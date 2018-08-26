@@ -1,0 +1,66 @@
+
+
+
+     SendPacket(31.0)	  ARP Programmers Manual      SendPacket(31.0)
+
+
+
+     NAME
+	  SendPacket - Send a packet to	DOS.
+
+     SYNOPSIS
+	  Result1 = SendPacket(	Action,	Args, Handler)
+	    d0			  d0	a0	a1
+
+     FUNCTION
+	  Sends	an AmigaDOS packet to a	handler.  This function	will
+	  Wait(), if necessary,	until the Handler returns the packet.
+	  It cannot therefore be used for asynchronous I/O.  This
+	  function uses	the processes message port, and	it will	call
+	  the pr_PktWait function if this is installed.
+
+     INPUTS
+	  Action - the action you wish this packet to cause.
+
+	  Args - Pointer to an array of	seven long words which specify
+		  the arguments	to send	with the packet.  This may be
+		  NULL,	in which case the arguments will be set	to
+		  zero.
+
+	  Handler - The	address	of the msgport of the handler you wish
+		  to receive this packet.
+
+     RESULT
+	  Result1 - This function returns the result1 field of the
+		  returned packet.  Res2 is available in register D1
+		  for assembly language	programmers, or	by calling
+		  IoErr().
+
+     BUGS
+	  None known.
+
+     SEE ALSO
+     AUTOHR
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

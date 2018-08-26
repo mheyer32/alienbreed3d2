@@ -1,0 +1,26 @@
+##base _ClistBase
+##bias 30
+##public
+InitCLPool(cLPool,size)(A0,D0)
+AllocCList(cLPool)(A1)
+FreeCList(cList)(A0)
+FlushCList(cList)(A0)
+SizeCList(cList)(A0)
+PutCLChar(cList,byte)(A0,D0)
+GetCLChar(cList)(A0)
+UnGetCLChar(cList,byte)(A0,D0)
+UnPutCLChar(cList)(A0)
+PutCLWord(cList,word)(A0,D0)
+GetCLWord(cList)(A0)
+UnGetCLWord(cList,word)(A0,D0)
+UnPutCLWord(cList)(A0)
+PutCLBuf(cList,buffer,length)(A0,A1,D1)
+GetCLBuf(cList,buffer,maxLength)(A0,A1,D1)
+MarkCList(cList,offset)(A0,D0)
+IncrCLMark(cList)(A0)
+PeekCLMark(cList)(A0)
+SplitCList(cList)(A0)
+CopyCList(cList)(A0)
+SubCList(cList,index,length)(A0,D0/D1)
+ConcatCList(sourceCList,destCList)(A0,A1)
+##end

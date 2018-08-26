@@ -1,0 +1,66 @@
+
+
+
+     CheckSumPrg(33.4)	  ARP Programmers Manual     CheckSumPrg(33.4)
+
+
+
+     NAME
+	  CheckSumPrg -- Calculate the checksum	on a resident program.
+
+     SYNOPSIS
+	  checksum = CheckSumPrg(node)
+	      d0		  d1
+
+     FUNCTION
+	  All programs on the resident list are	checksummed when they
+	  are added to the list.  On rare occasions, it	might be
+	  necessary to recompute this checksum.	 This function
+	  computes the checksum	on a resident program given its	node.
+	  It does not change, compare or otherwise alter the node.  It
+	  is also the only function which does not use the semaphore.
+	  Therefore, the correct method	of using this function is:
+		  Node = ObtainResidentProgram("name");
+		  checksum = CheckSumPrg(Node);
+		  ReleaseResidentPrg(Node->rpn_Segment);
+
+	  For a	general	discussion on ARP's resident list, see the
+	  manual page for AddResidentPrg().
+
+     INPUTS
+	  node - Pointer to a resident program node.
+
+     RESULT
+	  checksum - A newly calculated	checksum.
+
+     BUGS
+	  The checksum is not perfect, but it should catch most
+	  problems.  A tradeoff	was made with respect to the time it
+	  takes	to do more complex checksums.
+
+     SEE ALSO
+	  ObtainResidentPrg(), AddResidentPrg(),LoadPrg(),UnLoadPrg(),
+	  RemResidentPrg(), ReleaseResidentPrg(), BaseName().
+
+     AUTHOR
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

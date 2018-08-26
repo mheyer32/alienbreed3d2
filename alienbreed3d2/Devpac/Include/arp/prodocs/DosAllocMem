@@ -1,0 +1,66 @@
+
+
+
+     DosAllocMem(31.0)	  ARP Programmers Manual     DosAllocMem(31.0)
+
+
+
+     NAME
+	  DosAllocMem -	AmigaDOS compatible memory allocator
+
+     SYNOPSIS
+	  memBlock = DosAllocMem( size_in_bytes	)
+	     d0			     d0
+
+     FUNCTION
+	  This function	returns	a memory block of the size requested,
+	  or NULL if the allocation failed.  The memory	will satisfy
+	  the requirements of MEMF_PUBLIC | MEMF_CLEAR.
+
+	  As expected by AmigaDOS, the total size of the memory	block
+	  is stored at (memblock - 4), so the actual memory allocated
+	  will always be four bytes larger than	size_in_bytes.
+
+	  arp.library uses this	function to construct variable size
+	  list nodes for its DA	(DosAllocMem) lists. Note that this is
+	  NOT a	tracking function.
+
+     INPUTS
+	  size_in_bytes	- the size of the desired block	in bytes.
+
+     RESULT
+	  memBlock - a pointer to the allocated	free block.  This
+		  block	will be	longword aligned, and the total	size
+		  of the block is stored at (memblock -	4).  If	the
+		  allocation failed, memBlock will be zero.
+
+     ADDITIONAL	CONSIDERATIONS
+	  The value returned by	DosAllocMem is a real pointer.	If you
+	  need a BPTR, you must	convert	this value yourself.
+
+     BUGS
+	  None known.
+
+     SEE ALSO
+	  DosFreeMem(),	AddDANode(), FreeDAList(), AddDADevs()
+
+     AUTHOR
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

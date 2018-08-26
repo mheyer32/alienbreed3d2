@@ -1,0 +1,66 @@
+
+
+
+     InitStdPacket(31.0)  ARP Programmers Manual   InitStdPacket(31.0)
+
+
+
+     NAME
+	  InitStdPacket	- Initialize a standard	packet structure.
+
+     SYNOPSIS
+	  InitStdPacket(Action,	Args, Packet, replyport)
+			 D0	 A0	A1	 A2
+
+     FUNCTION
+	  This function	performs the initialization required for a
+	  packet before	it is posted to	AmigaDOS.
+
+     INPUTS
+	  PacketType - The type	(action) of packet you need.
+
+	  Packet - Address of the start	of the standard	packet you
+		  wish initialized. NOTE! - this is the	start of the
+		  message portion of the packet, NOT the actual	packet
+		  itself.
+
+	  ReplyPort - The replyport for	this packet.
+
+	  Args - pointer to an array of	7 longwords representing the
+		  argument values you wish to send to AmigaDOS.	 If
+		  this is NULL,	the packet arguments will be cleared.
+
+     RESULT
+	  The StdPacket	is initialized according to your requests.
+
+     BUGS
+	  None known.
+
+     SEE ALSO
+	  SendPacket()
+
+     AUTHOR
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

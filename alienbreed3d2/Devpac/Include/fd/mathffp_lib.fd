@@ -1,0 +1,21 @@
+##base _MathBase
+##bias 30
+##public
+SPFix(float)(D0)
+SPFlt(integer)(D0)
+SPCmp(leftFloat,rightFloat)(D1,D0)
+SPTst(float)(D1)
+SPAbs(float)(D0)
+SPNeg(float)(D0)
+SPAdd(leftFloat,rightFloat)(D1,D0)
+SPSub(leftFloat,rightFloat)(D1,D0)
+SPMul(leftFloat,rightFloat)(D1,D0)
+SPDiv(leftFloat,rightFloat)(D1,D0)
+*----------------------------------------------------------
+*
+*  New functions added for release 1.2
+*
+*----------------------------------------------------------
+SPFloor(float)(D0)
+SPCeil(float)(D0)
+##end

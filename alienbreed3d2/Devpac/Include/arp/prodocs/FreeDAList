@@ -1,0 +1,66 @@
+
+
+
+     FreeDAList(31.0)	  ARP Programmers Manual      FreeDAList(31.0)
+
+
+
+     NAME
+	  FreeDAList - Free a DosAllocmem (DA) list
+
+     SYNOPSIS
+	  FreeDAList ( daNode )
+			 A1
+
+     FUNCTION
+	  Frees	all DAList nodes from a	DA list.  This function	may be
+	  used to free any DA style list, the only requirements	are
+	  that each node in the	list must be allocated by calls	to
+	  DosAllocMem(), and that each node contains a pointer to the
+	  next node in the list	as its first entry.
+
+     INPUTS
+	  daNode - Pointer to the first	node to	free.
+
+     RESULT
+	  All nodes from daNode	to the end of the list will be freed.
+	  No value is returned to the caller.
+
+     BUGS
+	  None known.
+
+     AUTHOR
+	  CDH
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

@@ -1,0 +1,66 @@
+
+
+
+     LDiv(33.4)		  ARP Programmers Manual	    LDiv(33.4)
+
+
+
+     NAME
+	  LDiv - Perform a long	divide.
+
+     SYNOPSIS
+	  LONG = LDiv(dividend,	divisor)
+			 d0	  d1
+
+     FUNCTION
+	  The 68000 instruction	set does not implement a full 32bit
+	  divide.  This	function corrects that defect.
+
+     INPUTS
+	  dividend - A 32 bit signed number.
+
+	  divisor - A 32 bit signed number.
+
+     RESULT
+	  LONG - The 32	bit result of dividend/divisor.
+
+     BUGS
+	  None known.
+
+     SEE ALSO
+	  LMult, LMod
+
+     AUTHOR
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

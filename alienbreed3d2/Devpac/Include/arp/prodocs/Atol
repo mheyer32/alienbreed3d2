@@ -1,0 +1,66 @@
+
+
+
+     Atol(33.4)		  ARP Programmers Manual	    Atol(33.4)
+
+
+
+     NAME
+	  Atol -- Convert ascii	string to long int.
+
+     SYNOPSIS
+	  intval = Atol("string")
+	    d0		   a0
+
+     FUNCTION
+	  Convert "string" to a	long integer.  This function will skip
+	  leading whitespace. This function returns an error if	a
+	  non-whitespace non-digit is encountered during processing.
+
+     INPUTS
+	  string -- pointer ascii string, which	may be null terminated
+		  or whitespace	terminated.  The digits	may have
+		  leading whitespace.
+
+     RESULT
+	  intval -- the	binary value of	the string, else the offending
+		  character if an error.  You can tell if this
+		  function returned an error from assembly langauage
+		  by checking the Z flag, it will be SET if there is
+		  an error. The	C binding routine will place the error
+		  value	ERRBADINT in the global	long Errno if there is
+		  an error.  Errno is not cleared on a succesful
+		  return.
+
+     BUGS
+	  None known
+
+     SEE ALSO
+	  LMult()
+
+     AUTHOR
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

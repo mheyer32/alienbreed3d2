@@ -1,0 +1,66 @@
+
+
+
+     ArpLock(31.0)	  ARP Programmers Manual	 ArpLock(31.0)
+
+
+
+     NAME
+	  ArpLock - Get	a lock and track it.
+
+     SYNOPSIS
+	  Lock = ArpLock("name", accessmode)
+	   d0		    d1	      d2
+
+     FUNCTION
+	  This function	is completely equivalent to the	AmigaDOS
+	  Lock(), except that ArpLib will remember that	you have
+	  opened this lock, and	will UnLock() for you when you
+	  CloseLibrary(ArpBase).
+
+     INPUTS
+	  name - pointer to a null terminated string
+
+	  accessmode - a valid AmigaDOS	access value.
+
+     RESULTS
+	  Lock - A lock	or NULL, if no lock.
+
+	  TRACKER - Pointer to tracker in A1, or in LastTracker	if
+		  calling from 'C'
+
+     REMEMBER
+	  You must FreeTrackedItem( TRACKER ), CloseLibrary() or
+	  ArpExit() to free this resource.
+
+     BUGS
+	  None known.
+
+     SEE ALSO
+	  DOS DOCUMENTATION, FreeTrackedItem(),	CloseLibrary(),
+	  ArpExit(), OpenLibrary()
+
+     Author
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

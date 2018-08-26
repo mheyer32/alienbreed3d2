@@ -1,0 +1,66 @@
+
+
+
+     Puts(31.0)		  ARP Programmers Library	    Puts(31.0)
+
+
+
+     NAME
+	  Puts - Print string with newline on stdout.
+
+     SYNOPSIS
+	  BOOL = Puts("string")
+	   d0		  a1
+
+     FUNCTION
+	  Writes a string to stdout, and then writes a terminating
+	  newline.  This is currently implemented as Printf("%s0,
+	  string).
+
+     INPUTS
+	  string - pointer to ascii string. (null terminated) String
+		  may be null, in which	case a newline only will be
+		  displayed.
+
+     RESULT
+	  See FPrintf page for more information	- note that this
+	  function always trys to write	a newline.
+
+     BUGS
+	  None known.
+
+     SEE ALSO
+	  Printf, FPrintf.
+
+     AUTHOR
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

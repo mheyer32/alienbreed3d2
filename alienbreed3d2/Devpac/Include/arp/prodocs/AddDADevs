@@ -1,0 +1,66 @@
+
+
+
+     AddDADevs(31.0)	  ARP Programmers Manual       AddDADevs(31.0)
+
+
+
+     NAME
+	  AddDADevs -- get private copy	of DevInfo list.
+
+     SYNOPSIS
+	  numentries = AddDADevs( dalist, select )
+	      D0		    A0,	    D0
+
+     FUNCTION
+	  AddDADevs provides a method of searching the DevInfo list
+	  for specific types of	entries, and adding them to a user
+	  private DA list in a way that	is safe	for multitasking, and
+	  easily accessible for	assembler or higher level languages.
+	  This function	calls AddDANode() to add nodes to the dalist.
+	  The list is sorted first by class, and then
+	  alphanumerically, by name.  The user is responsible for
+	  freeing the nodes allocated by this function.
+
+     INPUTS
+	  dalist - pointer to a	DA list	header
+
+	  selectmask --	the selection mask which determines which
+		  devices will added to	the DA list.  See defines
+		  arpbase.[hi]
+
+     RESULT
+	  numenteries -	The number of entries actually added to	the
+		  users	DA list	will be	returned as the	value of this
+		  function, and	the list nodes will have been
+		  allocated and	added to dalist.
+
+     BUGS
+	  None known.
+
+     SEE ALSO
+	  FreeDAList(),	AddDANode(), DosFreeMem(), Tracking functions.
+
+     AUTHOR
+	  CDH
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

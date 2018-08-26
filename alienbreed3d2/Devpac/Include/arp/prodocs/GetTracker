@@ -1,0 +1,66 @@
+
+
+
+     GetTracker(33.4)	  ARP Programmers Manual      GetTracker(33.4)
+
+
+
+     NAME
+	  GetTracker --	Get a tracking node for	resource tracking.
+
+     SYNOPSIS
+	  Tracker = GetTracker()
+	    A1
+
+     C_LANGUAGE	SYNOPSIS
+	  Tracker = GetTracker(	ID )
+
+     FUNCTION
+	  Creates a DefaultTracker style node, which you must then
+	  initialize according to the specific resource	you wish
+	  tracked.  For	assembly language callers, this	includes
+	  installing the ID into the DefaultTracker returned to	you.
+	  For C	or other higher	language users,	this ID	is installed
+	  for you by the glue routine.	For more information on	the
+	  uses of each ID value, please	consult	the page for TRAK_IDS.
+
+     INPUTS
+	  ID - Higher level language users must	supply an ID as	a
+		  parameter, these are defined in arpbase.[hi].
+
+     RESULTS
+	  Tracker - A pointer to a DefaultTracker, or NULL if the
+		  allocation failed.
+
+     ASSEMBLY LANGUAGE CONSIDERATIONS
+	  This call preserves registers	D0/D1/A0, unless the request
+	  fails	in which case D0 is set	to 0 for your convenience, as
+	  a NULL result.  On sucess, register A1 is a pointer to the
+	  tracking node, and the Z flag	is set NOT-ZERO.
+
+     BUGS
+	  TRAK_WINDOW suffers from the CloseWindowSafely() bug.
+
+     SEE ALSO
+	  FreeTrackedItem(), FreeTaskResList(),	ArpAlloc(), TRAK_IDS
+
+     AUTHOR
+	  CDH
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

@@ -1,0 +1,66 @@
+
+
+
+     CreateTaskResList(31.0)   ARP Prog_Man    CreateTaskResList(31.0)
+
+
+
+     NAME
+	  CreateTaskResList - Create a new nested ResList for this
+	  task
+
+     SYNOPSIS
+	  ResList = CreateTaskResList()
+	     D0
+
+     FUNCTION
+	  Create a new Resource	list for this task, and	insert it at
+	  the HEAD of the ResourceArray	list.
+
+	  You do not normally need to use CreateTaskResList, because
+	  the functions	which insert tracked items into	the task
+	  reslist will automaticly create a reslist if one did not
+	  exist	before.
+
+	  This function	may be used to explictly create	a nested
+	  ResList for this task; all resources allocated after
+	  CreateTaskReslist will be stored in the new ResList until
+	  you call FreeTaskResList.  This would	allow you, for
+	  instance, to call CreateTaskResList at the start of a
+	  function, and	FreeTaskResList	at the end of the function,
+	  and any resources tracked in the interum would be freed; but
+	  all other tracked resources for the task would remain
+	  tracked.
+
+	  All Task reslists will also be automaticly freed when	you
+	  call CloseLibrary() or ArpExit()
+
+     INPUTS
+	  None
+
+     RESULT
+	  reslist - Pointer to the new list, or	NULL if	failure.
+		  Assembly language programers may rely	on the Z flag
+		  value	on return from this function.
+
+     BUGS
+	  None known
+
+     AUTHOR
+	  CDH
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

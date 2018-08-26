@@ -1,0 +1,132 @@
+
+
+
+     AddResidentPrg(33.4)     ARP Prog Manual	  AddResidentPrg(33.4)
+
+
+
+     NAME
+	  AddResidentPrg -- Add	a program to the resident list.
+
+     SYNOPSIS
+	  node = AddResidentPrg(segment, name)
+	    d0			  d1	  a0
+
+     FUNCTION
+	  ARP's	Resident Program manager is a sort of software MMU
+	  that attempts	to allow programs to run multiple times	with
+	  only one copy	of their code in memory. The result is similar
+	  to Unix(tm) shared text processes.  Provisions have been
+	  made to allocate extra data segments for programs that are
+	  not reentrant, these are allocated automatically if the
+	  program begins with a	ResidentProgramTag and is also on the
+	  resident list.  Additionally,	the ResidentProgramTag stores
+	  a max	stacksize needed to run	the program, this is used and
+	  overrides all	user stack requests whether or not the program
+	  is on	the Resident list.
+
+	  A program does not need to have a ResidentProgramTag to be
+	  installed on the resident list.  Programs are	checksummed
+	  upon being added, and	checked	each time they are obtained.
+	  While	not perfect, this provides a reasonable	method of
+	  weeding out most non-resident	programs.  As a	general	guide,
+	  all ARP programs currently will run as resident programs.
+	  Most current C programs modify their data, and so cannot be
+	  run without using the	ResidentProgramTag to allocate and
+	  copy data.  Programs which write into	their own code
+	  segments, such as those which	do SegList splits, will	never
+	  run as Resident, and will likely never run under a hardware
+	  MMU either.  Some programs, such as MicroSmith's TxED, check
+	  to see if they are on	the ResidentList before	doing a
+	  seglist split.  These	should be ok as	resident.
+
+	  All names on the resident list are stored using their
+	  BaseName's only.  Matches will succeed if you	specify	a full
+	  pathname, but	the match only examines	the basename of	each.
+
+	  This list is protected using a signal	semaphore in ArpBase,
+	  so the overall impact	on the system for searches is very
+	  low.	Generally, you will not	need to	obtain this semaphore
+	  for yourself,	since all these	functions (except
+	  CheckSumPrg()) handle	the locking of the list	for you.  In
+	  general, these functions do not need to be called, you
+	  should usually use the higher	level LoadPrg()	UnLoadPrg()
+	  functions instead.
+
+     INPUTS
+	  segment - BPTR as returned by	LoadSeg().
+
+	  name - pointer to a null terminated pathname.	 This may be
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+
+
+
+
+     AddResidentPrg(33.4)     ARP Prog Manual	  AddResidentPrg(33.4)
+
+
+
+		  any valid AmigaDOS pathname, but only	the BaseName
+		  of the path is compared and stored. Note that	the
+		  resident name	does not need to be the	same as	the
+		  original diskfile name.
+
+     RESULT
+	  node - If found, a pointer to	the resident program node for
+		  the program.	If NULL, it could not be added.	Note
+		  that it is impossible	to add the same	name twice to
+		  the resident list.  On failure, more information is
+		  available by calling IoErr().
+
+     BUGS
+	  None known
+
+     SEE ALSO
+	  ObtainResidentPrg(), RemResidentPrg(), LoadPrg(),
+	  UnLoadPrg(), CheckSumPrg(), ReleaseResidentPrg(),
+	  BaseName().
+
+     AUTHOR
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 2					     (printed 2/22/88)
+
+
+

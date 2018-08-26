@@ -1,0 +1,66 @@
+
+
+
+     ArpAllocMem(31.0)	  Arp Programmers Manual     ArpAllocMem(31.0)
+
+
+
+     NAME
+	  ArpAllocMem -	Allocate and track memory.
+
+     SYNOPSIS
+	  MemPtr = ArpAlloc( size, reqs	)
+	    d0		      D0    D1
+
+     FUNCTION
+	  This function	is identical to	Exec's AllocMem, but will uses
+	  the ArpLibrary tracking mechanism to track the allocations.
+	  Note that you	can track CHIP memory using this function.
+
+     INPUTS
+	  size - amount	of memory required
+
+	  reqs - type of memory	required
+
+     RESULT
+	  MemPtr - Pointer to a	memory block of	type and size
+		  requested, or	NULL, if not available.
+
+	  TRACKER - Tracker is available in A1,	or in LastTracker
+		  variable if calling from 'C'.
+
+     REMEMBER
+	  You must FreeTrackedItem( TRACKER ) or CloseLibrary()	or
+	  ArpExit() to free this memory.
+
+     BUGS
+	  None known.
+
+     SEE ALSO
+	  OpenLibrary(), CloseLibrary(), FreeTrackedItem(),
+	  GetTracker() exec.doc/AllocMem()
+
+     AUTHOR
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

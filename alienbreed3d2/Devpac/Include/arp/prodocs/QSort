@@ -1,0 +1,132 @@
+
+
+
+     QSort(31.0)	  ARP Programmers Manual	   QSort(31.0)
+
+
+
+     FUNCTION
+	  QSort	- Quickly sort whatever	you want.
+
+     SYNOPSIS
+	  stkerr = QSort( ptr, region_size, byte_size, user_func)
+	    d0		  a0	      d0	  d1	     a1
+
+     FUNCTION
+	  QSort	is an implementation of	Hoares sorting algorithm.  It
+	  uses a constant amount of stack no matter what the size of
+	  the file.
+
+     INPUTS
+	  baseptr   - pointer to the start of a	memory region to be
+		  sorted
+
+	  region_size -	size of	region to be sorted, in	number of
+		  elements (not	bytes!)
+
+	  byte_size - size of a	single element,	in bytes.
+
+	  user_function	- function to be provided by caller, which
+		  compares two elements	from the set to	be sorted.
+		  QSort	will call the user function like so:
+		  return = user_function(el1, el2)
+		   d0		   a0	 a1
+
+		  Your function	must return the	following in D0:
+
+		  if (el1 < el2) return	< 0
+		  if (el1 > el2) return	> 0
+		  if (el1 == el2) return = 0
+
+		  You must save	all registers except a0, a1, d0, d1.
+		  (See below for an example of a C calling sequence)
+
+		  QSort	will also pass A5 to you unchanged.  You can use
+		  this register	to point to pass information to	your
+		  comparison routine.
+
+     RETURNS
+	  stkerr - -1 if everything is cool, 0 if there	was an
+		  internal recursion stack overflow (not too likely).
+
+     EXAMPLE:
+	  Here is an example of	a calling sequence from	C, which is to
+	  sort an array	of pointers to strings:
+	  char **names;
+	  long numEls;
+	  extern    Cmp();
+
+	  if (QSort(names, numELs, 4L, Cmp))
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+
+
+
+
+     QSort(31.0)	  ARP Programmers Manual	   QSort(31.0)
+
+
+
+	       do whatever
+	       else
+	       STACK_ERROR()
+
+	  the Cmp function would look like this:
+
+	  Cmp()
+	  {
+	  {
+	  #asm
+	      public	 _geta4
+	      movem.l d2-d3/a4/a6,-(sp)	; save important registers
+	      movem.l a0/a1,-(sp)	; push args
+	      bsr     _geta4
+	      bsr     _cmp	   ; call real compare function
+	      addq.l  #8,sp	   ; clean up args
+	      movem.l (sp)+,d2-d3/a4/a6	; restore registers
+	  #endasm
+	  }
+	  }
+
+	  The cmp function called by the above is a normal C
+	  function, it can be whatever you like.  Here is a sample
+	  one:
+
+	  cmp(s1,s2)
+	  char **s1, **s2;
+	  {
+	       return strcmp(*a, *b);
+	  }
+
+     BUGS
+	  None known.
+
+     AUTHOR
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 2					     (printed 2/22/88)
+
+
+

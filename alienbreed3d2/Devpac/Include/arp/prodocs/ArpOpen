@@ -1,0 +1,66 @@
+
+
+
+     ArpOpen(31.0)	  ARP Programmers Manual	 ArpOpen(31.0)
+
+
+
+     NAME
+	  ArpOpen - Open a file	and track it.
+
+     SYNOPSIS
+	  FileHandle = ArpOpen("name", accessmode)
+	      d0		 d1	   d2
+
+     FUNCTION
+	  This function	is equivalent to the AmigaDOS Open(), except
+	  that this function will remember that	the file is open when
+	  you do a CloseLibrary(ArpBase) and close it for you.
+
+     INPUTS
+	  name - pointer to a null terminated string.
+
+	  accessmode - pointer to a valid AmigaDOS access mode.
+
+     RESULT
+	  FileHandle - a BPTR to a filehandle, or NULL
+
+	  TRACKER - Pointer to the tracker in A1, or in	LastTracker
+		  variable if calling from 'C'.
+
+     REMEMBER
+	  You must call	FreeTrackedItem(TRACKER), ArpExit() or
+	  CloseLibrary() to free this resource.
+
+     BUGS
+	  None known.
+
+     SEE ALSO
+	  FreeTrackedItem(), ArpExit(),	OpenLibrary(), CloseLibrary()
+	  dos.doc/Open
+
+     AUTHOR
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

@@ -1,0 +1,66 @@
+
+
+
+     GetEnv(33.4)	  ARP Programmers Manual	  GetEnv(33.4)
+
+
+
+     NAME
+	  GetEnv -- Get	the value of an	environment variable
+
+     SYNOPSIS
+	  strptr = Getenv("string", buffer, size)
+	    d0		    A0	      A1     d0
+
+     FUNCTION
+	  This function	provides an environment	variable mechanism
+	  compatible with MANX.	 Note that this	call is	more efficient
+	  than using the manx getenv() function	call when arplibrary
+	  is installed.
+
+     INPUTS
+	  string -- pointer to an environment variable name.
+
+	  buffer -- a user allocated area which	will be	used to	store
+		  the value associated with the	environment variable.
+		  This may be NULL.
+
+	  size -- size of buffer region	in bytes.
+
+     RESULT
+	  If found, a pointer to the start of the value	string for
+	  that variable	will be	returned.  If buffer is	non-null, then
+	  as much of the value string as allowed by size will be
+	  copied into the user buffer.
+
+     ADDTIONAL CONSIDERATIONS
+	  arp.libraries	environment variable mechanism is compatible
+	  with the MANX	software, which	has set	the defacto standard
+	  implementation for the Amiga.	 This call is NOT equivalent
+	  to the Manx getenv() call, however.
+
+	  You should run as Forbidden()	any code that uses or examines
+	  the return value from	this function, which is	a pointer to
+	  the global environment space of ArpLib.
+
+     BUGS
+	  None Known.
+
+     SEE ALSO
+	  SetEnv()
+
+     AUTHOR
+	  SDB
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

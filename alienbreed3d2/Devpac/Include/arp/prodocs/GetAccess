@@ -1,0 +1,66 @@
+
+
+
+     GetAccess(33.4)	  ARP Programmers Manual       GetAccess(33.4)
+
+
+
+     NAME
+	  GetAccess -- Locks access to a tracked resource.
+
+     SYNOPSIS
+	  Pointer = GetAccess( tracker )
+	     d0			  A1
+
+     FUNCTION
+	  This function	returns	a pointer to a tracked resource, if
+	  the resource is still	available, and locks it	into memory.
+	  If the resource has been freed since the last	FreeAccess()
+	  call,	the return value from this function will be NULL.  You
+	  can then do a	FreeTrackedItem( tracker ) to release the
+	  tracker, should you so desire.
+
+	  If this function returns NON-NULL, then the resource will
+	  once again be	locked into memory until the next FreeAccess()
+	  call on this tracker.
+
+     INPUTS
+	  tracker -- the tracker for the resource you want to reclaim.
+
+     RESULTS
+	  Pointer -- pointer to	the resource or	NULL, if the resource
+		  is gone.
+
+     BUGS
+	  None Known.
+
+     SEE ALSO
+	  FreeAccess(),	GetTracker()
+
+     AUTHOR
+	  CDH
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

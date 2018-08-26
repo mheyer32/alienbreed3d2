@@ -1,0 +1,65 @@
+
+
+
+     PathName(31.0)	  ARP Programmers Manual	PathName(31.0)
+
+
+
+     NAME
+	  PathName - Find complete pathname of file/directory.
+
+     SYNOPSIS
+	  Length = PathName(Lock, Destination, NumberNames)
+	    D0		     D0	      A0	  D1
+
+     FUNCTION
+	  This function	builds a path name which completely describes
+	  the path from	the root of the	filing system to the file on
+	  which	the Lock has been obtained.  The name returned is of
+	  the form:
+		  Volume:Dir1/Dir2/Dir3/.../Name .RE 0
+
+9     INPUTS
+	  Lock - This is a lock	on the file or directory obtained from
+		  Lock() or DupLock(), or some such function.
+
+	  Destination -	This is	the area of memory to place the
+		  filename in.
+
+	  NumberNames -	This is	the number of names that can be	placed
+		  in the destination area.  This should	be some
+		  multiple of FSIZE.
+
+     RESULT
+	  Length - If the return is non-zero, then the pathname	has
+		  been placed in Destination, and the return value is
+		  the total length of the pathname in characters.  A
+		  zero return indicates	a problem, either a buffer
+		  overflow, or disk error.  IoErr() can	be of help in
+		  this case.
+
+     BUGS
+	  None known.
+
+     AUTHOR
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

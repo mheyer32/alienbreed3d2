@@ -1,0 +1,66 @@
+
+
+
+     FreeTrackedItem(31.0)    ARP Prog Manual	 FreeTrackedItem(31.0)
+
+
+
+     NAME
+	  FreeTrackedItem - Free a tracked item	from a ResList
+
+     SYNOPSIS
+	  FreeTrackedItem( Tracker )
+			     A1
+
+     FUNCTION
+	  Frees	a resource obtained by one of the ARP tracking calls,
+	  or obtained by the user and then tracked using the ARPLIB
+	  tracking mechanism.
+
+     INPUTS
+	  Tracker - Pointer to the tracker for this resource, NOT a
+		  pointer to the individual resource!
+
+     RESULT
+	  The resource and its tracking	node is	released.
+
+     BUGS
+	  None Known.
+
+     AUTHOR:
+	  CDH
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

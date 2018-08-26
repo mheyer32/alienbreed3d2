@@ -1,0 +1,66 @@
+
+
+
+     FindTaskResList(31.0)    ARP Prog Manual	 FindTaskResList(31.0)
+
+
+
+     NAME
+	  FindTaskResList - find a pointer to current task's reslist
+
+     SYNOPSIS
+	  ResList = FindTaskResList()
+	    D0
+
+     FUNCTION
+	  Returns the most recent ResList for the current task,	if
+	  any.	If this	task has no ResList (nothing is	being tracked)
+	  returns NULL.
+
+     INPUTS
+	  None
+
+     RESULT
+	  ResList - Pointer to most recent ResList for your task or
+		  NULL,	if nothing is being tracked.
+
+     ADDITIONAL	CONSIDERATIONS
+	  This is not normally called by a user	process.
+
+     BUGS
+	  None known.
+
+     AUTHOR
+	  CDH
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

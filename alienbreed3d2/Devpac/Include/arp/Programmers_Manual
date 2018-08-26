@@ -1,0 +1,462 @@
+
+
+
+		   AmigaDOS Replacement	Project	V1.1 (REL2)
+
+
+			     AmigaDOS Replacement
+			     Project V1.1 (REL2)
+
+
+				   [4mABSTRACT[0m
+
+
+
+	  An overview of the new functions and support materials
+	  available to programmers using ARP, including	a discussion
+	  of calling arp.library from the C language.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				 CONTENTS
+
+	   Current Status of ARP................................  1
+
+       1.  Changes to old functions.............................  1
+	   1.1	GADS()..........................................  1
+	   1.2	FileRequest()...................................  1
+
+       2.  New Functions........................................  2
+	   2.1	Process	Control	and Resident....................  2
+	   2.2	Date functions..................................  3
+	   2.3	Misc functions..................................  3
+
+       3.  Language Support.....................................  3
+	   3.1	C Language Support..............................  4
+	   3.2	Modula II support...............................  5
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				  - i -
+
+
+
+
+
+
+
+       ARP Prog	Manual	   V1.1	Software (REL2)	  February 22, 1988
+
+
+
+       [4mCurrent Status of ARP[0m
+
+       This release meets our first goal in producing ARP. It is
+       now possible for	users of the Amiga to work in a	practically
+       BCPL free environment, allowing programmers to write
+       software	free of	BCPL headaches.	 This release of the
+       library (arp.library) introduces	what we	feel are important
+       advances	and standards for the Amiga, including new process
+       control functions and a resident	program	standard.  Old
+       functions have been enhanced, the GADS()	argument parser	now
+       supports	a new template type which allows the user to enter
+       any number of arguments,	and the	FileRequest() has been very
+       greatly enhanced, it now	sports a parent	gadget,	and
+       provides	much more programmer control than previously. It is
+       beautiful.
+
+
+       1.  [4mChanges to old functions[0m
+
+       Only GADS() and FileRequest() received significant
+       enhancements.  Both of these are	completely compatible with
+       older code.
+
+       1.1  [4mGADS()[0m
+
+       The only	change to GADS() is the	introduction of	a new
+       template	type which allows any number of	arguments to be
+       placed on the command line.  It consists	of the usual slash
+       followed	by three periods (/...).  On return from GADS(),
+       the array element which corresponds to the multiarged type
+       will be a pointer to another array of character pointers	(
+       *(**char)) which	contain	the actual arguments entered by	the
+       user.  This array is guranteed to be null terminated.  See
+       the GADS	manual page for	more information.  Note	that the
+       ugly and	limited	",,,," construct is still supported if you
+       are into	commas.
+
+       1.2  [4mFileRequest()[0m
+
+       FileRequest has been greatly enhanced and extended in this
+       release.	 You can now alter FileRequest's window, add or
+       subtract	your own gadgets, handle gadget	events relating	to
+       your own	gadgets, and so	on.  The FileRequester structure
+       has been	changed, however old code using	the old
+       FileRequester structure will still work as long as you set
+       the old fr_Flags	variable to zero as warned.  See the
+       FileRequest() manual page and arpbase.[ih] for more
+       information.
+
+
+
+
+
+
+				 Page 1
+
+
+
+
+
+
+
+       ARP Prog	Manual	   V1.1	Software (REL2)	  February 22, 1988
+
+
+
+       2.  [4mNew Functions[0m
+
+       Many new	functions have been added in this release. Perhaps
+       the most	important are the process control functions and	the
+       date functions.	The date functions support international
+       date formats for	both input and output, and were	provided by
+       Ken Salmon.
+
+       2.1  [4mProcess Control and Resident[0m
+
+       arp.library now has a background	process	spawner	which
+       should eliminate	any future need	for programs to	call
+       Execute(). You can set many options with	this function
+       including stdio handles,	or you can specify a flag which
+       will create a new interactive environment for the process.
+       Note that this function creates new CLI style processes as
+       its default actions, and	it may be called from Workbench
+       programs.  It also searches the Resident	list first, and	so
+       may be used to run multiple copies of the same code, and	it
+       automatically takes advantage of	stack settings using the
+       new ResidentProgramTag.
+
+	    The	spawner	will not execute BCPL programs.	This would
+       have been done if it were reasonably possible to	do so, but
+       it was not.  However, now that most of the ARP command
+       replacements are	done this should not be	an issue, since	any
+       disk which has arp.library will also have the command
+       replacements. The spawner will return an	error code to you,
+       at which	point you can inform the user, or attempt to
+       execute the BCPL	program	using Execute(), and all its
+       attendent problems.
+
+	    The	spawner	causes processes to automatically clean	up
+       after themselves, this includes closing all stdio handles
+       and freeing stack and possibly also data	memory,	if that	was
+       allocated by the	startup	code, so there is no reason for
+       your program to hang around waiting for child exits,
+       although	you can	if you wish to.	 For more information, see
+       the ASyncRun() manual page.
+
+       2.1.1  [4mResident programs[0m	 This release introduces a method
+       for creating shared text	processes on the Amiga.	 The code
+       for these processes in the past has had to be reentrant,	and
+       that is still the simplest case.	 ARP provides a	method for
+       specifying that a separate data segment should be allocated
+       if your program is resident, and	you can	then copy the data
+       to the new data segment,	and use	that, thus preserving a
+       clean slate for the next	execution.  The	compiler startup
+       code is responsible for initializing the	data segment.  This
+       was done	to keep	the support routines as	general	as
+       possible, the actual data copying is extremely short, as	a
+
+
+
+				 Page 2
+
+
+
+
+
+
+
+       ARP Prog	Manual	   V1.1	Software (REL2)	  February 22, 1988
+
+
+
+       look at the arprescrt0.s	source will demonstrate.
+
+	    Users now have a program to	install	processes as
+       Resident	as well	as a program to	execute	these processes.
+       Hopefully more people will take advantage of the	new
+       resident	standard and write more	of this	low overhead
+       software.  For more informtion, see the manual page for
+       Resident	in the users manual, and the AddResidentPrg() and
+       LoadPrg() etc., functions in the	programmers manual.
+
+       2.2  [4mDate functions[0m
+
+       These date functions provide a method for converting between
+       AmigaDOS	datestamps and strings and vice-versa.	These
+       functions provide a wide	variety	of international date
+       format input and	output conversions. You	must specify the
+       conversion you want.  The ARP standard has been to accept
+       the value of the	dateformat environment variable	as set by
+       users. If this is undefined, default to the current AmigaDOS
+       convention.  You	must check this	variable yourself, the
+       StrtoStamp() and	StamptoStr() functions will not	do this	for
+       you.  For more information see the manual pages for these
+       two functions, as well as the DateTime struct in
+       arpbase.[ih].
+
+       2.3  [4mMisc functions[0m
+
+       The following utility functions have been added in V33.4:
+
+	  - PreParse() - prepare a string for PatternMatch()
+
+	  - LMult(), LDiv(), LMod() - LONG multiply divide and
+	    modulus routines.
+
+	  - TackON() - add a filename to a pathname.
+
+	  - BaseName() - return	a pointer to the BaseName of a
+	    PathName.
+
+
+       3.  [4mLanguage Support[0m
+
+       Support is provided in the form of header files and linkable
+       libraries or pragma files for Aztec C, Lattice C	TDI Modula
+       II, and of course assembler.
+
+
+
+
+
+
+
+
+
+				 Page 3
+
+
+
+
+
+
+
+       ARP Prog	Manual	   V1.1	Software (REL2)	  February 22, 1988
+
+
+
+       3.1  [4mC Language Support[0m
+
+       Startup code which automatically	opens arp.library and
+       initializes IntuitionBase and GfxBase as	well as	ArpBase	is
+       provided	for both Lattice and Manx.  We have attempted to
+       keep filename conventions and header file proliferations	to
+       a minimum, and have succeeded pretty well so far, so the
+       discussion which	follows	apply equally well to both
+       compilers.
+
+	    To use the automatic startup code, simply link with
+       arp.lib.	This will perform the automatic	library	opens
+       described above and also	automatically call the GADS()
+       argument	parser to parse	the command line if you	are running
+       from the	CLI.  A	default	template is used which basically
+       allows users to enter arguments.	 If you	wish to	change this
+       template, simply	set a variable by the name of CLI_Template
+       to point	to the character string	you wish to use	for a
+       template.  You can also provide the optional extra help
+       message of your choice by providing a CLI_Help string
+       pointer.	 The startup code will also work correctly from
+       Workbench, of course, in	this case the GADS() parser will
+       not be used.
+
+	    Using the GADS() parser from C does	change the way most
+       C programmers expect their arguments, since they	are
+       preparsed (note:	this does not apply unless you have changed
+       the default template string.)  If you are using your own
+       template	string,	you should consult the GADS manual page	for
+       information about how it	passes arguments to you.  Note that
+       the startup code	does install the program name as argv[0],
+       as is usual.
+
+	    If you wish	to use the standard startup code, link with
+       a.lib which provides the	glue routines necessary	to hook	up
+       with arp.library. In this case you must explicitly open the
+       library yourself.
+
+	    It is *not*	recommended that you call the ArpExit()
+       function	from C,	this could possibly bypass allocations that
+       your compiler library has made on your behalf, and cause
+       problems	with open files	or unreleased memory.
+
+	    All	the source code	to the startup code is provided, so
+       you can see exactly what	it does	and modify it should you
+       need to.
+
+       3.1.1  [4mNote to Manx Users[0m  Manx users (but not Lattice) also
+       have the	files rstart, res.lib and the 32 bit versions of
+       these (rstart32 res32.lib).  These modules allow	you to take
+       advantage of the	resident program stuff from C.	Note that
+
+
+
+				 Page 4
+
+
+
+
+
+
+
+       ARP Prog	Manual	   V1.1	Software (REL2)	  February 22, 1988
+
+
+
+       you do not have to write	re-entrant code	using these modules
+       for your	stuff to work as resident. If you do need to know
+       if you are running resident, (as	opposed	to running from
+       disk) you may examine the global	long __fromdisk__.  This
+       variable	will be	TRUE (-1) when you are diskloaded.  If it
+       is zero,	then you have been launched from the resident list.
+       The default stack for resident programs has been	set in the
+       rstart module to	10240.	If this	is too high or too low,
+       simply modify the value in arprescrt0.s and remake (there is
+       a comment in the	file illustrating what you need	to change).
+
+       3.1.2  [4mNote to Lattice Users[0m  I am still	not happy with the
+       Lattice interface, the problem is that lattice does not
+       provide as much source as manx, so it is	difficult to
+       replace the exit	functions.  What has been done is to use
+       the OnExit() function to	perform	a CloseLibrary(ArpBase).
+       If you need OnExit() for	your own purposes, make	certain
+       that you	do a CloseLibrary(ArpBase) from	your exit routine.
+       Hopefully, the future will bring	more source from Lattice so
+       this can	be resolved.
+
+	    Also it does not appear possible from the supplied
+       documentation to	determine the total size of a merged data
+       area (data and bss) which is necessary for Resident support.
+       I am sure there must be a way, and as soon as I can find	out
+       from Lattice what it is,	I will try to supply resident
+       support files for lattice as well.
+
+       3.2  [4mModula II support[0m
+
+       We have not yet received	a Modula II support package from
+       anyone.	No one directly	involved with ARP speaks Modula	II,
+       so we are dependent on contributors for support for this
+       language.  The MII support materials we do provide are from
+       the first release, and cover only the first release
+       functions.  These were contributed by Martin Taillefer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				 Page 5
+
+
+
+

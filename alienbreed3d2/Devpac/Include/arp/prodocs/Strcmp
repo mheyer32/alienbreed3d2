@@ -1,0 +1,66 @@
+
+
+
+     Strcmp(31.0)	  ARP Programmers Manual	  Strcmp(31.0)
+
+
+
+     NAME
+	  Strcmp - Compare two strings,	ignoring case.
+
+     SYNOPSIS
+	  result = Strcmp(s1, s2)
+	    d0	    a0	a1
+
+     FUNCTION
+	  This is a standard implementation of this function, found in
+	  many C libraries, with the exception that case is ignored.
+	  In other words, Strcmp("ABC",	"abc") will regard these two
+	  strings as equal.
+
+     INPUTS
+	  s1,s2	- Pointer to null terminated ascii strings.
+
+     RESULTS
+	  result - returns less	than zero if s1	< s2, returns zero if
+		  s1 ==	s2, and	returns	greater	than zero if s1	> s2.
+
+     BUGS
+	  None Known
+
+     AUTHOR:
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

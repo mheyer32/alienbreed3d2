@@ -1,0 +1,66 @@
+
+
+
+     FreeAccess(33.4)	  ARP Programmers Manual      FreeAccess(33.4)
+
+
+
+     NAME
+	  FreeAccess --	Decrements use count for a tracked item.
+
+     SYNOPSIS
+	  FreeAccess( Tracker )
+			 A1
+
+     FUNCTION
+	  Decrements the 'user count' on a tracked item.  If the user
+	  count	goes to	-1, the	tracked	item will be freed by
+	  arp.library on a system Expunge call.
+
+     INPUTS
+	  Tracker -- Pointer to	the DefaultTracker for this item
+
+     RESULTS
+	  None
+
+     BUGS
+	  None Known
+
+     SEE ALSO
+	  GetAccess(), GetTracker().
+
+     AUTHOR
+	  CDH
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

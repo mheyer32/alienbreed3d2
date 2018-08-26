@@ -1,0 +1,198 @@
+
+
+
+     FileRequest(33.4)	  ARP Programmers Manual     FileRequest(33.4)
+
+
+
+     NAME
+	  FileRequest -- Get filename from user
+
+     SYNOPSIS
+	  file = FileRequest( FileRequester )
+	   D0			     A0
+
+     FUNCTION
+	  This function	is an implementation of	the famous Heath
+	  FileRequester.  It displays a	list of	files and directories
+	  in a Intuition style filerequester, and returns the users
+	  selection to you.  Additions to this function	in version
+	  33.4 of the library allow you	much more flexibility and
+	  control over the filerequester.  There have been a few
+	  changes to the FileRequester structure, but these are
+	  completely compatible	with the old struct, old code will
+	  still	work, as long as the cautions regarding	the old
+	  fr_Flags variable was	followed. (It must have	been
+	  initialized to zero).
+
+     INPUTS
+	  FileRequester	-- A pointer to	an initialized FileRequester
+		  structure.  The fr_FuncFlags variable	controls what
+		  the user function pointed to by fr_Function receives
+		  from FileRequest(). You may set more than one	task
+		  for your function to perform,	FileRequest() passes
+		  you a	copy of	the flag (note,	this is	the actual
+		  flag value, not the bit number) which	caused the
+		  function call, so you	will know what action to take.
+		  You are also passed an object, which will vary
+		  according to the flag	that caused the	function call.
+		  Some of these	functions require you to return	a
+		  value	to FileRequest,	this value should be returned
+		  in D0.
+
+	  FileRequest()	places the arguments on	the stack in an	order
+	  that allows the current generation of	Amiga 'C' compilers to
+	  access them without a	low level language binding function.
+	  All you need to do to	access the parameters from 'C' is to
+	  declare the function as:
+
+	       fr_Function(mask, object)
+	       LONGBITS	mask;
+	       CPTR object;
+
+
+	  To allow other languages access to this feature, and to
+	  insure compatibility with future generations of C compilers
+	  that may use a different stack frame,	the arguments are also
+	  passed in registers D0 (for the mask)	and A0 (for the
+	  object). Register A4 is guaranteed to	be the same as when
+	  you called FileRequest(), which makes	it unnecessary to call
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+
+
+
+
+     FileRequest(33.4)	  ARP Programmers Manual     FileRequest(33.4)
+
+
+
+	  geta4() type functions. It is	NOT guaranteed that A6 will
+	  contain ArpBase.
+
+	  fr_Function may freely use registers d0-d1/a0-a1, you	may
+	  also alter A4, if your compiler does not require it. All
+	  other	registers must be preserved, including A6.
+
+	  FRB_DoWildFunc: You get a pointer to a FileInfoBlock.	 If
+			  you want this	file to	be added to the	file
+			  requester display, return ZERO. Non zero
+			  returns will prevent this name from being
+			  displayed.
+
+	  FRB_DoMsgFunc:  Ordinarily if	FileRequest() receives an
+			  IntuiMessage that does not apply to the
+			  FileRequest()	gadgets	and windows, it	will
+			  send the message back	to Intuition without
+			  doing	anything else to it. This can occur if
+			  FileRequest was passed a fr_Window pointer
+			  and created a	shared IDCMP on	that windows
+			  ports	(see FDB_NewIDCMP).
+
+			  If you want to get your hands	on these
+			  messages, set	this bit in fr_FuncFlags, and
+			  you will be passed a pointer to the
+			  IntuiMessage that FileRequest() didn't
+			  recognize. Note that it now becomes your
+			  responsibility to return it to Intuition.
+			  Returns from this function are ignored.
+
+	  FRB_NewWindFunc:
+			  You get a pointer to the NewWindow structure
+			  that FileRequest() is	about to open for the
+			  file requester activities.  You may modify
+			  it as	you require. It	is intended for
+			  adjusting the	window position	of the
+			  filerequester	and/or its size	which must be
+			  legal	for the	requested screen.
+			  FileRequest()	ignores	any return value from
+			  this function.
+
+	  FRB_AddGadFunc: You get a pointer to the file	requester
+			  window after FileRequest() has added all of
+			  its standard gadgets,	but before they	are
+			  actually drawn. You may add/remove your own
+			  custom gadgets at this point.	 FileRequest()
+			  ignores any return value from	this function.
+
+	  FRB_GEventFunc: User is doing	something with a gadget	which
+			  is unknown to	FileRequest().	You are	passed
+			  the gadgetID of the gadget which caused the
+			  event.  FileRequest()	reserves all gadget
+
+
+
+     Page 2					     (printed 2/22/88)
+
+
+
+
+
+
+     FileRequest(33.4)	  ARP Programmers Manual     FileRequest(33.4)
+
+
+
+			  ID's greater than FR_FIRST_GADGET for	it's
+			  own use.  (This has been made	sufficiently
+			  large	so that	it will	not cause problems in
+			  practice.)
+
+			  If you return	ZERO, the FileRequest()	will
+			  continue, otherwise, it will exit. The exit
+			  status from FileRequest() is undefined if
+			  this occurs.
+
+	  FRB_ListFunc:	  Is not implemented yet.
+
+	  The following	control	bits do	not cause a function to	be
+	  called if set:
+
+	  FRB_DoColor:	  This controls	the background color, you get
+			  one of two choices, with or without the
+			  DoColor bit set.  This is useful to
+			  emphasize two	different uses of the
+			  FileRequester	in the same program, for
+			  example, Loading and saving files might use
+			  different colored file requester backgrounds
+			  to emphasize the difference.
+
+	  FRB_NewIDCMP:	  This is used only if you have	specified a
+			  value	for fr_Window.	Ordinarily,
+			  FileRequest()	will create a shared IDCMP
+			  using	the already opened IDCMP ports of your
+			  window, since	this requires much less
+			  overhead.  If	you do not wish	this to	occur,
+			  you may set this bit,	which will cause the
+			  FileRequest()	function to create its own
+			  IDCMP	ports.
+
+     RESULT
+	  file -- pointer to the File buffer in	your FileRequest
+		  structure, if	user selected OK.  If user selected
+		  CANCEL, the return value will	be NULL.  Note that
+		  you may have to do some further processing on	the
+		  return values	of the fr_DIR and fr_File to determine
+		  what the user	actually wanted.
+
+     BUGS
+	  None known.
+
+     AUTHOR
+	  CDH
+
+
+
+
+
+
+
+
+     Page 3					     (printed 2/22/88)
+
+
+

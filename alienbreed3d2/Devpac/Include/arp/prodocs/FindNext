@@ -1,0 +1,66 @@
+
+
+
+     FindNext(31.0)	  ARP Programmers Manual	FindNext(31.0)
+
+
+
+     NAME
+	  FindNext - Locate next match for a file pattern
+
+     SYNOPSIS
+	  rc = FindNext(AnchorPath)
+	   d0		  A0
+
+     FUNCTION
+	  This function	searchs	the filesystem for successive matches
+	  to a pattern.
+
+     INPUTS
+	  struct AnchorPath *AnchorPath	 - pointer to an AnchorPath
+		  structure which has been initialized by a call to
+		  FindFirst().
+
+     RESULT
+	  rc - 0 for success, non-zero for any error
+
+     BUGS
+	  None known.
+
+     SEE ALSO
+	  FindFirst(), FreeAnchorChain()
+
+     AUTHOR
+	  JAT
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

@@ -1,0 +1,132 @@
+
+
+
+     SyncRun(33.4)	  ARP Programmers Library	 SyncRun(33.4)
+
+
+
+     NAME
+	  SyncRun -- Run a process and wait for	its completion.
+
+     SYNOPSIS
+	  rc = SyncRun(	"Filename", "args", Input, Output)
+	   d0		    a0	      a1      d0     d1
+
+     FUNCTION
+	  SyncRun loads	a program from disk, searching the users Path
+	  as set by the	Path command, run it, and return the exit
+	  status of the	program	to you,	after first unloading the
+	  program.  You	may set	the default Input and Output handles
+	  for the new process, if you supply NULL, the new process
+	  will inherit your processes default input and	output.
+
+	  This function	has been made as safe as possible, all task
+	  private data stored before the new process gets your TCB,
+	  and it is restored on	exit.  Furthermore, this function
+	  cooperates with arp.library's	tracking functions to preserve
+	  your ResList and resources as	well as	correctly handling the
+	  new tasks calls to the tracking functions, if	any are	made.
+
+	  BCPL programs	contain	bugs which cause them to be inable to
+	  receive command lines	from this function.  All the programs
+	  from the rest	of the world will receive their	command	lines
+	  just fine, as	well BCPL programs when	they decide to join
+	  the rest of us.
+
+     INPUTS
+	  "Filename" --	the filename of	the process you	wish to	load
+		  and run.  The	directory search path will be searched
+		  for this name.
+
+	  "Arguments" -- The arguments you wish	to pass	to this
+		  process.  Note that the arguments are	passed without
+		  parsing, so you should not expect io_redirection ( <
+		  > ) to work.
+
+	  Input	-- The standard	input for the new process. If zero, it
+		  will inherit your processes default input.  This
+		  filehandle must be obtained and released by you.
+
+	  Output -- The	standard output	for the	new process.  If zero,
+		  it will share	your processes default output. This
+		  filehandle must be obtained and released by you.
+
+     RESULT
+	  If the return	from this function is positive or zero,	it is
+	  the return code of the process executed.  ZERO means
+	  succesful termination.
+
+	  If the result	is negative, this function is returning	an
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+
+
+
+
+     SyncRun(33.4)	  ARP Programmers Library	 SyncRun(33.4)
+
+
+
+	  error	to you indicating that it could	not execute or load
+	  the process.
+
+     New for V33
+	  This function	now releases memory chained into the tasks
+	  memlist by the child.	 Any memory allocated by the parent is
+	  of course not	freed until exit.
+
+	  This function	calls LoadPrg()	to obtain the segment to run.
+	  This is a V33	function which searches	first the
+	  ResidentList,	then the user speced path.
+
+     BUGS
+	  CLI programs only may	use this function, it will return an
+	  error	if a WorkBench or other	process	attempts to call it.
+
+     SEE ALSO
+	  LoadPrg(), UnLoadPrg(), AddResidentPrg(), ASyncRun()
+
+     AUTHOR
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 2					     (printed 2/22/88)
+
+
+

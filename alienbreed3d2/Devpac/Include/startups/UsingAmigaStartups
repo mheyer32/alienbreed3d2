@@ -1,0 +1,185 @@
+
+                         Using Amiga Startups
+                         ====================
+                
+   The new 1.3 startup.asm can be conditionally assembled into a
+   variety of startups, including startups for reentrant code and
+   startups which provide an application-specified CON: window for
+   input and output when run from Workbench.
+
+   This document explains the standard non-reentrant Amiga startups, who
+   can use them, and how to use them.  If your code can use these startups,
+   then with a bit of recoding you should be able to use the reentrant
+   versions (Rstartup.obj and RWstartup.obj) to write reentrant programs
+   which can be made Resident for the 1.3 shell.  Note that the reentrant
+   startups pass the WBenchMsg differently (in argv) and do not set up
+   the stdio handles (so stdio must be done via the Input() and Output()
+   file handles).  See the source code comments of startup.asm and
+   the WritingReentrantC tutorial for more information on startup
+   variations and using the reentrant startups.
+
+
+1. ASTARTUP.OBJ
+
+   The Astartup code is a replacement for the 1.2 version of Astartup.
+   This is NOT a replacement for Lstartup.obj (also know as "c.o").
+   (Lstartup contains many additional variables required by LC.lib)
+
+
+   FOR THOSE OF YOU WHO HAVE NEVER USED ASTARTUP:
+
+   Amiga/MCC assembler programs and many Amiga/Lattice C programs
+   can be linked with Astartup.obj.  The Astartup code sets up
+   _DOSBase and _SysBase (required by Amiga.lib), sets up Amiga
+   stdio (for use with Amiga.lib's abbreviated stdio functions),
+   and provides a consistent interface for receiving command line
+   and Workbench arguments.  The arguments are passed to "main"
+   in standard C fashion, as argc and argv (longs) on the stack.
+
+       main(argc,argv)
+       int argc;
+       char **argv;
+          {
+
+   If the program is started from CLI, argc is non-zero and is
+   equal to the number of command line args including the name
+   of the program itself.  Argv is an array of pointers to the
+   null terminated argument strings.
+
+   Example command line:  myprogram file1 file2
+                          argc = 3
+                          argv[0] = "myprogram"
+                          argv[1] = "file1"
+                          argv[2] = "file2"
+
+   If the program is started from Workbench, argc will be zero, and
+   the pointer _WBenchMsg defined in Astartup will point to a
+   WBStartup structure containing the names and locks of the program
+   and any WBargs passed via extend select or default tool.
+   (in C, extern struct WBStartup *WBenchMsg;  in asm, XREF _WBenchMsg)
+
+   Note that unlike Lstartup (c.o), Astartup does NOT open a default
+   stdio window when a program is started from Workbench.  If your
+   code needs an Amiga stdio window when started from Workbench,
+   also see the information below on AWstartup.obj.
+
+
+   USING ASTARTUP WITH AMIGA/MCC ASSEMBLER PROGRAMS:
+
+   Assembler programs that accept command line or Workbench arguments
+   can use the Astartup code for a consistent system interface.
+   The entry point of the assembler program must be named _main:
+   and this label must be XDEF'd.  When linking, put Astartup.obj
+   before your .obj.
+
+
+   USING ASTARTUP WITH AMIGA/LATTICE C PROGRAMS:
+
+   Many Amiga C programs call mostly Amiga system functions and use
+   very few LC.lib functions.  Such programs can often be linked with
+   Astartup.obj and with Amiga.lib first to produce a smaller executable.
+   Any C code to be linked this way must be compiled with the -v flag
+   on the second pass (LC2) of the compiler.  This disables the
+   insertion of Lattice stack checking code which would reference two
+   variables in Lstartup (_base and _xcovf).  Any other unresolved
+   external references are caused by using LC.lib functions which
+   depend on Lstartup.
+
+   In general, if your program does not use Lattice file IO functions
+   or Lattice floating point, you may be able to link with Astartup.
+   Amiga stdio (AmigaDOS filehandles stdin, stdout, stderr) are set
+   up by Astartup, and Amiga.lib contains a number of abbreviated
+   file IO and stdio functions for use with AmigaDos filehandles.
+   See the Addison Wesley Rom Kernel manual "Exec" for a description
+   of the C-support functions in Amiga.lib.  They include a printf()
+   and a getchar().  The printf() does not do floating point and it
+   seems to want %lc instead of %c for character formatting.
+
+   By linking LC.lib after Amiga.lib, certain functions such as
+   string functions and non-power-of-two integer math can be picked
+   up from LC.lib without requiring Lstartup.
+
+   If you want to use Astartup's stdio handles in your code:
+      (in C)  extern LONG stdin, stdout, stderr;
+      (in assembler)
+              XREF _stdin
+              XREF _stdout
+              XREF _stderr
+
+   Remember that unless you use AWstartup (below) you have NO stdio
+   if your program is started from Workbench.
+
+   To use Astartup, don't #include <lattice/stdio>, compile your
+   code with the -v flag on LC2, and link in this order:
+
+   Astartup.obj, your.o ... LIBRARY Amiga.lib, LC.lib
+
+
+
+2. AWSTARTUP.OBJ
+
+   The AWstartup code is a revised Astartup which can open an Amiga
+   stdio window when a program is started from Workbench.  The
+   CON: spec for the window is defined in YOUR code, so you can
+   easily modify the placement, size, and title of the window.
+   By defining it as a null string (""), you can suppress the
+   opening of the window.
+
+   In C:
+    Above main() in your code:
+      
+   /* CON: spec for Wstartups */
+   UBYTE  AppWindow[] = "CON:0/0/640/200/ My Window Title ";
+   /*
+    * For safety, include these lines to generate a linker error
+    * if your code is linked with a non-window startup
+    */ 
+   extern UBYTE  NeedWStartup;
+   UBYTE  *HaveWStartup = &NeedWStartup;
+
+
+     and if you want to use the stdio handles directly:
+              extern LONG stdin, stdout, stderr;
+
+
+    In assembler: (should work this way - haven't tried it)
+     Above your _main:
+
+              XDEF _main
+              XDEF _AppWindow
+
+              XREF _stdin       <--- Add these if you want direct
+              XREF _stdout           access to the stdio handles
+              XREF _stderr
+
+     And one of these (for window or no window) in your DATA section:
+
+     _AppWindow  DC.B  'CON:0/0/640/200/Test',0
+     _AppWindow  DC.B  0
+
+
+   Astartup programs which use stdio (printf(), getchar(), etc.) can
+   easily be modified for Workbench startup using AWstartup.
+   The only modifications required in the application are usually:
+
+      - Set a flag to let you know you started from WorkBench (argc==0)
+           BOOL fromWB;
+           fromWB = (argc==0) ? TRUE : FALSE;
+
+      - If you exit with an error message and started fromWB,
+        do something like printf("PRESS RETURN TO EXIT") and
+        wait for the user before exiting.  Otherwise the exit
+        code in AWstartup will close the stdio window before
+        the user can read your error message.
+
+      - If your program accepts command line flags or filenames,
+        you must add code to check for WBArgs passed via WBenchMsg
+        and if you wish, flags passed in the Tooltypes array of
+        your program's icon.
+
+
+   The AWstartup code is also valuable for printf() debugging of
+   Workbench programs that do not normally use use stdio
+
+
+

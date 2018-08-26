@@ -1,0 +1,66 @@
+
+
+
+     LMod(33.4)		  ARP Programmers Manual	    LMod(33.4)
+
+
+
+     NAME
+	  LMod - Perform a long	modulus, doing canonical thing with
+	  sign.
+
+     SYNOPSIS
+	  LONG = LMod(dividend,	divisor)
+			 d0	  d1
+
+     FUNCTION
+	  This returns the remainder of	dividend/divisor. The result
+	  will have the	sign of	the dividend.
+
+     INPUTS
+	  dividend - A 32 bit signed number.
+
+	  divisor - A 32 bit signed number.
+
+     RESULT
+	  LONG - The 32	bit result of dividend%divisor,	with sign of
+	  the dividend.
+
+     BUGS
+	  None known.
+
+     SEE ALSO
+	  LMult(), LDiv()
+
+     AUTHOR
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

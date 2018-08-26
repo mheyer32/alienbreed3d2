@@ -1,0 +1,66 @@
+
+
+
+     BtoCStr(31.0)	  ARP Programmers Manual	 BtoCStr(31.0)
+
+
+
+     NAME
+	  BtoCStr - Copy a BSTR	to a C null terminated string
+
+     SYNOPSIS
+	  Count	= BtoCStr("CString", BSTR, MaxLength)
+	    d0		      A0      D0      D1
+
+     FUNCTION
+	  This function	copies a BSTR into a null terminated string.
+	  The BCPL string is passed as an unconverted icky BCPL	ptr.
+
+     INPUTS
+	  CString - Pointer to a buffer	area for the resulting string,
+		  should be MaxLength+1	bytes in size.
+
+	  BSTR - BPTR to the BSTR to convert.
+
+	  MaxLength - Maximum number of	characters in buffer not
+		  including NULL terminator).
+
+     RESULT
+	  Count	- Actual number	of characters copied.  A0 has START of
+		  C string for assembly	convenience.
+
+     BUGS
+	  None known
+
+     AUTHOR
+	  CDH
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

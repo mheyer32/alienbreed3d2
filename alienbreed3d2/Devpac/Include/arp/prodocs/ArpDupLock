@@ -1,0 +1,66 @@
+
+
+
+     ArpDupLock(31.0)	  ARP Programmers Manual      ArpDupLock(31.0)
+
+
+
+     NAME
+	  ArpDupLock - Duplicate a lock	and track it.
+
+     SYNOPSIS
+	  Lock = ArpDupLock( lock )
+	   d0		      d1
+
+     FUNCTION
+	  Completely equivalent	to the AmigaDOS	DupLock() function
+	  call,	except that the	tracking functions of arp.library are
+	  used to keep track of	this allocation	for you.
+
+     INPUTS
+	  lock - pointer to a lock
+
+     RESULTS
+	  Lock - pointer to a lock or NULL
+
+	  TRACKER - Pointer to the tracker is in A1, or	in LastTracker
+		  variable if calling from 'C'.
+
+     REMEMBER
+	  You must FreeTrackedItem( TRACKER ) or CloseLibrary()	or
+	  ArpExit() to free this lock.
+
+     BUGS
+	  None known.
+
+     SEE ALSO
+	  DOS DOCUMENTATION, FreeTrackedItem(),	OpenLibrary(),
+	  CloseLibrary()
+
+     AUTHOR
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

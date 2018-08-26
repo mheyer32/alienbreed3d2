@@ -1,0 +1,343 @@
+
+
+            C Tips and Tricks --- Writing Reentrant C Programs
+            ==================================================
+                         by Carolyn Scheppner
+
+
+
+     The Workbench 1.3 RESIDENT command loads one copy of a command and
+adds it to DOS's resident list, making pre-loaded commands available for
+shared access by multiple processes.  The CLI and Workbench do not yet
+make use of resident commands, but rather load a new copy of a command
+each time it is called.  The Amiga Shell, however, looks for and uses
+commands which have been made resident.  Resident commands make efficient
+use of memory and reduce memory fragmentation.  In addition, the quick
+response of resident commands can significantly speed up command line
+work and system performance in general.
+
+
+     Unfortunately, most existing Amiga programs are not reentrant and will
+not work properly if one resident copy is used by more than one process,
+because they contain global and static variables which would be reused by
+code is entered.  This can be dangerous on successive calls to the code
+and disastrous if more than one process is using the code at the same time.  
+
+
+     The following small program, Test.c, demonstrates many of the problems
+which can keep C code from being reentrant.  The comments in the code are
+somewhat specific to programs linked with Astartup.obj and LIBRARY Amiga.lib,
+LC.lib, but the problems and questions are relevant for any type of Amiga
+development.  
+
+
+
+/*===========================================================================*/
+
+/* Test.c - A small program with big problems if made resident
+ * Use -v on LC2, link with Astartup.obj ... LIBRARY Amiga.lib, LC.lib
+ */
+#include <exec/types.h>
+#include <exec/memory.h>
+#include <libraries/dos.h>
+#include <workbench/startup.h>
+
+/* If this is a global in startup code, we'll be in trouble if
+ *  Workbench ever starts using the resident list.
+ */
+extern struct WBStartup *WBenchMsg;
+
+/* A global message string - won't be modified and can be shared if resident */
+UBYTE *usage = "Usage: test filename\n";
+
+/* Initialized to 0 now - but will they be when next process uses the code? */
+LONG  file = 0L;
+ULONG IconBase = 0L;
+BOOL  FromWb = 0;
+
+
+main(argc,argv)
+int argc;
+char **argv;
+   {
+   FromWb = argc ? FALSE : TRUE;
+
+   /* If this was a Workbench application, we'd be using extern WBenchMsg
+    * to get Workbench args.
+    * We'll assume CLI-only program for this small example.
+    */
+   if(FromWb)  exit(RETURN_FAIL);
+
+   /* Any invocation of the code could fail at any one of these three points.
+    * In addition, if two processes use the code at once, each one's value
+    *  for file will wipe out the previous value.
+    */
+
+   /* 1 - Did we get a filename ? */
+   if(argc != 2)   cleanexit(usage,RETURN_OK);  
+
+   /* 2 - Can we open the file ?
+    *
+    * Argv array and buffer may be a reused area in the startup module.
+    * If another process is using this code, we may have overwritten
+    *   their argv array and buffer.
+    */
+   file = Open(argv[1],MODE_OLDFILE);
+   /* We may have just overwritten another process's file handle
+    *  with our own, or with 0 if we failed to open our file.
+    */
+   if(!file)  cleanexit("Can't open file\n",RETURN_FAIL);  
+      
+   /* 3 - Can we open a library ? */   
+   IconBase = OpenLibrary("icon.library",0);
+   /* This global is necessary, but can cause problems in cleanup */
+   if(!IconBase)  cleanexit("Can't open icon.library\n",RETURN_FAIL);
+
+   Delay(100);
+
+   /* Problems here if two processes using code:
+    *  Printf() may reference a global _stdout set up by startup code.
+    *  And argv buffer may have been reused by another process.
+    *  Whose argv and stdout will we get ?
+    */ 
+   printf("filename = %s\n", argv[1]);
+   
+   cleanup();
+   exit(RETURN_OK);
+   }
+
+cleanexit(s,err)
+UBYTE *s;
+int err;
+   {
+   /* Another printf, possibly referencing a reused global _stdout */
+   if(*s)  printf(s);
+   cleanup();
+   exit(err);
+   }
+
+cleanup()
+   {
+   /* What if we aborted before opening icon.library ?
+    * If another process opened it, we are going to Close it.
+    * It might even get expunged while the other process is using it.
+    */
+   if(IconBase)  CloseLibrary(IconBase);
+
+   /* Whose file are we closing ?
+    * Or maybe our open failed and we zero'd out someone else's handle.
+    */
+   if(file)      Close(file);
+   }
+
+/* end */
+
+/*===========================================================================*/
+
+
+
+                          Making Test.c Reentrant
+                          =======================
+
+
+     Despite all of its problems, Test.c can be made reentrant with a 
+bit of recoding and some new reentrant startup code -  Rstartup.asm.   
+Rstartup.asm is a new version of Astartup.asm which is reentrant if 
+no globals other than _DOSBase and _SysBase are referenced.  The classic
+Astartup code contained global variables for stdio handles and the WBStartup
+message, and also used a static memory area for the argv array and strings. 
+Rstartup dynamically allocates the argv memory, and only sets up the
+global variables when conditionally assembled as an Astartup replacement
+for non-reentrant code.  Rstartup.asm can be conditionally assembled to
+produce Astartup and TWstartup replacements as well as Resident-Only
+versions without globals.  All Rstartups are smaller than their predecessors
+due to code consolidation and allocation of the argv array and buffer.
+
+
+     Now that we have reentrant startup code for our program, we must modify
+the C code so that it is reentrant.  System library functions are reentrant.
+Amiga.lib csupport and exec_support functions are almost all reentrant.
+(The random number functions use a static seed variable.  The stdio functions
+such as printf, puts, and getchar reference the globals stdin and stdout
+and cannot be used in reentrant code.)  Our Test.c program only calls
+Amiga.lib functions, system functions, and its own subroutines.  If we
+modify Test.c according to the following rules, we can make it reentrant.
+Then we can link it with an Rstartup to produce a "pure" executable which
+can be made resident.
+
+
+                      Rules for Reentrant Code
+                      ========================
+
+      - Make no direct or indirect (printf, etc) references to the
+        globals _stdin, _stdout, _stderr, _errno, or _WBenchMsg.
+
+      - For stdio use either special versions of printf and getchar
+        that use Input() and Output() rather than _stdin and _stdout,
+        or use fprintf and fgetc with Input() and Output() file handles.
+
+      - Workbench applications must get the pointer to the WBenchMsg
+        from argv rather than from a global extern WBenchMsg.
+
+      - Use no global or static variables within your code.  Instead,
+        put all former globals in a dynamically allocated structure, and
+        pass around a pointer to that structure.  The only acceptable
+        globals are constants (message strings, etc) and global copies
+        of Library Bases to resolve Amiga.lib references.  Your code
+        must return all OpenLibrary's into non-global variables,
+        copy the result to the global library base only if successful,
+        and use the non-globals when deciding whether to Close any
+        opened libraries.  
+
+
+/*===========================================================================*/
+
+Here's Test.c, recoded for reentrancy if linked with Rstartup.
+
+/* Reentrant Test.c
+ * Use -v on LC2, link with Rstartup.obj ... LIBRARY Amiga.lib, LC.lib
+ */
+
+#include <exec/types.h>
+#include <exec/memory.h>
+#include <libraries/dos.h>
+#include <workbench/startup.h>
+
+/* No global extern for WBenchMsg - it will be passed in argv */
+
+/* A global message string - won't be modified and can be shared if resident */
+UBYTE *usage = "Usage: test filename\n";
+
+/* We still need global library bases, but will handle them differently */
+ULONG IconBase = 0L;
+
+
+/* All of our other old globals (file, FromWb) go in a structure we define.
+ * Structure also contains an entry for each library we will open.
+ * And variables for input or output filehandles if we need them.
+ * And pointer to WBStartup message for Workbench applications.
+ * You can also consolidate any other dynamic allocations such as buffers
+ *    by putting them in this structure.
+ */
+
+struct  Variables
+   {
+   LONG   file;
+   BOOL   FromWb;
+   ULONG  iconbase;
+   LONG   output;
+   struct WBStartup *wbenchmsg;
+   };
+
+
+
+main(argc,argv)
+int argc;
+char **argv;
+   {
+   /* Non-static variables within any function, including main(), are OK
+    *  in reentrant programs - they are local variables on process stack.
+    */
+   struct Variables *var;   /* a local pointer for our Variables strcuture */
+
+
+   /* First we allocate and clear our variables structure */
+   var = (struct Variables *) 
+      AllocMem(sizeof(struct Variables),MEMF_PUBLIC|MEMF_CLEAR);
+
+   if(!var)
+      {
+      /* Exit here if we can't allocate var structure.
+       * Note use of fprintf() to Output() for error message.
+       */
+      fprintf(Output(),"Not enough memory\n");
+      exit(RETURN_FAIL);
+      } 
+
+   /* Rest of code can assume that var structure has been allocated.
+    * Initialize the variables in our Variables structure.
+    */
+   var->FromWb = argc ? FALSE : TRUE;
+   if(var->FromWb)  var->wbenchmsg = (struct WBStartup *)argv;
+   
+   /* We'll still assume CLI-only program for this small example.
+    * But you've seen how to get the WBenchMsg pointer.
+    */
+   if(var->FromWb)  exit(RETURN_FAIL);
+
+   /* We have no stdout global, so we'll store the Output() handle */
+   var->output = Output();
+   
+   /* Any invocation could still fail at any one of these three points.
+    * But now it's OK because our cleanup is safe. 
+    */   
+
+   /* 1 - Did we get a filename ?  
+    *
+    * Argc is only on stack and is OK for reentrant programs.
+    * Note that we now pass the var ptr to all of our subroutines.
+    * I usually pass it as last (or only) argument.
+    */
+   if(argc != 2)   cleanexit(usage,RETURN_OK,var);  
+
+   /* 2 - Can we open the file ?
+    *
+    * We initialize our local file variable.
+    * Argv is now reentrant because Rstartup dynamically allocates buffers.
+    */
+   var->file = Open(argv[1],MODE_OLDFILE);
+   if(!var->file)  cleanexit("Can't open file\n",RETURN_FAIL,var);  
+      
+   /* 3 - Can we open a library ? 
+    *
+    * Very Important -  OpenLibrary is now returned into our local variable.
+    *   We only initialize the global base if we succeed.
+    */
+   var->iconbase = OpenLibrary("icon.library",0);
+   if(!var->iconbase)  cleanexit("Can't open icon.library\n",RETURN_FAIL,var);
+   IconBase = var->iconbase;
+
+   Delay(100);
+
+
+   /* We now use fprintf() instead of printf() to write to "stdout" */
+   fprintf(var->output,"filename = %s\n", argv[1]);
+   
+   /* Pass var to our cleanup subroutine, then exit(n) */
+   cleanup(var);
+   exit(RETURN_OK);
+   }
+
+cleanexit(s,err,var)
+UBYTE *s;
+int err;
+struct Variables *var;
+   {
+   /* We fprintf our error message */
+   if(*s)  fprintf(var->output,s);
+
+   /* Clean up all opened and allocated things including var structure */
+   cleanup(var);
+
+   exit(err);
+   }
+
+cleanup(var)
+struct Variables *var;
+   {
+   /* We know we have a var structure or we wouldn't be here */
+   
+   /* No chance of closing a library we didn't open - we test our local. */
+   if(var->iconbase)  CloseLibrary(var->iconbase);
+
+   /* And we close OUR file if we got it open */
+   if(var->file)      Close(var->file);
+      
+   /* And last - Remember to free the Variables structure itself */
+   FreeMem(var,sizeof(struct Variables));
+   }
+
+/* end */
+
+
+/*===========================================================================*/

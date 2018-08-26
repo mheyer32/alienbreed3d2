@@ -1,0 +1,66 @@
+
+
+
+     Toupper(31.0)	  ARP Programmers Manual	 Toupper(31.0)
+
+
+
+     NAME
+	  Toupper - Convert character to uppercase
+
+     SYNOPSIS
+	  newchar = Toupper( oldchar )
+	     d0		       d0
+
+     FUNCTION
+	  Converts oldchar to upper case.  If a	CONTROL	character or
+	  already uppercase, returns the same character.
+
+     INPUTS
+	  oldchar - a character.  MANX users do	not have to cast to
+		  long.
+
+     RESULT
+	  newchar - an uppercase character
+
+     BUGS
+	  None known.
+
+     AUTHOR
+	  SDB
+
+     SEE ALSO
+	  Strcmp(), Strncmp(), PatternMatch()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+

@@ -1,0 +1,66 @@
+
+
+
+     CheckAbort(31.0)	  ARP Programmers Manual      CheckAbort(31.0)
+
+
+
+     NAME
+	  CheckAbort - Check for control C
+
+     SYNOPSIS
+	  BOOL = CheckAbort( (*Func)() )
+	   d0			A1
+
+     FUNCTION
+	  Check	to see if a CONTROL-C signal was sent to this process,
+	  calling a user function or returning a boolean value.
+
+     INPUTS
+	  (*Func)() - Function to call if signal was recieved.	This
+		  is optional, and may be NULL.
+
+     RESULT
+	  BOOL - FALSE (zero) if signal	not received.  If (*Func)() is
+		  not null, and	signal was received, return value will
+		  be that of user function.  If	(*Func)() is NULL,
+		  return value will be signal flag.
+
+     ADDITIONAL	CONSIDERATIONS
+	  If break occured, a pointer to the string "***BREAK" will be
+	  returned in A1, suitable for a direct	call to	Puts() from
+	  assembly language.
+
+     BUGS
+	  None known.
+
+     AUTHOR
+	  SDB
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     Page 1					     (printed 2/22/88)
+
+
+
