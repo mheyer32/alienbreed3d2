@@ -62,7 +62,9 @@ CFLAGS += -DNDEBUG -D__BIG_ENDIAN__ -DAMIGA -D__NO_NET_API
 LDFLAGS = $(RUNTIME_LDFLAGS)
 
 AFLAGS = -Fhunk -nosym -ldots -devpac -m68030
-AFLAGS += -I./Devpac/Include/include
+AFLAGS += -I./Devpac/Include/include \
+		  -I./includes \
+		  -I./
 
 #-I$(PREFIX)/m68k-amigaos/ndk-include
 
