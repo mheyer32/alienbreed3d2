@@ -1,0 +1,1061 @@
+
+
+brightanim:
+
+ move.l branimpt,a0
+ move.w (a0),d0
+; move.w d0,ZoneDat24+6
+ sub.w #10,d0
+ asr.w #1,d0
+ add.w #10,d0
+; move.w d0,ZoneDat23+6
+; move.w d0,ZoneDat23+6
+
+ sub.w #1,branimcount
+ bgt.s nonextbr
+ adda.w #4,a0
+ cmp.l #endbranim,a0
+ blt.s notrestartbr
+ move.l #branim,a0
+notrestartbr
+ move.l a0,branimpt
+ move.w 2(a0),branimcount
+nonextbr:
+
+ rts
+ 
+branimpt: dc.l branim
+branimcount: dc.w 0
+
+branim:
+ dc.w 10,1
+ dc.w -15,1
+ dc.w 10,3
+ dc.w -15,1
+ dc.w 10,4
+ dc.w -15,1
+ dc.w 10,1
+ dc.w -15,2
+ dc.w 10,2
+ dc.w -8,1
+ dc.w 10,1
+ dc.w -5,1
+ dc.w 10,2
+ dc.w -15,1
+ dc.w 10,2
+
+endbranim
+
+objvels: ds.l 8
+
+Robotanimpos:
+ dc.w 0
+Robotarmpos
+ dc.w 0
+clump: dc.w 0
+
+RobotWalk:
+ move.l #RobotPts+2,a0
+ move.l #Robotanim,a1
+ move.w Robotanimpos(pc),d0
+
+ clr.b clump
+ adda.w d0,a1
+ 
+ move.w #(38*3)-1,d0
+putinpts:
+ move.w (a1)+,(a0)+
+ dbra d0,putinpts
+
+
+ move.l #RightArm,a0
+ move.l #Armanim,a1
+ move.w Robotarmpos(pc),d0
+ adda.w d0,a1
+ move.w #(14*3)-1,d0
+putinpts2:
+ move.w (a1)+,(a0)+
+ dbra d0,putinpts2
+ 
+ move.l #Robot_MainBody,a0
+ move.l #BodyPlace+2,a1
+ move.w (a0)+,d0
+ move.w RobotPts+4+14*6,d1
+ add.w RobotPts+4+22*6,d1
+ asr.w #1,d1
+ 
+putinheights:
+ move.w (a0)+,d2
+ add.w d1,d2
+ move.w d2,(a1)
+ addq #6,a1
+ dbra d0,putinheights
+ 
+ move.w visxpos,d0
+ add.w visxdir,d0
+ cmp.w #24,d0
+ blt.s okvisr
+ move.w #-4,visxdir
+okvisr
+ cmp.w #-24,d0
+ bgt.s okvisl
+ move.w #4,visxdir
+okvisl:
+ move.w d0,visxpos
+ 
+ move.l #VISOR,a0
+ add.w #64,d0
+ move.b d0,6(a0)
+ move.b d0,18(a0)
+ move.b d0,22(a0)
+ add.b #63,d0
+ move.b d0,10(a0)
+ move.b d0,14(a0)
+ 
+ rts
+
+visxpos: dc.w 0
+visxdir: dc.w 4
+
+FramesToDraw: dc.w 0
+TempFrames: dc.w 0
+
+objmoveanim:
+
+ move.l PLR1_Roompt,a0
+ move.w (a0),PLR1_Zone
+ move.l PLR2_Roompt,a0
+ move.w (a0),PLR2_Zone
+
+ bsr DoorRoutine
+ bsr LiftRoutine
+ bsr ObjectHandler
+ bsr PlayerShot
+ bsr RobotWalk
+ 
+ subq.w #1,animtimer
+ bgt.s notzero
+ move.w #2,animtimer
+ move.l otherrip,d0
+ move.l RipTear,otherrip
+ move.l d0,RipTear
+notzero:
+
+ rts
+ 
+******************************
+
+tstdir: dc.w 0
+liftheighttab: ds.w 20
+doorheighttab: ds.w 20
+
+LiftRoutine:
+
+ move.l #LiftData,a0
+ move.l #liftheighttab,a6 
+doalift:
+ 
+ move.w (a0)+,d0	; bottom of lift movement
+ cmp.w #999,d0
+ bne notallliftsdone
+ rts
+notallliftsdone:
+ move.w (a0)+,d1	; top of lift movement.
+ 
+ move.w (a6)+,d3
+ move.w 2(a0),d2
+ move.w d3,(a0)+
+ move.l a0,a5
+ move.w d2,(a0)+
+ 
+ move.l (a0)+,a1
+ asr.w #2,d3
+ move.w d3,d0
+ asl.w #2,d0
+ move.w d0,2(a1)
+ move.w d3,d0
+ muls #256,d3
+ move.l (a0)+,a1
+ move.w -2(a1),d5
+ move.l PLR1_Roompt,a3
+ move.l d3,(a1)
+ and.w #63,d0
+ neg.w d0
+ add.w #64,d0
+ 
+ cmp.w (a3),d5
+ bne.s .notstoodonlift
+ 
+ move.b (a0)+,d1	; events
+ move.b (a0)+,d2	; conditions
+ and.b Conditions,d2
+ cmp.b -1(a0),d2
+ bra.s .dothesimplething 
+
+ move.w d7,(a5)
+ move.w #0,Noisex
+ move.w #0,Noisez
+ move.w #50,Noisevol
+ move.w #5,Samplenum
+ move.b #1,chanpick
+ st notifplaying
+ movem.l a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
+ jsr MakeSomeNoise
+ movem.l (a7)+,a0/a3/d0/d1/d2/d3/d6/d7
+
+ bra.s .dothesimplething
+
+.notstoodonlift:
+ 
+ move.b (a0)+,d1	; events
+ move.b (a0)+,d2	; conditions
+ and.b Conditions,d2
+
+ cmp.b -1(a0),d2
+ beq.s .satisfied 
+
+.dothesimplething:
+ move.l #FloorLines,a3
+.simplecheck:
+ move.w (a0)+,d5
+ blt nomoreliftwalls
+ asl.w #5,d5
+ lea (a3,d5.w),a4
+ move.w #0,30(a4)
+ move.l (a0)+,a1
+ move.l (a0)+,a2
+ adda.w d0,a2
+ move.l a2,10(a1)
+ move.l d3,20(a1)
+ move.l d3,16(a4)
+ bra.s .simplecheck
+ bra nomoreliftwalls 
+ 
+.satisfied:
+
+ move.l #FloorLines,a3
+
+liftwalls:
+ move.w (a0)+,d5
+ blt nomoreliftwalls
+
+ asl.w #5,d5
+ lea (a3,d5.w),a4
+ move.b 30(a4),d4
+ move.w #0,30(a4)
+ and.b d1,d4
+ beq.s .nothinghit
+ move.w d7,(a5)
+ move.w #0,Noisex
+ move.w #0,Noisez
+ move.w #50,Noisevol
+ move.w #5,Samplenum
+ move.b #1,chanpick
+ st notifplaying
+ movem.l a0/a3/a4/d0/d1/d2/d3/d6/d7,-(a7)
+ jsr MakeSomeNoise
+ movem.l (a7)+,a0/a3/a4/d0/d1/d2/d3/d6/d7
+.nothinghit:
+ move.l (a0)+,a1
+ move.l (a0)+,a2
+ adda.w d0,a2
+ move.l a2,10(a1)
+ move.l d3,20(a1)
+ move.l d3,16(a4)
+ bra liftwalls
+ 
+nomoreliftwalls 
+ bra doalift
+
+ rts
+
+animtimer: dc.w 2
+ 
+ 
+doordir: dc.w -1
+doorpos: dc.w -9
+ 
+DoorRoutine:
+
+ move.l #doorheighttab,a6
+ move.l #DoorData,a0
+ 
+doadoor:
+ 
+ move.w (a0)+,d0	; bottom of door movement
+ cmp.w #999,d0
+ bne notalldoorsdone
+ rts
+notalldoorsdone:
+ move.w (a0)+,d1	; top of door movement.
+ 
+ move.w (a6)+,d3
+
+ move.w d3,(a0)+
+ move.l a0,a5
+ move.w d2,(a0)+
+ 
+ move.l (a0)+,a1
+ asr.w #2,d3
+ move.w d3,d0
+ asl.w #2,d0
+ move.w d0,2(a1)
+ move.w d3,d0
+ muls #256,d3
+ move.l (a0)+,a1
+ move.l d3,(a1)
+ and.w #63,d0
+ neg.w d0
+ add.w #64,d0
+ 
+ move.b (a0)+,d1	; events
+ move.b (a0)+,d2	; conditions
+ and.b Conditions,d2
+
+dothesimplething:
+ move.l #FloorLines,a3
+simplecheck:
+ move.w (a0)+,d5
+ blt nomoredoorwalls
+ asl.w #5,d5
+ lea (a3,d5.w),a4
+ move.w #0,30(a4)
+ move.l (a0)+,a1
+ move.l (a0)+,a2
+ adda.w d0,a2
+ move.l a2,10(a1)
+ move.l d3,24(a1)
+ move.l d3,20(a4)
+ bra.s simplecheck
+ bra nomoredoorwalls 
+ 
+alreadygoingup:
+ move.w (a0)+,d1
+ bra dothesimplething
+ 
+satisfied:
+ 
+ move.l #FloorLines,a3
+
+doorwalls:
+ move.w (a0)+,d5
+ blt.s nomoredoorwalls
+ asl.w #5,d5
+ lea (a3,d5.w),a4
+ move.b 30(a4),d4
+ move.w #0,30(a4)
+ and.b d1,d4
+ beq.s nothinghit
+ move.w #-16,(a5)
+ move.w #0,Noisex
+ move.w #0,Noisez
+ move.w #50,Noisevol
+ move.w #5,Samplenum
+ move.b #1,chanpick
+ st notifplaying
+ movem.l a0/a3/d0/d1/d2/d3/d6,-(a7)
+ jsr MakeSomeNoise
+ movem.l (a7)+,a0/a3/d0/d1/d2/d3/d6
+nothinghit:
+ move.l (a0)+,a1
+ move.l (a0)+,a2
+ adda.w d0,a2
+ move.l a2,10(a1)
+ move.l d3,24(a1)
+ move.l d3,20(a4)
+ bra.s doorwalls
+ 
+nomoredoorwalls 
+ bra doadoor
+
+ rts
+ 
+tempGotBigGun: dc.w 0 
+tempGunDamage: dc.w 0
+tempGunNoise: dc.w 1
+tempxoff: dc.w 0
+tempzoff: dc.w 0
+tempRoompt: dc.l 0
+
+PLR1_GotBigGun: dc.w 0
+PLR1_GunDamage: dc.w 0
+PLR1_GunNoise: dc.w 0
+PLR2_GotBigGun: dc.w 0
+PLR2_GunDamage: dc.w 0
+PLR2_GunNoise: dc.w 0
+bulyspd: dc.w 0 
+closedist: dc.w 0
+ 
+ObsInLine:
+ ds.b 400 
+ 
+rotcount:
+ dc.w 0
+ 
+shotvels: ds.l 20
+
+PLR1_clicked: dc.b 0
+PLR2_clicked: dc.b 0
+popping: ds.l 5*4
+targetydiff: dc.l 0
+
+PlayerShot:
+
+ tst.b PLR1_clicked
+ beq PLR1_nofire
+
+ move.w PLR1_angpos,d0
+ move.l #SineTable,a0
+ lea (a0,d0.w),a0
+ move.w (a0),tempxdir
+ move.w 2048(a0),tempzdir
+ move.w PLR1_xoff,tempxoff
+ move.w PLR1_zoff,tempzoff
+ move.w PLR1_GunNoise,tempGunNoise
+ move.w PLR1_GotBigGun,tempGotBigGun
+ move.w PLR1_GunDamage,tempGunDamage
+ move.l PLR1_Roompt,tempRoompt
+ move.l #%10000001,d7
+ move.w #-1,d0
+ move.l #0,targetydiff
+ move.w #32767,d1
+
+ move.l #ObsInLine,a1
+ move.l #ObjectData,a0
+ move.l #ObjRotated,a2
+findclosestinline
+ tst.w (a0)
+ blt.s outofline
+ tst.b (a1)+
+ beq.s notlinedup
+ tst.b 17(a0)
+ beq.s notlinedup
+ move.b 16(a0),d6
+ btst d6,d7
+ beq.s notlinedup
+ move.w (a0),d5
+ move.w 2(a2,d5.w*8),d6
+ cmp.w d6,d1
+ blt.s notlinedup
+ move.w d6,d1
+ 
+; We have a closer enemy lined up.
+ move.w 4(a0),d6
+ ext.l d6
+ asl.l #7,d6
+ sub.l PLR1_yoff,d6
+ move.l d6,targetydiff 
+ move.w d5,d0
+
+notlinedup:
+ add.w #64,a0
+ bra findclosestinline
+
+outofline:
+
+ move.w #0,bulyspd
+ tst.w d0
+ blt.s nothingtoshoot
+ move.l targetydiff,d7
+ sub.l #playerheight,d7
+ add.l #22*256,d7
+ move.w d1,closedist
+ asr.w #4,d1
+ tst.w d1
+ bgt.s okdistthing
+ moveq #1,d1
+okdistthing
+ divs d1,d7
+ move.w d7,bulyspd
+
+nothingtoshoot:
+ 
+ bsr pressedfire
+PLR1_nofire:
+
+ tst.b PLR2_clicked
+ beq.s PLR2_nofire
+
+ move.w PLR2_angpos,d0
+ move.l #SineTable,a0
+ lea (a0,d0.w),a0
+ move.w (a0),tempxdir
+ move.w 2048(a0),tempzdir
+ move.w PLR2_xoff,tempxoff
+ move.w PLR2_zoff,tempzoff
+ move.w PLR2_GunNoise,tempGunNoise
+ move.w PLR2_GotBigGun,tempGotBigGun
+ move.w PLR2_GunDamage,tempGunDamage
+ move.l PLR2_Roompt,tempRoompt
+ bsr pressedfire
+PLR2_nofire:
+
+ rts
+ 
+tempangpos: dc.w 0
+tempxdir: dc.w 0
+tempzdir: dc.w 0
+ 
+pressedfire:
+
+ move.w #0,d7
+ move.w #256,d6
+ move.w #256,d5
+
+firefive:
+
+ move.l #PlayerShotData,a0
+ move.w #19,d1
+.findonefree
+ move.w 12(a0),d0
+ blt.s .foundonefree
+ adda.w #64,a0
+ dbra d1,.findonefree
+
+ rts
+
+.foundonefree:
+
+ move.w #0,Noisex
+ move.w #0,Noisez
+ move.w #50,Noisevol
+ move.w tempGunNoise,Samplenum
+ move.b #2,chanpick
+ clr.b notifplaying
+ move.b tempGotBigGun,shotsize(a0)
+ move.b tempGunDamage,shotpower(a0)
+ movem.l a0/d5/d6/d7,-(a7)
+ jsr MakeSomeNoise
+ movem.l (a7)+,a0/d5/d6/d7
+
+ move.l #ObjectPoints,a1
+ move.w (a0),d1
+ lea (a1,d1.w*8),a1
+ move.w tempxoff,(a1)
+ move.w tempzoff,4(a1)
+ move.w tempxdir,d0
+ ext.l d0
+ asl.l #4,d0
+ move.l d0,shotxvel(a0)
+ move.w tempzdir,d0
+ ext.l d0
+ asl.l #4,d0
+ move.l d0,shotzvel(a0)
+ move.w bulyspd,shotyvel(a0)
+ move.l #%10000001,EnemyFlags(a0)
+ move.l tempRoompt,a2
+ move.w (a2),12(a0)
+ move.l 2(a2),d0
+ sub.l #playerheight,d0
+ add.l #22*128,d0
+ move.l d0,accypos(a0)
+ asr.l #7,d0
+ move.w d0,4(a0)
+ 
+ add.w d6,tempangpos
+ neg.w d6
+ neg.w d5
+ add.w d5,d6
+ 
+ dbra d7,firefive
+ 
+ rts
+
+duh: dc.w 0
+double: dc.w 0
+ivescreamed: dc.w 0
+
+ObjectHandler:
+
+ move.l #ObjectData,a0
+Objectloop:
+ tst.w (a0)
+ blt.s doneallobj
+
+ cmp.b #0,16(a0)
+ bne.s notnasty
+ bsr ItsANasty
+notnasty:
+ cmp.b #1,16(a0)
+ bne.s notmedi
+ bsr ItsAMediKit
+notmedi:
+ cmp.b #2,16(a0)
+ bne.s notbullet
+ bsr ItsABullet
+notbullet:
+ cmp.b #3,16(a0)
+ bne.s notbiggun
+ bsr ItsABigGun
+notbiggun:
+ cmp.b #4,16(a0)
+ bne.s notkey
+ bsr ItsAKey
+notkey:
+ cmp.b #8,16(a0)
+ bne.s notmarine
+ bsr ItsAMarine
+notmarine:
+ cmp.b #6,16(a0)
+ bne.s notRobot
+ bsr ItsARobot
+notRobot:
+ cmp.b #7,16(a0)
+ bne.s notBigNasty
+ bsr ItsABigNasty
+notBigNasty:
+
+ adda.w #64,a0
+ bra Objectloop
+
+doneallobj:
+ rts
+ 
+ include "ab3:source/AI.s"
+
+ItsAMarine:
+
+ move.w #15,Aggression
+ move.w #0,Movement
+ move.w #30,Cooperation
+ move.b #0,Ident
+ move.l #%1,enemies
+ move.l #%10100000,friends
+ st Armed
+ bsr AIControl
+
+ move.l objroom,a2
+ move.w 10(a2),2(a0)
+ move.l 2(a2),d0
+ sub.l #6400,d0
+ asr.l #7,d0
+ move.w d0,4(a0)
+
+ move.w #20*256,8(a0)
+
+ rts
+
+ItsARobot:
+; Head towards a control point, and
+; once there, pick another one at
+; random and go all the way there
+; instead.
+
+ tst.w 12(a0)
+ blt .thisonedead
+
+ tst.b clump
+ beq.s .nosound
+ 
+ movem.l d0-d7/a0-a6,-(a7)
+
+ move.w (a0),d0
+ move.l #ObjRotated,a1
+ move.l (a1,d0.w*8),Noisex
+ move.w #400,Noisevol
+ move.w #7,Samplenum
+ move.b #1,chanpick
+ clr.b notifplaying
+ jsr MakeSomeNoise
+ movem.l (a7)+,d0-d7/a0-a6
+
+.nosound:
+
+ 
+ move.w 12(a0),d2
+ move.l #ZoneAdds,a5
+ move.l (a5,d2.w*4),objroom
+
+ move.w CurrCPt(a0),d0
+ move.w TargCPt(a0),d1
+ 
+ jsr GetNextCPt
+ 
+; d0 contains nearest CPt to go for.
+
+ move.l #CPtPos,a5
+ move.w (a5,d0.w*4),newx
+ move.w 2(a5,d0.w*4),newz
+
+ move.w (a0),d1
+ move.l #ObjectPoints,a1
+ lea (a1,d1.w*8),a1
+ move.w (a1),oldx
+ move.w 4(a1),oldz
+
+ move.w maxspd(a0),d2
+ muls TempFrames,d2
+ move.w d2,speed
+ move.w #20,Range
+
+ movem.l d0/a0/a1/a3/a4/d7,-(a7)
+ clr.b canshove
+ jsr HeadTowardsAng
+
+ move.w #%1000000000,wallflags
+ Jsr MoveObject
+ movem.l (a7)+,d0/a0/a1/a3/a4/d7
+
+ and.w #8191,Facing(a0)
+
+ move.w CosRet,d1
+ move.w SinRet,d2
+ move.w Facing(a0),d3
+ move.l #SineTable,a2
+ move.w 120(a2),d6
+ swap d6
+ clr.w d6
+ asr.l #1,d6
+ lea (a2,d3.w),a2
+ move.w (a2),d4	; sin
+ move.w 2048(a2),d5 ; cos
+ muls d2,d5
+ muls d1,d4
+ 
+ moveq #0,d3
+ 
+ sub.l d5,d4
+ blt.s .turnrighty
+.turnlefty:
+
+ cmp.l d4,d6
+ bgt.s .doneturn
+
+ move.w #-120,d3
+
+ bra.s .doneturn
+.turnrighty:
+
+ neg.l d4
+ cmp.l d4,d6
+ bgt.s .doneturn
+
+ move.w #120,d3
+
+.doneturn:
+
+ move.w #4,maxspd(a0)
+
+ muls 2048(a2),d1
+ muls (a2),d2
+ add.l d2,d1
+ cmp.l #$20000000,d1
+ bgt.s .canwalk
+ move.w #0,maxspd(a0)
+ 
+ add.w d3,d3
+ bne.s .canwalk
+ move.w #240,d3
+
+.canwalk:
+
+ add.w Facing(a0),d3
+ 
+ and.w #8191,d3
+
+ move.w d3,Facing(a0)
+
+ move.l objroom,a2
+ move.w (a2),12(a0)
+ 
+ move.w newx,(a1)
+ move.w newz,4(a1)
+ 
+ tst.b GotThere
+ beq.s .notatnextptyet
+ 
+ move.w d0,CurrCPt(a0)
+ cmp.w TargCPt(a0),d0
+ bne.s .notatnextptyet
+ 
+ move.w nextCPt,d0
+ move.w d0,TargCPt(a0)
+ add.w #7,d0
+ cmp.w NumCPts,d0
+ blt.s .stillsomemore
+ sub.w NumCPts,d0
+.stillsomemore:
+ move.w d0,nextCPt
+ 
+.notatnextptyet:
+
+ move.w 10(a2),2(a0)
+ move.l 2(a2),d0
+ add.l #128*24,d0
+ asr.l #7,d0
+ move.w d0,targheight(a0)
+ 
+ move.w 4(a0),d1
+ 
+ cmp.w d0,d1
+ beq.s .okh
+ ble.s .godown
+ subq #8,d1
+.godown
+ addq #4,d1
+ move.w d1,4(a0)
+.okh:
+  
+.thisonedead:
+ rts
+
+ include "ab3:source/aliencontrol.demo"
+
+nextCPt: dc.w 0
+
+RipTear: dc.l 256*17*65536
+otherrip: dc.l 256*18*65536
+
+ItsAMediKit:
+
+HealFactor EQU 18
+
+ move.w PLR1_xoff,oldx
+ move.w PLR1_zoff,oldz
+ move.w PLR1_Zone,d7
+ cmp.w 12(a0),d7
+ bne.s .NotSameZone
+ move.w (a0),d0
+ move.l #ObjectPoints,a1
+ move.w (a1,d0.w*8),newx
+ move.w 4(a1,d0.w*8),newz
+ move.l #50*50,d2
+ bsr CheckHit
+ tst.b hitwall
+ beq.s .NotPickedUp
+
+ move.w #0,Noisex
+ move.w #0,Noisez
+ move.w #50,Noisevol
+ move.w #4,Samplenum
+ move.b #2,chanpick
+ clr.b notifplaying
+ movem.l a0/a1/d2/d6/d7,-(a7)
+ jsr MakeSomeNoise
+ movem.l (a7)+,a0/a1/d2/d6/d7
+ 
+ move.w #-1,12(a0)
+ move.w HealFactor(a0),d0
+ add.w d0,Energy
+
+.NotPickedUp:
+
+.NotSameZone:
+
+ rts
+ 
+
+ItsABigGun:
+
+ move.w PLR1_xoff,oldx
+ move.w PLR1_zoff,oldz
+ move.w PLR1_Zone,d7
+ cmp.w 12(a0),d7
+ bne .NotSameZone
+ move.w (a0),d0
+ move.l #ObjectPoints,a1
+ move.w (a1,d0.w*8),newx
+ move.w 4(a1,d0.w*8),newz
+ move.l #50*50,d2
+ bsr CheckHit
+ tst.b hitwall
+ beq.s .NotPickedUp
+
+ move.w #0,Noisex
+ move.w #0,Noisez
+ move.w #50,Noisevol
+ move.w #4,Samplenum
+ move.b #2,chanpick
+ clr.b notifplaying
+ movem.l a0/a1/d2/d6/d7,-(a7)
+ jsr MakeSomeNoise
+ movem.l (a7)+,a0/a1/d2/d6/d7
+ 
+ move.l #Cheese,FacesPtr
+ move.w #4,Cheese
+ move.w #-1,FacesCounter
+ move.b #5,PLR1_GunDamage
+ st PLR1_GotBigGun
+ move.w #1,PLR1_GunNoise
+ 
+ move.w #-1,12(a0)
+
+.NotPickedUp:
+
+.NotSameZone:
+
+ rts
+
+ItsAKey:
+
+ move.w PLR1_xoff,oldx
+ move.w PLR1_zoff,oldz
+ move.w PLR1_Zone,d7
+ cmp.w 12(a0),d7
+ bne .NotSameZone
+ move.w (a0),d0
+ move.l #ObjectPoints,a1
+ move.w (a1,d0.w*8),newx
+ move.w 4(a1,d0.w*8),newz
+ move.l #50*50,d2
+ bsr CheckHit
+ tst.b hitwall
+ beq .NotPickedUp
+
+ move.w #0,Noisex
+ move.w #0,Noisez
+ move.w #50,Noisevol
+ move.w #4,Samplenum
+ move.b #2,chanpick
+ clr.b notifplaying
+ movem.l a0/a1/d2/d6/d7,-(a7)
+ jsr MakeSomeNoise
+ movem.l (a7)+,a0/a1/d2/d6/d7
+ 
+ move.w #-1,12(a0)
+ move.b 17(a0),d0
+ or.b d0,Conditions
+
+ move.l #Panel+24*64,a1
+ move.l #Panel+24*16+14,a2
+
+ moveq #0,d1
+ lsr.b #1,d0
+ bcs.s .done
+ addq #2,d1
+ lsr.b #1,d0
+ bcs.s .done
+ addq #2,d1
+ lsr.b #1,d0
+ bcs.s .done
+ addq #2,d1 
+.done
+
+ adda.w d1,a1
+ adda.w d1,a2
+
+ move.w #4,d0
+.planes:
+ move.l a1,a3
+ move.l a2,a4
+ moveq #15,d1
+.lines
+ move.w (a3),(a4)
+ adda.w #24,a3
+ adda.w #24,a4
+ dbra d1,.lines
+ add.l #80*24,a1
+ add.l #80*24,a2
+ dbra d0,.planes
+ 
+
+.NotPickedUp:
+
+.NotSameZone:
+
+ rts
+
+Conditions: dc.w 0
+ 
+ItsABullet:
+
+ tst.b shotsize(a0)
+ beq.s ItsASmallBullet
+ bra ItsABigBullet
+ 
+ItsASmallBullet
+
+ move.w 12(a0),d0
+ blt doneshot
+
+ move.l #(256*11*65536)+32,8(a0)
+ move.w #25*256+25,6(a0)
+doneshot:
+ rts
+
+ItsABigBullet:
+
+ move.w 12(a0),d0
+ blt doneshot
+
+ tst.b shotstatus(a0)
+ beq.s notpopping
+ 
+ move.l #256*7*65536,a1
+ move.b #12,d0
+ sub.b shotstatus(a0),d0
+ btst #0,d0
+ beq.s nobot
+ adda.w #32,a1
+nobot:
+ asr.b #1,d0
+ ext.w d0
+ asl.w #7,d0
+ move.l a1,8(a0)
+ add.w d0,8(a0)
+ add.w #4*256+4,6(a0)
+ sub.w #4,4(a0)
+ 
+ sub.b #1,shotstatus(a0)
+ bgt.s notdonepop
+ move.w #-1,12(a0)
+ clr.b shotstatus(a0)
+notdonepop:
+
+ bra doneshot
+
+notpopping:
+
+ move.w #25*256+25,6(a0)
+
+ rts
+ 
+hithit: dc.l 0
+ 
+ 
+putinbackdrop:
+
+ move.l a0,-(a7)
+
+ move.w angpos,d5
+ and.w #8191,d5
+ muls #432,d5
+ divs #8192,d5
+ muls #38*2,d5
+
+ CACHE_ON d1
+
+ move.l frompt,a0
+ adda.w #104*4,a0
+ move.l #EndBackPicture,a3
+ lea.l BackPicture,a1
+ add.l d5,a1
+ move.w #2,d4
+ bra allbars
+ cnop 0,32
+allbars:
+ move.w #31,d3
+onebar:
+vertline:	
+val SET 0
+
+ REPT 19
+ move.l (a1)+,d0
+ move.w d0,val+104*4(a0)
+ swap d0
+ move.w d0,val(a0)
+val SET val+104*8
+ ENDR
+ 
+ cmp.l a3,a1
+ blt.s notoffrightend
+ move.l #BackPicture,a1
+notoffrightend:
+ 
+ addq #4,a0
+ dbra d3,onebar
+ addq #4,a0
+ dbra d4,allbars
+ 
+ move.l (a7)+,a0
+ rts

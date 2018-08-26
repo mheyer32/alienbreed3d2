@@ -1,0 +1,26 @@
+
+	Develop preliminary map editor (Define floors, walls, rooms and
+	positions of objects)
+
+	Introduce collisions with walls and corners.
+	
+	Add early enemy intelligence and test collision routine.
+	
+	Introduce map control points, modifying level editor.
+	
+	Use map control points to guide aliens to the player.
+	
+	Add sound effect routine and develop a triggering routine so events
+	can cause noises.
+	
+	Replace simple directional sound with control-point directional sound
+	
+	Generalise object drawing routine to handle a database of objects
+	which the game logic can manipulate, allowing the introduction of
+	new objects (Eg player and enemy bullets).
+	
+	Introduce 'hot spots' to the map, defining areas which trigger things
+	like opening doors, logging on to computer terminals, activate alarms
+	and so on.
+	
+	Modify map editor to include hot spot definition

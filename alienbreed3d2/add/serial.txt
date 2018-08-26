@@ -1,0 +1,22 @@
+Serial Communictation
+
+Setting the baud rate
+  the value placed in the SERPER register is
+  (3546895/baud)-1
+  
+Setting the format
+  bit 15 of the SERPER register allows you to set data
+  transfer at either 8 or 9 bits
+  0 - 8 bits
+  1 - 9 bits
+
+Sending:
+  First, you must wait for any previous serial comunication
+  to be completed.  This is done by checking the Transmit
+  Shift Register Empty bit (bit 12) of SERDATR (set when
+  it is okay to write)
+
+  Data is sent by placing it in the SERDAT register
+  The lower 8 bits hold the byte to be sent, the 9th
+  bit holds a 1 (the stop bit) and the remaining bits
+  must be set to zero.

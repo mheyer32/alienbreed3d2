@@ -1,0 +1,669 @@
+
+brightanim:
+
+ move.l branimpt,a0
+ move.w (a0),d0
+ move.w d0,ZoneDat24+6
+ sub.w #10,d0
+ asr.w #1,d0
+ add.w #10,d0
+ move.w d0,ZoneDat23+6
+ move.w d0,ZoneDat23+6
+
+ sub.w #1,branimcount
+ bgt.s nonextbr
+ adda.w #4,a0
+ cmp.l #endbranim,a0
+ blt.s notrestartbr
+ move.l #branim,a0
+notrestartbr
+ move.l a0,branimpt
+ move.w 2(a0),branimcount
+nonextbr:
+
+ rts
+ 
+branimpt: dc.l branim
+branimcount: dc.w 0
+
+branim:
+ dc.w 10,1
+ dc.w -15,1
+ dc.w 10,3
+ dc.w -15,1
+ dc.w 10,4
+ dc.w -15,1
+ dc.w 10,1
+ dc.w -15,2
+ dc.w 10,2
+ dc.w -8,1
+ dc.w 10,1
+ dc.w -5,1
+ dc.w 10,2
+ dc.w -15,1
+ dc.w 10,2
+
+endbranim
+
+objvels: ds.l 8
+
+PlayerZone: dc.w 0
+
+objmoveanim:
+
+ move.l Roompt,a0
+ move.w (a0),PlayerZone
+
+; bsr brightanim
+ bsr PlayerShot
+; bsr Nasties
+; bsr CheckPickups
+ bsr ObjectHandler
+ rts
+ 
+GotBigGun: dc.w 0
+ 
+GunDamage:
+ dc.w 0
+ 
+rotcount:
+ dc.w 0
+ 
+shotvels: ds.l 20
+
+clicked: dc.w 0
+popping: ds.l 5*4
+
+GunNoise: dc.w 1
+
+PlayerShot:
+
+ tst.b clicked
+ bne pressedfire
+
+ rts
+ 
+tempangpos: dc.w 0
+ 
+pressedfire:
+
+ move.w angpos,tempangpos
+ move.w #0,d7
+ move.w #256,d6
+ move.w #256,d5
+
+firefive:
+
+ move.l #PlayerShotData,a0
+ move.w #19,d1
+findonefree
+ move.w 12(a0),d0
+ blt.s foundonefree
+ adda.w #32,a0
+ dbra d1,findonefree
+
+ rts
+
+foundonefree:
+
+ move.w #0,Noisex
+ move.w #0,Noisez
+ move.w #50,Noisevol
+ move.w GunNoise,Samplenum
+ move.b #2,chanpick
+ clr.b notifplaying
+ move.b GotBigGun,shotsize(a0)
+ move.b GunDamage,shotpower(a0)
+ movem.l a0/d5/d6/d7,-(a7)
+ jsr MakeSomeNoise
+ movem.l (a7)+,a0/d5/d6/d7
+
+ move.l #ObjectPoints,a1
+ move.w (a0),d1
+ lea (a1,d1.w*4),a1
+ move.w xoff,(a1)
+ move.w zoff,2(a1)
+ move.w tempangpos,d0
+ and.w #8191,d0
+ move.l #SineTable,a2
+ adda.w d0,a2
+ move.w (a2),d0
+ ext.l d0
+ asl.l #7,d0
+ swap d0
+ move.w d0,shotxvel(a0)
+ move.w 2048(a2),d0
+ ext.l d0
+ asl.l #7,d0
+ swap d0
+ move.w d0,shotzvel(a0)
+ move.l Roompt,a2
+ move.w (a2),12(a0)
+ move.l 2(a2),d0
+ asr.l #7,d0
+ add.w #50,d0
+ move.w d0,4(a0)
+ 
+ add.w d6,tempangpos
+ neg.w d6
+ neg.w d5
+ add.w d5,d6
+ 
+ dbra d7,firefive
+ 
+ rts
+
+duh: dc.w 0
+double: dc.w 0
+ivescreamed: dc.w 0
+
+ObjectHandler:
+
+ move.l #ObjectData,a0
+Objectloop:
+ tst.w (a0)
+ blt.s doneallobj
+
+ cmp.b #0,16(a0)
+ bne.s notnasty
+ bsr ItsANasty
+notnasty:
+ cmp.b #1,16(a0)
+ bne.s notmedi
+ bsr ItsAMediKit
+notmedi:
+ cmp.b #2,16(a0)
+ bne.s notbullet
+ bsr ItsABullet
+notbullet:
+ cmp.b #3,16(a0)
+ bne.s notbiggun
+ bsr ItsABigGun
+notbiggun:
+
+ adda.w #32,a0
+ bra Objectloop
+
+doneallobj:
+
+
+ItsANasty:
+
+ tst.b 17(a0)
+ beq NasType1
+ rts
+
+NasType1:
+
+ tst.w 12(a0)
+ blt notthisone
+
+ clr.b ivescreamed
+ tst.b numlives(a0)
+ bgt.s itsaround
+ move.b #0,numlives(a0)
+ move.w #-1,12(a0)
+ bra notthisone
+ 
+itsaround:
+
+ move.w 4(a0),d0
+ cmp.w targheight(a0),d0
+ beq.s rightheight
+ bgt.s goingdown
+ add.w #16,d0
+goingdown:
+ subq #8,d0
+rightheight:
+ move.w d0,4(a0)
+ 
+ move.b damagetaken(a0),d2
+ beq.s okrunaround
+
+* I've been shot!
+
+ st ivescreamed
+ 
+ sub.b d2,numlives(a0)
+ sub.w #20,currspd(a0)
+ move.b #0,damagetaken(a0)
+ 
+okrunaround:
+
+ move.w (a0),d0
+ 
+ move.l #ObjectPoints,a1
+ lea (a1,d0.w*4),a1
+ move.l (a1),oldx
+ move.w xoff,newx
+ move.w zoff,newz
+ move.w currspd(a0),d2
+ cmp.w maxspd(a0),d2
+ blt.s tooslow
+ beq.s notoofast
+ subq #6,d2
+tooslow:
+ addq #4,d2
+notoofast:
+ move.w d2,currspd(a0)
+ move.w d2,speed
+ move.w #40,Range
+ move.w 12(a0),d2
+ move.l #ZoneAdds,a5
+ move.l (a5,d2.w*4),objroom
+ movem.l a0/a1/a3/a4/d7,-(a7)
+ jsr HeadTowards
+ Jsr MoveObject
+ movem.l (a7)+,a0/a1/a3/a4/d7
+ 
+ tst.b GotThere
+ beq.s NotEating
+ 
+ movem.l d0-d7/a0-a6,-(a7)
+ sub.l #ObjectPoints,a1
+ add.l a1,a1
+ add.l #ObjRotated,a1
+ move.l (a1),Noisex
+ move.w #200,Noisevol
+ move.w #2,Samplenum
+ move.b #3,chanpick
+ st notifplaying
+ st backbeat
+ jsr MakeSomeNoise
+ sub.w #1,Energy
+ movem.l (a7)+,d0-d7/a0-a6
+ 
+NotEating:
+ 
+ move.l objroom,a2
+ 
+ tst.b ivescreamed
+ bne.s screamanyway
+ 
+ move.w (a2),d0
+ cmp.w 12(a0),d0
+ beq.s nochangeroom
+ move.l #Objects+4096*5,8(a0)
+ cmp.l Roompt,a2
+ bne.s nochangeroom
+
+ move.w #40,currspd(a0)
+screamanyway:
+
+ move.l #Objects+4096*6,8(a0)
+ movem.l d0-d7/a0-a6,-(a7)
+ sub.l #ObjectPoints,a1
+ add.l a1,a1
+ add.l #ObjRotated,a1
+ move.l (a1),Noisex
+ move.w #200,Noisevol
+ move.w #0,Samplenum
+ move.b #1,chanpick
+ clr.b notifplaying
+ st backbeat
+ jsr MakeSomeNoise
+ movem.l (a7)+,d0-d7/a0-a6
+
+nochangeroom:
+ 
+ move.w (a2),12(a0)
+ move.w 6(a2),2(a0)
+ move.l 2(a2),d0
+ asr.l #7,d0
+ move.w d0,targheight(a0)
+ 
+ move.w (a0),d0
+ move.l #ObjectPoints,a1
+ move.l newx,(a1,d0.w*4)
+notthisone:
+ 
+ rts
+
+ItsAMediKit:
+
+HealFactor EQU 18
+
+ move.w xoff,oldx
+ move.w zoff,oldz
+ move.w PlayerZone,d7
+ cmp.w 12(a0),d7
+ bne.s .NotSameZone
+ move.w (a0),d0
+ move.l #ObjectPoints,a1
+ move.l (a1,d0.w*4),newx
+ move.l #32*32,d2
+ bsr CheckHit
+ tst.b hitwall
+ beq.s .NotPickedUp
+
+ move.w #0,Noisex
+ move.w #0,Noisez
+ move.w #50,Noisevol
+ move.w #4,Samplenum
+ move.b #2,chanpick
+ clr.b notifplaying
+ movem.l a0/a1/d2/d6/d7,-(a7)
+ jsr MakeSomeNoise
+ movem.l (a7)+,a0/a1/d2/d6/d7
+ 
+ move.w #-1,12(a0)
+ move.w HealFactor(a0),d0
+ add.w d0,Energy
+
+.NotPickedUp:
+
+.NotSameZone:
+
+ rts
+
+ItsABigGun:
+
+ move.w xoff,oldx
+ move.w zoff,oldz
+ move.w PlayerZone,d7
+ cmp.w 12(a0),d7
+ bne .NotSameZone
+ move.w (a0),d0
+ move.l #ObjectPoints,a1
+ move.l (a1,d0.w*4),newx
+ move.l #32*32,d2
+ bsr CheckHit
+ tst.b hitwall
+ beq.s .NotPickedUp
+
+ move.w #0,Noisex
+ move.w #0,Noisez
+ move.w #50,Noisevol
+ move.w #4,Samplenum
+ move.b #2,chanpick
+ clr.b notifplaying
+ movem.l a0/a1/d2/d6/d7,-(a7)
+ jsr MakeSomeNoise
+ movem.l (a7)+,a0/a1/d2/d6/d7
+ 
+ move.l #Cheese,FacesPtr
+ move.b #5,GunDamage
+ st GotBigGun
+ move.w #1,GunNoise
+ 
+ move.w #-1,12(a0)
+
+.NotPickedUp:
+
+.NotSameZone:
+
+ rts
+ 
+ItsABullet:
+
+
+ tst.b shotsize(a0)
+ beq.s ItsASmallBullet
+ bra ItsABigBullet
+ 
+ItsASmallBullet
+
+ move.w 12(a0),d0
+ blt doneshot
+
+ move.w #50*128,6(a0)
+
+ move.l #ObjectPoints,a1
+ move.w (a0),d1
+ lea (a1,d1.w*4),a1
+ 
+ move.l #Objects+4096*11+32,8(a0)
+ 
+ move.w (a1),d2
+ move.w d2,oldx
+ add.w shotxvel(a0),d2
+ move.w d2,newx
+ move.w 2(a1),d2
+ move.w d2,oldz
+ add.w shotzvel(a0),d2
+ move.w d2,newz
+ move.l #ZoneAdds,a2
+ move.l (a2,d0.w*4),objroom
+ movem.l d0/d7/a0/a1/a2/a4/a5,-(a7)
+ jsr MoveObject
+ movem.l (a7)+,d0/d7/a0/a1/a2/a4/a5
+ tst.b hitwall
+ beq.s nothitwall
+ 
+ move.w #-1,12(a0)
+
+ bra doneshot
+
+ rts
+ 
+nothitwall:
+
+ move.l objroom,a3
+ move.w (a3),12(a0)
+ move.w newx,(a1)
+ move.w newz,2(a1)
+************ 
+* Check if hit a nasty
+
+ move.l (a1),oldx
+ 
+ move.l #ObjectPoints,a1
+ move.l #ObjectData,a3
+checkloop:
+ tst.w (a3)
+ blt checkedall
+ tst.w 12(a3)
+ blt.s notanasty
+ cmp.b #0,16(a3)
+ bne.s notanasty
+ move.w (a3),d1
+ move.l (a1,d1.w*4),newx
+ move.l #60*60,d2
+ jsr CheckHit
+ tst.b hitwall
+ beq.s stillgoing
+ add.b #1,damagetaken(a3)
+ move.w #-1,12(a0)
+ bra hitnasty
+stillgoing:
+notanasty:
+ add.w #32,a3
+ bra checkloop
+hitnasty:
+checkedall:
+
+ rts
+
+ItsABigBullet:
+
+ move.w 12(a0),d0
+ blt doneshot
+
+ tst.b shotstatus(a0)
+ beq.s notpopping
+ 
+ move.l #Objects+4096*7,a1
+ move.b #12,d0
+ sub.b shotstatus(a0),d0
+ btst #0,d0
+ beq.s nobot
+ adda.w #32,a1
+nobot:
+ asr.b #1,d0
+ ext.w d0
+ asl.w #6,d0
+ asl.w #5,d0
+ adda.w d0,a1
+ move.l a1,8(a0)
+ add.w #128*8,6(a0)
+ sub.w #4,4(a0)
+ 
+ sub.b #1,shotstatus(a0)
+ bgt.s notdonepop
+ move.w #-1,12(a0)
+ clr.b shotstatus(a0)
+notdonepop:
+
+ bra doneshot
+
+notpopping:
+
+ move.w #50*128,6(a0)
+
+ move.l #ObjectPoints,a1
+ move.w (a0),d1
+ lea (a1,d1.w*4),a1
+ 
+ move.w double,d3
+ move.w duh,d2
+ eor.w #32,d2
+ bne.s nonextx
+ add.w #64*32,d3
+ and.w #64*32*3,d3
+nonextx:
+ move.w d2,duh
+ move.w d3,double
+
+ add.w d2,d3
+ move.l #Objects+4096*3,d2
+ ext.l d3
+ add.l d3,d2
+ move.l d2,8(a0)
+ 
+ move.w (a1),d2
+ move.w d2,oldx
+ add.w shotxvel(a0),d2
+ move.w d2,newx
+ move.w 2(a1),d2
+ move.w d2,oldz
+ add.w shotzvel(a0),d2
+ move.w d2,newz
+ move.l #ZoneAdds,a2
+ move.l (a2,d0.w*4),objroom
+ movem.l d0/d7/a0/a1/a2/a4/a5,-(a7)
+ jsr MoveObject
+ movem.l (a7)+,d0/d7/a0/a1/a2/a4/a5
+ tst.b hitwall
+ beq.s .nothitwall
+ 
+ move.b #11,shotstatus(a0)
+ move.l #Objects+4096*7,8(a0)
+
+ bra doneshot
+
+ rts
+ 
+.nothitwall:
+
+ move.l objroom,a3
+ move.w (a3),12(a0)
+ move.w newx,(a1)
+ move.w newz,2(a1)
+************ 
+* Check if hit a nasty
+
+ move.l (a1),oldx
+ 
+ move.l #ObjectData,a3
+ move.l #ObjectPoints,a1
+
+.checkloop:
+ tst.w (a3)
+ blt .checkedall
+ tst.w 12(a3)
+ blt.s .notanasty
+ cmp.b #0,16(a3)
+ bne.s .notanasty
+ move.w (a3),d1
+ move.l (a1,d1.w*4),newx
+ move.l #60*60,d2
+ jsr CheckHit
+ tst.b hitwall
+ beq.s .stillgoing
+ add.b #5,damagetaken(a3)
+ move.b #11,shotstatus(a0)
+ move.l #Objects+4096*7,8(a0)
+ bra .hitnasty
+.stillgoing:
+.notanasty:
+ add.w #32,a3
+ dbra d6,.checkloop
+.hitnasty:
+.checkedall
+
+doneshot:
+
+ rts
+ 
+ZoneAdds:
+ dc.l ZoneDat0
+ dc.l ZoneDat1
+ dc.l ZoneDat2
+ dc.l ZoneDat3
+ dc.l ZoneDat4
+ dc.l ZoneDat5
+ dc.l ZoneDat6
+ dc.l ZoneDat7
+ dc.l ZoneDat8
+ dc.l ZoneDat9
+ dc.l ZoneDat10
+ dc.l ZoneDat11
+ dc.l ZoneDat12
+ dc.l ZoneDat13
+ dc.l ZoneDat14
+ dc.l ZoneDat15
+ dc.l ZoneDat16
+ dc.l ZoneDat17
+ dc.l ZoneDat18
+ dc.l ZoneDat19
+ dc.l ZoneDat20
+ dc.l ZoneDat21
+ dc.l ZoneDat22
+ dc.l ZoneDat23
+ dc.l ZoneDat24
+ dc.l ZoneDat25
+ dc.l ZoneDat26
+ dc.l ZoneDat27
+ dc.l ZoneDat28
+ dc.l ZoneDat29
+ 
+putinbackdrop:
+
+ move.w angpos,d5
+ and.w #8191,d5
+ muls #432,d5
+ divs #8192,d5
+ muls #160,d5
+
+ CACHE_ON d1
+
+ move.l frompt,a0
+ adda.w #104*4,a0
+ move.l #BackPicture,a1
+ add.l d5,a1
+ move.w #104*4,d1
+ move.w #2,d4
+allbars:
+ move.w #31,d3
+onebar:
+ move.w #1,d0
+ move.l a0,a2
+vertline:
+ REPT 20
+ move.w (a1)+,(a2)
+ adda.w d1,a2
+ ENDR
+ dbra d0,vertline
+ 
+ adda.w #80,a1
+ 
+ cmp.l #EndBackPicture,a1
+ blt.s notoffrightend
+ move.l #BackPicture,a1
+notoffrightend
+ 
+ addq #4,a0
+ dbra d3,onebar
+ addq #4,a0
+ dbra d4,allbars
+ rts

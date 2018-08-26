@@ -1,0 +1,57 @@
+
+
+KInt_Init	;VBR Assumed $0
+		move.l $68.w,OLDKINT
+		Move.l	#KInt_Main,$68.w	Install Interrupt 
+		And.b	#$3f,$bfe201		Set Timers
+		Move.b	#$7f,$bfed01
+		Move.b	$bfed01,d0
+		Move.b	#$88,$bfed01
+		St.b	KInt_CCode		
+		Move.b	#$a0,$bfee01		Start Timey Thing
+		Rts				And return
+
+OLDKINT: dc.l 0
+
+
+KInt_Main	
+		Movem.l	d0/d1/a0/a1/a6,-(a7)	Stack everything
+		Move.w	#8,$dff09a		Temp Disable Int.
+		Move.w	$dff01e,d0		Intreqr
+		And.w	#8,d0			Mask Out All X^ K_Int
+	Beq	KInt_End			Not Keyboard Interrupt
+		Lea	$bfed01,a6
+		Move.w	#$8,$dff09c		Clear Int.Request
+		Move.b	-$100(a6),d0		Move Raw Keyboard value
+		Ror.b	#1,d0			Roll to correct
+		Not.b	d0			
+		Move.b	d0,KInt_CCode		Save Corrected Keycode
+.HandShake	Move.b	#8,(a6)
+		Move.b	#7,-$900(a6)
+		Move.b	#0,-$800(a6)
+		Move.b	#0,-$100(a6)
+		Move.b	#$d1,$100(a6)		
+		Tst.b	(a6)	
+.wait		Btst	#0,(a6)
+	Beq.s	.wait
+		Move.b	#$a0,$100(a6)		
+		Move.b	(a6),d0		
+		Move.b	#$88,(a6)
+		Lea	KeyMap,a1
+		Moveq.w	#0,d0
+		Move.b	KInt_CCode(pc),d0
+	Bmi.s	KInt_KeyUp			neg if up 
+
+KInt_KeyDown
+		st (a1,d0.w)
+		move.b d0,lastpressed
+	Bra	KInt_End
+
+KInt_KeyUp
+		And.w	#$7f,d0			Make code Positive
+		clr.b (a1,d0.w)
+KInt_End	Movem.l	(a7)+,d0/d1/a0/a1/a6	Unstack Everything
+	
+		Move.w	#$8008,$dff09a		Re-enable Int.
+		Rts
+

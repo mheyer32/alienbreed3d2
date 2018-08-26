@@ -1,0 +1,45 @@
+HOW TO:
+
+						Define Objects
+						==============
+						
+	The term 'Object' in AB3DII has quite a broad meaning. Basically, anything which isn't a bullet,
+	a player, an alien or background (walls, floors and ceilings) is an object. There are several
+	main types that an object can be, and this determines its behaviour:
+	
+	1. Collectable
+	
+		The object may be collected by the player. When this happens, the player will recieve
+		whatever ammunition or other supplies the object is defined to provide, and the object
+		will remove itself from the map. Once so removed it will also cease to hold any doors
+		and lifts.
+		
+	2. Activatable
+	
+		The object can be 'activated' by the player being within its activation radius and pressing
+		the space bar. When this happens the object switches to 'active mode'. The player can
+		switch it back, or it can 'timeout' and return to its inactive state. Whilst active the
+		object will cease to hold any doors or lifts.
+		
+	3. Destructable.
+	
+		The object can be damaged by player bullets and explosions. Once destroyed it will cease
+		to hold any doors or lifts, and will no longer impede the player.
+		
+	4. Decoration
+	
+		The object cannot be interacted with in any way and simply sits there playing through
+		its animation sequence.
+	
+	To define an object, select OBJECTS -> DEFINE OBJECT STATS.
+	
+	Click on an empty space or an object you want to redefine with the LEFT mouse button, and type
+	the new name. Clicking on the object with the RIGHT mouse button instead takes you into the
+	actual definiton screen. On this screen are several options, some of which are only visible
+	for certain types of object. They are listed here in top-bottom order:
+	
+1. Type Of Object
+
+	Click to cycle through the four types above.
+
+2.

@@ -1,0 +1,9 @@
+FROM "c2p8_test.o"
+TO "c2p8_test"
+LIB c2p8.o LIB:scmieee.lib
+    LIB:sc.lib LIB:amiga.lib
+ADDSYM
+SMALLCODE
+SMALLDATA
+DEFINE @__chkabort=@__dummy
+

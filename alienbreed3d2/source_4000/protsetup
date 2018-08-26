@@ -1,0 +1,37 @@
+ lea.l PROTCALLENC-400(pc),a0
+ adda.w #400,a0
+ move.l #$75055345,d0
+ move.w #(ENDPROT-PROTCALLENC)/4-1,d1
+decode:
+ add.l d0,(a0)+
+ ror.l #1,d0
+ dbra d1,decode
+ 
+ 
+ lea.l dummycall-5000(pc),a1
+ lea.l protspace-10000(pc),a2
+ lea.l DummyAdds-2000(pc),a3
+ moveq #0,d0
+ lea PROTCALLENC-200(pc),a4
+ adda.w #200,a4
+ jsr (a4)
+ 
+ move.w #235,d0
+here:
+ lea.l PROTSETUP(pc),a0
+ move.w #(getrid-PROTSETUP)/2,d1
+getrid:
+ add.w d0,(a0)+
+ addq #6,d0
+ dbra d1,getrid
+ move.l #$4e754e75,d0
+ move.l d0,(a0)+
+ move.l d0,(a0)+
+ move.l d0,(a0)+
+ move.l d0,(a0)+
+ move.l d0,(a0)+
+ move.l d0,(a0)+
+ move.l d0,(a0)+
+ rts
+
+ ds.w 10

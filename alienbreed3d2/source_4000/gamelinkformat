@@ -1,0 +1,10 @@
+Game link file:
+
+0-63 : Levels directory
+64-703 : Level Names
+704-2623 : Object GFX filenames
+2624-6463 : SFX filenames
+6464-6527 : Floor tile filename
+6528-6591 : Gun Graphic Filename
+6592-6655 : Blurb filename
+6656-15776 : Bullet data (inc. anims)

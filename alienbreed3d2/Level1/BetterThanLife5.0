@@ -1,0 +1,3065 @@
+
+ 
+
+
+maxscrdiv EQU 8
+max3ddiv EQU 5
+
+xpos EQU 0	;l
+zpos EQU 4	;l
+zsinval EQU 8	;w
+zcosval EQU 10	;w
+ztox EQU 12	;l
+xsinval EQU 16	;w
+xcosval EQU 18	;w
+xspd EQU 20	;w
+zspd EQU 22	;w
+mapx EQU 24	;b
+mapz EQU 25	;b
+whichtile EQU 26 ;b
+xofflight EQU 28	;w
+zofflight EQU 30	;w
+offlight EQU 32		;w
+zlinestore EQU 34
+zlinedir EQU 38
+zposdir EQU 40
+zposstore EQU 42
+xdiststore EQU 44
+xdistdir EQU 46
+zwallfound EQU 48
+
+xlinestore EQU 50
+xlinedir EQU 54
+xposdir EQU 56
+xposstore EQU 58
+zdiststore EQU 60
+zdistdir EQU 62
+xwallfound EQU 64
+
+
+midoffset EQU 104*4*40
+
+ SECTION Scrn,CODE_C
+
+OpenLib         equ -552        ; Offset for OpenLibrary.
+CloseLib        equ -414        ; Offset for CloseLibrary.
+
+vhposr		equ $006	
+vhposrl		equ $007 
+bltcon0		equ $40 
+bltcon1		equ $42
+bltcpt		equ $48
+bltbpt		equ $4c
+bltapt		equ $50
+spr0ctl		equ $142
+spr1ctl		equ $14a
+spr2ctl		equ $152
+spr3ctl		equ $15a
+spr4ctl		equ $162
+spr5ctl		equ $16a
+spr6ctl		equ $172
+spr7ctl		equ $17a
+spr0pos		equ $140
+spr1pos		equ $148
+spr2pos		equ $150
+spr3pos		equ $158
+spr4pos		equ $160
+spr5pos		equ $168
+spr6pos		equ $170
+spr7pos		equ $178
+bltdpt     	equ $54
+bltafwm		equ $44
+bltalwm		equ $46
+bltsize     	equ $58
+bltcmod     	equ $60
+bltbmod     	equ $62
+bltamod     	equ $64
+bltdmod     	equ $66
+diwstart        equ $8e         ; Screen hardware registers.
+diwstop         equ $90
+ddfstart        equ $92
+ddfstop         equ $94
+bplcon0         equ $100
+bplcon1         equ $102
+col0            equ $180
+col1            equ $182
+col2		equ $184
+col3		equ $186
+col4		equ $188
+col5		equ $18a
+col6		equ $18c
+col7		equ $18e
+col8            equ $190
+col9            equ $192
+col10           equ $194
+dmacon		equ $96
+dmaconr		equ $002
+intenar		equ $01c
+intena		equ $09a
+intreq		equ $09c
+intreqr		equ $01e
+intreqrl	equ $01f
+bpl1pth         equ $e0
+bpl1ptl         equ $e2
+bpl2pth		equ $e4
+bpl2ptl		equ $e6
+bpl3pth		equ $e8
+bpl3ptl		equ $ea
+bpl4pth		equ $ec
+bpl4ptl		equ $ee
+bpl5pth		equ $f0
+bpl5ptl		equ $f2
+bpl6pth		equ $f4
+bpl6ptl		equ $f6
+bpl7pth		equ $f8
+bpl7ptl		equ $fa
+
+** This waits for the blitter to finish before allowing program
+** execution to continue.
+
+WB MACRO
+\@bf:
+ btst #6,dmaconr(a6)
+ bne.s \@bf
+ ENDM
+
+*Another version for when d6 <> dff000
+
+WBSLOW MACRO
+\@bf:
+ btst #6,$dff000+dmaconr
+ bne.s \@bf
+ ENDM
+
+ 
+**
+
+ include "macros.i"
+ include "ab3:source/defs.i"
+
+ move.w (a0),option
+
+ jmp stuff
+endstuff:
+
+ move.l #$dff000,a6    ; NB V. IMPORTANT: A6=CUSTOM BASE
+ move.w #$87c0,dmacon(a6)
+ move.w #$0020,dmacon(a6)
+ move.w intenar(a6),saveinters
+ move.w #$7fff,intena(a6)
+ move.w #$00ff,$dff09e
+
+*** Put myself in supervisor mode
+
+ move.l #blag,$80
+ trap #0
+; move.l $6c,d0
+; move.l #blag,$6c
+; move.w #$8010,intreq(a6)
+
+ rts
+ 
+saveit: ds.l 10
+
+
+blag:
+; move.w #$10,intreq(a6)
+; move.l d0,$6c
+; move.w #$7fff,intena(a6)
+
+ move.l $6c,saveit
+ move.l #Chan0inter,$6c
+ 
+ move.l #empty,pos1
+ move.l #empty,pos2
+ move.l #emptyend,Samp0end
+ move.l #emptyend,Samp1end
+ 
+ move.l #Panel,d0
+ move.w d0,p1l
+ swap d0
+ move.w d0,p1h
+ move.l #Panel+64*24,d0
+ move.w d0,p2l
+ swap d0
+ move.w d0,p2h
+ move.l #Panel+64*24*2,d0
+ move.w d0,p3l
+ swap d0
+ move.w d0,p3h
+ move.l #Panel+64*24*3,d0
+ move.w d0,p4l
+ swap d0
+ move.w d0,p4h
+
+ move.l #FacePlace,d0
+ move.w d0,f1l
+ swap d0
+ move.w d0,f1h
+ move.l #FacePlace+32*24,d0
+ move.w d0,f2l
+ swap d0
+ move.w d0,f2h
+ move.l #FacePlace+32*24*2,d0
+ move.w d0,f3l
+ swap d0
+ move.w d0,f3h
+ move.l #FacePlace+32*24*3,d0
+ move.w d0,f4l
+ swap d0
+ move.w d0,f4h
+ move.l #FacePlace+32*24*4,d0
+ move.w d0,f5l
+ swap d0
+ move.w d0,f5h
+ 
+ move.l #PanelCop,d0
+ move.w d0,pcl1
+ move.w d0,pcl2
+ swap d0
+ move.w d0,pch1
+ move.w d0,pch2
+ 
+ move.l #bigfield,d0
+ move.w d0,ocl
+ swap d0
+ move.w d0,och
+
+ bset.b #1,$bfe001
+
+ move.l #bigfield,$dff080    ; Point the copper at our copperlist.
+ move.l #$dff000,a6    ; a6 points at the first custom chip register.
+ move.w #$00ff,$dff09e
+
+ move.w #0,d0
+
+ move.l #scrn,d0
+ move.w d0,pl1l
+ swap d0
+ move.w d0,pl1h
+
+ move.l #scrn+40,d0
+ move.w d0,pl2l
+ swap d0
+ move.w d0,pl2h
+
+ move.l #scrn+80,d0
+ move.w d0,pl3l
+ swap d0
+ move.w d0,pl3h
+
+ move.l #scrn+120,d0
+ move.w d0,pl4l
+ swap d0
+ move.w d0,pl4h
+
+ move.l #scrn+160,d0
+ move.w d0,pl5l
+ swap d0
+ move.w d0,pl5h
+
+ move.l #scrn+200,d0
+ move.w d0,pl6l
+ swap d0
+ move.w d0,pl6h
+
+ move.l #scrn+240,d0
+ move.w d0,pl7l
+ swap d0
+ move.w d0,pl7h
+
+ move.l #colbars,a0
+ move.l #colbars2,a2
+ move.w #81,d0
+ move.l #0,d6
+ move.w #0,d3
+ move.w #$2bdf,startwait
+ move.w #$2d01,endwait
+fillcop
+ move.w #$180,d1
+
+ move.l a0,a1
+ move.l a2,a3
+ move.w #$10c,(a1)+
+ move.w #$10c,(a3)+
+ move.w d3,(a1)+
+ move.w d3,(a3)+
+ eor.w #$8000,d3
+
+ move.w #$106,(a1)+
+ move.w #$106,(a3)+
+ move.w #$2c40,d5
+ or.w d3,d5
+ move.w d5,(a1)+
+ move.w d5,(a3)+
+ bsr do32
+
+ move.w #$106,(a1)+
+ move.w #$106,(a3)+
+ move.w #$4c40,d5
+ or.w d3,d5
+ move.w d5,(a1)+
+ move.w d5,(a3)+
+ bsr do32
+
+ move.w #$106,(a1)+
+ move.w #$106,(a3)+
+ move.w #$6c40,d5
+ or.w d3,d5
+ move.w d5,(a1)+
+ move.w d5,(a3)+
+ bsr do32
+ 
+**********************************
+
+ cmp.b #'s',option
+ beq.s smallscrn
+
+ move.w startwait,(a1)+
+ move.w #$fffe,(a1)+
+ move.w endwait,(a1)+
+ move.w #$ff00,(a1)+
+ move.w startwait,(a3)+
+ move.w #$fffe,(a3)+
+ move.w endwait,(a3)+
+ move.w #$ff00,(a3)+
+ 
+ add.w #$300,startwait
+ add.w #$300,endwait
+ 
+smallscrn: 
+**********************************
+
+ adda.w #104*4,a0
+ adda.w #104*4,a2
+
+ dbra d0,fillcop
+
+**********************************
+ cmp.b #'s',option
+ beq smallnotlarge
+ move.w #$38,fetchstart
+ move.w #$b8,fetchstop
+ move.w #$2c81,winstart
+ move.w #$2cc1,winstop
+ move.w #-40,modulo
+ move.w #-40,modulo+4
+ 
+ move.l #scrn+40,a0
+ move.l #scrn+160,a1
+ move.l #scrn+280,a2
+ move.l #scrntab,a3
+ move.w #319,d7	; counter
+ move.w #0,d1	; xpos
+plotscrnloop:
+ move.b (a3)+,d0
+ move.w d1,d2
+ asr.w #3,d2
+ move.b d1,d3
+ not.b d3
+ bclr.b d3,-40(a0,d2.w)
+ bclr.b d3,(a0,d2.w)
+ bclr.b d3,40(a0,d2.w)
+ bclr.b d3,-40(a1,d2.w)
+ bclr.b d3,(a1,d2.w)
+ bclr.b d3,40(a1,d2.w)
+ bclr.b d3,-40(a2,d2.w)
+ btst #0,d0
+ beq.s nobp1
+ bset.b d3,-40(a0,d2.w)
+nobp1:
+ btst #1,d0
+ beq.s nobp2
+ bset.b d3,(a0,d2.w)
+nobp2:
+ btst #2,d0
+ beq.s nobp3
+ bset.b d3,40(a0,d2.w)
+nobp3:
+ btst #3,d0
+ beq.s nobp4
+ bset.b d3,-40(a1,d2.w)
+nobp4:
+ btst #4,d0
+ beq.s nobp5
+ bset.b d3,(a1,d2.w)
+nobp5:
+ btst #5,d0
+ beq.s nobp6
+ bset.b d3,40(a1,d2.w)
+nobp6:
+ btst #6,d0
+ beq.s nobp7
+ bset.b d3,-40(a2,d2.w)
+nobp7:
+
+ addq #1,d1
+
+ dbra d7,plotscrnloop
+
+smallnotlarge:
+
+**********************************
+
+****************************
+ jsr INITPLAYER
+; bsr initobjpos
+****************************
+ 
+ move.l #null,$dff0a0
+ move.w #100,$dff0a4
+ move.w #443,$dff0a6
+ move.w #63,$dff0a8
+
+ move.l #null2,$dff0b0
+ move.w #100,$dff0b4
+ move.w #443,$dff0b6
+ move.w #63,$dff0b8
+
+ move.l #null4,$dff0c0
+ move.w #100,$dff0c4
+ move.w #443,$dff0c6
+ move.w #63,$dff0c8
+
+ move.l #null3,$dff0d0
+ move.w #100,$dff0d4
+ move.w #443,$dff0d6
+ move.w #63,$dff0d8
+
+ move.l #tab+256,a1
+ move.w #63,d7
+outerlop
+ move.l #tab,a0
+ move.w #255,d6
+scaledownlop:
+ move.b (a0)+,d0
+ ext.w d0
+ ext.l d0
+ muls d7,d0
+ asr.l #6,d0
+ move.b d0,(a1)+
+ dbra d6,scaledownlop
+ subq #1,d7
+ bgt.s outerlop
+ 
+ move.l #$dff000,a6
+
+ move.w #$c010,intena(a6)
+ 
+ move.w #$f,dmacon(a6)
+ move.w #$820f,dmacon(a6)
+ 
+ bsr FullEnergy
+ move.b #1,GunDamage
+ move.w #3,GunNoise
+ 
+lop: 
+
+ move.l #$dff000,a6
+
+waitfortop:
+ btst.b #0,intreqrl(a6)
+ beq waitfortop
+ move.w #$1,intreq(a6)
+
+
+ move.l drawpt,d0
+ move.l olddrawpt,drawpt
+ move.l d0,olddrawpt
+ move.l d0,$dff084
+ move.l drawpt,a3
+ adda.w #10,a3
+ move.l a3,frompt
+ add.l #104*4*40,a3
+ move.l a3,midpt
+******************************************
+ bsr PlaceFace
+ bsr EnergyBar
+ jsr objmoveanim
+******************************************
+ 
+ move.l #SineTable,a0
+
+ move.w angspd,d1
+ move.w angpos,d0
+
+ btst #7,$bfe001
+ sne d6
+
+ tst.b d6
+ seq clicked
+ move.b fire,d7
+ and.b d7,clicked
+ 
+ move.b d6,fire
+ bsr turnleftright
+ 
+ move.w (a0,d0.w),d6
+ adda.w #2048,a0
+ move.w (a0,d0.w),d7
+
+ move.w d6,sinval
+ move.w d7,cosval
+
+ move.l xspdval,d6
+ move.l zspdval,d7
+
+ move.w xoff,oldxoff
+ move.w zoff,oldzoff
+
+
+ neg.l d6
+ ble.s nobug1
+ asr.l #1,d6
+ add.l #1,d6
+ bra.s bug1
+nobug1
+ asr.l #1,d6
+bug1:
+
+; beq.s goinnowhere
+; blt.s goinfor
+; cmp.l #4*65536,d6
+; ble.s goinnowhere
+; move.l #4*65536,d6
+;goinfor:
+; cmp.l #-4*65536,d6
+; bge.s goinnowhere
+; move.l #-4*65536,d6
+;goinnowhere:
+
+ neg.l d7
+ ble.s nobug2
+ asr.l #1,d7
+ add.l #1,d7
+ bra.s bug2
+nobug2
+ asr.l #1,d7
+bug2: 
+ 
+; beq.s goinnowhere2
+; blt.s goinfor2
+; cmp.l #4*65536,d7
+; ble.s goinnowhere2
+; move.l #4*65536,d7
+;goinfor2:
+; cmp.l #-4*65536,d7
+; bge.s goinnowhere2
+; move.l #-4*65536,d7
+;goinnowhere2:
+
+ move.w sinval,d1
+ move.w cosval,d2
+ ext.l d1
+ ext.l d2
+ asl.l #5,d1
+ asl.l #5,d2
+ 
+ tst.b fire
+ bra.s nomovelrposs
+ 
+ btst #1,$d(a6)
+ sne d3
+ beq.s notleft2
+ add.l d2,d6
+ sub.l d1,d7
+notleft2
+
+ btst #1,$c(a6)
+ sne d4
+ beq.s notright2
+ sub.l d2,d6
+ add.l d1,d7
+notright2
+
+nomovelrposs:
+
+ btst #0,$dff00c
+ sne d5
+ eor.b d4,d5
+ beq.s notup
+ add.l d1,d6
+ add.l d2,d7
+notup:
+
+ btst #0,$dff00d
+ sne d5
+ eor.b d3,d5
+ beq.s notdown
+ sub.l d1,d6
+ sub.l d2,d7
+notdown:
+
+ add.l d6,xspdval
+ add.l d7,zspdval
+ 
+ move.l xspdval,d6
+ move.l zspdval,d7
+ add.l d6,xoff
+ add.l d7,zoff
+
+*************************************
+ jsr putinbackdrop
+*************************************
+
+ move.w xoff,newx
+ move.w zoff,newz
+ move.w oldxoff,oldx
+ move.w oldzoff,oldz
+ move.l xspdval,xdiff
+ move.l zspdval,zdiff
+ move.l Roompt,objroom
+ bsr MoveObject
+ move.l objroom,Roompt
+ move.w newx,xoff
+ move.w newz,zoff
+
+ move.l Roompt,a0
+ addq #2,a0
+ move.l (a0)+,tyoff
+ addq #2,a0
+
+findneg:
+ tst.w (a0)+
+ bge.s findneg
+findneg2:
+ tst.w (a0)+
+ bge.s findneg2
+findneg3:
+ tst.w (a0)+
+ bge.s findneg3
+
+; move.l (a0),a0		; jump to viewpoint list
+ * A0 is pointing at a pointer to list of points to rotate
+ move.l (a0)+,PointsToRotatePtr
+ move.l a0,ListOfGraphRooms
+
+*****************************************************
+
+ move.l tyoff,d0
+ move.l yoff,d1
+ move.l yvel,d2
+ add.l d2,d1
+ add.l #1024,d2
+ sub.l d1,d0
+ bgt.s shouldfall
+ move.l d0,d2
+ cmp.l #-2048,d2
+ bge.s shouldfall
+ move.l #-2048,d2
+shouldfall:
+ move.l d2,yvel
+ move.l d1,yoff
+ 
+
+ move.l yoff,d0
+ asr.l #8,d0
+ move.w d0,d1
+ and.w #63,d1
+ move.w d1,wallyoff
+ and.b #%11111100,d0
+ move.w d0,flooryoff
+ 
+ move.w xoff,d6
+ move.w d6,d3
+ asr.w #1,d3
+ add.w d3,d6
+ asr.w #1,d6
+ move.w d6,xoff34
+ 
+ move.w zoff,d6
+ move.w d6,d3
+ asr.w #1,d3
+ add.w d3,d6
+ asr.w #1,d6
+ move.w d6,zoff34
+
+ bsr RotateLevelPts
+ bsr RotateObjectPts
+
+ move.w #0,scaleval
+
+ move.w #0,leftclip
+ move.w #96,rightclip
+
+* Subroom loop
+
+ move.l ListOfGraphRooms,a0
+
+subroomloop:
+ move.l (a0)+,d7
+ blt jumpoutofrooms
+ bsr setlrclip
+; move.w leftclip,d0
+; cmp.w rightclip,d0
+; bge subroomloop
+ move.l a0,-(a7)
+ move.l d7,a0
+
+ move.w (a0)+,d0
+ move.w d0,currzone
+ move.l #ZoneAdds,a1
+ move.l (a1,d0.w*4),a1
+ move.w 6(a1),ZoneBright
+
+polyloop:
+ move.w (a0)+,d0
+ blt jumpoutofloop
+ beq.s itsawall
+ cmp.w #3,d0
+ beq.s itsasetclip
+ cmp.w #4,d0
+ beq.s itsanobject
+ cmp.w #5,d0
+ bne.s itsafloor
+itsanarc:
+ jsr CurveDraw
+ bra polyloop
+ 
+itsanobject:
+ jsr ObjDraw
+ bra polyloop
+ 
+itsafloor:
+* 1,2 = floor/roof
+ jsr itsafloordraw
+ bra polyloop
+itsasetclip:
+ bsr setlrclip
+ bra polyloop
+itsawall:
+ bsr itsawalldraw
+ bra.s polyloop
+
+jumpoutofloop:
+
+ jsr ObjDraw
+
+ move.l (a7)+,a0
+ bra subroomloop
+
+jumpoutofrooms:
+
+
+ move.l #$dff000,a6
+
+; move.w #$300,col0(a6)
+
+ btst #6,$bfe001
+ beq end
+ 
+ tst.w Energy
+ ble end
+
+ bra lop
+ 
+***************************************************************************
+***************************************************************************
+****************** End of Main Loop here ********************************** 
+***************************************************************************
+***************************************************************************
+
+RotateLevelPts:
+
+ move.w sinval,d5
+ move.w cosval,d6
+
+ move.l PointsToRotatePtr,a0
+ move.l #Points,a3
+ move.l #Rotated,a1
+ move.l #OnScreen,a2
+pointrotlop:
+ move.w (a0)+,d7
+ blt.s outofpointrot
+ 
+ move.w (a3,d7*4),d0
+ sub.w xoff,d0
+ move.w 2(a3,d7*4),d1
+ sub.w zoff,d1
+ move.w d0,d2
+ muls d6,d2
+ move.w d1,d3
+ muls d5,d3
+ sub.l d3,d2
+ add.l d2,d2
+ swap d2
+ ext.l d2
+ asl.l #7,d2
+ move.l d2,(a1,d7*8)
+
+ muls d5,d0
+ muls d6,d1
+ add.l d0,d1
+ asl.l #2,d1
+ swap d1
+ move.l d1,4(a1,d7*8)
+
+ tst.w d1
+ bgt.s ptnotbehind
+ move.w #-1,d2
+ bra putin
+ptnotbehind:
+
+ divs d1,d2
+ add.w #47,d2
+putin:
+ move.w d2,(a2,d7*2)
+ 
+ bra pointrotlop
+outofpointrot:
+
+ rts
+
+RotateObjectPts:
+
+ move.w sinval,d5
+ move.w cosval,d6
+
+ move.l #ObjectPoints,a0
+ move.w NumObjectPoints,d7
+ move.l #ObjRotated,a1
+objpointrotlop:
+ 
+ move.w (a0)+,d0
+ sub.w xoff,d0
+ move.w (a0)+,d1
+ sub.w zoff,d1
+ move.w d0,d2
+ muls d6,d2
+ move.w d1,d3
+ muls d5,d3
+ sub.l d3,d2
+ add.l d2,d2
+ swap d2
+ move.w d2,(a1)+
+ ext.l d2
+ asl.l #7,d2
+
+ muls d5,d0
+ muls d6,d1
+ add.l d0,d1
+ asl.l #2,d1
+ swap d1
+ move.w d1,(a1)+
+ move.l d2,(a1)+
+
+ dbra d7,objpointrotlop
+
+ rts
+
+FaceToPlace: dc.w 0
+
+Cheese:
+ dc.w 4,25
+
+FacesList:
+
+ dc.w 0,4*4
+ dc.w 2,2*4
+ dc.w 0,2*4
+ dc.w 3,2*4
+ dc.w 0,2*4
+ dc.w 2,3*4
+ dc.w 0,2*4
+ dc.w 3,3*4
+ dc.w 0,5*4
+ dc.w 1,2*4
+ dc.w 0,2*4
+ dc.w 1,2*4
+ dc.w 0,2*4
+ dc.w 1,2*4
+ dc.w 0,2*4
+ dc.w 2,3*4
+ dc.w 0,1*4
+ dc.w 3,3*4
+ dc.w 0,1*4
+ dc.w 2,3*4
+ dc.w 0,1*4
+
+EndOfFacesList:
+
+FacesPtr:
+ dc.l FacesList
+FacesCounter:
+ dc.w 0
+Expression:
+ dc.w 0
+
+PlaceFace:
+
+ move.w FacesCounter,d0
+ subq #1,d0
+ bgt.s NoNewFace
+
+ move.l FacesPtr,a0
+ 
+ move.w 2(a0),d0
+ move.w (a0),Expression
+ addq #4,a0
+ cmp.l #EndOfFacesList,a0
+ blt.s NotFirstFace
+
+ move.l #FacesList,a0
+
+NotFirstFace
+ move.l a0,FacesPtr
+
+NoNewFace:
+
+ move.w d0,FacesCounter
+
+ Move.w FaceToPlace,d0
+ muls #5,d0
+ add.w Expression,d0
+ move.l #FacePlace+10,a0
+ move.l #Faces,a1
+ muls #(4*32*5),d0
+ adda.w d0,a1
+ move.w #4,d0
+ move.w #24,d1
+ 
+ move.w #4,d3
+bitplaneloop:
+ move.w #31,d2
+PlaceFaceToPlaceInFacePlaceLoop:
+ move.l (a1),(a0)
+ adda.w d0,a1
+ adda.w d1,a0
+ dbra d2,PlaceFaceToPlaceInFacePlaceLoop
+ dbra d3,bitplaneloop
+ 
+ rts
+ 
+Energy:
+ dc.w 191
+OldEnergy:
+ dc.w 191
+
+FullEnergy:
+ move.w #191,Energy
+ move.w #191,OldEnergy
+ move.l #Panel+41*24,a0
+ move.w #6*6-1,d0
+fillbar:
+ move.l #$fefefefe,(a0)+
+ dbra d0,fillbar
+ rts
+ 
+EnergyBar:
+
+ move.w Energy,d0
+ move.w #192,d1
+ sub.w d0,d1
+ ext.l d1
+ divs #48,d1
+ move.w d1,FaceToPlace
+ cmp.w OldEnergy,d0
+ bne.s gottochange
+ 
+NoChange
+ rts
+ 
+gottochange:
+  
+ blt LessEnergy
+ cmp.w #191,Energy
+ blt.s NotMax
+ move.w #191,Energy
+NotMax:
+
+ move.w Energy,d0
+ move.w OldEnergy,d2
+ sub.w d0,d2
+ beq.s NoChange
+ neg.w d2
+ 
+ move.w OldEnergy,d3
+ 
+ move.l #Panel+41*24,a0
+EnergyRise:
+ move.w d3,d0
+ move.b d0,d1
+ not.b d1
+ and.b #7,d1
+ beq.s noplot
+ asr.w #3,d0
+ lea (a0,d0.w),a1
+ bset.b d1,(a1)
+ bset.b d1,24(a1)
+ bset.b d1,24*2(a1)
+ bset.b d1,24*3(a1)
+ bset.b d1,24*4(a1)
+ bset.b d1,24*5(a1)
+noplot:
+ addq #1,d3
+ subq #1,d2
+ bgt.s EnergyRise
+
+ move.w Energy,OldEnergy
+
+ rts 
+
+
+LessEnergy: 
+ move.w OldEnergy,d2
+ sub.w d0,d2
+ 
+ move.w OldEnergy,d3
+ 
+ move.l #Panel+41*24,a0
+EnergyDrain:
+ move.w d3,d0
+ move.b d0,d1
+ not.b d1
+ asr.w #3,d0
+ lea (a0,d0.w),a1
+ bclr.b d1,(a1)
+ bclr.b d1,24(a1)
+ bclr.b d1,24*2(a1)
+ bclr.b d1,24*3(a1)
+ bclr.b d1,24*4(a1)
+ bclr.b d1,24*5(a1)
+ subq #1,d3
+ subq #1,d2
+ bgt.s EnergyDrain
+
+ move.w Energy,OldEnergy
+
+ rts 
+ 
+end:
+ jmp closeeverything 
+
+do32:
+ move.w #31,d7
+ move.w #$180,d1
+across:
+ move.w d1,(a1)+
+ move.w d1,(a3)+
+ move.w #0,(a1)+
+ move.w #0,(a3)+
+ add.w #2,d1
+ dbra d7,across
+ rts
+
+
+ 
+*************************************
+* Set left and right clip values
+*************************************
+ 
+xspdval: dc.l 0
+zspdval: dc.l 0
+ 
+setlrclip:
+ move.l #OnScreen,a1
+ move.l #Rotated,a2
+ 
+ move.w (a0)+,d0
+ bge.s notdefaultleft
+ move.w #0,leftclip
+ bra leftnotoktoclip
+notdefaultleft:
+
+ move.w 6(a2,d0*8),d1	; left z val
+ bgt.s leftclipinfront
+
+ move.w (a0),d0
+ tst.w 6(a2,d0*8)
+ bgt.s leftnotoktoclip
+ move.w #95,leftclip
+ move.w #0,rightclip
+ addq #2,a0
+ rts
+
+leftclipinfront:
+ move.w (a1,d0*2),d1	; left x on screen
+ cmp.w leftclip(pc),d1
+ ble.s leftnotoktoclip
+ cmp.w #95,d1
+ ble.s leftclipnotoffright
+ move.w #95,d1
+leftclipnotoffright:
+ move.w d1,leftclip
+leftnotoktoclip:
+
+ move.w (a0)+,d0
+ bge.s notdefaultright
+ move.w #96,rightclip
+ bra rightnotoktoclip
+notdefaultright:
+ move.w 6(a2,d0*8),d1	; right z val
+ ble.s rightnotoktoclip
+
+rightclipinfront:
+ move.w (a1,d0*2),d1	; right x on screen
+ cmp.w rightclip(pc),d1
+ bge.s rightnotoktoclip
+ tst.w d1
+ bge.s rightclipnotoffleft
+ moveq #0,d1
+rightclipnotoffleft:
+ addq #1,d1
+ move.w d1,rightclip
+rightnotoktoclip:
+
+ rts
+
+leftclip2: dc.w 0
+rightclip2: dc.w 0
+ZoneBright: dc.w 0
+ 
+npolys: dc.w 0
+
+fire: dc.w 0
+
+turnleftright:
+ move.w d1,d2
+ neg.w d2
+; cmp.w #128,d2
+; ble.s okslow1
+; move.w #128,d2
+;okslow1
+; cmp.w #-128,d2
+; bge.s okslow2
+; move.w #-128,d2
+;okslow2
+
+; tst.b fire
+; beq.s noturnposs
+
+ btst #1,$d(a6)
+ sne d3
+ beq.s notleft
+ move.w #80,d2
+ tst.w d1
+ bge.s notleft
+ moveq #0,d1
+notleft
+
+ btst #1,$c(a6)
+ sne d4
+ beq.s notright
+ move.w #-80,d2
+ tst.w d1
+ ble.s notright
+ moveq #0,d1
+notright
+
+noturnposs:
+
+ add.w d2,d1
+
+ move.w d1,angspd
+ add.w d1,d0
+ and.w #8191,d0
+ move.w d0,angpos
+ rts
+
+*****************************************************
+********** WALL STUFF *******************************
+
+ include "AB3:source/wallroutine3"
+
+*****************************************************
+
+ include "ab3:source/ObjectMove"
+
+pastdata:
+***********************************
+* This routine animates brightnesses.
+
+ 
+liftpt: dc.l liftanimtab
+
+brightpt:
+ dc.l brightanimtab
+
+liftanim:
+ rts
+
+******************************
+ include "ab3:level1/Anims"
+******************************
+
+rotanimpt: dc.w 0
+xradd: dc.w 5
+yradd: dc.w 8
+xrpos: dc.w 320
+yrpos: dc.w 320
+
+rotanim:
+ rts
+ 
+option:
+ dc.w 0
+
+******************************************
+* floor polygon
+
+itsafloordraw:
+
+* If D0 =1 then its a floor otherwise (=2) it's
+* a roof.
+
+ move.w #0,above
+ move.w (a0)+,d6	; ypos of poly
+ 
+ move.w leftclip(pc),d7
+ cmp.w rightclip(pc),d7
+ bge.s dontdrawreturn
+ 
+ sub.w flooryoff,d6
+ bgt.s below
+ blt.s aboveplayer
+dontdrawreturn:
+ move.w (a0)+,d6	; sides-1
+ add.w d6,d6
+ add.w d6,a0
+ add.w #4+6,a0
+ rts
+aboveplayer:
+ cmp.w #2,d0
+ bne.s dontdrawreturn
+ move.w #1,d0
+ move.w d0,above
+ neg.w d6
+below:
+ cmp.w #1,d0
+ bne.s dontdrawreturn
+ move.w d6,distaddr
+ muls #256,d6
+ move.l d6,ypos
+ divs #40,d6		; zpos of bottom
+			; visible line
+ move.w d6,minz
+ 
+ move.w #80,top
+ move.w #-1,bottom
+ move.w #0,drawit
+ move.l #Rotated,a1
+ move.l #OnScreen,a2
+ move.w (a0)+,d7	; no of sides
+sideloop:
+ move.w minz,d6
+ move.w (a0)+,d1
+ move.w (a0),d3
+ move.w 6(a1,d1*8),d4	;first z
+ cmp.w d6,d4
+ bgt firstinfront
+ move.w 6(a1,d3*8),d5	; sec z
+ cmp.w d6,d5
+ ble bothbehind
+** line must be on left and partially behind.
+ sub.w d5,d4
+ move.l (a1,d1*8),d0
+ sub.l (a1,d3*8),d0
+ sub.w d5,d6
+ divs d4,d0
+ muls d6,d0	; new x coord
+
+ add.l (a1,d3*8),d0
+ move.w minz,d4
+ move.w (a2,d3*2),d2
+ divs d4,d0
+ add.w #47,d0
+ move.l ypos,d3
+ divs d5,d3
+ move.w #40,d1 
+ bra lineclipped
+
+firstinfront:
+ move.w 6(a1,d3*8),d5	; sec z
+ cmp.w d6,d5
+ bgt bothinfront
+** line must be on right and partially behind.
+ sub.w d4,d5	; dz
+ move.l (a1,d3*8),d2
+ sub.l (a1,d1*8),d2	; dx
+ sub.w d4,d6
+ divs d5,d2
+ muls d6,d2	; new x coord
+ add.l (a1,d1*8),d2
+ move.w minz,d5
+ move.w (a2,d1*2),d0
+ divs d5,d2
+ add.w #47,d2
+ move.l ypos,d1
+ divs d4,d1
+ move.w #40,d3 
+ bra lineclipped
+
+bothinfront:
+
+* Also, usefully enough, both are on-screen
+* so no bottom clipping is needed.
+
+ move.w (a2,d1*2),d0	; first x
+ move.w (a2,d3*2),d2	; second x
+ move.l ypos,d1
+ move.l d1,d3
+ divs d4,d1		; first y
+ divs d5,d3		; second y
+lineclipped:
+ move.l #rightsidetab,a3
+ cmp.w d1,d3
+ beq lineflat
+ bgt lineonright
+ move.l #leftsidetab,a3
+ exg d1,d3
+ exg d0,d2
+ st drawit
+
+ lea (a3,d1*2),a3
+ 
+ cmp.w top(pc),d1
+ bge.s .nonewtop
+ move.w d1,top
+.nonewtop:
+ cmp.w bottom(pc),d3
+ ble.s .nonewbot
+ move.w d3,bottom
+.nonewbot:
+
+ sub.w d1,d3	; dy
+ sub.w d0,d2	; dx
+ 
+ blt .linegoingleft
+ sub.w #1,d0
+ moveq #0,d6
+ sub.w d3,d2
+ blt.s .noco
+.makeco
+ addq #1,d6
+ sub.w d3,d2
+ bge.s .makeco
+.noco
+ add.w d3,d2
+ 
+ move.w d3,d4
+ move.w d3,d5
+ subq #1,d5
+ move.w d6,d1
+ addq #1,d1
+
+.pixlopright:
+ move.w d0,(a3)+
+ sub.w d2,d4
+ bge.s .nobigstep
+ add.w d1,d0
+ add.w d3,d4
+ dbra d5,.pixlopright
+ bra lineflat
+.nobigstep
+ add.w d6,d0
+ dbra d5,.pixlopright
+ bra lineflat
+
+.linegoingleft:
+ sub.w #1,d0
+ neg.w d2
+ moveq #0,d6
+ sub.w d3,d2
+ blt.s .nocol
+.makecol
+ addq #1,d6
+ sub.w d3,d2
+ bge.s .makecol
+.nocol
+ add.w d3,d2
+ 
+ move.w d3,d4
+ move.w d3,d5
+ subq #1,d5
+ move.w d6,d1
+ addq #1,d1
+
+.pixlopleft:
+ sub.w d2,d4
+ bge.s .nobigstepl
+ sub.w d1,d0
+ add.w d3,d4
+ move.w d0,(a3)+
+ dbra d5,.pixlopleft
+ bra lineflat
+ 
+.nobigstepl
+ sub.w d6,d0
+ move.w d0,(a3)+
+ dbra d5,.pixlopleft
+ bra lineflat
+ 
+lineonright:
+
+ st drawit
+
+ lea (a3,d1*2),a3
+ 
+ cmp.w top(pc),d1
+ bge.s .nonewtop
+ move.w d1,top
+.nonewtop:
+ cmp.w bottom(pc),d3
+ ble.s .nonewbot
+ move.w d3,bottom
+.nonewbot:
+
+ sub.w d1,d3	; dy
+ sub.w d0,d2	; dx
+ blt .linegoingleft
+ addq #1,d0
+ moveq #0,d6
+ sub.w d3,d2
+ blt.s .noco
+.makeco
+ addq #1,d6
+ sub.w d3,d2
+ bge.s .makeco
+.noco
+ add.w d3,d2
+ 
+ move.w d3,d4
+ move.w d3,d5
+ subq #1,d5
+ move.w d6,d1
+ addq #1,d1
+
+.pixlopright:
+ sub.w d2,d4
+ bge.s .nobigstep
+ add.w d1,d0
+ add.w d3,d4
+ move.w d0,(a3)+
+ dbra d5,.pixlopright
+ bra lineflat
+ 
+.nobigstep
+ add.w d6,d0
+ move.w d0,(a3)+
+ dbra d5,.pixlopright
+ bra lineflat
+
+.linegoingleft:
+ addq #1,d0
+ neg.w d2
+ moveq #0,d6
+ sub.w d3,d2
+ blt.s .nocol
+.makecol
+ addq #1,d6
+ sub.w d3,d2
+ bge.s .makecol
+.nocol
+ add.w d3,d2
+
+ move.w d3,d4
+ move.w d3,d5
+ subq #1,d5
+ move.w d6,d1
+ addq #1,d1
+
+.pixlopleft:
+ move.w d0,(a3)+
+ sub.w d2,d4
+ bge.s .nobigstepl
+ sub.w d1,d0
+ add.w d3,d4
+ dbra d5,.pixlopleft
+ bra lineflat
+ 
+.nobigstepl
+ sub.w d6,d0
+ dbra d5,.pixlopleft
+
+lineflat:
+ 
+bothbehind:
+ dbra d7,sideloop
+
+pastsides:
+
+ addq #2,a0
+ 
+ move.w #104*4,linedir
+ move.l frompt,a6
+ add.l #104*4*41,a6
+ move.w (a0)+,scaleval
+ move.w (a0)+,whichtile
+ move.w (a0)+,d6
+ add.w ZoneBright,d6
+ move.w d6,lighttype
+ move.w above(pc),d6
+ beq groundfloor
+* on ceiling:
+ move.w #-104*4,linedir
+ suba.w #104*4,a6
+groundfloor:
+
+ move.w xoff,d6
+ move.w zoff,d7
+ move.w scaleval,d3
+ move.l scaleprogfrom(pc,d3.w*4),scaleprog
+ tst.w d3
+ beq.s .samescale
+ bgt.s .scaledown
+ neg.w d3
+ asr.l d3,d7
+ asr.l d3,d6
+ bra.s .samescale
+.scaledown:
+ asl.l d3,d6
+ asl.l d3,d7
+.samescale
+ asl.w #8,d7
+ move.w d6,sxoff
+ move.w d7,szoff
+ bra pastscale 
+
+ asr.l #3,d1
+ asr.l #3,d2
+ asr.l #2,d1
+ asr.l #2,d2
+ asr.l #1,d1
+ asr.l #1,d2
+scaleprogfrom
+ nop
+ nop
+ asl.l #1,d1
+ asl.l #1,d2
+ asl.l #2,d1
+ asl.l #2,d2
+ asl.l #3,d1
+ asl.l #3,d2
+
+drawit: dc.w 0
+top: dc.w 0
+bottom: dc.w 0
+ypos: dc.l 0
+nfloors: dc.w 0
+lighttype: dc.w 0
+above: dc.w 0 
+linedir: dc.w 0
+distaddr: dc.w 0
+ 
+minz: dc.w 0
+leftsidetab:
+ ds.w 80
+rightsidetab:
+ ds.w 80
+leftsideclip:
+ ds.w 80
+rightsideclip:
+ ds.w 80
+
+movespd: dc.w 0
+largespd: dc.l 0
+
+pastscale:
+
+ tst.b drawit(pc)
+ beq dontdrawfloor
+
+ move.l a0,-(a7)
+
+ move.l #leftsidetab,a4
+ move.w top(pc),d1
+ lea (a4,d1*2),a4
+ move.l #dists,a2
+ move.w distaddr,d0
+ asl.w #5,d0
+ adda.w d0,a2
+ lea (a2,d1*2),a2
+ move.w bottom(pc),d7
+ sub.w d1,d7
+ blt predontdrawfloor
+ muls linedir,d1
+ add.l d1,a6
+ move.l #floorscalecols,a1
+dofloor:
+ move.w (a2)+,d0
+ move.w leftclip(pc),d3
+ move.w rightclip(pc),d4
+ move.w rightsidetab-leftsidetab(a4),d2
+ addq #1,d2
+ cmp.w d3,d2
+ ble.s nodrawline
+ cmp.w d4,d2
+ ble.s noclipright
+ move.w d4,d2
+noclipright:
+ move.w (a4),d1
+ cmp.w d4,d1
+ bge.s nodrawline
+ cmp.w d3,d1
+ bge.s noclipleft
+ move.w d3,d1
+noclipleft:
+ cmp.w d1,d2
+ ble.s nodrawline
+
+ move.w d1,leftedge
+ move.w d2,rightedge
+ 
+ move.l a6,a3
+ movem.l d7/a2/a4,-(a7)
+*****************************************
+* Use Floorline for patterned floor, SimpleFloorLine for plain+fast.
+; cmp.b #'t',option+1
+; beq.s texturedfloor
+; bsr SimpleFloorLine
+; bra simplefloor
+;texturedfloor:
+ bsr FloorLine
+;simplefloor:
+*****************************************
+ movem.l (a7)+,d7/a2/a4
+nodrawline
+ adda.w linedir(pc),a6
+ addq #2,a4
+ subq #1,d7
+ bgt dofloor
+
+predontdrawfloor
+ move.l (a7)+,a0
+
+dontdrawfloor:
+ rts
+
+dists:
+ incbin "floordists"
+
+
+
+***************************
+* Right then, time for the floor
+* routine...
+* For test purposes, give it
+* a3 = point to screen
+* d0= z distance away
+* and sinval+cosval must be set up.
+***************************
+
+leftedge: dc.w 0
+rightedge: dc.w 0
+
+SimpleFloorLine:
+
+ move.w lighttype,d1
+ move.w d0,d2
+ asr.w #6,d2
+ add.w d2,d1
+ add.w #20,d1
+ move.l simplefloorbright(pc,d1.w*4),a1
+ bra pastsimplefloorbright
+ dc.l floorscalecols
+ dc.l floorscalecols
+ dc.l floorscalecols
+ dc.l floorscalecols
+ dc.l floorscalecols
+ dc.l floorscalecols
+ dc.l floorscalecols
+ dc.l floorscalecols
+ dc.l floorscalecols
+ dc.l floorscalecols
+ dc.l floorscalecols
+simplefloorbright:
+ dc.l floorscalecols+8192*0
+ dc.l floorscalecols+8192*1
+ dc.l floorscalecols+8192*1
+ dc.l floorscalecols+8192*2
+ dc.l floorscalecols+8192*2
+ dc.l floorscalecols+8192*3
+ dc.l floorscalecols+8192*3
+ dc.l floorscalecols+8192*4
+ dc.l floorscalecols+8192*4
+ dc.l floorscalecols+8192*5
+ dc.l floorscalecols+8192*5
+ dc.l floorscalecols+8192*6
+ dc.l floorscalecols+8192*6
+ dc.l floorscalecols+8192*7
+ dc.l floorscalecols+8192*7
+ dc.l floorscalecols+8192*8
+ dc.l floorscalecols+8192*8
+ dc.l floorscalecols+8192*9
+ dc.l floorscalecols+8192*9
+ dc.l floorscalecols+8192*10
+ dc.l floorscalecols+8192*10
+ dc.l floorscalecols+8192*11
+ dc.l floorscalecols+8192*11
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+ dc.l floorscalecols+8192*12
+
+simplepals:
+ dc.w $af
+ dc.w $ff
+ dc.w $ddd
+ dc.w $8f0
+ dc.w $ff0
+ dc.w $0
+
+pastsimplefloorbright:
+
+ CACHE_OFF d2
+
+ move.w whichtile,d1
+ move.w d1,d0
+ and.w #2,d0
+ asr.w #6,d1
+ or.w d1,d0
+ move.w simplepals(pc,d0.w),d0
+ 
+ move.w (a1,d0.w*2),d0; colour on this line
+ move.w leftedge(pc),d1
+ move.l #doacrossline,a1
+ move.w rightedge(pc),d2
+ sub.w d1,d2
+ lea (a1,d1.w*4),a1
+ move.w (a1,d2.w*4),d4
+ move.w #$4e75,(a1,d2.w*4)
+
+ jsr (a1)
+ move.w d4,(a1,d2.w*4)
+
+ CACHE_ON d2
+
+ rts
+ 
+storeit: dc.l 0
+
+doacrossline:
+val SET 0
+ REPT 32
+ move.w d0,val(a3)
+val SET val+4
+ ENDR
+val SET val+4
+ REPT 32
+ move.w d0,val(a3)
+val SET val+4
+ ENDR
+val SET val+4
+ REPT 32
+ move.w d0,val(a3)
+val SET val+4
+ ENDR
+ rts
+
+
+FloorLine:
+
+ move.l #floortile,a0
+ adda.w whichtile,a0
+ move.w lighttype,d1
+ 
+ move.w d0,d2
+ asr.w #6,d2
+ add.w d2,d1
+ add.w #5,d1
+ bge.s fixedbright
+ moveq #0,d1
+fixedbright:
+ cmp.w #28,d1
+ ble.s smallbright
+ move.w #28,d1
+smallbright:
+ move.l floorbright(pc,d1*4),a1
+ bra pastfloorbright
+ 
+floorbright:
+ dc.l floorscalecols+512*0
+ dc.l floorscalecols+512*1
+ dc.l floorscalecols+512*1
+ dc.l floorscalecols+512*2
+ dc.l floorscalecols+512*2
+ 
+ dc.l floorscalecols+512*3
+ dc.l floorscalecols+512*3
+ dc.l floorscalecols+512*4
+ dc.l floorscalecols+512*4
+ dc.l floorscalecols+512*5
+ 
+ dc.l floorscalecols+512*5
+ dc.l floorscalecols+512*6
+ dc.l floorscalecols+512*6
+ dc.l floorscalecols+512*7
+ dc.l floorscalecols+512*7
+ 
+ dc.l floorscalecols+512*8
+ dc.l floorscalecols+512*8
+ dc.l floorscalecols+512*9
+ dc.l floorscalecols+512*9
+ dc.l floorscalecols+512*10
+ 
+ dc.l floorscalecols+512*10
+ dc.l floorscalecols+512*11
+ dc.l floorscalecols+512*11
+ dc.l floorscalecols+512*12
+ dc.l floorscalecols+512*12
+ 
+ dc.l floorscalecols+512*13
+ dc.l floorscalecols+512*13
+ dc.l floorscalecols+512*14
+ dc.l floorscalecols+512*14
+
+widthleft: dc.w 0
+scaleval: dc.w 0
+sxoff: dc.w 0
+szoff: dc.w 0
+xoff34: dc.w 0
+zoff34: dc.w 0
+scosval: dc.w 0
+ssinval: dc.w 0
+
+floorsetbright:
+ move.l #walltiles,a0
+
+pastfloorbright
+ move.w d0,d1
+ muls cosval(PC),d1	; change in x across whole width
+ move.w d0,d2
+ muls sinval(PC),d2	; change in z across whole width
+ neg.l d2
+scaleprog:
+ asr.l #1,d1
+ asr.l #1,d2
+
+ move.l d1,d3 ;	z cos
+ move.l d3,d6
+ move.l d3,d5
+ asr.l #1,d6
+ add.l d6,d3
+; asr.l #1,d3 ; *3/4
+ asr.l #1,d3
+
+ move.l d2,d4	; z sin
+ move.l d4,d6
+ asr.l #1,d6
+ add.l d4,d6
+; asr.l #1,d6
+ add.l d3,d4
+ neg.l d4	; start x
+ 
+ asr.l #1,d6	; zsin/2
+ sub.l d6,d5	; start z
+ 
+ add.l d1,d1
+ add.l d2,d2	
+ move.w d4,startsmoothx
+ move.w d5,startsmoothz
+ 
+ swap d4
+ asr.l #8,d5
+ move.w szoff,d6
+ add.w d6,d5
+ move.w sxoff,d6
+ add.w d6,d4
+ and.w #63,d4
+ and.w #63*256,d5
+ move.b d4,d5
+ ext.l d5
+ and.b #63,d5
+ lsl.w #2,d5	; position in block
+
+ asr.l #7,d1
+ 
+ asr.l #7,d2
+ move.w leftedge(pc),d6
+ beq.s nomultleft
+ 
+ move.l d1,d3
+ asr.l #6,d3
+ muls d6,d3
+ asl.l #6,d3
+ swap d3
+ asl.w #2,d3
+ add.b d3,d5
+
+ move.l d2,d3
+ asr.l #6,d3
+ muls d6,d3
+ asl.l #6,d3
+ swap d3
+ lsl.w #8,d3
+ lsl.w #2,d3
+ add.w d3,d5
+ 
+nomultleft:
+
+ move.w d1,a4
+ move.w d2,a5
+ asr.l #6,d2
+ and.w #%1111110000000000,d2
+ swap d1
+ asl.w #2,d1
+ 
+***********************************
+ asr.w #2,d1
+ asr.w #2,d2
+ add.w d1,d2
+ move.w #%11111100111111,d1
+ asr.w #2,d5
+ and.w d1,d5
+ swap d5
+ move.w startsmoothz,d5
+ swap d5
+ swap d2
+ move.w a5,d2
+ swap d2
+ 
+***********************************
+ 
+ move.w d6,a2
+ move.l d2,d6
+ add.w #256,d6
+ 
+ moveq #0,d0
+ 
+ tst.w a2
+ beq startatleftedge
+ 
+ move.w widthleft(pc),d4
+ 
+ move.w rightedge(pc),d3
+ 
+ cmp.w #31,a2
+ bgt.s notinfirststrip
+ lea (a3,a2.w*4),a3
+ cmp.w #32,d3
+ ble.s allinfirststrip
+ move.w #32,d7
+ sub.w a2,d7
+ sub.w #32,d3
+ bra intofirststrip
+
+allinfirststrip
+ sub.w a2,d3
+ move.w d3,d7
+ move.w #0,d4
+ bra allintofirst
+
+notinfirststrip:
+ sub.w #32,a2
+ sub.w #32,d3
+ adda.w #33*4,a3
+ cmp.w #31,a2
+ bgt.s notstartinsec
+ lea (a3,a2.w*4),a3
+ cmp.w #32,d3
+ ble.s allinsecstrip
+ move.w #32,d7
+ sub.w a2,d7
+ sub.w #32,d3
+ move.w d3,d4
+ dbra d7,acrossscrn2
+
+allinsecstrip
+ sub.w a2,d3
+ move.w d3,d7
+ move.w #0,d4
+ dbra d7,acrossscrn2
+ rts
+ 
+notstartinsec:
+ sub.w #32,a2
+ sub.w #32,d3
+ adda.w #33*4,a3
+ lea (a3,a2.w*4),a3
+ cmp.w #32,d3
+ ble.s allinthirdstrip
+ move.w #32,d7
+ sub.w a2,d7
+ sub.w #32,d3
+ move.w d3,d4
+ dbra d7,acrossscrn3
+ rts
+
+allinthirdstrip
+ sub.w a2,d3
+ move.w d3,d7
+ move.w #0,d4
+ dbra d7,acrossscrn3
+ rts
+
+startatleftedge:
+
+ move.w rightedge(pc),d3
+ sub.w a2,d3
+ 
+ move.w d3,d7
+ cmp.w #32,d7
+ ble.s .notoowide
+ move.w #32,d7
+.notoowide:
+ sub.w d7,d3
+intofirststrip:
+ move.w d3,d4
+allintofirst:
+
+ move.w startsmoothx,d3
+ dbra d7,acrossscrn
+ rts
+
+backbefore:
+ and.w d1,d5
+ move.b (a0,d5.w*4),d0
+ move.w (a1,d0.w*2),(a3)
+ addq #4,a3
+ add.w a4,d3
+ addx.l d6,d5
+ dbcs d7,acrossscrn
+ dbcc d7,backbefore
+ bra.s past1
+ 
+acrossscrn:
+ and.w d1,d5
+ move.b (a0,d5.w*4),d0
+ move.w (a1,d0.w*2),(a3)
+ addq #4,a3
+ add.w a4,d3
+ addx.l d2,d5
+ dbcs d7,acrossscrn
+ dbcc d7,backbefore
+past1:
+
+ move.w d4,d7
+ bne.s .notdoneyet
+ rts
+.notdoneyet:
+
+ cmp.w #32,d7
+ ble.s .notoowide
+ move.w #32,d7
+.notoowide
+ sub.w d7,d4  
+ addq #4,a3
+ 
+ dbra d7,acrossscrn2
+ rts
+
+backbefore2:
+ and.w d1,d5
+ move.b (a0,d5.w*4),d0
+ move.w (a1,d0.w*2),(a3)
+ addq #4,a3
+ add.w a4,d3
+ addx.l d6,d5
+ dbcs d7,acrossscrn2
+ dbcc d7,backbefore2
+ bra.s past2
+ 
+acrossscrn2:
+ and.w d1,d5
+ move.b (a0,d5.w*4),d0
+ move.w (a1,d0.w*2),(a3)
+ addq #4,a3
+ add.w a4,d3
+ addx.l d2,d5
+ dbcs d7,acrossscrn2
+ dbcc d7,backbefore2
+past2:
+  
+ move.w d4,d7
+ bne.s .notdoneyet
+ rts
+.notdoneyet:
+
+ cmp.w #32,d7
+ ble.s .notoowide
+ move.w #32,d7
+.notoowide
+ sub.w d7,d4
+
+ addq #4,a3
+ dbra d7,acrossscrn3
+ rts
+
+backbefore3:
+ and.w d1,d5
+ move.b (a0,d5.w*4),d0
+ move.w (a1,d0.w*2),(a3)
+ addq #4,a3
+ add.w a4,d3
+ addx.l d6,d5
+ dbcs d7,acrossscrn3
+ dbcc d7,backbefore3
+ rts
+ 
+acrossscrn3:
+ and.w d1,d5
+ move.b (a0,d5.w*4),d0
+ move.w (a1,d0.w*2),(a3)
+ addq #4,a3
+ add.w a4,d3
+ addx.l d2,d5
+ dbcs d7,acrossscrn3
+ dbcc d7,backbefore3
+past3:
+ 
+timetodie:
+ 
+ rts 
+
+startsmoothx: dc.w 0
+startsmoothz: dc.w 0
+
+********************************
+*
+ include "AB3:source/ObjDraw2"
+*
+********************************
+
+numframes:
+ dc.w 0
+
+Chan0inter:
+
+ move.w #$0010,$dff000+intreq
+
+ btst #7,$dff000+intreqrl
+ bne.s newsampbitl
+
+noneed:
+ 
+ rte
+newsampbitl:
+
+ movem.l d0-d7/a0-a6,-(a7)
+ move.w #$820f,$dff000+dmacon
+
+ move.w #$80,$dff000+intreq
+ 
+ move.l pos1,a0
+ move.l pos2,a1
+
+ move.l #tab,a2
+ adda.w audpos1,a2
+ 
+ move.l Aupt0,a3
+ move.l a3,$dff0a0
+ move.l Auback0,Aupt0
+ move.l a3,Auback0
+ 
+ move.l Auback0,a3
+ 
+ moveq #0,d0
+ moveq #0,d1
+ moveq #0,d2
+ moveq #0,d3
+ moveq #0,d4
+ moveq #0,d5
+ move.w #49,d7
+loop:
+ move.l (a0)+,d0
+ move.b (a1)+,d1
+ move.b (a1)+,d2
+ move.b (a1)+,d3
+ move.b (a1)+,d4
+ move.b (a2,d3.w),d5
+ swap d5
+ move.b (a2,d1.w),d5
+ asl.l #8,d5
+ move.b (a2,d2.w),d5
+ swap d5
+ move.b (a2,d4.w),d5
+ add.l d5,d0
+ move.l d0,(a3)+
+ dbra d7,loop
+ 
+ move.l pos1,a0
+ move.l pos2,a1
+
+ move.l Aupt1,a3
+ move.l a3,$dff0b0
+ move.l Auback1,Aupt1
+ move.l a3,Auback1
+
+ move.l #tab,a2
+ adda.w audpos2,a2
+ moveq #0,d0
+ moveq #0,d1
+ moveq #0,d2
+ moveq #0,d3
+ moveq #0,d4
+ moveq #0,d5
+ move.w #49,d7
+loop2:
+ move.l (a0)+,d0
+ move.b (a1)+,d1
+ move.b (a1)+,d2
+ move.b (a1)+,d3
+ move.b (a1)+,d4
+ move.b (a2,d3.w),d5
+ swap d5
+ move.b (a2,d1.w),d5
+ asl.l #8,d5
+ move.b (a2,d2.w),d5
+ swap d5
+ move.b (a2,d4.w),d5
+ add.l d5,d0
+ move.l d0,(a3)+
+ dbra d7,loop2
+ 
+ cmp.l Samp0end,a0
+ blt.s notoffendsamp1
+ move.l #bass,a0
+ move.l #bassend,Samp0end
+ tst.b backbeat
+ bne.s playbeat
+ move.l #empty,a0
+ move.l #emptyend,Samp0end
+playbeat:
+notoffendsamp1:
+
+ cmp.l Samp1end,a1
+ blt.s notoffendsamp2
+ move.l #empty,a1
+ move.l #emptyend,Samp1end
+notoffendsamp2:
+
+ move.l a0,pos1
+ move.l a1,pos2
+
+******************* Other two channels
+
+ move.l pos3,a0
+ move.l pos4,a1
+
+ move.l #tab,a2
+ adda.w audpos3,a2
+ 
+ move.l Aupt2,a3
+ move.l a3,$dff0d0
+ move.l Auback2,Aupt2
+ move.l a3,Auback2
+ 
+ moveq #0,d0
+ moveq #0,d1
+ moveq #0,d2
+ moveq #0,d3
+ moveq #0,d4
+ moveq #0,d5
+ move.w #49,d7
+loop3:
+ move.l (a0)+,d0
+ move.b (a1)+,d1
+ move.b (a1)+,d2
+ move.b (a1)+,d3
+ move.b (a1)+,d4
+ move.b (a2,d3.w),d5
+ swap d5
+ move.b (a2,d1.w),d5
+ asl.l #8,d5
+ move.b (a2,d2.w),d5
+ swap d5
+ move.b (a2,d4.w),d5
+ add.l d5,d0
+ move.l d0,(a3)+
+ dbra d7,loop3
+ 
+ move.l pos3,a0
+ move.l pos4,a1
+
+ move.l Aupt3,a3
+ move.l a3,$dff0c0
+ move.l Auback3,Aupt3
+ move.l a3,Auback3
+
+ move.l #tab,a2
+ adda.w audpos4,a2
+ moveq #0,d0
+ moveq #0,d1
+ moveq #0,d2
+ moveq #0,d3
+ moveq #0,d4
+ moveq #0,d5
+ move.w #49,d7
+loop4:
+ move.l (a0)+,d0
+ move.b (a1)+,d1
+ move.b (a1)+,d2
+ move.b (a1)+,d3
+ move.b (a1)+,d4
+ move.b (a2,d3.w),d5
+ swap d5
+ move.b (a2,d1.w),d5
+ asl.l #8,d5
+ move.b (a2,d2.w),d5
+ swap d5
+ move.b (a2,d4.w),d5
+ add.l d5,d0
+ move.l d0,(a3)+
+ dbra d7,loop4
+ 
+ cmp.l Samp2end,a0
+ blt.s notoffendsamp3
+ move.l #empty,a0
+ move.l #emptyend,Samp2end
+notoffendsamp3:
+
+ cmp.l Samp3end,a1
+ blt.s notoffendsamp4
+ move.l #empty,a1
+ move.l #emptyend,Samp3end
+notoffendsamp4:
+
+ move.l a0,pos3
+ move.l a1,pos4
+
+ 
+ movem.l (a7)+,d0-d7/a0-a6
+
+ rte
+ 
+backbeat: dc.w 0
+
+Samp0end: dc.l emptyend
+Samp1end: dc.l emptyend
+Samp2end: dc.l emptyend
+Samp3end: dc.l emptyend
+
+Aupt0: dc.l null
+Auback0: dc.l null+500
+Aupt2: dc.l null3
+Auback2: dc.l null3+500
+Aupt3: dc.l null4
+Auback3: dc.l null4+500
+Aupt1: dc.l null2
+Auback1: dc.l null2+500
+
+empty: ds.l 100
+emptyend:
+ 
+**************************************
+* I want a routine to calculate all the
+* info needed for the sound player to
+* work, given say position of noise, volume
+* and sample number.
+
+Samplenum: dc.w 0
+Noisex: dc.w 0
+Noisez: dc.w 0
+Noisevol: dc.w 0
+chanpick: dc.w 0
+ 
+MakeSomeNoise:
+
+ move.w Noisex,d1
+ muls d1,d1
+ move.w Noisez,d2
+ muls d2,d2
+ move.w #64,d3
+ moveq #1,d0
+ add.l d1,d2
+ beq pastcalc
+
+ move.w #31,d0
+.findhigh
+ btst d0,d2
+ bne .foundhigh
+ dbra d0,.findhigh
+.foundhigh
+ asr.w #1,d0
+ clr.l d3
+ bset d0,d3
+ move.l d3,d0
+
+ move.w d0,d3
+ muls d3,d3	; x*x
+ sub.l d2,d3	; x*x-a
+ asr.l #1,d3	; (x*x-a)/2
+ divs d0,d3	; (x*x-a)/2x
+ sub.w d3,d0	; second approx
+ bgt .stillnot0
+ move.w #1,d0
+.stillnot0
+
+ move.w d0,d3
+ muls d3,d3
+ sub.l d2,d3
+ asr.l #1,d3
+ divs d0,d3
+ sub.w d3,d0	; second approx
+ bgt .stillnot02
+ move.w #1,d0
+.stillnot02
+ 
+ move.w #64,d3
+ muls Noisevol,d3
+ divs d0,d3
+
+ cmp.w #64,d3
+ ble.s notooloud
+ move.w #64,d3
+notooloud:
+
+pastcalc:
+
+	; d3 contains volume of noise.
+	
+ move.w d3,d4
+ 
+ move.w d3,d2
+ muls Noisex,d2
+ divs d0,d2
+ 
+ bgt quietleft
+ add.w d2,d4
+ bra donequiet
+quietleft:
+ sub.w d2,d3
+donequiet:
+
+; d3=leftvol?
+; d4=rightvol?
+
+ neg.w d3
+ add.w #64,d3
+ neg.w d4
+ add.w #64,d4
+ 
+ move.l #SampleList,a3
+
+ tst.b chanpick
+ beq.s chan0
+ cmp.b #1,chan0
+ beq.s chan1
+ cmp.b #2,chanpick
+ beq chan2
+
+ move.w Samplenum,d0
+ move.l (a3,d0.w*8),a1
+ move.l 4(a3,d0.w*8),a2
+ 
+ tst.b notifplaying
+ beq.s .play
+ cmp.l Samp3end,a2
+ bne.s .play
+ rts
+.play
+ 
+ move.b d3,audpos3
+ move.b d4,audpos4
+ move.l a1,pos4
+ move.l a2,Samp3end
+
+ rts
+ 
+chan0: 
+ move.w Samplenum,d0
+ move.l (a3,d0.w*8),a1
+ move.l 4(a3,d0.w*8),a2
+ tst.b notifplaying
+ beq.s .play
+ cmp.l Samp0end,a2
+ bne.s .play
+ rts
+.play
+ move.l a1,pos1
+ move.l a2,Samp0end
+ 
+ rts
+ 
+chan1:
+ 
+ move.w Samplenum,d0
+ move.l (a3,d0.w*8),a1
+ move.l 4(a3,d0.w*8),a2
+ tst.b notifplaying
+ beq.s .play
+ cmp.l Samp1end,a2
+ bne.s .play
+ rts
+.play
+ move.b d3,audpos1
+ move.b d4,audpos2
+ move.l a1,pos2
+ move.l a2,Samp1end
+
+ rts
+
+chan2: 
+ move.w Samplenum,d0
+ move.l (a3,d0.w*8),a1
+ move.l 4(a3,d0.w*8),a2
+ tst.b notifplaying
+ beq.s .play
+ cmp.l Samp1end,a2
+ bne.s .play
+ rts
+.play
+ move.l a1,pos3
+ move.l a2,Samp2end
+ 
+ rts
+
+SampleList
+ dc.l Scream,EndScream
+ dc.l Shoot,EndShoot
+ dc.l Munch,EndMunch
+ dc.l PooGun,EndPooGun
+ dc.l Collect,EndCollect
+
+saveinters:  
+ dc.w 0
+
+z: dc.w 10
+
+notifplaying:
+ dc.w 0
+
+audpos1: dc.w 0
+audpos2: dc.w 0
+audpos3: dc.w 0
+audpos4: dc.w 0
+
+pos: dc.l 0
+
+pos1: dc.l Scream
+pos2: dc.l Scream
+pos3: dc.l empty
+pos4: dc.l empty
+
+Scream: incbin "ab3:sounds/Scream"
+ ds.w 100
+EndScream:
+bass: incbin "ab3:sounds/backbass+drum"
+bassend:
+Shoot: incbin "ab3:sounds/fire!"
+EndShoot:
+Munch: incbin "ab3:sounds/munch"
+EndMunch:
+PooGun: incbin "ab3:sounds/poogun"
+EndPooGun:
+Collect: incbin "ab3:sounds/collect"
+EndCollect:
+
+numtodo dc.w 0
+
+npt: dc.w 0
+
+tab:
+val SET 0
+ REPT 128
+ dc.b val
+val SET val+1
+ ENDR
+val SET -128
+ REPT 128
+ dc.b val
+val SET val+1
+ ENDR 
+
+ ds.b 256*64
+
+
+test: dc.l 0
+ ds.l 30
+
+ even
+scalecols: incbin "ab3:level1/bytepixpalscaled"
+ even
+floorscalecols: incbin "ab3:level1/floorpalscaled"
+ even
+walltiles:
+ incbin "ab3:level1/bytepixfile"
+ even
+floortile:
+ incbin "ab3:level1/floortile" 
+ even
+wallrouts:
+ incbin "2x2WallDraw" 
+ObjDrawRouts:
+ incbin "ObjDrawRoutstst"
+BackPicture:
+ incbin "backfile"
+EndBackPicture:
+
+drawpt: dc.l colbars2
+olddrawpt: dc.l colbars
+frompt: dc.l 0 
+ 
+SineTable:
+ incbin "bigsine"
+
+angpos: dc.w 0
+angspd: dc.w 0
+wallyoff: dc.w 0
+flooryoff: dc.w 0
+xoff: dc.l 0
+yoff: dc.l 0
+yvel: dc.l 0
+zoff: dc.l 0
+tyoff: dc.l 0
+
+liftanimtab:
+
+endliftanimtab:
+ 
+brightanimtab:
+ dcb.w 200,20
+ dc.w 5
+ dc.w 10,20
+ dc.w 5
+ dcb.w 30,20
+ dc.w 7,10,10,5,10,0,5,6,5,6,5,6,5,6,0
+ dcb.w 40,0
+ dc.w 1,2,3,2,3,2,3,2,3,2,3,2,3,0
+ dcb.w 300,0
+ dc.w 1,0,1,0,2,2,2,5,5,5,5,5,5,5,5,5,6,10
+ dc.w -1
+
+Roompt: dc.l 0
+OldRoompt: dc.l 0
+
+*****************************************************************
+ *
+ include "AB3:level1/Level1.s"
+ *
+*****************************************************************
+
+
+wallpt: dc.l 0
+floorpt: dc.l 0
+
+Rotated:
+ ds.l 800 
+ObjRotated:
+ ds.l 800
+
+OnScreen:
+ ds.l 800 
+ 
+startwait: dc.w 0
+endwait: dc.w 0
+
+Faces: incbin "faces2raw"
+ 
+ SECTION ffff,CODE_C
+
+null: ds.w 500
+null2: ds.w 500
+null3: ds.w 500
+null4: ds.w 500
+
+bigfield:                    ; Start of our copper list.
+
+ dc.w intreq,$8011
+ dc.w $1fc,$3
+ dc.w diwstart
+winstart: dc.w $2cb1
+ dc.w diwstop
+winstop: dc.w $2c91
+ dc.w ddfstart
+fetchstart: dc.w $48
+ dc.w ddfstop
+fetchstop: dc.w $88
+
+ dc.w bplcon0,$7201
+ dc.w bplcon1
+smoff:
+ dc.w $0
+
+ dc.w col0,0
+
+ dc.w $108
+modulo: dc.w -24
+ dc.w $10a,-24
+
+ dc.w bpl1pth
+pl1h
+ dc.w 0
+
+ dc.w bpl1ptl
+pl1l
+ dc.w 0
+
+ dc.w bpl2pth
+pl2h
+ dc.w 0
+
+ dc.w bpl2ptl
+pl2l
+ dc.w 0
+
+ dc.w bpl3pth
+pl3h
+ dc.w 0
+
+ dc.w bpl3ptl
+pl3l
+ dc.w 0
+
+ dc.w bpl4pth
+pl4h
+ dc.w 0
+
+ dc.w bpl4ptl
+pl4l
+ dc.w 0
+
+ dc.w bpl5pth
+pl5h
+ dc.w 0
+
+ dc.w bpl5ptl
+pl5l
+ dc.w 0
+
+ dc.w bpl6pth
+pl6h
+ dc.w 0
+
+ dc.w bpl6ptl
+pl6l
+ dc.w 0
+
+ dc.w bpl7pth
+pl7h
+ dc.w 0
+
+ dc.w bpl7ptl
+pl7l
+ dc.w 0
+
+
+ dc.w $1001,$ff00
+ dc.w intreq,$11
+yposcop:
+ dc.w $2a11,$fffe
+ dc.w $8a,0
+ 
+colbars:
+val SET $2a
+ dcb.l 104*82,$1fe0000
+ dc.w $106,$c40
+ 
+ dc.w $80
+pch1:
+ dc.w 0
+ dc.w $82
+pcl1:
+ dc.w 0 
+ dc.w $88,0
+ 
+ dc.w $ffff,$fffe       ; End copper list.
+
+old dc.l 0
+
+colbars2:
+val SET $2a
+ dcb.l 104*82,$1fe0000
+ 
+ dc.w $106,$c40
+ 
+ dc.w $80
+pch2:
+ dc.w 0
+ dc.w $82
+pcl2:
+ dc.w 0
+ 
+ dc.w $88,0
+ 
+ dc.w $ffff,$fffe       ; End copper list.
+
+ dc.w $0
+
+PanelCop:
+
+ dc.w bplcon0,0
+
+ dc.w $106,$c40
+ dc.w $10c,0
+ dc.w $10e,0
+
+ incbin "Panelcopcols"
+
+ dc.w $108,0
+ dc.w $10a,0
+
+ dc.w bpl1pth
+p1h
+ dc.w 0
+
+ dc.w bpl1ptl
+p1l
+ dc.w 0
+
+ dc.w bpl2pth
+p2h
+ dc.w 0
+
+ dc.w bpl2ptl
+p2l
+ dc.w 0
+
+ dc.w bpl3pth
+p3h
+ dc.w 0
+
+ dc.w bpl3ptl
+p3l
+ dc.w 0
+
+ dc.w bpl4pth
+p4h
+ dc.w 0
+ dc.w bpl4ptl
+p4l
+ dc.w 0
+ 
+ dc.w $80
+och:
+ dc.w 0
+ dc.w $82
+ocl:
+ dc.w 0
+ 
+ dc.w $cf01,$ff00
+ dc.w bplcon0,$4200
+
+ dc.w $f801,$ff00
+ dc.w col1,$50
+ dc.w $f901,$ff00
+ dc.w col1,$90
+ dc.w $fa01,$ff00
+ dc.w col1,$f0
+ dc.w $fb01,$ff00
+ dc.w col1,$f0
+ dc.w $fc01,$ff00
+ dc.w col1,$90
+ dc.w $fd01,$ff00
+ dc.w col1,$50
+
+ dc.w $fe01,$ff00
+ dc.w col1,$fff
+ 
+ dc.w $ffdf,$fffe
+ dc.w $a01,$ff00
+ dc.w bplcon0,$0
+ incbin "faces2cols"
+ dc.w bpl1pth
+f1h
+ dc.w 0
+
+ dc.w bpl1ptl
+f1l
+ dc.w 0
+
+ dc.w bpl2pth
+f2h
+ dc.w 0
+
+ dc.w bpl2ptl
+f2l
+ dc.w 0
+
+ dc.w bpl3pth
+f3h
+ dc.w 0
+
+ dc.w bpl3ptl
+f3l
+ dc.w 0
+
+ dc.w bpl4pth
+f4h
+ dc.w 0
+ dc.w bpl4ptl
+f4l
+ dc.w 0
+
+ dc.w bpl5pth
+f5h
+ dc.w 0
+ dc.w bpl5ptl
+f5l
+ dc.w 0
+ 
+ dc.w $0c01,$ff00
+ dc.w bplcon0,$5200
+  
+ dc.w $ffff,$fffe
+
+ cnop 0,64
+FacePlace:
+ ds.l 6*32*5
+
+
+********************************************
+* Stuff you don't have to worry about yet. *
+********************************************
+
+closeeverything:
+ move.l old,$dff080     ; Restore old copper list.
+ move.l old,d0
+ move.w d0,ocl
+ swap d0
+ move.w d0,och
+ move.w #$8020,dmacon(a6)
+ move.w #$f,dmacon(a6)
+ move.l saveit,$6c
+ move.w saveinters,d0
+ or.w #$c000,d0
+ move.w d0,intena(a6)
+ clr.w $dff0a8
+ clr.w $dff0b8
+ clr.w $dff0c8
+ clr.w $dff0d8
+ rte
+
+stuff:
+ move.l 4.w,a6          ; Get EXECBASE.
+ lea gfxname(PC),a1     ; Point to 'graphics.library' string.
+ moveq #0,d0            ; Ignore version number.
+ jsr OpenLib(a6)        ; Open the library.
+ move.l d0,a1           ; Store library address.
+ move.l 38(a1),old      ; Store workbench copper address.
+ move.l 4.w,a6          ; Get EXECBASE again.	
+ jsr CloseLib(a6)       ; Close the library.
+
+ jmp endstuff
+
+gfxname dc.b "graphics.library",0
+
+ cnop 0,64
+
+Panel:
+ incbin "PanelRaw"
+
+scrntab:
+ ds.b 16
+val SET 32
+ REPT 96
+ dc.b val,val,val
+val SET val+1
+ ENDR
+ ds.b 16
+
+ cnop 0,64
+scrn:
+
+ dcb.l 8,$33333333
+ dc.l 0
+ dc.l 0
+ 
+ dcb.l 8,$0f0f0f0f
+ dc.l 0
+ dc.l 0
+
+ dcb.l 8,$00ff00ff
+ dc.l 0
+ dc.l 0
+ 
+ dcb.l 8,$0000ffff
+ dc.l 0
+ dc.l 0
+ 
+ dc.l 0,-1,0,-1,0,-1,0,-1
+ dc.l 0
+ dc.l 0
+ 
+ dc.l -1,-1,0,0,-1,-1,0,0
+ dc.l 0
+ dc.l 0
+ 
+ dc.l 0,0,-1,-1,-1,-1,-1,-1
+ dc.l 0
+ dc.l 0
+ 
+
+

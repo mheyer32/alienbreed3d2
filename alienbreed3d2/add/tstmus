@@ -1,0 +1,239 @@
+
+ section scrn,code
+
+
+INTREQ	equ	$09C
+INTENA	equ	$09A
+INTENAR	equ	$01C
+DMACON	equ	$096
+
+SERPER	equ	$032
+SERDATR	equ	$018
+SERDAT	equ	$030
+vhposr		equ $006	
+vhposrl		equ $007 
+
+bltcon0		equ $40 
+bltcon1		equ $42
+bltcpt		equ $48
+bltbpt		equ $4c
+bltapt		equ $50
+spr0ctl		equ $142
+spr1ctl		equ $14a
+spr2ctl		equ $152
+spr3ctl		equ $15a
+spr4ctl		equ $162
+spr5ctl		equ $16a
+spr6ctl		equ $172
+spr7ctl		equ $17a
+spr0pos		equ $140
+spr1pos		equ $148
+spr2pos		equ $150
+spr3pos		equ $158
+spr4pos		equ $160
+spr5pos		equ $168
+spr6pos		equ $170
+spr7pos		equ $178
+bltdpt     	equ $54
+bltafwm		equ $44
+bltalwm		equ $46
+bltsize     	equ $58
+bltcmod     	equ $60
+bltbmod     	equ $62
+bltamod     	equ $64
+bltdmod     	equ $66
+diwstart        equ $8e         ; Screen hardware registers.
+diwstop         equ $90
+ddfstart        equ $92
+ddfstop         equ $94
+bplcon0         equ $100
+bplcon1         equ $102
+col0            equ $180
+col1            equ $182
+col2		equ $184
+col3		equ $186
+col4		equ $188
+col5		equ $18a
+col6		equ $18c
+col7		equ $18e
+col8            equ $190
+col9            equ $192
+col10           equ $194
+dmacon		equ $96
+dmaconr		equ $002
+intenar		equ $01c
+intena		equ $09a
+intreq		equ $09c
+intreqr		equ $01e
+intreqrl	equ $01f
+bpl1pth         equ $e0
+bpl1ptl         equ $e2
+bpl2pth		equ $e4
+bpl2ptl		equ $e6
+bpl3pth		equ $e8
+bpl3ptl		equ $ea
+bpl4pth		equ $ec
+bpl4ptl		equ $ee
+bpl5pth		equ $f0
+bpl5ptl		equ $f2
+bpl6pth		equ $f4
+bpl6ptl		equ $f6
+bpl7pth		equ $f8
+bpl7ptl		equ $fa
+bpl8pth		equ $fc
+bpl8ptl		equ $fe
+spr0pth		equ $120
+spr0ptl		equ $122
+spr1pth		equ $124
+spr1ptl		equ $126
+spr2pth		equ $128
+spr2ptl		equ $12a
+spr3pth		equ $12c
+spr3ptl		equ $12e
+spr4pth		equ $130
+spr4ptl		equ $132
+spr5pth		equ $134
+spr5ptl		equ $136
+spr6pth		equ $138
+spr6ptl		equ $13a
+spr7pth		equ $13c
+spr7ptl		equ $13e
+
+
+
+stt:
+
+ jsr stuff
+
+ move.w #$20,$dff1dc
+ move.l #blankcop,$dff080
+
+ jsr _InitPlayer
+ 
+ move.l #MUSNAME,a0
+ jsr _LoadModule
+ move.l d0,MUSADDR
+ 
+ move.l d0,a0
+ jsr _InitModule
+
+ move.l MUSADDR,a0
+ jsr _PlayModule
+  
+wt:
+ btst #6,$bfe001
+ bne.s wt
+ 
+ jsr _StopPlayer
+ 
+ jsr _RemPlayer
+ 
+ move.l MUSADDR,a0
+ jsr _UnLoadModule
+ 
+ move.l old,$dff080
+ move.w #$f8e,$dff1dc
+ 	
+ rts
+
+MUSADDR: dc.l 0
+MUSNAME: dc.b 'ab3:sounds/abreed3d.med',0
+
+ even
+
+ include 'ab3:source/loadmod.a'
+ include 'ab3:source/proplayer.a'
+
+stuff:
+
+	Lea	gfxname(pc),a1	
+	Moveq.l	#0,d0
+	Move.l	$4.w,a6	
+	Jsr	-$228(a6)
+	Move.l 	d0,gfxbase
+	Move.l	d0,a6				Use As Base Reg
+	Move.l	34(a6),oldview
+	move.l 38(a6),old
+	rts
+
+oldview: dc.l 0
+old: dc.l 0
+gfxbase: dc.l 0
+
+gfxname dc.b "graphics.library",0
+ even
+
+ section blah,code_c
+
+blankcop:
+
+ dc.w diwstart,$2c81    ; Top left corner of screen.
+ dc.w diwstop,$2cc1     ; Bottom right corner of screen.
+ dc.w ddfstart,$38      ; Data fetch start.
+ dc.w ddfstop,$b8       ; Data fetch stop.
+
+ dc.w bplcon0,$6201
+ dc.w bplcon1
+ dc.w $0
+ 
+ dc.w $106,$c40
+ 
+TITLEPALCOP:
+val SET $180
+ REPT 32
+ dc.w val,0
+val SET val+2
+ ENDR 
+ dc.w $106,$2c40
+val SET $180
+ REPT 32
+ dc.w val,0
+val SET val+2
+ ENDR
+
+ dc.w $108,0
+ dc.w $10a,0
+
+ dc.w bpl1ptl
+ts1l:
+ dc.w 0
+ dc.w bpl1pth
+ts1h:
+ dc.w 0
+
+ dc.w bpl2ptl
+ts2l:
+ dc.w 0
+ dc.w bpl2pth
+ts2h:
+ dc.w 0
+ 
+ dc.w bpl3ptl
+ts3l:
+ dc.w 0
+ dc.w bpl3pth
+ts3h:
+ dc.w 0
+ 
+ dc.w bpl4ptl
+ts4l:
+ dc.w 0
+ dc.w bpl4pth
+ts4h:
+ dc.w 0
+ 
+ dc.w bpl5ptl
+ts5l:
+ dc.w 0
+ dc.w bpl5pth
+ts5h:
+ dc.w 0
+
+ dc.w bpl6ptl
+ts6l:
+ dc.w 0
+ dc.w bpl6pth
+ts6h:
+ dc.w 0
+
+ dc.w $ffff,$fffe

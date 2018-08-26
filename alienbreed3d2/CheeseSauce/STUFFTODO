@@ -1,0 +1,70 @@
+Things left to do on this game of mine:
+=======================================
+
+1.	Completing levels
+	I need to make the levels completable ie declaring a 'finish' zone in the level editor.
+	NEEDS:
+	New button on editorbuttons
+	Code in level editor (small)
+	Code in game (small)
+
+2.	In-Game text scroll.
+	I need to make certain objects produce a scrolly message along the bottom of the screen.
+	NEEDS:
+	Code in game for scrolling text
+	Make large screen slightly smaller (8 pixels shorter) to accomodate.
+	Make border picture correspondingly 8 pixels shorter.
+	Code in level editor for assigning text to an object/alien
+	
+3.	Weapons.
+	I need 8 more weapons for the game.
+	NEEDS:
+	8 sets of GFX in vector form with firing anims and on-floor views
+	Up to 8 bullet types with graphics and specifications in game linker.
+	Ammo packs for weapons (possibly two sizes for some, and backpacks of ammo)
+
+4.	Aliens
+	I need to convert and use the rest of the aliens.
+	NEEDS:
+	Specifications in the game linker and graphics from Mike.
+	Some vector aliens (simplish) from Charles.
+
+5.	Impact from alien guns
+	I need to make the player react to being shot.
+	NEEDS:
+	Code for making the player recieve an impulse in x,y and z directions
+	Make the player uncontrollable and frictionless in the air.
+
+6.	Walking sounds
+	I need to be able to specify the sound effects created by walking on the various
+	floors.
+	NEEDS:
+	Last 3 sound effect numbers undefinable in game linker.
+	Code in game for looking up the appropriate value.
+	Code in linker/leved for assigning/using sound effects for each type of floor tile AND one for
+	in water too. (three for each floor tile for different nasties etc).
+
+7.	Asking for insertion of disks.
+	I need to make the game queue requests for files, ask for each disk to be inserted and when
+	flushed, load all files and place addresses/lengths in places desired.
+	NEEDS:
+	code in game:
+		1. All file requests are queued: each is stored with POINTER TO NAME, POINTER TO START ADDRESS
+		STORE, POINTER TO LENGTH STORE.
+		2. Call to FLUSHDISKQUEUE
+		3. FLUSHDISKQUEUE tries to load each file. If it succeeds, it decompresses if necessary and 
+		stores the start address and length of the file in the addresses stored along with the name
+		pointer.
+		
+8.	Saving game to disk.
+	I need to allow the player to load/save his game to disk.
+	NEEDS:
+		Code to replace workbench screen and produce requester for player to select a filename.
+		Code to calculate file and save/load to/from disk.
+	
+
+
+
+
+
+

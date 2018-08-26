@@ -1,0 +1,143 @@
+
+INTUITION_REV	equ	31		v1.1
+GRAPHICS_REV	equ	31		v1.1
+
+_IntuitionBase: dc.l 0
+_GfxBase: dc.l 0
+MyScreen: dc.l 0
+MyNewScreen	dc.w	0,0		left, top
+		dc.w	320,256		width, height
+		dc.w	8		depth
+		dc.b	0,1		pens
+		dc.w	0		viewmodes
+		dc.w	CUSTOMBITMAP+CUSTOMSCREEN+SCREENQUIET	type
+		dc.l	MyFont		font
+		dc.l	screen_title	title
+		dc.l	0		gadgets
+		dc.l	MyBitmapX	bitmap
+
+* my font definition
+MyFont	dc.l	font_name
+	dc.w	TOPAZ_SIXTY
+	dc.b	FS_NORMAL
+	dc.b	FPF_ROMFONT
+	
+MyBitmapX:
+	dc.w 40
+	dc.w 256
+	dc.b 0
+	dc.b 8
+	dc.w 0
+	ds.l 8
+
+MyBitmapY:
+	dc.w 40
+	dc.w 256
+	dc.b 0
+	dc.b 8
+	dc.w 0
+	ds.l 8
+	
+screen_title:
+ dc.b "Honest, this is really going to work. NOT.",0
+
+int_name	INTNAME
+graf_name	GRAFNAME
+hello_message	dc.b	'Hello World'
+
+* these are C strings, so have to be null terminated
+font_name	dc.b	'topaz.font',0
+window_title	dc.b	'A Simple Window',0
+
+
+
+BMPtr: dc.l MyBitmapX
+BMPtr2: dc.l MyBitmapY
+	
+SCRNDRAWPT:
+ScreenXAddr: dc.l 0
+SCRNSHOWPT:
+ScreenYAddr: dc.l 0
+
+
+Open256Screen:
+
+	move.l #MyBitmapX,BMPtr
+	move.l #MyBitmapY,BMPtr2
+
+;	move.l #2,d1
+;	move.l #10240*8,d0
+;	move.l 4.w,a6
+;	jsr -198(a6)
+	move.l #scrn,d0
+	move.l d0,ScreenXAddr
+	
+	lea MyBitmapX+8,a0
+	
+	move.l d0,(a0)+
+	add.l #10240,d0
+	move.l d0,(a0)+
+	add.l #10240,d0
+	move.l d0,(a0)+
+	add.l #10240,d0
+	move.l d0,(a0)+
+	add.l #10240,d0
+	move.l d0,(a0)+
+	add.l #10240,d0
+	move.l d0,(a0)+
+	add.l #10240,d0
+	move.l d0,(a0)+
+	add.l #10240,d0
+	move.l d0,(a0)+
+
+;	move.l #2,d1
+;	move.l #10240*8,d0
+;	move.l 4.w,a6
+;	jsr -198(a6)
+	move.l #scrn2,d0
+	move.l d0,ScreenYAddr
+
+	lea MyBitmapY+8,a0
+	
+	move.l d0,(a0)+
+	add.l #10240,d0
+	move.l d0,(a0)+
+	add.l #10240,d0
+	move.l d0,(a0)+
+	add.l #10240,d0
+	move.l d0,(a0)+
+	add.l #10240,d0
+	move.l d0,(a0)+
+	add.l #10240,d0
+	move.l d0,(a0)+
+	add.l #10240,d0
+	move.l d0,(a0)+
+	add.l #10240,d0
+	move.l d0,(a0)+
+
+	moveq	#INTUITION_REV,d0	version
+	lea	int_name(pc),a1
+	CALLEXEC OpenLibrary
+	tst.l	d0
+;	beq	exit_false		if failed then quit
+	move.l	d0,_IntuitionBase	else save the pointer
+
+	moveq	#GRAPHICS_REV,d0
+	lea	graf_name(pc),a1
+	CALLEXEC OpenLibrary
+	tst.l	d0
+;	beq	exit_closeint		if failed then close Int, exit
+	move.l	d0,_GfxBase
+
+	lea	MyNewScreen(pc),a0
+	
+	CALLINT	OpenScreen		open a screen
+	tst.l	d0
+;	beq	exit_closeall		if failed the close both, exit
+	move.l	d0,MyScreen
+
+	move.l d0,a0
+	lea RastPort(a0),a0
+	move.w #%100,rp_Flags(a0)
+
+ rts

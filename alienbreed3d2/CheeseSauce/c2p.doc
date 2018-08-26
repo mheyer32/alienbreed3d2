@@ -1,0 +1,50 @@
+This is a new chunky2planar routine.
+
+I decided to release it on internet to stop people from using 
+does ugly copper-chunky screens and 2x2 pixels 16 colors screens.
+
+Actually this source contains 2 different routines:
+They are both optimised for fastram.
+
+Version 1:
+
+Dithered-laced, 2x2 width pixels, 256 colors.
+Linear chunky buffer. 
+CPU time pr frame: 6-7 ms.
+Frame rate: 50 fps.
+
+Version 2:
+
+Dithered-laced, 2x2 width pixels, 256 colors.
+Linear chunky buffer.
+CPU time pr frame 5 ms.
+Frame rate: 35 fps.
+
+The last version has a lower frame rate, but it used less
+CPU time. This version should only be used on a little more 
+complexed rendering.
+
+
+BTW: Dithered-laced means that I use a sprite mask. This causes
+a ghosted look. I try to avoid that by scrolling the pixels back and
+forward 50 fps using 2 copperlist. I think it looks pretty good, but
+if you for any reason don't want the small lace flickering and want 
+to have a ghosted look instead, its not hard to remove the second 
+copperlist. :)
+
+
+The routine is is based on $dff102 scroll trick used in blitterscreen1.01.
+
+
+The blitterscreen assembler source WAS A BIG MESS 
+(probably the worst source I have ever seen, that's my opinion anyway! ;)
+
+So I decided to make a new routine. Which I hope is a little easyer to
+understand. :)
+
+
+
+Ludde! - Virtual Reality developer and Amiga-demo programer!
+         Equipment: A1200/030/50mhz, 22 MB Ram, 1.7 GB HD.
+         Email: ludvigp@ifi.uio.no
+

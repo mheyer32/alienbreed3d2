@@ -1,0 +1,27 @@
+HOW TO:
+
+			Use the Animation Frame Selection Screen
+			========================================
+			
+	The Animation Frame Selection screen gives a more graphically meaningful way of selecting
+	frames from your object graphic files.
+	
+	You will see an image (if one is defined for the graphic file you selected) in the top
+	left hand corner, and some buttons below:
+	
+	[ PREV FRAME ]	[ NEXT FRAME ]
+	
+		Clicking on these cycles through the frames defined in the graphic file.
+	
+	[ FLIP HORIZONTALLY ]
+	
+		clicking on this flips the graphic. Useful for re-using side-on movement frames
+		for both left and right movement.
+		
+	Current Frame:
+	
+		Shows the number of the current frame in the graphic file being displayed.
+		
+	DONE		Return to wherever you called the screen up from, using the frame and
+			orientation you selected.
+		
