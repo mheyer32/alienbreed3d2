@@ -2331,7 +2331,7 @@ PROTSETUP:
 ; it from memory
 ; erase this routine and return.
 
-; include "source/protsetup"
+; include "protsetup"
  
 
 RELEASETITLEMEM:
@@ -2350,7 +2350,7 @@ RELEASETITLEMEM:
  
 
 PROTCALLENC:
-; incbin "source/protcallenc.bin
+; incbin "protcallenc.bin
 
 ; one pass, all instructions executed.
 ; must call protection routine,store

@@ -192,7 +192,7 @@ WTNOT MACRO
 **
 
  include "macros.i"
- include "source/defs.i"
+ include "defs.i"
 
 * Load level into buffers.
  move.l 4.w,a6
@@ -2039,7 +2039,7 @@ jumpoutofloop:
 ThisRoomToDraw: dc.l 0,0
 SplitHeight: dc.l 0
 
- include "source/OrderZones"
+ include "OrderZones"
 
 ReadMouse:
  clr.l d0
@@ -2917,7 +2917,7 @@ okspdrgt:
 
 *****************************************************
 
- include "source/ObjectMove"
+ include "ObjectMove"
 
 pastdata:
 ***********************************
@@ -2934,10 +2934,10 @@ liftanim:
  rts
 
 ******************************
- include "source/Anims"
+ include "Anims"
 ******************************
 startpass:
-; include "source/password_reloc.s"
+; include "password_reloc.s"
 endpass:
 
 rotanimpt: dc.w 0
@@ -2954,7 +2954,7 @@ option:
 
 ********** WALL STUFF *******************************
 
- include "AB3:source/wallroutine3.chipmem"
+ include "AB3:wallroutine3.chipmem"
 
 *****************************************************
 
@@ -4015,7 +4015,7 @@ ordinary:
 usebumps: dc.w $0
 smoothbumps: dc.w $0
  
- include "source/bumpmap.s"
+ include "bumpmap.s"
 
  CNOP 0,4
 backbefore:
@@ -4171,7 +4171,7 @@ startsmoothz: dc.w 0
 
 ********************************
 *
- include "AB3:source/ObjDraw3.chipram"
+ include "AB3:ObjDraw3.chipram"
 *
 ********************************
 
@@ -6430,7 +6430,7 @@ OldRoompt: dc.l 0
 
 *****************************************************************
  *
- include "AB3:source/LevelData2"
+ include "AB3:LevelData2"
  *
 *****************************************************************
 

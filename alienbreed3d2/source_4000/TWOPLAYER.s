@@ -201,7 +201,7 @@ WTNOT MACRO
 **
 
  include "macros.i"
- include "source/defs.i"
+ include "defs.i"
 
  move.w (a0)+,mors
 
@@ -2439,7 +2439,7 @@ jumpoutofloop:
 ThisRoomToDraw: dc.l 0,0
 SplitHeight: dc.l 0
 
- include "source/OrderZones"
+ include "OrderZones"
 
 ReadMouse:
  clr.l d0
@@ -3362,7 +3362,7 @@ PLR2_fire: dc.b 0
 
 *****************************************************
 
- include "source/ObjectMove"
+ include "ObjectMove"
 
 pastdata:
 ***********************************
@@ -3379,10 +3379,10 @@ liftanim:
  rts
 
 ******************************
- include "source/Anims"
+ include "Anims"
 ******************************
 startpass:
-; include "source/password_reloc.s"
+; include "password_reloc.s"
 endpass:
 
 rotanimpt: dc.w 0
@@ -3399,7 +3399,7 @@ option:
 
 ********** WALL STUFF *******************************
 
- include "AB3:source/wallroutine3.chipmem"
+ include "AB3:wallroutine3.chipmem"
 
 *****************************************************
 
@@ -5107,7 +5107,7 @@ usebumps: dc.w $0
 smoothbumps: dc.w $0
 gourfloor: dc.w 0
  
- include "source/bumpmap.s"
+ include "bumpmap.s"
 
  CNOP 0,4
 backbefore:
@@ -5363,7 +5363,7 @@ startsmoothz: dc.w 0
 
 ********************************
 *
- include "AB3:source/ObjDraw3.chipram"
+ include "AB3:ObjDraw3.chipram"
 *
 ********************************
 
@@ -5451,8 +5451,8 @@ PLR1_Ducked: dc.b 0
 PLR2_Ducked: dc.b 0
  even
 
- include "source/PLR1CONTROL.s"
- include "source/PLR2CONTROL.s"
+ include "PLR1CONTROL.s"
+ include "PLR2CONTROL.s"
 
 prot7: dc.w 0
  
@@ -6846,7 +6846,7 @@ SampleList:
  dc.l Whoosh,EndWhoosh
  dc.l ROAR,EndROAR
 
- include "source/wallchunk.s"
+ include "wallchunk.s"
 
 saveinters:  
  dc.w 0
@@ -7134,7 +7134,7 @@ OldRoompt: dc.l 0
 
 *****************************************************************
  *
- include "AB3:source/LevelData2"
+ include "AB3:LevelData2"
  *
 *****************************************************************
 

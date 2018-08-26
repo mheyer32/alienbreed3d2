@@ -385,4 +385,4 @@ FLOOROPTS:
  dc.b '    NONE    '
  
 PAUSEFONT:
- incbin "ab3:includes/PAUSEFONT"
+ incbin "includes/pausefont"

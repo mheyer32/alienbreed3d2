@@ -1,5 +1,5 @@
 CC=m68k-amigaos-gcc
-PHXASS=vasmm68k_mot
+ASS=vasmm68k_mot
 
 PREFIX = $(shell ./getprefix.sh "$(CC)")
 
@@ -61,9 +61,10 @@ CFLAGS += -DNDEBUG -D__BIG_ENDIAN__ -DAMIGA -D__NO_NET_API
 
 LDFLAGS = $(RUNTIME_LDFLAGS)
 
-PFLAGS = -Fhunk -phxass -nosym -ldots
-PFLAGS += -I$(PREFIX)/m68k-amigaos/ndk-include
-PFLAGS += -I$(PREFIX)/m68k-amigaos/ndk/include
+AFLAGS = -Fhunk -nosym -ldots -devpac -m68030
+AFLAGS += -I./Devpac/Include/include
+
+#-I$(PREFIX)/m68k-amigaos/ndk-include
 
 INTERMEDIATE =$(CURDIR)/build/
 OUT = $(CURDIR)/bin/
@@ -79,9 +80,8 @@ all:	 Lazerbolt
 clean:
 	rm *.o
 
-
 %:	%.s Makefile
-	$(PHXASS) $(PFLAGS) $< -o $@
+	$(ASS) $(AFLAGS) $< -o $@
 
 %.o:	%.c Makefile
 	$(CC) $(CFLAGS) -c $< -o $@
