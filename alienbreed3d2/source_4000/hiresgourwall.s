@@ -50,7 +50,7 @@ sometodrawG:
  bra pstitG
 
 itertabG:
- incbin "ab3:includes/iterfile"
+ incbin "includes/iterfile"
 
 pstitG:
 

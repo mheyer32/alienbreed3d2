@@ -7,7 +7,7 @@
 
 	opt	O+,P=68020
 
-	include "workbench:utilities/devpac/system.gs"
+	include "utilities/devpac/system.gs"
 
 ;	INCLUDE utils:sysinc/exec_lib.i		; change this for your path!.
 	INCLUDE utils:sysinc/exec/io.i

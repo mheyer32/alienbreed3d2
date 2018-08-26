@@ -28,7 +28,7 @@ LARGESCREEN equ 0
 
 	opt	c+,d+
 
-	include	workbench:utilities/devpac/system			use pre-assembled header
+	include	utilities/devpac/system			use pre-assembled header
 	include	exec/exec_lib.i
 	include	intuition/intuition.i
 	include	intuition/intuition_lib.i
@@ -2860,7 +2860,7 @@ BANG: dc.w 0
 CANG: dc.w 0
 DANG: dc.w 0
 
- include "ab3:print.s"
+ include "print.s"
  
  temp: dc.w 0
 
@@ -4013,7 +4013,7 @@ DONEDONEBUM:
  move.l SAVESTACK,a7
  rts
  
-GOURPAL: incbin "ab3:includes/bigshadow.pal"
+GOURPAL: incbin "includes/bigshadow.pal"
  
 
 
@@ -4904,7 +4904,7 @@ LEFTRIGHT: ds.l 256
 POLYGONDATA:
  ds.b 30000
 
-OBJNAME: dc.b "ab3:vectobj/testcube",0
+OBJNAME: dc.b "vectobj/testcube",0
  even
 doslibname: dc.b 'dos.library',0
  even
@@ -4913,7 +4913,7 @@ doslib: dc.l 0
 ****************************
  
 SINETABLE:
- incbin "ab3:includes/bigsine"
+ incbin "includes/bigsine"
  
  
 YANG: dc.w 0
@@ -4932,15 +4932,15 @@ COPIEDPAL:
  ds.l 10
 
 SHADOWBUFFER:
-HIGHLIGHT: incbin "work:temp/HIGHLIGHT"
+HIGHLIGHT: incbin "temp/HIGHLIGHT"
 
 PALETTEBIT:
 ; incbin "256palette"
 ; dc.w $ffff,$fffe
  
- incbin "ab3:shadowtex/shadowpal"
+ incbin "shadowtex/shadowpal"
 
- include "ab3:source_4000/chunky.s"
+ include "source_4000/chunky.s"
 
 willy: ds.w 48
 
@@ -5014,35 +5014,35 @@ RIGHTZS: ds.w 256
 
 NORMVECTS: ds.w 3*250
  
-;WORLD: incbin "ab3:includes/world"
+;WORLD: incbin "includes/world"
 
-;TWEEN: incbin "ab3:includes/tweenbrightfile"
+;TWEEN: incbin "includes/tweenbrightfile"
  
 LINEBUFFER: ds.b 320
  
-NEBBIE: incbin "work:temp/nebbieroar"
+NEBBIE: incbin "temp/nebbieroar"
 	ds.l (192/4)*16
  
  SECTION blib,code_f
  
 TEXTURES:
- incbin "ab3:shadowtex/shadowmaps"
+ incbin "shadowtex/shadowmaps"
  even
 
 BLUR:
  ifne MOTIONBLUR!ANTIALIAS
- incbin "ab3:shadowtex/blurfile"
+ incbin "shadowtex/blurfile"
  endc
  
-FIREPAL: incbin "ab3:includes/spleen.256pal"
+FIREPAL: incbin "includes/spleen.256pal"
  
 DEPTHBUFFER: ds.l 320*256
  
-BALL: incbin "ab3:includes/ballzbuff"
+BALL: incbin "includes/ballzbuff"
  
 Font: dc.l fontplace
 
-fontplace: incbin "ab3:XENFONT.bin"
+fontplace: incbin "XENFONT.bin"
  
  SECTION BGDROP,code_c
  

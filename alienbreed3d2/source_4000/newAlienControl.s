@@ -4,7 +4,7 @@ gotgun: dc.w 0
 ANIMPOINTER: dc.l 0
 
 ASKFORPROT:
- include "ab3:source_4000/askforprot.s"
+ include "source_4000/askforprot.s"
 
 ALIENBRIGHT: dc.w 0
 

@@ -700,11 +700,11 @@ startwait: dc.w 0
 endwait: dc.w 0
 
 
-landcheat: incbin "work:inc/smallcheatfile"
-landfile: incbin "work:inc/landfile"
-heightcheat: incbin "work:inc/heightcheat"
-landpic: incbin "work:inc/landpic"
-landpal: incbin "work:inc/landpal"
+landcheat: incbin "inc/smallcheatfile"
+landfile: incbin "inc/landfile"
+heightcheat: incbin "inc/heightcheat"
+landpic: incbin "inc/landpic"
+landpal: incbin "inc/landpal"
 
 skypic: dcb.w 160*360,$742
 endsky:

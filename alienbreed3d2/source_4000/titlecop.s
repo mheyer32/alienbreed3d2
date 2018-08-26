@@ -1,5 +1,5 @@
 TITLEPAL:
- incbin "ab3:includes/NEWTITLEPAL"
+ incbin "includes/NEWTITLEPAL"
 
 titlecop:
  dc.w intreq,$8010

@@ -425,7 +425,7 @@ LOADOBS:
 
  rts
  
-;TESTNAME: dc.b 'ab3:includes/TESTOBJ'
+;TESTNAME: dc.b 'includes/TESTOBJ'
 ; dc.b 0
 ; even
  
@@ -655,4 +655,4 @@ RELEASESCRNMEM:
 
  rts 
 
-unLHA:	incbin	"ab3:Decomp4.raw"
+unLHA:	incbin	"Decomp4.raw"

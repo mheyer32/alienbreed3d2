@@ -201,7 +201,7 @@ WTNOT MACRO
 **
 
  include "macros.i"
- include "ab3:source/defs.i"
+ include "source/defs.i"
 
  move.w (a0)+,mors
 
@@ -331,13 +331,13 @@ doslib: dc.l 0
 
 mors: dc.w 0
 
-LDname: dc.b 'ab3:includes/tstlev.bin',0
+LDname: dc.b 'includes/tstlev.bin',0
  even
 LDhandle: dc.l 0
-LGname: dc.b 'ab3:includes/tstlev.graph.bin',0
+LGname: dc.b 'includes/tstlev.graph.bin',0
  even
 LGhandle: dc.l 0
-LCname: dc.b 'ab3:includes/tstlev.clips',0
+LCname: dc.b 'includes/tstlev.clips',0
  even
 LChandle: dc.l 0
 
@@ -2434,7 +2434,7 @@ jumpoutofloop:
 ThisRoomToDraw: dc.l 0,0
 SplitHeight: dc.l 0
 
- include "ab3:source/OrderZones"
+ include "source/OrderZones"
 
 ReadMouse:
  clr.l d0
@@ -3357,7 +3357,7 @@ PLR2_fire: dc.b 0
 
 *****************************************************
 
- include "ab3:source/ObjectMove"
+ include "source/ObjectMove"
 
 pastdata:
 ***********************************
@@ -3374,10 +3374,10 @@ liftanim:
  rts
 
 ******************************
- include "ab3:source/Anims"
+ include "source/Anims"
 ******************************
 startpass:
-; include "ab3:source/password_reloc.s"
+; include "source/password_reloc.s"
 endpass:
 
 rotanimpt: dc.w 0
@@ -5102,7 +5102,7 @@ usebumps: dc.w $0
 smoothbumps: dc.w $0
 gourfloor: dc.w 0
  
- include "ab3:source/bumpmap.s"
+ include "source/bumpmap.s"
 
  CNOP 0,4
 backbefore:
@@ -5446,8 +5446,8 @@ PLR1_Ducked: dc.b 0
 PLR2_Ducked: dc.b 0
  even
 
- include "ab3:source/PLR1CONTROL.s"
- include "ab3:source/PLR2CONTROL.s"
+ include "source/PLR1CONTROL.s"
+ include "source/PLR2CONTROL.s"
 
 prot7: dc.w 0
  
@@ -6841,7 +6841,7 @@ SampleList:
  dc.l Whoosh,EndWhoosh
  dc.l ROAR,EndROAR
 
- include "ab3:source/wallchunk.s"
+ include "source/wallchunk.s"
 
 saveinters:  
  dc.w 0
@@ -6935,12 +6935,12 @@ ChunkAddr: dc.l 0
 ; dc.l RedAlertWALL
 ; dc.l RockWALL
 ;
-;GreenMechanicWALL: incbin "ab3:includes/walls/greenmechanic.wad"
-;BlueGreyMetalWALL: incbin "ab3:includes/walls/BlueGreyMetal.wad"
-;TechnoDetailWALL: incbin "ab3:includes/walls/TechnoDetail.wad"
-;BlueStoneWALL: incbin "ab3:includes/walls/bluestone.wad"
-;RedAlertWALL: incbin "ab3:includes/walls/redalert.wad"
-;RockWALL: incbin "ab3:includes/walls/rock.wad"
+;GreenMechanicWALL: incbin "includes/walls/greenmechanic.wad"
+;BlueGreyMetalWALL: incbin "includes/walls/BlueGreyMetal.wad"
+;TechnoDetailWALL: incbin "includes/walls/TechnoDetail.wad"
+;BlueStoneWALL: incbin "includes/walls/bluestone.wad"
+;RedAlertWALL: incbin "includes/walls/redalert.wad"
+;RockWALL: incbin "includes/walls/rock.wad"
  
 floortile:
  incbin "floortile" 
@@ -7750,51 +7750,51 @@ digits: incbin "numbers.inc"
  
  Section Sounds,CODE_C
 
-Scream: incbin "ab3:sounds/Scream"
+Scream: incbin "sounds/Scream"
  ds.w 100
 EndScream:
-LowScream: incbin "ab3:sounds/LowScream"
+LowScream: incbin "sounds/LowScream"
  ds.w 100
 EndLowScream:
-BaddieGun: incbin "ab3:sounds/BaddieGun"
+BaddieGun: incbin "sounds/BaddieGun"
 EndBaddieGun:
-bass: incbin "ab3:sounds/backbass+drum"
+bass: incbin "sounds/backbass+drum"
 bassend:
-Shoot: incbin "ab3:sounds/fire!"
+Shoot: incbin "sounds/fire!"
 EndShoot:
-Munch: incbin "ab3:sounds/munch"
+Munch: incbin "sounds/munch"
 EndMunch:
-PooGun: incbin "ab3:sounds/shoot.dm"
+PooGun: incbin "sounds/shoot.dm"
 EndPooGun:
-Collect: incbin "ab3:sounds/collect"
+Collect: incbin "sounds/collect"
 EndCollect:
-DoorNoise: incbin "ab3:sounds/newdoor"
+DoorNoise: incbin "sounds/newdoor"
 EndDoorNoise:
-Stomp: incbin "ab3:sounds/footstep3"
+Stomp: incbin "sounds/footstep3"
 EndStomp:
-SwitchNoise: incbin "ab3:sounds/switch"
+SwitchNoise: incbin "sounds/switch"
 EndSwitch:
-Reload: incbin "ab3:sounds/switch1.SFX"
+Reload: incbin "sounds/switch1.SFX"
 EndReload:
-NoAmmo: incbin "ab3:sounds/noammo"
+NoAmmo: incbin "sounds/noammo"
 EndNoAmmo:
-Splotch: incbin "ab3:sounds/splotch"
+Splotch: incbin "sounds/splotch"
 EndSplotch:
-SplatPop: incbin "ab3:sounds/splatpop"
+SplatPop: incbin "sounds/splatpop"
 EndSplatPop:
-Boom: incbin "ab3:sounds/boom"
+Boom: incbin "sounds/boom"
 EndBoom:
-Hiss: incbin "ab3:sounds/newhiss"
+Hiss: incbin "sounds/newhiss"
 EndHiss:
-Howl1: incbin "ab3:sounds/howl1"
+Howl1: incbin "sounds/howl1"
 EndHowl1:
-Howl2: incbin "ab3:sounds/howl2"
+Howl2: incbin "sounds/howl2"
 EndHowl2:
-Pant: incbin "ab3:sounds/pant"
+Pant: incbin "sounds/pant"
 EndPant:
-Whoosh: incbin "ab3:sounds/whoosh"
+Whoosh: incbin "sounds/whoosh"
 EndWhoosh:
-ROAR: incbin "ab3:sounds/bigscream"
+ROAR: incbin "sounds/bigscream"
 EndROAR
  SECTION music,code_c
 
@@ -8306,6 +8306,6 @@ tstchip: dc.l 0
 
 
 ingame:
-; incbin "ab3:includes/ingame"
-gameover: incbin "ab3:includes/gameover"
-welldone: incbin "ab3:includes/welldone"
+; incbin "includes/ingame"
+gameover: incbin "includes/gameover"
+welldone: incbin "includes/welldone"

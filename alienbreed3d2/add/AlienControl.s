@@ -1,32 +1,32 @@
 
 gotgun: dc.w 0
 
- INCLUDE "ab3:source/NormalAlien.s"
+ INCLUDE "source/NormalAlien.s"
 **************************************
- INCLUDE "ab3:source/FlyingScalyBall.s"
+ INCLUDE "source/FlyingScalyBall.s"
 **************************************
- INCLUDE "ab3:source/BigUglyAlien.s"
+ INCLUDE "source/BigUglyAlien.s"
 **************************************
- INCLUDE "ab3:source/MutantMarine.s"
+ INCLUDE "source/MutantMarine.s"
 **************************************
- INCLUDE "ab3:source/ToughMarine.s"
+ INCLUDE "source/ToughMarine.s"
 ASKFORPROT:
- include "ab3:source/askforprot.s"
+ include "source/askforprot.s"
  
 **************************************
- INCLUDE "ab3:source/halfworm.s"
+ INCLUDE "source/halfworm.s"
 **************************************
- INCLUDE "ab3:source/bigredthing.s"
+ INCLUDE "source/bigredthing.s"
 **************************************
- INCLUDE "ab3:source/tree.s"
+ INCLUDE "source/tree.s"
 **************************************
- INCLUDE "ab3:source/EyeBall.s"
+ INCLUDE "source/EyeBall.s"
 **************************************
- INCLUDE "ab3:source/FlameMarine.s"
+ INCLUDE "source/FlameMarine.s"
 
 
 **************************************
- INCLUDE "ab3:source/Robot.s"
+ INCLUDE "source/Robot.s"
  
 THISPLRxoff: dc.w 0
 THISPLRzoff: dc.w 0

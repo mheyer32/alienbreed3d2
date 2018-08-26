@@ -671,4 +671,4 @@ DOUBWIDTHCHUNKTEL:
 		rts
 
 STARTSHIM: dc.l 0
-SHIMMER: incbin "ab3:includes/shimmerfile"
+SHIMMER: incbin "includes/shimmerfile"

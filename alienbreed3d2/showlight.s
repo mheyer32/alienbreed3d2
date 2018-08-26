@@ -11,7 +11,7 @@
 
 	opt	c+,d+
 
-	include	workbench:utilities/devpac/system			use pre-assembled header
+	include	utilities/devpac/system			use pre-assembled header
 	include	exec/exec_lib.i
 	include	intuition/intuition.i
 	include	intuition/intuition_lib.i
@@ -370,7 +370,7 @@ PALETTEBIT:
 ; incbin "256palette"
 ; dc.w $ffff,$fffe
  
- incbin "ab3:includes/256pal"
+ incbin "includes/256pal"
 
 
 CHUNKYTOPLANAR
@@ -557,9 +557,9 @@ FASTBUFFER:
  
 fasty: ds.w 320*256
 
-WAD: incbin "ab3:hqn/priest.wad"
-PTR: incbin "ab3:hqn/priest.ptr"
-CMP: incbin "ab3:hqn/priest.256pal"
+WAD: incbin "hqn/priest.wad"
+PTR: incbin "hqn/priest.ptr"
+CMP: incbin "hqn/priest.256pal"
  
  SECTION BGDROP,code_c
  

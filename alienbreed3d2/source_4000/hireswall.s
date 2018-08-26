@@ -141,7 +141,7 @@ sometodraw:
  bra pstit
 
 itertab:
- incbin "ab3:includes/iterfile"
+ incbin "includes/iterfile"
 
 pstit:
 
@@ -214,7 +214,7 @@ screendividethru:
  bra .pastscrinto
 
 .scrintocop:
- incbin "ab3:includes/XTOCOPX"
+ incbin "includes/XTOCOPX"
 
 .pastscrinto 
 
@@ -1054,7 +1054,7 @@ curvecalc:
 ;nullit:
 ; rts
 ; 
-; incbin "ab3:includes/protroutencoded"
+; incbin "includes/protroutencoded"
 
 endprot:
 

@@ -4,7 +4,7 @@ gotgun: dc.w 0
 ANIMPOINTER: dc.l 0
 
 ASKFORPROT:
- include "ab3:CHEESESAUCE/askforprot.s"
+ include "CHEESESAUCE/askforprot.s"
 
 ALIENBRIGHT: dc.w 0
 

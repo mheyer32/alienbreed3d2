@@ -32,7 +32,7 @@
 ;13. goto 6
 
 INTROTUNEADDR: dc.l 0
-INTROTUNENAME: dc.b 'ab3:sounds/abreed3d.med',0
+INTROTUNENAME: dc.b 'sounds/abreed3d.med',0
  even
 TITLESCRNADDR: dc.l 0
 TITLESCRNNAME: dc.b 'AB3D1:includes/titlescrnraw',0
@@ -2268,7 +2268,7 @@ GETTITLEMEM:
 ProtChkJLev1:
 
 PROTSETUP:
- incbin "ab3:includes/protsetupenc"
+ incbin "includes/protsetupenc"
 
 ; Need to: Decode protection calling
 ; routine
@@ -2276,7 +2276,7 @@ PROTSETUP:
 ; it from memory
 ; erase this routine and return.
 
-; include "ab3:source/protsetup"
+; include "source/protsetup"
  
 
 RELEASETITLEMEM:
@@ -2295,7 +2295,7 @@ RELEASETITLEMEM:
  
 
 PROTCALLENC:
-; incbin "ab3:source/protcallenc.bin
+; incbin "source/protcallenc.bin
 
 ; one pass, all instructions executed.
 ; must call protection routine,store
@@ -2303,7 +2303,7 @@ PROTCALLENC:
 ; compare returned value, if correct
 ; set up all values, then return.
 
- include "ab3:source/protcallenc"
+ include "source/protcallenc"
 
 ENDPROT:
  
@@ -2433,7 +2433,7 @@ dummycall
  
 protspace: ds.l 200
 
- include "ab3:source/LEVEL_BLURB"
+ include "source/LEVEL_BLURB"
  
 font:
  incbin "OptFont"

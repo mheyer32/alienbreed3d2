@@ -770,7 +770,7 @@ curvecalc:
 ;nullit:
 ; rts
 ; 
-; incbin "ab3:includes/protroutencoded"
+; incbin "includes/protroutencoded"
 
 endprot:
 

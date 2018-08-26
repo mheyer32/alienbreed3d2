@@ -2581,27 +2581,27 @@ POLYOBJECTS:
  dc.l Torch_des
  
 Spider_des:
- incbin "ab3:vectobj/robot"
+ incbin "vectobj/robot"
 Medi_des:
- incbin "ab3:includes/medipac.vec"
+ incbin "includes/medipac.vec"
 Exit_des:
- incbin "ab3:vectobj/exitsign
+ incbin "vectobj/exitsign
 Crate_des:
- incbin "ab3:vectobj/mug"
+ incbin "vectobj/mug"
 Terminal_des:
- incbin "ab3:includes/terminal.vec"
+ incbin "includes/terminal.vec"
 Blue_des:
- incbin "ab3:vectobj/blueind"
+ incbin "vectobj/blueind"
 Green_des:
- incbin "ab3:vectobj/Greenind"
+ incbin "vectobj/Greenind"
 Red_des:
- incbin "ab3:vectobj/Redind"
+ incbin "vectobj/Redind"
 Yellow_des:
- incbin "ab3:vectobj/yellowind"
+ incbin "vectobj/yellowind"
 Gas_des:
- incbin "ab3:vectobj/gaspipe"
+ incbin "vectobj/gaspipe"
 Torch_des:
- incbin "ab3:vectobj/torch"
+ incbin "vectobj/torch"
 
 boxonscr:
  ds.l 250*2

@@ -1,7 +1,7 @@
 
 ; Grab all available memory into a buffer:
 
- include workbench:sysinc/exec/exec_lib.i
+ include sysinc/exec/exec_lib.i
 
  move.l #65536,d7
  move.l #tab,a0

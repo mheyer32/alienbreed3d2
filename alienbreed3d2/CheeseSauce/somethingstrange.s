@@ -1,7 +1,7 @@
 ;this program uses the task oriented ctp routine to display
 ;a simple picture.
 
-	include	"workbench:utilities/devpac/system.gs"
+	include	"utilities/devpac/system.gs"
 	
 scrwid	EQU	192
 scrht	EQU	160
@@ -186,5 +186,5 @@ XPOS:		dc.w	0
 YPOS:		dc.w	0
 
 	even
-	include	"ab3:source_4000/somethingstrange2.s"
+	include	"source_4000/somethingstrange2.s"
 	

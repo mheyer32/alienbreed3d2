@@ -2056,7 +2056,7 @@ xzangs:
  dc.w -23,0,-20,10,-16,16,-10,20
 
 guff:
- incbin "ab3:includes/guff"
+ incbin "includes/guff"
 
 midx: dc.w 0
 objpixwidth: dc.w 0
@@ -2076,7 +2076,7 @@ PointAngPtr: dc.l 0
 
  ds.w 100
 objintocop:
- incbin "ab3:includes/XTOCOPX"
+ incbin "includes/XTOCOPX"
  ds.w 100
 
    *********************************
@@ -4132,29 +4132,29 @@ POLYOBJECTS:
 ; dc.l Torch_des
  
 Spider_des:
-; incbin "ab3:vectobj/robot"
- incbin "ab3:vectobj/walllamp"
+; incbin "vectobj/robot"
+ incbin "vectobj/walllamp"
 
 ;Medi_des:
-; incbin "ab3:vectobj/testgrill"
+; incbin "vectobj/testgrill"
 ;Exit_des:
-; incbin "ab3:vectobj/exitsign
+; incbin "vectobj/exitsign
 ;Crate_des:
-; incbin "ab3:vectobj/droid"
+; incbin "vectobj/droid"
 ;Terminal_des:
-; incbin "ab3:includes/terminal.vec"
+; incbin "includes/terminal.vec"
 ;Blue_des:
-; incbin "ab3:vectobj/blueind"
+; incbin "vectobj/blueind"
 ;Green_des:
-; incbin "ab3:vectobj/Greenind"
+; incbin "vectobj/Greenind"
 ;Red_des:
-; incbin "ab3:vectobj/Redind"
+; incbin "vectobj/Redind"
 ;Yellow_des:
-; incbin "ab3:vectobj/yellowind"
+; incbin "vectobj/yellowind"
 ;Gas_des:
-; incbin "ab3:vectobj/gaspipe"
+; incbin "vectobj/gaspipe"
 ;Torch_des:
-; incbin "ab3:vectobj/torch"
+; incbin "vectobj/torch"
 
 boxonscr:
  ds.l 250*2
@@ -4698,9 +4698,9 @@ objpal:
 ; incbin "ALIEN1.256pal"
 TextureMaps:
  dc.l 0
-; incbin "ab3:includes/newTexturemaps"
+; incbin "includes/newTexturemaps"
 TexturePal:
  dc.l 0
-; incbin "ab3:includes/texture256pal"
+; incbin "includes/texture256pal"
  
 testval: dc.l 0

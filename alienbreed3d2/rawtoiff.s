@@ -11,7 +11,7 @@
 
 	opt	c+,d+
 
-	include	workbench:utilities/devpac/system			use pre-assembled header
+	include	utilities/devpac/system			use pre-assembled header
 	include	exec/exec_lib.i
 	include	intuition/intuition.i
 	include	intuition/intuition_lib.i
@@ -205,12 +205,12 @@ PALETTEBIT:
 ; incbin "256palette"
 ; dc.w $ffff,$fffe
  
- incbin "ab3:includes/256pal"
+ incbin "includes/256pal"
 
  
  
  SECTION BGDROP,code_c
  
 RAWSCRN:
- incbin "work:rawscrnd"
+ incbin "rawscrnd"
 

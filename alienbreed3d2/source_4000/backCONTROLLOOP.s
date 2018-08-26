@@ -32,7 +32,7 @@
 ;13. goto 6
 
 INTROTUNEADDR: dc.l 0
-INTROTUNENAME: dc.b 'ab3:sounds/abreed3d.med',0
+INTROTUNENAME: dc.b 'sounds/abreed3d.med',0
  even
 TITLESCRNADDR: dc.l 0
 TITLESCRNNAME: dc.b 'TKG1:includes/titlescrnraw1',0
@@ -592,7 +592,7 @@ backpicname: dc.b "tkg1:includes/rawbackpacked"
  
 bordername: dc.b "TKG2:includes/newborderRAW",0
  even
-borderpacked: incbin "ab3:includes/newborderPACKED"
+borderpacked: incbin "includes/newborderPACKED"
  
 ; KEY OPTIONS:
 CONTROLBUFFER:
@@ -2676,7 +2676,7 @@ GETTITLEMEM:
 ProtChkJLev1:
 
 PROTSETUP:
- incbin "ab3:includes/protsetupenc"
+ incbin "includes/protsetupenc"
 
 ; Need to: Decode protection calling
 ; routine
@@ -2684,7 +2684,7 @@ PROTSETUP:
 ; it from memory
 ; erase this routine and return.
 
-; include "ab3:source/protsetup"
+; include "source/protsetup"
  
 
 RELEASETITLEMEM:
@@ -2703,7 +2703,7 @@ RELEASETITLEMEM:
  
 
 PROTCALLENC:
-; incbin "ab3:source/protcallenc.bin
+; incbin "source/protcallenc.bin
 
 ; one pass, all instructions executed.
 ; must call protection routine,store
@@ -2711,7 +2711,7 @@ PROTCALLENC:
 ; compare returned value, if correct
 ; set up all values, then return.
 
-; include "ab3:source_4000/protcallenc"
+; include "source_4000/protcallenc"
 
 ENDPROT:
  
@@ -2842,11 +2842,11 @@ dummycall
 protspace: 
  ;ds.l 200
 
- include "ab3:source_4000/LEVEL_BLURB"
+ include "source_4000/LEVEL_BLURB"
  
 font:
  incbin "Starquake.font.bin"
 
 rain: incbin "optcop"
 
-	include "ab3:demo/menu/menu_v2.s"
+	include "demo/menu/menu_v2.s"

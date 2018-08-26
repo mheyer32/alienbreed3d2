@@ -11,7 +11,7 @@
 
 	opt	c+,d+
 
-	include	workbench:utilities/devpac/system			use pre-assembled header
+	include	utilities/devpac/system			use pre-assembled header
 	include	exec/exec_lib.i
 	include	intuition/intuition.i
 	include	intuition/intuition_lib.i
@@ -1080,7 +1080,7 @@ nolineh
  dbra d7,drawpoly
  bra PASTIT
 
-TEXTUREPAL: incbin "ab3:includes/newtexturemaps.pal"
+TEXTUREPAL: incbin "includes/newtexturemaps.pal"
 
 PASTIT:
 NOPOLYGON:
@@ -1375,7 +1375,7 @@ POLYGONDATA:
 
  
 SINETABLE:
- incbin "ab3:includes/bigsine"
+ incbin "includes/bigsine"
  
 SHADOWBUFFER: ds.l 65536/4
  
@@ -1441,9 +1441,9 @@ PALETTEBIT:
 ; incbin "256palette"
 ; dc.w $ffff,$fffe
  
- incbin "ab3:includes/256pal"
+ incbin "includes/256pal"
 
- include "ab3:source_4000/chunky.s"
+ include "source_4000/chunky.s"
 
 willy: ds.w 49
 
@@ -1489,11 +1489,11 @@ SUBSTACK: ds.l 10*100
 LEFTUVS: ds.l 4*256
 RIGHTUVS: ds.l 4*256
  
-WORLD: incbin "ab3:includes/world"
+WORLD: incbin "includes/world"
 
-TWEEN: incbin "ab3:includes/tweenbrightfile"
+TWEEN: incbin "includes/tweenbrightfile"
  
-TEXTURES: incbin "ab3:includes/newtexturemaps"
+TEXTURES: incbin "includes/newtexturemaps"
  
  SECTION BGDROP,code_c
  

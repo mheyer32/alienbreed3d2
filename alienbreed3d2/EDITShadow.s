@@ -11,7 +11,7 @@
 
 	opt	c+,d+
 
-	include	workbench:utilities/devpac/system			use pre-assembled header
+	include	utilities/devpac/system			use pre-assembled header
 	include	exec/exec_lib.i
 	include	intuition/intuition.i
 	include	intuition/intuition_lib.i
@@ -2100,7 +2100,7 @@ PASTAC
 
  bra NOPOLYGON
 
-TEXTUREPAL: incbin "ab3:includes/shadow.pal"
+TEXTUREPAL: incbin "includes/shadow.pal"
 
 SAVESTACK: dc.l 0
 HIGHPOLY: dc.w 0
@@ -2405,7 +2405,7 @@ INTOLIGHTGOUR:
  dbra d0,INTHELIGHTGOUR
  bra PASTACGOUR
  
-GOURPAL: incbin "ab3:includes/shadow.pal"
+GOURPAL: incbin "includes/shadow.pal"
  
 PASTACGOUR:
  
@@ -2672,7 +2672,7 @@ INTOLIGHTGOURRL:
  dbra d0,INTHELIGHTGOURRL
  bra PASTACGOUR
  
-GOURPALRL: incbin "ab3:includes/shadow.pal"
+GOURPALRL: incbin "includes/shadow.pal"
  
 
 TOPPTR: dc.l 0
@@ -3043,13 +3043,13 @@ ZOFF: dc.w 768
 LEFTRIGHT: ds.l 256
 
 POLYGONDATA:
- incbin "ab3:vectobj/testcube"
+ incbin "vectobj/testcube"
 
 ****************************
 
  
 SINETABLE:
- incbin "ab3:includes/bigsine"
+ incbin "includes/bigsine"
  
  
 YANG: dc.w 0
@@ -3073,9 +3073,9 @@ PALETTEBIT:
 ; incbin "256palette"
 ; dc.w $ffff,$fffe
  
- incbin "ab3:includes/256pal"
+ incbin "includes/256pal"
 
- include "ab3:source_4000/chunky.s"
+ include "source_4000/chunky.s"
 
 willy: ds.w 48
 
@@ -3139,13 +3139,13 @@ RIGHTUVS: ds.w 8*256
 
 NORMVECTS: ds.w 3*250
  
-;WORLD: incbin "ab3:includes/world"
+;WORLD: incbin "includes/world"
 
-;TWEEN: incbin "ab3:includes/tweenbrightfile"
+;TWEEN: incbin "includes/tweenbrightfile"
  
-TEXTURES: incbin "ab3:includes/newtexturemaps"
+TEXTURES: incbin "includes/newtexturemaps"
  
-NEBBIE: incbin "work:temp/nebbieroar"
+NEBBIE: incbin "temp/nebbieroar"
 	ds.l (192/4)*16
  
  SECTION BGDROP,code_c

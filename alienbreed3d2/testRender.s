@@ -11,7 +11,7 @@
 
 	opt	c+,d+
 
-	include	workbench:utilities/devpac/system			use pre-assembled header
+	include	utilities/devpac/system			use pre-assembled header
 	include	exec/exec_lib.i
 	include	intuition/intuition.i
 	include	intuition/intuition_lib.i
@@ -2166,7 +2166,7 @@ PASTAC
 
  bra NOPOLYGON
 
-TEXTUREPAL: incbin "ab3:includes/shadow.pal"
+TEXTUREPAL: incbin "includes/shadow.pal"
 
 SAVESTACK: dc.l 0
 HIGHPOLY: dc.w 0
@@ -3120,7 +3120,7 @@ LIGHTPLOTT:
  bra.s FLIBBLEY
  
  
-GOURPAL: incbin "ab3:includes/shadow.pal"
+GOURPAL: incbin "includes/shadow.pal"
  
 DONEDONEBUM:
  move.l SAVESTACK,a7
@@ -3766,7 +3766,7 @@ LEFTRIGHT: ds.l 256
 POLYGONDATA:
  ds.b 30000
 
-OBJNAME: dc.b "ab3:vectobj/testcube",0
+OBJNAME: dc.b "vectobj/testcube",0
  even
 doslibname: dc.b 'dos.library',0
  even
@@ -3775,7 +3775,7 @@ doslib: dc.l 0
 ****************************
  
 SINETABLE:
- incbin "ab3:includes/bigsine"
+ incbin "includes/bigsine"
  
  
 YANG: dc.w 0
@@ -3794,15 +3794,15 @@ COPIEDPAL:
  ds.l 10
 
 SHADOWBUFFER: ds.l 65536/4
-HIGHLIGHT: incbin "work:temp/HIGHLIGHT"
+HIGHLIGHT: incbin "temp/HIGHLIGHT"
 
 PALETTEBIT:
 ; incbin "256palette"
 ; dc.w $ffff,$fffe
  
- incbin "ab3:shadowtex/shadowpal"
+ incbin "shadowtex/shadowpal"
 
- include "ab3:source_4000/chunky.s"
+ include "source_4000/chunky.s"
 
 willy: ds.w 48
 
@@ -3866,19 +3866,19 @@ RIGHTUVS: ds.w 8*256
 
 NORMVECTS: ds.w 3*250
  
-;WORLD: incbin "ab3:includes/world"
+;WORLD: incbin "includes/world"
 
-;TWEEN: incbin "ab3:includes/tweenbrightfile"
+;TWEEN: incbin "includes/tweenbrightfile"
  
  
  
-NEBBIE: incbin "work:temp/nebbieroar"
+NEBBIE: incbin "temp/nebbieroar"
 	ds.l (192/4)*16
  
  SECTION blib,code_f
  
 TEXTURES:
- incbin "ab3:includes/shadowmaps"
+ incbin "includes/shadowmaps"
  even
 
  SECTION BGDROP,code_c

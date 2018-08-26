@@ -239,7 +239,7 @@ adkcon	    equ   $09E
 ** execution to continue.
 
  
- include "ab3:source_4000/protsetupdecode"
+ include "source_4000/protsetupdecode"
 
 SAVEREGS MACRO
  movem.l d0-d7/a0-a6,-(a7)
@@ -301,9 +301,9 @@ WTNOT MACRO
  
 **
 
- include "ab3:source_4000/ProtectionProtection"
+ include "source_4000/ProtectionProtection"
  include "macros.i"
- include "ab3:source_4000/defs.i"
+ include "source_4000/defs.i"
 
 ;wtclickk:
 ; btst #6,$bfe001
@@ -3210,8 +3210,8 @@ noexit:
 
 
  
-; include "ab3:demo/system/keyboard.s"
- include "ab3:source_4000/ab3diipatchidr.s"
+; include "demo/system/keyboard.s"
+ include "source_4000/ab3diipatchidr.s"
  
 CLRTWOLINES:
 
@@ -3955,12 +3955,12 @@ SAVETHESCREEN:
 
  rts
  
-SAVENAME: dc.b 'work:rawscrn'
+SAVENAME: dc.b 'rawscrn'
 SAVELETTER: dc.b 'd',0
 
  even
  
- include "ab3:source_4000/CHUNKY.s"
+ include "source_4000/CHUNKY.s"
  
  
 MASTERQUITTING: dc.b 0
@@ -3969,7 +3969,7 @@ MASTERPAUSE: dc.b 0
 SLAVEPAUSE: dc.b 0
 
 PAUSEOPTS:
- include "ab3:source_4000/pauseopts"
+ include "source_4000/pauseopts"
 
 ENDZONE: dc.w 0
 
@@ -6099,7 +6099,7 @@ GOURSEL: dc.w 0
 ThisRoomToDraw: dc.l 0,0
 SplitHeight: dc.l 0
 
- include "ab3:source_4000/OrderZones"
+ include "source_4000/OrderZones"
 
 ReadMouse:
  move.l #$dff000,a6
@@ -7144,7 +7144,7 @@ charlines:
  
  rts
  
-borderchars: incbin "ab3:includes/bordercharsRAW"
+borderchars: incbin "includes/bordercharsRAW"
 
 NARRATOR:
 
@@ -7219,7 +7219,7 @@ NARRATOR:
 
 NARRTIME: dc.w 5
 
-SCROLLCHARS: incbin "ab3:includes/scrollfont"
+SCROLLCHARS: incbin "includes/scrollfont"
 
 .NoChange
  rts
@@ -7691,7 +7691,7 @@ ENDENDGAMETEXT:
 ; include "endscroll.s"
 
 ***********************************
- include "ab3:source_4000/CD32JOY"
+ include "source_4000/CD32JOY"
 
 
  
@@ -7923,12 +7923,12 @@ liftanim:
  rts
 
 ******************************
- include "ab3:source_4000/ObjectMove"
- include "ab3:source_4000/newAnims"
- include "ab3:source_4000/airoutine.s"
+ include "source_4000/ObjectMove"
+ include "source_4000/newAnims"
+ include "source_4000/airoutine.s"
 ******************************
 startpass:
-; include "ab3:source_4000/password_reloc.s"
+; include "source_4000/password_reloc.s"
 endpass:
 
 rotanimpt: dc.w 0
@@ -9608,7 +9608,7 @@ tstwhich: dc.w 0
 whichtile: dc.w 0
   
 PLAINSCALE: 
-;incbin "ab3:includes/plainscale"
+;incbin "includes/plainscale"
   
 storeit: dc.l 0
 
@@ -10002,7 +10002,7 @@ usebumps: dc.w $0
 smoothbumps: dc.w $0
 gourfloor: dc.w 0
  
- include "ab3:source_4000/bumpmap.s"
+ include "source_4000/bumpmap.s"
 
  CNOP 0,4
 backbefore:
@@ -10842,9 +10842,9 @@ PLR2_Squished: dc.w 0
 PLR1s_SquishedHeight: dc.l 0
 PLR2s_SquishedHeight: dc.l 0
 
- include "ab3:source_4000/PLR1CONTROL.s"
- include "ab3:source_4000/PLR2CONTROL.s"
- include "ab3:source_4000/FALL.s"
+ include "source_4000/PLR1CONTROL.s"
+ include "source_4000/PLR2CONTROL.s"
+ include "source_4000/FALL.s"
 
 
 
@@ -13210,10 +13210,10 @@ SampleList:
  
 storeval: dc.w 0
 
- include "ab3:source_4000/wallchunk.s"
- include "ab3:source_4000/newloadfromdisk.s"
- include "ab3:source_4000/screensetup.s"
- include "ab3:source_4000/CONTROLLOOP.s"
+ include "source_4000/wallchunk.s"
+ include "source_4000/newloadfromdisk.s"
+ include "source_4000/screensetup.s"
+ include "source_4000/CONTROLLOOP.s"
 
 
 
@@ -13313,12 +13313,12 @@ ChunkAddr: dc.l 0
 ; dc.l RedAlertWALL
 ; dc.l RockWALL
 ;
-;GreenMechanicWALL: incbin "ab3:includes/walls/greenmechanic.wad"
-;BlueGreyMetalWALL: incbin "ab3:includes/walls/BlueGreyMetal.wad"
-;TechnoDetailWALL: incbin "ab3:includes/walls/TechnoDetail.wad"
-;BlueStoneWALL: incbin "ab3:includes/walls/bluestone.wad"
-;RedAlertWALL: incbin "ab3:includes/walls/redalert.wad"
-;RockWALL: incbin "ab3:includes/walls/rock.wad"
+;GreenMechanicWALL: incbin "includes/walls/greenmechanic.wad"
+;BlueGreyMetalWALL: incbin "includes/walls/BlueGreyMetal.wad"
+;TechnoDetailWALL: incbin "includes/walls/TechnoDetail.wad"
+;BlueStoneWALL: incbin "includes/walls/bluestone.wad"
+;RedAlertWALL: incbin "includes/walls/redalert.wad"
+;RockWALL: incbin "includes/walls/rock.wad"
  
 floortile:
  dc.l 0
@@ -13573,8 +13573,8 @@ consttab:
 
 *********************************
 
-; include "ab3:source_4000/loadmod.a"
-; include "ab3:source_4000/proplayer.a"
+; include "source_4000/loadmod.a"
+; include "source_4000/proplayer.a"
 
  
 darkentab: 
@@ -13598,7 +13598,7 @@ FULLSCR: dc.w 0
 
 LINKSPACE:
 ; ds.l 22500
-; incbin "ab3:includes/test.lnk"
+; incbin "includes/test.lnk"
 
 LINKname:
  dc.b "TKG1:includes/test.lnk",0
@@ -13671,7 +13671,7 @@ blcols:
 nullline:
  ds.b 80	
 
- include "ab3:source_4000/titlecop.s"
+ include "source_4000/titlecop.s"
 
 bigfield:    
                 ; Start of our copper list.
@@ -14337,19 +14337,19 @@ val SET val+1
  cnop 0,64
 scrn:
  dc.l 0
-; incbin "ab3:includes/newborderRAW"
+; incbin "includes/newborderRAW"
 ; ds.b 80
 scrn2:
  dc.l 0
 
 ;flib:
-; incbin "ab3:includes/newborderRAW"
+; incbin "includes/newborderRAW"
 ; ds.b 80
 ;flib2:
-; incbin "ab3:includes/newborderRAW"
+; incbin "includes/newborderRAW"
 ; ds.b 80
 
-; incbin "ab3:includes/newborderRAW"
+; incbin "includes/newborderRAW"
 ; ds.b 80
 
 SCRNDRAWPT: dc.l 0
@@ -14456,42 +14456,42 @@ nullcop:
  dc.w $ffff,$fffe
 
 Scream:
-; incbin "ab3:sounds/Scream"
+; incbin "sounds/Scream"
 ; ds.w 100
 EndScream:
 LowScream:
-; incbin "ab3:sounds/LowScream"
+; incbin "sounds/LowScream"
 ; ds.w 100
 EndLowScream:
 BaddieGun:
-; incbin "ab3:sounds/BaddieGun"
+; incbin "sounds/BaddieGun"
 EndBaddieGun:
 bass:
-; incbin "ab3:sounds/backbass+drum"
+; incbin "sounds/backbass+drum"
 bassend:
 Shoot:
-; incbin "ab3:sounds/fire!"
+; incbin "sounds/fire!"
 EndShoot:
 Munch:
-; incbin "ab3:sounds/munch"
+; incbin "sounds/munch"
 EndMunch:
 PooGun:
-; incbin "ab3:sounds/shoot.dm"
+; incbin "sounds/shoot.dm"
 EndPooGun:
 Collect:
-; incbin "ab3:sounds/collect"
+; incbin "sounds/collect"
 EndCollect:
 DoorNoise:
-; incbin "ab3:sounds/newdoor"
+; incbin "sounds/newdoor"
 EndDoorNoise:
 Stomp:
-; incbin "ab3:sounds/footstep3"
+; incbin "sounds/footstep3"
 EndStomp:
 SwitchNoise:
-; incbin "ab3:sounds/switch"
+; incbin "sounds/switch"
 EndSwitch:
 Reload:
-; incbin "ab3:sounds/switch1.SFX"
+; incbin "sounds/switch1.SFX"
 EndReload:
 
 CHEATFRAME:
@@ -14499,37 +14499,37 @@ CHEATFRAME:
 ENDCHEAT:
 
 NoAmmo:
-; incbin "ab3:sounds/noammo"
+; incbin "sounds/noammo"
 EndNoAmmo:
 Splotch:
-; incbin "ab3:sounds/splotch"
+; incbin "sounds/splotch"
 EndSplotch:
 SplatPop:
-; incbin "ab3:sounds/splatpop"
+; incbin "sounds/splatpop"
 EndSplatPop:
 Boom:
-; incbin "ab3:sounds/boom"
+; incbin "sounds/boom"
 EndBoom:
 Hiss:
-; incbin "ab3:sounds/newhiss"
+; incbin "sounds/newhiss"
 EndHiss:
 Howl1:
-; incbin "ab3:sounds/howl1"
+; incbin "sounds/howl1"
 EndHowl1:
 Howl2:
-; incbin "ab3:sounds/howl2"
+; incbin "sounds/howl2"
 EndHowl2:
 Pant:
-; incbin "ab3:sounds/pant"
+; incbin "sounds/pant"
 EndPant:
 Whoosh:
-; incbin "ab3:sounds/whoosh"
+; incbin "sounds/whoosh"
 EndWhoosh:
 ROAR:
-; incbin "ab3:sounds/bigscream"
+; incbin "sounds/bigscream"
 EndROAR
 whoosh:
-; incbin "ab3:sounds/flame"
+; incbin "sounds/flame"
 Endwhoosh:
  SECTION music,code_c
 
@@ -14680,8 +14680,8 @@ mt_getnew:
 	bra	mt_setdma
 
 PROTCALC:
-;	include "ab3:source_4000/protcalc.s"
-	incbin "ab3:includes/protcalc.bin"
+;	include "source_4000/protcalc.s"
+	incbin "includes/protcalc.bin"
 ENDPROTCALC:
 
 mt_playvoice:
@@ -15053,9 +15053,9 @@ tstchip: dc.l 0
  include "SERIAL_NIGHTMARE"
 
 ingame:
-; incbin "work:temp/newmusic/testonechan"
+; incbin "temp/newmusic/testonechan"
 gameover: 
-;incbin "ab3:includes/gameover"
-welldone: incbin "ab3:includes/quietwelldone"
+;incbin "includes/gameover"
+welldone: incbin "includes/quietwelldone"
 
 

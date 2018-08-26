@@ -151,7 +151,7 @@ WBSLOW MACRO
 **
 
  include "macros.i"
- include "ab3:source/defs.i"
+ include "source/defs.i"
 
  move.w (a0)+,option
  move.w (a0)+,option+2
@@ -248,13 +248,13 @@ doslibname: dc.b 'dos.library',0
  even
 doslib: dc.l 0
 
-LDname: dc.b 'ab3:includes/newlev.bin',0
+LDname: dc.b 'includes/newlev.bin',0
  even
 LDhandle: dc.l 0
-LGname: dc.b 'ab3:includes/newlev.graph.bin',0
+LGname: dc.b 'includes/newlev.graph.bin',0
  even
 LGhandle: dc.l 0
-LCname: dc.b 'ab3:includes/newlev.clips',0
+LCname: dc.b 'includes/newlev.clips',0
  even
 LChandle: dc.l 0
 
@@ -1479,7 +1479,7 @@ jumpoutofloop:
 
 ThisRoomToDraw: dc.l 0
 
- include "ab3:source/OrderZones"
+ include "source/OrderZones"
 
 ReadMouse:
  clr.l d0
@@ -2178,7 +2178,7 @@ okspdrgt:
 
 *****************************************************
 
- include "ab3:source/ObjectMove"
+ include "source/ObjectMove"
 
 pastdata:
 ***********************************
@@ -2194,7 +2194,7 @@ liftanim:
  rts
 
 ******************************
- include "ab3:source/Anims"
+ include "source/Anims"
 ******************************
 
 rotanimpt: dc.w 0
@@ -3263,7 +3263,7 @@ ordinary:
 usebumps: dc.w $0
 smoothbumps: dc.w $0
  
- include "ab3:source/bumpmap.s"
+ include "source/bumpmap.s"
 
  CNOP 0,4
 backbefore:
@@ -5433,7 +5433,7 @@ leaveold:
  
  rte
 
-RECname: dc.b 'ab3:includes/RECORDING',0
+RECname: dc.b 'includes/RECORDING',0
  even
 REChandle: dc.l 0
 gfxbase: dc.l 0
@@ -5569,27 +5569,27 @@ digits: incbin "numbers.inc"
  
  Section Sounds,CODE_C
 
-Scream: incbin "ab3:sounds/Scream"
+Scream: incbin "sounds/Scream"
  ds.w 100
 EndScream:
-LowScream: incbin "ab3:sounds/LowScream"
+LowScream: incbin "sounds/LowScream"
  ds.w 100
 EndLowScream:
-BaddieGun: incbin "ab3:sounds/BaddieGun"
+BaddieGun: incbin "sounds/BaddieGun"
 EndBaddieGun:
-bass: incbin "ab3:sounds/backbass+drum"
+bass: incbin "sounds/backbass+drum"
 bassend:
-Shoot: incbin "ab3:sounds/fire!"
+Shoot: incbin "sounds/fire!"
 EndShoot:
-Munch: incbin "ab3:sounds/munch"
+Munch: incbin "sounds/munch"
 EndMunch:
-PooGun: incbin "ab3:sounds/shoot.dm"
+PooGun: incbin "sounds/shoot.dm"
 EndPooGun:
-Collect: incbin "ab3:sounds/collect"
+Collect: incbin "sounds/collect"
 EndCollect:
-DoorNoise: incbin "ab3:sounds/newdoor"
+DoorNoise: incbin "sounds/newdoor"
 EndDoorNoise:
-Stomp: incbin "ab3:sounds/footstep3"
+Stomp: incbin "sounds/footstep3"
 EndStomp:
-SwitchNoise: incbin "ab3:sounds/switch"
+SwitchNoise: incbin "sounds/switch"
 EndSwitch:
