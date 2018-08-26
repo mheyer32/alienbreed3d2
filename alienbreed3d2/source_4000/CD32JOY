@@ -3,8 +3,8 @@
 
 
 ;	INCDIR	include:
-	include workbench:utilities/devpac/system.gs"
-	INCLUDE	utils:sysinc/libraries/lowlevel.i
+;	include workbench:utilities/devpac/system.gs"
+	INCLUDE	libraries/lowlevel.i
 ;	INCLUDE	exec/exec_lib.i
 
 _LVOReadJoyPort	EQU	-$1e

@@ -2467,7 +2467,7 @@ dummycall
  
 protspace: ds.l 200
 
- include "source_4000/LEVEL_BLURB"
+ include "LEVEL_BLURB"
  
 font:
  incbin "includes/OptFont"

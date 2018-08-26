@@ -7001,7 +7001,7 @@ liftanim:
  include "CHEESESAUCE/airoutine.s"
 ******************************
 startpass:
-; include "source_4000/password_reloc.s"
+; include "password_reloc.s"
 endpass:
 
 rotanimpt: dc.w 0
@@ -7018,8 +7018,8 @@ option:
 
 ********** WALL STUFF *******************************
 
- include "AB3:CHEESESAUCE/hireswall.s"
- include "AB3:CHEESESAUCE/hiresgourwall.s"
+ include "CHEESESAUCE/hireswall.s"
+ include "CHEESESAUCE/hiresgourwall.s"
 
 *****************************************************
 
@@ -9201,7 +9201,7 @@ usebumps: dc.w $0
 smoothbumps: dc.w $0
 gourfloor: dc.w 0
  
- include "CHEESESAUCE/bumpmap.s"
+ include "CHEESESAUCE/BumpMap.s"
 
  CNOP 0,4
 backbefore:
@@ -9990,7 +9990,7 @@ startsmoothz: dc.w 0
 
 ********************************
 *
- include "AB3:CHEESESAUCE/ObjDrawHIRES.s"
+ include "CHEESESAUCE/ObjDrawHIRES.s"
 *
 ********************************
 
@@ -12355,7 +12355,7 @@ OldRoompt: dc.l 0
 
 *****************************************************************
  *
- include "AB3:CHEESESAUCE/LevelData2"
+ include "CHEESESAUCE/LevelData2"
  *
 *****************************************************************
 
@@ -12390,8 +12390,8 @@ consttab:
 
 *********************************
 
-; include "source_4000/loadmod.a"
-; include "source_4000/proplayer.a"
+; include "loadmod.a"
+; include "proplayer.a"
 
  
 darkentab: 
@@ -13495,7 +13495,7 @@ mt_getnew:
 	bra	mt_setdma
 
 PROTCALC:
-;	include "source_4000/protcalc.s"
+;	include "protcalc.s"
 	incbin "includes/protcalc.bin"
 ENDPROTCALC:
 

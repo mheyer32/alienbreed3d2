@@ -1945,7 +1945,7 @@ notdoneflame:
  
  rts
  
-; include "ab3:source/AI.s"
+; include "AI.s"
 
 ItsABarrel:
 
@@ -2069,7 +2069,7 @@ nodamage:
 
  rts
 
- include "ab3:source_4000/NEWaliencontrol.s"
+ include "NEWaliencontrol.s"
 
 nextCPt: dc.w 0
 

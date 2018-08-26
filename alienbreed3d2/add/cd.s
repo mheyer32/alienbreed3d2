@@ -9,11 +9,11 @@
 
 	include "utilities/devpac/system.gs"
 
-;	INCLUDE utils:sysinc/exec_lib.i		; change this for your path!.
-	INCLUDE utils:sysinc/exec/io.i
-	INCLUDE utils:sysinc/devices/cd.i
+;	INCLUDE exec_lib.i		; change this for your path!.
+	INCLUDE exec/io.i
+	INCLUDE devices/cd.i
 
-	INCLUDE utils:sysinc/exec/lists.i
+	INCLUDE exec/lists.i
 
 
 _test

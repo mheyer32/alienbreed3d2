@@ -4691,7 +4691,7 @@ LessAmmo:
  move.w #63,d3
  sub.w OldAmmo,d3
  
- move.l #borders++5184+25*16+1,a1
+ move.l #borders+5184+25*16+1,a1
  asl.w #5,d3
  add.w d3,a1
  lea 2592(a1),a2
@@ -5030,7 +5030,7 @@ option:
 
 ********** WALL STUFF *******************************
 
- include "AB3:wallroutine3.chipmem"
+ include "wallroutine3.chipmem"
 
 *****************************************************
 
@@ -6812,7 +6812,7 @@ usebumps: dc.w $0
 smoothbumps: dc.w $0
 gourfloor: dc.w 0
  
- include "bumpmap.s"
+ include "BumpMap.s"
 
  CNOP 0,4
 backbefore:
@@ -7081,7 +7081,7 @@ startsmoothz: dc.w 0
 
 ********************************
 *
- include "AB3:ObjDraw3.chipram"
+ include "ObjDraw3.chipram"
 *
 ********************************
 
@@ -8919,7 +8919,7 @@ OldRoompt: dc.l 0
 
 *****************************************************************
  *
- include "AB3:LevelData2"
+ include "LevelData2"
  *
 *****************************************************************
 

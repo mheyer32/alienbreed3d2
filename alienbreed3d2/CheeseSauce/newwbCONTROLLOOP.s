@@ -35,9 +35,9 @@ INTROTUNEADDR: dc.l 0
 INTROTUNENAME: dc.b 'sounds/abreed3d.med',0
  even
 TITLESCRNADDR: dc.l 0
-TITLESCRNNAME: dc.b 'AB3:includes/titlescrnraw',0
+TITLESCRNNAME: dc.b 'includes/titlescrnraw',0
  even
-TITLESCRNNAME2: dc.b 'AB3:includes/titlescrnraw1',0
+TITLESCRNNAME2: dc.b 'includes/titlescrnraw1',0
  even
 OPTSPRADDR: dc.l 0
 
@@ -2488,7 +2488,7 @@ dummycall
  
 protspace: ds.l 200
 
- include "source_4000/LEVEL_BLURB"
+ include "LEVEL_BLURB"
  
 font:
  incbin "OptFont"

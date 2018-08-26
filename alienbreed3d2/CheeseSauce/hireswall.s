@@ -214,7 +214,7 @@ screendividethru:
  bra .pastscrinto
 
 .scrintocop:
- incbin "includes/XTOCOPX"
+ incbin "includes/xtocopx"
 
 .pastscrinto: 
 
@@ -369,7 +369,7 @@ scrdrawlop:
  
  bra .pastscrinto
 .scrintocop:
- incbin "XTOCOPX"
+ incbin "xtocopx"
  
 .pastscrinto
  
@@ -462,7 +462,7 @@ scrdrawlopDOUB:
  move.l (a0)+,d1
  bra .pastscrinto
 .scrintocop:
- incbin "XTOCOPX"
+ incbin "xtocopx"
  
 .pastscrinto
  swap d1
@@ -537,7 +537,7 @@ middleline:
  dc.w 0
 
 ;scrintocop:
-; incbin "XTOCOPX"
+; incbin "xtocopx"
 prot4: dc.w 0
 
 fromtile: dc.l 0

@@ -94,7 +94,7 @@ DataCacheOn macro
 
 	opt	P=68020
 
-	include utils:sysinc/hardware/intbits.i
+	include hardware/intbits.i
 
 CD32VER equ 0
 
@@ -239,7 +239,7 @@ adkcon	    equ   $09E
 ** execution to continue.
 
  
- include "source_4000/protsetupdecode"
+ include "protsetupdecode"
 
 SAVEREGS MACRO
  movem.l d0-d7/a0-a6,-(a7)
@@ -301,9 +301,9 @@ WTNOT MACRO
  
 **
 
- include "source_4000/ProtectionProtection"
+ include "ProtectionProtection"
  include "macros.i"
- include "source_4000/defs.i"
+ include "defs.i"
 
 ;wtclickk:
 ; btst #6,$bfe001
@@ -3211,7 +3211,7 @@ noexit:
 
  
 ; include "demo/system/keyboard.s"
- include "source_4000/ab3diipatchidr.s"
+ include "ab3diipatchidr.s"
  
 CLRTWOLINES:
 
@@ -3960,7 +3960,7 @@ SAVELETTER: dc.b 'd',0
 
  even
  
- include "source_4000/CHUNKY.s"
+ include "CHUNKY.s"
  
  
 MASTERQUITTING: dc.b 0
@@ -3969,7 +3969,7 @@ MASTERPAUSE: dc.b 0
 SLAVEPAUSE: dc.b 0
 
 PAUSEOPTS:
- include "source_4000/pauseopts"
+ include "pauseopts"
 
 ENDZONE: dc.w 0
 
@@ -6099,7 +6099,7 @@ GOURSEL: dc.w 0
 ThisRoomToDraw: dc.l 0,0
 SplitHeight: dc.l 0
 
- include "source_4000/OrderZones"
+ include "OrderZones"
 
 ReadMouse:
  move.l #$dff000,a6
@@ -7691,7 +7691,7 @@ ENDENDGAMETEXT:
 ; include "endscroll.s"
 
 ***********************************
- include "source_4000/CD32JOY"
+ include "CD32JOY"
 
 
  
@@ -7923,12 +7923,12 @@ liftanim:
  rts
 
 ******************************
- include "source_4000/ObjectMove"
- include "source_4000/newAnims"
- include "source_4000/airoutine.s"
+ include "ObjectMove"
+ include "newAnims"
+ include "airoutine.s"
 ******************************
 startpass:
-; include "source_4000/password_reloc.s"
+; include "password_reloc.s"
 endpass:
 
 rotanimpt: dc.w 0
@@ -7945,8 +7945,8 @@ option:
 
 ********** WALL STUFF *******************************
 
- include "AB3:source_4000/hireswall.s"
- include "AB3:source_4000/hiresgourwall.s"
+ include "hireswall.s"
+ include "hiresgourwall.s"
 
 *****************************************************
 
@@ -10002,7 +10002,7 @@ usebumps: dc.w $0
 smoothbumps: dc.w $0
 gourfloor: dc.w 0
  
- include "source_4000/bumpmap.s"
+ include "BumpMap.s"
 
  CNOP 0,4
 backbefore:
@@ -10724,7 +10724,7 @@ startsmoothz: dc.w 0
 
 ********************************
 *
- include "AB3:source_4000/ObjDrawHIRES.s"
+ include "ObjDrawHIRES.s"
 *
 ********************************
 
@@ -10842,9 +10842,9 @@ PLR2_Squished: dc.w 0
 PLR1s_SquishedHeight: dc.l 0
 PLR2s_SquishedHeight: dc.l 0
 
- include "source_4000/PLR1CONTROL.s"
- include "source_4000/PLR2CONTROL.s"
- include "source_4000/FALL.s"
+ include "PLR1CONTROL.s"
+ include "PLR2CONTROL.s"
+ include "FALL.s"
 
 
 
@@ -13210,10 +13210,10 @@ SampleList:
  
 storeval: dc.w 0
 
- include "source_4000/wallchunk.s"
- include "source_4000/newloadfromdisk.s"
- include "source_4000/screensetup.s"
- include "source_4000/CONTROLLOOP.s"
+ include "wallchunk.s"
+ include "newloadfromdisk.s"
+ include "screensetup.s"
+ include "CONTROLLOOP.s"
 
 
 
@@ -13536,7 +13536,7 @@ OldRoompt: dc.l 0
 
 *****************************************************************
  *
- include "AB3:source_4000/LevelData2"
+ include "LevelData2"
  *
 *****************************************************************
 
@@ -13573,8 +13573,8 @@ consttab:
 
 *********************************
 
-; include "source_4000/loadmod.a"
-; include "source_4000/proplayer.a"
+; include "loadmod.a"
+; include "proplayer.a"
 
  
 darkentab: 
@@ -13671,7 +13671,7 @@ blcols:
 nullline:
  ds.b 80	
 
- include "source_4000/titlecop.s"
+ include "titlecop.s"
 
 bigfield:    
                 ; Start of our copper list.
@@ -14680,7 +14680,7 @@ mt_getnew:
 	bra	mt_setdma
 
 PROTCALC:
-;	include "source_4000/protcalc.s"
+;	include "protcalc.s"
 	incbin "includes/protcalc.bin"
 ENDPROTCALC:
 

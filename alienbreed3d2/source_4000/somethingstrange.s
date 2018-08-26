@@ -186,5 +186,5 @@ XPOS:		dc.w	0
 YPOS:		dc.w	0
 
 	even
-	include	"source_4000/somethingstrange2.s"
+	include	"somethingstrange2.s"
 	

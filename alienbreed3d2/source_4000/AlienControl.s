@@ -1,32 +1,32 @@
 
 gotgun: dc.w 0
 
- INCLUDE "source_4000/NEWALIEN.s"
+ INCLUDE "NEWALIEN.s"
 **************************************
- INCLUDE "source_4000/FlyingScalyBall.s"
+ INCLUDE "FlyingScalyBall.s"
 **************************************
- INCLUDE "source_4000/BigUglyAlien.s"
+ INCLUDE "BigUglyAlien.s"
 **************************************
- INCLUDE "source_4000/MutantMarine.s"
+ INCLUDE "MutantMarine.s"
 **************************************
- INCLUDE "source_4000/ToughMarine.s"
+ INCLUDE "ToughMarine.s"
 ASKFORPROT:
- include "source_4000/askforprot.s"
+ include "ASKFORPROT.s"
  
 **************************************
- INCLUDE "source_4000/halfworm.s"
+ INCLUDE "HalfWorm.s"
 **************************************
- INCLUDE "source_4000/bigredthing.s"
+ INCLUDE "BigRedThing.s"
 **************************************
- INCLUDE "source_4000/tree.s"
+ INCLUDE "Tree.s"
 **************************************
- INCLUDE "source_4000/EyeBall.s"
+ INCLUDE "EyeBall.s"
 **************************************
- INCLUDE "source_4000/FlameMarine.s"
+ INCLUDE "FlameMarine.s"
 
 
 **************************************
- INCLUDE "source_4000/Robot.s"
+ INCLUDE "Robot.s"
  
 THISPLRxoff: dc.w 0
 THISPLRzoff: dc.w 0

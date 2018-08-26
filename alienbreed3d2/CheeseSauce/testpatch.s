@@ -33,5 +33,5 @@ LLhandle: dc.l 0
 LLname: dc.b "bill:twiddle",0
  even
 
- include "source_4000/ab3diipatchidr.s"
+ include "ab3diipatchidr.s"
  

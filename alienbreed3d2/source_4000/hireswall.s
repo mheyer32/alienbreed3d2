@@ -214,7 +214,7 @@ screendividethru:
  bra .pastscrinto
 
 .scrintocop:
- incbin "includes/XTOCOPX"
+ incbin "includes/xtocopx"
 
 .pastscrinto 
 
@@ -540,7 +540,7 @@ middleline:
 LASTSTIRRUP: dc.w 0
 
 ;scrintocop:
-; incbin "XTOCOPX"
+; incbin "xtocopx"
 prot4: dc.w 0
 
 fromtile: dc.l 0

@@ -85,7 +85,7 @@ DataCacheOn macro
 
 	opt	P=68020
 
-	include utils:sysinc/hardware/intbits.i
+	include hardware/intbits.i
 
 CD32VER equ 0
 
@@ -230,7 +230,7 @@ adkcon	    equ   $09E
 ** execution to continue.
 
  
- include "source_4000/protsetupdecode"
+ include "protsetupdecode"
 
 SAVEREGS MACRO
  movem.l d0-d7/a0-a6,-(a7)
@@ -292,9 +292,9 @@ WTNOT MACRO
  
 **
 
- include "source_4000/ProtectionProtection"
+ include "ProtectionProtection"
  include "macros.i"
- include "source_4000/defs.i"
+ include "defs.i"
 
  move.w (a0)+,mors
 
@@ -2190,7 +2190,7 @@ MASTERPAUSE: dc.b 0
 SLAVEPAUSE: dc.b 0
 
 PAUSEOPTS:
- include "source_4000/pauseopts"
+ include "pauseopts"
 
 ENDZONES:
 ; LEVEL 1
@@ -4156,7 +4156,7 @@ GOURSEL: dc.w 0
 ThisRoomToDraw: dc.l 0,0
 SplitHeight: dc.l 0
 
- include "source_4000/OrderZones"
+ include "OrderZones"
 
 ReadMouse:
  move.l #$dff000,a6
@@ -4989,7 +4989,7 @@ ENDGAMESCROLL:
 ; include "endscroll.s"
 
 ***********************************
- include "source_4000/CD32JOY"
+ include "CD32JOY"
 
 
  
@@ -5166,11 +5166,11 @@ liftanim:
  rts
 
 ******************************
- include "source_4000/ObjectMove"
- include "source_4000/Anims"
+ include "ObjectMove"
+ include "Anims"
 ******************************
 startpass:
-; include "source_4000/password_reloc.s"
+; include "password_reloc.s"
 endpass:
 
 rotanimpt: dc.w 0
@@ -5187,7 +5187,7 @@ option:
 
 ********** WALL STUFF *******************************
 
- include "AB3:source_4000/wallroutine3.chipmem"
+ include "wallroutine3.chipmem"
 
 *****************************************************
 
@@ -6969,7 +6969,7 @@ usebumps: dc.w $0
 smoothbumps: dc.w $0
 gourfloor: dc.w 0
  
- include "source_4000/bumpmap.s"
+ include "BumpMap.s"
 
  CNOP 0,4
 backbefore:
@@ -7238,7 +7238,7 @@ startsmoothz: dc.w 0
 
 ********************************
 *
- include "AB3:source_4000/ObjDraw3.chipram"
+ include "ObjDraw3.chipram"
 *
 ********************************
 
@@ -7343,9 +7343,9 @@ PLR1_Ducked: dc.b 0
 PLR2_Ducked: dc.b 0
  even
 
- include "source_4000/PLR1CONTROL.s"
- include "source_4000/PLR2CONTROL.s"
- include "source_4000/FALL.s"
+ include "PLR1CONTROL.s"
+ include "PLR2CONTROL.s"
+ include "FALL.s"
 
 prot7: dc.w 0
  
@@ -8780,10 +8780,10 @@ SampleList:
  
 storeval: dc.w 0
 
- include "source_4000/wallchunk.s"
- include "source_4000/loadfromdisk.s"
- include "source_4000/screensetup.s"
- include "source_4000/CONTROLLOOP.s"
+ include "wallchunk.s"
+ include "loadfromdisk.s"
+ include "screensetup.s"
+ include "CONTROLLOOP.s"
 
 
 
@@ -9089,7 +9089,7 @@ OldRoompt: dc.l 0
 
 *****************************************************************
  *
- include "AB3:source_4000/LevelData2"
+ include "LevelData2"
  *
 *****************************************************************
 
@@ -9121,8 +9121,8 @@ consttab:
 
 *********************************
 
-; include "source_4000/loadmod.a"
-; include "source_4000/proplayer.a"
+; include "loadmod.a"
+; include "proplayer.a"
 
  
 darkentab: incbin "darkenedcols"
@@ -9181,7 +9181,7 @@ blcols:
 nullline:
  ds.b 80	
 
- include "source_4000/titlecop.s"
+ include "titlecop.s"
 
 bigfield:    
                 ; Start of our copper list.
@@ -10088,7 +10088,7 @@ mt_getnew:
 	bra	mt_setdma
 
 PROTCALC:
-;	include "source_4000/protcalc.s"
+;	include "protcalc.s"
 	incbin "includes/protcalc.bin"
 ENDPROTCALC:
 

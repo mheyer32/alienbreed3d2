@@ -1,7 +1,7 @@
 
 ;		opt o+,l+,d+
 
-		incdir	utils:sysinc/
+		incdir	
 
 		include	"exec/execbase.i"
 		include "exec/exec.i"

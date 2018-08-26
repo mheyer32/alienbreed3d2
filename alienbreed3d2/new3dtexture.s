@@ -1234,7 +1234,7 @@ PALETTEBIT:
  
  incbin "includes/256pal"
 
- include "source_4000/chunky.s"
+ include "chunky.s"
 
 willy: ds.w 49
 

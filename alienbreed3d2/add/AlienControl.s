@@ -11,14 +11,14 @@ gotgun: dc.w 0
 **************************************
  INCLUDE "ToughMarine.s"
 ASKFORPROT:
- include "askforprot.s"
+ include "ASKFORPROT.s"
  
 **************************************
- INCLUDE "halfworm.s"
+ INCLUDE "HalfWorm.s"
 **************************************
- INCLUDE "bigredthing.s"
+ INCLUDE "BigRedThing.s"
 **************************************
- INCLUDE "tree.s"
+ INCLUDE "Tree.s"
 **************************************
  INCLUDE "EyeBall.s"
 **************************************

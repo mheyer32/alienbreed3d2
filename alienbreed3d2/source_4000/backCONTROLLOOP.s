@@ -2711,7 +2711,7 @@ PROTCALLENC:
 ; compare returned value, if correct
 ; set up all values, then return.
 
-; include "source_4000/protcallenc"
+; include "protcallenc"
 
 ENDPROT:
  
@@ -2842,7 +2842,7 @@ dummycall
 protspace: 
  ;ds.l 200
 
- include "source_4000/LEVEL_BLURB"
+ include "LEVEL_BLURB"
  
 font:
  incbin "Starquake.font.bin"

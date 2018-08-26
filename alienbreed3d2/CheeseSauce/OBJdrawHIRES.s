@@ -2076,7 +2076,7 @@ PointAngPtr: dc.l 0
 
  ds.w 100
 objintocop:
- incbin "includes/XTOCOPX"
+ incbin "includes/xtocopx"
  ds.w 100
 
    *********************************

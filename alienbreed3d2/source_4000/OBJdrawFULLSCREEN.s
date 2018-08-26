@@ -1157,7 +1157,7 @@ PTR_PTR: dc.l 0
 
  ds.w 100
 objintocop:
- incbin "XTOCOPX"
+ incbin "xtocopx"
  ds.w 100
 
    *********************************

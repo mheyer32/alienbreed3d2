@@ -137,12 +137,12 @@ wt:
  rts
 
 MUSADDR: dc.l 0
-MUSNAME: dc.b 'ab3:sounds/abreed3d.med',0
+MUSNAME: dc.b 'sounds/abreed3d.med',0
 
  even
 
- include 'ab3:source/loadmod.a'
- include 'ab3:source/proplayer.a'
+ include 'loadmod.a'
+ include 'proplayer.a'
 
 stuff:
 

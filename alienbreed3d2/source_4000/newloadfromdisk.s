@@ -446,7 +446,7 @@ blocklen: dc.l 0
 blockname: dc.l 0
 blockstart: dc.l 0
  
-BOTPICNAME: dc.b 'AB3:includes/panelraw',0
+BOTPICNAME: dc.b 'includes/panelraw',0
  even
 PanelLen: dc.l 0
  
@@ -886,10 +886,10 @@ BUFFE: ds.b 80
  
 floortilename:
  ifeq CHEESEY
- dc.b 'AB3:includes/floortile'
+ dc.b 'includes/floortile'
  endc
  ifne CHEESEY
- dc.b 'AB3:includes/SMALLfloortile'
+ dc.b 'includes/SMALLfloortile'
  endc
  dc.b 0
  

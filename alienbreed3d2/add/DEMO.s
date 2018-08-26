@@ -2954,7 +2954,7 @@ option:
 
 ********** WALL STUFF *******************************
 
- include "AB3:wallroutine3.chipmem"
+ include "wallroutine3.chipmem"
 
 *****************************************************
 
@@ -4015,7 +4015,7 @@ ordinary:
 usebumps: dc.w $0
 smoothbumps: dc.w $0
  
- include "bumpmap.s"
+ include "BumpMap.s"
 
  CNOP 0,4
 backbefore:
@@ -4171,7 +4171,7 @@ startsmoothz: dc.w 0
 
 ********************************
 *
- include "AB3:ObjDraw3.chipram"
+ include "ObjDraw3.chipram"
 *
 ********************************
 
@@ -6430,7 +6430,7 @@ OldRoompt: dc.l 0
 
 *****************************************************************
  *
- include "AB3:LevelData2"
+ include "LevelData2"
  *
 *****************************************************************
 

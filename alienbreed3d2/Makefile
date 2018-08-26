@@ -29,27 +29,6 @@ else
 	RUNTIME_LDFLAGS = $(CLIB_LDFLAGS)
 endif
 
-#-fbbb=abcefimprs
-#-fbbb=
-#-fbbb=Enable Bebbo's optimizations.
-# +    enable all optimizations
-# a   commute add move instructions
-# b    use register for base addresses
-# c    convert load const and compare into a sub
-# e    eliminate dead assignments + redundant loads
-# f	   shrink stack frame
-# i    use post increment on addresses
-# m    merge add and move statements
-# p    propagate move assignment pairs out of loops
-# r    register renaming to maybe save registers
-# s    a strcpy optimization
-# v    be verbose
-# V    be very verbose
-# x    dump insns
-# Default: -fbbb=+ which yields -fbbb=abcefimprs
-
-#-v -fbbb=Vabcefimprs
-
 #
 CFLAGS = $(RUNTIME_CFLAGS)
 CFLAGS += -fbaserel -m68030 -m68881 -msmall-code
@@ -63,10 +42,10 @@ LDFLAGS = $(RUNTIME_LDFLAGS)
 
 AFLAGS = -Fhunk -nosym -ldots -devpac -m68030
 AFLAGS += -I./Devpac/Include/include \
+		  -I$(PREFIX)/m68k-amigaos/ndk-include \
 		  -I./includes \
 		  -I./
 
-#-I$(PREFIX)/m68k-amigaos/ndk-include
 
 INTERMEDIATE =$(CURDIR)/build/
 OUT = $(CURDIR)/bin/

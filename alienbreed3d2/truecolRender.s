@@ -3804,7 +3804,7 @@ PALETTEBIT:
  
  incbin "shadowtex/shadowpal"
 
- include "source_4000/truecolchunky.s"
+ include "truecolchunky.s"
 
 willy: ds.w 48
 

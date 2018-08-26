@@ -7,7 +7,7 @@
 
 	opt	L-,O+,P=68020
 
-	INCDIR	utils:sysinc/
+	INCDIR	
 	INCLUDE exec/exec_lib.i		; change this for your path!.
 	INCLUDE exec/io.i
 	INCLUDE devices/cd.i

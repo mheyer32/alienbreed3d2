@@ -2648,7 +2648,7 @@ PROTCALLENC:
 ; compare returned value, if correct
 ; set up all values, then return.
 
-; include "source_4000/protcallenc"
+; include "protcallenc"
 
 ENDPROT:
  

@@ -4046,7 +4046,7 @@ PALETTEBIT:
  
  incbin "shadowtex/shadowpal"
 
- include "source_4000/chunky.s"
+ include "chunky.s"
 
 willy: ds.w 48
 
