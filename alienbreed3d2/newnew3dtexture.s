@@ -11,12 +11,7 @@
 
 	opt	c+,d+
 
-	include	utilities/devpac/system			use pre-assembled header
-	include	exec/exec_lib.i
-	include	intuition/intuition.i
-	include	intuition/intuition_lib.i
-	include	graphics/graphics_lib.i
-	include	graphics/text.i
+	include	system.i			use pre-assembled header
 
 INTUITION_REV	equ	31		v1.1
 GRAPHICS_REV	equ	31		v1.1
@@ -1443,7 +1438,7 @@ PALETTEBIT:
  
  incbin "includes/256pal"
 
- include "chunky.s"
+ include "source_4000/chunky.s"
 
 willy: ds.w 49
 

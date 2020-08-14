@@ -3,7 +3,7 @@
 
 
 	INCDIR	utils:sysinc
-	include "utilities/devpac/system.gs"
+	include "system.i.gs"
 	INCLUDE	libraries/lowlevel.i
 ;	INCLUDE	exec/exec_lib.i
 

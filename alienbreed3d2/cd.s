@@ -8,9 +8,9 @@
 	opt	L-,O+,P=68020
 
 	INCDIR	
-	INCLUDE exec/exec_lib.i		; change this for your path!.
-	INCLUDE exec/io.i
-	INCLUDE devices/cd.i
+	include exec/exec_lib.i		; change this for your path!.
+	include exec/io.i
+	include devices/cd.i
 
 
 	XREF	_CreatePort

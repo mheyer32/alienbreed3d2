@@ -1,5 +1,5 @@
 TITLEPAL:
- incbin "includes/NEWTITLEPAL"
+ incbin "includes/newtitlepal"
 
 titlecop:
  dc.w intreq,$8010

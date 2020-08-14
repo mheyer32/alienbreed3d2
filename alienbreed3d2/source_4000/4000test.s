@@ -292,7 +292,7 @@ WTNOT MACRO
  
 **
 
- include "ProtectionProtection"
+ include "protectionprotection"
  include "macros.i"
  include "defs.i"
 
@@ -4156,7 +4156,7 @@ GOURSEL: dc.w 0
 ThisRoomToDraw: dc.l 0,0
 SplitHeight: dc.l 0
 
- include "OrderZones"
+ include "orderzones"
 
 ReadMouse:
  move.l #$dff000,a6
@@ -4989,7 +4989,7 @@ ENDGAMESCROLL:
 ; include "endscroll.s"
 
 ***********************************
- include "CD32JOY"
+ include "cd32joy"
 
 
  
@@ -5166,8 +5166,8 @@ liftanim:
  rts
 
 ******************************
- include "ObjectMove"
- include "Anims"
+ include "objectmove"
+ include "anims"
 ******************************
 startpass:
 ; include "password_reloc.s"
@@ -6969,7 +6969,7 @@ usebumps: dc.w $0
 smoothbumps: dc.w $0
 gourfloor: dc.w 0
  
- include "BumpMap.s"
+ include "bumpmap.s"
 
  CNOP 0,4
 backbefore:
@@ -7238,7 +7238,7 @@ startsmoothz: dc.w 0
 
 ********************************
 *
- include "ObjDraw3.chipram"
+ include "objdraw3.chipram"
 *
 ********************************
 
@@ -7343,9 +7343,9 @@ PLR1_Ducked: dc.b 0
 PLR2_Ducked: dc.b 0
  even
 
- include "PLR1CONTROL.s"
- include "PLR2CONTROL.s"
- include "FALL.s"
+ include "plr1control.s"
+ include "plr2control.s"
+ include "fall.s"
 
 prot7: dc.w 0
  
@@ -8783,7 +8783,7 @@ storeval: dc.w 0
  include "wallchunk.s"
  include "loadfromdisk.s"
  include "screensetup.s"
- include "CONTROLLOOP.s"
+ include "controlloop.s"
 
 
 
@@ -8850,7 +8850,7 @@ test: dc.l 0
 
  even
 ConstCols:
-; incbin "ConstCols"
+; incbin "constcols"
  even
 Smoothscalecols:
 ; incbin "smoothbumppalscaled"
@@ -8859,7 +8859,7 @@ SmoothTile:
 ; incbin "smoothbumptile"
  even
 Bumpscalecols:
-; incbin "Bumppalscaled"
+; incbin "bumppalscaled"
  even
 Bumptile:
 ; incbin "bumptile"
@@ -8882,8 +8882,8 @@ ChunkAddr: dc.l 0
 ; dc.l RockWALL
 ;
 ;GreenMechanicWALL: incbin "includes/walls/greenmechanic.wad"
-;BlueGreyMetalWALL: incbin "includes/walls/BlueGreyMetal.wad"
-;TechnoDetailWALL: incbin "includes/walls/TechnoDetail.wad"
+;BlueGreyMetalWALL: incbin "includes/walls/bluegreymetal.wad"
+;TechnoDetailWALL: incbin "includes/walls/technodetail.wad"
 ;BlueStoneWALL: incbin "includes/walls/bluestone.wad"
 ;RedAlertWALL: incbin "includes/walls/redalert.wad"
 ;RockWALL: incbin "includes/walls/rock.wad"
@@ -8893,7 +8893,7 @@ floortile:
 ; incbin "floortile" 
  even
 wallrouts:
-; incbin "2x2WallDraw" 
+; incbin "2x2walldraw" 
  CNOP 0,64
 BackPicture:
  incbin "backfile"
@@ -9089,7 +9089,7 @@ OldRoompt: dc.l 0
 
 *****************************************************************
  *
- include "LevelData2"
+ include "leveldata2"
  *
 *****************************************************************
 
@@ -9400,7 +9400,7 @@ n1l:
 n1h:
  dc.w 0
  dc.w $108,-24
- incbin "Panelpal"
+ incbin "panelpal"
 
  dc.w bpl2pth
 p2h
@@ -9867,15 +9867,15 @@ nullcop:
  dc.w $ffff,$fffe
 
 Scream:
-; incbin "sounds/Scream"
+; incbin "sounds/scream"
 ; ds.w 100
 EndScream:
 LowScream:
-; incbin "sounds/LowScream"
+; incbin "sounds/lowscream"
 ; ds.w 100
 EndLowScream:
 BaddieGun:
-; incbin "sounds/BaddieGun"
+; incbin "sounds/baddiegun"
 EndBaddieGun:
 bass:
 ; incbin "sounds/backbass+drum"
@@ -9902,7 +9902,7 @@ SwitchNoise:
 ; incbin "sounds/switch"
 EndSwitch:
 Reload:
-; incbin "sounds/switch1.SFX"
+; incbin "sounds/switch1.sfx"
 EndReload:
 
 CHEATFRAME:
@@ -10456,7 +10456,7 @@ testchip: dc.w 0
 ;/* End of File */
 mt_data: dc.l 0
 tstchip: dc.l 0
- include "SERIAL_NIGHTMARE"
+ include "serial_nightmare"
 
 ingame:
 ; incbin "includes/ingame"

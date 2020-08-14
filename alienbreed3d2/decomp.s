@@ -24,7 +24,7 @@ main:
 
  SECTION	data2,DATA_F
 ********************
-UnLhA:	incbin	"Decomp4.raw"
+UnLhA:	incbin	"decomp4.raw"
 buffer:		ds.b	16384
 ********************
 data:			;load lha-datafile

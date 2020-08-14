@@ -655,4 +655,4 @@ RELEASESCRNMEM:
 
  rts 
 
-unLHA:	incbin	"Decomp4.raw"
+unLHA:	incbin	"decomp4.raw"

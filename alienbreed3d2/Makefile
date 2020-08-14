@@ -1,5 +1,6 @@
 CC=m68k-amigaos-gcc
 ASS=vasmm68k_mot
+LINK=vlink
 
 PREFIX = $(shell ./getprefix.sh "$(CC)")
 
@@ -26,7 +27,7 @@ RUNTIME_CFLAGS = $(NOIXEMUL_CFLAGS)
 RUNTIME_LDFLAGS = $(NOIXEMUL_LDFLAGS)
 else
 	RUNTIME_CFLAGS = $(CLIB_CFLAGS)
-	RUNTIME_LDFLAGS = $(CLIB_LDFLAGS)
+	RUNTIME_LDFLAGS = $(CLIB_LDFLAGS
 endif
 
 #
@@ -40,11 +41,14 @@ CFLAGS += -DNDEBUG -D__BIG_ENDIAN__ -DAMIGA -D__NO_NET_API
 
 LDFLAGS = $(RUNTIME_LDFLAGS)
 
-AFLAGS = -Fhunk -nosym -ldots -devpac -m68030
-AFLAGS += -I./Devpac/Include/include \
+AFLAGS = -Fhunk -ldots -devpac -m68030 -ignore-mult-inc -linedebug -align
+AFLAGS += -I./devpac/Include/include \
 		  -I$(PREFIX)/m68k-amigaos/ndk-include \
 		  -I./includes \
 		  -I./
+
+LFLAGS = -bamigahunk -textbaserel
+LFLAGS += -L./Devpac/Include/lib
 
 
 INTERMEDIATE =$(CURDIR)/build/
@@ -56,13 +60,14 @@ OUTOBJS = $(addprefix $(INTERMEDIATE), $(OBJS))
 
 #$(info $(OBJS))
 
-all:	 Lazerbolt
+all:	 lazerbolt
 
 clean:
 	rm *.o
 
 %:	%.s Makefile
-	$(ASS) $(AFLAGS) $< -o $@
+	$(ASS) $(AFLAGS) -o $@.o $<
+	$(LINK) $(LFLAGS) $@.o -o $@
 
 %.o:	%.c Makefile
 	$(CC) $(CFLAGS) -c $< -o $@

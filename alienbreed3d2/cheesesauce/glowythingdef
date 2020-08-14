@@ -1,0 +1,13 @@
+glowything_des:
+ dc.l glowythingPts
+ dc.l glowythingLines
+
+glowythingPts:
+ incbin "work:amos_pro/redind.obj"
+ dc.w -1
+
+glowythingLines:
+ dc.l 0
+ dc.w 0*10
+ dc.l -1
+

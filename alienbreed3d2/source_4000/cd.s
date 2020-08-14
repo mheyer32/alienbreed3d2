@@ -7,13 +7,13 @@
 
 	opt	O+,P=68020
 
-	include "utilities/devpac/system.gs"
+	include "system.i.gs"
 
-;	INCLUDE exec_lib.i		; change this for your path!.
-	INCLUDE exec/io.i
-	INCLUDE devices/cd.i
+;	include exec_lib.i		; change this for your path!.
+	include exec/io.i
+	include devices/cd.i
 
-	INCLUDE exec/lists.i
+	include exec/lists.i
 
 
 _test

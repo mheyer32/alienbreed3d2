@@ -1,16 +1,19 @@
 
 		opt o+,l+,d+
 
-		incdir	inc:
+		;incdir	inc:
 
 		include	"exec/exec_lib.i"
 		include "exec/exec.i"
-		include	"graphics/graphics_lib.i"
+		include	"lvo/graphics_lib.i"
 		include "hardware/custom.i"
 
 		xdef	_c2p8_init
 		xdef	_c2p8_go
 
+bltcon0l    EQU   $05B		; note: byte access only
+bltsizv     EQU   $05C
+bltsizh     EQU   $05E
 ; ---------------------------------------------------------------------
 
 ; void __asm c2p8_init (register __a0 UBYTE *chunky,
@@ -32,7 +35,7 @@
 ; Optimised for 68020/30 with fastmem.
 ;
 ; Author: Peter McGavin (e-mail peterm@maths.grace.cri.nz), 21 April 1994
-; Based on James McCoull's 4-pass blitter algorithm.
+; Based on James McCoulls 4-pass blitter algorithm.
 ;
 ; Modified by Conrad Sanderson (g.sanderson@ais.gu.edu.au), 4 June 1994
 ;
@@ -66,7 +69,7 @@
 ; -------------------------------------------------------------------
 
 
-		section chunks,code
+		section .text,code
 
 _c2p8_init:
 		movem.l	d2-d3/a2-a4/a6,-(sp)
@@ -476,7 +479,7 @@ blit32:		move.l	(tmp_buff2,pc),d0
 ;-------------------------------------------------
 
 ;Pass 4, plane 7
-;	apt		Buff3+0*pixels/8
+;	apt		Buff3+0*pixecpuls/8
 ;	bpt		Buff3+1*pixels/8
 ;	dpt		Plane7+offset
 ;	amod		0
@@ -829,5 +832,6 @@ signals2:	dc.l	0		; signals to Signal() at cleanup
 gfxbase:	dc.l	0		; GfxBase
 sysbase:	dc.l	0		; ExecBase
 
-		end
+ThisTask	dc.l	0		; send signals to own thread
+;		end
 
