@@ -418,4 +418,4 @@ mt_arpeggio:
 	dc.w $00e2,$00d6,$00ca,$00be,$00b4,$00aa,$00a0,$0097
 	dc.w $008f,$0087,$007f,$0078,$0071,$0000,$0000,$0000
 
-MT_DATA: incbin "work:andy's_tunes/twochantrack"
+MT_DATA:  incbin "work:andy's_tunes/twochantrack"

@@ -539,14 +539,14 @@ notallliftsdone:
  add.w d2,d3
  move.w 2(a0),d2
  cmp.w d3,d0
- sle.s liftatbot
+ sle liftatbot
  bgt.s .nolower
  moveq #0,d2
  move.w d0,d3
 .nolower:
 
  cmp.w d3,d1
- sge.s liftattop
+ sge liftattop
  blt.s .noraise
  moveq #0,d2
  move.w d1,d3
@@ -579,10 +579,10 @@ notallliftsdone:
  neg.w d0
  
  cmp.w (a3),d5
- seq.s PLR1_stoodonlift
+ seq PLR1_stoodonlift
  move.l PLR2_Roompt,a3
  cmp.w (a3),d5
- seq.s PLR2_stoodonlift
+ seq PLR2_stoodonlift
  
  move.w (a0)+,d2	; conditions
  and.w Conditions,d2
@@ -801,13 +801,13 @@ notalldoorsdone:
  add.w d2,d3
  move.w 2(a0),d2
  cmp.w d3,d0
- sle.s doorclosed
+ sle doorclosed
  bgt.s nolower
  moveq #0,d2
 nolower:
 
  cmp.w d3,d1
- sge.s dooropen
+ sge dooropen
  blt.s noraise
  moveq #0,d2
  move.w d1,d3
@@ -1404,7 +1404,7 @@ notdoneflame:
  
  rts
  
-; include "ab3:source/ai.s"
+; include "ai.s"
 
 ItsABarrel:
 
@@ -1528,7 +1528,7 @@ nodamage:
 
  rts
 
- include "ab3:source_4000/aliencontrol.s"
+ include "aliencontrol.s"
 
 nextCPt: dc.w 0
 
@@ -3115,8 +3115,8 @@ nograv:
  asr.l #7,d4
  move.w d4,4(a0)
  btst #0,shotflags+1(a0)
- sne.s wallbounce
- seq.s exitfirst
+ sne wallbounce
+ seq exitfirst
 
  clr.b hitwall
  move.b ObjInTop(a0),StoodInTop

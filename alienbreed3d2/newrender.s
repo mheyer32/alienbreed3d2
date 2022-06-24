@@ -15,7 +15,6 @@
 	include	exec/exec_lib.i
 	include	intuition/intuition.i
 	include	intuition/intuition_lib.i
-	include	lvo/graphics_lib.i
 	include	graphics/text.i
 
 INTUITION_REV	equ	31		v1.1
@@ -4012,16 +4011,13 @@ COPIEDPAL:
  ds.l 3*256
  ds.l 10
 
-SHADOWBUFFER:
-HIGHLIGHT: incbin "temp/highlight"
-
 PALETTEBIT:
 ; incbin "256palette"
 ; dc.w $ffff,$fffe
  
  incbin "shadowtex/shadowpal"
 
- include "chunky.s"
+ include "cheesesauce/chunky.s"
 
 willy: ds.w 48
 

@@ -3,7 +3,7 @@
  adda.w #10000,a2
  move.l a1,a4
  lea protspace(pc),a5
- moveq.w #123,d0
+ moveq.l #123,d0
  move.w #399,d1
 decode2:
  move.w (a4)+,d2

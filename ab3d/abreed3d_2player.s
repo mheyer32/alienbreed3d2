@@ -74,9 +74,9 @@ bltcmod     	equ $60
 bltbmod     	equ $62
 bltamod     	equ $64
 bltdmod     	equ $66
-diwstart        equ $8e         ; Screen hardware registers.
+diwstrt        equ $8e         ; Screen hardware registers.
 diwstop         equ $90
-ddfstart        equ $92
+ddfstrt        equ $92
 ddfstop         equ $94
 bplcon0         equ $100
 bplcon1         equ $102
@@ -152,8 +152,8 @@ WBSLOW MACRO
  
 **
 
- include "macros.i"
- include "ab3:source/defs.i"
+  include "macros.i"
+  include "defs.i"
 
 * Load level into buffers.
  move.l 4.w,a6
@@ -1023,7 +1023,7 @@ rfbl:
 readoutfrom:
  move.w #15,d1
  move.l a2,a1
- moveq.w #0,d5
+ moveq.l #0,d5
 readoutfromdown:
  move.w (a3)+,d2
  beq.s nono1
@@ -1172,7 +1172,7 @@ GunData:
 protA: dc.w 0
 
 Path:
-; incbin "testpath"
+;  incbin "testpath"
 endpath:
 pathpt: dc.l Path
 
@@ -1659,7 +1659,7 @@ jumpoutofloop:
 
 ThisRoomToDraw: dc.l 0
 
- include "ab3:source/OrderZones"
+  include "orderzones"
 
 ReadMouse:
  clr.l d0
@@ -2509,7 +2509,7 @@ okspdrgt:
 
 *****************************************************
 
- include "ab3:source/ObjectMove"
+  include "objectmove"
 
 pastdata:
 ***********************************
@@ -2525,7 +2525,7 @@ liftanim:
  rts
 
 ******************************
- include "ab3:source/Anims"
+  include "anims"
 ******************************
 
 rotanimpt: dc.w 0
@@ -2542,7 +2542,7 @@ option:
 
 ********** WALL STUFF *******************************
 
- include "AB3:source/wallroutine3.chipmem"
+  include "wallroutine3.chipmem"
 
 *****************************************************
 
@@ -3151,7 +3151,7 @@ dofloornoclip:
 
 
 dists:
-; incbin "floordists"
+;  incbin "floordists"
 drawit: dc.w 0
 
 LineToUse: dc.l 0
@@ -3556,7 +3556,7 @@ ordinary:
 usebumps: dc.w $0
 smoothbumps: dc.w $0
  
- include "ab3:source/bumpmap.s"
+  include "bumpmap.s"
 
  CNOP 0,4
 backbefore:
@@ -3714,7 +3714,7 @@ startsmoothz: dc.w 0
 
 ********************************
 *
- include "AB3:source/ObjDraw3.chipram"
+  include "objdraw3.chipram"
 *
 ********************************
 
@@ -4865,7 +4865,7 @@ loop3:
  move.b vol1right,d0
  move.b vol3right,d1
  cmp.b d1,d0
- slt.s swappedem
+ slt swappedem
  bge.s fbig3
 
  exg a0,a1
@@ -5681,35 +5681,35 @@ test: dc.l 0
 
  even
 ConstCols:
- incbin "ConstCols"
+  incbin "constcols"
  even
 Smoothscalecols:
-; incbin "smoothbumppalscaled"
+;  incbin "smoothbumppalscaled"
  even
 SmoothTile:
-; incbin "smoothbumptile"
+;  incbin "smoothbumptile"
  even
 Bumpscalecols:
-; incbin "Bumppalscaled"
+;  incbin "bumppalscaled"
  even
 Bumptile:
-; incbin "bumptile"
+;  incbin "bumptile"
  even
-scalecols: incbin "bytepixpalscaled"
+scalecols:  incbin "bytepixpalscaled"
  even
-floorscalecols: incbin "floorpalscaled"
+floorscalecols:  incbin "floorpalscaled"
  even
 walltiles:
- incbin "bytepixfile"
+  incbin "bytepixfile"
  even
 floortile:
- incbin "floortile" 
+  incbin "floortile" 
  even
 wallrouts:
-; incbin "2x2WallDraw" 
+;  incbin "2x2walldraw" 
  CNOP 0,64
 BackPicture:
- incbin "backfile"
+  incbin "backfile"
 EndBackPicture:
 
 drawpt: dc.l colbars2
@@ -5717,7 +5717,7 @@ olddrawpt: dc.l colbars
 frompt: dc.l 0 
  
 SineTable:
- incbin "bigsine"
+  incbin "bigsine"
 
 angpos: dc.w 0
 angspd: dc.w 0
@@ -5800,11 +5800,11 @@ liftanimtab:
 endliftanimtab:
  
 glassball:
- incbin "glassball.inc"
+  incbin "glassball.inc"
 endglass
 glassballpt: dc.l glassball
  
-rndtab: ; incbin "randfile"
+rndtab: ;  incbin "randfile"
 endrnd: 
  
 brightanimtab:
@@ -5825,7 +5825,7 @@ OldRoompt: dc.l 0
 
 *****************************************************************
  *
- include "AB3:source/LevelData2"
+  include "leveldata2"
  *
 *****************************************************************
 
@@ -5844,20 +5844,20 @@ OnScreen:
 startwait: dc.w 0
 endwait: dc.w 0
 
-Faces: incbin "faces2raw"
+Faces:  incbin "faces2raw"
 
 *******************************************************************
 
 consttab:
- incbin "constantfile"
+  incbin "constantfile"
 
 *******************************************************************
  
-darkentab: incbin "darkenedcols"
-brightentab: incbin "brightenfile"
+darkentab:  incbin "darkenedcols"
+brightentab:  incbin "brightenfile"
 WorkSpace:
  ds.l 8192 
-waterfile: incbin "waterfile"
+waterfile:  incbin "waterfile"
 
  SECTION ffff,CODE_C
 
@@ -5865,16 +5865,16 @@ nullspr: dc.l 0
  
  cnop 0,8
 borders:
- incbin "leftbord"
- incbin "rightbord"
+  incbin "leftbord"
+  incbin "rightbord"
 
-health: incbin "healthstrip"
-Ammunition: incbin "ammostrip"
-healthpal: incbin "healthpal"
-PanelKeys: incbin "greenkey"
- incbin "redkey"
- incbin "yellowkey"
- incbin "bluekey"
+health:  incbin "healthstrip"
+Ammunition:  incbin "ammostrip"
+healthpal:  incbin "healthpal"
+PanelKeys:  incbin "greenkey"
+  incbin "redkey"
+  incbin "yellowkey"
+  incbin "bluekey"
 
 null: ds.w 500
 null2: ds.w 500
@@ -5889,9 +5889,9 @@ bl1l: dc.w 0
  dc.w bpl1pth
 bl1h: dc.w 0
 
- dc.w diwstart,$2c81
+ dc.w diwstrt,$2c81
  dc.w diwstop,$1cc1
- dc.w ddfstart,$38
+ dc.w ddfstrt,$38
  dc.w ddfstop,$b8
  dc.w bplcon0,$9201
  dc.w bplcon1,0
@@ -5915,17 +5915,17 @@ bigfield:
  dc.w dmacon,$8020
  dc.w intreq,$8011
  dc.w $1fc,$f
- dc.w diwstart
+ dc.w diwstrt
 winstart: dc.w $2cb1
  dc.w diwstop
 winstop: dc.w $2c91
- dc.w ddfstart
+ dc.w ddfstrt
 fetchstart: dc.w $48
  dc.w ddfstop
 fetchstop: dc.w $88
 
 bordercols:
- incbin "borderpal"
+  incbin "borderpal"
 
  dc.w spr0ptl
 s0l:
@@ -5982,7 +5982,7 @@ s7h:
  dc.w col0,0
 
  dc.w $106,$c42
- incbin "borderpal"
+  incbin "borderpal"
 
  dc.w bplcon0,$7201
  dc.w bplcon1
@@ -6107,7 +6107,7 @@ n1l:
 n1h:
  dc.w 0
  dc.w $108,-24
- incbin "Panelpal"
+  incbin "panelpal"
 
  dc.w bpl2pth
 p2h
@@ -6163,9 +6163,9 @@ och:
 ocl:
  dc.w 0
 
- dc.w ddfstart,$38
+ dc.w ddfstrt,$38
  dc.w ddfstop,$b8
- dc.w diwstart,$2c81
+ dc.w diwstrt,$2c81
  dc.w diwstop,$2cc1
  
  dc.w bplcon0
@@ -6207,7 +6207,7 @@ p1l
  dc.w $a01,$ff00
  dc.w bplcon0,$201
  
- incbin "faces2cols"
+  incbin "faces2cols"
  dc.w bpl1pth
 f1h
  dc.w 0
@@ -6331,7 +6331,7 @@ gfxname dc.b "graphics.library",0
  cnop 0,64
 
 Panel:
- incbin "PanelRaw"
+  incbin "panelraw"
 
 TimerScr: ds.b 40*64
 
@@ -6433,38 +6433,38 @@ STOPTIMER:
  st oktodisplay
  rts
  
-digits: incbin "numbers.inc"
+digits:  incbin "numbers.inc"
 
  
  Section Sounds,CODE_C
 
-Scream: incbin "ab3:sounds/Scream"
+Scream:  incbin "sounds/scream"
  ds.w 100
 EndScream:
-LowScream: incbin "ab3:sounds/LowScream"
+LowScream:  incbin "sounds/lowscream"
  ds.w 100
 EndLowScream:
-BaddieGun: incbin "ab3:sounds/BaddieGun"
+BaddieGun:  incbin "sounds/baddiegun"
 EndBaddieGun:
-;bass: incbin "ab3:sounds/backbass+drum"
+;bass:  incbin "sounds/backbass+drum"
 ;bassend:
-Shoot: incbin "ab3:sounds/fire!"
+Shoot:  incbin "sounds/fire!"
 EndShoot:
-Munch: incbin "ab3:sounds/munch"
+Munch:  incbin "sounds/munch"
 EndMunch:
-PooGun: incbin "ab3:sounds/shoot.dm"
+PooGun:  incbin "sounds/shoot.dm"
 EndPooGun:
-Collect: incbin "ab3:sounds/collect"
+Collect:  incbin "sounds/collect"
 EndCollect:
-DoorNoise: incbin "ab3:sounds/newdoor"
+DoorNoise:  incbin "sounds/newdoor"
 EndDoorNoise:
-Stomp: incbin "ab3:sounds/footstep3"
+Stomp:  incbin "sounds/footstep3"
 EndStomp:
-SwitchNoise: incbin "ab3:sounds/switch"
+SwitchNoise:  incbin "sounds/switch"
 EndSwitch:
-Reload: incbin "ab3:sounds/switch1.SFX"
+Reload:  incbin "sounds/switch1.sfx"
 EndReload:
-NoAmmo: incbin "ab3:sounds/noammo"
+NoAmmo:  incbin "sounds/noammo"
 EndNoAmmo:
 
  SECTION music,code_c
@@ -6805,7 +6805,7 @@ mt_vib2:move.w	d0,$6(a5)
 mt_nop:	move.w	$10(a6),$6(a5)
 	rts
 
- include "ab3:source/password_reloc.s"
+  include "password_reloc.s"
 
 mt_checkcom:
 	move.w	$2(a6),d0
@@ -6974,6 +6974,6 @@ testchip: dc.w 0
 ;/* End of File */
 mt_data: dc.l 0
 
-ingame: incbin "ab3:includes/ingame"
-gameover: incbin "ab3:includes/gameover"
-welldone: incbin "ab3:includes/welldone"
+ingame:  incbin "includes/ingame"
+gameover:  incbin "includes/gameover"
+welldone:  incbin "includes/welldone"

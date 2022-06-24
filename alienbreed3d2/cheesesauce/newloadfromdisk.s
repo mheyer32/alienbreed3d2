@@ -590,7 +590,7 @@ NOMOREVECTORS:
 DOTPTR: dc.l 0
  
 LOAD_A_PALETTE
- movem.l d0-a7/a0-a6,-(a7)
+ movem.l d0-d7/a0-a6,-(a7)
  
  move.l #OBJNAME,blockname
  move.l doslib,a6
@@ -621,7 +621,7 @@ LOAD_A_PALETTE
  move.l handle,d1
  jsr -36(a6)
 
- movem.l (a7)+,d0-a7/a0-a6
+ movem.l (a7)+,d0-d7/a0-a6
  
  move.l blockstart,(a2)+
  move.l blocklen,(a2)+

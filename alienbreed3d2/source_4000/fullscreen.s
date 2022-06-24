@@ -1,4 +1,4 @@
-	
+	include "system.i"
 
 *************************************************
 * Stuff to do to get a C2P version:
@@ -124,14 +124,6 @@ DMACON		equ	$096
 SERPER		equ	$032
 SERDATR	equ	$018
 SERDAT		equ	$030
-vhposr		equ $006	
-vhposrl	equ $007 
-
-bltcon0	equ $40 
-bltcon1	equ $42
-bltcpt		equ $48
-bltbpt		equ $4c
-bltapt		equ $50
 spr0ctl	equ $142
 spr1ctl	equ $14a
 spr2ctl	equ $152
@@ -148,20 +140,6 @@ spr4pos	equ $160
 spr5pos	equ $168
 spr6pos	equ $170
 spr7pos	equ $178
-bltdpt     	equ $54
-bltafwm	equ $44
-bltalwm	equ $46
-bltsize     	equ $58
-bltcmod     	equ $60
-bltbmod     	equ $62
-bltamod     	equ $64
-bltdmod     	equ $66
-diwstart        equ $8e         ; Screen hardware registers.
-diwstop         equ $90
-ddfstart        equ $92
-ddfstop         equ $94
-bplcon0         equ $100
-bplcon1         equ $102
 col0            equ $180
 col1            equ $182
 col2		equ $184
@@ -176,12 +154,6 @@ col10           equ $194
 col11           equ $196
 col12           equ $198
 col13           equ $19a
-dmacon		equ $96
-dmaconr		equ $002
-intenar		equ $01c
-intena		equ $09a
-intreq		equ $09c
-intreqr		equ $01e
 intreqrl	equ $01f
 bpl1pth         equ $e0
 bpl1ptl         equ $e2
@@ -215,8 +187,6 @@ spr6pth		equ $138
 spr6ptl		equ $13a
 spr7pth		equ $13c
 spr7ptl		equ $13e
-adkcon	    equ   $09E
-
 
 ; move.l #length,d0
 ; moveq.l #2,d1	; chipmem
@@ -3641,7 +3611,7 @@ notintop:
  add.l PLR1_Roompt,d1
  move.l d1,PLR1_PointsToRotatePtr
  tst.w (a0)+
- sne.s DRAWNGRAPHTOP
+ sne DRAWNGRAPHTOP
  beq.s nobackgraphics
  cmp.b #'s',mors
  beq.s nobackgraphics
@@ -5082,7 +5052,7 @@ LessAmmo:
  move.w #63,d3
  sub.w OldAmmo,d3
  
- move.l #borders++5184+25*16+1,a1
+ move.l #borders+5184+25*16+1,a1
  asl.w #5,d3
  add.w d3,a1
  lea 2592(a1),a2
@@ -8329,7 +8299,7 @@ loop3:
  move.b vol1right,d0
  move.b vol3right,d1
  cmp.b d1,d0
- slt.s swappedem
+ slt swappedem
  bge.s fbig3
 
  exg a0,a1
@@ -9545,7 +9515,7 @@ darkentab:
 ; ENDR
  incbin "darkenfile"
 
-SHADINGTABLE: incbin "shadefile" 
+;SHADINGTABLE: incbin "shadefile"
  
 brightentab: incbin "brightenfile"
 WorkSpace:
@@ -9582,9 +9552,9 @@ bl1l: dc.w 0
  dc.w bpl1pth
 bl1h: dc.w 0
 
- dc.w diwstart,$2c81
+ dc.w diwstrt,$2c81
  dc.w diwstop,$1cc1
- dc.w ddfstart,$38
+ dc.w ddfstrt,$38
  dc.w ddfstop,$b8
  dc.w bplcon0,$9201
  dc.w bplcon1,0
@@ -9610,11 +9580,11 @@ bigfield:
  dc.w dmacon,$8020
  dc.w intreq,$8011
  dc.w $1fc,$f
- dc.w diwstart
+ dc.w diwstrt
 winstart: dc.w $2c81
  dc.w diwstop
 winstop: dc.w $2cc1
- dc.w ddfstart
+ dc.w ddfstrt
 fetchstart: dc.w $38
  dc.w ddfstop
 fetchstop: dc.w $b8
@@ -9894,9 +9864,9 @@ p8l
  dc.w 0
  
 
- dc.w ddfstart,$38
+ dc.w ddfstrt,$38
  dc.w ddfstop,$b8
- dc.w diwstart,$2c81
+ dc.w diwstrt,$2c81
  dc.w diwstop,$2cc1
  
  dc.w bplcon0
@@ -10044,9 +10014,9 @@ txs7h:
  dc.w $10c,$0088
 
  dc.w $1fc,$f
- dc.w diwstart,$2c81    ; Top left corner of screen.
+ dc.w diwstrt,$2c81    ; Top left corner of screen.
  dc.w diwstop,$2cc1     ; Bottom right corner of screen.
- dc.w ddfstart,$38      ; Data fetch start.
+ dc.w ddfstrt,$38      ; Data fetch start.
  dc.w ddfstop,$c8       ; Data fetch stop.
 
  dc.w bplcon0

@@ -15,7 +15,6 @@
 	include	exec/exec_lib.i
 	include	intuition/intuition.i
 	include	intuition/intuition_lib.i
-	include	lvo/graphics_lib.i
 	include	graphics/text.i
 
 INTUITION_REV	equ	31		v1.1

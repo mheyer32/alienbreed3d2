@@ -15,11 +15,12 @@
 	include	exec/exec_lib.i
 	include	intuition/intuition.i
 	include	intuition/intuition_lib.i
-	include	lvo/graphics_lib.i
 	include	graphics/text.i
 
 INTUITION_REV	equ	31		v1.1
 GRAPHICS_REV	equ	31		v1.1
+
+	section .text,code
 
 * Open the intuition library
 
@@ -3794,7 +3795,7 @@ COPIEDPAL:
  ds.l 10
 
 SHADOWBUFFER: ds.l 65536/4
-HIGHLIGHT: incbin "temp/highlight"
+;HIGHLIGHT: incbin "temp/highlight"
 
 PALETTEBIT:
 ; incbin "256palette"
@@ -3802,7 +3803,7 @@ PALETTEBIT:
  
  incbin "shadowtex/shadowpal"
 
- include "chunky.s"
+ include "cheesesauce/chunky.s"
 
 willy: ds.w 48
 
@@ -3872,7 +3873,8 @@ NORMVECTS: ds.w 3*250
  
  
  
-NEBBIE: incbin "temp/nebbieroar"
+NEBBIE:
+	incbin "temp/nebbieroar"
 	ds.l (192/4)*16
  
  SECTION blib,code_f

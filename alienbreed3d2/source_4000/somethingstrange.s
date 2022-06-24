@@ -1,7 +1,10 @@
 ;this program uses the task oriented ctp routine to display
 ;a simple picture.
-
-	include	"system.i.gs"
+	include "funcdef.i"
+	include "lvo/exec_lib.i"
+	include	"lvo/intuition_lib.i"
+	include	"intuition/screens.i"
+	include "hardware/custom.i"
 	
 scrwid	EQU	192
 scrht	EQU	160

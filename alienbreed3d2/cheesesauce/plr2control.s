@@ -75,7 +75,7 @@ PLR2_mouse_control
  move.b forward_key,d7
 
  btst #6,$bfe001
- seq.s (a5,d7.w)
+ seq (a5,d7.w)
 
  bra PLR2_keyboard_control
 

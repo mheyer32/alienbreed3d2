@@ -144,8 +144,8 @@ scrht	EQU	256
 ;	lea	bm_Planes(a2),a2	;plane pointer
 	move.l #backupptr,a2
 	move.l	_GfxBase,a3
-	move.l	#1,d0			;signals1
-	move.l	#2,d1			;signals2
+	move.l	SIG1,d0			;signals1
+	move.l	SIG2,d1			;signals2
 	move.l	#scrwid*scrht,d2	;number of pixels
 	move.l	#0,d3			;byte offset
 	move.l	CHIPBUF1,d4
@@ -4775,12 +4775,14 @@ SCREENBASE:	dc.l	0
  
 RAWPTR: dc.l RAWSCRN
 RAWPTR2: dc.l RAWSCRN2
- 
+
+include "source_4000/cpu+blitter/c2p8.s"
+
  SECTION BGDROP,code_c
- 
+
 RAWSCRN:
  ds.l 2560*8
 RAWSCRN2:
  ds.l 2560*8
 
-	include "source_4000/cpu+blitter/c2p8.s"
+

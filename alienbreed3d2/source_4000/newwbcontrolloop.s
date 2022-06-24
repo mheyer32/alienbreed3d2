@@ -391,12 +391,12 @@ QUITTT:
  move.l old,$dff080
  move.l 4.w,a6
  lea VBLANKInt,a1
- moveq #INTB_COPER,d0
+ moveq #4,d0
  jsr _LVORemIntServer(a6)
 
  move.l 4.w,a6
  lea KEYInt,a1
- moveq #INTB_PORTS,d0
+ moveq #3,d0
  jsr _LVORemIntServer(a6)
 
  move.w #$f8e,$dff1dc
@@ -1089,7 +1089,7 @@ CHECKPARITY:
  move.b d0,d1
  and.b #$80,d1
  eor.b d1,d2
- sne.s d5
+ sne d5
  rts
  
 CALCPASSWORD:

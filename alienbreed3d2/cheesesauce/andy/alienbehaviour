@@ -1,0 +1,130 @@
+
+	Alien Ettiquette
+		or
+   How the aliens should behave.
+
+1. Solitary Prowling.
+
+	Required action:
+	Simulate a sort of random roaming of the rooms and corridors looking
+	for intruders, with no active cooperation between aliens.
+		
+	Possible solutions:
+	a) Picking a control point at random and going all the way there, 
+	then picking a new point and going to there, and so on.
+	
+	b) Keeping a one-position memory of the last c.p. visited, preventing
+	the alien from back-tracking pointlessly. At each control point
+	reached, a new one is selected at random from those adjoining the
+	current one.
+	
+	c) Just pick a new point at random adjoining the current one and go
+	there, not bothering about whether it has just been there or not.
+	
+	Characteristics of solutions:
+	a) Aliens tend to roam very widely quite quickly, and might easily
+	find the players within seconds of starting a level even when
+	initially positioned a long way away.
+	
+	b) Aliens will tend to spread out more slowly, provided there are
+	many 'loops' and junctions in the area. With lots of long corridors
+	with few junctions, the aliens will become more seperated much more
+	quickly.
+	
+	c) Aliens will wander backwards and forwards and never really get
+	anywhere no matter what the design of level is like.
+	
+2. Solitary Attack.
+
+	Required action:
+	An alien has seen an enemy and has decided to attack.
+	
+	Possible solutions:
+	a) While the enemy is visible the alien heads towards it, returning
+	to its earlier mode of behaviour when no enemy is visible, with
+	some flags set to indicate the enemy has been sighted.
+	If another closer target presents itself, the alien will attack it
+	instead.
+	
+	b) While the enemy is visible the alien heads towards it,
+	remembering where the enemy is all the time. If the enemy should
+	vanish, the alien will head to the place it last saw the enemy. If
+	it reaches this place and it still cannot see the enemy it reverts
+	to previous mode of behaviour, with flags set indicating the enemy
+	has been sighted.
+	
+	Characteristics of solutions:
+	
+	a) Aliens are easy to 'lose' in a maze-like level with lots of
+	corners.
+	
+	b) Aliens, particularly fast ones, are difficult to shake off. If
+	they are moving faster than you are you might have a real problem
+	and have to stand, or run, and fight.
+	
+3. Cooperative search.
+
+	Required action:
+	Aliens know the enemy is out there somewhere and want to find them.
+	They work together to search everywhere pretty thoroughly.
+	
+	Possible Solutions:
+	a) Aliens move from c.p. to c.p. using method 1b, except when faced
+	with a junction rather than a corridor. In that case, aliens wait
+	until there are enough of them at one junction to go down every
+	exit EXCEPT those from which any of them has arrived
+	
+	b) Similar to above except that aliens faced with more unexplored
+	exits than there are aliens to explore them will pick exits randomly
+	and keep moving.
+	
+	Characteristics of solutions:
+	
+	a) Aliens are cautious about venturing alone into new areas and tend
+	to wait for backup. Of course, it may happen that this never arrives
+	and so after some prearranged time limit the alien my start to prowl
+	independantly.
+	
+	b) Aliens keep moving and exploring and tend to find the enemy
+	more quickly.
+
+4. 'Wait for backup'
+
+	Required action:
+	A lone alien finding the enemy decides to wait until there are more
+	of its fellows around before attacking. It should keep out of sight
+	and possibly signal to other aliens.
+
+	Possible solutions:
+	a) Aliens remember the last position where they were unable to see
+	any enemy and retreat to that point when the enemy is sighted. If
+	seen and attacked, the alien will definately call to its fellows
+	and may decide to attack or retreat.
+	
+	Characteristics of solutions:
+	a) Aliens are cunning and reluctant to be drawn into confrontations
+	where they do not have the advantage.
+
+Notable behaviour patterns obtained by combinations of the above:
+=================================================================
+
+1b and 2b make aliens very persistant, particularly if the enemy sighted
+(ES) flags make it speed up when prowling. If no cooperation is allowed this
+should give a moderate difficulty level which could offer real problems if
+the player's tactics are poor (eg telling everyone to split up and run
+away from the aliens).
+
+1c and 2a make aliens very stupid, frequently giving up the chase to just
+wander aimlessly around. For early levels only.
+
+3a and 4a make aliens very cautious and reluctant to enter into
+confrontations.
+
+3b with 2b and screams and so on makes aliens individually aggressive, and 
+if not dealt with quickly will lead all the others to you
+
+3a/b with actual communication ie telling other aliens where you are rather
+than just making a noise, means that if an alien sees you, and you dont
+leave sharpish, all the other aliens are going to turn up and slaughter you.
+Makes for a difficult level.
+

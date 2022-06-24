@@ -77,7 +77,7 @@ main_musicstop:	MACRO		; Command to Stop Music
 PPR_68020	=	1
 PPR_NotePlayer	=	0
 
-		include	"demo:System/ProRunner.S"
+		include	"system/prorunner.s"
 		ENDIF
 		ENDIF
 		ENDIF
@@ -3439,7 +3439,7 @@ main_contxt11:	dc.b	' counter: ',0
 main_contxt12:	dc.b	'                       main_counter: ',0
 main_contxt13:	dc.b	0,0	
 main_contxt14:	dc.b	10,13,'Unknown command !!!',10,13,0
-main_contxt15:	blk.b	79,32
+main_contxt15:	dcb.b	79,32
 		dc.b	0
 main_contxt16:	dc.b	'Continue program  Exit to system  View screen'
 		dc.b	'  Run frame by frame   Commands',0
@@ -3532,7 +3532,7 @@ main_mousezones:dc.w	0,472,143,504
 		dc.l	0			; Blahhh
 
 main_inputlength:dc.w	0		
-main_inputbuffer:blk.b	128
+main_inputbuffer:dcb.b	128
 
 main_mousesprite:dc.l	$48605000
 		dc.w	%1001001000000000,%1000001000000000
@@ -3688,7 +3688,7 @@ main_font:	dc.l	$7e666666,$66667e00,$7e666666,$66667e00
 		dc.l	$66006666,$66663b00,$0c106666,$663c1870
 		dc.l	$f0607c66,$667c60f0,$66006666,$663c1870
 
-main_concols:	blk.w	7
+main_concols:	dcb.w	7
 		
 main_configcop:	dc.l	$01009200,$01020000,$01040024,$01060000,$010c0011
 		dc.l	$01fc0000,$01080000,$010a0000,$01800000,$018200f0
@@ -3815,7 +3815,7 @@ kbd_keydefault:	dc.l	$00600031,$00320033,$00340035,$00360037
 		dc.l	$00000000,$00000000,$009a009b,$009d009c
 		dc.l	$00000000,$00000000,$00000000,$00000000
 		dc.l	$00000000,$00000000,$00000000,$000000a4
-		blk.b	6720
+		dcb.b	6720
 
 kbd_buffer:	dc.b	0,0		; Head & Tail ptr
 		ds.w	256		; Buffer
@@ -3827,7 +3827,7 @@ main_conintreq:	dc.w	0			; Config old intreq
 main_condmacon:	dc.w	0			; Config old dma
 main_configsr:	dc.w	0			; Int status reg
 main_configpc:	dc.l	0			; Int userpc
-main_configregs:blk.l	16			; Registers a7-d0
+main_configregs:dcb.l	16			; Registers a7-d0
 main_configexit:dc.w	0			; Set to 1 to close con screen
 main_configscreen:dc.w	0			; Flag to indicate if config
 	ENDIF
@@ -3860,8 +3860,8 @@ main_vectorlist:
 main_counter2:	dc.l	0
 main_usersr:	dc.w	0			; Int status reg
 main_userpc:	dc.l	0			; Int userpc
-main_registers:	blk.l	16			; Registers a7-d0
-main_oldvectors:blk.l	17			; Space for system vectors
+main_registers:	dcb.l	16			; Registers a7-d0
+main_oldvectors:dcb.l	17			; Space for system vectors
 main_oldintena:	dc.w	0			; saved intena
 main_oldintreq:	dc.w	0			; saved intreq
 main_olddmacon:	dc.w	0			; saved dmacon
@@ -3884,7 +3884,7 @@ main_argv:	dc.l	0			; Ptr to arguments
 main_cachereg:	dc.l	0			; Cache reg ptr
 main_cacheok:	dc.w	0			; Ok 2 reset cache ?
 		IFND	main_short
-test:		blk.l	16			; Test block
+test:		dcb.l	16			; Test block
 		ENDIF
 		
 
@@ -3907,7 +3907,7 @@ main_ok2run:	dc.w	0
 
 	IFND	main_short
 main_argcount:	dc.l	0
-main_arglist:	blk.l	16
+main_arglist:	dcb.l	16
 main_timer2:	dc.l	0	; Last timer value
 main_savecount:	dc.l	0
 main_savecount2:dc.l	0

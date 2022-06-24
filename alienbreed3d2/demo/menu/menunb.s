@@ -328,10 +328,10 @@ mnu_setscreen:	bsr.w	mnu_init
 
 mnu_vblint:
 		bsr.w	mnu_movescreen
-		;bsr.w	mnu_dofire
+;		bsr.w	mnu_dofire
 ;		bsr.w	key_kbdlevel3
 		bsr.w	mnu_animcursor
-		;bsr.w	mnu_plot
+;		bsr.w	mnu_plot
 		rts
 
 mnu_init:	bsr.w	mnu_initrnd		; Uses palette buffer
@@ -2131,14 +2131,14 @@ mnu_buttonanim:	dc.b	236,236,236,236
 		dc.b	237,237,237,237
 		dc.b	24
 		even
-mnu_font:	incbin	"demo:Menu/font16x16.raw2"
-mnu_fontpal:	incbin	"demo:Menu/FONT16x16.PAL2"
-mnu_firepal:	incbin	"Demo:Menu/FirePal.Pal2"
-mnu_backpal:	incbin	"demo:Menu/Back.Pal"
+mnu_font:	incbin	"demo/menu/font16x16.raw2"
+mnu_fontpal:	incbin	"demo/menu/font16x16.pal2"
+mnu_firepal:	incbin	"demo/menu/firepal.pal2"
+mnu_backpal:	incbin	"demo/menu/back.pal"
 
 mnu_palette:	ds.l	256
 
-mnu_frame:	incbin	"demo:Menu/Credits_Only.Raw"
+mnu_frame:	incbin	"demo/menu/credits_only.raw"
 
 		section	data_c,data_c
 
@@ -2155,7 +2155,7 @@ mnu_bplptrs:	dc.l	$00e00000,$00e20000,$00e40000,$00e60000
 mnu_colptrs:	ds.l	(32+1)*8*2+1
 		cnop	64,64
 
-mnu_screen:	incbin	"Demo:Menu/Back2.Raw"
+mnu_screen:	incbin	"demo/menu/back2.raw"
 		ds.b	40*256*2
 
 mnu_morescreen:	ds.b	40*256*8

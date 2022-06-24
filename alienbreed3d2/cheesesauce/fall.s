@@ -156,7 +156,7 @@ CARRYON:
 ARSE:
  
  sub.l d1,d0
- slt.s CANJUMP
+ slt CANJUMP
  bgt.s .aboveground
  beq.s .notfast
  sub.l #512,d2

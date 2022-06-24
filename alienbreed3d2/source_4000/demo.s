@@ -1,4 +1,4 @@
-
+	include "system.i"
 maxscrdiv EQU 8
 max3ddiv EQU 5
 playerheight EQU 12*1024
@@ -48,13 +48,6 @@ midoffset EQU 104*4*40
 OpenLib         equ -552
 CloseLib        equ -414
 
-vhposr		equ $006	
-vhposrl		equ $007 
-bltcon0		equ $40 
-bltcon1		equ $42
-bltcpt		equ $48
-bltbpt		equ $4c
-bltapt		equ $50
 spr0ctl		equ $142
 spr1ctl		equ $14a
 spr2ctl		equ $152
@@ -72,19 +65,6 @@ spr5pos		equ $168
 spr6pos		equ $170
 spr7pos		equ $178
 bltdpt     	equ $54
-bltafwm		equ $44
-bltalwm		equ $46
-bltsize     	equ $58
-bltcmod     	equ $60
-bltbmod     	equ $62
-bltamod     	equ $64
-bltdmod     	equ $66
-diwstart        equ $8e         ; Screen hardware registers.
-diwstop         equ $90
-ddfstart        equ $92
-ddfstop         equ $94
-bplcon0         equ $100
-bplcon1         equ $102
 col0            equ $180
 col1            equ $182
 col2		equ $184
@@ -96,12 +76,6 @@ col7		equ $18e
 col8            equ $190
 col9            equ $192
 col10           equ $194
-dmacon		equ $96
-dmaconr		equ $002
-intenar		equ $01c
-intena		equ $09a
-intreq		equ $09c
-intreqr		equ $01e
 intreqrl	equ $01f
 bpl1pth         equ $e0
 bpl1ptl         equ $e2
@@ -191,6 +165,7 @@ WTNOT MACRO
  
 **
 
+ include "protectionprotection"
  include "macros.i"
  include "defs.i"
 
@@ -1221,7 +1196,7 @@ rfbl:
 readoutfrom:
  move.w #15,d1
  move.l a2,a1
- moveq.w #0,d5
+ moveq.l #0,d5
 readoutfromdown:
  move.w (a3)+,d2
  beq.s nono1
@@ -2576,7 +2551,7 @@ LessAmmo:
  move.w #63,d3
  sub.w OldAmmo,d3
  
- move.l #borders++5184+25*16+1,a1
+ move.l #borders+5184+25*16+1,a1
  asl.w #5,d3
  add.w d3,a1
  lea 2592(a1),a2
@@ -5436,7 +5411,7 @@ loop3:
  move.b vol1right,d0
  move.b vol3right,d1
  cmp.b d1,d0
- slt.s swappedem
+ slt swappedem
  bge.s fbig3
 
  exg a0,a1
@@ -6494,9 +6469,9 @@ bl1l: dc.w 0
  dc.w bpl1pth
 bl1h: dc.w 0
 
- dc.w diwstart,$2c81
+ dc.w diwstrt,$2c81
  dc.w diwstop,$1cc1
- dc.w ddfstart,$38
+ dc.w ddfstrt,$38
  dc.w ddfstop,$b8
  dc.w bplcon0,$9201
  dc.w bplcon1,0
@@ -6520,11 +6495,11 @@ bigfield:
  dc.w dmacon,$8020
  dc.w intreq,$8011
  dc.w $1fc,$f
- dc.w diwstart
+ dc.w diwstrt
 winstart: dc.w $2cb1
  dc.w diwstop
 winstop: dc.w $2c91
- dc.w ddfstart
+ dc.w ddfstrt
 fetchstart: dc.w $48
  dc.w ddfstop
 fetchstop: dc.w $88
@@ -6772,9 +6747,9 @@ och:
 ocl:
  dc.w 0
 
- dc.w ddfstart,$38
+ dc.w ddfstrt,$38
  dc.w ddfstop,$b8
- dc.w diwstart,$2c81
+ dc.w diwstrt,$2c81
  dc.w diwstop,$2cc1
  
  dc.w bplcon0

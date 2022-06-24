@@ -5,7 +5,7 @@
 
 		include	"exec/exec_lib.i"
 		include "exec/exec.i"
-		include	"lvo/graphics_lib.i"
+		;include	"lvo/graphics_lib.i"
 		include "hardware/custom.i"
 
 		xdef	_c2p8_init

@@ -62,7 +62,7 @@ donetopbot:
  move.l #depthtable,a3
  move.l a3,a4
  move.w #79,d7
-emptytab:
+	emptytab:
  move.l #$80010000,(a3)+
  dbra d7,emptytab
  

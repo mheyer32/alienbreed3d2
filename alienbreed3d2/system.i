@@ -1,5 +1,8 @@
 
 	output	/system.gs
+
+	include funcdef.i
+
 	include	exec/types.i
 	include exec/exec_lib.i
 	include	exec/io.i
@@ -28,6 +31,9 @@
 	include	graphics/text.i
 	include	graphics/view.i
 
+	include hardware/intbits.i
+	include hardware/custom.i
+
 	include intuition/intuition.i
 	include intuition/intuition_lib.i
 	include	intuition/intuitionbase.i
@@ -38,3 +44,5 @@
 *	include	utility/tagitem.i
 
 	include	workbench/startup.i
+
+

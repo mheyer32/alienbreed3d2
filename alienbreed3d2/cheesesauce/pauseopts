@@ -176,10 +176,10 @@ nobotchange:
 pastster:
  
  cmp.b #'4',d1
- seq.s CHANNELDATA+8
- seq.s CHANNELDATA+12
- seq.s CHANNELDATA+24
- seq.s CHANNELDATA+28
+ seq CHANNELDATA+8
+ seq CHANNELDATA+12
+ seq CHANNELDATA+24
+ seq CHANNELDATA+28
 
  move.w #$f,$dff000+dmacon
  move.l #null,$dff0a0
@@ -380,18 +380,18 @@ DRAWPAUSEBLOCK:
 
 PAUSETXT:
 ;      012345678901
- dc.b '            '	0
- dc.b '            '	1
- dc.b 'SFX  QUALITY'	2
+ dc.b '            '	;0
+ dc.b '            '	;1
+ dc.b 'SFX  QUALITY'	;2
 SOUNDOPTLINE:
- dc.b '            '	3
- dc.b '            '	4
- dc.b 'FLOOR DETAIL'	5
+ dc.b '            '	;3
+ dc.b '            '	;4
+ dc.b 'FLOOR DETAIL'	;5
 FLOOROPTLINE:
- dc.b '  GOURAUD   '	6
- dc.b '            '	7
- dc.b '            '	8
- dc.b '            '	9
+ dc.b '  GOURAUD   '	;6
+ dc.b '            '	;7
+ dc.b '            '	;8
+ dc.b '            '	;9
 
 SOUNDOPTS:
  dc.b 'FOUR CH MONO'

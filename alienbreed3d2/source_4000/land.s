@@ -73,9 +73,9 @@ bltcmod     	equ $60
 bltbmod     	equ $62
 bltamod     	equ $64
 bltdmod     	equ $66
-diwstart        equ $8e         ; Screen hardware registers.
+diwstrt        equ $8e         ; Screen hardware registers.
 diwstop         equ $90
-ddfstart        equ $92
+ddfstrt        equ $92
 ddfstop         equ $94
 bplcon0         equ $100
 bplcon1         equ $102
@@ -718,11 +718,11 @@ bigfield:                    ; Start of our copper list.
 
  dc.w intreq,$8001
  dc.w $1fc,$3
- dc.w diwstart
+ dc.w diwstrt
 winstart: dc.w $2cb1
  dc.w diwstop
 winstop: dc.w $2c91
- dc.w ddfstart
+ dc.w ddfstrt
 fetchstart: dc.w $48
  dc.w ddfstop
 fetchstop: dc.w $88

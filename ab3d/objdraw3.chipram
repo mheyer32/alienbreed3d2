@@ -821,7 +821,7 @@ PTR_PTR: dc.l 0
 
  ds.w 100
 objintocop:
- incbin "XTOCOPX"
+   incbin "xtocopx"
  ds.w 100
 
    *********************************
@@ -2240,25 +2240,39 @@ POLYOBJECTS:
  dc.l Gas_des
  
 Spider_des:
- incbin "ab3:vectobj/robot"
+   incbin "vectobj/robot"
 Medi_des:
- incbin "ab3:includes/medipac.vec"
+   incbin "includes/medipac.vec"
 Exit_des:
- incbin "ab3:vectobj/exitsign
+    ;incbin "vectobj/exitsign
+    ; original not found in source, just reusing crate
+    incbin "includes/crate.vec"
 Crate_des:
- incbin "ab3:includes/crate.vec"
+    incbin "includes/crate.vec"
 Terminal_des:
- incbin "ab3:includes/terminal.vec"
+    ; original not found in source, just reusing crate
+    incbin "includes/crate.vec"
+    ;   incbin "includes/terminal.vec"
 Blue_des:
- incbin "ab3:vectobj/blueind"
+    ; original not found in source, just reusing crate
+    incbin "includes/crate.vec"
+    ;   incbin "vectobj/blueind"
 Green_des:
- incbin "ab3:vectobj/Greenind"
+    ; original not found in source, just reusing crate
+    incbin "includes/crate.vec"
+    ;   incbin "vectobj/greenind"
 Red_des:
- incbin "ab3:vectobj/Redind"
+    ; original not found in source, just reusing crate
+    incbin "includes/crate.vec"
+    ;   incbin "vectobj/redind"
 Yellow_des:
- incbin "ab3:vectobj/yellowind"
+    ; original not found in source, just reusing crate
+    incbin "includes/crate.vec"
+    ;   incbin "vectobj/yellowind"
 Gas_des:
- incbin "ab3:vectobj/gaspipe"
+    ; original not found in source, just reusing crate
+    incbin "includes/crate.vec"
+    ;   incbin "vectobj/gaspipe"
 
 boxonscr:
  ds.l 250*2
@@ -2327,9 +2341,9 @@ Objects:
  dc.l 0,0,FLAMEMARINE_FRAMES,FLAMEMARINE_PAL
 
 ALIEN_WAD:
-; incbin "ALIEN2.wad"
+;   incbin "alien2.wad"
 ALIEN_PTR:
-; incbin "ALIEN2.ptr"
+;   incbin "alien2.ptr"
 ALIEN_FRAMES:
 ; walking=0-3
  dc.w 0,0
@@ -2374,12 +2388,12 @@ ALIEN_FRAMES:
 
  
 ALIEN_PAL:
- incbin "alien2.pal"
+   incbin "alien2.pal"
 
 PICKUPS_WAD:
-; incbin "Pickups.wad"
+;   incbin "pickups.wad"
 PICKUPS_PTR:
-; incbin "PICKUPS.ptr"
+;   incbin "pickups.ptr"
 PICKUPS_FRAMES:
 ; medikit=0
  dc.w 0,0
@@ -2433,12 +2447,12 @@ PICKUPS_FRAMES:
  
  
 PICKUPS_PAL:
- incbin "PICKUPS.PAL"
+   incbin "pickups.pal"
 
 BIGBULLET_WAD:
-; incbin "bigbullet.wad"
+;   incbin "bigbullet.wad"
 BIGBULLET_PTR:
-; incbin "bigbullet.ptr"
+;   incbin "bigbullet.ptr"
 BIGBULLET_FRAMES:
  dc.w 0,0
  dc.w 0,32
@@ -2462,7 +2476,7 @@ BIGBULLET_FRAMES:
  dc.w 32*9*4,0
  dc.w 32*9*4,32
 BIGBULLET_PAL
- incbin "bigbullet.pal"
+   incbin "bigbullet.pal"
 
 EXPLOSION_FRAMES:
  dc.w 0,0
@@ -2476,21 +2490,21 @@ EXPLOSION_FRAMES:
  dc.w 64*4*8,0
 
 EXPLOSION_PAL
- incbin "explosion.pal"
+   incbin "explosion.pal"
 
 UGLYMONSTER_WAD:
-; incbin "uglymonster.wad"
+;   incbin "uglymonster.wad"
 UGLYMONSTER_PTR:
-; incbin "uglymonster.ptr"
+;   incbin "uglymonster.ptr"
 UGLYMONSTER_FRAMES:
  dc.w 0,0
 UGLYMONSTER_PAL:
- incbin "uglymonster.pal"
+   incbin "uglymonster.pal"
  
 FLYINGMONSTER_WAD:
-; incbin "FLYINGalien.wad"
+;   incbin "flyingalien.wad"
 FLYINGMONSTER_PTR:
-; incbin "FLYINGalien.ptr"
+;   incbin "flyingalien.ptr"
 FLYINGMONSTER_FRAMES:
  dc.w 0,0
  dc.w 64*4,0 
@@ -2515,24 +2529,24 @@ FLYINGMONSTER_FRAMES:
  dc.w 64*4*20,0 
  
 FLYINGMONSTER_PAL:
- incbin "FLYINGalien.pal"
+   incbin "flyingalien.pal"
 
 KEYS_WAD:
-; incbin "keys.wad"
+;   incbin "keys.wad"
 KEYS_PTR:
-; incbin "KEYS.PTR"
+;   incbin "keys.ptr"
 KEYS_FRAMES:
  dc.w 0,0
  dc.w 0,32
  dc.w 32*4,0
  dc.w 32*4,32
 KEYS_PAL:
- incbin "keys.pal"
+   incbin "keys.pal"
 
 ROCKETS_WAD:
-; incbin "ROCKETS.wad"
+;   incbin "rockets.wad"
 ROCKETS_PTR:
-; incbin "ROCKETS.ptr"
+;   incbin "rockets.ptr"
 ROCKETS_FRAMES:
 ;rockets=0 to 3
  dc.w 0,0
@@ -2554,21 +2568,21 @@ ROCKETS_FRAMES:
  
  
 ROCKETS_PAL:
- incbin "ROCKETS.pal"
+   incbin "rockets.pal"
  
 BARREL_WAD:
-; incbin "BARREL.wad"
+;   incbin "barrel.wad"
 BARREL_PTR:
-; incbin "BARREL.ptr"
+;   incbin "barrel.ptr"
 BARREL_FRAMES:
  dc.w 0,0
  
-BARREL_PAL: incbin "BARREL.pal"
+BARREL_PAL:   incbin "barrel.pal"
  
 GUNS_WAD:
-; incbin "guns.wad"
+;   incbin "guns.wad"
 GUNS_PTR:
-; incbin "GUNS.PTR"
+;   incbin "guns.ptr"
 GUNS_FRAMES:
 
  dc.w 96*4*20,0
@@ -2611,12 +2625,12 @@ GUNS_FRAMES:
  dc.w 96*4*2,0
  dc.w 96*4*3,0 
 
-GUNS_PAL: incbin "newgunsinhand.pal"
+GUNS_PAL:   incbin "newgunsinhand.pal"
  
 MARINE_WAD:
-; incbin "newMarine.wad"
+;   incbin "newmarine.wad"
 MARINE_PTR:
-; incbin "newMARINE.ptr"
+;   incbin "newmarine.ptr"
 MARINE_FRAMES:
  dc.w 0,0
  dc.w 64*4,0
@@ -2638,7 +2652,7 @@ MARINE_FRAMES:
  dc.w (64*17)*4,0
  dc.w (64*18)*4,0
 MARINE_PAL:
- incbin "newmarine.pal"
+   incbin "newmarine.pal"
 TOUGHMARINE_FRAMES:
  dc.w 0,0
  dc.w 64*4,0
@@ -2660,7 +2674,7 @@ TOUGHMARINE_FRAMES:
  dc.w (64*17)*4,0
  dc.w (64*18)*4,0
 TOUGHMARINE_PAL:
- incbin "toughmutant.pal"
+   incbin "toughmutant.pal"
 FLAMEMARINE_FRAMES:
  dc.w 0,0
  dc.w 64*4,0
@@ -2682,13 +2696,13 @@ FLAMEMARINE_FRAMES:
  dc.w (64*17)*4,0
  dc.w (64*18)*4,0
 FLAMEMARINE_PAL:
- incbin "flamemutant.pal"
+   incbin "flamemutant.pal"
 
 
 BIGALIEN_WAD:
-; incbin "BIGSCARYALIEN.wad"
+;   incbin "bigscaryalien.wad"
 BIGALIEN_PTR:
-; incbin "BIGSCARYALIEN.ptr"
+;   incbin "bigscaryalien.ptr"
 BIGALIEN_FRAMES:
 ; walking=0-3
  dc.w 0,0
@@ -2696,12 +2710,12 @@ BIGALIEN_FRAMES:
  dc.w 128*4*2,0
  dc.w 128*4*3,0
 BIGALIEN_PAL:
- incbin "BIGSCARYALIEN.pal"
+   incbin "bigscaryalien.pal"
 
 LAMPS_FRAMES:
  dc.w 0,0
 LAMPS_PAL:
- incbin "LAMPS.pal"
+   incbin "lamps.pal"
  
 WORM_FRAMES:
  dc.w 0,0
@@ -2726,7 +2740,7 @@ WORM_FRAMES:
  dc.w 90*4*19,0
  dc.w 90*4*20,0
 WORM_PAL:
- incbin "worm.pal"
+   incbin "worm.pal"
  
 BIGCLAWS_FRAMES:
  dc.w 0,0
@@ -2748,7 +2762,7 @@ BIGCLAWS_FRAMES:
  dc.w 128*4*16,0
  dc.w 128*4*17,0
 BIGCLAWS_PAL:
- incbin "bigclaws.pal"
+   incbin "bigclaws.pal"
  
 TREE_FRAMES:
  dc.w 0,0
@@ -2782,17 +2796,17 @@ TREE_FRAMES:
  dc.w 32*11*4,0
  
 TREE_PAL:
- incbin "tree.pal"
+   incbin "tree.pal"
 
  
  even
 ObAdds:
-; incbin "ALIEN1.ptr"
+;   incbin "alien1.ptr"
 objpal:
-; incbin "ALIEN1.pal"
+;   incbin "alien1.pal"
 TextureMaps:
- incbin "Texturemaps"
+   incbin "texturemaps"
 TexturePal:
- incbin "texturepalscaled"
+   incbin "texturepalscaled"
  
 testval: dc.l 0

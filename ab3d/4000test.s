@@ -23,7 +23,7 @@ BLUE	macro
 
 	opt	P=68020,D+,LINE
 
-	include include:hardware/intbits.i
+	include hardware/intbits.i
 
 CD32VER equ 1
 
@@ -86,9 +86,9 @@ bltcmod     	equ $60
 bltbmod     	equ $62
 bltamod     	equ $64
 bltdmod     	equ $66
-diwstart        equ $8e         ; Screen hardware registers.
+diwstrt        equ $8e         ; Screen hardware registers.
 diwstop         equ $90
-ddfstart        equ $92
+ddfstrt        equ $92
 ddfstop         equ $94
 bplcon0         equ $100
 bplcon1         equ $102
@@ -166,7 +166,7 @@ spr7ptl		equ $13e
 ** execution to continue.
 
  
- include "ab3:source/protsetupdecode"
+  include "protsetupdecode"
 
 SAVEREGS MACRO
  movem.l d0-d7/a0-a6,-(a7)
@@ -228,8 +228,8 @@ WTNOT MACRO
  
 **
 
- include "macros.i"
- include "ab3:source/defs.i"
+  include "macros.i"
+  include "defs.i"
 
  move.w (a0)+,mors
 
@@ -322,17 +322,17 @@ FONTADDRS:
  dc.l ENDFONT2,CHARWIDTHS2
  
 ENDFONT0:
- incbin "endfont0"
+  incbin "endfont0"
 CHARWIDTHS0:
- incbin "charwidths0"
+  incbin "charwidths0"
 ENDFONT1:
- incbin "endfont1"
+  incbin "endfont1"
 CHARWIDTHS1:
- incbin "charwidths1"
+  incbin "charwidths1"
 ENDFONT2:
- incbin "endfont2"
+  incbin "endfont2"
 CHARWIDTHS2:
- incbin "charwidths2"
+  incbin "charwidths2"
  
  even
  
@@ -2006,7 +2006,7 @@ MASTERPAUSE: dc.b 0
 SLAVEPAUSE: dc.b 0
 
 PAUSEOPTS:
- include "ab3:source/pauseopts"
+  include "pauseopts"
 
 ENDZONES:
 ; LEVEL 1
@@ -3022,7 +3022,7 @@ PLR2_GunData:
 protA: dc.w 0
 
 Path:
-; incbin "testpath"
+;  incbin "testpath"
 endpath:
 pathpt: dc.l Path
 
@@ -3227,7 +3227,7 @@ notintop:
  add.l PLR1_Roompt,d1
  move.l d1,PLR1_PointsToRotatePtr
  tst.w (a0)+
- sne.s DRAWNGRAPHTOP
+ sne DRAWNGRAPHTOP
  beq.s nobackgraphics
  cmp.b #'s',mors
  beq.s nobackgraphics
@@ -3956,7 +3956,7 @@ GOURSEL: dc.w 0
 ThisRoomToDraw: dc.l 0,0
 SplitHeight: dc.l 0
 
- include "ab3:source/OrderZones"
+  include "orderzones"
 
 ReadMouse:
  move.l #$dff000,a6
@@ -4629,7 +4629,7 @@ LessAmmo:
  move.w #63,d3
  sub.w OldAmmo,d3
  
- move.l #borders++5184+25*16+1,a1
+ move.l #borders+5184+25*16+1,a1
  asl.w #5,d3
  add.w d3,a1
  lea 2592(a1),a2
@@ -4766,10 +4766,10 @@ across:
  rts
  
 ENDGAMESCROLL:
- include "endscroll.s"
+  include "endscroll.s"
 
 ***********************************
- include "ab3:source/CD32JOY"
+  include "cd32joy"
 
 
  
@@ -4946,11 +4946,11 @@ liftanim:
  rts
 
 ******************************
- include "ab3:source/ObjectMove"
- include "ab3:source/Anims"
+  include "objectmove"
+  include "anims"
 ******************************
 startpass:
-; include "ab3:source/password_reloc.s"
+;  include "password_reloc.s"
 endpass:
 
 rotanimpt: dc.w 0
@@ -4967,7 +4967,7 @@ option:
 
 ********** WALL STUFF *******************************
 
- include "AB3:source/wallroutine3.chipmem"
+  include "wallroutine3.chipmem"
 
 *****************************************************
 
@@ -6310,7 +6310,7 @@ dofloornoclipGOUR:
 
 
 dists:
-; incbin "floordists"
+;  incbin "floordists"
 drawit: dc.w 0
 
 LineToUse: dc.l 0
@@ -6379,7 +6379,7 @@ DOBLACK:
 tstwhich: dc.w 0
 whichtile: dc.w 0
   
-PLAINSCALE: incbin "ab3:includes/plainscale"
+PLAINSCALE:  incbin "includes/plainscale"
   
 storeit: dc.l 0
 
@@ -6751,7 +6751,7 @@ usebumps: dc.w $0
 smoothbumps: dc.w $0
 gourfloor: dc.w 0
  
- include "ab3:source/bumpmap.s"
+  include "bumpmap.s"
 
  CNOP 0,4
 backbefore:
@@ -7029,7 +7029,7 @@ startsmoothz: dc.w 0
 
 ********************************
 *
- include "AB3:source/ObjDraw3.chipram"
+  include "objdraw3.chipram"
 *
 ********************************
 
@@ -7120,9 +7120,9 @@ PLR1_Ducked: dc.b 0
 PLR2_Ducked: dc.b 0
  even
 
- include "ab3:source/PLR1CONTROL.s"
- include "ab3:source/PLR2CONTROL.s"
- include "ab3:source/FALL.s"
+  include "plr1control.s"
+  include "plr2control.s"
+  include "fall.s"
 
 prot7: dc.w 0
  
@@ -7684,7 +7684,7 @@ loop3:
  move.b vol1right,d0
  move.b vol3right,d1
  cmp.b d1,d0
- slt.s swappedem
+ slt swappedem
  bge.s fbig3
 
  exg a0,a1
@@ -8544,10 +8544,10 @@ SampleList:
  
 storeval: dc.w 0
 
- include "ab3:source/wallchunk.s"
- include "ab3:source/loadfromdisk.s"
- include "ab3:source/screensetup.s"
- include "ab3:source/CONTROLLOOP.s"
+  include "wallchunk.s"
+  include "loadfromdisk.s"
+  include "screensetup.s"
+  include "controlloop.s"
 
 
 
@@ -8614,24 +8614,24 @@ test: dc.l 0
 
  even
 ConstCols:
-; incbin "ConstCols"
+;  incbin "constcols"
  even
 Smoothscalecols:
-; incbin "smoothbumppalscaled"
+;  incbin "smoothbumppalscaled"
  even
 SmoothTile:
-; incbin "smoothbumptile"
+;  incbin "smoothbumptile"
  even
 Bumpscalecols:
-; incbin "Bumppalscaled"
+;  incbin "bumppalscaled"
  even
 Bumptile:
-; incbin "bumptile"
+;  incbin "bumptile"
  even
-scalecols: ;incbin "bytepixpalscaled"
+scalecols: ; incbin "bytepixpalscaled"
  even
 floorscalecols:
- incbin "floorpalscaled"
+  incbin "floorpalscaled"
  ds.w 256*4
 
  even
@@ -8645,22 +8645,22 @@ ChunkAddr: dc.l 0
 ; dc.l RedAlertWALL
 ; dc.l RockWALL
 ;
-;GreenMechanicWALL: incbin "ab3:includes/walls/greenmechanic.wad"
-;BlueGreyMetalWALL: incbin "ab3:includes/walls/BlueGreyMetal.wad"
-;TechnoDetailWALL: incbin "ab3:includes/walls/TechnoDetail.wad"
-;BlueStoneWALL: incbin "ab3:includes/walls/bluestone.wad"
-;RedAlertWALL: incbin "ab3:includes/walls/redalert.wad"
-;RockWALL: incbin "ab3:includes/walls/rock.wad"
+;GreenMechanicWALL:  incbin "includes/walls/greenmechanic.wad"
+;BlueGreyMetalWALL:  incbin "includes/walls/bluegreymetal.wad"
+;TechnoDetailWALL:  incbin "includes/walls/technodetail.wad"
+;BlueStoneWALL:  incbin "includes/walls/bluestone.wad"
+;RedAlertWALL:  incbin "includes/walls/redalert.wad"
+;RockWALL:  incbin "includes/walls/rock.wad"
  
 floortile:
  dc.l 0
-; incbin "floortile" 
+;  incbin "floortile" 
  even
 wallrouts:
-; incbin "2x2WallDraw" 
+;  incbin "2x2walldraw" 
  CNOP 0,64
 BackPicture:
- incbin "backfile"
+  incbin "backfile"
 EndBackPicture:
 
 drawpt: dc.l 0
@@ -8668,7 +8668,7 @@ olddrawpt: dc.l 0
 frompt: dc.l 0 
  
 SineTable:
- incbin "bigsine"
+  incbin "bigsine"
 
 angspd: dc.w 0
 flooryoff: dc.w 0
@@ -8828,11 +8828,11 @@ liftanimtab:
 endliftanimtab:
  
 glassball:
-; incbin "glassball.inc"
+;  incbin "glassball.inc"
 endglass
 glassballpt: dc.l glassball
  
-rndtab: ; incbin "randfile"
+rndtab: ;  incbin "randfile"
 endrnd: 
  
 brightanimtab:
@@ -8853,7 +8853,7 @@ OldRoompt: dc.l 0
 
 *****************************************************************
  *
- include "AB3:source/LevelData2"
+  include "leveldata2"
  *
 *****************************************************************
 
@@ -8872,12 +8872,12 @@ OnScreen:
 startwait: dc.w 0
 endwait: dc.w 0
 
-Faces:; incbin "faces2raw"
+Faces:;  incbin "faces2raw"
 
 *******************************************************************
 
 consttab:
- incbin "constantfile"
+  incbin "constantfile"
 
 *******************************************************************
  
@@ -8885,15 +8885,15 @@ consttab:
 
 *********************************
 
-; include "ab3:source/loadmod.a"
-; include "ab3:source/proplayer.a"
+;  include "loadmod.a"
+;  include "proplayer.a"
 
  
-darkentab: incbin "darkenedcols"
-brightentab: incbin "brightenfile"
+darkentab:  incbin "darkenedcols"
+brightentab:  incbin "brightenfile"
 WorkSpace:
  ds.l 8192 
-waterfile: incbin "waterfile"
+waterfile:  incbin "waterfile"
 
  SECTION ffff,CODE_C
 
@@ -8901,16 +8901,16 @@ nullspr: dc.l 0
  
  cnop 0,8
 borders:
- incbin "leftbord"
- incbin "rightbord"
+  incbin "leftbord"
+  incbin "rightbord"
 
-health: incbin "healthstrip"
-Ammunition: incbin "ammostrip"
-healthpal: incbin "healthpal"
-PanelKeys: incbin "greenkey"
- incbin "redkey"
- incbin "yellowkey"
- incbin "bluekey"
+health:  incbin "healthstrip"
+Ammunition:  incbin "ammostrip"
+healthpal:  incbin "healthpal"
+PanelKeys:  incbin "greenkey"
+  incbin "redkey"
+  incbin "yellowkey"
+  incbin "bluekey"
 
 null: ds.w 500
 null2: ds.w 500
@@ -8925,9 +8925,9 @@ bl1l: dc.w 0
  dc.w bpl1pth
 bl1h: dc.w 0
 
- dc.w diwstart,$2c81
+ dc.w diwstrt,$2c81
  dc.w diwstop,$1cc1
- dc.w ddfstart,$38
+ dc.w ddfstrt,$38
  dc.w ddfstop,$b8
  dc.w bplcon0,$9201
  dc.w bplcon1,0
@@ -8945,7 +8945,7 @@ blcols:
 nullline:
  ds.b 80	
 
- include "ab3:source/titlecop.s"
+  include "titlecop.s"
 
 bigfield:    
                 ; Start of our copper list.
@@ -8954,17 +8954,17 @@ bigfield:
  dc.w intreq,$8011
  dc.w $1fc,$f
 
- dc.w diwstart
+ dc.w diwstrt
 winstart: dc.w $2cb1
  dc.w diwstop
 winstop: dc.w $2c91
- dc.w ddfstart
+ dc.w ddfstrt
 fetchstart: dc.w $48
  dc.w ddfstop
 fetchstop: dc.w $88
 
 bordercols:
- incbin "borderpal"
+  incbin "borderpal"
 
  dc.w spr0ptl
 s0l:
@@ -9017,7 +9017,7 @@ s7h:
 
 
  dc.w $106,$c42
- incbin "borderpal"
+  incbin "borderpal"
 
  dc.w $106,$8c42
  dc.w col0
@@ -9165,7 +9165,7 @@ n1l:
 n1h:
  dc.w 0
  dc.w $108,-24
- incbin "Panelpal"
+  incbin "panelpal"
 
  dc.w bpl2pth
 p2h
@@ -9215,9 +9215,9 @@ p8l
  dc.w 0
  
 
- dc.w ddfstart,$38
+ dc.w ddfstrt,$38
  dc.w ddfstop,$b8
- dc.w diwstart,$2c81
+ dc.w diwstrt,$2c81
  dc.w diwstop,$2cc1
  
  dc.w bplcon0
@@ -9259,7 +9259,7 @@ p1l
  dc.w $a01,$ff00
  dc.w bplcon0,$201
  
- incbin "faces2cols"
+  incbin "faces2cols"
  dc.w bpl1pth
 f1h
  dc.w 0
@@ -9367,9 +9367,9 @@ txs7h:
 		dc.w	$1fc,%00000000001111
 
 ; dc.w $1fc,$f
- dc.w diwstart,$2c81    ; Top left corner of screen.
+ dc.w diwstrt,$2c81    ; Top left corner of screen.
  dc.w diwstop,$2cc1     ; Bottom right corner of screen.
- dc.w ddfstart,$38      ; Data fetch start.
+ dc.w ddfstrt,$38      ; Data fetch start.
  dc.w ddfstop,$c8       ; Data fetch stop.
 
  dc.w bplcon0
@@ -9618,7 +9618,7 @@ STOPTIMER:
  st oktodisplay
  rts
  
-digits: incbin "numbers.inc"
+digits:  incbin "numbers.inc"
 
  
  Section Sounds,CODE_C
@@ -9630,75 +9630,75 @@ nullcop:
  dc.w $ffff,$fffe
 
 Scream:
-; incbin "ab3:sounds/Scream"
+;  incbin "sounds/scream"
 ; ds.w 100
 EndScream:
 LowScream:
-; incbin "ab3:sounds/LowScream"
+;  incbin "sounds/lowscream"
 ; ds.w 100
 EndLowScream:
 BaddieGun:
-; incbin "ab3:sounds/BaddieGun"
+;  incbin "sounds/baddiegun"
 EndBaddieGun:
 bass:
-; incbin "ab3:sounds/backbass+drum"
+;  incbin "sounds/backbass+drum"
 bassend:
 Shoot:
-; incbin "ab3:sounds/fire!"
+;  incbin "sounds/fire!"
 EndShoot:
 Munch:
-; incbin "ab3:sounds/munch"
+;  incbin "sounds/munch"
 EndMunch:
 PooGun:
-; incbin "ab3:sounds/shoot.dm"
+;  incbin "sounds/shoot.dm"
 EndPooGun:
 Collect:
-; incbin "ab3:sounds/collect"
+;  incbin "sounds/collect"
 EndCollect:
 DoorNoise:
-; incbin "ab3:sounds/newdoor"
+;  incbin "sounds/newdoor"
 EndDoorNoise:
 Stomp:
-; incbin "ab3:sounds/footstep3"
+;  incbin "sounds/footstep3"
 EndStomp:
 SwitchNoise:
-; incbin "ab3:sounds/switch"
+;  incbin "sounds/switch"
 EndSwitch:
 Reload:
-; incbin "ab3:sounds/switch1.SFX"
+;  incbin "sounds/switch1.sfx"
 EndReload:
 NoAmmo:
-; incbin "ab3:sounds/noammo"
+;  incbin "sounds/noammo"
 EndNoAmmo:
 Splotch:
-; incbin "ab3:sounds/splotch"
+;  incbin "sounds/splotch"
 EndSplotch:
 SplatPop:
-; incbin "ab3:sounds/splatpop"
+;  incbin "sounds/splatpop"
 EndSplatPop:
 Boom:
-; incbin "ab3:sounds/boom"
+;  incbin "sounds/boom"
 EndBoom:
 Hiss:
-; incbin "ab3:sounds/newhiss"
+;  incbin "sounds/newhiss"
 EndHiss:
 Howl1:
-; incbin "ab3:sounds/howl1"
+;  incbin "sounds/howl1"
 EndHowl1:
 Howl2:
-; incbin "ab3:sounds/howl2"
+;  incbin "sounds/howl2"
 EndHowl2:
 Pant:
-; incbin "ab3:sounds/pant"
+;  incbin "sounds/pant"
 EndPant:
 Whoosh:
-; incbin "ab3:sounds/whoosh"
+;  incbin "sounds/whoosh"
 EndWhoosh:
 ROAR:
-; incbin "ab3:sounds/bigscream"
+;  incbin "sounds/bigscream"
 EndROAR
 whoosh:
-; incbin "ab3:sounds/flame"
+;  incbin "sounds/flame"
 Endwhoosh:
  SECTION music,code_c
 
@@ -9847,8 +9847,8 @@ mt_getnew:
 	bra	mt_setdma
 
 PROTCALC:
-;	include "ab3:source/protcalc.s"
-	incbin "ab3:includes/protcalc.bin"
+;	 include "protcalc.s"
+	 incbin "protcalc.bin"
 ENDPROTCALC:
 
 mt_playvoice:
@@ -10211,9 +10211,9 @@ testchip: dc.w 0
 ;/* End of File */
 mt_data: dc.l 0
 tstchip: dc.l 0
- include "SERIAL_NIGHTMARE"
+  include "serial_nightmare"
 
 ingame:
-; incbin "ab3:includes/ingame"
-gameover: incbin "ab3:includes/gameover"
-welldone: incbin "ab3:includes/welldone"
+;  incbin "includes/ingame"
+gameover:  incbin "includes/gameover"
+welldone:  incbin "includes/welldone"

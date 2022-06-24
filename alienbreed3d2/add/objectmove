@@ -1441,7 +1441,7 @@ CanItBeSeenAng:
  sub.l d3,d2
  bgt.s ItMightBeSeen
  clr.b CanSee
- movem.l (a7)+,d0-a7/a0-a6
+ movem.l (a7)+,d0-d7/a0-a6
  rts
 ItMightBeSeen:
  
@@ -1700,7 +1700,7 @@ outlist:
  
  
 FindCollisionPt:
- movem.l d0-a7/a0-a6,-(a7)
+ movem.l d0-d7/a0-a6,-(a7)
  
  move.w Targetx,d0
  move.w Targetz,d1
@@ -1811,7 +1811,7 @@ FindCollisionPt:
 
 foundpt:
 
- movem.l (a7)+,d0-a7/a0-a6
+ movem.l (a7)+,d0-d7/a0-a6
  rts
  
 GetRand:

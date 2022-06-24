@@ -73,6 +73,10 @@ _LVORefreshWindowFrame	EQU	-456
 _LVOActivateGadget	EQU	-462
 _LVONewModifyProp	EQU	-468
 
+; Had to add this here, are the Devpac incluides outdated?
+; Need DevPac include for the CALLINT and INTNAME macros
+_LVOEasyRequestArgs     EQU   -588
+
 CALLINT	MACRO
 	move.l	_IntuitionBase,a6
 	jsr	_LVO\1(a6)

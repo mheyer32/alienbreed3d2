@@ -7,9 +7,9 @@ titlecop:
  dc.w $10c,$0088
 
  dc.w $1fc,$f
- dc.w diwstart,$2c81    ; Top left corner of screen.
+ dc.w diwstrt,$2c81    ; Top left corner of screen.
  dc.w diwstop,$2cc1     ; Bottom right corner of screen.
- dc.w ddfstart,$38      ; Data fetch start.
+ dc.w ddfstrt,$38      ; Data fetch start.
  dc.w ddfstop,$b8       ; Data fetch stop.
 
  dc.w bplcon0

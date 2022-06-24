@@ -484,7 +484,7 @@ MUSTPLR1:
  muls (a2),d2
  add.l d2,d1
  cmp.l #$20000000,d1
- sgt.s canshootgun
+ sgt canshootgun
  bgt.s .canwalk2
  move.w #0,maxspd(a0)
  
@@ -747,7 +747,7 @@ MUSTPLR2:
  muls (a2),d2
  add.l d2,d1
  cmp.l #$20000000,d1
- sgt.s canshootgun
+ sgt canshootgun
  bgt.s .canwalk2
  move.w #0,maxspd(a0)
  

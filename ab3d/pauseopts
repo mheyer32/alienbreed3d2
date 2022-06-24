@@ -300,18 +300,18 @@ DRAWPAUSEBLOCK:
 
 PAUSETXT:
 ;      012345678901
- dc.b '            '	0
- dc.b '            '	1
- dc.b 'FAST  BUFFER'	2
+ dc.b '            '	;0
+ dc.b '            '	;1
+ dc.b 'FAST  BUFFER'	;2
 FBUFFOPTLINE:
- dc.b '    OFF     '	3
- dc.b '            '	4
- dc.b 'FLOOR DETAIL'	5
+ dc.b '    OFF     '	;3
+ dc.b '            '	;4
+ dc.b 'FLOOR DETAIL'	;5
 FLOOROPTLINE:
- dc.b '  GOURAUD   '	6
- dc.b '            '	7
- dc.b '            '	8
- dc.b '            '	9
+ dc.b '  GOURAUD   '	;6
+ dc.b '            '	;7
+ dc.b '            '	;8
+ dc.b '            '	;9
 
 FBUFFOPTS:
  dc.b '    OFF     '
@@ -324,4 +324,4 @@ FLOOROPTS:
  dc.b '    NONE    '
  
 PAUSEFONT:
- incbin "PAUSEFONT"
+ incbin "pausefont"

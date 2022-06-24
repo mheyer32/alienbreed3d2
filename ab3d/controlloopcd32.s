@@ -822,7 +822,7 @@ CHECKPARITY:
  move.b d0,d1
  and.b #$80,d1
  eor.b d1,d2
- sne.s d5
+ sne d5
  rts
  
 CALCPASSWORD:
@@ -1957,7 +1957,7 @@ GETTITLEMEM:
  rts
  
 PROTSETUP:
- incbin "ab3:includes/protsetupenc"
+  incbin "includes/protsetupenc"
 
 ; Need to: Decode protection calling
 ; routine
@@ -1965,7 +1965,7 @@ PROTSETUP:
 ; it from memory
 ; erase this routine and return.
 
-; include "ab3:source/protsetup"
+;  include "protsetup"
  
 
 RELEASETITLEMEM:
@@ -1984,7 +1984,7 @@ RELEASETITLEMEM:
  
 
 PROTCALLENC:
- incbin "ab3:source/protcallenc.bin
+ incbin "protcallenc.bin
 
 ; one pass, all instructions executed.
 ; must call protection routine,store
@@ -1992,7 +1992,7 @@ PROTCALLENC:
 ; compare returned value, if correct
 ; set up all values, then return.
 
-; include "ab3:source/protcallenc"
+;  include "protcallenc"
 
 ENDPROT:
  
@@ -2126,6 +2126,6 @@ protspace: ds.l 200
 
  
 font:
- incbin "OptFont"
+  incbin "optfont"
 
-rain: incbin "optcop"
+rain:  incbin "optcop"

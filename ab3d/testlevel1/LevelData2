@@ -27,7 +27,7 @@ INITPLAYER:
 PointsToRotatePtr: dc.l 0
 
 ***************************************
- include "ab3:includes/testlevel"
+ include "includes/testlevel"
 ***************************************
 
 *************************************************************

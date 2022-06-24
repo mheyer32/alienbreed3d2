@@ -29,11 +29,11 @@ LARGESCREEN equ 0
 	opt	c+,d+
 
 	include	system.i			use pre-assembled header
-	include	exec/exec_lib.i
-	include	intuition/intuition.i
-	include	intuition/intuition_lib.i
-	include	lvo/graphics_lib.i
-	include	graphics/text.i
+;	include	exec/exec_lib.i
+	;include	intuition/intuition.i
+	;include	intuition/intuition_lib.i
+;	include	lvo/graphics_lib.i
+;	include	graphics/text.i
 
 INTUITION_REV	equ	31		v1.1
 GRAPHICS_REV	equ	31		v1.1

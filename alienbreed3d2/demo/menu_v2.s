@@ -5,7 +5,7 @@ main_disabledos
 main_playeroff
 main_meteroff
 
-		include	"demo:System/Main_V3.82.S"
+		include	"system/main_v3.82.s"
 		
 		
 
@@ -1164,7 +1164,7 @@ mnu_savelevel:	; Level to save is in mnu_currentlevel.w
 
 *******************************************************************************
 
-		include	"demo:System/KeyBoard.S"
+	include	"system/keyboard.s"
 
 ****************************************************************** Variables **
 
@@ -1288,7 +1288,7 @@ mnu_mainstack:	dc.l	0
 mnu_sliderwidth:dc.w	6
 mnu_sliddat:	dc.l	mnu_font+40*16+7*2
 mnu_leftslider:	dc.b	58,0
-mnu_sliderspace:blk.b	20,0
+mnu_sliderspace:dcb.b	20,0
 mnu_rightslider:dc.b	60,0
 mnu_rawprint:	dc.b	0,0
 		even
@@ -1444,7 +1444,7 @@ mnu_mainleveltext:dc.b	'A',58,1
 		dc.b	'Game credits',1
 		dc.b	'Load position',1
 		dc.b	'Save position',1
-'		dc.b	'Quit',1
+		dc.b	'Quit',1
 		dc.b	0
 
 mnu_quitmenutext:dc.b	' Quit game',131,131,131,1,1
@@ -1584,14 +1584,14 @@ mnu_buttonanim:	dc.b	236,236,236 ,236
 		dc.b	24
 
 		even
-mnu_font:	incbin	"demo:Menu/Font16x16.Raw2"
-mnu_fontpal:	incbin	"demo:Menu/Font16x16.Pal2"
-mnu_firepal:	incbin	"Demo:Menu/FirePal.Pal2"
-mnu_backpal:	incbin	"demo:Menu/Back.Pal"
+mnu_font:	incbin	"menu/font16x16.raw2"
+mnu_fontpal:	incbin	"menu/font16x16.pal2"
+mnu_firepal:	incbin	"menu/firepal.pal2"
+mnu_backpal:	incbin	"menu/back.pal"
 
-mnu_palette:	blk.l	256
+mnu_palette:	dcb.l	256
 
-mnu_frame:	incbin	"demo:Menu/Credits.Raw"
+mnu_frame:	incbin	"menu/credits.raw"
 
 		section	data_b,bss
 
@@ -1607,10 +1607,12 @@ mnu_bplptrs:	dc.l	$00e00000,$00e20000,$00e40000,$00e60000
 		dc.l	$00e80000,$00ea0000,$00ec0000,$00ee0000
 		dc.l	$00f00000,$00f20000,$00f40000,$00f60000
 		dc.l	$00f80000,$00fa0000,$00fc0000,$00fe0000
-mnu_colptrs:	blk.l	(32+1)*8*2+1
+mnu_colptrs:	dcb.l	(32+1)*8*2+1
 		cnop	64,64
 
-mnu_screen:	incbin	"Demo:Menu/Back2.Raw"
+mnu_screen:	incbin	"menu/back2.raw"
 		ds.b	40*256*2
 
 mnu_morescreen:	ds.b	40*256*8
+
+KeyMap: ds.b 256

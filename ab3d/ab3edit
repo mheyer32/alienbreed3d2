@@ -75,9 +75,9 @@ bltcmod     	equ $60
 bltbmod     	equ $62
 bltamod     	equ $64
 bltdmod     	equ $66
-diwstart        equ $8e         ; Screen hardware registers.
+diwstrt        equ $8e         ; Screen hardware registers.
 diwstop         equ $90
-ddfstart        equ $92
+ddfstrt        equ $92
 ddfstop         equ $94
 bplcon0         equ $100
 bplcon1         equ $102
@@ -152,7 +152,7 @@ WBSLOW MACRO
 **
 
  include "macros.i"
- include "ab3:source/defs.i"
+ include "defs.i"
 
  move.w (a0)+,option
  move.w (a0)+,option+2
@@ -1321,7 +1321,7 @@ jumpoutofloop:
 
 ThisRoomToDraw: dc.l 0
 
- include "ab3:source/OrderZones"
+ include "OrderZones"
 
 ReadMouse:
  clr.l d0
@@ -2115,7 +2115,7 @@ okspdrgt:
 
 *****************************************************
 
- include "ab3:source/ObjectMove"
+ include "ObjectMove"
 
 pastdata:
 ***********************************
@@ -2131,7 +2131,7 @@ liftanim:
  rts
 
 ******************************
- include "ab3:source/Anims.demo"
+ include "Anims.demo"
 ******************************
 
 rotanimpt: dc.w 0
@@ -2148,7 +2148,7 @@ option:
 
 ********** WALL STUFF *******************************
 
- include "AB3:source/wallroutine3.chipmem"
+ include "wallroutine3.chipmem"
 
 *****************************************************
 
@@ -3174,7 +3174,7 @@ ordinary:
 usebumps: dc.w $0
 smoothbumps: dc.w $0
  
- include "ab3:source/bumpmap.s"
+ include "bumpmap.s"
 
  CNOP 0,4
 backbefore:
@@ -3331,7 +3331,7 @@ drawit: dc.w 0
 
 ********************************
 *
- include "AB3:source/ObjDraw3.chipram"
+ include "ObjDraw3.chipram"
 *
 ********************************
 
@@ -4170,7 +4170,7 @@ loop3:
  move.b vol2right,d0
  move.b vol3right,d1
  cmp.b d1,d0
- slt.s swappedem
+ slt swappedem
  bge.s fbig3
 
  exg a0,a1
@@ -4770,7 +4770,7 @@ OldRoompt: dc.l 0
 
 *****************************************************************
  *
- include "AB3:source/LevelData2"
+ include "LevelData2"
  *
 *****************************************************************
 
@@ -4803,7 +4803,7 @@ brightentab: incbin "brightenfile"
 WorkSpace:
  ds.l 8192 
 waterfile: incbin "waterfile"
-RecordBuffer: incbin "ab3:includes/EDIT1"
+RecordBuffer: incbin "includes/EDIT1"
 EndRecordBuffer:
  even
 RecordPtr: dc.l RecordBuffer+6
@@ -4831,9 +4831,9 @@ bl1l: dc.w 0
  dc.w bpl1pth
 bl1h: dc.w 0
 
- dc.w diwstart,$2c81
+ dc.w diwstrt,$2c81
  dc.w diwstop,$1cc1
- dc.w ddfstart,$38
+ dc.w ddfstrt,$38
  dc.w ddfstop,$b8
  dc.w bplcon0,$9201
  dc.w bplcon1,0
@@ -4854,11 +4854,11 @@ bigfield:
  dc.w dmacon,$8020
  dc.w intreq,$8011
  dc.w $1fc,$7
- dc.w diwstart
+ dc.w diwstrt
 winstart: dc.w $2cb1
  dc.w diwstop
 winstop: dc.w $2c91
- dc.w ddfstart
+ dc.w ddfstrt
 fetchstart: dc.w $48
  dc.w ddfstop
 fetchstop: dc.w $88
@@ -5351,25 +5351,25 @@ ENDSPD:
  
  Section Sounds,CODE_C
 
-Scream: incbin "ab3:sounds/Scream"
+Scream: incbin "sounds/Scream"
  ds.w 100
 EndScream:
-LowScream: incbin "ab3:sounds/LowScream"
+LowScream: incbin "sounds/LowScream"
  ds.w 100
 EndLowScream:
-BaddieGun: incbin "ab3:sounds/BaddieGun"
+BaddieGun: incbin "sounds/BaddieGun"
 EndBaddieGun:
-bass: incbin "ab3:sounds/backbass+drum"
+bass: incbin "sounds/backbass+drum"
 bassend:
-Shoot: incbin "ab3:sounds/fire!"
+Shoot: incbin "sounds/fire!"
 EndShoot:
-Munch: incbin "ab3:sounds/munch"
+Munch: incbin "sounds/munch"
 EndMunch:
-PooGun: incbin "ab3:sounds/shoot.dm"
+PooGun: incbin "sounds/shoot.dm"
 EndPooGun:
-Collect: incbin "ab3:sounds/collect"
+Collect: incbin "sounds/collect"
 EndCollect:
-DoorNoise: incbin "ab3:sounds/door"
+DoorNoise: incbin "sounds/door"
 EndDoorNoise:
-Stomp: incbin "ab3:sounds/footstep3"
+Stomp: incbin "sounds/footstep3"
 EndStomp:

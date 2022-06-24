@@ -899,7 +899,7 @@ notallliftsdone:
  add.w d2,d3
  move.w d7,d2
  cmp.w d3,d0
- sle.s liftatbot
+ sle liftatbot
  bgt.s .nolower
  
  tst.w d2
@@ -920,7 +920,7 @@ notallliftsdone:
 .nolower:
 
  cmp.w d3,d1
- sge.s liftattop
+ sge liftattop
  blt.s .noraise
 
  tst.w d2
@@ -969,7 +969,7 @@ notallliftsdone:
  neg.w d0
  
  cmp.w (a3),d5
- seq.s PLR1_stoodonlift
+ seq PLR1_stoodonlift
  bne.s .nosetfloorspd1
  
  move.w FLOORMOVESPD,PLR1_FloorSpd
@@ -978,7 +978,7 @@ notallliftsdone:
  
  move.l PLR2_Roompt,a3
  cmp.w (a3),d5
- seq.s PLR2_stoodonlift
+ seq PLR2_stoodonlift
  bne.s .nosetfloorspd2
  
  move.w FLOORMOVESPD,PLR2_FloorSpd
@@ -1253,7 +1253,7 @@ notalldoorsdone:
  add.w d2,d3
  move.w 2(a0),d2
  cmp.w d3,d0
- sle.s doorclosed
+ sle doorclosed
  bgt.s nolower
  
  tst.w d2
@@ -1275,7 +1275,7 @@ notalldoorsdone:
 nolower:
 
  cmp.w d3,d1
- sge.s dooropen
+ sge dooropen
  blt.s noraise
  
  
@@ -1854,7 +1854,7 @@ notdoneflame:
  
  rts
  
-; include "ab3:source/ai.s"
+; include "ai.s"
 
 ItsABarrel:
 
@@ -3334,8 +3334,8 @@ nograv:
  asr.l #7,d4
  move.w d4,4(a0)
  tst.l B_BounceOffWalls(a6)
- sne.s wallbounce
- seq.s exitfirst
+ sne wallbounce
+ seq exitfirst
 
  clr.b hitwall
  move.b ObjInTop(a0),StoodInTop

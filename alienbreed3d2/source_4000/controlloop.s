@@ -250,10 +250,14 @@ ProtChkDLev1:
  
  move.w #$20,$dff1dc
  move.l #titlecop,$dff080
- PRSDV
+
+PRSDV
+
  move.w #$87c0,$dff000+dmacon
  move.w #$8020,$dff000+dmacon
+
 ProtChkMLev1:
+
  move.w $dff006,d0
  lea RVAL2-100(pc),a0
  add.w d0,100(a0)
@@ -261,6 +265,7 @@ ProtChkMLev1:
 ; bsr GETTITLEMEM
 ProtChkELev1:
  PRSDU
+
 ; bsr CLROPTSCRN
  
 ; bsr SETUPTITLESCRN
@@ -276,8 +281,10 @@ ProtChkELev1:
  
 ; move.l INTROTUNEADDR,a0
 ; jsr _PlayModule
+
 ProtChkFLev1:
- PRSDa
+PRSDa
+
 ; move.l #TITLESCRNNAME,TITLESCRNPTR
 ; bsr LOADTITLESCRN2
 
@@ -321,11 +328,12 @@ ProtChkFLev1:
  jsr LOADOBS
  PRSDZ
  
- 
+  ifeq CHEESEY
  move.l #backpicname,a0
  move.l #BackPicture,d0
  move.l #0,d1
  jsr QUEUEFILE
+  endc
 
 ; IFNE CD32VER
  PRSDD
@@ -1387,7 +1395,7 @@ CHECKPARITY:
  move.b d0,d1
  and.b #$80,d1
  eor.b d1,d2
- sne.s d5
+ sne d5
  rts
  
 CALCPASSWORD:
@@ -1978,11 +1986,11 @@ SAVEPOSITION:
  
  move.l doslib,a6
  move.l handle,d1
- jsr -36(a6)
+ jsr _LVOClose(a6)
  
  move.l doslib,a6
  move.l #200,d1
- jsr -198(a6) 
+ jsr _LVODelay(a6)
  
  move.w #$0020,$dff000+intena
 

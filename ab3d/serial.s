@@ -98,7 +98,7 @@ SERFINWAIT:
 	clr.w	$dff0d8
 	rts
 	
-	include "serial.inc"
+	 include "serial.inc"
 		
 old:		dc.l	0
 saveinters:	dc.w	0

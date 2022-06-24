@@ -74,11 +74,11 @@ PLR3_mouse_control
  move.b forward_key,d7
 
  btst #6,$bfe001
- seq.s (a5,d7.w)
+ seq (a5,d7.w)
 
  move.b fire_key,d7
  btst #2,$dff016
- seq.s (a5,d7.w)
+ seq (a5,d7.w)
 
  bra PLR3_keyboard_control
 

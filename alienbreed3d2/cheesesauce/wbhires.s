@@ -163,9 +163,9 @@ bltcmod     	equ $60
 bltbmod     	equ $62
 bltamod     	equ $64
 bltdmod     	equ $66
-diwstart        equ $8e         ; Screen hardware registers.
+diwstrt        equ $8e         ; Screen hardware registers.
 diwstop         equ $90
-ddfstart        equ $92
+ddfstrt        equ $92
 ddfstop         equ $94
 bplcon0         equ $100
 bplcon1         equ $102
@@ -3986,7 +3986,7 @@ notintop:
  add.l PLR1_Roompt,d1
  move.l d1,PLR1_PointsToRotatePtr
  tst.w (a0)+
- sne.s DRAWNGRAPHTOP
+ sne DRAWNGRAPHTOP
  beq.s nobackgraphics
  cmp.b #'s',mors
  beq.s nobackgraphics
@@ -9384,7 +9384,7 @@ loop3:
  move.b vol1right,d0
  move.b vol3right,d1
  cmp.b d1,d0
- slt.s swappedem
+ slt swappedem
  bge.s fbig3
 
  exg a0,a1
@@ -10653,9 +10653,9 @@ bl1l: dc.w 0
  dc.w bpl1pth
 bl1h: dc.w 0
 
- dc.w diwstart,$2c81
+ dc.w diwstrt,$2c81
  dc.w diwstop,$1cc1
- dc.w ddfstart,$38
+ dc.w ddfstrt,$38
  dc.w ddfstop,$b8
  dc.w bplcon0,$9201
  dc.w bplcon1,0
@@ -10681,11 +10681,11 @@ bigfield:
  dc.w dmacon,$8020
  dc.w intreq,$8011
  dc.w $1fc,$f
- dc.w diwstart
+ dc.w diwstrt
 winstart: dc.w $2c81
  dc.w diwstop
 winstop: dc.w $2cc1
- dc.w ddfstart
+ dc.w ddfstrt
 fetchstart: dc.w $38
  dc.w ddfstop
 fetchstop: dc.w $b8
@@ -10975,9 +10975,9 @@ p8l
  dc.w 0
  
 
- dc.w ddfstart,$38
+ dc.w ddfstrt,$38
  dc.w ddfstop,$b8
- dc.w diwstart,$2c81
+ dc.w diwstrt,$2c81
  dc.w diwstop,$2cc1
  
  dc.w bplcon0
@@ -11125,9 +11125,9 @@ txs7h:
  dc.w $10c,$0088
 
  dc.w $1fc,$f
- dc.w diwstart,$2c81    ; Top left corner of screen.
+ dc.w diwstrt,$2c81    ; Top left corner of screen.
  dc.w diwstop,$2cc1     ; Bottom right corner of screen.
- dc.w ddfstart,$38      ; Data fetch start.
+ dc.w ddfstrt,$38      ; Data fetch start.
  dc.w ddfstop,$c8       ; Data fetch stop.
 
  dc.w bplcon0

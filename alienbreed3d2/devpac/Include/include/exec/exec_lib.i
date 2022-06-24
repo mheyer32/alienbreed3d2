@@ -90,6 +90,9 @@ _LVOSumKickData	EQU	-612
 _LVOAddMemList	EQU	-618
 _LVOCopyMem	EQU	-624
 _LVOCopyMemQuick	EQU	-630
+_LVOCacheClearU     EQU   -636
+_LVOCacheClearE     EQU   -642
+_LVOCacheControl     EQU   -648
 
 CALLEXEC	MACRO
 	move.l	4.w,a6

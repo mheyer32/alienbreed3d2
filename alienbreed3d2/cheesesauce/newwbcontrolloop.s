@@ -1089,7 +1089,7 @@ CHECKPARITY:
  move.b d0,d1
  and.b #$80,d1
  eor.b d1,d2
- sne.s d5
+ sne d5
  rts
  
 CALCPASSWORD:

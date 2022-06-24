@@ -1832,7 +1832,7 @@ CHECKINFRONT:
  muls d3,d0
  muls d4,d1
  add.l d0,d1
- sgt.s d0
+ sgt d0
  rts
  
 ANIMFACING: dc.w 0

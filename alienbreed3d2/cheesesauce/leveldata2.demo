@@ -111,4 +111,4 @@ LEVELCLIPS:
  incbin "newlev.clips"
  
 ControlPts:
-; incbin "ab3:includes/newlev.map"
+; incbin "includes/newlev.map"

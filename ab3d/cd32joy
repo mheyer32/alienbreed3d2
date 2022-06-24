@@ -3,7 +3,7 @@
 
 
 	INCDIR	include:
-	include "libs:system.gs"
+	;include "system.gs"
 	INCLUDE	libraries/lowlevel.i
 ;	INCLUDE	exec/exec_lib.i
 

@@ -611,7 +611,7 @@ notBigNasty:
 doneallobj:
  rts
  
- include "ab3:source/AI.s"
+ include "ai.s"
 
 ItsAMarine:
 
@@ -799,7 +799,7 @@ ItsARobot:
 .thisonedead:
  rts
 
- include "ab3:source/aliencontrol.demo"
+ include "aliencontrol.demo"
 
 nextCPt: dc.w 0
 
