@@ -273,7 +273,6 @@ WTNOT MACRO
 
  include "protectionprotection"
  include "macros.i"
- include "defs.i"
 
 ;wtclickk:
 ; btst #6,$bfe001
@@ -425,7 +424,11 @@ fillconst:
  jsr START
 
  rts
- 
+
+;*******************************************************************************
+
+ include "defs.i"
+
 FASTBUFFER: dc.l 0
 
 SYSTEMBLITINT: dc.l 0
