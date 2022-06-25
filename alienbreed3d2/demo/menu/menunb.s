@@ -76,7 +76,8 @@ mnu_exit:	move.l	mnu_mainstack,a7
 		bsr.w	mnu_clearscreen
 		rts
 
-mnu_protection:	
+	IFND	mnu_nocode
+mnu_protection:
 .retry:		moveq.l	#0,d0
 		bsr.w	mnu_getrnd
 		move.l	d0,d2
@@ -257,6 +258,8 @@ MODIT MACRO
  add.w #999,d6
  move.w d6,d0
  rts
+
+ ENDC
 
 
 		rts
@@ -2029,6 +2032,7 @@ mnu_controltext2:dc.b	1
 mnu_leveltext:	dc.b	'Level '
 mnu_levelno:	dc.b	'A',0
 
+	IFND	mnu_nocode
 mnu_protecttext:dc.b	'ENTER NUMBER AT',1,1
 		dc.b	'  TABLE     '
 mnu_tableptr:	dc.b	'0',1
@@ -2044,7 +2048,7 @@ mnu_wrongtext:	dc.b	'Wrong!',0
 
 mnu_dontbelong:	dc.b	'Nice try.',0
 		even
-
+	ENDC
 ;------------------------------------------------------- Cyclers and sliders --
 
 mnu_level0:	dc.b	'A',0

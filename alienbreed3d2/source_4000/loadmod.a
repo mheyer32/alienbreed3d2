@@ -28,7 +28,7 @@ msng_numsamples	EQU	787
 	CODE
 _LoadModule:
 		movem.l a2-a4/a6/d2-d6,-(sp)
-	PRSDF
+;	PRSDF
 		moveq	#0,d6		;d6 = return value (zero = error)
 		move.l  a0,a4		;a4 = module name
 		movea.l 4,a6
@@ -36,7 +36,7 @@ _LoadModule:
 		moveq	#0,d0
 		jsr     -$228(a6)	;OpenLibrary()
 		tst.l   d0
-		PRSDE
+;	PRSDE
 		beq     xlm1
 		move.l  d0,a3		;a3 = DOSBase
 		move.l  d0,a6

@@ -715,17 +715,17 @@ FireFlickerANIM:
  dc.w -5,-5
  dc.w 999
 
-realtab:
- dc.l prot1-78935450
- dc.l prot2-78935450
- dc.l prot3-78935450
- dc.l prot4-78935450
- dc.l prot5-78935450
- dc.l prot6-78935450
- dc.l prot7-78935450
- dc.l prot8-78935450
- dc.l prot9-78935450
- dc.l protA-78935450
+;realtab:
+; dc.l prot1-78935450
+; dc.l prot2-78935450
+; dc.l prot3-78935450
+; dc.l prot4-78935450
+; dc.l prot5-78935450
+; dc.l prot6-78935450
+; dc.l prot7-78935450
+; dc.l prot8-78935450
+; dc.l prot9-78935450
+; dc.l protA-78935450
 
 objvels: ds.l 8
 

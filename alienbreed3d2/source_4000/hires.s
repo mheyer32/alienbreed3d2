@@ -209,7 +209,7 @@ spr7ptl		equ $13e
 ** execution to continue.
 
  
- include "protsetupdecode"
+; include "protsetupdecode"
 
 SAVEREGS MACRO
  movem.l d0-d7/a0-a6,-(a7)
@@ -271,7 +271,7 @@ WTNOT MACRO
  
 **
 
- include "protectionprotection"
+ ;include "protectionprotection"
  include "macros.i"
 
 ;wtclickk:
@@ -340,7 +340,7 @@ WTNOT MACRO
  clr.b PLR2JOY
  ENDC
 
- PRSDO
+; PRSDO
 
  move.l #2,d1	
  move.l #10280*2,d0
@@ -5009,7 +5009,7 @@ GunSelected: dc.b 0
 GunData: dc.l 0
 
 
-protA: dc.w 0
+;protA: dc.w 0
 
 Path:
 ; incbin "testpath"
@@ -5885,27 +5885,27 @@ nowaterfull:
  bset.b #1,$bfe001
  rts
  
-prot9: dc.w 0
+;prot9: dc.w 0
  
 ;TempBuffer: ds.l 100 
 
-prot8: dc.w 0
+;prot8: dc.w 0
 
 ClipTable: ds.l 30
 EndOfClipPt: dc.l 0
 DOUPPER: dc.w 0
 
-RealTable:
- dc.l prot1-78935450
- dc.l prot2-78935450
- dc.l prot3-78935450
- dc.l prot4-78935450
- dc.l prot5-78935450
- dc.l prot6-78935450
- dc.l prot7-78935450
- dc.l prot8-78935450
- dc.l prot9-78935450
- dc.l protA-78935450
+;RealTable:
+; dc.l prot1-78935450
+; dc.l prot2-78935450
+; dc.l prot3-78935450
+; dc.l prot4-78935450
+; dc.l prot5-78935450
+; dc.l prot6-78935450
+; dc.l prot7-78935450
+; dc.l prot8-78935450
+; dc.l prot9-78935450
+; dc.l protA-78935450
 
 dothisroom
 
@@ -10890,7 +10890,7 @@ LASTMESSPTR: dc.l MESSAGEBUFFER
 
 
 
-prot7: dc.w 0
+;prot7: dc.w 0
  
 GOTTOSEND: dc.w 0
 
@@ -12548,7 +12548,7 @@ needleft: dc.b 0
 needright: dc.b 0
 STEREO: dc.b $0
 even
-prot6: dc.w 0
+;prot6: dc.w 0
 
  even
 CHANNELDATA:
@@ -13913,7 +13913,7 @@ BLANKSCROLL:
  dc.b "                                                                                "
 endtestscroll: 
 
-prot5: dc.w 0
+;prot5: dc.w 0
 PanelCop:
 
  dc.w $80
@@ -14268,7 +14268,9 @@ stuff:
 	Moveq.l	#0,d0
 	Move.l	$4.w,a6	
 	Jsr	-$228(a6)
-	add.w d1,RVAL1
+
+;	add.w d1,RVAL1
+
 	Move.l 	d0,gfxbase
 	Move.l	d0,a6				Use As Base Reg
 	Move.l	34(a6),oldview
@@ -14652,10 +14654,10 @@ mt_getnew:
 	bsr	mt_playvoice
 	bra	mt_setdma
 
-PROTCALC:
+;PROTCALC:
 ;	include "protcalc.s"
-	incbin "includes/protcalc.bin"
-ENDPROTCALC:
+;	incbin "includes/protcalc.bin"
+;ENDPROTCALC:
 
 mt_playvoice:
 	move.l	(a0,d1.l),(a6)

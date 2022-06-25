@@ -44,20 +44,20 @@ TITLESCRNPTR: dc.l 0
 
 
 
-ProtValA: dc.l 0
-ProtValB: dc.l 0
-ProtValC: dc.l 0
-ProtValD: dc.l 0
-ProtValE: dc.l 0
-ProtValF: dc.l 0
-ProtValG: dc.l 0
-ProtValH: dc.l 0
-ProtValI: dc.l 0
-ProtValJ: dc.l 0
-ProtValK: dc.l 0
-ProtValL: dc.l 0
-ProtValM: dc.l 0
-ProtValN: dc.l 0
+;ProtValA: dc.l 0
+;ProtValB: dc.l 0
+;ProtValC: dc.l 0
+;ProtValD: dc.l 0
+;ProtValE: dc.l 0
+;ProtValF: dc.l 0
+;ProtValG: dc.l 0
+;ProtValH: dc.l 0
+;ProtValI: dc.l 0
+;ProtValJ: dc.l 0
+;ProtValK: dc.l 0
+;ProtValL: dc.l 0
+;ProtValM: dc.l 0
+;ProtValN: dc.l 0
 
 MASTERPLAYERONEHEALTH:
   dc.w 0
@@ -159,12 +159,12 @@ START:
 
  move.b #'n',mors  
 
-************************************88
+************************************
 * TAKE OUT WHEN PLAYING MODULE AGAIN
 ********************************
-ProtChkBLev1:
-	PRSDF
-	PRSDE
+;ProtChkBLev1:
+;	PRSDF
+;	PRSDE
 ************************************
 
 ; move.l #PROTCALLENC,a0
@@ -176,8 +176,8 @@ ProtChkBLev1:
 ; dbra d1,codeitup
 ; rts
 
-ProtChkCLev1:
- PRSDA
+;ProtChkCLev1:
+; PRSDA
 
  move.w #$7201,titleplanes
  
@@ -239,32 +239,33 @@ ProtChkCLev1:
 ; jsr -36(a6)
 
 
- PRSDS
+; PRSDS
  
  jsr _InitLowLevel
  
 ; jsr CLEARTITLEPAL
  
-ProtChkDLev1:
- PRSDT
+;ProtChkDLev1:
+; PRSDT
  
  move.w #$20,$dff1dc
  move.l #titlecop,$dff080
 
-PRSDV
+; PRSDV
 
  move.w #$87c0,$dff000+dmacon
  move.w #$8020,$dff000+dmacon
 
-ProtChkMLev1:
+;ProtChkMLev1:
 
- move.w $dff006,d0
- lea RVAL2-100(pc),a0
- add.w d0,100(a0)
+; move.w $dff006,d0
+; lea RVAL2-100(pc),a0
+; add.w d0,100(a0)
  
-; bsr GETTITLEMEM
-ProtChkELev1:
- PRSDU
+ ;bsr GETTITLEMEM
+
+;ProtChkELev1:
+; PRSDU
 
 ; bsr CLROPTSCRN
  
@@ -275,15 +276,17 @@ ProtChkELev1:
 ; move.l #INTROTUNENAME,a0
 ; jsr _LoadModule
 ; move.l d0,INTROTUNEADDR
- PRSDY
+
+; PRSDY
+
 ; move.l d0,a0
 ; jsr _InitModule
  
 ; move.l INTROTUNEADDR,a0
 ; jsr _PlayModule
 
-ProtChkFLev1:
-PRSDa
+;ProtChkFLev1:
+;PRSDa
 
 ; move.l #TITLESCRNNAME,TITLESCRNPTR
 ; bsr LOADTITLESCRN2
@@ -321,12 +324,15 @@ PRSDa
  move.w #0,FADEVAL
  move.w #31,FADEAMOUNT
  bsr FADEUPTITLE
- PRSDB
+
+; PRSDB
+
  jsr LOAD_SFX
  jsr LOADWALLS
  jsr LOADFLOOR
  jsr LOADOBS
- PRSDZ
+
+; PRSDZ
  
   ifeq CHEESEY
  move.l #backpicname,a0
@@ -336,13 +342,13 @@ PRSDa
   endc
 
 ; IFNE CD32VER
- PRSDD
+; PRSDD
 ; ENDC
 
 ; jsr _StopPlayer
- PRSDW
- PRSDX
 ; jsr _RemPlayer
+; PRSDW
+; PRSDX
 
 
 ***********************************************
@@ -370,7 +376,7 @@ PRSDa
 ;newblag:
 
 
-ProtChkGLev1:
+;ProtChkGLev1:
 ; bsr PROTSETUP
  bsr DEFAULTGAME
  
@@ -380,7 +386,7 @@ ProtChkGLev1:
 ; IFEQ CD32VER
 ; jsr KInt_Init
 ; ENDC
-ProtChkHLev1:
+;ProtChkHLev1:
 ; rte
 ;
 ;JUMPPASTIT:
@@ -388,9 +394,7 @@ ProtChkHLev1:
 
 ; jsr mnu_GETBLITINT
  jsr mnu_setscreen
-
- jsr mnu_protection
-
+; jsr mnu_protection
 
 BACKTOMENU:
 
@@ -755,9 +759,9 @@ SLAVESETUP:
 ********************************************************
 
 ASKFORDISK:
- lea RVAL1+300(pc),a0
- lea RVAL2+900(pc),a1
- PRSDD
+ ;lea RVAL1+300(pc),a0
+ ;lea RVAL2+900(pc),a1
+; PRSDD
  move.w #10,OptScrn
  bsr DRAWOPTSCRN
 
@@ -1687,9 +1691,9 @@ val SET val+258*16
  
 CLROPTSCRN:
 
- move.l #$2cdfea,d0
- move.w (a4,d0.l),d0
- add.w d0,RVAL2
+; move.l #$2cdfea,d0
+; move.w (a4,d0.l),d0
+; add.w d0,RVAL2
 
  move.l OPTSPRADDR,a0
  lea 16(a0),a1
@@ -2721,7 +2725,7 @@ wvb:
  rts
  
 CLEARTITLEPAL:
- PRSDP
+; PRSDP
  move.l #TITLEPALCOP,a0
  move.w #7,d1
 clrpal:
@@ -2732,7 +2736,7 @@ clr32
  dbra d0,clr32
  addq #4,a0
  dbra d1,clrpal
- PRSDQ
+; PRSDQ
  rts
 
 FADEDOWNTITLE:
@@ -2829,10 +2833,10 @@ GETTITLEMEM:
  
  rts
  
-ProtChkJLev1:
+;ProtChkJLev1:
 
-PROTSETUP:
- incbin "includes/protsetupenc"
+;PROTSETUP:
+; incbin "includes/protsetupenc"
 
 ; Need to: Decode protection calling
 ; routine
@@ -2858,7 +2862,7 @@ RELEASETITLEMEM:
  rts
  
 
-PROTCALLENC:
+;PROTCALLENC:
 ; incbin "protcallenc.bin
 
 ; one pass, all instructions executed.
@@ -2869,7 +2873,7 @@ PROTCALLENC:
 
 ; include "protcallenc"
 
-ENDPROT:
+;ENDPROT:
  
 LOADTITLESCRN:
  
@@ -2889,11 +2893,11 @@ LOADTITLESCRN:
  
  rts
 
-RVAL2: dc.w 0
+; RVAL2: dc.w 0
 
 SETUPTITLESCRN:
 
- PRSDR
+; PRSDR
  move.l #OPTCOP,a0
  move.l #rain,a1
  move.w #255,d0
@@ -2978,19 +2982,19 @@ putinrain:
  move.w d0,ts7h
  rts 
 
-RVAL1: dc.w 0
+;RVAL1: dc.w 0
 
-DummyAdds:
- dc.l dummy-78935450
- dc.l dummy-78935450
- dc.l dummy-78935450
- dc.l dummy-78935450
- dc.l dummy-78935450
- dc.l dummy-78935450
- dc.l dummy-78935450
- dc.l dummy-78935450
- dc.l dummy-78935450
- dc.l dummy-78935450
+;DummyAdds:
+; dc.l dummy-78935450
+; dc.l dummy-78935450
+; dc.l dummy-78935450
+; dc.l dummy-78935450
+; dc.l dummy-78935450
+; dc.l dummy-78935450
+; dc.l dummy-78935450
+; dc.l dummy-78935450
+; dc.l dummy-78935450
+; dc.l dummy-78935450
 
 LEVELTEXTNAME: dc.b 'TKG1:includes/TEXT_FILE'
 
@@ -2999,11 +3003,11 @@ LEVELTEXTNAME: dc.b 'TKG1:includes/TEXT_FILE'
 LEVELTEXT:
  dc.l 0
 
-dummycall
- dc.w $4e75-123
+;dummycall
+; dc.w $4e75-123
  
-protspace: 
- ds.l 200
+;protspace:
+; ds.l 200
 
 ; include "level_blurb"
  

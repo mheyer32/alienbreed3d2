@@ -461,7 +461,7 @@ FREEBOTMEM:
  
 LOADBOTPIC:
 
- PRSDb
+; PRSDb
 
  move.l #BOTPICNAME,blockname
 
@@ -512,7 +512,7 @@ LOADBOTPIC:
  
 LOADOBS:
 
- PRSDG
+; PRSDG
 
  move.l #OBJ_ADDRS,a2
  move.l LINKFILE,a0
