@@ -2170,3 +2170,5 @@ main_counter: dc.l 0
 main_bltint: dc.l 0
 main_vbrbase: dc.l 0
 timer: dc.l 0
+
+		section code,code
