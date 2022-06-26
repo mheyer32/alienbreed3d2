@@ -13553,16 +13553,15 @@ consttab:
 ; include "loadmod.a"
 ; include "proplayer.a"
 
- 
-darkentab: 
+; only used by glassobj: which in turn isn't used.
+;darkentab:
 ;val SET 0
 ; REPT 256
 ; dc.b val
 ;val SET val+1
 ; ENDR
 ; incbin "darkenfile"
-
-	dc.w 0
+	dc.l 0
 MIDDLEX: dc.w 0
 RIGHTX: dc.w 192
 FULLSCR: dc.w 0
@@ -13594,7 +13593,7 @@ WorkSpace:
 waterfile:
  incbin "waterfile"
 
- SECTION ffff,CODE_C
+ SECTION ffff,DATA_C
 
 nullspr: dc.l 0
  
@@ -13666,6 +13665,8 @@ fetchstop: dc.w $b8
 
 bordercols:
  incbin "borderpal"
+
+ even
 
  dc.w spr0ptl
 s0l:
@@ -14198,6 +14199,8 @@ TSPTl2:
 * Stuff you don't have to worry about yet. *
 ********************************************
 
+	section code,code
+
 closeeverything:
 
 ; jsr mt_end
@@ -14426,7 +14429,7 @@ COMPACTMAP: ds.l 257
 
 BIGMAP: ds.l 256*10
  
- Section Sounds,CODE_C
+ Section Sounds,DATA_C
 
 nullcop:
  dc.w $106,$c40
@@ -14510,7 +14513,8 @@ EndROAR
 whoosh:
 ; incbin "sounds/flame"
 Endwhoosh:
- SECTION music,code_c
+
+ SECTION music,code
 
 UseAllChannels: dc.w 0
 
