@@ -4,42 +4,6 @@ LINK=vlink
 
 PREFIX = $(shell ./getprefix.sh "$(CC)")
 
-#-noixemul
-#-fbaserel
-#-mcrt=clib2
-#-mcrt=nix13
-#-msmall-code
-#-Wa,-adhln
-#-mregparm=4
-#-v   #verbose
-#-fstrength-reduce
-
-CLIB_CFLAGS = -mcrt=clib2 -DUSECLIB2 -mregparm=4
-CLIB_LDFLAGS =
-
-NOIXEMUL_CFLAGS = -noixemul -DUSENOIXEMUL -mregparm=4
-NOIXEMUL_LDFLAGS =
-
-USEIXEMUL ?= 1
-
-ifeq ($(USEIXEMUL), 1)
-RUNTIME_CFLAGS = $(NOIXEMUL_CFLAGS)
-RUNTIME_LDFLAGS = $(NOIXEMUL_LDFLAGS)
-else
-	RUNTIME_CFLAGS = $(CLIB_CFLAGS)
-	RUNTIME_LDFLAGS = $(CLIB_LDFLAGS
-endif
-
-#
-CFLAGS = $(RUNTIME_CFLAGS)
-CFLAGS += -fbaserel -m68030 -m68881 -msmall-code
-CFLAGS += -Ofast -fstrength-reduce -fomit-frame-pointer
-CFLAGS += -Werror -Wimplicit -Wstrict-prototypes
-
-#-DRANGECHECK
-CFLAGS += -DNDEBUG -D__BIG_ENDIAN__ -DAMIGA -D__NO_NET_API
-
-LDFLAGS = $(RUNTIME_LDFLAGS)
 CHEESEY ?= 0
 
 #-DCD32VER=0
@@ -53,16 +17,6 @@ AFLAGS += -I../ \
 
 LFLAGS = -bamigahunk -textbaserel
 LFLAGS += -L./Devpac/Include/lib
-
-
-INTERMEDIATE =$(CURDIR)/build/
-OUT = $(CURDIR)/bin/
-
-OBJS = 
-
-OUTOBJS = $(addprefix $(INTERMEDIATE), $(OBJS))
-
-#$(info $(OBJS))
 
 all:	 hires
 
