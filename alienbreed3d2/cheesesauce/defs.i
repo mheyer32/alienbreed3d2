@@ -247,9 +247,9 @@ BigGun_Graph EQU 256*10*65536+32
 * 5 = Marine
 * 6 = Robot
 
- dc.l AlienNames
- dc.l ObjectNames
- dc.l ObjectStats
- dc.l AlienStats
- dc.l WallGFXNames
- dc.l FloorData
+; dc.l AlienNames
+; dc.l ObjectNames
+; dc.l ObjectStats
+; dc.l AlienStats
+; dc.l WallGFXNames
+; dc.l FloorData

@@ -129,7 +129,6 @@ DMACON		equ	$096
 SERPER		equ	$032
 SERDATR	equ	$018
 SERDAT		equ	$030
-vhposrl	equ $007 
 
 spr0ctl	equ $142
 spr1ctl	equ $14a
@@ -147,8 +146,6 @@ spr4pos	equ $160
 spr5pos	equ $168
 spr6pos	equ $170
 spr7pos	equ $178
-diwstrt        equ $8e         ; Screen hardware registers.
-ddfstrt        equ $92
 col0            equ $180
 col1            equ $182
 col2		equ $184
@@ -12419,7 +12416,7 @@ LINKSPACE:
 ; incbin "includes/test.lnk"
 
 LINKname:
- dc.b "tkg1:includes/test.lnk",0
+ dc.b "tkg1:includes/cheesy.lnk",0
 	even
 LINKFILE:
  dc.l LINKSPACE

@@ -4,11 +4,12 @@ LINK=vlink
 
 PREFIX = $(shell ./getprefix.sh "$(CC)")
 
-CHEESEY ?= 0
+CHEESEY ?= 1
 
 #-DCD32VER=0
 AFLAGS = -Fhunk -devpac -m68030 -ignore-mult-inc -linedebug -L listing.txt -DCHEESEY=${CHEESEY} -Dmnu_nocode=1
-AFLAGS += -I../ \
+AFLAGS += -I./ \
+		  -I../ \
 		  -I../devpac/Include/include \
 		  -I../includes \
 		  -I../devpac \
