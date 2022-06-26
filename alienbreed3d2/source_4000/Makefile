@@ -7,15 +7,14 @@ PREFIX = $(shell ./getprefix.sh "$(CC)")
 CHEESEY ?= 0
 
 #-DCD32VER=0
-AFLAGS = -Fhunk -devpac -m68030 -ignore-mult-inc -linedebug -L listing.txt -DCHEESEY=${CHEESEY} -Dmnu_nocode=1
+AFLAGS = -Fhunk -devpac -m68030 -linedebug -L listing.txt -DCHEESEY=${CHEESEY} -Dmnu_nocode=1
 AFLAGS += -I../ \
 		  -I../devpac/Include/include \
 		  -I../includes \
 		  -I../devpac \
 		  -I$(PREFIX)/m68k-amigaos/ndk-include
  
-
-LFLAGS = -bamigahunk -textbaserel
+LFLAGS = -b amigahunk -sd -sc
 LFLAGS += -L./Devpac/Include/lib
 
 all:	 hires
