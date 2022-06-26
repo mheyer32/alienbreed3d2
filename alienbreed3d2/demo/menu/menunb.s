@@ -331,10 +331,10 @@ mnu_setscreen:	bsr.w	mnu_init
 
 mnu_vblint:
 		bsr.w	mnu_movescreen
-;		bsr.w	mnu_dofire
+		bsr.w	mnu_dofire
 ;		bsr.w	key_kbdlevel3
 		bsr.w	mnu_animcursor
-;		bsr.w	mnu_plot
+		bsr.w	mnu_plot
 		rts
 
 mnu_init:	bsr.w	mnu_initrnd		; Uses palette buffer
@@ -1565,8 +1565,7 @@ mnu_xsine0:	dc.w	0
 mnu_xsine1:	dc.w	0
 mnu_ysine0:	dc.w	0
 mnu_ysine1:	dc.w	0
-
-		ds.l 2*100
+			ds.l 2*100 ; some buffer for the points in the menu fire
 
 mnu_sines:
 	dc.w	$0006,$0013,$001f,$002c,$0038,$0045,$0052,$005e,$006b,$0077
