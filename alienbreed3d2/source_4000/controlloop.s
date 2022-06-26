@@ -213,14 +213,14 @@ START:
  
  jsr stuff
  
-; move.l gfxbase,a6
-; jsr _LVOOwnBlitter(a6)
+ move.l gfxbase,a6
+ jsr _LVOOwnBlitter(a6)
  
-; move.l 4.w,a6
-; lea BLITInt,a1
-; moveq #6,d0
-; jsr _LVOSetIntVector(a6)
-; move.l d0,SYSTEMBLITINT
+ move.l 4.w,a6
+ lea BLITInt,a1
+ moveq #6,d0
+ jsr _LVOSetIntVector(a6)
+ move.l d0,SYSTEMBLITINT
 
 ; move.l doslib,a6
 ; move.l #LINKname,d1
@@ -304,13 +304,13 @@ START:
  WBSLOW
  WBSLOW
 
-; move.l 4.w,a6
-; move.l SYSTEMBLITINT,a1
-; moveq #6,d0
-; jsr _LVOSetIntVector(a6)
-;
-; move.l gfxbase,a6
-; jsr _LVODisownBlitter(a6)
+ move.l 4.w,a6
+ move.l SYSTEMBLITINT,a1
+ moveq #6,d0
+ jsr _LVOSetIntVector(a6)
+
+ move.l gfxbase,a6
+ jsr _LVODisownBlitter(a6)
 
  move.w #$83f0,$dff096
 
@@ -392,7 +392,7 @@ START:
 ;JUMPPASTIT:
 ; 
 
-; jsr mnu_GETBLITINT
+ jsr mnu_GETBLITINT
  jsr mnu_setscreen
 ; jsr mnu_protection
 
@@ -415,7 +415,7 @@ BACKTOSLAVE:
 DONEMENU:
 
  jsr mnu_clearscreen
-; jsr mnu_DROPBLITINT
+ jsr mnu_DROPBLITINT
  move.w #$83f0,$dff096
 
  bsr WAITREL
