@@ -763,6 +763,8 @@ mnu_size	=	256
 mnu_subtract:	dc.l	0
 mnu_count:	dc.w	0
 
+		cnop 0,4
+
 mnu_pass1:	clr.l	mnu_subtract
 		move.w	mnu_count,d0
 		addq.w	#1,mnu_count
@@ -788,6 +790,7 @@ mnu_pass1:	clr.l	mnu_subtract
 		move.w	#(mnu_size-mnu_speed)*64+20,$58(a6)	; Size and trigger
 		rts
 
+		cnop 0,4
 mnu_pass2:;	move.l	#$0ff80000,$40(a6)		; D=A+BC
 ;		move.l	#$ffffffff,$44(a6)		; Masks A
 ;		move.l	#$00000000,$60(a6)		; CB modulo
@@ -802,6 +805,7 @@ mnu_pass2:;	move.l	#$0ff80000,$40(a6)		; D=A+BC
 		rts
 
 
+		cnop 0,4
 mnu_pass3:;	move.l	#$0ff80000,$40(a6)		; D=A+BC
 ;		move.l	#$ffffffff,$44(a6)		; Masks A
 ;		move.l	#$00000000,$60(a6)		; CB modulo
@@ -815,6 +819,7 @@ mnu_pass3:;	move.l	#$0ff80000,$40(a6)		; D=A+BC
 		move.w	#(mnu_size-mnu_speed)*64+20,$58(a6)	; Size and trigger
 		rts
 		
+		cnop 0,4
 mnu_cls:	lea	mnu_morescreen+40*256*6,a1
 		moveq.l	#0,d1
 		move.w	#40*256*3/16-1,d0
@@ -2143,6 +2148,13 @@ mnu_palette:	ds.l	256
 
 mnu_frame:	incbin	"demo/menu/credits_only.raw"
 
+counter: dc.l 0
+main_vblint: dc.l 0
+main_counter: dc.l 0
+main_bltint: dc.l 0
+main_vbrbase: dc.l 0
+timer: dc.l 0
+
 		section	data_c,data_c
 
 mnu_copper:
@@ -2156,18 +2168,10 @@ mnu_bplptrs:	dc.l	$00e00000,$00e20000,$00e40000,$00e60000
 		dc.l	$00f00000,$00f20000,$00f40000,$00f60000
 		dc.l	$00f80000,$00fa0000,$00fc0000,$00fe0000
 mnu_colptrs:	ds.l	(32+1)*8*2+1
-		cnop	64,64
 
+		cnop	64,64 ; align for fetch mode 3
 mnu_screen:	incbin	"demo/menu/back2.raw"
 		ds.b	40*256*2
-
 mnu_morescreen:	ds.b	40*256*8
-
-counter: dc.l 0
-main_vblint: dc.l 0
-main_counter: dc.l 0
-main_bltint: dc.l 0
-main_vbrbase: dc.l 0
-timer: dc.l 0
 
 		section code,code
