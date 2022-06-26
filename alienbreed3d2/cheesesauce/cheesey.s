@@ -1,5 +1,7 @@
 
+ IFND CHEESEY
 CHEESEY equ 1
+ ENDC
  
 *************************************************
 * Stuff to do to get a C2P version:

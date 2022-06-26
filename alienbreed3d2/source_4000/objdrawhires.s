@@ -186,6 +186,7 @@ DrawtheObject:
  movem.l (a7)+,d0-d7/a0-a6
  rts
 
+ IFNE 0
 glassobj:
  move.w (a0)+,d0	;pt num
  move.w 2(a1,d0.w*8),d1
@@ -494,7 +495,9 @@ glassobj:
  movem.l (a7)+,d0-d7/a0-a6
 
  rts
- 
+
+ ENDC
+
 realwidth: dc.w 0
 realheight: dc.w 0
  

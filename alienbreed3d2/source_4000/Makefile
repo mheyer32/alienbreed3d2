@@ -40,9 +40,10 @@ CFLAGS += -Werror -Wimplicit -Wstrict-prototypes
 CFLAGS += -DNDEBUG -D__BIG_ENDIAN__ -DAMIGA -D__NO_NET_API
 
 LDFLAGS = $(RUNTIME_LDFLAGS)
+CHEESEY ?= 0
 
 #-DCD32VER=0
-AFLAGS = -Fhunk -devpac -m68030 -ignore-mult-inc -linedebug -L listing.txt -DCHEESEY=0 -Dmnu_nocode=1
+AFLAGS = -Fhunk -devpac -m68030 -ignore-mult-inc -linedebug -L listing.txt -DCHEESEY=${CHEESEY} -Dmnu_nocode=1
 AFLAGS += -I../ \
 		  -I../devpac/Include/include \
 		  -I../includes \

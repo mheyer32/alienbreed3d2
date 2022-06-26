@@ -1,6 +1,9 @@
 	include "system.i"
 
+ IFND CHEESEY
 CHEESEY equ 0
+ ENDC
+
  
 *************************************************
 * Stuff to do to get a C2P version:
