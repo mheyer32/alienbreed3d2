@@ -65,7 +65,7 @@ RECFIRST:
 	move.b	d1,d2
 	swap	d0
 	move.b	d0,d1
-	bsr.s	SERSEND
+	bsr	 SERSEND
 	ror.l	#8,d2
 	bsr.s	SERREC
 	move.b	d1,d2

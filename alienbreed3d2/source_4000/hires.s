@@ -3280,7 +3280,7 @@ wallsofzone
 
  asr.l #1,d5
  addq #4,a3
- bra.s DECIDEDWALL
+ bra DECIDEDWALL
 
 WALLMAPPED:
  move.w #$b00,d4
@@ -3600,7 +3600,7 @@ DRAWAtransLINE:
  sub.w d1,d3
 
  sub.w d0,d2
- bge.s downrighttrans
+ bge downrighttrans
  
 downlefttrans:
  neg.w d2
@@ -3811,7 +3811,7 @@ DOITFAT:
  sub.w d1,d3
 
  sub.w d0,d2
- bge.s downrightFAT
+ bge downrightFAT
  
 downleftFAT:
  neg.w d2
