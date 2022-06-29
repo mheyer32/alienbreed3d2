@@ -14197,6 +14197,8 @@ TSPTl2:
 
  dc.w $ffff,$fffe
 
+
+; SECTION .text,CODE
 ********************************************
 * Stuff you don't have to worry about yet. *
 ********************************************
@@ -14289,11 +14291,6 @@ stuff:
 
 gfxname dc.b "graphics.library",0
  even
-INTUNAME	dc.b	"intuition.library",0
-
- even
-
-
  cnop 0,64
 
 Panel:
@@ -15035,12 +15032,17 @@ LEVELMUSIC: dc.l 0
 ;/* End of File */
 mt_data: dc.l 0
 tstchip: dc.l 0
- include "serial_nightmare"
 
+	section music,DATA_C
 ingame:
 ; incbin "temp/newmusic/testonechan"
-gameover: 
-;incbin "includes/gameover"
-welldone: incbin "includes/quietwelldone"
+gameover:
+; incbin "includes/gameover"
+welldone:
+	incbin "includes/quietwelldone"
+
+	section .text,CODE
+ include "serial_nightmare"
+
 
 
