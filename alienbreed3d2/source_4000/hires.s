@@ -896,6 +896,7 @@ Prefsname: dc.b 'ram:prefs',0
  even
 Prefshandle: dc.l 0
 
+AppName: dc.b 'TheKillingGrounds',0
  
  even
 
@@ -904,21 +905,21 @@ Prefshandle: dc.l 0
 VBLANKInt:
  dc.l 0,0
  dc.b NT_INTERRUPT,9
- dc.l Prefsname
+ dc.l AppName
  dc.l 0
- dc.l Chan0inter
+ dc.l VBlankInterrupt
 
 KEYInt:
  dc.l 0,0
  dc.b NT_INTERRUPT,127
- dc.l Prefsname
+ dc.l AppName
  dc.l 0
  dc.l key_interrupt
 
 BLITInt:
  dc.l 0,0
  dc.b NT_INTERRUPT,127
- dc.l Prefsname
+ dc.l AppName
  dc.l 0
  dc.l BlitterInterrupt
 
@@ -10923,7 +10924,8 @@ BlitterInterrupt:
 
  rts
 
-Chan0inter:
+; Main VBlank interrupt
+VBlankInterrupt:
 
 	add.l #1,counter
 	add.l #1,main_counter
