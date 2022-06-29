@@ -664,35 +664,35 @@ turn_left_key:
 turn_right_key:
  dc.b $4e
 forward_key:
- dc.b $4c
+ dc.b $11
 backward_key:
- dc.b $4d
+ dc.b $21
 fire_key:
- dc.b $65
+ dc.b $63
 operate_key:
- dc.b $40
+ dc.b $23
 run_key:
- dc.b $61
+ dc.b $60
 force_sidestep_key:
- dc.b $67
+ dc.b $64
 sidestep_left_key:
- dc.b $39
+ dc.b $20
 sidestep_right_key:
- dc.b $3a
-duck_key:
  dc.b $22
+duck_key:
+ dc.b $33
 look_behind_key:
  dc.b $28
 jump_key:
- dc.b $f
+ dc.b $40
 look_up_key:
- dc.b 27
+ dc.b 12
 look_down_key:
- dc.b 42
+ dc.b 10
 centre_view_key:
  dc.b 41
 next_weapon_key:
- dc.b 68
+ dc.b 13
 
 templeftkey: dc.b 0
 temprightkey: dc.b 0
@@ -1431,6 +1431,26 @@ CHANGECONTROLS:
 ; move.w #0,OPTNUM
 ; bsr HIGHLIGHT
 ; bsr WAITREL
+
+; copy current setting over to menu
+ move.l #CONTROLBUFFER,a0
+ move.l #KEY_LINES+17,a1
+ moveq #10,d1
+.copykeys
+ move.b (a0)+,d0
+ add.b #132,d0
+ move.b d0,(a1)
+ add.l #21,a1
+ dbra d1,.copykeys
+
+ move.l #KEY_LINES2+17,a1
+  moveq #5,d1
+.copykeys2
+ move.b (a0)+,d0
+ add.b #132,d0
+ move.b d0,(a1)
+ add.l #21,a1
+ dbra d1,.copykeys2
 
  lea mnu_MYCONTROLSONE,a0
  bsr MYOPENMENU

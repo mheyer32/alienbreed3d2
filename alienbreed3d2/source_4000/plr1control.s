@@ -69,17 +69,21 @@ PLR1_mouse_control
  muls #320,d0
  move.l d0,SBIGMIDDLEY
 
+
  move.l #KeyMap,a5
  moveq #0,d7
- move.b forward_key,d7
 
- btst #6,$bfe001
+ ;the right mouse button triggers the next_weapon key
+ move.b next_weapon_key,d7
+ btst #2,$dff000+potinp ; right button
  seq (a5,d7.w)
 
+; the left mouse button triggers the fire key
  move.b fire_key,d7
- btst #2,$dff016
+ btst #CIAB_GAMEPORT0,$bfe001+ciapra ; left button
  seq (a5,d7.w)
 
+.cont
  bra PLR1_keyboard_control
 
  move.w #-20,d2
