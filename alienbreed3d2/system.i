@@ -32,6 +32,7 @@
 	include	graphics/view.i
 
 	include hardware/intbits.i
+	include hardware/dmabits.i
 	include hardware/custom.i
 
 	include intuition/intuition.i

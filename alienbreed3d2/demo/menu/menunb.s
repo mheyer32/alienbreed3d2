@@ -13,7 +13,7 @@ mnu_GETBLITINT:
  
  move.l 4.w,a6
  lea BLITInt,a1
- moveq #6,d0
+ moveq #INTB_BLIT,d0
  jsr _LVOSetIntVector(a6)
  move.l d0,SYSTEMBLITINT
  rts
@@ -24,7 +24,7 @@ mnu_DROPBLITINT:
 
  move.l 4.w,a6
  move.l SYSTEMBLITINT,a1
- moveq #6,d0
+ moveq #INTB_BLIT,d0
  jsr _LVOSetIntVector(a6)
 
  move.l gfxbase,a6
@@ -308,20 +308,21 @@ mnu_copycredz:	lea	mnu_frame,a0
 		dbra	d0,.loop		
 		rts
 		
-mnu_clearscreen:bsr.w	mnu_fadeout
-		clr.l	main_vblint
-.loop1:		tst.w	mnu_bltbusy
+mnu_clearscreen:
+		bsr.w	mnu_fadeout
+		clr.l	main_vblint ; prevent VBL kicking off new blits
+.loop1:	tst.w	mnu_bltbusy ; wait for any outstanding blits and fire to finish its passes
 		bne.s	.loop1
 ;		bsr.w	key_kbdexit
-		clr.l	main_bltint
+		clr.l	main_bltint		; prevent more blit passes to be processed (necessary?!)
 ;		macro_sync
-		move.w	#$7de0,$dff096
+		move.w	#DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_BLITTER!DMAF_SPRITE,$dff096 ; disable  DMA
 		rts
 
 mnu_setscreen:	bsr.w	mnu_init
 		macro_sync
-		move.w	#$7de0,$dff096
-		move.w	#$8200!%110000000,$dff096
+		move.w	#DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_BLITTER!DMAF_SPRITE,$dff096 ; disable  DMA
+		move.w	#DMAF_SETCLR!DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_BLITTER!DMAF_SPRITE,$dff096 ; enable DMA
 		move.l	#mnu_copper,$dff080
 		move.w	#0,$dff088
 ;		bsr.w	key_kbdinit
@@ -721,9 +722,9 @@ mnu_dofire:	btst.b	#0,main_counter+3
 		move.l	d0,8(a0)
 		lea	$dff000,a6
 		st.b	mnu_bltbusy
-		move.w	#$0040,$9c(a6)			; Clear BLT req
-		move.w	#$8040,$9a(a6)			; Enable BLT int
-		move.w	#$8200!%1000000,$96(a6)		; Enable blitter dma
+		move.w	#INTF_BLIT,$9c(a6)		; Clear BLT req
+		move.w	#INTF_SETCLR!INTF_BLIT,$9a(a6)	; Enable BLT int
+		move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_BLITTER,$96(a6)	; Enable blitter dma
 		bsr.w	mnu_bltint
 		rts
 
@@ -735,8 +736,8 @@ mnu_bltint:	bsr.w	.getrnd
 		addq.l	#4,.passptr
 		move.l	d0,a0
 		jmp	(a0)
-.last:		move.w	#$0040,$9a(a6)			; Disable BLT int
-		move.w	#%1000000,$96(a6)		; Disable blitter dma
+.last:		;move.w	#$0040,$9a(a6)			; Disable BLT int
+		;move.w	#%1000000,$96(a6)		; Disable blitter dma
 		move.l	#.passlist,.passptr
 		clr.w	mnu_bltbusy
 		rts
@@ -2158,7 +2159,7 @@ timer: dc.l 0
 		section	data_c,data_c
 
 mnu_copper:
-		dc.w    intreq,$8010
+		dc.w    intreq,$8010 ; trigger VBL interrupt
 		dc.l	$01000211,$01020000,$01040000
 		dc.l	$0108fff8,$010afff8,$010c0000
 		dc.l	$01fc0003
