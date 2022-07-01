@@ -3036,4 +3036,4 @@ font:
 
 rain: incbin "optcop"
 
-	include "demo/menu/menunb.s"
+	include "menu/menunb.s"

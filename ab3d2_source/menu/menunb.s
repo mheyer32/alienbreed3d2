@@ -2140,14 +2140,14 @@ mnu_buttonanim:	dc.b	236,236,236,236
 		dc.b	237,237,237,237
 		dc.b	24
 		even
-mnu_font:	incbin	"demo/menu/font16x16.raw2"
-mnu_fontpal:	incbin	"demo/menu/font16x16.pal2"
-mnu_firepal:	incbin	"demo/menu/firepal.pal2"
-mnu_backpal:	incbin	"demo/menu/back.pal"
+mnu_font:	incbin	"menu/font16x16.raw2"
+mnu_fontpal:	incbin	"menu/font16x16.pal2"
+mnu_firepal:	incbin	"menu/firepal.pal2"
+mnu_backpal:	incbin	"menu/back.pal"
 
 mnu_palette:	ds.l	256
 
-mnu_frame:	incbin	"demo/menu/credits_only.raw"
+mnu_frame:	incbin	"menu/credits_only.raw"
 
 counter: dc.l 0
 main_vblint: dc.l 0
@@ -2171,7 +2171,7 @@ mnu_bplptrs:	dc.l	$00e00000,$00e20000,$00e40000,$00e60000
 mnu_colptrs:	ds.l	(32+1)*8*2+1
 
 		cnop	64,64 ; align for fetch mode 3
-mnu_screen:	incbin	"demo/menu/back2.raw"
+mnu_screen:	incbin	"menu/back2.raw"
 		ds.b	40*256*2
 mnu_morescreen:	ds.b	40*256*8
 
