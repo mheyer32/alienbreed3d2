@@ -7,7 +7,7 @@ PREFIX = $(shell ./getprefix.sh "$(CC)")
 CHEESEY ?= 0
 
 #-DCD32VER=0
-AFLAGS = -Fhunk -devpac -m68030 -linedebug -L listing.txt -DCHEESEY=${CHEESEY} -Dmnu_nocode=1
+AFLAGS = -Fhunk -m68060 -linedebug -align -L listing.txt -DCHEESEY=${CHEESEY} -Dmnu_nocode=1
 AFLAGS += -I../ \
 		  -I../devpac/Include/include \
 		  -I../includes \
