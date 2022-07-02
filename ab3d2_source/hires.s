@@ -592,8 +592,6 @@ PLAYTHEGAME:
 				move.w	#$0020,$dff000+intreq
 				dbra	d1,.fdup
 
-				jsr		INITCOPPERSCRN
-
 				move.l	#$dff000,a6
 				jsr		SETPLAYERS
 
@@ -13191,10 +13189,7 @@ storeval:		dc.w	0
 
 				include	"wallchunk.s"
 				include	"newloadfromdisk.s"
-				include	"screensetup.s"
 				include	"controlloop.s"
-
-
 
 
 saveinters:
