@@ -8,6 +8,7 @@ import argparse
 import tempfile
 import shutil
 import os
+from pathlib import Path
 
 # parser = argparse.ArgumentParser(description='Beautify m68k assembly')
 # parser.add_argument('--inplace')
@@ -37,33 +38,40 @@ def fillTabs(line: str, column : int):
 
 if __name__ == "__main__":
 
-	# tempfile.NamedTemporaryFile(mode='w+b', buffering=- 1, encoding=None, newline=None, suffix=None, prefix=None, dir=None, delete=True, *, errors=None)
-
 	# print(f"Arguments count: {len(sys.argv)}")
 
 	if len(sys.argv) < 2 or not sys.argv[1]:
      	# FIXME: print to std::err instead
 		print("need filename")
-		quit()
+		sys.exit(-1)
 
 	# for i, arg in enumerate(sys.argv):
 	# 	print(f"Argument {i:>6}: {arg}")
 
 	# Using readlines()
-	file1 = open(sys.argv[1], 'r')
-	Lines = file1.readlines()
+	inputFileName = sys.argv[1]
+	if not os.path.isfile(inputFileName):
+		print(inputFileName + "is not a file", file = sys.stderr)
+		exit(-1)
+ 
+	inputFile = open(sys.argv[1], 'r')
+	Lines = inputFile.readlines()
+
+	temp = tempfile.NamedTemporaryFile(mode='w+', buffering=- 1, encoding=None, newline=None, suffix=None, prefix=None, dir=Path(inputFileName).parent, delete=False)
 
 	count = 0
 	asmline = re.compile(
-		r"""(?P<startcomment>\s*[;*]+.*?)$|((?P<label>\S*:?)?(\s+(?P<directive>\S+))?(\s+(?P<operands>(((".*?")|('.*?')|(\S+?)),?)*))?\s+(?P<endcomment>.*?)?$)""")
+		r"""(?P<empty>\s*?$)|(?P<startcomment>\s*[;*]+.*?)$|((?P<label>\S+?:?)?(\s+(?P<directive>\S+))?(\s+(?P<operands>(((".*?")|('.*?')|(\S+?)),?)*))?(\s+(?P<endcomment>.*?))?$)""")
 
 	for line in Lines:
 		match = asmline.match(line)
-		count += 1
 		if not match:
-			print("NO MATCH: '" + line + "'")
-			continue
+			print("NO MATCH in line {}: '{}'".format(count, line))
+			sys.exit(-1)
 
+		count += 1
+  
+		empty = match.group('empty')
 		startcomment = match.group('startcomment')
 		label = match.group('label')
 		directive = match.group('directive')
@@ -79,8 +87,9 @@ if __name__ == "__main__":
 			print("No match line Line{}:".format(line))
 			assert False
 
-
-		if startcomment:
+		if empty:
+			pass
+		elif startcomment:
 			assert not label and not directive and not operands and not endcomment
 			out = startcomment.strip()
 		else:
@@ -96,5 +105,12 @@ if __name__ == "__main__":
 			if endcomment:
 				out = fillTabs(out, commentColumn)
 				out = out + endcomment.strip()
-		print(out)
-    
+		print(out, file = temp)
+
+	temp.flush()
+
+	os.rename(temp.name, inputFileName)
+
+	temp.close()
+
+	sys.exit(0) 
