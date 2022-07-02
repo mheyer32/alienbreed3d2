@@ -3,9 +3,6 @@ gotgun: dc.w 0
 
 ANIMPOINTER: dc.l 0
 
-ASKFORPROT:
- include "askforprot.s"
-
 ALIENBRIGHT: dc.w 0
 
 ItsAnAlien:
