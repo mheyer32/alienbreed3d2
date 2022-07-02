@@ -3947,7 +3947,7 @@ MASTERPAUSE: dc.b 0
 SLAVEPAUSE: dc.b 0
 
 PAUSEOPTS:
- include "pauseopts"
+ include "pauseopts.s"
 
 ENDZONE: dc.w 0
 
@@ -6077,7 +6077,7 @@ GOURSEL: dc.w 0
 ThisRoomToDraw: dc.l 0,0
 SplitHeight: dc.l 0
 
- include "orderzones"
+ include "orderzones.s"
 
 ReadMouse:
  move.l #$dff000,a6
@@ -7669,7 +7669,7 @@ ENDENDGAMETEXT:
 ; include "endscroll.s"
 
 ***********************************
- include "cd32joy"
+ include "cd32joy.s"
 
 
  
@@ -7901,8 +7901,8 @@ liftanim:
  rts
 
 ******************************
- include "objectmove"
- include "newanims"
+ include "objectmove.s"
+ include "newanims.s"
  include "airoutine.s"
 ******************************
 startpass:
@@ -13515,7 +13515,7 @@ OldRoompt: dc.l 0
 
 *****************************************************************
  *
- include "leveldata2"
+ include "leveldata2.s"
  *
 *****************************************************************
 
@@ -15042,7 +15042,7 @@ welldone:
 	incbin "includes/quietwelldone"
 
 	section .text,CODE
- include "serial_nightmare"
+ include "serial_nightmare.s"
 
 
 
