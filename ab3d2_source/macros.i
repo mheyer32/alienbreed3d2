@@ -1,124 +1,124 @@
 *---------------------------------------------------------------------------*
-CACHE_ON	MACRO
+CACHE_ON		MACRO
 *---------------------------------------------------------------------------*
-			Movec.l	CACR,\1
-			Or.l	#1,\1
-			Movec.l	\1,CACR
-			ENDM
+				Movec.l	CACR,\1
+				Or.l	#1,\1
+				Movec.l	\1,CACR
+				ENDM
 *---------------------------------------------------------------------------*
-CACHE_OFF	MACRO
+CACHE_OFF		MACRO
 *---------------------------------------------------------------------------*
-			Movec.l	CACR,\1
-			And.l	#-2,\1
-			Movec.l	\1,CACR
-			ENDM
+				Movec.l	CACR,\1
+				And.l	#-2,\1
+				Movec.l	\1,CACR
+				ENDM
 *---------------------------------------------------------------------------*
-DATA_CACHE_CLEAR	MACRO
+DATA_CACHE_CLEAR MACRO
 *---------------------------------------------------------------------------*
-			Movec.l	CACR,\1
-			or.l	#%100000000000,\1
-			Movec.l	\1,CACR
-			ENDM
+				Movec.l	CACR,\1
+				or.l	#%100000000000,\1
+				Movec.l	\1,CACR
+				ENDM
 *---------------------------------------------------------------------------*
-CACHE_CLEAR	MACRO
+CACHE_CLEAR		MACRO
 *---------------------------------------------------------------------------*
-			Movec.l	CACR,\1
-			or.l	#8,\1
-			Movec.l	\1,CACR
-			ENDM
+				Movec.l	CACR,\1
+				or.l	#8,\1
+				Movec.l	\1,CACR
+				ENDM
 *---------------------------------------------------------------------------*
 CACHE_FREEZE_ON	MACRO
 *---------------------------------------------------------------------------*
-			Movec.l	CACR,\1
-			or.l	#2,\1
-			Movec.l	\1,CACR
-			ENDM
+				Movec.l	CACR,\1
+				or.l	#2,\1
+				Movec.l	\1,CACR
+				ENDM
 *---------------------------------------------------------------------------*
 
 DATA_CACHE_ON	MACRO
 *---------------------------------------------------------------------------*
-			Movec.l	CACR,\1
-			or.l	#$10,\1
-			Movec.l	\1,CACR
-			ENDM
+				Movec.l	CACR,\1
+				or.l	#$10,\1
+				Movec.l	\1,CACR
+				ENDM
 *---------------------------------------------------------------------------*
 DATA_CACHE_OFF	MACRO
 *---------------------------------------------------------------------------*
-			Movec.l	CACR,\1
-			and.l	#%11111111111111111111111011111111,\1
-			Movec.l	\1,CACR
-			ENDM
+				Movec.l	CACR,\1
+				and.l	#%11111111111111111111111011111111,\1
+				Movec.l	\1,CACR
+				ENDM
 *---------------------------------------------------------------------------*
 
 
-CACHE_FREEZE_OFF	MACRO
+CACHE_FREEZE_OFF MACRO
 *---------------------------------------------------------------------------*
-			Movec.l	CACR,\1
-			and.l	#%11111111111111111111111111111101,\1
-			Movec.l	\1,CACR
-			ENDM
+				Movec.l	CACR,\1
+				and.l	#%11111111111111111111111111111101,\1
+				Movec.l	\1,CACR
+				ENDM
 *---------------------------------------------------------------------------*
 DUGDOS			MACRO
-			Move.l	DosBase,a6
-			Jsr	_LVO\1(a6)		DosCall
-			ENDM
+				Move.l	DosBase,a6
+				Jsr		_LVO\1(a6)				DosCall
+				ENDM
 *---------------------------------------------------------------------------*
 DUGREQ			MACRO
-			Move.l	ReqBase,a6
-			Jsr	_LVO\1(a6)		ReqCall
-			ENDM
+				Move.l	ReqBase,a6
+				Jsr		_LVO\1(a6)				ReqCall
+				ENDM
 *---------------------------------------------------------------------------*
 BLIT_NASTY		MACRO
-		    	Move.w	#$8400,Dmacon(a6)	Blitter Nasty On
-			ENDM
+				Move.w	#$8400,Dmacon(a6)		Blitter Nasty On
+				ENDM
 *---------------------------------------------------------------------------*
 BLIT_NICE		MACRO
-			Move.w	#$0400,Dmacon(a6)	Blitter Nasty Off
-			ENDM
+				Move.w	#$0400,Dmacon(a6)		Blitter Nasty Off
+				ENDM
 *---------------------------------------------------------------------------*
-WAIT_BLIT 		MACRO
+WAIT_BLIT		MACRO
 .\@
-			Btst	#6,DMACONR(a6)		Wait for Blitter End
-			Bne.s	.\@
-		        ENDM
+				Btst	#6,DMACONR(a6)			Wait for Blitter End
+				Bne.s	.\@
+				ENDM
 
 *---------------------------------------------------------------------------*
-SCROLL_WB 		MACRO
+SCROLL_WB		MACRO
 .\@
-			Btst	#6,DMACONR-BLTSIZE(a3)		Wait for Blitter End
-			Bne.s	.\@
-		        ENDM
+				Btst	#6,DMACONR-BLTSIZE(a3)	Wait for Blitter End
+				Bne.s	.\@
+				ENDM
 *---------------------------------------------------------------------------*
 PALETTE32COL	MACRO
-		dc.l	$1800000,$1820000,$1840000,$1860000,$1880000,$18a0000
-		dc.l	$18c0000,$18e0000,$1900000,$1920000,$1940000,$1960000
-		dc.l	$1980000,$19a0000,$19c0000,$19e0000,$1a00000,$1a20000
-		dc.l	$1a40000,$1a60000,$1a80000,$1aa0000,$1ac0000,$1ae0000
-		dc.l	$1b00000,$1b20000,$1b40000,$1b60000,$1b80000,$1ba0000
-		dc.l	$1bc0000,$1be0000
-		ENDM
+				dc.l	$1800000,$1820000,$1840000,$1860000,$1880000,$18a0000
+				dc.l	$18c0000,$18e0000,$1900000,$1920000,$1940000,$1960000
+				dc.l	$1980000,$19a0000,$19c0000,$19e0000,$1a00000,$1a20000
+				dc.l	$1a40000,$1a60000,$1a80000,$1aa0000,$1ac0000,$1ae0000
+				dc.l	$1b00000,$1b20000,$1b40000,$1b60000,$1b80000,$1ba0000
+				dc.l	$1bc0000,$1be0000
+				ENDM
 *---------------------------------------------------------------------------*
 
 * QMOVE		 move a constant into a reg the quickest way (probbly)      *
 * qmove.w 123,d0 NB:if word or byte, will still use moveq!!! if it can      *
 *---------------------------------------------------------------------------*
-QMOVE	MACRO
-	IFGE	\1
-		IFLE	\1-127
-		Moveq	#\1,\2
-           	MEXIT
-		ENDC
-			IFLE	\1-255
-			Moveq	#256-\1,\2
-			Neg.b	\2
-			MEXIT
-			ENDC
+QMOVE			MACRO
+				IFGE	\1
+				IFLE	\1-127
+				Moveq	#\1,\2
+				MEXIT
+				ENDC
+				IFLE	\1-255
+				Moveq	#256-\1,\2
+				Neg.b	\2
+				MEXIT
+				ENDC
 				move.\0	#\1,\2
 				MEXIT
-			        	ELSEIF
-      					move.\0	#\1,\2
-					ENDC
-					ENDM
+				ELSEIF
+				move.\0	#\1,\2
+				ENDC
+				ENDM
 ;*---------------------------------------------------------------------------*
 ;STRUCTURE	MACRO		; structure name, initial offset
 ;*---------------------------------------------------------------------------*
