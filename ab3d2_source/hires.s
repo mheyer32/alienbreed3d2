@@ -1442,7 +1442,7 @@ scaledownlop:
 				jsr		_LVOSuperState(a6)
 				move.l	d0,SSTACK
 
-				CACHE_FREEZE_OFF d2
+				;CACHE_FREEZE_OFF d2
 
 ; charlie
 ; DATA_CACHE_ON d2
@@ -9536,7 +9536,7 @@ BLACKFLOOR:
 
 SimpleFloorLine:
 
-				CACHE_OFF d2
+;				CACHE_OFF d2
 
 				move.l	#doacrossline,a1
 				move.w	leftedge(pc),d1
@@ -9578,7 +9578,7 @@ DOBLACK:
 				jsr		(a1)
 				move.w	d4,(a1,d3.w*4)
 
-				CACHE_ON d2
+				;CACHE_ON d2
 
 				rts
 

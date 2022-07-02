@@ -86,7 +86,7 @@ OneBelow:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 
 *****************************
@@ -143,7 +143,7 @@ TwoBelow:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 *****************************
 
@@ -202,7 +202,7 @@ ThreeBelow:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 *****************************
 
@@ -263,7 +263,7 @@ FourBelow:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 *****************************
 
@@ -326,7 +326,7 @@ FiveBelow:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 *****************************
 
@@ -391,7 +391,7 @@ SixBelow:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 *****************************
 
@@ -458,7 +458,7 @@ SevenBelow:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 *****************************
 
@@ -527,7 +527,7 @@ EightBelow:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 
 *****************************
@@ -599,7 +599,7 @@ NineBelow:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 *****************************
 
@@ -672,7 +672,7 @@ TenBelow:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 *****************************
 
@@ -747,7 +747,7 @@ ElevenBelow:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 *****************************
 
@@ -824,7 +824,7 @@ TwelveBelow:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 
 
@@ -901,7 +901,7 @@ OneAbove:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 
 *****************************
@@ -957,7 +957,7 @@ TwoAbove:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 *****************************
 
@@ -1014,7 +1014,7 @@ ThreeAbove:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 *****************************
 
@@ -1073,7 +1073,7 @@ FourAbove:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 *****************************
 
@@ -1134,7 +1134,7 @@ FiveAbove:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 
 *****************************
@@ -1198,7 +1198,7 @@ SixAbove:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 *****************************
 
@@ -1263,7 +1263,7 @@ SevenAbove:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 *****************************
 
@@ -1330,7 +1330,7 @@ EightAbove:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 
 SmoothMap:
@@ -1411,7 +1411,7 @@ OneBelowS:
 
 				dbra	d7,.BumpAcross
 
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 
 *****************************
@@ -1481,7 +1481,7 @@ TwoBelowS:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 *****************************
 
@@ -1568,7 +1568,7 @@ ThreeBelowS:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 
 *****************************
@@ -1658,7 +1658,7 @@ FourBelowS:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 
 *****************************
@@ -1753,7 +1753,7 @@ FiveBelowS:
 
 				dbra	d7,.BumpAcross
 tstend:
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 
 *****************************
@@ -1848,7 +1848,7 @@ SixBelowS:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 
 SevenBelowS:
@@ -1943,7 +1943,7 @@ SevenBelowS:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2
+;				CACHE_FREEZE_ON d2
 				rts
 
 
