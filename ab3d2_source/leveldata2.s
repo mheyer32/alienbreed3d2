@@ -62,8 +62,9 @@ INITPLAYER:
 PointsToRotatePtr: dc.l	0
 
 ***************************************
-LEVELDATA:
-				dc.l	0
+LEVELDATASize	equ		140000
+
+LEVELDATA:		dc.l	0
 
 ;LEVELDATAD: ds.b 100000
 

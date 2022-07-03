@@ -15,8 +15,7 @@ _LVOReadJoyPort	EQU		-$1e
 _InitLowLevel
 				lea		_lowlevel(pc),a1
 				moveq	#1,d0
-				move.l	4.w,a6
-				jsr		_LVOOpenLibrary(a6)
+				CALLEXEC OpenLibrary
 				tst.l	d0
 				beq.s	.NoLowLib
 				move.l	d0,_LowBase
@@ -33,8 +32,7 @@ _CloseLowLevel
 				move.l	_LowBase(pc),a1
 				tst.l	a1
 				beq.s	.Exit
-				move.l	4.w,a6
-				jsr		_LVOCloseLibrary(a6)
+				CALLEXEC CloseLibrary
 .Exit
 				rts
 

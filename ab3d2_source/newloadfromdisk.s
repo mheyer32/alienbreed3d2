@@ -177,9 +177,8 @@ FLUSHED:
 TRYTOOPEN:
 				movem.l	d1-d7/a0-a6,-(a7)
 				move.l	a0,d1
-				move.l	doslib,a6
 				move.l	#1005,d2
-				jsr		-30(a6)
+				CALLDOS	Open
 				movem.l	(a7)+,d1-d7/a0-a6
 				rts
 
@@ -454,8 +453,7 @@ FREEBOTMEM:
 				move.l	Panel,d1
 				move.l	d1,a1
 				move.l	PanelLen,d0
-				move.l	4.w,a6
-				jsr		-210(a6)
+				CALLEXEC FreeMem
 
 				rts
 
@@ -465,39 +463,30 @@ LOADBOTPIC:
 
 				move.l	#BOTPICNAME,blockname
 
-				move.l	doslib,a6
 				move.l	blockname,d1
 				move.l	#1005,d2
-				jsr		-30(a6)
+				CALLDOS	Open
 				move.l	d0,handle
 
 				lea		fib,a5
 				move.l	handle,d1
 				move.l	a5,d2
-				jsr		-390(a6)
+				CALLDOS	ExamineFH
 
 				move.l	$7c(a5),blocklen
 				move.l	#30720,PanelLen
 
 				move.l	#2,d1
-				move.l	4.w,a6
 				move.l	PanelLen,d0
-				jsr		-198(a6)
+				CALLEXEC AllocMem
 				move.l	d0,blockstart
-; move.l doslib,a6
-; move.l blockname,d1
-; move.l #1005,d2
-; jsr -30(a6)
-				move.l	doslib,a6
-; move.l d0,handle
 
 				move.l	handle,d1
 				move.l	LEVELDATA,d2
 				move.l	blocklen,d3
-				jsr		-42(a6)
-				move.l	doslib,a6
+				CALLDOS	Read
 				move.l	handle,d1
-				jsr		-36(a6)
+				CALLDOS	Close
 
 				move.l	blockstart,Panel
 
@@ -610,33 +599,25 @@ LOAD_A_PALETTE
 				movem.l	d0-d7/a0-a6,-(a7)
 
 				move.l	#OBJNAME,blockname
-				move.l	doslib,a6
 				move.l	blockname,d1
 				move.l	#1005,d2
-				jsr		-30(a6)
+				CALLDOS	Open
 				move.l	d0,handle
 
 				move.l	#2048,blocklen
 
 				move.l	#1,d1
-				move.l	4.w,a6
 				move.l	blocklen,d0
-				jsr		-198(a6)
+				CALLEXEC AllocMem
 				move.l	d0,blockstart
-; move.l doslib,a6
-; move.l blockname,d1
-; move.l #1005,d2
-; jsr -30(a6)
-				move.l	doslib,a6
-; move.l d0,handle
 
 				move.l	handle,d1
 				move.l	blockstart,d2
 				move.l	blocklen,d3
-				jsr		-42(a6)
-				move.l	doslib,a6
+				CALLDOS	Read
+
 				move.l	handle,d1
-				jsr		-36(a6)
+				CALLDOS	Close
 
 				movem.l	(a7)+,d0-d7/a0-a6
 
@@ -647,43 +628,35 @@ LOAD_A_PALETTE
 				CNOP	0,4
 fib:			ds.l	75
 
+; FIXME: seems unused
 LOAD_AN_OBJ:
 				movem.l	a0/a1/a2/a3/a4,-(a7)
 
 				move.l	#OBJNAME,blockname
 
-				move.l	doslib,a6
 				move.l	blockname,d1
 				move.l	#1005,d2
-				jsr		-30(a6)
+				CALLDOS	Open
 				move.l	d0,handle
 
 				lea		fib,a5
 				move.l	handle,d1
 				move.l	a5,d2
-				jsr		-390(a6)
+				CALLDOS	ExamineFH
 
 				move.l	$7c(a5),blocklen
 
 				move.l	#1,d1
-				move.l	4.w,a6
 				move.l	blocklen,d0
-				jsr		-198(a6)
+				CALLEXEC AllocMem
 				move.l	d0,blockstart
-; move.l doslib,a6
-; move.l blockname,d1
-; move.l #1005,d2
-; jsr -30(a6)
-				move.l	doslib,a6
-; move.l d0,handle
 
 				move.l	handle,d1
 				move.l	blockstart,d2
 				move.l	blocklen,d3
-				jsr		-42(a6)
-				move.l	doslib,a6
+				CALLDOS	Read
 				move.l	handle,d1
-				jsr		-36(a6)
+				CALLDOS	Close
 
 				movem.l	(a7)+,a0/a1/a2/a3/a4
 
@@ -710,8 +683,7 @@ relobjlop
 				move.l	blockstart,d1
 				move.l	d1,a1
 				move.l	blocklen,d0
-				move.l	4.w,a6
-				jsr		-210(a6)
+				CALLEXEC FreeMem
 
 				movem.l	(a7)+,a0/a2
 				bra.s	relobjlop
@@ -798,17 +770,17 @@ PATCHSFX:
 ; move.l blocklen,d0
 ; jsr -198(a6)
 ; move.l d0,blockstart
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; move.l blockname,d1
 ; move.l #1005,d2
 ; jsr -30(a6)
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; move.l d0,handle
 ; move.l d0,d1
 ; move.l blockstart,d2
 ; move.l blocklen,d3
 ; jsr -42(a6)
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; move.l handle,d1
 ; jsr -36(a6)
 ; movem.l (a7)+,a0/a1
@@ -830,15 +802,15 @@ LOADFLOOR
 ;
 ; move.l #floortilename,d1
 ; move.l #1005,d2
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; jsr -30(a6)
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; move.l d0,handle
 ; move.l d0,d1
 ; move.l floortile,d2
 ; move.l #65536,d3
 ; jsr -42(a6)
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; move.l handle,d1
 ; jsr -36(a6)
 
@@ -905,9 +877,8 @@ RELEASESAMPMEM:
 				move.l	(a0)+,d0
 				sub.l	d1,d0
 				move.l	d1,a1
-				move.l	4.w,a6
 				move.l	a0,-(a7)
-				jsr		-210(a6)
+				CALLEXEC FreeMem
 				move.l	(a7)+,a0
 				bra		.relmem
 
@@ -918,33 +889,28 @@ RELEASELEVELMEM:
 				move.l	LINKS,d1
 				move.l	d1,a1
 				move.l	#10000,d0
-				move.l	4.w,a6
-				jsr		-210(a6)
+				CALLEXEC FreeMem
 
 
 				move.l	FLYLINKS,d1
 				move.l	d1,a1
 				move.l	#10000,d0
-				move.l	4.w,a6
-				jsr		-210(a6)
-
+				CALLEXEC FreeMem
 
 				move.l	LEVELGRAPHICS,d1
 				move.l	d1,a1
 				move.l	#40000,d0
-				move.l	4.w,a6
-				jsr		-210(a6)
+				CALLEXEC FreeMem
 
 				move.l	LEVELCLIPS,d1
 				move.l	d1,a1
 				move.l	#40000,d0
-				move.l	4.w,a6
-				jsr		-210(a6)
+				CALLEXEC FreeMem
+
 				move.l	LEVELMUSIC,d1
 				move.l	d1,a1
 				move.l	#70000,d0
-				move.l	4.w,a6
-				jsr		-210(a6)
+				CALLEXEC FreeMem
 				rts
 
 RELEASEFLOORMEM:
@@ -952,8 +918,7 @@ RELEASEFLOORMEM:
 				move.l	floortile,d1
 				move.l	d1,a1
 				move.l	#65536,d0
-				move.l	4.w,a6
-				jsr		-210(a6)
+				CALLEXEC FreeMem
 				rts
 
 COPSCR1:		dc.l	0

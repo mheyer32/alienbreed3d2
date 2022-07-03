@@ -136,7 +136,7 @@ KVALTOASC:
 FINISHEDLEVEL:	dc.w	0
 
 _IntuitionBase:	dc.l	0
-_GfxBase:		dc.l	0
+
 MyScreen:		dc.l	0
 
 MyNewScreen		dc.w	0,0						left, top
@@ -181,11 +181,10 @@ START:
 
 				move.w	#$7201,titleplanes
 
-				move.l	4.w,a6
 				move.l	#doslibname,a1
 				moveq	#0,d0
-				jsr		-552(a6)
-				move.l	d0,doslib
+				CALLEXEC OpenLibrary
+				move.l	d0,_DOSBase
 
 				moveq	#INTUITION_REV,d0		version
 				lea		int_name(pc),a1
@@ -195,7 +194,6 @@ START:
 				move.l	d0,_IntuitionBase		else save the pointer
 
 				lea		MyNewScreen(pc),a0
-
 				CALLINT	OpenScreen				open a screen
 				tst.l	d0
 ;	beq	exit_closeall		if failed the close both, exit
@@ -211,30 +209,29 @@ START:
 				jsr		LOADAFILE
 				move.l	d0,LEVELTEXT
 
+				; Open Graphics.library
 				jsr		stuff
 
-				move.l	gfxbase,a6
-				jsr		_LVOOwnBlitter(a6)
+				CALLGRAF OwnBlitter
 
-				move.l	4.w,a6
 				lea		BLITInt,a1
 				moveq	#6,d0
-				jsr		_LVOSetIntVector(a6)
+				CALLEXEC SetIntVector
 				move.l	d0,SYSTEMBLITINT
 
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; move.l #LINKname,d1
 ; move.l #1005,d2
 ; jsr -30(a6)
 ; move.l d0,LLhandle
 ;
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; move.l d0,d1
 ; move.l #LINKSPACE,d2
 ; move.l #90000,d3
 ; jsr -42(a6)
 ;
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; move.l LLhandle,d1
 ; jsr -36(a6)
 
@@ -247,12 +244,13 @@ START:
 
 ;ProtChkDLev1:
 ; PRSDT
-
+				; FIXME: screen setup should be all OS stuff
+				; set PAL in BEAMCON
 				move.w	#$20,$dff1dc
 				move.l	#titlecop,$dff080
 
 ; PRSDV
-
+				; FIXME: whatyadoin?
 				move.w	#$87c0,$dff000+dmacon
 				move.w	#$8020,$dff000+dmacon
 
@@ -304,13 +302,11 @@ START:
 				WBSLOW
 				WBSLOW
 
-				move.l	4.w,a6
 				move.l	SYSTEMBLITINT,a1
 				moveq	#6,d0
-				jsr		_LVOSetIntVector(a6)
+				CALLEXEC SetIntVector
 
-				move.l	gfxbase,a6
-				jsr		_LVODisownBlitter(a6)
+				CALLGRAF DisownBlitter
 
 				move.w	#$83f0,$dff096
 
@@ -363,9 +359,8 @@ START:
 ; bsr ASKFORDISK
 
 				IFNE	CD32VER
-				move.l	doslib,a6
 				move.l	#115,d1
-				jsr		-198(a6)
+				CALLDOS	Delay
 				ENDC
 
 ; move.l #newblag,$80
@@ -480,16 +475,15 @@ DONEMENU:
 *************************************
 				jsr		INITQUEUE
 
+				; Is this where the main screen gets allocated?
 				move.l	#MEMF_CHIP,d1
 				move.l	#10240*8,d0
-				move.l	4.w,a6
-				jsr		-198(a6)
+				CALLEXEC AllocMem
 				move.l	d0,scrn
 
 				move.l	#MEMF_CHIP,d1
 				move.l	#10240*8,d0
-				move.l	4.w,a6
-				jsr		-198(a6)
+				CALLEXEC AllocMem
 				move.l	d0,scrn2
 
 				move.l	#borderpacked,d0
@@ -534,13 +528,11 @@ DONEMENU:
 *************************************
 				move.l	scrn,a1
 				move.l	#10240*8,d0
-				move.l	4.w,a6
-				jsr		-210(a6)
+				CALLEXEC FreeMem
 				ifeq	CHEESEY
 				move.l	scrn2,a1
 				move.l	#10240*8,d0
-				move.l	4.w,a6
-				jsr		-210(a6)
+				CALLEXEC FreeMem
 				endc
 *************************************
 
@@ -600,23 +592,17 @@ dontusestats:
 				bra		BACKTOMENU
 
 QUITTT:
+				move.l	LEVELDATA,a1
+				move.l	#LEVELDATASize,d0
+				CALLEXEC FreeMem
 
-				move.l	LEVELDATA,d1
-				move.l	d1,a1
-				move.l	#120000,d0
-				move.l	4.w,a6
-				jsr		-210(a6)
+				move.l	TEXTSCRN,a1
+				move.l	#TEXTSCRNSize,d0
+				CALLEXEC FreeMem
 
-				move.l	TEXTSCRN,d1
-				move.l	d1,a1
-				move.l	#10240*2,d0
-				move.l	4.w,a6
-				jsr		-210(a6)
-
-				move.l	FASTBUFFER,d1
-				move.l	#2*320*256,d0
-				move.l	4.w,a6
-				jsr		-210(a6)
+				move.l	FASTBUFFER,a1
+				move.l	#FASTBUFFERSize,d0
+				CALLEXEC FreeMem
 
 ; jsr RELEASEWALLMEM
 				jsr		RELEASESAMPMEM
@@ -624,25 +610,24 @@ QUITTT:
 				jsr		RELEASEOBJMEM
 
 				move.l	old,$dff080
-				move.l	4.w,a6
 				lea		VBLANKInt,a1
 				moveq	#INTB_COPER,d0
-				jsr		_LVORemIntServer(a6)
+				CALLEXEC RemIntServer
 
-				move.l	4.w,a6
 				lea		KEYInt,a1
 				moveq	#INTB_PORTS,d0
-				jsr		_LVORemIntServer(a6)
+				CALLEXEC RemIntServer
 
+				; why write to BEAMCON0???
 				move.w	#$f8e,$dff1dc
 
+				; FXIME: holy cow, we didn't even do a full system takeover,
+				; yet writing directly to interrupt control
 				move.l	old,$dff080
 				move.w	_storeint,d0
 				or.w	d0,$dff000+intena
 
-; move.l	4.w,a6
-; jsr	_LVOPermit(a6)
-
+				;CALLEXEC Permit
 
 				move.l	#0,d0
 
@@ -1991,30 +1976,25 @@ SAVEPOSITION:
 				move.l	oldcopper,$dff080
 				move.w	#$8020,$dff000+intena
 
-				move.l	_IntuitionBase,a6
-				jsr		_LVORemakeDisplay(a6)
+				CALLINT	RemakeDisplay
+				CALLINT	RethinkDisplay
 
-				jsr		_LVORethinkDisplay(a6)
 
-				move.l	doslib,a6
 				move.l	#SAVEGAMENAME,d1
 				move.l	#1006,d2
-				jsr		-30(a6)
+				CALLDOS	Open
 				move.l	d0,handle
 
-				move.l	doslib,a6
 				move.l	SAVEGAMEPOS,d2
 				move.l	handle,d1
 				move.l	SAVEGAMELEN,d3
-				jsr		_LVOWrite(a6)
+				CALLDOS	Write
 
-				move.l	doslib,a6
 				move.l	handle,d1
-				jsr		_LVOClose(a6)
+				CALLDOS	Close
 
-				move.l	doslib,a6
 				move.l	#200,d1
-				jsr		_LVODelay(a6)
+				CALLDOS	Delay
 
 				move.w	#$0020,$dff000+intena
 
@@ -2789,13 +2769,13 @@ fadedownloop:
 
 				rts
 
+; FIXME not used?
 LOADTITLESCRN2:
 
 
 				move.l	#MEMF_CLEAR,d1
-				move.l	#52400,d0
-				move.l	4.w,a6
-				jsr		_LVOAllocMem(a6)
+				move.l	#52400,d0				;seems excessive?
+				CALLEXEC AllocMem
 				tst.l	d0
 				beq		.nomem
 
@@ -2803,18 +2783,15 @@ LOADTITLESCRN2:
 
 				move.l	TITLESCRNPTR,d1
 				move.l	#1005,d2
-				move.l	doslib,a6
-				jsr		-30(a6)
+				CALLDOS	Open
 				move.l	d0,handle
 				move.l	d0,d1
-				move.l	doslib,a6
 ; move.l TITLESCRNADDR,d2
 				move.l	tempptr,d2
 				move.l	#10240*7,d3
-				jsr		-42(a6)
-				move.l	doslib,a6
+				CALLDOS	Read
 				move.l	handle,d1
-				jsr		-36(a6)
+				CALLDOS	Close
 
 
 				move.l	TITLESCRNADDR,a0
@@ -2839,16 +2816,14 @@ tempptr			dc.l	0
 GETTITLEMEM:
 				move.l	#2,d1
 				move.l	#10240*7,d0
-				move.l	4.w,a6
-				jsr		-198(a6)
+				CALLEXEC AllocMem
 				move.l	d0,TITLESCRNADDR
 
 				move.l	#$dff000-$2cdfe4,a4
 
 				move.l	#2,d1
 				move.l	#258*16*5,d0
-				move.l	4.w,a6
-				jsr		-198(a6)
+				CALLEXEC AllocMem
 				move.l	d0,OPTSPRADDR
 
 				rts
@@ -2871,14 +2846,12 @@ RELEASETITLEMEM:
 				move.l	TITLESCRNADDR,d1
 				move.l	d1,a1
 				move.l	#10240*7,d0
-				move.l	4.w,a6
-				jsr		-210(a6)
+				CALLEXEC FreeMem
 
 				move.l	OPTSPRADDR,d1
 				move.l	d1,a1
 				move.l	#258*80,d0
-				move.l	4.w,a6
-				jsr		-210(a6)
+				CALLEXEC FreeMem
 				rts
 
 
@@ -2899,17 +2872,14 @@ LOADTITLESCRN:
 
 				move.l	#TITLESCRNNAME,d1
 				move.l	#1005,d2
-				move.l	doslib,a6
-				jsr		-30(a6)
+				CALLDOS	Open
 				move.l	d0,handle
 				move.l	d0,d1
-				move.l	doslib,a6
 				move.l	TITLESCRNADDR,d2
 				move.l	#10240*7,d3
-				jsr		-42(a6)
-				move.l	doslib,a6
+				CALLDOS	Read
 				move.l	handle,d1
-				jsr		-36(a6)
+				CALLDOS	Close
 
 				rts
 

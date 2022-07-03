@@ -11,9 +11,9 @@ relmem:
 				beq.s	notthismem
 
 				move.l	d1,a1
-				move.l	4.w,a6
+
 				movem.l	a0/a5,-(a7)
-				jsr		-210(a6)
+				CALLEXEC FreeMem
 				movem.l	(a7)+,a0/a5
 
 
@@ -122,36 +122,32 @@ LOADAFILE:
 				movem.l	d0-d7/a0-a6,-(a7)
 
 				move.l	a0,d1
-				move.l	doslib,a6
 				move.l	#1005,d2
-				jsr		-30(a6)
+				CALLDOS	Open
 				move.l	d0,handle
 
 intoload:
-
+				; Is this some sort of decompression hooked into DOS.library?
+				; Is this getting the size of the file?
 				lea		fib,a5
 				move.l	handle,d1
 				move.l	a5,d2
-				move.l	doslib,a6
-				jsr		-390(a6)
+				CALLDOS	ExamineFH
 				move.l	$7c(a5),blocklen
 
 				move.l	TYPEOFMEM,d1
-				move.l	4.w,a6
 				move.l	blocklen,d0
-				jsr		-198(a6)
+				CALLEXEC AllocMem
 
 				move.l	d0,blockstart
 
-				move.l	doslib,a6
 				move.l	handle,d1
 				move.l	d0,d2
 				move.l	blocklen,d3
-				jsr		-42(a6)
+				CALLDOS	Read
 
-				move.l	doslib,a6
 				move.l	handle,d1
-				jsr		-36(a6)
+				CALLDOS	Close
 
 				move.l	blockstart,a0
 				move.l	(a0),d0
@@ -176,12 +172,11 @@ ITSASFX:
 				add.l	#4,d0					;Skip "CSFX"
 				move.l	d1,.CompressedSampleSize
 				move.l	d0,a0
-				move.l	4.w,a6
 				move.l	(a0)+,d0				;file size
 				move.l	d0,.SampleSize
 				move.l	a0,.CompressedSamplePosition
 				move.l	#MEMF_CHIP,d1
-				jsr		_LVOAllocMem(a6)
+				CALLEXEC AllocMem
 				move.l	d0,.SamplePosition
 				move.l	.CompressedSamplePosition,a0
 				move.l	d0,a1
@@ -210,8 +205,7 @@ ITSASFX:
 				move.l	.CompressedSamplePosition,a1
 				sub.l	#8,a1
 				move.l	.CompressedSampleSize,d0
-				move.l	4.w,a6
-				jsr		_LVOFreeMem(a6)
+				CALLEXEC FreeMem
 ;Now check the sample and clip it if it ever gets
 ;too big
 
@@ -252,8 +246,7 @@ ITSPACKED:
 				move.l	4(a0),d0				; length of unpacked file.
 				move.l	d0,UNPACKED
 				move.l	TYPEOFMEM,d1
-				move.l	4.w,a6
-				jsr		-198(a6)
+				CALLEXEC AllocMem
 
 				move.l	d0,unpackedstart
 
@@ -267,8 +260,7 @@ ITSPACKED:
 				move.l	blockstart,d1
 				move.l	d1,a1
 				move.l	blocklen,d0
-				move.l	4.w,a6
-				jsr		-210(a6)
+				CALLEXEC FreeMem
 
 				move.l	unpackedstart,d0
 				move.l	UNPACKED,d1

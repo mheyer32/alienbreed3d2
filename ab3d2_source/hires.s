@@ -79,19 +79,17 @@ BLUE			macro
 
 DataCacheOff	macro
 				movem.l	a0-a6/d0-d7,-(sp)
-				move.l	4.w,a6
 				moveq	#0,d0
 				move.l	#%0000000100000000,d1
-				jsr		_LVOCacheControl(a6)
+				CALLEXEC CacheControl
 				movem.l	(sp)+,a0-a6/d0-d7
 				endm
 
 DataCacheOn		macro
 				movem.l	a0-a6/d0-d7,-(sp)
-				move.l	4.w,a6
 				moveq	#-1,d0
 				move.l	#%0000000100000000,d1
-				jsr		_LVOCacheControl(a6)
+				CALLEXEC CacheControl
 				movem.l	(sp)+,a0-a6/d0-d7
 				endm
 
@@ -193,28 +191,6 @@ spr7pth			equ		$13c
 spr7ptl			equ		$13e
 
 
-; move.l #length,d0
-; moveq.l #2,d1	; chipmem
-; move.l 4.w,a6
-; jsr allocmem(a6) = -198
-
-; tst.l d0
-; beq.s ohbugger
-; move.l d0,memaddr
-
-
-; move.l 4.w,a6
-; move.l memaddr,a1
-; move.l #size,d0
-; jsr freemem(a6) =-210
-
-
-** This waits for the blitter to finish before allowing program
-** execution to continue.
-
-
-; include "protsetupdecode"
-
 SAVEREGS		MACRO
 				movem.l	d0-d7/a0-a6,-(a7)
 				ENDM
@@ -282,6 +258,7 @@ WTNOT			MACRO
 ; btst #6,$bfe001
 ; bne.s wtclickk
 
+_start
 				move.w	(a0)+,LEVTOPLAY
 
 
@@ -309,48 +286,44 @@ WTNOT			MACRO
 				st		GOURSEL
 
 
-				move.l	4.w,a6
 				lea		VBLANKInt(pc),a1
 				moveq	#INTB_COPER,d0
-				jsr		_LVOAddIntServer(a6)
+				CALLEXEC AddIntServer
 
 				IFEQ	CD32VER
-				move.l	4.w,a6
 				lea		KEYInt(pc),a1
 				moveq	#INTB_PORTS,d0
-				jsr		_LVOAddIntServer(a6)
+				CALLEXEC AddIntServer
 				ENDC
 
-				WBSLOW
-
-
+				; init default control method
 				IFNE	CD32VER
-				clr.b	PLR1KEYS
-				clr.b	PLR1PATH
-				clr.b	PLR1MOUSE
-				st		PLR1JOY
-				clr.b	PLR2KEYS
-				clr.b	PLR2PATH
-				clr.b	PLR2MOUSE
-				st		PLR2JOY
+					clr.b	PLR1KEYS
+					clr.b	PLR1PATH
+					clr.b	PLR1MOUSE
+					st		PLR1JOY
+					clr.b	PLR2KEYS
+					clr.b	PLR2PATH
+					clr.b	PLR2MOUSE
+					st		PLR2JOY
 				ELSE
-				st		PLR1KEYS
-				clr.b	PLR1PATH
-				clr.b	PLR1MOUSE
-				clr.b	PLR1JOY
-				st		PLR2KEYS
-				clr.b	PLR2PATH
-				clr.b	PLR2MOUSE
-				clr.b	PLR2JOY
+					clr.b	PLR1KEYS
+					clr.b	PLR1PATH
+					st		PLR1MOUSE
+					clr.b	PLR1JOY
+					clr.b	PLR2KEYS
+					clr.b	PLR2PATH
+					st		PLR2MOUSE
+					clr.b	PLR2JOY
 				ENDC
 
 ; PRSDO
 
 				move.l	#2,d1
-				move.l	#10280*2,d0
-				move.l	4.w,a6
-				jsr		-198(a6)
+				move.l	#TEXTSCRNSize,d0
+				CALLEXEC AllocMem
 				move.l	d0,TEXTSCRN
+
 				move.w	d0,TSPTl
 				swap	d0
 				move.w	d0,TSPTh
@@ -379,27 +352,18 @@ WTNOT			MACRO
 				move.w	d0,txs6h
 				move.w	d0,txs7h
 
+				; allocate Level Data
 				move.l	#0,d1
-				move.l	#140000,d0
-				move.l	4.w,a6
-				jsr		-198(a6)
+				move.l	#LEVELDATASize,d0
+				CALLEXEC AllocMem
 				move.l	d0,LEVELDATA
-
+				; allocate chunky render buffer in fastmem
 				move.l	#0,d1
-
-				ifeq	CHEESEY
-				move.l	#320*256,d0
-				endc
-
-				ifne	CHEESEY
-				move.l	#320*160,d0
-				endc
-
-				move.l	4.w,a6
-				jsr		-198(a6)
+				move.l	#FASTBUFFERSize,d0
+				CALLEXEC AllocMem
 				move.l	d0,FASTBUFFER
 
-
+				; Setup constant table
 				move.l	#consttab,a0
 				moveq	#1,d0
 				move.w	#8191,d1
@@ -432,6 +396,12 @@ fillconst:
 ;*******************************************************************************
 
 				include	"defs.i"
+
+				IFEQ CHEESEY
+FASTBUFFERSize	equ		320*256
+				ELSE
+FASTBUFFERSize	equ		320*160
+				ENDC
 
 FASTBUFFER:		dc.l	0
 
@@ -609,20 +579,17 @@ PLAYTHEGAME:
 
 				move.l	#1,d1
 				move.l	#40000,d0
-				move.l	4.w,a6
-				jsr		-198(a6)
+				CALLEXEC AllocMem
 				move.l	d0,LEVELGRAPHICS
 
 				move.l	#1,d1
 				move.l	#40000,d0
-				move.l	4.w,a6
-				jsr		-198(a6)
+				CALLEXEC AllocMem
 				move.l	d0,LEVELCLIPS
 
 				move.l	#2,d1
 				move.l	#70000,d0
-				move.l	4.w,a6
-				jsr		-198(a6)
+				CALLEXEC AllocMem
 				move.l	d0,LEVELMUSIC
 
 				move.l	#$dff000,a6
@@ -643,37 +610,37 @@ PLAYTHEGAME:
 
 *********************************
 
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; move.l #LLname,d1
 ; move.l #1005,d2
 ; jsr -30(a6)
 ; move.l d0,LLhandle
 ;
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; move.l d0,d1
 ; move.l #LINKS,d2
 ; move.l #10000,d3
 ; jsr -42(a6)
 ;
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; move.l LLhandle,d1
 ; jsr -36(a6)
 
 ********************************
 
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; move.l #LLFname,d1
 ; move.l #1005,d2
 ; jsr -30(a6)
 ; move.l d0,LLhandle
 
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; move.l d0,d1
 ; move.l #FLYLINKS,d2
 ; move.l #10000,d3
 ; jsr -42(a6)
 
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; move.l LLhandle,d1
 ; jsr -36(a6)
 
@@ -689,21 +656,17 @@ PLAYTHEGAME:
 				add.l	d1,a6
 				move.l	a6,d1
 
-				move.l	doslib,a6
-
 				move.l	#1005,d2
-				jsr		-30(a6)
+				CALLDOS	Open
 				move.l	d0,LDhandle
 
-				move.l	doslib,a6
 				move.l	d0,d1
 				move.l	LEVELCLIPS,d2
 				move.l	#40000,d3
-				jsr		-42(a6)
+				CALLDOS	Read
 
-				move.l	doslib,a6
 				move.l	LDhandle,d1
-				jsr		-36(a6)
+				CALLDOS	Close
 
 *************************************
 				move.l	LEVELCLIPS,d0
@@ -715,21 +678,18 @@ PLAYTHEGAME:
 *************************************
 
 
-				move.l	doslib,a6
 				move.l	#LDname,d1
 				move.l	#1005,d2
-				jsr		-30(a6)
+				CALLDOS	Open
 				move.l	d0,LDhandle
 
-				move.l	doslib,a6
 				move.l	d0,d1
 				move.l	LEVELCLIPS,d2
 				move.l	#40000,d3
-				jsr		-42(a6)
+				CALLDOS	Read
 
-				move.l	doslib,a6
 				move.l	LDhandle,d1
-				jsr		-36(a6)
+				CALLDOS	Close
 
 *************************************
 				move.l	LEVELCLIPS,d0
@@ -742,21 +702,18 @@ PLAYTHEGAME:
 
 ********
 
-				move.l	doslib,a6
 				move.l	#LGname,d1
 				move.l	#1005,d2
-				jsr		-30(a6)
+				CALLDOS	Open
 				move.l	d0,LGhandle
 
-				move.l	doslib,a6
 				move.l	d0,d1
 				move.l	LEVELCLIPS,d2
 				move.l	#40000,d3
-				jsr		-42(a6)
+				CALLDOS	Read
 
-				move.l	doslib,a6
 				move.l	LGhandle,d1
-				jsr		-36(a6)
+				CALLDOS	Close
 
 *************************************
 				move.l	LEVELCLIPS,d0
@@ -769,21 +726,19 @@ PLAYTHEGAME:
 
 ********
 
-				move.l	doslib,a6
+
 				move.l	#LCname,d1
 				move.l	#1005,d2
-				jsr		-30(a6)
+				CALLDOS	Open
 				move.l	d0,LChandle
 
-				move.l	doslib,a6
 				move.l	d0,d1
 				move.l	#WorkSpace+16384,d2
 				move.l	#16000,d3
-				jsr		-42(a6)
+				CALLDOS	Read
 
-				move.l	doslib,a6
 				move.l	LChandle,d1
-				jsr		-36(a6)
+				CALLDOS	Close
 
 *************************************
 				move.l	#WorkSpace+16384,d0
@@ -801,36 +756,36 @@ noload:
 
 ********
 
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; move.l #Prefsname,d1
 ; move.l #1005,d2
 ; jsr -30(a6)
 ; move.l d0,Prefshandle
 
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; move.l d0,d1
 ; move.l #Prefsfile,d2
 ; move.l #50,d3
 ; jsr -42(a6)
 
-; move.l doslib,a6
+; move.l _DOSBase,a6
 ; move.l Prefshandle,d1
 ; jsr -36(a6)
 
 *******
 
 				IFNE	CD32VER
-				move.l	doslib,a6
 				move.l	#115,d1
-				jsr		-198(a6)
+				CALLDOS	Delay
 				ENDC
 
 
-; move.l doslib,d0
+; move.l _DOSBase,d0
 ; move.l d0,a1
 ; move.l 4.w,a6
 ; jsr CloseLib(a6)
 
+				;FIXME another place with hw access
 				move.l	#$dff000,a6
 
 charlie:
@@ -859,7 +814,7 @@ charlie:
 saveit:			ds.l	10
 doslibname:		dc.b	'dos.library',0
 				even
-doslib:			dc.l	0
+_DOSBase:		dc.l	0
 
 mors:			dc.w	0
 
@@ -1434,22 +1389,22 @@ scaledownlop:
 ; trap #0
 ; rts
 ;
+				;FIXE not referenced?
 ;ANOTHERSUP:
 
-				move.l	$4.w,a6
-				jsr		_LVOSuperState(a6)
-				move.l	d0,SSTACK
+				; CALLEXEC SuperState(a6)
+				; move.l	d0,SSTACK
 
-				;CACHE_FREEZE_OFF d2
+				; CACHE_FREEZE_OFF d2
 
-; charlie
-; DATA_CACHE_ON d2
+				; charlie
+				; DATA_CACHE_ON d2
 
-				DataCacheOn
+				; DataCacheOn
 
-				move.l	$4.w,a6
-				move.l	SSTACK,d0
-				jsr		_LVOUserState(a6)
+
+				; move.l	SSTACK,d0
+				; CALLEXEC UserState
 
 				move.l	#0,hitcol
 
@@ -1487,8 +1442,7 @@ NOCLTXT:
 
 
 
-				move.l	4.w,a6
-				jsr		_LVOForbid(a6)
+				CALLEXEC Forbid
 ;	jsr	_LVODisable(a6)
 
 
@@ -1624,8 +1578,6 @@ CLRDAM:
 				move.l	scrn,SCRNSHOWPT
 
 				move.l	scrn2,SCRNDRAWPT
-
-
 
 				move.l	#MESSAGEBUFFER,a0
 				move.w	#19,d0
@@ -3901,29 +3853,25 @@ SAVETHESCREEN:
 				move.l	old,$dff080
 				move.w	#$8020,$dff000+intena
 
-				move.l	_IntuitionBase,a6
-				jsr		_LVORethinkDisplay(a6)
+				CALLINT	RethinkDisplay
 
-				move.l	doslib,a6
 				move.l	#SAVENAME,d1
 				move.l	#1006,d2
-				jsr		-30(a6)
+				CALLDOS	Open
 				move.l	d0,handle
 
-				move.l	doslib,a6
 				move.l	SCRNDRAWPT,d2
 				move.l	handle,d1
 				move.l	#10240*8,d3
-				jsr		_LVOWrite(a6)
+				CALLDOS	Write
 
-				move.l	doslib,a6
 				move.l	handle,d1
-				jsr		-36(a6)
+				CALLDOS	Close
 
-				move.l	doslib,a6
 				move.l	#200,d1
-				jsr		-198(a6)
+				CALLDOS	Delay
 
+				; FIXME
 				move.w	#$0020,$dff000+intena
 				move.l	#bigfield,$dff080
 
@@ -13536,10 +13484,11 @@ LINKS:			dc.l	0
 FLYLINKS:		dc.l	0
 *************************************************************
 
+				section	bss
 consttab:
 				ds.b	65536
 
-; incbin "constantfile"
+				section	Scrn,CODE
 
 *******************************************************************
 
@@ -14080,6 +14029,7 @@ f5l
 FacePlace:
 ; ds.l 6*32*5
 
+TEXTSCRNSize	equ		10280*2
 TEXTSCRN:		dc.l	0
 
 TEXTCOP:
@@ -14214,23 +14164,20 @@ closeeverything:
 				swap	d0
 				move.w	d0,och
 
-; move.l doslib,a6
-; move.l #4,d1
-; jsr -198(a6)
+				;move.l #4,d1
+				;CALLDOS Delay
 
-; move.l doslib,d0
-; move.l d0,a1
-; move.l 4.w,a6
-; jsr CloseLib(a6)
+				;move.l _DOSBase,d0
+				;move.l d0,a1
+				;CALLEXEC CloseLibrary
 
 				move.l	#$dff000,a6
 				move.w	#$8020,dmacon(a6)
 				move.w	#$f,dmacon(a6)
 
-; move.l 4.w,a6
-; lea VBLANKInt,a1
-; moveq #INTB_COPER,d0
-; jsr _LVORemIntServer(a6)
+				;lea VBLANKInt,a1
+				;moveq #INTB_COPER,d0
+				;CALLEXEC RemIntServer
 
 ; IFEQ CD32VER
 ; move.l OLDKINT,$68.w
@@ -14238,16 +14185,15 @@ closeeverything:
 ; move.w saveinters,d0
 ; or.w #$c000,d0
 ; move.w d0,intena(a6)
+
 				clr.w	$dff0a8
 				clr.w	$dff0b8
 				clr.w	$dff0c8
 				clr.w	$dff0d8
 
-
-; move.l oldview,a1
-; move.l a1,d0
-; move.l gfxbase,a6
-; jsr -$de(a6)
+				move.l	oldview,a1
+				move.l	a1,d0
+				CALLGRAF LoadView
 
 ; cmp.b #'s',mors
 ; beq.s leaveold
@@ -14260,37 +14206,30 @@ closeeverything:
 				move.l	#0,d0
 
 				rts
-
-
-
-intbase:		dc.l	0
-gfxbase:		dc.l	0
-oldview:		dc.l	0
-oldcopper:		dc.l	0
-
 stuff:
-
 				Lea		gfxname(pc),a1
 				Moveq.l	#0,d0
-				Move.l	$4.w,a6
-				Jsr		-$228(a6)
+				CALLEXEC OpenLibrary
 
 ;	add.w d1,RVAL1
 
-				Move.l	d0,gfxbase
+				Move.l	d0,_GfxBase
 				Move.l	d0,a6					Use As Base Reg
 				Move.l	34(a6),oldview
 				move.l	38(a6),old
 				move.l	38(a6),oldcopper
 				rts
 
-gfxname			dc.b	"graphics.library",0
+gfxname			GRAFNAME
 				even
+_GfxBase:		dc.l	0
+
+oldview:		dc.l	0
+oldcopper:		dc.l	0
+
+Panel:			dc.l	0
+
 				cnop	0,64
-
-Panel:
-				dc.l	0
-
 TimerScr:
 ;ds.b 40*64
 

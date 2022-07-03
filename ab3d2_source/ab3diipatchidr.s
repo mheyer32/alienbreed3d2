@@ -1,10 +1,10 @@
 ;Patch to cancel any Error Report from DOS
+; FIXME: this causes us to open intuition.library twice
 FuncToPatch		equ		_LVOEasyRequestArgs
 MakePatch:
-				move.l	4.w,a6
 				move.l	#IntuiName,a1
 				move.l	#36,d0
-				jsr		_LVOOpenLibrary(a6)
+				CALLEXEC OpenLibrary
 				move.l	d0,IntuiBase
 				beq.s	IntuiError
 

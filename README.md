@@ -33,7 +33,7 @@ In order to be able to cross-compile the code via vasm I had to
 
 There are MANY ways this game can be improved
 * include faster C2P   code just as in legacy patches and WHDLoad slaves
-* remove system-takeover
+* remove system-takeover, in partcular writing to DMACON and INTENA
 ** open regular screen, support RTG
 ** use intution for keyboard control
 ** allow exiting the game

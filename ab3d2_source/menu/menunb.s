@@ -8,13 +8,11 @@ main_meteroff
 
 
 mnu_GETBLITINT:
-				move.l	gfxbase,a6
-				jsr		_LVOOwnBlitter(a6)
+				CALLGRAF OwnBlitter
 
-				move.l	4.w,a6
 				lea		BLITInt,a1
 				moveq	#INTB_BLIT,d0
-				jsr		_LVOSetIntVector(a6)
+				CALLEXEC SetIntVector
 				move.l	d0,SYSTEMBLITINT
 				rts
 
@@ -22,13 +20,11 @@ mnu_DROPBLITINT:
 				WBSLOW
 				WBSLOW
 
-				move.l	4.w,a6
 				move.l	SYSTEMBLITINT,a1
 				moveq	#INTB_BLIT,d0
-				jsr		_LVOSetIntVector(a6)
+				CALLEXEC SetIntVector
 
-				move.l	gfxbase,a6
-				jsr		_LVODisownBlitter(a6)
+				CALLGRAF DisownBlitter
 				rts
 
 mnu_nowait		;		Skip					the "waiting for opp.."
