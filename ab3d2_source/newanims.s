@@ -3872,14 +3872,14 @@ vertline:
 				move.w	(a4)+,d0
 				move.b	d0,(a2)
 				move.b	(a4)+,d0
-				move.b	d0,320(a2)
+				move.b	d0,SCREENWIDTH(a2)
 				addq	#1,a4
 				move.b	(a4)+,d0
-				move.b	d0,320*2(a2)
+				move.b	d0,SCREENWIDTH*2(a2)
 				move.b	(a4)+,d0
-				move.b	d0,320*3(a2)
+				move.b	d0,SCREENWIDTH*3(a2)
 
-				adda.w	#320*4,a2
+				adda.w	#SCREENWIDTH*4,a2
 				dbra	d3,vertline
 
 				add.w	d1,a1
@@ -3929,15 +3929,15 @@ BIGBACK:
 				move.l	a1,a4
 .vertline:
 				move.l	(a4)+,d0
-				move.b	d0,320*3(a2)
+				move.b	d0,SCREENWIDTH*3(a2)
 				swap	d0
-				move.b	d0,320(a2)
+				move.b	d0,SCREENWIDTH(a2)
 				lsr.l	#8,d0
 				move.b	d0,(a2)
 				swap	d0
-				move.b	d0,320*2(a2)
+				move.b	d0,SCREENWIDTH*2(a2)
 
-				adda.w	#320*4,a2
+				adda.w	#SCREENWIDTH*4,a2
 				dbra	d3,.vertline
 
 				add.w	#240,a1
@@ -4002,14 +4002,14 @@ horline:
 				move.l	a1,a4
 vertline:
 				move.l	d0,(a2)
-				move.l	d0,320(a2)
-				move.l	d0,320*2(a2)
-				move.l	d0,320*3(a2)
+				move.l	d0,SCREENWIDTH(a2)
+				move.l	d0,SCREENWIDTH*2(a2)
+				move.l	d0,SCREENWIDTH*3(a2)
 				move.l	d0,4(a2)
-				move.l	d0,4+320(a2)
-				move.l	d0,4+(320*2)(a2)
-				move.l	d0,4+(320*3)(a2)
-				adda.w	#320*4,a2
+				move.l	d0,4+SCREENWIDTH(a2)
+				move.l	d0,4+(SCREENWIDTH*2)(a2)
+				move.l	d0,4+(SCREENWIDTH*3)(a2)
+				adda.w	#SCREENWIDTH*4,a2
 				dbra	d3,vertline
 
 				addq.w	#8,a0
@@ -4034,7 +4034,7 @@ BIGBACK:
 				sub.w	d6,a5
 
 				asr.w	#2,d7
-				move.w	#(288/8)-1,d4
+				move.w	#(RENDERWIDTH/8)-1,d4
 				move.l	#0,d0
 
 .horline:
@@ -4043,17 +4043,17 @@ BIGBACK:
 				move.l	a1,a4
 .vertline:
 
-				move.l	d0,320*0(a2)
-				move.l	d0,320*1(a2)
-				move.l	d0,320*2(a2)
-				move.l	d0,320*3(a2)
-				move.l	d0,4+320*0(a2)
-				move.l	d0,4+320*1(a2)
-				move.l	d0,4+320*2(a2)
-				move.l	d0,4+320*3(a2)
+				move.l	d0,SCREENWIDTH*0(a2)
+				move.l	d0,SCREENWIDTH*1(a2)
+				move.l	d0,SCREENWIDTH*2(a2)
+				move.l	d0,SCREENWIDTH*3(a2)
+				move.l	d0,4+SCREENWIDTH*0(a2)
+				move.l	d0,4+SCREENWIDTH*1(a2)
+				move.l	d0,4+SCREENWIDTH*2(a2)
+				move.l	d0,4+SCREENWIDTH*3(a2)
 
 
-				adda.w	#320*4,a2
+				adda.w	#SCREENWIDTH*4,a2
 				dbra	d3,.vertline
 
 				addq	#8,a0

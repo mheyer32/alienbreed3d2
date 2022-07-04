@@ -400,7 +400,7 @@ glassobj:
 				swap	d1
 				swap	d2
 
-				muls	#320,d2
+				muls	#SCREENWIDTH,d2
 
 				move.l	#WorkSpace,a0
 
@@ -423,7 +423,7 @@ glassobj:
 				add.w	d2,a6
 				add.w	d6,d7
 				bcc.s	.noadmore
-				adda.w	#320,a6
+				adda.w	#SCREENWIDTH,a6
 .noadmore:
 				dbra	d0,.readintodown
 				swap	d0
@@ -485,7 +485,7 @@ glassobj:
 				move.b	(a5,d3.w*2),d6
 				move.b	(a2,d6.w),(a6)
 .itsbackground
-				adda.w	#320,a6
+				adda.w	#SCREENWIDTH,a6
 				addx.l	d2,d1
 				dbra	d4,.drawavertstrip
 				swap	d3
@@ -777,7 +777,7 @@ drawrightsideGLARE:
 				move.b	(a6),d0
 				move.b	(a4,d0.w),(a6)
 .dontplotthisoneitsblack:
-				adda.w	#320,a6
+				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
 				dbra	d4,.drawavertstrip
@@ -800,7 +800,7 @@ SecThirdGLARE:
 				move.b	(a6),d0
 				move.b	(a4,d0.w),(a6)
 .dontplotthisoneitsblack:
-				adda.w	#320,a6
+				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
 				dbra	d4,.drawavertstrip
@@ -822,7 +822,7 @@ ThirdThirdGLARE:
 				move.b	(a6),d0
 				move.b	(a4,d0.w),(a6)
 .dontplotthisoneitsblack:
-				adda.w	#320,a6
+				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
 				dbra	d4,.drawavertstrip
@@ -1217,7 +1217,7 @@ drawrightside:
 				beq.s	.dontplotthisoneitsblack
 				move.b	(a4,d0.w*2),(a6)
 .dontplotthisoneitsblack:
-				adda.w	#320,a6
+				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
 				dbra	d4,.drawavertstrip
@@ -1237,7 +1237,7 @@ SecThird:
 				beq.s	.dontplotthisoneitsblack
 				move.b	(a4,d0.w*2),(a6)
 .dontplotthisoneitsblack:
-				adda.w	#320,a6
+				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
 				dbra	d4,.drawavertstrip
@@ -1256,7 +1256,7 @@ ThirdThird:
 				beq.s	.dontplotthisoneitsblack
 				move.b	(a4,d0.w*2),(a6)
 .dontplotthisoneitsblack:
-				adda.w	#320,a6
+				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
 				dbra	d4,.drawavertstrip
@@ -1300,7 +1300,7 @@ drawrightsideADD:
 				lsl.w	#8,d0
 				move.b	(a6),d0
 				move.b	(a4,d0.w),(a6)
-				adda.w	#320,a6
+				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
 				dbra	d4,.drawavertstrip
@@ -1320,7 +1320,7 @@ SecThirdADD:
 				lsl.w	#8,d0
 				move.b	(a6),d0
 				move.b	(a4,d0.w),(a6)
-				adda.w	#320,a6
+				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
 				dbra	d4,.drawavertstrip
@@ -1340,7 +1340,7 @@ ThirdThirdADD:
 				move.b	(a6),d0
 				move.b	(a4,d0.w),(a6)
 .dontplotthisoneitsblack:
-				adda.w	#320,a6
+				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
 				dbra	d4,.drawavertstrip
@@ -1704,7 +1704,7 @@ drawlightlop
 				beq.s	.dontplotthisoneitsblack
 				move.b	(a4,d0.w),(a6)
 .dontplotthisoneitsblack:
-				adda.w	#320,a6
+				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
 				dbra	d4,.drawavertstrip
@@ -2769,7 +2769,7 @@ usegour:
 				bsr		putingourlines
 dontusegour:
 
-				move.w	#320,linedir
+				move.w	#SCREENWIDTH,linedir
 				move.l	FASTBUFFER,a6
 
 				tst.b	drawit(pc)
@@ -3018,7 +3018,7 @@ drawpol:
 
 
 				move.b	(a1,d3.w),(a3)
-				adda.w	#320,a3
+				adda.w	#SCREENWIDTH,a3
 				dbra	d2,drawpol
 
 ; add.w a5,d3
@@ -3030,7 +3030,7 @@ drawpol:
 ; and.w d1,d5
 ; move.b (a0,d5.w*4),d0
 ; move.w (a1,d0.w*2),(a3)
-; adda.w #320,a3
+; adda.w #SCREENWIDTH,a3
 ; add.w a5,d3
 ; addx.l d4,d5
 ; dbcs d2,drawpol2
@@ -3048,7 +3048,7 @@ ontoscr:
 val				SET		0
 				REPT	256
 				dc.l	val
-val				SET		val+320
+val				SET		val+SCREENWIDTH
 				ENDR
 
 predoglare:
@@ -3170,7 +3170,7 @@ drawpolGL:
 				add.l	d4,d6
 
 				move.b	(a1,d3.w),(a3)
-				adda.w	#320,a3
+				adda.w	#SCREENWIDTH,a3
 				dbra	d2,drawpolGL
 
 nodlGL:
@@ -3183,7 +3183,7 @@ itsblack:
 				swap	d5
 				add.l	a5,d5
 				add.l	d4,d6
-				adda.w	#320,a3
+				adda.w	#SCREENWIDTH,a3
 				dbra	d2,drawpolGL
 				adda.w	#16,a4
 				dbra	d7,DOGLAREPOLY
@@ -3194,7 +3194,7 @@ ontoscrGL:
 val				SET		0
 				REPT	256
 				dc.l	val
-val				SET		val+320
+val				SET		val+SCREENWIDTH
 				ENDR
 
 tstdca:			dc.l	0
@@ -3347,7 +3347,7 @@ drawpolg:
 				add.w	d2,d7
 				swap	d2
 				move.b	(a1,d3.w),(a3)
-				adda.w	#320,a3
+				adda.w	#SCREENWIDTH,a3
 				dbra	d2,drawpolg
 
 nodlg:
@@ -3362,7 +3362,7 @@ ontoscrg:
 val				SET		0
 				REPT	256
 				dc.l	val
-val				SET		val+320
+val				SET		val+SCREENWIDTH
 				ENDR
 
 
@@ -3535,7 +3535,7 @@ drawpolh:
 				beq.s	.dontplot
 				move.b	(a1,d3.w),(a3)
 .dontplot
-				adda.w	#320,a3
+				adda.w	#SCREENWIDTH,a3
 				dbra	d2,drawpolh
 
 pastith:
@@ -3550,7 +3550,7 @@ ontoscrh:
 val				SET		0
 				REPT	256
 				dc.l	val
-val				SET		val+320
+val				SET		val+SCREENWIDTH
 				ENDR
 
 				EVEN
@@ -4186,11 +4186,11 @@ boxbrights:
 
 boxang:			dc.w	0
 
-				ds.w	320*4
-PolyBotTab:		ds.w	320*8
-				ds.w	320*4
-PolyTopTab:		ds.w	320*8
-				ds.w	320*4
+				ds.w	SCREENWIDTH*4
+PolyBotTab:		ds.w	SCREENWIDTH*8
+				ds.w	SCREENWIDTH*4
+PolyTopTab:		ds.w	SCREENWIDTH*8
+				ds.w	SCREENWIDTH*4
 
 offset:
 				dc.w	0

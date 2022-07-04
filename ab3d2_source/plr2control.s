@@ -66,7 +66,7 @@ PLR2_mouse_control
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
-				muls	#320,d0
+				muls	#SCREENWIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 
 				move.l	#KeyMap,a5
@@ -472,7 +472,7 @@ PLR2_keyboard_control:
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
-				muls	#320,d0
+				muls	#SCREENWIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 
 				move.w	PLR2s_angpos,d0

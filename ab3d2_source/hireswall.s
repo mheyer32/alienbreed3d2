@@ -1626,7 +1626,7 @@ usesimple:
 
 cliptopusesimple
 				move.w	VALAND,d7
-				move.w	#320,d0
+				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
 				cmp.l	a4,a2
 				blt.s	usea2
@@ -1722,10 +1722,10 @@ simplewallPACK2:
 ; bra cliptop
 
 MIDDLEY:		dc.w	120
-BIGMIDDLEY:		dc.l	320*120
+BIGMIDDLEY:		dc.l	SCREENWIDTH*120
 TOPOFFSET:		dc.w	0
 SMIDDLEY:		dc.w	120
-SBIGMIDDLEY:	dc.l	320*120
+SBIGMIDDLEY:	dc.l	SCREENWIDTH*120
 STOPOFFSET:		dc.w	0
 
 gotoend:
@@ -1772,7 +1772,7 @@ gotoend:
 				add.w	totalyoff(pc),d4
 				move.w	VALAND,d7
 				and.w	d7,d4
-				move.w	#320,d0
+				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
 
 				ifne	CHEESEY
@@ -1793,7 +1793,7 @@ timeslarge:
 val				SET		0
 				REPT	256
 				dc.l	val
-val				SET		val+320
+val				SET		val+SCREENWIDTH
 				ENDR
 
 doubwall
@@ -1865,7 +1865,7 @@ timeslargeDOUB:
 val				SET		0
 				REPT	256
 				dc.l	val
-val				SET		val+320
+val				SET		val+SCREENWIDTH
 				ENDR
 
 
@@ -1949,7 +1949,7 @@ gotoendBIG
 				add.w	totalyoff(pc),d4
 				move.w	VALAND,d7
 				and.w	d7,d4
-				move.w	#320,d0
+				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
 
 				ifne	CHEESEY
@@ -1970,7 +1970,7 @@ timeslargeBIG:
 val				SET		0
 				REPT	256
 				dc.l	val
-val				SET		val+320
+val				SET		val+SCREENWIDTH
 				ENDR
 
 doubwallBIG:
@@ -2044,7 +2044,7 @@ timeslargeBIGDOUB:
 val				SET		0
 				REPT	256
 				dc.l	val
-val				SET		val+320
+val				SET		val+SCREENWIDTH
 				ENDR
 
 nostripqthru:

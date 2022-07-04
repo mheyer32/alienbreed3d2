@@ -139,8 +139,8 @@ _IntuitionBase:	dc.l	0
 
 MyScreen:		dc.l	0
 
-MyNewScreen		dc.w	0,0						left, top
-				dc.w	320,16					width, height
+MyNewScreen:	dc.w	0,0						left, top
+				dc.w	SCREENWIDTH,16			width, height
 				dc.w	1						depth
 				dc.b	0,1						pens
 				dc.w	0						viewmodes
@@ -193,6 +193,8 @@ START:
 ;	beq	exit_false		if failed then quit
 				move.l	d0,_IntuitionBase		else save the pointer
 
+				; FIMXE: this screen never gets closed. Why does it get opened at all?
+				; is it just to reset the view to default?
 				lea		MyNewScreen(pc),a0
 				CALLINT	OpenScreen				open a screen
 				tst.l	d0
@@ -475,7 +477,8 @@ DONEMENU:
 *************************************
 				jsr		INITQUEUE
 
-				; Is this where the main screen gets allocated?
+				; Allocate main chipmem bitmap data for rendering
+				; FIXME: this should be AllocBitmap instead for alignment purposes
 				move.l	#MEMF_CHIP,d1
 				move.l	#10240*8,d0
 				CALLEXEC AllocMem
@@ -517,7 +520,7 @@ DONEMENU:
 
 				ifne	CHEESEY
 
-				move.l	scrn,scrn2
+				move.l	scrn,scrn2	; FIXME: loosing scrn2 pointer this way. Is this removing double-buffering from the cheesey version?
 
 				endc
 
@@ -600,7 +603,7 @@ QUITTT:
 				move.l	#TEXTSCRNSize,d0
 				CALLEXEC FreeMem
 
-				move.l	FASTBUFFER,a1
+				move.l	FASTBUFFERalloc,a1
 				move.l	#FASTBUFFERSize,d0
 				CALLEXEC FreeMem
 
@@ -2774,7 +2777,7 @@ LOADTITLESCRN2:
 
 
 				move.l	#MEMF_CLEAR,d1
-				move.l	#52400,d0				;seems excessive?
+				move.l	#52400,d0
 				CALLEXEC AllocMem
 				tst.l	d0
 				beq		.nomem

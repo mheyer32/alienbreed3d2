@@ -1194,7 +1194,7 @@ usesimpleG:
 
 cliptopusesimpleG
 				move.w	VALAND,d7
-				move.w	#320,d0
+				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
 
 				swap	d2
@@ -1353,7 +1353,7 @@ gotoendG:
 cliptopG
 				move.w	VALAND,d7
 				and.w	d7,d4
-				move.w	#320,d0
+				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
 
 				ifne	CHEESEY
@@ -1377,7 +1377,7 @@ timeslargeG:
 val				SET		0
 				REPT	256
 				dc.l	val
-val				SET		val+320
+val				SET		val+SCREENWIDTH
 				ENDR
 
 doubwallGOUR:
@@ -1450,7 +1450,7 @@ timeslargeGDOUB:
 val				SET		0
 				REPT	256
 				dc.l	val
-val				SET		val+320
+val				SET		val+SCREENWIDTH
 				ENDR
 
 
@@ -1543,7 +1543,7 @@ gotoendGB:
 				add.w	totalyoff(pc),d4
 				move.w	VALAND,d7
 				and.w	d7,d4
-				move.w	#320,d0
+				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
 
 				ifne	CHEESEY
@@ -1569,7 +1569,7 @@ timeslargeGB:
 val				SET		0
 				REPT	256
 				dc.l	val
-val				SET		val+320
+val				SET		val+SCREENWIDTH
 				ENDR
 
 
@@ -1646,5 +1646,5 @@ timeslargeGBDOUB:
 val				SET		0
 				REPT	256
 				dc.l	val
-val				SET		val+320
+val				SET		val+SCREENWIDTH
 				ENDR

@@ -99,6 +99,9 @@ DataCacheOn		macro
 
 CD32VER			equ		0
 
+RENDERWIDTH		equ		320
+SCREENWIDTH		equ		320
+
 maxscrdiv		EQU		8
 max3ddiv		EQU		5
 playerheight	EQU		12*1024
@@ -361,6 +364,12 @@ _start
 				move.l	#0,d1
 				move.l	#FASTBUFFERSize,d0
 				CALLEXEC AllocMem
+				move.l	d0,FASTBUFFERalloc
+				;align to 16byte for best C2P perf
+				moveq.l	#15,d1
+				add.l	d1,d0
+				moveq	#-16,d1 ; $F0
+				and.l   d1,d0
 				move.l	d0,FASTBUFFER
 
 				; Setup constant table
@@ -397,13 +406,14 @@ fillconst:
 
 				include	"defs.i"
 
-				IFEQ CHEESEY
-FASTBUFFERSize	equ		320*256
+				IFEQ	CHEESEY
+FASTBUFFERSize	equ		SCREENWIDTH*256 + 15 ; screen size plus alignment
 				ELSE
-FASTBUFFERSize	equ		320*160
+FASTBUFFERSize	equ		SCREENWIDTH*160 + 15
 				ENDC
 
-FASTBUFFER:		dc.l	0
+FASTBUFFER:		dc.l	0					; aligned address
+FASTBUFFERalloc: dc.l	0					; allocated address
 
 SYSTEMBLITINT:	dc.l	0
 
@@ -489,7 +499,7 @@ DRAWLINEOFTEXT:
 				dbra	d0,.addup
 				asr.w	#1,d1
 				neg.w	d1
-				add.w	#320,d1					; horiz pos of start x
+				add.w	#SCREENWIDTH,d1			; horiz pos of start x
 
 NOTCENTRED:
 				move.w	d6,d7
@@ -1569,14 +1579,14 @@ CLRDAM:
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
-				muls	#320,d0
+				muls	#SCREENWIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 
 				move.w	#0,PLR1_AIMSPD
 				move.w	#0,PLR2_AIMSPD
 
+; init pointer to chipmem render buffers
 				move.l	scrn,SCRNSHOWPT
-
 				move.l	scrn2,SCRNDRAWPT
 
 				move.l	#MESSAGEBUFFER,a0
@@ -1710,7 +1720,8 @@ lop:
 .notmess2:
 
 
-				move.w	#%110000000000,$dff034
+				move.w	#%110000000000,$dff034	; POTGO -start Potentionmeter reading
+												; FIXME: shouldn't this be in a regular interrupt, like VBL?
 
 ; move.w COUNTER,d0
 ; ext.l d0
@@ -1766,10 +1777,10 @@ lop:
 				move.w	#100,WIDESCRN
 .okwidee:
 
-				move.w	#144,MIDDLEX
-				move.w	#288,RIGHTX
+				move.w	#RENDERWIDTH/2,MIDDLEX
+				move.w	#RENDERWIDTH,RIGHTX
 				move.w	#232,BOTTOMY
-				move.w	#120,TOTHEMIDDLE
+				move.w	#232/2,TOTHEMIDDLE
 				move.l	SCRNSHOWPT,a0
 				jsr		WIPEDISPLAY
 				move.l	SCRNDRAWPT,a0
@@ -1784,10 +1795,10 @@ lop:
 .okwide:
 
 
-				move.w	#96,MIDDLEX
+				move.w	#192/2,MIDDLEX
 				move.w	#192,RIGHTX
 				move.w	#160,BOTTOMY
-				move.w	#80,TOTHEMIDDLE
+				move.w	#160/2,TOTHEMIDDLE
 				move.l	SCRNSHOWPT,a0
 				jsr		WIPEDISPLAY
 				move.l	SCRNDRAWPT,a0
@@ -1795,7 +1806,7 @@ lop:
 .notswapscr2:
 
 
-				btst	#6,$bfe001
+				btst	#6,$bfe001		;  checking left mouse button?
 ;charlie bne.b .nocop
 
 ;charlie move.l #bigfield,$dff080    ; Point the copper at our copperlist.
@@ -1897,6 +1908,7 @@ putinpal:
 				move.l	olddrawpt,drawpt
 				move.l	d0,olddrawpt
 
+; Swap screen bitmaps
 				move.l	SCRNDRAWPT,d0
 				move.l	SCRNSHOWPT,SCRNDRAWPT
 				move.l	d0,SCRNSHOWPT
@@ -2686,12 +2698,13 @@ IWasPlayer1:
 
 				move.w	#0,leftclip
 				move.w	RIGHTX,rightclip
-				move.w	#0,deftopclip
-				move.w	WIDESCRN,d0
-				add.w	d0,deftopclip
 
+				move.w	WIDESCRN,d0
+				move.w	#0,deftopclip
+				add.w	d0,deftopclip
 				move.w	BOTTOMY,defbotclip
 				sub.w	d0,defbotclip
+
 				move.w	#0,topclip
 				add.w	d0,topclip
 				move.w	BOTTOMY,botclip
@@ -2745,10 +2758,12 @@ drawplayer2
 
 				move.w	#0,leftclip
 				move.w	RIGHTX,rightclip
+
 				move.w	#0,deftopclip
 				add.w	d0,deftopclip
 				move.w	BOTTOMY,defbotclip
 				sub.w	d0,defbotclip
+
 				move.w	#0,topclip
 				add.w	d0,topclip
 				move.w	BOTTOMY,botclip
@@ -2794,61 +2809,63 @@ nodrawp2:
 				beq.s	.nomap
 				bsr		DoTheMapWotNastyCharlesIsForcingMeToDo
 .nomap
-
-				move.w	WIDESCRN,d7
+				move.w	WIDESCRN,d7				; height of black border top/bottom
 
 				tst.b	FULLSCR
 				beq		nobigconv
 
+				; setup for "fullscreen"
 				move.l	FASTBUFFER,a0
-; add.l #320*2*20,a0
+				; add.l #SCREENWIDTH*2*20,a0
 				move.w	d7,d6
-				muls	#320,d6
-				add.l	d6,a0
-				move.l	SCRNDRAWPT,a1
+				muls	#SCREENWIDTH,d6
+				add.l	d6,a0					; a0 Ptr to start of rendered image
+				move.l	SCRNDRAWPT,a1			;
 				move.w	d7,d6
 				muls	#40,d6
 				add.l	d6,a1
-				add.l	#2,a1
-				move.l	#(288/8)-1,d0
-				move.l	#231,d1
-				sub.w	d7,d1
-				sub.w	d7,d1
+				add.l	#2,a1					; indent by 16 pixel border, a1 chipmem ptr of top left corner
+
+				move.l	#(RENDERWIDTH/8)-1,d0	; RENDERWIDTH pixel is width of rendered image (2x 16pixel borders)
+				move.l	#231,d1					; 232 lines vertically
+				sub.w	d7,d1					; top letterbox
+				sub.w	d7,d1					; bottom letterbox: d1: number of lines
 				blt		nochunk
-				move.w	#(320-288),d2
-				move.w	#4,d3
+				move.w	#(SCREENWIDTH-RENDERWIDTH),d2 ; modulo chunky
+				move.w	#4,d3					; modulo chipmem
 
 				bra		donebigconv
 
+				; setup for small renderbox
 nobigconv:
 
 				move.l	FASTBUFFER,a0
-				move.w	d7,d6
-				muls	#320,d6
-				add.l	d6,a0
-				move.l	SCRNDRAWPT,a1
-				add.l	#8+40*20,a1
+				move.w	d7,d6					; top of rendered image (letterbox border on top)
+				muls	#SCREENWIDTH,d6			; number of pixels
+				add.l	d6,a0					; start of rendered frame data
+				move.l	SCRNDRAWPT,a1			; chipmem ptr
+				add.l	#40*20,a1				; add 20 lines down,
 				move.w	d7,d6
 				muls	#40,d6
-				add.l	d6,a1
+				add.l	d6,a1					; letter box offset into chipmem
 				move.l	#(192/8)-1,d0
 				move.l	#159,d1
 				sub.w	d7,d1
-				sub.w	d7,d1
+				sub.w	d7,d1					; 160 lines minus the top/bottom black border
 				blt		nochunk
-				move.w	#(320-192),d2
-				move.w	#16,d3
+				move.w	#(SCREENWIDTH-192),d2	; src chunky modulo
+				move.w	#16,d3					; dst chipmem modulo
 donebigconv
 
 				tst.b	DOUBLEHEIGHT
 				beq.s	.nodoub
-				asr.w	#1,d1
+				asr.w	#1,d1					; height/2
 				blt		nochunk
-				add.w	#320,d2
-				add.w	#40,d3
+				add.w	#SCREENWIDTH,d2			; this skips every second line in src
+				add.w	#40,d3					; skip every second line in dst
 .nodoub:
 
-				move.b	DOUBLEWIDTH,d4
+				move.b	DOUBLEWIDTH,d4			;
 
 				move.b	PLR1_TELEPORTED,d5
 				clr.b	PLR1_TELEPORTED
@@ -2860,67 +2877,34 @@ donebigconv
 				jsr		CHUNKYTOPLANAR
 
 nochunk:
-
-
 				move.l	#KeyMap,a5
 				tst.b	$4a(a5)
 				beq		.nosmallscr
 
-				move.w	#100,d2
-				move.l	#0,d7
-				move.l	#0,d6
+				; clamp wide screen
+				move.w	#100,d0				; maximum in fullscreen mode
 				tst.b	FULLSCR
-				bne.s	.attop
-				move.l	#40*20,d7
-				move.l	#40*52,d6
-				move.w	#60,d2
-.attop:
-
-				move.w	WIDESCRN,d0
-				move.l	SCRNDRAWPT,a0
-				add.l	d7,a0
-				muls	#40,d0
-				add.l	d0,a0
-				bsr		CLRTWOLINES
-				move.w	WIDESCRN,d0
-				move.l	SCRNSHOWPT,a0
-				add.l	d7,a0
-				muls	#40,d0
-				add.l	d0,a0
-				bsr		CLRTWOLINES
-
+				bne.s	.isFullscreen
+				move.w	#60,d0				; maximum in small screen mode
+.isFullscreen:
+				cmp.w	WIDESCRN,d0
+				blt.s	.clamped
 
 				add.w	#2,WIDESCRN
 
-				cmp.w	WIDESCRN,d2
-				bgt.s	.okwide
-				move.w	d2,WIDESCRN
-.okwide:
-
 				move.l	SCRNDRAWPT,a0
-				add.l	#232*40,a0
-				sub.l	d6,a0
-				move.w	WIDESCRN,d0
-				muls	#40,d0
-				sub.l	d0,a0
-				bsr		CLRTWOLINES
+				jsr		WIPEDISPLAY
 				move.l	SCRNSHOWPT,a0
-				sub.l	d6,a0
-				add.l	#232*40,a0
-				move.w	WIDESCRN,d0
-				muls	#40,d0
-				sub.l	d0,a0
-				bsr		CLRTWOLINES
-
+				jsr		WIPEDISPLAY
+.clamped:
 .nosmallscr
-
 				tst.b	$5e(a5)
 				beq.s	.nobigscr
+
 				tst.w	WIDESCRN
 				ble.s	.nobigscr
 
 				sub.w	#2,WIDESCRN
-
 .nobigscr
 
 
@@ -3166,7 +3150,7 @@ CLRTWOLINES:
 				move.l	d1,26+40(a0)
 				move.l	d1,30+40(a0)
 				move.l	d1,34+40(a0)
-				add.l	#10240,a0
+				add.l	#10240,a0				; next bitplane
 				dbra	d2,.ccc
 				move.l	(a7)+,d2
 				rts
@@ -3174,7 +3158,7 @@ CLRTWOLINES:
 
 LASTDH:			dc.b	0
 LASTDW:			dc.b	0
-WIDESCRN:		dc.w	0
+WIDESCRN:		dc.w	0						; Letter box rendering, height of black border
 TRRANS:			dc.w	0
 DOANYWATER:		dc.w	0
 
@@ -3528,7 +3512,7 @@ DRAWAtransLINE:
 				tst.b	FULLSCR
 				beq.s	.nooffset
 
-				add.l	#(320*40)+(48*2),a0
+				add.l	#(SCREENWIDTH*40)+(48*2),a0
 
 .nooffset:
 
@@ -3543,7 +3527,7 @@ DRAWAtransLINE:
 .okdown
 
 				move.w	d1,d5
-				muls	#320,d5
+				muls	#SCREENWIDTH,d5
 				add.l	d5,a0
 				lea		(a0,d0.w*2),a0
 
@@ -3558,7 +3542,7 @@ downlefttrans:
 				bgt.s	downmorelefttrans
 
 downleftmoretrans:
-				move.w	#320,d6
+				move.w	#SCREENWIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 
@@ -3575,7 +3559,7 @@ downleftmoretrans:
 				rts
 
 downmorelefttrans:
-				move.w	#320,d6
+				move.w	#SCREENWIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
@@ -3598,7 +3582,7 @@ downrighttrans:
 				bgt.s	downmorerighttrans
 
 downrightmoretrans:
-				move.w	#320,d6
+				move.w	#SCREENWIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 
@@ -3615,7 +3599,7 @@ downrightmoretrans:
 				rts
 
 downmorerighttrans:
-				move.w	#320,d6
+				move.w	#SCREENWIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
@@ -3655,7 +3639,7 @@ DRAWAMAPLINE:
 .okdown
 
 				move.w	d1,d5
-				muls	#320,d5
+				muls	#SCREENWIDTH,d5
 				add.l	d5,a0
 				lea		(a0,d0.w),a0
 
@@ -3670,7 +3654,7 @@ downleft:
 				bgt.s	downmoreleft
 
 downleftmore:
-				move.w	#320,d6
+				move.w	#SCREENWIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 				addq	#1,a0
@@ -3686,7 +3670,7 @@ downleftmore:
 				rts
 
 downmoreleft:
-				move.w	#320,d6
+				move.w	#SCREENWIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
@@ -3708,7 +3692,7 @@ downright:
 				bgt.s	downmoreright
 
 downrightmore:
-				move.w	#320,d6
+				move.w	#SCREENWIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 
@@ -3724,7 +3708,7 @@ downrightmore:
 				rts
 
 downmoreright:
-				move.w	#320,d6
+				move.w	#SCREENWIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
@@ -3754,7 +3738,7 @@ DOITFAT:
 .okdown
 
 				move.w	d1,d5
-				muls	#320,d5
+				muls	#SCREENWIDTH,d5
 				add.l	d5,a0
 				lea		(a0,d0.w),a0
 
@@ -3769,7 +3753,7 @@ downleftFAT:
 				bgt.s	downmoreleftFAT
 
 downleftmoreFAT:
-				move.w	#320,d6
+				move.w	#SCREENWIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 				addq	#1,a0
@@ -3787,12 +3771,12 @@ downleftmoreFAT:
 				rts
 
 downmoreleftFAT:
-				move.w	#320,d6
+				move.w	#SCREENWIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
 .linelop:
-				move.b	d4,320(a0)
+				move.b	d4,SCREENWIDTH(a0)
 				move.b	d4,1(a0)
 				move.b	d4,(a0)
 				add.w	d6,a0
@@ -3811,12 +3795,12 @@ downrightFAT:
 				bgt.s	downmorerightFAT
 
 downrightmoreFAT:
-				move.w	#320,d6
+				move.w	#SCREENWIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 
 .linelop:
-				move.b	d4,320(a0)
+				move.b	d4,SCREENWIDTH(a0)
 				move.b	d4,(a0)+
 				move.b	d4,(a0)
 				sub.w	d3,d0
@@ -3829,12 +3813,12 @@ downrightmoreFAT:
 				rts
 
 downmorerightFAT:
-				move.w	#320,d6
+				move.w	#SCREENWIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
 .linelop:
-				move.b	d4,320(a0)
+				move.b	d4,SCREENWIDTH(a0)
 				move.b	d4,1(a0)
 				move.b	d4,(a0)
 				add.w	d6,a0
@@ -5742,7 +5726,7 @@ NOGUNLOOK:
 				beq		nowaterfull
 				bgt		oknothalf
 				moveq	#119,d0
-				add.l	#320*120*2,a0
+				add.l	#SCREENWIDTH*120*2,a0
 oknothalf:
 
 				bclr.b	#1,$bfe001
@@ -5763,7 +5747,7 @@ DOSOMESCREEN:
 				move.b	(a0),d2
 				move.b	(a2,d2.w),(a0)+
 				dbra	d1,.fwa
-				add.w	#(320-192),a0
+				add.w	#(SCREENWIDTH-192),a0
 				dbra	d0,.fw
 				rts
 
@@ -7858,8 +7842,8 @@ endpass:
 rotanimpt:		dc.w	0
 xradd:			dc.w	5
 yradd:			dc.w	8
-xrpos:			dc.w	320
-yrpos:			dc.w	320
+xrpos:			dc.w	SCREENWIDTH
+yrpos:			dc.w	SCREENWIDTH
 
 rotanim:
 				rts
@@ -8757,7 +8741,7 @@ pastsides:
 
 				addq	#2,a0
 
-				move.w	#320,linedir
+				move.w	#SCREENWIDTH,linedir
 
 ; move.l FASTBUFFER2,a6
 ; add.l BIGMIDDLEY,a6
@@ -8789,8 +8773,8 @@ pastsides:
 				move.w	above(pc),d6
 				beq		groundfloor
 * on ceiling:
-				move.w	#-320,linedir
-				suba.w	#320,a6
+				move.w	#-SCREENWIDTH,linedir
+				suba.w	#SCREENWIDTH,a6
 groundfloor:
 
 				move.w	xoff,d6
@@ -8910,7 +8894,7 @@ pastscale:
 				tst.w	above
 				beq.s	.clipfloor
 
-				sub.w	#320,a6
+				sub.w	#SCREENWIDTH,a6
 
 				move.w	MIDDLEY,d7
 				subq	#1,d7
@@ -10416,7 +10400,7 @@ oknotoffbotototr
 ; asr.w #7,d3
 ; add.w d3,d0
 
-				muls	#320,d0
+				muls	#SCREENWIDTH,d0
 				tst.w	above
 				beq.s	nonnnnnegr
 				neg.l	d0
@@ -10513,7 +10497,7 @@ oknotoffbototot
 				and.b	#$fe,d0
 .nodoub:
 
-				muls	#320,d0
+				muls	#SCREENWIDTH,d0
 				tst.w	above
 				beq.s	nonnnnneg
 				neg.l	d0
@@ -10606,7 +10590,7 @@ texturedwaterDOUB:
 				and.b	#$fe,d0
 .nodoub:
 
-				muls	#320,d0
+				muls	#SCREENWIDTH,d0
 				tst.w	above
 				beq.s	.nonnnnneg
 				neg.l	d0
@@ -11473,7 +11457,7 @@ noret2:
 ; neg.w d0
 ; add.w #120,d0
 ; move.w d0,SMIDDLEY
-; muls #320*2,d0
+; muls #SCREENWIDTH*2,d0
 ; move.l d0,SBIGMIDDLEY
 
 
@@ -11608,7 +11592,7 @@ nostartalan:
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
-				muls	#320,d0
+				muls	#SCREENWIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 				jsr		PLR1_fall
 
@@ -11697,7 +11681,7 @@ control2:
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
-				muls	#320,d0
+				muls	#SCREENWIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 				jsr		PLR2_fall
 
@@ -13534,8 +13518,10 @@ LINKFILE:
 
 ;brightentab:
 ; incbin "brightenfile"
+				section bss
 WorkSpace:
 				ds.l	8192
+				section code
 waterfile:
 				incbin	"waterfile"
 
@@ -14978,5 +14964,7 @@ welldone:
 				section	.text,CODE
 				include	"serial_nightmare.s"
 
-
+				cnop	0,4
+				include	"c2p1x1_8_c5_040.s"
+				include	"c2p_rect.s"
 

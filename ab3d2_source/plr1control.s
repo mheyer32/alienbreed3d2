@@ -66,7 +66,7 @@ PLR1_mouse_control
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
-				muls	#320,d0
+				muls	#SCREENWIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 
 
@@ -358,30 +358,41 @@ gogog:
 
 FULLSCRTEMP:	dc.w	0
 
+				; Restores the complete original screen left/right borders,
+				; bottom panel.They are stored in a lha packed format
+
+				; a0 points to destination memory
 WIPEDISPLAY:
-				move.l	#231,d0
+				move.l	#borderpacked,d0
 				moveq	#0,d1
-
-				move.w	#7,d2
-planel:
-				move.l	#231,d0
-
-wipe:
-				move.l	d1,2(a0)
-				move.l	d1,6(a0)
-				move.l	d1,10(a0)
-				move.l	d1,14(a0)
-				move.l	d1,18(a0)
-				move.l	d1,22(a0)
-				move.l	d1,26(a0)
-				move.l	d1,30(a0)
-				move.l	d1,34(a0)
-				add.w	#40,a0
-				dbra	d0,wipe
-				add.w	#40*24,a0
-				dbra	d2,planel
+				lea		WorkSpace,a1
+				lea		$0,a2
+				jsr		unLHA
 
 				rts
+
+; The original WIPEDISPLAY seems to selectivel only clean the
+;				move.l	#231,d0
+;				moveq	#0,d1
+;				move.w	#7,d2
+;planel:
+;				move.l	#231,d0
+;wipe:
+;				move.l	d1,2(a0) ; skips left border
+;				move.l	d1,6(a0)
+;				move.l	d1,10(a0)
+;				move.l	d1,14(a0)
+;				move.l	d1,18(a0)
+;				move.l	d1,22(a0)
+;				move.l	d1,26(a0)
+;				move.l	d1,30(a0)
+;				move.l	d1,34(a0) ; skips right 16 border pixels
+;				add.w	#40,a0
+;				dbra	d0,wipe
+;				add.w	#40*24,a0
+;				dbra	d2,planel
+
+;				rts
 
 SHOWPLR1GUNNAME:
 				moveq	#0,d2
@@ -480,7 +491,7 @@ PLR1_keyboard_control:
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
-				muls	#320,d0
+				muls	#SCREENWIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 
 				move.w	PLR1s_angpos,d0
