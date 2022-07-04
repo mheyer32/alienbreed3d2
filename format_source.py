@@ -91,7 +91,7 @@ if __name__ == "__main__":
 			pass
 		elif startcomment:
 			assert not label and not directive and not operands and not endcomment
-			out = startcomment.strip()
+			out = startcomment.rstrip()
 		else:
 			column = 0
 			if label:
