@@ -37,8 +37,8 @@ NEWCHUNKY
 				beq		.smallscreen
 
 				; fullscreen
-				tst.b	d4
-				bne		DOUBWIDTHCHUNK
+				tst.b	DOUBLEWIDTH
+				bne		.doublewidthFullscreen
 
 				move.w	#SCREENWIDTH,d0
 				move.w	WIDESCRN,d3				; height of black border top/bottom
@@ -73,6 +73,36 @@ NEWCHUNKY
 				add.l	#(SCREENWIDTH/8)*20+(64/8),a1	; top of regular small screen
 														; c2p_rect will apply d1 offset ontop
 				jsr		c2p_rect
+
+				rts
+
+
+; d0.w	chunkyx [chunky-pixels] (even multiple of 32)
+; d1.w	chunkyy [chunky-pixels]
+; d2.w	scroffsx [screen-pixels] (even multiple of 8)
+; d3.w	scroffsy [screen-pixels]
+; d4.l	rowlen [bytes] -- offset between one row and the next in a bpl
+; d5.l	bplsize [bytes] -- offset between one row in one bpl and the next bpl
+; d6.l	chunkylen [bytes] -- offset between one row and the next in chunkybu
+
+.doublewidthFullscreen
+				move.w	#RENDERWIDTH/2,d0
+				move.w	WIDESCRN,d3				; height of black border top/bottom
+				move.w	#232,d1
+				sub.w	d3,d1					; top letterbox
+				sub.w	d3,d1					; bottom letterbox: d1: number of lines
+				moveq.l	#0,d2
+				move.l	#SCREENWIDTH/8,d4
+				move.l	#(SCREENWIDTH/8)*256,d5
+				move.l	#SCREENWIDTH,d6
+				jsr		c2p2x1_8_c5_gen_init
+
+				; scroffsy only accounts for the Y offset in the destination buffer
+				move.l	FASTBUFFER,a0
+				mulu.w	d6,d3
+				lea		(a0,d3.w),a0
+				move.l	SCRNDRAWPT,a1
+				jsr		c2p2x1_8_c5_gen
 
 				rts
 

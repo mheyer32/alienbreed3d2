@@ -207,8 +207,8 @@ outofcalcG:
 				tst.b	FULLSCR
 				bne		scrdrawlopGB
 
-				tst.b	DOUBLEWIDTH
-				bne		scrdrawlopGDOUB
+;				tst.b	DOUBLEWIDTH
+;				bne		scrdrawlopGDOUB
 				bra		scrdrawlopG
 
 thislinedoneG:

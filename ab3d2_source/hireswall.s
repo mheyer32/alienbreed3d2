@@ -355,8 +355,8 @@ outofcalc:
 ; tst.b seethru
 ; bne screendividethru
 
-				tst.b	DOUBLEWIDTH
-				bne		scrdrawlopDOUB
+				;tst.b	DOUBLEWIDTH
+				;bne		scrdrawlopDOUB
 				bra		scrdrawlop
 
 thislinedone:
@@ -906,7 +906,7 @@ DivideCurve
 
 				rts
 
-prot3:			dc.w	0
+;prot3:			dc.w	0
 
 curvecalc:
 				move.l	#databuffer,a1

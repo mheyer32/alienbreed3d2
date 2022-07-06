@@ -1767,52 +1767,19 @@ lop:
 				move.b	FULLSCRTEMP,d0
 				move.b	FULLSCR,d1
 				eor.b	d1,d0
-				beq		.notswapscr2
+				beq		.noFullscreenSwitch
 
 				move.b	FULLSCRTEMP,FULLSCR
-				beq.s	.notswapscr3
 
-				cmp.w	#100,WIDESCRN
-				blt.s	.okwidee
-				move.w	#100,WIDESCRN
-.okwidee:
+				bsr		SetupRenderbufferSize
 
-				move.w	#RENDERWIDTH/2,MIDDLEX
-				move.w	#RENDERWIDTH,RIGHTX
-				move.w	#232,BOTTOMY
-				move.w	#232/2,TOTHEMIDDLE
-				move.l	SCRNSHOWPT,a0
-				jsr		WIPEDISPLAY
-				move.l	SCRNDRAWPT,a0
-				jsr		WIPEDISPLAY
-
-				bra.s	.notswapscr2
-
-.notswapscr3:
-				cmp.w	#60,WIDESCRN
-				blt.s	.okwide
-				move.w	#60,WIDESCRN
-.okwide:
-
-
-				move.w	#192/2,MIDDLEX
-				move.w	#192,RIGHTX
-				move.w	#160,BOTTOMY
-				move.w	#160/2,TOTHEMIDDLE
-				move.l	SCRNSHOWPT,a0
-				jsr		WIPEDISPLAY
-				move.l	SCRNDRAWPT,a0
-				jsr		WIPEDISPLAY
-.notswapscr2:
-
-
+.noFullscreenSwitch
 				btst	#6,$bfe001		;  checking left mouse button?
 ;charlie bne.b .nocop
 
 ;charlie move.l #bigfield,$dff080    ; Point the copper at our copperlist.
 
 .nocop
-
 				move.l	#KeyMap,a5
 
 				cmp.b	#'n',mors
@@ -2957,12 +2924,10 @@ notdoubheight2
 				beq.s	notdoubwidth
 				tst.b	LASTDW
 				bne		notdoubwidth2
-				move.l	SCRNSHOWPT,a0
-				jsr		WIPEDISPLAY
-				move.l	SCRNDRAWPT,a0
-				jsr		WIPEDISPLAY
-				st		LASTDW
 				not.b	DOUBLEWIDTH
+
+				bsr		SetupRenderbufferSize
+
 				bra.s	notdoubwidth2
 
 notdoubwidth:
@@ -3120,7 +3085,46 @@ noexit:
 
 				bra		lop
 
+SetupRenderbufferSize:
+				; FIXME dowe need to clamp here again?
+				cmp.w	#100,WIDESCRN
+				blt.s	.wideScreenOk
+				move.w	#100,WIDESCRN
 
+.wideScreenOk
+				tst.b FULLSCR
+				beq.s .setupSmallScreen
+
+				move.w  #RENDERWIDTH,d0
+				tst.b	DOUBLEWIDTH
+				beq.s	.noDoubleWidth
+				lsr.w	#1,d0
+.noDoubleWidth
+				move.w	d0,RIGHTX
+				lsr.w	#1,d0
+				move.w	d0,MIDDLEX
+				move.w	#232,BOTTOMY
+				move.w	#232/2,TOTHEMIDDLE
+				bra.s	.wipeScreen
+
+.setupSmallScreen:
+				move.w	#192,d0
+				tst.b	DOUBLEWIDTH
+				beq.s	.noDoubleWidth2
+				lsr.w	#1,d0
+.noDoubleWidth2
+				move.w	d0,RIGHTX
+				lsr.w	#1,d0
+				move.w	d0,MIDDLEX
+				move.w	#160,BOTTOMY
+				move.w	#160/2,TOTHEMIDDLE
+
+.wipeScreen
+				move.l	SCRNSHOWPT,a0
+				jsr		WIPEDISPLAY
+				move.l	SCRNDRAWPT,a0
+				jsr		WIPEDISPLAY
+				rts
 
 ; include "demo/system/keyboard.s"
 				include	"ab3diipatchidr.s"
@@ -9855,8 +9859,9 @@ doneallmult:
 ***********************************
 
 
-				tst.b	DOUBLEWIDTH
-				beq.s	.nodoub
+				;tst.b	DOUBLEWIDTH
+				;beq.s	.nodoub
+				bra.s	.nodoub
 
 				and.b	#$fe,d6
 
@@ -14970,4 +14975,5 @@ welldone:
 				cnop	0,4
 				include	"c2p1x1_8_c5_040.s"
 				include	"c2p_rect.s"
+				include	"c2p2x1_8_c5_gen.s"
 
