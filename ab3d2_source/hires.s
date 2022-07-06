@@ -2888,20 +2888,16 @@ nochunk:
 				beq		notdoubheight
 				tst.b	LASTDH
 				bne		notdoubheight2
-				move.l	SCRNSHOWPT,a0
-				jsr		WIPEDISPLAY
-				move.l	SCRNDRAWPT,a0
-				jsr		WIPEDISPLAY
 				st		LASTDH
-
 				move.w	#0,d0
 				move.w	#0,d1
 
 				not.b	DOUBLEHEIGHT
+
+				; Change copperlist for repeating every second line
 				beq.s	singlepixheight
 				move.w	#-40,d0
 				move.w	#40,d1
-
 singlepixheight:
 
 				move.l	#SCRMODULOS,a0
@@ -2913,6 +2909,9 @@ putinmode:
 				move.w	d1,6+16+4(a0)
 				add.w	#32,a0
 				dbra	d2,putinmode
+
+				; Check renderbuffer setup variables and clear screen
+				bsr		SetupRenderbufferSize
 
 				bra		notdoubheight2
 
@@ -3085,6 +3084,7 @@ noexit:
 
 				bra		lop
 
+; Check renderbuffer setup variables and wipe screen
 SetupRenderbufferSize:
 				; FIXME dowe need to clamp here again?
 				cmp.w	#100,WIDESCRN
@@ -3274,10 +3274,14 @@ DECIDEDWALL:
 				dbra	d7,wallsofzone
 				bra		SHOWMAP
 
+
+				; FIXME: why does map rendering have an effect on wall rendering?
 shownmap:
 
-				clr.b	TRRANS
+				clr.b	TRRANS		; FIXME seems like there is code for
+									; translucent map rendering, check it out
 
+				; Is this drawing the Arrow?
 				move.w	mapxoff,d0
 				ext.l	d0
 				move.w	mapzoff,d1
@@ -3319,118 +3323,144 @@ shownmap:
 
 
 CLIPANDDRAW:
-
 				tst.b	FULLSCR
 				beq.s	.nodov
 
+				; This is likely scaling the coordinates by 2/3 for Fullscreen
+				; go from 288 to 196 wide?
 				add.l	d0,d0
 				add.l	d2,d2
 				ext.l	d0
 				ext.l	d2
-				divs.l	#3,d0
+				divs.l	#3,d0	288 * 2/3 = 196
 				divs.l	#3,d2
 
 .nodov:
+				tst.b	DOUBLEWIDTH			; correct aspect ratio for DW/DH
+				beq.s	.noDoubleWidth
+				asr.l	#1,d0
+				asr.l	#1,d2
+.noDoubleWidth	tst.b	DOUBLEHEIGHT
+				beq.s	.noDoubleHeight
+				asr.l	#1,d1
+				asr.l	#1,d3
+.noDoubleHeight
+				move.w	MAPBRIGHT,d5 ; is this the map zoom?
 
-				move.w	MAPBRIGHT,d5
-
-				asr.l	d5,d0
+				asr.l	d5,d0		; I guess, this achieves X*0.5 + 0.5 for centered map rendering
 				asr.l	d5,d1
 				asr.l	d5,d2
 				asr.l	d5,d3
 
-NOSCALING:
-				add.l	#96,d0
+
+NOSCALING:		add.w	MIDDLEX,d0
+				ext.l	d0
 				bge		p1xpos
 
-				add.l	#96,d2
+				add.w	MIDDLEX,d2
+				ext.l	d2
 				blt		OFFSCREEN
 
-x1nx2p:
+x1nx2p:			; X1<0  X2>0, clip against X=0
+				move.l	d2,d6
+				sub.l	d0,d6		; dx
+				beq		OFFSCREEN	; dx == 0?
 
 				move.l	d3,d5
-				sub.l	d1,d5
-				move.l	d2,d6
-				sub.l	d0,d6
-				beq		OFFSCREEN
+				sub.l	d1,d5		; dy
 
-				muls.l	d0,d5
-				divs.l	d6,d5
-				sub.l	d5,d1
-				move.l	#0,d0
+				muls.l	d0,d5		; x1 * dy
+				divs.l	d6,d5		; x1 * dy / dx
+				sub.l	d5,d1		; y1 = y1 - x * dy / dx
+				move.l	#0,d0		; x1 = 0
 
 				bra		doneleftclip
 
 p1xpos:
-
-				add.l	#96,d2
+				add.w	MIDDLEX,d2
+				ext.l	d2
 				bge		doneleftclip
 
-				move.l	d1,d5
-				sub.l	d3,d5
 				move.l	d0,d6
-				sub.l	d2,d6
-				beq		OFFSCREEN
+				sub.l	d2,d6		; dx
+				ble		OFFSCREEN   ; dx == 0?
 
-				muls.l	d2,d5
-				divs.l	d6,d5
-				sub.l	d5,d3
-				move.l	#0,d2
+				move.l	d1,d5
+				sub.l	d3,d5		; dy
+
+				muls.l	d2,d5		; x2 * dy
+				divs.l	d6,d5		; x2 * dy / dx
+				sub.l	d5,d3		; y2 = y2 - x2 * dy / dx
+				move.l	#0,d2		; x2 == 0
 
 doneleftclip:
+				; Looks like the map draw is hardcoded to clip against the
+				; small render window
+				cmp.w	RIGHTX,d0
+				blt		p1xneg
 
-				cmp.l	#191,d0
-				ble		p1xneg
-
-				cmp.l	#191,d2
-				bgt		OFFSCREEN
+				cmp.w	RIGHTX,d2
+				bge		OFFSCREEN
 
 				move.l	d0,d6
-				sub.l	d2,d6
+				sub.l	d2,d6	; dx
 				beq		OFFSCREEN
-				sub.l	#191,d0
-				move.l	d3,d5
-				sub.l	d1,d5
 
-				muls.l	d5,d0
-				divs.l	d6,d0
-				add.l	d0,d1
-				move.l	#191,d0
+				move.l	d3,d5
+				sub.l	d1,d5	; dy
+
+				sub.w	RIGHTX,d0
+				addq.w	#1,d0
+				ext.l	d0		; (rightx - x1)
+
+				muls.l	d5,d0	; dy * (rightx -x1)
+				divs.l	d6,d0	; (dy * (rightx -x1))/dx
+				add.l	d0,d1	; y1 + (dy * (rightx -x1))/dx = y1 + dy/dx * (rightx - x1)
+				move.w	RIGHTX,d0
+				subq.w	#1,d0
+				ext.l	d0
 
 				bra		donerightclip
 
 p1xneg:
-
-				cmp.l	#191,d2
-				ble		donerightclip
+				cmp.w	RIGHTX,d2
+				blt		donerightclip
 
 				move.l	d2,d6
 				sub.l	d0,d6
-				beq		OFFSCREEN
-				sub.l	#191,d2
+				ble		OFFSCREEN
+
+				sub.w	RIGHTX,d2
+				addq.w	#1,d2
+				ext.l	d2
 				move.l	d1,d5
 				sub.l	d3,d5
 
 				muls.l	d5,d2
 				divs.l	d6,d2
 				add.l	d2,d3
-				move.l	#191,d2
+				move.w	RIGHTX,d2
+				subq.w	#1,d2
+				ext.l	d2
 
 donerightclip:
 
 *********************************
 
-				add.l	#80,d1
+				add.w	TOTHEMIDDLE,d1
+				ext.l	d1
 				bge		p1ypos
 
-				add.l	#80,d3
+				add.w	TOTHEMIDDLE,d3
+				ext.l	d3
 				blt		OFFSCREEN
+
+				move.l	d3,d6
+				sub.l	d1,d6
+				ble		OFFSCREEN
 
 				move.l	d2,d5
 				sub.l	d0,d5
-				move.l	d3,d6
-				sub.l	d1,d6
-				beq		OFFSCREEN
 
 				muls.l	d1,d5
 				divs.l	d6,d5
@@ -3440,15 +3470,16 @@ donerightclip:
 				bra		donetopclip
 
 p1ypos:
-
-				add.l	#80,d3
+				add.w	TOTHEMIDDLE,d3
 				bge		donetopclip
+
+				move.l	d1,d6
+				sub.l	d3,d6
+				ble		OFFSCREEN
 
 				move.l	d0,d5
 				sub.l	d2,d5
-				move.l	d1,d6
-				sub.l	d3,d6
-				beq		OFFSCREEN
+
 
 				muls.l	d3,d5
 				divs.l	d6,d5
@@ -3457,42 +3488,50 @@ p1ypos:
 
 donetopclip:
 
-				cmp.l	#159,d1
-				ble		p1yneg
+				cmp.w	BOTTOMY,d1
+				blt		p1yneg
 
-				cmp.l	#159,d3
-				bgt		OFFSCREEN
+				cmp.w	BOTTOMY,d3
+				bge		OFFSCREEN
 
 				move.l	d1,d6
 				sub.l	d3,d6
-				beq		OFFSCREEN
-				sub.l	#159,d1
+				ble		OFFSCREEN
+				sub.w	BOTTOMY,d1
+				addq.w	#1,d1
+				ext.l	d1
 				move.l	d2,d5
 				sub.l	d0,d5
 
 				muls.l	d5,d1
 				divs.l	d6,d1
 				add.l	d1,d0
-				move.l	#159,d1
+				move.w	BOTTOMY,d1
+				subq.w	#1,d1
+				ext.l	d1
 
 				bra		donebotclip
 
 p1yneg:
 
-				cmp.l	#159,d3
-				ble		donebotclip
+				cmp.w	BOTTOMY,d3
+				blt		donebotclip
 
 				move.l	d3,d6
 				sub.l	d1,d6
-				beq		OFFSCREEN
-				sub.l	#159,d3
+				ble		OFFSCREEN
+				sub.w	BOTTOMY,d3
+				addq.w	#1,d3
+				ext.l	d3
 				move.l	d0,d5
 				sub.l	d2,d5
 
 				muls.l	d5,d3
 				divs.l	d6,d3
 				add.l	d3,d2
-				move.l	#159,d3
+				move.w	BOTTOMY,d3
+				subq.w	#1,d3
+				ext.l	d3
 
 donebotclip:
 
@@ -3624,12 +3663,10 @@ NOLINE:
 				rts
 
 DRAWAMAPLINE:
-
-
-				move.b	DOUBLEHEIGHT,d5
-				or.b	DOUBLEWIDTH,d5
-				tst.b	d5
-				bne		DOITFAT
+;				move.b	DOUBLEHEIGHT,d5
+;				or.b	DOUBLEWIDTH,d5
+;				tst.b	d5
+;				bne		DOITFAT
 
 				move.l	FASTBUFFER,a0			; screen to render to.
 				cmp.w	d1,d3
