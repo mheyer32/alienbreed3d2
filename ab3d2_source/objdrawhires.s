@@ -360,9 +360,6 @@ glassobj:
 				sub.w	d6,d3
 
 .okrightside:
-
-				move.l	#objintocop,a1
-				sub.l	a1,a1
 				move.w	d0,a1
 				add.w	a1,a1
 
@@ -2089,9 +2086,6 @@ PolyAngPtr:		dc.l	0
 PointAngPtr:	dc.l	0
 
 				ds.w	100
-objintocop:
-				incbin	"includes/xtocopx"
-				ds.w	100
 
 *********************************
 ***************************************
@@ -2800,8 +2794,6 @@ dontusegour:
 				sub.w	d1,d7
 				ble		polybehind
 				move.w	d1,a2
-; move.l #objintocop,a2
-; lea (a2,d1.w*2),a2
 				moveq	#0,d0
 
 				move.l	TextureMaps,a0

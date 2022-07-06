@@ -5883,8 +5883,8 @@ polyloop:
 				beq		itsanobject
 				cmp.w	#5,d0
 				beq		itsanarc
-				cmp.w	#6,d0
-				beq		itsalightbeam
+;				cmp.w	#6,d0
+;				beq		itsalightbeam
 				cmp.w	#7,d0
 				beq.s	itswater
 				cmp.w	#9,d0
@@ -5926,9 +5926,9 @@ itsanobject:
 				jsr		ObjDraw
 				bra		polyloop
 
-itsalightbeam:
-				jsr		LightDraw
-				bra		polyloop
+;itsalightbeam:
+;				jsr		LightDraw
+;				bra		polyloop
 
 itsabumpyfloor:
 				move.w	#1,SMALLIT
@@ -6673,62 +6673,65 @@ BIGOBJPTS:
 				dbra	d7,.objpointrotlop
 				rts
 
-LightDraw:
-
-				move.w	(a0)+,d0
-				move.w	(a0)+,d1
-				move.l	#Rotated,a1
-				move.w	6(a1,d0.w*8),d2
-				ble.s	oneendbehind
-				move.w	6(a1,d1.w*8),d3
-				bgt.s	bothendsinfront
-
-oneendbehind:
-				rts
-bothendsinfront:
-
-				move.l	#OnScreen,a2
-				move.w	(a2,d0.w*2),d0
-				bge.s	okleftend
-				moveq	#0,d0
-okleftend:
-				move.w	(a2,d1.w*2),d1
-				bgt.s	somevis
-				rts
-somevis:
-				cmp.w	RIGHTX,d0
-				blt.s	somevis2
-				rts
-somevis2:
-				cmp.w	RIGHTX,d1
-				blt.s	okrightend
-				move.w	RIGHTX,d1
-				subq	#1,d1
-okrightend:
-
-				sub.w	d0,d1
-				blt.s	wrongbloodywayround
-				move.l	TexturePal,a4
-				move.l	#objintocop,a1
-				lea		(a1,d0.w*2),a1
-
-				move.l	frompt,a3
-				move.w	#104*4,d6
-				move.w	#79,d2
-lacross:
-				move.w	d2,d3
-				move.l	a3,a2
-				adda.w	(a1)+,a2
-ldown:
-				add.w	d6,a2
-				move.w	(a2),d7
-				move.w	(a4,d7.w*2),(a2)
-				dbra	d3,ldown
-				dbra	d1,lacross
-
-wrongbloodywayround:
-
-				rts
+				; Is this actually still used?
+				; it introduces a dependcy to "objintocop" which I believe
+				; is not/should not be used anymore ("object to copper"?)
+;LightDraw:
+;
+;				move.w	(a0)+,d0
+;				move.w	(a0)+,d1
+;				move.l	#Rotated,a1
+;				move.w	6(a1,d0.w*8),d2
+;				ble.s	oneendbehind
+;				move.w	6(a1,d1.w*8),d3
+;				bgt.s	bothendsinfront
+;
+;oneendbehind:
+;				rts
+;bothendsinfront:
+;
+;				move.l	#OnScreen,a2
+;				move.w	(a2,d0.w*2),d0
+;				bge.s	okleftend
+;				moveq	#0,d0
+;okleftend:
+;				move.w	(a2,d1.w*2),d1
+;				bgt.s	somevis
+;				rts
+;somevis:
+;				cmp.w	RIGHTX,d0
+;				blt.s	somevis2
+;				rts
+;somevis2:
+;				cmp.w	RIGHTX,d1
+;				blt.s	okrightend
+;				move.w	RIGHTX,d1
+;				subq	#1,d1
+;okrightend:
+;
+;				sub.w	d0,d1
+;				blt.s	wrongbloodywayround
+;				move.l	TexturePal,a4
+;				move.l	#objintocop,a1
+;				lea		(a1,d0.w*2),a1
+;
+;				move.l	frompt,a3
+;				move.w	#104*4,d6
+;				move.w	#79,d2
+;lacross:
+;				move.w	d2,d3
+;				move.l	a3,a2
+;				adda.w	(a1)+,a2
+;ldown:
+;				add.w	d6,a2
+;				move.w	(a2),d7
+;				move.w	(a4,d7.w*2),(a2)
+;				dbra	d3,ldown
+;				dbra	d1,lacross
+;
+;wrongbloodywayround:
+;
+;				rts
 
 FaceToPlace:	dc.w	0
 
