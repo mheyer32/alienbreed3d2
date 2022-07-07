@@ -102,6 +102,7 @@ CD32VER			equ		0
 RENDERWIDTH		equ		320
 SCREENWIDTH		equ		320
 
+
 maxscrdiv		EQU		8
 max3ddiv		EQU		5
 playerheight	EQU		12*1024
@@ -3283,40 +3284,34 @@ shownmap:
 
 				; Is this drawing the Arrow?
 				move.w	mapxoff,d0
-				ext.l	d0
 				move.w	mapzoff,d1
-				ext.l	d1
-				neg.l	d1
-				move.l	d0,d2
-				move.l	d1,d3
-				sub.l	#128,d1
-				add.l	#128,d3
+				neg.w	d1
+				move.w	d0,d2
+				move.w	d1,d3
+				sub.w	#128,d1
+				add.w	#128,d3
 				move.w	#250,d4
 				bsr		CLIPANDDRAW
 
 				move.w	mapxoff,d0
-				ext.l	d0
 				move.w	mapzoff,d1
-				ext.l	d1
-				neg.l	d1
-				move.l	d0,d2
-				move.l	d1,d3
-				sub.l	#128,d1
-				sub.l	#32,d3
-				sub.l	#64,d2
+				neg.w	d1
+				move.w	d0,d2
+				move.w	d1,d3
+				sub.w	#128,d1
+				sub.w	#32,d3
+				sub.w	#64,d2
 				move.w	#250,d4
 				bsr		CLIPANDDRAW
 
 				move.w	mapxoff,d0
-				ext.l	d0
 				move.w	mapzoff,d1
-				ext.l	d1
-				neg.l	d1
-				move.l	d0,d2
-				move.l	d1,d3
-				sub.l	#128,d1
-				sub.l	#32,d3
-				add.l	#64,d2
+				neg.w	d1
+				move.w	d0,d2
+				move.w	d1,d3
+				sub.w	#128,d1
+				sub.w	#32,d3
+				add.w	#64,d2
 				move.w	#250,d4
 				bsr		CLIPANDDRAW
 				rts
@@ -3328,70 +3323,67 @@ CLIPANDDRAW:
 
 				; This is likely scaling the coordinates by 2/3 for Fullscreen
 				; go from 288 to 196 wide?
-				add.l	d0,d0
-				add.l	d2,d2
+				add.w	d0,d0
+				add.w	d2,d2
 				ext.l	d0
 				ext.l	d2
-				divs.l	#3,d0	288 * 2/3 = 196
-				divs.l	#3,d2
+				divs.w	#3,d0	288 * 2/3 = 196
+				divs.w	#3,d2
 
 .nodov:
 				tst.b	DOUBLEWIDTH			; correct aspect ratio for DW/DH
 				beq.s	.noDoubleWidth
-				asr.l	#1,d0
-				asr.l	#1,d2
+				asr.w	#1,d0
+				asr.w	#1,d2
 .noDoubleWidth	tst.b	DOUBLEHEIGHT
 				beq.s	.noDoubleHeight
-				asr.l	#1,d1
-				asr.l	#1,d3
+				asr.w	#1,d1
+				asr.w	#1,d3
 .noDoubleHeight
 				move.w	MAPBRIGHT,d5 ; is this the map zoom?
 
-				asr.l	d5,d0		; I guess, this achieves X*0.5 + 0.5 for centered map rendering
-				asr.l	d5,d1
-				asr.l	d5,d2
-				asr.l	d5,d3
+				asr.w	d5,d0		; I guess, this achieves X*0.5 + 0.5 for centered map rendering?
+				asr.w	d5,d1
+				asr.w	d5,d2
+				asr.w	d5,d3
 
 
 NOSCALING:		add.w	MIDDLEX,d0
-				ext.l	d0
 				bge		p1xpos
 
 				add.w	MIDDLEX,d2
-				ext.l	d2
 				blt		OFFSCREEN
 
 x1nx2p:			; X1<0  X2>0, clip against X=0
-				move.l	d2,d6
-				sub.l	d0,d6		; dx
+				move.w	d2,d6
+				sub.w	d0,d6		; dx
 				beq		OFFSCREEN	; dx == 0?
 
-				move.l	d3,d5
-				sub.l	d1,d5		; dy
+				move.w	d3,d5
+				sub.w	d1,d5		; dy
 
-				muls.l	d0,d5		; x1 * dy
-				divs.l	d6,d5		; x1 * dy / dx
-				sub.l	d5,d1		; y1 = y1 - x * dy / dx
-				move.l	#0,d0		; x1 = 0
+				muls.w	d0,d5		; x1 * dy
+				divs.w	d6,d5		; x1 * dy / dx
+				sub.w	d5,d1		; y1 = y1 - x * dy / dx
+				moveq.l	#0,d0		; x1 = 0
 
 				bra		doneleftclip
 
 p1xpos:
 				add.w	MIDDLEX,d2
-				ext.l	d2
 				bge		doneleftclip
 
-				move.l	d0,d6
-				sub.l	d2,d6		; dx
+				move.w	d0,d6
+				sub.w	d2,d6		; dx
 				ble		OFFSCREEN   ; dx == 0?
 
-				move.l	d1,d5
-				sub.l	d3,d5		; dy
+				move.w	d1,d5
+				sub.w	d3,d5		; dy
 
-				muls.l	d2,d5		; x2 * dy
-				divs.l	d6,d5		; x2 * dy / dx
-				sub.l	d5,d3		; y2 = y2 - x2 * dy / dx
-				move.l	#0,d2		; x2 == 0
+				muls.w	d2,d5		; x2 * dy
+				divs.w	d6,d5		; x2 * dy / dx
+				sub.w	d5,d3		; y2 = y2 - x2 * dy / dx
+				moveq.l	#0,d2		; x2 == 0
 
 doneleftclip:
 				; Looks like the map draw is hardcoded to clip against the
@@ -3402,23 +3394,21 @@ doneleftclip:
 				cmp.w	RIGHTX,d2
 				bge		OFFSCREEN
 
-				move.l	d0,d6
-				sub.l	d2,d6	; dx
+				move.w	d0,d6
+				sub.w	d2,d6	; dx
 				beq		OFFSCREEN
 
-				move.l	d3,d5
-				sub.l	d1,d5	; dy
+				move.w	d3,d5
+				sub.w	d1,d5	; dy
 
 				sub.w	RIGHTX,d0
 				addq.w	#1,d0
-				ext.l	d0		; (rightx - x1)
 
-				muls.l	d5,d0	; dy * (rightx -x1)
-				divs.l	d6,d0	; (dy * (rightx -x1))/dx
-				add.l	d0,d1	; y1 + (dy * (rightx -x1))/dx = y1 + dy/dx * (rightx - x1)
+				muls.w	d5,d0	; dy * (rightx -x1)
+				divs.w	d6,d0	; (dy * (rightx -x1))/dx
+				add.w	d0,d1	; y1 + (dy * (rightx -x1))/dx = y1 + dy/dx * (rightx - x1)
 				move.w	RIGHTX,d0
 				subq.w	#1,d0
-				ext.l	d0
 
 				bra		donerightclip
 
@@ -3426,46 +3416,42 @@ p1xneg:
 				cmp.w	RIGHTX,d2
 				blt		donerightclip
 
-				move.l	d2,d6
-				sub.l	d0,d6
+				move.w	d2,d6
+				sub.w	d0,d6
 				ble		OFFSCREEN
 
 				sub.w	RIGHTX,d2
 				addq.w	#1,d2
-				ext.l	d2
-				move.l	d1,d5
-				sub.l	d3,d5
+				move.w	d1,d5
+				sub.w	d3,d5
 
-				muls.l	d5,d2
-				divs.l	d6,d2
-				add.l	d2,d3
+				muls.w	d5,d2
+				divs.w	d6,d2
+				add.w	d2,d3
 				move.w	RIGHTX,d2
 				subq.w	#1,d2
-				ext.l	d2
 
 donerightclip:
 
 *********************************
 
 				add.w	TOTHEMIDDLE,d1
-				ext.l	d1
 				bge		p1ypos
 
 				add.w	TOTHEMIDDLE,d3
-				ext.l	d3
 				blt		OFFSCREEN
 
-				move.l	d3,d6
-				sub.l	d1,d6
+				move.w	d3,d6
+				sub.w	d1,d6
 				ble		OFFSCREEN
 
-				move.l	d2,d5
-				sub.l	d0,d5
+				move.w	d2,d5
+				sub.w	d0,d5
 
-				muls.l	d1,d5
-				divs.l	d6,d5
-				sub.l	d5,d0
-				move.l	#0,d1
+				muls.w	d1,d5
+				divs.w	d6,d5
+				sub.w	d5,d0
+				moveq.l	#0,d1
 
 				bra		donetopclip
 
@@ -3473,18 +3459,18 @@ p1ypos:
 				add.w	TOTHEMIDDLE,d3
 				bge		donetopclip
 
-				move.l	d1,d6
-				sub.l	d3,d6
+				move.w	d1,d6
+				sub.w	d3,d6
 				ble		OFFSCREEN
 
-				move.l	d0,d5
-				sub.l	d2,d5
+				move.w	d0,d5
+				sub.w	d2,d5
 
 
-				muls.l	d3,d5
-				divs.l	d6,d5
-				sub.l	d5,d2
-				move.l	#0,d3
+				muls.w	d3,d5
+				divs.w	d6,d5
+				sub.w	d5,d2
+				moveq.l	#0,d3
 
 donetopclip:
 
@@ -3494,47 +3480,42 @@ donetopclip:
 				cmp.w	BOTTOMY,d3
 				bge		OFFSCREEN
 
-				move.l	d1,d6
-				sub.l	d3,d6
+				move.w	d1,d6
+				sub.w	d3,d6
 				ble		OFFSCREEN
+
 				sub.w	BOTTOMY,d1
 				addq.w	#1,d1
-				ext.l	d1
-				move.l	d2,d5
-				sub.l	d0,d5
+				move.w	d2,d5
+				sub.w	d0,d5
 
-				muls.l	d5,d1
-				divs.l	d6,d1
-				add.l	d1,d0
+				muls.w	d5,d1
+				divs.w	d6,d1
+				add.w	d1,d0
 				move.w	BOTTOMY,d1
 				subq.w	#1,d1
-				ext.l	d1
 
 				bra		donebotclip
 
 p1yneg:
-
 				cmp.w	BOTTOMY,d3
 				blt		donebotclip
 
-				move.l	d3,d6
-				sub.l	d1,d6
+				move.w	d3,d6
+				sub.w	d1,d6
 				ble		OFFSCREEN
 				sub.w	BOTTOMY,d3
 				addq.w	#1,d3
-				ext.l	d3
-				move.l	d0,d5
-				sub.l	d2,d5
+				move.w	d0,d5
+				sub.w	d2,d5
 
-				muls.l	d5,d3
-				divs.l	d6,d3
-				add.l	d3,d2
+				muls.w	d5,d3
+				divs.w	d6,d3
+				add.w	d3,d2
 				move.w	BOTTOMY,d3
 				subq.w	#1,d3
-				ext.l	d3
 
 donebotclip:
-
 				tst.b	TRRANS
 				bne		DRAWAtransLINE
 				bra		DRAWAMAPLINE
