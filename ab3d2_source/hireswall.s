@@ -213,9 +213,6 @@ screendividethru:
 
 				bra		.pastscrinto
 
-.scrintocop:
-				incbin	"includes/xtocopx"
-
 .pastscrinto
 
 				swap	d1
@@ -538,10 +535,6 @@ scrdrawlopDOUB:
 middleline:
 				dc.w	0
 LASTSTIRRUP:	dc.w	0
-
-;scrintocop:
-; incbin "xtocopx"
-prot4:			dc.w	0
 
 fromtile:		dc.l	0
 fromquartertile: dc.l	0
