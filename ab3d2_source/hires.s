@@ -5627,12 +5627,12 @@ itsafloor:
 				add.l	d1,FloorPtBrights
 
 				move.w	#1,SMALLIT
-
-				movem.l	a0/d0,-(a7)
-				move.l	$4.w,a6
-				jsr		_LVOSuperState(a6)
-				move.l	d0,SSTACK
-				movem.l	(a7)+,a0/d0
+; FIMXE: what is this? What does it do here? Part of copy protection?
+;				movem.l	a0/d0,-(a7)
+;				move.l	$4.w,a6
+;				jsr		_LVOSuperState(a6)
+;				move.l	d0,SSTACK
+;				movem.l	(a7)+,a0/d0
 
 				move.l	#FloorLine,LineToUse
 * 1,2 = floor/roof
@@ -5640,11 +5640,13 @@ itsafloor:
 				clr.b	usebumps
 				move.b	GOURSEL,gourfloor
 				jsr		itsafloordraw
-				move.l	a0,-(a7)
-				move.l	$4.w,a6
-				move.l	SSTACK,d0
-				jsr		_LVOUserState(a6)
-				move.l	(a7)+,a0
+
+;				move.l	a0,-(a7)
+;				move.l	$4.w,a6
+;				move.l	SSTACK,d0
+;				jsr		_LVOUserState(a6)
+;				move.l	(a7)+,a0
+
 				bra		polyloop
 itsasetclip:
 				bra		polyloop
