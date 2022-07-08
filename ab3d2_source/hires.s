@@ -373,8 +373,8 @@ _start
 				;align to 16byte for best C2P perf
 				moveq.l	#15,d1
 				add.l	d1,d0
-				moveq	#-16,d1 ; $F0
-				and.l   d1,d0
+				moveq	#-16,d1					; $F0
+				and.l	d1,d0
 				move.l	d0,FASTBUFFER
 
 				; Setup constant table
@@ -1779,7 +1779,7 @@ lop:
 				bsr		SetupRenderbufferSize
 
 .noFullscreenSwitch
-				btst	#6,$bfe001		;  checking left mouse button?
+				btst	#6,$bfe001				;  checking left mouse button?
 ;charlie bne.b .nocop
 
 ;charlie move.l #bigfield,$dff080    ; Point the copper at our copperlist.
@@ -2746,37 +2746,6 @@ drawplayer2
 
 nodrawp2:
 
-*****************************************
-* Copy from copbuff to chip ram
-
-
-; move.l drawpt,a3
-; adda.w #10,a3
-; move.l COPSCRNBUFF,a2
-; move.w #2,d6
-; adda.w #10,a2
-;COPYOUT
-; move.w #31,d0
-;COPYDOWN1:
-; move.w #3,d1
-; move.l a2,a4
-; move.l a3,a5
-;.inlop1:
-;val SET 0
-; REPT 20
-; move.w val(a4),val(a5)
-;val SET val+104*4
-; ENDR
-; adda.l #104*4*20,a4
-; adda.l #104*4*20,a5
-; dbra d1,.inlop1
-; addq #4,a2
-; addq #4,a3
-; dbra d0,COPYDOWN1
-; addq #4,a2
-; addq #4,a3
-; dbra d6,COPYOUT
-
 				tst.b	REALMAPON
 				beq.s	.nomap
 				bsr		DoTheMapWotNastyCharlesIsForcingMeToDo
@@ -3094,8 +3063,8 @@ SetupRenderbufferSize:
 				move.w	#100,WIDESCRN
 
 .wideScreenOk
-				tst.b FULLSCR
-				beq.s .setupSmallScreen
+				tst.b	FULLSCR
+				beq.s	.setupSmallScreen
 
 				move.w	#FS_WIDTH,d0
 				tst.b	DOUBLEWIDTH
@@ -3328,11 +3297,11 @@ CLIPANDDRAW:
 				add.w	d2,d2
 				ext.l	d0
 				ext.l	d2
-				divs.w	#3,d0	288 * 2/3 = 196
+				divs.w	#3,d0					288 * 2/3 = 196
 				divs.w	#3,d2
 
 .nodov:
-				tst.b	DOUBLEWIDTH			; correct aspect ratio for DW/DH
+				tst.b	DOUBLEWIDTH				; correct aspect ratio for DW/DH
 				beq.s	.noDoubleWidth
 				asr.w	#1,d0
 				asr.w	#1,d2
@@ -3341,9 +3310,9 @@ CLIPANDDRAW:
 				asr.w	#1,d1
 				asr.w	#1,d3
 .noDoubleHeight
-				move.w	MAPBRIGHT,d5 ; is this the map zoom?
+				move.w	MAPBRIGHT,d5			; is this the map zoom?
 
-				asr.w	d5,d0		; I guess, this achieves X*0.5 + 0.5 for centered map rendering?
+				asr.w	d5,d0					; I guess, this achieves X*0.5 + 0.5 for centered map rendering?
 				asr.w	d5,d1
 				asr.w	d5,d2
 				asr.w	d5,d3
@@ -3355,18 +3324,18 @@ NOSCALING:		add.w	MIDDLEX,d0
 				add.w	MIDDLEX,d2
 				blt		OFFSCREEN
 
-x1nx2p:			; X1<0  X2>0, clip against X=0
+x1nx2p:			;		X1<0					X2>0, clip against X=0
 				move.w	d2,d6
-				sub.w	d0,d6		; dx
-				beq		OFFSCREEN	; dx == 0?
+				sub.w	d0,d6					; dx
+				beq		OFFSCREEN				; dx == 0?
 
 				move.w	d3,d5
-				sub.w	d1,d5		; dy
+				sub.w	d1,d5					; dy
 
-				muls.w	d0,d5		; x1 * dy
-				divs.w	d6,d5		; x1 * dy / dx
-				sub.w	d5,d1		; y1 = y1 - x * dy / dx
-				moveq.l	#0,d0		; x1 = 0
+				muls.w	d0,d5					; x1 * dy
+				divs.w	d6,d5					; x1 * dy / dx
+				sub.w	d5,d1					; y1 = y1 - x * dy / dx
+				moveq.l	#0,d0					; x1 = 0
 
 				bra		doneleftclip
 
@@ -3375,16 +3344,16 @@ p1xpos:
 				bge		doneleftclip
 
 				move.w	d0,d6
-				sub.w	d2,d6		; dx
-				ble		OFFSCREEN   ; dx == 0?
+				sub.w	d2,d6					; dx
+				ble		OFFSCREEN				; dx == 0?
 
 				move.w	d1,d5
-				sub.w	d3,d5		; dy
+				sub.w	d3,d5					; dy
 
-				muls.w	d2,d5		; x2 * dy
-				divs.w	d6,d5		; x2 * dy / dx
-				sub.w	d5,d3		; y2 = y2 - x2 * dy / dx
-				moveq.l	#0,d2		; x2 == 0
+				muls.w	d2,d5					; x2 * dy
+				divs.w	d6,d5					; x2 * dy / dx
+				sub.w	d5,d3					; y2 = y2 - x2 * dy / dx
+				moveq.l	#0,d2					; x2 == 0
 
 doneleftclip:
 				; Looks like the map draw is hardcoded to clip against the
@@ -3396,18 +3365,18 @@ doneleftclip:
 				bge		OFFSCREEN
 
 				move.w	d0,d6
-				sub.w	d2,d6	; dx
+				sub.w	d2,d6					; dx
 				beq		OFFSCREEN
 
 				move.w	d3,d5
-				sub.w	d1,d5	; dy
+				sub.w	d1,d5					; dy
 
 				sub.w	RIGHTX,d0
 				addq.w	#1,d0
 
-				muls.w	d5,d0	; dy * (rightx -x1)
-				divs.w	d6,d0	; (dy * (rightx -x1))/dx
-				add.w	d0,d1	; y1 + (dy * (rightx -x1))/dx = y1 + dy/dx * (rightx - x1)
+				muls.w	d5,d0					; dy * (rightx -x1)
+				divs.w	d6,d0					; (dy * (rightx -x1))/dx
+				add.w	d0,d1					; y1 + (dy * (rightx -x1))/dx = y1 + dy/dx * (rightx - x1)
 				move.w	RIGHTX,d0
 				subq.w	#1,d0
 
@@ -13186,10 +13155,10 @@ LINKFILE:
 
 ;brightentab:
 ; incbin "brightenfile"
-				section bss
+				section	bss
 WorkSpace:
 				ds.l	8192
-				section code
+				section	code
 waterfile:
 				incbin	"waterfile"
 

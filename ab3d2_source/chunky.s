@@ -11,7 +11,7 @@ CHUNKYTOPLANAR:
 				tst.b	d5
 				beq.s	.noteleffect
 
-				move.w	#8,TELVAL			; Start a number of teleporter frames
+				move.w	#8,TELVAL				; Start a number of teleporter frames
 
 .noteleffect
 				tst.w	TELVAL
