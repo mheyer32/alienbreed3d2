@@ -60,7 +60,7 @@ NEWCHUNKY
 .smallscreen:
 				moveq.l	#0,d0					; x
 				move.w	WIDESCRN,d1				; y, height of black border top/bottom
-				move.l	#192,d2					; width
+				move.l	#SMALL_WIDTH,d2			; width
 				move.l	#160,d3					; height
 				sub.w	d1,d3					; top letterbox
 				sub.w	d1,d3					; bottom letterbox: d3: number of lines
@@ -70,7 +70,7 @@ NEWCHUNKY
 
 				move.l	FASTBUFFER,a0
 				move.l	SCRNDRAWPT,a1
-				add.l	#(SCREENWIDTH/8)*20+(64/8),a1	; top of regular small screen
+				add.l	#(SCREENWIDTH/8)*20+(64/8),a1 ; top of regular small screen
 														; c2p_rect will apply d1 offset ontop
 				jsr		c2p_rect
 
@@ -86,7 +86,7 @@ NEWCHUNKY
 ; d6.l	chunkylen [bytes] -- offset between one row and the next in chunkybu
 
 .doublewidthFullscreen
-				move.w	#RENDERWIDTH/2,d0
+				move.w	#FS_WIDTH/2,d0
 				move.w	WIDESCRN,d3				; height of black border top/bottom
 				move.w	#232,d1
 				sub.w	d3,d1					; top letterbox

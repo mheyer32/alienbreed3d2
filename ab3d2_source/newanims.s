@@ -3920,7 +3920,7 @@ BIGBACK:
 				sub.w	d6,a5
 
 				asr.w	#2,d7
-				move.w	#287,d4
+				move.w	#FS_WIDTH-1,d4
 
 
 .horline:
@@ -3992,7 +3992,7 @@ putinbackdrop:
 				move.w	#240,d1
 				move.w	#240,d2
 				move.w	#480,d5
-				move.w	#(192/8)-1,d4
+				move.w	#(SMALL_WIDTH/8)-1,d4
 
 				moveq	#0,d0
 
@@ -4034,7 +4034,7 @@ BIGBACK:
 				sub.w	d6,a5
 
 				asr.w	#2,d7
-				move.w	#(RENDERWIDTH/8)-1,d4
+				move.w	#(FS_WIDTH/8)-1,d4
 				move.l	#0,d0
 
 .horline:

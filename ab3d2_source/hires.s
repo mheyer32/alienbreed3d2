@@ -99,8 +99,11 @@ DataCacheOn		macro
 
 CD32VER			equ		0
 
-RENDERWIDTH		equ		320
-RENDERHEIGHT	equ		232
+FS_WIDTH		equ		320
+FS_HEIGHT		equ		232
+SMALL_WIDTH		equ		192
+SMALL_HEIGHT	equ		160
+
 SCREENWIDTH		equ		320
 
 
@@ -409,13 +412,13 @@ fillconst:
 				include	"defs.i"
 
 				IFEQ	CHEESEY
-FASTBUFFERSize	equ		SCREENWIDTH*256 + 15 ; screen size plus alignment
+FASTBUFFERSize	equ		SCREENWIDTH*256			+ 15 ; screen size plus alignment
 				ELSE
-FASTBUFFERSize	equ		SCREENWIDTH*160 + 15
+FASTBUFFERSize	equ		SCREENWIDTH*160			+ 15
 				ENDC
 
-FASTBUFFER:		dc.l	0					; aligned address
-FASTBUFFERalloc: dc.l	0					; allocated address
+FASTBUFFER:		dc.l	0						; aligned address
+FASTBUFFERalloc: dc.l	0						; allocated address
 
 SYSTEMBLITINT:	dc.l	0
 
@@ -1555,10 +1558,10 @@ nomorezones:
 
 NOALLWALLS
 
-				move.w	#96,MIDDLEX
-				move.w	#192,RIGHTX
-				move.w	#160,BOTTOMY
-				move.w	#80,TOTHEMIDDLE
+				move.w	#SMALL_WIDTH/2,MIDDLEX
+				move.w	#SMALL_WIDTH,RIGHTX
+				move.w	#SMALL_HEIGHT,BOTTOMY
+				move.w	#SMALL_HEIGHT/2,TOTHEMIDDLE
 				clr.b	FULLSCR
 				move.l	scrn,a0
 				jsr		WIPEDISPLAY
@@ -2795,12 +2798,12 @@ nodrawp2:
 				add.l	d6,a1
 				add.l	#2,a1					; indent by 16 pixel border, a1 chipmem ptr of top left corner
 
-				move.l	#(RENDERWIDTH/8)-1,d0	; RENDERWIDTH pixel is width of rendered image (2x 16pixel borders)
+				move.l	#(FS_WIDTH/8)-1,d0		; FS_WIDTH pixel is width of rendered image (2x 16pixel borders)
 				move.l	#231,d1					; 232 lines vertically
 				sub.w	d7,d1					; top letterbox
 				sub.w	d7,d1					; bottom letterbox: d1: number of lines
 				blt		nochunk
-				move.w	#(SCREENWIDTH-RENDERWIDTH),d2 ; modulo chunky
+				move.w	#(SCREENWIDTH-FS_WIDTH),d2 ; modulo chunky
 				move.w	#4,d3					; modulo chipmem
 
 				bra		donebigconv
@@ -2817,12 +2820,12 @@ nobigconv:
 				move.w	d7,d6
 				muls	#40,d6
 				add.l	d6,a1					; letter box offset into chipmem
-				move.l	#(192/8)-1,d0
-				move.l	#159,d1
+				move.l	#(SMALL_WIDTH/8)-1,d0
+				move.l	#SMALL_HEIGHT-1,d1
 				sub.w	d7,d1
 				sub.w	d7,d1					; 160 lines minus the top/bottom black border
 				blt		nochunk
-				move.w	#(SCREENWIDTH-192),d2	; src chunky modulo
+				move.w	#(SCREENWIDTH-SMALL_WIDTH),d2 ; src chunky modulo
 				move.w	#16,d3					; dst chipmem modulo
 donebigconv
 
@@ -2851,10 +2854,10 @@ nochunk:
 				beq		.nosmallscr
 
 				; clamp wide screen
-				move.w	#100,d0				; maximum in fullscreen mode
+				move.w	#100,d0					; maximum in fullscreen mode
 				tst.b	FULLSCR
 				bne.s	.isFullscreen
-				move.w	#60,d0				; maximum in small screen mode
+				move.w	#60,d0					; maximum in small screen mode
 .isFullscreen:
 				cmp.w	WIDESCRN,d0
 				blt.s	.clamped
@@ -3094,7 +3097,7 @@ SetupRenderbufferSize:
 				tst.b FULLSCR
 				beq.s .setupSmallScreen
 
-				move.w  #RENDERWIDTH,d0
+				move.w	#FS_WIDTH,d0
 				tst.b	DOUBLEWIDTH
 				beq.s	.noDoubleWidth
 				lsr.w	#1,d0
@@ -3102,12 +3105,12 @@ SetupRenderbufferSize:
 				move.w	d0,RIGHTX
 				lsr.w	#1,d0
 				move.w	d0,MIDDLEX
-				move.w	#232,BOTTOMY
-				move.w	#232/2,TOTHEMIDDLE
+				move.w	#FS_HEIGHT,BOTTOMY
+				move.w	#FS_HEIGHT/2,TOTHEMIDDLE
 				bra.s	.wipeScreen
 
 .setupSmallScreen:
-				move.w	#192,d0
+				move.w	#SMALL_WIDTH,d0
 				tst.b	DOUBLEWIDTH
 				beq.s	.noDoubleWidth2
 				lsr.w	#1,d0
@@ -3115,8 +3118,8 @@ SetupRenderbufferSize:
 				move.w	d0,RIGHTX
 				lsr.w	#1,d0
 				move.w	d0,MIDDLEX
-				move.w	#160,BOTTOMY
-				move.w	#160/2,TOTHEMIDDLE
+				move.w	#SMALL_HEIGHT,BOTTOMY
+				move.w	#SMALL_HEIGHT/2,TOTHEMIDDLE
 
 .wipeScreen
 				move.l	SCRNSHOWPT,a0
@@ -5379,12 +5382,12 @@ NOGUNLOOK:
 				tst.b	DOANYWATER
 				beq.s	nowaterfull
 
-				move.w	#231,d0
+				move.w	#FS_WIDTH-1,d0
 				move.l	FASTBUFFER,a0
 				tst.b	fillscrnwater
 				beq		nowaterfull
 				bgt		oknothalf
-				moveq	#119,d0
+				moveq	#FS_HEIGHT/2-1,d0
 				add.l	#SCREENWIDTH*120*2,a0
 oknothalf:
 
@@ -5399,21 +5402,21 @@ oknothalf:
 
 DOSOMESCREEN:
 
-				move.w	#159,d0
+				move.w	#SMALL_HEIGHT-1,d0
 .fw:
-				move.w	#191,d1
+				move.w	#SMALL_WIDTH-1,d1
 .fwa:
 				move.b	(a0),d2
 				move.b	(a2,d2.w),(a0)+
 				dbra	d1,.fwa
-				add.w	#(SCREENWIDTH-192),a0
+				add.w	#(SCREENWIDTH-SMALL_WIDTH),a0
 				dbra	d0,.fw
 				rts
 
 DOALLSCREEN:
 
 fw:
-				move.w	#287,d1
+				move.w	#FS_WIDTH-1,d1
 fwa:
 				move.b	(a0),d2
 				move.b	(a2,d2.w),(a0)+
@@ -7461,7 +7464,7 @@ FIRSTsetlrclip:
 ; move.w rightclip,d1
 ; cmp.w d0,d1
 ; bge.s .noswap
-; move.w #192,rightclip
+; move.w #SMALL_WIDTH,rightclip
 ; move.w #0,leftclip
 ;.noswap:
 
@@ -13157,8 +13160,8 @@ consttab:
 ; ENDR
 ; incbin "darkenfile"
 				dc.l	0
-MIDDLEX:		dc.w	0
-RIGHTX:			dc.w	192
+MIDDLEX:		dc.w	SMALL_WIDTH/2
+RIGHTX:			dc.w	SMALL_WIDTH
 FULLSCR:		dc.w	0
 
 ;SHADINGTABLE: incbin "shadefile"

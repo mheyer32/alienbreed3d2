@@ -2148,10 +2148,12 @@ PolygonObj:
 				bne		polybehind
 
 				move.w	#1,d1
-				move.w	#80,POLYMIDDLEY
+				; FIMXE: the original values here were 80 and 120
+				; which sets weapons slighly lower in the view
+				move.w	#SMALL_HEIGHT/2,POLYMIDDLEY
 				tst.b	FULLSCR
 				beq.s	.okinfront
-				move.w	#120,POLYMIDDLEY
+				move.w	#FS_HEIGHT/2,POLYMIDDLEY
 .okinfront:
 
 				movem.l	d0-d7/a0-a6,-(a7)

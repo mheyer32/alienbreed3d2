@@ -1714,11 +1714,12 @@ simplewallPACK2:
 ;.notsimple:
 ; bra cliptop
 
-MIDDLEY:		dc.w	120
-BIGMIDDLEY:		dc.l	SCREENWIDTH*120
+; ATTENION: for some reason the order of these variables is important
+MIDDLEY:		dc.w	FS_HEIGHT/2
+BIGMIDDLEY:		dc.l	SCREENWIDTH*FS_HEIGHT/2
 TOPOFFSET:		dc.w	0
-SMIDDLEY:		dc.w	120
-SBIGMIDDLEY:	dc.l	SCREENWIDTH*120
+SMIDDLEY:		dc.w	FS_HEIGHT/2
+SBIGMIDDLEY:	dc.l	SCREENWIDTH*FS_HEIGHT/2
 STOPOFFSET:		dc.w	0
 
 gotoend:
