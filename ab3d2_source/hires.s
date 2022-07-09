@@ -5837,6 +5837,7 @@ onrightsomewhere:
 ptnotbehind:
 
 				divs.w	d1,d2			; x / z perspective projection
+				asr.w	d2				; DOUBLEWIDTH test
 				add.w	MIDDLEX,d2
 putin:
 				move.w	d2,(a2)+		; store to OnScreen
@@ -5904,6 +5905,7 @@ onrightsomewhereB:
 				bra		putinB
 ptnotbehindB:
 				divs.w	d1,d2
+				asr.w	d2				; DOUBLEWIDTH test
 				add.w	MIDDLEX,d2
 putinB:
 				move.w	d2,(a2)+		; store fully projected X
@@ -5984,8 +5986,10 @@ pointrotlop:
 				move.w	RIGHTX,d2
 				bra		.putin
 .ptnotbehind:
+				divs.w	d1,d2
 
-				divs	d1,d2
+				asr.w	d2				; DOUBLEWIDTH test
+
 				add.w	MIDDLEX,d2
 .putin:
 				move.w	d2,(a2,d7*2)
@@ -6053,8 +6057,10 @@ BIGLONELY:
 				move.w	RIGHTX,d2
 				bra		.putin
 .ptnotbehind:
+				divs.w	d1,d2
 
-				divs	d1,d2
+				asr.w	d2				; DOUBLEWIDTH test
+
 				add.w	MIDDLEX,d2
 .putin:
 				move.w	d2,(a2,d7*2)	; this means the a2 array will also be sparsely written to,
@@ -7784,6 +7790,9 @@ sideloop:
 				move.w	minz,d4					; z' = minZ
 				move.w	(a2,d3*2),d2
 				divs.w	d4,d0					; x' - x' / minz
+
+				asr.w	d0					; DOUBLEWIDTH test
+
 				add.w	MIDDLEX,d0
 
 				move.l	ypos,d3
@@ -7814,7 +7823,11 @@ firstinfront:
 				move.w	minz,d5
 				move.w	(a2,d1*2),d0
 				divs	d5,d2
+
+				asr.w	d2					; DOUBLEWIDTH test
+
 				add.w	MIDDLEX,d2
+
 				move.l	ypos,d1
 				divs	d4,d1
 				move.w	bottomline,d3
@@ -7826,7 +7839,10 @@ bothinfront:
 * so no bottom clipping is needed.
 
 				move.w	(a2,d1*2),d0			; first x
+				;asr.w	d0						; DOUBLEWIDTH test
 				move.w	(a2,d3*2),d2			; second x
+				;asr.w	d1						; DOUBLEWIDTH test
+
 				move.l	ypos,d1
 				move.l	d1,d3
 				divs	d4,d1					; ypos / first z
@@ -8118,7 +8134,11 @@ sideloopGOUR:
 				move.w	minz,d4
 				move.w	(a2,d3*2),d2
 				divs	d4,d0
+
+				asr.w	d0					; DOUBLEWIDTH test
+
 				add.w	MIDDLEX,d0
+
 				move.l	ypos,d3
 				divs	d5,d3
 
@@ -8152,7 +8172,11 @@ firstinfrontGOUR:
 				move.w	minz,d5				; minz = nearclip distance?
 				move.w	(a2,d1*2),d0
 				divs	d5,d2
+
+				asr.w	d2					; DOUBLEWIDTH test
+
 				add.w	MIDDLEX,d2
+
 				move.l	ypos,d1
 				divs	d4,d1
 				move.w	bottomline,d3
@@ -9556,6 +9580,11 @@ scaleprog:
 				add.l	sxoff,d4	; d4/d5 is the texture starting position?
 				add.l	szoff,d5
 
+				; d1/d2 are the steps in floor texture space when moving left to right in screenspace
+				; for DOUBLEWIDTH, double the step size
+				add.l	d1,d1		; DOUBLEWIDTH TEST
+				add.l	d2,d2		; DOUBLEWIDTH TEST
+
 				tst.b	FULLSCR
 				beq.s	.nob
 
@@ -9675,10 +9704,9 @@ doneallmult:
 
 ***********************************
 
-
-				;tst.b	DOUBLEWIDTH
-				;beq.s	.nodoub
-				bra.s	.nodoub
+;				tst.b	DOUBLEWIDTH
+;				beq.s	.nodoub
+				bra		.nodoub
 
 				; old doublewidth rendering
 				and.b	#$fe,d6			; remove LSB in lower 8 bit, only draw even columns?
