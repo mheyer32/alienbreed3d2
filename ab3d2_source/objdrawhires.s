@@ -18,6 +18,8 @@ rightclipb:		dc.w	0
 leftclipb:		dc.w	0
 whichdoing:		dc.w	0
 
+********************************************************************************
+
 ObjDraw:
 
 				move.w	(a0)+,d0
@@ -126,6 +128,8 @@ doneallinfront
 
 depthtable:		ds.l	80
 enddepthtab:
+
+********************************************************************************
 
 DrawtheObject:
 
@@ -552,8 +556,8 @@ glareobj:
 				move.w	d3,d6
 .okobbc:
 				move.w	d6,objclipb
-
 				move.l	4(a1,d0.w*8),d0
+
 				move.w	AUXX,d2
 				ext.l	d2
 				asl.l	#7,d2
@@ -571,6 +575,9 @@ glareobj:
 				add.w	MIDDLEY,d2
 
 				divs	d1,d0
+
+				asr.w	d0					;DOUBLEWIDTH test
+
 				add.w	MIDDLEX,d0				;x pos of middle
 
 ; Need to calculate:
@@ -597,9 +604,13 @@ glareobj:
 				moveq	#0,d4
 				move.b	(a0)+,d3
 				move.b	(a0)+,d4
-				lsl.l	#7,d3
+
+				;lsl.l	#7,d3
+				lsl.l	#6,d3					; DOUBLEWIDTH TEST
+
 				lsl.l	#7,d4
 				divs	d1,d3					;width in pixels
+
 				divs	d1,d4					;height in pixels
 
 				sub.w	d4,d2
@@ -649,12 +660,13 @@ glareobj:
 				moveq	#0,d6
 				move.b	-1(a0),d6
 				beq		objbehind
+
 				divu	d6,d7
 				swap	d7
 				clr.w	d7
 				swap	d7
-				lea		(a3,d7.l*8),a3			; pointer to
-; vertical c.
+
+				lea		(a3,d7.l*8),a3			; pointer to vertical c.
 
 * CLIP OBJECT TO TOP AND BOTTOM
 * OF THE VISIBLE DISPLAY
@@ -664,8 +676,7 @@ glareobj:
 				bge.s	objfitsontopGLARE
 
 				sub.w	objclipt,d2
-				add.w	d2,d4					;new height in
-;pixels
+				add.w	d2,d4					;new height in pixels
 				ble		objbehind				; nothing to draw
 
 				move.w	d2,d7
@@ -750,9 +761,11 @@ okrightsideGLARE:
 drawrightsideGLARE:
 				swap	d7
 				move.l	midobj(pc),a5
-				lea		(a5,d7.w*4),a5
+				lea		(a5,d7.w*8),a5		; DOUBLEWIDTH TEST, was d7.w*4
 				swap	d7
-				add.l	a2,d7
+				add.l	a2,d7				; step fractional column
+
+
 				move.l	WAD_PTR(PC),a0
 
 				move.l	toppt(pc),a6
@@ -871,31 +884,35 @@ BitMapObj:
 				sub.l	yoff,d6
 				divs	d1,d6
 				add.w	MIDDLEY,d6
+
 				cmp.w	d3,d6
 				bge		objbehind
+
 				cmp.w	d2,d6
 				bge.s	.okobtc
 				move.w	d2,d6
 .okobtc:
-				move.w	d6,objclipt
+				move.w	d6,objclipt	; top object clip
 
 				move.l	by3d,d6
 				sub.l	yoff,d6
 				divs	d1,d6
 				add.w	MIDDLEY,d6
-				cmp.w	d2,d6
+				cmp.w	d2,d6		; bottom of object over top of screen?
+
 				ble		objbehind
 				cmp.w	d3,d6
 				ble.s	.okobbc
-				move.w	d3,d6
+				move.w	d3,d6		; clip bottom of object to lower clip
 .okobbc:
-				move.w	d6,objclipb
+				move.w	d6,objclipb	; bottom object clip
 
 				move.l	4(a1,d0.w*8),d0
 				move.w	AUXX,d2
 				ext.l	d2
 				asl.l	#7,d2
 				add.l	d2,d0
+
 				move.w	d1,d6
 				asr.w	#6,d6
 				add.w	(a0)+,d6
@@ -905,7 +922,7 @@ BitMapObj:
 				moveq	#0,d6
 brighttoonot
 				sub.l	a4,a4
-				move.w	objscalecols(pc,d6.w*2),a4
+				move.w	objscalecols(pc,d6.w*2),a4	; is this the table that scales vertically?
 				bra		pastobjscale
 
 objscalecols:
@@ -943,10 +960,10 @@ objscalecols:
 				dcb.w	20,64*31
 
 WHICHLIGHTPAL:	dc.w	0
-FLIPIT:			dc.w	0
+FLIPIT:			dc.w	0	; BOOL flip on/off
 FLIPPEDIT:		dc.w	0
-LIGHTIT:		dc.w	0
-ADDITIVE:		dc.w	0
+LIGHTIT:		dc.w	0	; BOOL Lighting for object on/off
+ADDITIVE:		dc.w	0	; BOOL Additive translucency for object on/off
 BASEPAL:		dc.l	0
 
 pastobjscale:
@@ -961,7 +978,8 @@ pastobjscale:
 
 
 				divs	d1,d0
-				add.w	MIDDLEX,d0				;x pos of middle
+				asr.w	d0					; DOUBLEWIDTH test. Adjust position on screen for DOUBLEWIDTH
+				add.w	MIDDLEX,d0			;x pos of middle
 
 ; Need to calculate:
 ; Width of object in pixels
@@ -974,9 +992,9 @@ pastobjscale:
 				move.l	#Objects,a5
 				move.w	2(a0),d7
 				asl.w	#4,d7
-				adda.w	d7,a5
+				adda.w	d7,a5		; a5 pointing to?
 				asl.w	#4,d7
-				adda.w	d7,a6
+				adda.w	d7,a6		; a6 pointing to?
 
 				clr.b	LIGHTIT
 				clr.b	ADDITIVE
@@ -1000,8 +1018,8 @@ pastobjscale:
 .NOTALIGHT:
 
 				moveq	#0,d7
-				move.b	5(a0),d7
-				lea		(a6,d7.w*8),a6
+				move.b	5(a0),d7		; current frame of animation
+				lea		(a6,d7.w*8),a6	; a6 pointing to frame?
 
 				move.l	#consttab,a3
 
@@ -1011,7 +1029,12 @@ pastobjscale:
 				move.b	(a0)+,d4
 				lsl.l	#7,d3
 				lsl.l	#7,d4
-				divs	d1,d3					;width in pixels
+				divs	d1,d3					;width in pixels on screen
+
+				asr.w	d3						; DOUBLEWIDTH testtest
+												; (DOES NOT SCALE THE Texture column scaling and thus causes
+												; just a half of the object show up, but at 2x scale
+
 				divs	d1,d4					;height in pixels
 
 				sub.w	d4,d2
@@ -1030,18 +1053,18 @@ pastobjscale:
 
 				move.l	(a5)+,WAD_PTR
 				move.l	(a5)+,PTR_PTR
-				add.l	4(a5),a4
+				add.l	4(a5),a4			; a5: #Objects
 				move.l	4(a5),BASEPAL
 
-				move.l	(a6),d7
-				move.w	d7,DOWN_STRIP
+				move.l	(a6),d7				; pointer to current frame
+				move.w	d7,DOWN_STRIP		; leftmost strip?
 				move.l	PTR_PTR,a5
 
 				tst.b	FLIPIT
 				beq.s	.nfl1
 
-				move.w	4(a6),d6
-				add.w	d6,d6
+				move.w	4(a6),d6			; mhhm, somehow this flips the frame?
+				add.w	d6,d6				; go to next frame and subtract
 				subq	#1,d6
 				lea		(a5,d6.w*4),a5
 
@@ -1075,10 +1098,11 @@ fl1:
 				move.b	-1(a0),d6
 				beq		objbehind
 				divu	d6,d7
+
 				swap	d7
 				clr.w	d7
 				swap	d7
-				lea		(a3,d7.l*8),a3			; pointer to
+				lea		(a3,d7.l*8),a3			; pointer to vertical scale table?
 ; vertical c.
 
 * CLIP OBJECT TO TOP AND BOTTOM
@@ -1166,17 +1190,17 @@ okrightside:
 				mulu	d7,d6
 				swap	d6
 				add.w	d6,d5
-				add.w	DOWN_STRIP(PC),d5		;d5 contains
-;top offset into
-;each strip.
+				add.w	DOWN_STRIP(PC),d5	;d5 contains
+											;top offset into
+											;strip?
 				add.l	#$80000000,d5
 
-				move.l	(a2),d7
+				move.l	(a2),d7			; what is a2 pointing to?
 				tst.b	FLIPIT
 				beq.s	.nfl3
 				neg.l	d7
 .nfl3:
-				move.l	d7,a2
+				move.l	d7,a2			; store fractional column offset
 				moveq.l	#0,d7
 				move.l	a5,midobj
 				move.l	(a3),d2
@@ -1193,9 +1217,10 @@ okrightside:
 drawrightside:
 				swap	d7
 				move.l	midobj(pc),a5
-				lea		(a5,d7.w*4),a5
+				lea		(a5,d7.w*8),a5	; DOUBLEWDITH TEST, was d7.w*4 (step twice as fast through columns)
 				swap	d7
-				add.l	a2,d7
+				add.l	a2,d7			; fractional column advance?
+
 				move.l	WAD_PTR(PC),a0
 
 				move.l	toppt(pc),a6
@@ -1208,12 +1233,16 @@ drawrightside:
 				add.l	d1,a0
 
 				move.b	(a5),d1
+				; I think the vertical strips are stored as 5 bit (32cols)
+				; To not waste memory, 3 strips are stored in 16bit words
+				; Here we decide which strip to extract
 				cmp.b	#1,d1
 				bgt.s	ThirdThird
 				beq.s	SecThird
 				move.l	d5,d6
 				move.l	d5,d1
 				move.w	d4,-(a7)
+				; Inner loops of 2D object drawing
 .drawavertstrip
 				move.b	1(a0,d1.w*2),d0
 				and.b	#%00011111,d0
@@ -1221,7 +1250,7 @@ drawrightside:
 				move.b	(a4,d0.w*2),(a6)
 .dontplotthisoneitsblack:
 				adda.w	#SCREENWIDTH,a6
-				add.l	d2,d6
+				add.l	d2,d6				; is d2 the vertical step, fraction|integer?
 				addx.w	d2,d1
 				dbra	d4,.drawavertstrip
 				move.w	(a7)+,d4
@@ -1240,9 +1269,9 @@ SecThird:
 				beq.s	.dontplotthisoneitsblack
 				move.b	(a4,d0.w*2),(a6)
 .dontplotthisoneitsblack:
-				adda.w	#SCREENWIDTH,a6
+				adda.w	#SCREENWIDTH,a6		; next line on screen
 				add.l	d2,d6
-				addx.w	d2,d1
+				addx.w	d2,d1				; is d2 the vertical step, fraction|integer?
 				dbra	d4,.drawavertstrip
 				move.w	(a7)+,d4
 				dbra	d3,drawrightside
@@ -1261,7 +1290,7 @@ ThirdThird:
 .dontplotthisoneitsblack:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
-				addx.w	d2,d1
+				addx.w	d2,d1				; is d2 the vertical dy/dt step, fraction|integer?
 				dbra	d4,.drawavertstrip
 				move.w	(a7)+,d4
 				dbra	d3,drawrightside
@@ -1276,7 +1305,7 @@ DRAWITADDED:
 drawrightsideADD:
 				swap	d7
 				move.l	midobj(pc),a5
-				lea		(a5,d7.w*4),a5
+				lea		(a5,d7.w*8),a5	; DOUBLEWIDTH test, was d7.w*4
 				swap	d7
 				add.l	a2,d7
 				move.l	WAD_PTR(PC),a0
@@ -1686,7 +1715,7 @@ makepals:
 drawlightlop
 				swap	d7
 				move.l	midobj(pc),a5
-				lea		(a5,d7.w*4),a5
+				lea		(a5,d7.w*8),a5		; DOUBLEWDITH test
 				swap	d7
 				add.l	a2,d7
 				move.l	WAD_PTR(PC),a0
@@ -2110,6 +2139,12 @@ ObjAng:			dc.w	0
 POLYMIDDLEY:	dc.w	0
 OBJONOFF:		dc.l	0
 
+
+
+;  Polygonal Object rendering
+; a0 : object ; struct object {short id,x,y,z}
+; a1 : view?
+; struct ObjectPoints {short x,y,z}
 PolygonObj:
 
 ************************
@@ -2135,13 +2170,13 @@ PolygonObj:
 
 				move.w	MIDDLEY,POLYMIDDLEY
 
-				move.w	(a0)+,d0
+				move.w	(a0)+,d0		; object Id?
 				move.l	ObjectPoints,a4
 
 				move.w	(a4,d0.w*8),thisxpos
 				move.w	4(a4,d0.w*8),thiszpos
 
-				move.w	2(a1,d0.w*8),d1			; zpos of mid
+				move.w	2(a1,d0.w*8),d1			; zpos of mid; is this the view position ?
 				blt		polybehind
 				bgt.s	.okinfront
 
@@ -2345,19 +2380,20 @@ BOTPART:
 				add.w	d2,a3
 				subq	#1,d5
 
-				move.l	#boxrot,a4
+				move.l	#boxrot,a4		; temp storage for rotated points?
 
 				move.w	ObjAng,d2
-				sub.w	#2048,d2
-				sub.w	angpos,d2
-				and.w	#8191,d2
+				sub.w	#2048,d2		; 90deg
+				sub.w	angpos,d2		; view angle
+				and.w	#8191,d2		; wrap 360deg
 				move.l	#SineTable,a2
-				lea		(a2,d2.w),a5
+				lea		(a2,d2.w),a5	; sine of object rotation wrt view
 				move.l	#boxbrights,a6
 
-				move.w	(a5),d6
-				move.w	2048(a5),d7
-
+				move.w	(a5),d6			; sine of object rottaion
+				move.w	2048(a5),d7		; cosine of object rotation. WHY DOES IT NOT NEED OOB/WRAP CHECK?
+										; bigsine is 16kb, so 8192 words
+										; this may mean the table is covering 4pi/720deg
 rotobj:
 				move.w	(a3),d2					; xpt
 				move.w	2(a3),d3				; ypt
@@ -2383,76 +2419,83 @@ rotobj:
 ; swap d2
 ; move.w d6,d3	; newy
 
-				muls	d7,d4
-				muls	d6,d2
+				muls	d7,d4	; z * cos
+				muls	d6,d2	; x * (sin << 16)
 				sub.l	d4,d2
 				asr.l	#8,d2
-				asr.l	#1,d2
-				move.l	d2,(a4)+
+				asr.l	#1,d2	; ((z * cos - x * sin) << 16) >> 9 = (z * cos - x * sin) * 128
+				move.l	d2,(a4)+	; store x' in boxpts
 				ext.l	d3
-				asl.l	#6,d3
+				asl.l	#6,d3	; y * 64
 				move.l	d3,(a4)+
-				move.w	(a3),d2
-				move.w	4(a3),d4
-				muls	d6,d4
-				muls	d7,d2
-				add.l	d2,d4
+				move.w	(a3),d2		; PtsPtr -> xpt
+				move.w	4(a3),d4	; PtsPtr -> zpt
+				muls	d6,d4	; z * sin
+				muls	d7,d2	; x * cos
+				add.l	d2,d4	; (z * sin  + x * cos) << 16
 ; add.l d4,d4
-				swap	d4
-				move.w	d4,(a4)+
+				swap	d4		; (z * sin  + x * cos)
+				move.w	d4,(a4)+	; store z' in boxpts
 
-				addq	#6,a3
+				addq	#6,a3		; next point
 				dbra	d5,rotobj
 
 
-
-				move.l	4(a1,d0.w*8),d0			; xpos of mid
+				move.l	4(a1,d0.w*8),d0			; xpos of mid; is this the object position?
 
 				move.w	num_points,d7
 				move.l	#boxrot,a2
 				move.l	#boxonscr,a3
 				move.l	#boxbrights,a6
-				move.w	2(a0),d2
+				move.w	2(a0),d2	; object y pos?
 				subq	#1,d7
 
-				asl.l	#1,d0
-
+				asl.l	#1,d0		;
+; Projection for polygonal objects to screen here?
 				tst.b	FULLSCR
 				beq.s	smallconv
 
 				move.w	d1,d3
 				asl.w	#1,d1
-				add.w	d3,d1
+				add.w	d3,d1		; d1 * 3  because 288 is ~1.5times larger than 196?
+									; if I change this, 3d objects start "swimming" with regard to the world
 
 				ext.l	d2
-				asl.l	#7,d2
+				asl.l	#7,d2		; (view_ypos *128 - yoff) *2
 				sub.l	yoff,d2
 				asl.l	#1,d2
 .convtoscr
-				move.l	(a2),d3
-				add.l	d0,d3
-				move.l	d3,(a2)+
-				move.l	(a2),d4
-				add.l	d2,d4
-				move.l	d4,(a2)+
-				move.w	(a2),d5
-				add.w	d1,d5
+				move.l	(a2),d3		;
+				add.l	d0,d3		; x'' = xpos_of_view + x
+				move.l	d3,(a2)+	; '
+				move.l	(a2),d4		;
+				add.l	d2,d4		; y'' = y' + ypos_obj
+				move.l	d4,(a2)+	;
+				move.w	(a2),d5		; z'
+				add.w	d1,d5		; z'' = z' + zpos_of_view
 				ble		.ptbehind
 				move.w	d5,(a2)+
-				add.w	d5,d5
 
-				move.l	d3,d6
-				add.l	d6,d6
-				add.l	d6,d3
+				; FIXME: can we factor the 3/2 scaling into Z somewhere else?
+				add.w	d5,d5		; z'' * 2  to achieve  3/2 scaling for fullscreen
+
 				move.l	d4,d6
 				add.l	d6,d6
-				add.l	d6,d4
+				add.l	d6,d4		; y'' * 3
+				divs	d5,d4		; ys = (x*3)/(z*2)
 
-				divs	d5,d3
-				divs	d5,d4
-				add.w	MIDDLEX,d3
-				add.w	POLYMIDDLEY,d4
-				move.w	d3,(a3)+
+				move.l	d3,d6		;
+				add.l	d6,d6
+				add.l	d6,d3		; x'' * 3
+				divs	d5,d3		; xs = (x*3)/(z*2)
+				; FIXME: how can I factor DOUBLWIDTH into the whole equation, so no
+				; additional branches are needed in the inner loop
+				asr		d3			; DOUBLEWIDTH TEST make it so x'' gets halfed
+
+				add.w	MIDDLEX,d3	; mid_x of screen
+
+				add.w	POLYMIDDLEY,d4	; mid_y of screen
+				move.w	d3,(a3)+	; store xs,ys in boxonscr
 				move.w	d4,(a3)+
 
 				dbra	d7,.convtoscr
@@ -2466,12 +2509,11 @@ rotobj:
 				bra		DONECONV
 
 smallconv
-
-				asl.w	#1,d1
+				asl.w	#1,d1		; d1 * 2
 				ext.l	d2
 				asl.l	#7,d2
 				sub.l	yoff,d2
-				asl.l	#1,d2
+				asl.l	#1,d2		; (d2*128 - yoff) *2
 .convtoscr
 				move.l	(a2),d3
 				add.l	d0,d3
@@ -2484,8 +2526,13 @@ smallconv
 				ble		.ptbehind2
 				move.w	d5,(a2)+
 				divs	d5,d3
+
+				asr.w	d3					; DOUBLEWIDTH test
+
 				divs	d5,d4
+
 				add.w	MIDDLEX,d3
+
 				add.w	POLYMIDDLEY,d4
 				move.w	d3,(a3)+
 				move.w	d4,(a3)+

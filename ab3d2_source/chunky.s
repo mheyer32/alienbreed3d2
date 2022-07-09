@@ -57,11 +57,43 @@ NEWCHUNKY
 
 				rts
 
+; d0.w	chunkyx [chunky-pixels] (even multiple of 32)
+; d1.w	chunkyy [chunky-pixels]
+; d2.w	scroffsx [screen-pixels] (even multiple of 8)
+; d3.w	scroffsy [screen-pixels]
+; d4.l	rowlen [bytes] -- offset between one row and the next in a bpl
+; d5.l	bplsize [bytes] -- offset between one row in one bpl and the next bpl
+; d6.l	chunkylen [bytes] -- offset between one row and the next in chunkybuffer
+
+.doublewidthFullscreen
+				move.w	#FS_WIDTH/2,d0
+				move.w	WIDESCRN,d3				; height of black border top/bottom
+				move.w	#FS_HEIGHT,d1
+				sub.w	d3,d1					; top letterbox
+				sub.w	d3,d1					; bottom letterbox: d1: number of lines
+				moveq.l	#0,d2
+				move.l	#SCREENWIDTH/8,d4
+				move.l	#(SCREENWIDTH/8)*256,d5
+				move.l	#SCREENWIDTH,d6
+				jsr		c2p2x1_8_c5_gen_init
+
+				; scroffsy only accounts for the Y offset in the destination buffer
+				move.l	FASTBUFFER,a0
+				mulu.w	d6,d3
+				lea		(a0,d3.w),a0
+				move.l	SCRNDRAWPT,a1
+				jsr		c2p2x1_8_c5_gen
+
+				rts
+
 .smallscreen:
+				tst.b	DOUBLEWIDTH
+				bne.s	.doublewidthSmallscreen
+
 				moveq.l	#0,d0					; x
 				move.w	WIDESCRN,d1				; y, height of black border top/bottom
 				move.l	#SMALL_WIDTH,d2			; width
-				move.l	#160,d3					; height
+				move.l	#SMALL_HEIGHT,d3		; height
 				sub.w	d1,d3					; top letterbox
 				sub.w	d1,d3					; bottom letterbox: d3: number of lines
 				move.l	#SCREENWIDTH,d4			; chunkymod
@@ -76,19 +108,11 @@ NEWCHUNKY
 
 				rts
 
+.doublewidthSmallscreen:
 
-; d0.w	chunkyx [chunky-pixels] (even multiple of 32)
-; d1.w	chunkyy [chunky-pixels]
-; d2.w	scroffsx [screen-pixels] (even multiple of 8)
-; d3.w	scroffsy [screen-pixels]
-; d4.l	rowlen [bytes] -- offset between one row and the next in a bpl
-; d5.l	bplsize [bytes] -- offset between one row in one bpl and the next bpl
-; d6.l	chunkylen [bytes] -- offset between one row and the next in chunkybu
-
-.doublewidthFullscreen
-				move.w	#FS_WIDTH/2,d0
+				move.w	#SMALL_WIDTH/2,d0
 				move.w	WIDESCRN,d3				; height of black border top/bottom
-				move.w	#232,d1
+				move.w	#SMALL_HEIGHT,d1
 				sub.w	d3,d1					; top letterbox
 				sub.w	d3,d1					; bottom letterbox: d1: number of lines
 				moveq.l	#0,d2
@@ -102,6 +126,9 @@ NEWCHUNKY
 				mulu.w	d6,d3
 				lea		(a0,d3.w),a0
 				move.l	SCRNDRAWPT,a1
+				; top left of small render window in chipmem
+				add.l	#(SCREENWIDTH/8)*20+(64/8),a1
+
 				jsr		c2p2x1_8_c5_gen
 
 				rts
