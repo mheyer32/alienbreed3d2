@@ -223,8 +223,8 @@ outofcalcG:
 				tst.b	FULLSCR
 				bne		scrdrawlopGB
 
-;				tst.b	DOUBLEWIDTH
-;				bne		scrdrawlopGDOUB
+				;tst.b	DOUBLEWIDTH
+				;bne		scrdrawlopGDOUB
 				bra		scrdrawlopG
 
 thislinedoneG:
@@ -901,9 +901,13 @@ CalcAndDrawG:
 				ext.l	d0
 
 				divs.l	d0,d1
+
+				asr.w d1			; DOUBLEWIDTH TEST
+
 				moveq	#0,d5
 				move.w	MIDDLEX,d5
 				add.l	d5,d1
+
 
 				move.l	topofwall(pc),d5
 				divs	d0,d5
@@ -924,6 +928,9 @@ CalcAndDrawG:
 				move.l	(a1),d3
 				ext.l	d2
 				divs.l	d2,d3
+
+				asr.w d3			; DOUBLEWIDTH TEST
+
 				moveq	#0,d5
 				move.w	MIDDLEX,d5
 				add.l	d5,d3
@@ -1006,6 +1013,9 @@ computeloop2G:
 				move.l	#store,a0
 				move.l	(a1),d3
 				divs.l	d2,d3					; this could be divs.w, no?
+
+				asr.l	d3				; DOUBLEWIDTH test
+
 				moveq	#0,d5
 				move.w	MIDDLEX,d5
 				add.l	d5,d3					; making this an add.w ?

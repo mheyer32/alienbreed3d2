@@ -575,6 +575,9 @@ glareobj:
 				add.w	MIDDLEY,d2
 
 				divs	d1,d0
+
+				asr.w	d0					;DOUBLEWIDTH test
+
 				add.w	MIDDLEX,d0				;x pos of middle
 
 ; Need to calculate:
@@ -601,9 +604,13 @@ glareobj:
 				moveq	#0,d4
 				move.b	(a0)+,d3
 				move.b	(a0)+,d4
-				lsl.l	#7,d3
+
+				;lsl.l	#7,d3
+				lsl.l	#6,d3					; DOUBLEWIDTH TEST
+
 				lsl.l	#7,d4
 				divs	d1,d3					;width in pixels
+
 				divs	d1,d4					;height in pixels
 
 				sub.w	d4,d2
@@ -653,6 +660,7 @@ glareobj:
 				moveq	#0,d6
 				move.b	-1(a0),d6
 				beq		objbehind
+
 				divu	d6,d7
 				swap	d7
 				clr.w	d7
@@ -753,7 +761,7 @@ okrightsideGLARE:
 drawrightsideGLARE:
 				swap	d7
 				move.l	midobj(pc),a5
-				lea		(a5,d7.w*4),a5
+				lea		(a5,d7.w*8),a5		; DOUBLEWIDTH TEST, was d7.w*4
 				swap	d7
 				add.l	a2,d7					; step fractional column
 
@@ -970,7 +978,8 @@ pastobjscale:
 
 
 				divs	d1,d0
-				add.w	MIDDLEX,d0				;x pos of middle
+				asr.w	d0					; DOUBLEWIDTH test. Adjust position on screen for DOUBLEWIDTH
+				add.w	MIDDLEX,d0			;x pos of middle
 
 ; Need to calculate:
 ; Width of object in pixels
@@ -1020,7 +1029,12 @@ pastobjscale:
 				move.b	(a0)+,d4
 				lsl.l	#7,d3
 				lsl.l	#7,d4
-				divs	d1,d3					;width in pixels
+				divs	d1,d3					;width in pixels on screen
+
+				asr.w	d3						; DOUBLEWIDTH testtest
+												; (DOES NOT SCALE THE Texture column scaling and thus causes
+												; just a half of the object show up, but at 2x scale
+
 				divs	d1,d4					;height in pixels
 
 				sub.w	d4,d2
@@ -1203,7 +1217,7 @@ okrightside:
 drawrightside:
 				swap	d7
 				move.l	midobj(pc),a5
-				lea		(a5,d7.w*4),a5
+				lea		(a5,d7.w*8),a5	; DOUBLEWDITH TEST, was d7.w*4 (step twice as fast through columns)
 				swap	d7
 				add.l	a2,d7					; fractional column advance?
 
@@ -1291,7 +1305,7 @@ DRAWITADDED:
 drawrightsideADD:
 				swap	d7
 				move.l	midobj(pc),a5
-				lea		(a5,d7.w*4),a5
+				lea		(a5,d7.w*8),a5	; DOUBLEWIDTH test, was d7.w*4
 				swap	d7
 				add.l	a2,d7
 				move.l	WAD_PTR(PC),a0
@@ -1701,7 +1715,7 @@ makepals:
 drawlightlop
 				swap	d7
 				move.l	midobj(pc),a5
-				lea		(a5,d7.w*4),a5
+				lea		(a5,d7.w*8),a5		; DOUBLEWDITH test
 				swap	d7
 				add.l	a2,d7
 				move.l	WAD_PTR(PC),a0
@@ -2474,9 +2488,17 @@ rotobj:
 				add.l	d6,d6
 				add.l	d6,d3		; x'' * 3
 				divs	d5,d3		; xs = (x*3)/(z*2)
+				; FIXME: how can I factor DOUBLWIDTH into the whole equation, so no
+				; additional branches are needed in the inner loop
+				asr		d3			; DOUBLEWIDTH TEST make it so x'' gets halfed
+
 				add.w	MIDDLEX,d3	; mid_x of screen
+
 				add.w	POLYMIDDLEY,d4	; mid_y of screen
 				move.w	d3,(a3)+	; store xs,ys in boxonscr
+				; FIXME: how can I factor DOUBLWIDTH into the whole equation, so no
+				; additional branches are needed in the inner loop
+				asr		d3			; DOUBLEWIDTH TEST make it so x'' gets halfed
 				move.w	d4,(a3)+
 
 				dbra	d7,.convtoscr
@@ -2507,6 +2529,9 @@ smallconv
 				ble		.ptbehind2
 				move.w	d5,(a2)+
 				divs	d5,d3
+
+				asr.w	d3					; DOUBLEWIDTH test
+
 				divs	d5,d4
 
 				add.w	MIDDLEX,d3

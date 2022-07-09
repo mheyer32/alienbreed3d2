@@ -353,7 +353,7 @@ outofcalc:
 ; bne screendividethru
 
 				;tst.b	DOUBLEWIDTH
-				;bne		scrdrawlopDOUB
+				;bne		scrdrawlopDOUB	; DOUBLEWIDTH test
 				bra		scrdrawlop
 
 thislinedone:
@@ -550,8 +550,8 @@ ffscrpickhowbrightD:
 
 screendivideFULL:
 
-				tst.b	DOUBLEWIDTH
-				bne		scrdrawlopFULLDOUB
+				;tst.b	DOUBLEWIDTH					; DOUBLEWIDTH TEST
+				;bne		scrdrawlopFULLDOUB
 
 
 scrdrawlopFULL:
@@ -1005,7 +1005,6 @@ store:			ds.l	500
 ;				rts
 ;
 
-********************************************************************************
 ;protcheck:
 ; sub.l #53624,a3
 ; add.l #2345215,a2
@@ -1311,6 +1310,9 @@ CalcAndDraw:
 ; d1=left x, d4=left end, d0=left dist
 
 				divs.l	d0,d1
+
+				asr.w	d1					; DOUBLEWIDTH test
+
 				moveq	#0,d5
 				move.w	MIDDLEX,d5
 				add.l	d5,d1
@@ -1334,9 +1336,13 @@ CalcAndDraw:
 				move.l	#store,a0
 				move.l	(a1),d3
 				divs.l	d2,d3
+
+				asr.w	d3					; DOUBLEWIDTH test
+
 				moveq	#0,d5
 				move.w	MIDDLEX,d5
 				add.l	d5,d3
+
 				move.w	6(a1),d5
 				move.w	strtop(pc),12(a0)
 				move.l	topofwall(pc),d6
@@ -1413,9 +1419,13 @@ computeloop2:
 				move.l	#store,a0
 				move.l	(a1),d3
 				divs.l	d2,d3
+
+				asr.w	d3					; DOUBLEWIDTH test
+
 				moveq	#0,d5
 				move.w	MIDDLEX,d5
 				add.l	d5,d3
+
 				move.w	6(a1),d5
 				move.w	strtop(pc),12(a0)
 				move.l	topofwall(pc),d6
@@ -2565,6 +2575,9 @@ pastclip:
 				move.w	6(a5,d0*8),d4
 				ext.l	d4
 				divs.l	d4,d3
+
+				asr.w	d3				; DOUBLEWIDTH test
+
 				move.w	MIDDLEX,d4
 				ext.l	d4
 				add.l	d4,d3
@@ -2573,6 +2586,9 @@ pastclip:
 				move.w	6(a5,d2*8),d4
 				ext.l	d4
 				divs.l	d4,d6
+
+				asr.w	d6				; DOUBLEWIDTH test
+
 				move.w	MIDDLEX,d4
 				ext.l	d4
 				add.l	d4,d6
