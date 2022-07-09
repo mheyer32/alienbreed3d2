@@ -294,10 +294,13 @@ START:
 ; FLASHER $0f0,$fff
 
 ******************************
+
+				;jsr		mnu_start	; For some reason this doesn't work
+										; Shows the wrong menu
+
 				jsr		mnu_copycredz
 				jsr		mnu_setscreen
 				move.l	a7,mnu_mainstack
-				jsr		mnu_viewcredz
 
 				jsr		mnu_clearscreen
 
@@ -520,7 +523,7 @@ DONEMENU:
 
 				ifne	CHEESEY
 
-				move.l	scrn,scrn2	; FIXME: loosing scrn2 pointer this way. Is this removing double-buffering from the cheesey version?
+				move.l	scrn,scrn2				; FIXME: loosing scrn2 pointer this way. Is this removing double-buffering from the cheesey version?
 
 				endc
 
@@ -886,7 +889,7 @@ READMAINMENU:
 ; bsr WAITREL
 ; bra .rdlop
 
-				jsr		mnu_viewcredz
+				;jsr		mnu_viewcredz
 				lea		mnu_MYMAINMENU,a0
 				bsr		MYOPENMENU
 

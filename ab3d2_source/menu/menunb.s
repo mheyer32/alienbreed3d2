@@ -55,12 +55,11 @@ mnu_start:		bsr.w	mnu_copycredz
 				bsr.w	mnu_setscreen
 				move.l	a7,mnu_mainstack
 
-				bsr.w	mnu_viewcredz
-				bsr.w	mnu_cls
-				IFND	mnu_nocode
-				bsr.w	mnu_protection
-
-				ENDC
+				;bsr.w	mnu_viewcredz
+				;bsr.w	mnu_cls
+				;IFND	mnu_nocode
+				;bsr.w	mnu_protection
+				;ENDC
 
 mnu_loop:		lea		mnu_mainmenu,a0
 				bsr.w	mnu_domenu
