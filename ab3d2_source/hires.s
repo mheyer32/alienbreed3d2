@@ -2610,7 +2610,7 @@ IWasPlayer1:
 				move.w	#-1,12+128(a0)
 
 				eor.w	#4096,angpos
-				neg.w	cosval
+				neg.w	cosval			; view direction 180deg
 				neg.w	sinval
 .nolookback:
 
@@ -3494,8 +3494,7 @@ OFFSCREEN:
 NOLINEtrans:
 				rts
 
-MAPBRIGHT:
-				dc.w	3
+MAPBRIGHT:		dc.w	3		; "Map Brightness?" or "Map Bits Right"?
 mapxoff:		dc.w	0
 mapzoff:		dc.w	0
 
@@ -5050,7 +5049,7 @@ DrawDisplay:
 				move.l	#SineTable,a0
 				move.w	angpos,d0
 				move.w	(a0,d0.w),d6
-				adda.w	#2048,a0
+				adda.w	#2048,a0			; +90 deg?
 				move.w	(a0,d0.w),d7
 				move.w	d6,sinval
 				move.w	d7,cosval
@@ -5058,7 +5057,7 @@ DrawDisplay:
 				move.l	yoff,d0
 				asr.l	#8,d0
 				move.w	d0,d1
-				add.w	#256-32,d1
+				add.w	#256-32,d1			; 224
 				and.w	#255,d1
 				move.w	d1,wallyoff
 				move.l	yoff,d0
@@ -5608,8 +5607,7 @@ itsafloor:
 ;				move.l	d0,SSTACK
 ;				movem.l	(a7)+,a0/d0
 
-				move.l	#FloorLine,LineToUse
-* 1,2 = floor/roof
+				move.l	#FloorLine,LineToUse	* 1,2 = floor/roof
 				clr.b	usewater
 				clr.b	usebumps
 				move.b	GOURSEL,gourfloor
@@ -5749,11 +5747,12 @@ REALMAPON:		dc.w	0
 RotateLevelPts:
 
 				tst.b	REALMAPON
-				beq		ONLYTHELONELY
+				beq		ONLYTHELONELY ; FIXME: revisit ONLYTHELONELY. Has issues, don't know what it is
 
 				move.w	sinval,d6
 				swap	d6
 				move.w	cosval,d6
+
 				move.l	Points,a3
 				move.l	#Rotated,a1
 				move.l	#OnScreen,a2
@@ -5838,33 +5837,38 @@ pointrotlop2B:
 				move.w	(a3)+,d1
 				asr.w	#1,d1
 				sub.w	d5,d1
-				muls	d6,d2
+				muls	d6,d2		; *cos
 				swap	d6
 				move.w	d1,d3
-				muls	d6,d3
+				muls	d6,d3		; *sin
 				sub.l	d3,d2
 ; add.l d2,d2
 ; swap d2
 ; ext.l d2
 ; asl.l #7,d2
 				asr.l	#7,d2
-				add.l	xwobble,d2
+
+				add.l	xwobble,d2		; could the wobble be a shake or some underwater effect?
 				move.l	d2,(a1)+
 
-				muls	d6,d0
+				muls	d6,d0		; cos <<16
 				swap	d6
-				muls	d6,d1
+				muls	d6,d1		; sin <<16
 				add.l	d0,d1
 
-				divs.l	#3,d1
-				asr.l	#8,d1
-				asr.l	#5,d1
+;				divs.l	#3,d1	; is this what differentiates fullscreen vs. smallscreen?
+;				asr.l	#8,d1
+;				asr.l	#5,d1	; achieves d1/(3*2<<13) - we could roll this into the divs above
+
+				divs.w	#3*4096,d1	; 3*8192 doesn't quite fit into 16bits divisor
+				asr.w	d1
+				ext.l	d1
 
 ; asl.l #3,d1
 ; swap d1
 ; ext.l d1
 ; divs #3,d1
-				move.l	d1,(a1)+
+				move.l	d1,(a1)+	; FIXME: do we really need to store the points as long?
 
 				tst.l	d1
 				bgt.s	ptnotbehindB
@@ -6180,9 +6184,8 @@ CalcPLR2InLine:
 
 
 RotateObjectPts:
-
-				move.w	sinval,d5
-				move.w	cosval,d6
+				move.w	sinval,d5			; fetch sine of rotation
+				move.w	cosval,d6			; consine
 
 				move.l	ObjectData,a4
 				move.l	ObjectPoints,a0
@@ -6198,41 +6201,41 @@ RotateObjectPts:
 				cmp.b	#3,16(a4)
 				beq.s	.itaux
 
-				move.w	(a0),d0
-				sub.w	xoff,d0
-				move.w	4(a0),d1
-				addq	#8,a0
+				move.w	(a0),d0		; x of object point
+				sub.w	xoff,d0		; viewX = X - cam X
+				move.w	4(a0),d1	; z of object point
+				addq	#8,a0		; next point? or next object?
 
-				tst.w	12(a4)
+				tst.w	12(a4)		; ObjectData
 				blt		.noworkout
 
-				sub.w	zoff,d1
+				sub.w	zoff,d1		; viewZ = Z - cam Z
 
 				move.w	d0,d2
-				muls	d6,d2
-				move.w	d1,d3
-				muls	d5,d3
-				sub.l	d3,d2
+				muls	d6,d2		; cosx = viewX * (cos << 16)
+				move.w	d1,d3		;
+				muls	d5,d3		; sinz = viewZ * (sin << 16)
 
+				sub.l	d3,d2		;  x' = cosx - sinz
+				add.l	d2,d2		; x'*2
+				swap	d2			; x' >> 16
+				move.w	d2,(a1)+	; finished rotated x'
 
-				add.l	d2,d2
-				swap	d2
-				move.w	d2,(a1)+
-
-				muls	d5,d0
-				muls	d6,d1
-				add.l	d0,d1
-				asl.l	#1,d1
-				swap	d1
+				muls	d5,d0		; sinx = viewX * sin <<16
+				muls	d6,d1		; cosz = viewZ * cos << 16
+				add.l	d0,d1		; z' = sinx + cosz
+				add.l	d1,d1		; *2
+				swap	d1			; >> 16
 ; ext.l d1
 ; divs #3,d1
-				moveq	#0,d3
+				moveq	#0,d3		;FIMXE: why?
 
-				move.w	d1,(a1)+
-				ext.l	d2
+				move.w	d1,(a1)+	; finished rotated z'
+
+				ext.l	d2			; whats the wobble about?
 				asl.l	#7,d2
 				add.l	xwobble,d2
-				move.l	d2,(a1)+
+				move.l	d2,(a1)+	; no clue
 
 				dbra	d7,.objpointrotlop
 
@@ -6278,6 +6281,7 @@ BIGOBJPTS:
 
 				muls	d5,d0
 				muls	d6,d1
+
 				add.l	d0,d1
 				asl.l	#2,d1
 				swap	d1
@@ -7548,8 +7552,8 @@ itsafloordraw:
 				cmp.l	BOTOFROOM,d7
 				bgt.s	dontdrawreturn
 
-				move.w	leftclip,d7
-				cmp.w	rightclip,d7
+				move.w	leftclip,d7				; FIXME: how come we clip against left/right clip with the Y values
+				cmp.w	rightclip,d7			; have leftclip/rightclip repurposed for floors to mean top/botttom?
 				bge.s	dontdrawreturn
 
 				sub.w	flooryoff,d6
@@ -7703,6 +7707,7 @@ sideloop:
 				sub.w	d5,d4
 				move.l	(a1,d1*8),d0
 				sub.l	(a1,d3*8),d0
+
 				asr.l	#7,d0
 				sub.w	d5,d6
 				muls	d6,d0					; new x coord
@@ -7714,9 +7719,14 @@ sideloop:
 				move.w	minz,d4
 				move.w	(a2,d3*2),d2
 				divs	d4,d0
+
+				asr.w	d0					; DOUBLEWIDTH test
+
 				add.w	MIDDLEX,d0
+
 				move.l	ypos,d3
-				divs	d5,d3
+				divs	d5,d3				; perspective divide
+
 				move.w	bottomline,d1
 				bra		lineclipped
 
@@ -7729,16 +7739,22 @@ firstinfront:
 				move.l	(a1,d3*8),d2
 				sub.l	(a1,d1*8),d2			; dx
 				sub.w	d4,d6
+
 				asr.l	#7,d2
 				muls	d6,d2					; new x coord
 				divs	d5,d2
 				ext.l	d2
+
 				asl.l	#7,d2
 				add.l	(a1,d1*8),d2
 				move.w	minz,d5
 				move.w	(a2,d1*2),d0
 				divs	d5,d2
+
+				asr.w	d2					; DOUBLEWIDTH test
+
 				add.w	MIDDLEX,d2
+
 				move.l	ypos,d1
 				divs	d4,d1
 				move.w	bottomline,d3
@@ -7750,7 +7766,10 @@ bothinfront:
 * so no bottom clipping is needed.
 
 				move.w	(a2,d1*2),d0			; first x
+				;asr.w	d0						; DOUBLEWIDTH test
 				move.w	(a2,d3*2),d2			; second x
+				;asr.w	d1						; DOUBLEWIDTH test
+
 				move.l	ypos,d1
 				move.l	d1,d3
 				divs	d4,d1					; first y
@@ -8001,6 +8020,7 @@ sideloopGOUR:
 				move.w	6(a1,d1*8),d4			;first z
 				cmp.w	d6,d4
 				bgt		firstinfrontGOUR
+
 				move.w	6(a1,d3*8),d5			; sec z
 				cmp.w	d6,d5
 				ble		bothbehindGOUR
@@ -8011,6 +8031,7 @@ sideloopGOUR:
 				sub.w	sbr,d0
 				sub.w	d5,d6
 				muls	d6,d0
+
 				divs	d4,d0
 				add.w	sbr,d0
 				move.w	d0,fbr
@@ -8020,6 +8041,7 @@ sideloopGOUR:
 				asr.l	#7,d0
 				muls	d6,d0					; new x coord
 				divs	d4,d0
+
 				ext.l	d0
 				asl.l	#7,d0
 
@@ -8027,7 +8049,11 @@ sideloopGOUR:
 				move.w	minz,d4
 				move.w	(a2,d3*2),d2
 				divs	d4,d0
+
+				asr.w	d0					; DOUBLEWIDTH test
+
 				add.w	MIDDLEX,d0
+
 				move.l	ypos,d3
 				divs	d5,d3
 
@@ -8054,13 +8080,18 @@ firstinfrontGOUR:
 				asr.l	#7,d2
 				muls	d6,d2					; new x coord
 				divs	d5,d2
+
 				ext.l	d2
 				asl.l	#7,d2
 				add.l	(a1,d1*8),d2
-				move.w	minz,d5
+				move.w	minz,d5				; minz = nearclip distance?
 				move.w	(a2,d1*2),d0
 				divs	d5,d2
+
+				asr.w	d2					; DOUBLEWIDTH test
+
 				add.w	MIDDLEX,d2
+
 				move.l	ypos,d1
 				divs	d4,d1
 				move.w	bottomline,d3
@@ -8073,6 +8104,8 @@ bothinfrontGOUR:
 
 				move.w	(a2,d1*2),d0			; first x
 				move.w	(a2,d3*2),d2			; second x
+
+
 				move.l	ypos,d1
 				move.l	d1,d3
 				divs	d4,d1					; first y
@@ -8121,8 +8154,8 @@ linenotflatGOUR
 
 				ext.l	d2
 				divs	d3,d2
-				move.w	d2,d6
-				swap	d2
+				move.w	d2,d6					; dx/dy
+				swap	d2						; dx mod dy?, is this the starting texel?
 				move.w	d2,a5
 
 ; moveq #0,d6
@@ -8135,9 +8168,9 @@ linenotflatGOUR
 ;.noco
 ; add.w d3,d2
 
-				move.w	d3,d4
-				move.w	d3,d5
-				subq	#1,d5
+				move.w	d3,d4					; dy
+				move.w	d3,d5					; dy
+				subq	#1,d5					; dy-1
 				move.w	d6,d1
 				addq	#1,d1
 				move.w	d1,a6
@@ -8147,11 +8180,13 @@ linenotflatGOUR
 				move.w	fbr,d2
 				sub.w	d1,d2
 				ext.l	d2
-				asl.w	#8,d2
+
+				asl.w	#8,d2					; is this some gouraud math?
 				asl.w	#2,d2
 				divs	d3,d2
 				ext.l	d2
 				asl.l	#6,d2
+
 				swap	d1
 
 .pixlopright:
@@ -8469,6 +8504,9 @@ groundfloor:
 				move.l	d7,szoff
 				bra		pastscale
 
+; why is this code here in the moiddle of nowhere, followed by data?
+; could this be form of self modifying code? I.e. stick the code here and copy it
+; over into relevant places on demand
 				asr.l	#3,d1
 				asr.l	#3,d2
 				asr.l	#2,d1
@@ -8514,6 +8552,7 @@ movespd:		dc.w	0
 largespd:		dc.l	0
 disttobot:		dc.w	0
 
+********************************************************************************
 pastscale:
 
 
@@ -8680,7 +8719,7 @@ doneclip:
 				lea		(a4,d1*2),a4
 ; move.l #dists,a2
 				move.w	distaddr,d0
-				muls	#64,d0
+				muls	#64,d0			; FIXME: why muls here? Is this addressing the floor tile row?
 				move.l	d0,a2
 ; muls #25,d0
 ; adda.w d0,a2
@@ -9327,13 +9366,18 @@ ssinval:		dc.w	0
 floorsetbright:
 				move.l	#walltiles,a0
 
+			; Floor drawing
 pastfloorbright:
 
+				; these directly determine the texture gradients
+				; as function of the player view direction
 				move.l	d0,d1
 				muls	cosval,d1				; change in x across whole width
 				move.l	d0,d2
 				muls	sinval,d2				; change in z across whole width
 				neg.l	d2
+
+				; scale for lowres CHEESEY version
 				ifne	CHEESEY
 				asr.l	#3,d2
 				asr.l	#3,d1
@@ -9342,10 +9386,12 @@ pastfloorbright:
 				asr.l	#2,d2
 				asr.l	#2,d1
 				endc
+
 scaleprog:
 				move.w	scaleval(pc),d3
 				beq.s	.samescale
 				bgt.s	.scaledown
+				; scale up
 				neg.w	d3
 				asr.l	d3,d1
 				asr.l	d3,d2
@@ -9354,8 +9400,6 @@ scaleprog:
 				asl.l	d3,d1
 				asl.l	d3,d2
 .samescale
-
-
 				move.l	d1,d3					;	z cos
 				move.l	d3,d6
 				move.l	d3,d5
@@ -9384,7 +9428,7 @@ scaleprog:
 				beq.s	.nomultleftB
 
 				add.l	d6,d6
-				divs	#3,d6
+				divs	#3,d6		; * 2/3 seems to be the FULLSCREEN multiplier?
 				ext.l	d6
 
 				move.l	d1,a4
@@ -9416,9 +9460,9 @@ scaleprog:
 
 				move.w	d4,d5
 
-				asr.l	#6,d1
+				asr.l	#6,d1		; don't shift by 7, but 6
 				asr.l	#6,d2
-				divs.l	#3,d1
+				divs.l	#3,d1		; to achieve * 2/3
 				divs.l	#3,d2
 
 				bra.s	doneallmult
@@ -9489,10 +9533,9 @@ doneallmult:
 
 ***********************************
 
-
-				;tst.b	DOUBLEWIDTH
-				;beq.s	.nodoub
-				bra.s	.nodoub
+;				tst.b	DOUBLEWIDTH
+;				beq.s	.nodoub
+				bra		.nodoub
 
 				and.b	#$fe,d6
 
@@ -9507,7 +9550,7 @@ doneallmult:
 
 				tst.b	usewater
 				bne		texturedwaterDOUB
-; tst.b gourfloor
+		; tst.b gourfloor
 				bra		gouraudfloorDOUB
 
 .nodoub:
@@ -11226,7 +11269,7 @@ nostartalan:
 				clr.b	PLR1_clicked
 				move.w	#0,ADDTOBOBBLE
 				move.l	#playercrouched,PLR1s_height
-				move.w	#-80,d0
+				move.w	#-80,d0			; Is this related to render buffer height
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0

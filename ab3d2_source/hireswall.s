@@ -353,7 +353,7 @@ outofcalc:
 ; bne screendividethru
 
 				;tst.b	DOUBLEWIDTH
-				;bne		scrdrawlopDOUB
+				;bne		scrdrawlopDOUB	; DOUBLEWIDTH test
 				bra		scrdrawlop
 
 thislinedone:
@@ -550,8 +550,8 @@ ffscrpickhowbrightD:
 
 screendivideFULL:
 
-				tst.b	DOUBLEWIDTH
-				bne		scrdrawlopFULLDOUB
+				;tst.b	DOUBLEWIDTH					; DOUBLEWIDTH TEST
+				;bne		scrdrawlopFULLDOUB
 
 
 scrdrawlopFULL:
@@ -667,7 +667,7 @@ scrdrawlopFULLDOUB:
 				move.l	(a0)+,d3
 				swap	d3
 				add.l	#divthreetab,a5
-				move.w	(a5),StripData
+				move.w	(a5),StripData		;
 
 				move.l	ChunkAddr,a5
 				moveq	#0,d6
@@ -725,7 +725,7 @@ ffscrpickhowbrightFULLDOUB:
 				SCALE
 
 
-divthreetab:
+divthreetab:						; stores x/3 and x mod 3 for x=0...660
 val				SET		0
 				REPT	220
 				dc.b	val,0
@@ -1005,7 +1005,6 @@ store:			ds.l	500
 ;				rts
 ;
 
-********************************************************************************
 ;protcheck:
 ; sub.l #53624,a3
 ; add.l #2345215,a2
@@ -1311,6 +1310,9 @@ CalcAndDraw:
 ; d1=left x, d4=left end, d0=left dist
 
 				divs.l	d0,d1
+
+				asr.w	d1					; DOUBLEWIDTH test
+
 				moveq	#0,d5
 				move.w	MIDDLEX,d5
 				add.l	d5,d1
@@ -1334,6 +1336,9 @@ CalcAndDraw:
 				move.l	#store,a0
 				move.l	(a1),d3
 				divs.l	d2,d3
+
+				asr.w	d3					; DOUBLEWIDTH test
+
 				moveq	#0,d5
 				move.w	MIDDLEX,d5
 				add.l	d5,d3
@@ -1413,6 +1418,9 @@ computeloop2:
 				move.l	#store,a0
 				move.l	(a1),d3
 				divs.l	d2,d3
+
+				asr.w	d3					; DOUBLEWIDTH test
+
 				moveq	#0,d5
 				move.w	MIDDLEX,d5
 				add.l	d5,d3
@@ -1543,12 +1551,12 @@ wlcnt:			dc.w	0
 				CNOP	0,4
 drawwalldimPACK0:
 				and.w	d7,d4
-				move.b	1(a5,d4.w*2),d1
-				and.b	#31,d1
-				add.l	d3,d4
+				move.b	1(a5,d4.w*2),d1		; fetch texel
+				and.b	#31,d1				; really necessary to clamp?
+				add.l	d3,d4				; add fractional part?
 				move.b	(a4,d1.w*2),(a3)
-				adda.w	d0,a3
-				addx.w	d2,d4
+				adda.w	d0,a3				; next line in screen
+				addx.w	d2,d4				; texture Y + dy
 				dbra	d6,drawwallPACK0
 				rts
 
@@ -1733,18 +1741,18 @@ STOPOFFSET:		dc.w	0
 gotoend:
 				tst.b	DOUBLEHEIGHT
 				bne		doubwall
-				sub.w	d5,d6					; height to draw.
+				sub.w	d5,d6					; end-start; height to draw?
 				ble		nostripq
 
-				add.l	timeslarge(pc,d5.w*4),a3
+				add.l	timeslarge(pc,d5.w*4),a3	; offset to render buffer line of the strip
 
 				add.w	d2,d2
 
-				move.l	4(a1,d2.w*8),d0
+				move.l	4(a1,d2.w*8),d0				; fetch (a1) at d2*16
 				add.w	TOPOFFSET(pc),d5
 				move.w	d5,d4
 
-				move.l	(a1,d2.w*4),d2
+				move.l	(a1,d2.w*4),d2				; fetch (a1) at d2*8
 ; moveq #0,d3
 ; move.w d2,d3
 ; swap d2
@@ -1771,41 +1779,47 @@ gotoend:
 ; add.l d0,d4
 ; swap d4
 ; add.w d5,d4
-				add.w	totalyoff(pc),d4
+				add.w	totalyoff(pc),d4	; start texel offset in strip
 				move.w	VALAND,d7
-				and.w	d7,d4
-				move.w	#SCREENWIDTH,d0
+				and.w	d7,d4				; vertical texture coordinate clamp/wrap
+				move.w	#SCREENWIDTH,d0		; line offset to next line
 				moveq	#0,d1
 
 				ifne	CHEESEY
-				asr.l	#1,d2
+				asr.l	#1,d2				; shrink dt for CHEESEY
 				endc
-				swap	d2
+
+				swap	d2					; fractional dt in upper word
 				move.l	d2,d3
 				clr.w	d3
 
-				cmp.b	#1,StripData+1
+				cmp.b	#1,StripData+1		; depending on 0th, 1st or second line, start at different routine
 				dbge	d6,drawwallPACK0
 				dbne	d6,drawwallPACK1
 				dble	d6,drawwallPACK2
 				rts
 
+; FIXME: there are multiple timeslargeXXXX tables throughout the code
+; that essentially all contain the same data (line offsets into renderbuffer)
+; We can potentially use the same table for all and later also try just multiplying
+; in code. The table approach was probably suitable for chunky copper. Nowadays could
+; change it to use mul instead?
 timeslarge:
 
 val				SET		0
-				REPT	256
+				REPT	256				; this limits the vertical height of the renderbuffer
 				dc.l	val
 val				SET		val+SCREENWIDTH
 				ENDR
 
 doubwall
 				moveq	#0,d0
-				asr.w	#1,d5
-				addx.w	d0,d5
-				add.w	d5,d5
+				asr.w	#1,d5		; d5*2
+				addx.w	d0,d5		; ??
+				add.w	d5,d5		; d5 * 3
 				sub.w	d5,d6
 				asr.w	#1,d6
-				ble		nostripq
+				ble		nostripq	; (d5*3-d6)/2
 
 				add.l	timeslargeDOUB(pc,d5.w*4),a3
 
@@ -1908,16 +1922,16 @@ ScreenWallstripdrawBIG:
 gotoendBIG
 				tst.b	DOUBLEHEIGHT
 				bne		doubwallBIG
-				sub.w	d5,d6					; height to draw.
+				sub.w	d5,d6					; d6 = height to draw.
 				ble		nostripq
 
-				add.l	timeslargeBIG(pc,d5.w*4),a3
+				add.l	timeslargeBIG(pc,d5.w*4),a3 ;offset to start line in renderbuffer
 
 				move.w	d2,d4
 				add.w	d2,d2
-				add.w	d2,d4
+				add.w	d2,d4				; d2*3
 
-				move.l	4(a1,d4.w*8),d0
+				move.l	4(a1,d4.w*8),d0		; d2*24
 				add.w	TOPOFFSET(pc),d5
 				move.w	d5,d4
 
@@ -2374,6 +2388,7 @@ WHICHLEFTPT:	dc.w	0
 WHICHRIGHTPT:	dc.w	0
 OTHERZONE:		dc.w	0
 
+				; Is this THE wall draw entrypoint?
 itsawalldraw:
 
 				move.l	#Rotated,a5
@@ -2429,24 +2444,24 @@ itsawalldraw:
 				ifne	CHEESEY
 				asr.w	#1,d1
 				endc
-				move.w	d1,VALAND
+				move.w	d1,VALAND		; (vertical) wall texture height mask
 
 				moveq	#0,d1
 				move.b	(a0)+,d1
 
-				ifne	CHEESEY
+				ifne	CHEESEY			; CHEESEY version has all textures at quarter size?!
 				sub.w	#1,d1
 				endc
-				move.w	d1,VALSHIFT
+				move.w	d1,VALSHIFT	;	; (vertical) wall texture height shift
 
 				moveq	#0,d1
-				move.b	(a0)+,d1
+				move.b	(a0)+,d1		; texture width
 
 				ifne	CHEESEY
 				asr.w	#1,d1
 				endc
 
-				move.w	d1,HORAND
+				move.w	d1,HORAND		; horizontal texture width mask?
 
 				move.b	(a0)+,WHICHPBR
 
