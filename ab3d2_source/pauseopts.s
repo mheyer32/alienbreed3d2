@@ -136,78 +136,78 @@ CHECKUPDOWN
 
 				rts
 
-CHANGEPOPTS:
-
-				bsr		CHECKUPDOWN
-
-
-				tst.b	d3
-				beq.s	nobotchange
-
-				move.w	BOTPOPT,d0
-				addq	#1,d0
-				and.w	#3,d0
-				move.w	d0,BOTPOPT
-				clr.b	ANYFLOOR
-				clr.b	GOURSEL
-				st		CLRNOFLOOR
-				move.l	#SimpleFloorLine,THEFLOORLINE
-				cmp.w	#2,d0
-				bgt.s	.nofloor
-				beq.s	.plainfloor
-				tst.w	d0
-				bgt.s	.textureonly
-				st		GOURSEL
-.textureonly
-				move.l	#FloorLine,THEFLOORLINE
-.plainfloor
-				st		ANYFLOOR
-				clr.b	CLRNOFLOOR
-.nofloor:
-
-				muls	#12,d0
-				add.l	#FLOOROPTS,d0
-				move.l	d0,a0
-				move.l	#FLOOROPTLINE,a1
-				bsr		PUTINPLINE
-
-				bsr		DRAWPAUSESCRN
-
-billythe
-				bsr		CHECKUPDOWN
-				tst.b	d3
-				bne.s	billythe
-
-nobotchange:
-
-				tst.b	d2
-				beq		notopchange
-
-				muls	#12,d0
-				add.l	#SOUNDOPTS,d0
-				move.l	d0,a0
-				move.l	#SOUNDOPTLINE,a1
-				bsr		PUTINPLINE
-
-				bsr		DRAWPAUSESCRN
-
-billythetop
-				bsr		CHECKUPDOWN
-				tst.b	d2
-				bne.s	billythetop
-
-
-notopchange
-
-				rts
-
-
-THEFLOORLINE:	dc.l	FloorLine
-USECOPBUFFER:	dc.w	0
+;CHANGEPOPTS:
+;
+;				bsr		CHECKUPDOWN
+;
+;
+;				tst.b	d3
+;				beq.s	nobotchange
+;
+;				move.w	BOTPOPT,d0
+;				addq	#1,d0
+;				and.w	#3,d0
+;				move.w	d0,BOTPOPT
+;				clr.b	ANYFLOOR
+;				clr.b	GOURSEL
+;				st		CLRNOFLOOR
+;				move.l	#SimpleFloorLine,THEFLOORLINE
+;				cmp.w	#2,d0
+;				bgt.s	.nofloor
+;				beq.s	.plainfloor
+;				tst.w	d0
+;				bgt.s	.textureonly
+;				st		GOURSEL
+;.textureonly
+;				move.l	#FloorLine,THEFLOORLINE
+;.plainfloor
+;				st		ANYFLOOR
+;				clr.b	CLRNOFLOOR
+;.nofloor:
+;
+;				muls	#12,d0
+;				add.l	#FLOOROPTS,d0
+;				move.l	d0,a0
+;				move.l	#FLOOROPTLINE,a1
+;				bsr		PUTINPLINE
+;
+;				bsr		DRAWPAUSESCRN
+;
+;billythe
+;				bsr		CHECKUPDOWN
+;				tst.b	d3
+;				bne.s	billythe
+;
+;nobotchange:
+;
+;				tst.b	d2
+;				beq		notopchange
+;
+;				muls	#12,d0
+;				add.l	#SOUNDOPTS,d0
+;				move.l	d0,a0
+;				move.l	#SOUNDOPTLINE,a1
+;				bsr		PUTINPLINE
+;
+;				bsr		DRAWPAUSESCRN
+;
+;billythetop
+;				bsr		CHECKUPDOWN
+;				tst.b	d2
+;				bne.s	billythetop
+;
+;
+;notopchange
+;
+;				rts
+;
+;
+;THEFLOORLINE:	dc.l	FloorLine
+;USECOPBUFFER:	dc.w	0
 TOPPOPT:		dc.w	0
 BOTPOPT:		dc.w	0
-ANYFLOOR:		dc.w	0
-
+;ANYFLOOR:		dc.w	0
+;
 PUTINPLINE:
 				moveq	#11,d7
 .pppp

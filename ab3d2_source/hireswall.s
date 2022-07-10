@@ -754,250 +754,258 @@ StripData:		dc.w	0
 * a1 = strip buffer
 
 store:			ds.l	500
+********************************************************************************
 
-******************************************************************
+;******************************************************************
+;
+;* Curve drawing routine. We have to know:
+;* The top and bottom of the wall
+;* The point defining the centre of the arc
+;* the point defining the starting point of the arc
+;* the start and end angles of the arc
+;* The start and end positions along the bitmap of the arc
+;* Which bitmap to use for the arc
+;
+;xmiddle:		dc.w	0
+;zmiddle			SET		2
+;				dc.w	0
+;xradius			SET		4
+;				dc.w	0
+;zradius			SET		6
+;				dc.w	0
+;startbitmap		SET		8
+;				dc.w	0
+;bitmapcounter	SET		10
+;				dc.w	0
+;brightmult		SET		12
+;				dc.w	0
+;angadd			SET		14
+;				dc.l	0
+;xmiddlebig		SET		18
+;				dc.l	0
+;basebright		SET		22
+;				dc.w	0
+;shift			SET		24
+;				dc.w	0
+;count			SET		26
+;				dc.w	0
+;
+;subdividevals:
+;				dc.w	2,4
+;				dc.w	3,8
+;				dc.w	4,16
+;				dc.w	5,32
+;				dc.w	6,64
+;
+;CurveDraw:
+;
+;				move.w	(a0)+,d0				; centre of rotation
+;				move.w	(a0)+,d1				; point on arc
+;				move.l	#Rotated,a1
+;				move.l	#xmiddle,a2
+;				move.l	(a1,d0.w*8),d2
+;				move.l	d2,18(a2)
+;				asr.l	#7,d2
+;				move.l	(a1,d1.w*8),d4
+;				asr.l	#7,d4
+;				sub.w	d2,d4
+;				move.w	d2,(a2)
+;				move.w	d4,4(a2)
+;				move.w	6(a1,d0.w*8),d2
+;				move.w	6(a1,d1.w*8),d4
+;				sub.w	d2,d4
+;				move.w	d2,2(a2)
+;				asr.w	#1,d4
+;				move.w	d4,6(a2)
+;				move.w	(a0)+,d4				; start of bitmap
+;				move.w	(a0)+,d5				; end of bitmap
+;				move.w	d4,8(a2)
+;				sub.w	d4,d5
+;				move.w	d5,10(a2)
+;				move.w	(a0)+,d4
+;				ext.l	d4
+;				move.l	d4,14(a2)
+;				move.w	(a0)+,d4
+;				move.l	#subdividevals,a3
+;				move.l	(a3,d4.w*4),shift(a2)
+;
+;				move.l	#walltiles,a3
+;				add.l	(a0)+,a3
+;				adda.w	wallyoff,a3
+;				move.l	a3,fromtile
+;				move.w	(a0)+,basebright(a2)
+;				move.w	(a0)+,brightmult(a2)
+;				move.l	(a0)+,topofwall
+;				move.l	(a0)+,botofwall
+;				move.l	yoff,d6
+;				sub.l	d6,topofwall
+;				sub.l	d6,botofwall
+;
+;				move.l	#databuffer,a1
+;				move.l	#SineTable,a3
+;				lea		2048(a3),a4
+;				moveq	#0,d0
+;				moveq	#0,d1
+;				move.w	count(a2),d7
+;DivideCurve
+;				move.l	d0,d2
+;				move.w	shift(a2),d4
+;				asr.l	d4,d2
+;				move.w	(a3,d2.w*2),d4
+;				move.w	d4,d5
+;				move.w	(a4,d2.w*2),d3
+;				move.w	d3,d6
+;				muls.w	4(a2),d3
+;				muls.w	6(a2),d4
+;				muls.w	4(a2),d5
+;				muls.w	6(a2),d6
+;				sub.l	d4,d3
+;				add.l	d6,d5
+;				asl.l	#2,d5
+;				asr.l	#8,d3
+;				add.l	18(a2),d3
+;				swap	d5
+;				move.w	basebright(a2),d6
+;				move.w	brightmult(a2),d4
+;				muls	d5,d4
+;				swap	d4
+;				add.w	d4,d6
+;
+;				add.w	2(a2),d5
+;				move.l	d3,(a1)+
+;				move.w	d5,(a1)+
+;				move.w	d1,d2
+;				move.w	shift(a2),d4
+;				asr.w	d4,d2
+;				add.w	8(a2),d2
+;				move.w	d2,(a1)+
+;				move.w	d6,(a1)+
+;
+;				add.l	14(a2),d0
+;				add.w	10(a2),d1
+;				dbra	d7,DivideCurve
+;
+;				move.l	a0,-(a7)
+;
+;; move.w #31,d6
+;; move.l #0,d3
+;; move.l #stripbuffer,a4
+;;.emptylop:
+;; move.l d3,(a4)+
+;; dbra d6,.emptylop
+;
+;				bsr		curvecalc
+;
+;				move.l	(a7)+,a0
+;
+;				rts
+;
+;;prot3:			dc.w	0
+;
+;curvecalc:
+;				move.l	#databuffer,a1
+;				move.w	count(a2),d7
+;				subq	#1,d7
+;.findfirstinfront:
+;				move.l	(a1)+,d1
+;				move.w	(a1)+,d0
+;				bgt.s	.foundinfront
+;				move.w	(a1)+,d4
+;				move.w	(a1)+,d6
+;				dbra d7,.findfirstinfront
+;; CACHE_ON d2
+;				rts		;						no two points were in front
+;
+;.foundinfront:
+;				move.w	(a1)+,d4
+;				move.w	(a1)+,d6
+;; d1=left x, d4=left end, d0=left dist
+;; d6=left angbright
+;				divs	d0,d1
+;
+;				asr.w	d1					; DOUBLEWIDTH test
+;
+;				add.w	MIDDLEX,d1
+;
+;				move.l	topofwall(pc),d5
+;				divs	d0,d5
+;				add.w	MIDDLEY,d5
+;				move.w	d5,strtop
+;				move.l	botofwall(pc),d5
+;				divs	d0,d5
+;				add.w	MIDDLEY,d5
+;				move.w	d5,strbot
+;
+;; CACHE_OFF d2
+;
+;.computeloop:
+;				move.w	4(a1),d2
+;				bgt.s	.infront
+;
+;; addq #8,a1
+;; dbra d7,.findfirstinfront
+;
+;; CACHE_ON d2
+;				rts
+;
+;.infront:
+;				move.l	#store,a0
+;				move.l	(a1),d3
+;				move.w	6(a1),d5
+;				add.w	8(a1),d6
+;				asr.w	#1,d6
+;				move.w	d6,angbright
+;				divs	d2,d3
+;
+;				asr.w	d3					; DOUBLEWIDTH test
+;
+;				add.w	MIDDLEX,d3
+;				move.w	strtop(pc),12(a0)
+;				move.w	strbot(pc),16(a0)
+;				move.l	topofwall(pc),d6
+;				divs	d2,d6
+;				add.w	MIDDLEY,d6
+;				move.w	d6,strtop
+;				move.w	d6,14(a0)
+;				move.l	botofwall(pc),d6
+;				divs	d2,d6
+;				add.w	MIDDLEY,d6
+;				move.w	d6,strbot
+;				move.w	d6,18(a0)
+;				move.w	d3,2(a1)
+;				blt.s	.alloffleft
+;				cmp.w	RIGHTX,d1
+;				bgt.s	.alloffleft
+;
+;				cmp.w	d1,d3
+;				blt.s	.alloffleft
+;
+;				move.w	d1,(a0)
+;				move.w	d3,2(a0)
+;				move.w	d4,4(a0)
+;				move.w	d5,6(a0)
+;				move.w	d0,8(a0)
+;				move.w	d2,10(a0)
+;				move.w	d7,-(a7)
+;				move.w	#maxscrdiv,d7
+;				bsr		Doleftend
+;				move.w	(a7)+,d7
+;
+;.alloffleft:
+;
+;				move.l	(a1)+,d1
+;				move.w	(a1)+,d0
+;				move.w	(a1)+,d4
+;				move.w	(a1)+,d6
+;
+;				dbra	d7,.computeloop
+;
+;.alloffright:
+;; CACHE_ON d2
+;				rts
+;
 
-* Curve drawing routine. We have to know:
-* The top and bottom of the wall
-* The point defining the centre of the arc
-* the point defining the starting point of the arc
-* the start and end angles of the arc
-* The start and end positions along the bitmap of the arc
-* Which bitmap to use for the arc
-
-xmiddle:		dc.w	0
-zmiddle			SET		2
-				dc.w	0
-xradius			SET		4
-				dc.w	0
-zradius			SET		6
-				dc.w	0
-startbitmap		SET		8
-				dc.w	0
-bitmapcounter	SET		10
-				dc.w	0
-brightmult		SET		12
-				dc.w	0
-angadd			SET		14
-				dc.l	0
-xmiddlebig		SET		18
-				dc.l	0
-basebright		SET		22
-				dc.w	0
-shift			SET		24
-				dc.w	0
-count			SET		26
-				dc.w	0
-
-subdividevals:
-				dc.w	2,4
-				dc.w	3,8
-				dc.w	4,16
-				dc.w	5,32
-				dc.w	6,64
-
-CurveDraw:
-
-				move.w	(a0)+,d0				; centre of rotation
-				move.w	(a0)+,d1				; point on arc
-				move.l	#Rotated,a1
-				move.l	#xmiddle,a2
-				move.l	(a1,d0.w*8),d2
-				move.l	d2,18(a2)
-				asr.l	#7,d2
-				move.l	(a1,d1.w*8),d4
-				asr.l	#7,d4
-				sub.w	d2,d4
-				move.w	d2,(a2)
-				move.w	d4,4(a2)
-				move.w	6(a1,d0.w*8),d2
-				move.w	6(a1,d1.w*8),d4
-				sub.w	d2,d4
-				move.w	d2,2(a2)
-				asr.w	#1,d4
-				move.w	d4,6(a2)
-				move.w	(a0)+,d4				; start of bitmap
-				move.w	(a0)+,d5				; end of bitmap
-				move.w	d4,8(a2)
-				sub.w	d4,d5
-				move.w	d5,10(a2)
-				move.w	(a0)+,d4
-				ext.l	d4
-				move.l	d4,14(a2)
-				move.w	(a0)+,d4
-				move.l	#subdividevals,a3
-				move.l	(a3,d4.w*4),shift(a2)
-
-				move.l	#walltiles,a3
-				add.l	(a0)+,a3
-				adda.w	wallyoff,a3
-				move.l	a3,fromtile
-				move.w	(a0)+,basebright(a2)
-				move.w	(a0)+,brightmult(a2)
-				move.l	(a0)+,topofwall
-				move.l	(a0)+,botofwall
-				move.l	yoff,d6
-				sub.l	d6,topofwall
-				sub.l	d6,botofwall
-
-				move.l	#databuffer,a1
-				move.l	#SineTable,a3
-				lea		2048(a3),a4
-				moveq	#0,d0
-				moveq	#0,d1
-				move.w	count(a2),d7
-DivideCurve
-				move.l	d0,d2
-				move.w	shift(a2),d4
-				asr.l	d4,d2
-				move.w	(a3,d2.w*2),d4
-				move.w	d4,d5
-				move.w	(a4,d2.w*2),d3
-				move.w	d3,d6
-				muls.w	4(a2),d3
-				muls.w	6(a2),d4
-				muls.w	4(a2),d5
-				muls.w	6(a2),d6
-				sub.l	d4,d3
-				add.l	d6,d5
-				asl.l	#2,d5
-				asr.l	#8,d3
-				add.l	18(a2),d3
-				swap	d5
-				move.w	basebright(a2),d6
-				move.w	brightmult(a2),d4
-				muls	d5,d4
-				swap	d4
-				add.w	d4,d6
-
-				add.w	2(a2),d5
-				move.l	d3,(a1)+
-				move.w	d5,(a1)+
-				move.w	d1,d2
-				move.w	shift(a2),d4
-				asr.w	d4,d2
-				add.w	8(a2),d2
-				move.w	d2,(a1)+
-				move.w	d6,(a1)+
-
-				add.l	14(a2),d0
-				add.w	10(a2),d1
-				dbra	d7,DivideCurve
-
-				move.l	a0,-(a7)
-
-; move.w #31,d6
-; move.l #0,d3
-; move.l #stripbuffer,a4
-;.emptylop:
-; move.l d3,(a4)+
-; dbra d6,.emptylop
-
-				bsr		curvecalc
-
-				move.l	(a7)+,a0
-
-				rts
-
-;prot3:			dc.w	0
-
-curvecalc:
-				move.l	#databuffer,a1
-				move.w	count(a2),d7
-				subq	#1,d7
-.findfirstinfront:
-				move.l	(a1)+,d1
-				move.w	(a1)+,d0
-				bgt.s	.foundinfront
-				move.w	(a1)+,d4
-				move.w	(a1)+,d6
-				dbra	d7,.findfirstinfront
-; CACHE_ON d2
-				rts		;						no two points were in front
-
-.foundinfront:
-				move.w	(a1)+,d4
-				move.w	(a1)+,d6
-; d1=left x, d4=left end, d0=left dist
-; d6=left angbright
-
-				divs	d0,d1
-				add.w	MIDDLEX,d1
-
-				move.l	topofwall(pc),d5
-				divs	d0,d5
-				add.w	MIDDLEY,d5
-				move.w	d5,strtop
-				move.l	botofwall(pc),d5
-				divs	d0,d5
-				add.w	MIDDLEY,d5
-				move.w	d5,strbot
-
-; CACHE_OFF d2
-
-.computeloop:
-				move.w	4(a1),d2
-				bgt.s	.infront
-
-; addq #8,a1
-; dbra d7,.findfirstinfront
-
-; CACHE_ON d2
-				rts
-
-.infront:
-				move.l	#store,a0
-				move.l	(a1),d3
-				move.w	6(a1),d5
-				add.w	8(a1),d6
-				asr.w	#1,d6
-				move.w	d6,angbright
-				divs	d2,d3
-				add.w	MIDDLEX,d3
-				move.w	strtop(pc),12(a0)
-				move.w	strbot(pc),16(a0)
-				move.l	topofwall(pc),d6
-				divs	d2,d6
-				add.w	MIDDLEY,d6
-				move.w	d6,strtop
-				move.w	d6,14(a0)
-				move.l	botofwall(pc),d6
-				divs	d2,d6
-				add.w	MIDDLEY,d6
-				move.w	d6,strbot
-				move.w	d6,18(a0)
-				move.w	d3,2(a1)
-				blt.s	.alloffleft
-				cmp.w	RIGHTX,d1
-				bgt.s	.alloffleft
-
-				cmp.w	d1,d3
-				blt.s	.alloffleft
-
-				move.w	d1,(a0)
-				move.w	d3,2(a0)
-				move.w	d4,4(a0)
-				move.w	d5,6(a0)
-				move.w	d0,8(a0)
-				move.w	d2,10(a0)
-				move.w	d7,-(a7)
-				move.w	#maxscrdiv,d7
-				bsr		Doleftend
-				move.w	(a7)+,d7
-
-.alloffleft:
-
-				move.l	(a1)+,d1
-				move.w	(a1)+,d0
-				move.w	(a1)+,d4
-				move.w	(a1)+,d6
-
-				dbra	d7,.computeloop
-
-.alloffright:
-; CACHE_ON d2
-				rts
-
+********************************************************************************
 ;protcheck:
 ; sub.l #53624,a3
 ; add.l #2345215,a2

@@ -5512,8 +5512,10 @@ polyloop:
 				blt		itsafloor
 				cmp.w	#4,d0
 				beq		itsanobject
-				cmp.w	#5,d0
-				beq		itsanarc
+
+;				cmp.w	#5,d0
+;				beq		itsanarc
+
 ;				cmp.w	#6,d0
 ;				beq		itsalightbeam
 				cmp.w	#7,d0
@@ -5549,9 +5551,9 @@ itswater:
 				jsr		itsafloordraw
 				bra		polyloop
 
-itsanarc:
-				jsr		CurveDraw
-				bra		polyloop
+;itsanarc:
+;				jsr		CurveDraw
+;				bra		polyloop
 
 itsanobject:
 				jsr		ObjDraw
@@ -9096,57 +9098,57 @@ LineToUse:		dc.l	0
 * and sinval+cosval must be set up.
 ***************************
 
-BLACKFLOOR:
-				moveq	#0,d0
-				bra.s	DOBLACK
+;BLACKFLOOR:
+;				moveq	#0,d0
+;				bra.s	DOBLACK
 
-SimpleFloorLine:
-
-;				CACHE_OFF d2
-
-				move.l	#doacrossline,a1
-				move.w	leftedge(pc),d1
-				move.w	rightedge(pc),d3
-				sub.w	d1,d3
-				lea		(a1,d1.w*4),a1
-				move.w	(a1,d3.w*4),d4
-				move.w	#$4e75,(a1,d3.w*4)
-
-				tst.b	CLRNOFLOOR
-				bne.s	BLACKFLOOR
-
-				move.l	#PLAINSCALE,a2
-
-				move.w	d0,d2
-				move.w	lighttype,d1
-				asr.w	#8,d2
-				add.w	#5,d1
-				add.w	d2,d1
-				bge.s	.fixedbright
-				moveq	#0,d1
-.fixedbright:
-				cmp.w	#28,d1
-				ble.s	.smallbright
-				move.w	#28,d1
-.smallbright:
-				lea		(a2,d1.w*2),a2
-
-				move.w	whichtile,d0
-				move.w	d0,d1
-				and.w	#$3,d1
-				and.w	#$300,d0
-				lsl.b	#6,d1
-				move.b	d1,d0
-				move.w	d0,tstwhich
-				move.w	(a2,d0.w),d0
-
-DOBLACK:
-				jsr		(a1)
-				move.w	d4,(a1,d3.w*4)
-
-				;CACHE_ON d2
-
-				rts
+;SimpleFloorLine:
+;
+;;				CACHE_OFF d2
+;
+;				move.l	#doacrossline,a1
+;				move.w	leftedge(pc),d1
+;				move.w	rightedge(pc),d3
+;				sub.w	d1,d3
+;				lea		(a1,d1.w*4),a1
+;				move.w	(a1,d3.w*4),d4
+;				move.w	#$4e75,(a1,d3.w*4)
+;
+;				tst.b	CLRNOFLOOR
+;				bne.s	BLACKFLOOR
+;
+;				move.l	#PLAINSCALE,a2
+;
+;				move.w	d0,d2
+;				move.w	lighttype,d1
+;				asr.w	#8,d2
+;				add.w	#5,d1
+;				add.w	d2,d1
+;				bge.s	.fixedbright
+;				moveq	#0,d1
+;.fixedbright:
+;				cmp.w	#28,d1
+;				ble.s	.smallbright
+;				move.w	#28,d1
+;.smallbright:
+;				lea		(a2,d1.w*2),a2
+;
+;				move.w	whichtile,d0
+;				move.w	d0,d1
+;				and.w	#$3,d1
+;				and.w	#$300,d0
+;				lsl.b	#6,d1
+;				move.b	d1,d0
+;				move.w	d0,tstwhich
+;				move.w	(a2,d0.w),d0
+;
+;DOBLACK:
+;				jsr		(a1)
+;				move.w	d4,(a1,d3.w*4)
+;
+;				;CACHE_ON d2
+;
+;				rts
 
 tstwhich:		dc.w	0
 whichtile:		dc.w	0

@@ -186,314 +186,320 @@ DrawtheObject:
 				movem.l	(a7)+,d0-d7/a0-a6
 				rts
 
-				IFNE	0
-glassobj:
-				move.w	(a0)+,d0				;pt num
-				move.w	2(a1,d0.w*8),d1
-				cmp.w	#25,d1
-				ble		objbehind
+********************************************************************************
+* Glass objects are not suported and likely broken
+;				IFNE	0
+;glassobj:
+;				move.w	(a0)+,d0				;pt num
+;				move.w	2(a1,d0.w*8),d1
+;				cmp.w	#25,d1
+;				ble		objbehind
+;
+;				move.w	topclip,d2
+;				move.w	botclip,d3
+;
+;				move.l	ty3d,d6
+;				sub.l	yoff,d6
+;				divs	d1,d6
+;				add.w	MIDDLEY,d6
+;				cmp.w	d3,d6
+;				bge		objbehind
+;				cmp.w	d2,d6
+;				bge.s	.okobtc
+;				move.w	d2,d6
+;.okobtc:
+;				move.w	d6,objclipt
+;
+;				move.l	by3d,d6
+;				sub.l	yoff,d6
+;				divs	d1,d6
+;				add.w	MIDDLEY,d6
+;				cmp.w	d2,d6
+;				ble		objbehind
+;				cmp.w	d3,d6
+;				ble.s	.okobbc
+;				move.w	d3,d6
+;.okobbc:
+;				move.w	d6,objclipb
+;
+;				move.l	4(a1,d0.w*8),d0
+;				move.l	(a0)+,d2				; height
+;				ext.l	d2
+;				asl.l	#7,d2
+;				sub.l	yoff,d2
+;				divs	d1,d2
+;				add.w	MIDDLEY,d2
+;
+;				divs	d1,d0
+;				asr.w	d0						; DOUBLEWIDTH test
+;
+;				add.w	MIDDLEX,d0				;x pos of middle
+;
+;; Need to calculate:
+;; Width of object in pixels
+;; height of object in pixels
+;; horizontal constants
+;; vertical constants.
+;
+;				move.l	#consttab,a3
+;
+;				moveq	#0,d3
+;				moveq	#0,d4
+;				move.b	(a0)+,d3
+;				move.b	(a0)+,d4
+;				asl.w	#7,d3
+;				asl.w	#7,d4
+;				divs	d1,d3					;width in pixels
+;				divs	d1,d4					;height in pixels
+;				sub.w	d4,d2
+;				sub.w	d3,d0
+;				cmp.w	rightclipb,d0
+;				bge		objbehind
+;				add.w	d3,d3
+;				cmp.w	objclipb,d2
+;				bge		objbehind
+;
+;				add.w	d4,d4
+;
+;				move.w	d3,realwidth
+;				move.w	d4,realheight
+;
+;* OBTAIN POINTERS TO HORIZ AND VERT
+;* CONSTANTS FOR MOVING ACROSS AND
+;* DOWN THE OBJECT GRAPHIC.
+;
+;				move.w	d1,d7
+;				moveq	#0,d6
+;				move.b	6(a0),d6
+;				add.w	d6,d6
+;				mulu	d6,d7
+;				move.b	-2(a0),d6
+;				divu	d6,d7
+;				swap	d7
+;				clr.w	d7
+;				swap	d7
+;
+;				lea		(a3,d7.l*8),a2			; pointer to
+;; horiz const
+;				move.w	d1,d7
+;				move.b	7(a0),d6
+;				add.w	d6,d6
+;				mulu	d6,d7
+;				move.b	-1(a0),d6
+;				divu	d6,d7
+;				swap	d7
+;				clr.w	d7
+;				swap	d7
+;				lea		(a3,d7.l*8),a3			; pointer to
+;; vertical c.
+;
+;* CLIP OBJECT TO TOP AND BOTTOM
+;* OF THE VISIBLE DISPLAY
+;
+;				moveq	#0,d7
+;				cmp.w	objclipt,d2
+;				bge.s	.objfitsontop
+;
+;				sub.w	objclipt,d2
+;				add.w	d2,d4					;new height in
+;;pixels
+;				ble		objbehind				; nothing to draw
+;
+;				move.w	d2,d7
+;				neg.w	d7						; factor to mult.
+;; constants by
+;; at top of obj.
+;				move.w	objclipt,d2
+;
+;.objfitsontop:
+;
+;				move.w	objclipb,d6
+;				sub.w	d2,d6
+;				cmp.w	d6,d4
+;				ble.s	.objfitsonbot
+;
+;				move.w	d6,d4
+;
+;.objfitsonbot:
+;
+;				subq	#1,d4
+;				blt		objbehind
+;
+;				move.l	#ontoscr,a6
+;				move.l	(a6,d2.w*4),d2
+;
+;				add.l	FASTBUFFER,d2
+;				move.l	d2,toppt
+;
+;				move.l	#WorkSpace,a5
+;				move.l	#glassball,a4
+;				cmp.w	leftclipb,d0
+;				bge.s	.okonleft
+;
+;				sub.w	leftclipb,d0
+;				add.w	d0,d3
+;				ble		objbehind
+;
+;				move.w	(a2),d1
+;				move.w	2(a2),d2
+;				neg.w	d0
+;				muls	d0,d1
+;				mulu	d0,d2
+;				swap	d2
+;				add.w	d2,d1
+;				asl.w	#7,d1
+;				lea		(a5,d1.w),a5
+;				lea		(a4,d1.w),a4
+;
+;				move.w	leftclipb,d0
+;
+;.okonleft:
+;
+;				move.w	d0,d6
+;				add.w	d3,d6
+;				sub.w	rightclipb,d6
+;				blt.s	.okrightside
+;
+;				sub.w	#1,d3
+;				sub.w	d6,d3
+;
+;.okrightside:
+;				move.w	d0,a1
+;				add.w	a1,a1
+;
+;				move.w	(a3),d5
+;				move.w	2(a3),d6
+;				muls	d7,d5
+;				mulu	d7,d6
+;				swap	d6
+;				add.w	d6,d5
+;; add.w 2(a0),d5	;d5 contains
+;;top offset into
+;;each strip.
+;				add.l	#$80000000,d5
+;
+;				move.l	(a2),d6
+;				moveq.l	#0,d7
+;				move.l	a5,midobj
+;				move.l	a4,midglass
+;				move.l	(a3),d2
+;				swap	d2
+;				move.l	#times128,a0
+;
+;				movem.l	d0-d7/a0-a6,-(a7)
+;
+;				move.w	d3,d1
+;				ext.l	d1
+;				swap	d1
+;				move.w	d4,d2
+;				ext.l	d2
+;				swap	d2
+;				asr.l	#6,d1
+;				asr.l	#6,d2
+;				move.w	d1,d5
+;				move.w	d2,d6
+;				swap	d1
+;				swap	d2
+;
+;				muls	#SCREENWIDTH,d2
+;
+;				move.l	#WorkSpace,a0
+;
+;				move.w	#63,d0
+;.readinto:
+;				swap	d0
+;				move.w	#63,d0
+;				move.l	toppt(pc),a6
+;				adda.w	a1,a6
+;				add.w	d1,a1
+;				add.w	d5,d7
+;				bcc.s	.noadmoreh
+;				addq	#1,a1
+;.noadmoreh:
+;				swap	d7
+;				move.w	#0,d7
+;.readintodown:
+;				move.w	(a6),d3
+;				move.w	d3,(a0)+
+;				add.w	d2,a6
+;				add.w	d6,d7
+;				bcc.s	.noadmore
+;				adda.w	#SCREENWIDTH,a6
+;.noadmore:
+;				dbra	d0,.readintodown
+;				swap	d0
+;				swap	d7
+;				dbra	d0,.readinto
+;
+;
+;; Want to zoom an area d3*d4
+;; in size up to 64*64 in size.
+;; move.l #WorkSpace,a0
+;; move.l frompt,a2
+;; move.w #104*4,d3
+;; move.w #1,d6
+;;.ribl
+;; move.w #31,d0
+;;.readinto
+;; move.w #15,d1
+;; move.l a2,a1
+;;.readintodown
+;; move.w (a1),(a0)+
+;; adda.w d3,a1
+;; move.w (a1),(a0)+
+;; adda.w d3,a1
+;; move.w (a1),(a0)+
+;; adda.w d3,a1
+;; move.w (a1),(a0)+
+;; adda.w d3,a1
+;; dbra d1,.readintodown
+;;; add.w #256-128,a0
+;; addq #4,a2
+;; dbra d0,.readinto
+;; addq #4,a2
+;; dbra d6,.ribl
+;
+;				movem.l	(a7)+,d0-d7/a0-a6
+;
+;				move.l	#darkentab,a2
+;				move.l	toppt,d1
+;				add.l	a1,d1
+;				move.l	d1,toppt
+;				move.l	d6,a1
+;				moveq	#0,d6
+;
+;.drawrightside:
+;				swap	d7
+;				move.l	midglass(pc),a4
+;				adda.w	(a0,d7.w*2),a4
+;				swap	d7
+;				add.l	a1,d7
+;				move.l	toppt(pc),a6
+;				addq.l	#1,toppt
+;
+;				move.l	d5,d1
+;				move.w	d4,-(a7)
+;				swap	d3
+;.drawavertstrip
+;				move.w	(a4,d1.w*2),d3
+;				blt.s	.itsbackground
+;				move.b	(a5,d3.w*2),d6
+;				move.b	(a2,d6.w),(a6)
+;.itsbackground
+;				adda.w	#SCREENWIDTH,a6
+;				addx.l	d2,d1
+;				dbra	d4,.drawavertstrip
+;				swap	d3
+;				move.w	(a7)+,d4
+;
+;				dbra	d3,.drawrightside
+;				movem.l	(a7)+,d0-d7/a0-a6
+;
+;				rts
+;
+;				ENDC
 
-				move.w	topclip,d2
-				move.w	botclip,d3
-
-				move.l	ty3d,d6
-				sub.l	yoff,d6
-				divs	d1,d6
-				add.w	MIDDLEY,d6
-				cmp.w	d3,d6
-				bge		objbehind
-				cmp.w	d2,d6
-				bge.s	.okobtc
-				move.w	d2,d6
-.okobtc:
-				move.w	d6,objclipt
-
-				move.l	by3d,d6
-				sub.l	yoff,d6
-				divs	d1,d6
-				add.w	MIDDLEY,d6
-				cmp.w	d2,d6
-				ble		objbehind
-				cmp.w	d3,d6
-				ble.s	.okobbc
-				move.w	d3,d6
-.okobbc:
-				move.w	d6,objclipb
-
-				move.l	4(a1,d0.w*8),d0
-				move.l	(a0)+,d2				; height
-				ext.l	d2
-				asl.l	#7,d2
-				sub.l	yoff,d2
-				divs	d1,d2
-				add.w	MIDDLEY,d2
-
-				divs	d1,d0
-				add.w	MIDDLEX,d0				;x pos of middle
-
-; Need to calculate:
-; Width of object in pixels
-; height of object in pixels
-; horizontal constants
-; vertical constants.
-
-				move.l	#consttab,a3
-
-				moveq	#0,d3
-				moveq	#0,d4
-				move.b	(a0)+,d3
-				move.b	(a0)+,d4
-				asl.w	#7,d3
-				asl.w	#7,d4
-				divs	d1,d3					;width in pixels
-				divs	d1,d4					;height in pixels
-				sub.w	d4,d2
-				sub.w	d3,d0
-				cmp.w	rightclipb,d0
-				bge		objbehind
-				add.w	d3,d3
-				cmp.w	objclipb,d2
-				bge		objbehind
-
-				add.w	d4,d4
-
-				move.w	d3,realwidth
-				move.w	d4,realheight
-
-* OBTAIN POINTERS TO HORIZ AND VERT
-* CONSTANTS FOR MOVING ACROSS AND
-* DOWN THE OBJECT GRAPHIC.
-
-				move.w	d1,d7
-				moveq	#0,d6
-				move.b	6(a0),d6
-				add.w	d6,d6
-				mulu	d6,d7
-				move.b	-2(a0),d6
-				divu	d6,d7
-				swap	d7
-				clr.w	d7
-				swap	d7
-
-				lea		(a3,d7.l*8),a2			; pointer to
-; horiz const
-				move.w	d1,d7
-				move.b	7(a0),d6
-				add.w	d6,d6
-				mulu	d6,d7
-				move.b	-1(a0),d6
-				divu	d6,d7
-				swap	d7
-				clr.w	d7
-				swap	d7
-				lea		(a3,d7.l*8),a3			; pointer to
-; vertical c.
-
-* CLIP OBJECT TO TOP AND BOTTOM
-* OF THE VISIBLE DISPLAY
-
-				moveq	#0,d7
-				cmp.w	objclipt,d2
-				bge.s	.objfitsontop
-
-				sub.w	objclipt,d2
-				add.w	d2,d4					;new height in
-;pixels
-				ble		objbehind				; nothing to draw
-
-				move.w	d2,d7
-				neg.w	d7						; factor to mult.
-; constants by
-; at top of obj.
-				move.w	objclipt,d2
-
-.objfitsontop:
-
-				move.w	objclipb,d6
-				sub.w	d2,d6
-				cmp.w	d6,d4
-				ble.s	.objfitsonbot
-
-				move.w	d6,d4
-
-.objfitsonbot:
-
-				subq	#1,d4
-				blt		objbehind
-
-				move.l	#ontoscr,a6
-				move.l	(a6,d2.w*4),d2
-
-				add.l	FASTBUFFER,d2
-				move.l	d2,toppt
-
-				move.l	#WorkSpace,a5
-				move.l	#glassball,a4
-				cmp.w	leftclipb,d0
-				bge.s	.okonleft
-
-				sub.w	leftclipb,d0
-				add.w	d0,d3
-				ble		objbehind
-
-				move.w	(a2),d1
-				move.w	2(a2),d2
-				neg.w	d0
-				muls	d0,d1
-				mulu	d0,d2
-				swap	d2
-				add.w	d2,d1
-				asl.w	#7,d1
-				lea		(a5,d1.w),a5
-				lea		(a4,d1.w),a4
-
-				move.w	leftclipb,d0
-
-.okonleft:
-
-				move.w	d0,d6
-				add.w	d3,d6
-				sub.w	rightclipb,d6
-				blt.s	.okrightside
-
-				sub.w	#1,d3
-				sub.w	d6,d3
-
-.okrightside:
-				move.w	d0,a1
-				add.w	a1,a1
-
-				move.w	(a3),d5
-				move.w	2(a3),d6
-				muls	d7,d5
-				mulu	d7,d6
-				swap	d6
-				add.w	d6,d5
-; add.w 2(a0),d5	;d5 contains
-;top offset into
-;each strip.
-				add.l	#$80000000,d5
-
-				move.l	(a2),d6
-				moveq.l	#0,d7
-				move.l	a5,midobj
-				move.l	a4,midglass
-				move.l	(a3),d2
-				swap	d2
-				move.l	#times128,a0
-
-				movem.l	d0-d7/a0-a6,-(a7)
-
-				move.w	d3,d1
-				ext.l	d1
-				swap	d1
-				move.w	d4,d2
-				ext.l	d2
-				swap	d2
-				asr.l	#6,d1
-				asr.l	#6,d2
-				move.w	d1,d5
-				move.w	d2,d6
-				swap	d1
-				swap	d2
-
-				muls	#SCREENWIDTH,d2
-
-				move.l	#WorkSpace,a0
-
-				move.w	#63,d0
-.readinto:
-				swap	d0
-				move.w	#63,d0
-				move.l	toppt(pc),a6
-				adda.w	a1,a6
-				add.w	d1,a1
-				add.w	d5,d7
-				bcc.s	.noadmoreh
-				addq	#1,a1
-.noadmoreh:
-				swap	d7
-				move.w	#0,d7
-.readintodown:
-				move.w	(a6),d3
-				move.w	d3,(a0)+
-				add.w	d2,a6
-				add.w	d6,d7
-				bcc.s	.noadmore
-				adda.w	#SCREENWIDTH,a6
-.noadmore:
-				dbra	d0,.readintodown
-				swap	d0
-				swap	d7
-				dbra	d0,.readinto
-
-
-; Want to zoom an area d3*d4
-; in size up to 64*64 in size.
-; move.l #WorkSpace,a0
-; move.l frompt,a2
-; move.w #104*4,d3
-; move.w #1,d6
-;.ribl
-; move.w #31,d0
-;.readinto
-; move.w #15,d1
-; move.l a2,a1
-;.readintodown
-; move.w (a1),(a0)+
-; adda.w d3,a1
-; move.w (a1),(a0)+
-; adda.w d3,a1
-; move.w (a1),(a0)+
-; adda.w d3,a1
-; move.w (a1),(a0)+
-; adda.w d3,a1
-; dbra d1,.readintodown
-;; add.w #256-128,a0
-; addq #4,a2
-; dbra d0,.readinto
-; addq #4,a2
-; dbra d6,.ribl
-
-				movem.l	(a7)+,d0-d7/a0-a6
-
-				move.l	#darkentab,a2
-				move.l	toppt,d1
-				add.l	a1,d1
-				move.l	d1,toppt
-				move.l	d6,a1
-				moveq	#0,d6
-
-.drawrightside:
-				swap	d7
-				move.l	midglass(pc),a4
-				adda.w	(a0,d7.w*2),a4
-				swap	d7
-				add.l	a1,d7
-				move.l	toppt(pc),a6
-				addq.l	#1,toppt
-
-				move.l	d5,d1
-				move.w	d4,-(a7)
-				swap	d3
-.drawavertstrip
-				move.w	(a4,d1.w*2),d3
-				blt.s	.itsbackground
-				move.b	(a5,d3.w*2),d6
-				move.b	(a2,d6.w),(a6)
-.itsbackground
-				adda.w	#SCREENWIDTH,a6
-				addx.l	d2,d1
-				dbra	d4,.drawavertstrip
-				swap	d3
-				move.w	(a7)+,d4
-
-				dbra	d3,.drawrightside
-				movem.l	(a7)+,d0-d7/a0-a6
-
-				rts
-
-				ENDC
+********************************************************************************
 
 realwidth:		dc.w	0
 realheight:		dc.w	0
