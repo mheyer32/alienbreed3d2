@@ -14569,17 +14569,19 @@ LEVELMUSIC:		dc.l	0
 
 ;/* End of File */
 mt_data:		dc.l	0
-tstchip:		dc.l	0
 
 				section	music,DATA_C
-ingame:
-; incbin "temp/newmusic/testonechan"
+
+tstchip:		dc.l	0		; not sure what this is; it seems to be used as timing
+								; device. I.e. by accessing chipmap, we throttle the CPU
+
 gameover:
-; incbin "includes/gameover"
+				incbin "includes/gameover"
 welldone:
 				incbin	"includes/quietwelldone"
 
 				section	.text,CODE
+				cnop	0,4
 				include	"serial_nightmare.s"
 
 				cnop	0,4
