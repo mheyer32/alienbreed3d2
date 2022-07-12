@@ -5746,21 +5746,27 @@ oldy2:			dc.w	0
 MAPON:			dc.w	$0
 REALMAPON:		dc.w	0
 
-RotateLevelPts:
+
+
+RotateLevelPts: ; Does this rotate ALL points in the level EVERY frame?
 
 				tst.b	REALMAPON
-				beq		ONLYTHELONELY
+				beq		ONLYTHELONELY	; When REALMAP is on, we apparently need to transform all level points,
+										; otherwise only the visible subset
 
+				; Rotate all level points
 				move.w	sinval,d6
 				swap	d6
 				move.w	cosval,d6
+
 				move.l	Points,a3
-				move.l	#Rotated,a1
+				move.l	#Rotated,a1		; stores only 2x800 points
 				move.l	#OnScreen,a2
 				move.w	xoff,d4
-				asr.w	#1,d4
+				;asr.w	#1,d4
 				move.w	zoff,d5
-				asr.w	#1,d5
+				;asr.w	#1,d5
+
 ; move.w #$c40,$dff106
 ; move.w #$f00,$dff180
 
@@ -5769,40 +5775,47 @@ RotateLevelPts:
 				tst.b	FULLSCR
 				bne		BIGALL
 
+				; rotate all level points, small screen
 pointrotlop2:
 				move.w	(a3)+,d0
-				asr.w	#1,d0
+*				asr.w	#1,d0
 				sub.w	d4,d0
-				move.w	d0,d2
+				move.w	d0,d2		; view X
+
 				move.w	(a3)+,d1
-				asr.w	#1,d1
-				sub.w	d5,d1
-				muls	d6,d2
+*				asr.w	#1,d1
+				sub.w	d5,d1		; view Z
+
+				muls	d6,d2		; x' = (cos*viewX)<<16
 				swap	d6
 				move.w	d1,d3
-				muls	d6,d3
-				sub.l	d3,d2
-; add.l d2,d2
-; swap d2
-; ext.l d2
-; asl.l #7,d2
+				muls	d6,d3		; z' = (sin*viewZ) << 16
 
-				asr.l	#7,d2
+				sub.l	d3,d2		; x' =  (cos*viewX - sin*viewZ) << 16
+
+ ; add.l d2,d2
+ ; swap d2
+ ; ext.l d2
+ ; asl.l #7,d2   ; (x'*2 >> 16) << 7 == x' << 8
+
+				asr.l	#8,d2		; x' = int(2*x') << 8
 
 				add.l	xwobble,d2
-				move.l	d2,(a1)+
+				move.l	d2,(a1)+	; store rotated x'
 
 				muls	d6,d0
 				swap	d6
 				muls	d6,d1
 				add.l	d0,d1
-; asl.l #2,d1
-; swap d1
 
-				asr.l	#8,d1
-				asr.l	#6,d1
+ ; asl.l #1,d1
+ ; swap d1
+ ; ext.l d1       ; (z' >> 16) * 2 == z' >> 15
 
-				move.l	d1,(a1)+
+				asr.l	#8,d1		;
+				asr.l	#7,d1		; z' = int(z') * 2
+
+				move.l	d1,(a1)+	; store rotated z'
 
 				tst.l	d1
 				bgt.s	ptnotbehind
@@ -5812,16 +5825,13 @@ pointrotlop2:
 				bra		putin
 onrightsomewhere:
 				move.w	RIGHTX,d2
-				ext.l	d2
 				bra		putin
 ptnotbehind:
 
-				divs.l	d1,d2
-				move.w	MIDDLEX,d1
-				ext.l	d1
-				add.l	d1,d2
+				divs.w	d1,d2			; x / z perspective projection
+				add.w	MIDDLEX,d2
 putin:
-				move.w	d2,(a2)+
+				move.w	d2,(a2)+		; store to OnScreen
 
 				dbra	d7,pointrotlop2
 outofpointrot:
@@ -5831,71 +5841,77 @@ outofpointrot:
 BIGALL:
 
 pointrotlop2B:
-				move.w	(a3)+,d0
-				asr.w	#1,d0
-				sub.w	d4,d0
-				move.w	d0,d2
-				move.w	(a3)+,d1
-				asr.w	#1,d1
-				sub.w	d5,d1
-				muls	d6,d2
+				move.w	(a3)+,d0	; x
+				sub.w	d4,d0		; x/2 - xoff
+				move.w	d0,d2		; x = x/2 -xoff
+
+				move.w	(a3)+,d1	; z
+				sub.w	d5,d1		; z = z/2 - zoff
+
+				muls.w	d6,d2		; x*cos<<16
 				swap	d6
 				move.w	d1,d3
-				muls	d6,d3
-				sub.l	d3,d2
+				muls.w	d6,d3		; z*sin<<16
+				sub.l	d3,d2		; x' = (x * cos - z *sin)<<16
 ; add.l d2,d2
 ; swap d2
 ; ext.l d2
-; asl.l #7,d2
-				asr.l	#7,d2
-				add.l	xwobble,d2
-				move.l	d2,(a1)+
+; asl.l #7,d2    ; integer part times 256
 
-				muls	d6,d0
+				asr.l	#8,d2
+
+				add.l	xwobble,d2		; could the wobble be a shake or some underwater effect?
+				move.l	d2,(a1)+		; store x'<<16
+
+				muls	d6,d0		; x * sin<<16
 				swap	d6
-				muls	d6,d1
-				add.l	d0,d1
+				muls	d6,d1		; z * cos <<16
+				add.l	d0,d1		; z' = (x*sin + z*sin)<<16
 
-				divs.l	#3,d1
-				asr.l	#8,d1
-				asr.l	#5,d1
+;				divs.l	#3,d1	; is this what differentiates fullscreen vs. smallscreen?
+;				asr.l	#8,d1
+;				asr.l	#5,d1	; achieves d1/(3*2<<13) - we could roll this into the divs above
 
+				divs.w	#3*4096,d1	; 3*8192 doesn't quite fit into 16bits divisor
+				asr.w	#2,d1		; z' = (z' << 16) / (3 * 2 << 13)
+				ext.l	d1
+									; z' = z' * 8 / 3		; Is the factor in z' here determining the prespective factor?
 ; asl.l #3,d1
 ; swap d1
 ; ext.l d1
 ; divs #3,d1
-				move.l	d1,(a1)+
+				move.l	d1,(a1)+	; this stores the rotated points, but why does it factor in the scale factor
+									; for the screen? Or is storing in view space with aspect ratio applied actually
+									; convenient?
+									; WOuld here a good opportunity to factor in DOUBLEWIDTH?
 
 				tst.l	d1
 				bgt.s	ptnotbehindB
 				tst.l	d2
 				bgt.s	onrightsomewhereB
-				move.l	#0,d2
+				moveq.l	#0,d2
 				bra		putinB
 onrightsomewhereB:
 				move.w	RIGHTX,d2
-				ext.l	d2
 				bra		putinB
 ptnotbehindB:
-
-				divs.l	d1,d2
-				move.w	MIDDLEX,d1
-				ext.l	d1
-				add.l	d1,d2
+				divs.w	d1,d2
+				add.w	MIDDLEX,d2
 putinB:
-				move.w	d2,(a2)+
+				move.w	d2,(a2)+		; store fully projected X
 
 				dbra	d7,pointrotlop2B
 				rts
 
 
+				; This only rotates a subset of the points, with indices pointed to at PointsToRotatePtr
 ONLYTHELONELY:
 
 				move.w	sinval,d6
 				swap	d6
 				move.w	cosval,d6
 
-				move.l	PointsToRotatePtr,a0
+				move.l	PointsToRotatePtr,a0 ; -1 terminated array of point indices to rotate
 				move.l	Points,a3
 				move.l	#Rotated,a1
 				move.l	#OnScreen,a2
@@ -5914,18 +5930,25 @@ pointrotlop:
 
 				move.w	(a3,d7*4),d0
 				sub.w	d4,d0
+
 				move.w	d0,d2
 				move.w	2(a3,d7*4),d1
+
 				sub.w	d5,d1
 				muls	d6,d2
 				swap	d6
+
 				move.w	d1,d3
 				muls	d6,d3
 				sub.l	d3,d2
-				add.l	d2,d2
-				swap	d2
-				ext.l	d2
-				asl.l	#7,d2
+
+;				add.l	d2,d2
+;				swap	d2
+;				ext.l	d2
+;				asl.l	#7,d2
+
+				asr.l	#8,d2		; x' = int(2*x') << 8
+
 				add.l	xwobble,d2
 				move.l	d2,(a1,d7*8)
 
@@ -5933,10 +5956,14 @@ pointrotlop:
 				swap	d6
 				muls	d6,d1
 				add.l	d0,d1
-				asl.l	#1,d1
-				swap	d1
-; ext.l d1
-; divs #3,d1
+
+;				asl.l #1,d1
+;				swap d1
+;				ext.l d1       ; (z' >> 16) * 2 == z' >> 15
+
+				asr.l	#8,d1		;
+				asr.l	#7,d1		; z' = int(z') * 2
+
 				move.l	d1,4(a1,d7*8)
 
 				tst.w	d1
@@ -5971,17 +5998,23 @@ BIGLONELY:
 				move.w	(a3,d7*4),d0
 				sub.w	d4,d0
 				move.w	d0,d2
+
 				move.w	2(a3,d7*4),d1
 				sub.w	d5,d1
 				muls	d6,d2
+
 				swap	d6
 				move.w	d1,d3
 				muls	d6,d3
 				sub.l	d3,d2
-				add.l	d2,d2
-				swap	d2
-				ext.l	d2
-				asl.l	#7,d2
+
+;				add.l	d2,d2
+;				swap	d2
+;				ext.l	d2
+;				asl.l	#7,d2
+
+				asr.l	#8,d2		; x' = int(2*x') << 8
+
 				add.l	xwobble,d2
 				move.l	d2,(a1,d7*8)
 
@@ -5989,10 +6022,17 @@ BIGLONELY:
 				swap	d6
 				muls	d6,d1
 				add.l	d0,d1
-				asl.l	#2,d1
-				swap	d1
+
+;				asl.l	#2,d1		; z' * 2 *2
+;				swap	d1
+;				ext.l	d1
+;				divs	#3,d1		; z' * 2 *2/3
+
+				divs.w	#3*4096,d1	; 3*8192 doesn't quite fit into 16bits divisor
+				asr.w	#2,d1		; z' = (z' << 16) / (3 * 2 << 13)
+									; z' = z' * 8 / 3		; Is the factor in z' here determining the prespective factor?
 				ext.l	d1
-				divs	#3,d1
+
 				move.l	d1,4(a1,d7*8)
 
 				tst.w	d1
@@ -6009,7 +6049,10 @@ BIGLONELY:
 				divs	d1,d2
 				add.w	MIDDLEX,d2
 .putin:
-				move.w	d2,(a2,d7*2)
+				move.w	d2,(a2,d7*2)	; this means the a2 array will also be sparsely written to,
+										; but then again doesn't need reindeexing the input indices.
+										; maybe it is worthwhile investigating if its possible to re-index
+										; and write in a packed manner
 
 				bra		.pointrotlop
 
@@ -6180,9 +6223,8 @@ CalcPLR2InLine:
 
 
 RotateObjectPts:
-
-				move.w	sinval,d5
-				move.w	cosval,d6
+				move.w	sinval,d5			; fetch sine of rotation
+				move.w	cosval,d6			; consine
 
 				move.l	ObjectData,a4
 				move.l	ObjectPoints,a0
@@ -6198,41 +6240,41 @@ RotateObjectPts:
 				cmp.b	#3,16(a4)
 				beq.s	.itaux
 
-				move.w	(a0),d0
-				sub.w	xoff,d0
-				move.w	4(a0),d1
-				addq	#8,a0
+				move.w	(a0),d0		; x of object point
+				sub.w	xoff,d0		; viewX = X - cam X
+				move.w	4(a0),d1	; z of object point
+				addq	#8,a0		; next point? or next object?
 
-				tst.w	12(a4)
+				tst.w	12(a4)		; ObjectData
 				blt		.noworkout
 
-				sub.w	zoff,d1
+				sub.w	zoff,d1		; viewZ = Z - cam Z
 
 				move.w	d0,d2
-				muls	d6,d2
-				move.w	d1,d3
-				muls	d5,d3
-				sub.l	d3,d2
+				muls	d6,d2		; cosx = viewX * (cos << 16)
+				move.w	d1,d3		;
+				muls	d5,d3		; sinz = viewZ * (sin << 16)
 
+				sub.l	d3,d2		;  x' = cosx - sinz
+				add.l	d2,d2		; x'*2
+				swap	d2			; x' >> 16
+				move.w	d2,(a1)+	; finished rotated x'
 
-				add.l	d2,d2
-				swap	d2
-				move.w	d2,(a1)+
-
-				muls	d5,d0
-				muls	d6,d1
-				add.l	d0,d1
-				asl.l	#1,d1
-				swap	d1
+				muls	d5,d0		; sinx = viewX * sin <<16
+				muls	d6,d1		; cosz = viewZ * cos << 16
+				add.l	d0,d1		; z' = sinx + cosz
+				add.l	d1,d1		; *2
+				swap	d1			; >> 16
 ; ext.l d1
 ; divs #3,d1
-				moveq	#0,d3
+				moveq	#0,d3		;FIMXE: why?
 
-				move.w	d1,(a1)+
-				ext.l	d2
+				move.w	d1,(a1)+	; finished rotated z'
+
+				ext.l	d2			; whats the wobble about?
 				asl.l	#7,d2
 				add.l	xwobble,d2
-				move.l	d2,(a1)+
+				move.l	d2,(a1)+	; no clue
 
 				dbra	d7,.objpointrotlop
 
@@ -6278,6 +6320,7 @@ BIGOBJPTS:
 
 				muls	d5,d0
 				muls	d6,d1
+
 				add.l	d0,d1
 				asl.l	#2,d1
 				swap	d1
