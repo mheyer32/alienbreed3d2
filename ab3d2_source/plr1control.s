@@ -418,23 +418,11 @@ SHOWPLR1GUNNAME:
 				jsr		SENDMESSAGENORET
 				rts
 
-
-GUNVALS:
-; machine gun
-				dc.b	0
-; shotgun
-				dc.b	7
-; plasma
-				dc.b	1
-; grenade
-				dc.b	4
-; rocket
-				dc.b	2
-
+				align	4
 TOTHEMIDDLE:	dc.w	0
+BOTTOMY:		dc.w	0
 BIGsmall:		dc.b	0
 lastscr:		dc.b	0
-BOTTOMY:		dc.w	0
 				even
 
 PLR1_keyboard_control:
