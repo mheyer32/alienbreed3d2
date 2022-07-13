@@ -419,12 +419,10 @@ SHOWPLR1GUNNAME:
 				rts
 
 				align	4
-TOTHEMIDDLE:	dc.w	0
-BOTTOMY:		dc.w	0
 BIGsmall:		dc.b	0
 lastscr:		dc.b	0
-				even
 
+				cnop	0,4
 PLR1_keyboard_control:
 
 				move.l	#SineTable,a0

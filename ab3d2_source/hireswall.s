@@ -1723,12 +1723,15 @@ simplewallPACK2:
 ; bra cliptop
 
 ; ATTENION: for some reason the order of these variables is important
+				align	4
+BOTTOMY:		dc.w	0
 MIDDLEY:		dc.w	FS_HEIGHT/2
 BIGMIDDLEY:		dc.l	SCREENWIDTH*FS_HEIGHT/2
 TOPOFFSET:		dc.w	0
 SMIDDLEY:		dc.w	FS_HEIGHT/2
 SBIGMIDDLEY:	dc.l	SCREENWIDTH*FS_HEIGHT/2
 STOPOFFSET:		dc.w	0
+TOTHEMIDDLE:	dc.w	0
 
 gotoend:
 				tst.b	DOUBLEHEIGHT
