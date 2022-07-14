@@ -1407,19 +1407,19 @@ scaledownlop:
 				;FIXE not referenced?
 ;ANOTHERSUP:
 
-				; CALLEXEC SuperState(a6)
-				; move.l	d0,SSTACK
+				;CALLEXEC SuperState
+				;move.l	d0,SSTACK
 
-				; CACHE_FREEZE_OFF d2
+				;CACHE_FREEZE_OFF d2
 
 				; charlie
-				; DATA_CACHE_ON d2
+				;DATA_CACHE_ON d2
 
-				; DataCacheOn
+				DataCacheOn
 
 
-				; move.l	SSTACK,d0
-				; CALLEXEC UserState
+				;move.l	SSTACK,d0
+				;CALLEXEC UserState
 
 				move.l	#0,hitcol
 
@@ -9104,7 +9104,7 @@ LineToUse:		dc.l	0
 
 ;SimpleFloorLine:
 ;
-;;				CACHE_OFF d2
+;				CACHE_OFF d2
 ;
 ;				move.l	#doacrossline,a1
 ;				move.w	leftedge(pc),d1
