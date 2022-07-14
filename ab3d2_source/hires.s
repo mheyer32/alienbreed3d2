@@ -7453,8 +7453,6 @@ PLR2_fire:		dc.b	0
 
 *****************************************************
 
-
-pastdata:
 ***********************************
 * This routine animates brightnesses.
 
@@ -7464,30 +7462,11 @@ liftpt:			dc.l	liftanimtab
 brightpt:
 				dc.l	brightanimtab
 
-
-liftanim:
-				rts
-
 ******************************
 				include	"objectmove.s"
 				include	"newanims.s"
 				include	"airoutine.s"
 ******************************
-startpass:
-; include "password_reloc.s"
-endpass:
-
-rotanimpt:		dc.w	0
-xradd:			dc.w	5
-yradd:			dc.w	8
-xrpos:			dc.w	SCREENWIDTH
-yrpos:			dc.w	SCREENWIDTH
-
-rotanim:
-				rts
-
-option:
-				dc.l	0,0
 
 ********** WALL STUFF *******************************
 
