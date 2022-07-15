@@ -9,7 +9,7 @@
 ;the second long word holds the length of the
 ;uncompressed sample.
 
-	include	"utils:devpac/system.gs"
+	include	"devpac/system.gs"
 
 UnPackSample:
 	add.l	#4,d0		;Skip "CSFX"

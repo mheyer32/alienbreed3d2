@@ -1,3 +1,6 @@
+	include "system.i"
+
+
  IFND CHEESEY
 CHEESEY equ 0
  ENDC
@@ -94,9 +97,6 @@ DataCacheOn macro
 	movem.l	(sp)+,a0-a6/d0-d7
 	endm
 
-	opt	P=68020
-
-	include hardware/intbits.i
 
 CD32VER equ 0
 
@@ -127,14 +127,6 @@ DMACON		equ	$096
 SERPER		equ	$032
 SERDATR	equ	$018
 SERDAT		equ	$030
-vhposr		equ $006	
-vhposrl	equ $007 
-
-bltcon0	equ $40 
-bltcon1	equ $42
-bltcpt		equ $48
-bltbpt		equ $4c
-bltapt		equ $50
 spr0ctl	equ $142
 spr1ctl	equ $14a
 spr2ctl	equ $152
@@ -151,20 +143,6 @@ spr4pos	equ $160
 spr5pos	equ $168
 spr6pos	equ $170
 spr7pos	equ $178
-bltdpt     	equ $54
-bltafwm	equ $44
-bltalwm	equ $46
-bltsize     	equ $58
-bltcmod     	equ $60
-bltbmod     	equ $62
-bltamod     	equ $64
-bltdmod     	equ $66
-diwstrt        equ $8e         ; Screen hardware registers.
-diwstop         equ $90
-ddfstrt        equ $92
-ddfstop         equ $94
-bplcon0         equ $100
-bplcon1         equ $102
 col0            equ $180
 col1            equ $182
 col2		equ $184
@@ -179,12 +157,6 @@ col10           equ $194
 col11           equ $196
 col12           equ $198
 col13           equ $19a
-dmacon		equ $96
-dmaconr		equ $002
-intenar		equ $01c
-intena		equ $09a
-intreq		equ $09c
-intreqr		equ $01e
 intreqrl	equ $01f
 bpl1pth         equ $e0
 bpl1ptl         equ $e2
@@ -218,7 +190,6 @@ spr6pth		equ $138
 spr6ptl		equ $13a
 spr7pth		equ $13c
 spr7ptl		equ $13e
-adkcon	    equ   $09E
 
 
 ; move.l #length,d0
