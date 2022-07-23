@@ -93,7 +93,7 @@ DataCacheOn		macro
 				movem.l	(sp)+,a0-a6/d0-d7
 				endm
 
-				opt		P=68020
+				opt		o+
 
 				include	hardware/intbits.i
 
@@ -5064,9 +5064,9 @@ DrawDisplay:
 				and.w	#255,d1
 				move.w	d1,wallyoff
 
-				move.l	yoff,d0				; is yoff the viewer's y position << 12
-				asr.l	#6,d0
-				move.w	d0,flooryoff		; yoff << 6
+				move.l	yoff,d0				; is yoff the viewer's y position << 16?
+				asr.l	#6,d0				; yoff << 10
+				move.w	d0,flooryoff		; yoff << 10
 
 				move.w	xoff,d6
 				move.w	d6,d3
@@ -7551,10 +7551,11 @@ checkforwater:
 				move.b	#$f,fillscrnwater
 
 .notwater:
-				move.w	(a0)+,d6				; sides-1
-				add.w	d6,d6
-				add.w	d6,a0
-				add.w	#4+6,a0
+				move.w	(a0)+,d6				; # sides-1
+;				add.w	d6,d6
+;				add.w	d6,a0					; a0 + (sides-1)*2
+;				add.w	#4+6,a0					; a0 + (sides-1)*2 + 10
+				lea		10(a0,d6.w*2),a0
 				rts
 
 				rts
@@ -7568,8 +7569,8 @@ itsafloordraw:
 * If D0 =1 then its a floor otherwise (=2) it's
 * a roof.
 
-				move.w	#0,above
-				move.w	(a0)+,d6				; ypos of floor/celing?
+				move.w	#0,above				; reset 'above'
+				move.w	(a0)+,d6				; floorY of floor/ceiling?
 
 				tst.b	usewater
 				beq.s	.oknon
@@ -7580,6 +7581,7 @@ itsafloordraw:
 				move.w	d6,d7
 				ext.l	d7
 				asl.l	#6,d7				; floorY << 6?
+
 				cmp.l	TOPOFROOM,d7
 				blt		checkforwater		;
 				cmp.l	BOTOFROOM,d7
@@ -7589,7 +7591,7 @@ itsafloordraw:
 				cmp.w	rightclip,d7
 				bge.s	dontdrawreturn		; don't draw if there's no room betwen left and rightclip
 
-				sub.w	flooryoff,d6		; (floorY - viewerY) << 6
+				sub.w	flooryoff,d6		; (floorY - viewerY)
 
 				bgt.s	below				; floor is below
 				blt.s	aboveplayer			; floor is above
@@ -7610,9 +7612,10 @@ itsafloordraw:
 
 dontdrawreturn:
 				move.w	(a0)+,d6				; sides-1
-				add.w	d6,d6
-				add.w	d6,a0
-				add.w	#4+6,a0					; skip sides
+				;add.w	d6,d6
+				;add.w	d6,a0
+				;add.w	#4+6,a0
+				lea		10(a0,d6.w*2),a0		; skip sides
 				rts
 aboveplayer:
 				tst.b	usewater
@@ -7647,8 +7650,9 @@ below:
 
 
 notbelow:
-				btst	#0,d0
+				btst	#0,d0					; if its below the player and is not a floor, skip it
 				beq.s	dontdrawreturn
+
 				move.w	d6,View2FloorDist		; (floorY - ViewerY) in worldspace
 				;		|
 				;-------+---------------------- MIDDLEY
@@ -7661,10 +7665,20 @@ notbelow:
 				;
 				; clip Y =  FloorDist/minZ
 				; minZ = FloorDist / clipY
-				muls	#64,d6
-				move.l	d6,ypos
-				ext.l	d7
-				divs.l	d7,d6					; zpos of bottom
+
+				move	d6,d5
+				ext.l	d5
+				asl.l	#6,d5					; View2FloorDist << 6
+				move.l	d5,ypos					; ypos = View2FloorDist * 64
+
+				;ext.l	d7
+				;divs.l	d7,d6					; d6 = (floorY - ViewerY) / (Y-clip to middleY)?
+												; projects the Y-clip screen coordinate to Z in the world
+												; it thus
+
+				mulu.w	OneOverN(pc,d7.w*2),d6
+				lsr.l	#8,d6
+
 ; visible line
 
 				beq		dontdrawreturn
@@ -8516,24 +8530,30 @@ groundfloor:
 
 				move.w	xoff,d6
 				move.w	zoff,d7
-				add.w	xwobxoff,d7
-				add.w	xwobzoff,d6
-				ext.l	d6
-				ext.l	d7
+				add.w	xwobxoff,d6	; this was adding xwobxoff to d7, was this a bug?
+				add.w	xwobzoff,d7
 
 				tst.b	FULLSCR
 				beq.s	.shiftit
 
-				asl.l	#2,d6
-				asl.l	#2,d7
-				divs	#3,d6
-				divs	#3,d7
-				swap	d6
-				swap	d7
-				clr.w	d6
-				clr.w	d7
-				asr.l	#2,d6
-				asr.l	#2,d7
+				;ext.l	d6
+				;ext.l	d7
+				;asl.l	#2,d6		; Fullscreen : scale world by *4/3,
+				;asl.l	#2,d7
+				;divs	#3,d6
+				;divs	#3,d7
+				;swap	d6
+				;swap	d7
+				;clr.w	d6
+				;clr.w	d7
+				;asr.l	#2,d6
+				;asr.l	#2,d7
+
+				; stll don't really understand why the render aspect ratio gets rolled into here
+				; as these are supposed to be the viewer/s position in the world
+				muls.w	#21845,d6	; (4/3<<16)/4
+				muls.w	#21845,d7
+
 				bra.s	.donsht
 
 .shiftit
@@ -8617,10 +8637,19 @@ movespd:		dc.w	0
 largespd:		dc.l	0
 disttobot:		dc.w	0
 
+OneOverN:		; 1/N * 16384
+				dc.w	0					;16384/0 not defined
+val				SET		1
+				REPT	255
+				dc.w	16384/val
+val				SET		val+1
+				ENDR
+
+
 ********************************************************************************
+
+				; Walk the stored lines and draw them
 pastscale:
-
-
 				tst.b	drawit(pc)
 				beq		dontdrawfloor
 
@@ -8709,9 +8738,11 @@ pastscale:
 ; addx d0,d1
 
 ; move.l #dists,a2
-				move.w	View2FloorDist,d0
-				muls	#64,d0
-				move.l	d0,a2
+				move.w	View2FloorDist,d0	; ydist<<6 to floor/ceiling	; distance of viewer to floor
+;				muls	#64,d0				; ydist<<12 to floor/ceiling
+				ext.l	d0
+				lsl.l	#6,d0
+				move.l	d0,a2				; a2
 ; muls #25,d0
 ; adda.w d0,a2
 ; lea (a2,d1*2),a2
@@ -8799,7 +8830,9 @@ doneclip:
 				lea		(a4,d1*2),a4	; go to top linetab
 ; move.l #dists,a2
 				move.w	View2FloorDist,d0
-				muls	#64,d0			; FIXME: why muls here? Is this addressing the floor tile row?
+				;muls	#64,d0			; FIXME: why muls here? Is this addressing the floor tile row?
+				ext.l	d0
+				lsl.l	#6,d0
 				move.l	d0,a2
 ; muls #25,d0
 ; adda.w d0,a2
@@ -8888,16 +8921,27 @@ noclipleft:
 ; move.l d3,brightspd
 
 				move.l	a6,a3
+
 				movem.l	d0/d7/a2/a4/a5/a6,-(a7)
+
 				; perspective correct interpolation of Z over the floor by just looking at
 				; the screenspace coordinate and the floor height
 				; https://youtu.be/2ZAIIDXoBis?t=1385
+
 				move.l	a2,d7		; View2FloorDist*64 (distance of viewer Y to floor in worldspace)
-				asl.l	#2,d7		; *4 = * 256
-				ext.l	d0
-				divs.l	d0,d7		; View2FloorDist * 256 / currentline
-				move.l	d7,d0
-				jsr		(a5)
+				;asl.l	#2,d7		; *4 = * 256
+				;ext.l	d0
+				;divs.w	d0,d7		; View2FloorDist * 256 / currentline
+				;ext.l	d7
+
+				mulu.w	OneOverN(pc,d0.w*2),d7	;
+				lsr.l	#6,d7
+
+				; for some reason important to write.l here
+				move.l	d7,d0		; Z of current screen line projected to floor
+
+				jsr		(a5)		; Call the horizontal line drawing routine!
+
 				movem.l	(a7)+,d0/d7/a2/a4/a5/a6
 nodrawline
 				sub.w	#1,disttobot
@@ -9463,14 +9507,14 @@ pastfloorbright:
 				; these directly determine the texture gradients
 				; as function of the player view direction
 				; d0 = distance of line to viewer along Z axis
-				move.l	d0,d1					; View2FloorDist*64 * 256 / firstline
+				move.l	d0,d1					; distance of line to viewer along Z axis
 				muls	cosval,d1				; cos * dist
 				move.l	d0,d2
-				muls	sinval,d2				; sin * width
-				neg.l	d2
+				muls	sinval,d2				;
+				neg.l	d2						; -sin * width
 
-				; scale for lowres CHEESEY version
 				ifne	CHEESEY
+				; scale for lowres CHEESEY version
 				asr.l	#3,d2
 				asr.l	#3,d1
 				endc
@@ -13041,7 +13085,7 @@ olddrawpt:		dc.l	0
 frompt:			dc.l	0
 
 SineTable:
-				incbin	"bigsine"
+				incbin	"bigsine"	; sine/cosine << 15
 
 angspd:			dc.w	0
 flooryoff:		dc.w	0		; viewer y pos << 6
