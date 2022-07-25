@@ -32,66 +32,73 @@ DoleftendGOUR:
 				move.w	d0,leftclipandlast
 
 
-				move.w	(a0),d0
-				move.w	2(a0),d1
-				sub.w	d0,d1
+				move.w	(a0),d0		; leftx
+				move.w	2(a0),d1	; rightx
+				sub.w	d0,d1		; width
 				bge.s	sometodrawG
 				rts
+
+				;  struct{short 2^n-1,n;} itertab[]
 sometodrawG:
-				move.w	itertabG(pc,d1.w*4),d7
+				; I think, this determines how oblique a wall is to the viewer.
+				; The thinner a wall, the less precise the iterations need to be.
+				; The iterations are bound by the next power-of-two number covering the whole width
+				; FIXME: this is another place where the maximum resolution is hardcoded into the
+				; size of itertabG
+				move.w	itertabG(pc,d1.w*4),d7		; how many iterations for this width; or is it a mask?
 				swap	d0
-				move.w	itertabG+2(pc,d1.w*4),d6
-				clr.w	d0
+				move.w	itertabG+2(pc,d1.w*4),d6	; shift for this width
+				clr.w	d0							; leftx in high word
 				swap	d1
-				clr.w	d1
-				asr.l	d6,d1
-				move.l	d1,(a0)
+				clr.w	d1							; width in high word
+				asr.l	d6,d1						; divide down by shift
+				move.l	d1,(a0)						; save
 
 				bra		pstitG
 
 itertabG:
 				incbin	"includes/iterfile"
 
+				; Reading input walls from a0 and writing calculated deltas back into a0
 pstitG:
-
 				moveq	#0,d1
-				move.w	4(a0),d1
+				move.w	4(a0),d1	; leftbm
 				moveq	#0,d2
-				move.w	6(a0),d2
-				sub.w	d1,d2
-				swap	d1
-				swap	d2
-				asr.l	d6,d2
-				move.l	d2,4(a0)
+				move.w	6(a0),d2	; rightbm
+				sub.w	d1,d2		; dBm = (rightbm -leftbm)
+				swap	d1			; leftbm in high word
+				swap	d2			;
+				asr.l	d6,d2		; dBM >> widthShift
+				move.l	d2,4(a0)	; store dBM in 4(a0)
 
 				moveq	#0,d2
-				move.w	8(a0),d2
+				move.w	8(a0),d2	; leftdist
 				moveq	#0,d3
-				move.w	10(a0),d3
-				sub.w	d2,d3
-				swap	d2
+				move.w	10(a0),d3	; rightdist
+				sub.w	d2,d3		; dDist = rightdist - leftfist
+				swap	d2			; d2 = leftdist << 16
 				swap	d3
-				asr.l	d6,d3
-				move.l	d3,8(a0)
+				asr.l	d6,d3		; (dDist << 16)  >> widthShift
+				move.l	d3,8(a0)	; store dDist in 8(a0)
 
-				moveq	#0,d3
+				moveq	#0,d3		; lefttop
 				move.w	12(a0),d3
 				moveq	#0,d4
-				move.w	14(a0),d4
-				sub.w	d3,d4
-				swap	d3
-				swap	d4
-				asr.l	d6,d4
-				move.l	d4,12(a0)
+				move.w	14(a0),d4	; righttop
+				sub.w	d3,d4		; dTop = (rightTop - leftTop)
+				swap	d3			; lefttop in high word
+				swap	d4			;
+				asr.l	d6,d4		; (dTop << 16) >> widthShift
+				move.l	d4,12(a0)	; dTop in 12(a0)
 
-				moveq	#0,d4
+				moveq	#0,d4		; left bottom
 				move.w	16(a0),d4
 				moveq	#0,d5
-				move.w	18(a0),d5
-				sub.w	d4,d5
-				swap	d4
+				move.w	18(a0),d5	; right bottom
+				sub.w	d4,d5		; dBot = rightbot-leftbot
+				swap	d4			; leftbot << 16
 				swap	d5
-				asr.l	d6,d5
+				asr.l	d6,d5		; (dBot << 16) >> widthShift
 				move.l	d5,16(a0)
 
 
@@ -102,12 +109,13 @@ pstitG:
 				add.w	d5,d5
 				swap	d5
 				asr.l	d6,d5
-				move.l	d5,28(a0)
+				move.l	d5,28(a0)	; Deltas for lighting values?
+
 				moveq	#0,d5
 				move.w	24(a0),d5
 				add.w	d5,d5
 				swap	d5
-				move.l	d5,24(a0)
+				move.l	d5,24(a0)	; 24(a0) << 17
 
 *** Extra Gouraud Shading ***
 
@@ -117,42 +125,50 @@ pstitG:
 				add.w	d5,d5
 				swap	d5
 				asr.l	d6,d5
-				move.l	d5,36(a0)
+				move.l	d5,36(a0)	; Deltas for lighting values?
+
 				moveq	#0,d5
 				move.w	32(a0),d5
 				add.w	d5,d5
 				swap	d5
-				move.l	d5,32(a0)
+				move.l	d5,32(a0)	; 32(a0) << 17
 
 				bra		screendivideGOUR
 
 TOPBRCOUNT:		dc.l	0
 BOTBRCOUNT:		dc.l	0
 
+
+				; Is this preparing the strips to draw?
 screendivideGOUR:
 
-				or.l	#$ffff0000,d7
-				move.w	leftclipandlast(pc),d6
+				or.l	#$ffff0000,d7		; high word for number of iterations/iterations mask
+				move.w	leftclipandlast(pc),d6 ; left clip minus 1
 				move.l	#WorkSpace,a2
 
-				move.l	(a0),a3
-				move.l	4(a0),a4
-				move.l	8(a0),a5
-				move.l	12(a0),a6
-				move.l	16(a0),a1
+				move.l	(a0),a3			; (Width<<16)>>widthShift
+				move.l	4(a0),a4		; dBM
+				move.l	8(a0),a5		; dDist
+				move.l	12(a0),a6		; dTop
+				move.l	16(a0),a1		; dBottom
 
 
+				;iterate through strips until we get past leftclip
+				; I think, leftclip is a continuously updated x coordinate that
+				; denotes "undrawn" space on screen to prevent partially covered walls
+				; from overwriting walls in front
 scrdivlopG:
-
 				swap	d0
 				cmp.w	d6,d0
 				bgt		scrnotoffleftG
 				swap	d0
+				; forward-differencing of positions and texture coordinates
 				add.l	a4,d1
 				add.l	a5,d2
 				add.l	a6,d3
 				add.l	a1,d4
 				add.l	a3,d0
+				; forward differencing vertex color shading?!
 				move.l	28(a0),d5
 				add.l	d5,24(a0)
 				move.l	36(a0),d5
@@ -162,22 +178,22 @@ scrdivlopG:
 				rts
 
 scrnotoffleftG:
-
-				move.w	d0,d6
+				move.w	d0,d6		; This continuuously moves the 'leftclip' out by one pixel
+									; So we always only produce new strips at integer x coordinates
 
 				cmp.w	rightclip(pc),d0
 				bge.s	outofcalcG
 
 scrnotoffrightG:
-
-
+				; store current left strip data
 				move.w	d0,(a2)+
 				move.l	d1,(a2)+
 				move.l	d2,(a2)+
 				move.l	d3,(a2)+
 				move.l	d4,(a2)+
-				move.l	24(a0),(a2)+
-				move.l	32(a0),(a2)+
+				move.l	24(a0),(a2)+	; this is immediately overwriting workspace area
+				move.l	32(a0),(a2)+	; but I guess the writing is trailing the reading
+				; iterate further
 				swap	d0
 				add.l	a3,d0
 				add.l	a4,d1
@@ -219,14 +235,14 @@ thislinedoneG:
 
 scrdrawlopG:
 
-				move.w	(a0)+,d0
+				move.w	(a0)+,d0		; start fetching the next strip, x-coord
 
 				cmp.w	LASTSTIRRUP,d0
 				beq.s	thislinedoneG
 				move.w	d0,LASTSTIRRUP
 
 				move.l	FASTBUFFER,a3
-				lea		(a3,d0.w),a3
+				lea		(a3,d0.w),a3	; point to start address of screen column
 				move.l	(a0)+,d1
 
 ; bra pastscrinto
@@ -237,24 +253,24 @@ scrdrawlopG:
 				swap	d1
 
 				move.w	d1,d6
-				and.w	HORAND,d6
+				and.w	HORAND,d6	; wrap texture coordinate
 				move.l	(a0)+,d2
 				swap	d2
-				add.w	fromtile(pc),d6
+				add.w	fromtile(pc),d6 ;
 				add.w	d6,d6
-				move.w	d6,a5
+				move.w	d6,a5		; "Word-size source operands are signextended to 32-bit quantities."
 				move.l	(a0)+,d3
 				swap	d3
 				add.l	#divthreetab,a5
-				move.w	(a5),StripData
+				move.w	(a5),StripData	; d6*2/3
 
 				move.l	ChunkAddr,a5
 				moveq	#0,d6
-				move.b	StripData,d6
-				add.w	d6,d6
-				move.w	VALSHIFT,d4
-				asl.l	d4,d6
-				add.l	d6,a5
+				move.b	StripData,d6	; (d6*2/3)
+				add.w	d6,d6			; d6 *4/3
+				move.w	VALSHIFT,d4		;
+				asl.l	d4,d6			; * wall texture height(?)
+				add.l	d6,a5			; start of wall strip
 				move.l	(a0)+,d4
 				swap	d4
 				addq	#1,d4
@@ -382,7 +398,7 @@ scrdrawlopGDOUB:
 ***************************
 				move.l	(a0)+,d5
 				swap	d5
-				move.w	d7,-(a7)
+				move.w	d7,-(a7)		; save
 				ext.w	d5
 				move.w	d6,d7
 				add.w	d5,d7
@@ -422,7 +438,7 @@ scrdrawlopGDOUB:
 ;.nobrightswap:
 
 				bsr		ScreenWallstripdrawGOUR
-				move.w	(a7)+,d7
+				move.w	(a7)+,d7	; restore
 
 				dbra	d7,scrdrawlopGDOUB
 
@@ -550,7 +566,7 @@ scrdrawlopGBDOUB:
 				and.w	HORAND,d6
 				move.l	(a0)+,d2
 				swap	d2
-				add.w	fromtile(pc),d6
+				add.w	fromtile(pc),d6		; ptr to floor tile
 				add.w	d6,d6
 				move.w	d6,a5
 				move.l	(a0)+,d3
@@ -911,6 +927,8 @@ CalcAndDrawG:
 				moveq	#0,d5
 				move.w	MIDDLEX,d5
 				add.l	d5,d3
+
+
 				move.w	8(a1),d5
 				move.w	strtop(pc),12(a0)
 				move.l	topofwall(pc),d6
@@ -987,10 +1005,11 @@ computeloop2G:
 				ext.l	d2
 				move.l	#store,a0
 				move.l	(a1),d3
-				divs.l	d2,d3
+				divs.l	d2,d3			; this could be divs.w, no?
 				moveq	#0,d5
 				move.w	MIDDLEX,d5
-				add.l	d5,d3
+				add.l	d5,d3			; making this an add.w ?
+
 				move.w	8(a1),d5
 				move.w	strtop(pc),12(a0)
 				move.l	topofwall(pc),d6
@@ -1319,7 +1338,8 @@ gotoendG:
 
 				move.l	d7,GOURSPEED
 
-				add.l	timeslargeG(pc,d5.w*4),a3
+				; start/endline in renderbuffer?
+				add.l	timeslargeG(pc,d5.w*4),a3	; timeslarge contains renderbuffer offsets for each line
 
 				add.w	d2,d2
 
@@ -1508,7 +1528,7 @@ gotoendGB:
 				ble		nostripqG
 				move.l	d7,GOURSPEED
 
-				add.l	timeslargeGB(pc,d5.w*4),a3
+				add.l	timeslargeGB(pc,d5.w*4),a3 ; start of line in renderbuffer
 
 				move.w	d2,d4
 				add.w	d2,d2

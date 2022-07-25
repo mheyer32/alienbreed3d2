@@ -2610,7 +2610,7 @@ IWasPlayer1:
 				move.w	#-1,12+128(a0)
 
 				eor.w	#4096,angpos
-				neg.w	cosval
+				neg.w	cosval			; view direction 180deg
 				neg.w	sinval
 .nolookback:
 
@@ -3355,10 +3355,7 @@ p1xpos:
 				sub.w	d5,d3					; y2 = y2 - x2 * dy / dx
 				moveq.l	#0,d2					; x2 == 0
 
-doneleftclip:
-				; Looks like the map draw is hardcoded to clip against the
-				; small render window
-				cmp.w	RIGHTX,d0
+doneleftclip:	cmp.w	RIGHTX,d0
 				blt		p1xneg
 
 				cmp.w	RIGHTX,d2
@@ -3494,11 +3491,12 @@ OFFSCREEN:
 NOLINEtrans:
 				rts
 
-MAPBRIGHT:
-				dc.w	3
+MAPBRIGHT:		dc.w	3		; "Map Brightness?" or "Map Bits Right"?
 mapxoff:		dc.w	0
 mapzoff:		dc.w	0
 
+
+				; FIXME: this is probably still on chunky screen
 DRAWAtransLINE:
 
 				move.l	FASTBUFFER,a0			; screen to render to.
@@ -4669,7 +4667,7 @@ PLR1_Control:
 				swap	d1
 				swap	d2
 				asr.w	#7,d1
-				move.w	d1,xwobxoff
+				move.w	d1,xwobxoff			; xwobble
 				asr.w	#7,d2
 				neg.w	d2
 				move.w	d2,xwobzoff
@@ -5047,37 +5045,42 @@ DrawDisplay:
 
 				clr.b	fillscrnwater
 
+				; bignsine is 16kb = 8192 words for 4pi (720deg)
+				; --> 4096 words per 2pi
+				; --> 1042 words = 2048byte per 90deg
+
 				move.l	#SineTable,a0
 				move.w	angpos,d0
 				move.w	(a0,d0.w),d6
-				adda.w	#2048,a0
+				adda.w	#2048,a0			; +90 deg?
 				move.w	(a0,d0.w),d7
 				move.w	d6,sinval
 				move.w	d7,cosval
 
 				move.l	yoff,d0
-				asr.l	#8,d0
+				asr.l	#8,d0				; yoff >> 8
 				move.w	d0,d1
-				add.w	#256-32,d1
+				add.w	#256-32,d1			; 224
 				and.w	#255,d1
 				move.w	d1,wallyoff
-				move.l	yoff,d0
+
+				move.l	yoff,d0				; is yoff the viewer's y position << 12
 				asr.l	#6,d0
-				move.w	d0,flooryoff
+				move.w	d0,flooryoff		; yoff << 6
 
 				move.w	xoff,d6
 				move.w	d6,d3
-				asr.w	#1,d3
-				add.w	d3,d6
-				asr.w	#1,d6
-				move.w	d6,xoff34
+				asr.w	#1,d3				; xoff * 0.5
+				add.w	d3,d6				; xoff * 1.5
+				asr.w	#1,d6				; xoff * 0.75
+				move.w	d6,xoff34			; xoff * 3/4
 
 				move.w	zoff,d6
 				move.w	d6,d3
 				asr.w	#1,d3
 				add.w	d3,d6
 				asr.w	#1,d6
-				move.w	d6,zoff34
+				move.w	d6,zoff34			; zoff * 3/4
 
 				bsr		RotateLevelPts
 				bsr		RotateObjectPts
@@ -5601,15 +5604,27 @@ itsafloor:
 				add.l	d1,FloorPtBrights
 
 				move.w	#1,SMALLIT
-; FIMXE: what is this? What does it do here? Part of copy protection?
+
+; Its possible that the reason for swithcing into SV mode was to be able to
+; manipulate CACR, for instance to disable write-allocation when doing the floor
+; tiles. This would make sense as keeping the runtime variable in cache is more important
+; than allocating cache lines for the written pixels.
+
+; FIXME: Indeed, it seems for A1200  with no fastram and its 68020, with its tiny
+; instruction cache it made sense to freeze the ICache after the first iteration
+; of floor drawing to keep the innermost loop in cache and thus require no less bus accesses
+; when churning out the floor pixels.
+;
+; I had removed many CACHE_FREEZE_OFF calls from the code - need to reinstate those.
+; Not sure how much sense it made for later CPU models, though.
+
 ;				movem.l	a0/d0,-(a7)
 ;				move.l	$4.w,a6
 ;				jsr		_LVOSuperState(a6)
 ;				move.l	d0,SSTACK
 ;				movem.l	(a7)+,a0/d0
 
-				move.l	#FloorLine,LineToUse
-* 1,2 = floor/roof
+				move.l	#FloorLine,LineToUse	;* 1,2 = floor/roof
 				clr.b	usewater
 				clr.b	usebumps
 				move.b	GOURSEL,gourfloor
@@ -7127,7 +7142,7 @@ SCROLLSHADES:
 				dc.w	$eee
 
 ENDGAMETEXTy:
-;          12345678901234567890123456789012345678901234567890123456789012345678901234567890
+				  ;          12345678901234567890123456789012345678901234567890123456789012345678901234567890
 				dc.b	0,0,"                                                                                "
 				dc.b	0,1,"As the beast and its four servants die, a breathless silence falls, broken      "
 				dc.b	0,1,"only by the hammering of my own heart in my chest.                              "
@@ -7554,7 +7569,7 @@ itsafloordraw:
 * a roof.
 
 				move.w	#0,above
-				move.w	(a0)+,d6				; ypos of poly
+				move.w	(a0)+,d6				; ypos of floor/celing?
 
 				tst.b	usewater
 				beq.s	.oknon
@@ -7564,19 +7579,20 @@ itsafloordraw:
 
 				move.w	d6,d7
 				ext.l	d7
-				asl.l	#6,d7
+				asl.l	#6,d7				; floorY << 6?
 				cmp.l	TOPOFROOM,d7
-				blt		checkforwater
+				blt		checkforwater		;
 				cmp.l	BOTOFROOM,d7
 				bgt.s	dontdrawreturn
 
 				move.w	leftclip,d7
 				cmp.w	rightclip,d7
-				bge.s	dontdrawreturn
+				bge.s	dontdrawreturn		; don't draw if there's no room betwen left and rightclip
 
-				sub.w	flooryoff,d6
-				bgt.s	below
-				blt.s	aboveplayer
+				sub.w	flooryoff,d6		; (floorY - viewerY) << 6
+
+				bgt.s	below				; floor is below
+				blt.s	aboveplayer			; floor is above
 
 				tst.b	usewater
 				beq.s	.notwater
@@ -7596,10 +7612,9 @@ dontdrawreturn:
 				move.w	(a0)+,d6				; sides-1
 				add.w	d6,d6
 				add.w	d6,a0
-				add.w	#4+6,a0
+				add.w	#4+6,a0					; skip sides
 				rts
 aboveplayer:
-
 				tst.b	usewater
 				beq.s	.notwater
 
@@ -7610,25 +7625,42 @@ aboveplayer:
 
 				move.b	#$f,fillscrnwater
 
-.notwater:
-
-				btst	#1,d0
+				; Is above camera
+.notwater:		btst	#1,d0				; If its above the player and if its not a ceiling (a floor?), skip it
 				beq.s	dontdrawreturn
+
+				; its a ceiling
 				move.w	MIDDLEY,d7
 				sub.w	topclip,d7
 				ble.s	dontdrawreturn
+
 				move.w	#1,d0
-				move.w	d0,above
+				move.w	d0,above			; replace with st above? But then also check the various places that tst.w it
 				neg.w	d6
 				bra.s	notbelow
+
+				; is below camera
 below:
 				move.w	botclip,d7
 				sub.w	MIDDLEY,d7
-				ble.s	dontdrawreturn
+				ble.s	dontdrawreturn			; don't draw if no room between screen center amd bottom clip
+
+
 notbelow:
 				btst	#0,d0
 				beq.s	dontdrawreturn
-				move.w	d6,distaddr
+				move.w	d6,View2FloorDist		; (floorY - ViewerY) in worldspace
+				;		|
+				;-------+---------------------- MIDDLEY
+				;***    |
+				;   *** |
+				;      *** clipY
+				;       |  ***
+				;-------------***----------------FloorDist from Viewer
+				;>   minZ		<
+				;
+				; clip Y =  FloorDist/minZ
+				; minZ = FloorDist / clipY
 				muls	#64,d6
 				move.l	d6,ypos
 				ext.l	d7
@@ -7652,27 +7684,29 @@ notbelow:
 				move.l	#Rotated,a1
 				move.l	#OnScreen,a2
 ; move.l #NewCornerBuff,a3
-				moveq	#0,d4
-				moveq	#0,d5
-				moveq	#0,d6
-				clr.b	anyclipping
+				moveq	#0,d4				; some points left to left clip
+				moveq	#0,d5				; some points fully between left and right clip
+				moveq	#0,d6				; some points right of right clip
+				clr.b	anyclipping			; some clipping will be necessary?
 
-cornerprocessloop:
 
-				move.w	(a0)+,d0
+cornerprocessloop:	; figure out if any left/right clipping is necessary
+				; this also helps rejecting whole floors, almost in a portal-engine fashion
+
+				move.w	(a0)+,d0			; point index
 				and.w	#$fff,d0
-				move.w	6(a1,d0.w*8),d1
+				move.w	6(a1,d0.w*8),d1		; fetch prerotated point Z fractional part?
 				ble		.canttell
 
-				move.w	(a2,d0.w*2),d3
+				move.w	(a2,d0.w*2),d3		; fetch projected X coordinate
 				cmp.w	leftclip,d3
-				bgt.s	.nol
+				bgt.s	.nol				; right of left clip
 				st		d4
 				st		anyclipping
 				bra.s	.nos
 .nol:
 				cmp.w	rightclip,d3
-				blt.s	.nor
+				blt.s	.nor				; left of right clip
 				st		d6
 				st		anyclipping
 				bra.s	.nos
@@ -7686,15 +7720,14 @@ cornerprocessloop:
 				st		anyclipping
 
 .cantell:
-
-
 				dbra	d7,cornerprocessloop
 
-
 				move.l	(a7)+,a0
-				tst.b	d5
+				tst.b	d5					; if this is 0, none of the corner points were inside the clip region
 				bne.s	somefloortodraw
-				eor.b	d4,d6
+				eor.b	d4,d6				; if some were left of left clip and the others right of right clip
+											; some floor covers the clip region
+											; only if they are all left or all right, nothing needs to be drawn
 				bne		dontdrawreturn
 
 somefloortodraw:
@@ -7702,43 +7735,53 @@ somefloortodraw:
 				tst.b	gourfloor
 				bne		goursides
 
-				move.w	#300,top
-				move.w	#-1,bottom
+				move.w	#300,top				; running top clip
+				move.w	#-1,bottom				; running bottom clip
 				move.w	#0,drawit
 				move.l	#Rotated,a1
 				move.l	#OnScreen,a2
 				move.w	(a0)+,d7				; no of sides
+
+; clip floor polygon against closest possible visible z (due to bottom/top clipping) "minz"
 sideloop:
 				move.w	minz,d6
-				move.w	(a0)+,d1
+				move.w	(a0)+,d1				; floor line point indices
 				move.w	(a0),d3
-				and.w	#$fff,d1
-				and.w	#$fff,d3
+				and.w	#$fff,d1				; mod 4096 , why?
+				and.w	#$fff,d3				; mod 4096
 
-				move.w	6(a1,d1*8),d4			;first z
+				move.w	6(a1,d1*8),d4			; first z
 				cmp.w	d6,d4
 				bgt		firstinfront
+
 				move.w	6(a1,d3*8),d5			; sec z
 				cmp.w	d6,d5
 				ble		bothbehind
+
 ** line must be on left and partially behind.
-				sub.w	d5,d4
-				move.l	(a1,d1*8),d0
-				sub.l	(a1,d3*8),d0
-				asr.l	#7,d0
-				sub.w	d5,d6
-				muls	d6,d0					; new x coord
-				divs	d4,d0
+				sub.w	d5,d4					; dz
+				move.l	(a1,d1*8),d0			; first x
+				sub.l	(a1,d3*8),d0			; dx = first x - second x
+
+				asr.l	#7,d0					; dx << 9
+
+				sub.w	d5,d6					; distMinz = minz - z
+												; (projecting onto nearplane)
+
+				muls	d6,d0					; x' = dist * dx
+				divs	d4,d0					; x' = distMinz * dx/dz
 				ext.l	d0
 				asl.l	#7,d0
 
-				add.l	(a1,d3*8),d0
-				move.w	minz,d4
+				add.l	(a1,d3*8),d0			; x' = x + distMinz * dx/dz
+				move.w	minz,d4					; z' = minZ
 				move.w	(a2,d3*2),d2
-				divs	d4,d0
+				divs.w	d4,d0					; x' - x' / minz
 				add.w	MIDDLEX,d0
+
 				move.l	ypos,d3
-				divs	d5,d3
+				divs	d5,d3				; y2' = y2 / z2
+
 				move.w	bottomline,d1
 				bra		lineclipped
 
@@ -7746,17 +7789,21 @@ firstinfront:
 				move.w	6(a1,d3*8),d5			; sec z
 				cmp.w	d6,d5
 				bgt		bothinfront
+
 ** line must be on right and partially behind.
 				sub.w	d4,d5					; dz
 				move.l	(a1,d3*8),d2
 				sub.l	(a1,d1*8),d2			; dx
-				sub.w	d4,d6
+				sub.w	d4,d6					; minz - z
+
 				asr.l	#7,d2
 				muls	d6,d2					; new x coord
-				divs	d5,d2
+				divs	d5,d2					; x ' = (dx >> 7) * (minz - z) / dz
 				ext.l	d2
-				asl.l	#7,d2
-				add.l	(a1,d1*8),d2
+
+				asl.l	#7,d2					; x' >> 7
+				add.l	(a1,d1*8),d2			; x ' = x1 + x'
+
 				move.w	minz,d5
 				move.w	(a2,d1*2),d0
 				divs	d5,d2
@@ -7775,19 +7822,26 @@ bothinfront:
 				move.w	(a2,d3*2),d2			; second x
 				move.l	ypos,d1
 				move.l	d1,d3
-				divs	d4,d1					; first y
-				divs	d5,d3					; second y
+				divs	d4,d1					; ypos / first z
+				divs	d5,d3					; ypos / second z
+
+				; line is  now in (d0/d1 )(d2/d3)  x/y
+				; now "draw" the projected line into the line buffer which stores X
+				; values
 lineclipped:
 				move.l	#rightsidetab,a3
 				cmp.w	d1,d3
-				beq		lineflat
+				beq		lineflat				; if line is flat, skip
+
 				st		drawit
 				bgt		lineonright
 				move.l	#leftsidetab,a3
+
+				; switch points to make line sloped downwards
 				exg		d1,d3
 				exg		d0,d2
 
-				lea		(a3,d1*2),a3
+				lea		(a3,d1*2),a3		; start of left side buffer
 
 				cmp.w	top(pc),d1
 				bge.s	.nonewtop
@@ -7805,8 +7859,8 @@ lineclipped:
 
 				ext.l	d2
 				divs	d3,d2
-				move.w	d2,d6
-				swap	d2
+				move.w	d2,d6					; dx/dy
+				swap	d2						; dx mod dy
 
 ; moveq #0,d6
 ; sub.w d3,d2
@@ -7818,15 +7872,16 @@ lineclipped:
 ;.noco
 ; add.w d3,d2
 
-				move.w	d3,d4
+				move.w	d3,d4				; dy
 				move.w	d3,d5
-				subq	#1,d5
+				subq	#1,d5				; dy - 1   loop counter
 				move.w	d6,d1
-				addq	#1,d1
+				addq	#1,d1				; dx/dy + 1
 
+				; Is this "drawing" left line into a buffer, using bresenham, storing the X values into a3
 .pixlopright:
-				move.w	d0,(a3)+
-				sub.w	d2,d4
+				move.w	d0,(a3)+			; store x in left side entry buffer
+				sub.w	d2,d4				; dy - (dx mod dy)
 				bge.s	.nobigstep
 				add.w	d1,d0
 				add.w	d3,d4
@@ -7837,14 +7892,17 @@ lineclipped:
 				dbra	d5,.pixlopright
 				bra		lineflat
 
+			; line is  now in (d0/d1 )(d2/d3)  x/y
+			; now "draw" the projected line into the line buffer which stores X
+			; values
 .linegoingleft:
 
-				neg.w	d2
+				neg.w	d2				; dx = -dx
 
 				ext.l	d2
-				divs	d3,d2
+				divs	d3,d2			; dx/dy
 				move.w	d2,d6
-				swap	d2
+				swap	d2				; dx mod dy
 
 
 ; moveq #0,d6
@@ -7871,19 +7929,20 @@ lineclipped:
 				bge.s	.nobigstepl
 				sub.w	d1,d0
 				add.w	d3,d4
-				move.w	d0,(a3)+
+				move.w	d0,(a3)+		;  store left side entry
 				dbra	d5,.pixlopleft
 				bra		lineflat
 
 .nobigstepl
 				sub.w	d6,d0
-				move.w	d0,(a3)+
+				move.w	d0,(a3)+		; store left side entry
 				dbra	d5,.pixlopleft
 				bra		lineflat
 
+			; Is this "drawing" right line into a buffer, storing the X values into a3
 lineonright:
 
-				lea		(a3,d1*2),a3
+				lea		(a3,d1*2),a3	;right line entry start
 
 				cmp.w	top(pc),d1
 				bge.s	.nonewtop
@@ -7924,13 +7983,13 @@ lineonright:
 				bge.s	.nobigstep
 				add.w	d1,d0
 				add.w	d3,d4
-				move.w	d0,(a3)+
+				move.w	d0,(a3)+			; store right entry
 				dbra	d5,.pixlopright
 				bra		lineflat
 
 .nobigstep
 				add.w	d6,d0
-				move.w	d0,(a3)+
+				move.w	d0,(a3)+			; store right entry
 				dbra	d5,.pixlopright
 				bra		lineflat
 
@@ -8023,6 +8082,7 @@ sideloopGOUR:
 				move.w	6(a1,d1*8),d4			;first z
 				cmp.w	d6,d4
 				bgt		firstinfrontGOUR
+
 				move.w	6(a1,d3*8),d5			; sec z
 				cmp.w	d6,d5
 				ble		bothbehindGOUR
@@ -8033,6 +8093,7 @@ sideloopGOUR:
 				sub.w	sbr,d0
 				sub.w	d5,d6
 				muls	d6,d0
+
 				divs	d4,d0
 				add.w	sbr,d0
 				move.w	d0,fbr
@@ -8042,6 +8103,7 @@ sideloopGOUR:
 				asr.l	#7,d0
 				muls	d6,d0					; new x coord
 				divs	d4,d0
+
 				ext.l	d0
 				asl.l	#7,d0
 
@@ -8076,10 +8138,11 @@ firstinfrontGOUR:
 				asr.l	#7,d2
 				muls	d6,d2					; new x coord
 				divs	d5,d2
+
 				ext.l	d2
 				asl.l	#7,d2
 				add.l	(a1,d1*8),d2
-				move.w	minz,d5
+				move.w	minz,d5				; minz = nearclip distance?
 				move.w	(a2,d1*2),d0
 				divs	d5,d2
 				add.w	MIDDLEX,d2
@@ -8095,10 +8158,14 @@ bothinfrontGOUR:
 
 				move.w	(a2,d1*2),d0			; first x
 				move.w	(a2,d3*2),d2			; second x
+
+
 				move.l	ypos,d1
 				move.l	d1,d3
 				divs	d4,d1					; first y
 				divs	d5,d3					; second y
+
+
 lineclippedGOUR:
 				move.l	#rightsidetab,a3
 				cmp.w	d1,d3
@@ -8124,8 +8191,8 @@ linenotflatGOUR
 				exg		d1,d3
 				exg		d0,d2
 
-				lea		(a3,d1*2),a3
-				lea		leftbrighttab-leftsidetab(a3),a4
+				lea		(a3,d1*2),a3						; left side entry
+				lea		leftbrighttab-leftsidetab(a3),a4	; left side brightness entry
 
 				cmp.w	top(pc),d1
 				bge.s	.nonewtop
@@ -8143,8 +8210,8 @@ linenotflatGOUR
 
 				ext.l	d2
 				divs	d3,d2
-				move.w	d2,d6
-				swap	d2
+				move.w	d2,d6					; dx/dy
+				swap	d2						; dx mod dy?
 				move.w	d2,a5
 
 ; moveq #0,d6
@@ -8157,9 +8224,9 @@ linenotflatGOUR
 ;.noco
 ; add.w d3,d2
 
-				move.w	d3,d4
-				move.w	d3,d5
-				subq	#1,d5
+				move.w	d3,d4					; dy
+				move.w	d3,d5					; dy
+				subq	#1,d5					; dy-1
 				move.w	d6,d1
 				addq	#1,d1
 				move.w	d1,a6
@@ -8169,17 +8236,19 @@ linenotflatGOUR
 				move.w	fbr,d2
 				sub.w	d1,d2
 				ext.l	d2
-				asl.w	#8,d2
+
+				asl.w	#8,d2					; is this some gouraud math?
 				asl.w	#2,d2
 				divs	d3,d2
 				ext.l	d2
 				asl.l	#6,d2
+
 				swap	d1
 
 .pixlopright:
-				move.w	d0,(a3)+
+				move.w	d0,(a3)+				; store left side entry
 				swap	d1
-				move.w	d1,(a4)+
+				move.w	d1,(a4)+				; store left side entry brightness
 				swap	d1
 				add.l	d2,d1
 
@@ -8239,7 +8308,7 @@ linenotflatGOUR
 .pixlopleft:
 
 				swap	d1
-				move.w	d1,(a4)+
+				move.w	d1,(a4)+			; store right side entry brightness
 				swap	d1
 				add.l	d2,d1
 
@@ -8247,21 +8316,21 @@ linenotflatGOUR
 				bge.s	.nobigstepl
 				sub.w	a6,d0
 				add.w	d3,d4
-				move.w	d0,(a3)+
+				move.w	d0,(a3)+			; store left side entry
 				dbra	d5,.pixlopleft
 				bra		lineflatGOUR
 
 .nobigstepl
 				sub.w	d6,d0
-				move.w	d0,(a3)+
+				move.w	d0,(a3)+			 ; store left side entry
 				dbra	d5,.pixlopleft
 				bra		lineflatGOUR
 
 lineonrightGOUR:
 
-				lea		(a3,d1*2),a3
+				lea		(a3,d1*2),a3			; left side entry
 
-				lea		rightbrighttab-rightsidetab(a3),a4
+				lea		rightbrighttab-rightsidetab(a3),a4 ; right brightness entry
 
 				cmp.w	top(pc),d1
 				bge.s	.nonewtop
@@ -8315,7 +8384,7 @@ lineonrightGOUR:
 .pixlopright:
 
 				swap	d1
-				move.w	d1,(a4)+
+				move.w	d1,(a4)+			; store right side brightness entry
 				swap	d1
 				add.l	d2,d1
 
@@ -8323,13 +8392,13 @@ lineonrightGOUR:
 				bge.s	.nobigstep
 				add.w	a6,d0
 				add.w	d3,d4
-				move.w	d0,(a3)+
+				move.w	d0,(a3)+			; store right side entry
 				dbra	d5,.pixlopright
 				bra		lineflatGOUR
 
 .nobigstep
 				add.w	d6,d0
-				move.w	d0,(a3)+
+				move.w	d0,(a3)+			;  store right side entry
 				dbra	d5,.pixlopright
 				bra		lineflatGOUR
 
@@ -8376,11 +8445,11 @@ lineonrightGOUR:
 .pixlopleft:
 
 				swap	d1
-				move.w	d1,(a4)+
+				move.w	d1,(a4)+		; store left entry brightness
 				swap	d1
 				add.l	d2,d1
 
-				move.w	d0,(a3)+
+				move.w	d0,(a3)+		; store left entry x
 				sub.w	a5,d4
 				bge.s	.nobigstepl
 				sub.w	a6,d0
@@ -8397,19 +8466,27 @@ lineflatGOUR:
 bothbehindGOUR:
 				dbra	d7,sideloopGOUR
 
+
+; I think wwhat happens is that the above code records lots of left/right pixel
+; pairs in lefttab, leftbrightab, righttab and rightbrighttab by edge-walking the floor polygon.
+; Each entry's offset in the tables are hard0-wired to a specific Y position in the rendered
+; image. I.e. lighttab[5] is the leftmost X coordinate of the floor on line 5 of the screen.
+
+; Here we setup the actual line drawing
 pastsides:
 
 				addq	#2,a0
 
-				move.w	#SCREENWIDTH,linedir
+				move.w	#SCREENWIDTH,linedir	; moving from one horizontal line to the next
+												; floors walk downwards
 
 ; move.l FASTBUFFER2,a6
 ; add.l BIGMIDDLEY,a6
 ; move.l a6,REFPTR
 
 				move.l	FASTBUFFER,a6
-				add.l	BIGMIDDLEY,a6
-				move.w	(a0)+,d6
+				add.l	BIGMIDDLEY,a6			; pointer to middle line of screen
+				move.w	(a0)+,d6				; floor scale?
 				add.w	SMALLIT,d6
 				move.w	d6,scaleval
 				move.w	(a0)+,d6
@@ -8430,10 +8507,10 @@ pastsides:
 				move.w	(a0)+,d6
 				add.w	ZoneBright,d6
 				move.w	d6,lighttype
-				move.w	above(pc),d6
+				move.w	above(pc),d6			; is floor above player (i.e. ceiling)
 				beq		groundfloor
 * on ceiling:
-				move.w	#-SCREENWIDTH,linedir
+				move.w	#-SCREENWIDTH,linedir	; ceilings are walked bottom to top
 				suba.w	#SCREENWIDTH,a6
 groundfloor:
 
@@ -8460,7 +8537,6 @@ groundfloor:
 				bra.s	.donsht
 
 .shiftit
-
 ; divs #3,d6
 ; divs #3,d7
 				swap	d6
@@ -8469,8 +8545,10 @@ groundfloor:
 				clr.w	d7
 				asr.l	#1,d6
 				asr.l	#1,d7
+
+
 .donsht:
-				move.w	scaleval(pc),d3
+				move.w	scaleval(pc),d3		; FIMXE: is this an opportunity to scale for DOUBLEWIDTH/DOUBLEHEIGHT?
 				beq.s	.samescale
 				bgt.s	.scaledown
 				neg.w	d3
@@ -8491,6 +8569,9 @@ groundfloor:
 				move.l	d7,szoff
 				bra		pastscale
 
+; why is this code here in the middle of nowhere, followed by data?
+; could this be form of self modifying code? I.e. stick the code here and copy it
+; over into relevant places on demand
 				asr.l	#3,d1
 				asr.l	#3,d2
 				asr.l	#2,d1
@@ -8514,7 +8595,7 @@ nfloors:		dc.w	0
 lighttype:		dc.w	0
 above:			dc.w	0
 linedir:		dc.w	0
-distaddr:		dc.w	0
+View2FloorDist:		dc.w	0
 
 minz:			dc.l	0
 
@@ -8536,6 +8617,7 @@ movespd:		dc.w	0
 largespd:		dc.l	0
 disttobot:		dc.w	0
 
+********************************************************************************
 pastscale:
 
 
@@ -8545,15 +8627,22 @@ pastscale:
 				tst.b	DOUBLEHEIGHT
 				beq		pix1h
 
+				; DOUBLEHEIGHT rendering
 				move.l	a0,-(a7)
-				move.w	linedir,d1
-				add.w	d1,linedir
+				move.w	linedir,d1			; line to line in screen
+				add.w	d1,linedir			; x2
 
 				move.l	#leftsidetab,a4
 				move.w	top(pc),d1
-				tst.w	above
-				beq.s	.clipfloor
+				tst.w	above				; is above camera?
+				beq.s	.clipfloor			; no, its a floor!
 
+; Its a ceiling, clip it to top/bottom
+; For ceilings, the top and bottom have reversed roles
+; The ceiling's +Y goes "up" on the screen, with MIDDLEY of screen mapping to 0.
+; That's why there's the gymnastics with ; (MIDDLEY - N) to transform the
+; screen clipping coordinates into "ceiling coordinates"
+; This turns the 'top' variable actually into the bottommost Y of the ceiling.
 				sub.w	#SCREENWIDTH,a6
 
 				move.w	MIDDLEY,d7
@@ -8561,84 +8650,92 @@ pastscale:
 				sub.w	d1,d7
 				move.w	d7,disttobot
 
-				move.w	bottom(pc),d7
+				move.w	bottom(pc),d7		; bottom of floor
 				move.w	MIDDLEY,d3
 				move.w	d3,d4
 				sub.w	topclip,d3
 				sub.w	botclip,d4
 				cmp.w	d3,d1
-				bge		predontdrawfloor
+				bge		predontdrawfloor	; top_of_floor >= (MIDDLEY-topclip)
 				cmp.w	d4,d7
-				blt		predontdrawfloor
+				blt		predontdrawfloor	; bottom_of_floor < (MIDDLEY-botclip) ?
 				cmp.w	d4,d1
-				bge.s	.nocliptoproof
-				move.w	d4,d1
+				bge.s	.nocliptoproof		; top_of_floor >= (MIDDLEY-botclip)  ?
+				move.w	d4,d1				; clip top_of_floor to (MIDDLEY-botclip)
 .nocliptoproof
 				cmp.w	d3,d7
 				blt		.doneclip
 				move.w	d3,d7
 				bra		.doneclip
 
+; Its a floor, clip it to top/bottom
+; FIXME: didn't we already clip to the bottom clip (minZ) ?
+
 .clipfloor:
 				move.w	BOTTOMY,d7
-				sub.w	MIDDLEY,d7
+				sub.w	MIDDLEY,d7			;
 				subq	#1,d7
 				sub.w	d1,d7
 				move.w	d7,disttobot
 
 				move.w	bottom(pc),d7
+
 				move.w	botclip,d4
 				sub.w	MIDDLEY,d4
 				cmp.w	d4,d1
-				bge		predontdrawfloor
+				bge		predontdrawfloor	; top >= (botclip - MIDDLEY)
+
 				move.w	topclip,d3
 				sub.w	MIDDLEY,d3
 				cmp.w	d3,d1
-				bge.s	.nocliptopfloor
-				move.w	d3,d1
+				bge.s	.nocliptopfloor		; top >= (topclip - MIDDLEY)
+
+				move.w	d3,d1				; clip top_of_floor to (topclip - MIDDLEY)
 .nocliptopfloor
 				cmp.w	d3,d7
-				ble		predontdrawfloor
+				ble		predontdrawfloor	; (bottom) <= (topclip - MIDDLEY) : bottom <= topclip (bottom of floor above topclip)
 				cmp.w	d4,d7
-				blt.s	.noclipbotfloor
-				move.w	d4,d7
+				blt.s	.noclipbotfloor		; (bottom) < (botclip)
+				move.w	d4,d7				; bottom = botclip
 .noclipbotfloor:
 
 .doneclip:
-
-				lea		(a4,d1*2),a4
+				lea		(a4,d1*2),a4		; adress of first floor/roof line
 				addq	#1,d7
-				sub.w	d1,d7
+				sub.w	d1,d7				; number of lines
 
 ;moveq #0,d0
-				asr.w	#1,d1
+				asr.w	#1,d1				; top line/2 for DOUBLEHEIGHT
 ; addx d0,d1
 
 ; move.l #dists,a2
-				move.w	distaddr,d0
+				move.w	View2FloorDist,d0
 				muls	#64,d0
 				move.l	d0,a2
 ; muls #25,d0
 ; adda.w d0,a2
 ; lea (a2,d1*2),a2
-				asr.w	#1,d7
-				ble		predontdrawfloor
+				asr.w	#1,d7				; number of lines /2 for DOUBLEHEIGHT
+				ble		predontdrawfloor	; nothing left?
+
 				move.w	d1,d0
 				bne.s	.notzero
-				moveq	#1,d0
+				moveq	#1,d0				; always start at line 1?
 .notzero
-				add.w	d0,d0
-				muls	linedir,d1
-				add.l	d1,a6
+				add.w	d0,d0				; start line# *2
+
+				muls	linedir,d1			; top line in screen times renderwidth (typical 320)
+				add.l	d1,a6				; this is where we start writing?
 ; sub.l d1,REFPTR
 				move.l	TexturePal,a1
 				add.l	#256*32,a1
 				move.l	LineToUse,a5
 
-				move.w	#4,tonextline
+				move.w	#4,tonextline		; line tab advance?
 
 				bra		pix2h
 
+				; Regular Nx1 line rendering
 pix1h:
 
 				move.l	a0,-(a7)
@@ -8649,6 +8746,7 @@ pix1h:
 				tst.w	above
 				beq.s	clipfloor
 
+				; clip roof?
 				move.w	MIDDLEY,d7
 				subq	#1,d7
 				sub.w	d1,d7
@@ -8660,12 +8758,12 @@ pix1h:
 				sub.w	topclip,d3
 				sub.w	botclip,d4
 				cmp.w	d3,d1
-				bge		predontdrawfloor
+				bge		predontdrawfloor	; top >= MIDDLEY - topclip
 				cmp.w	d4,d7
-				blt		predontdrawfloor
+				blt		predontdrawfloor	; bottom >= MIDDLEY - bottomclip
 				cmp.w	d4,d1
-				bge.s	.nocliptoproof
-				move.w	d4,d1
+				bge.s	.nocliptoproof		; top >= MIDDLEY - bottomclip
+				move.w	d4,d1				; top = MIDDLEY - bottomclip
 .nocliptoproof
 				cmp.w	d3,d7
 				blt		doneclip
@@ -8683,45 +8781,47 @@ clipfloor:
 				move.w	botclip,d4
 				sub.w	MIDDLEY,d4
 				cmp.w	d4,d1
-				bge		predontdrawfloor
+				bge		predontdrawfloor		; top >= (botclip - MIDDLEY)
 				move.w	topclip,d3
 				sub.w	MIDDLEY,d3
 				cmp.w	d3,d1
-				bge.s	.nocliptopfloor
-				move.w	d3,d1
+				bge.s	.nocliptopfloor			; top >= (topclip - MIDDLEY)
+				move.w	d3,d1					; top =  (topclip - MIDDLEY)
 .nocliptopfloor
 				cmp.w	d3,d7
-				ble		predontdrawfloor
+				ble		predontdrawfloor		; bottom <=  (topclip - MIDDLEY)
 				cmp.w	d4,d7
-				blt.s	.noclipbotfloor
-				move.w	d4,d7
+				blt.s	.noclipbotfloor			; bottom <= (botclip - MIDDLEY)
+				move.w	d4,d7					; botom = (botclip - MIDDLEY)
 .noclipbotfloor:
 
 doneclip:
-
-				lea		(a4,d1*2),a4
+				lea		(a4,d1*2),a4	; go to top linetab
 ; move.l #dists,a2
-				move.w	distaddr,d0
-				muls	#64,d0
+				move.w	View2FloorDist,d0
+				muls	#64,d0			; FIXME: why muls here? Is this addressing the floor tile row?
 				move.l	d0,a2
 ; muls #25,d0
 ; adda.w d0,a2
 ; lea (a2,d1*2),a2
-				sub.w	d1,d7
+				sub.w	d1,d7				;  number of lines to draw
 				ble		predontdrawfloor
-				move.w	d1,d0
+				move.w	d1,d0				; current line
 				bne.s	.notzero
-				moveq	#1,d0
+				moveq	#1,d0				; at least start at line 1 ?!
+											; We later divide  by d0, so make sure its not 0
 .notzero
 				muls	linedir,d1
-				add.l	d1,a6
+				add.l	d1,a6				; renderbuffer start address
 ; sub.l d1,REFPTR
 				move.l	TexturePal,a1
 				add.l	#256*32,a1
-				move.l	LineToUse,a5
+				move.l	LineToUse,a5		; This function ptr has been stored by the very outermost
 
-				move.w	#2,tonextline
+				move.w	#2,tonextline		; lefttab/righttab advance?
 
+
+				;double height rendering
 pix2h:
 
 				tst.b	gourfloor
@@ -8734,24 +8834,25 @@ dofloor:
 ; move.w (a2)+,d0
 				move.w	leftclip,d3
 				move.w	rightclip,d4
-				move.w	rightsidetab-leftsidetab(a4),d2
+				move.w	rightsidetab-leftsidetab(a4),d2	; get rightside of line
 
-				addq	#1,d2
-				cmp.w	d3,d2
-				ble.s	nodrawline
+				addq	#1,d2		; why? Is the right side X not inclusive?
+				cmp.w	d3,d2		; does this make sense?
+				ble.s	nodrawline	; rightside <= leftclip?
+
 				cmp.w	d4,d2
-				ble.s	noclipright
-				move.w	d4,d2
+				ble.s	noclipright	; rightclip <= rightside?
+				move.w	d4,d2		; clip rightside to rightclip
 noclipright:
-				move.w	(a4),d1
+				move.w	(a4),d1		; leftside x
 				cmp.w	d4,d1
-				bge.s	nodrawline
+				bge.s	nodrawline	; leftside >= rightclip?
 				cmp.w	d3,d1
-				bge.s	noclipleft
-				move.w	d3,d1
+				bge.s	noclipleft	; leftside >= leftclip
+				move.w	d3,d1		; leftside = leftclip
 noclipleft:
 				cmp.w	d1,d2
-				ble.s	nodrawline
+				ble.s	nodrawline	; rightside <= leftside?
 
 				move.w	d1,leftedge
 				move.w	d2,rightedge
@@ -8788,10 +8889,13 @@ noclipleft:
 
 				move.l	a6,a3
 				movem.l	d0/d7/a2/a4/a5/a6,-(a7)
-				move.l	a2,d7
-				asl.l	#2,d7
+				; perspective correct interpolation of Z over the floor by just looking at
+				; the screenspace coordinate and the floor height
+				; https://youtu.be/2ZAIIDXoBis?t=1385
+				move.l	a2,d7		; View2FloorDist*64 (distance of viewer Y to floor in worldspace)
+				asl.l	#2,d7		; *4 = * 256
 				ext.l	d0
-				divs.l	d0,d7
+				divs.l	d0,d7		; View2FloorDist * 256 / currentline
 				move.l	d7,d0
 				jsr		(a5)
 				movem.l	(a7)+,d0/d7/a2/a4/a5/a6
@@ -8820,8 +8924,9 @@ anyclipping:	dc.w	0
 
 dofloornoclip:
 ; move.w (a2)+,d0
-				move.w	rightsidetab-leftsidetab(a4),d2
-				addq	#1,d2
+				move.w	rightsidetab-leftsidetab(a4),d2  ;offset from leftside table entry to right side table entry
+				addq	#1,d2							 ;
+
 				move.w	(a4),d1
 				move.w	d1,leftedge
 				move.w	d2,rightedge
@@ -9207,18 +9312,21 @@ rndpt:			dc.l	rndtab
 
 dst:			dc.l	0
 
+********************************************************************************
+				; Draw one floor line
 FloorLine:
 
 				move.l	floortile,a0
 				adda.w	whichtile,a0
 				move.w	lighttype,d1
-				move.l	d0,dst					; *4
-				move.l	d0,d2					; *4
-*********************
+				move.l	d0,dst					; View2FloorDist*64 * 256 / firstline
+				move.l	d0,d2					;
+				********************
 * Old version
 				asr.l	#2,d2
-				asr.l	#8,d2
-				add.w	#5,d1
+				asr.l	#8,d2				; View2FloorDist / 1024
+
+				add.w	#5,d1				; add 5 to lighttype?!
 *********************
 ; asr.w #3,d2
 ; sub.w #4,d2
@@ -9227,17 +9335,17 @@ FloorLine:
 ; move.w #6,d2
 ;flbrbr:
 *********************
-				add.w	d2,d1
+				add.w	d2,d1				; clamp lighting on the line
 				bge.s	.fixedbright
-				moveq	#0,d1
+				moveq	#0,d1				; low clamp
 .fixedbright:
 				cmp.w	#28,d1
 				ble.s	.smallbright
-				move.w	#28,d1
+				move.w	#28,d1				; high clamp
 .smallbright:
 				move.l	TexturePal,a1
 				add.l	#256*32,a1
-				add.l	floorbright(pc,d1.w*4),a1
+				add.l	floorbright(pc,d1.w*4),a1	; adjust brightness of line
 				bra		pastfloorbright
 
 ConstCol:		dc.w	0
@@ -9338,7 +9446,7 @@ floorbright:
 
 widthleft:		dc.w	0
 scaleval:		dc.w	0
-sxoff:			dc.l	0
+sxoff:			dc.l	0	; viewer position in floor texture space?
 szoff:			dc.l	0
 xoff34:			dc.w	0
 zoff34:			dc.w	0
@@ -9349,13 +9457,19 @@ ssinval:		dc.w	0
 floorsetbright:
 				move.l	#walltiles,a0
 
+			; Floor drawing
 pastfloorbright:
 
-				move.l	d0,d1
-				muls	cosval,d1				; change in x across whole width
+				; these directly determine the texture gradients
+				; as function of the player view direction
+				; d0 = distance of line to viewer along Z axis
+				move.l	d0,d1					; View2FloorDist*64 * 256 / firstline
+				muls	cosval,d1				; cos * dist
 				move.l	d0,d2
-				muls	sinval,d2				; change in z across whole width
+				muls	sinval,d2				; sin * width
 				neg.l	d2
+
+				; scale for lowres CHEESEY version
 				ifne	CHEESEY
 				asr.l	#3,d2
 				asr.l	#3,d1
@@ -9364,62 +9478,74 @@ pastfloorbright:
 				asr.l	#2,d2
 				asr.l	#2,d1
 				endc
+
 scaleprog:
 				move.w	scaleval(pc),d3
 				beq.s	.samescale
 				bgt.s	.scaledown
+				; scale up
 				neg.w	d3
 				asr.l	d3,d1
 				asr.l	d3,d2
 				bra.s	.samescale
 .scaledown:
-				asl.l	d3,d1
-				asl.l	d3,d2
+				asl.l	d3,d1		; cos * dist * scale	step size of line through texture at distance 'dist'
+				asl.l	d3,d2		; -sin * dist * scale
+
+
+				; view vector R * (-ViewDist*.75 , ViewDist)^T
+				; I think the 0.75 related to the field of view
+				; It is supposed to produce left left start coordinate
+				; of the line in floor texture coordinates
 .samescale
+				move.l	d1,d3		; dist * cos * scale
+				move.l	d3,d6		; dist * cos * scale
+				move.l	d3,d5		; dist * cos * scale
+				asr.l	#1,d6		; dist * cos * scale * 0.5
+				add.l	d6,d3		; dist * cos * scale * 1.5
+				asr.l	#1,d3		; dist * cos * scale * 0.75
 
+				move.l	d2,d4		; -dist * sin * scale
+				move.l	d4,d6		; -dist * sin * scale
+				asr.l	#1,d6		; -dist * sin * scale * 0.5
+				add.l	d4,d6		; -dist * sin * scale * 1.5
+				asr.l	#1,d6		; -dist * sin * scale * 0.75
 
-				move.l	d1,d3					;	z cos
-				move.l	d3,d6
-				move.l	d3,d5
-				asr.l	#1,d6
-				add.l	d6,d3
-				asr.l	#1,d3
+				add.l	d3,d4		; left t = (dist * cos * scale * 0.75) - (dist * sin * scale)
+				neg.l	d4			; - start x
 
-				move.l	d2,d4					; z sin
-				move.l	d4,d6
-				asr.l	#1,d6
-				add.l	d4,d6
-				add.l	d3,d4
-				neg.l	d4						; start x
+				sub.l	d6,d5		; left s= -1 * -1 * (dist * sin * scale * 0.75) + (dist * cos * scale)
 
-				asr.l	#1,d6					; zsin/2
-				sub.l	d6,d5					; start z
-
-				add.l	sxoff,d4
+				add.l	sxoff,d4	; d4/d5 is the texture starting position?
 				add.l	szoff,d5
 
 				tst.b	FULLSCR
 				beq.s	.nob
 
 				moveq	#0,d6
-				move.w	leftedge(pc),d6
+				move.w	leftedge(pc),d6	; left edge of clipped floor line in screenspace
 				beq.s	.nomultleftB
 
+				; if the clipped left edge of the floor line is > 0,
+				; need  to inset the start of the floorspace coordinate accordingly
 				add.l	d6,d6
-				divs	#3,d6
-				ext.l	d6
+				divs	#3,d6		; * 2/3 seems to be the FULLSCREEN multiplier?
+				ext.l	d6			; FIXME: why are we applying that here?
+									; shouldn't that have been implicit when calulating the clipping stuff?
+									; but taking it away, doesn't work
 
-				move.l	d1,a4
-				move.l	d2,a5
+				move.l	d1,a4		; save width * cos * scale
+				move.l	d2,a5		; save width * sin * scale
 
-				muls.l	d6,d1
-				asr.l	#7,d1
-				add.l	d1,d4
+				muls.l	d6,d1		; ds/dx  * left start
+				asr.l	#7,d1		; sin/cos are << 15; this shifts it down to << 8
+				add.l	d1,d4		; current floor line start texel s
 
-				muls.l	d6,d2
-				asr.l	#7,d2
-				add.l	d2,d5
-				move.l	a4,d1
+				muls.l	d6,d2		; dt/dx * left start
+				asr.l	#7,d2		; sin/cos are << 15; this shifts it down to << 8
+				add.l	d2,d5		; current floor line start texel t
+
+				move.l	a4,d1		; restore
 				move.l	a5,d2
 
 				move.w	leftedge(pc),d6
@@ -9438,63 +9564,64 @@ scaleprog:
 
 				move.w	d4,d5
 
-				asr.l	#6,d1
+				; multiply floor space step ds/dx and dt/dx by Fullscreen multiplier
+				asr.l	#6,d1		; don't shift by 7, but 6
 				asr.l	#6,d2
-				divs.l	#3,d1
+				divs.l	#3,d1		; to achieve * 2/3
 				divs.l	#3,d2
 
 				bra.s	doneallmult
 
-.nob
-
+.nob			; smallscreen left edge insetting
 				moveq	#0,d6
 				move.w	leftedge(pc),d6
-				beq.s	nomultleft
+				beq.s	nomultleft	; skip if at left screen edge already
 
-				move.l	d1,a4
-				move.l	d2,a5
+				move.l	d1,a4		; save  width * cos * scale
+				move.l	d2,a5		; save width * sin * scale
 
-				muls.l	d6,d1
+				muls.l	d6,d1		; left start * ds/dx
 				asr.l	#7,d1
-				add.l	d1,d4
+				add.l	d1,d4		; start texel x
 
-				muls.l	d6,d2
+				muls.l	d6,d2		; left start * dt/dx
 				asr.l	#7,d2
-				add.l	d2,d5
-				move.l	a4,d1
-				move.l	a5,d2
+				add.l	d2,d5		; start texel y
+
+				move.l	a4,d1		; restore
+				move.l	a5,d2		; restore
 
 				move.w	leftedge(pc),d6
 
-nomultleft:
-
+nomultleft:		; final start coordinate in floor texture space
 				move.w	d4,startsmoothx
 				move.w	d5,startsmoothz
 
-				asr.l	#8,d4
-				asl.l	#8,d5
-
+				asr.l	#8,d4		;  s / 256
+				asl.l	#8,d5		;  t * 256
 
 ; add.w szoff,d5
 ; add.w sxoff,d4
 ; and.w #63,d4
 ; and.w #63*256,d5
 
-				move.w	d4,d5
+				move.w	d4,d5		; move s into lower half of t
 
-				asr.l	#7,d1
-				asr.l	#7,d2
+				asr.l	#7,d1	    ; ds/dx / 128 = ds/dx << 8
+				asr.l	#7,d2		; dt/dx / 128 = dt/dx << 8
 ; divs.l #3,d1
 ; divs.l #3,d2
 
 doneallmult:
 
-				move.w	d1,a4
+				move.w	d1,a4		; save ds/dx and dt/dx
 				move.w	d2,a5
-				asl.l	#8,d2
+
+				asl.l	#8,d2		;  dt/dx << 16
 ; and.w #%0011111100000000,d2
-				asr.l	#8,d1
-				move.w	d1,d2
+				asr.l	#8,d1		;  ds/dx
+				move.w	d1,d2		;  move ds/dx into lower half of dt/dx
+
 				ifeq	CHEESEY
 				move.l	#$3fff3fff,d1
 				endc
@@ -9516,7 +9643,8 @@ doneallmult:
 				;beq.s	.nodoub
 				bra.s	.nodoub
 
-				and.b	#$fe,d6
+				; old doublewidth rendering
+				and.b	#$fe,d6			; remove LSB in lower 8 bit, only draw even columns?
 
 				move.w	d6,a2
 				moveq	#0,d0
@@ -9529,17 +9657,16 @@ doneallmult:
 
 				tst.b	usewater
 				bne		texturedwaterDOUB
-; tst.b gourfloor
+		; tst.b gourfloor
 				bra		gouraudfloorDOUB
 
 .nodoub:
-
-				move.w	d6,a2
+				move.w	d6,a2			; left start X
 				moveq	#0,d0
 				move.w	rightedge(pc),d3
-				lea		(a3,a2.w),a3
+				lea		(a3,a2.w),a3	; start adress in screen
 				move.w	d3,d7
-				sub.w	a2,d7
+				sub.w	a2,d7			; end X - start X : line width
 
 intofirststrip:
 allintofirst:
@@ -9550,7 +9677,8 @@ tstwat:
 
 				tst.b	usewater
 				bne		texturedwater
-; tst.b gourfloor
+; tst.b gourfloor						; FIXME: this effectively disables bumpmapped floors...
+										; opportunity to reenable and see what happens
 				bra		gouraudfloor
 
 
@@ -9643,23 +9771,26 @@ gouraudfloor:
 				asr.w	#1,d7
 				btst	#0,d3
 				beq.s	.nosingle1
-				move.w	d5,d3
+
+				move.w	d5,d3		; d3 = S
 				move.l	d5,d6
 				lsr.w	#8,d3
-				swap	d6
-				move.b	d3,d6
-				move.w	d0,d3
+				swap	d6			; d6 = T
+				move.b	d3,d6		; T * 256 + S
+
+				move.w	d0,d3		; line X
+
 				ifeq	CHEESEY
-				move.b	(a0,d6.w*4),d3
+				move.b	(a0,d6.w*4),d3	; fetch floor texel; but why d6*4?
 				endc
 				ifne	CHEESEY
-				move.b	(a0,d6.w),d3
+				move.b	(a0,d6.w),d3	; fetch floor texel
 				endc
 
-				add.w	d1,d0
+				add.w	d1,d0		;
 				add.l	d2,d5
 				and.l	d4,d5
-				move.b	(a1,d3.w),(a3)+
+				move.b	(a1,d3.w),(a3)+	; map through palette and write to renderbuffer
 .nosingle1
 
 				move.w	d7,d3
@@ -11248,7 +11379,7 @@ nostartalan:
 				clr.b	PLR1_clicked
 				move.w	#0,ADDTOBOBBLE
 				move.l	#playercrouched,PLR1s_height
-				move.w	#-80,d0
+				move.w	#-80,d0			; Is this related to render buffer height
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
@@ -12847,6 +12978,9 @@ test:			dc.l	0
 				ds.l	30
 
 
+; FIXME: since these are all empty symbols
+; it stands to reason that they're all unusable,
+; and any code referencing them.
 				even
 ConstCols:
 ; incbin "constcols"
@@ -12910,11 +13044,11 @@ SineTable:
 				incbin	"bigsine"
 
 angspd:			dc.w	0
-flooryoff:		dc.w	0
+flooryoff:		dc.w	0		; viewer y pos << 6
 xoff:			dc.l	0
+zoff:			dc.l	0
 yoff:			dc.l	0
 yvel:			dc.l	0
-zoff:			dc.l	0
 tyoff:			dc.l	0
 xspdval:		dc.l	0
 zspdval:		dc.l	0
@@ -13111,13 +13245,11 @@ OldRoompt:		dc.l	0
 wallpt:			dc.l	0
 floorpt:		dc.l	0
 
-Rotated:
-				ds.l	2*800
-ObjRotated:
-				ds.l	2*500
+Rotated:		ds.l	2*800	; store rotated X and Z coordinates with Z scaling applied
 
-OnScreen:
-				ds.l	2*800
+ObjRotated:		ds.l	2*500
+
+OnScreen:		ds.l	2*800	; store screen projected X coordinates for rotated points
 
 startwait:		dc.w	0
 endwait:		dc.w	0

@@ -667,7 +667,7 @@ scrdrawlopFULLDOUB:
 				move.l	(a0)+,d3
 				swap	d3
 				add.l	#divthreetab,a5
-				move.w	(a5),StripData
+				move.w	(a5),StripData		;
 
 				move.l	ChunkAddr,a5
 				moveq	#0,d6
@@ -725,7 +725,7 @@ ffscrpickhowbrightFULLDOUB:
 				SCALE
 
 
-divthreetab:
+divthreetab:						; stores x/3 and x mod 3 for x=0...660
 val				SET		0
 				REPT	220
 				dc.b	val,0
@@ -1437,7 +1437,6 @@ computeloop2:
 				bge.s	alloffright2
 
 OTHERHALF:
-
 				move.w	d1,(a0)
 				move.w	d3,2(a0)
 				move.w	d4,4(a0)
@@ -1460,7 +1459,6 @@ OTHERHALF:
 				movem.l	(a7)+,d7/a1
 
 alloffleft2:
-
 				move.l	(a1)+,d1
 				move.w	(a1)+,d0
 				move.w	(a1)+,d4
@@ -1543,12 +1541,12 @@ wlcnt:			dc.w	0
 				CNOP	0,4
 drawwalldimPACK0:
 				and.w	d7,d4
-				move.b	1(a5,d4.w*2),d1
-				and.b	#31,d1
-				add.l	d3,d4
+				move.b	1(a5,d4.w*2),d1		; fetch texel
+				and.b	#31,d1				; pull out right part
+				add.l	d3,d4				; add fractional part?
 				move.b	(a4,d1.w*2),(a3)
-				adda.w	d0,a3
-				addx.w	d2,d4
+				adda.w	d0,a3				; next line in screen
+				addx.w	d2,d4				; texture Y + dy
 				dbra	d6,drawwallPACK0
 				rts
 
@@ -1633,7 +1631,6 @@ cliptopusesimple
 				blt.s	usea2
 				move.l	a4,a2
 usea2:
-
 				and.w	d7,d4
 
 				move.l	d2,d5
@@ -1736,18 +1733,18 @@ TOTHEMIDDLE:	dc.w	0
 gotoend:
 				tst.b	DOUBLEHEIGHT
 				bne		doubwall
-				sub.w	d5,d6					; height to draw.
+				sub.w	d5,d6					; end-start; height to draw?
 				ble		nostripq
 
-				add.l	timeslarge(pc,d5.w*4),a3
+				add.l	timeslarge(pc,d5.w*4),a3	; offset to render buffer line of the strip
 
 				add.w	d2,d2
 
-				move.l	4(a1,d2.w*8),d0
+				move.l	4(a1,d2.w*8),d0				; fetch 4(a1) at d2*16
 				add.w	TOPOFFSET(pc),d5
 				move.w	d5,d4
 
-				move.l	(a1,d2.w*4),d2
+				move.l	(a1,d2.w*4),d2				; fetch (a1) at d2*8
 ; moveq #0,d3
 ; move.w d2,d3
 ; swap d2
@@ -1774,41 +1771,49 @@ gotoend:
 ; add.l d0,d4
 ; swap d4
 ; add.w d5,d4
-				add.w	totalyoff(pc),d4
+				add.w	totalyoff(pc),d4	; start texel offset in strip
 				move.w	VALAND,d7
-				and.w	d7,d4
-				move.w	#SCREENWIDTH,d0
+				and.w	d7,d4				; vertical texture coordinate clamp/wrap
+				move.w	#SCREENWIDTH,d0		; line offset to next line
 				moveq	#0,d1
 
 				ifne	CHEESEY
-				asr.l	#1,d2
+				asr.l	#1,d2				; shrink dt for CHEESEY
 				endc
-				swap	d2
+
+				swap	d2					; fractional dt in upper word
 				move.l	d2,d3
 				clr.w	d3
 
-				cmp.b	#1,StripData+1
+				cmp.b	#1,StripData+1		; depending on 0th, 1st or second column,
+											; start at different routine, unpacking the correct
+											; column from packed strip data
 				dbge	d6,drawwallPACK0
 				dbne	d6,drawwallPACK1
 				dble	d6,drawwallPACK2
 				rts
 
+; FIXME: there are multiple timeslargeXXXX tables throughout the code
+; that essentially all contain the same data (line offsets into renderbuffer)
+; We can potentially use the same table for all and later also try just multiplying
+; in code. The table approach was probably suitable for chunky copper. Nowadays could
+; change it to use mul instead?
 timeslarge:
 
 val				SET		0
-				REPT	256
+				REPT	256				; this limits the vertical height of the renderbuffer
 				dc.l	val
 val				SET		val+SCREENWIDTH
 				ENDR
 
 doubwall
 				moveq	#0,d0
-				asr.w	#1,d5
-				addx.w	d0,d5
-				add.w	d5,d5
+				asr.w	#1,d5		; d5*2
+				addx.w	d0,d5		; ??
+				add.w	d5,d5		; d5 * 3
 				sub.w	d5,d6
 				asr.w	#1,d6
-				ble		nostripq
+				ble		nostripq	; (d5*3-d6)/2
 
 				add.l	timeslargeDOUB(pc,d5.w*4),a3
 
@@ -1911,16 +1916,16 @@ ScreenWallstripdrawBIG:
 gotoendBIG
 				tst.b	DOUBLEHEIGHT
 				bne		doubwallBIG
-				sub.w	d5,d6					; height to draw.
+				sub.w	d5,d6					; d6 = height to draw.
 				ble		nostripq
 
-				add.l	timeslargeBIG(pc,d5.w*4),a3
+				add.l	timeslargeBIG(pc,d5.w*4),a3 ;offset to start line in renderbuffer
 
 				move.w	d2,d4
 				add.w	d2,d2
-				add.w	d2,d4
+				add.w	d2,d4				; d2*3
 
-				move.l	4(a1,d4.w*8),d0
+				move.l	4(a1,d4.w*8),d0		; d2*24
 				add.w	TOPOFFSET(pc),d5
 				move.w	d5,d4
 
@@ -2250,7 +2255,7 @@ simplewallthruiPACK1:
 				lsr.w	#5,d1
 				and.w	#31,d1
 				move.w	(a2,d1.w*2),d3
-				simplewallthruPACK1:
+simplewallthruPACK1:
 				move.w	d3,(a3)
 				adda.w	d0,a3
 				add.l	d5,d4
@@ -2377,19 +2382,22 @@ WHICHLEFTPT:	dc.w	0
 WHICHRIGHTPT:	dc.w	0
 OTHERZONE:		dc.w	0
 
+				; Is this THE wall draw entrypoint?
+				; a0 pointing to wall description?
 itsawalldraw:
 
 				move.l	#Rotated,a5
 				move.l	#OnScreen,a6
 
-				move.w	(a0)+,d0
-				move.w	(a0)+,d2
+				move.w	(a0)+,d0			; left point index
+				move.w	(a0)+,d2			; right point index
 
 				move.w	d0,wallleftpt
 				move.w	d2,wallrightpt
 
-				move.b	(a0)+,WHICHLEFTPT+1
-				move.b	(a0)+,WHICHRIGHTPT+1
+				move.b	(a0)+,WHICHLEFTPT+1		; mhhm?!
+				move.b	(a0)+,WHICHRIGHTPT+1	; mhhm??
+
 				move.w	#0,leftend
 				moveq	#0,d5
 				move.w	(a0)+,d5
@@ -2432,24 +2440,24 @@ itsawalldraw:
 				ifne	CHEESEY
 				asr.w	#1,d1
 				endc
-				move.w	d1,VALAND
+				move.w	d1,VALAND		; (vertical) wall texture height mask
 
 				moveq	#0,d1
 				move.b	(a0)+,d1
 
-				ifne	CHEESEY
+				ifne	CHEESEY			; CHEESEY version has all textures at quarter size?!
 				sub.w	#1,d1
 				endc
-				move.w	d1,VALSHIFT
+				move.w	d1,VALSHIFT	;	; (vertical) wall texture height shift
 
 				moveq	#0,d1
-				move.b	(a0)+,d1
+				move.b	(a0)+,d1		; texture width
 
 				ifne	CHEESEY
 				asr.w	#1,d1
 				endc
 
-				move.w	d1,HORAND
+				move.w	d1,HORAND		; horizontal texture width mask?
 
 				move.b	(a0)+,WHICHPBR
 
@@ -2488,14 +2496,15 @@ cantell:
 				ble.s	cliptotestsecbehind
 				bra		pastclip
 cliptotestfirstbehind:
-
-				move.l	(a5,d0*8),d3
-				sub.l	(a5,d2*8),d3
+				;	a5 Rotated
+				move.l	(a5,d0*8),d3		; prerotated points,
+				sub.l	(a5,d2*8),d3		; line dx, integer part ?
 				move.w	6(a5,d0*8),d6
-				sub.w	6(a5,d2*8),d6
+				sub.w	6(a5,d2*8),d6		; line dy, fractional part?
 				ext.l	d6
-				divs.l	d6,d3
-				move.w	6(a5,d2.w*8),d6
+				divs.l	d6,d3				; dx/dy
+
+				move.w	6(a5,d2.w*8),d6		; FIXME: why fetch a second time?
 				ext.l	d6
 				muls.l	d6,d3
 				neg.l	d3
@@ -2505,6 +2514,7 @@ cliptotestfirstbehind:
 				move.w	6(a5,d2*8),d4
 				ext.l	d4
 				divs.l	d4,d6
+
 ; move.w MIDDLEX,d4
 ; ext.l d4
 ; sub.l d4,d6
@@ -2530,6 +2540,7 @@ cliptotestsecbehind:
 				muls.l	d6,d3
 				neg.l	d3
 				add.l	(a5,d0*8),d3
+
 ; move.w (a6,d0*2),d6
 ; sub.w MIDDLEX,d6
 ; ext.l d6
@@ -2538,6 +2549,7 @@ cliptotestsecbehind:
 				move.w	6(a5,d0*8),d4
 				ext.l	d4
 				divs.l	d4,d6
+
 ; move.w MIDDLEX,d4
 ; ext.l d4
 ; sub.l d4,d6

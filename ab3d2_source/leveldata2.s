@@ -84,7 +84,7 @@ ObjectPoints:	dc.l	0
 PlayerShotData:	dc.l	0
 ObjectData:		dc.l	0
 FloorLines:		dc.l	0
-Points:			dc.l	0
+Points:			dc.l	0	; Pointer to array of all 2D points in the world
 PLR1_Obj:		dc.l	0
 PLR2_Obj:		dc.l	0
 PLR3_Obj:		dc.l	0

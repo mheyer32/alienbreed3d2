@@ -30,7 +30,7 @@ CACHE_CLEAR		MACRO
 CACHE_FREEZE_ON	MACRO
 *---------------------------------------------------------------------------*
 				Movec.l	CACR,\1
-				or.l	#2,\1
+				or.l	#2,\1		; Freeze instruction cache
 				Movec.l	\1,CACR
 				ENDM
 *---------------------------------------------------------------------------*
