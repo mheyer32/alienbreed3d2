@@ -37,7 +37,7 @@ macro_sync:		MACRO	;						Kills: d7 --			Macro_Sync
 				move.l	main_dataptr,a0
 				move.l	d0,48(a0)
 				ENDC
-.waitsync\@:	move.l	$dff004,d7
+.waitsync\@:	move.l	vposr+_custom,d7
 				and.l	#$1ff00,d7
 				cmp.l	#305*$100,d7
 				bne.s	.waitsync\@
@@ -271,17 +271,17 @@ MODIT			MACRO
 				dc.w	643
 				dc.l	999
 
-mnu_getrnd:		move.w	$dff00a,d0
-				add.w	$dff00c,d0
-				add.w	$dff008,d0
-				add.w	$dff012,d0
-				add.w	$dff014,d0
-				add.w	$dff016,d0
-				add.w	$dff018,d0
-				add.w	$dff01a,d0
-				add.w	$dff002,d0
-				add.w	$dff004,d0
-				add.w	$dff006,d0
+mnu_getrnd:		move.w	_custom+joy0dat,d0
+				add.w	_custom+joy1dat,d0
+				add.w	_custom+dskdatr,d0
+				add.w	_custom+pot0dat,d0
+				add.w	_custom+pot1dat,d0
+				add.w	_custom+potinp,d0
+				add.w	_custom+serdatr,d0
+				add.w	_custom+dskbytr,d0
+				add.w	_custom+dmaconr,d0
+				add.w	_custom+vposr,d0
+				add.w	_custom+vhposr,d0
 				rts
 
 mnu_viewcredz:	clr.l	counter
@@ -316,11 +316,12 @@ mnu_clearscreen:
 
 mnu_setscreen:	bsr.w	mnu_init
 				macro_sync
-				move.w	#DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_BLITTER!DMAF_SPRITE,$dff096 ; disable  DMA
-				move.w	#DMAF_SETCLR!DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_BLITTER!DMAF_SPRITE,$dff096 ; enable DMA
-				move.l	#mnu_copper,$dff080
-				move.w	#0,$dff088
-;		bsr.w	key_kbdinit
+				; disable  DMA
+				move.w	#DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_BLITTER!DMAF_SPRITE,dmacon+_custom
+				; enable DMA
+				move.w	#DMAF_SETCLR!DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_BLITTER!DMAF_SPRITE,dmacon+_custom
+				move.l	#mnu_copper,cop1lc+_custom
+				move.w	#0,copjmp1+_custom
 				move.l	#mnu_vblint,main_vblint
 				bsr.w	mnu_fadein
 				rts
@@ -553,20 +554,20 @@ mnu_fadespeed	=		16
 mnu_fadein:		clr.w	mnu_fadefactor
 				moveq.l	#256/mnu_fadespeed-1,d0
 .loop:			move.l	d0,-(a7)
-.wsync:			cmp.b	#$80,$dff006
+.wsync:			cmp.b	#$80,_custom+vhposr
 				blt.s	.wsync
-				cmp.b	#$90,$dff006
+				cmp.b	#$90,_custom+vhposr
 				bgt.s	.wsync
 				bsr.w	mnu_fade
-.wsync2:		cmp.b	#$a0,$dff006
+.wsync2:		cmp.b	#$a0,_custom+vhposr
 				blt.s	.wsync2
 				add.w	#mnu_fadespeed,mnu_fadefactor
 				move.l	(a7)+,d0
 				dbra	d0,.loop
 				move.w	#255,mnu_fadefactor
-.wsync3:		cmp.b	#$80,$dff006
+.wsync3:		cmp.b	#$80,_custom+vhposr
 				blt.s	.wsync3
-				cmp.b	#$90,$dff006
+				cmp.b	#$90,_custom+vhposr
 				bgt.s	.wsync3
 				bsr.w	mnu_fade
 				rts
@@ -575,20 +576,20 @@ mnu_fadeout:	move.w	#255,mnu_fadefactor
 				moveq.l	#256/mnu_fadespeed-1,d0
 .loop:			move.l	d0,-(a7)
 ;		bsr.w	mnu_docursor
-.wsync:			cmp.b	#$80,$dff006
+.wsync:			cmp.b	#$80,_custom+vhposr
 				blt.s	.wsync
-				cmp.b	#$90,$dff006
+				cmp.b	#$90,_custom+vhposr
 				bgt.s	.wsync
 				bsr.w	mnu_fade
-.wsync2:		cmp.b	#$a0,$dff006
+.wsync2:		cmp.b	#$a0,_custom+vhposr
 				blt.s	.wsync2
 				sub.w	#mnu_fadespeed,mnu_fadefactor
 				move.l	(a7)+,d0
 				dbra	d0,.loop
 				clr.w	mnu_fadefactor
-.wsync3:		cmp.b	#$80,$dff006
+.wsync3:		cmp.b	#$80,_custom+vhposr
 				blt.s	.wsync3
-				cmp.b	#$90,$dff006
+				cmp.b	#$90,_custom+vhposr
 				bgt.s	.wsync3
 				bsr.w	mnu_fade
 				rts
@@ -698,16 +699,16 @@ mnu_dofire:		btst.b	#0,main_counter+3
 				beq.s	.skip
 				rts
 .skip:			move.l	#mnu_bltint,main_bltint
-				move.w	$dff006,d0
+				move.w	_custom+vhposr,d0
 				add.w	d0,mnu_rnd
-				tst.b	$dff002
+				tst.b	_custom+dmaconr
 
 
 .w8:			tst.w	mnu_bltbusy
 				beq.s	.notdoneyet
 				rts
 .notdoneyet:
-.w82			btst.b	#6,$dff002
+.w82			btst.b	#6,_custom+dmaconr
 				bne.s	.w82
 
 				lea		mnu_sourceptrs,a0
@@ -715,7 +716,7 @@ mnu_dofire:		btst.b	#0,main_counter+3
 				move.l	4(a0),(a0)
 				move.l	8(a0),4(a0)
 				move.l	d0,8(a0)
-				lea		$dff000,a6
+				lea		_custom,a6
 				st.b	mnu_bltbusy
 				move.w	#INTF_BLIT,$9c(a6)		; Clear BLT req
 				move.w	#INTF_SETCLR!INTF_BLIT,$9a(a6) ; Enable BLT int
@@ -724,15 +725,15 @@ mnu_dofire:		btst.b	#0,main_counter+3
 				rts
 
 mnu_bltint:		bsr.w	.getrnd
-				lea		$dff000,a6
+				lea		_custom,a6
 				move.l	.passptr,a0
 				move.l	(a0),d0
 				beq.s	.last
 				addq.l	#4,.passptr
 				move.l	d0,a0
 				jmp		(a0)
-.last:			;move.w	#$0040,$9a(a6)			; Disable BLT int
-;move.w	#%1000000,$96(a6)		; Disable blitter dma
+.last:			;move.w	#INTF_BLIT,intena(a6)			; Disable BLT int
+				;move.w	#DMAF_BLITTER,dmacon(a6)		; Disable blitter dma
 				move.l	#.passlist,.passptr
 				clr.w	mnu_bltbusy
 				rts
@@ -1439,9 +1440,9 @@ mnu_wait4slave:	;		Wait					for the slave to connect.
 ;.............. Do your tests here .................................
 ;.............. if the slave connects just exit with a rts .........
 
-				btst	#6,$bfe001
+				btst	#CIAB_GAMEPORT0,_ciaa+ciapra
 				bne.s	.loop
-.loop1:			btst	#6,$bfe001
+.loop1:			btst	#CIAB_GAMEPORT0,_ciaa+ciapra
 				beq.s	.loop1
 
 .rts:			rts
@@ -1455,9 +1456,9 @@ mnu_wait4master:; Wait	for						the master to connect.
 ;.............. Do your tests here ..................................
 ;.............. if the master connects just exit with a rts .........
 
-				btst	#6,$bfe001
+				btst	#CIAB_GAMEPORT0,_ciaa+ciapra
 				bne.s	.loop
-.loop1:			btst	#6,$bfe001
+.loop1:			btst	#CIAB_GAMEPORT0,_ciaa+ciapra
 				beq.s	.loop1
 
 .rts:			rts
@@ -1466,7 +1467,7 @@ mnu_wait4master:; Wait	for						the master to connect.
 
 mnu_play1p:		;		Do						the 1 player game stuff here
 
-.loop:			btst	#6,$bfe001
+.loop:			btst	#CIAB_GAMEPORT0,_ciaa+ciapra
 				bne.s	.loop
 
 				rts
@@ -1475,7 +1476,7 @@ mnu_play1p:		;		Do						the 1 player game stuff here
 
 mnu_play2pMaster:; Do	the						2 player master game stuff here
 
-.loop:			btst	#6,$bfe001
+.loop:			btst	#CIAB_GAMEPORT0,_ciaa+ciapra
 				bne.s	.loop
 
 				rts
@@ -1484,7 +1485,7 @@ mnu_play2pMaster:; Do	the						2 player master game stuff here
 
 mnu_play2pSlave:; Do	the						2 player slave game stuff here
 
-.loop:			btst	#6,$bfe001
+.loop:			btst	#CIAB_GAMEPORT0,_ciaa+ciapra
 				bne.s	.loop
 
 				rts
@@ -1685,7 +1686,7 @@ mnu_MYMAINMENU:
 				dc.l	0,0
 
 mnu_MYMAINMENUTEXT:
-;      12345678901234567890
+;                        12345678901234567890
 				dc.b	'                    ',1
 				dc.b	'                    ',1
 mnu_CURRENTLEVELLINE:
@@ -1714,7 +1715,7 @@ mnu_MYCONTROLSONE:
 
 mnu_MYCONTROLTEXTONE:
 KEY_LINES:
-;      12345678901234567  8  90
+;                        12345678901234567  8  90
 				dc.b	'  TURN LEFT      ',132+$4f,'  ',1
 				dc.b	'  TURN RIGHT     ',132+$4e,'  ',1
 				dc.b	'  FORWARDS       ',132+$4c,'  ',1
@@ -1742,7 +1743,7 @@ mnu_MYCONTROLSTWO:
 
 mnu_MYCONTROLTEXTTWO:
 KEY_LINES2:
-;      12345678901234567  8  90
+;                        12345678901234567  8  90
 				dc.b	'  LOOK BEHIND    ',132+$28,'  ',1
 				dc.b	'  JUMP           ',132+$0f,'  ',1
 				dc.b	'  LOOK UP        ',132+027,'  ',1
@@ -1764,7 +1765,7 @@ mnu_MYMASTERMENU:
 				EVEN
 
 mnu_MYMASTERTEXT:
-;      12345678901234567890
+;                        12345678901234567890
 				dc.b	'  2 PLAYER  MASTER  ',1
 mnu_CURRENTLEVELLINEM:
 				dc.b	'                    ',1
@@ -1784,7 +1785,7 @@ mnu_MYSLAVEMENU:
 				EVEN
 
 mnu_MYSLAVETEXT:
-;      12345678901234567890
+;                        12345678901234567890
 				dc.b	'   2 PLAYER SLAVE   ',1
 				dc.b	'     PLAY  GAME     ',1
 				dc.b	'  CONTROL  OPTIONS  ',0
@@ -1802,7 +1803,7 @@ mnu_MYLOADMENU:
 				EVEN
 
 mnu_MYLOADMENUTEXT:
-;      12345678901234567890
+;                        12345678901234567890
 				dc.b	'   LOAD  POSITION   ',1
 mnu_LSLOTA:
 				dc.b	'      NEW GAME      ',1
@@ -1826,7 +1827,7 @@ mnu_MYSAVEMENU:
 				EVEN
 
 mnu_MYSAVEMENUTEXT:
-;      12345678901234567890
+;                        12345678901234567890
 				dc.b	'   SAVE  POSITION   ',1
 mnu_SSLOTA:
 				dc.b	'                    ',1
@@ -1943,7 +1944,7 @@ mnu_2pmastermenu:
 
 ;--------------------------------------------------------------------- Texts --
 mnu_askfordisktext:
-;     12345678901234567890
+;                        12345678901234567890
 				dc.b	'Please Insert Volume',1
 				dc.b	1
 mnu_diskline:

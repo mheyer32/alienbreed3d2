@@ -1,20 +1,20 @@
 ;sends the lower byte of d1 accross serial port
 ;corrupts bit 8 of d1
 SERSEND:
-				btst.b	#5,SERDATR(a6)
+				btst.b	#5,serdatr(a6)
 				beq.s	SERSEND					;wait until last byte sent
 				and.w	#$00FF,d1
 				bset.l	#8,d1					;add stop bit
-				move.w	d1,SERDAT(a6)
+				move.w	d1,serdat(a6)
 				rts
 
 ;waits for serial data and returns it in
 ;lower byte of d1
 SERREC:
-				btst.b	#6,SERDATR(a6)
+				btst.b	#6,serdatr(a6)
 				beq.s	SERREC
-				move.w	SERDATR(a6),d1
-				move.w	#$0800,INTREQ(a6)
+				move.w	serdatr(a6),d1
+				move.w	#$0800,intreq(a6)
 				and.w	#$00ff,d1
 				rts
 

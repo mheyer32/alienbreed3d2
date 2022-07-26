@@ -45,11 +45,11 @@ FILTER			macro
 				endm
 
 BLACK			macro
-				move.w	#0,$dff180
+				move.w	#0,_custom+color
 				endm
 
 RED				macro
-				move.w	#$f00,$dff180
+				move.w	#$f00,_custom+color
 				endm
 
 FLASHER			macro
@@ -57,10 +57,10 @@ FLASHER			macro
 ;	move.w	#-1,d1
 ;
 ;loop3\@
-;;	move.w	#\1,$dff180
+;;	move.w	#\1,_custom+color
 ;	nop
 ;	nop
-;	move.w	#\2,$dff180
+;	move.w	#\2,_custom+color
 ;	nop
 ;	nop
 ;	dbra	d1,loop3\@
@@ -233,7 +233,7 @@ WBa				MACRO
 
 WBSLOW			MACRO
 \@bf:
-				btst	#6,$dff000+dmaconr
+				btst	#6,_custom+dmaconr
 				bne.s	\@bf
 				ENDM
 
@@ -284,7 +284,7 @@ _start
 
 
 
-				move.l	#$dff000,a6				; NB V. IMPORTANT: A6=CUSTOM BASE
+				move.l	#_custom,a6				; NB V. IMPORTANT: A6=CUSTOM BASE
 				move.w	intenar(a6),_storeint
 				and.w	#$c000,_storeint
 
@@ -562,7 +562,7 @@ PLAYTHEGAME:
 .notext
 
 ;charlie
-				move.l	#TEXTCOP,$dff080
+				move.l	#TEXTCOP,_custom+cop1lc
 
 				move.w	#$10,d0
 				move.w	#7,d1
@@ -572,12 +572,12 @@ PLAYTHEGAME:
 				move.w	d0,MIXCOLL
 				add.w	#$121,d0
 .wtframe:
-				btst	#5,$dff000+intreqrl
+				btst	#5,_custom+intreqrl
 				beq.s	.wtframe
-				move.w	#$0020,$dff000+intreq
+				move.w	#$0020,_custom+intreq
 				dbra	d1,.fdup
 
-				move.l	#$dff000,a6
+				move.l	#_custom,a6
 				jsr		SETPLAYERS
 
 				move.l	#0,TYPEOFMEM
@@ -607,7 +607,7 @@ PLAYTHEGAME:
 				CALLEXEC AllocMem
 				move.l	d0,LEVELMUSIC
 
-				move.l	#$dff000,a6
+				move.l	#_custom,a6
 
 ; move.b LEVTOPLAY,d0
 ; move.b d0,LEVA
@@ -801,7 +801,7 @@ noload:
 ; jsr CloseLib(a6)
 
 				;FIXME another place with hw access
-				move.l	#$dff000,a6
+				move.l	#_custom,a6
 
 charlie:
 ; jmp  ENDGAMESCROLL

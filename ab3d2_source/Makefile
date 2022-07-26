@@ -16,7 +16,7 @@ AFLAGS += -I../ \
 
 #		  -I$(PREFIX)/m68k-amigaos/ndk-include
 
-LFLAGS = -b amigahunk -sd -sc
+LFLAGS = -b amigahunk -sd -sc -l amiga -L ../devpac/Include/lib
 
 all:	 hires
 

@@ -249,12 +249,12 @@ START:
 				; FIXME: screen setup should be all OS stuff
 				; set PAL in BEAMCON
 				move.w	#$20,$dff1dc
-				move.l	#titlecop,$dff080
+				move.l	#titlecop,_custom+cop1lc
 
 ; PRSDV
 				; FIXME: whatyadoin?
-				move.w	#$87c0,$dff000+dmacon
-				move.w	#$8020,$dff000+dmacon
+				move.w	#DMAF_SETCLR!DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER,_custom+dmacon
+				move.w	#DMAF_SETCLR!DMAF_SPRITE,_custom+dmacon
 
 ;ProtChkMLev1:
 
@@ -303,7 +303,7 @@ START:
 				move.l	a7,mnu_mainstack
 
 				jsr		mnu_clearscreen
-
+				; mnu_clearscreen disables all visual DMA
 				WBSLOW
 				WBSLOW
 
@@ -313,7 +313,7 @@ START:
 
 				CALLGRAF DisownBlitter
 
-				move.w	#$83f0,$dff096
+				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_BLITTER!DMAF_SPRITE!DMAF_DISK,dmacon+_custom
 
 ******************************
 
@@ -415,8 +415,9 @@ BACKTOSLAVE:
 DONEMENU:
 
 				jsr		mnu_clearscreen
+				; mnu_clearscreen disables all visual DMA
 				jsr		mnu_DROPBLITINT
-				move.w	#$83f0,$dff096
+				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_BLITTER!DMAF_SPRITE!DMAF_DISK,dmacon+_custom
 
 				bsr		WAITREL
 
@@ -615,7 +616,7 @@ QUITTT:
 				jsr		RELEASEFLOORMEM
 				jsr		RELEASEOBJMEM
 
-				move.l	old,$dff080
+				move.l	old,_custom+cop1lc
 				lea		VBLANKInt,a1
 				moveq	#INTB_COPER,d0
 				CALLEXEC RemIntServer
@@ -629,9 +630,9 @@ QUITTT:
 
 				; FXIME: holy cow, we didn't even do a full system takeover,
 				; yet writing directly to interrupt control
-				move.l	old,$dff080
+				move.l	old,_custom+cop1lc
 				move.w	_storeint,d0
-				or.w	d0,$dff000+intena
+				or.w	d0,_custom+intena
 
 				;CALLEXEC Permit
 
@@ -1039,13 +1040,13 @@ GETACHAR:
 				movem.l	(a7)+,d0-d7/a0-a6
 
 .wtnum:
-				btst	#1,$dff00c
+				btst	#1,_custom+joy1dat
 				sne		d1
-				btst	#1,$dff00d
+				btst	#1,_custom+joy1dat+1
 				sne		d2
-				btst	#0,$dff00c
+				btst	#0,_custom+joy1dat
 				sne		d3
-				btst	#0,$dff00d
+				btst	#0,_custom+joy1dat+1
 				sne		d4
 
 				eor.b	d1,d3
@@ -1593,13 +1594,13 @@ WAITREL2:
 				bne.s	WAITREL2
 				ENDC
 
-				btst	#1,$dff00c
+				btst	#1,_custom+joy1dat
 				sne		d0
-				btst	#1,$dff00d
+				btst	#1,_custom+joy1dat+1
 				sne		d1
-				btst	#0,$dff00c
+				btst	#0,_custom+joy1dat
 				sne		d2
-				btst	#0,$dff00d
+				btst	#0,_custom+joy1dat+1
 				sne		d3
 
 				eor.b	d0,d2
@@ -1959,7 +1960,7 @@ SAVEPOSITION:
 				jsr		mnu_clearscreen
 				jsr		mnu_DROPBLITINT
 
-				move.w	#$83f0,$dff096
+				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_BLITTER!DMAF_SPRITE!DMAF_DISK,dmacon+_custom
 
 				move.l	(a7)+,d0
 
@@ -1979,8 +1980,8 @@ SAVEPOSITION:
 				move.l	(a1)+,(a0)+
 				ENDR
 
-				move.l	oldcopper,$dff080
-				move.w	#$8020,$dff000+intena
+				move.l	oldcopper,_custom+cop1lc
+				move.w	#$8020,_custom+intena
 
 				CALLINT	RemakeDisplay
 				CALLINT	RethinkDisplay
@@ -2002,7 +2003,7 @@ SAVEPOSITION:
 				move.l	#200,d1
 				CALLDOS	Delay
 
-				move.w	#$0020,$dff000+intena
+				move.w	#$0020,_custom+intena
 
 				jsr		mnu_GETBLITINT
 				jsr		mnu_setscreen
@@ -2710,9 +2711,9 @@ fadeuploop:
 				move.l	#TITLEPALCOP,a1
 
 wvb:
-				btst	#5,$dff000+intreqrl
+				btst	#5,_custom+intreqrl
 				beq.s	wvb
-				move.w	#$20,$dff000+intreq
+				move.w	#$20,_custom+intreq
 
 				bsr		PUTIN32
 				add.w	#4,a1
@@ -2755,9 +2756,9 @@ fadedownloop:
 				move.l	#TITLEPALCOP,a1
 
 .wvb:
-				btst	#5,$dff000+intreqrl
+				btst	#5,_custom+intreqrl
 				beq.s	.wvb
-				move.w	#$20,$dff000+intreq
+				move.w	#$20,_custom+intreq
 
 				bsr		PUTIN32
 				add.w	#4,a1
@@ -2825,7 +2826,7 @@ GETTITLEMEM:
 				CALLEXEC AllocMem
 				move.l	d0,TITLESCRNADDR
 
-				move.l	#$dff000-$2cdfe4,a4
+				move.l	#_custom-$2cdfe4,a4 ;????
 
 				move.l	#2,d1
 				move.l	#258*16*5,d0
