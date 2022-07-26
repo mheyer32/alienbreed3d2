@@ -35,6 +35,7 @@
 				include	hardware/dmabits.i
 				include	hardware/custom.i
 				include	hardware/cia.i
+				include	hardware/blit.i
 
 				include	intuition/intuition.i
 				include	intuition/intuition_lib.i

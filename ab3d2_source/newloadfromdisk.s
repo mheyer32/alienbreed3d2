@@ -92,8 +92,6 @@ tryagain
 ; move.w #0,OPTNUM
 ; jsr DRAWOPTSCRN
 
-				jsr		mnu_GETBLITINT
-
 				jsr		mnu_setscreen
 
 				lea		mnu_askfordisk,a0
@@ -101,7 +99,6 @@ tryagain
 
 				jsr		mnu_clearscreen
 
-				jsr		mnu_DROPBLITINT
 
 ;.wtrel:
 ; btst #7,$bfe001

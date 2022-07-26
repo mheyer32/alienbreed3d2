@@ -1,5 +1,8 @@
 				include	"system.i"
 
+				xref _custom
+				xref _ciaa
+
 				IFND	CHEESEY
 CHEESEY			equ		0
 				ENDC
@@ -419,8 +422,6 @@ FASTBUFFERSize	equ		SCREENWIDTH*160			+ 15
 
 FASTBUFFER:		dc.l	0						; aligned address
 FASTBUFFERalloc: dc.l	0						; allocated address
-
-SYSTEMBLITINT:	dc.l	0
 
 _storeint
 				dc.w	0
@@ -883,14 +884,6 @@ KEYInt:
 				dc.l	AppName
 				dc.l	0
 				dc.l	key_interrupt
-
-BLITInt:
-				dc.l	0,0
-				dc.b	NT_INTERRUPT,127
-				dc.l	AppName
-				dc.l	0
-				dc.l	BlitterInterrupt
-
 
 blag:
 ; move.w #$10,intreq(a6)
@@ -10675,20 +10668,6 @@ OtherInter:
 				bra		justshake
 
 				cnop	0,4
-
-BlitterInterrupt:
-
-				movem.l	d0-d7/a0-a6,-(a7)
-				move.w	#$0040,$dff09c			; Clear REQ bits
-
-				move.l	main_bltint,d0
-				beq.s	.noint
-				move.l	d0,a0
-				jsr		(a0)
-.noint:
-				movem.l	(a7)+,d0-d7/a0-a6
-
-				rts
 
 ; Main VBlank interrupt
 VBlankInterrupt:

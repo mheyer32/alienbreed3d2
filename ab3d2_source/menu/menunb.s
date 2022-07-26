@@ -6,27 +6,6 @@ main_endinfooff
 main_playeroff
 main_meteroff
 
-
-mnu_GETBLITINT:
-				CALLGRAF OwnBlitter
-
-				lea		BLITInt,a1
-				moveq	#INTB_BLIT,d0
-				CALLEXEC SetIntVector
-				move.l	d0,SYSTEMBLITINT
-				rts
-
-mnu_DROPBLITINT:
-				WBSLOW
-				WBSLOW
-
-				move.l	SYSTEMBLITINT,a1
-				moveq	#INTB_BLIT,d0
-				CALLEXEC SetIntVector
-
-				CALLGRAF DisownBlitter
-				rts
-
 mnu_nowait		;		Skip					the "waiting for opp.."
 macro_sync:		MACRO	;						Kills: d7 --			Macro_Sync
 				IFND	main_meteroff
@@ -47,6 +26,11 @@ macro_sync:		MACRO	;						Kills: d7 --			Macro_Sync
 				jsr		(a0)
 				movem.l	(a7)+,d0-a0
 				ENDC
+				ENDM
+
+WAITBLIT:		MACRO
+.wait\@			tst.b mnu_bltbusy
+				bne.s .wait\@
 				ENDM
 
 ;		include	"demo:System/Main_V3.82.S"
@@ -306,20 +290,17 @@ mnu_copycredz:	lea		mnu_frame,a0
 mnu_clearscreen:
 				bsr.w	mnu_fadeout
 				clr.l	main_vblint				; prevent VBL kicking off new blits
-.loop1:			tst.w	mnu_bltbusy				; wait for any outstanding blits and fire to finish its passes
-				bne.s	.loop1
-;		bsr.w	key_kbdexit
-				clr.l	main_bltint				; prevent more blit passes to be processed (necessary?!)
-;		macro_sync
-				move.w	#DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_BLITTER!DMAF_SPRITE,$dff096 ; disable  DMA
+				WAITBLIT
+				; disable  DMA
+				move.w	#DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_SPRITE,dmacon+_custom
 				rts
 
 mnu_setscreen:	bsr.w	mnu_init
 				macro_sync
-				; disable  DMA
-				move.w	#DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_BLITTER!DMAF_SPRITE,dmacon+_custom
+				; disable DMA
+				move.w	#DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_SPRITE,dmacon+_custom
 				; enable DMA
-				move.w	#DMAF_SETCLR!DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_BLITTER!DMAF_SPRITE,dmacon+_custom
+				move.w	#DMAF_SETCLR!DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_SPRITE,dmacon+_custom
 				move.l	#mnu_copper,cop1lc+_custom
 				move.w	#0,copjmp1+_custom
 				move.l	#mnu_vblint,main_vblint
@@ -329,7 +310,6 @@ mnu_setscreen:	bsr.w	mnu_init
 mnu_vblint:
 				bsr.w	mnu_movescreen
 				bsr.w	mnu_dofire
-;		bsr.w	key_kbdlevel3
 				bsr.w	mnu_animcursor
 				bsr.w	mnu_plot
 				rts
@@ -696,60 +676,36 @@ mnu_printxy:;in:a0,d0,d1=Text ptr,XPos,YPos (XPos in words YPos in pixels)
 .exit:			rts
 
 mnu_dofire:		btst.b	#0,main_counter+3
-				beq.s	.skip
+				beq.s	.noskip
 				rts
-.skip:			move.l	#mnu_bltint,main_bltint
-				move.w	_custom+vhposr,d0
+.noskip:		move.w	_custom+vhposr,d0
 				add.w	d0,mnu_rnd
-				tst.b	_custom+dmaconr
 
-
-.w8:			tst.w	mnu_bltbusy
-				beq.s	.notdoneyet
+				tst.b	mnu_bltbusy
+				beq.s	.blitAgain
 				rts
-.notdoneyet:
-.w82			btst.b	#6,_custom+dmaconr
-				bne.s	.w82
-
-				lea		mnu_sourceptrs,a0
+.blitAgain:
+				lea		mnu_sourceptrs,a0		; rotate fire bitplanes
 				move.l	(a0),d0
 				move.l	4(a0),(a0)
 				move.l	8(a0),4(a0)
 				move.l	d0,8(a0)
-				lea		_custom,a6
+
 				st.b	mnu_bltbusy
-				move.w	#INTF_BLIT,$9c(a6)		; Clear BLT req
-				move.w	#INTF_SETCLR!INTF_BLIT,$9a(a6) ; Enable BLT int
-				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_BLITTER,$96(a6) ; Enable blitter dma
-				bsr.w	mnu_bltint
+				lea		BltNode,a1
+				; FIMXE: can I call this from a VBL interrupt?
+				CALLGRAF QBSBlit
 				rts
 
-mnu_bltint:		bsr.w	.getrnd
-				lea		_custom,a6
-				move.l	.passptr,a0
-				move.l	(a0),d0
-				beq.s	.last
-				addq.l	#4,.passptr
-				move.l	d0,a0
-				jmp		(a0)
-.last:			;move.w	#INTF_BLIT,intena(a6)			; Disable BLT int
-				;move.w	#DMAF_BLITTER,dmacon(a6)		; Disable blitter dma
-				move.l	#.passlist,.passptr
-				clr.w	mnu_bltbusy
-				rts
-.getrnd:		moveq.l	#0,d0
+getrnd:			moveq.l	#0,d0
 				move.w	mnu_rnd,d0
 				and.l	#8190,d0
 				add.l	#mnu_morescreen+6*40*256,d0
 				move.l	d0,mnu_rndptr
 				addq.w	#5,mnu_rnd
 				rts
+
 .rnd:			dc.w	0
-.passptr:		dc.l	.passlist
-.passlist:		dc.l	mnu_pass1
-				dc.l	mnu_pass2
-				dc.l	mnu_pass3
-				dc.l	0
 
 mnu_rnd:		dc.w	0
 mnu_bltbusy:	dc.w	0
@@ -762,7 +718,8 @@ mnu_count:		dc.w	0
 
 				cnop	0,4
 
-mnu_pass1:		clr.l	mnu_subtract
+mnu_pass1:		bsr.w	getrnd
+				clr.l	mnu_subtract
 				move.w	mnu_count,d0
 				addq.w	#1,mnu_count
 				and.w	#$3,d0
@@ -770,51 +727,60 @@ mnu_pass1:		clr.l	mnu_subtract
 				cmp.w	#1,d0
 				bne.s	.normal
 				move.l	#-2,mnu_subtract
-				move.l	#$fff80000,$40(a6)		; D=A+BC
+				move.l	#$fff80000,bltcon0(a0)		; D=A+BC
 				bra.s	.cont
-.l1:			move.l	#$1ff80000,$40(a6)		; D=A+BC
+.l1:			move.l	#$1ff80000,bltcon0(a0)		; D=A+BC
 				bra.s	.cont
-.normal:		move.l	#$0ff80000,$40(a6)		; D=A+BC
-.cont:			move.l	#$ffffffff,$44(a6)		; Masks A
-				move.l	#$00000000,$60(a6)		; CB modulo
-				move.l	#$00000000,$64(a6)		; AD modulo
-				move.l	#mnu_morescreen+mnu_speed*40,$48(a6) ; Source C
-				move.l	mnu_rndptr,$4c(a6)		; Source B
+.normal:		move.l	#$0ff80000,bltcon0(a0)		; D=A+BC
+.cont:			move.l	#$ffffffff,bltafwm(a0)		; Masks A
+				move.l	#$00000000,bltcmod(a0)		; CB modulo
+				move.l	#$00000000,bltamod(a0)		; AD modulo
+				move.l	#mnu_morescreen+mnu_speed*40,bltcpt(a0) ; Source C
+				move.l	mnu_rndptr,bltbpt(a0)		; Source B
 				move.l	mnu_sourceptrs,d0
 				sub.l	mnu_subtract,d0
-				move.l	d0,$50(a6)				; Source A
-				move.l	#mnu_morescreen,$54(a6)	; Dest D
-				move.w	#(mnu_size-mnu_speed)*64+20,$58(a6) ; Size and trigger
+				move.l	d0,bltapt(a0)				; Source A
+				move.l	#mnu_morescreen,bltdpt(a0)	; Dest D
+				move.w	#(mnu_size-mnu_speed)*64+20,bltsize(a0) ; Size and trigger
+				; continue with next pass
+				move.l #mnu_pass2,bn_function(a1)
+				moveq.l	#1,d0
 				rts
 
 				cnop	0,4
-mnu_pass2:;		move.l	#$0ff80000,$40(a6)		; D=A+BC
-;		move.l	#$ffffffff,$44(a6)		; Masks A
-;		move.l	#$00000000,$60(a6)		; CB modulo
-;		move.l	#$00000000,$64(a6)		; AD modulo
-				move.l	#mnu_morescreen+40*256+mnu_speed*40,$48(a6) ; Source C
-				move.l	mnu_rndptr,$4c(a6)		; Source B
+mnu_pass2:		bsr.w	getrnd
+				move.l	#mnu_morescreen+40*256+mnu_speed*40,bltcpt(a0) ; Source C
+				move.l	mnu_rndptr,bltbpt(a0)		; Source B
 				move.l	mnu_sourceptrs+4,d0
 				sub.l	mnu_subtract,d0
-				move.l	d0,$50(a6)				; Source A
-				move.l	#mnu_morescreen+40*256,$54(a6) ; Dest D
-				move.w	#(mnu_size-mnu_speed)*64+20,$58(a6) ; Size and trigger
+				move.l	d0,bltapt(a0)				; Source A
+				move.l	#mnu_morescreen+40*256,bltdpt(a0) ; Dest D
+				move.w	#(mnu_size-mnu_speed)*64+20,bltsize(a0) ; Size and trigger
+				; continue with next pass
+				move.l #mnu_pass3,bn_function(a1)
+				moveq.l	#1,d0
 				rts
-
 
 				cnop	0,4
-mnu_pass3:;		move.l	#$0ff80000,$40(a6)		; D=A+BC
-;		move.l	#$ffffffff,$44(a6)		; Masks A
-;		move.l	#$00000000,$60(a6)		; CB modulo
-;		move.l	#$00000000,$64(a6)		; AD modulo
-				move.l	#mnu_morescreen+40*256*2+mnu_speed*40,$48(a6) ; Source C
-				move.l	mnu_rndptr,$4c(a6)		; Source B
+mnu_pass3:		bsr.w	getrnd
+				move.l	#mnu_morescreen+40*256*2+mnu_speed*40,bltcpt(a0) ; Source C
+				move.l	mnu_rndptr,bltbpt(a0)		; Source B
 				move.l	mnu_sourceptrs+8,d0
 				sub.l	mnu_subtract,d0
-				move.l	d0,$50(a6)				; Source A
-				move.l	#mnu_morescreen+40*256*2,$54(a6) ; Dest D
-				move.w	#(mnu_size-mnu_speed)*64+20,$58(a6) ; Size and trigger
+				move.l	d0,bltapt(a0)				; Source A
+				move.l	#mnu_morescreen+40*256*2,bltdpt(a0) ; Dest D
+				move.w	#(mnu_size-mnu_speed)*64+20,bltsize(a0) ; Size and trigger
+
+				move.l #mnu_pass4,bn_function(a1)
+				moveq.l	#1,d0
 				rts
+
+				cnop	0,4
+mnu_pass4:		move.l #mnu_pass1,bn_function(a1)	; restore first pass ptr
+				clr.b	mnu_bltbusy
+				moveq.l	#0,d0						; this was the last pass
+				rts
+
 
 				cnop	0,4
 mnu_cls:		lea		mnu_morescreen+40*256*6,a1
@@ -2148,9 +2114,17 @@ mnu_frame:		incbin	"menu/credits_only.raw"
 counter:		dc.l	0
 main_vblint:	dc.l	0
 main_counter:	dc.l	0
-main_bltint:	dc.l	0
 main_vbrbase:	dc.l	0
 timer:			dc.l	0
+
+
+BltNode			dc.l	0			; bn_n
+				dc.l	mnu_pass1	; bn_function
+				dc.b	0			; bn_stat
+				dc.b	0			; bn_dummy
+				dc.w	0			; bn_blitsize
+				dc.w	0			; bn_beamsync
+				dc.l	0			; bn_cleanup
 
 				section	data_c,data_c
 

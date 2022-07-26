@@ -214,13 +214,6 @@ START:
 				; Open Graphics.library
 				jsr		stuff
 
-				CALLGRAF OwnBlitter
-
-				lea		BLITInt,a1
-				moveq	#6,d0
-				CALLEXEC SetIntVector
-				move.l	d0,SYSTEMBLITINT
-
 ; move.l _DOSBase,a6
 ; move.l #LINKname,d1
 ; move.l #1005,d2
@@ -304,16 +297,7 @@ START:
 
 				jsr		mnu_clearscreen
 				; mnu_clearscreen disables all visual DMA
-				WBSLOW
-				WBSLOW
-
-				move.l	SYSTEMBLITINT,a1
-				moveq	#6,d0
-				CALLEXEC SetIntVector
-
-				CALLGRAF DisownBlitter
-
-				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_BLITTER!DMAF_SPRITE!DMAF_DISK,dmacon+_custom
+				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_SPRITE,dmacon+_custom
 
 ******************************
 
@@ -392,7 +376,6 @@ START:
 ;JUMPPASTIT:
 ;
 
-				jsr		mnu_GETBLITINT
 				jsr		mnu_setscreen
 ; jsr mnu_protection
 
@@ -416,8 +399,7 @@ DONEMENU:
 
 				jsr		mnu_clearscreen
 				; mnu_clearscreen disables all visual DMA
-				jsr		mnu_DROPBLITINT
-				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_BLITTER!DMAF_SPRITE!DMAF_DISK,dmacon+_custom
+				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_SPRITE,dmacon+_custom
 
 				bsr		WAITREL
 
@@ -592,7 +574,6 @@ dontusestats:
 ; jsr KInt_Init
 ; ENDC
 
-				jsr		mnu_GETBLITINT
 				jsr		mnu_setscreen
 
 
@@ -1820,7 +1801,6 @@ SAVEGAMELEN:	dc.l	0
 LOADPOSITION:
 
 				jsr		mnu_clearscreen
-				jsr		mnu_DROPBLITINT
 
 				move.l	#SAVEGAMENAME,a0
 				move.l	#SAVEGAMEPOS,d0
@@ -1829,7 +1809,6 @@ LOADPOSITION:
 				jsr		QUEUEFILE
 				jsr		FLUSHQUEUE
 
-				jsr		mnu_GETBLITINT
 				jsr		mnu_setscreen
 
 
@@ -1904,7 +1883,6 @@ LOADPOSITION:
 SAVEPOSITION:
 
 				jsr		mnu_clearscreen
-				jsr		mnu_DROPBLITINT
 
 				move.l	#SAVEGAMENAME,a0
 				move.l	#SAVEGAMEPOS,d0
@@ -1913,7 +1891,6 @@ SAVEPOSITION:
 				jsr		QUEUEFILE
 				jsr		FLUSHQUEUE
 
-				jsr		mnu_GETBLITINT
 				jsr		mnu_setscreen
 
 				move.l	SAVEGAMEPOS,a2			; address of first saved game.
@@ -1958,9 +1935,8 @@ SAVEPOSITION:
 				move.l	d0,-(a7)
 
 				jsr		mnu_clearscreen
-				jsr		mnu_DROPBLITINT
 
-				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_BLITTER!DMAF_SPRITE!DMAF_DISK,dmacon+_custom
+				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_SPRITE,dmacon+_custom
 
 				move.l	(a7)+,d0
 
@@ -2005,7 +1981,6 @@ SAVEPOSITION:
 
 				move.w	#$0020,_custom+intena
 
-				jsr		mnu_GETBLITINT
 				jsr		mnu_setscreen
 
 .nosave:
