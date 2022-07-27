@@ -1,7 +1,0 @@
-##base _PotgoBase
-##bias 6
-##public
-AllocPotBits(bits)(D0)
-FreePotBits(bits)(D0)
-WritePotgo(word,mask)(D0,D1)
-##end

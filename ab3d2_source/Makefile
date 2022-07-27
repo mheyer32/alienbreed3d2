@@ -2,7 +2,8 @@ CC=m68k-amigaos-gcc
 ASS=vasmm68k_mot
 LINK=vlink
 
-#PREFIX = $(shell ./getprefix.sh "$(CC)")
+#find the toolchain's directory
+PREFIX = $(shell ./getprefix.sh "$(CC)")
 
 CHEESEY ?= 0
 
@@ -10,13 +11,11 @@ CHEESEY ?= 0
 
 AFLAGS = -Fhunk -m68060 -linedebug -align -L listing.txt -DCHEESEY=${CHEESEY} -Dmnu_nocode=1
 AFLAGS += -I../ \
-		  -I../devpac/Include/include \
+		  -I$(PREFIX)/m68k-amigaos/ndk-include \
 		  -I../media \
 		  -I../media/includes
 
-#		  -I$(PREFIX)/m68k-amigaos/ndk-include
-
-LFLAGS = -b amigahunk -sd -sc -l amiga -L ../devpac/Include/lib
+LFLAGS = -b amigahunk -sd -sc -l amiga -L $(PREFIX)m68k-amigaos/ndk/lib/libs
 
 all:	 hires
 

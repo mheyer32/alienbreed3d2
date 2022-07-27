@@ -1,8 +1,0 @@
-##base _DiskfontBase
-##bias 30
-##public
-OpenDiskFont(textAttr)(A0)
-AvailFonts(buffer,bufBytes,flags)(A0,D0/D1)
-NewFontContents(fontsLock,fontName)(A0/A1)
-DisposeFontContents(fontContentsHeader)(A1)
-##end

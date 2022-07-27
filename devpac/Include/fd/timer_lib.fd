@@ -1,6 +1,0 @@
-##base _TimerBase
-##bias 42
-##public
-AddTime(dest,src)(A0/A1)
-SubTime(dest,src)(A0/A1)
-CmpTime(dest,src)(A0/A1)

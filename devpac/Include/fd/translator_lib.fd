@@ -1,5 +1,0 @@
-##base _TranslatorBase
-##bias 30
-##public
-Translate(inputString,inputLength,outputBuffer,bufferSize)(A0,D0/A1,D1)
-##end
