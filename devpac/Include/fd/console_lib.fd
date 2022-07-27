@@ -1,8 +1,0 @@
-##base _ConsoleDevice
-##bias 42
-##public
-CDInputHandler(events,device)(A0/A1)
-RawKeyConvert(events,buffer,length,keyMap)(A0/A1,D1/A2)
-AskDefaultKeyMap(keyMap)(A0)
-SetDefaultKeyMap(keyMap)(A0)
-##end

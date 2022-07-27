@@ -1,5 +1,0 @@
-##base _RomBootBase
-##bias 30
-##public
-RomBoot()
-##end
