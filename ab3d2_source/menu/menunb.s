@@ -291,8 +291,12 @@ mnu_clearscreen:
 				;bsr.w	mnu_fadeout
 				clr.l	main_vblint				; prevent VBL kicking off new blits
 				WAITBLIT
-				;CALLGRAF WaitTOF
-				move.l	MenuScreen,d0
+				move.l	MenuWindow,d0
+				beq.s	.noWindow
+				move.l	d0,a0
+				CALLINT CloseWindow		; FIXME: may have to clear the Window's event queue first
+				clr.l	MenuWindow
+.noWindow		move.l	MenuScreen,d0
 				beq.s	.noScreen
 				move.l	d0,a0
 				CALLINT	CloseScreen
@@ -305,7 +309,21 @@ mnu_setscreen:	bsr.w	mnu_init
 				lea		ScreenTags,a1
 				CALLINT OpenScreenTagList
 				move.l	d0,MenuScreen
+				; need a window to be able to clear out mouse pointer
+				; may later also serve as IDCMP input source
+				sub.l	a0,a0
+				lea		WindowTags,a1
+				move.l	d0,WTagScreenPtr-WindowTags(a1)	; WA_CustomScreen
+				CALLINT OpenWindowTagList
+				move.l	d0,MenuWindow
 				move.l	d0,a0
+				lea		emptySprite,a1
+				moveq	#1,d0
+				moveq	#16,d1
+				move.l	d0,d2
+				move.l	d0,d3
+				CALLINT SetPointer
+
 				bsr.w	mnu_setpalette
 
 				move.l	#mnu_vblint,main_vblint
@@ -2165,6 +2183,24 @@ ScreenTags		dc.l	SA_Width,320
 
 MenuScreen		dc.l	0
 
+WindowTags		dc.l	WA_Left,0
+				dc.l	WA_Top,0
+				dc.l	WA_Width,320
+				dc.l	WA_Height,256
+				dc.l	WA_CustomScreen
+WTagScreenPtr	dc.l	0				; will fill in screen pointer later
+				; intution.i states "WA_Flags ;not implemented at present"
+				; But I have seen code using it...
+				dc.l	WA_Flags,WFLG_ACTIVATE!WFLG_BORDERLESS!WFLG_RMBTRAP!WFLG_NOCAREREFRESH!WFLG_SIMPLE_REFRESH
+				; Just to be sure, provide the same info again
+				dc.l	WA_Activate,1
+				dc.l	WA_Borderless,1
+				dc.l	WA_RMBTrap,1		; prevent menu rendering
+				dc.l	WA_NoCareRefresh,1
+				dc.l	WA_SimpleRefresh,1
+				dc.l	TAG_END,0
+
+MenuWindow		dc.l	0
 
 				section	data_c,data_c
 
@@ -2175,5 +2211,7 @@ mnu_colptrs:	ds.l	(32+1)*8*2+1
 mnu_screen:		incbin	"menu/back2.raw"		; 4 color background
 				ds.b	40*256*2				; 2 more bitplanes
 mnu_morescreen:	ds.b	40*256*8				;
+
+emptySprite    ds.w    6,0
 
 				section	code,code
