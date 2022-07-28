@@ -298,7 +298,7 @@ _start
 
 
 				lea		VBLANKInt(pc),a1
-				moveq	#INTB_COPER,d0
+				moveq	#INTB_VERTB,d0
 				CALLEXEC AddIntServer
 
 				IFEQ	CD32VER
@@ -872,11 +872,11 @@ AppName:		dc.b	'TheKillingGrounds',0
 				cnop	0,4
 
 VBLANKInt:
-				dc.l	0,0
-				dc.b	NT_INTERRUPT,9
-				dc.l	AppName
-				dc.l	0
-				dc.l	VBlankInterrupt
+				dc.l	0,0					;is_Node
+				dc.b	NT_INTERRUPT,9		;is_Node
+				dc.l	AppName				;is_Node
+				dc.l	0					;is_Data
+				dc.l	VBlankInterrupt		;is_Code
 
 KEYInt:
 				dc.l	0,0
@@ -10686,11 +10686,11 @@ VBlankInterrupt:
 				beq.s	.noint
 				move.l	d0,a0
 				jsr		(a0)
-.noint:
 
+.noint:
 				GETREGS
 ;	move.w	#1024+'.',$dff030
-
+				lea _custom,a0		; place custom base into a0 (See autodocs for AddIntServer)
 				moveq	#1,d0
 				rts
 

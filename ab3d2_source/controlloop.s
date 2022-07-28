@@ -599,7 +599,7 @@ QUITTT:
 
 				move.l	old,_custom+cop1lc
 				lea		VBLANKInt,a1
-				moveq	#INTB_COPER,d0
+				moveq	#INTB_VERTB,d0
 				CALLEXEC RemIntServer
 
 				lea		KEYInt,a1
