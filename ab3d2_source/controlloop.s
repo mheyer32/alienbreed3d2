@@ -241,13 +241,13 @@ START:
 ; PRSDT
 				; FIXME: screen setup should be all OS stuff
 				; set PAL in BEAMCON
-				move.w	#$20,$dff1dc
-				move.l	#titlecop,_custom+cop1lc
+				;move.w	#$20,$dff1dc
+				;move.l	#titlecop,_custom+cop1lc
 
 ; PRSDV
 				; FIXME: whatyadoin?
-				move.w	#DMAF_SETCLR!DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER,_custom+dmacon
-				move.w	#DMAF_SETCLR!DMAF_SPRITE,_custom+dmacon
+				;move.w	#DMAF_SETCLR!DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER,_custom+dmacon
+				;move.w	#DMAF_SETCLR!DMAF_SPRITE,_custom+dmacon
 
 ;ProtChkMLev1:
 
@@ -297,7 +297,7 @@ START:
 
 				jsr		mnu_clearscreen
 				; mnu_clearscreen disables all visual DMA
-				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_SPRITE,dmacon+_custom
+;				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_SPRITE,dmacon+_custom
 
 ******************************
 
@@ -306,9 +306,9 @@ START:
 				jsr		INITQUEUE
 **********************************************
 
-				move.w	#0,FADEVAL
-				move.w	#31,FADEAMOUNT
-				bsr		FADEUPTITLE
+				;move.w	#0,FADEVAL
+				;move.w	#31,FADEAMOUNT
+				;bsr		FADEUPTITLE
 
 ; PRSDB
 
@@ -342,8 +342,8 @@ START:
 
 				jsr		PATCHSFX
 
-				move.w	#23,FADEAMOUNT
-				bsr		FADEDOWNTITLE
+				;move.w	#23,FADEAMOUNT
+				;bsr		FADEDOWNTITLE
 
 ; bsr ASKFORDISK
 
@@ -399,7 +399,7 @@ DONEMENU:
 
 				jsr		mnu_clearscreen
 				; mnu_clearscreen disables all visual DMA
-				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_SPRITE,dmacon+_custom
+				;move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_SPRITE,dmacon+_custom
 
 				bsr		WAITREL
 
@@ -415,7 +415,7 @@ DONEMENU:
 ; move.w #23,FADEAMOUNT
 ; bsr FADEUPTITLE
 ; move.w #31,FADEAMOUNT
-				bsr		FADEDOWNTITLE
+				;bsr		FADEDOWNTITLE
 
 				move.w	#$0201,titleplanes
 
@@ -597,7 +597,7 @@ QUITTT:
 				jsr		RELEASEFLOORMEM
 				jsr		RELEASEOBJMEM
 
-				move.l	old,_custom+cop1lc
+;				move.l	old,_custom+cop1lc
 				lea		VBLANKInt,a1
 				moveq	#INTB_VERTB,d0
 				CALLEXEC RemIntServer
@@ -607,13 +607,13 @@ QUITTT:
 				CALLEXEC RemIntServer
 
 				; why write to BEAMCON0???
-				move.w	#$f8e,$dff1dc
+;				move.w	#$f8e,$dff1dc
 
 				; FXIME: holy cow, we didn't even do a full system takeover,
 				; yet writing directly to interrupt control
-				move.l	old,_custom+cop1lc
-				move.w	_storeint,d0
-				or.w	d0,_custom+intena
+;				move.l	old,_custom+cop1lc
+;				move.w	_storeint,d0
+;				or.w	d0,_custom+intena
 
 				;CALLEXEC Permit
 
