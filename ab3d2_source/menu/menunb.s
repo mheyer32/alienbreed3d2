@@ -288,27 +288,31 @@ mnu_copycredz:	lea		mnu_frame,a0
 				rts
 
 mnu_clearscreen:
-				bsr.w	mnu_fadeout
+				;bsr.w	mnu_fadeout
 				clr.l	main_vblint				; prevent VBL kicking off new blits
 				WAITBLIT
-				; disable  DMA
-				move.w	#DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_SPRITE,dmacon+_custom
+				;CALLGRAF WaitTOF
+				move.l	MenuScreen,d0
+				beq.s	.noScreen
+				move.l	d0,a0
+				CALLINT	CloseScreen
+				clr.l	MenuScreen
+.noScreen
 				rts
 
 mnu_setscreen:	bsr.w	mnu_init
-				macro_sync
-				; disable DMA
-				move.w	#DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_SPRITE,dmacon+_custom
-				; enable DMA
-				move.w	#DMAF_SETCLR!DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_SPRITE,dmacon+_custom
-				move.l	#mnu_copper,cop1lc+_custom
-				move.w	#0,copjmp1+_custom
+				sub.l	a0,a0
+				lea		ScreenTags,a1
+				CALLINT OpenScreenTagList
+				move.l	d0,MenuScreen
+				move.l	d0,a0
+				bsr.w	mnu_setpalette
+
 				move.l	#mnu_vblint,main_vblint
-				bsr.w	mnu_fadein
+				;bsr.w	mnu_fadein
 				rts
 
-mnu_vblint:
-				bsr.w	mnu_movescreen
+mnu_vblint:		bsr.w	mnu_movescreen
 				bsr.w	mnu_dofire
 				bsr.w	mnu_animcursor
 				bsr.w	mnu_plot
@@ -319,11 +323,13 @@ mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				tst.w	.cp
 				bne.w	.skipfs
 
+				; copy menu background (2bitplanes) a second time underneath (for scrolling meny background)
+				; At the same time, this "moves" the second plane one screen downwards
 				lea		mnu_screen,a0
 				lea		mnu_screen+40*256,a1
 				lea		mnu_screen+40*256*2,a2
 				lea		mnu_screen+40*256*3,a3
-				move.w	#40*256/4-1,d1
+				move.w	#40*256/4-1,d1	; one screen worth in longwords
 .fsloop:		move.l	(a1),d0
 				move.l	d0,(a2)+
 				move.l	d0,(a3)+
@@ -341,7 +347,7 @@ mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				dbra	d0,.clrloop
 				bsr.w	mnu_cls
 ;--------------------------------------------------------------- Set bplptrs --
-				lea		mnu_bplptrs+2,a0
+				lea		Bitmap+bm_Planes,a0
 				move.l	#mnu_screen,d0
 				moveq.l	#0,d1
 				bsr.w	.setbplptrs
@@ -351,51 +357,48 @@ mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				move.l	#mnu_morescreen,d0
 				moveq.l	#5,d1
 				bsr.s	.setbplptrs
-;-------------------------------------------------------------- Init palette --
-				lea		mnu_palette,a2
-				moveq.l	#7,d0					; #of banks-1
-				move.l	#$01060000,d6
-				move.l	#$01060200,d7
-				lea		mnu_colptrs,a0
-				lea		mnu_colptrs+33*4,a1
-.bankloop:		moveq.l	#31,d1					; d1=#of colour/bank
-				move.l	d6,(a0)+
-				move.l	d7,(a1)+
-				move.w	#$0180,d5
-.colloop:		;move.l	(a2)+,d2
-				clr.l	d2
-				move.l	d2,d3
-				and.l	#$f0f0f0,d2
-				lsr.l	#4,d2					; x0x0x
-				lsl.b	#4,d2					; x0xx0
-				lsl.w	#4,d2					; xxx00
-				lsr.l	#8,d2					; 00xxx
-				and.l	#$f0f0f,d3
-				lsl.b	#4,d3					; x0xx0
-				lsl.w	#4,d3					; xxx00
-				lsr.l	#8,d3					; 00xxx
-				move.w	d5,(a0)+
-				move.w	d2,(a0)+
-				move.w	d5,(a1)+
-				move.w	d3,(a1)+
-				addq.w	#2,d5
-				dbra	d1,.colloop
-				add.l	#33*4,a0
-				add.l	#33*4,a1
-				add.l	#$2000,d6
-				add.l	#$2000,d7
-				dbra	d0,.bankloop
-				move.l	#-2,(a0)
+
 				rts
-.setbplptrs:	swap.w	d0
-				move.w	d0,(a0)
-				swap.w	d0
-				move.w	d0,4(a0)
-				addq.l	#8,a0
+
+.setbplptrs:	move.l	d0,(a0)+
 				add.l	#40*256,d0
 				dbra	d1,.setbplptrs
 				rts
+
 .cp:			dc.w	0
+
+;-------------------------------------------------------------- Init palette --
+mnu_setpalette:	lea		mnu_palette,a2
+
+				;LoadRGB32
+				sub.l	#256*4*3+2+2+4,a7		; reserve stack for 256 color entries + numColors + firstColor
+				move.l	a7,a1
+				move.l	a1,a0
+				move.w	#256,(a0)+	; number of entries
+				move.w	#0,(a0)+	; start index
+				move.w	#255,d0
+				; need to expand the 8 bits to 32bits per gun
+.setCol			move.l	(a2)+,d1
+				move.l	d1,d2
+				clr.w	d2
+				rol.l	#8,d2
+				move.l	d2,(a0)+
+				move.l	d1,d2
+				clr.b	d2
+				swap	d2
+				move.l	d2,(a0)+	; this has some stuff in lower word, butt hey'll be discarded
+				ror.l	#8,d1
+				move.l	d1,(a0)+	; same here
+				dbra	d0,.setCol
+				clr.l	(a0)		; terminate list
+
+				move.l	MenuScreen,a0
+				lea		sc_ViewPort(a0),a0
+				CALLGRAF LoadRGB32
+
+				add.l	#256*4*3+2+2+4,a7
+				rts
+
 
 mnu_initrnd:	lea		mnu_palette+256,a1
 				move.w	#255,d0
@@ -443,22 +446,33 @@ mnu_initrnd:	lea		mnu_palette+256,a1
 				dbra	d0,.loop
 				rts
 
-mnu_movescreen:	move.w	mnu_screenpos,d0
+				; scroll first two bitplanes
+mnu_movescreen:	move.l  MenuScreen,a1
+				lea		sc_ViewPort(a1),a1
+				move.l	a1,a0
+				move.l	vp_RasInfo(a1),a1
+				move.l  ri_BitMap(a1),a1
+				lea		bm_Planes(a1),a1
+
+				move.w	mnu_screenpos,d0
 				and.w	#$ff,d0
 				mulu	#40,d0
 				add.l	#mnu_screen,d0
-				lea		mnu_bplptrs+2,a0
+
 				moveq.l	#1,d1
-.loop:			swap.w	d0
-				move.w	d0,(a0)
-				swap.w	d0
-				move.w	d0,4(a0)
-				addq.l	#8,a0
+.loop:			move.l	d0,(a1)+
 				add.l	#40*256*2,d0
 				dbra	d1,.loop
+
 				addq.w	#1,mnu_screenpos
+
+				; This makes Intuition re-evaluate the bitmap pointers
+				; viewport still in a0
+				CALLGRAF ScrollVPort
+
 				rts
 
+				; Stitch a 24bit palette together such that the background
 mnu_createpalette:
 				lea		mnu_backpal,a0
 				lea		mnu_firepal,a1
@@ -2126,23 +2140,40 @@ BltNode			dc.l	0			; bn_n
 				dc.w	0			; bn_beamsync
 				dc.l	0			; bn_cleanup
 
+
+Bitmap			dc.w	320/8					; bm_BytesPerRow
+				dc.w	256						; bm_Rows
+				dc.b	BMF_DISPLAYABLE			; bm_Flags
+				dc.b	8						; bm_Depth
+				dc.w	0						; bm_Pad
+				dc.l	mnu_screen				; The lower two bitplanes are the scrolling
+				dc.l	mnu_screen+1*40*512		; background, 512 lines high
+				dc.l	mnu_morescreen			; The upper planes are for drawing characters and
+				dc.l	mnu_morescreen+1*40*256	; the fire effect
+				dc.l	mnu_morescreen+2*40*256
+				dc.l	mnu_morescreen+3*40*256
+				dc.l	mnu_morescreen+4*40*256
+				dc.l	mnu_morescreen+5*40*256
+
+ScreenTags		dc.l	SA_Width,320
+				dc.l	SA_Height,256
+				dc.l	SA_Depth,8
+				dc.l	SA_BitMap,Bitmap
+				dc.l	SA_Type,CUSTOMSCREEN
+				dc.l	SA_Quiet,1
+				dc.l	TAG_END,0
+
+MenuScreen		dc.l	0
+
+
 				section	data_c,data_c
 
 mnu_copper:
-				dc.w	intreq,$8010			; trigger VBL interrupt
-				dc.l	$01000211,$01020000,$01040000
-				dc.l	$0108fff8,$010afff8,$010c0000
-				dc.l	$01fc0003
-				dc.l	$008e2881,$009028c1,$00920038,$009400d0
-mnu_bplptrs:	dc.l	$00e00000,$00e20000,$00e40000,$00e60000
-				dc.l	$00e80000,$00ea0000,$00ec0000,$00ee0000
-				dc.l	$00f00000,$00f20000,$00f40000,$00f60000
-				dc.l	$00f80000,$00fa0000,$00fc0000,$00fe0000
 mnu_colptrs:	ds.l	(32+1)*8*2+1
 
 				cnop	64,64					; align for fetch mode 3
-mnu_screen:		incbin	"menu/back2.raw"
-				ds.b	40*256*2
-mnu_morescreen:	ds.b	40*256*8
+mnu_screen:		incbin	"menu/back2.raw"		; 4 color background
+				ds.b	40*256*2				; 2 more bitplanes
+mnu_morescreen:	ds.b	40*256*8				;
 
 				section	code,code
