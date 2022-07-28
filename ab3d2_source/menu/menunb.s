@@ -323,7 +323,18 @@ mnu_setscreen:	bsr.w	mnu_init
 				move.l	d0,d2
 				move.l	d0,d3
 				CALLINT SetPointer
+				; we open the Window pixel size to prevent it from clearing
+				; the screen immediately. This resizes the window to fullscreen.
+				; FIXME: doesn't work. When first input is received, the window clear happens.
+				; But opening the window pixel sized already did the trick...
+				;move.l	MenuWindow,a0
+				;clr.l	d0
+				;move.l	d0,d1
+				;move.l	#320,d2
+				;move.l	#256,d3
+				;CALLINT ChangeWindowBox
 
+				bsr.w	mnu_init
 				bsr.w	mnu_setpalette
 
 				move.l	#mnu_vblint,main_vblint
@@ -2185,13 +2196,13 @@ MenuScreen		dc.l	0
 
 WindowTags		dc.l	WA_Left,0
 				dc.l	WA_Top,0
-				dc.l	WA_Width,320
-				dc.l	WA_Height,256
+				dc.l	WA_Width,0
+				dc.l	WA_Height,0
 				dc.l	WA_CustomScreen
 WTagScreenPtr	dc.l	0				; will fill in screen pointer later
 				; intution.i states "WA_Flags ;not implemented at present"
 				; But I have seen code using it...
-				dc.l	WA_Flags,WFLG_ACTIVATE!WFLG_BORDERLESS!WFLG_RMBTRAP!WFLG_NOCAREREFRESH!WFLG_SIMPLE_REFRESH
+				dc.l	WA_Flags,WFLG_ACTIVATE!WFLG_BORDERLESS!WFLG_RMBTRAP!WFLG_SIMPLE_REFRESH!WFLG_BACKDROP!WFLG_NOCAREREFRESH
 				; Just to be sure, provide the same info again
 				dc.l	WA_Activate,1
 				dc.l	WA_Borderless,1
