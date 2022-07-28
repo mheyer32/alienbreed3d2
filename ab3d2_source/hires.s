@@ -293,9 +293,7 @@ _start
 
 				move.w	#31,SERPER(a6)			;19200 baud, 8 bits, no parity
 
-
 				st		GOURSEL
-
 
 				lea		VBLANKInt(pc),a1
 				moveq	#INTB_VERTB,d0
@@ -563,7 +561,7 @@ PLAYTHEGAME:
 .notext
 
 ;charlie
-				move.l	#TEXTCOP,_custom+cop1lc
+;				move.l	#TEXTCOP,_custom+cop1lc
 
 				move.w	#$10,d0
 				move.w	#7,d1
@@ -572,11 +570,11 @@ PLAYTHEGAME:
 				move.w	d0,TXTCOLL
 				move.w	d0,MIXCOLL
 				add.w	#$121,d0
-.wtframe:
-				btst	#5,_custom+intreqrl
-				beq.s	.wtframe
-				move.w	#$0020,_custom+intreq
-				dbra	d1,.fdup
+;.wtframe:
+;				btst	#5,_custom+intreqrl
+;				beq.s	.wtframe
+;				move.w	#$0020,_custom+intreq
+;				dbra	d1,.fdup
 
 				move.l	#_custom,a6
 				jsr		SETPLAYERS
@@ -807,15 +805,15 @@ noload:
 charlie:
 ; jmp  ENDGAMESCROLL
 
-				move.w	#$87c0,dmacon(a6)
+;				move.w	#$87c0,dmacon(a6)
 
-				move.w	#%1000000000100000,dmacon(a6)
+;				move.w	#%1000000000100000,dmacon(a6)
 
 ; move.w intenar(a6),saveinters
 
-				move.w	#%00101111,intena(a6)
+;				move.w	#%00101111,intena(a6)
 
-				move.w	#255,adkcon(a6)
+;				move.w	#255,adkcon(a6)
 
 
 *** Put myself in supervisor mode
@@ -1192,8 +1190,8 @@ noclips:
 
 ; jmp stuff
 ;endstuff:
-
-				move.w	#$00ff,$dff09e
+				; clear audio modulation settings
+				move.w	#$00ff,_custom+adkcon
 
 ; move.l #Blurbfield,$dff080
 
@@ -1252,7 +1250,7 @@ noclips:
 ; bsr initobjpos
 ****************************
 
-
+				; setup audio channels
 				move.l	#$dff000,a6
 
 				move.l	#null,$dff0a0
@@ -1298,17 +1296,18 @@ scaledownlop:
 
 				move.l	#$dff000,a6
 
-				move.w	#$c008,intena(a6)
-
-				move.w	#$f,dmacon(a6)
-				move.w	#$820f,dmacon(a6)
+				move.w	#INTB_SETCLR!INTB_INTEN!INTB_PORTS,intena(a6)
+				; disable audio dma
+				move.w	#DMAF_AUDIO,dmacon(a6)
+				; enable audio dma
+				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_AUDIO,dmacon(a6)
 
 ; bsr protinit
 
 
-; move.w #$20,$1dc(a6)
+; move.w #$20,$1dc(a6)	; BEAMCON Pal
 
-				move.w	#$0,$dff034
+				move.w	#$0,_custom+potgo
 				move.w	#0,Conditions
 
 				cmp.b	#'n',mors
@@ -10695,7 +10694,6 @@ VBlankInterrupt:
 				rts
 
 .routine
-
 
 ;w move.w #$0010,$dff000+intreq
 
