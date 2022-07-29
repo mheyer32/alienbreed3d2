@@ -2227,6 +2227,7 @@ WTagScreenPtr	dc.l	0				; will fill in screen pointer later
 				dc.l	WA_RMBTrap,1		; prevent menu rendering
 				dc.l	WA_NoCareRefresh,1
 				dc.l	WA_SimpleRefresh,1
+				dc.l	WA_Backdrop,1
 				dc.l	TAG_END,0
 
 MenuWindow		dc.l	0
