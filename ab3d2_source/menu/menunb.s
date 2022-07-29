@@ -304,7 +304,12 @@ mnu_clearscreen:
 .noScreen
 				rts
 
-mnu_setscreen:	bsr.w	mnu_init
+mnu_setscreen:
+				lea		Bitmap+bm_Planes,a0		; provide "fake" bitplane pointers such that
+				move.w	#7,d0					; opening the screen/window will not overwrite
+.setPlane		move.l	#mnu_morescreen,(a0)+	; the hardcoded background pattern
+				dbra	d0,.setPlane
+
 				sub.l	a0,a0
 				lea		ScreenTags,a1
 				CALLINT OpenScreenTagList
@@ -323,6 +328,7 @@ mnu_setscreen:	bsr.w	mnu_init
 				move.l	d0,d2
 				move.l	d0,d3
 				CALLINT SetPointer
+
 				; we open the Window pixel size to prevent it from clearing
 				; the screen immediately. This resizes the window to fullscreen.
 				; FIXME: doesn't work. When first input is received, the window clear happens.
@@ -376,7 +382,14 @@ mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				dbra	d0,.clrloop
 				bsr.w	mnu_cls
 ;--------------------------------------------------------------- Set bplptrs --
-				lea		Bitmap+bm_Planes,a0
+
+				move.l  MenuScreen,a1
+				lea		sc_ViewPort(a1),a1
+				move.l	a1,a0
+				move.l	vp_RasInfo(a1),a1
+				move.l  ri_BitMap(a1),a1
+				lea		bm_Planes(a1),a1
+
 				move.l	#mnu_screen,d0
 				moveq.l	#0,d1
 				bsr.w	.setbplptrs
@@ -387,9 +400,13 @@ mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				moveq.l	#5,d1
 				bsr.s	.setbplptrs
 
+				; This makes Intuition re-evaluate the bitmap pointers
+				; viewport still in a0
+				CALLGRAF ScrollVPort
+
 				rts
 
-.setbplptrs:	move.l	d0,(a0)+
+.setbplptrs:	move.l	d0,(a1)+
 				add.l	#40*256,d0
 				dbra	d1,.setbplptrs
 				rts
@@ -2175,14 +2192,14 @@ Bitmap			dc.w	320/8					; bm_BytesPerRow
 				dc.b	BMF_DISPLAYABLE			; bm_Flags
 				dc.b	8						; bm_Depth
 				dc.w	0						; bm_Pad
-				dc.l	mnu_screen				; The lower two bitplanes are the scrolling
-				dc.l	mnu_screen+1*40*512		; background, 512 lines high
+				dc.l	mnu_morescreen			; mnu_screen				; The lower two bitplanes are the scrolling
+				dc.l	mnu_morescreen			; mnu_screen+1*40*512		; background, 512 lines high
 				dc.l	mnu_morescreen			; The upper planes are for drawing characters and
-				dc.l	mnu_morescreen+1*40*256	; the fire effect
-				dc.l	mnu_morescreen+2*40*256
-				dc.l	mnu_morescreen+3*40*256
-				dc.l	mnu_morescreen+4*40*256
-				dc.l	mnu_morescreen+5*40*256
+				dc.l	mnu_morescreen			; the fire effect
+				dc.l	mnu_morescreen
+				dc.l	mnu_morescreen
+				dc.l	mnu_morescreen
+				dc.l	mnu_morescreen
 
 ScreenTags		dc.l	SA_Width,320
 				dc.l	SA_Height,256
@@ -2190,6 +2207,7 @@ ScreenTags		dc.l	SA_Width,320
 				dc.l	SA_BitMap,Bitmap
 				dc.l	SA_Type,CUSTOMSCREEN
 				dc.l	SA_Quiet,1
+				dc.l	SA_ShowTitle,0
 				dc.l	TAG_END,0
 
 MenuScreen		dc.l	0
