@@ -137,23 +137,58 @@ FINISHEDLEVEL:	dc.w	0
 
 _IntuitionBase:	dc.l	0
 
-MyScreen:		dc.l	0
+MainScreen:		dc.l	0
+MyRaster0		dc.l	0
+MyRaster1		dc.l	0
 
-MyNewScreen:	dc.w	0,0						left, top
-				dc.w	SCREENWIDTH,16			width, height
-				dc.w	1						depth
-				dc.b	0,1						pens
-				dc.w	0						viewmodes
-				dc.w	CUSTOMSCREEN+SCREENQUIET type
-				dc.l	0						font
-				dc.l	0						title
-				dc.l	0						gadgets
-				dc.l	0						bitmap
+MainScreenTags	dc.l	SA_Width,320
+				dc.l	SA_Height,256
+				dc.l	SA_Depth,8
+				dc.l	SA_BitMap,MainBitmap
+				dc.l	SA_Type,CUSTOMSCREEN
+				dc.l	SA_Quiet,1
+				dc.l	SA_AutoScroll,0
+				dc.l	SA_FullPalette,1
+				dc.l	TAG_END,0
 
+MainWindowTags	dc.l	WA_Left,0
+				dc.l	WA_Top,0
+				dc.l	WA_Width,0
+				dc.l	WA_Height,0
+				dc.l	WA_CustomScreen
+MainWTagScreenPtr dc.l	0				; will fill in screen pointer later
+				; intution.i states "WA_Flags ;not implemented at present"
+				; But I have seen code using it...
+				dc.l	WA_Flags,WFLG_ACTIVATE!WFLG_BORDERLESS!WFLG_RMBTRAP!WFLG_SIMPLE_REFRESH!WFLG_BACKDROP!WFLG_NOCAREREFRESH
+				; Just to be sure, provide the same info again
+				dc.l	WA_Activate,1
+				dc.l	WA_Borderless,1
+				dc.l	WA_RMBTrap,1		; prevent menu rendering
+				dc.l	WA_NoCareRefresh,1
+				dc.l	WA_SimpleRefresh,1
+				dc.l	WA_Backdrop,1
+				dc.l	TAG_END,0
+
+MainWindow		dc.l	0
+
+MainBitmap		dc.w	320/8					; bm_BytesPerRow
+				dc.w	256						; bm_Rows
+				dc.b	BMF_DISPLAYABLE			; bm_Flags
+				dc.b	8						; bm_Depth
+				dc.w	0						; bm_Pad
+				ds.l	8						; bm_Planes
 
 INTUITION_REV	equ		31						v1.1
 int_name		INTNAME
 				even
+
+
+MyAllocRaster:
+				move.l	#320,d0			; want all planes in one chunk of memory
+				move.l	#(256*8)+1,d1
+				CALLGRAF AllocRaster
+				tst.l	d0
+				rts
 
 START:
 
@@ -179,8 +214,6 @@ START:
 ;ProtChkCLev1:
 ; PRSDA
 
-				move.w	#$7201,titleplanes
-
 				move.l	#doslibname,a1
 				moveq	#0,d0
 				CALLEXEC OpenLibrary
@@ -193,15 +226,56 @@ START:
 ;	beq	exit_false		if failed then quit
 				move.l	d0,_IntuitionBase		else save the pointer
 
-				; FIMXE: this screen never gets closed. Why does it get opened at all?
-				; is it just to reset the view to default?
-				lea		MyNewScreen(pc),a0
-				CALLINT	OpenScreen				open a screen
+				; Open Graphics.library, store old coppper list etc.
+				jsr		OpenGraphics
+
+				bsr		MyAllocRaster
+;				beq	exit_closeall
+				move.l	d0,MyRaster0
+
+				addq.l	#7,d0			; align to 8 byte for FMOD3
+				and.l	#~7,d0
+				move.l	d0,scrn
+
+				move.l	d0,TEXTSCRN		; FIXME: TEXTSCRN should go
+
+				bsr		MyAllocRaster
+;				beq	exit_closeall
+				move.l	d0,MyRaster1
+
+				addq.l	#7,d0			; align to 8 byte for FMOD3
+				and.l	#~7,d0
+				move.l	d0,scrn2
+
+				lea		MainBitmap+bm_Planes,a1
+				moveq.l	#7,d1
+.storePlanePtr	move.l	d0,(a1)+
+				add.l	#(256*(320/8)),d0
+				dbra	d1,.storePlanePtr
+
+				sub.l	a0,a0
+				lea		MainScreenTags,a1
+				CALLINT	OpenScreenTagList
 				tst.l	d0
 ;	beq	exit_closeall		if failed the close both, exit
-				move.l	d0,MyScreen
+				move.l	d0,MainScreen
 
-				CALLINT	RethinkDisplay
+				; need a window to be able to clear out mouse pointer
+				; may later also serve as IDCMP input source
+				sub.l	a0,a0
+				lea		MainWindowTags,a1
+				move.l	d0,MainWTagScreenPtr-MainWindowTags(a1)	; WA_CustomScreen
+				CALLINT OpenWindowTagList
+				tst.l	d0
+;				beq	exit_closeall
+				move.l	d0,MainWindow
+				move.l	d0,a0
+				lea		emptySprite,a1
+				moveq	#1,d0
+				moveq	#16,d1
+				move.l	d0,d2
+				move.l	d0,d3
+				CALLINT SetPointer
 
 				move.l	#LINKname,a0
 				jsr		LOADAFILE
@@ -211,80 +285,7 @@ START:
 				jsr		LOADAFILE
 				move.l	d0,LEVELTEXT
 
-				; Open Graphics.library
-				jsr		stuff
-
-; move.l _DOSBase,a6
-; move.l #LINKname,d1
-; move.l #1005,d2
-; jsr -30(a6)
-; move.l d0,LLhandle
-;
-; move.l _DOSBase,a6
-; move.l d0,d1
-; move.l #LINKSPACE,d2
-; move.l #90000,d3
-; jsr -42(a6)
-;
-; move.l _DOSBase,a6
-; move.l LLhandle,d1
-; jsr -36(a6)
-
-
-; PRSDS
-
 				jsr		_InitLowLevel
-
-; jsr CLEARTITLEPAL
-
-;ProtChkDLev1:
-; PRSDT
-				; FIXME: screen setup should be all OS stuff
-				; set PAL in BEAMCON
-				;move.w	#$20,$dff1dc
-				;move.l	#titlecop,_custom+cop1lc
-
-; PRSDV
-				; FIXME: whatyadoin?
-				;move.w	#DMAF_SETCLR!DMAF_BLITHOG!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER,_custom+dmacon
-				;move.w	#DMAF_SETCLR!DMAF_SPRITE,_custom+dmacon
-
-;ProtChkMLev1:
-
-; move.w $dff006,d0
-; lea RVAL2-100(pc),a0
-; add.w d0,100(a0)
-
-;bsr GETTITLEMEM
-
-;ProtChkELev1:
-; PRSDU
-
-; bsr CLROPTSCRN
-
-; bsr SETUPTITLESCRN
-
-; jsr _InitPlayer
-
-; move.l #INTROTUNENAME,a0
-; jsr _LoadModule
-; move.l d0,INTROTUNEADDR
-
-; PRSDY
-
-; move.l d0,a0
-; jsr _InitModule
-
-; move.l INTROTUNEADDR,a0
-; jsr _PlayModule
-
-;ProtChkFLev1:
-;PRSDa
-
-; move.l #TITLESCRNNAME,TITLESCRNPTR
-; bsr LOADTITLESCRN2
-
-; FLASHER $0f0,$fff
 
 ******************************
 
@@ -296,8 +297,6 @@ START:
 				move.l	a7,mnu_mainstack
 
 				jsr		mnu_clearscreen
-				; mnu_clearscreen disables all visual DMA
-;				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_SPRITE,dmacon+_custom
 
 ******************************
 
@@ -352,32 +351,10 @@ START:
 				CALLDOS	Delay
 				ENDC
 
-; move.l #newblag,$80
-; trap #0
-; bra JUMPPASTIT
-; rts
-;
-;newblag:
-
-
-;ProtChkGLev1:
-; bsr PROTSETUP
 				bsr		DEFAULTGAME
 
-; move.l INTROTUNEADDR,a0
-; jsr _UnLoadModule
-
-; IFEQ CD32VER
-; jsr KInt_Init
-; ENDC
-;ProtChkHLev1:
-; rte
-;
-;JUMPPASTIT:
-;
-
 				jsr		mnu_setscreen
-; jsr mnu_protection
+				; jsr mnu_protection
 
 BACKTOMENU:
 
@@ -397,38 +374,15 @@ BACKTOSLAVE:
 				bsr		SLAVEMENU
 DONEMENU:
 
+
 				jsr		mnu_clearscreen
-				; mnu_clearscreen disables all visual DMA
-				;move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_SPRITE,dmacon+_custom
 
-				bsr		WAITREL
-
-; IFEQ CD32VER
-; move.l OLDKINT,$68.w
-; ENDC
-
-
-
-
-; bsr CLRSPRITES
-
-; move.w #23,FADEAMOUNT
-; bsr FADEUPTITLE
-; move.w #31,FADEAMOUNT
-				;bsr		FADEDOWNTITLE
-
-				move.w	#$0201,titleplanes
+				;	bsr		WAITREL
 
 				FILTER
 
 				tst.b	SHOULDQUIT
 				bne		QUITTT
-
-; bsr RELEASETITLEMEM
-
-
-; jsr LOADBOTPIC
-
 
 				clr.b	FINISHEDLEVEL
 
@@ -463,18 +417,6 @@ DONEMENU:
 *************************************
 				jsr		INITQUEUE
 
-				; Allocate main chipmem bitmap data for rendering
-				; FIXME: this should be AllocBitmap instead for alignment purposes
-				move.l	#MEMF_CHIP,d1
-				move.l	#10240*8,d0
-				CALLEXEC AllocMem
-				move.l	d0,scrn
-
-				move.l	#MEMF_CHIP,d1
-				move.l	#10240*8,d0
-				CALLEXEC AllocMem
-				move.l	d0,scrn2
-
 				move.l	#borderpacked,d0
 				moveq	#0,d1
 				move.l	scrn,a0
@@ -489,45 +431,11 @@ DONEMENU:
 				lea		$0,a2
 				jsr		unLHA
 
-; move.l #MEMF_CHIP,TYPEOFMEM
-; move.l #bordername,a0
-; move.l #scrn,d0
-; move.l #0,d1
-; jsr QUEUEFILE
-;
-; ifeq CHEESEY
-; move.l #bordername,a0
-; move.l #scrn2,d0
-; move.l #0,d1
-; jsr QUEUEFILE
-; endc
-;
-; jsr FLUSHQUEUE
-
-				ifne	CHEESEY
-
-				move.l	scrn,scrn2				; FIXME: loosing scrn2 pointer this way. Is this removing double-buffering from the cheesey version?
-
-				endc
-
 *************************************
 
 				jsr		PLAYTHEGAME
 
 *************************************
-				move.l	scrn,a1
-				move.l	#10240*8,d0
-				CALLEXEC FreeMem
-				ifeq	CHEESEY
-				move.l	scrn2,a1
-				move.l	#10240*8,d0
-				CALLEXEC FreeMem
-				endc
-*************************************
-
-; bsr FREEBOTMEM
-
-; bra QUITTT
 
 				tst.b	FINISHEDLEVEL
 				beq		dontusestats
@@ -546,34 +454,6 @@ DONEMENU:
 				ENDR
 
 dontusestats:
-
-; bsr PASSLINETOGAME
-; bsr GETSTATS
-
-; bsr GETTITLEMEM
-; bsr CLROPTSCRN
-; bsr SETUPTITLESCRN
-
-; move.l #TITLESCRNNAME2,TITLESCRNPTR
-; bsr LOADTITLESCRN2
-; move.w #$7201,titleplanes
-
-; move.w #$20,$dff1dc
-; move.l #titlecop,$dff080
-; move.w #$87c0,$dff000+dmacon
-; move.w #$8020,$dff000+dmacon
-
-; move.w #0,FADEVAL
-; move.w #31,FADEAMOUNT
-; bsr FADEUPTITLE
-
-; move.w #23,FADEAMOUNT
-; bsr FADEDOWNTITLE
-
-; IFEQ CD32VER
-; jsr KInt_Init
-; ENDC
-
 				jsr		mnu_setscreen
 
 
@@ -584,20 +464,26 @@ QUITTT:
 				move.l	#LEVELDATASize,d0
 				CALLEXEC FreeMem
 
-				move.l	TEXTSCRN,a1
-				move.l	#TEXTSCRNSize,d0
-				CALLEXEC FreeMem
-
 				move.l	FASTBUFFERalloc,a1
 				move.l	#FASTBUFFERSize,d0
 				CALLEXEC FreeMem
+
+				move.l	MyRaster0,a0
+				move.w	#320,d0
+				move.w	#256*8+1,d1
+				CALLGRAF FreeRaster
+
+				move.l	MyRaster1,a0
+				move.w	#320,d0
+				move.w	#256*8+1,d1
+				CALLGRAF FreeRaster
+
 
 ; jsr RELEASEWALLMEM
 				jsr		RELEASESAMPMEM
 				jsr		RELEASEFLOORMEM
 				jsr		RELEASEOBJMEM
 
-;				move.l	old,_custom+cop1lc
 				lea		VBLANKInt,a1
 				moveq	#INTB_VERTB,d0
 				CALLEXEC RemIntServer
@@ -605,17 +491,6 @@ QUITTT:
 				lea		KEYInt,a1
 				moveq	#INTB_PORTS,d0
 				CALLEXEC RemIntServer
-
-				; why write to BEAMCON0???
-;				move.w	#$f8e,$dff1dc
-
-				; FXIME: holy cow, we didn't even do a full system takeover,
-				; yet writing directly to interrupt control
-;				move.l	old,_custom+cop1lc
-;				move.w	_storeint,d0
-;				or.w	d0,_custom+intena
-
-				;CALLEXEC Permit
 
 				move.l	#0,d0
 
@@ -749,27 +624,6 @@ wtclick:
 				btst	#6,$bfe001
 				bne.s	wtclick
 
-				rts
-
-CLRSPRITES:
-				move.l	#nullspr,d0
-				move.w	d0,tsp0l
-				move.w	d0,tsp1l
-				move.w	d0,tsp2l
-				move.w	d0,tsp3l
-				move.w	d0,tsp4l
-				move.w	d0,tsp5l
-				move.w	d0,tsp6l
-				move.w	d0,tsp7l
-				swap	d0
-				move.w	d0,tsp0h
-				move.w	d0,tsp1h
-				move.w	d0,tsp2h
-				move.w	d0,tsp3h
-				move.w	d0,tsp4h
-				move.w	d0,tsp5h
-				move.w	d0,tsp6h
-				move.w	d0,tsp7h
 				rts
 
 ********************************************************
@@ -1800,17 +1654,12 @@ SAVEGAMELEN:	dc.l	0
 
 LOADPOSITION:
 
-				jsr		mnu_clearscreen
-
 				move.l	#SAVEGAMENAME,a0
 				move.l	#SAVEGAMEPOS,d0
 				move.l	#SAVEGAMELEN,d1
 				jsr		INITQUEUE
 				jsr		QUEUEFILE
 				jsr		FLUSHQUEUE
-
-				jsr		mnu_setscreen
-
 
 				move.l	SAVEGAMEPOS,a2			; address of first saved game.
 
@@ -1882,16 +1731,12 @@ LOADPOSITION:
 
 SAVEPOSITION:
 
-				jsr		mnu_clearscreen
-
 				move.l	#SAVEGAMENAME,a0
 				move.l	#SAVEGAMEPOS,d0
 				move.l	#SAVEGAMELEN,d1
 				jsr		INITQUEUE
 				jsr		QUEUEFILE
 				jsr		FLUSHQUEUE
-
-				jsr		mnu_setscreen
 
 				move.l	SAVEGAMEPOS,a2			; address of first saved game.
 
@@ -1934,10 +1779,6 @@ SAVEPOSITION:
 
 				move.l	d0,-(a7)
 
-				jsr		mnu_clearscreen
-
-				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_RASTER!DMAF_COPPER!DMAF_SPRITE,dmacon+_custom
-
 				move.l	(a7)+,d0
 
 				addq	#1,d0
@@ -1956,13 +1797,6 @@ SAVEPOSITION:
 				move.l	(a1)+,(a0)+
 				ENDR
 
-				move.l	oldcopper,_custom+cop1lc
-				move.w	#$8020,_custom+intena
-
-				CALLINT	RemakeDisplay
-				CALLINT	RethinkDisplay
-
-
 				move.l	#SAVEGAMENAME,d1
 				move.l	#1006,d2
 				CALLDOS	Open
@@ -1976,12 +1810,8 @@ SAVEPOSITION:
 				move.l	handle,d1
 				CALLDOS	Close
 
-				move.l	#200,d1
-				CALLDOS	Delay
-
-				move.w	#$0020,_custom+intena
-
-				jsr		mnu_setscreen
+;				move.l	#200,d1
+;				CALLDOS	Delay
 
 .nosave:
 
@@ -2682,43 +2512,32 @@ FADEUPTITLE:
 				move.w	FADEAMOUNT,d1
 fadeuploop:
 
-				move.l	#TITLEPAL,a0
-				move.l	#TITLEPALCOP,a1
-
-wvb:
-				btst	#5,_custom+intreqrl
-				beq.s	wvb
-				move.w	#$20,_custom+intreq
-
-				bsr		PUTIN32
-				add.w	#4,a1
-				bsr		PUTIN32
-				add.w	#4,a1
-				bsr		PUTIN32
-				add.w	#4,a1
-				bsr		PUTIN32
-
-				addq.w	#8,d0
-				dbra	d1,fadeuploop
-
-				subq	#8,d0
-				move.w	d0,FADEVAL
+;				move.l	#TITLEPAL,a0
+;				move.l	#TITLEPALCOP,a1
+;
+;wvb:
+;				btst	#5,_custom+intreqrl
+;				beq.s	wvb
+;				move.w	#$20,_custom+intreq
+;
+;				bsr		PUTIN32
+;				add.w	#4,a1
+;				bsr		PUTIN32
+;				add.w	#4,a1
+;				bsr		PUTIN32
+;				add.w	#4,a1
+;				bsr		PUTIN32
+;
+;				addq.w	#8,d0
+;				dbra	d1,fadeuploop
+;
+;				subq	#8,d0
+;				move.w	d0,FADEVAL
 
 				rts
 
 CLEARTITLEPAL:
-; PRSDP
-				move.l	#TITLEPALCOP,a0
-				move.w	#7,d1
-clrpal:
-				move.w	#31,d0
-clr32
-				move.w	#0,2(a0)
-				addq	#4,a0
-				dbra	d0,clr32
-				addq	#4,a0
-				dbra	d1,clrpal
-; PRSDQ
+
 				rts
 
 FADEDOWNTITLE:
@@ -2727,246 +2546,29 @@ FADEDOWNTITLE:
 				move.w	FADEAMOUNT,d1
 fadedownloop:
 
-				move.l	#TITLEPAL,a0
-				move.l	#TITLEPALCOP,a1
-
-.wvb:
-				btst	#5,_custom+intreqrl
-				beq.s	.wvb
-				move.w	#$20,_custom+intreq
-
-				bsr		PUTIN32
-				add.w	#4,a1
-				bsr		PUTIN32
-				add.w	#4,a1
-				bsr		PUTIN32
-				add.w	#4,a1
-				bsr		PUTIN32
-
-				subq.w	#8,d0
-				dbra	d1,fadedownloop
-
-				addq	#8,d0
-				move.w	d0,FADEVAL
-
-				rts
-
-; FIXME not used?
-LOADTITLESCRN2:
-
-
-				move.l	#MEMF_CLEAR,d1
-				move.l	#52400,d0
-				CALLEXEC AllocMem
-				tst.l	d0
-				beq		.nomem
-
-				move.l	d0,tempptr
-
-				move.l	TITLESCRNPTR,d1
-				move.l	#1005,d2
-				CALLDOS	Open
-				move.l	d0,handle
-				move.l	d0,d1
-; move.l TITLESCRNADDR,d2
-				move.l	tempptr,d2
-				move.l	#10240*7,d3
-				CALLDOS	Read
-				move.l	handle,d1
-				CALLDOS	Close
-
-
-				move.l	TITLESCRNADDR,a0
-				move.l	tempptr,d0
-
-				moveq	#0,d1
-				lea		WorkSpace,a1
-				lea		$0,a2
-				jsr		unLHA
-
-				move.l	tempptr,a1
-				move.l	#52400,d0
-				CALLEXEC FreeMem
-
-.nomem
+;				move.l	#TITLEPAL,a0
+;
+;.wvb:
+;				btst	#5,_custom+intreqrl
+;				beq.s	.wvb
+;				move.w	#$20,_custom+intreq
+;
+;				bsr		PUTIN32
+;				add.w	#4,a1
+;				bsr		PUTIN32
+;				add.w	#4,a1
+;				bsr		PUTIN32
+;				add.w	#4,a1
+;				bsr		PUTIN32
+;
+;				subq.w	#8,d0
+;				dbra	d1,fadedownloop
+;
+;				addq	#8,d0
+;				move.w	d0,FADEVAL
 
 				rts
 
-tempptr			dc.l	0
-
-
-GETTITLEMEM:
-				move.l	#2,d1
-				move.l	#10240*7,d0
-				CALLEXEC AllocMem
-				move.l	d0,TITLESCRNADDR
-
-				move.l	#_custom-$2cdfe4,a4 ;????
-
-				move.l	#2,d1
-				move.l	#258*16*5,d0
-				CALLEXEC AllocMem
-				move.l	d0,OPTSPRADDR
-
-				rts
-
-;ProtChkJLev1:
-
-;PROTSETUP:
-; incbin "includes/protsetupenc"
-
-; Need to: Decode protection calling
-; routine
-; use null values to call it and erase
-; it from memory
-; erase this routine and return.
-
-; include "protsetup"
-
-
-RELEASETITLEMEM:
-				move.l	TITLESCRNADDR,d1
-				move.l	d1,a1
-				move.l	#10240*7,d0
-				CALLEXEC FreeMem
-
-				move.l	OPTSPRADDR,d1
-				move.l	d1,a1
-				move.l	#258*80,d0
-				CALLEXEC FreeMem
-				rts
-
-
-;PROTCALLENC:
-; incbin "protcallenc.bin
-
-; one pass, all instructions executed.
-; must call protection routine,store
-; value somewhere, call ask routine,
-; compare returned value, if correct
-; set up all values, then return.
-
-; include "protcallenc"
-
-;ENDPROT:
-
-LOADTITLESCRN:
-
-				move.l	#TITLESCRNNAME,d1
-				move.l	#1005,d2
-				CALLDOS	Open
-				move.l	d0,handle
-				move.l	d0,d1
-				move.l	TITLESCRNADDR,d2
-				move.l	#10240*7,d3
-				CALLDOS	Read
-				move.l	handle,d1
-				CALLDOS	Close
-
-				rts
-
-; RVAL2: dc.w 0
-
-SETUPTITLESCRN:
-
-; PRSDR
-				move.l	#OPTCOP,a0
-				move.l	#rain,a1
-				move.w	#255,d0
-putinrain:
-				move.w	(a1)+,d1
-				move.w	d1,6(a0)
-				move.w	d1,6+4(a0)
-				move.w	d1,6+8(a0)
-				move.w	d1,6+12(a0)
-				add.w	#4*14,a0
-
-				dbra	d0,putinrain
-
-; Put addr into copper.
-				move.l	OPTSPRADDR,d0
-				move.w	d0,tsp0l
-				swap	d0
-				move.w	d0,tsp0h
-				swap	d0
-				add.l	#258*16,d0
-				move.w	d0,tsp1l
-				swap	d0
-				move.w	d0,tsp1h
-				swap	d0
-				add.l	#258*16,d0
-				move.w	d0,tsp2l
-				swap	d0
-				move.w	d0,tsp2h
-				swap	d0
-				add.l	#258*16,d0
-				move.w	d0,tsp3l
-				swap	d0
-				move.w	d0,tsp3h
-				swap	d0
-				add.l	#258*16,d0
-				move.w	d0,tsp4l
-				swap	d0
-				move.w	d0,tsp4h
-
-				move.l	#nullspr,d0
-				move.w	d0,tsp5l
-				move.w	d0,tsp6l
-				move.w	d0,tsp7l
-				swap	d0
-				move.w	d0,tsp5h
-				move.w	d0,tsp6h
-				move.w	d0,tsp7h
-
-				move.l	TITLESCRNADDR,d0
-				move.w	d0,ts1l
-				swap	d0
-				move.w	d0,ts1h
-				swap	d0
-				add.l	#10240,d0
-				move.w	d0,ts2l
-				swap	d0
-				move.w	d0,ts2h
-				swap	d0
-				add.l	#10240,d0
-				move.w	d0,ts3l
-				swap	d0
-				move.w	d0,ts3h
-				swap	d0
-				add.l	#10240,d0
-				move.w	d0,ts4l
-				swap	d0
-				move.w	d0,ts4h
-				swap	d0
-				add.l	#10240,d0
-				move.w	d0,ts5l
-				swap	d0
-				move.w	d0,ts5h
-				swap	d0
-				add.l	#10240,d0
-				move.w	d0,ts6l
-				swap	d0
-				move.w	d0,ts6h
-				swap	d0
-				add.l	#10240,d0
-				move.w	d0,ts7l
-				swap	d0
-				move.w	d0,ts7h
-				rts
-
-;RVAL1: dc.w 0
-
-;DummyAdds:
-; dc.l dummy-78935450
-; dc.l dummy-78935450
-; dc.l dummy-78935450
-; dc.l dummy-78935450
-; dc.l dummy-78935450
-; dc.l dummy-78935450
-; dc.l dummy-78935450
-; dc.l dummy-78935450
-; dc.l dummy-78935450
-; dc.l dummy-78935450
 
 LEVELTEXTNAME:	dc.b	'TKG1:includes/TEXT_FILE'
 
