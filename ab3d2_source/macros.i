@@ -319,4 +319,32 @@ WTNOT			MACRO
 				bne.s	\@bf
 				ENDM
 
-**
+CINIT			MACRO	; \1 UCopList* \2 number of instructions to hold
+				move.l	\1,a0
+				move.w	#\2,d0
+				jsr		_LVOUCopperListInit(a6)
+				ENDM
+
+CMOVE			MACRO ; \1 UCopList* \2 custom register \3 value
+				lea		_custom+\2,a1
+				move.l	a1,d0
+				move.l	\1,a1
+				move.l	\3,d1
+				jsr		_LVOCMove(a6) ; is A1 scratch?
+				move.l	\1,a1
+				jsr		_LVOCBump(a6)
+				ENDM
+
+CWAIT			MACRO ; \1 UCopList* \2 vertical pos \3 horizontal pos
+				move.l	\1,a1
+				move.l	\2,d0
+				move.l	\3,d1
+				jsr		_LVOCWait(a6)
+				move.l	\1,a1
+				jsr		_LVOCBump(a6)
+				ENDM
+
+CEND			MACRO ; \1 UCopList*
+				CWAIT \1,10000,255
+				ENDM
+
