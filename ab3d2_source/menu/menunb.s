@@ -29,8 +29,8 @@ macro_sync:		MACRO	;						Kills: d7 --			Macro_Sync
 				ENDM
 
 WAITBLIT:		MACRO
-.wait\@			tst.b mnu_bltbusy
-				bne.s .wait\@
+.wait\@			tst.b	mnu_bltbusy
+				bne.s	.wait\@
 				ENDM
 
 ;		include	"demo:System/Main_V3.82.S"
@@ -294,7 +294,7 @@ mnu_clearscreen:
 				move.l	MenuWindow,d0
 				beq.s	.noWindow
 				move.l	d0,a0
-				CALLINT CloseWindow		; FIXME: may have to clear the Window's event queue first
+				CALLINT	CloseWindow				; FIXME: may have to clear the Window's event queue first
 				clr.l	MenuWindow
 .noWindow		move.l	MenuScreen,d0
 				beq.s	.noScreen
@@ -312,14 +312,14 @@ mnu_setscreen:
 
 				sub.l	a0,a0
 				lea		ScreenTags,a1
-				CALLINT OpenScreenTagList
+				CALLINT	OpenScreenTagList
 				move.l	d0,MenuScreen
 				; need a window to be able to clear out mouse pointer
 				; may later also serve as IDCMP input source
 				sub.l	a0,a0
 				lea		WindowTags,a1
-				move.l	d0,WTagScreenPtr-WindowTags(a1)	; WA_CustomScreen
-				CALLINT OpenWindowTagList
+				move.l	d0,WTagScreenPtr-WindowTags(a1) ; WA_CustomScreen
+				CALLINT	OpenWindowTagList
 				move.l	d0,MenuWindow
 				move.l	d0,a0
 				lea		emptySprite,a1
@@ -327,7 +327,7 @@ mnu_setscreen:
 				moveq	#16,d1
 				move.l	d0,d2
 				move.l	d0,d3
-				CALLINT SetPointer
+				CALLINT	SetPointer
 
 				; we open the Window pixel size to prevent it from clearing
 				; the screen immediately. This resizes the window to fullscreen.
@@ -364,7 +364,7 @@ mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				lea		mnu_screen+40*256,a1
 				lea		mnu_screen+40*256*2,a2
 				lea		mnu_screen+40*256*3,a3
-				move.w	#40*256/4-1,d1	; one screen worth in longwords
+				move.w	#40*256/4-1,d1			; one screen worth in longwords
 .fsloop:		move.l	(a1),d0
 				move.l	d0,(a2)+
 				move.l	d0,(a3)+
@@ -383,11 +383,11 @@ mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				bsr.w	mnu_cls
 ;--------------------------------------------------------------- Set bplptrs --
 
-				move.l  MenuScreen,a1
+				move.l	MenuScreen,a1
 				lea		sc_ViewPort(a1),a1
 				move.l	a1,a0
 				move.l	vp_RasInfo(a1),a1
-				move.l  ri_BitMap(a1),a1
+				move.l	ri_BitMap(a1),a1
 				lea		bm_Planes(a1),a1
 
 				move.l	#mnu_screen,d0
@@ -420,8 +420,8 @@ mnu_setpalette:	lea		mnu_palette,a2
 				sub.l	#256*4*3+2+2+4,a7		; reserve stack for 256 color entries + numColors + firstColor
 				move.l	a7,a1
 				move.l	a1,a0
-				move.w	#256,(a0)+	; number of entries
-				move.w	#0,(a0)+	; start index
+				move.w	#256,(a0)+				; number of entries
+				move.w	#0,(a0)+				; start index
 				move.w	#255,d0
 				; need to expand the 8 bits to 32bits per gun
 .setCol			move.l	(a2)+,d1
@@ -432,11 +432,11 @@ mnu_setpalette:	lea		mnu_palette,a2
 				move.l	d1,d2
 				clr.b	d2
 				swap	d2
-				move.l	d2,(a0)+	; this has some stuff in lower word, butt hey'll be discarded
+				move.l	d2,(a0)+				; this has some stuff in lower word, butt hey'll be discarded
 				ror.l	#8,d1
-				move.l	d1,(a0)+	; same here
+				move.l	d1,(a0)+				; same here
 				dbra	d0,.setCol
-				clr.l	(a0)		; terminate list
+				clr.l	(a0)					; terminate list
 
 				move.l	MenuScreen,a0
 				lea		sc_ViewPort(a0),a0
@@ -493,11 +493,11 @@ mnu_initrnd:	lea		mnu_palette+256,a1
 				rts
 
 				; scroll first two bitplanes
-mnu_movescreen:	move.l  MenuScreen,a1
+mnu_movescreen:	move.l	MenuScreen,a1
 				lea		sc_ViewPort(a1),a1
 				move.l	a1,a0
 				move.l	vp_RasInfo(a1),a1
-				move.l  ri_BitMap(a1),a1
+				move.l	ri_BitMap(a1),a1
 				lea		bm_Planes(a1),a1
 
 				move.w	mnu_screenpos,d0
@@ -787,58 +787,58 @@ mnu_pass1:		bsr.w	getrnd
 				cmp.w	#1,d0
 				bne.s	.normal
 				move.l	#-2,mnu_subtract
-				move.l	#$fff80000,bltcon0(a0)		; D=A+BC
+				move.l	#$fff80000,bltcon0(a0)	; D=A+BC
 				bra.s	.cont
-.l1:			move.l	#$1ff80000,bltcon0(a0)		; D=A+BC
+.l1:			move.l	#$1ff80000,bltcon0(a0)	; D=A+BC
 				bra.s	.cont
-.normal:		move.l	#$0ff80000,bltcon0(a0)		; D=A+BC
-.cont:			move.l	#$ffffffff,bltafwm(a0)		; Masks A
-				move.l	#$00000000,bltcmod(a0)		; CB modulo
-				move.l	#$00000000,bltamod(a0)		; AD modulo
+.normal:		move.l	#$0ff80000,bltcon0(a0)	; D=A+BC
+.cont:			move.l	#$ffffffff,bltafwm(a0)	; Masks A
+				move.l	#$00000000,bltcmod(a0)	; CB modulo
+				move.l	#$00000000,bltamod(a0)	; AD modulo
 				move.l	#mnu_morescreen+mnu_speed*40,bltcpt(a0) ; Source C
-				move.l	mnu_rndptr,bltbpt(a0)		; Source B
+				move.l	mnu_rndptr,bltbpt(a0)	; Source B
 				move.l	mnu_sourceptrs,d0
 				sub.l	mnu_subtract,d0
-				move.l	d0,bltapt(a0)				; Source A
-				move.l	#mnu_morescreen,bltdpt(a0)	; Dest D
+				move.l	d0,bltapt(a0)			; Source A
+				move.l	#mnu_morescreen,bltdpt(a0) ; Dest D
 				move.w	#(mnu_size-mnu_speed)*64+20,bltsize(a0) ; Size and trigger
 				; continue with next pass
-				move.l #mnu_pass2,bn_function(a1)
+				move.l	#mnu_pass2,bn_function(a1)
 				moveq.l	#1,d0
 				rts
 
 				cnop	0,4
 mnu_pass2:		bsr.w	getrnd
 				move.l	#mnu_morescreen+40*256+mnu_speed*40,bltcpt(a0) ; Source C
-				move.l	mnu_rndptr,bltbpt(a0)		; Source B
+				move.l	mnu_rndptr,bltbpt(a0)	; Source B
 				move.l	mnu_sourceptrs+4,d0
 				sub.l	mnu_subtract,d0
-				move.l	d0,bltapt(a0)				; Source A
+				move.l	d0,bltapt(a0)			; Source A
 				move.l	#mnu_morescreen+40*256,bltdpt(a0) ; Dest D
 				move.w	#(mnu_size-mnu_speed)*64+20,bltsize(a0) ; Size and trigger
 				; continue with next pass
-				move.l #mnu_pass3,bn_function(a1)
+				move.l	#mnu_pass3,bn_function(a1)
 				moveq.l	#1,d0
 				rts
 
 				cnop	0,4
 mnu_pass3:		bsr.w	getrnd
 				move.l	#mnu_morescreen+40*256*2+mnu_speed*40,bltcpt(a0) ; Source C
-				move.l	mnu_rndptr,bltbpt(a0)		; Source B
+				move.l	mnu_rndptr,bltbpt(a0)	; Source B
 				move.l	mnu_sourceptrs+8,d0
 				sub.l	mnu_subtract,d0
-				move.l	d0,bltapt(a0)				; Source A
+				move.l	d0,bltapt(a0)			; Source A
 				move.l	#mnu_morescreen+40*256*2,bltdpt(a0) ; Dest D
 				move.w	#(mnu_size-mnu_speed)*64+20,bltsize(a0) ; Size and trigger
 
-				move.l #mnu_pass4,bn_function(a1)
+				move.l	#mnu_pass4,bn_function(a1)
 				moveq.l	#1,d0
 				rts
 
 				cnop	0,4
-mnu_pass4:		move.l #mnu_pass1,bn_function(a1)	; restore first pass ptr
+mnu_pass4:		move.l	#mnu_pass1,bn_function(a1) ; restore first pass ptr
 				clr.b	mnu_bltbusy
-				moveq.l	#0,d0						; this was the last pass
+				moveq.l	#0,d0					; this was the last pass
 				rts
 
 
@@ -2178,13 +2178,13 @@ main_vbrbase:	dc.l	0
 timer:			dc.l	0
 
 
-BltNode			dc.l	0			; bn_n
-				dc.l	mnu_pass1	; bn_function
-				dc.b	0			; bn_stat
-				dc.b	0			; bn_dummy
-				dc.w	0			; bn_blitsize
-				dc.w	0			; bn_beamsync
-				dc.l	0			; bn_cleanup
+BltNode			dc.l	0						; bn_n
+				dc.l	mnu_pass1				; bn_function
+				dc.b	0						; bn_stat
+				dc.b	0						; bn_dummy
+				dc.w	0						; bn_blitsize
+				dc.w	0						; bn_beamsync
+				dc.l	0						; bn_cleanup
 
 
 Bitmap			dc.w	320/8					; bm_BytesPerRow
@@ -2217,14 +2217,14 @@ WindowTags		dc.l	WA_Left,0
 				dc.l	WA_Width,0
 				dc.l	WA_Height,0
 				dc.l	WA_CustomScreen
-WTagScreenPtr	dc.l	0				; will fill in screen pointer later
+WTagScreenPtr	dc.l	0						; will fill in screen pointer later
 				; intution.i states "WA_Flags ;not implemented at present"
 				; But I have seen code using it...
 				dc.l	WA_Flags,WFLG_ACTIVATE!WFLG_BORDERLESS!WFLG_RMBTRAP!WFLG_SIMPLE_REFRESH!WFLG_BACKDROP!WFLG_NOCAREREFRESH
 				; Just to be sure, provide the same info again
 				dc.l	WA_Activate,1
 				dc.l	WA_Borderless,1
-				dc.l	WA_RMBTrap,1		; prevent menu rendering
+				dc.l	WA_RMBTrap,1			; prevent menu rendering
 				dc.l	WA_NoCareRefresh,1
 				dc.l	WA_SimpleRefresh,1
 				dc.l	WA_Backdrop,1
@@ -2242,6 +2242,6 @@ mnu_screen:		incbin	"menu/back2.raw"		; 4 color background
 				ds.b	40*256*2				; 2 more bitplanes
 mnu_morescreen:	ds.b	40*256*8				;
 
-emptySprite    ds.w    6,0
+emptySprite		ds.w	6,0
 
 				section	code,code

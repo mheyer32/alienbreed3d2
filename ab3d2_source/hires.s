@@ -4,8 +4,8 @@
 
 				opt		o+
 
-				xref _custom
-				xref _ciaa
+				xref	_custom
+				xref	_ciaa
 
 				IFND	CHEESEY
 CHEESEY			equ		0
@@ -60,37 +60,37 @@ _start
 
 				jsr		MakePatch
 
-                lea.l   MiscResourceName,a1
-                CALLEXEC OpenResource    ;Open "misc.resource"
-                tst.l   d0
+				lea.l	MiscResourceName,a1
+				CALLEXEC OpenResource			;Open "misc.resource"
+				tst.l	d0
                 ;beq.s   fail
-                move.l  d0,MiscResourceBase
-                move.l  d0,a6
+				move.l	d0,MiscResourceBase
+				move.l	d0,a6
 
-                move.l  #MR_SERIALPORT,d0     ;We want these bits
-                lea.l   AppName(pc),a1
-                jsr     _LVOAllocMiscResource(a6)
-                tst.l   d0
+				move.l	#MR_SERIALPORT,d0		;We want these bits
+				lea.l	AppName(pc),a1
+				jsr		_LVOAllocMiscResource(a6)
+				tst.l	d0
                 ;beq.s   fail
-                move.l  #MR_SERIALBITS,d0
-                lea.l   AppName(pc),a1
-                jsr     _LVOAllocMiscResource(a6)
-                tst.l   d0
+				move.l	#MR_SERIALBITS,d0
+				lea.l	AppName(pc),a1
+				jsr		_LVOAllocMiscResource(a6)
+				tst.l	d0
                 ;beq.s   fail
 
 				; now we have the resource, may poke the hardware bits
 				move.w	#31,serper(a6)			;19200 baud, 8 bits, no parity
 
-				lea.l   PotgoResourceName,a1
+				lea.l	PotgoResourceName,a1
 				CALLEXEC OpenResource			;Open "potgo.resource"
-				tst.l   d0
+				tst.l	d0
 				;beq.s   fail
-				move.l  d0,PotgoResourceBase
-				move.l  d0,a6
+				move.l	d0,PotgoResourceBase
+				move.l	d0,a6
 
-				move.l  #%110000000000,d0     ;We want these bits
-				jsr     _LVOAllocPotBits(a6)
-				tst.l   d0
+				move.l	#%110000000000,d0		;We want these bits
+				jsr		_LVOAllocPotBits(a6)
+				tst.l	d0
 				;beq.s   fail
 
 				st		GOURSEL
@@ -107,23 +107,23 @@ _start
 
 				; init default control method
 				IFNE	CD32VER
-					clr.b	PLR1KEYS
-					clr.b	PLR1PATH
-					clr.b	PLR1MOUSE
-					st		PLR1JOY
-					clr.b	PLR2KEYS
-					clr.b	PLR2PATH
-					clr.b	PLR2MOUSE
-					st		PLR2JOY
+				clr.b	PLR1KEYS
+				clr.b	PLR1PATH
+				clr.b	PLR1MOUSE
+				st		PLR1JOY
+				clr.b	PLR2KEYS
+				clr.b	PLR2PATH
+				clr.b	PLR2MOUSE
+				st		PLR2JOY
 				ELSE
-					clr.b	PLR1KEYS
-					clr.b	PLR1PATH
-					st		PLR1MOUSE
-					clr.b	PLR1JOY
-					clr.b	PLR2KEYS
-					clr.b	PLR2PATH
-					st		PLR2MOUSE
-					clr.b	PLR2JOY
+				clr.b	PLR1KEYS
+				clr.b	PLR1PATH
+				st		PLR1MOUSE
+				clr.b	PLR1JOY
+				clr.b	PLR2KEYS
+				clr.b	PLR2PATH
+				st		PLR2MOUSE
+				clr.b	PLR2JOY
 				ENDC
 
 				; allocate Level Data
@@ -471,13 +471,13 @@ noload:
 				CALLDOS	Delay
 				ENDC
 
-				bra		blag ; FIXME: why is this jumpp there?
+				bra		blag					; FIXME: why is this jumpp there?
 
 				rts
 
-doslibname:			DOSNAME
-MiscResourceName:	MISCNAME
-PotgoResourceName:	POTGONAME
+doslibname:		DOSNAME
+MiscResourceName: MISCNAME
+PotgoResourceName: POTGONAME
 
 				align	4
 _DOSBase:		dc.l	0
@@ -486,7 +486,7 @@ MiscResourceBase
 PotgoResourceBase
 				dc.l	0
 
-mors:			dc.w	0	; this seems to be some sort of game state (single player, multiplayer etc)
+mors:			dc.w	0						; this seems to be some sort of game state (single player, multiplayer etc)
 
 LDname:			dc.b	'tkg2:levels/level_'
 LEVA:
@@ -526,11 +526,11 @@ AppName:		dc.b	'TheKillingGrounds',0
 				cnop	0,4
 
 VBLANKInt:
-				dc.l	0,0					;is_Node
-				dc.b	NT_INTERRUPT,9		;is_Node
-				dc.l	AppName				;is_Node
-				dc.l	0					;is_Data
-				dc.l	VBlankInterrupt		;is_Code
+				dc.l	0,0						;is_Node
+				dc.b	NT_INTERRUPT,9			;is_Node
+				dc.l	AppName					;is_Node
+				dc.l	0						;is_Data
+				dc.l	VBlankInterrupt			;is_Code
 
 KEYInt:
 				dc.l	0,0
@@ -707,11 +707,11 @@ noclips:
 
 ; move.l #Blurbfield,$dff080
 
-				move.l  MainScreen,a1
+				move.l	MainScreen,a1
 				lea		sc_ViewPort(a1),a1
 				move.l	a1,a0
 				move.l	vp_RasInfo(a1),a1
-				move.l  ri_BitMap(a1),a1
+				move.l	ri_BitMap(a1),a1
 				lea		bm_Planes(a1),a1
 
 				move.l	scrn,d0
@@ -1155,7 +1155,7 @@ lop:
 .notmess2:
 
 				;FIXME: should use _LVOWritePotgo here!
-				move.w	#%110000000000,_custom+potgo	; POTGO -start Potentiometer reading
+				move.w	#%110000000000,_custom+potgo ; POTGO -start Potentiometer reading
 														; FIXME: shouldn't this be in a regular interrupt, like VBL?
 
 ; move.w COUNTER,d0
@@ -1247,9 +1247,9 @@ nofadedownhc:
 				move.l	a7,a1
 				move.l	a7,a0
 				lea		Palette,a2
-				move.w	#256,(a0)+	; number of entries
-				move.w	#0,(a0)+	; start index
-				move.w	#256*3-1,d0	; 768 entries
+				move.w	#256,(a0)+				; number of entries
+				move.w	#0,(a0)+				; start index
+				move.w	#256*3-1,d0				; 768 entries
 
 				; Palette stores each entry as word
 .setCol			clr.l	d1
@@ -1257,13 +1257,13 @@ nofadedownhc:
 				ror.l	#8,d1
 				move.l	d1,(a0)+
 				dbra	d0,.setCol
-				clr.l	(a0)		; terminate list
+				clr.l	(a0)					; terminate list
 
 				move.l	MainScreen,a0
 				lea		sc_ViewPort(a0),a0
-				CALLGRAF LoadRGB32	; a1 still points to start of palette
+				CALLGRAF LoadRGB32				; a1 still points to start of palette
 
-				add.l	#256*4*3+2+2+4+4,a7	;restore stack
+				add.l	#256*4*3+2+2+4+4,a7		;restore stack
 
 				st		READCONTROLS
 				move.l	#$dff000,a6
@@ -1336,11 +1336,11 @@ waitmaster:
 
 
 				; Flip screens
-				move.l  MainScreen,a1
+				move.l	MainScreen,a1
 				lea		sc_ViewPort(a1),a1
 				move.l	a1,a0
 				move.l	vp_RasInfo(a1),a1
-				move.l  ri_BitMap(a1),a1
+				move.l	ri_BitMap(a1),a1
 				lea		bm_Planes(a1),a1
 
 				moveq.l	#7,d1
@@ -2003,7 +2003,7 @@ IWasPlayer1:
 				move.w	#-1,12+128(a0)
 
 				eor.w	#4096,angpos
-				neg.w	cosval			; view direction 180deg
+				neg.w	cosval					; view direction 180deg
 				neg.w	sinval
 .nolookback:
 
@@ -2644,7 +2644,7 @@ DECIDEDWALL:
 				; FIXME: why does map rendering have an effect on wall rendering?
 shownmap:
 
-				clr.b	TRRANS		; FIXME seems like there is code for
+				clr.b	TRRANS					; FIXME seems like there is code for
 									; translucent map rendering, check it out
 
 				; Is this drawing the Arrow?
@@ -2886,7 +2886,7 @@ OFFSCREEN:
 NOLINEtrans:
 				rts
 
-MAPBRIGHT:		dc.w	3		; "Map Brightness?" or "Map Bits Right"?
+MAPBRIGHT:		dc.w	3						; "Map Brightness?" or "Map Bits Right"?
 mapxoff:		dc.w	0
 mapzoff:		dc.w	0
 
@@ -4050,7 +4050,7 @@ PLR1_Control:
 				swap	d1
 				swap	d2
 				asr.w	#7,d1
-				move.w	d1,xwobxoff			; xwobble
+				move.w	d1,xwobxoff				; xwobble
 				asr.w	#7,d2
 				neg.w	d2
 				move.w	d2,xwobzoff
@@ -4435,35 +4435,35 @@ DrawDisplay:
 				move.l	#SineTable,a0
 				move.w	angpos,d0
 				move.w	(a0,d0.w),d6
-				adda.w	#2048,a0			; +90 deg?
+				adda.w	#2048,a0				; +90 deg?
 				move.w	(a0,d0.w),d7
 				move.w	d6,sinval
 				move.w	d7,cosval
 
 				move.l	yoff,d0
-				asr.l	#8,d0				; yoff >> 8
+				asr.l	#8,d0					; yoff >> 8
 				move.w	d0,d1
-				add.w	#256-32,d1			; 224
+				add.w	#256-32,d1				; 224
 				and.w	#255,d1
 				move.w	d1,wallyoff
 
-				move.l	yoff,d0				; is yoff the viewer's y position << 16?
-				asr.l	#6,d0				; yoff << 10
-				move.w	d0,flooryoff		; yoff << 10
+				move.l	yoff,d0					; is yoff the viewer's y position << 16?
+				asr.l	#6,d0					; yoff << 10
+				move.w	d0,flooryoff			; yoff << 10
 
 				move.w	xoff,d6
 				move.w	d6,d3
-				asr.w	#1,d3				; xoff * 0.5
-				add.w	d3,d6				; xoff * 1.5
-				asr.w	#1,d6				; xoff * 0.75
-				move.w	d6,xoff34			; xoff * 3/4
+				asr.w	#1,d3					; xoff * 0.5
+				add.w	d3,d6					; xoff * 1.5
+				asr.w	#1,d6					; xoff * 0.75
+				move.w	d6,xoff34				; xoff * 3/4
 
 				move.w	zoff,d6
 				move.w	d6,d3
 				asr.w	#1,d3
 				add.w	d3,d6
 				asr.w	#1,d6
-				move.w	d6,zoff34			; zoff * 3/4
+				move.w	d6,zoff34				; zoff * 3/4
 
 				bsr		RotateLevelPts
 				bsr		RotateObjectPts
@@ -5129,10 +5129,10 @@ REALMAPON:		dc.w	0
 
 
 
-RotateLevelPts: ; Does this rotate ALL points in the level EVERY frame?
+RotateLevelPts:	;		Does					this rotate ALL points in the level EVERY frame?
 
 				tst.b	REALMAPON
-				beq		ONLYTHELONELY	; When REALMAP is on, we apparently need to transform all level points,
+				beq		ONLYTHELONELY			; When REALMAP is on, we apparently need to transform all level points,
 										; otherwise only the visible subset
 
 				; Rotate all level points
@@ -5141,7 +5141,7 @@ RotateLevelPts: ; Does this rotate ALL points in the level EVERY frame?
 				move.w	cosval,d6
 
 				move.l	Points,a3
-				move.l	#Rotated,a1		; stores only 2x800 points
+				move.l	#Rotated,a1				; stores only 2x800 points
 				move.l	#OnScreen,a2
 				move.w	xoff,d4
 				;asr.w	#1,d4
@@ -5161,28 +5161,28 @@ pointrotlop2:
 				move.w	(a3)+,d0
 *				asr.w	#1,d0
 				sub.w	d4,d0
-				move.w	d0,d2		; view X
+				move.w	d0,d2					; view X
 
 				move.w	(a3)+,d1
 *				asr.w	#1,d1
-				sub.w	d5,d1		; view Z
+				sub.w	d5,d1					; view Z
 
-				muls	d6,d2		; x' = (cos*viewX)<<16
+				muls	d6,d2					; x' = (cos*viewX)<<16
 				swap	d6
 				move.w	d1,d3
-				muls	d6,d3		; z' = (sin*viewZ) << 16
+				muls	d6,d3					; z' = (sin*viewZ) << 16
 
-				sub.l	d3,d2		; x' =  (cos*viewX - sin*viewZ) << 16
+				sub.l	d3,d2					; x' =  (cos*viewX - sin*viewZ) << 16
 
  ; add.l d2,d2
  ; swap d2
  ; ext.l d2
  ; asl.l #7,d2   ; (x'*2 >> 16) << 7 == x' << 8
 
-				asr.l	#8,d2		; x' = int(2*x') << 8
+				asr.l	#8,d2					; x' = int(2*x') << 8
 
 				add.l	xwobble,d2
-				move.l	d2,(a1)+	; store rotated x'
+				move.l	d2,(a1)+				; store rotated x'
 
 				muls	d6,d0
 				swap	d6
@@ -5193,10 +5193,10 @@ pointrotlop2:
  ; swap d1
  ; ext.l d1       ; (z' >> 16) * 2 == z' >> 15
 
-				asr.l	#8,d1		;
-				asr.l	#7,d1		; z' = int(z') * 2
+				asr.l	#8,d1					;
+				asr.l	#7,d1					; z' = int(z') * 2
 
-				move.l	d1,(a1)+	; store rotated z'
+				move.l	d1,(a1)+				; store rotated z'
 
 				tst.l	d1
 				bgt.s	ptnotbehind
@@ -5209,11 +5209,11 @@ onrightsomewhere:
 				bra		putin
 ptnotbehind:
 
-				divs.w	d1,d2			; x / z perspective projection
-				asr.w	d2				; DOUBLEWIDTH test
+				divs.w	d1,d2					; x / z perspective projection
+				asr.w	d2						; DOUBLEWIDTH test
 				add.w	MIDDLEX,d2
 putin:
-				move.w	d2,(a2)+		; store to OnScreen
+				move.w	d2,(a2)+				; store to OnScreen
 
 				dbra	d7,pointrotlop2
 outofpointrot:
@@ -5223,18 +5223,18 @@ outofpointrot:
 BIGALL:
 
 pointrotlop2B:
-				move.w	(a3)+,d0	; x
-				sub.w	d4,d0		; x/2 - xoff
-				move.w	d0,d2		; x = x/2 -xoff
+				move.w	(a3)+,d0				; x
+				sub.w	d4,d0					; x/2 - xoff
+				move.w	d0,d2					; x = x/2 -xoff
 
-				move.w	(a3)+,d1	; z
-				sub.w	d5,d1		; z = z/2 - zoff
+				move.w	(a3)+,d1				; z
+				sub.w	d5,d1					; z = z/2 - zoff
 
-				muls.w	d6,d2		; x*cos<<16
+				muls.w	d6,d2					; x*cos<<16
 				swap	d6
 				move.w	d1,d3
-				muls.w	d6,d3		; z*sin<<16
-				sub.l	d3,d2		; x' = (x * cos - z *sin)<<16
+				muls.w	d6,d3					; z*sin<<16
+				sub.l	d3,d2					; x' = (x * cos - z *sin)<<16
 ; add.l d2,d2
 ; swap d2
 ; ext.l d2
@@ -5242,27 +5242,27 @@ pointrotlop2B:
 
 				asr.l	#8,d2
 
-				add.l	xwobble,d2		; could the wobble be a shake or some underwater effect?
-				move.l	d2,(a1)+		; store x'<<16
+				add.l	xwobble,d2				; could the wobble be a shake or some underwater effect?
+				move.l	d2,(a1)+				; store x'<<16
 
-				muls	d6,d0		; x * sin<<16
+				muls	d6,d0					; x * sin<<16
 				swap	d6
-				muls	d6,d1		; z * cos <<16
-				add.l	d0,d1		; z' = (x*sin + z*sin)<<16
+				muls	d6,d1					; z * cos <<16
+				add.l	d0,d1					; z' = (x*sin + z*sin)<<16
 
 ;				divs.l	#3,d1	; is this what differentiates fullscreen vs. smallscreen?
 ;				asr.l	#8,d1
 ;				asr.l	#5,d1	; achieves d1/(3*2<<13) - we could roll this into the divs above
 
-				divs.w	#3*4096,d1	; 3*8192 doesn't quite fit into 16bits divisor
-				asr.w	#2,d1		; z' = (z' << 16) / (3 * 2 << 13)
+				divs.w	#3*4096,d1				; 3*8192 doesn't quite fit into 16bits divisor
+				asr.w	#2,d1					; z' = (z' << 16) / (3 * 2 << 13)
 				ext.l	d1
 									; z' = z' * 8 / 3		; Is the factor in z' here determining the prespective factor?
 ; asl.l #3,d1
 ; swap d1
 ; ext.l d1
 ; divs #3,d1
-				move.l	d1,(a1)+	; this stores the rotated points, but why does it factor in the scale factor
+				move.l	d1,(a1)+				; this stores the rotated points, but why does it factor in the scale factor
 									; for the screen? Or is storing in view space with aspect ratio applied actually
 									; convenient?
 									; WOuld here a good opportunity to factor in DOUBLEWIDTH?
@@ -5278,10 +5278,10 @@ onrightsomewhereB:
 				bra		putinB
 ptnotbehindB:
 				divs.w	d1,d2
-				asr.w	d2				; DOUBLEWIDTH test
+				asr.w	d2						; DOUBLEWIDTH test
 				add.w	MIDDLEX,d2
 putinB:
-				move.w	d2,(a2)+		; store fully projected X
+				move.w	d2,(a2)+				; store fully projected X
 
 				dbra	d7,pointrotlop2B
 				rts
@@ -5294,7 +5294,7 @@ ONLYTHELONELY:
 				swap	d6
 				move.w	cosval,d6
 
-				move.l	PointsToRotatePtr,a0 ; -1 terminated array of point indices to rotate
+				move.l	PointsToRotatePtr,a0	; -1 terminated array of point indices to rotate
 				move.l	Points,a3
 				move.l	#Rotated,a1
 				move.l	#OnScreen,a2
@@ -5330,7 +5330,7 @@ pointrotlop:
 ;				ext.l	d2
 ;				asl.l	#7,d2
 
-				asr.l	#8,d2		; x' = int(2*x') << 8
+				asr.l	#8,d2					; x' = int(2*x') << 8
 
 				add.l	xwobble,d2
 				move.l	d2,(a1,d7*8)
@@ -5344,8 +5344,8 @@ pointrotlop:
 ;				swap d1
 ;				ext.l d1       ; (z' >> 16) * 2 == z' >> 15
 
-				asr.l	#8,d1		;
-				asr.l	#7,d1		; z' = int(z') * 2
+				asr.l	#8,d1					;
+				asr.l	#7,d1					; z' = int(z') * 2
 
 				move.l	d1,4(a1,d7*8)
 
@@ -5361,7 +5361,7 @@ pointrotlop:
 .ptnotbehind:
 				divs.w	d1,d2
 
-				asr.w	d2				; DOUBLEWIDTH test
+				asr.w	d2						; DOUBLEWIDTH test
 
 				add.w	MIDDLEX,d2
 .putin:
@@ -5398,7 +5398,7 @@ BIGLONELY:
 ;				ext.l	d2
 ;				asl.l	#7,d2
 
-				asr.l	#8,d2		; x' = int(2*x') << 8
+				asr.l	#8,d2					; x' = int(2*x') << 8
 
 				add.l	xwobble,d2
 				move.l	d2,(a1,d7*8)
@@ -5413,8 +5413,8 @@ BIGLONELY:
 ;				ext.l	d1
 ;				divs	#3,d1		; z' * 2 *2/3
 
-				divs.w	#3*4096,d1	; 3*8192 doesn't quite fit into 16bits divisor
-				asr.w	#2,d1		; z' = (z' << 16) / (3 * 2 << 13)
+				divs.w	#3*4096,d1				; 3*8192 doesn't quite fit into 16bits divisor
+				asr.w	#2,d1					; z' = (z' << 16) / (3 * 2 << 13)
 									; z' = z' * 8 / 3		; Is the factor in z' here determining the prespective factor?
 				ext.l	d1
 
@@ -5432,11 +5432,11 @@ BIGLONELY:
 .ptnotbehind:
 				divs.w	d1,d2
 
-				asr.w	d2				; DOUBLEWIDTH test
+				asr.w	d2						; DOUBLEWIDTH test
 
 				add.w	MIDDLEX,d2
 .putin:
-				move.w	d2,(a2,d7*2)	; this means the a2 array will also be sparsely written to,
+				move.w	d2,(a2,d7*2)			; this means the a2 array will also be sparsely written to,
 										; but then again doesn't need reindeexing the input indices.
 										; maybe it is worthwhile investigating if its possible to re-index
 										; and write in a packed manner
@@ -5610,8 +5610,8 @@ CalcPLR2InLine:
 
 
 RotateObjectPts:
-				move.w	sinval,d5			; fetch sine of rotation
-				move.w	cosval,d6			; consine
+				move.w	sinval,d5				; fetch sine of rotation
+				move.w	cosval,d6				; consine
 
 				move.l	ObjectData,a4
 				move.l	ObjectPoints,a0
@@ -5627,41 +5627,41 @@ RotateObjectPts:
 				cmp.b	#3,16(a4)
 				beq.s	.itaux
 
-				move.w	(a0),d0		; x of object point
-				sub.w	xoff,d0		; viewX = X - cam X
-				move.w	4(a0),d1	; z of object point
-				addq	#8,a0		; next point? or next object?
+				move.w	(a0),d0					; x of object point
+				sub.w	xoff,d0					; viewX = X - cam X
+				move.w	4(a0),d1				; z of object point
+				addq	#8,a0					; next point? or next object?
 
-				tst.w	12(a4)		; ObjectData
+				tst.w	12(a4)					; ObjectData
 				blt		.noworkout
 
-				sub.w	zoff,d1		; viewZ = Z - cam Z
+				sub.w	zoff,d1					; viewZ = Z - cam Z
 
 				move.w	d0,d2
-				muls	d6,d2		; cosx = viewX * (cos << 16)
-				move.w	d1,d3		;
-				muls	d5,d3		; sinz = viewZ * (sin << 16)
+				muls	d6,d2					; cosx = viewX * (cos << 16)
+				move.w	d1,d3					;
+				muls	d5,d3					; sinz = viewZ * (sin << 16)
 
-				sub.l	d3,d2		;  x' = cosx - sinz
-				add.l	d2,d2		; x'*2
-				swap	d2			; x' >> 16
-				move.w	d2,(a1)+	; finished rotated x'
+				sub.l	d3,d2					;  x' = cosx - sinz
+				add.l	d2,d2					; x'*2
+				swap	d2						; x' >> 16
+				move.w	d2,(a1)+				; finished rotated x'
 
-				muls	d5,d0		; sinx = viewX * sin <<16
-				muls	d6,d1		; cosz = viewZ * cos << 16
-				add.l	d0,d1		; z' = sinx + cosz
-				add.l	d1,d1		; *2
-				swap	d1			; >> 16
+				muls	d5,d0					; sinx = viewX * sin <<16
+				muls	d6,d1					; cosz = viewZ * cos << 16
+				add.l	d0,d1					; z' = sinx + cosz
+				add.l	d1,d1					; *2
+				swap	d1						; >> 16
 ; ext.l d1
 ; divs #3,d1
-				moveq	#0,d3		;FIMXE: why?
+				moveq	#0,d3					;FIMXE: why?
 
-				move.w	d1,(a1)+	; finished rotated z'
+				move.w	d1,(a1)+				; finished rotated z'
 
-				ext.l	d2			; whats the wobble about?
+				ext.l	d2						; whats the wobble about?
 				asl.l	#7,d2
 				add.l	xwobble,d2
-				move.l	d2,(a1)+	; no clue
+				move.l	d2,(a1)+				; no clue
 
 				dbra	d7,.objpointrotlop
 
@@ -6099,7 +6099,7 @@ NARRTIME:		dc.w	5
 SCROLLCHARS:	incbin	"includes/scrollfont"
 
 
-doanything:		dc.w	0			; does main game run?
+doanything:		dc.w	0						; does main game run?
 
 end:
 ; 	_break #0
@@ -6758,21 +6758,21 @@ itsafloordraw:
 
 				move.w	d6,d7
 				ext.l	d7
-				asl.l	#6,d7				; floorY << 6?
+				asl.l	#6,d7					; floorY << 6?
 
 				cmp.l	TOPOFROOM,d7
-				blt		checkforwater		;
+				blt		checkforwater			;
 				cmp.l	BOTOFROOM,d7
 				bgt.s	dontdrawreturn
 
 				move.w	leftclip,d7
 				cmp.w	rightclip,d7
-				bge.s	dontdrawreturn		; don't draw if there's no room betwen left and rightclip
+				bge.s	dontdrawreturn			; don't draw if there's no room betwen left and rightclip
 
-				sub.w	flooryoff,d6		; (floorY - viewerY)
+				sub.w	flooryoff,d6			; (floorY - viewerY)
 
-				bgt.s	below				; floor is below
-				blt.s	aboveplayer			; floor is above
+				bgt.s	below					; floor is below
+				blt.s	aboveplayer				; floor is above
 
 				tst.b	usewater
 				beq.s	.notwater
@@ -6807,7 +6807,7 @@ aboveplayer:
 				move.b	#$f,fillscrnwater
 
 				; Is above camera
-.notwater:		btst	#1,d0				; If its above the player and if its not a ceiling (a floor?), skip it
+.notwater:		btst	#1,d0					; If its above the player and if its not a ceiling (a floor?), skip it
 				beq.s	dontdrawreturn
 
 				; its a ceiling
@@ -6816,7 +6816,7 @@ aboveplayer:
 				ble.s	dontdrawreturn
 
 				move.w	#1,d0
-				move.w	d0,above			; replace with st above? But then also check the various places that tst.w it
+				move.w	d0,above				; replace with st above? But then also check the various places that tst.w it
 				neg.w	d6
 				bra.s	notbelow
 
@@ -6876,29 +6876,29 @@ notbelow:
 				move.l	#Rotated,a1
 				move.l	#OnScreen,a2
 ; move.l #NewCornerBuff,a3
-				moveq	#0,d4				; some points left to left clip
-				moveq	#0,d5				; some points fully between left and right clip
-				moveq	#0,d6				; some points right of right clip
-				clr.b	anyclipping			; some clipping will be necessary?
+				moveq	#0,d4					; some points left to left clip
+				moveq	#0,d5					; some points fully between left and right clip
+				moveq	#0,d6					; some points right of right clip
+				clr.b	anyclipping				; some clipping will be necessary?
 
 
-cornerprocessloop:	; figure out if any left/right clipping is necessary
+cornerprocessloop: ;	figure					out if any left/right clipping is necessary
 				; this also helps rejecting whole floors, almost in a portal-engine fashion
 
-				move.w	(a0)+,d0			; point index
+				move.w	(a0)+,d0				; point index
 				and.w	#$fff,d0
-				move.w	6(a1,d0.w*8),d1		; fetch prerotated point Z fractional part?
+				move.w	6(a1,d0.w*8),d1			; fetch prerotated point Z fractional part?
 				ble		.canttell
 
-				move.w	(a2,d0.w*2),d3		; fetch projected X coordinate
+				move.w	(a2,d0.w*2),d3			; fetch projected X coordinate
 				cmp.w	leftclip,d3
-				bgt.s	.nol				; right of left clip
+				bgt.s	.nol					; right of left clip
 				st		d4
 				st		anyclipping
 				bra.s	.nos
 .nol:
 				cmp.w	rightclip,d3
-				blt.s	.nor				; left of right clip
+				blt.s	.nor					; left of right clip
 				st		d6
 				st		anyclipping
 				bra.s	.nos
@@ -6915,9 +6915,9 @@ cornerprocessloop:	; figure out if any left/right clipping is necessary
 				dbra	d7,cornerprocessloop
 
 				move.l	(a7)+,a0
-				tst.b	d5					; if this is 0, none of the corner points were inside the clip region
+				tst.b	d5						; if this is 0, none of the corner points were inside the clip region
 				bne.s	somefloortodraw
-				eor.b	d4,d6				; if some were left of left clip and the others right of right clip
+				eor.b	d4,d6					; if some were left of left clip and the others right of right clip
 											; some floor covers the clip region
 											; only if they are all left or all right, nothing needs to be drawn
 				bne		dontdrawreturn
@@ -6970,12 +6970,12 @@ sideloop:
 				move.w	(a2,d3*2),d2
 				divs.w	d4,d0					; x' - x' / minz
 
-				asr.w	d0					; DOUBLEWIDTH test
+				asr.w	d0						; DOUBLEWIDTH test
 
 				add.w	MIDDLEX,d0
 
 				move.l	ypos,d3
-				divs	d5,d3				; y2' = y2 / z2
+				divs	d5,d3					; y2' = y2 / z2
 
 				move.w	bottomline,d1
 				bra		lineclipped
@@ -7003,7 +7003,7 @@ firstinfront:
 				move.w	(a2,d1*2),d0
 				divs	d5,d2
 
-				asr.w	d2					; DOUBLEWIDTH test
+				asr.w	d2						; DOUBLEWIDTH test
 
 				add.w	MIDDLEX,d2
 
@@ -7043,7 +7043,7 @@ lineclipped:
 				exg		d1,d3
 				exg		d0,d2
 
-				lea		(a3,d1*2),a3		; start of left side buffer
+				lea		(a3,d1*2),a3			; start of left side buffer
 
 				cmp.w	top(pc),d1
 				bge.s	.nonewtop
@@ -7074,16 +7074,16 @@ lineclipped:
 ;.noco
 ; add.w d3,d2
 
-				move.w	d3,d4				; dy
+				move.w	d3,d4					; dy
 				move.w	d3,d5
-				subq	#1,d5				; dy - 1   loop counter
+				subq	#1,d5					; dy - 1   loop counter
 				move.w	d6,d1
-				addq	#1,d1				; dx/dy + 1
+				addq	#1,d1					; dx/dy + 1
 
 				; Is this "drawing" left line into a buffer, using bresenham, storing the X values into a3
 .pixlopright:
-				move.w	d0,(a3)+			; store x in left side entry buffer
-				sub.w	d2,d4				; dy - (dx mod dy)
+				move.w	d0,(a3)+				; store x in left side entry buffer
+				sub.w	d2,d4					; dy - (dx mod dy)
 				bge.s	.nobigstep
 				add.w	d1,d0
 				add.w	d3,d4
@@ -7099,12 +7099,12 @@ lineclipped:
 			; values
 .linegoingleft:
 
-				neg.w	d2				; dx = -dx
+				neg.w	d2						; dx = -dx
 
 				ext.l	d2
-				divs	d3,d2			; dx/dy
+				divs	d3,d2					; dx/dy
 				move.w	d2,d6
-				swap	d2				; dx mod dy
+				swap	d2						; dx mod dy
 
 
 ; moveq #0,d6
@@ -7131,20 +7131,20 @@ lineclipped:
 				bge.s	.nobigstepl
 				sub.w	d1,d0
 				add.w	d3,d4
-				move.w	d0,(a3)+		;  store left side entry
+				move.w	d0,(a3)+				;  store left side entry
 				dbra	d5,.pixlopleft
 				bra		lineflat
 
 .nobigstepl
 				sub.w	d6,d0
-				move.w	d0,(a3)+		; store left side entry
+				move.w	d0,(a3)+				; store left side entry
 				dbra	d5,.pixlopleft
 				bra		lineflat
 
 			; Is this "drawing" right line into a buffer, storing the X values into a3
 lineonright:
 
-				lea		(a3,d1*2),a3	;right line entry start
+				lea		(a3,d1*2),a3			;right line entry start
 
 				cmp.w	top(pc),d1
 				bge.s	.nonewtop
@@ -7185,13 +7185,13 @@ lineonright:
 				bge.s	.nobigstep
 				add.w	d1,d0
 				add.w	d3,d4
-				move.w	d0,(a3)+			; store right entry
+				move.w	d0,(a3)+				; store right entry
 				dbra	d5,.pixlopright
 				bra		lineflat
 
 .nobigstep
 				add.w	d6,d0
-				move.w	d0,(a3)+			; store right entry
+				move.w	d0,(a3)+				; store right entry
 				dbra	d5,.pixlopright
 				bra		lineflat
 
@@ -7314,7 +7314,7 @@ sideloopGOUR:
 				move.w	(a2,d3*2),d2
 				divs	d4,d0
 
-				asr.w	d0					; DOUBLEWIDTH test
+				asr.w	d0						; DOUBLEWIDTH test
 
 				add.w	MIDDLEX,d0
 
@@ -7348,11 +7348,11 @@ firstinfrontGOUR:
 				ext.l	d2
 				asl.l	#7,d2
 				add.l	(a1,d1*8),d2
-				move.w	minz,d5				; minz = nearclip distance?
+				move.w	minz,d5					; minz = nearclip distance?
 				move.w	(a2,d1*2),d0
 				divs	d5,d2
 
-				asr.w	d2					; DOUBLEWIDTH test
+				asr.w	d2						; DOUBLEWIDTH test
 
 				add.w	MIDDLEX,d2
 
@@ -7401,8 +7401,8 @@ linenotflatGOUR
 				exg		d1,d3
 				exg		d0,d2
 
-				lea		(a3,d1*2),a3						; left side entry
-				lea		leftbrighttab-leftsidetab(a3),a4	; left side brightness entry
+				lea		(a3,d1*2),a3			; left side entry
+				lea		leftbrighttab-leftsidetab(a3),a4 ; left side brightness entry
 
 				cmp.w	top(pc),d1
 				bge.s	.nonewtop
@@ -7518,7 +7518,7 @@ linenotflatGOUR
 .pixlopleft:
 
 				swap	d1
-				move.w	d1,(a4)+			; store right side entry brightness
+				move.w	d1,(a4)+				; store right side entry brightness
 				swap	d1
 				add.l	d2,d1
 
@@ -7526,13 +7526,13 @@ linenotflatGOUR
 				bge.s	.nobigstepl
 				sub.w	a6,d0
 				add.w	d3,d4
-				move.w	d0,(a3)+			; store left side entry
+				move.w	d0,(a3)+				; store left side entry
 				dbra	d5,.pixlopleft
 				bra		lineflatGOUR
 
 .nobigstepl
 				sub.w	d6,d0
-				move.w	d0,(a3)+			 ; store left side entry
+				move.w	d0,(a3)+				; store left side entry
 				dbra	d5,.pixlopleft
 				bra		lineflatGOUR
 
@@ -7594,7 +7594,7 @@ lineonrightGOUR:
 .pixlopright:
 
 				swap	d1
-				move.w	d1,(a4)+			; store right side brightness entry
+				move.w	d1,(a4)+				; store right side brightness entry
 				swap	d1
 				add.l	d2,d1
 
@@ -7602,13 +7602,13 @@ lineonrightGOUR:
 				bge.s	.nobigstep
 				add.w	a6,d0
 				add.w	d3,d4
-				move.w	d0,(a3)+			; store right side entry
+				move.w	d0,(a3)+				; store right side entry
 				dbra	d5,.pixlopright
 				bra		lineflatGOUR
 
 .nobigstep
 				add.w	d6,d0
-				move.w	d0,(a3)+			;  store right side entry
+				move.w	d0,(a3)+				;  store right side entry
 				dbra	d5,.pixlopright
 				bra		lineflatGOUR
 
@@ -7655,11 +7655,11 @@ lineonrightGOUR:
 .pixlopleft:
 
 				swap	d1
-				move.w	d1,(a4)+		; store left entry brightness
+				move.w	d1,(a4)+				; store left entry brightness
 				swap	d1
 				add.l	d2,d1
 
-				move.w	d0,(a3)+		; store left entry x
+				move.w	d0,(a3)+				; store left entry x
 				sub.w	a5,d4
 				bge.s	.nobigstepl
 				sub.w	a6,d0
@@ -7726,7 +7726,7 @@ groundfloor:
 
 				move.w	xoff,d6
 				move.w	zoff,d7
-				add.w	xwobxoff,d6	; this was adding xwobxoff to d7, was this a bug?
+				add.w	xwobxoff,d6				; this was adding xwobxoff to d7, was this a bug?
 				add.w	xwobzoff,d7
 
 				tst.b	FULLSCR
@@ -7747,7 +7747,7 @@ groundfloor:
 
 				; stll don't really understand why the render aspect ratio gets rolled into here
 				; as these are supposed to be the viewer/s position in the world
-				muls.w	#21845,d6	; (4/3<<16)/4
+				muls.w	#21845,d6				; (4/3<<16)/4
 				muls.w	#21845,d7
 
 				bra.s	.donsht
@@ -7764,7 +7764,7 @@ groundfloor:
 
 
 .donsht:
-				move.w	scaleval(pc),d3		; FIMXE: is this an opportunity to scale for DOUBLEWIDTH/DOUBLEHEIGHT?
+				move.w	scaleval(pc),d3			; FIMXE: is this an opportunity to scale for DOUBLEWIDTH/DOUBLEHEIGHT?
 				beq.s	.samescale
 				bgt.s	.scaledown
 				neg.w	d3
@@ -7811,7 +7811,7 @@ nfloors:		dc.w	0
 lighttype:		dc.w	0
 above:			dc.w	0
 linedir:		dc.w	0
-View2FloorDist:		dc.w	0
+View2FloorDist:	dc.w	0
 
 minz:			dc.l	0
 
@@ -7833,8 +7833,8 @@ movespd:		dc.w	0
 largespd:		dc.l	0
 disttobot:		dc.w	0
 
-OneOverN:		; 1/N * 16384
-				dc.w	0					;16384/0 not defined
+OneOverN:		;		1/N						* 16384
+				dc.w	0						;16384/0 not defined
 val				SET		1
 				REPT	255
 				dc.w	16384/val
@@ -7854,13 +7854,13 @@ pastscale:
 
 				; DOUBLEHEIGHT rendering
 				move.l	a0,-(a7)
-				move.w	linedir,d1			; line to line in screen
-				add.w	d1,linedir			; x2
+				move.w	linedir,d1				; line to line in screen
+				add.w	d1,linedir				; x2
 
 				move.l	#leftsidetab,a4
 				move.w	top(pc),d1
-				tst.w	above				; is above camera?
-				beq.s	.clipfloor			; no, its a floor!
+				tst.w	above					; is above camera?
+				beq.s	.clipfloor				; no, its a floor!
 
 ; Its a ceiling, clip it to top/bottom
 ; For ceilings, the top and bottom have reversed roles
@@ -7875,18 +7875,18 @@ pastscale:
 				sub.w	d1,d7
 				move.w	d7,disttobot
 
-				move.w	bottom(pc),d7		; bottom of floor
+				move.w	bottom(pc),d7			; bottom of floor
 				move.w	MIDDLEY,d3
 				move.w	d3,d4
 				sub.w	topclip,d3
 				sub.w	botclip,d4
 				cmp.w	d3,d1
-				bge		predontdrawfloor	; top_of_floor >= (MIDDLEY-topclip)
+				bge		predontdrawfloor		; top_of_floor >= (MIDDLEY-topclip)
 				cmp.w	d4,d7
-				blt		predontdrawfloor	; bottom_of_floor < (MIDDLEY-botclip) ?
+				blt		predontdrawfloor		; bottom_of_floor < (MIDDLEY-botclip) ?
 				cmp.w	d4,d1
-				bge.s	.nocliptoproof		; top_of_floor >= (MIDDLEY-botclip)  ?
-				move.w	d4,d1				; clip top_of_floor to (MIDDLEY-botclip)
+				bge.s	.nocliptoproof			; top_of_floor >= (MIDDLEY-botclip)  ?
+				move.w	d4,d1					; clip top_of_floor to (MIDDLEY-botclip)
 .nocliptoproof
 				cmp.w	d3,d7
 				blt		.doneclip
@@ -7898,7 +7898,7 @@ pastscale:
 
 .clipfloor:
 				move.w	BOTTOMY,d7
-				sub.w	MIDDLEY,d7			;
+				sub.w	MIDDLEY,d7				;
 				subq	#1,d7
 				sub.w	d1,d7
 				move.w	d7,disttobot
@@ -7908,57 +7908,57 @@ pastscale:
 				move.w	botclip,d4
 				sub.w	MIDDLEY,d4
 				cmp.w	d4,d1
-				bge		predontdrawfloor	; top >= (botclip - MIDDLEY)
+				bge		predontdrawfloor		; top >= (botclip - MIDDLEY)
 
 				move.w	topclip,d3
 				sub.w	MIDDLEY,d3
 				cmp.w	d3,d1
-				bge.s	.nocliptopfloor		; top >= (topclip - MIDDLEY)
+				bge.s	.nocliptopfloor			; top >= (topclip - MIDDLEY)
 
-				move.w	d3,d1				; clip top_of_floor to (topclip - MIDDLEY)
+				move.w	d3,d1					; clip top_of_floor to (topclip - MIDDLEY)
 .nocliptopfloor
 				cmp.w	d3,d7
-				ble		predontdrawfloor	; (bottom) <= (topclip - MIDDLEY) : bottom <= topclip (bottom of floor above topclip)
+				ble		predontdrawfloor		; (bottom) <= (topclip - MIDDLEY) : bottom <= topclip (bottom of floor above topclip)
 				cmp.w	d4,d7
-				blt.s	.noclipbotfloor		; (bottom) < (botclip)
-				move.w	d4,d7				; bottom = botclip
+				blt.s	.noclipbotfloor			; (bottom) < (botclip)
+				move.w	d4,d7					; bottom = botclip
 .noclipbotfloor:
 
 .doneclip:
-				lea		(a4,d1*2),a4		; adress of first floor/roof line
+				lea		(a4,d1*2),a4			; adress of first floor/roof line
 				addq	#1,d7
-				sub.w	d1,d7				; number of lines
+				sub.w	d1,d7					; number of lines
 
 ;moveq #0,d0
-				asr.w	#1,d1				; top line/2 for DOUBLEHEIGHT
+				asr.w	#1,d1					; top line/2 for DOUBLEHEIGHT
 ; addx d0,d1
 
 ; move.l #dists,a2
-				move.w	View2FloorDist,d0	; ydist<<6 to floor/ceiling	; distance of viewer to floor
+				move.w	View2FloorDist,d0		; ydist<<6 to floor/ceiling	; distance of viewer to floor
 ;				muls	#64,d0				; ydist<<12 to floor/ceiling
 				ext.l	d0
 				lsl.l	#6,d0
-				move.l	d0,a2				; a2
+				move.l	d0,a2					; a2
 ; muls #25,d0
 ; adda.w d0,a2
 ; lea (a2,d1*2),a2
-				asr.w	#1,d7				; number of lines /2 for DOUBLEHEIGHT
-				ble		predontdrawfloor	; nothing left?
+				asr.w	#1,d7					; number of lines /2 for DOUBLEHEIGHT
+				ble		predontdrawfloor		; nothing left?
 
 				move.w	d1,d0
 				bne.s	.notzero
-				moveq	#1,d0				; always start at line 1?
+				moveq	#1,d0					; always start at line 1?
 .notzero
-				add.w	d0,d0				; start line# *2
+				add.w	d0,d0					; start line# *2
 
-				muls	linedir,d1			; top line in screen times renderwidth (typical 320)
-				add.l	d1,a6				; this is where we start writing?
+				muls	linedir,d1				; top line in screen times renderwidth (typical 320)
+				add.l	d1,a6					; this is where we start writing?
 ; sub.l d1,REFPTR
 				move.l	TexturePal,a1
 				add.l	#256*32,a1
 				move.l	LineToUse,a5
 
-				move.w	#4,tonextline		; line tab advance?
+				move.w	#4,tonextline			; line tab advance?
 
 				bra		pix2h
 
@@ -7985,12 +7985,12 @@ pix1h:
 				sub.w	topclip,d3
 				sub.w	botclip,d4
 				cmp.w	d3,d1
-				bge		predontdrawfloor	; top >= MIDDLEY - topclip
+				bge		predontdrawfloor		; top >= MIDDLEY - topclip
 				cmp.w	d4,d7
-				blt		predontdrawfloor	; bottom >= MIDDLEY - bottomclip
+				blt		predontdrawfloor		; bottom >= MIDDLEY - bottomclip
 				cmp.w	d4,d1
-				bge.s	.nocliptoproof		; top >= MIDDLEY - bottomclip
-				move.w	d4,d1				; top = MIDDLEY - bottomclip
+				bge.s	.nocliptoproof			; top >= MIDDLEY - bottomclip
+				move.w	d4,d1					; top = MIDDLEY - bottomclip
 .nocliptoproof
 				cmp.w	d3,d7
 				blt		doneclip
@@ -8023,7 +8023,7 @@ clipfloor:
 .noclipbotfloor:
 
 doneclip:
-				lea		(a4,d1*2),a4	; go to top linetab
+				lea		(a4,d1*2),a4			; go to top linetab
 ; move.l #dists,a2
 				move.w	View2FloorDist,d0
 				;muls	#64,d0			; FIXME: why muls here? Is this addressing the floor tile row?
@@ -8033,21 +8033,21 @@ doneclip:
 ; muls #25,d0
 ; adda.w d0,a2
 ; lea (a2,d1*2),a2
-				sub.w	d1,d7				;  number of lines to draw
+				sub.w	d1,d7					;  number of lines to draw
 				ble		predontdrawfloor
-				move.w	d1,d0				; current line
+				move.w	d1,d0					; current line
 				bne.s	.notzero
-				moveq	#1,d0				; at least start at line 1 ?!
+				moveq	#1,d0					; at least start at line 1 ?!
 											; We later divide  by d0, so make sure its not 0
 .notzero
 				muls	linedir,d1
-				add.l	d1,a6				; renderbuffer start address
+				add.l	d1,a6					; renderbuffer start address
 ; sub.l d1,REFPTR
 				move.l	TexturePal,a1
 				add.l	#256*32,a1
-				move.l	LineToUse,a5		; This function ptr has been stored by the very outermost
+				move.l	LineToUse,a5			; This function ptr has been stored by the very outermost
 
-				move.w	#2,tonextline		; lefttab/righttab advance?
+				move.w	#2,tonextline			; lefttab/righttab advance?
 
 
 				;double height rendering
@@ -8063,25 +8063,25 @@ dofloor:
 ; move.w (a2)+,d0
 				move.w	leftclip,d3
 				move.w	rightclip,d4
-				move.w	rightsidetab-leftsidetab(a4),d2	; get rightside of line
+				move.w	rightsidetab-leftsidetab(a4),d2 ; get rightside of line
 
-				addq	#1,d2		; why? Is the right side X not inclusive?
-				cmp.w	d3,d2		; does this make sense?
-				ble.s	nodrawline	; rightside <= leftclip?
+				addq	#1,d2					; why? Is the right side X not inclusive?
+				cmp.w	d3,d2					; does this make sense?
+				ble.s	nodrawline				; rightside <= leftclip?
 
 				cmp.w	d4,d2
-				ble.s	noclipright	; rightclip <= rightside?
-				move.w	d4,d2		; clip rightside to rightclip
+				ble.s	noclipright				; rightclip <= rightside?
+				move.w	d4,d2					; clip rightside to rightclip
 noclipright:
-				move.w	(a4),d1		; leftside x
+				move.w	(a4),d1					; leftside x
 				cmp.w	d4,d1
-				bge.s	nodrawline	; leftside >= rightclip?
+				bge.s	nodrawline				; leftside >= rightclip?
 				cmp.w	d3,d1
-				bge.s	noclipleft	; leftside >= leftclip
-				move.w	d3,d1		; leftside = leftclip
+				bge.s	noclipleft				; leftside >= leftclip
+				move.w	d3,d1					; leftside = leftclip
 noclipleft:
 				cmp.w	d1,d2
-				ble.s	nodrawline	; rightside <= leftside?
+				ble.s	nodrawline				; rightside <= leftside?
 
 				move.w	d1,leftedge
 				move.w	d2,rightedge
@@ -8124,7 +8124,7 @@ noclipleft:
 				; the screenspace coordinate and the floor height
 				; https://youtu.be/2ZAIIDXoBis?t=1385
 
-				move.l	a2,d7		; View2FloorDist*64 (distance of viewer Y to floor in worldspace)
+				move.l	a2,d7					; View2FloorDist*64 (distance of viewer Y to floor in worldspace)
 				;asl.l	#2,d7		; *4 = * 256
 				;ext.l	d0
 				;divs.w	d0,d7		; View2FloorDist * 256 / currentline
@@ -8134,9 +8134,9 @@ noclipleft:
 				lsr.l	#6,d7
 
 				; for some reason important to write.l here
-				move.l	d7,d0		; Z of current screen line projected to floor
+				move.l	d7,d0					; Z of current screen line projected to floor
 
-				jsr		(a5)		; Call the horizontal line drawing routine!
+				jsr		(a5)					; Call the horizontal line drawing routine!
 
 				movem.l	(a7)+,d0/d7/a2/a4/a5/a6
 nodrawline
@@ -8164,8 +8164,8 @@ anyclipping:	dc.w	0
 
 dofloornoclip:
 ; move.w (a2)+,d0
-				move.w	rightsidetab-leftsidetab(a4),d2  ;offset from leftside table entry to right side table entry
-				addq	#1,d2							 ;
+				move.w	rightsidetab-leftsidetab(a4),d2 ;offset from leftside table entry to right side table entry
+				addq	#1,d2					;
 
 				move.w	(a4),d1
 				move.w	d1,leftedge
@@ -8564,9 +8564,9 @@ FloorLine:
 				********************
 * Old version
 				asr.l	#2,d2
-				asr.l	#8,d2				; View2FloorDist / 1024
+				asr.l	#8,d2					; View2FloorDist / 1024
 
-				add.w	#5,d1				; add 5 to lighttype?!
+				add.w	#5,d1					; add 5 to lighttype?!
 *********************
 ; asr.w #3,d2
 ; sub.w #4,d2
@@ -8575,17 +8575,17 @@ FloorLine:
 ; move.w #6,d2
 ;flbrbr:
 *********************
-				add.w	d2,d1				; clamp lighting on the line
+				add.w	d2,d1					; clamp lighting on the line
 				bge.s	.fixedbright
-				moveq	#0,d1				; low clamp
+				moveq	#0,d1					; low clamp
 .fixedbright:
 				cmp.w	#28,d1
 				ble.s	.smallbright
-				move.w	#28,d1				; high clamp
+				move.w	#28,d1					; high clamp
 .smallbright:
 				move.l	TexturePal,a1
 				add.l	#256*32,a1
-				add.l	floorbright(pc,d1.w*4),a1	; adjust brightness of line
+				add.l	floorbright(pc,d1.w*4),a1 ; adjust brightness of line
 				bra		pastfloorbright
 
 ConstCol:		dc.w	0
@@ -8686,7 +8686,7 @@ floorbright:
 
 widthleft:		dc.w	0
 scaleval:		dc.w	0
-sxoff:			dc.l	0	; viewer position in floor texture space?
+sxoff:			dc.l	0						; viewer position in floor texture space?
 szoff:			dc.l	0
 xoff34:			dc.w	0
 zoff34:			dc.w	0
@@ -8729,8 +8729,8 @@ scaleprog:
 				asr.l	d3,d2
 				bra.s	.samescale
 .scaledown:
-				asl.l	d3,d1		; cos * dist * scale	step size of line through texture at distance 'dist'
-				asl.l	d3,d2		; -sin * dist * scale
+				asl.l	d3,d1					; cos * dist * scale	step size of line through texture at distance 'dist'
+				asl.l	d3,d2					; -sin * dist * scale
 
 
 				; view vector R * (-ViewDist*.75 , ViewDist)^T
@@ -8738,59 +8738,59 @@ scaleprog:
 				; It is supposed to produce left left start coordinate
 				; of the line in floor texture coordinates
 .samescale
-				move.l	d1,d3		; dist * cos * scale
-				move.l	d3,d6		; dist * cos * scale
-				move.l	d3,d5		; dist * cos * scale
-				asr.l	#1,d6		; dist * cos * scale * 0.5
-				add.l	d6,d3		; dist * cos * scale * 1.5
-				asr.l	#1,d3		; dist * cos * scale * 0.75
+				move.l	d1,d3					; dist * cos * scale
+				move.l	d3,d6					; dist * cos * scale
+				move.l	d3,d5					; dist * cos * scale
+				asr.l	#1,d6					; dist * cos * scale * 0.5
+				add.l	d6,d3					; dist * cos * scale * 1.5
+				asr.l	#1,d3					; dist * cos * scale * 0.75
 
-				move.l	d2,d4		; -dist * sin * scale
-				move.l	d4,d6		; -dist * sin * scale
-				asr.l	#1,d6		; -dist * sin * scale * 0.5
-				add.l	d4,d6		; -dist * sin * scale * 1.5
-				asr.l	#1,d6		; -dist * sin * scale * 0.75
+				move.l	d2,d4					; -dist * sin * scale
+				move.l	d4,d6					; -dist * sin * scale
+				asr.l	#1,d6					; -dist * sin * scale * 0.5
+				add.l	d4,d6					; -dist * sin * scale * 1.5
+				asr.l	#1,d6					; -dist * sin * scale * 0.75
 
-				add.l	d3,d4		; left t = (dist * cos * scale * 0.75) - (dist * sin * scale)
-				neg.l	d4			; - start x
+				add.l	d3,d4					; left t = (dist * cos * scale * 0.75) - (dist * sin * scale)
+				neg.l	d4						; - start x
 
-				sub.l	d6,d5		; left s= -1 * -1 * (dist * sin * scale * 0.75) + (dist * cos * scale)
+				sub.l	d6,d5					; left s= -1 * -1 * (dist * sin * scale * 0.75) + (dist * cos * scale)
 
-				add.l	sxoff,d4	; d4/d5 is the texture starting position?
+				add.l	sxoff,d4				; d4/d5 is the texture starting position?
 				add.l	szoff,d5
 
 				; d1/d2 are the steps in floor texture space when moving left to right in screenspace
 				; for DOUBLEWIDTH, double the step size
-				add.l	d1,d1		; DOUBLEWIDTH TEST
-				add.l	d2,d2		; DOUBLEWIDTH TEST
+				add.l	d1,d1					; DOUBLEWIDTH TEST
+				add.l	d2,d2					; DOUBLEWIDTH TEST
 
 				tst.b	FULLSCR
 				beq.s	.nob
 
 				moveq	#0,d6
-				move.w	leftedge(pc),d6	; left edge of clipped floor line in screenspace
+				move.w	leftedge(pc),d6			; left edge of clipped floor line in screenspace
 				beq.s	.nomultleftB
 
 				; if the clipped left edge of the floor line is > 0,
 				; need  to inset the start of the floorspace coordinate accordingly
 				add.l	d6,d6
-				divs	#3,d6		; * 2/3 seems to be the FULLSCREEN multiplier?
-				ext.l	d6			; FIXME: why are we applying that here?
+				divs	#3,d6					; * 2/3 seems to be the FULLSCREEN multiplier?
+				ext.l	d6						; FIXME: why are we applying that here?
 									; shouldn't that have been implicit when calulating the clipping stuff?
 									; but taking it away, doesn't work
 
-				move.l	d1,a4		; save width * cos * scale
-				move.l	d2,a5		; save width * sin * scale
+				move.l	d1,a4					; save width * cos * scale
+				move.l	d2,a5					; save width * sin * scale
 
-				muls.l	d6,d1		; ds/dx  * left start
-				asr.l	#7,d1		; sin/cos are << 15; this shifts it down to << 8
-				add.l	d1,d4		; current floor line start texel s
+				muls.l	d6,d1					; ds/dx  * left start
+				asr.l	#7,d1					; sin/cos are << 15; this shifts it down to << 8
+				add.l	d1,d4					; current floor line start texel s
 
-				muls.l	d6,d2		; dt/dx * left start
-				asr.l	#7,d2		; sin/cos are << 15; this shifts it down to << 8
-				add.l	d2,d5		; current floor line start texel t
+				muls.l	d6,d2					; dt/dx * left start
+				asr.l	#7,d2					; sin/cos are << 15; this shifts it down to << 8
+				add.l	d2,d5					; current floor line start texel t
 
-				move.l	a4,d1		; restore
+				move.l	a4,d1					; restore
 				move.l	a5,d2
 
 				move.w	leftedge(pc),d6
@@ -8810,62 +8810,62 @@ scaleprog:
 				move.w	d4,d5
 
 				; multiply floor space step ds/dx and dt/dx by Fullscreen multiplier
-				asr.l	#6,d1		; don't shift by 7, but 6
+				asr.l	#6,d1					; don't shift by 7, but 6
 				asr.l	#6,d2
-				divs.l	#3,d1		; to achieve * 2/3
+				divs.l	#3,d1					; to achieve * 2/3
 				divs.l	#3,d2
 
 				bra.s	doneallmult
 
-.nob			; smallscreen left edge insetting
+.nob			;		smallscreen				left edge insetting
 				moveq	#0,d6
 				move.w	leftedge(pc),d6
-				beq.s	nomultleft	; skip if at left screen edge already
+				beq.s	nomultleft				; skip if at left screen edge already
 
-				move.l	d1,a4		; save  width * cos * scale
-				move.l	d2,a5		; save width * sin * scale
+				move.l	d1,a4					; save  width * cos * scale
+				move.l	d2,a5					; save width * sin * scale
 
-				muls.l	d6,d1		; left start * ds/dx
+				muls.l	d6,d1					; left start * ds/dx
 				asr.l	#7,d1
-				add.l	d1,d4		; start texel x
+				add.l	d1,d4					; start texel x
 
-				muls.l	d6,d2		; left start * dt/dx
+				muls.l	d6,d2					; left start * dt/dx
 				asr.l	#7,d2
-				add.l	d2,d5		; start texel y
+				add.l	d2,d5					; start texel y
 
-				move.l	a4,d1		; restore
-				move.l	a5,d2		; restore
+				move.l	a4,d1					; restore
+				move.l	a5,d2					; restore
 
 				move.w	leftedge(pc),d6
 
-nomultleft:		; final start coordinate in floor texture space
+nomultleft:		;		final					start coordinate in floor texture space
 				move.w	d4,startsmoothx
 				move.w	d5,startsmoothz
 
-				asr.l	#8,d4		;  s / 256
-				asl.l	#8,d5		;  t * 256
+				asr.l	#8,d4					;  s / 256
+				asl.l	#8,d5					;  t * 256
 
 ; add.w szoff,d5
 ; add.w sxoff,d4
 ; and.w #63,d4
 ; and.w #63*256,d5
 
-				move.w	d4,d5		; move s into lower half of t
+				move.w	d4,d5					; move s into lower half of t
 
-				asr.l	#7,d1	    ; ds/dx / 128 = ds/dx << 8
-				asr.l	#7,d2		; dt/dx / 128 = dt/dx << 8
+				asr.l	#7,d1					; ds/dx / 128 = ds/dx << 8
+				asr.l	#7,d2					; dt/dx / 128 = dt/dx << 8
 ; divs.l #3,d1
 ; divs.l #3,d2
 
 doneallmult:
 
-				move.w	d1,a4		; save ds/dx and dt/dx
+				move.w	d1,a4					; save ds/dx and dt/dx
 				move.w	d2,a5
 
-				asl.l	#8,d2		;  dt/dx << 16
+				asl.l	#8,d2					;  dt/dx << 16
 ; and.w #%0011111100000000,d2
-				asr.l	#8,d1		;  ds/dx
-				move.w	d1,d2		;  move ds/dx into lower half of dt/dx
+				asr.l	#8,d1					;  ds/dx
+				move.w	d1,d2					;  move ds/dx into lower half of dt/dx
 
 				ifeq	CHEESEY
 				move.l	#$3fff3fff,d1
@@ -8888,7 +8888,7 @@ doneallmult:
 				bra		.nodoub
 
 				; old doublewidth rendering
-				and.b	#$fe,d6			; remove LSB in lower 8 bit, only draw even columns?
+				and.b	#$fe,d6					; remove LSB in lower 8 bit, only draw even columns?
 
 				move.w	d6,a2
 				moveq	#0,d0
@@ -8905,12 +8905,12 @@ doneallmult:
 				bra		gouraudfloorDOUB
 
 .nodoub:
-				move.w	d6,a2			; left start X
+				move.w	d6,a2					; left start X
 				moveq	#0,d0
 				move.w	rightedge(pc),d3
-				lea		(a3,a2.w),a3	; start adress in screen
+				lea		(a3,a2.w),a3			; start adress in screen
 				move.w	d3,d7
-				sub.w	a2,d7			; end X - start X : line width
+				sub.w	a2,d7					; end X - start X : line width
 
 intofirststrip:
 allintofirst:
@@ -9016,25 +9016,25 @@ gouraudfloor:
 				btst	#0,d3
 				beq.s	.nosingle1
 
-				move.w	d5,d3		; d3 = S
+				move.w	d5,d3					; d3 = S
 				move.l	d5,d6
 				lsr.w	#8,d3
-				swap	d6			; d6 = T
-				move.b	d3,d6		; T * 256 + S
+				swap	d6						; d6 = T
+				move.b	d3,d6					; T * 256 + S
 
-				move.w	d0,d3		; line X
+				move.w	d0,d3					; line X
 
 				ifeq	CHEESEY
-				move.b	(a0,d6.w*4),d3	; fetch floor texel; but why d6*4?
+				move.b	(a0,d6.w*4),d3			; fetch floor texel; but why d6*4?
 				endc
 				ifne	CHEESEY
-				move.b	(a0,d6.w),d3	; fetch floor texel
+				move.b	(a0,d6.w),d3			; fetch floor texel
 				endc
 
-				add.w	d1,d0		;
+				add.w	d1,d0					;
 				add.l	d2,d5
 				and.l	d4,d5
-				move.b	(a1,d3.w),(a3)+	; map through palette and write to renderbuffer
+				move.b	(a1,d3.w),(a3)+			; map through palette and write to renderbuffer
 .nosingle1
 
 				move.w	d7,d3
@@ -9896,7 +9896,7 @@ VBlankInterrupt:
 
 .noint:
 				GETREGS
-				lea _custom,a0		; place custom base into a0 (See autodocs for AddIntServer)
+				lea		_custom,a0				; place custom base into a0 (See autodocs for AddIntServer)
 				moveq	#1,d0
 				rts
 
@@ -10606,7 +10606,7 @@ nostartalan:
 				clr.b	PLR1_clicked
 				move.w	#0,ADDTOBOBBLE
 				move.l	#playercrouched,PLR1s_height
-				move.w	#-80,d0			; Is this related to render buffer height
+				move.w	#-80,d0					; Is this related to render buffer height
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
@@ -12264,10 +12264,10 @@ EndBackPicture:
 				endc
 
 SineTable:
-				incbin	"bigsine"	; sine/cosine << 15
+				incbin	"bigsine"				; sine/cosine << 15
 
 angspd:			dc.w	0
-flooryoff:		dc.w	0		; viewer y pos << 6
+flooryoff:		dc.w	0						; viewer y pos << 6
 xoff:			dc.l	0
 zoff:			dc.l	0
 yoff:			dc.l	0
@@ -12468,11 +12468,11 @@ OldRoompt:		dc.l	0
 wallpt:			dc.l	0
 floorpt:		dc.l	0
 
-Rotated:		ds.l	2*800	; store rotated X and Z coordinates with Z scaling applied
+Rotated:		ds.l	2*800					; store rotated X and Z coordinates with Z scaling applied
 
 ObjRotated:		ds.l	2*500
 
-OnScreen:		ds.l	2*800	; store screen projected X coordinates for rotated points
+OnScreen:		ds.l	2*800					; store screen projected X coordinates for rotated points
 
 startwait:		dc.w	0
 endwait:		dc.w	0
@@ -12569,7 +12569,7 @@ TEXTSCRN:		dc.l	0
 				SECTION	ffff,DATA_C
 				cnop	0,8
 
-PanelKeys:			; I'm pretty sure these are not needed anymore, but there's code referencing it
+PanelKeys:		;		I'm pretty sure these are not needed anymore, but there's code referencing it
 ;incbin "greenkey"
 ; incbin "redkey"
 ; incbin "yellowkey"
@@ -12594,15 +12594,15 @@ SCROLLSCRN:		ds.l	20*16
 
 closeeverything:
 
-				jsr mt_end
+				jsr		mt_end
 
-				move.l _DOSBase,d0
-				move.l d0,a1
+				move.l	_DOSBase,d0
+				move.l	d0,a1
 				CALLEXEC CloseLibrary
 
 				; FIXME: need to test if it even got installed
-				lea VBLANKInt,a1
-				moveq #INTB_VERTB,d0
+				lea		VBLANKInt,a1
+				moveq	#INTB_VERTB,d0
 				CALLEXEC RemIntServer
 
 				IFEQ	CD32VER
@@ -12614,16 +12614,16 @@ closeeverything:
 				jsr		RELEASELEVELMEM
 				jsr		RELEASESCRNMEM
 
-				move.l	 MiscResourceBase,d0
+				move.l	MiscResourceBase,d0
 				beq.s	.noMiscResourceBase
 				move.l	d0,a6
 				; FIXME: would need to check if we actually allocated them successfully
-				move.l  #MR_SERIALPORT,d0
+				move.l	#MR_SERIALPORT,d0
 				jsr		_LVOFreeMiscResource(a6)
-				move.l  #MR_SERIALBITS,d0
+				move.l	#MR_SERIALBITS,d0
 				jsr		_LVOFreeMiscResource(a6)
 
-				clr.l	MiscResourceBase	; Resource library doesn't have a 'close'?
+				clr.l	MiscResourceBase		; Resource library doesn't have a 'close'?
 
 .noMiscResourceBase
 
@@ -12637,7 +12637,7 @@ closeeverything:
 
 .noPotgoResource
 
-				move.l	#0,d0			; FIXME indicate failure
+				move.l	#0,d0					; FIXME indicate failure
 				rts
 
 
@@ -12657,7 +12657,7 @@ _GfxBase:		dc.l	0
 Panel:			dc.l	0
 
 				cnop	0,64
-TimerScr:		; Not needed(?), but still referenced but (inactive?) code
+TimerScr:		;		Not						needed(?), but still referenced but (inactive?) code
 ;ds.b 40*64
 scrn:			dc.l	0
 scrn2:			dc.l	0
@@ -13323,11 +13323,11 @@ mt_data:		dc.l	0
 
 				section	music,DATA_C
 
-tstchip:		dc.l	0		; not sure what this is; it seems to be used as timing
+tstchip:		dc.l	0						; not sure what this is; it seems to be used as timing
 								; device. I.e. by accessing chipmap, we throttle the CPU
 
 gameover:
-				incbin "includes/gameover"
+				incbin	"includes/gameover"
 welldone:
 				incbin	"includes/quietwelldone"
 

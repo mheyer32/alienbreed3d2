@@ -151,25 +151,25 @@ NEWCHUNKYTEL:
 				tst.b	FULLSCR
 				beq		.smallscreenTele
 
-				move.w	#(FS_WIDTH/8)-1,WTC	; width in chipmem?
+				move.w	#(FS_WIDTH/8)-1,WTC		; width in chipmem?
 
 				move.w	WIDESCRN,d7
-				move.l	#FS_HEIGHT,d1	; height of area to convert
-				sub.w	d7,d1			; top letterbox
-				sub.w	d7,d1			; bottom letterbox: d1: number of lines
+				move.l	#FS_HEIGHT,d1			; height of area to convert
+				sub.w	d7,d1					; top letterbox
+				sub.w	d7,d1					; bottom letterbox: d1: number of lines
 				move.w	d1,HTC
 
-				move.w	#(SCREENWIDTH-FS_WIDTH),MODUL	 ; modulo chunky
+				move.w	#(SCREENWIDTH-FS_WIDTH),MODUL ; modulo chunky
 				move.w	#(SCREENWIDTH-FS_WIDTH)/8,SCRMOD ; modulo chipmem
 
 				move.l	FASTBUFFER,a0
 				move.w	#SCREENWIDTH,d3
 				mulu.w	d7,d3
-				lea		(a0,d3.w),a0		; offset for top letterbox in renderbuffer
+				lea		(a0,d3.w),a0			; offset for top letterbox in renderbuffer
 
 				move.l	SCRNDRAWPT,a1
 				move.w	#(SCREENWIDTH/8),d3
-				mulu.w	d7,d3				; offset for top letterbox in screenbuffer
+				mulu.w	d7,d3					; offset for top letterbox in screenbuffer
 				lea		(a1,d3.w),a1
 
 				bra		.startchunkytel
@@ -178,22 +178,22 @@ NEWCHUNKYTEL:
 				move.w	#(SMALL_WIDTH/8)-1,WTC	; width in chipmem?
 
 				move.w	WIDESCRN,d7
-				move.l	#SMALL_HEIGHT,d1	; height of area to convert
-				sub.w	d7,d1			; top letterbox
-				sub.w	d7,d1			; bottom letterbox: d1: number of lines
+				move.l	#SMALL_HEIGHT,d1		; height of area to convert
+				sub.w	d7,d1					; top letterbox
+				sub.w	d7,d1					; bottom letterbox: d1: number of lines
 				move.w	d1,HTC
 
-				move.w	#(SCREENWIDTH-SMALL_WIDTH),MODUL	 ; modulo chunky
-				move.w	#(SCREENWIDTH-SMALL_WIDTH)/8,SCRMOD	; modulo chipmem
+				move.w	#(SCREENWIDTH-SMALL_WIDTH),MODUL ; modulo chunky
+				move.w	#(SCREENWIDTH-SMALL_WIDTH)/8,SCRMOD ; modulo chipmem
 
 				move.l	FASTBUFFER,a0
 				move.w	#SCREENWIDTH,d3
 				mulu.w	d7,d3
-				lea		(a0,d3.w),a0		; offset for top letterbox in renderbuffer
+				lea		(a0,d3.w),a0			; offset for top letterbox in renderbuffer
 
 				move.l	SCRNDRAWPT,a1
 				move.w	#(SCREENWIDTH/8),d3
-				mulu.w	d7,d3				; offset for top letterbox in screenbuffer
+				mulu.w	d7,d3					; offset for top letterbox in screenbuffer
 				lea		(a1,d3.w),a1
 				add.l	#(SCREENWIDTH/8)*20+(64/8),a1; top left corner of small render window in chipmem
 
