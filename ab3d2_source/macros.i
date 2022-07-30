@@ -187,3 +187,136 @@ QMOVE			MACRO
 ;		CNOP	0,8
 ;		ENDM
 ;*---------------------------------------------------------------------------*
+_break			macro
+;	bkpt	\1
+				endm
+
+
+FILTER			macro
+;	move.l	d0,-(sp)
+;	move.l	#65000,d0
+;.loop\@
+;	bchg	#1,$bfe001
+;	dbra	d0,.loop\@
+;	move.l	(sp)+,d0
+				endm
+
+SETCOPLOR0		macro
+				movem.l a0/a1/a6,-(a7)
+				subq.l	#4,a7
+				move.l	a7,a1
+				move.w	#\1,(a1)		; a1 pointer to list of colors
+				move.l	MainScreen,a0
+				lea		sc_ViewPort(a0),a0 ; viewport
+				moveq	#1,d0			; count
+				CALLGRAF LoadRGB4
+				addq.l #4,a7
+				movem.l (a7)+,a0/a1/a6
+				endm
+
+BLACK			macro
+				SETCOPLOR0 $0
+				endm
+
+RED				macro
+				SETCOPLOR0 $f00
+				endm
+
+FLASHER			macro
+				movem.l	d1,-(sp)
+				move.w	#-1,d1
+.loop3\@
+				move.w	#\1,_custom+color
+				nop
+				nop
+				move.w	#\2,_custom+color
+				nop
+				nop
+				dbra	d1,.loop3\@
+				movem.l	(sp)+,d1
+
+				endm
+
+GREEN			macro
+				SETCOPLOR0 $0f0
+				endm
+
+BLUE			macro
+				SETCOPLOR0 $f
+				endm
+
+DataCacheOff	macro
+				movem.l	a0-a6/d0-d7,-(sp)
+				moveq	#0,d0
+				move.l	#%0000000100000000,d1
+				CALLEXEC CacheControl
+				movem.l	(sp)+,a0-a6/d0-d7
+				endm
+
+DataCacheOn		macro
+				movem.l	a0-a6/d0-d7,-(sp)
+				moveq	#-1,d0
+				move.l	#%0000000100000000,d1
+				CALLEXEC CacheControl
+				movem.l	(sp)+,a0-a6/d0-d7
+				endm
+
+SAVEREGS		MACRO
+				movem.l	d0-d7/a0-a6,-(a7)
+				ENDM
+
+GETREGS			MACRO
+				movem.l	(a7)+,d0-d7/a0-a6
+				ENDM
+
+
+WB				MACRO
+\@bf:
+				btst	#6,dmaconr(a6)
+				bne.s	\@bf
+				ENDM
+
+WBa				MACRO
+\@bf:
+				move.w	#\2,$dff180
+
+				btst	#6,$bfe001
+				bne.s	\@bf
+\@bz:
+
+				move.w	#$f0f,$dff180
+
+				btst	#6,$bfe001
+				beq.s	\@bz
+
+				ENDM
+
+*Another version for when a6 <> dff000
+
+WBSLOW			MACRO
+\@bf:
+				btst	#6,_custom+dmaconr
+				bne.s	\@bf
+				ENDM
+
+WT				MACRO
+\@bf:
+				btst	#6,(a3)
+				bne.s	\@bd
+				rts
+\@bd:
+				btst	#4,(a0)
+				beq.s	\@bf
+				ENDM
+
+WTNOT			MACRO
+\@bf:
+				btst	#6,(a3)
+				bne.s	\@bd
+				rts
+\@bd:
+				btst	#4,(a0)
+				bne.s	\@bf
+				ENDM
+
+**
