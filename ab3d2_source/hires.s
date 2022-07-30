@@ -58,14 +58,40 @@ intreqrl		equ		$01f
 _start
 				move.w	(a0)+,LEVTOPLAY
 
-
 				jsr		MakePatch
 
-				move.l	#_custom,a6				; NB V. IMPORTANT: A6=CUSTOM BASE
-				move.w	intenar(a6),_storeint
-				and.w	#$c000,_storeint
+                lea.l   MiscResourceName,a1
+                CALLEXEC OpenResource    ;Open "misc.resource"
+                tst.l   d0
+                ;beq.s   fail
+                move.l  d0,MiscResourceBase
+                move.l  d0,a6
 
+                move.l  #MR_SERIALPORT,d0     ;We want these bits
+                lea.l   AppName(pc),a1
+                jsr     _LVOAllocMiscResource(a6)
+                tst.l   d0
+                ;beq.s   fail
+                move.l  #MR_SERIALBITS,d0
+                lea.l   AppName(pc),a1
+                jsr     _LVOAllocMiscResource(a6)
+                tst.l   d0
+                ;beq.s   fail
+
+				; now we have the resource, may poke the hardware bits
 				move.w	#31,serper(a6)			;19200 baud, 8 bits, no parity
+
+				lea.l   PotgoResourceName,a1
+				CALLEXEC OpenResource			;Open "potgo.resource"
+				tst.l   d0
+				;beq.s   fail
+				move.l  d0,PotgoResourceBase
+				move.l  d0,a6
+
+				move.l  #%110000000000,d0     ;We want these bits
+				jsr     _LVOAllocPotBits(a6)
+				tst.l   d0
+				;beq.s   fail
 
 				st		GOURSEL
 
@@ -449,9 +475,16 @@ noload:
 
 				rts
 
-doslibname:		dc.b	'dos.library',0
-				even
+doslibname:			DOSNAME
+MiscResourceName:	MISCNAME
+PotgoResourceName:	POTGONAME
+
+				align	4
 _DOSBase:		dc.l	0
+MiscResourceBase
+				dc.l	0
+PotgoResourceBase
+				dc.l	0
 
 mors:			dc.w	0	; this seems to be some sort of game state (single player, multiplayer etc)
 
@@ -1121,8 +1154,8 @@ lop:
 				move.w	#-1,12(a0)
 .notmess2:
 
-
-				move.w	#%110000000000,_custom+potgo	; POTGO -start Potentionmeter reading
+				;FIXME: should use _LVOWritePotgo here!
+				move.w	#%110000000000,_custom+potgo	; POTGO -start Potentiometer reading
 														; FIXME: shouldn't this be in a regular interrupt, like VBL?
 
 ; move.w COUNTER,d0
@@ -5053,6 +5086,7 @@ nonegx2:
 				move.w	d0,d1
 				move.w	d2,oldmx
 
+				;FIXME: should use _LVOWritePotgo here
 				move.w	#$0,_custom+potgo
 
 				add.w	d0,oldx2
@@ -12560,29 +12594,50 @@ SCROLLSCRN:		ds.l	20*16
 
 closeeverything:
 
-; jsr mt_end
+				jsr mt_end
 
-;				move.l	#nullcop,d0
-; move.l old,d0
+				move.l _DOSBase,d0
+				move.l d0,a1
+				CALLEXEC CloseLibrary
 
+				; FIXME: need to test if it even got installed
+				lea VBLANKInt,a1
+				moveq #INTB_VERTB,d0
+				CALLEXEC RemIntServer
 
-;charlie
-				;move.l #4,d1
-				;CALLDOS Delay
-
-				;move.l _DOSBase,d0
-				;move.l d0,a1
-				;CALLEXEC CloseLibrary
-
-				;lea VBLANKInt,a1
-				;moveq #INTB_COPER,d0
-				;CALLEXEC RemIntServer
+				IFEQ	CD32VER
+				lea		KEYInt,a1
+				moveq	#INTB_PORTS,d0
+				CALLEXEC RemIntServer
+				ENDC
 
 				jsr		RELEASELEVELMEM
 				jsr		RELEASESCRNMEM
 
-				move.l	#0,d0
+				move.l	 MiscResourceBase,d0
+				beq.s	.noMiscResourceBase
+				move.l	d0,a6
+				; FIXME: would need to check if we actually allocated them successfully
+				move.l  #MR_SERIALPORT,d0
+				jsr		_LVOFreeMiscResource(a6)
+				move.l  #MR_SERIALBITS,d0
+				jsr		_LVOFreeMiscResource(a6)
 
+				clr.l	MiscResourceBase	; Resource library doesn't have a 'close'?
+
+.noMiscResourceBase
+
+				move.l	PotgoResourceBase,d0
+				beq.s	.noPotgoResource
+				move.l	d0,a6
+				move.l	#%110000000000,d0
+				jsr		_LVOFreePotBits(a6)
+
+
+
+.noPotgoResource
+
+				move.l	#0,d0			; FIXME indicate failure
 				rts
 
 
