@@ -42,6 +42,11 @@
 				include	lvo/exec_lib.i
 				include	lvo/graphics_lib.i
 				include	lvo/intuition_lib.i
+				include lvo/misc_lib.i
+				include lvo/potgo_lib.i
+
+				include resources/misc.i
+				include resources/potgo.i
 
 				include	utility/tagitem.i
 
