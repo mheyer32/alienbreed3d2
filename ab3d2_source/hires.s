@@ -136,80 +136,7 @@ scrheight		EQU		80
 midoffset		EQU		104*4*40
 
 
-				SECTION	Scrn,CODE
-INTREQ			equ		$09C
-INTENA			equ		$09A
-INTENAR			equ		$01C
-DMACON			equ		$096
-
-SERPER			equ		$032
-SERDATR			equ		$018
-SERDAT			equ		$030
-spr0ctl			equ		$142
-spr1ctl			equ		$14a
-spr2ctl			equ		$152
-spr3ctl			equ		$15a
-spr4ctl			equ		$162
-spr5ctl			equ		$16a
-spr6ctl			equ		$172
-spr7ctl			equ		$17a
-spr0pos			equ		$140
-spr1pos			equ		$148
-spr2pos			equ		$150
-spr3pos			equ		$158
-spr4pos			equ		$160
-spr5pos			equ		$168
-spr6pos			equ		$170
-spr7pos			equ		$178
-col0			equ		$180
-col1			equ		$182
-col2			equ		$184
-col3			equ		$186
-col4			equ		$188
-col5			equ		$18a
-col6			equ		$18c
-col7			equ		$18e
-col8			equ		$190
-col9			equ		$192
-col10			equ		$194
-col11			equ		$196
-col12			equ		$198
-col13			equ		$19a
 intreqrl		equ		$01f
-bpl1pth			equ		$e0
-bpl1ptl			equ		$e2
-bpl2pth			equ		$e4
-bpl2ptl			equ		$e6
-bpl3pth			equ		$e8
-bpl3ptl			equ		$ea
-bpl4pth			equ		$ec
-bpl4ptl			equ		$ee
-bpl5pth			equ		$f0
-bpl5ptl			equ		$f2
-bpl6pth			equ		$f4
-bpl6ptl			equ		$f6
-bpl7pth			equ		$f8
-bpl7ptl			equ		$fa
-bpl8pth			equ		$fc
-bpl8ptl			equ		$fe
-spr0pth			equ		$120
-spr0ptl			equ		$122
-spr1pth			equ		$124
-spr1ptl			equ		$126
-spr2pth			equ		$128
-spr2ptl			equ		$12a
-spr3pth			equ		$12c
-spr3ptl			equ		$12e
-spr4pth			equ		$130
-spr4ptl			equ		$132
-spr5pth			equ		$134
-spr5ptl			equ		$136
-spr6pth			equ		$138
-spr6ptl			equ		$13a
-spr7pth			equ		$13c
-spr7ptl			equ		$13e
-
-
 SAVEREGS		MACRO
 				movem.l	d0-d7/a0-a6,-(a7)
 				ENDM
@@ -270,12 +197,7 @@ WTNOT			MACRO
 
 **
 
-;include "protectionprotection"
 				include	"macros.i"
-
-;wtclickk:
-; btst #6,$bfe001
-; bne.s wtclickk
 
 _start
 				move.w	(a0)+,LEVTOPLAY
@@ -283,23 +205,11 @@ _start
 
 				jsr		MakePatch
 
-;	FLASHER $0f0,$fff
-
-; PROTFCALC
-; PROTGCALC
-; PROTHCALC
-; PROTICALC
-; PROTKCALC
-; PROTLCALC
-; PROTMCALC
-
-
-
 				move.l	#_custom,a6				; NB V. IMPORTANT: A6=CUSTOM BASE
 				move.w	intenar(a6),_storeint
 				and.w	#$c000,_storeint
 
-				move.w	#31,SERPER(a6)			;19200 baud, 8 bits, no parity
+				move.w	#31,serper(a6)			;19200 baud, 8 bits, no parity
 
 				st		GOURSEL
 
@@ -334,7 +244,6 @@ _start
 					clr.b	PLR2JOY
 				ENDC
 
-; PRSDO
 				; allocate Level Data
 				move.l	#0,d1
 				move.l	#LEVELDATASize,d0
@@ -395,9 +304,6 @@ FASTBUFFERSize	equ		SCREENWIDTH*160			+ 15
 
 FASTBUFFER:		dc.l	0						; aligned address
 FASTBUFFERalloc: dc.l	0						; allocated address
-
-_storeint
-				dc.w	0
 
 * Load level into buffers.
 				clr.b	doanything
@@ -582,61 +488,6 @@ PLAYTHEGAME:
 				CALLEXEC AllocMem
 				move.l	d0,LEVELMUSIC
 
-				move.l	#_custom,a6
-
-; move.b LEVTOPLAY,d0
-; move.b d0,LEVA
-; move.b d0,LEVB
-; move.b d0,LEVC
-; move.b d0,LEVD
-; move.b d0,LEVE
-
-
-; move.l #LEVELDATAD,LEVELDATA
-; move.l #LEVELGRAPHICSD,LEVELGRAPHICS
-; move.l #LEVELCLIPSD,LEVELCLIPS
-
-; bra noload
-
-*********************************
-
-; move.l _DOSBase,a6
-; move.l #LLname,d1
-; move.l #1005,d2
-; jsr -30(a6)
-; move.l d0,LLhandle
-;
-; move.l _DOSBase,a6
-; move.l d0,d1
-; move.l #LINKS,d2
-; move.l #10000,d3
-; jsr -42(a6)
-;
-; move.l _DOSBase,a6
-; move.l LLhandle,d1
-; jsr -36(a6)
-
-********************************
-
-; move.l _DOSBase,a6
-; move.l #LLFname,d1
-; move.l #1005,d2
-; jsr -30(a6)
-; move.l d0,LLhandle
-
-; move.l _DOSBase,a6
-; move.l d0,d1
-; move.l #FLYLINKS,d2
-; move.l #10000,d3
-; jsr -42(a6)
-
-; move.l _DOSBase,a6
-; move.l LLhandle,d1
-; jsr -36(a6)
-
-************************
-********
-
 				moveq	#0,d1
 				move.b	LEVA,d1
 				sub.b	#'a',d1
@@ -666,8 +517,6 @@ PLAYTHEGAME:
 				lea		$0,a2
 				jsr		unLHA
 *************************************
-
-
 				move.l	#LDname,d1
 				move.l	#1005,d2
 				CALLDOS	Open
@@ -689,8 +538,6 @@ PLAYTHEGAME:
 				lea		$0,a2
 				jsr		unLHA
 *************************************
-
-********
 
 				move.l	#LGname,d1
 				move.l	#1005,d2
@@ -738,70 +585,21 @@ PLAYTHEGAME:
 
 
 noload:
-
-********
-
-; move.l _DOSBase,a6
-; move.l #Prefsname,d1
-; move.l #1005,d2
-; jsr -30(a6)
-; move.l d0,Prefshandle
-
-; move.l _DOSBase,a6
-; move.l d0,d1
-; move.l #Prefsfile,d2
-; move.l #50,d3
-; jsr -42(a6)
-
-; move.l _DOSBase,a6
-; move.l Prefshandle,d1
-; jsr -36(a6)
-
-*******
-
+				; What for?
 				IFNE	CD32VER
 				move.l	#115,d1
 				CALLDOS	Delay
 				ENDC
 
-
-; move.l _DOSBase,d0
-; move.l d0,a1
-; move.l 4.w,a6
-; jsr CloseLib(a6)
-
-				;FIXME another place with hw access
-			;	move.l	#_custom,a6
-
-charlie:
-; jmp  ENDGAMESCROLL
-
-;				move.w	#$87c0,dmacon(a6)
-
-;				move.w	#%1000000000100000,dmacon(a6)
-
-; move.w intenar(a6),saveinters
-
-;				move.w	#%00101111,intena(a6)
-
-;				move.w	#255,adkcon(a6)
-
-
-*** Put myself in supervisor mode
-
-				bra		blag
-; move.l $6c,d0
-; move.l #blag,$6c
-; move.w #$8010,intreq(a6)
+				bra		blag ; FIXME: why is this jumpp there?
 
 				rts
 
-saveit:			ds.l	10
 doslibname:		dc.b	'dos.library',0
 				even
 _DOSBase:		dc.l	0
 
-mors:			dc.w	0
+mors:			dc.w	0	; this seems to be some sort of game state (single player, multiplayer etc)
 
 LDname:			dc.b	'tkg2:levels/level_'
 LEVA:
@@ -855,17 +653,6 @@ KEYInt:
 				dc.l	key_interrupt
 
 blag:
-; move.w #$10,intreq(a6)
-; move.l d0,$6c
-; move.w #$7fff,intena(a6)
-
-; move.w #$20,$dff1dc
-
-; move.l 4.w,a6
-; lea VBLANKInt(pc),a1
-; moveq #INTB_COPER,d0
-; jsr _LVOAddIntServer(a6)
-
 ****************************
 * Initialize level
 ****************************
@@ -983,9 +770,6 @@ nomorethiszone:
 
 noclips:
 
-* Put in addresses of glowything
-
-
 ************************************
 
 ; cmp.b #'k',Prefsfile
@@ -1026,81 +810,6 @@ noclips:
 				move.l	#emptyend,Samp3endLEFT
 				move.l	#emptyend,Samp2endRIGHT
 				move.l	#emptyend,Samp3endRIGHT
-
-;??
-;				move.l	#nullline,d0
-;				move.w	d0,n1l
-;				swap	d0
-;				move.w	d0,n1h
-
-; Setting up panel at bottom?
-;				move.l	Panel,d0
-;				move.w	d0,p1l
-;				swap	d0
-;				move.w	d0,p1h
-;				swap	d0
-;				add.l	#40,d0
-;				move.w	d0,p2l
-;				swap	d0
-;				move.w	d0,p2h
-;				swap	d0
-;				add.l	#40,d0
-;				move.w	d0,p3l
-;				swap	d0
-;				move.w	d0,p3h
-;				swap	d0
-;				add.l	#40,d0
-;				move.w	d0,p4l
-;				swap	d0
-;				move.w	d0,p4h
-;				swap	d0
-;				add.l	#40,d0
-;				move.w	d0,p5l
-;				swap	d0
-;				move.w	d0,p5h
-;				swap	d0
-;				add.l	#40,d0
-;				move.w	d0,p6l
-;				swap	d0
-;				move.w	d0,p6h
-;				swap	d0
-;				add.l	#40,d0
-;				move.w	d0,p7l
-;				swap	d0
-;				move.w	d0,p7h
-;				swap	d0
-;				add.l	#40,d0
-;				move.w	d0,p8l
-;				swap	d0
-;				move.w	d0,p8h
-;
-;
-;				move.l	#FacePlace,d0
-;				move.w	d0,f1l
-;				swap	d0
-;				move.w	d0,f1h
-;				move.l	#FacePlace+32*24,d0
-;				move.w	d0,f2l
-;				swap	d0
-;				move.w	d0,f2h
-;				move.l	#FacePlace+32*24*2,d0
-;				move.w	d0,f3l
-;				swap	d0
-;				move.w	d0,f3h
-;				move.l	#FacePlace+32*24*3,d0
-;				move.w	d0,f4l
-;				swap	d0
-;				move.w	d0,f4h
-;				move.l	#FacePlace+32*24*4,d0
-;				move.w	d0,f5l
-;				swap	d0
-;				move.w	d0,f5h
-
-
-;				move.l	#bigfield,d0
-;				move.w	d0,ocl
-;				swap	d0
-;				move.w	d0,och
 
 				bset.b	#1,$bfe001
 
@@ -1177,18 +886,12 @@ scaledownlop:
 
 				move.l	#$dff000,a6
 
-;				move.w	#INTB_SETCLR!INTB_INTEN!INTB_PORTS,intena(a6)
 				; disable audio dma
 				move.w	#DMAF_AUDIO,dmacon(a6)
 				; enable audio dma
 				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_AUDIO,dmacon(a6)
 
-; bsr protinit
-
-
-; move.w #$20,$1dc(a6)	; BEAMCON Pal
-
-				move.w	#$0,_custom+potgo
+				move.w	#$0,potgo(a6)
 				move.w	#0,Conditions
 
 				cmp.b	#'n',mors
@@ -1259,9 +962,6 @@ scaledownlop:
 
 ; jmp end
 
-; move.l COPSCRN1,drawpt
-; move.l COPSCRN2,olddrawpt
-
 				jsr		CLEARKEYBOARD
 ; jsr MAKEBACKROUT
 
@@ -1273,26 +973,7 @@ scaledownlop:
 ; move.w #200,PLAYERTWOHEALTH
 ; move.w #200,PLAYERONEHEALTH
 
-; move.l #ANOTHERSUP,$80
-; trap #0
-; rts
-;
-				;FIXE not referenced?
-;ANOTHERSUP:
-
-				;CALLEXEC SuperState
-				;move.l	d0,SSTACK
-
-				;CACHE_FREEZE_OFF d2
-
-				; charlie
-				;DATA_CACHE_ON d2
-
 				DataCacheOn
-
-
-				;move.l	SSTACK,d0
-				;CALLEXEC UserState
 
 				move.l	#0,hitcol
 
@@ -1329,18 +1010,6 @@ scaledownlop:
 ;				move.w	#0,MIXCOLL
 
 NOCLTXT:
-
-				;CALLEXEC Forbid
-;	jsr	_LVODisable(a6)
-
-
-;	move.w	#%0111111111111111,intena+$dff000
-;	move.w	#%1000000011111111,intena+$dff000
-
-
-;charlie
-;				move.l	#PALETTEBIT,_custom+cop2lc		; wtf?
-;				move.l	#bigfield,_custom+cop1lc		; Point the copper at our copperlist.
 
 				;FIXME: need to load the game palette here?
 
@@ -1653,12 +1322,7 @@ lop:
 				bsr		SetupRenderbufferSize
 
 .noFullscreenSwitch
-				btst	#6,$bfe001				;  checking left mouse button?
-;charlie bne.b .nocop
 
-;charlie move.l #bigfield,$dff080    ; Point the copper at our copperlist.
-
-.nocop
 				move.l	#KeyMap,a5
 
 				cmp.b	#'n',mors
@@ -1758,23 +1422,10 @@ nofadedownhc:
 
 .nopause:
 
-				;FIXME: the drawpt/olddrawpt stuff can go
-				move.l	drawpt,d0
-				move.l	olddrawpt,drawpt
-				move.l	d0,olddrawpt
-
 ; Swap screen bitmaps
 				move.l	SCRNDRAWPT,d0
 				move.l	SCRNSHOWPT,SCRNDRAWPT
 				move.l	d0,SCRNSHOWPT
-
-; move.l d0,$dff084
-				move.l	drawpt,a3
-; move.l COPSCRNBUFF,a3
-				adda.w	#10,a3
-				move.l	a3,frompt
-				add.l	#104*4*40,a3
-				move.l	a3,midpt
 
 				cmp.b	#'s',mors
 				beq.s	nowaitslave
@@ -2849,10 +2500,6 @@ plr1only:
 ; adda.w #104*4,a3
 ; dbra d7,horl
 
-				move.l	#$dff000,a6
-
-; move.w #$300,col0(a6)
-
 				move.l	#KeyMap,a5
 				tst.b	$45(a5)
 				beq.s	noend
@@ -3685,11 +3332,6 @@ downmorerightFAT:
 ; Screenshot?
 SAVETHESCREEN:
 
-				;move.l	old,$dff080
-				;move.w	#$8020,$dff000+intena
-
-				;CALLINT	RethinkDisplay
-
 				move.l	#SAVENAME,d1
 				move.l	#1006,d2
 				CALLDOS	Open
@@ -3705,10 +3347,6 @@ SAVETHESCREEN:
 
 				move.l	#200,d1
 				CALLDOS	Delay
-
-				; FIXME
-				;move.w	#$0020,$dff000+intena
-				;move.l	#bigfield,$dff080
 
 				add.b	#1,SAVELETTER
 
@@ -4432,9 +4070,6 @@ GunSelected:	dc.b	0
 
 
 GunData:		dc.l	0
-
-
-;protA: dc.w 0
 
 Path:
 ; incbin "testpath"
@@ -5315,27 +4950,9 @@ nowaterfull:
 				bset.b	#1,$bfe001
 				rts
 
-;prot9: dc.w 0
-
-;TempBuffer: ds.l 100
-
-;prot8: dc.w 0
-
 ClipTable:		ds.l	30
 EndOfClipPt:	dc.l	0
 DOUPPER:		dc.w	0
-
-;RealTable:
-; dc.l prot1-78935450
-; dc.l prot2-78935450
-; dc.l prot3-78935450
-; dc.l prot4-78935450
-; dc.l prot5-78935450
-; dc.l prot6-78935450
-; dc.l prot7-78935450
-; dc.l prot8-78935450
-; dc.l prot9-78935450
-; dc.l protA-78935450
 
 dothisroom
 
@@ -6338,103 +5955,6 @@ OldEnergy:
 Ammo:			dc.w	63
 OldAmmo:		dc.w	63
 
-;FullEnergy:
-;; move.w #127,Energy
-;; move.w #127,OldEnergy
-;; move.l #health,a0
-;; move.l #borders,a1
-;; add.l #25*8*2+6,a1
-;; lea 2592(a1),a2
-;; move.w #127,d0
-;;PutInFull:
-;; move.b (a0)+,(a1)
-;; move.b (a0)+,8(a1)
-;; add.w #16,a1
-;; move.b (a0)+,(a2)
-;; move.b (a0)+,8(a2)
-;; add.w #16,a2
-;; dbra d0,PutInFull
-;
-;				rts
-;
-;;EnergyBar:
-;
-;				move.w	Energy,d0
-;				bgt.s	.noeneg
-;				move.w	#0,d0
-;.noeneg:
-;				move.w	d0,Energy
-;
-;				cmp.w	OldEnergy,d0
-;				bne.s	gottochange
-;
-;NoChange
-;				rts
-;
-;gottochange:
-;
-;				blt		LessEnergy
-;				cmp.w	#127,Energy
-;				blt.s	NotMax
-;				move.w	#127,Energy
-;NotMax:
-;
-;				move.w	Energy,d0
-;				move.w	OldEnergy,d2
-;				sub.w	d0,d2
-;				beq.s	NoChange
-;				neg.w	d2
-;
-;				move.w	#127,d3
-;				sub.w	d0,d3
-;
-;				move.l	#health,a0
-;				lea		(a0,d3.w*4),a0
-;; move.l #borders+25*16+6,a1
-;				lsl.w	#4,d3
-;				add.w	d3,a1
-;				lea		2592(a1),a2
-;
-;EnergyRise:
-;				move.b	(a0)+,(a1)
-;				move.b	(a0)+,8(a1)
-;				add.w	#16,a1
-;				move.b	(a0)+,(a2)
-;				move.b	(a0)+,8(a2)
-;				add.w	#16,a2
-;				subq	#1,d2
-;				bgt.s	EnergyRise
-;
-;				move.w	Energy,OldEnergy
-;
-;				rts
-;
-;LessEnergy:
-;				move.w	OldEnergy,d2
-;				sub.w	d0,d2
-;
-;				move.w	#127,d3
-;				sub.w	OldEnergy,d3
-;
-;; move.l #borders+25*16+6,a1
-;				asl.w	#4,d3
-;				add.w	d3,a1
-;				lea		2592(a1),a2
-;
-;EnergyDrain:
-;				move.b	#0,(a1)
-;				move.b	#0,8(a1)
-;				move.b	#0,(a2)
-;				move.b	#0,8(a2)
-;				add.w	#16,a1
-;				add.w	#16,a2
-;				subq	#1,d2
-;				bgt.s	EnergyDrain
-;
-;				move.w	Energy,OldEnergy
-;
-;				rts
-
 firstdigit:		dc.b	0
 secdigit:		dc.b	0
 thirddigit:		dc.b	0
@@ -6685,99 +6205,11 @@ NARRATOR:
 .NOCHARYET:
 				rts
 
-; cmp.w OldAmmo,d0
-; bne.s .gottochange
-;
 
 NARRTIME:		dc.w	5
 
 SCROLLCHARS:	incbin	"includes/scrollfont"
 
-.NoChange
-				rts
-
-.gottochange:
-
-				blt		LessAmmo
-				cmp.w	#63,Ammo
-				blt.s	.NotMax
-				move.w	#63,Ammo
-.NotMax:
-
-				move.w	Ammo,d0
-				move.w	OldAmmo,d2
-				sub.w	d0,d2
-				beq.s	.NoChange
-				neg.w	d2
-
-				move.w	#63,d3
-				sub.w	d0,d3
-
-				move.l	#Ammunition,a0
-				lea		(a0,d3.w*8),a0
-; move.l #borders+5184+25*16+1,a1
-				lsl.w	#5,d3
-				add.w	d3,a1
-				lea		2592(a1),a2
-
-AmmoRise:
-				move.b	(a0)+,(a1)
-				move.b	(a0)+,8(a1)
-				add.w	#16,a1
-				move.b	(a0)+,(a2)
-				move.b	(a0)+,8(a2)
-				add.w	#16,a2
-				move.b	(a0)+,(a1)
-				move.b	(a0)+,8(a1)
-				add.w	#16,a1
-				move.b	(a0)+,(a2)
-				move.b	(a0)+,8(a2)
-				add.w	#16,a2
-				subq	#1,d2
-				bgt.s	AmmoRise
-
-				move.w	Ammo,OldAmmo
-
-				rts
-
-
-LessAmmo:
-				move.w	OldAmmo,d2
-				sub.w	d0,d2
-
-				move.w	#63,d3
-				sub.w	OldAmmo,d3
-
-; move.l #borders++5184+25*16+1,a1
-				asl.w	#5,d3
-				add.w	d3,a1
-				lea		2592(a1),a2
-
-AmmoDrain:
-				move.b	#0,(a1)
-				move.b	#0,8(a1)
-				move.b	#0,(a2)
-				move.b	#0,8(a2)
-				add.w	#16,a1
-				add.w	#16,a2
-				move.b	#0,(a1)
-				move.b	#0,8(a1)
-				move.b	#0,(a2)
-				move.b	#0,8(a2)
-				add.w	#16,a1
-				add.w	#16,a2
-				subq	#1,d2
-				bgt.s	AmmoDrain
-
-				move.w	Ammo,OldAmmo
-
-				rts
-
-nulop:
-				move.w	#$0010,$dff000+intreq
-				rte
-
-doanything:		dc.w	0
 
 doanything:		dc.w	0			; does main game run?
 
@@ -6801,10 +6233,6 @@ end:
 				bne.s	.notsl
 				move.w	PLAYERTWOHEALTH,Energy
 .notsl:
-
-				move.l	drawpt,d0
-				move.l	olddrawpt,drawpt
-				move.l	d0,olddrawpt
 
 ; cmp.b #'b',Prefsfile+3
 ; bne.s .noback
@@ -6832,8 +6260,6 @@ playgameover:
 
 
 				jsr		mt_music
-
-
 
 				tst.b	reachedend
 				beq.s	playgameover
@@ -6881,7 +6307,6 @@ playwelldone:
 wevelost:
 
 ;				move.w	#$f,$dff000+dmacon
-;PROTICHECK a0
 
 				jmp		closeeverything
 
@@ -6916,9 +6341,6 @@ across:
 				add.w	#2,d1
 				dbra	d7,across
 				rts
-
-;string:
-;	dc.b	'credits',0
 
 ENDGAMESCROLL:
 				move.l	LEVELMUSIC,mt_data
@@ -7150,8 +6572,6 @@ ENDGAMETEXTy:
 				dc.b	0,1,"Pete Lyons                                                                      "
 				dc.b	0,0,"                                                                                "
 				dc.b	0,0,"                                                                                "
-
-
 ENDENDGAMETEXT:
 
 
@@ -10588,15 +10008,11 @@ VBlankInterrupt:
 
 .noint:
 				GETREGS
-;	move.w	#1024+'.',$dff030
 				lea _custom,a0		; place custom base into a0 (See autodocs for AddIntServer)
 				moveq	#1,d0
 				rts
 
 .routine
-;w move.w #$0010,$dff000+intreq
-
-
 ;FIXME:  Wait, does the whole game run as part of the VBLank (formerly copper interrupt)?
 				tst.b	doanything
 				bne		dosomething
@@ -12959,10 +12375,6 @@ BackPicture:
 EndBackPicture:
 				endc
 
-drawpt:			dc.l	0
-olddrawpt:		dc.l	0
-frompt:			dc.l	0
-
 SineTable:
 				incbin	"bigsine"	; sine/cosine << 15
 
@@ -13267,19 +12679,9 @@ TEXTSCRN:		dc.l	0
 
 
 				SECTION	ffff,DATA_C
-
 				cnop	0,8
-;borders:
-; incbin "newleftbord"
-; incbin "newrightbord"
 
-health:
-;incbin "healthstrip"
-Ammunition:
-;incbin "ammostrip"
-healthpal:
-;incbin "healthpal"
-PanelKeys:
+PanelKeys:			; I'm pretty sure these are not needed anymore, but there's code referencing it
 ;incbin "greenkey"
 ; incbin "redkey"
 ; incbin "yellowkey"
@@ -13346,73 +12748,12 @@ _GfxBase:		dc.l	0
 Panel:			dc.l	0
 
 				cnop	0,64
-TimerScr:
+TimerScr:		; Not needed(?), but still referenced but (inactive?) code
 ;ds.b 40*64
-
-scrntab:
-				ds.b	16
-val				SET		32
-				REPT	96
-				dc.b	val,val,val
-val				SET		val+1
-				ENDR
-				ds.b	16
-
-smallscrntab:
-val				SET		32
-				REPT	96
-				dc.b	val,val
-val				SET		val+1
-				ENDR
-
-				cnop	0,64
-scrn:
-				dc.l	0
-; incbin "includes/newborderraw"
-; ds.b 80
-scrn2:
-				dc.l	0
-
-;flib:
-; incbin "includes/newborderraw"
-; ds.b 80
-;flib2:
-; incbin "includes/newborderraw"
-; ds.b 80
-
-; incbin "includes/newborderraw"
-; ds.b 80
-
+scrn:			dc.l	0
+scrn2:			dc.l	0
 SCRNDRAWPT:		dc.l	0
 SCRNSHOWPT:		dc.l	0
-
-; dcb.l 8,$33333333
-; dc.l 0
-; dc.l 0
-;
-; dcb.l 8,$0f0f0f0f
-; dc.l 0
-; dc.l 0
-;
-; dcb.l 8,$00ff00ff
-; dc.l 0
-; dc.l 0
-;
-; dcb.l 8,$0000ffff
-; dc.l 0
-; dc.l 0
-;
-; dc.l 0,-1,0,-1,0,-1,0,-1
-; dc.l 0
-; dc.l 0
-;
-; dc.l -1,-1,0,0,-1,-1,0,0
-; dc.l 0
-; dc.l 0
-;
-; dc.l 0,0,-1,-1,-1,-1,-1,-1
-; dc.l 0
-; dc.l 0
 
 NumTimes:		dc.l	0
 TimeCount:		dc.l	0
@@ -13479,12 +12820,6 @@ COMPACTMAP:		ds.l	257
 BIGMAP:			ds.l	256*10
 
 				Section	Sounds,DATA_C
-
-nullcop:
-				dc.w	$106,$c40
-				dc.w	$180,0
-				dc.w	$100,$0
-				dc.w	$ffff,$fffe
 
 Scream:
 ; incbin "sounds/scream"
@@ -13710,11 +13045,6 @@ mt_getnew:
 				lea		mt_voice4(pc),a6
 				bsr		mt_playvoice
 				bra		mt_setdma
-
-;PROTCALC:
-;	include "protcalc.s"
-;	incbin "includes/protcalc.bin"
-;ENDPROTCALC:
 
 mt_playvoice:
 				move.l	(a0,d1.l),(a6)

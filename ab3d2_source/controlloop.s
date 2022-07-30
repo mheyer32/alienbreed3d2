@@ -42,23 +42,6 @@ TITLESCRNNAME2:	dc.b	'TKG2:includes/titlescrnraw1',0
 OPTSPRADDR:		dc.l	0
 TITLESCRNPTR:	dc.l	0
 
-
-
-;ProtValA: dc.l 0
-;ProtValB: dc.l 0
-;ProtValC: dc.l 0
-;ProtValD: dc.l 0
-;ProtValE: dc.l 0
-;ProtValF: dc.l 0
-;ProtValG: dc.l 0
-;ProtValH: dc.l 0
-;ProtValI: dc.l 0
-;ProtValJ: dc.l 0
-;ProtValK: dc.l 0
-;ProtValL: dc.l 0
-;ProtValM: dc.l 0
-;ProtValN: dc.l 0
-
 MASTERPLAYERONEHEALTH:
 				dc.w	0
 				dc.w	0
@@ -194,26 +177,6 @@ START:
 
 				move.b	#'n',mors
 
-************************************
-* TAKE OUT WHEN PLAYING MODULE AGAIN
-********************************
-;ProtChkBLev1:
-;	PRSDF
-;	PRSDE
-************************************
-
-; move.l #PROTCALLENC,a0
-; move.l #(ENDPROT-PROTCALLENC)/4-1,d1
-; move.l #$75055345,d0
-;codeitup:
-; sub.l d0,(a0)+
-; ror.l #1,d0
-; dbra d1,codeitup
-; rts
-
-;ProtChkCLev1:
-; PRSDA
-
 				move.l	#doslibname,a1
 				moveq	#0,d0
 				CALLEXEC OpenLibrary
@@ -309,14 +272,10 @@ START:
 				;move.w	#31,FADEAMOUNT
 				;bsr		FADEUPTITLE
 
-; PRSDB
-
 				jsr		LOAD_SFX
 				jsr		LOADWALLS
 				jsr		LOADFLOOR
 				jsr		LOADOBS
-
-; PRSDZ
 
 				ifeq	CHEESEY
 				move.l	#backpicname,a0
@@ -325,14 +284,8 @@ START:
 				jsr		QUEUEFILE
 				endc
 
-; IFNE CD32VER
-; PRSDD
-; ENDC
-
 ; jsr _StopPlayer
 ; jsr _RemPlayer
-; PRSDW
-; PRSDX
 
 
 ***********************************************
@@ -2577,17 +2530,7 @@ LEVELTEXTNAME:	dc.b	'TKG1:includes/TEXT_FILE'
 LEVELTEXT:
 				dc.l	0
 
-;dummycall
-; dc.w $4e75-123
-
-;protspace:
-; ds.l 200
-
-; include "level_blurb"
-
 font:
 				incbin	"starquake.font.bin"
-
-rain:			incbin	"optcop"
 
 				include	"menu/menunb.s"
