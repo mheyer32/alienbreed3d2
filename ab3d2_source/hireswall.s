@@ -1720,6 +1720,7 @@ simplewallPACK2:
 ; bra cliptop
 
 ; ATTENION: for some reason the order of these variables is important
+; There's code that expects	these in the right order to allow for movem
 				align	4
 BOTTOMY:		dc.w	0
 MIDDLEY:		dc.w	FS_HEIGHT/2
