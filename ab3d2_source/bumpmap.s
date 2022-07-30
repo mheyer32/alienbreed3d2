@@ -86,7 +86,7 @@ OneBelow:
 				addq	#4,a3
 
 				dbra	d7,.BumpAcross
-				CACHE_FREEZE_ON d2		; freeze instruction cache to keep inner loop
+				CACHE_FREEZE_ON d2				; freeze instruction cache to keep inner loop
 										; floor drawing code hot in cache
 				rts
 

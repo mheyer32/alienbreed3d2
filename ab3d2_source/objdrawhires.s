@@ -755,7 +755,7 @@ drawrightsideGLARE:
 				move.l	midobj(pc),a5
 				lea		(a5,d7.w*4),a5
 				swap	d7
-				add.l	a2,d7				; step fractional column
+				add.l	a2,d7					; step fractional column
 
 
 				move.l	WAD_PTR(PC),a0
@@ -884,20 +884,20 @@ BitMapObj:
 				bge.s	.okobtc
 				move.w	d2,d6
 .okobtc:
-				move.w	d6,objclipt	; top object clip
+				move.w	d6,objclipt				; top object clip
 
 				move.l	by3d,d6
 				sub.l	yoff,d6
 				divs	d1,d6
 				add.w	MIDDLEY,d6
-				cmp.w	d2,d6		; bottom of object over top of screen?
+				cmp.w	d2,d6					; bottom of object over top of screen?
 
 				ble		objbehind
 				cmp.w	d3,d6
 				ble.s	.okobbc
-				move.w	d3,d6		; clip bottom of object to lower clip
+				move.w	d3,d6					; clip bottom of object to lower clip
 .okobbc:
-				move.w	d6,objclipb	; bottom object clip
+				move.w	d6,objclipb				; bottom object clip
 
 				move.l	4(a1,d0.w*8),d0
 				move.w	AUXX,d2
@@ -914,7 +914,7 @@ BitMapObj:
 				moveq	#0,d6
 brighttoonot
 				sub.l	a4,a4
-				move.w	objscalecols(pc,d6.w*2),a4	; is this the table that scales vertically?
+				move.w	objscalecols(pc,d6.w*2),a4 ; is this the table that scales vertically?
 				bra		pastobjscale
 
 objscalecols:
@@ -952,10 +952,10 @@ objscalecols:
 				dcb.w	20,64*31
 
 WHICHLIGHTPAL:	dc.w	0
-FLIPIT:			dc.w	0	; BOOL flip on/off
+FLIPIT:			dc.w	0						; BOOL flip on/off
 FLIPPEDIT:		dc.w	0
-LIGHTIT:		dc.w	0	; BOOL Lighting for object on/off
-ADDITIVE:		dc.w	0	; BOOL Additive translucency for object on/off
+LIGHTIT:		dc.w	0						; BOOL Lighting for object on/off
+ADDITIVE:		dc.w	0						; BOOL Additive translucency for object on/off
 BASEPAL:		dc.l	0
 
 pastobjscale:
@@ -983,9 +983,9 @@ pastobjscale:
 				move.l	#Objects,a5
 				move.w	2(a0),d7
 				asl.w	#4,d7
-				adda.w	d7,a5		; a5 pointing to?
+				adda.w	d7,a5					; a5 pointing to?
 				asl.w	#4,d7
-				adda.w	d7,a6		; a6 pointing to?
+				adda.w	d7,a6					; a6 pointing to?
 
 				clr.b	LIGHTIT
 				clr.b	ADDITIVE
@@ -1009,8 +1009,8 @@ pastobjscale:
 .NOTALIGHT:
 
 				moveq	#0,d7
-				move.b	5(a0),d7		; current frame of animation
-				lea		(a6,d7.w*8),a6	; a6 pointing to frame?
+				move.b	5(a0),d7				; current frame of animation
+				lea		(a6,d7.w*8),a6			; a6 pointing to frame?
 
 				move.l	#consttab,a3
 
@@ -1039,18 +1039,18 @@ pastobjscale:
 
 				move.l	(a5)+,WAD_PTR
 				move.l	(a5)+,PTR_PTR
-				add.l	4(a5),a4			; a5: #Objects
+				add.l	4(a5),a4				; a5: #Objects
 				move.l	4(a5),BASEPAL
 
-				move.l	(a6),d7				; pointer to current frame
-				move.w	d7,DOWN_STRIP		; leftmost strip?
+				move.l	(a6),d7					; pointer to current frame
+				move.w	d7,DOWN_STRIP			; leftmost strip?
 				move.l	PTR_PTR,a5
 
 				tst.b	FLIPIT
 				beq.s	.nfl1
 
-				move.w	4(a6),d6			; mhhm, somehow this flips the frame?
-				add.w	d6,d6				; go to next frame and subtract
+				move.w	4(a6),d6				; mhhm, somehow this flips the frame?
+				add.w	d6,d6					; go to next frame and subtract
 				subq	#1,d6
 				lea		(a5,d6.w*4),a5
 
@@ -1176,17 +1176,17 @@ okrightside:
 				mulu	d7,d6
 				swap	d6
 				add.w	d6,d5
-				add.w	DOWN_STRIP(PC),d5	;d5 contains
+				add.w	DOWN_STRIP(PC),d5		;d5 contains
 											;top offset into
 											;strip?
 				add.l	#$80000000,d5
 
-				move.l	(a2),d7			; what is a2 pointing to?
+				move.l	(a2),d7					; what is a2 pointing to?
 				tst.b	FLIPIT
 				beq.s	.nfl3
 				neg.l	d7
 .nfl3:
-				move.l	d7,a2			; store fractional column offset
+				move.l	d7,a2					; store fractional column offset
 				moveq.l	#0,d7
 				move.l	a5,midobj
 				move.l	(a3),d2
@@ -1205,7 +1205,7 @@ drawrightside:
 				move.l	midobj(pc),a5
 				lea		(a5,d7.w*4),a5
 				swap	d7
-				add.l	a2,d7			; fractional column advance?
+				add.l	a2,d7					; fractional column advance?
 
 				move.l	WAD_PTR(PC),a0
 
@@ -1236,7 +1236,7 @@ drawrightside:
 				move.b	(a4,d0.w*2),(a6)
 .dontplotthisoneitsblack:
 				adda.w	#SCREENWIDTH,a6
-				add.l	d2,d6				; is d2 the vertical step, fraction|integer?
+				add.l	d2,d6					; is d2 the vertical step, fraction|integer?
 				addx.w	d2,d1
 				dbra	d4,.drawavertstrip
 				move.w	(a7)+,d4
@@ -1255,9 +1255,9 @@ SecThird:
 				beq.s	.dontplotthisoneitsblack
 				move.b	(a4,d0.w*2),(a6)
 .dontplotthisoneitsblack:
-				adda.w	#SCREENWIDTH,a6		; next line on screen
+				adda.w	#SCREENWIDTH,a6			; next line on screen
 				add.l	d2,d6
-				addx.w	d2,d1				; is d2 the vertical step, fraction|integer?
+				addx.w	d2,d1					; is d2 the vertical step, fraction|integer?
 				dbra	d4,.drawavertstrip
 				move.w	(a7)+,d4
 				dbra	d3,drawrightside
@@ -1276,7 +1276,7 @@ ThirdThird:
 .dontplotthisoneitsblack:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
-				addx.w	d2,d1				; is d2 the vertical dy/dt step, fraction|integer?
+				addx.w	d2,d1					; is d2 the vertical dy/dt step, fraction|integer?
 				dbra	d4,.drawavertstrip
 				move.w	(a7)+,d4
 				dbra	d3,drawrightside
@@ -2156,7 +2156,7 @@ PolygonObj:
 
 				move.w	MIDDLEY,POLYMIDDLEY
 
-				move.w	(a0)+,d0		; object Id?
+				move.w	(a0)+,d0				; object Id?
 				move.l	ObjectPoints,a4
 
 				move.w	(a4,d0.w*8),thisxpos
@@ -2366,18 +2366,18 @@ BOTPART:
 				add.w	d2,a3
 				subq	#1,d5
 
-				move.l	#boxrot,a4		; temp storage for rotated points?
+				move.l	#boxrot,a4				; temp storage for rotated points?
 
 				move.w	ObjAng,d2
-				sub.w	#2048,d2		; 90deg
-				sub.w	angpos,d2		; view angle
-				and.w	#8191,d2		; wrap 360deg
+				sub.w	#2048,d2				; 90deg
+				sub.w	angpos,d2				; view angle
+				and.w	#8191,d2				; wrap 360deg
 				move.l	#SineTable,a2
-				lea		(a2,d2.w),a5	; sine of object rotation wrt view
+				lea		(a2,d2.w),a5			; sine of object rotation wrt view
 				move.l	#boxbrights,a6
 
-				move.w	(a5),d6			; sine of object rottaion
-				move.w	2048(a5),d7		; cosine of object rotation. WHY DOES IT NOT NEED OOB/WRAP CHECK?
+				move.w	(a5),d6					; sine of object rottaion
+				move.w	2048(a5),d7				; cosine of object rotation. WHY DOES IT NOT NEED OOB/WRAP CHECK?
 										; bigsine is 16kb, so 8192 words
 										; this may mean the table is covering 4pi/720deg
 rotobj:
@@ -2405,25 +2405,25 @@ rotobj:
 ; swap d2
 ; move.w d6,d3	; newy
 
-				muls	d7,d4	; z * cos
-				muls	d6,d2	; x * (sin << 16)
+				muls	d7,d4					; z * cos
+				muls	d6,d2					; x * (sin << 16)
 				sub.l	d4,d2
 				asr.l	#8,d2
-				asr.l	#1,d2	; ((z * cos - x * sin) << 16) >> 9 = (z * cos - x * sin) * 128
-				move.l	d2,(a4)+	; store x' in boxpts
+				asr.l	#1,d2					; ((z * cos - x * sin) << 16) >> 9 = (z * cos - x * sin) * 128
+				move.l	d2,(a4)+				; store x' in boxpts
 				ext.l	d3
-				asl.l	#6,d3	; y * 64
+				asl.l	#6,d3					; y * 64
 				move.l	d3,(a4)+
-				move.w	(a3),d2		; PtsPtr -> xpt
-				move.w	4(a3),d4	; PtsPtr -> zpt
-				muls	d6,d4	; z * sin
-				muls	d7,d2	; x * cos
-				add.l	d2,d4	; (z * sin  + x * cos) << 16
+				move.w	(a3),d2					; PtsPtr -> xpt
+				move.w	4(a3),d4				; PtsPtr -> zpt
+				muls	d6,d4					; z * sin
+				muls	d7,d2					; x * cos
+				add.l	d2,d4					; (z * sin  + x * cos) << 16
 ; add.l d4,d4
-				swap	d4		; (z * sin  + x * cos)
-				move.w	d4,(a4)+	; store z' in boxpts
+				swap	d4						; (z * sin  + x * cos)
+				move.w	d4,(a4)+				; store z' in boxpts
 
-				addq	#6,a3		; next point
+				addq	#6,a3					; next point
 				dbra	d5,rotobj
 
 
@@ -2433,44 +2433,44 @@ rotobj:
 				move.l	#boxrot,a2
 				move.l	#boxonscr,a3
 				move.l	#boxbrights,a6
-				move.w	2(a0),d2	; object y pos?
+				move.w	2(a0),d2				; object y pos?
 				subq	#1,d7
 
-				asl.l	#1,d0		;
+				asl.l	#1,d0					;
 ; Projection for polygonal objects to screen here?
 				tst.b	FULLSCR
 				beq.s	smallconv
 
 				move.w	d1,d3
 				asl.w	#1,d1
-				add.w	d3,d1		; d1 * 3  because 288 is ~1.5times larger than 196?
+				add.w	d3,d1					; d1 * 3  because 288 is ~1.5times larger than 196?
 									; if I change this, 3d objects start "swimming" with regard to the world
 
 				ext.l	d2
-				asl.l	#7,d2		; (view_ypos *128 - yoff) *2
+				asl.l	#7,d2					; (view_ypos *128 - yoff) *2
 				sub.l	yoff,d2
 				asl.l	#1,d2
 .convtoscr
-				move.l	(a2),d3		;
-				add.l	d0,d3		; x'' = xpos_of_view + x
-				move.l	d3,(a2)+	; '
-				move.l	(a2),d4		;
-				add.l	d2,d4		; y'' = y' + ypos_obj
-				move.l	d4,(a2)+	;
-				move.w	(a2),d5		; z'
-				add.w	d1,d5		; z'' = z' + zpos_of_view
+				move.l	(a2),d3					;
+				add.l	d0,d3					; x'' = xpos_of_view + x
+				move.l	d3,(a2)+				; '
+				move.l	(a2),d4					;
+				add.l	d2,d4					; y'' = y' + ypos_obj
+				move.l	d4,(a2)+				;
+				move.w	(a2),d5					; z'
+				add.w	d1,d5					; z'' = z' + zpos_of_view
 				ble		.ptbehind
 				move.w	d5,(a2)+
 
 				; FIXME: can we factor the 3/2 scaling into Z somewhere else?
-				add.w	d5,d5		; z'' * 2  to achieve  3/2 scaling for fullscreen
+				add.w	d5,d5					; z'' * 2  to achieve  3/2 scaling for fullscreen
 
 				move.l	d4,d6
 				add.l	d6,d6
-				add.l	d6,d4		; y'' * 3
-				divs	d5,d4		; ys = (x*3)/(z*2)
+				add.l	d6,d4					; y'' * 3
+				divs	d5,d4					; ys = (x*3)/(z*2)
 
-				move.l	d3,d6		;
+				move.l	d3,d6					;
 				add.l	d6,d6
 				add.l	d6,d3		; x'' * 3
 				divs	d5,d3		; xs = (x*3)/(z*2)
@@ -2490,11 +2490,11 @@ rotobj:
 				bra		DONECONV
 
 smallconv
-				asl.w	#1,d1		; d1 * 2
+				asl.w	#1,d1					; d1 * 2
 				ext.l	d2
 				asl.l	#7,d2
 				sub.l	yoff,d2
-				asl.l	#1,d2		; (d2*128 - yoff) *2
+				asl.l	#1,d2					; (d2*128 - yoff) *2
 .convtoscr
 				move.l	(a2),d3
 				add.l	d0,d3
@@ -4151,7 +4151,7 @@ thislineflatgour:
 				addq	#4,a1
 				rts
 
-				section bss
+				section	bss
 
 offleftby:		dc.w	0
 Left:			dc.w	0
@@ -4169,8 +4169,8 @@ POLYOBJECTS:
 				ds.l	40
 
 			; FIMXE: screenconv stores word sized points, why are they using ds.l here?
-boxonscr:		ds.l	250*2	; projected 2D points in screenspace
-boxrot:			ds.l	250*3	; rotated 3D points in X/Z plane (y pointing up)
+boxonscr:		ds.l	250*2					; projected 2D points in screenspace
+boxrot:			ds.l	250*3					; rotated 3D points in X/Z plane (y pointing up)
 
 boxbrights:		ds.w	250
 
@@ -4194,4 +4194,4 @@ TexturePal:		dc.l	0
 
 testval:		dc.l	0
 
-				section code
+				section	code

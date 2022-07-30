@@ -202,16 +202,16 @@ FILTER			macro
 				endm
 
 SETCOPLOR0		macro
-				movem.l a0/a1/a6,-(a7)
+				movem.l	a0/a1/a6,-(a7)
 				subq.l	#4,a7
 				move.l	a7,a1
-				move.w	#\1,(a1)		; a1 pointer to list of colors
+				move.w	#\1,(a1)				; a1 pointer to list of colors
 				move.l	MainScreen,a0
-				lea		sc_ViewPort(a0),a0 ; viewport
-				moveq	#1,d0			; count
+				lea		sc_ViewPort(a0),a0		; viewport
+				moveq	#1,d0					; count
 				CALLGRAF LoadRGB4
-				addq.l #4,a7
-				movem.l (a7)+,a0/a1/a6
+				addq.l	#4,a7
+				movem.l	(a7)+,a0/a1/a6
 				endm
 
 BLACK			macro
