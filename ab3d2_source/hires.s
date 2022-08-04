@@ -1243,27 +1243,7 @@ lop:
 ;				move.l	d0,hitcol
 nofadedownhc:
 
-				sub.l	#256*4*3+2+2+4+4,a7		; reserve stack for 256 color entries + numColors + firstColor
-				move.l	a7,a1
-				move.l	a7,a0
-				lea		Palette,a2
-				move.w	#256,(a0)+				; number of entries
-				move.w	#0,(a0)+				; start index
-				move.w	#256*3-1,d0				; 768 entries
-
-				; Palette stores each entry as word
-.setCol			clr.l	d1
-				move.w	(a2)+,d1
-				ror.l	#8,d1
-				move.l	d1,(a0)+
-				dbra	d0,.setCol
-				clr.l	(a0)					; terminate list
-
-				move.l	MainScreen,a0
-				lea		sc_ViewPort(a0),a0
-				CALLGRAF LoadRGB32				; a1 still points to start of palette
-
-				add.l	#256*4*3+2+2+4+4,a7		;restore stack
+				bsr		LoadMainPalette
 
 				st		READCONTROLS
 				move.l	#$dff000,a6
@@ -2490,6 +2470,30 @@ SetupRenderbufferSize:
 				jsr		WIPEDISPLAY
 				move.l	SCRNDRAWPT,a0
 				jsr		WIPEDISPLAY
+				rts
+
+LoadMainPalette:
+				sub.l	#256*4*3+2+2+4+4,a7		; reserve stack for 256 color entries + numColors + firstColor
+				move.l	a7,a1
+				move.l	a7,a0
+				lea		Palette,a2
+				move.w	#256,(a0)+				; number of entries
+				move.w	#0,(a0)+				; start index
+				move.w	#256*3-1,d0				; 768 entries
+
+				; Palette stores each entry as word
+.setCol			clr.l	d1
+				move.w	(a2)+,d1
+				ror.l	#8,d1
+				move.l	d1,(a0)+
+				dbra	d0,.setCol
+				clr.l	(a0)					; terminate list
+
+				move.l	MainScreen,a0
+				lea		sc_ViewPort(a0),a0
+				CALLGRAF LoadRGB32				; a1 still points to start of palette
+
+				add.l	#256*4*3+2+2+4+4,a7		;restore stack
 				rts
 
 ; include "demo/system/keyboard.s"
