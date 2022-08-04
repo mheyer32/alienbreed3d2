@@ -22,6 +22,7 @@
 				include	graphics/layers.i
 				include	graphics/rastport.i
 				include	graphics/text.i
+				include graphics/videocontrol.i
 				include	graphics/view.i
 
 				include	hardware/blit.i

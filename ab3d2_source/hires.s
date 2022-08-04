@@ -2241,25 +2241,9 @@ nochunk:
 
 				not.b	DOUBLEHEIGHT
 
-				; Change copperlist for repeating every second line
-				; FIXME: can this be achieved via user copperlist?
-;				beq.s	singlepixheight
-;				move.w	#-40,d0
-;				move.w	#40,d1
-;singlepixheight:
-;
-;				move.l	#SCRMODULOS,a0
-;				move.w	#115,d2
-;putinmode:
-;				move.w	d0,6(a0)
-;				move.w	d0,6+4(a0)
-;				move.w	d1,6+16(a0)
-;				move.w	d1,6+16+4(a0)
-;				add.w	#32,a0
-;				dbra	d2,putinmode
-
 				; Check renderbuffer setup variables and clear screen
 				bsr		SetupRenderbufferSize
+				jsr		SetupDoubleheightCopperlist
 
 				bra		notdoubheight2
 
@@ -3248,6 +3232,7 @@ SAVELETTER:		dc.b	'd',0
 
 				even
 
+				include "screensetup.s"
 				include	"chunky.s"
 
 
