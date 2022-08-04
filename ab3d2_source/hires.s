@@ -6107,16 +6107,18 @@ doanything:		dc.w	0						; does main game run?
 
 end:
 ; 	_break #0
-
-				move.l	#$dff000,a6
 				clr.b	dosounds
 				clr.b	doanything
+
+				; waiting for serial transmit complete?
 ;waitfortop22:
 ;				btst.b	#0,intreqrl(a6)
 ;				beq		waitfortop22
 ;waitfortop222:
 ;				btst.b	#0,intreqrl(a6)
 ;				beq		waitfortop222
+
+				; Audio off
 ;				move.w	#$f,$dff000+dmacon
 
 
@@ -6160,7 +6162,7 @@ playgameover:
 
 
 wevewon:
-
+				; Disable audio DMA
 ;				move.w	#$f,$dff000+dmacon
 
 				bsr		EnergyBar
@@ -6197,7 +6199,7 @@ playwelldone:
 				jmp		ENDGAMESCROLL
 
 wevelost:
-
+				; disable Audio DMA
 ;				move.w	#$f,$dff000+dmacon
 
 				jmp		closeeverything
@@ -12596,52 +12598,56 @@ SCROLLSCRN:		ds.l	20*16
 
 				section	code,code
 
+				; FIMXE: this is not what I was thinking it is.
+				; This does not exit the whole game, but just playing
+				; the game. After that it'll return to the main menu.
+
 closeeverything:
 
 				jsr		mt_end
 
-				move.l	_DOSBase,d0
-				move.l	d0,a1
-				CALLEXEC CloseLibrary
-
-				; FIXME: need to test if it even got installed
-				lea		VBLANKInt,a1
-				moveq	#INTB_VERTB,d0
-				CALLEXEC RemIntServer
-
-				IFEQ	CD32VER
-				lea		KEYInt,a1
-				moveq	#INTB_PORTS,d0
-				CALLEXEC RemIntServer
-				ENDC
-
+;				move.l	_DOSBase,d0
+;				move.l	d0,a1
+;				CALLEXEC CloseLibrary
+;
+;				; FIXME: need to test if it even got installed
+;				lea		VBLANKInt,a1
+;				moveq	#INTB_VERTB,d0
+;				CALLEXEC RemIntServer
+;
+;				IFEQ	CD32VER
+;				lea		KEYInt,a1
+;				moveq	#INTB_PORTS,d0
+;				CALLEXEC RemIntServer
+;				ENDC
+;
 				jsr		RELEASELEVELMEM
 				jsr		RELEASESCRNMEM
-
-				move.l	MiscResourceBase,d0
-				beq.s	.noMiscResourceBase
-				move.l	d0,a6
-				; FIXME: would need to check if we actually allocated them successfully
-				move.l	#MR_SERIALPORT,d0
-				jsr		_LVOFreeMiscResource(a6)
-				move.l	#MR_SERIALBITS,d0
-				jsr		_LVOFreeMiscResource(a6)
-
-				clr.l	MiscResourceBase		; Resource library doesn't have a 'close'?
-
-.noMiscResourceBase
-
-				move.l	PotgoResourceBase,d0
-				beq.s	.noPotgoResource
-				move.l	d0,a6
-				move.l	#%110000000000,d0
-				jsr		_LVOFreePotBits(a6)
-
-
-
-.noPotgoResource
-
-				move.l	#0,d0					; FIXME indicate failure
+;
+;				move.l	MiscResourceBase,d0
+;				beq.s	.noMiscResourceBase
+;				move.l	d0,a6
+;				; FIXME: would need to check if we actually allocated them successfully
+;				move.l	#MR_SERIALPORT,d0
+;				jsr		_LVOFreeMiscResource(a6)
+;				move.l	#MR_SERIALBITS,d0
+;				jsr		_LVOFreeMiscResource(a6)
+;
+;				clr.l	MiscResourceBase		; Resource library doesn't have a 'close'?
+;
+;.noMiscResourceBase
+;
+;				move.l	PotgoResourceBase,d0
+;				beq.s	.noPotgoResource
+;				move.l	d0,a6
+;				move.l	#%110000000000,d0
+;				jsr		_LVOFreePotBits(a6)
+;
+;
+;
+;.noPotgoResource
+;
+;				move.l	#0,d0					; FIXME indicate failure
 				rts
 
 
