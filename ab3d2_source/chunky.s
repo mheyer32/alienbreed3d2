@@ -31,6 +31,9 @@ NEWCHUNKY
 				tst.b	DOUBLEWIDTH
 				bne		.doublewidthFullscreen
 
+				tst.b	DOUBLEHEIGHT
+				bne		.doubleheightFullscreen
+
 				move.w	#SCREENWIDTH,d0
 				move.w	WIDESCRN,d3				; height of black border top/bottom
 				move.w	#232,d1
@@ -46,7 +49,7 @@ NEWCHUNKY
 				move.l	SCRNDRAWPT,a1
 				jsr		c2p1x1_8_c5_040
 
-				rts
+.nothingLeft	rts
 
 ; d0.w	chunkyx [chunky-pixels] (even multiple of 32)
 ; d1.w	chunkyy [chunky-pixels]
@@ -57,6 +60,9 @@ NEWCHUNKY
 ; d6.l	chunkylen [bytes] -- offset between one row and the next in chunkybuffer
 
 .doublewidthFullscreen
+				tst.b	DOUBLEHEIGHT
+				bne.s	.doublewidthheightFullscreen
+
 				move.w	#FS_WIDTH/2,d0
 				move.w	WIDESCRN,d3				; height of black border top/bottom
 				move.w	#FS_HEIGHT,d1
@@ -77,9 +83,55 @@ NEWCHUNKY
 
 				rts
 
+.doublewidthheightFullscreen
+				move.w	#FS_WIDTH/2,d0
+				move.w	WIDESCRN,d3				; height of black border top/bottom
+				move.w	#FS_HEIGHT/2,d1
+				sub.w	d3,d1					; top letterbox
+				sub.w	d3,d1					; bottom letterbox: d1: number of lines
+				ble		.nothingLeft
+				moveq.l	#0,d2
+				move.l	#(SCREENWIDTH/8)*2,d4
+				move.l	#(SCREENWIDTH/8)*256,d5
+				move.l	#SCREENWIDTH*2,d6
+				jsr		c2p2x1_8_c5_gen_init
+
+				; scroffsy only accounts for the Y offset in the destination buffer
+				move.l	FASTBUFFER,a0
+				mulu.w	d6,d3
+				lea		(a0,d3.w),a0
+				move.l	SCRNDRAWPT,a1
+				jsr		c2p2x1_8_c5_gen
+
+				rts
+
+
+.doubleheightFullscreen
+				moveq.l	#0,d0					; x
+				move.w	WIDESCRN,d1				; y, height of black border top/bottom
+				add.w	d1,d1
+				move.l	#FS_WIDTH,d2			; width
+				move.l	#FS_HEIGHT/2,d3			; height
+				sub.w	d1,d3					; top letterbox
+				sub.w	d1,d3					; bottom letterbox: d3: number of lines
+				ble		.nothingLeft
+				move.l	#SCREENWIDTH*2,d4		; chunkymod
+				move.l	#(SCREENWIDTH/8)*2,d5	; bpl rowmod
+				move.l	#(SCREENWIDTH/8)*256,d6	; bplsize
+
+				move.l	FASTBUFFER,a0
+				move.l	SCRNDRAWPT,a1
+				jsr		c2p_rect
+
+				rts
+
+
+
 .smallscreen
 				tst.b	DOUBLEWIDTH
-				bne.s	.doublewidthSmallscreen
+				bne		.doublewidthSmallscreen
+				tst.b	DOUBLEHEIGHT
+				bne		.doubleheightSmallscreen
 
 				moveq.l	#0,d0					; x
 				move.w	WIDESCRN,d1				; y, height of black border top/bottom
@@ -100,6 +152,8 @@ NEWCHUNKY
 				rts
 
 .doublewidthSmallscreen
+				tst.b	DOUBLEHEIGHT
+				bne.s	.doublewidthheightSmallscreen
 
 				move.w	#SMALL_WIDTH/2,d0
 				move.w	WIDESCRN,d3				; height of black border top/bottom
@@ -124,6 +178,54 @@ NEWCHUNKY
 
 				rts
 
+
+.doublewidthheightSmallscreen
+
+				move.w	#SMALL_WIDTH/2,d0
+				move.w	WIDESCRN,d3				; height of black border top/bottom
+				add.w	d3,d3
+				move.w	#SMALL_HEIGHT/2,d1
+				sub.w	d3,d1					; top letterbox
+				sub.w	d3,d1					; bottom letterbox: d1: number of lines
+				ble		.nothingLeft
+				moveq.l	#0,d2
+				move.l	#(SCREENWIDTH/8)*2,d4
+				move.l	#(SCREENWIDTH/8)*256,d5
+				move.l	#SCREENWIDTH*2,d6
+				jsr		c2p2x1_8_c5_gen_init
+
+				; scroffsy only accounts for the Y offset in the destination buffer
+				move.l	FASTBUFFER,a0
+				mulu.w	d6,d3
+				lea		(a0,d3.w),a0
+				move.l	SCRNDRAWPT,a1
+				; top left of small render window in chipmem
+				add.l	#(SCREENWIDTH/8)*20+(64/8),a1
+
+				jsr		c2p2x1_8_c5_gen
+
+				rts
+
+.doubleheightSmallscreen
+				moveq.l	#0,d0					; x
+				move.w	WIDESCRN,d1				; y, height of black border top/bottom
+				add.w	d1,d1
+				move.l	#SMALL_WIDTH,d2			; width
+				move.l	#SMALL_HEIGHT/2,d3		; height
+				sub.w	d1,d3					; top letterbox
+				sub.w	d1,d3					; bottom letterbox: d3: number of lines
+				ble		.nothingLeft
+				move.l	#(SCREENWIDTH)*2,d4		; chunkymod
+				move.l	#(SCREENWIDTH/8)*2,d5	; bpl rowmod
+				move.l	#(SCREENWIDTH/8)*256,d6	; bplsize
+
+				move.l	FASTBUFFER,a0
+				move.l	SCRNDRAWPT,a1
+				add.l	#(SCREENWIDTH/8)*20+(64/8),a1 ; top of regular small screen
+														; c2p_rect will apply d1 offset ontop
+				jsr		c2p_rect
+
+				rts
 
 ; a0 src chunky ptr
 ; a1 dst chipmem ptr
