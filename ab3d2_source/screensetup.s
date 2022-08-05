@@ -31,7 +31,7 @@ OpenMainScreen:
 				add.l	#(256*(320/8)),d0
 				dbra	d1,.storePlanePtr
 
-				sub.l	a0,a0
+				lea		MainNewScreen,a0
 				lea		MainScreenTags,a1
 				CALLINT	OpenScreenTagList
 				tst.l	d0
@@ -128,6 +128,21 @@ MainScreenTags	dc.l	SA_Width,320
 				dc.l	SA_AutoScroll,0
 				dc.l	SA_FullPalette,1
 				dc.l	TAG_END,0
+
+				align	4
+MainNewScreen	dc.w	0						; ns_LeftEdge
+				dc.w	0						; ns_TopEdge
+				dc.w	320						; ns_Width
+				dc.w	256						; ns_Height
+				dc.w	8						; ns_Depth
+				dc.b	0						; ns_DetailPen
+				dc.b	0						; ns_BlockPen
+				dc.w	0						; ns_ViewModes
+				dc.w	CUSTOMSCREEN!SCREENQUIET; ns_Type
+				dc.l	0						; ns_Font
+				dc.l	0						; ns_DefaultTitle
+				dc.l	0						; ns_Gadgets
+				dc.l	0						; ns_CustomBitMap
 
 				align	4
 MainWindowTags	dc.l	WA_Left,0
