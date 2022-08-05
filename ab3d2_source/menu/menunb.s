@@ -242,7 +242,7 @@ MODIT			MACRO
 
 
 				rts
-;			a b c d e f
+;						a b c d e f
 .variables:		dc.w	54,97,2,94,66,23,0,0	; Table A
 				dc.w	61,78,247,622,59,324,0,0 ; Table B
 				dc.w	34,76,99,168,43,66,0,0	; Table C
@@ -288,9 +288,10 @@ mnu_copycredz:	lea		mnu_frame,a0
 				rts
 
 mnu_clearscreen:
-				;bsr.w	mnu_fadeout
+				bsr.w	mnu_fadeout
 				clr.l	main_vblint				; prevent VBL kicking off new blits
 				WAITBLIT
+				CALLGRAF WaitTOF
 				move.l	MenuWindow,d0
 				beq.s	.noWindow
 				move.l	d0,a0
@@ -310,7 +311,9 @@ mnu_setscreen:
 .setPlane		move.l	#mnu_morescreen,(a0)+	; the hardcoded background pattern
 				dbra	d0,.setPlane
 
-				sub.l	a0,a0
+				CALLGRAF WaitTOF
+
+				lea		MainNewScreen,a0
 				lea		ScreenTags,a1
 				CALLINT	OpenScreenTagList
 				move.l	d0,MenuScreen
@@ -341,10 +344,11 @@ mnu_setscreen:
 				;CALLINT ChangeWindowBox
 
 				bsr.w	mnu_init
-				bsr.w	mnu_setpalette
+				clr.w	mnu_fadefactor
+				bsr.w	mnu_fade
 
 				move.l	#mnu_vblint,main_vblint
-				;bsr.w	mnu_fadein
+				bsr.w	mnu_fadein
 				rts
 
 mnu_vblint:		bsr.w	mnu_movescreen
@@ -589,104 +593,88 @@ mnu_createpalette:
 				rts
 
 
-mnu_fadespeed	=		16
+mnu_fadespeed	equ		16
 
 mnu_fadein:		clr.w	mnu_fadefactor
 				moveq.l	#256/mnu_fadespeed-1,d0
 .loop:			move.l	d0,-(a7)
-.wsync:			cmp.b	#$80,_custom+vhposr
-				blt.s	.wsync
-				cmp.b	#$90,_custom+vhposr
-				bgt.s	.wsync
+
+				; Ramp up at discreet steps
+				CALLGRAF WaitTOF
 				bsr.w	mnu_fade
-.wsync2:		cmp.b	#$a0,_custom+vhposr
-				blt.s	.wsync2
+				CALLGRAF WaitTOF
+
 				add.w	#mnu_fadespeed,mnu_fadefactor
 				move.l	(a7)+,d0
 				dbra	d0,.loop
+
+				; One pass to make sure we're hitting the RGB * 1.0 case
 				move.w	#255,mnu_fadefactor
-.wsync3:		cmp.b	#$80,_custom+vhposr
-				blt.s	.wsync3
-				cmp.b	#$90,_custom+vhposr
-				bgt.s	.wsync3
+				CALLGRAF WaitTOF
 				bsr.w	mnu_fade
 				rts
 
-mnu_fadeout:	move.w	#255,mnu_fadefactor
+mnu_fadeout:	move.w	#256,mnu_fadefactor
 				moveq.l	#256/mnu_fadespeed-1,d0
 .loop:			move.l	d0,-(a7)
-;		bsr.w	mnu_docursor
-.wsync:			cmp.b	#$80,_custom+vhposr
-				blt.s	.wsync
-				cmp.b	#$90,_custom+vhposr
-				bgt.s	.wsync
+
+				; Ramp down at discreet steps
+				CALLGRAF WaitTOF
 				bsr.w	mnu_fade
-.wsync2:		cmp.b	#$a0,_custom+vhposr
-				blt.s	.wsync2
+				CALLGRAF WaitTOF
+
 				sub.w	#mnu_fadespeed,mnu_fadefactor
 				move.l	(a7)+,d0
 				dbra	d0,.loop
+
+				; One pass to make sure we're hitting the RGB * 0.0 case
 				clr.w	mnu_fadefactor
-.wsync3:		cmp.b	#$80,_custom+vhposr
-				blt.s	.wsync3
-				cmp.b	#$90,_custom+vhposr
-				bgt.s	.wsync3
+				CALLGRAF WaitTOF
 				bsr.w	mnu_fade
 				rts
 
 mnu_fadefactor:	dc.w	0
 
 mnu_fade:		lea		mnu_palette,a2
-				moveq.l	#7,d0
-				lea		mnu_colptrs+2,a0
-				lea		mnu_colptrs+2+33*4,a1
-				move.w	mnu_fadefactor,d7
-				move.l	#$f0f0f0,d5
-				move.l	#$ff,d6
-.bankloop:		moveq.l	#31,d1
-				addq.l	#4,a0
-				addq.l	#4,a1
-.colloop:		moveq.l	#0,d4
-				move.l	(a2)+,d2
 
-				REPT	2
-				move.l	d2,d3
-				and.w	d6,d3
-				mulu	d7,d3
-				divu	d6,d3
-				move.b	d3,d4
-				ror.l	#8,d4
-				ror.l	#8,d2
-				ENDR
-				move.l	d2,d3
-				and.w	d6,d3
-				mulu	d7,d3
-				divu	d6,d3
-				move.b	d3,d4
-				ror.l	#8,d4
-				ror.l	#8,d4
-				move.l	d4,d3
-				and.l	d5,d3
-				lsr.l	#4,d3					; x0x0x
-				lsl.b	#4,d3					; x0xx0
-				lsl.w	#4,d3					; xxx00
-				lsr.l	#8,d3					; 00xxx
-				and.l	#$f0f0f,d4
-				move.w	d3,(a0)
-				lsl.b	#4,d4					; x0xx0
-				lsl.w	#4,d4					; xxx00
-				lsr.l	#8,d4					; 00xxx
-				addq.l	#4,a0
-				move.w	d4,(a1)
-				addq.l	#4,a1
-				dbra	d1,.colloop
-				add.l	#33*4,a0
-				add.l	#33*4,a1
-				dbra	d0,.bankloop
+				move.w	mnu_fadefactor,d3
+				sub.l	#256*4*3+2+2+4+4,a7		; reserve stack for 256 color entries + numColors + firstColor
+				move.l	a7,a1
+				move.l	a7,a0
+				move.w	#256,(a0)+				; number of entries
+				move.w	#0,(a0)+				; start index
 
+				move.w	#256-1,d0
+
+.setCol			move.l	(a2)+,d1
+				move.l	d1,d2
+				andi.l	#$00FF0000,d2
+				swap	d2
+				mulu.w	d3,d2					; bits 16-23 end up in 24-31
+				swap	d2
+				move.l	d2,(a0)+
+
+				move.l	d1,d2
+				andi.l	#$0000FF00,d2
+				mulu.w	d3,d2
+				lsl.l	#8,d2					; shift up to 24-31
+				move.l	d2,(a0)+				; this has some stuff in lower word, butt hey'll be discarded
+
+				andi.l	#$000000FF,d1
+				mulu.w	d3,d1
+				swap	d1
+				move.l	d1,(a0)+				; same here
+
+				dbra	d0,.setCol
+
+				clr.l	(a0)					; terminate list
+
+				move.l	MenuScreen,a0
+				lea		sc_ViewPort(a0),a0
+				CALLGRAF LoadRGB32				; a1 still points to start of palette
+
+				add.l	#256*4*3+2+2+4+4,a7		;restore stack
 				rts
-
-
 
 
 mnu_printxy:;in:a0,d0,d1=Text ptr,XPos,YPos (XPos in words YPos in pixels)
@@ -2167,7 +2155,7 @@ mnu_fontpal:	incbin	"menu/font16x16.pal2"
 mnu_firepal:	incbin	"menu/firepal.pal2"
 mnu_backpal:	incbin	"menu/back.pal"
 
-mnu_palette:	ds.l	256
+mnu_palette:	ds.l	256						; 4byte per pixel, 24bit used
 
 mnu_frame:		incbin	"menu/credits_only.raw"
 
@@ -2233,9 +2221,6 @@ WTagScreenPtr	dc.l	0						; will fill in screen pointer later
 MenuWindow		dc.l	0
 
 				section	data_c,data_c
-
-mnu_copper:
-mnu_colptrs:	ds.l	(32+1)*8*2+1
 
 				cnop	64,64					; align for fetch mode 3
 mnu_screen:		incbin	"menu/back2.raw"		; 4 color background
