@@ -2381,7 +2381,7 @@ noend:
 
 ; change this for quick exit, charlie
 zzzz:
-; bra end
+;				 bra end	; immediately return to main menu for testing
 
 				bne.s	noexit
 				add.w	#2,TELVAL
@@ -8005,7 +8005,7 @@ doneclip:
 				move.w	d1,d0					; current line
 				bne.s	.notzero
 				moveq	#1,d0					; at least start at line 1 ?!
-											; We later divide  by d0, so make sure its not 0
+												; We later divide  by d0, so make sure its not 0
 .notzero
 				muls	linedir,d1
 				add.l	d1,a6					; renderbuffer start address
@@ -9848,21 +9848,18 @@ VBlankInterrupt:
 				beq.s	.nodec
 				subq.l	#1,timer
 .nodec:
-
 				SAVEREGS
-				jsr		.routine
+				bsr.s	.routine
 
 				move.l	main_vblint,d0
 				beq.s	.noint
 				move.l	d0,a0
 				jsr		(a0)
-
 .noint:
 				GETREGS
 				lea		_custom,a0				; place custom base into a0 (See autodocs for AddIntServer)
 				moveq	#1,d0
 				rts
-
 .routine
 ;FIXME:  Wait, does the whole game run as part of the VBLank (formerly copper interrupt)?
 				tst.b	doanything

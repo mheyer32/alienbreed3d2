@@ -918,9 +918,6 @@ RELEASEFLOORMEM:
 				CALLEXEC FreeMem
 				rts
 
-COPSCR1:		dc.l	0
-COPSCN2:		dc.l	0
-
 RELEASESCRNMEM:
 
 				rts

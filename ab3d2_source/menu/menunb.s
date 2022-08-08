@@ -238,11 +238,8 @@ MODIT			MACRO
 				move.w	d6,d0
 				rts
 
-				ENDC
 
-
-				rts
-;						a b c d e f
+		a b c d e f
 .variables:		dc.w	54,97,2,94,66,23,0,0	; Table A
 				dc.w	61,78,247,622,59,324,0,0 ; Table B
 				dc.w	34,76,99,168,43,66,0,0	; Table C
@@ -254,6 +251,8 @@ MODIT			MACRO
 ;	dc.l	643*2000
 				dc.w	643
 				dc.l	999
+
+				ENDC
 
 mnu_getrnd:		move.w	_custom+joy0dat,d0
 				add.w	_custom+joy1dat,d0
