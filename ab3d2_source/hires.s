@@ -4966,7 +4966,7 @@ itsafloor:
 
 ; FIXME: Indeed, it seems for A1200  with no fastram and its 68020, with its tiny
 ; instruction cache it made sense to freeze the ICache after the first iteration
-; of floor drawing to keep the innermost loop in cache and thus require no less bus accesses
+; of floor drawing to keep the innermost loop in cache and thus require less bus accesses
 ; when churning out the floor pixels.
 ;
 ; I had removed many CACHE_FREEZE_OFF calls from the code - need to reinstate those.
@@ -7800,7 +7800,7 @@ movespd:		dc.w	0
 largespd:		dc.l	0
 disttobot:		dc.w	0
 
-OneOverN:		;		1/N						* 16384
+OneOverN:		; 1/N	* 16384
 				dc.w	0						;16384/0 not defined
 val				SET		1
 				REPT	255
@@ -8097,8 +8097,9 @@ noclipleft:
 				;divs.w	d0,d7		; View2FloorDist * 256 / currentline
 				;ext.l	d7
 
-				mulu.w	OneOverN(pc,d0.w*2),d7	;
-				lsr.l	#6,d7
+				mulu.w	OneOverN(pc,d0.w*2),d7	;  View2FloorDist * 64 * 16384 / currentline
+				lsr.l	#8,d7
+				lsr.l	#4,d7
 
 				; for some reason important to write.l here
 				move.l	d7,d0					; Z of current screen line projected to floor
@@ -8166,12 +8167,21 @@ dofloornoclip:
 
 				move.l	a6,a3
 				movem.l	d0/d7/a2/a4/a5/a6,-(a7)
-				move.l	a2,d7
-				asl.l	#2,d7
-				ext.l	d0
-				divs.l	d0,d7
+
+				;move.l	a2,d7
+				;asl.l	#2,d7
+				;ext.l	d0
+				;divs.l	d0,d7
+
+				move.l	 a2,d7
+				mulu.w	OneOverN(pc,d0.w*2),d7	;
+				asr.l	#8,d7
+				asr.l	#4,d7
+
 				move.l	d7,d0
+
 				jsr		(a5)
+
 				movem.l	(a7)+,d0/d7/a2/a4/a5/a6
 				sub.w	#1,disttobot
 				move.w	linedir(pc),d3
@@ -8226,12 +8236,22 @@ noclipleftGOUR:
 				move.w	d2,rightedge
 
 				move.l	a2,d2
-				asl.l	#2,d2
-				ext.l	d0
-				divs.l	d0,d2
+
+				;asl.l	#2,d2
+				;ext.l	d0
+				;divs.l	d0,d2
+				;move.l	d2,dst
+				;asr.l	#7,d2
+				;asr.l	#2,d2
+
+				mulu.w	OneOverN(pc,d0.w*2),d2	;
+				asr.l	#8,d2
+				asr.l	#4,d2
+
 				move.l	d2,dst
 				asr.l	#7,d2
 				asr.l	#2,d2
+
 ; addq #5,d2
 ; add.w lighttype,d2
 
@@ -8324,6 +8344,9 @@ dontdrawfloorGOUR:
 
 REFPTR:			dc.l	0
 
+
+; Gouraud floor line drawing
+
 dofloornoclipGOUR:
 ; move.w (a2)+,d0
 				move.w	rightsidetab-leftsidetab(a4),d2
@@ -8335,9 +8358,15 @@ dofloornoclipGOUR:
 				sub.w	d1,d2
 
 				move.l	a2,d6
-				asl.l	#2,d6
-				ext.l	d0
-				divs.l	d0,d6
+
+;				asl.l	#2,d6
+;				ext.l	d0
+;				divs.l	d0,d6
+
+				mulu.w	OneOverN(pc,d0.w*2),d6
+				asr.l	#8,d6
+				asr.l	#4,d6		; from n << 20 down to n << 8
+
 				move.l	d6,d5
 				asr.l	#7,d5
 				asr.l	#2,d5
@@ -8421,6 +8450,7 @@ dists:
 ; incbin "floordists"
 drawit:			dc.w	0
 
+				align 4
 LineToUse:		dc.l	0
 
 ***************************
