@@ -7695,25 +7695,6 @@ groundfloor:
 				move.l	d7,szoff
 				bra		pastscale
 
-; why is this code here in the middle of nowhere, followed by data?
-; could this be form of self modifying code? I.e. stick the code here and copy it
-; over into relevant places on demand
-				asr.l	#3,d1
-				asr.l	#3,d2
-				asr.l	#2,d1
-				asr.l	#2,d2
-				asr.l	#1,d1
-				asr.l	#1,d2
-scaleprogfrom
-				nop
-				nop
-				asl.l	#1,d1
-				asl.l	#1,d2
-				asl.l	#2,d1
-				asl.l	#2,d2
-				asl.l	#3,d1
-				asl.l	#3,d2
-
 top:			dc.w	0
 bottom:			dc.w	0
 ypos:			dc.l	0
