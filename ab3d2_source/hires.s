@@ -2122,65 +2122,8 @@ nodrawp2:
 				tst.b	REALMAPON
 				beq.s	.nomap
 				bsr		DoTheMapWotNastyCharlesIsForcingMeToDo
+
 .nomap
-				move.w	WIDESCRN,d7				; height of black border top/bottom
-
-				tst.b	FULLSCR
-				beq		nobigconv
-
-				; setup for "fullscreen"
-				move.l	FASTBUFFER,a0
-				; add.l #SCREENWIDTH*2*20,a0
-				move.w	d7,d6
-				muls	#SCREENWIDTH,d6
-				add.l	d6,a0					; a0 Ptr to start of rendered image
-				move.l	SCRNDRAWPT,a1			;
-				move.w	d7,d6
-				muls	#40,d6
-				add.l	d6,a1
-				add.l	#2,a1					; indent by 16 pixel border, a1 chipmem ptr of top left corner
-
-				move.l	#(FS_WIDTH/8)-1,d0		; FS_WIDTH pixel is width of rendered image (2x 16pixel borders)
-				move.l	#231,d1					; 232 lines vertically
-				sub.w	d7,d1					; top letterbox
-				sub.w	d7,d1					; bottom letterbox: d1: number of lines
-				blt		nochunk
-				move.w	#(SCREENWIDTH-FS_WIDTH),d2 ; modulo chunky
-				move.w	#4,d3					; modulo chipmem
-
-				bra		donebigconv
-
-				; setup for small renderbox
-nobigconv:
-
-				move.l	FASTBUFFER,a0
-				move.w	d7,d6					; top of rendered image (letterbox border on top)
-				muls	#SCREENWIDTH,d6			; number of pixels
-				add.l	d6,a0					; start of rendered frame data
-				move.l	SCRNDRAWPT,a1			; chipmem ptr
-				add.l	#40*20,a1				; add 20 lines down,
-				move.w	d7,d6
-				muls	#40,d6
-				add.l	d6,a1					; letter box offset into chipmem
-				move.l	#(SMALL_WIDTH/8)-1,d0
-				move.l	#SMALL_HEIGHT-1,d1
-				sub.w	d7,d1
-				sub.w	d7,d1					; 160 lines minus the top/bottom black border
-				blt		nochunk
-				move.w	#(SCREENWIDTH-SMALL_WIDTH),d2 ; src chunky modulo
-				move.w	#16,d3					; dst chipmem modulo
-donebigconv
-
-				tst.b	DOUBLEHEIGHT
-				beq.s	.nodoub
-				asr.w	#1,d1					; height/2
-				blt		nochunk
-				add.w	#SCREENWIDTH,d2			; this skips every second line in src
-				add.w	#40,d3					; skip every second line in dst
-.nodoub:
-
-				move.b	DOUBLEWIDTH,d4			;
-
 				move.b	PLR1_TELEPORTED,d5
 				clr.b	PLR1_TELEPORTED
 				cmp.b	#'s',mors
@@ -2190,7 +2133,7 @@ donebigconv
 .notplr2
 				jsr		CHUNKYTOPLANAR
 
-nochunk:
+
 				move.l	#KeyMap,a5
 				tst.b	$4a(a5)
 				beq		.nosmallscr
