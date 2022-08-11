@@ -12011,46 +12011,13 @@ FOUNDACHAN:
 ; move.w #$8010,$dff000+intena
 				rts
 
+				section bss,bss
 SampleList:
-				dc.l	Scream,EndScream
-				dc.l	Shoot,EndShoot
-				dc.l	Munch,EndMunch
-				dc.l	PooGun,EndPooGun
-				dc.l	Collect,EndCollect
-;5
-				dc.l	DoorNoise,EndDoorNoise
-				dc.l	0,0
-				dc.l	Stomp,EndStomp
-				dc.l	LowScream,EndLowScream
-				dc.l	BaddieGun,EndBaddieGun
-;10
-				dc.l	SwitchNoise,EndSwitch
-				dc.l	Reload,EndReload
-				dc.l	NoAmmo,EndNoAmmo
-				dc.l	Splotch,EndSplotch
-				dc.l	SplatPop,EndSplatPop
-;15
-				dc.l	Boom,EndBoom
-				dc.l	Hiss,EndHiss
-				dc.l	Howl1,EndHowl1
-				dc.l	Howl2,EndHowl2
-				dc.l	Pant,EndPant
-;20
-				dc.l	Whoosh,EndWhoosh
-				dc.l	ROAR,EndROAR
-				dc.l	whoosh,Endwhoosh
-				dc.l	0,0
-				dc.l	0,0
-				dc.l	0,0
-				dc.l	0,0
-				dc.l	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-				dc.l	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-				dc.l	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-				dc.l	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+				ds.l	133
 
-				dc.l	0
+storeval:		ds.w	1
 
-storeval:		dc.w	0
+				section code,code
 
 				include	"wallchunk.s"
 				include	"newloadfromdisk.s"
@@ -12646,86 +12613,9 @@ COMPACTMAP:		ds.l	257
 
 BIGMAP:			ds.l	256*10
 
-				Section	Sounds,DATA_C
-
-Scream:
-; incbin "sounds/scream"
-; ds.w 100
-EndScream:
-LowScream:
-; incbin "sounds/lowscream"
-; ds.w 100
-EndLowScream:
-BaddieGun:
-; incbin "sounds/baddiegun"
-EndBaddieGun:
-bass:
-; incbin "sounds/backbass+drum"
-bassend:
-Shoot:
-; incbin "sounds/fire!"
-EndShoot:
-Munch:
-; incbin "sounds/munch"
-EndMunch:
-PooGun:
-; incbin "sounds/shoot.dm"
-EndPooGun:
-Collect:
-; incbin "sounds/collect"
-EndCollect:
-DoorNoise:
-; incbin "sounds/newdoor"
-EndDoorNoise:
-Stomp:
-; incbin "sounds/footstep3"
-EndStomp:
-SwitchNoise:
-; incbin "sounds/switch"
-EndSwitch:
-Reload:
-; incbin "sounds/switch1.sfx"
-EndReload:
-
 CHEATFRAME:
 				dc.b	26,20,33,27,17,12
 ENDCHEAT:
-
-NoAmmo:
-; incbin "sounds/noammo"
-EndNoAmmo:
-Splotch:
-; incbin "sounds/splotch"
-EndSplotch:
-SplatPop:
-; incbin "sounds/splatpop"
-EndSplatPop:
-Boom:
-; incbin "sounds/boom"
-EndBoom:
-Hiss:
-; incbin "sounds/newhiss"
-EndHiss:
-Howl1:
-; incbin "sounds/howl1"
-EndHowl1:
-Howl2:
-; incbin "sounds/howl2"
-EndHowl2:
-Pant:
-; incbin "sounds/pant"
-EndPant:
-Whoosh:
-; incbin "sounds/whoosh"
-EndWhoosh:
-ROAR:
-; incbin "sounds/bigscream"
-EndROAR
-whoosh:
-; incbin "sounds/flame"
-Endwhoosh:
-
-				SECTION	music,code
 
 UseAllChannels:	dc.w	0
 
