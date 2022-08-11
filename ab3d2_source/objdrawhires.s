@@ -4151,19 +4151,19 @@ thislineflatgour:
 				addq	#4,a1
 				rts
 
-				section	bss
+offleftby:		ds.w	1
+Left:			ds.w	1
+Right:			ds.w	1
 
-offleftby:		dc.w	0
-Left:			dc.w	0
-Right:			dc.w	0
+				section	bss,bss
 
 PointAndPolyBrights:
 				ds.l	4*16
 
 
-POINTER_TO_POINTERS: dc.l 0
-START_OF_OBJ:	dc.l	0
-num_points:		dc.w	0
+POINTER_TO_POINTERS: ds.l 1
+START_OF_OBJ:	ds.l	1
+num_points:		ds.w	1
 
 POLYOBJECTS:
 				ds.l	40
@@ -4174,7 +4174,7 @@ boxrot:			ds.l	250*3					; rotated 3D points in X/Z plane (y pointing up)
 
 boxbrights:		ds.w	250
 
-boxang:			dc.w	0
+boxang:			ds.w	1
 
 				ds.w	SCREENWIDTH*4
 PolyBotTab:		ds.w	SCREENWIDTH*8
@@ -4183,15 +4183,15 @@ PolyTopTab:		ds.w	SCREENWIDTH*8
 				ds.w	SCREENWIDTH*4
 
 offset:
-				dc.w	0
+				ds.w	1
 ;timer:
-				dc.w	0
+				ds.w	1
 
 Objects:		ds.l	38*4
 
-TextureMaps:	dc.l	0
-TexturePal:		dc.l	0
+TextureMaps:	ds.l	1
+TexturePal:		ds.l	1
 
-testval:		dc.l	0
+testval:		ds.l	1
 
-				section	code
+				section	code,code

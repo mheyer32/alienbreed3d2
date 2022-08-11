@@ -55,6 +55,8 @@ scrheight		EQU		80
 intreqrl		equ		$01f
 
 
+				section code,code
+
 _start
 				move.w	(a0)+,LEVTOPLAY
 
@@ -12365,11 +12367,11 @@ LINKS:			dc.l	0
 FLYLINKS:		dc.l	0
 *************************************************************
 
-				section	bss
+				section	bss,bss
 consttab:
 				ds.b	65536
 
-				section	Scrn,CODE
+				section	code,code
 
 *******************************************************************
 
@@ -12415,15 +12417,17 @@ LINKFILE:
 
 ;brightentab:
 ; incbin "brightenfile"
-				section	bss
+				section	bss,bss
 WorkSpace:
 				ds.l	8192
 
-				section	code
+				section	data,data
 waterfile:
 				incbin	"waterfile"
 
 Palette			incbin	"256pal"
+
+				section code,code
 
 hitcol:			dc.l	0
 
@@ -12447,7 +12451,7 @@ endtestscroll:
 TEXTSCRN:		dc.l	0
 
 
-				SECTION	ffff,DATA_C
+				SECTION	bss_c,bss_c
 				cnop	0,8
 
 PanelKeys:		;		I'm pretty sure these are not needed anymore, but there's code referencing it
@@ -12466,7 +12470,6 @@ null4:			ds.w	500
 				CNOP	0,64
 SCROLLSCRN:		ds.l	20*16
 
-; SECTION .text,CODE
 ********************************************
 * Stuff you don't have to worry about yet. *
 ********************************************
@@ -13129,7 +13132,7 @@ LEVELMUSIC:		dc.l	0
 ;/* End of File */
 mt_data:		dc.l	0
 
-				section	music,DATA_C
+				section	data_c,data_c
 
 tstchip:		dc.l	0						; not sure what this is; it seems to be used as timing
 								; device. I.e. by accessing chipmap, we throttle the CPU
@@ -13139,7 +13142,7 @@ gameover:
 welldone:
 				incbin	"includes/quietwelldone"
 
-				section	.text,CODE
+				section code,code
 				cnop	0,4
 				include	"serial_nightmare.s"
 
