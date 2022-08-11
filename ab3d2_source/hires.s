@@ -2635,8 +2635,8 @@ CLIPANDDRAW:
 				asr.w	#1,d2
 .noDoubleWidth	tst.b	DOUBLEHEIGHT
 				beq.s	.noDoubleHeight
-				asr.w	#1,d1
-				asr.w	#1,d3
+				;asr.w	#1,d1					; DOUBLEHIGHT renderbuffer is still full height
+				;asr.w	#1,d3
 .noDoubleHeight
 				move.w	MAPBRIGHT,d5			; is this the map zoom?
 
@@ -7761,10 +7761,13 @@ pastscale:
 ; That's why there's the gymnastics with ; (MIDDLEY - N) to transform the
 ; screen clipping coordinates into "ceiling coordinates"
 ; This turns the 'top' variable actually into the bottommost Y of the ceiling.
-				sub.w	#SCREENWIDTH,a6
 
 				move.w	MIDDLEY,d7
-				subq	#1,d7
+				btst	#0,d7
+				bne.s	.evenMiddleRoof
+				sub.w	#SCREENWIDTH,a6			; with regular nx1 rendering, we usually start at an odd line for ceiling rendering
+
+.evenMiddleRoof	subq	#1,d7
 				sub.w	d1,d7
 				move.w	d7,disttobot
 
@@ -7784,6 +7787,7 @@ pastscale:
 				cmp.w	d3,d7
 				blt		.doneclip
 				move.w	d3,d7
+
 				bra		.doneclip
 
 ; Its a floor, clip it to top/bottom
@@ -7791,7 +7795,12 @@ pastscale:
 
 .clipfloor:
 				move.w	BOTTOMY,d7
-				sub.w	MIDDLEY,d7				;
+				move.w	MIDDLEY,d4
+				btst	#0,d4
+				beq.s	.evenMiddleFloor
+				add.w	#SCREENWIDTH,a6
+
+.evenMiddleFloor sub.w	d4,d7
 				subq	#1,d7
 				sub.w	d1,d7
 				move.w	d7,disttobot
@@ -7817,36 +7826,34 @@ pastscale:
 				move.w	d4,d7					; bottom = botclip
 .noclipbotfloor:
 
-.doneclip:
+
+.doneclip:		;addq.w	#1,d1					; snap start of floor to even line - needed?!
+				;and.w	#~1,d1
+
 				lea		(a4,d1*2),a4			; adress of first floor/roof line
+
 				addq	#1,d7
 				sub.w	d1,d7					; number of lines
 
-;moveq #0,d0
-				asr.w	#1,d1					; top line/2 for DOUBLEHEIGHT
-; addx d0,d1
+				asr.w	#1,d7					; number of lines /2 for DOUBLEHEIGHT
+				ble		predontdrawfloor		; nothing left?
 
-; move.l #dists,a2
+				asr.w	#1,d1					; top line/2 for DOUBLEHEIGHT
+
 				move.w	View2FloorDist,d0		; ydist<<6 to floor/ceiling	; distance of viewer to floor
-;				muls	#64,d0				; ydist<<12 to floor/ceiling
 				ext.l	d0
 				lsl.l	#6,d0
 				move.l	d0,a2					; a2
-; muls #25,d0
-; adda.w d0,a2
-; lea (a2,d1*2),a2
-				asr.w	#1,d7					; number of lines /2 for DOUBLEHEIGHT
-				ble		predontdrawfloor		; nothing left?
 
 				move.w	d1,d0
 				bne.s	.notzero
 				moveq	#1,d0					; always start at line 1?
 .notzero
-				add.w	d0,d0					; start line# *2
+				add.w	d0,d0					; start line# *2 DOUBLEHEIGHT
 
-				muls	linedir,d1				; top line in screen times renderwidth (typical 320)
+				muls.w	linedir,d1				; top line in screen times renderwidth (typical 320)
 				add.l	d1,a6					; this is where we start writing?
-; sub.l d1,REFPTR
+
 				move.l	TexturePal,a1
 				add.l	#256*32,a1
 				move.l	LineToUse,a5
@@ -10618,6 +10625,7 @@ control2:
 				move.w	d0,SMIDDLEY
 				muls	#SCREENWIDTH,d0
 				move.l	d0,SBIGMIDDLEY
+
 				jsr		PLR2_fall
 
 				move.l	PLR2s_xspdval,d6
