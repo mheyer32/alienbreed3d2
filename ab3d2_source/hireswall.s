@@ -1722,14 +1722,14 @@ simplewallPACK2:
 ; ATTENION: for some reason the order of these variables is important
 ; There's code that expects	these in the right order to allow for movem
 				align	4
+TOTHEMIDDLE:	dc.w	0
 BOTTOMY:		dc.w	0
 MIDDLEY:		dc.w	FS_HEIGHT/2
-BIGMIDDLEY:		dc.l	SCREENWIDTH*FS_HEIGHT/2
 TOPOFFSET:		dc.w	0
+BIGMIDDLEY:		dc.l	SCREENWIDTH*FS_HEIGHT/2
 SMIDDLEY:		dc.w	FS_HEIGHT/2
-SBIGMIDDLEY:	dc.l	SCREENWIDTH*FS_HEIGHT/2
 STOPOFFSET:		dc.w	0
-TOTHEMIDDLE:	dc.w	0
+SBIGMIDDLEY:	dc.l	SCREENWIDTH*FS_HEIGHT/2		; renderbuffer offset to middle line
 
 gotoend:
 				tst.b	DOUBLEHEIGHT
