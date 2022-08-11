@@ -12628,9 +12628,9 @@ mt_init:
 				add.l	#$3b8,a1
 				moveq	#$7f,d0
 				moveq	#0,d1
-mt_loop:move.l	d1,d2
+mt_loop:		move.l	d1,d2
 				subq.w	#1,d0
-mt_lop2:move.b	(a1)+,d1
+mt_lop2:		move.b	(a1)+,d1
 				cmp.b	d2,d1
 				bgt.s	mt_loop
 				dbf		d0,mt_lop2
@@ -12712,13 +12712,13 @@ mt_arpeggio:
 				move.b	$3(a6),d0
 				lsr.b	#4,d0
 				bra.s	mt_arp3
-mt_arp1:moveq	#0,d0
+mt_arp1:		moveq	#0,d0
 				move.b	$3(a6),d0
 				and.b	#$f,d0
 				bra.s	mt_arp3
-mt_arp2:move.w	$10(a6),d2
+mt_arp2:		move.w	$10(a6),d2
 				bra.s	mt_arp4
-mt_arp3:asl.w	#1,d0
+mt_arp3:		asl.w	#1,d0
 				moveq	#0,d1
 				move.w	$10(a6),d1
 				lea		mt_periods(pc),a0
@@ -12730,7 +12730,7 @@ mt_arploop:
 				addq.l	#2,a0
 				dbf		d7,mt_arploop
 				rts
-mt_arp4:move.w	d2,$6(a5)
+mt_arp4:		move.w	d2,$6(a5)
 				rts
 
 mt_getnew:
@@ -12878,7 +12878,7 @@ mt_nex:			clr.w	mt_pattpos
 ;	cmp.b	mt_data+$3b6,d1
 ;	bne.s	mt_endr
 ;	move.b	mt_data+$3b7,mt_songpos
-mt_endr:tst.b	mt_break
+mt_endr:		tst.b	mt_break
 				bne.s	mt_nex
 				movem.l	(a7)+,d0-d4/a0-a3/a5-a6
 				rts
@@ -12918,7 +12918,7 @@ mt_myslide:
 				bgt.s	mt_myok
 				move.w	$18(a6),$10(a6)
 				clr.w	$18(a6)
-mt_myok:move.w	$10(a6),$6(a5)
+mt_myok:		move.w	$10(a6),$6(a5)
 				rts
 mt_mysub:
 				sub.w	d0,$10(a6)
@@ -12951,7 +12951,7 @@ mt_vi:			move.b	$1b(a6),d0
 				bra.s	mt_vib2
 mt_vibmin:
 				sub.w	d2,d0
-mt_vib2:move.w	d0,$6(a5)
+mt_vib2:		move.w	d0,$6(a5)
 				move.b	$1a(a6),d0
 				lsr.w	#$2,d0
 				and.w	#$3c,d0
@@ -12993,7 +12993,7 @@ mt_volslide:
 				cmp.w	#$40,$12(a6)
 				bmi.s	mt_vol2
 				move.w	#$40,$12(a6)
-mt_vol2:move.w	$12(a6),d0
+mt_vol2:		move.w	$12(a6),d0
 				move.w	d0,$8(a5)
 				rts
 
@@ -13004,7 +13004,7 @@ mt_voldown:
 				sub.w	d0,$12(a6)
 				bpl.s	mt_vol3
 				clr.w	$12(a6)
-mt_vol3:move.w	$12(a6),d0
+mt_vol3:		move.w	$12(a6),d0
 				move.w	d0,$8(a5)
 				rts
 
@@ -13018,7 +13018,7 @@ mt_portup:
 				bpl.s	mt_por2
 				and.w	#$f000,$10(a6)
 				or.w	#$71,$10(a6)
-mt_por2:move.w	$10(a6),d0
+mt_por2:		move.w	$10(a6),d0
 				and.w	#$fff,d0
 				move.w	d0,$6(a5)
 				rts
@@ -13033,7 +13033,7 @@ mt_portdown:
 				bmi.s	mt_por3
 				and.w	#$f000,$10(a6)
 				or.w	#$358,$10(a6)
-mt_por3:move.w	$10(a6),d0
+mt_por3:		move.w	$10(a6),d0
 				and.w	#$fff,d0
 				move.w	d0,$6(a5)
 				rts
@@ -13074,18 +13074,18 @@ mt_setvol:
 				cmp.b	#$40,$3(a6)
 				ble.s	mt_vol4
 				move.b	#$40,$3(a6)
-mt_vol4:move.b	$3(a6),d0
+mt_vol4:		move.b	$3(a6),d0
 				move.w	d0,$8(a5)
 				rts
 mt_setspeed:
 				cmp.b	#$1f,$3(a6)
 				ble.s	mt_sets
 				move.b	#$1f,$3(a6)
-mt_sets:move.b	$3(a6),d0
+mt_sets:		move.b	$3(a6),d0
 				beq.s	mt_rts2
 				move.b	d0,mt_speed
 				clr.b	mt_counter
-mt_rts2:rts
+mt_rts2:		rts
 
 mt_sin:
 				DC.b	$00,$18,$31,$4a,$61,$78,$8d,$a1,$b4,$c5,$d4,$e0,$eb,$f4,$fa,$fd
