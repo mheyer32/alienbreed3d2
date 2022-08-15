@@ -8030,9 +8030,9 @@ noclipleft:
 				;divs.w	d0,d7		; View2FloorDist * 256 / currentline
 				;ext.l	d7
 
+				lsr.l	#4,d7
 				mulu.w	OneOverN(pc,d0.w*2),d7	;  View2FloorDist * 64 * 16384 / currentline
 				lsr.l	#8,d7
-				lsr.l	#4,d7
 
 				; for some reason important to write.l here
 				move.l	d7,d0					; Z of current screen line projected to floor
@@ -8107,9 +8107,9 @@ dofloornoclip:
 				;divs.l	d0,d7
 
 				move.l	 a2,d7
+				lsr.l	#4,d7
 				mulu.w	OneOverN(pc,d0.w*2),d7	;
-				asr.l	#8,d7
-				asr.l	#4,d7
+				lsr.l	#8,d7
 
 				move.l	d7,d0
 
@@ -8177,9 +8177,9 @@ noclipleftGOUR:
 				;asr.l	#7,d2
 				;asr.l	#2,d2
 
+				lsr.l	#4,d2
 				mulu.w	OneOverN(pc,d0.w*2),d2	;
-				asr.l	#8,d2
-				asr.l	#4,d2
+				lsr.l	#8,d2
 
 				move.l	d2,dst
 				asr.l	#7,d2
@@ -8296,9 +8296,9 @@ dofloornoclipGOUR:
 ;				ext.l	d0
 ;				divs.l	d0,d6
 
+				asr.l	#4,d6
 				mulu.w	OneOverN(pc,d0.w*2),d6
-				asr.l	#8,d6
-				asr.l	#4,d6		; from n << 20 down to n << 8
+				asr.l	#8,d6	; from n << 20 down to n << 8
 
 				move.l	d6,d5
 				asr.l	#7,d5
