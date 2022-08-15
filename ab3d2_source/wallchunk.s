@@ -44,7 +44,7 @@ emptywalls:
 				move.l	#walltiles,a4
 				move.l	LINKFILE,a3
 				add.l	#WallGFXNames,a3
-				move.l	#0,TYPEOFMEM
+				move.l	#MEMF_ANY,TYPEOFMEM
 
 loademin:
 				move.l	(a3),d0
