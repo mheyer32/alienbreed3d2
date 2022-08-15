@@ -15,7 +15,7 @@ AFLAGS += -I../ \
 		  -I../media \
 		  -I../media/includes
 
-LFLAGS = -b amigahunk -sd -sc -l amiga -L $(PREFIX)m68k-amigaos/ndk/lib/libs
+LFLAGS = -b amigahunk -sc -l amiga -L $(PREFIX)m68k-amigaos/ndk/lib/libs
 
 all:	 hires
 
