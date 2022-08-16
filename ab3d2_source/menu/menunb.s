@@ -2195,6 +2195,7 @@ ScreenTags		dc.l	SA_Width,320
 				dc.l	SA_Type,CUSTOMSCREEN
 				dc.l	SA_Quiet,1
 				dc.l	SA_ShowTitle,0
+				dc.l	SA_DisplayID,PAL_MONITOR_ID
 				dc.l	TAG_END,0
 
 MenuScreen		dc.l	0

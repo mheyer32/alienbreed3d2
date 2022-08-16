@@ -127,6 +127,7 @@ MainScreenTags	dc.l	SA_Width,320
 				dc.l	SA_Quiet,1
 				dc.l	SA_AutoScroll,0
 				dc.l	SA_FullPalette,1
+				dc.l	SA_DisplayID,PAL_MONITOR_ID
 				dc.l	TAG_END,0
 
 				align	4
