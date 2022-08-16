@@ -13115,6 +13115,7 @@ mt_break:		DC.b	0
 mt_dmacon:		DC.w	0
 mt_samplestarts:DS.L $1f
 mt_voice1:		DS.w	10
+
 				DC.w	1
 				DS.w	3
 mt_voice2:		DS.w	10
@@ -13133,7 +13134,6 @@ PLR2_dead:		dc.w	0
 CHEATPTR:		dc.l	0
 CHEATNUM:		dc.l	0
 
-testchip:		dc.w	0
 
 LEVELMUSIC:		dc.l	0
 
@@ -13144,6 +13144,7 @@ mt_data:		dc.l	0
 
 tstchip:		dc.l	0						; not sure what this is; it seems to be used as timing
 								; device. I.e. by accessing chipmap, we throttle the CPU
+testchip:		dc.w	0
 
 gameover:
 				incbin	"includes/gameover"

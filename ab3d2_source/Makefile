@@ -24,7 +24,8 @@ clean:
 
 %:	%.s Makefile
 	$(ASS) $(AFLAGS) -o $@.o $<
-	$(LINK) $(LFLAGS) $@.o -o $@
+#	$(LINK) $(LFLAGS) $@.o -o $@
+	$(CC) -g -ggdb -nostartfiles -nostdlib -L $(PREFIX)/m68k-amigaos/lib  $@.o -l amiga -o $@
 
 %.o:	%.c Makefile
 	$(CC) $(CFLAGS) -c $< -o $@
