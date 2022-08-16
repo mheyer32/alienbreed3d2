@@ -4671,7 +4671,7 @@ NOGUNLOOK:
 				tst.b	DOANYWATER
 				beq.s	nowaterfull
 
-				move.w	#FS_WIDTH-1,d0
+				move.w	#FS_HEIGHT-1,d0
 				move.l	FASTBUFFER,a0
 				tst.b	fillscrnwater
 				beq		nowaterfull
