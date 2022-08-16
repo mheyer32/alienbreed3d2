@@ -4677,7 +4677,7 @@ NOGUNLOOK:
 				beq		nowaterfull
 				bgt		oknothalf
 				moveq	#FS_HEIGHT/2-1,d0
-				add.l	#SCREENWIDTH*120*2,a0
+				add.l	#SCREENWIDTH*FS_HEIGHT/2,a0
 oknothalf:
 
 				bclr.b	#1,$bfe001
@@ -4710,7 +4710,7 @@ fwa:
 				move.b	(a0),d2
 				move.b	(a2,d2.w),(a0)+
 				dbra	d1,fwa
-				add.w	#32,a0
+				add.w	#(SCREENWIDTH-FS_WIDTH),a0
 				dbra	d0,fw
 
 ; move.l frompt,a0
