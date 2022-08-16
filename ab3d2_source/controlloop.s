@@ -118,7 +118,7 @@ KVALTOASC:
 
 FINISHEDLEVEL:	dc.w	0
 
-				align	4
+				cnop 0,4
 _IntuitionBase:	dc.l	0
 
 INTUITION_REV	equ		31						v1.1

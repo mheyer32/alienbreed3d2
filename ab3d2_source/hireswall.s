@@ -1721,7 +1721,7 @@ simplewallPACK2:
 
 ; ATTENION: for some reason the order of these variables is important
 ; There's code that expects	these in the right order to allow for movem
-				align	4
+				cnop 0,4
 TOTHEMIDDLE:	dc.w	0
 BOTTOMY:		dc.w	0
 MIDDLEY:		dc.w	FS_HEIGHT/2
@@ -2734,7 +2734,7 @@ VALAND:			dc.w	0
 VALSHIFT:		dc.w	0
 HORAND:			dc.w	0
 
-				align	4
+				cnop 0,4
 sinval:			dc.w	0
 cosval:			dc.w	0
 

@@ -113,12 +113,12 @@ SetupDoubleheightCopperlist:
 				CALLINT RethinkDisplay
 				rts
 
-				align	4
+				cnop 0,4
 MainScreen:		dc.l	0
 MyRaster0		dc.l	0
 MyRaster1		dc.l	0
 
-				align	4
+				cnop 0,4
 MainScreenTags	dc.l	SA_Width,320
 				dc.l	SA_Height,256
 				dc.l	SA_Depth,8
@@ -130,7 +130,7 @@ MainScreenTags	dc.l	SA_Width,320
 				dc.l	SA_DisplayID,PAL_MONITOR_ID
 				dc.l	TAG_END,0
 
-				align	4
+				cnop 0,4
 MainNewScreen	dc.w	0						; ns_LeftEdge
 				dc.w	0						; ns_TopEdge
 				dc.w	320						; ns_Width
@@ -145,7 +145,7 @@ MainNewScreen	dc.w	0						; ns_LeftEdge
 				dc.l	0						; ns_Gadgets
 				dc.l	0						; ns_CustomBitMap
 
-				align	4
+				cnop 0,4
 MainWindowTags	dc.l	WA_Left,0
 				dc.l	WA_Top,0
 				dc.l	WA_Width,0
@@ -164,10 +164,10 @@ MainWTagScreenPtr dc.l	0						; will fill in screen pointer later
 				dc.l	WA_Backdrop,1
 				dc.l	TAG_END,0
 
-				align	4
+				cnop 0,4
 MainWindow		dc.l	0
 
-				align	4
+				cnop 0,4
 MainBitmap		dc.w	320/8					; bm_BytesPerRow
 				dc.w	256						; bm_Rows
 				dc.b	BMF_DISPLAYABLE			; bm_Flags
@@ -175,9 +175,9 @@ MainBitmap		dc.w	320/8					; bm_BytesPerRow
 				dc.w	0						; bm_Pad
 				ds.l	8						; bm_Planes
 
-				align	4
+				cnop 0,4
 MyUCopList		ds.b	ucl_SIZEOF				; see copper.i
 
-				align	4
+				cnop 0,4
 VidControlTags	dc.l	VTAG_USERCLIP_SET,1
 				dc.l	VTAG_END_CM,0

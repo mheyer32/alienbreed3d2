@@ -9,7 +9,7 @@ CHEESEY ?= 0
 
 #-DCD32VER
 
-AFLAGS = -Fhunk -m68060 -linedebug -align -L listing.txt -DCHEESEY=${CHEESEY} -Dmnu_nocode=1
+AFLAGS = -Fhunk -m68030 -devpac -linedebug -align -L listing.txt -DCHEESEY=${CHEESEY} -Dmnu_nocode=1
 AFLAGS += -I../ \
 		  -I$(PREFIX)/m68k-amigaos/ndk-include \
 		  -I../media \

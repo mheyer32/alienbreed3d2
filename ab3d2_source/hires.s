@@ -2,7 +2,7 @@
 				include	"macros.i"
 				include	"defs.i"
 
-				opt		o+
+;				opt		o+
 
 				xref	_custom
 				xref	_ciaa
@@ -481,7 +481,7 @@ doslibname:		DOSNAME
 MiscResourceName: MISCNAME
 PotgoResourceName: POTGONAME
 
-				align	4
+				cnop 0,4
 _DOSBase:		dc.l	0
 MiscResourceBase
 				dc.l	0
@@ -8383,7 +8383,7 @@ dists:
 ; incbin "floordists"
 drawit:			dc.w	0
 
-				align 4
+				cnop	0,4
 LineToUse:		dc.l	0
 
 ***************************

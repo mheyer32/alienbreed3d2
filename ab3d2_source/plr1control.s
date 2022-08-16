@@ -418,7 +418,7 @@ SHOWPLR1GUNNAME:
 				jsr		SENDMESSAGENORET
 				rts
 
-				align	4
+				cnop 0,4
 BIGsmall:		dc.b	0
 lastscr:		dc.b	0
 
