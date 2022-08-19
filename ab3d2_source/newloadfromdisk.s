@@ -505,7 +505,7 @@ LOADOBS:
 				move.l	LINKFILE,a0
 				lea		ObjectGfxNames(a0),a0
 
-				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#MEMF_ANY!MEMF_CLEAR,TYPEOFMEM
 
 				move.l	#Objects,a1
 
@@ -604,7 +604,7 @@ LOAD_A_PALETTE
 
 				move.l	#2048,blocklen
 
-				move.l	#MEMF_ANY,d1
+				move.l	#MEMF_ANY!MEMF_CLEAR,d1
 				move.l	blocklen,d0
 				CALLEXEC AllocMem
 				move.l	d0,blockstart
@@ -644,7 +644,7 @@ LOAD_AN_OBJ:
 
 				move.l	$7c(a5),blocklen
 
-				move.l	#MEMF_ANY,d1
+				move.l	#MEMF_ANY!MEMF_CLEAR,d1
 				move.l	blocklen,d0
 				CALLEXEC AllocMem
 				move.l	d0,blockstart
@@ -692,7 +692,7 @@ nomoreovj:
 
 
 
-TYPEOFMEM:		dc.l	0
+TYPEOFMEM:		dc.l	MEMF_ANY!MEMF_CLEAR
 
 LOAD_SFX:
 
@@ -716,7 +716,7 @@ LOADSAMPS:
 
 oktoload:
 
-				move.l	#MEMF_CHIP,TYPEOFMEM
+				move.l	#MEMF_CHIP|MEMF_CLEAR,TYPEOFMEM
 				move.l	a1,d0
 				move.l	d0,d1
 				add.l	#4,d1
@@ -728,7 +728,7 @@ oktoload:
 				adda.w	#64,a0
 				dbra	d7,LOADSAMPS
 
-				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#MEMF_ANY!MEMF_CLEAR,TYPEOFMEM
 
 				rts
 
@@ -819,7 +819,7 @@ LOADFLOOR
 				add.l	#FloorTileFilename,a0
 				move.l	#floortile,d0
 				move.l	#0,d1
-				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#MEMF_ANY!MEMF_CLEAR,TYPEOFMEM
 				jsr		QUEUEFILE
 ; move.l d0,floortile
 

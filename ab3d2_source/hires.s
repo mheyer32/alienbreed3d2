@@ -129,13 +129,13 @@ _start
 				ENDC
 
 				; allocate Level Data
-				move.l	#MEMF_ANY,d1
+				move.l	#MEMF_ANY!MEMF_CLEAR,d1
 				move.l	#LEVELDATASize,d0
 				CALLEXEC AllocMem
 				move.l	d0,LEVELDATA
 
 				; allocate chunky render buffer in fastmem
-				move.l	#MEMF_ANY,d1
+				move.l	#MEMF_ANY!MEMF_CLEAR,d1
 				move.l	#FASTBUFFERSize,d0
 				CALLEXEC AllocMem
 				move.l	d0,FASTBUFFERalloc
@@ -343,30 +343,30 @@ PLAYTHEGAME:
 				move.l	#_custom,a6
 				jsr		SETPLAYERS
 
-				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#MEMF_ANY!MEMF_CLEAR,TYPEOFMEM
 				move.l	#LLname,a0
 				jsr		LOADAFILE
 				move.l	d0,LINKS
 
-				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#MEMF_ANY!MEMF_CLEAR,TYPEOFMEM
 				move.l	#LLFname,a0
 				jsr		LOADAFILE
 				move.l	d0,FLYLINKS
 
 ; Get level memory.
 
-				move.l	#MEMF_ANY,d1
 				move.l	#40000,d0
+				move.l	#MEMF_ANY!MEMF_CLEAR,d1
 				CALLEXEC AllocMem
 				move.l	d0,LEVELGRAPHICS
 
-				move.l	#MEMF_ANY,d1
 				move.l	#40000,d0
+				move.l	#MEMF_ANY!MEMF_CLEAR,d1
 				CALLEXEC AllocMem
 				move.l	d0,LEVELCLIPS
 
-				move.l	#MEMF_CHIP,d1
 				move.l	#70000,d0
+				move.l	#MEMF_CHIP|MEMF_CLEAR,d1
 				CALLEXEC AllocMem
 				move.l	d0,LEVELMUSIC
 

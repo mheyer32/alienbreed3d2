@@ -44,7 +44,7 @@ emptywalls:
 				move.l	#walltiles,a4
 				move.l	LINKFILE,a3
 				add.l	#WallGFXNames,a3
-				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#MEMF_ANY!MEMF_CLEAR,TYPEOFMEM
 
 loademin:
 				move.l	(a3),d0
@@ -175,7 +175,7 @@ ITSASFX:
 				move.l	(a0)+,d0				;file size
 				move.l	d0,.SampleSize
 				move.l	a0,.CompressedSamplePosition
-				move.l	#MEMF_CHIP,d1
+				move.l	#MEMF_CHIP|MEMF_CLEAR,d1
 				CALLEXEC AllocMem
 				move.l	d0,.SamplePosition
 				move.l	.CompressedSamplePosition,a0
