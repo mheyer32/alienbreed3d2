@@ -154,5 +154,5 @@ LEVELCLIPS:
 ; ds.b 50000
 ; incbin "tstlev.clips"
 
-ControlPts:
+;ControlPts:
 ; incbin "ab3:includes/newlev.map"
