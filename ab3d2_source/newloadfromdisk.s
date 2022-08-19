@@ -181,105 +181,105 @@ TRYTOOPEN:
 
 ***************************************************
 
-SFX_NAMES:
-				dc.l	ScreamName,4400
-				dc.l	ShootName,7200
-				dc.l	0,0
-; dc.l MunchName,5400
-				dc.l	PooGunName,4600
-				dc.l	CollectName,3400
-;5
-				dc.l	DoorNoiseName,8400
-				dc.l	BassName,8000
-				dc.l	StompName,4000
-				dc.l	LowScreamName,8600
-				dc.l	BaddieGunName,6200
-;10
-; dc.l 0,0
-				dc.l	SwitchNoiseName,1200
-				dc.l	ReloadName,4000
-				dc.l	NoAmmoName,2200
-				dc.l	SplotchName,3000
-				dc.l	SplatPopName,5600
-;15
-				dc.l	BoomName,11600
-				dc.l	HissName,7200
-				dc.l	Howl1Name,7400
-				dc.l	Howl2Name,9200
-				dc.l	PantName,5000
-;20
-				dc.l	WhooshName,4000
-				dc.l	ShotGunName,8800
-; dc.l 0,0
-				dc.l	FlameName,9000
-				dc.l	MuffledName,1800
-				dc.l	ClopName,3400
-;25
-				dc.l	ClankName,1600
-				dc.l	TeleportName,11000
-				dc.l	HALFWORMPAINNAME,8400
-				dc.l	-1
-
-ScreamName:		dc.b	'AB3D2:sounds/scream',0
-				even
-ShootName:		dc.b	'AB3D2:sounds/fire!',0
-				even
-*
-*
-PooGunName:		dc.b	'AB3D2:sounds/shoot.dm',0
-				even
-CollectName:	dc.b	'AB3D2:sounds/collect',0
-				even
-DoorNoiseName:	dc.b	'AB3D2:sounds/newdoor',0
-				even
-BassName:		dc.b	'AB3D2:sounds/splash',0
-				even
-StompName:		dc.b	'AB3D2:sounds/footstep3',0
-				even
-LowScreamName:	dc.b	'AB3D2:sounds/lowscream',0
-				even
-BaddieGunName:	dc.b	'AB3D2:sounds/baddiegun',0
-				even
-SwitchNoiseName:dc.b 'AB3D2:sounds/switch',0
-				even
-ReloadName:		dc.b	'AB3D2:sounds/switch1.sfx',0
-				even
-NoAmmoName:		dc.b	'AB3D2:sounds/noammo',0
-				even
-SplotchName:	dc.b	'AB3D2:sounds/splotch',0
-				even
-SplatPopName:	dc.b	'AB3D2:sounds/splatpop',0
-				even
-BoomName:		dc.b	'AB3D2:sounds/boom',0
-				even
-HissName:		dc.b	'AB3D2:sounds/newhiss',0
-				even
-Howl1Name:		dc.b	'AB3D2:sounds/howl1',0
-				even
-Howl2Name:		dc.b	'AB3D2:sounds/howl2',0
-				even
-PantName:		dc.b	'AB3D2:sounds/pant',0
-				even
-WhooshName:		dc.b	'AB3D2:sounds/whoosh',0
-				even
-ShotGunName:	dc.b	'AB3D2:sounds/shotgun',0
-				even
-FlameName:		dc.b	'AB3D2:sounds/flame',0
-				even
-MuffledName:	dc.b	'AB3D2:sounds/MuffledFoot',0
-				even
-ClopName:		dc.b	'AB3D2:sounds/footclop',0
-				even
-ClankName:		dc.b	'AB3D2:sounds/footclank',0
-				even
-TeleportName:	dc.b	'AB3D2:sounds/teleport',0
-				even
-HALFWORMPAINNAME: dc.b	'AB3D2:sounds/HALFWORMPAIN',0
-				even
-
-MunchName:		dc.b	'AB3D2:sounds/munch',0
-				even
-RoarName:		dc.b	'AB3D2:sounds/bigscream',0
+;SFX_NAMES:
+;				dc.l	ScreamName,4400
+;				dc.l	ShootName,7200
+;				dc.l	0,0
+;; dc.l MunchName,5400
+;				dc.l	PooGunName,4600
+;				dc.l	CollectName,3400
+;;5
+;				dc.l	DoorNoiseName,8400
+;				dc.l	BassName,8000
+;				dc.l	StompName,4000
+;				dc.l	LowScreamName,8600
+;				dc.l	BaddieGunName,6200
+;;10
+;; dc.l 0,0
+;				dc.l	SwitchNoiseName,1200
+;				dc.l	ReloadName,4000
+;				dc.l	NoAmmoName,2200
+;				dc.l	SplotchName,3000
+;				dc.l	SplatPopName,5600
+;;15
+;				dc.l	BoomName,11600
+;				dc.l	HissName,7200
+;				dc.l	Howl1Name,7400
+;				dc.l	Howl2Name,9200
+;				dc.l	PantName,5000
+;;20
+;				dc.l	WhooshName,4000
+;				dc.l	ShotGunName,8800
+;; dc.l 0,0
+;				dc.l	FlameName,9000
+;				dc.l	MuffledName,1800
+;				dc.l	ClopName,3400
+;;25
+;				dc.l	ClankName,1600
+;				dc.l	TeleportName,11000
+;				dc.l	HALFWORMPAINNAME,8400
+;				dc.l	-1
+;
+;ScreamName:		dc.b	'AB3D2:sounds/scream',0
+;				even
+;ShootName:		dc.b	'AB3D2:sounds/fire!',0
+;				even
+;*
+;*
+;PooGunName:		dc.b	'AB3D2:sounds/shoot.dm',0
+;				even
+;CollectName:	dc.b	'AB3D2:sounds/collect',0
+;				even
+;DoorNoiseName:	dc.b	'AB3D2:sounds/newdoor',0
+;				even
+;BassName:		dc.b	'AB3D2:sounds/splash',0
+;				even
+;StompName:		dc.b	'AB3D2:sounds/footstep3',0
+;				even
+;LowScreamName:	dc.b	'AB3D2:sounds/lowscream',0
+;				even
+;BaddieGunName:	dc.b	'AB3D2:sounds/baddiegun',0
+;				even
+;SwitchNoiseName:dc.b 'AB3D2:sounds/switch',0
+;				even
+;ReloadName:		dc.b	'AB3D2:sounds/switch1.sfx',0
+;				even
+;NoAmmoName:		dc.b	'AB3D2:sounds/noammo',0
+;				even
+;SplotchName:	dc.b	'AB3D2:sounds/splotch',0
+;				even
+;SplatPopName:	dc.b	'AB3D2:sounds/splatpop',0
+;				even
+;BoomName:		dc.b	'AB3D2:sounds/boom',0
+;				even
+;HissName:		dc.b	'AB3D2:sounds/newhiss',0
+;				even
+;Howl1Name:		dc.b	'AB3D2:sounds/howl1',0
+;				even
+;Howl2Name:		dc.b	'AB3D2:sounds/howl2',0
+;				even
+;PantName:		dc.b	'AB3D2:sounds/pant',0
+;				even
+;WhooshName:		dc.b	'AB3D2:sounds/whoosh',0
+;				even
+;ShotGunName:	dc.b	'AB3D2:sounds/shotgun',0
+;				even
+;FlameName:		dc.b	'AB3D2:sounds/flame',0
+;				even
+;MuffledName:	dc.b	'AB3D2:sounds/MuffledFoot',0
+;				even
+;ClopName:		dc.b	'AB3D2:sounds/footclop',0
+;				even
+;ClankName:		dc.b	'AB3D2:sounds/footclank',0
+;				even
+;TeleportName:	dc.b	'AB3D2:sounds/teleport',0
+;				even
+;HALFWORMPAINNAME: dc.b	'AB3D2:sounds/HALFWORMPAIN',0
+;				even
+;
+;MunchName:		dc.b	'AB3D2:sounds/munch',0
+;				even
+;RoarName:		dc.b	'AB3D2:sounds/bigscream',0
 				even
 
 ;-102
@@ -455,47 +455,47 @@ FREEBOTMEM:
 				rts
 
 ; FIXME: not used?
-LOADBOTPIC:
-
-; PRSDb
-
-				move.l	#BOTPICNAME,blockname
-
-				move.l	blockname,d1
-				move.l	#1005,d2
-				CALLDOS	Open
-				move.l	d0,handle
-
-				lea		fib,a5
-				move.l	handle,d1
-				move.l	a5,d2
-				CALLDOS	ExamineFH
-
-				move.l	$7c(a5),blocklen
-				move.l	#30720,PanelLen
-
-				move.l	#MEMF_CHIP,d1
-				move.l	PanelLen,d0
-				CALLEXEC AllocMem
-				move.l	d0,blockstart
-
-				move.l	handle,d1
-				move.l	LEVELDATA,d2
-				move.l	blocklen,d3
-				CALLDOS	Read
-				move.l	handle,d1
-				CALLDOS	Close
-
-				move.l	blockstart,Panel
-
-				move.l	LEVELDATA,d0
-				moveq	#0,d1
-				move.l	Panel,a0
-				lea		WorkSpace,a1
-				lea		$0,a2
-				jsr		unLHA
-
-				rts
+;LOADBOTPIC:
+;
+;; PRSDb
+;
+;				move.l	#BOTPICNAME,blockname
+;
+;				move.l	blockname,d1
+;				move.l	#1005,d2
+;				CALLDOS	Open
+;				move.l	d0,handle
+;
+;				lea		fib,a5
+;				move.l	handle,d1
+;				move.l	a5,d2
+;				CALLDOS	ExamineFH
+;
+;				move.l	$7c(a5),blocklen
+;				move.l	#30720,PanelLen
+;
+;				move.l	#MEMF_CHIP|MEMF_CLEAR,d1
+;				move.l	PanelLen,d0
+;				CALLEXEC AllocMem
+;				move.l	d0,blockstart
+;
+;				move.l	handle,d1
+;				move.l	LEVELDATA,d2
+;				move.l	blocklen,d3
+;				CALLDOS	Read
+;				move.l	handle,d1
+;				CALLDOS	Close
+;
+;				move.l	blockstart,Panel
+;
+;				move.l	LEVELDATA,d0
+;				moveq	#0,d1
+;				move.l	Panel,a0
+;				lea		WorkSpace,a1
+;				lea		$0,a2
+;				jsr		unLHA
+;
+;				rts
 
 LOADOBS:
 

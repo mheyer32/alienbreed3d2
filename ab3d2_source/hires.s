@@ -58,8 +58,6 @@ intreqrl		equ		$01f
 				section code,code
 
 _start
-				move.w	(a0)+,LEVTOPLAY
-
 				jsr		MakePatch
 
 				lea.l	MiscResourceName,a1
@@ -305,8 +303,6 @@ CLRTWEENSCRN:
 				move.l	d1,(a0)+
 				dbra	d0,.lll
 				rts
-
-LEVTOPLAY:		dc.w	0
 
 COPYLINK:		dc.l	0
 
@@ -12409,16 +12405,10 @@ FULLSCR:		dc.w	0
 * Link file !*****************************
 ******************************************
 
-LINKSPACE:
-; ds.l 22500
-; incbin "includes/test.lnk"
-
-LINKname:
-				dc.b	"TKG1:includes/test.lnk",0
+LINKname:		dc.b	"TKG1:includes/test.lnk",0
 				even
 
-LINKFILE:
-				dc.l	LINKSPACE
+LINKFILE:		dc.l	0
 
 ******************************************
 
@@ -13133,7 +13123,6 @@ PLR2_dead:		dc.w	0
 CHEATPTR:		dc.l	0
 CHEATNUM:		dc.l	0
 
-testchip:		dc.w	0
 
 LEVELMUSIC:		dc.l	0
 
@@ -13141,9 +13130,10 @@ LEVELMUSIC:		dc.l	0
 mt_data:		dc.l	0
 
 				section	data_c,data_c
-
-tstchip:		dc.l	0						; not sure what this is; it seems to be used as timing
-								; device. I.e. by accessing chipmap, we throttle the CPU
+; not sure what this is; it seems to be used as timing
+; device. I.e. by accessing chipmap, we throttle the CPU
+tstchip:		dc.l	0
+testchip:		dc.w	0
 
 gameover:
 				incbin	"includes/gameover"
