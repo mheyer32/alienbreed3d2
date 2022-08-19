@@ -133,10 +133,10 @@ intoload:
 				move.l	handle,d1
 				move.l	a5,d2
 				CALLDOS	ExamineFH
-				move.l	$7c(a5),blocklen
+				move.l	fib_Size(a5),d0
+				move.l	d0,blocklen
 
 				move.l	TYPEOFMEM,d1
-				move.l	blocklen,d0
 				CALLEXEC AllocMem
 
 				move.l	d0,blockstart

@@ -623,8 +623,9 @@ LOAD_A_PALETTE
 				move.l	blocklen,(a2)+
 
 				rts
-				CNOP	0,4
-fib:			ds.l	75
+
+				CNOP	0,4	; FileInfoBlock must be 4-byte aligned
+fib:			ds.b	fib_SIZEOF
 
 ; FIXME: seems unused
 LOAD_AN_OBJ:
