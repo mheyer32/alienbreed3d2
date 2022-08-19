@@ -364,6 +364,8 @@ backpicname:	dc.b	"tkg1:includes/rawbackpacked"
 bordername:		dc.b	"TKG2:includes/newborderRAW",0
 				even
 borderpacked:	incbin	"includes/newborderpacked"
+				dc.l	0
+				dc.l	0	;; terminate LHA compression stream
 
 ; KEY OPTIONS:
 CONTROLBUFFER:

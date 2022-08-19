@@ -927,6 +927,7 @@ RELEASESCRNMEM:
 
 				rts
 
+				cnop 0,4
 unLHA:			incbin	"decomp4.raw"
 
 

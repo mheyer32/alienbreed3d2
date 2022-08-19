@@ -135,6 +135,8 @@ intoload:
 				CALLDOS	ExamineFH
 				move.l	$7c(a5),blocklen
 
+				add.l	#8,d0
+
 				move.l	TYPEOFMEM,d1
 				move.l	blocklen,d0
 				CALLEXEC AllocMem
@@ -260,6 +262,9 @@ ITSPACKED:
 				move.l	blockstart,d1
 				move.l	d1,a1
 				move.l	blocklen,d0
+
+				add.l	#8,d0
+
 				CALLEXEC FreeMem
 
 				move.l	unpackedstart,d0
