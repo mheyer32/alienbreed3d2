@@ -60,9 +60,9 @@ OpenMainScreen:
 				CALLINT ViewPortAddress
 				move.l	d0,a2
 
-				;move.l	vp_ColorMap(a2),a0
-				;lea		VidControlTags,a1
-				;CALLGRAF VideoControl
+				move.l	vp_ColorMap(a2),a0
+				lea		VidControlTags,a1
+				CALLGRAF VideoControl
 
 				; Setup a User copperlist to enable doubleheight rendering
 				move.l	_GfxBase,a6
@@ -87,7 +87,7 @@ OpenMainScreen:
 				addq.w	#1,d2
 				cmp.w	#232,d2
 				blt		.nextLine
-				CWAIT	a2,d2,#30
+				CWAIT	a2,d2,#0
 				CMOVE	a2,bpl1mod,#0-8
 				CMOVE	a2,bpl2mod,#0-8
 				CEND	a2

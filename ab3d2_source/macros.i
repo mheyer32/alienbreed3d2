@@ -345,6 +345,6 @@ CWAIT			MACRO ; \1 UCopList* \2 vertical pos \3 horizontal pos
 				ENDM
 
 CEND			MACRO ; \1 UCopList*
-				CWAIT \1,10000,255
+				CWAIT \1,#10000,#255
 				ENDM
 
