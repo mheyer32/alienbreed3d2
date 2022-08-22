@@ -136,8 +136,6 @@ intoload:
 				move.l	fib_Size(a5),d0
 				move.l	d0,blocklen
 
-				add.l	#8,d0			; reserve 8 byte more for unLHA end-of-stream marker
-
 				move.l	TYPEOFMEM,d1
 				CALLEXEC AllocVec
 
@@ -147,11 +145,6 @@ intoload:
 				move.l	d0,d2
 				move.l	blocklen,d3
 				CALLDOS	Read
-
-				; place end-of-stream markers for unLHA
-				move.l	blockstart,a0
-				clr.l	(a0,d3.l)
-				clr.l	4(a0,d3.l)
 
 				move.l	handle,d1
 				CALLDOS	Close
