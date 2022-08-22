@@ -8607,21 +8607,20 @@ scaleprog:
 
 				; if the clipped left edge of the floor line is > 0,
 				; need  to inset the start of the floorspace coordinate accordingly
-				;add.l	d6,d6
-				;divs	#3,d6					; * 2/3 seems to be the FULLSCREEN multiplier?
-				;ext.l	d6						; FIXME: why are we applying that here?
 
-									; shouldn't that have been implicit when calulating the clipping stuff?
-									; but taking it away, doesn't work
-
-				; 0xABADCAFE quicker evaluation of 2/3 multiplier, 171/256 => 0.66796875
-				;muls.l	#171,d6
-				;asr.l	#8,d6
-
-				; 0xABADCAFE : Issue 9 - Try multiplier of 6/10, using 10 bit precision
-				muls.l  #614,d6
+				; 0xABADCAFE - Apply fullscreen multiplier.
+				if SCREENWIDTH=320
+				; Pipper's fullscreen: Scale factor is 192/320 => 3/5
+				; Use quicker evaluation of 3/5, 154/256 => 0.6015625
+				muls.l  #154,d6
 				asr.l	#8,d6
-				asr.l	#2,d6
+				else
+				; Original fullscreen: Scale factor is 192/288 => 2/3
+				; Use quicker evaluation of 2/3 multiplier, 171/256 => 0.66796875
+				muls.l	#171,d6
+				asr.l	#8,d6
+
+				endif
 
 				move.l	d1,a4					; save width * cos * scale
 				move.l	d2,a5					; save width * sin * scale
@@ -8654,26 +8653,24 @@ scaleprog:
 				move.w	d4,d5
 
 				; multiply floor space step ds/dx and dt/dx by Fullscreen multiplier
-				asr.l	#6,d1					; don't shift by 7, but 6
+				asr.l	#6,d1					; don't shift by 7, but 6, to achieve 2/3
 				asr.l	#6,d2
-;				divs.l	#3,d1					; to achieve * 2/3
-;				divs.l	#3,d2
 
+				; 0xABADCAFE - Apply fullscreen multiplier.
+				if SCREENWIDTH=320
+				; Pipper's fullscreen: Scale factor is 192/320
+				; Use quicker evaluation of 3/10, 77/256 => 0.30078125
+				muls.l  #77,d1
+				muls.l  #77,d2
+				else
+				; Original fullscreen: Scale factor is 192/288
 				; 0xABADCAFE quicker evaluation of 1/3 multiplier, 85/256 => 0.33203125
-				;muls.l  #85,d1
-				;muls.l  #85,d2
-				;muls.l  #77,d1
-				;muls.l  #77,d2
-				;asr.l	#8,d1
-				;asr.l	#8,d2
+				muls.l  #85,d1
+				muls.l  #85,d2
+				endif
 
-				; 0xABADCAFE - Issue #9 - Use 3/10 multiplier, 10 bits precision
-				muls.l  #307,d1
-				muls.l  #307,d2
-				asr.l   #8,d1
-				asr.l   #8,d2
-				asr.l   #2,d1
-				asr.l   #2,d2
+				asr.l	#8,d1
+				asr.l	#8,d2
 
 				bra.s	doneallmult
 
