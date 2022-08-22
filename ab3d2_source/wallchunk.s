@@ -13,7 +13,7 @@ relmem:
 				move.l	d1,a1
 
 				movem.l	a0/a5,-(a7)
-				CALLEXEC FreeMem
+				CALLEXEC FreeVec
 				movem.l	(a7)+,a0/a5
 
 
@@ -101,7 +101,7 @@ loadedall:
 
 handle:			dc.l	0
 
-UNPACKED:		dc.l	0
+unpackedLength:		dc.l	0
 
 walltiles:
 				ds.l	40
@@ -136,8 +136,10 @@ intoload:
 				move.l	fib_Size(a5),d0
 				move.l	d0,blocklen
 
+				add.l	#8,d0			; reserve 8 byte more for unLHA end-of-stream marker
+
 				move.l	TYPEOFMEM,d1
-				CALLEXEC AllocMem
+				CALLEXEC AllocVec
 
 				move.l	d0,blockstart
 
@@ -145,6 +147,11 @@ intoload:
 				move.l	d0,d2
 				move.l	blocklen,d3
 				CALLDOS	Read
+
+				; place end-of-stream markers for unLHA
+				move.l	blockstart,a0
+				clr.l	(a0,d3.l)
+				clr.l	4(a0,d3.l)
 
 				move.l	handle,d1
 				CALLDOS	Close
@@ -176,7 +183,7 @@ ITSASFX:
 				move.l	d0,.SampleSize
 				move.l	a0,.CompressedSamplePosition
 				move.l	#MEMF_CHIP,d1
-				CALLEXEC AllocMem
+				CALLEXEC AllocVec
 				move.l	d0,.SamplePosition
 				move.l	.CompressedSamplePosition,a0
 				move.l	d0,a1
@@ -204,8 +211,8 @@ ITSASFX:
 .SampleFinished:
 				move.l	.CompressedSamplePosition,a1
 				sub.l	#8,a1
-				move.l	.CompressedSampleSize,d0
-				CALLEXEC FreeMem
+
+				CALLEXEC FreeVec
 ;Now check the sample and clip it if it ever gets
 ;too big
 
@@ -244,26 +251,26 @@ ITSASFX:
 ITSPACKED:
 
 				move.l	4(a0),d0				; length of unpacked file.
-				move.l	d0,UNPACKED
+				move.l	d0,unpackedLength
 				move.l	TYPEOFMEM,d1
-				CALLEXEC AllocMem
+				CALLEXEC AllocVec
 
 				move.l	d0,unpackedstart
 
 				move.l	blockstart,d0
 				moveq	#0,d1
 				move.l	unpackedstart,a0
-				move.l	LEVELDATA,a1
+				move.l	#unLhaTempBuffer,a1
 				lea		$0,a2
 				jsr		unLHA
 
 				move.l	blockstart,d1
 				move.l	d1,a1
-				move.l	blocklen,d0
-				CALLEXEC FreeMem
+
+				CALLEXEC FreeVec
 
 				move.l	unpackedstart,d0
-				move.l	UNPACKED,d1
+				move.l	unpackedLength,d1
 				move.l	d0,a0
 				cmp.l	#'CSFX',(a0)
 				beq		ITSASFX
@@ -271,10 +278,13 @@ ITSPACKED:
 				movem.l	(a7)+,d0-d7/a0-a6
 
 				move.l	unpackedstart,d0
-				move.l	UNPACKED,d1
+				move.l	unpackedLength,d1
 
 				rts
 
+				section bss,bss
+unLhaTempBuffer	ds.l	4096		; unLHA wants 16kb
+				section code,code
 
 unpackedstart:
 				dc.l	0

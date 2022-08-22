@@ -321,12 +321,10 @@ dontusestats:
 
 QUITTT:
 				move.l	LEVELDATA,a1
-				move.l	#LEVELDATASize,d0
-				CALLEXEC FreeMem
+				CALLEXEC FreeVec
 
 				move.l	FASTBUFFERalloc,a1
-				move.l	#FASTBUFFERSize,d0
-				CALLEXEC FreeMem
+				CALLEXEC FreeVec
 
 				move.l	MyRaster0,a0
 				move.w	#320,d0
@@ -1584,8 +1582,7 @@ LOADPOSITION:
 .noload:
 
 				move.l	SAVEGAMEPOS,a1
-				move.l	SAVEGAMELEN,d0
-				CALLEXEC FreeMem
+				CALLEXEC FreeVec
 
 				rts
 
@@ -1676,8 +1673,7 @@ SAVEPOSITION:
 .nosave:
 
 				move.l	SAVEGAMEPOS,a1
-				move.l	SAVEGAMELEN,d0
-				CALLEXEC FreeMem
+				CALLEXEC FreeVec
 
 				rts
 

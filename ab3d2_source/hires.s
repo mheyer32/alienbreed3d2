@@ -126,16 +126,10 @@ _start
 				clr.b	PLR2JOY
 				ENDC
 
-				; allocate Level Data
-				move.l	#MEMF_ANY,d1
-				move.l	#LEVELDATASize,d0
-				CALLEXEC AllocMem
-				move.l	d0,LEVELDATA
-
 				; allocate chunky render buffer in fastmem
 				move.l	#MEMF_ANY,d1
 				move.l	#FASTBUFFERSize,d0
-				CALLEXEC AllocMem
+				CALLEXEC AllocVec
 				move.l	d0,FASTBUFFERalloc
 				;align to 16byte for best C2P perf
 				moveq.l	#15,d1
@@ -343,122 +337,41 @@ PLAYTHEGAME:
 				move.l	#LLname,a0
 				jsr		LOADAFILE
 				move.l	d0,LINKS
+*************************************
 
 				move.l	#MEMF_ANY,TYPEOFMEM
 				move.l	#LLFname,a0
 				jsr		LOADAFILE
 				move.l	d0,FLYLINKS
 
-; Get level memory.
-
-				move.l	#MEMF_ANY,d1
-				move.l	#40000,d0
-				CALLEXEC AllocMem
-				move.l	d0,LEVELGRAPHICS
-
-				move.l	#MEMF_ANY,d1
-				move.l	#40000,d0
-				CALLEXEC AllocMem
-				move.l	d0,LEVELCLIPS
-
-				move.l	#MEMF_CHIP,d1
-				move.l	#70000,d0
-				CALLEXEC AllocMem
-				move.l	d0,LEVELMUSIC
-
 				moveq	#0,d1
 				move.b	LEVA,d1
 				sub.b	#'a',d1
 				lsl.w	#6,d1
-				move.l	LINKFILE,a6
-				add.l	#LevelMusic,a6
-				add.l	d1,a6
-				move.l	a6,d1
+				move.l	LINKFILE,a0
+				lea		LevelMusic(a0),a0
 
-				move.l	#1005,d2
-				CALLDOS	Open
-				move.l	d0,LDhandle
-
-				move.l	d0,d1
-				move.l	LEVELCLIPS,d2
-				move.l	#40000,d3
-				CALLDOS	Read
-
-				move.l	LDhandle,d1
-				CALLDOS	Close
-
-*************************************
-				move.l	LEVELCLIPS,d0
-				moveq	#0,d1
-				move.l	LEVELMUSIC,a0
-				lea		WorkSpace,a1
-				lea		$0,a2
-				jsr		unLHA
-*************************************
-				move.l	#LDname,d1
-				move.l	#1005,d2
-				CALLDOS	Open
-				move.l	d0,LDhandle
-
-				move.l	d0,d1
-				move.l	LEVELCLIPS,d2
-				move.l	#40000,d3
-				CALLDOS	Read
-
-				move.l	LDhandle,d1
-				CALLDOS	Close
-
-*************************************
-				move.l	LEVELCLIPS,d0
-				moveq	#0,d1
-				move.l	LEVELDATA,a0
-				lea		WorkSpace,a1
-				lea		$0,a2
-				jsr		unLHA
+				move.l	#MEMF_CHIP,TYPEOFMEM
+				jsr		LOADAFILE
+				move.l	d0,LEVELMUSIC
 *************************************
 
-				move.l	#LGname,d1
-				move.l	#1005,d2
-				CALLDOS	Open
-				move.l	d0,LGhandle
-
-				move.l	d0,d1
-				move.l	LEVELCLIPS,d2
-				move.l	#40000,d3
-				CALLDOS	Read
-
-				move.l	LGhandle,d1
-				CALLDOS	Close
-
-*************************************
-				move.l	LEVELCLIPS,d0
-				moveq	#0,d1
-				move.l	LEVELGRAPHICS,a0
-				lea		WorkSpace,a1
-				lea		$0,a2
-				jsr		unLHA
+				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#LDname,a0
+				jsr		LOADAFILE
+				move.l	d0,LEVELDATA
 *************************************
 
-				move.l	#LCname,d1
-				move.l	#1005,d2
-				CALLDOS	Open
-				move.l	d0,LChandle
-
-				move.l	d0,d1
-				move.l	#WorkSpace+16384,d2
-				move.l	#16000,d3
-				CALLDOS	Read
-
-				move.l	LChandle,d1
-				CALLDOS	Close
-
+				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#LGname,a0
+				jsr		LOADAFILE
+				move.l	d0,LEVELGRAPHICS
 *************************************
-				move.l	#WorkSpace+16384,d0
-				moveq	#0,d1
-				move.l	LEVELCLIPS,a0
-				lea		WorkSpace,a1
-				lea		$0,a2
-				jsr		unLHA
+
+				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#LCname,a0
+				jsr		LOADAFILE
+				move.l	d0,LEVELCLIPS
 *************************************
 
 

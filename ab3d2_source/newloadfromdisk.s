@@ -449,8 +449,7 @@ PanelLen:		dc.l	0
 FREEBOTMEM:
 				move.l	Panel,d1
 				move.l	d1,a1
-				move.l	PanelLen,d0
-				CALLEXEC FreeMem
+				CALLEXEC FreeVec
 
 				rts
 
@@ -476,7 +475,7 @@ FREEBOTMEM:
 ;
 ;				move.l	#MEMF_CHIP|MEMF_CLEAR,d1
 ;				move.l	PanelLen,d0
-;				CALLEXEC AllocMem
+;				CALLEXEC AllocVec
 ;				move.l	d0,blockstart
 ;
 ;				move.l	handle,d1
@@ -606,7 +605,7 @@ LOAD_A_PALETTE
 
 				move.l	#MEMF_ANY,d1
 				move.l	blocklen,d0
-				CALLEXEC AllocMem
+				CALLEXEC AllocVec
 				move.l	d0,blockstart
 
 				move.l	handle,d1
@@ -647,7 +646,7 @@ LOAD_AN_OBJ:
 
 				move.l	#MEMF_ANY,d1
 				move.l	blocklen,d0
-				CALLEXEC AllocMem
+				CALLEXEC AllocVec
 				move.l	d0,blockstart
 
 				move.l	handle,d1
@@ -681,8 +680,7 @@ relobjlop
 
 				move.l	blockstart,d1
 				move.l	d1,a1
-				move.l	blocklen,d0
-				CALLEXEC FreeMem
+				CALLEXEC FreeVec
 
 				movem.l	(a7)+,a0/a2
 				bra.s	relobjlop
@@ -881,7 +879,7 @@ RELEASESAMPMEM:
 				sub.l	d1,d0
 				move.l	d1,a1
 				move.l	a0,-(a7)
-				CALLEXEC FreeMem
+				CALLEXEC FreeVec
 				move.l	(a7)+,a0
 				bra		.relmem
 
@@ -889,39 +887,32 @@ RELEASESAMPMEM:
 
 RELEASELEVELMEM:
 
-				move.l	LINKS,d1
-				move.l	d1,a1
-				move.l	#10000,d0
-				CALLEXEC FreeMem
+				move.l	LINKS,a1
+				CALLEXEC FreeVec
+				clr.l	LINKS
 
+				move.l	FLYLINKS,a1
+				CALLEXEC FreeVec
+				clr.l	FLYLINKS
 
-				move.l	FLYLINKS,d1
-				move.l	d1,a1
-				move.l	#10000,d0
-				CALLEXEC FreeMem
+				move.l	LEVELGRAPHICS,a1
+				CALLEXEC FreeVec
+				clr.l	LEVELGRAPHICS
 
-				move.l	LEVELGRAPHICS,d1
-				move.l	d1,a1
-				move.l	#40000,d0
-				CALLEXEC FreeMem
+				move.l	LEVELCLIPS,a1
+				CALLEXEC FreeVec
+				clr.l	LEVELCLIPS
 
-				move.l	LEVELCLIPS,d1
-				move.l	d1,a1
-				move.l	#40000,d0
-				CALLEXEC FreeMem
-
-				move.l	LEVELMUSIC,d1
-				move.l	d1,a1
-				move.l	#70000,d0
-				CALLEXEC FreeMem
+				move.l	LEVELMUSIC,a1
+				CALLEXEC FreeVec
+				clr.l	LEVELMUSIC
 				rts
 
 RELEASEFLOORMEM:
 
 				move.l	floortile,d1
-				move.l	d1,a1
-				move.l	#65536,d0
-				CALLEXEC FreeMem
+				CALLEXEC FreeVec
+				clr.l	floortile
 				rts
 
 RELEASESCRNMEM:
