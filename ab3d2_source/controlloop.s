@@ -362,6 +362,8 @@ backpicname:	dc.b	"tkg1:includes/rawbackpacked"
 bordername:		dc.b	"TKG2:includes/newborderRAW",0
 				even
 borderpacked:	incbin	"includes/newborderpacked"
+				dc.l	0
+				dc.l	0	; end-of-stream markers for unLHA
 
 ; KEY OPTIONS:
 CONTROLBUFFER:

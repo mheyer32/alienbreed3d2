@@ -12057,10 +12057,10 @@ wallrouts:
 				CNOP	0,64
 
 				ifeq	CHEESEY
-BackPicture:
+BackPicture:				; Is this the skytexture?
 				dc.l	0
 ; incbin "rawback"
-EndBackPicture:
+EndBackPicture:				; FIXME: this obviously doesn't work anymore, yet is still referfenced
 				endc
 
 SineTable:
