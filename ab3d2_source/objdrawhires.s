@@ -2208,7 +2208,8 @@ MYacross:
 				sub.w	d3,d4
 				swap	d3
 				swap	d4
-				divs.l	#8,d4
+;				divs.l	#8,d4 ; 0xABADCAFE delete after testing
+				asr.l	#3,d4
 				moveq	#7,d2
 				moveq	#3*16,d5
 .down:
@@ -2241,8 +2242,9 @@ TOPPART:
 				sub.w	d3,d4
 				swap	d3
 				swap	d4
-				divs.l	#8,d4
-				asr.l	#1,d4					; halfway
+;				divs.l	#8,d4 ; 0xABADCAFE delete after testing
+;				asr.l	#1,d4					; halfway
+				asr.l	#4,d4
 				moveq	#3,d2
 				moveq	#3*16,d5
 .down:
@@ -2275,8 +2277,9 @@ BOTPART:
 				sub.w	d3,d4
 				swap	d3
 				swap	d4
-				divs.l	#8,d4
-				asr.l	#1,d4					; halfway
+;				divs.l	#8,d4 ; 0xABADCAFE delete after testing
+;				asr.l	#1,d4					; halfway
+				asr.l	#4,d4
 				moveq	#3,d2
 				move.w	#11*16,d5
 .down:
