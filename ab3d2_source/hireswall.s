@@ -753,7 +753,7 @@ StripData:		dc.w	0
 * d4=sl d5=el
 * a1 = strip buffer
 
-store:			ds.l	500
+storage:		ds.l	500
 ********************************************************************************
 
 ;******************************************************************
@@ -949,7 +949,7 @@ store:			ds.l	500
 ;				rts
 ;
 ;.infront:
-;				move.l	#store,a0
+;				move.l	#storage,a0
 ;				move.l	(a1),d3
 ;				move.w	6(a1),d5
 ;				add.w	8(a1),d6
@@ -1331,7 +1331,7 @@ CalcAndDraw:
 
 .infront:
 				ext.l	d2
-				move.l	#store,a0
+				move.l	#storage,a0
 				move.l	(a1),d3
 				divs.l	d2,d3
 				moveq	#0,d5
@@ -1410,7 +1410,7 @@ computeloop2:
 
 .infront:
 				ext.l	d2
-				move.l	#store,a0
+				move.l	#storage,a0
 				move.l	(a1),d3
 				divs.l	d2,d3
 				moveq	#0,d5

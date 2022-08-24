@@ -920,7 +920,7 @@ CalcAndDrawG:
 				rts
 
 .infront:
-				move.l	#store,a0
+				move.l	#storage,a0
 				move.l	(a1),d3
 				ext.l	d2
 				divs.l	d2,d3
@@ -1003,7 +1003,7 @@ computeloop2G:
 
 .infront:
 				ext.l	d2
-				move.l	#store,a0
+				move.l	#storage,a0
 				move.l	(a1),d3
 				divs.l	d2,d3					; this could be divs.w, no?
 				moveq	#0,d5

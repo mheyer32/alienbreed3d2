@@ -11358,8 +11358,6 @@ IDNUM:			dc.w	0
 needleft:		dc.b	0
 needright:		dc.b	0
 STEREO:			dc.b	$0
-even
-;prot6: dc.w 0
 
 				even
 CHANNELDATA:
@@ -11612,7 +11610,7 @@ FOUNDALEFT:
 
 				move.w	Samplenum,d5
 
-; tst.b Echo
+; tst.b PlayEcho
 ; bne.s YESECHO
 ; tst.b SourceEcho
 ; beq.s NOECHO
@@ -11837,7 +11835,7 @@ FOUNDACHAN:
 
 				move.w	Samplenum,d5
 
-; tst.b Echo
+; tst.b PlayEcho
 ; bne.s YESECHO2
 ; tst.b SourceEcho
 ; beq.s NOECHO2
@@ -12211,7 +12209,7 @@ PLR2_StoodInTop: dc.b	0
 				even
 PLR2_height:	dc.l	0
 PLR2_Echo:		dc.w	0
-Echo:			dc.w	0
+PlayEcho:		dc.w	0
 
 				ds.w	4
 
