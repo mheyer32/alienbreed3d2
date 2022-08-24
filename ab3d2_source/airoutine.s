@@ -650,7 +650,7 @@ WIDGET:
 .canmove:
 
 				clr.b	wallbounce
-				Jsr		MoveObject
+				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
 				move.b	StoodInTop,ObjInTop(a0)
 
@@ -838,7 +838,7 @@ INTOCHA:
 .canmove:
 
 				clr.b	wallbounce
-				Jsr		MoveObject
+				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
 				move.b	StoodInTop,ObjInTop(a0)
 
@@ -1306,7 +1306,7 @@ INTOCHAFLY:
 .canmove:
 
 				clr.b	wallbounce
-				Jsr		MoveObject
+				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
 				move.b	StoodInTop,ObjInTop(a0)
 
@@ -1540,7 +1540,7 @@ INTOAPP:
 .canmove:
 
 				clr.b	wallbounce
-				Jsr		MoveObject
+				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
 				move.b	StoodInTop,ObjInTop(a0)
 

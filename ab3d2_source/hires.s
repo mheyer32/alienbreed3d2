@@ -4273,7 +4273,7 @@ DrawDisplay:
 
 				; bignsine is 16kb = 8192 words for 4pi (720deg)
 				; --> 4096 words per 2pi
-				; --> 1042 words = 2048byte per 90deg
+				; --> 1024 words = 2048byte per 90deg
 
 				move.l	#SineTable,a0
 				move.w	angpos,d0
@@ -9626,9 +9626,9 @@ key_interrupt:
 				rts
 
 lastpressed:	dc.b	0
-KInt_CCode		Ds.b	1
-KInt_Askey		Ds.b	1
-KInt_OCode		Ds.w	1
+KInt_CCode		ds.b	1
+KInt_Askey		ds.b	1
+KInt_OCode		ds.w	1
 
 
 OldSpace:		dc.b	0
@@ -12464,11 +12464,12 @@ closeeverything:
 
 
 OpenGraphics:
-				Lea		gfxname(pc),a1
-				Moveq.l	#0,d0
+				lea		gfxname(pc),a1
+
+				moveq.l	#0,d0
 				CALLEXEC OpenLibrary
 
-				Move.l	d0,_GfxBase
+				move.l	d0,_GfxBase
 				rts
 
 gfxname			GRAFNAME
@@ -13022,36 +13023,36 @@ mt_sets:		move.b	$3(a6),d0
 mt_rts2:		rts
 
 mt_sin:
-				DC.b	$00,$18,$31,$4a,$61,$78,$8d,$a1,$b4,$c5,$d4,$e0,$eb,$f4,$fa,$fd
-				DC.b	$ff,$fd,$fa,$f4,$eb,$e0,$d4,$c5,$b4,$a1,$8d,$78,$61,$4a,$31,$18
+				dc.b	$00,$18,$31,$4a,$61,$78,$8d,$a1,$b4,$c5,$d4,$e0,$eb,$f4,$fa,$fd
+				dc.b	$ff,$fd,$fa,$f4,$eb,$e0,$d4,$c5,$b4,$a1,$8d,$78,$61,$4a,$31,$18
 
 mt_periods:
-				DC.w	$0358,$0328,$02fa,$02d0,$02a6,$0280,$025c,$023a,$021a,$01fc,$01e0
-				DC.w	$01c5,$01ac,$0194,$017d,$0168,$0153,$0140,$012e,$011d,$010d,$00fe
-				DC.w	$00f0,$00e2,$00d6,$00ca,$00be,$00b4,$00aa,$00a0,$0097,$008f,$0087
-				DC.w	$007f,$0078,$0071,$0000,$0000
+				dc.w	$0358,$0328,$02fa,$02d0,$02a6,$0280,$025c,$023a,$021a,$01fc,$01e0
+				dc.w	$01c5,$01ac,$0194,$017d,$0168,$0153,$0140,$012e,$011d,$010d,$00fe
+				dc.w	$00f0,$00e2,$00d6,$00ca,$00be,$00b4,$00aa,$00a0,$0097,$008f,$0087
+				dc.w	$007f,$0078,$0071,$0000,$0000
 
 reachedend:		dc.b	0
-mt_speed:		DC.b	6
-mt_songpos:		DC.b	0
-mt_pattpos:		DC.w	0
-mt_counter:		DC.b	0
+mt_speed:		dc.b	6
+mt_songpos:		dc.b	0
+mt_pattpos:		dc.w	0
+mt_counter:		dc.b	0
 
-mt_break:		DC.b	0
-mt_dmacon:		DC.w	0
-mt_samplestarts:DS.L $1f
-mt_voice1:		DS.w	10
-				DC.w	1
-				DS.w	3
-mt_voice2:		DS.w	10
-				DC.w	2
-				DS.w	3
-mt_voice3:		DS.w	10
-				DC.w	4
-				DS.w	3
-mt_voice4:		DS.w	10
-				DC.w	8
-				DS.w	3
+mt_break:		dc.b	0
+mt_dmacon:		dc.w	0
+mt_samplestarts:ds.l $1f
+mt_voice1:		ds.w	10
+				dc.w	1
+				ds.w	3
+mt_voice2:		ds.w	10
+				dc.w	2
+				ds.w	3
+mt_voice3:		ds.w	10
+				dc.w	4
+				ds.w	3
+mt_voice4:		ds.w	10
+				dc.w	8
+				ds.w	3
 
 PLR1_dead:		dc.w	0
 PLR2_dead:		dc.w	0
