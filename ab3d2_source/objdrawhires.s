@@ -21,7 +21,6 @@ whichdoing:		dc.w	0
 ********************************************************************************
 
 ObjDraw:
-
 				move.w	(a0)+,d0
 				cmp.w	#1,d0
 				blt.s	beforewat
@@ -64,7 +63,7 @@ donetopbot:
 				move.l	#depthtable,a3
 				move.l	a3,a4
 				move.w	#79,d7
-				emptytab:
+emptytab:
 				move.l	#$80010000,(a3)+
 				dbra	d7,emptytab
 
@@ -2829,33 +2828,11 @@ dontusegour:
 
 				move.l	TextureMaps,a0
 				move.w	(a1)+,d0
-				ifeq	CHEESEY
 				bge.s	.notsec
 				and.w	#$7fff,d0
 				add.l	#65536,a0
+
 .notsec
-				endc
-
-				ifne	CHEESEY
-
-				bge.s	.notsec
-				and.w	#$7fff,d0
-				add.w	#%0000010000000000,d0
-
-.notsec:
-
-				moveq	#0,d1
-				move.w	d0,d1					; 00000XXX 000000YY
-				lsr.w	#6,d0
-				add.w	d0,d1					; 00000XXX 000XXXYY
-				and.b	#%111,d1				; 00000XXX 00000XYY
-				add.b	d1,d1					; 00000XXX 0000XYY0
-				lsl.w	#4,d1					; 0XXX0000 XYY00000
-				and.w	#%0110000011100000,d1
-				move.w	d1,d0
-
-				endc
-
 				add.w	d0,a0
 				moveq	#0,d0
 				moveq	#0,d1
@@ -2996,25 +2973,7 @@ nocr:
 
 				add.l	ontoscr(pc,d1.w*4),a3
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-				ifeq	CHEESEY
 				move.l	#$3fffff,d1
-				endc
-				ifne	CHEESEY
-				move.l	#$1fffff,d1
-				endc
 
 				move.l	d3,a5
 				moveq	#0,d3
@@ -3028,17 +2987,11 @@ drawpol:
 				swap	d5
 				move.b	d5,d0
 
-				ifeq	CHEESEY
 				move.b	(a0,d0.w*4),d3
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d0.w),d3
-				endc
 
 				swap	d5
 				add.l	a5,d5
 				add.l	d4,d6
-
 
 				move.b	(a1,d3.w),(a3)
 				adda.w	#SCREENWIDTH,a3
@@ -3157,12 +3110,7 @@ nocrGL:
 
 				add.l	ontoscrGL(pc,d1.w*4),a3
 
-				ifeq	CHEESEY
 				move.l	#$3fffff,d1
-				endc
-				ifne	CHEESEY
-				move.l	#$1fffff,d1
-				endc
 
 				move.l	d3,a5
 				moveq	#0,d3
@@ -3176,12 +3124,7 @@ drawpolGL:
 				swap	d5
 				move.b	d5,d0
 
-				ifeq	CHEESEY
 				move.b	(a0,d0.w*4),d3
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d0.w),d3
-				endc
 				beq.s	itsblack
 
 				lsl.w	#8,d3
@@ -3336,13 +3279,7 @@ nocrg:
 				move.w	d1,d2
 				swap	d2
 
-				ifeq	CHEESEY
 				move.l	#$3fffff,d1
-				endc
-				ifne	CHEESEY
-				move.l	#$1fffff,d1
-				endc
-
 
 				subq.w	#1,d2
 drawpolg:
@@ -3356,12 +3293,7 @@ drawpolg:
 
 				move.w	d7,d3
 
-				ifeq	CHEESEY
 				move.b	(a0,d0.w*4),d3
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d0.w),d3
-				endc
 
 				swap	d2
 				swap	d5
@@ -3525,12 +3457,7 @@ nocrh:
 				divs.l	d0,d4
 
 				add.l	ontoscrh(pc,d1.w*4),a3
-				ifeq	CHEESEY
 				move.l	#$3fffff,d1
-				endc
-				ifne	CHEESEY
-				move.l	#$1fffff,d1
-				endc
 
 				move.l	d3,a5
 				moveq	#0,d3
@@ -3548,12 +3475,7 @@ drawpolh:
 				add.l	a5,d5
 				add.l	d4,d6
 
-				ifeq	CHEESEY
 				move.b	(a0,d0.w*4),d3
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d0.w),d3
-				endc
 
 				beq.s	.dontplot
 				move.b	(a1,d3.w),(a3)
@@ -3653,15 +3575,9 @@ putinlines:
 				divs.l	d4,d5
 				moveq	#0,d2
 				move.b	2(a1),d2
-				ifne	CHEESEY
-				asr.w	#1,d2
-				endc
 
 				moveq	#0,d6
 				move.b	6(a1),d6
-				ifne	CHEESEY
-				asr.w	#1,d6
-				endc
 				sub.w	d6,d2
 				swap	d2
 				swap	d6
@@ -3673,14 +3589,8 @@ putinlines:
 
 				moveq	#0,d5
 				move.b	3(a1),d5
-				ifne	CHEESEY
-				asr.w	#1,d5
-				endc
 				moveq	#0,d2
 				move.b	7(a1),d2
-				ifne	CHEESEY
-				asr.w	#1,d2
-				endc
 				sub.w	d2,d5
 				swap	d2
 				swap	d5
@@ -3776,14 +3686,8 @@ thislineontop:
 				divs.l	d4,d5
 				moveq	#0,d2
 				move.b	6(a1),d2
-				ifne	CHEESEY
-				asr.w	#1,d2
-				endc
 				moveq	#0,d6
 				move.b	2(a1),d6
-				ifne	CHEESEY
-				asr.w	#1,d6
-				endc
 				sub.w	d6,d2
 				swap	d2
 				swap	d6
@@ -3795,14 +3699,8 @@ thislineontop:
 
 				moveq	#0,d5
 				move.b	7(a1),d5
-				ifne	CHEESEY
-				asr.w	#1,d5
-				endc
 				moveq	#0,d2
 				move.b	3(a1),d2
-				ifne	CHEESEY
-				asr.w	#1,d2
-				endc
 				sub.w	d2,d5
 				swap	d2
 				swap	d5
@@ -3923,14 +3821,8 @@ piglloop:
 				divs.l	d4,d5
 				moveq	#0,d2
 				move.b	2(a1),d2
-				ifne	CHEESEY
-				asr.w	#1,d2
-				endc
 				moveq	#0,d6
 				move.b	6(a1),d6
-				ifne	CHEESEY
-				asr.w	#1,d6
-				endc
 				sub.w	d6,d2
 				swap	d2
 				swap	d6
@@ -3942,14 +3834,8 @@ piglloop:
 
 				moveq	#0,d5
 				move.b	3(a1),d5
-				ifne	CHEESEY
-				asr.w	#1,d5
-				endc
 				moveq	#0,d2
 				move.b	7(a1),d2
-				ifne	CHEESEY
-				asr.w	#1,d2
-				endc
 
 				sub.w	d2,d5
 				swap	d2
@@ -4059,14 +3945,8 @@ thislineontopgour:
 				divs.l	d4,d5
 				moveq	#0,d2
 				move.b	6(a1),d2
-				ifne	CHEESEY
-				asr.w	#1,d2
-				endc
 				moveq	#0,d6
 				move.b	2(a1),d6
-				ifne	CHEESEY
-				asr.w	#1,d6
-				endc
 				sub.w	d6,d2
 				swap	d2
 				swap	d6
@@ -4078,14 +3958,8 @@ thislineontopgour:
 
 				moveq	#0,d5
 				move.b	7(a1),d5
-				ifne	CHEESEY
-				asr.w	#1,d5
-				endc
 				moveq	#0,d2
 				move.b	3(a1),d2
-				ifne	CHEESEY
-				asr.w	#1,d2
-				endc
 
 				sub.w	d2,d5
 				swap	d2
