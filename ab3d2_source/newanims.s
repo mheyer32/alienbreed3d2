@@ -3818,7 +3818,7 @@ MAKEBACKROUT:
 				rts
 
 ****************************************
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 
 putinbackdrop:
 
@@ -3953,117 +3953,117 @@ BIGBACK:
 				move.l	(a7)+,a0
 				rts
 ****************************************
-				endc
+;				endc
 
-				ifne	CHEESEY
-
-putinbackdrop:
-
-				move.l	a0,-(a7)
-
-				move.w	tmpangpos,d5
-				and.w	#4095,d5
-				muls	#648,d5
-				divs	#4096,d5
-
-;xoffset of backdrop
-
-; CACHE_ON d1
-
-				tst.b	FULLSCR
-				bne		BIGBACK
-
-
-				move.l	FASTBUFFER,a0
-				add.l	d5,a1
-				add.w	#240,a1
-
-				move.w	MIDDLEY,d7
-
-				move.w	d7,d6
-				move.w	d6,d5
-				asr.w	#1,d5
-				add.w	d5,d6
-				sub.w	d6,a1
-				sub.w	d6,a5
-
-				asr.w	#2,d7
-
-				move.w	#240,d1
-				move.w	#240,d2
-				move.w	#480,d5
-				move.w	#(SMALL_WIDTH/8)-1,d4
-
-				moveq	#0,d0
-
-horline:
-				move.w	d7,d3
-				move.l	a0,a2
-				move.l	a1,a4
-vertline:
-				move.l	d0,(a2)
-				move.l	d0,SCREENWIDTH(a2)
-				move.l	d0,SCREENWIDTH*2(a2)
-				move.l	d0,SCREENWIDTH*3(a2)
-				move.l	d0,4(a2)
-				move.l	d0,4+SCREENWIDTH(a2)
-				move.l	d0,4+(SCREENWIDTH*2)(a2)
-				move.l	d0,4+(SCREENWIDTH*3)(a2)
-				adda.w	#SCREENWIDTH*4,a2
-				dbra	d3,vertline
-
-				addq.w	#8,a0
-
-				dbra	d4,horline
-
-				move.l	(a7)+,a0
-				rts
-
-
-BIGBACK:
-
-
-				move.l	FASTBUFFER,a0
-				add.l	d5,a1
-				add.w	#240,a1
-
-				move.w	MIDDLEY,d7
-
-				move.w	d7,d6
-				sub.w	d6,a1
-				sub.w	d6,a5
-
-				asr.w	#2,d7
-				move.w	#(FS_WIDTH/8)-1,d4
-				move.l	#0,d0
-
-.horline:
-				move.w	d7,d3
-				move.l	a0,a2
-				move.l	a1,a4
-.vertline:
-
-				move.l	d0,SCREENWIDTH*0(a2)
-				move.l	d0,SCREENWIDTH*1(a2)
-				move.l	d0,SCREENWIDTH*2(a2)
-				move.l	d0,SCREENWIDTH*3(a2)
-				move.l	d0,4+SCREENWIDTH*0(a2)
-				move.l	d0,4+SCREENWIDTH*1(a2)
-				move.l	d0,4+SCREENWIDTH*2(a2)
-				move.l	d0,4+SCREENWIDTH*3(a2)
-
-
-				adda.w	#SCREENWIDTH*4,a2
-				dbra	d3,.vertline
-
-				addq	#8,a0
-
-				dbra	d4,.horline
-
-				move.l	(a7)+,a0
-				rts
-
-				endc
+;				ifne	CHEESEY
+;
+;putinbackdrop:
+;
+;				move.l	a0,-(a7)
+;
+;				move.w	tmpangpos,d5
+;				and.w	#4095,d5
+;				muls	#648,d5
+;				divs	#4096,d5
+;
+;;xoffset of backdrop
+;
+;; CACHE_ON d1
+;
+;				tst.b	FULLSCR
+;				bne		BIGBACK
+;
+;
+;				move.l	FASTBUFFER,a0
+;				add.l	d5,a1
+;				add.w	#240,a1
+;
+;				move.w	MIDDLEY,d7
+;
+;				move.w	d7,d6
+;				move.w	d6,d5
+;				asr.w	#1,d5
+;				add.w	d5,d6
+;				sub.w	d6,a1
+;				sub.w	d6,a5
+;
+;				asr.w	#2,d7
+;
+;				move.w	#240,d1
+;				move.w	#240,d2
+;				move.w	#480,d5
+;				move.w	#(SMALL_WIDTH/8)-1,d4
+;
+;				moveq	#0,d0
+;
+;horline:
+;				move.w	d7,d3
+;				move.l	a0,a2
+;				move.l	a1,a4
+;vertline:
+;				move.l	d0,(a2)
+;				move.l	d0,SCREENWIDTH(a2)
+;				move.l	d0,SCREENWIDTH*2(a2)
+;				move.l	d0,SCREENWIDTH*3(a2)
+;				move.l	d0,4(a2)
+;				move.l	d0,4+SCREENWIDTH(a2)
+;				move.l	d0,4+(SCREENWIDTH*2)(a2)
+;				move.l	d0,4+(SCREENWIDTH*3)(a2)
+;				adda.w	#SCREENWIDTH*4,a2
+;				dbra	d3,vertline
+;
+;				addq.w	#8,a0
+;
+;				dbra	d4,horline
+;
+;				move.l	(a7)+,a0
+;				rts
+;
+;
+;BIGBACK:
+;
+;
+;				move.l	FASTBUFFER,a0
+;				add.l	d5,a1
+;				add.w	#240,a1
+;
+;				move.w	MIDDLEY,d7
+;
+;				move.w	d7,d6
+;				sub.w	d6,a1
+;				sub.w	d6,a5
+;
+;				asr.w	#2,d7
+;				move.w	#(FS_WIDTH/8)-1,d4
+;				move.l	#0,d0
+;
+;.horline:
+;				move.w	d7,d3
+;				move.l	a0,a2
+;				move.l	a1,a4
+;.vertline:
+;
+;				move.l	d0,SCREENWIDTH*0(a2)
+;				move.l	d0,SCREENWIDTH*1(a2)
+;				move.l	d0,SCREENWIDTH*2(a2)
+;				move.l	d0,SCREENWIDTH*3(a2)
+;				move.l	d0,4+SCREENWIDTH*0(a2)
+;				move.l	d0,4+SCREENWIDTH*1(a2)
+;				move.l	d0,4+SCREENWIDTH*2(a2)
+;				move.l	d0,4+SCREENWIDTH*3(a2)
+;
+;
+;				adda.w	#SCREENWIDTH*4,a2
+;				dbra	d3,.vertline
+;
+;				addq	#8,a0
+;
+;				dbra	d4,.horline
+;
+;				move.l	(a7)+,a0
+;				rts
+;
+;				endc
 
 MaxDamage:		dc.w	0
 
