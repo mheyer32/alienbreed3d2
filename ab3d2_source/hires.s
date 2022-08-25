@@ -2245,14 +2245,14 @@ zzzz:
 				jmp		endlevel
 noexit:
 
-; tst.w PLAYERONEHEALTH
-; bgt nnoend1
-; jmp endlevel
-;nnoend1:
-; tst.w PLAYERTWOHEALTH
-; bgt nnoend2
-; jmp endlevel
-;nnoend2:
+				tst.w PLAYERONEHEALTH
+				bgt nnoend1
+				jmp endlevel
+nnoend1:
+				tst.w PLAYERTWOHEALTH
+				bgt nnoend2
+				jmp endlevel
+nnoend2:
 
 ; move.l SwitchData,a0
 ; tst.b 24+8(a0)
