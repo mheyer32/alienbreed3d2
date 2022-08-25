@@ -170,11 +170,11 @@ fillconst:
 
 ;*******************************************************************************
 
-				IFEQ	CHEESEY
+;				IFEQ	CHEESEY
 FASTBUFFERSize	equ		SCREENWIDTH*256			+ 15 ; screen size plus alignment
-				ELSE
-FASTBUFFERSize	equ		SCREENWIDTH*160			+ 15
-				ENDC
+;				ELSE
+;FASTBUFFERSize	equ		SCREENWIDTH*160			+ 15
+;				ENDC
 
 FASTBUFFER:		dc.l	0						; aligned address
 FASTBUFFERalloc: dc.l	0						; allocated address
@@ -661,7 +661,7 @@ noclips:
 				move.w	#443,$dff0d6
 				move.w	#63,$dff0d8
 
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 
 				move.l	#tab,a1
 				move.w	#64,d7
@@ -680,7 +680,7 @@ scaledownlop:
 				addq	#1,d6
 				dbra	d7,outerlop
 
-				endc
+;				endc
 
 				move.l	#$dff000,a6
 
@@ -3430,7 +3430,7 @@ USEPLR1:
 
 				move.l	PLR1_Obj,a0
 
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 
 				tst.w	PLAYERONEHEALTH
 				bgt.s	.notdead
@@ -3484,11 +3484,11 @@ USEPLR1:
 
 				move.b	ObjInTop(a0),ObjInTop+128(a0)
 
-				endc
+;				endc
 
-				ifne	CHEESEY
-				move.w	#-1,12+128(a0)
-				endc
+;				ifne	CHEESEY
+;				move.w	#-1,12+128(a0)
+;				endc
 
 				rts
 
@@ -3731,7 +3731,7 @@ USEPLR2:
 
 				move.l	PLR2_Obj,a0
 
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 
 				tst.w	PLAYERTWOHEALTH
 				bgt.s	.notdead
@@ -3784,12 +3784,11 @@ USEPLR2:
 
 				move.b	ObjInTop(a0),ObjInTop+64(a0)
 
-				endc
+;				endc
 
-				ifne	CHEESEY
-
-				move.w	#-1,12+64(a0)
-				endc
+;				ifne	CHEESEY
+;				move.w	#-1,12+64(a0)
+;				endc
 
 				rts
 
@@ -7522,17 +7521,17 @@ pastsides:
 				move.w	d6,scaleval
 				move.w	(a0)+,d6
 
-				ifne	CHEESEY
-				move.w	d6,d7					; 000000XX000000YY
-				lsr.w	#6,d6
-				add.w	d6,d7					; 000000XX0000XXYY
+;				ifne	CHEESEY
+;				move.w	d6,d7					; 000000XX000000YY
+;				lsr.w	#6,d6
+;				add.w	d6,d7					; 000000XX0000XXYY
 
-				and.b	#%111,d6				; 000000XX00000XYY
-				add.b	d7,d7					; 000000XX0000XYY0
-				asl.w	#4,d7					; 00XX0000 XYY00000
-				and.w	#%0010000011100000,d7
-				move.w	d7,d6
-				endc
+;				and.b	#%111,d6				; 000000XX00000XYY
+;				add.b	d7,d7					; 000000XX0000XYY0
+;				asl.w	#4,d7					; 00XX0000 XYY00000
+;				and.w	#%0010000011100000,d7
+;				move.w	d7,d6
+;				endc
 
 				move.w	d6,whichtile
 				move.w	(a0)+,d6
@@ -7597,10 +7596,10 @@ groundfloor:
 				asl.l	d3,d7
 .samescale
 
-				ifne	CHEESEY
-				asr.l	#1,d6
-				asr.l	#1,d7
-				endc
+;				ifne	CHEESEY
+;				asr.l	#1,d6
+;				asr.l	#1,d7
+;				endc
 
 				move.l	d6,sxoff
 				move.l	d7,szoff
@@ -8548,15 +8547,15 @@ pastfloorbright:
 				muls	sinval,d2				;
 				neg.l	d2						; -sin * width
 
-				ifne	CHEESEY
-				; scale for lowres CHEESEY version
-				asr.l	#3,d2
-				asr.l	#3,d1
-				endc
-				ifeq	CHEESEY
+;				ifne	CHEESEY
+;				; scale for lowres CHEESEY version
+;				asr.l	#3,d2
+;				asr.l	#3,d1
+;				endc
+;				ifeq	CHEESEY
 				asr.l	#2,d2
 				asr.l	#2,d1
-				endc
+;				endc
 
 scaleprog:
 				move.w	scaleval(pc),d3
@@ -8724,12 +8723,12 @@ doneallmult:
 				asr.l	#8,d1					;  ds/dx
 				move.w	d1,d2					;  move ds/dx into lower half of dt/dx
 
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				move.l	#$3fff3fff,d1
-				endc
-				ifne	CHEESEY
-				move.l	#$1fff1fff,d1
-				endc
+;				endc
+;				ifne	CHEESEY
+;				move.l	#$1fff1fff,d1
+;				endc
 				and.l	d1,d5
 ; swap d5
 ; move.w startsmoothz,d5
@@ -8882,12 +8881,12 @@ gouraudfloor:
 
 				move.w	d0,d3					; line X
 
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3			; fetch floor texel; but why d6*4?
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d6.w),d3			; fetch floor texel
-				endc
+;				endc
+;				ifne	CHEESEY
+;				move.b	(a0,d6.w),d3			; fetch floor texel
+;				endc
 
 				add.w	d1,d0					;
 				add.l	d2,d5
@@ -8905,12 +8904,12 @@ gouraudfloor:
 				swap	d6
 				move.b	d3,d6
 				move.w	d0,d3
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d6.w),d3
-				endc
+;				endc
+;				ifne	CHEESEY
+;				move.b	(a0,d6.w),d3
+;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -8921,12 +8920,12 @@ gouraudfloor:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d6.w),d3
-				endc
+;				endc
+;				ifne	CHEESEY
+;				move.b	(a0,d6.w),d3
+;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -8947,12 +8946,12 @@ acrossscrngour:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d6.w),d3
-				endc
+;				endc
+;				ifne	CHEESEY
+;				move.b	(a0,d6.w),d3
+;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -8963,12 +8962,12 @@ acrossscrngour:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d6.w),d3
-				endc
+;				endc
+;				ifne	CHEESEY
+;				move.b	(a0,d6.w),d3
+;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -8979,12 +8978,12 @@ acrossscrngour:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d6.w),d3
-				endc
+;				endc
+;				ifne	CHEESEY
+;				move.b	(a0,d6.w),d3
+;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -8995,12 +8994,12 @@ acrossscrngour:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d6.w),d3
-				endc
+;				endc
+;				ifne	CHEESEY
+;				move.b	(a0,d6.w),d3
+;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -9030,12 +9029,12 @@ gouraudfloorDOUB:
 				swap	d6
 				move.b	d3,d6
 				move.w	d0,d3
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d6.w),d3
-				endc
+;				endc
+;				ifne	CHEESEY
+;				move.b	(a0,d6.w),d3
+;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -9052,12 +9051,12 @@ gouraudfloorDOUB:
 				swap	d6
 				move.b	d3,d6
 				move.w	d0,d3
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d6.w),d3
-				endc
+;				endc
+;				ifne	CHEESEY
+;				move.b	(a0,d6.w),d3
+;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -9068,12 +9067,12 @@ gouraudfloorDOUB:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d6.w),d3
-				endc
+;				endc
+;				ifne	CHEESEY
+;				move.b	(a0,d6.w),d3
+;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -9094,12 +9093,12 @@ acrossscrngourD:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d6.w),d3
-				endc
+;				endc
+;				ifne	CHEESEY
+;				move.b	(a0,d6.w),d3
+;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -9110,12 +9109,12 @@ acrossscrngourD:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d6.w),d3
-				endc
+;				endc
+;				ifne	CHEESEY
+;				move.b	(a0,d6.w),d3
+;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -9126,12 +9125,12 @@ acrossscrngourD:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d6.w),d3
-				endc
+;				endc
+;				ifne	CHEESEY
+;				move.b	(a0,d6.w),d3
+;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -9142,12 +9141,12 @@ acrossscrngourD:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-				endc
-				ifne	CHEESEY
-				move.b	(a0,d6.w),d3
-				endc
+;				endc
+;				ifne	CHEESEY
+;				move.b	(a0,d6.w),d3
+;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -12020,9 +12019,9 @@ val				SET		val+1
 				ENDR
 
 tab:
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				ds.b	256*65
-				endc
+;				endc
 
 test:			dc.l	0
 				ds.l	30
@@ -12079,12 +12078,12 @@ wallrouts:
 ; incbin "2x2walldraw"
 				CNOP	0,64
 
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 BackPicture:				; Is this the skytexture?
 				dc.l	0
 ; incbin "rawback"
 EndBackPicture:				; FIXME: this obviously doesn't work anymore, yet is still referfenced
-				endc
+;				endc
 
 SineTable:
 				incbin	"bigsine"				; sine/cosine << 15
