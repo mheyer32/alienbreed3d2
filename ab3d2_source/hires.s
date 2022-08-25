@@ -766,8 +766,9 @@ scaledownlop:
 
 				move.l	#0,hitcol
 
-				cmp.b	#'n',mors
-				bne.s	NOCLTXT
+;				cmp.b	#'n',mors 	; 0xABADCAFE - commented out as dependent branch commented out
+;				bne.s	NOCLTXT		; 0xABADCAFE - commented out to avoid "branch converted to nop"
+
 
 ; Wait for mouse button, then fade out level text
 ;				move.b	#0,lastpressed
@@ -2534,7 +2535,7 @@ CLIPANDDRAW:
 				asr.w	#1,d0
 				asr.w	#1,d2
 .noDoubleWidth	tst.b	DOUBLEHEIGHT
-				beq.s	.noDoubleHeight
+				;beq.s	.noDoubleHeight         ; 0xABADCAFE - commented out to avoid branch converted to nop
 				;asr.w	#1,d1					; DOUBLEHIGHT renderbuffer is still full height
 				;asr.w	#1,d3
 .noDoubleHeight

@@ -24,7 +24,6 @@ PLAYERONENOISEVOL: dc.w	0
 PLAYERTWONOISEVOL: dc.w	0
 
 AIROUTINE:
-
 				move.w	#-20,2(a0)
 
 ; bsr CHECKDAMAGE
@@ -45,7 +44,6 @@ AIROUTINE:
 				beq		DODIE
 
 DOTAKEDAMAGE:
-
 				jsr		WALKANIM
 				move.w	4(a0),-(a7)
 				bsr		GETROOMSTATSSTILL
@@ -55,8 +53,8 @@ DOTAKEDAMAGE:
 				blt		.notflying
 
 				move.w	d0,4(a0)
-.notflying
 
+.notflying
 				tst.b	FINISHEDANIM
 				beq.s	stillhurting
 				move.b	#0,currentmode(a0)
@@ -64,15 +62,14 @@ DOTAKEDAMAGE:
 				move.w	#0,SecTimer(a0)
 
 stillhurting:
-
 				bsr		DOTORCH
 
 				tst.w	12-64(a0)
 				blt.s	.nocopyin
 				move.w	12(a0),12-64(a0)
 				move.w	GraphicRoom(a0),GraphicRoom-64(a0)
-.nocopyin:
 
+.nocopyin:
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.w	PLR1_xoff,newx
 				move.w	PLR1_zoff,newz
@@ -107,13 +104,11 @@ stilldying:
 				blt.s	.nocopyin
 				move.w	12(a0),12-64(a0)
 				move.w	GraphicRoom(a0),GraphicRoom-64(a0)
+
 .nocopyin:
-
-
 				rts
 
 TAKEDAMAGE:
-
 				clr.b	getout
 				moveq	#0,d0
 				move.b	damagetaken(a0),d0
@@ -159,6 +154,7 @@ TAKEDAMAGE:
 				st		getout
 
 				rts
+
 .dodododo
 
 ; asr.w #2,d2
@@ -178,15 +174,13 @@ TAKEDAMAGE:
 getout:			dc.w	0
 
 JUSTDIED:
-
 				move.b	#0,numlives(a0)
-
 				move.w	TextToShow(a0),d0
 				blt.s	.notext
-
 				muls	#160,d0
 				add.l	LEVELDATA,d0
 				jsr		SENDMESSAGE
+
 ; move.w #0,SCROLLXPOS
 ; move.l d0,SCROLLPOINTER
 ; add.l #160,d0
@@ -194,8 +188,6 @@ JUSTDIED:
 ; move.w #40,SCROLLTIMER
 
 .notext:
-
-
 				move.l	ObjectPoints,a2
 				move.w	(a0),d3
 				move.w	(a2,d3.w*8),newx
@@ -237,7 +229,6 @@ JUSTDIED:
 				move.w	#9,d3
 
 spawny:
-
 .findonefree
 				move.w	12(a2),d2
 				blt.s	.foundonefree
@@ -249,7 +240,6 @@ spawny:
 				bra		.cantshoot
 
 .foundonefree
-
 				move.b	A_HitPoints+1(a4),numlives(a2)
 				move.b	TypeOfSplat,TypeOfThing(a2)
 				move.b	#-1,TextToShow(a2)
@@ -280,12 +270,11 @@ spawny:
 				move.b	#3,16-64(a2)
 
 				dbra	d7,spawny
-.cantshoot
 
+.cantshoot
 				bra		spawned
 
 gosplutch:
-
 				move.w	#8,d2
 				jsr		ExplodeIntoBits
 
@@ -299,19 +288,15 @@ spawned:
 				rts
 
 DORETREAT
-
 				rts
 
 DODEFAULT:
-
 				cmp.w	#1,DEFAULTMODE
 				blt		PROWLRANDOM
 				beq		PROWLRANDOMFLYING
-
 				rts
 
 DORESPONSE:
-
 				cmp.w	#1,RESPONSEMODE
 				blt		CHARGE
 				beq		CHARGETOSIDE
@@ -349,35 +334,26 @@ DOFOLLOWUP:
 FLYABIT:		dc.w	0
 
 PROWLRANDOMFLYING:
-
 				move.l	#1000*256,StepDownVal
-
 				st		FLYABIT
 				bra		PROWLFLY
 
 PROWLRANDOM:
-
 				clr.b	FLYABIT
 				move.l	#30*256,StepDownVal
 
 PROWLFLY:
-
 				move.l	#20*256,StepUpVal
-
 				tst.b	damagetaken(a0)
 				beq.s	.nodamage
-
 				bsr		TAKEDAMAGE
 				tst.b	getout
 				beq.s	.nodamage
 				rts
 
 .nodamage:
-
 				jsr		WALKANIM
-
 				move.l	BOREDOMPTR,a1
-
 				move.w	2(a1),d1
 				move.w	4(a1),d2
 
@@ -392,15 +368,14 @@ PROWLFLY:
 				sub.w	d1,d3
 				bge.s	.okp1
 				neg.w	d3
-.okp1:
 
+.okp1:
 				sub.w	d2,d4
 				bge.s	.okp2
 				neg.w	d4
+
 .okp2
-
 				add.w	d3,d4					; dist away
-
 				cmp.w	#50,d4
 				blt.s	.NONEWSTORE
 
@@ -410,7 +385,6 @@ PROWLFLY:
 				bra		.NEWSTORE
 
 .NONEWSTORE
-
 				sub.w	#1,(a1)
 				bgt.s	.NEWSTORE
 
@@ -431,22 +405,23 @@ PROWLFLY:
 				beq.s	.plusagain
 				cmp.b	#$7f,d0
 				bne.s	.okaway2
+
 .plusagain:
 				move.w	TargCPt(a0),d1
 				add.w	#1,d1
 				cmp.w	NumCPts,d1
 				blt		.nobin
 				moveq	#0,d1
+
 .nobin
 				dbra	d7,.tryagain
-.okaway2
 
+.okaway2
 				move.w	#50,(a1)
 
 .NEWSTORE
 
 WIDGET:
-
 				tst.w	PLAYERONENOISEVOL
 				beq.s	.noplayernoise
 
@@ -457,7 +432,6 @@ WIDGET:
 				addq	#1,a1
 
 .pnotintop:
-
 				moveq	#0,d1
 				move.b	ToZoneCpt(a1),d1
 
@@ -467,12 +441,11 @@ WIDGET:
 				cmp.b	#$7f,d0
 				bne.s	.okaway
 				move.w	CurrCPt(a0),d0
-.okaway
 
+.okaway
 				move.w	d0,TargCPt(a0)
 
 .noplayernoise:
-
 				moveq	#0,d0
 				move.b	teamnumber(a0),d0
 				blt.s	.noteam
@@ -487,8 +460,8 @@ WIDGET:
 				bne.s	.noremove
 				move.w	#-1,SEENBY(a2)
 				bra.s	.noteam
-.noremove:
 
+.noremove:
 				asl.w	#4,d0
 				lea		NASTYWORK(pc),a1
 				add.w	d0,a1
@@ -503,7 +476,6 @@ WIDGET:
 				bra.s	.notseen
 
 .noteam:
-
 				move.w	(a0),d0
 				asl.w	#4,d0
 				lea		NASTYWORK(pc),a1
@@ -514,9 +486,8 @@ WIDGET:
 				blt.s	.notseen
 				move.w	lastcpt(a1),TargCPt(a0)
 				move.w	#-1,lastzone(a1)
+
 .notseen:
-
-
 				move.w	CurrCPt(a0),d0			; where the alien is now.
 				move.w	TargCPt(a0),d1
 				jsr		GetNextCPt
@@ -526,6 +497,7 @@ WIDGET:
 				bne.s	.norand
 				tst.b	ONLYSEE
 				beq.s	.norand
+
 .yesrand
 				jsr		GetRand
 				moveq	#0,d1
@@ -542,20 +514,19 @@ WIDGET:
 				beq.s	.plusagain
 				cmp.b	#$7f,d0
 				bne.s	.okaway2
+
 .plusagain:
 				move.w	TargCPt(a0),d1
 				add.w	#1,d1
 				cmp.w	NumCPts,d1
 				blt		.nobin
 				moveq	#0,d1
+
 .nobin
 				dbra	d7,.tryagain
 .okaway2
 
-
 .norand:
-
-
 				move.w	d0,MIDDLECPT
 
 				move.l	CPtPos,a1
@@ -595,6 +566,7 @@ WIDGET:
 
 				muls.w	prowlspeed,d2
 				move.w	d2,speed
+
 .nospeed:
 				move.w	#40,Range
 				move.w	4(a0),d0
@@ -635,7 +607,6 @@ WIDGET:
 				move.w	d1,TargCPt(a0)
 
 .notnextcpt:
-
 				move.w	#%1000000000,wallflags
 				move.l	#%00001000110010000010,CollideFlags
 				jsr		Collision
@@ -648,7 +619,6 @@ WIDGET:
 				bra		.hitathing
 
 .canmove:
-
 				clr.b	wallbounce
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
@@ -660,8 +630,8 @@ WIDGET:
 				blt.s	.nocopyin
 				move.w	12(a0),12-64(a0)
 				move.w	GraphicRoom(a0),GraphicRoom-64(a0)
-.nocopyin:
 
+.nocopyin:
 				move.w	4(a0),-(a7)
 				bsr		GETROOMSTATS
 				move.w	(a7)+,d0
@@ -670,8 +640,8 @@ WIDGET:
 				beq.s	.noflymove
 				move.w	d0,4(a0)
 				bsr		FLYTOCPTHEIGHT
-.noflymove:
 
+.noflymove:
 				bsr		DOTORCH
 
 				move.b	#0,currentmode(a0)
@@ -715,16 +685,15 @@ WIDGET:
 				move.w	#0,SecTimer(a0)
 				move.b	#1,currentmode(a0)
 				move.b	#1,WhichAnim(a0)
+
 .notreacted:
 				move.w	ANIMFACING,d0
 				add.w	d0,Facing(a0)
 				rts
 .nosee:
 				move.w	REACTIONTIME,ObjTimer(a0)
-
 				move.w	ANIMFACING,d0
 				add.w	d0,Facing(a0)
-
 				rts
 
 ***********************************************
@@ -743,17 +712,14 @@ CHARGE:
 				move.l	#30*256,StepDownVal
 
 INTOCHA:
-
 				tst.b	damagetaken(a0)
 				beq.s	.nodamage
-
 				bsr		TAKEDAMAGE
 				tst.b	getout
 				beq.s	.nodamage
 				rts
 
 .nodamage:
-
 				jsr		ATTACKANIM
 ; tst.b FINISHEDANIM
 ; beq.s .notfinishedattacking
@@ -771,8 +737,8 @@ INTOCHA:
 				asr.l	#7,d0
 				add.w	d0,4(a0)
 				bra		.NoMunch
-.notel:
 
+.notel:
 				move.w	PLR1_xoff,newx
 				move.w	PLR1_zoff,newz
 				move.w	PLR1_sinval,tempsin
@@ -782,9 +748,8 @@ INTOCHA:
 				tst.b	TOSIDE
 				beq.s	.noside
 				jsr		RunAround
+
 .noside:
-
-
 				move.w	(a0),d1
 				move.l	#ObjRotated,a6
 				move.l	ObjectPoints,a1
@@ -824,7 +789,6 @@ INTOCHA:
 				bra		.hitathing
 
 .nothitplayer:
-
 				move.l	#%11111111110111000010,CollideFlags
 				jsr		Collision
 				tst.b	hitwall
@@ -836,7 +800,6 @@ INTOCHA:
 				bra		.hitathing
 
 .canmove:
-
 				clr.b	wallbounce
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
@@ -849,8 +812,8 @@ INTOCHA:
 				blt.s	.nocopyin
 				move.w	12(a0),12-64(a0)
 				move.w	GraphicRoom(a0),GraphicRoom-64(a0)
-.nocopyin:
 
+.nocopyin:
 				tst.b	GotThere
 				beq.s	.NoMunch
 				tst.b	DoAction
@@ -872,15 +835,10 @@ INTOCHA:
 				add.w	d0,ImpactZ(a5)
 
 .NoMunch:
-
 				bsr		STOREPLAYERPOS
-
 				bsr		GETROOMSTATS
-
 				bsr		GETROOMCPT
-
 				bsr		DOTORCH
-
 				bsr		LOOKFORPLAYER1
 				move.b	#0,currentmode(a0)
 				tst.b	17(a0)
@@ -903,6 +861,7 @@ INTOCHA:
 				move.b	#1,currentmode(a0)
 				move.b	#1,WhichAnim(a0)
 				rts
+
 .nosee:
 				move.b	#0,WhichAnim(a0)
 				move.w	#0,SecTimer(a0)
@@ -910,17 +869,14 @@ INTOCHA:
 				add.w	d0,Facing(a0)
 				rts
 
-
 ATTACKWITHGUNFLYING
 				st		FLYABIT
 				bra		intoatt
 
 ATTACKWITHGUN:
 				clr.b	FLYABIT
+
 intoatt:
-
-
-
 				move.l	LINKFILE,a1
 				lea		AlienStats(a1),a1
 				moveq	#0,d0
@@ -949,7 +905,6 @@ intoatt:
 				beq		ATTACKWITHBULLETGUN
 
 ATTACKWITHINSTANTGUN:
-
 				tst.b	damagetaken(a0)
 				beq.s	.nodamage
 
@@ -962,7 +917,6 @@ ATTACKWITHINSTANTGUN:
 				rts
 
 .nodamage:
-
 				jsr		ATTACKANIM
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -978,7 +932,6 @@ ATTACKWITHINSTANTGUN:
 				jsr		HeadTowardsAng
 				move.w	AngRet,Facing(a0)
 				movem.l	(a7)+,d0-d7/a0-a6
-
 
 				bsr		STOREPLAYERPOS
 
@@ -1005,7 +958,6 @@ ATTACKWITHINSTANTGUN:
 				rts
 
 .yessee:
-
 				tst.b	DoAction
 				beq		.noshootythang
 
@@ -1045,6 +997,7 @@ ATTACKWITHINSTANTGUN:
 				bgt.s	.hitplr
 				jsr		SHOOTPLAYER1
 				bra.s	.missplr
+
 .hitplr:
 				move.l	PLR1_Obj,a1
 				move.b	SHOTPOWER,d0
@@ -1068,7 +1021,6 @@ ATTACKWITHINSTANTGUN:
 				moveq	#0,d3
 				move.b	SHOTPOWER,d3
 
-
 				muls	d3,d0
 				divs	d2,d0
 				muls	d3,d1
@@ -1080,9 +1032,7 @@ ATTACKWITHINSTANTGUN:
 .missplr:
 				movem.l	(a7)+,a0/a1
 
-
 .noshootythang:
-
 				move.w	(a0),d1
 				move.l	ObjectPoints,a1
 				lea		(a1,d1.w*8),a1
@@ -1101,12 +1051,11 @@ ATTACKWITHINSTANTGUN:
 				move.w	ANIMFACING,d0
 				add.w	d0,Facing(a0)
 				rts
-.notfinishedattacking:
 
+.notfinishedattacking:
 				rts
 
 ATTACKWITHBULLETGUN:
-
 				tst.b	damagetaken(a0)
 				beq.s	.nodamage
 
@@ -1119,8 +1068,6 @@ ATTACKWITHBULLETGUN:
 				rts
 
 .nodamage:
-
-
 				jsr		ATTACKANIM
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -1152,8 +1099,8 @@ ATTACKWITHBULLETGUN:
 
 				jsr		FireAtPlayer1
 				movem.l	(a7)+,d0-d7/a0-a6
-.noshootythang:
 
+.noshootythang:
 				move.w	(a0),d1
 				move.l	ObjectPoints,a1
 				lea		(a1,d1.w*8),a1
@@ -1162,7 +1109,6 @@ ATTACKWITHBULLETGUN:
 				move.w	4(a1),newz
 
 				bsr		DOTORCH
-
 
 				tst.b	FINISHEDANIM
 				beq.s	.notfinishedattacking
@@ -1173,8 +1119,8 @@ ATTACKWITHBULLETGUN:
 				move.w	ANIMFACING,d0
 				add.w	d0,Facing(a0)
 				rts
-.notfinishedattacking:
 
+.notfinishedattacking:
 				bsr		LOOKFORPLAYER1
 				move.b	#0,currentmode(a0)
 				tst.b	17(a0)
@@ -1187,6 +1133,7 @@ ATTACKWITHBULLETGUN:
 				move.w	ANIMFACING,d0
 				add.w	d0,Facing(a0)
 				rts
+
 .nosee:
 				move.b	#0,WhichAnim(a0)
 				move.w	#0,SecTimer(a0)
@@ -1205,11 +1152,9 @@ CHARGETOSIDEFLYING:
 CHARGEFLYING:
 				clr.b	TOSIDE
 				st		FLYABIT
-
 				move.l	#1000*256,StepDownVal
 
 INTOCHAFLY:
-
 				tst.b	damagetaken(a0)
 				beq.s	.nodamage
 
@@ -1221,8 +1166,6 @@ INTOCHAFLY:
 				rts
 
 .nodamage:
-
-
 				jsr		ATTACKANIM
 ; tst.b FINISHEDANIM
 ; beq.s .notfinishedattacking
@@ -1240,8 +1183,8 @@ INTOCHAFLY:
 				asr.l	#7,d0
 				add.w	d0,4(a0)
 				bra		.NoMunch
-.notel:
 
+.notel:
 				move.w	(a0),d1
 				move.l	#ObjRotated,a6
 				move.l	ObjectPoints,a1
@@ -1258,8 +1201,8 @@ INTOCHAFLY:
 				tst.b	TOSIDE
 				beq.s	.noside
 				jsr		RunAround
-.noside:
 
+.noside:
 				move.w	responsespeed,d2
 				muls.w	TempFrames,d2
 				move.w	d2,speed
@@ -1292,7 +1235,6 @@ INTOCHAFLY:
 				bra		.hitathing
 
 .nothitplayer:
-
 				move.l	#%11111111110111000010,CollideFlags
 				jsr		Collision
 				tst.b	hitwall
@@ -1304,16 +1246,13 @@ INTOCHAFLY:
 				bra		.hitathing
 
 .canmove:
-
 				clr.b	wallbounce
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
 				move.b	StoodInTop,ObjInTop(a0)
-
 				move.w	AngRet,Facing(a0)
 
 .hitathing:
-
 				tst.b	GotThere
 				beq.s	.NoMunch
 				tst.b	DoAction
@@ -1322,8 +1261,8 @@ INTOCHAFLY:
 				move.b	DoAction,d0
 				asl.w	#1,d0
 				add.b	d0,damagetaken(a5)
-.NoMunch:
 
+.NoMunch:
 				bsr		STOREPLAYERPOS
 
 				move.w	4(a0),-(a7)
@@ -1331,11 +1270,8 @@ INTOCHAFLY:
 				move.w	(a7)+,4(a0)
 
 				bsr		GETROOMCPT
-
 				bsr		FLYTOPLAYERHEIGHT
-
 				bsr		DOTORCH
-
 				bsr		LOOKFORPLAYER1
 				move.b	#0,currentmode(a0)
 				tst.b	17(a0)
@@ -1377,7 +1313,6 @@ PAUSEBRIEFLY
 				rts
 
 .nodamage:
-
 				move.w	#0,SecTimer(a0)
 				jsr		WALKANIM
 
@@ -1409,6 +1344,7 @@ PAUSEBRIEFLY
 				move.w	ANIMFACING,d0
 				add.w	d0,Facing(a0)
 				rts
+
 .nosee:
 				move.b	#0,WhichAnim(a0)
 				move.w	ANIMFACING,d0
@@ -1446,17 +1382,14 @@ APPROACHTOSIDE:
 				move.l	#30*256,StepDownVal
 
 INTOAPP:
-
 				tst.b	damagetaken(a0)
 				beq.s	.nodamage
-
 				bsr		TAKEDAMAGE
 				tst.b	getout
 				beq.s	.nodamage
 				rts
 
 .nodamage:
-
 				jsr		WALKANIM
 
 				move.w	12(a0),FromZone
@@ -1467,8 +1400,8 @@ INTOAPP:
 				asr.l	#7,d0
 				add.w	d0,4(a0)
 				bra		.NoMunch
-.notel:
 
+.notel:
 				move.w	(a0),d1
 				move.l	#ObjRotated,a6
 				move.l	ObjectPoints,a1
@@ -1486,8 +1419,8 @@ INTOAPP:
 				tst.b	TOSIDE
 				beq.s	.noside
 				jsr		RunAround
-.noside:
 
+.noside:
 				move.w	#0,speed
 				tst.b	DoAction
 				beq.s	.nospeed
@@ -1496,6 +1429,7 @@ INTOAPP:
 				asl.w	#2,d2
 				muls.w	followupspeed,d2
 				move.w	d2,speed
+
 .nospeed:
 				move.w	#160,Range
 				move.w	4(a0),d0
@@ -1526,7 +1460,6 @@ INTOAPP:
 				bra		.hitathing
 
 .nothitplayer:
-
 				move.l	#%11111111110111000010,CollideFlags
 				jsr		Collision
 				tst.b	hitwall
@@ -1538,16 +1471,13 @@ INTOAPP:
 				bra		.hitathing
 
 .canmove:
-
 				clr.b	wallbounce
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
 				move.b	StoodInTop,ObjInTop(a0)
-
 				move.w	AngRet,Facing(a0)
 
 .hitathing:
-
 				tst.w	12-64(a0)
 				blt.s	.nocopyin
 				move.w	12(a0),12-64(a0)
@@ -1574,18 +1504,17 @@ INTOAPP:
 				beq.s	.notfl
 
 				bsr		FLYTOPLAYERHEIGHT
-.notfl:
 
+.notfl:
 				move.w	4(a0),-(a7)
 				bsr		GETROOMSTATS
 				move.w	(a7)+,d0
 				tst.b	FLYABIT
 				beq.s	.notflying
 				move.w	d0,4(a0)
+
 .notflying:
-
 				bsr		GETROOMCPT
-
 				bsr		DOTORCH
 
 				move.b	#0,currentmode(a0)
@@ -1594,8 +1523,8 @@ INTOAPP:
 				bsr		CHECKATTACKONGROUND
 				tst.b	d0
 				beq		.nosee
-.inair:
 
+.inair:
 				bsr		LOOKFORPLAYER1
 				tst.b	17(a0)
 				beq.s	.nosee
@@ -1615,6 +1544,7 @@ INTOAPP:
 				move.w	ANIMFACING,d0
 				add.w	d0,Facing(a0)
 				rts
+
 .nosee:
 				move.b	#0,WhichAnim(a0)
 				move.w	ANIMFACING,d0
@@ -1626,11 +1556,9 @@ INTOAPP:
 ***********************************************
 
 FLYTOCPTHEIGHT
-
 				move.w	MIDDLECPT,d0
 				move.l	CPtPos,a1
 				move.w	4(a1,d0.w*8),d1
-
 				bra		intoflytoheight
 
 FLYTOPLAYERHEIGHT:
@@ -1641,34 +1569,29 @@ intoflytoheight:
 				move.w	4(a0),d0
 				cmp.w	d0,d1
 				bgt.s	.flydown
-
 				move.w	objyvel(a0),d2
-
 				sub.w	#2,d2
 				cmp.w	#-32,d2
 				bgt.s	.nofastup
 				move.w	#-32,d2
-.nofastup
 
+.nofastup
 				move.w	d2,objyvel(a0)
 				add.w	d2,4(a0)
-
 				bra		CHECKFLOORCEILING
 
 .flydown
 				move.w	objyvel(a0),d2
-
 				add.w	#2,d2
 				cmp.w	#32,d2
 				blt.s	.nofastdown
 				move.w	#32,d2
-.nofastdown
 
+.nofastdown
 				move.w	d2,objyvel(a0)
 				add.w	d2,4(a0)
 
 CHECKFLOORCEILING:
-
 				move.w	4(a0),d2
 				move.l	thingheight,d4
 				asr.l	#8,d4
