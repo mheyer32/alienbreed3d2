@@ -3,9 +3,7 @@
 ENDOFQUEUE:		dc.l	0
 
 INITQUEUE:
-
 				move.l	#WorkSpace,ENDOFQUEUE
-
 				rts
 
 QUEUEFILE:
@@ -18,23 +16,19 @@ QUEUEFILE:
 				movem.l	d0-d7/a0-a6,-(a7)
 
 				move.l	ENDOFQUEUE,a1
-
 				move.l	d0,(a1)+
 				move.l	d1,(a1)+
 				move.l	TYPEOFMEM,(a1)+
 				move.w	#79,d0
+
 .copyname:
 				move.b	(a0)+,(a1)+
 				dbra	d0,.copyname
-
 				add.l	#100,ENDOFQUEUE
-
 				movem.l	(a7)+,d0-d7/a0-a6
-
 				rts
 
 FLUSHQUEUE:
-
 				bsr		FLUSHPASS
 
 tryagain
@@ -43,11 +37,13 @@ tryagain
 
 * Find first unloaded file and prompt for disk.
 				move.l	#WorkSpace,a2
+
 .findfind:
 				tst.l	(a2)
 				bne.s	.foundunloaded
 				add.l	#100,a2
 				bra.s	.findfind
+
 .foundunloaded:
 
 * A2 points at an unloaded file thingy.
@@ -855,15 +851,8 @@ LOADFLOOR
 dotty:			dc.l	0
 BUFFE:			ds.b	80
 
-
-
 floortilename:
-				ifeq	CHEESEY
 				dc.b	'includes/floortile'
-				endc
-				ifne	CHEESEY
-				dc.b	'includes/SMALLfloortile'
-				endc
 				dc.b	0
 
 				even
@@ -883,10 +872,7 @@ RELEASESAMPMEM:
 				move.l	(a7)+,a0
 				bra		.relmem
 
-
-
 RELEASELEVELMEM:
-
 				move.l	LINKS,a1
 				CALLEXEC FreeVec
 				clr.l	LINKS
@@ -909,16 +895,12 @@ RELEASELEVELMEM:
 				rts
 
 RELEASEFLOORMEM:
-
 				move.l	floortile,d1
 				CALLEXEC FreeVec
 				clr.l	floortile
 				rts
 
 RELEASESCRNMEM:
-
 				rts
 
 unLHA:			incbin	"decomp4.raw"
-
-
