@@ -715,7 +715,7 @@ LOADSAMPS:
 
 oktoload:
 
-				move.l	#MEMF_CHIP,TYPEOFMEM
+				move.l	#MEMF_ANY,TYPEOFMEM
 				move.l	a1,d0
 				move.l	d0,d1
 				add.l	#4,d1

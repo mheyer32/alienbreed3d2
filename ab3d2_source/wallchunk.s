@@ -179,7 +179,7 @@ ITSASFX:
 				move.l	(a0)+,d0				;file size
 				move.l	d0,.SampleSize
 				move.l	a0,.CompressedSamplePosition
-				move.l	#MEMF_CHIP,d1
+				move.l	#MEMF_ANY,d1
 				CALLEXEC AllocVec
 				move.l	d0,.SamplePosition
 				move.l	.CompressedSamplePosition,a0
