@@ -67,50 +67,50 @@ MASTERPLAYERTWOGUNS:
 				dcb.w	10,0
 
 KVALTOASC:
-				Dc.b	" `  "," 1  "," 2  "," 3  "
+				dc.b	" `  "," 1  "," 2  "," 3  "
 				dc.b	" 4  "," 5  "," 6  "," 7  "
 				dc.b	" 8  "," 9  "
 ; 10
-				Dc.b	" 0  "," -  "," +  "," \  "
+				dc.b	" 0  "," -  "," +  "," \  "
 				dc.b	'    ','    '," Q  "," W  "
 				dc.b	" E  "," R  "
 ; 20
-				Dc.b	" T  "," Y  "," U  "," I  "
+				dc.b	" T  "," Y  "," U  "," I  "
 				dc.b	" O  "," P  "," [  "," ]  "
 				dc.b	'    ','KP1 '
 ; 30
-				Dc.b	'KP2 ','KP3 '," A  "," S  "
+				dc.b	'KP2 ','KP3 '," A  "," S  "
 				dc.b	" D  "," F  "," G  "," H  "
 				dc.b	" J  "," K  "
 ;40
-				Dc.b	" L  "," ;  "," #  ",'    '
+				dc.b	" L  "," ;  "," #  ",'    '
 				dc.b	'    ','KP4 ','KP5 ','KP6 '
 				dc.b	'    '," Z  "
 ;50
-				Dc.b	" X  "," C  "," V  "," B  "
+				dc.b	" X  "," C  "," V  "," B  "
 				dc.b	" N  "," M  "," ,  "," .  "
 				dc.b	" /  ",'    '
 ;60
-				Dc.b	'    ','KP7 ','KP8 ','KP9 '
+				dc.b	'    ','KP7 ','KP8 ','KP9 '
 				dc.b	'SPC ','<-- ','TAB ','ENT '
 				dc.b	'RTN ','ESC '
 ;70
-				Dc.b	'DEL ','    ','    ','    '
+				dc.b	'DEL ','    ','    ','    '
 				dc.b	'KP- ','    ','UCK ','DCK '
 				dc.b	'RCK ','LCK '
 ;80
-				Dc.b	'FK1 ','FK2 ','FK3 ','FK4 '
+				dc.b	'FK1 ','FK2 ','FK3 ','FK4 '
 				dc.b	'FK5 ','FK6 ','FK7 ','FK8 '
 				dc.b	'FK9 ','FK0 '
 ;90
-				Dc.b	'KP( ','KP) ','KP/ ','KP* '
+				dc.b	'KP( ','KP) ','KP/ ','KP* '
 				dc.b	'KP+ ','HLP ','LSH ','RSH '
 				dc.b	'CPL ','CTL '
 ;100
-				Dc.b	'LAL ','RAL ','LAM ','RAM '
+				dc.b	'LAL ','RAL ','LAM ','RAM '
 				dc.b	'    ','    ','    ','    '
 				dc.b	'    ','    '
-				Dc.b	'    ','    ','    ','    '
+				dc.b	'    ','    ','    ','    '
 				dc.b	'    ','    ','    ','    '
 				dc.b	'    ','    '
 
@@ -445,7 +445,7 @@ MASTERSETUP:
 				rts
 
 SLAVESETUP:
-				CLR.B	NASTY
+				clr.b	NASTY
 				jsr		RECFIRST
 				move.w	d0,PLOPT
 				add.b	#'a',d0
