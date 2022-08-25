@@ -1,92 +1,92 @@
 *---------------------------------------------------------------------------*
 CACHE_ON		MACRO
 *---------------------------------------------------------------------------*
-;				Movec.l	CACR,\1
-;				Or.l	#1,\1
-;				Movec.l	\1,CACR
+;				movec.l	CACR,\1
+;				or.l	#1,\1
+;				movec.l	\1,CACR
 				ENDM
 *---------------------------------------------------------------------------*
 CACHE_OFF		MACRO
 *---------------------------------------------------------------------------*
-;				Movec.l	CACR,\1
-;				And.l	#-2,\1
-;				Movec.l	\1,CACR
+;				movec.l	CACR,\1
+;				and.l	#-2,\1
+;				movec.l	\1,CACR
 				ENDM
 *---------------------------------------------------------------------------*
 DATA_CACHE_CLEAR MACRO
 *---------------------------------------------------------------------------*
-;				Movec.l	CACR,\1
+;				movec.l	CACR,\1
 ;				or.l	#%100000000000,\1
-;				Movec.l	\1,CACR
+;				movec.l	\1,CACR
 				ENDM
 *---------------------------------------------------------------------------*
 CACHE_CLEAR		MACRO
 *---------------------------------------------------------------------------*
-;				Movec.l	CACR,\1
+;				movec.l	CACR,\1
 ;				or.l	#8,\1
-;				Movec.l	\1,CACR
+;				movec.l	\1,CACR
 				ENDM
 *---------------------------------------------------------------------------*
 CACHE_FREEZE_ON	MACRO
 *---------------------------------------------------------------------------*
-;				Movec.l	CACR,\1
+;				movec.l	CACR,\1
 ;				or.l	#2,\1		; Freeze instruction cache
-;				Movec.l	\1,CACR
+;				movec.l	\1,CACR
 				ENDM
 *---------------------------------------------------------------------------*
 
 DATA_CACHE_ON	MACRO
 *---------------------------------------------------------------------------*
-;				Movec.l	CACR,\1
+;				movec.l	CACR,\1
 ;				or.l	#$10,\1
-;				Movec.l	\1,CACR
+;				movec.l	\1,CACR
 				ENDM
 *---------------------------------------------------------------------------*
 DATA_CACHE_OFF	MACRO
 *---------------------------------------------------------------------------*
-;				Movec.l	CACR,\1
+;				movec.l	CACR,\1
 ;				and.l	#%11111111111111111111111011111111,\1
-;				Movec.l	\1,CACR
+;				movec.l	\1,CACR
 				ENDM
 *---------------------------------------------------------------------------*
 
 
 CACHE_FREEZE_OFF MACRO
 *---------------------------------------------------------------------------*
-;				Movec.l	CACR,\1
+;				movec.l	CACR,\1
 ;				and.l	#%11111111111111111111111111111101,\1
-;				Movec.l	\1,CACR
+;				movec.l	\1,CACR
 				ENDM
 *---------------------------------------------------------------------------*
 DUGDOS			MACRO
-				Move.l	DosBase,a6
-				Jsr		_LVO\1(a6)				DosCall
+				move.l	DosBase,a6
+				jsr		_LVO\1(a6)				DosCall
 				ENDM
 *---------------------------------------------------------------------------*
 DUGREQ			MACRO
-				Move.l	ReqBase,a6
-				Jsr		_LVO\1(a6)				ReqCall
+				move.l	ReqBase,a6
+				jsr		_LVO\1(a6)				ReqCall
 				ENDM
 *---------------------------------------------------------------------------*
 BLIT_NASTY		MACRO
-				Move.w	#$8400,Dmacon(a6)		Blitter Nasty On
+				move.w	#$8400,Dmacon(a6)		Blitter Nasty On
 				ENDM
 *---------------------------------------------------------------------------*
 BLIT_NICE		MACRO
-				Move.w	#$0400,Dmacon(a6)		Blitter Nasty Off
+				move.w	#$0400,Dmacon(a6)		Blitter Nasty Off
 				ENDM
 *---------------------------------------------------------------------------*
 WAIT_BLIT		MACRO
 .\@
-				Btst	#6,DMACONR(a6)			Wait for Blitter End
-				Bne.s	.\@
+				btst	#6,DMACONR(a6)			Wait for Blitter End
+				bne.s	.\@
 				ENDM
 
 *---------------------------------------------------------------------------*
 SCROLL_WB		MACRO
 .\@
-				Btst	#6,DMACONR-BLTSIZE(a3)	Wait for Blitter End
-				Bne.s	.\@
+				btst	#6,DMACONR-BLTSIZE(a3)	Wait for Blitter End
+				bne.s	.\@
 				ENDM
 *---------------------------------------------------------------------------*
 PALETTE32COL	MACRO
@@ -105,12 +105,12 @@ PALETTE32COL	MACRO
 QMOVE			MACRO
 				IFGE	\1
 				IFLE	\1-127
-				Moveq	#\1,\2
+				moveq	#\1,\2
 				MEXIT
 				ENDC
 				IFLE	\1-255
-				Moveq	#256-\1,\2
-				Neg.b	\2
+				moveq	#256-\1,\2
+				neg.b	\2
 				MEXIT
 				ENDC
 				move.\0	#\1,\2
