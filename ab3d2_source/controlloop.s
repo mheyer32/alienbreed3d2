@@ -184,12 +184,12 @@ START:
 				jsr		LOADFLOOR
 				jsr		LOADOBS
 
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				move.l	#backpicname,a0
 				move.l	#BackPicture,d0
 				move.l	#0,d1
 				jsr		QUEUEFILE
-				endc
+;				endc
 
 ; jsr _StopPlayer
 ; jsr _RemPlayer
