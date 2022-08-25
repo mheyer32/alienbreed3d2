@@ -10130,7 +10130,7 @@ pastster:
 				bra		notogglesound2
 
 Prefsfile:
-				dc.b	'k4nx'
+				dc.b	'k8nx'
 
 notogglesound:
 				clr.b	lasttogsound
@@ -11346,7 +11346,7 @@ chanpick:		dc.w	0
 IDNUM:			dc.w	0
 needleft:		dc.b	0
 needright:		dc.b	0
-STEREO:			dc.b	$0
+STEREO:			dc.b	$FF
 
 				even
 CHANNELDATA:
