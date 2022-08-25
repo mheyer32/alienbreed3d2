@@ -1761,9 +1761,9 @@ gotoend:
 
 				add.l	d0,d4
 
-				ifne	CHEESEY
-				asr.l	#1,d4
-				endc
+;				ifne	CHEESEY
+;				asr.l	#1,d4
+;				endc
 
 				swap	d4
 
@@ -1778,9 +1778,9 @@ gotoend:
 				move.w	#SCREENWIDTH,d0			; line offset to next line
 				moveq	#0,d1
 
-				ifne	CHEESEY
-				asr.l	#1,d2					; shrink dt for CHEESEY
-				endc
+;				ifne	CHEESEY
+;				asr.l	#1,d2					; shrink dt for CHEESEY
+;				endc
 
 				swap	d2						; fractional dt in upper word
 				move.l	d2,d3
@@ -1840,9 +1840,9 @@ doubwall
 
 				add.l	d0,d4
 
-				ifne	CHEESEY
-				asr.l	#1,d4
-				endc
+;				ifne	CHEESEY
+;				asr.l	#1,d4
+;				endc
 
 				swap	d4
 
@@ -1857,9 +1857,9 @@ doubwall
 				move.w	#640,d0
 				moveq	#0,d1
 
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				add.l	d2,d2
-				endc
+;				endc
 
 				swap	d2
 				move.l	d2,d3
@@ -1946,9 +1946,9 @@ gotoendBIG
 
 				add.l	d0,d4
 
-				ifne	CHEESEY
-				asr.l	#1,d4
-				endc
+;				ifne	CHEESEY
+;				asr.l	#1,d4
+;				endc
 
 				swap	d4
 
@@ -1963,9 +1963,9 @@ gotoendBIG
 				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
 
-				ifne	CHEESEY
-				asr.l	#1,d2
-				endc
+;				ifne	CHEESEY
+;				asr.l	#1,d2
+;				endc
 				swap	d2
 				move.l	d2,d3
 				clr.w	d3
@@ -2019,9 +2019,9 @@ doubwallBIG:
 
 				add.l	d0,d4
 
-				ifne	CHEESEY
-				asr.l	#1,d4
-				endc
+;				ifne	CHEESEY
+;				asr.l	#1,d4
+;				endc
 
 				swap	d4
 
@@ -2036,9 +2036,9 @@ doubwallBIG:
 				move.w	#640,d0
 				moveq	#0,d1
 
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				add.l	d2,d2
-				endc
+;				endc
 
 				swap	d2
 				move.l	d2,d3
@@ -2403,18 +2403,18 @@ itsawalldraw:
 				moveq	#0,d5
 				move.w	(a0)+,d5
 
-				ifne	CHEESEY
-				asr.w	#1,d5
-				endc
+;				ifne	CHEESEY
+;				asr.w	#1,d5
+;				endc
 
 				move.w	(a0)+,d1
 
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 				asl.w	#4,d1
-				endc
-				ifne	CHEESEY
-				asl.w	#3,d1
-				endc
+;				endc
+;				ifne	CHEESEY
+;				asl.w	#3,d1
+;				endc
 
 				move.w	d1,fromtile
 
@@ -2438,25 +2438,25 @@ itsawalldraw:
 				moveq	#0,d1
 				move.b	(a0)+,d1
 
-				ifne	CHEESEY
-				asr.w	#1,d1
-				endc
+;				ifne	CHEESEY
+;				asr.w	#1,d1
+;				endc
 				move.w	d1,VALAND				; (vertical) wall texture height mask
 
 				moveq	#0,d1
 				move.b	(a0)+,d1
 
-				ifne	CHEESEY					; CHEESEY version has all textures at quarter size?!
-				sub.w	#1,d1
-				endc
+;				ifne	CHEESEY					; CHEESEY version has all textures at quarter size?!
+;				sub.w	#1,d1
+;				endc
 				move.w	d1,VALSHIFT				;	; (vertical) wall texture height shift
 
 				moveq	#0,d1
 				move.b	(a0)+,d1				; texture width
 
-				ifne	CHEESEY
-				asr.w	#1,d1
-				endc
+;				ifne	CHEESEY
+;				asr.w	#1,d1
+;				endc
 
 				move.w	d1,HORAND				; horizontal texture width mask?
 
@@ -2465,9 +2465,9 @@ itsawalldraw:
 				move.w	totalyoff,d1
 				add.w	wallyoff,d1
 
-				ifne	CHEESEY
-				asr.w	#1,d1
-				endc
+;				ifne	CHEESEY
+;				asr.w	#1,d1
+;				endc
 
 				and.w	VALAND,d1
 				move.w	d1,totalyoff
@@ -2701,7 +2701,7 @@ cant_tell:
 
 				move.w	#-1,LASTSTIRRUP
 
-				ifeq	CHEESEY
+;				ifeq	CHEESEY
 
 				move.w	rightwallTOPbright,d0
 				cmp.w	rightwallbright,d0
@@ -2710,7 +2710,7 @@ cant_tell:
 				cmp.w	leftwallbright,d0
 				bne.s	gottagour
 
-				endc
+;				endc
 
 				bsr		walldraw
 				bra.s	nottagour
