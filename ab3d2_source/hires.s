@@ -170,14 +170,12 @@ fillconst:
 
 ;*******************************************************************************
 
-;				IFEQ	CHEESEY
 FASTBUFFERSize	equ		SCREENWIDTH*256			+ 15 ; screen size plus alignment
-;				ELSE
-;FASTBUFFERSize	equ		SCREENWIDTH*160			+ 15
-;				ENDC
 
-FASTBUFFER:		dc.l	0						; aligned address
-FASTBUFFERalloc: dc.l	0						; allocated address
+FASTBUFFER:
+				dc.l	0						; aligned address
+FASTBUFFERalloc:
+				dc.l	0						; allocated address
 
 * Load level into buffers.
 				clr.b	doanything
@@ -186,12 +184,10 @@ FASTBUFFERalloc: dc.l	0						; allocated address
 ; DRAW TEXT SCREEN
 
 TWEENTEXT:
-
 				move.l	LEVELTEXT,a0
 				move.w	PLOPT,d0
 				muls	#82*16,d0
 				add.l	d0,a0
-
 				move.w	#15,d7
 				move.w	#0,d0
 DOWNTEXT:
@@ -661,8 +657,6 @@ noclips:
 				move.w	#443,$dff0d6
 				move.w	#63,$dff0d8
 
-;				ifeq	CHEESEY
-
 				move.l	#tab,a1
 				move.w	#64,d7
 				move.w	#0,d6
@@ -672,15 +666,13 @@ outerlop
 scaledownlop:
 				move.b	(a0)+,d0
 				ext.w	d0
-				ext.l	d0
+				ext.l	d0 ; // ext.b ?
 				muls	d6,d0
 				asr.l	#6,d0
 				move.b	d0,(a1)+
 				dbra	d5,scaledownlop
 				addq	#1,d6
 				dbra	d7,outerlop
-
-;				endc
 
 				move.l	#$dff000,a6
 
@@ -696,7 +688,6 @@ scaledownlop:
 				beq.s	.nokeys
 				move.w	#%111111111111,Conditions
 .nokeys:
-
 				move.l	#KeyMap,a5
 				clr.b	$45(a5)
 
@@ -3430,8 +3421,6 @@ USEPLR1:
 
 				move.l	PLR1_Obj,a0
 
-;				ifeq	CHEESEY
-
 				tst.w	PLAYERONEHEALTH
 				bgt.s	.notdead
 
@@ -3439,7 +3428,6 @@ USEPLR1:
 				rts
 
 .notdead:
-
 				move.l	PLR1_Roompt,a1
 
 				move.w	Facing(a0),d0
@@ -3483,12 +3471,6 @@ USEPLR1:
 				add.w	d1,4+128(a0)
 
 				move.b	ObjInTop(a0),ObjInTop+128(a0)
-
-;				endc
-
-;				ifne	CHEESEY
-;				move.w	#-1,12+128(a0)
-;				endc
 
 				rts
 
@@ -3730,12 +3712,8 @@ USEPLR2:
 **********************************
 
 				move.l	PLR2_Obj,a0
-
-;				ifeq	CHEESEY
-
 				tst.w	PLAYERTWOHEALTH
 				bgt.s	.notdead
-
 				move.w	#-1,12+64(a0)
 				rts
 
@@ -3784,15 +3762,7 @@ USEPLR2:
 
 				move.b	ObjInTop(a0),ObjInTop+64(a0)
 
-;				endc
-
-;				ifne	CHEESEY
-;				move.w	#-1,12+64(a0)
-;				endc
-
 				rts
-
-
 
 GunSelected:	dc.b	0
 				even
@@ -7520,19 +7490,6 @@ pastsides:
 				add.w	SMALLIT,d6
 				move.w	d6,scaleval
 				move.w	(a0)+,d6
-
-;				ifne	CHEESEY
-;				move.w	d6,d7					; 000000XX000000YY
-;				lsr.w	#6,d6
-;				add.w	d6,d7					; 000000XX0000XXYY
-
-;				and.b	#%111,d6				; 000000XX00000XYY
-;				add.b	d7,d7					; 000000XX0000XYY0
-;				asl.w	#4,d7					; 00XX0000 XYY00000
-;				and.w	#%0010000011100000,d7
-;				move.w	d7,d6
-;				endc
-
 				move.w	d6,whichtile
 				move.w	(a0)+,d6
 				add.w	ZoneBright,d6
@@ -7595,12 +7552,6 @@ groundfloor:
 				asl.l	d3,d6
 				asl.l	d3,d7
 .samescale
-
-;				ifne	CHEESEY
-;				asr.l	#1,d6
-;				asr.l	#1,d7
-;				endc
-
 				move.l	d6,sxoff
 				move.l	d7,szoff
 				bra		pastscale
@@ -8546,16 +8497,8 @@ pastfloorbright:
 				move.l	d0,d2
 				muls	sinval,d2				;
 				neg.l	d2						; -sin * width
-
-;				ifne	CHEESEY
-;				; scale for lowres CHEESEY version
-;				asr.l	#3,d2
-;				asr.l	#3,d1
-;				endc
-;				ifeq	CHEESEY
 				asr.l	#2,d2
 				asr.l	#2,d1
-;				endc
 
 scaleprog:
 				move.w	scaleval(pc),d3
@@ -8723,12 +8666,7 @@ doneallmult:
 				asr.l	#8,d1					;  ds/dx
 				move.w	d1,d2					;  move ds/dx into lower half of dt/dx
 
-;				ifeq	CHEESEY
 				move.l	#$3fff3fff,d1
-;				endc
-;				ifne	CHEESEY
-;				move.l	#$1fff1fff,d1
-;				endc
 				and.l	d1,d5
 ; swap d5
 ; move.w startsmoothz,d5
@@ -8863,7 +8801,6 @@ leftbright:		dc.l	0
 brightspd:		dc.l	0
 
 gouraudfloor:
-
 				move.w	leftbright,d0
 				move.l	d1,d4
 				move.w	brightspd,d1
@@ -8881,19 +8818,14 @@ gouraudfloor:
 
 				move.w	d0,d3					; line X
 
-;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3			; fetch floor texel; but why d6*4?
-;				endc
-;				ifne	CHEESEY
-;				move.b	(a0,d6.w),d3			; fetch floor texel
-;				endc
 
 				add.w	d1,d0					;
 				add.l	d2,d5
 				and.l	d4,d5
 				move.b	(a1,d3.w),(a3)+			; map through palette and write to renderbuffer
-.nosingle1
 
+.nosingle1
 				move.w	d7,d3
 				asr.w	#1,d7
 				btst	#0,d3
@@ -8904,12 +8836,7 @@ gouraudfloor:
 				swap	d6
 				move.b	d3,d6
 				move.w	d0,d3
-;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-;				endc
-;				ifne	CHEESEY
-;				move.b	(a0,d6.w),d3
-;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -8920,12 +8847,7 @@ gouraudfloor:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-;				endc
-;				ifne	CHEESEY
-;				move.b	(a0,d6.w),d3
-;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -8946,12 +8868,7 @@ acrossscrngour:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-;				endc
-;				ifne	CHEESEY
-;				move.b	(a0,d6.w),d3
-;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -8962,12 +8879,7 @@ acrossscrngour:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-;				endc
-;				ifne	CHEESEY
-;				move.b	(a0,d6.w),d3
-;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -8978,12 +8890,7 @@ acrossscrngour:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-;				endc
-;				ifne	CHEESEY
-;				move.b	(a0,d6.w),d3
-;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -8994,12 +8901,7 @@ acrossscrngour:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-;				endc
-;				ifne	CHEESEY
-;				move.b	(a0,d6.w),d3
-;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -9012,7 +8914,6 @@ acrossscrngour:
 
 
 gouraudfloorDOUB:
-
 				move.w	leftbright,d0
 				move.l	d1,d4
 				move.w	brightspd,d1
@@ -9029,18 +8930,13 @@ gouraudfloorDOUB:
 				swap	d6
 				move.b	d3,d6
 				move.w	d0,d3
-;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-;				endc
-;				ifne	CHEESEY
-;				move.b	(a0,d6.w),d3
-;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
 				move.w	(a1,d3.w),(a3)+
-.nosingle1
 
+.nosingle1
 				move.w	d7,d3
 				asr.w	#1,d7
 				btst	#0,d3
@@ -9051,12 +8947,7 @@ gouraudfloorDOUB:
 				swap	d6
 				move.b	d3,d6
 				move.w	d0,d3
-;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-;				endc
-;				ifne	CHEESEY
-;				move.b	(a0,d6.w),d3
-;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -9067,38 +8958,25 @@ gouraudfloorDOUB:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-;				endc
-;				ifne	CHEESEY
-;				move.b	(a0,d6.w),d3
-;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
 				move.w	(a1,d3.w),(a3)+
 
 .nosingle2
-
 				move.l	d5,d6
 				swap	d6
-
 				dbra	d7,acrossscrngourD
 				rts
 
 				CNOP	0,4
-
 acrossscrngourD:
 				move.w	d5,d3
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-;				endc
-;				ifne	CHEESEY
-;				move.b	(a0,d6.w),d3
-;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -9109,12 +8987,7 @@ acrossscrngourD:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-;				endc
-;				ifne	CHEESEY
-;				move.b	(a0,d6.w),d3
-;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -9125,12 +8998,7 @@ acrossscrngourD:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-;				endc
-;				ifne	CHEESEY
-;				move.b	(a0,d6.w),d3
-;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -9141,12 +9009,7 @@ acrossscrngourD:
 				lsr.w	#8,d3
 				move.b	d3,d6
 				move.w	d0,d3
-;				ifeq	CHEESEY
 				move.b	(a0,d6.w*4),d3
-;				endc
-;				ifne	CHEESEY
-;				move.b	(a0,d6.w),d3
-;				endc
 				add.w	d1,d0
 				add.l	d2,d5
 				and.l	d4,d5
@@ -9154,7 +9017,6 @@ acrossscrngourD:
 				swap	d6
 				move.w	(a1,d3.w),(a3)+
 				dbra	d7,acrossscrngourD
-
 				rts
 
 
@@ -12019,9 +11881,7 @@ val				SET		val+1
 				ENDR
 
 tab:
-;				ifeq	CHEESEY
 				ds.b	256*65
-;				endc
 
 test:			dc.l	0
 				ds.l	30
@@ -12078,12 +11938,10 @@ wallrouts:
 ; incbin "2x2walldraw"
 				CNOP	0,64
 
-;				ifeq	CHEESEY
 BackPicture:				; Is this the skytexture?
 				dc.l	0
 ; incbin "rawback"
 EndBackPicture:				; FIXME: this obviously doesn't work anymore, yet is still referfenced
-;				endc
 
 SineTable:
 				incbin	"bigsine"				; sine/cosine << 15
