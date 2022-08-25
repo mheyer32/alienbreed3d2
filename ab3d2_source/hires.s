@@ -5977,14 +5977,7 @@ endlevel:
 				jsr		mt_init
 playgameover:
 
-;				move.l	#$dff000,a6
-;waitfortop2:
-;
-;
-;				btst.b	#0,intreqrl(a6)
-;				beq		waitfortop2
-;				move.w	#$1,intreq(a6)
-
+				CALLGRAF WaitTOF
 
 				jsr		mt_music
 
@@ -5996,7 +5989,7 @@ playgameover:
 
 wevewon:
 				; Disable audio DMA
-;				move.w	#$f,$dff000+dmacon
+				move.w	#$f,$dff000+dmacon
 
 				bsr		EnergyBar
 
@@ -6013,11 +6006,7 @@ wevewon:
 
 				jsr		mt_init
 playwelldone:
-;				move.l	#$dff000,a6
-;waitfortop3:
-;				btst.b	#0,intreqrl(a6)
-;				beq		waitfortop3
-;				move.w	#$1,intreq(a6)
+				CALLGRAF WaitTOF
 
 				jsr		mt_music
 
@@ -6033,7 +6022,7 @@ playwelldone:
 
 wevelost:
 				; disable Audio DMA
-;				move.w	#$f,$dff000+dmacon
+				move.w	#$f,$dff000+dmacon
 
 				jmp		closeeverything
 
