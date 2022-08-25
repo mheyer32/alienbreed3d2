@@ -2242,16 +2242,16 @@ zzzz:
 				cmp.w	#9,TELVAL
 				blt		noexit
 
-				jmp		end
+				jmp		endlevel
 noexit:
 
 ; tst.w PLAYERONEHEALTH
 ; bgt nnoend1
-; jmp end
+; jmp endlevel
 ;nnoend1:
 ; tst.w PLAYERTWOHEALTH
 ; bgt nnoend2
-; jmp end
+; jmp endlevel
 ;nnoend2:
 
 ; move.l SwitchData,a0
@@ -5938,7 +5938,7 @@ SCROLLCHARS:	incbin	"includes/scrollfont"
 
 doanything:		dc.w	0						; does main game run?
 
-end:
+endlevel:
 ; 	_break #0
 				clr.b	dosounds
 				clr.b	doanything
