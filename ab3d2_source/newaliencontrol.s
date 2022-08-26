@@ -81,22 +81,21 @@ ItsAnAlien:
 
 				move.w	(a0),CollId
 
-				move.b	1(a1),VECOBJ
-				move.w	A_ReactionTime(a1),REACTIONTIME
-				move.w	A_DefBeh(a1),DEFAULTMODE
-				move.w	A_ResBeh(a1),RESPONSEMODE
-				move.w	A_RetBeh(a1),RETREATMODE
-				move.w	A_FolBeh(a1),FOLLOWUPMODE
-				move.w	A_DefSpeed(a1),prowlspeed
-				move.w	A_ResSpeed(a1),responsespeed
-				move.w	A_RetSpeed(a1),retreatspeed
-				move.w	A_FolSpeed(a1),followupspeed
-				move.w	A_FolTimeout(a1),FOLLOWUPTIMER
+				move.b	1(a1),AI_VecObj_w
+				move.w	A_ReactionTime(a1),AI_ReactionTime_w
+				move.w	A_DefBeh(a1),AI_DefaultMode_w
+				move.w	A_ResBeh(a1),AI_ResponseMode_w
+				move.w	A_RetBeh(a1),AI_RetreatMode_w
+				move.w	A_FolBeh(a1),AI_FollowupMode_w
+				move.w	A_DefSpeed(a1),AI_ProwlSpeed_w
+				move.w	A_ResSpeed(a1),AI_ResponseSpeed_w
+				move.w	A_RetSpeed(a1),AI_RetreatSpeed_w
+				move.w	A_FolSpeed(a1),AI_FollowupSpeed_w
+				move.w	A_FolTimeout(a1),AI_FollowupTimer_w
 				move.w	A_WallCollDist(a1),d0
 				move.b	diststowall+1(pc,d0.w*4),awayfromwall
 				move.w	diststowall+2(pc,d0.w*4),extlen
-
-				jsr		AIROUTINE
+				jsr		AI_MainRoutine
 
 				rts
 
@@ -510,7 +509,7 @@ StillHere:
 				move.w	(a1,d0.w*8),newx
 				move.w	4(a1,d0.w*8),newz
 
-				jsr		LOOKFORPLAYER1
+				jsr		AI_LookForPlayer1
 				movem.l	(a7)+,d0-d7/a0-a6
 
 Decoration

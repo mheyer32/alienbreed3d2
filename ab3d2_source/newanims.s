@@ -798,10 +798,10 @@ objmoveanim:
 				move.w	#-5,PLR2_Zone
 .okp2:
 
-				move.w	#0,PLAYERONENOISEVOL
-				move.w	#0,PLAYERTWONOISEVOL
+				move.w	#0,AI_Player1NoiseVol_w
+				move.w	#0,AI_Player2NoiseVol_w
 
-				move.l	#BOREDOMSPACE,BOREDOMPTR
+				move.l	#AI_BoredomSpace_vl,AI_BoredomPtr_l
 
 				bsr		BACKSFX
 
@@ -1785,7 +1785,7 @@ ivescreamed:	dc.w	0
 ObjectHandler:
 
 				move.l	#ObjWork,WORKPTR
-				move.l	#DAMAGED,DAMAGEPTR
+				move.l	#AI_Damaged_vw,AI_DamagePtr_l
 
 				move.l	ObjectData,a0
 Objectloop:
@@ -1805,8 +1805,8 @@ doneobj:
 dontworryyourprettyhead:
 				adda.w	#64,a0
 				add.l	#8,WORKPTR
-				add.l	#2,DAMAGEPTR
-				add.l	#8,BOREDOMPTR
+				add.l	#2,AI_DamagePtr_l
+				add.l	#8,AI_BoredomPtr_l
 				bra		Objectloop
 
 doneallobj:

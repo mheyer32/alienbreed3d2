@@ -1,75 +1,119 @@
+;
+; 0xABADCAFE Proposed coding style guide:
+;
+; As a stepping stone towards getting the code into a more modular state where the visibility of code and data can be
+; properly controlled, a set of style guides for labels are proposed that aim to encapsulate the following key facts:
+;
+; 1) The origin of the label (for modularisation purposes)
+; 2) The visibility of the label (for modularisation purposes)
+; 3) The type of label (i.e. code or data)
+; 4) The type of data for data labels (machine word type, singluar or vector)
+;
+;
+; Callable labels are formatted as <module id>_<function name>
+;    - Function names are camel case
+;    - Module ID signifies which module the label is defined in
+;    - The case of the module ID signifies the file or global scope of the label
+;
+;    - Examples:
+;        - AI_LookForPlayer1
+;            - Defined in AI module
+;            - Globally callable
+;
+;         - ai_TakeDamage
+;            - Defined in AI module
+;            - Locally callable from within module
+;
+; Data labels are formatted as <module id>_<entity name>_<size type>
+;    - Entity names are camel case
+;    - Module ID signifies which module the label is defined in
+;    - The case of the module ID signifies the file of global scope of the label
+;    - The size field indicates the basic storage type, e.g. b, w, l
+;    - For arrays declared using ds, the size field is prefixed with v
+;
+;    - Examples:
+;        - AI_Teamwork_vl
+;            - Defined in AI module
+;            - Globally accessable
+;            - Vector of longs
+;
+;        - ai_AnimFacing_w
+;            - Defined in AI module
+;            - Locally accessible from within module
+;            - Individual word
+;
+; Function scope labels sare formatted in lower snake case and do not contain module identifers. This is to indicate
+; their immediate scope.
+;
+;    - Examples:
+;        - .not_dead_yet
+;
+; Other visibility aids:
+;
+;    - Flow guides:
+;        - A blank line before any callable label
+;        - No code on the same line as a callable label
+;        - A blank line after any branch (bra, bsr, jsr, bcc, rts), except where part of a logical chain of tests.
+;
+
+
 lastx			EQU		0
 lasty			EQU		2
 lastzone		EQU		4
 lastcpt			EQU		6
-SEENBY			equ		8
-DAMAGEDONE		equ		10
-DAMAGETAKEN		equ		12
+SEENBY			EQU		8
+DAMAGEDONE		EQU		10
+DAMAGETAKEN		EQU		12
 
-DEFAULTMODE:	dc.w	0
-RESPONSEMODE:	dc.w	0
-FOLLOWUPMODE:	dc.w	0
-RETREATMODE:	dc.w	0
-CURRENTMODE:	dc.w	0
-prowlspeed:		dc.w	0
-responsespeed:	dc.w	0
-retreatspeed:	dc.w	0
-followupspeed:	dc.w	0
-FOLLOWUPTIMER:	dc.w	0
-REACTIONTIME:	dc.w	0
-MIDDLECPT:		dc.w	0
-VECOBJ:			dc.w	0
-
-PLAYERONENOISEVOL: dc.w	0
-PLAYERTWONOISEVOL: dc.w	0
-
-AIROUTINE:
+; Code
+AI_MainRoutine:
 				move.w	#-20,2(a0)
 
-; bsr CHECKDAMAGE
+; bsr ai_CheckDamage
 ; tst.b numlives(a0)
-; bgt.s .notdeadyet
+; bgt.s .not_dead_yet
 ; rts
-;.notdeadyet:
+;.not_dead_yet:
 
 				cmp.b	#1,currentmode(a0)
-				blt		DODEFAULT
-				beq		DORESPONSE
+				blt		ai_DoDefault
+				beq		ai_DoResponse
 
 				cmp.b	#3,currentmode(a0)
-				blt		DOFOLLOWUP
-				beq		DORETREAT
+				blt		ai_DoFollowup
+				beq		ai_DoRetreat
 
 				cmp.b	#5,currentmode(a0)
-				beq		DODIE
+				beq		ai_DoDie
 
-DOTAKEDAMAGE:
-				jsr		WALKANIM
+ai_DoTakeDamage:
+				jsr		ai_DoWalkAnim
 				move.w	4(a0),-(a7)
-				bsr		GETROOMSTATSSTILL
+				bsr		ai_GetRoomStatsStill
 
 				move.w	(a7)+,d0
-				cmp.w	#1,DEFAULTMODE
-				blt		.notflying
+				cmp.w	#1,AI_DefaultMode_w
+				blt		.not_flying
 
 				move.w	d0,4(a0)
 
-.notflying
-				tst.b	FINISHEDANIM
-				beq.s	stillhurting
+.not_flying:
+				tst.b	ai_FinishedAnim_b
+				beq.s	.still_hurting
+
 				move.b	#0,currentmode(a0)
 				move.b	#0,WhichAnim(a0)
 				move.w	#0,SecTimer(a0)
 
-stillhurting:
-				bsr		DOTORCH
+.still_hurting:
+				bsr		ai_DoTorch
 
 				tst.w	12-64(a0)
-				blt.s	.nocopyin
+				blt.s	.no_copy_in
 				move.w	12(a0),12-64(a0)
 				move.w	GraphicRoom(a0),GraphicRoom-64(a0)
 
-.nocopyin:
+.no_copy_in:
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.w	PLR1_xoff,newx
 				move.w	PLR1_zoff,newz
@@ -81,102 +125,100 @@ stillhurting:
 				move.w	#-20,Range
 				move.w	#20,speed
 				jsr		HeadTowardsAng
+
 				move.w	AngRet,d0
-				add.w	ANIMFACING,d0
+				add.w	ai_AnimFacing_w,d0
 				move.w	d0,Facing(a0)
 				movem.l	(a7)+,d0-d7/a0-a6
-
 				rts
 
-DODIE:
-				jsr		WALKANIM
-				bsr		GETROOMSTATSSTILL
-				tst.b	FINISHEDANIM
-				beq.s	stilldying
+ai_DoDie:
+				jsr		ai_DoWalkAnim
+
+				bsr		ai_GetRoomStatsStill
+
+				tst.b	ai_FinishedAnim_b
+				beq.s	.still_dying
+
 				move.w	#-1,12(a0)
 				move.w	#-1,GraphicRoom(a0)
 				move.b	#0,16(a0)
 				clr.b	worry(a0)
-				st		getout
-stilldying:
+				st		ai_GetOut_w
+
+.still_dying:
 				move.b	#0,numlives(a0)
 				tst.w	12-64(a0)
-				blt.s	.nocopyin
+				blt.s	.no_copy_in
+
 				move.w	12(a0),12-64(a0)
 				move.w	GraphicRoom(a0),GraphicRoom-64(a0)
 
-.nocopyin:
+.no_copy_in:
 				rts
 
-TAKEDAMAGE:
-				clr.b	getout
+ai_TakeDamage:
+				clr.b	ai_GetOut_w
 				moveq	#0,d0
 				move.b	damagetaken(a0),d0
-				move.l	DAMAGEPTR,a2
+				move.l	AI_DamagePtr_l,a2
 				add.w	d0,(a2)
 				move.w	(a2),d0
-
 				asr.w	#2,d0					; divide by 4
-
 				moveq	#0,d1
 				move.b	numlives(a0),d1
-
 				move.b	#0,damagetaken(a0)
 				cmp.w	d0,d1
-				ble		JUSTDIED
+				ble		ai_JustDied
+
 				move.w	#0,ObjTimer(a0)
 				move.w	#0,SecTimer(a0)
-
 				jsr		GetRand
+
 				and.w	#3,d0
 				beq.s	.dodododo
 
 				move.l	WORKPTR,a5
 				st		1(a5)
-
 				move.b	#1,currentmode(a0)
 				move.w	#0,SecTimer(a0)
 				move.w	#0,ObjTimer(a0)
 				move.b	#1,WhichAnim(a0)
-
 				move.w	(a0),d0
 				move.l	ObjectPoints,a1
 				move.w	(a1,d0.w*8),oldx
 				move.w	4(a1,d0.w*8),oldz
 				move.w	PLR1_xoff,newx
 				move.w	PLR1_zoff,newz
-
 				move.w	#100,speed
 				move.w	#-20,Range
 				jsr		HeadTowardsAng
+
 				move.w	AngRet,Facing(a0)
-
-				st		getout
-
+				st		ai_GetOut_w
 				rts
 
-.dodododo
+.dodododo:
 
 ; asr.w #2,d2
 ; cmp.w d0,d2
-; bgt.s .nostop
+; bgt.s .no_stop
 
 				move.b	#4,currentmode(a0)		; do take damage.
 				move.b	#2,WhichAnim(a0)		; get hit anim.
 				move.l	WORKPTR,a5
 				st		1(a5)
-
-				st		getout
-				rts
-.nostop:
+				st		ai_GetOut_w
 				rts
 
-getout:			dc.w	0
+.no_stop:
+				rts
 
-JUSTDIED:
+ai_JustDied:
 				move.b	#0,numlives(a0)
 				move.w	TextToShow(a0),d0
-				blt.s	.notext
+				blt.s	.no_text
+
 				muls	#160,d0
 				add.l	LEVELDATA,d0
 				jsr		SENDMESSAGE
@@ -187,59 +229,53 @@ JUSTDIED:
 ; move.l d0,ENDSCROLL
 ; move.w #40,SCROLLTIMER
 
-.notext:
+.no_text:
 				move.l	ObjectPoints,a2
 				move.w	(a0),d3
 				move.w	(a2,d3.w*8),newx
 				move.w	4(a2,d3.w*8),newz
-
 				moveq	#0,d0
 				move.b	TypeOfThing(a0),d0
 				muls	#AlienStatLen,d0
 				move.l	LINKFILE,a2
 				lea		AlienStats(a2),a2
 				add.l	d0,a2
-
 				move.b	A_TypeOfSplat+1(a2),d0
 				move.b	d0,TypeOfSplat
 				cmp.b	#20,d0
-				blt		gosplutch
+				blt		.go_splutch
 
 				sub.b	#20,TypeOfSplat
 				sub.b	#20,d0
 				ext.w	d0
-
 				move.l	LINKFILE,a2
 				add.l	#AlienStats,a2
 				muls	#AlienStatLen,d0
 				add.l	d0,a2
 				move.l	a2,a4
 
-* Spawn some smaller aliens...
-
+				; * Spawn some smaller aliens...
 				move.w	#2,d7					; number to do.
-
 				move.l	OtherNastyData,a2
 				add.l	#64,a2
-
 				move.l	ObjectPoints,a1
 				move.w	(a0),d1
 				move.l	(a1,d1.w*8),d0
 				move.l	4(a1,d1.w*8),d1
 				move.w	#9,d3
 
-spawny:
-.findonefree
+.spawn_loop:
+.find_one_free:
 				move.w	12(a2),d2
-				blt.s	.foundonefree
+				blt.s	.found_one_free
 				tst.b	numlives(a2)
-				beq.s	.foundonefree
+				beq.s	.found_one_free
 
 				adda.w	#128,a2
-				dbra	d3,.findonefree
-				bra		.cantshoot
+				dbra	d3,.find_one_free
+				bra		.cant_shoot
 
-.foundonefree
+.found_one_free:
 				move.b	A_HitPoints+1(a4),numlives(a2)
 				move.b	TypeOfSplat,TypeOfThing(a2)
 				move.b	#-1,TextToShow(a2)
@@ -268,60 +304,60 @@ spawny:
 				move.l	DoorsHeld(a0),DoorsHeld(a2)
 				move.b	ObjInTop(a0),ObjInTop(a2)
 				move.b	#3,16-64(a2)
+				dbra	d7,.spawn_loop
 
-				dbra	d7,spawny
+.cant_shoot:
+				bra		.spawned
 
-.cantshoot
-				bra		spawned
-
-gosplutch:
+.go_splutch:
 				move.w	#8,d2
 				jsr		ExplodeIntoBits
 
-spawned:
+.spawned:
 				move.b	#5,currentmode(a0)
 				move.b	#3,WhichAnim(a0)
 				move.w	#0,SecTimer(a0)
 				move.l	WORKPTR,a5
 				st		1(a5)
-				st		getout
+				st		ai_GetOut_w
 				rts
 
-DORETREAT
+ai_DoRetreat:
 				rts
 
-DODEFAULT:
-				cmp.w	#1,DEFAULTMODE
-				blt		PROWLRANDOM
-				beq		PROWLRANDOMFLYING
-				rts
-
-DORESPONSE:
-				cmp.w	#1,RESPONSEMODE
-				blt		CHARGE
-				beq		CHARGETOSIDE
-
-				cmp.w	#3,RESPONSEMODE
-				blt		ATTACKWITHGUN
-				beq		CHARGEFLYING
-
-				cmp.w	#5,RESPONSEMODE
-				blt		CHARGETOSIDEFLYING
-				beq		ATTACKWITHGUNFLYING
+ai_DoDefault:
+				cmp.w	#1,AI_DefaultMode_w
+				blt		ai_ProwlRandom
+				beq		ai_ProwlRandomFlying
 
 				rts
 
-DOFOLLOWUP:
-				cmp.w	#1,FOLLOWUPMODE
-				blt		PAUSEBRIEFLY
-				beq		APPROACH
+ai_DoResponse:
+				cmp.w	#1,AI_ResponseMode_w
+				blt		ai_Charge
+				beq		ai_ChargeToSide
 
-				cmp.w	#3,FOLLOWUPMODE
-				blt		APPROACHTOSIDE
-				beq		APPROACHFLYING
+				cmp.w	#3,AI_ResponseMode_w
+				blt		ai_AttackWithGun
+				beq		ai_ChargeFlying
 
-				cmp.w	#5,FOLLOWUPMODE
-				blt		APPROACHTOSIDEFLYING
+				cmp.w	#5,AI_ResponseMode_w
+				blt		ai_ChargeToSideFlying
+				beq		ai_AttackWithGunFlying
+
+				rts
+
+ai_DoFollowup:
+				cmp.w	#1,AI_FollowupMode_w
+				blt		ai_PauseBriefly
+				beq		ai_Approach
+
+				cmp.w	#3,AI_FollowupMode_w
+				blt		ai_ApproachToSide
+				beq		ai_ApproachFlying
+
+				cmp.w	#5,AI_FollowupMode_w
+				blt		ai_ApproachToSideFlying
 
 				rts
 
@@ -331,40 +367,39 @@ DOFOLLOWUP:
 
 ; Need a FLYING prowl routine
 
-FLYABIT:		dc.w	0
-
-PROWLRANDOMFLYING:
+ai_ProwlRandomFlying:
 				move.l	#1000*256,StepDownVal
-				st		FLYABIT
-				bra		PROWLFLY
+				st		AI_FlyABit_w
+				bra		ai_ProwlFly
 
-PROWLRANDOM:
-				clr.b	FLYABIT
+ai_ProwlRandom:
+				clr.b	AI_FlyABit_w
 				move.l	#30*256,StepDownVal
 
-PROWLFLY:
+ai_ProwlFly:
 				move.l	#20*256,StepUpVal
 				tst.b	damagetaken(a0)
-				beq.s	.nodamage
-				bsr		TAKEDAMAGE
-				tst.b	getout
-				beq.s	.nodamage
+				beq.s	.no_damage
+
+				bsr		ai_TakeDamage
+
+				tst.b	ai_GetOut_w
+				beq.s	.no_damage
+
 				rts
 
-.nodamage:
-				jsr		WALKANIM
-				move.l	BOREDOMPTR,a1
+.no_damage:
+				jsr		ai_DoWalkAnim
+
+				move.l	AI_BoredomPtr_l,a1
 				move.w	2(a1),d1
 				move.w	4(a1),d2
-
 				move.l	ObjectPoints,a2
 				move.w	(a0),d3
 				move.w	4(a2,d3.w*8),d4
 				move.w	(a2,d3.w*8),d3
-
 				move.w	d3,d5
 				move.w	d4,d6
-
 				sub.w	d1,d3
 				bge.s	.okp1
 				neg.w	d3
@@ -374,64 +409,68 @@ PROWLFLY:
 				bge.s	.okp2
 				neg.w	d4
 
-.okp2
+.okp2:
 				add.w	d3,d4					; dist away
 				cmp.w	#50,d4
-				blt.s	.NONEWSTORE
+				blt.s	.no_new_store
 
 				move.w	d5,2(a1)
 				move.w	d6,4(a1)
 				move.w	#100,(a1)
-				bra		.NEWSTORE
+				bra		.new_store
 
-.NONEWSTORE
+.no_new_store
 				sub.w	#1,(a1)
-				bgt.s	.NEWSTORE
+				bgt.s	.new_store
 
-				bsr		GETROOMCPT
+				bsr		ai_GetRoomCPT
 
 				jsr		GetRand
+
 				moveq	#0,d1
 				move.w	d0,d1
 				divs.w	NumCPts,d1
 				swap	d1
 				move.w	#7,d7
 
-.tryagain:
+.try_again:
 				move.w	d1,TargCPt(a0)
 				move.w	CurrCPt(a0),d0
 				jsr		GetNextCPt
+
 				cmp.w	CurrCPt(a0),d0
-				beq.s	.plusagain
+				beq.s	.plus_again
+
 				cmp.b	#$7f,d0
 				bne.s	.okaway2
 
-.plusagain:
+.plus_again:
 				move.w	TargCPt(a0),d1
 				add.w	#1,d1
 				cmp.w	NumCPts,d1
-				blt		.nobin
+				blt		.no_bin
+
 				moveq	#0,d1
 
-.nobin
-				dbra	d7,.tryagain
+.no_bin
+				dbra	d7,.try_again
 
 .okaway2
 				move.w	#50,(a1)
 
-.NEWSTORE
 
-WIDGET:
-				tst.w	PLAYERONENOISEVOL
-				beq.s	.noplayernoise
+.new_store:
+ai_Widget:
+				tst.w	AI_Player1NoiseVol_w
+				beq.s	.no_player_noise
 
 				move.l	PLR1_Roompt,a1
 				tst.b	PLR1_StoodInTop
-				beq.s	.pnotintop
+				beq.s	.player_not_in_top
 
 				addq	#1,a1
 
-.pnotintop:
+.player_not_in_top:
 				moveq	#0,d1
 				move.b	ToZoneCpt(a1),d1
 
@@ -445,25 +484,25 @@ WIDGET:
 .okaway
 				move.w	d0,TargCPt(a0)
 
-.noplayernoise:
+.no_player_noise:
 				moveq	#0,d0
 				move.b	teamnumber(a0),d0
-				blt.s	.noteam
+				blt.s	.no_team
 
-				lea		TEAMWORK(pc),a2
+				lea		AI_Teamwork_vl(pc),a2
 				asl.w	#4,d0
 				add.w	d0,a2
 				tst.w	SEENBY(a2)
-				blt.s	.noteam
+				blt.s	.no_team
 				move.w	(a0),d0
 				cmp.w	SEENBY(a2),d0
-				bne.s	.noremove
+				bne.s	.no_remove
 				move.w	#-1,SEENBY(a2)
-				bra.s	.noteam
+				bra.s	.no_team
 
-.noremove:
+.no_remove:
 				asl.w	#4,d0
-				lea		NASTYWORK(pc),a1
+				lea		ai_NastyWork_vl(pc),a1
 				add.w	d0,a1
 				move.w	#0,DAMAGEDONE(a1)
 				move.w	#0,DAMAGETAKEN(a1)
@@ -473,32 +512,32 @@ WIDGET:
 				move.l	12(a2),12(a1)
 				move.w	lastcpt(a1),TargCPt(a0)
 				move.w	#-1,lastzone(a1)
-				bra.s	.notseen
+				bra.s	.not_seen
 
-.noteam:
+.no_team:
 				move.w	(a0),d0
 				asl.w	#4,d0
-				lea		NASTYWORK(pc),a1
+				lea		ai_NastyWork_vl(pc),a1
 				add.w	d0,a1
 				move.w	#0,DAMAGEDONE(a1)
 				move.w	#0,DAMAGETAKEN(a1)
 				tst.w	lastzone(a1)
-				blt.s	.notseen
+				blt.s	.not_seen
 				move.w	lastcpt(a1),TargCPt(a0)
 				move.w	#-1,lastzone(a1)
 
-.notseen:
+.not_seen:
 				move.w	CurrCPt(a0),d0			; where the alien is now.
 				move.w	TargCPt(a0),d1
 				jsr		GetNextCPt
 				cmp.b	#$7f,d0
-				beq.s	.yesrand
-				tst.b	FLYABIT
-				bne.s	.norand
+				beq.s	.yes_rand
+				tst.b	AI_FlyABit_w
+				bne.s	.no_rand
 				tst.b	ONLYSEE
-				beq.s	.norand
+				beq.s	.no_rand
 
-.yesrand
+.yes_rand:
 				jsr		GetRand
 				moveq	#0,d1
 				move.w	d0,d1
@@ -506,28 +545,28 @@ WIDGET:
 				swap	d1
 				move.w	#7,d7
 
-.tryagain:
+.try_again:
 				move.w	d1,TargCPt(a0)
 				move.w	CurrCPt(a0),d0
 				jsr		GetNextCPt
 				cmp.w	CurrCPt(a0),d0
-				beq.s	.plusagain
+				beq.s	.plus_again
 				cmp.b	#$7f,d0
 				bne.s	.okaway2
 
-.plusagain:
+.plus_again:
 				move.w	TargCPt(a0),d1
 				add.w	#1,d1
 				cmp.w	NumCPts,d1
-				blt		.nobin
+				blt		.no_bin
 				moveq	#0,d1
 
-.nobin
-				dbra	d7,.tryagain
-.okaway2
+.no_bin:
+				dbra	d7,.try_again
 
-.norand:
-				move.w	d0,MIDDLECPT
+.okaway2:
+.no_rand:
+				move.w	d0,ai_MiddleCPT_w
 
 				move.l	CPtPos,a1
 				move.w	(a1,d0.w*8),newx
@@ -558,16 +597,16 @@ WIDGET:
 				move.w	(a1),oldx
 				move.w	4(a1),oldz
 				move.w	#0,speed
-				tst.b	DoAction
-				beq.s	.nospeed
+				tst.b	ai_DoAction_b
+				beq.s	.no_speed
 				moveq	#0,d2
-				move.b	DoAction,d2
+				move.b	ai_DoAction_b,d2
 				asl.w	#2,d2
 
-				muls.w	prowlspeed,d2
+				muls.w	AI_ProwlSpeed_w,d2
 				move.w	d2,speed
 
-.nospeed:
+.no_speed:
 				move.w	#40,Range
 				move.w	4(a0),d0
 				ext.l	d0
@@ -589,12 +628,12 @@ WIDGET:
 ; and.w #8190,Facing(a0)
 
 				tst.b	GotThere
-				beq.s	.notnextcpt
+				beq.s	.not_next_cpt
 
-				move.w	MIDDLECPT,d0
+				move.w	ai_MiddleCPT_w,d0
 				move.w	d0,CurrCPt(a0)
 				cmp.w	TargCPt(a0),d0
-				bne		.notnextcpt
+				bne		.not_next_cpt
 
 * We have arrived at the target contol pt. Pick a
 * random one and go to that...
@@ -606,93 +645,94 @@ WIDGET:
 				swap	d1
 				move.w	d1,TargCPt(a0)
 
-.notnextcpt:
+.not_next_cpt:
 				move.w	#%1000000000,wallflags
 				move.l	#%00001000110010000010,CollideFlags
 				jsr		Collision
 				tst.b	hitwall
-				beq.s	.canmove
+				beq.s	.can_move
 
 				move.w	oldx,newx
 				move.w	oldz,newz
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
-				bra		.hitathing
+				bra		.hit_something
 
-.canmove:
+.can_move:
 				clr.b	wallbounce
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
 				move.b	StoodInTop,ObjInTop(a0)
 
 
-.hitathing:
+.hit_something:
 				tst.w	12-64(a0)
-				blt.s	.nocopyin
+				blt.s	.no_copy_in
 				move.w	12(a0),12-64(a0)
 				move.w	GraphicRoom(a0),GraphicRoom-64(a0)
 
-.nocopyin:
+.no_copy_in:
 				move.w	4(a0),-(a7)
-				bsr		GETROOMSTATS
+				bsr		ai_GetRoomStats
 				move.w	(a7)+,d0
 
-				tst.b	FLYABIT
+				tst.b	AI_FlyABit_w
 				beq.s	.noflymove
 				move.w	d0,4(a0)
-				bsr		FLYTOCPTHEIGHT
+				bsr		ai_FlyToCPTHeight
 
 .noflymove:
-				bsr		DOTORCH
+				bsr		ai_DoTorch
 
 				move.b	#0,currentmode(a0)
-				bsr		LOOKFORPLAYER1
+				bsr		AI_LookForPlayer1
 				move.b	#0,WhichAnim(a0)
 				tst.b	17(a0)
-				beq.s	.nosee
-				bsr		CHECKINFRONT
+				beq.s	.cant_see_player
+				bsr		ai_CheckInFront
 				tst.b	d0
-				beq.s	.nosee
+				beq.s	.cant_see_player
 
 				move.w	TempFrames,d0
 				sub.w	d0,ObjTimer(a0)
 				bgt.s	.notreacted
-				bsr		CHECKFORDARK
+				bsr		ai_CheckForDark
 				tst.b	d0
-				beq.s	.nosee
+				beq.s	.cant_see_player
 
 ; We have seen the player and reacted; can we attack him?
 
-				tst.b	FLYABIT
-				bne.s	.yesattack
+				tst.b	AI_FlyABit_w
+				bne.s	.attack_player
 
-				cmp.w	#2,RESPONSEMODE
-				beq.s	.yesattack
-				cmp.w	#5,RESPONSEMODE
-				beq.s	.yesattack
+				cmp.w	#2,AI_ResponseMode_w
+				beq.s	.attack_player
+				cmp.w	#5,AI_ResponseMode_w
+				beq.s	.attack_player
 
-				bsr		CHECKATTACKONGROUND
+				bsr		ai_CheckAttackOnGround
 				tst.b	d0
-				bne.s	.yesattack
+				bne.s	.attack_player
 
 ; We can see the player
 
-				bsr		STOREPLAYERPOS
+				bsr		ai_StorePlayerPosition
 
 ; but we can't get to him
-				bra.s	.nosee
+				bra.s	.cant_see_player
 
-.yesattack:
+.attack_player:
 				move.w	#0,SecTimer(a0)
 				move.b	#1,currentmode(a0)
 				move.b	#1,WhichAnim(a0)
 
 .notreacted:
-				move.w	ANIMFACING,d0
+				move.w	ai_AnimFacing_w,d0
 				add.w	d0,Facing(a0)
 				rts
-.nosee:
-				move.w	REACTIONTIME,ObjTimer(a0)
-				move.w	ANIMFACING,d0
+
+.cant_see_player:
+				move.w	AI_ReactionTime_w,ObjTimer(a0)
+				move.w	ai_AnimFacing_w,d0
 				add.w	d0,Facing(a0)
 				rts
 
@@ -700,56 +740,57 @@ WIDGET:
 ** RESPONSE MOVEMENTS *************************
 ***********************************************
 
-CHARGETOSIDE:
-				clr.b	FLYABIT
-				st		TOSIDE
+ai_ChargeToSide:
+				clr.b	AI_FlyABit_w
+				st		ai_ToSide_w
 				move.l	#30*256,StepDownVal
-				bra		INTOCHA
+				bra		ai_ChargeCommon
 
-CHARGE:
-				clr.b	FLYABIT
-				clr.b	TOSIDE
+ai_Charge:
+				clr.b	AI_FlyABit_w
+				clr.b	ai_ToSide_w
 				move.l	#30*256,StepDownVal
 
-INTOCHA:
+ai_ChargeCommon:
 				tst.b	damagetaken(a0)
-				beq.s	.nodamage
-				bsr		TAKEDAMAGE
-				tst.b	getout
-				beq.s	.nodamage
+				beq.s	.no_damage
+				bsr		ai_TakeDamage
+				tst.b	ai_GetOut_w
+				beq.s	.no_damage
 				rts
 
-.nodamage:
-				jsr		ATTACKANIM
-; tst.b FINISHEDANIM
-; beq.s .notfinishedattacking
+.no_damage:
+				jsr		ai_DoAttackAnim
+
+; tst.b ai_FinishedAnim_b
+; beq.s .not_finished_attacking
 ; move.b #2,currentmode(a0)
-; move.w FOLLOWUPTIMER,ObjTimer(a0)
+; move.w AI_FollowupTimer_w,ObjTimer(a0)
 ; move.w #0,SecTimer(a0)
 ; rts
-;.notfinishedattacking:
+;.not_finished_attacking:
 
 				move.w	12(a0),FromZone
 				jsr		CheckTeleport
 				tst.b	OKTEL
-				beq.s	.notel
+				beq.s	.no_teleport
 				move.l	floortemp,d0
 				asr.l	#7,d0
 				add.w	d0,4(a0)
-				bra		.NoMunch
+				bra		.no_munch
 
-.notel:
+.no_teleport:
 				move.w	PLR1_xoff,newx
 				move.w	PLR1_zoff,newz
 				move.w	PLR1_sinval,tempsin
 				move.w	PLR1_cosval,tempcos
 				move.w	p1_xoff,tempx
 				move.w	p1_zoff,tempz
-				tst.b	TOSIDE
-				beq.s	.noside
+				tst.b	ai_ToSide_w
+				beq.s	.no_side
 				jsr		RunAround
 
-.noside:
+.no_side:
 				move.w	(a0),d1
 				move.l	#ObjRotated,a6
 				move.l	ObjectPoints,a1
@@ -757,7 +798,7 @@ INTOCHA:
 				lea		(a6,d1.w*8),a6
 				move.w	(a1),oldx
 				move.w	4(a1),oldz
-				move.w	responsespeed,d2
+				move.w	AI_ResponseSpeed_w,d2
 				muls.w	TempFrames,d2
 				move.w	d2,speed
 				move.w	#160,Range
@@ -780,49 +821,47 @@ INTOCHA:
 				move.l	#%100000,CollideFlags
 				jsr		Collision
 				tst.b	hitwall
-				beq.s	.nothitplayer
+				beq.s	.not_hit_player
 
 				move.w	oldx,newx
 				move.w	oldz,newz
 				st		GotThere
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
-				bra		.hitathing
+				bra		.hit_something
 
-.nothitplayer:
+.not_hit_player:
 				move.l	#%11111111110111000010,CollideFlags
 				jsr		Collision
 				tst.b	hitwall
-				beq.s	.canmove
+				beq.s	.can_move
 
 				move.w	oldx,newx
 				move.w	oldz,newz
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
-				bra		.hitathing
+				bra		.hit_something
 
-.canmove:
+.can_move:
 				clr.b	wallbounce
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
 				move.b	StoodInTop,ObjInTop(a0)
-
 				move.w	AngRet,Facing(a0)
 
-.hitathing:
+.hit_something:
 				tst.w	12-64(a0)
-				blt.s	.nocopyin
+				blt.s	.no_copy_in
 				move.w	12(a0),12-64(a0)
 				move.w	GraphicRoom(a0),GraphicRoom-64(a0)
 
-.nocopyin:
+.no_copy_in:
 				tst.b	GotThere
-				beq.s	.NoMunch
-				tst.b	DoAction
-				beq.s	.NoMunch
+				beq.s	.no_munch
+				tst.b	ai_DoAction_b
+				beq.s	.no_munch
 				move.l	PLR1_Obj,a5
-				move.b	DoAction,d0
+				move.b	ai_DoAction_b,d0
 				asl.w	#1,d0
 				add.b	d0,damagetaken(a5)
-
 				move.w	newx,d0
 				sub.w	oldx,d0
 				ext.l	d0
@@ -834,49 +873,49 @@ INTOCHA:
 				divs	TempFrames,d0
 				add.w	d0,ImpactZ(a5)
 
-.NoMunch:
-				bsr		STOREPLAYERPOS
-				bsr		GETROOMSTATS
-				bsr		GETROOMCPT
-				bsr		DOTORCH
-				bsr		LOOKFORPLAYER1
+.no_munch:
+				bsr		ai_StorePlayerPosition
+				bsr		ai_GetRoomStats
+				bsr		ai_GetRoomCPT
+				bsr		ai_DoTorch
+				bsr		AI_LookForPlayer1
 				move.b	#0,currentmode(a0)
 				tst.b	17(a0)
-				beq.s	.nosee
-				bsr		CHECKINFRONT
+				beq.s	.cant_see_player
+				bsr		ai_CheckInFront
 				tst.b	d0
-				beq.s	.nosee
-				tst.b	FLYABIT
-				bne.s	.yesattack
+				beq.s	.cant_see_player
+				tst.b	AI_FlyABit_w
+				bne.s	.attack_player
 
-				bsr		CHECKATTACKONGROUND
+				bsr		ai_CheckAttackOnGround
 				tst.b	d0
-				bne.s	.yesattack
+				bne.s	.attack_player
 
-				bra.s	.nosee
+				bra.s	.cant_see_player
 
-.yesattack
-				move.w	ANIMFACING,d0
+.attack_player
+				move.w	ai_AnimFacing_w,d0
 				add.w	d0,Facing(a0)
 				move.b	#1,currentmode(a0)
 				move.b	#1,WhichAnim(a0)
 				rts
 
-.nosee:
+.cant_see_player:
 				move.b	#0,WhichAnim(a0)
 				move.w	#0,SecTimer(a0)
-				move.w	ANIMFACING,d0
+				move.w	ai_AnimFacing_w,d0
 				add.w	d0,Facing(a0)
 				rts
 
-ATTACKWITHGUNFLYING
-				st		FLYABIT
-				bra		intoatt
+ai_AttackWithGunFlying:
+				st		AI_FlyABit_w
+				bra		ai_AttackCommon
 
-ATTACKWITHGUN:
-				clr.b	FLYABIT
+ai_AttackWithGun:
+				clr.b	AI_FlyABit_w
 
-intoatt:
+ai_AttackCommon:
 				move.l	LINKFILE,a1
 				lea		AlienStats(a1),a1
 				moveq	#0,d0
@@ -885,12 +924,10 @@ intoatt:
 				add.w	d0,a1
 				move.w	A_BulletType(a1),d0
 				move.b	d0,SHOTTYPE
-
 				move.l	LINKFILE,a1
 				lea		BulletAnimData(a1),a1
 				muls	#B_BulStatLen,d0
 				add.l	d0,a1
-
 				move.l	B_DamageToTarget(a1),d0
 				move.b	d0,SHOTPOWER
 				clr.l	d1
@@ -899,25 +936,23 @@ intoatt:
 				move.w	d1,SHOTSPEED
 				sub.w	#1,d0
 				move.w	d0,SHOTSHIFT
-
-
 				tst.l	B_VisibleOrInstant(a1)
-				beq		ATTACKWITHBULLETGUN
+				beq		ai_AttackWithProjectile
 
-ATTACKWITHINSTANTGUN:
+ai_AttackWithHitScan:
 				tst.b	damagetaken(a0)
-				beq.s	.nodamage
+				beq.s	.no_damage
 
 				move.b	#4,currentmode(a0)
-				bsr		TAKEDAMAGE
-				tst.b	getout
-				beq.s	.nodamage
-; move.w ANIMFACING,d0
+				bsr		ai_TakeDamage
+				tst.b	ai_GetOut_w
+				beq.s	.no_damage
+; move.w ai_AnimFacing_w,d0
 ; add.w d0,Facing(a0)
 				rts
 
-.nodamage:
-				jsr		ATTACKANIM
+.no_damage:
+				jsr		ai_DoAttackAnim
 
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.w	PLR1_xoff,newx
@@ -933,33 +968,35 @@ ATTACKWITHINSTANTGUN:
 				move.w	AngRet,Facing(a0)
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				bsr		STOREPLAYERPOS
+				bsr		ai_StorePlayerPosition
 
-				bsr		LOOKFORPLAYER1
+				bsr		AI_LookForPlayer1
+
 				move.b	#0,currentmode(a0)
 				tst.b	17(a0)
-				beq.s	.nosee
-				bsr		CHECKINFRONT
+				beq.s	.cant_see_player
+				bsr		ai_CheckInFront
 				tst.b	d0
-				beq.s	.nosee
+				beq.s	.cant_see_player
 
 				move.b	#1,currentmode(a0)
 				move.b	#1,WhichAnim(a0)
-				move.w	ANIMFACING,d0
+				move.w	ai_AnimFacing_w,d0
 				add.w	d0,Facing(a0)
-				bra		.yessee
-.nosee:
+				bra		.can_see_player
+
+.cant_see_player:
 				move.b	#0,WhichAnim(a0)
 				move.w	#0,SecTimer(a0)
-				move.w	FOLLOWUPTIMER,ObjTimer(a0)
+				move.w	AI_FollowupTimer_w,ObjTimer(a0)
 				move.w	#0,SecTimer(a0)
-				move.w	ANIMFACING,d0
+				move.w	ai_AnimFacing_w,d0
 				add.w	d0,Facing(a0)
 				rts
 
-.yessee:
-				tst.b	DoAction
-				beq		.noshootythang
+.can_see_player:
+				tst.b	ai_DoAction_b
+				beq		.no_shooty_thang
 
 				move.w	(a0),d1
 				move.l	#ObjRotated,a6
@@ -994,11 +1031,11 @@ ATTACKWITHINSTANTGUN:
 				ext.l	d0
 				asl.l	#2,d0
 				cmp.l	d1,d0
-				bgt.s	.hitplr
+				bgt.s	.hit_player
 				jsr		SHOOTPLAYER1
-				bra.s	.missplr
+				bra.s	.missed_player
 
-.hitplr:
+.hit_player:
 				move.l	PLR1_Obj,a1
 				move.b	SHOTPOWER,d0
 				add.b	d0,damagetaken(a1)
@@ -1015,7 +1052,7 @@ ATTACKWITHINSTANTGUN:
 				muls	d2,d2
 				muls	d3,d3
 				add.l	d3,d2
-				jsr		CALCSQROOT
+				jsr		ai_CalcSqrt
 				add.l	d2,d2
 
 				moveq	#0,d3
@@ -1029,10 +1066,10 @@ ATTACKWITHINSTANTGUN:
 				sub.w	d0,ImpactX(a1)
 				sub.w	d1,ImpactZ(a1)
 
-.missplr:
+.missed_player:
 				movem.l	(a7)+,a0/a1
 
-.noshootythang:
+.no_shooty_thang:
 				move.w	(a0),d1
 				move.l	ObjectPoints,a1
 				lea		(a1,d1.w*8),a1
@@ -1040,35 +1077,35 @@ ATTACKWITHINSTANTGUN:
 				move.w	(a1),newx
 				move.w	4(a1),newz
 
-				bsr		DOTORCH
+				bsr		ai_DoTorch
 
-				tst.b	FINISHEDANIM
-				beq.s	.notfinishedattacking
+				tst.b	ai_FinishedAnim_b
+				beq.s	.not_finished_attacking
 				move.b	#0,WhichAnim(a0)
 				move.b	#2,currentmode(a0)
-				move.w	FOLLOWUPTIMER,ObjTimer(a0)
+				move.w	AI_FollowupTimer_w,ObjTimer(a0)
 				move.w	#0,SecTimer(a0)
-				move.w	ANIMFACING,d0
+				move.w	ai_AnimFacing_w,d0
 				add.w	d0,Facing(a0)
 				rts
 
-.notfinishedattacking:
+.not_finished_attacking:
 				rts
 
-ATTACKWITHBULLETGUN:
+ai_AttackWithProjectile:
 				tst.b	damagetaken(a0)
-				beq.s	.nodamage
+				beq.s	.no_damage
 
 				move.b	#4,currentmode(a0)
-				bsr		TAKEDAMAGE
-				tst.b	getout
-				beq.s	.nodamage
-; move.w ANIMFACING,d0
+				bsr		ai_TakeDamage
+				tst.b	ai_GetOut_w
+				beq.s	.no_damage
+; move.w ai_AnimFacing_w,d0
 ; add.w d0,Facing(a0)
 				rts
 
-.nodamage:
-				jsr		ATTACKANIM
+.no_damage:
+				jsr		ai_DoAttackAnim
 
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.w	PLR1_xoff,newx
@@ -1084,10 +1121,10 @@ ATTACKWITHBULLETGUN:
 				move.w	AngRet,Facing(a0)
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				bsr		STOREPLAYERPOS
+				bsr		ai_StorePlayerPosition
 
-				tst.b	DoAction
-				beq.s	.noshootythang
+				tst.b	ai_DoAction_b
+				beq.s	.no_shooty_thang
 
 				movem.l	d0-d7/a0-a6,-(a7)
 
@@ -1100,7 +1137,7 @@ ATTACKWITHBULLETGUN:
 				jsr		FireAtPlayer1
 				movem.l	(a7)+,d0-d7/a0-a6
 
-.noshootythang:
+.no_shooty_thang:
 				move.w	(a0),d1
 				move.l	ObjectPoints,a1
 				lea		(a1,d1.w*8),a1
@@ -1108,83 +1145,83 @@ ATTACKWITHBULLETGUN:
 				move.w	(a1),newx
 				move.w	4(a1),newz
 
-				bsr		DOTORCH
+				bsr		ai_DoTorch
 
-				tst.b	FINISHEDANIM
-				beq.s	.notfinishedattacking
+				tst.b	ai_FinishedAnim_b
+				beq.s	.not_finished_attacking
 				move.b	#0,WhichAnim(a0)
 				move.b	#2,currentmode(a0)
-				move.w	FOLLOWUPTIMER,ObjTimer(a0)
+				move.w	AI_FollowupTimer_w,ObjTimer(a0)
 				move.w	#0,SecTimer(a0)
-				move.w	ANIMFACING,d0
+				move.w	ai_AnimFacing_w,d0
 				add.w	d0,Facing(a0)
 				rts
 
-.notfinishedattacking:
-				bsr		LOOKFORPLAYER1
+.not_finished_attacking:
+				bsr		AI_LookForPlayer1
 				move.b	#0,currentmode(a0)
 				tst.b	17(a0)
-				beq.s	.nosee
-				bsr		CHECKINFRONT
+				beq.s	.cant_see_player
+				bsr		ai_CheckInFront
 				tst.b	d0
-				beq.s	.nosee
+				beq.s	.cant_see_player
 				move.b	#1,WhichAnim(a0)
 				move.b	#1,currentmode(a0)
-				move.w	ANIMFACING,d0
+				move.w	ai_AnimFacing_w,d0
 				add.w	d0,Facing(a0)
 				rts
 
-.nosee:
+.cant_see_player:
 				move.b	#0,WhichAnim(a0)
 				move.w	#0,SecTimer(a0)
-				move.w	FOLLOWUPTIMER,ObjTimer(a0)
+				move.w	AI_FollowupTimer_w,ObjTimer(a0)
 				move.w	#0,SecTimer(a0)
-				move.w	ANIMFACING,d0
+				move.w	ai_AnimFacing_w,d0
 				add.w	d0,Facing(a0)
 				rts
 
-CHARGETOSIDEFLYING:
-				st		FLYABIT
-				st		TOSIDE
+ai_ChargeToSideFlying:
+				st		AI_FlyABit_w
+				st		ai_ToSide_w
 				move.l	#1000*256,StepDownVal
-				bra		INTOCHAFLY
+				bra		ai_ChargeFlyingCommon
 
-CHARGEFLYING:
-				clr.b	TOSIDE
-				st		FLYABIT
+ai_ChargeFlying:
+				clr.b	ai_ToSide_w
+				st		AI_FlyABit_w
 				move.l	#1000*256,StepDownVal
 
-INTOCHAFLY:
+ai_ChargeFlyingCommon:
 				tst.b	damagetaken(a0)
-				beq.s	.nodamage
+				beq.s	.no_damage
 
-				bsr		TAKEDAMAGE
-				tst.b	getout
-				beq.s	.nodamage
-; move.w ANIMFACING,d0
+				bsr		ai_TakeDamage
+				tst.b	ai_GetOut_w
+				beq.s	.no_damage
+; move.w ai_AnimFacing_w,d0
 ; add.w d0,Facing(a0)
 				rts
 
-.nodamage:
-				jsr		ATTACKANIM
-; tst.b FINISHEDANIM
-; beq.s .notfinishedattacking
+.no_damage:
+				jsr		ai_DoAttackAnim
+; tst.b ai_FinishedAnim_b
+; beq.s .not_finished_attacking
 ; move.b #2,currentmode(a0)
-; move.w FOLLOWUPTIMER,ObjTimer(a0)
+; move.w AI_FollowupTimer_w,ObjTimer(a0)
 ; move.w #0,SecTimer(a0)
 ; rts
-;.notfinishedattacking:
+;.not_finished_attacking:
 
 				move.w	12(a0),FromZone
 				jsr		CheckTeleport
 				tst.b	OKTEL
-				beq.s	.notel
+				beq.s	.no_teleport
 				move.l	floortemp,d0
 				asr.l	#7,d0
 				add.w	d0,4(a0)
-				bra		.NoMunch
+				bra		.no_munch
 
-.notel:
+.no_teleport:
 				move.w	(a0),d1
 				move.l	#ObjRotated,a6
 				move.l	ObjectPoints,a1
@@ -1198,12 +1235,12 @@ INTOCHAFLY:
 				move.w	PLR1_cosval,tempcos
 				move.w	p1_xoff,tempx
 				move.w	p1_zoff,tempz
-				tst.b	TOSIDE
-				beq.s	.noside
+				tst.b	ai_ToSide_w
+				beq.s	.no_side
 				jsr		RunAround
 
-.noside:
-				move.w	responsespeed,d2
+.no_side:
+				move.w	AI_ResponseSpeed_w,d2
 				muls.w	TempFrames,d2
 				move.w	d2,speed
 				move.w	#160,Range
@@ -1226,68 +1263,68 @@ INTOCHAFLY:
 				move.l	#%100000,CollideFlags
 				jsr		Collision
 				tst.b	hitwall
-				beq.s	.nothitplayer
+				beq.s	.not_hit_player
 
 				move.w	oldx,newx
 				move.w	oldz,newz
 				st		GotThere
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
-				bra		.hitathing
+				bra		.hit_something
 
-.nothitplayer:
+.not_hit_player:
 				move.l	#%11111111110111000010,CollideFlags
 				jsr		Collision
 				tst.b	hitwall
-				beq.s	.canmove
+				beq.s	.can_move
 
 				move.w	oldx,newx
 				move.w	oldz,newz
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
-				bra		.hitathing
+				bra		.hit_something
 
-.canmove:
+.can_move:
 				clr.b	wallbounce
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
 				move.b	StoodInTop,ObjInTop(a0)
 				move.w	AngRet,Facing(a0)
 
-.hitathing:
+.hit_something:
 				tst.b	GotThere
-				beq.s	.NoMunch
-				tst.b	DoAction
-				beq.s	.NoMunch
+				beq.s	.no_munch
+				tst.b	ai_DoAction_b
+				beq.s	.no_munch
 				move.l	PLR1_Obj,a5
-				move.b	DoAction,d0
+				move.b	ai_DoAction_b,d0
 				asl.w	#1,d0
 				add.b	d0,damagetaken(a5)
 
-.NoMunch:
-				bsr		STOREPLAYERPOS
+.no_munch:
+				bsr		ai_StorePlayerPosition
 
 				move.w	4(a0),-(a7)
-				bsr		GETROOMSTATS
+				bsr		ai_GetRoomStats
 				move.w	(a7)+,4(a0)
 
-				bsr		GETROOMCPT
-				bsr		FLYTOPLAYERHEIGHT
-				bsr		DOTORCH
-				bsr		LOOKFORPLAYER1
+				bsr		ai_GetRoomCPT
+				bsr		ai_FlyToPlayerHeight
+				bsr		ai_DoTorch
+				bsr		AI_LookForPlayer1
 				move.b	#0,currentmode(a0)
 				tst.b	17(a0)
-				beq.s	.nosee
-				bsr		CHECKINFRONT
+				beq.s	.cant_see_player
+				bsr		ai_CheckInFront
 				tst.b	d0
-				beq.s	.nosee
+				beq.s	.cant_see_player
 				move.b	#1,currentmode(a0)
 				move.b	#1,WhichAnim(a0)
-				move.w	ANIMFACING,d0
+				move.w	ai_AnimFacing_w,d0
 				add.w	d0,Facing(a0)
 				rts
-.nosee:
+.cant_see_player:
 				move.b	#0,WhichAnim(a0)
 				move.w	#0,SecTimer(a0)
-				move.w	ANIMFACING,d0
+				move.w	ai_AnimFacing_w,d0
 				add.w	d0,Facing(a0)
 				rts
 
@@ -1300,21 +1337,21 @@ INTOCHAFLY:
 ** Followup Movements *************************
 ***********************************************
 
-PAUSEBRIEFLY
-
+ai_PauseBriefly:
 				tst.b	damagetaken(a0)
-				beq.s	.nodamage
+				beq.s	.no_damage
 
-				bsr		TAKEDAMAGE
-				tst.b	getout
-				beq.s	.nodamage
-; move.w ANIMFACING,d0
+				bsr		ai_TakeDamage
+				tst.b	ai_GetOut_w
+				beq.s	.no_damage
+
+; move.w ai_AnimFacing_w,d0
 ; add.w d0,Facing(a0)
 				rts
 
-.nodamage:
+.no_damage:
 				move.w	#0,SecTimer(a0)
-				jsr		WALKANIM
+				jsr		ai_DoWalkAnim
 
 				move.w	TempFrames,d0
 				sub.w	d0,ObjTimer(a0)
@@ -1326,82 +1363,82 @@ PAUSEBRIEFLY
 
 				move.w	(a1),newx
 				move.w	4(a1),newz
+				bsr		ai_DoTorch
 
-				bsr		DOTORCH
+				bsr		AI_LookForPlayer1
 
-				bsr		LOOKFORPLAYER1
 				move.b	#0,currentmode(a0)
 				tst.b	17(a0)
-				beq.s	.nosee
-				bsr		CHECKINFRONT
+				beq.s	.cant_see_player
+				bsr		ai_CheckInFront
 				tst.b	d0
-				beq.s	.nosee
-				bsr		CHECKFORDARK
+				beq.s	.cant_see_player
+				bsr		ai_CheckForDark
 				tst.b	d0
-				beq.s	.nosee
+				beq.s	.cant_see_player
 				move.b	#1,WhichAnim(a0)
 				move.b	#1,currentmode(a0)
-				move.w	ANIMFACING,d0
+				move.w	ai_AnimFacing_w,d0
 				add.w	d0,Facing(a0)
 				rts
 
-.nosee:
+.cant_see_player:
 				move.b	#0,WhichAnim(a0)
-				move.w	ANIMFACING,d0
+				move.w	ai_AnimFacing_w,d0
 				add.w	d0,Facing(a0)
 				rts
 
 .stillwaiting:
-				move.w	ANIMFACING,d0
+				move.w	ai_AnimFacing_w,d0
 				add.w	d0,Facing(a0)
 				rts
 
-TOSIDE:			dc.w	0
 
-APPROACH:
-				clr.b	FLYABIT
+
+ai_Approach:
+				clr.b	AI_FlyABit_w
 				move.l	#30*256,StepDownVal
-				clr.b	TOSIDE
-				bra		INTOAPP
+				clr.b	ai_ToSide_w
+				bra		ai_ApproachCommon
 
-APPROACHFLYING:
-				st		FLYABIT
+ai_ApproachFlying:
+				st		AI_FlyABit_w
 				move.l	#1000*256,StepDownVal
-				clr.b	TOSIDE
-				bra		INTOAPP
+				clr.b	ai_ToSide_w
+				bra		ai_ApproachCommon
 
-APPROACHTOSIDEFLYING:
-				st		FLYABIT
+ai_ApproachToSideFlying:
+				st		AI_FlyABit_w
 				move.l	#1000*256,StepDownVal
-				st		TOSIDE
-				bra		INTOAPP
+				st		ai_ToSide_w
+				bra		ai_ApproachCommon
 
-APPROACHTOSIDE:
-				st		TOSIDE
-				clr.b	FLYABIT
+ai_ApproachToSide:
+				st		ai_ToSide_w
+				clr.b	AI_FlyABit_w
 				move.l	#30*256,StepDownVal
 
-INTOAPP:
+ai_ApproachCommon:
 				tst.b	damagetaken(a0)
-				beq.s	.nodamage
-				bsr		TAKEDAMAGE
-				tst.b	getout
-				beq.s	.nodamage
+				beq.s	.no_damage
+				bsr		ai_TakeDamage
+				tst.b	ai_GetOut_w
+				beq.s	.no_damage
 				rts
 
-.nodamage:
-				jsr		WALKANIM
+.no_damage:
+				jsr		ai_DoWalkAnim
 
 				move.w	12(a0),FromZone
 				jsr		CheckTeleport
 				tst.b	OKTEL
-				beq.s	.notel
+				beq.s	.no_teleport
 				move.l	floortemp,d0
 				asr.l	#7,d0
 				add.w	d0,4(a0)
-				bra		.NoMunch
+				bra		.no_munch
 
-.notel:
+.no_teleport:
 				move.w	(a0),d1
 				move.l	#ObjRotated,a6
 				move.l	ObjectPoints,a1
@@ -1416,21 +1453,21 @@ INTOAPP:
 				move.w	PLR1_cosval,tempcos
 				move.w	p1_xoff,tempx
 				move.w	p1_zoff,tempz
-				tst.b	TOSIDE
-				beq.s	.noside
+				tst.b	ai_ToSide_w
+				beq.s	.no_side
 				jsr		RunAround
 
-.noside:
+.no_side:
 				move.w	#0,speed
-				tst.b	DoAction
-				beq.s	.nospeed
+				tst.b	ai_DoAction_b
+				beq.s	.no_speed
 				moveq	#0,d2
-				move.b	DoAction,d2
+				move.b	ai_DoAction_b,d2
 				asl.w	#2,d2
-				muls.w	followupspeed,d2
+				muls.w	AI_FollowupSpeed_w,d2
 				move.w	d2,speed
 
-.nospeed:
+.no_speed:
 				move.w	#160,Range
 				move.w	4(a0),d0
 				ext.l	d0
@@ -1451,103 +1488,103 @@ INTOAPP:
 				move.l	#%100000,CollideFlags
 				jsr		Collision
 				tst.b	hitwall
-				beq.s	.nothitplayer
+				beq.s	.not_hit_player
 
 				move.w	oldx,newx
 				move.w	oldz,newz
 				st		GotThere
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
-				bra		.hitathing
+				bra		.hit_something
 
-.nothitplayer:
+.not_hit_player:
 				move.l	#%11111111110111000010,CollideFlags
 				jsr		Collision
 				tst.b	hitwall
-				beq.s	.canmove
+				beq.s	.can_move
 
 				move.w	oldx,newx
 				move.w	oldz,newz
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
-				bra		.hitathing
+				bra		.hit_something
 
-.canmove:
+.can_move:
 				clr.b	wallbounce
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
 				move.b	StoodInTop,ObjInTop(a0)
 				move.w	AngRet,Facing(a0)
 
-.hitathing:
+.hit_something:
 				tst.w	12-64(a0)
-				blt.s	.nocopyin
+				blt.s	.no_copy_in
 				move.w	12(a0),12-64(a0)
 				move.w	GraphicRoom(a0),GraphicRoom-64(a0)
-.nocopyin:
+.no_copy_in:
 
 ; tst.b GotThere
-; beq.s .NoMunch
+; beq.s .no_munch
 ; tst.w FourthTimer(a0)
 ; ble.s .OKtomunch
 ; move.w TempFrames,d0
 ; sub.w d0,FourthTimer(a0)
-; bra.s .NoMunch
+; bra.s .no_munch
 ;.OKtomunch:
 ; move.w #40,FourthTimer(a0)
 ; move.l PLR1_Obj,a5
 ; add.b #2,damagetaken(a5)
 ;
-.NoMunch:
+.no_munch:
 
-				bsr		STOREPLAYERPOS
+				bsr		ai_StorePlayerPosition
 
-				tst.b	FLYABIT
+				tst.b	AI_FlyABit_w
 				beq.s	.notfl
 
-				bsr		FLYTOPLAYERHEIGHT
+				bsr		ai_FlyToPlayerHeight
 
 .notfl:
 				move.w	4(a0),-(a7)
-				bsr		GETROOMSTATS
+				bsr		ai_GetRoomStats
 				move.w	(a7)+,d0
-				tst.b	FLYABIT
-				beq.s	.notflying
+				tst.b	AI_FlyABit_w
+				beq.s	.not_flying
 				move.w	d0,4(a0)
 
-.notflying:
-				bsr		GETROOMCPT
-				bsr		DOTORCH
+.not_flying:
+				bsr		ai_GetRoomCPT
+				bsr		ai_DoTorch
 
 				move.b	#0,currentmode(a0)
-				tst.b	FLYABIT
-				bne.s	.inair
-				bsr		CHECKATTACKONGROUND
+				tst.b	AI_FlyABit_w
+				bne.s	.is_flying
+				bsr		ai_CheckAttackOnGround
 				tst.b	d0
-				beq		.nosee
+				beq		.cant_see_player
 
-.inair:
-				bsr		LOOKFORPLAYER1
+.is_flying:
+				bsr		AI_LookForPlayer1
 				tst.b	17(a0)
-				beq.s	.nosee
-				bsr		CHECKINFRONT
+				beq.s	.cant_see_player
+				bsr		ai_CheckInFront
 				tst.b	d0
-				beq.s	.nosee
+				beq.s	.cant_see_player
 				move.b	#2,currentmode(a0)
 				move.w	TempFrames,d0
 				sub.w	d0,ObjTimer(a0)
-				bgt.s	.nosee
-				bsr		CHECKFORDARK
+				bgt.s	.cant_see_player
+				bsr		ai_CheckForDark
 				tst.b	d0
-				beq.s	.nosee
+				beq.s	.cant_see_player
 				move.b	#1,currentmode(a0)
 				move.w	#0,SecTimer(a0)
 				move.b	#1,WhichAnim(a0)
-				move.w	ANIMFACING,d0
+				move.w	ai_AnimFacing_w,d0
 				add.w	d0,Facing(a0)
 				rts
 
-.nosee:
+.cant_see_player:
 				move.b	#0,WhichAnim(a0)
-				move.w	ANIMFACING,d0
+				move.w	ai_AnimFacing_w,d0
 				add.w	d0,Facing(a0)
 				rts
 
@@ -1555,43 +1592,43 @@ INTOAPP:
 ** GENERIC ROUTINES ***************************
 ***********************************************
 
-FLYTOCPTHEIGHT
-				move.w	MIDDLECPT,d0
+ai_FlyToCPTHeight:
+				move.w	ai_MiddleCPT_w,d0
 				move.l	CPtPos,a1
 				move.w	4(a1,d0.w*8),d1
-				bra		intoflytoheight
+				bra		ai_FlyToHeightCommon
 
-FLYTOPLAYERHEIGHT:
+ai_FlyToPlayerHeight:
 				move.l	PLR1_yoff,d1
 				asr.l	#7,d1
 
-intoflytoheight:
+ai_FlyToHeightCommon:
 				move.w	4(a0),d0
 				cmp.w	d0,d1
-				bgt.s	.flydown
+				bgt.s	.fly_down
 				move.w	objyvel(a0),d2
 				sub.w	#2,d2
 				cmp.w	#-32,d2
-				bgt.s	.nofastup
+				bgt.s	.no_fast_up
 				move.w	#-32,d2
 
-.nofastup
+.no_fast_up
 				move.w	d2,objyvel(a0)
 				add.w	d2,4(a0)
-				bra		CHECKFLOORCEILING
+				bra		ai_CheckFloorCeiling
 
-.flydown
+.fly_down
 				move.w	objyvel(a0),d2
 				add.w	#2,d2
 				cmp.w	#32,d2
-				blt.s	.nofastdown
+				blt.s	.no_fast_down
 				move.w	#32,d2
 
-.nofastdown
+.no_fast_down
 				move.w	d2,objyvel(a0)
 				add.w	d2,4(a0)
 
-CHECKFLOORCEILING:
+ai_CheckFloorCeiling:
 				move.w	4(a0),d2
 				move.l	thingheight,d4
 				asr.l	#8,d4
@@ -1604,57 +1641,53 @@ CHECKFLOORCEILING:
 				move.l	ToZoneFloor(a2),d0
 				move.l	ToZoneRoof(a2),d1
 				tst.b	ObjInTop(a0)
-				beq.s	.notintop
+				beq.s	.not_in_top
 				move.l	ToUpperFloor(a2),d0
 				move.l	ToUpperRoof(a2),d1
-.notintop:
 
+.not_in_top:
 				asr.l	#7,d0
 				asr.l	#7,d1
-
 				cmp.w	d0,d3
-				blt.s	.botnohit
+				blt.s	.bottom_no_hit
 				move.w	d0,d3
 				move.w	d3,d2
 				sub.w	d4,d2
 				sub.w	d4,d2
-.botnohit
 
+.bottom_no_hit:
 				cmp.w	d1,d2
-				bgt.s	.topnohit
+				bgt.s	.top_no_hit
 				move.w	d1,d2
 				move.w	d2,d3
 				add.w	d4,d3
 				add.w	d4,d3
-.topnohit
 
+.top_no_hit:
 				sub.w	d4,d3
 				move.w	d3,4(a0)
-
 				rts
 
-STOREPLAYERPOS:
+ai_StorePlayerPosition:
 				move.w	(a0),d0
-				move.l	#NASTYWORK,a2
+				move.l	#ai_NastyWork_vl,a2
 				asl.w	#4,d0
 				add.w	d0,a2
 				move.w	PLR1_xoff,lastx(a2)
 				move.w	PLR1_zoff,lasty(a2)
 				move.l	PLR1_Roompt,a3
 				move.w	(a3),lastzone(a2)
-
 				moveq	#0,d0
 				move.b	ToZoneCpt(a3),d0
 				tst.b	PLR1_StoodInTop
-				beq.s	.pnotintop
+				beq.s	.player_not_in_top
 				move.b	ToZoneCpt+1(a3),d0
-.pnotintop:
 
+.player_not_in_top:
 				move.w	d0,lastcpt(a2)
-
 				move.b	teamnumber(a0),d0
-				blt.s	.noteam
-				move.l	#TEAMWORK,a2
+				blt.s	.no_team
+				move.l	#AI_Teamwork_vl,a2
 				asl.w	#4,d0
 				add.w	d0,a2
 				move.w	PLR1_xoff,lastx(a2)
@@ -1664,24 +1697,24 @@ STOREPLAYERPOS:
 				moveq	#0,d0
 				move.b	ToZoneCpt(a3),d0
 				tst.b	PLR1_StoodInTop
-				beq.s	.pnotintop2
+				beq.s	.player_not_in_top2
 				move.b	ToZoneCpt+1(a3),d0
-.pnotintop2:
+
+.player_not_in_top2:
 				move.w	d0,lastcpt(a2)
 				move.w	(a0),SEENBY(a2)
 
-.noteam:
+.no_team:
 				rts
 
-GETROOMSTATS:
-
+ai_GetRoomStats:
 				move.w	(a0),d0
 				move.l	ObjectPoints,a1
 				lea		(a1,d0.w*8),a1
 				move.w	newx,(a1)
 				move.w	newz,4(a1)
 
-GETROOMSTATSSTILL:
+ai_GetRoomStatsStill:
 				move.l	objroom,a2
 				move.w	(a2),12(a0)
 
@@ -1696,41 +1729,39 @@ GETROOMSTATSSTILL:
 
 				move.l	ToZoneFloor(a2),d0
 				tst.b	ObjInTop(a0)
-				beq.s	.notintop2
+				beq.s	.not_in_top2
 				move.l	ToUpperFloor(a2),d0
-.notintop2:
+
+.not_in_top2:
 				move.l	thingheight,d2
 				asr.l	#1,d2
 				sub.l	d2,d0
 				asr.l	#7,d0
 				move.w	d0,4(a0)
-
 				move.w	12(a0),GraphicRoom(a0)
-
 				rts
 
-CHECKFORDARK:
-
+ai_CheckForDark:
 				move.w	(a0),d0
 				move.l	PLR1_Roompt,a3
 				move.w	(a3),d1
 				cmp.w	d1,d0
-				beq.s	NOTINDARK
+				beq.s	.not_in_dark
 
 				jsr		GetRand
 				and.w	#31,d0
 				cmp.w	PLR1_RoomBright,d0
-				bge.s	NOTINDARK
+				bge.s	.not_in_dark
 
-INDARK:
+.in_dark:
 				moveq	#0,d0
 				rts
 
-NOTINDARK:
+.not_in_dark:
 				moveq	#-1,d0
 				rts
 
-CHECKINFRONT:
+ai_CheckInFront:
 
 ; clr.b 17(a0)
 ; rts
@@ -1758,10 +1789,7 @@ CHECKINFRONT:
 				sgt		d0
 				rts
 
-ANIMFACING:		dc.w	0
-
-LOOKFORPLAYER1:
-
+AI_LookForPlayer1:
 				clr.b	17(a0)
 				clr.b	CanSee
 				move.b	ObjInTop(a0),ViewerTop
@@ -1786,8 +1814,8 @@ LOOKFORPLAYER1:
 .carryonprowling:
 				rts
 
-CLRNASTYMEM:
-				move.l	#NASTYWORK,a0
+AI_ClearNastyMem:
+				move.l	#ai_NastyWork_vl,a0
 				move.l	#299,d0
 .lopp
 				move.l	#0,(a0)
@@ -1796,7 +1824,7 @@ CLRNASTYMEM:
 				add.w	#16,a0
 				dbra	d0,.lopp
 
-				move.l	#TEAMWORK,a0
+				move.l	#AI_Teamwork_vl,a0
 				move.l	#29,d0
 .lopp2
 				move.l	#0,(a0)
@@ -1807,27 +1835,27 @@ CLRNASTYMEM:
 
 				rts
 
-CHECKDAMAGE:
+ai_CheckDamage:
 
 				moveq	#0,d2
 				move.b	damagetaken(a0),d2
 				beq		.noscream
 
 				sub.b	d2,numlives(a0)
-				bgt		.notdeadyet
+				bgt		.not_dead_yet
 
 				moveq	#0,d0
 				move.b	teamnumber(a0),d0
-				blt.s	.noteam
+				blt.s	.no_team
 
-				lea		TEAMWORK(pc),a2
+				lea		AI_Teamwork_vl(pc),a2
 				asl.w	#4,d0
 				add.w	d0,a2
 				move.w	(a0),d0
 				cmp.w	SEENBY(a2),d0
-				bne.s	.noteam
+				bne.s	.no_team
 				move.w	#-1,SEENBY(a2)
-.noteam
+.no_team
 
 				cmp.b	#1,d2
 				ble		.noexplode
@@ -1884,7 +1912,7 @@ CHECKDAMAGE:
 				move.w	12(a0),GraphicRoom(a0)
 				rts
 
-.notdeadyet:
+.not_dead_yet:
 				clr.b	damagetaken(a0)
 				movem.l	d0-d7/a0-a6,-(a7)
 				sub.l	ObjectPoints,a1
@@ -1913,7 +1941,7 @@ SPLIBBLE:
 				jsr		ViewpointToDraw
 				add.l	d0,d0
 
-				cmp.b	#1,VECOBJ
+				cmp.b	#1,AI_VecObj_w
 				bne.s	.NOSIDES
 				moveq	#0,d0
 
@@ -1938,7 +1966,7 @@ SPLIBBLE:
 				move.b	1(a6,d1.w),11(a0)
 
 				move.w	#-1,6(a0)
-				cmp.b	#1,VECOBJ
+				cmp.b	#1,AI_VecObj_w
 				beq.s	.nosize
 				move.w	2(a6,d1.w),6(a0)
 .nosize
@@ -1963,12 +1991,12 @@ SPLIBBLE:
 .nosoundmake
 
 				move.b	6(a6,d1.w),d0
-				sne		DoAction
+				sne		ai_DoAction_b
 
 				rts
 
 
-DOTORCH:
+ai_DoTorch:
 				move.w	ALIENBRIGHT,d0
 				bge.s	.nobright
 
@@ -1987,9 +2015,8 @@ DOTORCH:
 .nobright:
 				rts
 
-FOIBLE:
-WALKANIM:
-ATTACKANIM:
+ai_DoWalkAnim:
+ai_DoAttackAnim:
 
 				move.l	d0,-(a7)
 
@@ -2003,7 +2030,7 @@ ATTACKANIM:
 
 				moveq	#0,d1
 
-				cmp.b	#1,VECOBJ
+				cmp.b	#1,AI_VecObj_w
 				beq.s	.notview
 
 				jsr		ViewpointToDraw
@@ -2026,9 +2053,9 @@ ATTACKANIM:
 				muls	#A_FrameLen,d1
 
 				st		1(a5)
-				move.b	(a5),DoAction
+				move.b	(a5),ai_DoAction_b
 				clr.b	(a5)
-				move.b	3(a5),FINISHEDANIM
+				move.b	3(a5),ai_FinishedAnim_b
 				clr.b	3(a5)
 
 				move.l	#0,8(a0)
@@ -2043,10 +2070,10 @@ ATTACKANIM:
 				move.b	d0,11(a0)
 
 
-				move.w	#0,ANIMFACING
-				cmp.b	#1,VECOBJ
+				move.w	#0,ai_AnimFacing_w
+				cmp.b	#1,AI_VecObj_w
 				bne.s	.noanimface
-				move.w	2(a6,d1.w),ANIMFACING
+				move.w	2(a6,d1.w),ai_AnimFacing_w
 .noanimface:
 
 ******************************************
@@ -2149,7 +2176,7 @@ ATTACKANIM:
 
 
 				move.w	#-1,6(a0)
-				cmp.b	#1,VECOBJ
+				cmp.b	#1,AI_VecObj_w
 				beq.s	.nosize
 				bgt.s	.setlight
 				move.w	2(a6,d1.w),6(a0)
@@ -2166,7 +2193,7 @@ ATTACKANIM:
 .setlight:
 				move.w	2(a6,d1.w),6(a0)
 
-				move.b	VECOBJ,d1
+				move.b	AI_VecObj_w,d1
 				or.b	d1,10(a0)
 
 				move.l	(a7)+,d0
@@ -2186,7 +2213,7 @@ BLIBBLE:
 				add.w	#1,d2
 				muls	#A_FrameLen,d1
 				tst.b	A_FrameLen(a6,d1.w)
-				slt		FINISHEDANIM
+				slt		ai_FinishedAnim_b
 				bge.s	.noendanim
 				moveq	#0,d2
 .noendanim
@@ -2197,7 +2224,7 @@ BLIBBLE:
 				move.b	1(a6,d1.w),11(a0)
 
 				move.w	#-1,6(a0)
-				cmp.b	#1,VECOBJ
+				cmp.b	#1,AI_VecObj_w
 				beq.s	.nosize
 				move.w	2(a6,d1.w),6(a0)
 .nosize
@@ -2222,67 +2249,64 @@ BLIBBLE:
 .nosoundmake
 
 				move.b	6(a6,d1.w),d0
-				sne		DoAction
+				sne		ai_DoAction_b
 
 				rts
 
-CHECKATTACKONGROUND:
+ai_CheckAttackOnGround:
 
 				move.l	PLR1_Roompt,a3
 				moveq	#0,d1
 				move.b	ToZoneCpt(a3),d1
 				tst.b	PLR1_StoodInTop
-				beq.s	.pnotintop
+				beq.s	.player_not_in_top
 				move.b	ToZoneCpt+1(a3),d1
-.pnotintop:
 
+.player_not_in_top:
 				move.w	d1,d3
-
 				move.w	CurrCPt(a0),d0
-
 				cmp.w	d0,d1
-				beq.s	.yesattack
+				beq.s	.attack_player
 
 				jsr		GetNextCPt
 
 				cmp.w	d0,d3
-				beq.s	.yesattack
+				beq.s	.attack_player
 
-.noattack:
-
+.dont_attack_player:
 				clr.b	d0
 				rts
 
-.yesattack:
-
+.attack_player:
 				st		d0
-
 				rts
 
-GETROOMCPT:
+ai_GetRoomCPT:
 				move.l	objroom,a2
 				moveq	#0,d0
 				move.b	ToZoneCpt(a2),d0
 				tst.b	ObjInTop(a0)
-				beq.s	.pnotintop
-				move.b	ToZoneCpt+1(a2),d0
-.pnotintop:
+				beq.s	.player_not_in_top
 
+				move.b	ToZoneCpt+1(a2),d0
+
+.player_not_in_top:
 				move.w	d0,CurrCPt(a0)
 				rts
 
 
-CALCSQROOT:
+ai_CalcSqrt:
 				tst.l	d2
 				beq		.oksqr
 
 				movem.l	d0/d1/d3-d7/a0-a6,-(a7)
-
 				move.w	#31,d0
+
 .findhigh
 				btst	d0,d2
 				bne		.foundhigh
 				dbra	d0,.findhigh
+
 .foundhigh
 				asr.w	#1,d0
 				clr.l	d3
@@ -2297,8 +2321,8 @@ CALCSQROOT:
 				sub.w	d1,d0					; second approx
 				bgt		.stillnot0
 				move.w	#1,d0
-.stillnot0
 
+.stillnot0
 				move.w	d0,d1
 				muls	d1,d1
 				sub.l	d2,d1
@@ -2307,8 +2331,8 @@ CALCSQROOT:
 				sub.w	d1,d0					; second approx
 				bgt		.stillnot02
 				move.w	#1,d0
-.stillnot02
 
+.stillnot02
 				move.w	d0,d1
 				muls	d1,d1
 				sub.l	d2,d1
@@ -2317,24 +2341,43 @@ CALCSQROOT:
 				sub.w	d1,d0					; second approx
 				bgt		.stillnot03
 				move.w	#1,d0
-.stillnot03
 
+.stillnot03
 				move.w	d0,d2
 				ext.l	d2
-
 				movem.l	(a7)+,d0/d1/d3-d7/a0-a6
 
 .oksqr
 				rts
 
+ai_MiddleCPT_w:		dc.w	0
+ai_GetOut_w:		dc.w	0
+ai_ToSide_w:		dc.w	0
+ai_AnimFacing_w:	dc.w	0
+ai_DoAction_b:		dc.b	0
+ai_FinishedAnim_b:	dc.b	0
 
+				CNOP 0,4
+ai_NastyWork_vl:	ds.l	4*300
+AI_Teamwork_vl:		ds.l	4*30
+AI_Damaged_vw:		ds.w	300
 
-DoAction:		dc.b	0
-FINISHEDANIM:	dc.b	0
-NASTYWORK:		ds.l	4*300
-TEAMWORK:		ds.l	4*30
-DAMAGED:		ds.w	300
-DAMAGEPTR:		dc.l	0
+AI_DamagePtr_l:			dc.l	0
+AI_BoredomPtr_l:		dc.l	0
+AI_BoredomSpace_vl:		ds.l	2*300
 
-BOREDOMPTR:		dc.l	0
-BOREDOMSPACE:	ds.l	2*300
+AI_FlyABit_w:			dc.w	0
+AI_DefaultMode_w:		dc.w	0
+AI_ResponseMode_w:		dc.w	0
+AI_FollowupMode_w:		dc.w	0
+AI_RetreatMode_w:		dc.w	0
+AI_CurrentMode_w:		dc.w	0 ; unused ?
+AI_ProwlSpeed_w:		dc.w	0
+AI_ResponseSpeed_w:		dc.w	0
+AI_RetreatSpeed_w:		dc.w	0
+AI_FollowupSpeed_w:		dc.w	0
+AI_FollowupTimer_w:		dc.w	0
+AI_ReactionTime_w:		dc.w	0
+AI_VecObj_w:			dc.w	0
+AI_Player1NoiseVol_w:	dc.w	0
+AI_Player2NoiseVol_w:	dc.w	0
