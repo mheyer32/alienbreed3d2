@@ -1842,7 +1842,7 @@ CHECKDAMAGE:
 				clr.b	notifplaying
 				st		backbeat
 				move.w	(a0),IDNUM
-				move.b	ALIENECHO,Echo
+				move.b	ALIENECHO,PlayEcho
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
 
@@ -1876,7 +1876,7 @@ CHECKDAMAGE:
 				clr.b	notifplaying
 				st		backbeat
 				move.w	(a0),IDNUM
-				move.b	ALIENECHO,Echo
+				move.b	ALIENECHO,PlayEcho
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
 
@@ -1896,7 +1896,7 @@ CHECKDAMAGE:
 				clr.b	notifplaying
 				move.w	(a0),IDNUM
 				st		backbeat
-				move.b	ALIENECHO,Echo
+				move.b	ALIENECHO,PlayEcho
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
 
@@ -1957,7 +1957,7 @@ SPLIBBLE:
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
 				move.l	(a1),Noisex
-				move.b	ALIENECHO,Echo
+				move.b	ALIENECHO,PlayEcho
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
 .nosoundmake
@@ -2216,7 +2216,7 @@ BLIBBLE:
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
 				move.l	(a1),Noisex
-				move.b	ALIENECHO,Echo
+				move.b	ALIENECHO,PlayEcho
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
 .nosoundmake

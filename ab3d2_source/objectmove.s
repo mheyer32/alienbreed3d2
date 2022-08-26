@@ -590,7 +590,7 @@ anotherwalls:
 				move.w	4(a2),d2
 				sub.w	a4,d2
 				sub.w	a6,d2
-				move.w	d2,DX
+				move.w	d2,deltax
 				move.w	6(a2),d5
 				add.w	a4,d5
 				sub.w	a6,d5
@@ -602,7 +602,7 @@ anotherwalls:
 				sub.w	2(a2),d1
 				sub.w	a4,d0
 				sub.w	a6,d1
-				muls	DX,d1
+				muls	deltax,d1
 				muls	d5,d0
 				sub.l	d1,d0
 				bge		.oknothitwall
@@ -625,7 +625,7 @@ anotherwalls:
 				muls	d3,d2
 				add.l	d2,d1					; h(e-a)+g(b-f)
 
-				muls	DX,d4
+				muls	deltax,d4
 				muls	d5,d3
 				sub.l	d3,d4
 				beq		.oknothitwall
@@ -651,7 +651,7 @@ anotherwalls:
 				sub.w	#3,d7
 				move.w	d7,d6
 				muls	d5,d6
-				muls	DX,d7
+				muls	deltax,d7
 				divs	d0,d6
 				divs	d0,d7
 				neg.w	d6
@@ -664,7 +664,7 @@ anotherwalls:
 				sub.w	2(a2),d1
 				sub.w	a4,d0
 				sub.w	a6,d1
-				muls	DX,d1
+				muls	deltax,d1
 				muls	d5,d0
 				sub.l	d1,d0
 				blt		.oknothitwall
@@ -692,7 +692,7 @@ anotherwalls:
 				tst.w	d6
 				bgt.s	.xispos
 
-				move.w	DX,d7
+				move.w	deltax,d7
 				bgt.s	.oknothitwall
 				cmp.w	d7,d6
 				blt.s	.oknothitwall
@@ -701,7 +701,7 @@ anotherwalls:
 
 .xispos:
 
-				move.w	DX,d7
+				move.w	deltax,d7
 				blt.s	.oknothitwall
 				cmp.w	d7,d6
 				bgt.s	.oknothitwall
@@ -1018,7 +1018,7 @@ ERRORINMOVEMENT:
 
 objroomback:	dc.l	0
 
-DX:				dc.w	0
+deltax:			dc.w	0
 
 tstxval:		dc.l	0
 oldx:			dc.l	0

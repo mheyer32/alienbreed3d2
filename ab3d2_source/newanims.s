@@ -774,7 +774,7 @@ BACKSFX:
 				move.w	#$fff0,IDNUM
 				st.b	notifplaying
 				move.l	#0,Noisex
-				move.b	#0,Echo
+				move.b	#0,PlayEcho
 				jsr		GetRand
 				and.w	#15,d0
 				add.w	#32,d0
@@ -970,7 +970,7 @@ notallliftsdone:
 				move.l	ZoneAdds,a1
 				move.l	(a1,d7.w*4),a1
 				add.l	LEVELDATA,a1
-				move.b	ToEcho(a1),Echo
+				move.b	ToEcho(a1),PlayEcho
 
 				move.w	d2,d7					; speed of movement.
 
@@ -1334,7 +1334,7 @@ notalldoorsdone:
 				move.l	ZoneAdds,a1
 				move.l	(a1,d7.w*4),a1
 				add.l	LEVELDATA,a1
-				move.b	ToEcho(a1),Echo
+				move.b	ToEcho(a1),PlayEcho
 
 				muls	TempFrames,d2
 				add.w	d2,d3
@@ -3228,7 +3228,7 @@ notdoneanim:
 
 ********************************
 				move.l	objroom,a3
-				move.b	ToEcho(a3),Echo
+				move.b	ToEcho(a3),PlayEcho
 
 				tst.b	ObjInTop(a0)
 				beq.s	.notintop

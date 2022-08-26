@@ -715,7 +715,7 @@ GiveGuns2:
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
 				move.l	(a1),Noisex
-				move.b	#0,Echo
+				move.b	#0,PlayEcho
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
 .nosoundmake
@@ -1285,7 +1285,7 @@ FireAtPlayer1:
 				move.b	SHOTTYPE,d0
 				move.w	#0,shotlife(a5)
 				move.b	d0,shotsize(a5)
-				move.b	ALIENECHO,Echo
+				move.b	ALIENECHO,PlayEcho
 				move.b	SHOTPOWER,shotpower(a5)
 				movem.l	a5/a1/a0,-(a7)
 				move.w	(a0),IDNUM
@@ -1535,7 +1535,7 @@ FireAtPlayer2:
 				move.b	SHOTPOWER,shotpower(a5)
 				movem.l	a5/a1/a0,-(a7)
 				move.w	(a0),IDNUM
-				move.b	ALIENECHO,Echo
+				move.b	ALIENECHO,PlayEcho
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,a5/a1/a0
 

@@ -127,14 +127,14 @@ LOADAFILE:
 				move.l	d0,handle
 
 intoload:
-				; Is this some sort of decompression hooked into DOS.library?
-				; Is this getting the size of the file?
 				lea		fib,a5
 				move.l	handle,d1
 				move.l	a5,d2
 				CALLDOS	ExamineFH
 				move.l	fib_Size(a5),d0
 				move.l	d0,blocklen
+
+				add.l	#8,d0			; over-allocate by 8 bytes
 
 				move.l	TYPEOFMEM,d1
 				CALLEXEC AllocVec
@@ -150,6 +150,10 @@ intoload:
 				CALLDOS	Close
 
 				move.l	blockstart,a0
+
+				clr.l	(a0,d3.l)		; clear last 8 bytes
+				clr.l	4(a0,d3.l)
+
 				move.l	(a0),d0
 				cmp.l	#'=SB=',d0
 				beq		ITSPACKED
@@ -175,7 +179,7 @@ ITSASFX:
 				move.l	(a0)+,d0				;file size
 				move.l	d0,.SampleSize
 				move.l	a0,.CompressedSamplePosition
-				move.l	#MEMF_CHIP,d1
+				move.l	#MEMF_ANY,d1
 				CALLEXEC AllocVec
 				move.l	d0,.SamplePosition
 				move.l	.CompressedSamplePosition,a0
@@ -240,7 +244,7 @@ ITSASFX:
 
 
 
-
+				cnop 0,4
 ITSPACKED:
 
 				move.l	4(a0),d0				; length of unpacked file.

@@ -422,8 +422,6 @@ _ReadJoy2
 ; dc.l JPF_JOY_LEFT            Left
 ; dc.l JPF_JOY_RIGHT           Right
 
-Data:
-
 _LowBase
 				dc.l	0
 

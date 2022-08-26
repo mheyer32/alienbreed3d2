@@ -4054,10 +4054,10 @@ PolyBotTab:		ds.w	SCREENWIDTH*8
 PolyTopTab:		ds.w	SCREENWIDTH*8
 				ds.w	SCREENWIDTH*4
 
-offset:
-				ds.w	1
+;offset:
+;				ds.w	1
 ;timer:
-				ds.w	1
+;				ds.w	1
 
 Objects:		ds.l	38*4
 

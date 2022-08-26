@@ -2234,17 +2234,17 @@ zzzz:
 				cmp.w	#9,TELVAL
 				blt		noexit
 
-				jmp		end
+				jmp		endlevel
 noexit:
 
-; tst.w PLAYERONEHEALTH
-; bgt nnoend1
-; jmp end
-;nnoend1:
-; tst.w PLAYERTWOHEALTH
-; bgt nnoend2
-; jmp end
-;nnoend2:
+				tst.w PLAYERONEHEALTH
+				bgt nnoend1
+				jmp endlevel
+nnoend1:
+				tst.w PLAYERTWOHEALTH
+				bgt nnoend2
+				jmp endlevel
+nnoend2:
 
 ; move.l SwitchData,a0
 ; tst.b 24+8(a0)
@@ -5908,7 +5908,7 @@ SCROLLCHARS:	incbin	"includes/scrollfont"
 
 doanything:		dc.w	0						; does main game run?
 
-end:
+endlevel:
 ; 	_break #0
 				clr.b	dosounds
 				clr.b	doanything
@@ -5947,14 +5947,7 @@ end:
 				jsr		mt_init
 playgameover:
 
-;				move.l	#$dff000,a6
-;waitfortop2:
-;
-;
-;				btst.b	#0,intreqrl(a6)
-;				beq		waitfortop2
-;				move.w	#$1,intreq(a6)
-
+				CALLGRAF WaitTOF
 
 				jsr		mt_music
 
@@ -5966,7 +5959,7 @@ playgameover:
 
 wevewon:
 				; Disable audio DMA
-;				move.w	#$f,$dff000+dmacon
+				move.w	#$f,$dff000+dmacon
 
 				bsr		EnergyBar
 
@@ -5983,11 +5976,7 @@ wevewon:
 
 				jsr		mt_init
 playwelldone:
-;				move.l	#$dff000,a6
-;waitfortop3:
-;				btst.b	#0,intreqrl(a6)
-;				beq		waitfortop3
-;				move.w	#$1,intreq(a6)
+				CALLGRAF WaitTOF
 
 				jsr		mt_music
 
@@ -6003,7 +5992,7 @@ playwelldone:
 
 wevelost:
 				; disable Audio DMA
-;				move.w	#$f,$dff000+dmacon
+				move.w	#$f,$dff000+dmacon
 
 				jmp		closeeverything
 
@@ -10003,7 +9992,7 @@ pastster:
 				bra		notogglesound2
 
 Prefsfile:
-				dc.b	'k4nx'
+				dc.b	'k8nx'
 
 notogglesound:
 				clr.b	lasttogsound
@@ -11219,9 +11208,7 @@ chanpick:		dc.w	0
 IDNUM:			dc.w	0
 needleft:		dc.b	0
 needright:		dc.b	0
-STEREO:			dc.b	$0
-even
-;prot6: dc.w 0
+STEREO:			dc.b	$FF
 
 				even
 CHANNELDATA:
@@ -11474,7 +11461,7 @@ FOUNDALEFT:
 
 				move.w	Samplenum,d5
 
-; tst.b Echo
+; tst.b PlayEcho
 ; bne.s YESECHO
 ; tst.b SourceEcho
 ; beq.s NOECHO
@@ -11699,7 +11686,7 @@ FOUNDACHAN:
 
 				move.w	Samplenum,d5
 
-; tst.b Echo
+; tst.b PlayEcho
 ; bne.s YESECHO2
 ; tst.b SourceEcho
 ; beq.s NOECHO2
@@ -12069,7 +12056,7 @@ PLR2_StoodInTop: dc.b	0
 				even
 PLR2_height:	dc.l	0
 PLR2_Echo:		dc.w	0
-Echo:			dc.w	0
+PlayEcho:		dc.w	0
 
 				ds.w	4
 
