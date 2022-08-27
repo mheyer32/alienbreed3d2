@@ -328,9 +328,6 @@ notgotweap2
 				dbra	d1,pickweap2
 
 gogogogog:
-
-				ifeq	CHEESEY
-
 				tst.b	$43(a5)
 				beq.s	.notswapscr
 				tst.b	lastscr
@@ -344,9 +341,6 @@ gogogogog:
 .notswapscr:
 				clr.b	lastscr
 .notswapscr2:
-
-				endc
-
 				rts
 
 SHOWPLR2GUNNAME:

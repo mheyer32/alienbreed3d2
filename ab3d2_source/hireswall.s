@@ -117,17 +117,15 @@ SCALE			MACRO
 
 
 Doleftend:
-
 				move.w	leftclip,d0
 				sub.w	#1,d0
 				move.w	d0,leftclipandlast
-
-
 				move.w	(a0),d0
 				move.w	2(a0),d1
 				sub.w	d0,d1
 				bge.s	sometodraw
 				rts
+
 sometodraw:
 				move.w	itertab(pc,d1.w*4),d7
 				swap	d0
@@ -144,7 +142,6 @@ itertab:
 				incbin	"includes/iterfile"
 
 pstit:
-
 				moveq	#0,d1
 				move.w	4(a0),d1
 				moveq	#0,d2
@@ -185,7 +182,6 @@ pstit:
 				asr.l	d6,d5
 				move.l	d5,16(a0)
 
-
 *** Gouraud shading ***
 				moveq	#0,d5
 				move.w	26(a0),d5
@@ -206,7 +202,6 @@ itercount:		dc.w	0
 screendividethru:
 
 .scrdrawlop:
-
 				move.w	(a0)+,d0
 				move.l	FASTBUFFER,a3
 				move.l	(a0)+,d1
@@ -214,7 +209,6 @@ screendividethru:
 				bra		.pastscrinto
 
 .pastscrinto
-
 				swap	d1
 
 				move.w	d1,d6
@@ -239,6 +233,7 @@ screendividethru:
 				move.l	(a0)+,d4
 				swap	d4
 				move.w	d2,d6
+
 ***************************
 * old version
 				asr.w	#7,d6
@@ -253,10 +248,12 @@ screendividethru:
 				add.w	angbright(pc),d6
 				bge.s	.brnotneg
 				moveq	#0,d6
+
 .brnotneg
 				cmp.w	#32,d6
 				blt.s	.brnotpos
 				move.w	#32,d6
+
 .brnotpos
 				move.l	PaletteAddr,a2
 				move.l	a2,a4
@@ -279,11 +276,9 @@ screendividethru:
 .ffscrpickhowbright:
 				SCALE
 
-
 ***************************
 
 screendivide:
-
 				or.l	#$ffff0000,d7
 				move.w	leftclipandlast(pc),d6
 				move.l	#WorkSpace,a2
@@ -296,7 +291,6 @@ screendivide:
 				move.l	28(a0),a0
 
 scrdivlop:
-
 				swap	d0
 				cmp.w	d6,d0
 				bgt		scrnotoffleft
@@ -311,15 +305,11 @@ scrdivlop:
 				rts
 
 scrnotoffleft:
-
 				move.w	d0,d6
-
 				cmp.w	rightclip(pc),d0
 				bge.s	outofcalc
 
 scrnotoffright:
-
-
 				move.w	d0,(a2)+
 				move.l	d1,(a2)+
 				move.l	d2,(a2)+
@@ -341,11 +331,10 @@ outofcalc:
 				tst.w	d7
 				bge.s	.somethingtodraw
 				rts
-.somethingtodraw:
 
+.somethingtodraw:
 				move.l	#consttab,a1
 				move.l	#WorkSpace,a0
-
 				tst.b	FULLSCR
 				bne		screendivideFULL
 
@@ -362,7 +351,6 @@ thislinedone:
 				rts
 
 scrdrawlop:
-
 				move.w	(a0)+,d0
 
 				cmp.w	LASTSTIRRUP,d0
@@ -398,6 +386,7 @@ scrdrawlop:
 				swap	d4
 				addq	#1,d4
 				move.w	d2,d6
+
 ***************************
 * old version
 				asr.w	#7,d6
@@ -409,16 +398,19 @@ scrdrawlop:
 ; move.w #6,d6
 ;tstbrbr:
 ***************************
+
 				move.l	(a0)+,d5
 				swap	d5
 				ext.w	d5
 				add.w	d5,d6
 				bge.s	.brnotneg
 				moveq	#0,d6
+
 .brnotneg
 				cmp.w	#64,d6
 				blt.s	.brnotpos
 				move.w	#64,d6
+
 .brnotpos
 				move.l	PaletteAddr,a2
 				move.l	a2,a4
@@ -429,21 +421,18 @@ scrdrawlop:
 				btst	#0,d0
 				beq		.nobrightswap
 				exg		a2,a4
-.nobrightswap:
 
+.nobrightswap:
 				move.w	d7,-(a7)
 				bsr		ScreenWallstripdraw
 				move.w	(a7)+,d7
 
 toosmall:
-
 				dbra	d7,scrdrawlop
-
 				rts
 
 ffscrpickhowbright:
 				SCALE
-
 
 thislineodd:
 				add.w	#4+4+4+4+4,a0
@@ -451,7 +440,6 @@ thislineodd:
 				rts
 
 scrdrawlopDOUB:
-
 				move.w	(a0)+,d0
 				btst	#0,d0
 				bne.s	thislineodd
@@ -465,7 +453,6 @@ scrdrawlopDOUB:
 				move.l	(a0)+,d1
 
 				swap	d1
-
 				move.w	d1,d6
 				and.w	HORAND,d6
 				move.l	(a0)+,d2
@@ -489,6 +476,7 @@ scrdrawlopDOUB:
 				swap	d4
 				addq	#1,d4
 				move.w	d2,d6
+
 ***************************
 * old version
 				asr.w	#7,d6
@@ -500,16 +488,19 @@ scrdrawlopDOUB:
 ; move.w #6,d6
 ;tstbrbr:
 ***************************
+
 				move.l	(a0)+,d5
 				swap	d5
 				ext.w	d5
 				add.w	d5,d6
 				bge.s	.brnotneg
 				moveq	#0,d6
+
 .brnotneg
 				cmp.w	#64,d6
 				blt.s	.brnotpos
 				move.w	#64,d6
+
 .brnotpos
 				move.l	PaletteAddr,a2
 				move.l	a2,a4
@@ -520,17 +511,13 @@ scrdrawlopDOUB:
 				btst	#0,d0
 				beq		.nobrightswap
 				exg		a2,a4
-.nobrightswap:
 
+.nobrightswap:
 				move.w	d7,-(a7)
 				bsr		ScreenWallstripdraw
 				move.w	(a7)+,d7
-
-
 				dbra	d7,scrdrawlopDOUB
-
 				rts
-
 
 middleline:
 				dc.w	0
@@ -549,13 +536,10 @@ ffscrpickhowbrightD:
 				SCALE
 
 screendivideFULL:
-
 				tst.b	DOUBLEWIDTH
 				bne		scrdrawlopFULLDOUB
 
-
 scrdrawlopFULL:
-
 				move.w	(a0)+,d0
 				move.l	FASTBUFFER,a3
 				lea		(a3,d0.w),a3
@@ -591,6 +575,7 @@ scrdrawlopFULL:
 				swap	d4
 				addq	#1,d4
 				move.w	d2,d6
+
 ***************************
 * old version
 				asr.w	#7,d6
@@ -602,16 +587,19 @@ scrdrawlopFULL:
 ; move.w #6,d6
 ;tstbrbr:
 ***************************
+
 				move.l	(a0)+,d5
 				swap	d5
 				ext.w	d5
 				add.w	d5,d6
 				bge.s	.brnotneg
 				moveq	#0,d6
+
 .brnotneg
 				cmp.w	#64,d6
 				blt.s	.brnotpos
 				move.w	#64,d6
+
 .brnotpos
 				move.l	PaletteAddr,a2
 				move.l	a2,a4
@@ -622,14 +610,13 @@ scrdrawlopFULL:
 				btst	#0,d0
 				beq		.nobrightswap
 				exg		a2,a4
-.nobrightswap:
 
+.nobrightswap:
 				move.w	d7,-(a7)
 				bsr		ScreenWallstripdrawBIG
 				move.w	(a7)+,d7
 
 				dbra	d7,scrdrawlopFULL
-
 				rts
 
 ffscrpickhowbrightFULL:
@@ -641,11 +628,9 @@ itsanoddone:
 				rts
 
 scrdrawlopFULLDOUB:
-
 				move.w	(a0)+,d0
 				btst	#0,d0
 				bne.s	itsanoddone
-
 				move.l	FASTBUFFER,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
@@ -680,6 +665,7 @@ scrdrawlopFULLDOUB:
 				swap	d4
 				addq	#1,d4
 				move.w	d2,d6
+
 ***************************
 * old version
 				asr.w	#7,d6
@@ -691,16 +677,19 @@ scrdrawlopFULLDOUB:
 ; move.w #6,d6
 ;tstbrbr:
 ***************************
+
 				move.l	(a0)+,d5
 				swap	d5
 				ext.w	d5
 				add.w	d5,d6
 				bge.s	.brnotneg
 				moveq	#0,d6
+
 .brnotneg
 				cmp.w	#64,d6
 				blt.s	.brnotpos
 				move.w	#64,d6
+
 .brnotpos
 				move.l	PaletteAddr,a2
 				move.l	a2,a4
@@ -711,19 +700,16 @@ scrdrawlopFULLDOUB:
 				btst	#0,d0
 				beq		.nobrightswap
 				exg		a2,a4
-.nobrightswap:
 
+.nobrightswap:
 				move.w	d7,-(a7)
 				bsr		ScreenWallstripdrawBIG
 				move.w	(a7)+,d7
-
 				dbra	d7,scrdrawlopFULLDOUB
-
 				rts
 
 ffscrpickhowbrightFULLDOUB:
 				SCALE
-
 
 divthreetab:	;		stores					x/3 and x mod 3 for x=0...660
 val				SET		0
@@ -1082,7 +1068,6 @@ oneinfront1
 				nop
 
 oneinfront
-
 				move.w	#16,d7
 				move.w	#2,d6
 
@@ -1092,14 +1077,14 @@ oneinfront
 				move.w	#64,d7
 				move.w	#4,d6
 				bra		.ISGOOD
-.notgood:
 
+.notgood:
 				move.l	a2,d0
 				sub.l	a0,d0
 				bge.s	.okpos
 				neg.l	d0
-.okpos:
 
+.okpos:
 				cmp.l	#256*128,d0
 				blt.s	.ISGOOD
 				add.w	d7,d7
@@ -1128,7 +1113,6 @@ notnegzdiff
 				add.w	#1,d6
 				bra		nha
 nd0:
-
 				cmp.w	#256,d0
 				bgt.s	nh1
 				asr.w	#1,d7
@@ -1141,11 +1125,11 @@ nh1:
 nh2:
 
 nha:
-
 				move.w	d3,d0
 				cmp.w	d1,d3
 				blt.s	rightnearest
 				move.w	d1,d0
+
 rightnearest:
 				cmp.w	#32,d0
 				bgt.s	ndd0
@@ -1156,8 +1140,8 @@ ndd0:
 				bgt.s	nd1
 				addq	#1,d6
 				add.w	d7,d7
-nd1:
 
+nd1:
 				cmp.w	#128,d0
 				blt.s	nh3
 				asr.w	#1,d7
@@ -1168,19 +1152,19 @@ nd1:
 				asr.w	#1,d7
 				subq	#1,d6
 				blt.s	nh4
+
 nh3:
 				cmp.w	#512,d0
 				blt.s	nh4
 				asr.w	#1,d7
 				subq	#1,d6
 nh4:
-
 				cmp.w	#128,d7
 				ble.s	.okokok
 				move.w	#128,d7
 				move.w	#5,d6
-.okokok:
 
+.okokok:
 				move.w	d6,iters
 				subq	#1,d7
 				move.w	d7,multcount
@@ -1238,6 +1222,7 @@ iterloop:
 				move.l	(a3)+,d0
 				move.w	(a3)+,d1
 				move.l	(a3)+,d2
+
 middleloop:
 				move.l	d0,(a4)+
 				move.l	(a3)+,d3
@@ -1294,13 +1279,13 @@ CalcAndDraw:
 
 				move.l	a0,a1
 				move.w	multcount,d7
+
 .findfirstinfront:
 				move.l	(a1)+,d1
 				move.w	(a1)+,d0
 				bgt.s	.foundinfront
 				move.l	(a1)+,d4
 				dbra	d7,.findfirstinfront
-
 				rts		;						no two points were in front
 
 .foundinfront:
@@ -1375,8 +1360,8 @@ CalcAndDraw:
 				beq.s	.nodoor
 				addq	#2,d0
 				bset	d0,d1
-.nodoor:
 
+.nodoor:
 				or.l	d1,(a0)
 				move.l	BIGPTR,a0
 
@@ -1384,14 +1369,12 @@ CalcAndDraw:
 				move.w	wallrightpt,2(a0,d2.w*4)
 
 .noputinmap
-
 				movem.l	(a7)+,d0/d1/d2/d3/a0
 
 				bra		OTHERHALF
 
 
 .alloffleft:
-
 				move.l	(a1)+,d1
 				move.w	(a1)+,d0
 				move.w	(a1)+,d4
@@ -1503,7 +1486,6 @@ nostripq:
 				rts
 
 ScreenWallstripdraw:
-
 				move.w	d4,d6
 				cmp.w	topclip(pc),d6
 				blt.s	nostripq
@@ -1513,8 +1495,8 @@ ScreenWallstripdraw:
 				cmp.w	botclip(pc),d6
 				ble.s	noclipbot
 				move.w	botclip(pc),d6
-noclipbot:
 
+noclipbot:
 				move.w	d3,d5
 				cmp.w	topclip(pc),d5
 				bge.s	nocliptop
@@ -1527,13 +1509,11 @@ noclipbot:
 				bra		gotoend
 
 nocliptop:
-
 				btst	#0,d5
 				beq.s	.nsbd
 				exg		a2,a4
+
 .nsbd:
-
-
 				bra		gotoend
 
 wlcnt:			dc.w	0
@@ -1615,10 +1595,8 @@ drawwallPACK2:
 				dbra	d6,drawwalldimPACK2
 				rts
 
-
 usesimple:
 				mulu	d3,d4
-
 				add.l	d0,d4
 				swap	d4
 				add.w	totalyoff(pc),d4
@@ -1632,7 +1610,6 @@ cliptopusesimple
 				move.l	a4,a2
 usea2:
 				and.w	d7,d4
-
 				move.l	d2,d5
 				clr.w	d5
 				cmp.b	#1,StripData+1
@@ -1656,16 +1633,19 @@ simplewallPACK0:
 				move.b	1(a5,d4.w*2),d1
 				and.b	#31,d1
 				move.b	(a2,d1.w*2),d3
+
 .noread:
 				dbra	d6,simplewallPACK0
 				rts
 
 				CNOP	0,4
+
 simplewalliPACK1:
 				move.w	(a5,d4.w*2),d1
 				lsr.w	#5,d1
 				and.w	#31,d1
 				move.b	(a2,d1.w*2),d3
+
 simplewallPACK1:
 				move.b	d3,(a3)
 				adda.w	d0,a3
@@ -1687,6 +1667,7 @@ simplewalliPACK2:
 				lsr.b	#2,d1
 				and.b	#31,d1
 				move.b	(a2,d1.w*2),d3
+
 simplewallPACK2:
 				move.b	d3,(a3)
 				adda.w	d0,a3
@@ -1697,6 +1678,7 @@ simplewallPACK2:
 				move.b	(a5,d4.w*2),d1
 				lsr.b	#2,d1
 				move.b	(a2,d1.w*2),d3
+
 .noread:
 				dbra	d6,simplewallPACK2
 				rts
@@ -1758,13 +1740,7 @@ gotoend:
 				ext.l	d5
 				move.l	d2,d4
 				muls.l	d5,d4
-
 				add.l	d0,d4
-
-				ifne	CHEESEY
-				asr.l	#1,d4
-				endc
-
 				swap	d4
 
 ; mulu d3,d4
@@ -1777,11 +1753,6 @@ gotoend:
 				and.w	d7,d4					; vertical texture coordinate clamp/wrap
 				move.w	#SCREENWIDTH,d0			; line offset to next line
 				moveq	#0,d1
-
-				ifne	CHEESEY
-				asr.l	#1,d2					; shrink dt for CHEESEY
-				endc
-
 				swap	d2						; fractional dt in upper word
 				move.l	d2,d3
 				clr.w	d3
@@ -1837,13 +1808,7 @@ doubwall
 				ext.l	d5
 				move.l	d2,d4
 				muls.l	d5,d4
-
 				add.l	d0,d4
-
-				ifne	CHEESEY
-				asr.l	#1,d4
-				endc
-
 				swap	d4
 
 ; mulu d3,d4
@@ -1856,11 +1821,7 @@ doubwall
 				and.w	d7,d4
 				move.w	#640,d0
 				moveq	#0,d1
-
-				ifeq	CHEESEY
 				add.l	d2,d2
-				endc
-
 				swap	d2
 				move.l	d2,d3
 				clr.w	d3
@@ -1872,18 +1833,13 @@ doubwall
 				rts
 
 timeslargeDOUB:
-
 val				SET		0
 				REPT	256
 				dc.l	val
 val				SET		val+SCREENWIDTH
 				ENDR
 
-
-
-
 ScreenWallstripdrawBIG:
-
 				move.w	d4,d6
 				cmp.w	topclip(pc),d6
 				blt		nostripq
@@ -1893,8 +1849,8 @@ ScreenWallstripdrawBIG:
 				cmp.w	botclip(pc),d6
 				ble.s	.noclipbot
 				move.w	botclip(pc),d6
-.noclipbot:
 
+.noclipbot:
 				move.w	d3,d5
 				cmp.w	topclip(pc),d5
 				bge.s	.nocliptop
@@ -1902,17 +1858,15 @@ ScreenWallstripdrawBIG:
 				btst	#0,d5
 				beq.s	.nsbd
 				exg		a2,a4
-.nsbd:
 
+.nsbd:
 				bra		gotoendBIG
 
 .nocliptop:
-
 				btst	#0,d5
 				beq.s	.nsbd2
 				exg		a2,a4
 .nsbd2:
-
 
 gotoendBIG
 				tst.b	DOUBLEHEIGHT
@@ -1943,13 +1897,7 @@ gotoendBIG
 				ext.l	d5
 				move.l	d2,d4
 				muls.l	d5,d4
-
 				add.l	d0,d4
-
-				ifne	CHEESEY
-				asr.l	#1,d4
-				endc
-
 				swap	d4
 
 ; mulu d3,d4
@@ -1962,14 +1910,9 @@ gotoendBIG
 				and.w	d7,d4
 				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
-
-				ifne	CHEESEY
-				asr.l	#1,d2
-				endc
 				swap	d2
 				move.l	d2,d3
 				clr.w	d3
-
 				cmp.b	#1,StripData+1
 				dbge	d6,drawwallPACK0
 				dbne	d6,drawwallPACK1
@@ -2016,13 +1959,7 @@ doubwallBIG:
 				ext.l	d5
 				move.l	d2,d4
 				muls.l	d5,d4
-
 				add.l	d0,d4
-
-				ifne	CHEESEY
-				asr.l	#1,d4
-				endc
-
 				swap	d4
 
 ; mulu d3,d4
@@ -2035,15 +1972,10 @@ doubwallBIG:
 				and.w	d7,d4
 				move.w	#640,d0
 				moveq	#0,d1
-
-				ifeq	CHEESEY
 				add.l	d2,d2
-				endc
-
 				swap	d2
 				move.l	d2,d3
 				clr.w	d3
-
 				cmp.b	#1,StripData+1
 				dbge	d6,drawwallPACK0
 				dbne	d6,drawwallPACK1
@@ -2064,18 +1996,16 @@ nostripqthru:
 
 
 ScreenWallstripdrawthru:
-
 				move.w	d4,d6
 				cmp.w	topclip(pc),d6
 				blt.s	nostripqthru
 				cmp.w	botclip(pc),d3
 				bgt.s	nostripqthru
-
 				cmp.w	botclip(pc),d6
 				ble.s	.noclipbot
 				move.w	botclip(pc),d6
-.noclipbot:
 
+.noclipbot:
 				move.w	d3,d5
 				cmp.w	topclip(pc),d5
 				bge.s	.nocliptop
@@ -2083,23 +2013,20 @@ ScreenWallstripdrawthru:
 				btst	#0,d5
 				beq.s	.nsbd
 				exg		a2,a4
-.nsbd:
 
+.nsbd:
 				sub.w	d5,d6					; height to draw.
 				ble.s	nostripqthru
-
 				bra		gotoendthru
 
 .nocliptop:
-
 				btst	#0,d5
 				beq.s	.nsbdthru
 				exg		a2,a4
-.nsbdthru:
 
+.nsbdthru:
 				sub.w	d5,d6					; height to draw.
 				ble.s	nostripqthru
-
 				bra		gotoendthru
 
 				CNOP	0,4
@@ -2109,12 +2036,14 @@ drawwalldimthruPACK0:
 				and.b	#31,d1
 				beq.s	.holey
 				move.w	(a4,d1.w*2),(a3)
+
 .holey:
 				adda.w	d0,a3
 				add.l	d3,d4
 				addx.w	d2,d4
 				dbra	d6,drawwallthruPACK0
 				rts
+
 				CNOP	0,4
 drawwallthruPACK0:
 				and.w	d7,d4
@@ -2188,10 +2117,8 @@ drawwallthruPACK2:
 				dbra	d6,drawwalldimthruPACK2
 				rts
 
-
 usesimplethru:
 				mulu	d3,d4
-
 				add.l	d0,d4
 				swap	d4
 				add.w	totalyoff(pc),d4
@@ -2205,7 +2132,6 @@ cliptopusesimplethru
 				move.l	a4,a2
 usea2thru:
 				and.w	d7,d4
-
 				move.l	d2,d5
 				clr.w	d5
 
@@ -2220,11 +2146,13 @@ simplewallthruiPACK0:
 				move.b	1(a5,d4.w*2),d1
 				and.b	#31,d1
 				move.w	(a2,d1.w*2),d3
+
 simplewallthruPACK0:
 				move.w	d3,(a3)
 				adda.w	d0,a3
 				add.l	d5,d4
 				bcc.s	noreadthruPACK0
+
 maybeholePACK0
 				addx.w	d2,d4
 				and.w	d7,d4
@@ -2234,6 +2162,7 @@ maybeholePACK0
 				move.w	(a2,d1.w*2),d3
 				dbra	d6,simplewallthruPACK0
 				rts
+
 noreadthruPACK0:
 				addx.w	d2,d4
 				dbra	d6,simplewallthruPACK0
@@ -2245,6 +2174,7 @@ simplewallholePACK0:
 				add.l	d5,d4
 				bcs.s	maybeholePACK0
 				addx.w	d2,d4
+
 holeysimplePACK0
 				and.w	d7,d4
 				dbra	d6,simplewallholePACK0
@@ -2256,11 +2186,13 @@ simplewallthruiPACK1:
 				lsr.w	#5,d1
 				and.w	#31,d1
 				move.w	(a2,d1.w*2),d3
+
 simplewallthruPACK1:
 				move.w	d3,(a3)
 				adda.w	d0,a3
 				add.l	d5,d4
 				bcc.s	noreadthruPACK1
+
 maybeholePACK1
 				addx.w	d2,d4
 				and.w	d7,d4
@@ -2271,6 +2203,7 @@ maybeholePACK1
 				move.w	(a2,d1.w*2),d3
 				dbra	d6,simplewallthruPACK1
 				rts
+
 noreadthruPACK1:
 				addx.w	d2,d4
 				dbra	d6,simplewallthruPACK1
@@ -2282,6 +2215,7 @@ simplewallholePACK1:
 				add.l	d5,d4
 				bcs.s	maybeholePACK1
 				addx.w	d5,d4
+
 holeysimplePACK1
 				and.w	d7,d4
 				dbra	d6,simplewallholePACK1
@@ -2294,11 +2228,13 @@ simplewallthruiPACK2:
 				lsr.b	#2,d1
 				and.b	#31,d1
 				move.w	(a2,d1.w*2),d3
+
 simplewallthruPACK2:
 				move.w	d3,(a3)
 				adda.w	d0,a3
 				add.l	d5,d4
 				bcc.s	noreadthruPACK2
+
 maybeholePACK2
 				addx.w	d2,d4
 				and.w	d7,d4
@@ -2309,6 +2245,7 @@ maybeholePACK2
 				move.w	(a2,d1.w*2),d3
 				dbra	d6,simplewallthruPACK2
 				rts
+
 noreadthruPACK2:
 				addx.w	d2,d4
 				dbra	d6,simplewallthruPACK2
@@ -2320,6 +2257,7 @@ simplewallholePACK2
 				add.l	d5,d4
 				bcs.s	maybeholePACK2
 				addx.w	d2,d4
+
 holeysimplePACK2
 				and.w	d7,d4
 				dbra	d6,simplewallholePACK2
@@ -2338,22 +2276,21 @@ gotoendthru:
 				bne.s	.notsimple
 				cmp.l	#$b000,d3
 				ble		usesimplethru
-.notsimple:
 
+.notsimple:
 				mulu	d3,d4
 				muls	d2,d5
 				add.l	d0,d4
 				swap	d4
 				add.w	d5,d4
 				add.w	wallyoff(pc),d4
+
 cliptopthru
 				moveq	#63,d7
 				move.w	#104*4,d0
 				moveq	#0,d1
-
 				move.l	d2,d3
 				clr.w	d3
-
 				cmp.b	#1,StripData+1
 				dbge	d6,drawwallthruPACK0
 				dbne	d6,drawwallthruPACK1
@@ -2362,7 +2299,6 @@ cliptopthru
 				rts
 
 timeslargethru:
-
 val				SET		104*4
 				REPT	80
 				dc.l	val
@@ -2386,7 +2322,6 @@ OTHERZONE:		dc.w	0
 				; Is this THE wall draw entrypoint?
 				; a0 pointing to wall description?
 itsawalldraw:
-
 				move.l	#Rotated,a5
 				move.l	#OnScreen,a6
 
@@ -2402,20 +2337,8 @@ itsawalldraw:
 				move.w	#0,leftend
 				moveq	#0,d5
 				move.w	(a0)+,d5
-
-				ifne	CHEESEY
-				asr.w	#1,d5
-				endc
-
 				move.w	(a0)+,d1
-
-				ifeq	CHEESEY
 				asl.w	#4,d1
-				endc
-				ifne	CHEESEY
-				asl.w	#3,d1
-				endc
-
 				move.w	d1,fromtile
 
 				move.w	(a0)+,d1
@@ -2437,46 +2360,22 @@ itsawalldraw:
 
 				moveq	#0,d1
 				move.b	(a0)+,d1
-
-				ifne	CHEESEY
-				asr.w	#1,d1
-				endc
 				move.w	d1,VALAND				; (vertical) wall texture height mask
-
 				moveq	#0,d1
 				move.b	(a0)+,d1
-
-				ifne	CHEESEY					; CHEESEY version has all textures at quarter size?!
-				sub.w	#1,d1
-				endc
 				move.w	d1,VALSHIFT				;	; (vertical) wall texture height shift
-
 				moveq	#0,d1
 				move.b	(a0)+,d1				; texture width
-
-				ifne	CHEESEY
-				asr.w	#1,d1
-				endc
-
 				move.w	d1,HORAND				; horizontal texture width mask?
-
 				move.b	(a0)+,WHICHPBR
-
 				move.w	totalyoff,d1
 				add.w	wallyoff,d1
-
-				ifne	CHEESEY
-				asr.w	#1,d1
-				endc
-
 				and.w	VALAND,d1
 				move.w	d1,totalyoff
-
 				move.l	(a0)+,topofwall
 				sub.l	d6,topofwall
 				move.l	(a0)+,botofwall
 				sub.l	d6,botofwall
-
 
 				move.b	(a0)+,d3
 				ext.w	d3
@@ -2492,10 +2391,12 @@ itsawalldraw:
 				tst.w	6(a5,d2*8)
 				ble		wallfacingaway
 				bra		cliptotestfirstbehind
+
 cantell:
 				tst.w	6(a5,d2*8)
 				ble.s	cliptotestsecbehind
 				bra		pastclip
+
 cliptotestfirstbehind:
 				;	a5 Rotated
 				move.l	(a5,d0*8),d3			; prerotated points,
@@ -2529,7 +2430,6 @@ cliptotestfirstbehind:
 				bra		pastclip
 
 cliptotestsecbehind:
-
 				move.l	(a5,d2*8),d3
 				sub.l	(a5,d0*8),d3
 				move.w	6(a5,d2*8),d6
@@ -2560,7 +2460,6 @@ cliptotestsecbehind:
 				bra		cant_tell
 
 pastclip:
-
 				move.l	(a5,d0*8),d3
 				move.w	6(a5,d0*8),d4
 				ext.l	d4
@@ -2681,8 +2580,6 @@ cant_tell:
 				bge.s	.okpos3
 				neg.w	d0
 .okpos3:
-
-
 				add.w	wallbrightoff,d0
 				move.w	d0,leftwallTOPbright
 
@@ -2701,16 +2598,12 @@ cant_tell:
 
 				move.w	#-1,LASTSTIRRUP
 
-				ifeq	CHEESEY
-
 				move.w	rightwallTOPbright,d0
 				cmp.w	rightwallbright,d0
 				bne.s	gottagour
 				move.w	leftwallTOPbright,d0
 				cmp.w	leftwallbright,d0
 				bne.s	gottagour
-
-				endc
 
 				bsr		walldraw
 				bra.s	nottagour
@@ -2722,8 +2615,6 @@ nottagour:
 				rts
 
 wallfacingaway:
-
-
 				rts
 
 PointBrightsPtr: dc.l	0
@@ -2744,4 +2635,3 @@ oldzoff:		dc.w	0
 topclip:		dc.w	0
 botclip:		dc.w	0
 seethru:		dc.w	0
-

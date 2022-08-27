@@ -1218,14 +1218,8 @@ cliptopusesimpleG
 
 				swap	d2
 
-				ifne	CHEESEY
-				asr.l	#1,d2
-				endc
 				move.l	d2,a2
 				swap	d4
-				ifne	CHEESEY
-				asr.l	#1,d4
-				endc
 
 				move.l	GOURSPEED,d5
 				asl.l	#5,d5
@@ -1364,9 +1358,6 @@ gotoendG:
 ; mulu d3,d4
 ; muls d2,d5
 				add.l	d0,d4
-				ifne	CHEESEY
-				asr.l	#1,d4
-				endc
 				swap	d4
 ; add.w d5,d4
 				add.w	totalyoff(pc),d4
@@ -1376,9 +1367,6 @@ cliptopG
 				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
 
-				ifne	CHEESEY
-				asr.l	#1,d2
-				endc
 				move.l	d2,a2
 				swap	d4
 
@@ -1438,9 +1426,6 @@ doubwallGOUR:
 ; mulu d3,d4
 ; muls d2,d5
 				add.l	d0,d4
-				ifne	CHEESEY
-				asr.l	#1,d4
-				endc
 				swap	d4
 ; add.w d5,d4
 				add.w	totalyoff(pc),d4
@@ -1449,9 +1434,7 @@ doubwallGOUR:
 				move.w	#640,d0
 				moveq	#0,d1
 
-				ifeq	CHEESEY
 				add.l	d2,d2
-				endc
 				move.l	d2,a2
 				swap	d4
 
@@ -1555,9 +1538,6 @@ gotoendGB:
 ; mulu d3,d4
 ; muls d2,d5
 				add.l	d0,d4
-				ifne	CHEESEY
-				asr.l	#1,d4
-				endc
 				swap	d4
 ; add.w d5,d4
 				add.w	totalyoff(pc),d4
@@ -1565,15 +1545,8 @@ gotoendGB:
 				and.w	d7,d4
 				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
-
-				ifne	CHEESEY
-				asr.l	#1,d2
-				endc
-
 				move.l	d2,a2
 				swap	d4
-
-
 				move.l	GOURSPEED,d5
 				asl.l	#5,d5
 				move.l	STARTGOUR,d3
@@ -1632,25 +1605,16 @@ doubwallGOURBIG:
 ; mulu d3,d4
 ; muls d2,d5
 				add.l	d0,d4
-				ifne	CHEESEY
-				asr.l	#1,d4
-				endc
 				swap	d4
 ; add.w d5,d4
 				add.w	totalyoff(pc),d4
 				move.w	VALAND,d7
-
 				and.w	d7,d4
 				move.w	#640,d0
 				moveq	#0,d1
-
-				ifeq	CHEESEY
 				add.l	d2,d2
-				endc
 				move.l	d2,a2
 				swap	d4
-
-
 				move.l	GOURSPEED,d5
 				asl.l	#6,d5
 				move.l	STARTGOUR,d3

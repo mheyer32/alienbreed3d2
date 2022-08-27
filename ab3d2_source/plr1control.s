@@ -336,8 +336,6 @@ notgotweap
 				dbra	d1,pickweap
 
 gogog:
-
-				ifeq	CHEESEY
 				tst.b	$43(a5)
 				beq.s	.notswapscr
 				tst.b	lastscr
@@ -350,10 +348,8 @@ gogog:
 
 .notswapscr:
 				clr.b	lastscr
+
 .notswapscr2:
-
-				endc
-
 				rts
 
 FULLSCRTEMP:	dc.w	0

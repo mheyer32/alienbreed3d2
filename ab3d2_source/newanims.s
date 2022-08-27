@@ -3792,7 +3792,6 @@ notasplut:
 .checkedall
 
 doneshot:
-
 				rts
 
 MOVING:			dc.w	0
@@ -3818,10 +3817,8 @@ MAKEBACKROUT:
 				rts
 
 ****************************************
-				ifeq	CHEESEY
 
 putinbackdrop:
-
 				move.l	a0,-(a7)
 
 				move.w	tmpangpos,d5
@@ -3834,7 +3831,6 @@ putinbackdrop:
 
 				tst.b	FULLSCR
 				bne		BIGBACK
-
 
 				move.l	FASTBUFFER,a0
 				move.l	BackPicture,a5
@@ -3868,6 +3864,7 @@ horline:
 				move.w	d7,d3
 				move.l	a0,a2
 				move.l	a1,a4
+
 vertline:
 				move.w	(a4)+,d0
 				move.b	d0,(a2)
@@ -3887,7 +3884,6 @@ vertline:
 				bgt.s	.noend
 				move.l	a5,a1
 .noend
-
 				exg		d1,d2
 				exg		d2,d5
 
@@ -3898,10 +3894,7 @@ vertline:
 				move.l	(a7)+,a0
 				rts
 
-
 BIGBACK:
-
-
 				move.l	FASTBUFFER,a0
 				move.l	BackPicture,a5
 				move.l	a5,a3
@@ -3922,11 +3915,11 @@ BIGBACK:
 				asr.w	#2,d7
 				move.w	#FS_WIDTH-1,d4
 
-
 .horline:
 				move.w	d7,d3
 				move.l	a0,a2
 				move.l	a1,a4
+
 .vertline:
 				move.l	(a4)+,d0
 				move.b	d0,SCREENWIDTH*3(a2)
@@ -3944,136 +3937,21 @@ BIGBACK:
 				cmp.l	a1,a3
 				bgt.s	.noend
 				move.l	a5,a1
+
 .noend
-
 				addq.w	#1,a0
-
 				dbra	d4,.horline
-
-				move.l	(a7)+,a0
-				rts
-****************************************
-				endc
-
-				ifne	CHEESEY
-
-putinbackdrop:
-
-				move.l	a0,-(a7)
-
-				move.w	tmpangpos,d5
-				and.w	#4095,d5
-				muls	#648,d5
-				divs	#4096,d5
-
-;xoffset of backdrop
-
-; CACHE_ON d1
-
-				tst.b	FULLSCR
-				bne		BIGBACK
-
-
-				move.l	FASTBUFFER,a0
-				add.l	d5,a1
-				add.w	#240,a1
-
-				move.w	MIDDLEY,d7
-
-				move.w	d7,d6
-				move.w	d6,d5
-				asr.w	#1,d5
-				add.w	d5,d6
-				sub.w	d6,a1
-				sub.w	d6,a5
-
-				asr.w	#2,d7
-
-				move.w	#240,d1
-				move.w	#240,d2
-				move.w	#480,d5
-				move.w	#(SMALL_WIDTH/8)-1,d4
-
-				moveq	#0,d0
-
-horline:
-				move.w	d7,d3
-				move.l	a0,a2
-				move.l	a1,a4
-vertline:
-				move.l	d0,(a2)
-				move.l	d0,SCREENWIDTH(a2)
-				move.l	d0,SCREENWIDTH*2(a2)
-				move.l	d0,SCREENWIDTH*3(a2)
-				move.l	d0,4(a2)
-				move.l	d0,4+SCREENWIDTH(a2)
-				move.l	d0,4+(SCREENWIDTH*2)(a2)
-				move.l	d0,4+(SCREENWIDTH*3)(a2)
-				adda.w	#SCREENWIDTH*4,a2
-				dbra	d3,vertline
-
-				addq.w	#8,a0
-
-				dbra	d4,horline
-
 				move.l	(a7)+,a0
 				rts
 
-
-BIGBACK:
-
-
-				move.l	FASTBUFFER,a0
-				add.l	d5,a1
-				add.w	#240,a1
-
-				move.w	MIDDLEY,d7
-
-				move.w	d7,d6
-				sub.w	d6,a1
-				sub.w	d6,a5
-
-				asr.w	#2,d7
-				move.w	#(FS_WIDTH/8)-1,d4
-				move.l	#0,d0
-
-.horline:
-				move.w	d7,d3
-				move.l	a0,a2
-				move.l	a1,a4
-.vertline:
-
-				move.l	d0,SCREENWIDTH*0(a2)
-				move.l	d0,SCREENWIDTH*1(a2)
-				move.l	d0,SCREENWIDTH*2(a2)
-				move.l	d0,SCREENWIDTH*3(a2)
-				move.l	d0,4+SCREENWIDTH*0(a2)
-				move.l	d0,4+SCREENWIDTH*1(a2)
-				move.l	d0,4+SCREENWIDTH*2(a2)
-				move.l	d0,4+SCREENWIDTH*3(a2)
-
-
-				adda.w	#SCREENWIDTH*4,a2
-				dbra	d3,.vertline
-
-				addq	#8,a0
-
-				dbra	d4,.horline
-
-				move.l	(a7)+,a0
-				rts
-
-				endc
 
 MaxDamage:		dc.w	0
 
 ComputeBlast:
-
 				clr.w	doneflames
 
 				move.w	d0,d6
 				move.w	d0,MaxDamage
-
 				move.w	d0,d1
 				ext.l	d6
 				neg.w	d1
@@ -4087,9 +3965,7 @@ ComputeBlast:
 
 				move.l	ObjectData,a2
 				suba.w	#64,a2
-
 				ext.l	d6
-
 				move.l	a0,-(a7)
 
 HitObjLoop:
@@ -4124,8 +4000,6 @@ HitObjLoop:
 				beq.s	HitObjLoop
 
 .okblast:
-
-
 				move.w	12(a2),d1
 				move.l	ZoneAdds,a3
 				move.l	(a3,d1.w*4),a3
@@ -4152,9 +4026,11 @@ HitObjLoop:
 				add.l	d3,d2
 				beq		.oksqr
 				move.w	#31,d4
+
 .findhigh
 				btst	d4,d2
 				dbne	d4,.findhigh
+
 .foundhigh
 				asr.w	#1,d4
 				clr.l	d3
@@ -4169,8 +4045,8 @@ HitObjLoop:
 				sub.w	d3,d4					; second approx
 				bgt		.stillnot0
 				move.w	#1,d4
-.stillnot0
 
+.stillnot0
 				move.w	d4,d3
 				muls	d1,d3
 				sub.l	d2,d3
@@ -4179,8 +4055,8 @@ HitObjLoop:
 				sub.w	d3,d4					; second approx
 				bgt		.stillnot02
 				move.w	#1,d4
-.stillnot02
 
+.stillnot02
 				move.w	d4,d3
 				muls	d3,d3
 				sub.l	d2,d3
@@ -4192,23 +4068,19 @@ HitObjLoop:
 .stillnot03
 
 .oksqr
-
 				move.w	d4,d3
 				move.w	d3,d7
-
 				cmp.w	#256,d7
 				bge.s	.okd
 				move.w	#256,d7
+
 .okd:
-
 				asr.w	#3,d3
-
-
 				sub.w	#4,d3
 				bge.s	OkItsnotzero
 				moveq	#0,d3
-OkItsnotzero:
 
+OkItsnotzero:
 				cmp.w	#64,d3
 				bgt		HitObjLoop
 				neg.w	d3
@@ -4220,6 +4092,7 @@ OkItsnotzero:
 				cmp.w	MaxDamage,d5
 				blt.s	okdamage
 				move.w	MaxDamage,d5
+
 okdamage:
 				add.b	d5,damagetaken(a2)
 				ext.l	d0
@@ -4247,21 +4120,17 @@ okdamage:
 				cmp.w	#-8*256,d1
 				bge.s	.okbl
 				move.w	#-8*256,d1
+
 .okbl
-
 				add.w	d1,shotyvel(a2)
-
 				bra.s	.impactedbul
-.impactalien:
 
+.impactalien:
 				move.w	d0,ImpactX(a2)
 				move.w	d1,ImpactZ(a2)
-
-
 				move.l	d6,d1
 				asl.l	#4,d1
 				divs	d7,d1
-
 
 ; move.w 4(a2),d0
 ; sub.w 4(a0),d0	;dy
@@ -4271,12 +4140,11 @@ okdamage:
 				cmp.w	#-8,d1
 				bge.s	.okbl2
 				move.w	#-8,d1
-.okbl2
 
+.okbl2
 				move.w	d1,ImpactY(a2)
 
 .impactedbul:
-
 				bra		HitObjLoop
 
 CheckedEmAll:
@@ -4312,11 +4180,11 @@ CheckedEmAll:
 				move.w	#19,NUMTOCHECK
 
 				move.w	#2,d6
+
 radiusloop:
 				move.w	#1,d7
 
 DOFLAMES:
-
 				move.w	NUMTOCHECK,d1
 .findonefree
 				move.w	12(a3),d2
@@ -4324,12 +4192,10 @@ DOFLAMES:
 				adda.w	#64,a3
 				dbra	d1,.findonefree
 				rts
+
 .foundonefree
-
 				move.b	#2,16(a3)
-
 				move.w	d1,NUMTOCHECK
-
 				add.w	#1,doneflames
 				move.w	middlex,d1
 				move.w	middlez,d2
@@ -4343,6 +4209,7 @@ DOFLAMES:
 				asr.w	#1,d0
 				bne.s	.xnz
 				moveq	#2,d0
+
 .xnz:
 				add.w	d0,d1
 				jsr		GetRand
@@ -4351,6 +4218,7 @@ DOFLAMES:
 				asr.w	#1,d0
 				bne.s	.znz
 				moveq	#2,d0
+
 .znz:
 				add.w	d0,d2
 				move.l	oldy,d3
@@ -4363,7 +4231,6 @@ DOFLAMES:
 				move.w	d1,newx
 				move.w	d2,newz
 				move.l	MiddleRoom,objroom
-
 
 				movem.l	d5/d6/a0/a1/a3/d7/a6,-(a7)
 				move.w	#80,extlen
@@ -4382,18 +4249,18 @@ DOFLAMES:
 				beq.s	.okinbot
 				move.l	ToUpperFloor(a2),d1
 				move.l	ToUpperRoof(a2),d2
-.okinbot:
 
+.okinbot:
 				cmp.l	d0,d1
 				bgt.s	.abovefloor
 				move.l	d1,d0
-.abovefloor:
 
+.abovefloor:
 				cmp.l	d0,d2
 				blt.s	.belowroof
 				move.l	d2,d0
-.belowroof:
 
+.belowroof:
 				move.l	d0,accypos(a3)
 				asr.l	#7,d0
 				move.w	d0,4(a3)
@@ -4418,11 +4285,9 @@ DOFLAMES:
 				dbra	d6,radiusloop
 
 .nomore:
-
 				rts
 
 MiddleRoom:		dc.l	0
 middlex:		dc.w	0
 middlez:		dc.w	0
 doneflames:		dc.w	0
-
