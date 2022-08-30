@@ -156,7 +156,7 @@ okdistthing
 				move.l	#ObjRotated,a2
 				move.l	(a2,d0.w*8),Noisex
 				move.w	#100,Noisevol
-				move.w	#100,PLAYERONENOISEVOL
+				move.w	#100,AI_Player1NoiseVol_w
 				move.w	#12,Samplenum
 				clr.b	notifplaying
 				move.b	#$fb,IDNUM
@@ -186,7 +186,7 @@ okdistthing
 				move.w	(a2),d2
 				move.l	#ObjRotated,a2
 				move.l	(a2,d2.w*8),Noisex
-				move.w	#100,PLAYERONENOISEVOL
+				move.w	#100,AI_Player1NoiseVol_w
 				move.w	#300,Noisevol
 				move.w	G_SoundEffect(a6),Samplenum
 				move.b	#2,chanpick
@@ -507,7 +507,7 @@ okdistthing2
 				move.l	#ObjRotated,a2
 				move.l	(a2,d0.w*8),Noisex
 				move.w	#300,Noisevol
-				move.w	#100,PLAYERTWONOISEVOL
+				move.w	#100,AI_Player2NoiseVol_w
 				move.w	#12,Samplenum
 				clr.b	notifplaying
 				move.b	#$fb,IDNUM
@@ -537,7 +537,7 @@ okdistthing2
 				move.w	(a2),d2
 				move.l	#ObjRotated,a2
 				move.l	(a2,d2.w*8),Noisex
-				move.w	#100,PLAYERTWONOISEVOL
+				move.w	#100,AI_Player2NoiseVol_w
 				move.w	#300,Noisevol
 				move.w	G_SoundEffect(a6),Samplenum
 				move.b	#2,chanpick
