@@ -11903,20 +11903,6 @@ scalecols:		;incbin	"bytepixpalscaled"
 				even
 PaletteAddr:	dc.l	0
 ChunkAddr:		dc.l	0
-;walltiles:
-; dc.l GreenMechanicWALL
-; dc.l BlueGreyMetalWALL
-; dc.l TechnoDetailWALL
-; dc.l BlueStoneWALL
-; dc.l RedAlertWALL
-; dc.l RockWALL
-;
-;GreenMechanicWALL: incbin "includes/walls/greenmechanic.wad"
-;BlueGreyMetalWALL: incbin "includes/walls/bluegreymetal.wad"
-;TechnoDetailWALL: incbin "includes/walls/technodetail.wad"
-;BlueStoneWALL: incbin "includes/walls/bluestone.wad"
-;RedAlertWALL: incbin "includes/walls/redalert.wad"
-;RockWALL: incbin "includes/walls/rock.wad"
 
 floortile:
 				dc.l	0
