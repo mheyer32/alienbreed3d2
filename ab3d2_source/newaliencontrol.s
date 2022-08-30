@@ -1374,13 +1374,19 @@ FireAtPlayer1:
 				move.w	d1,shotyvel(a5)
 				st		worry(a5)
 
-				move.l	GunData,a6
-				moveq	#0,d0
-				move.b	SHOTTYPE,d0
-				asl.w	#5,d0
-				add.w	d0,a6
-				move.w	16(a6),shotgrav(a5)
-				move.w	18(a6),shotflags(a5)
+; FIXME: this is causing Enforcer hits. It looks like the places that put a
+; value into GunData are all commented out. On the other hand, most other places
+; writing to shotgrav just write a 0. Maybe no alien weapon has gravity applied?
+; similar with shotflags
+;				move.l	GunData,a6
+;				moveq	#0,d0
+;				move.b	SHOTTYPE,d0
+;				asl.w	#5,d0
+;				add.w	d0,a6
+;				move.w	16(a6),shotgrav(a5)
+;				move.w	18(a6),shotflags(a5)
+
+
 ; move.w 20(a6),d0
 ; add.w d0,shotyvel(a5)
 

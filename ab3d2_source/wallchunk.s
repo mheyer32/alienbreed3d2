@@ -1,8 +1,7 @@
 
-
+; todo - this is not currently called
 RELEASEWALLMEM:
 				move.l	#walltiles,a0
-				move.l	#wallchunkdata,a5
 relmem:
 				move.l	4(a5),d0
 				beq.s	relall
@@ -15,7 +14,6 @@ relmem:
 				movem.l	a0/a5,-(a7)
 				CALLEXEC FreeVec
 				movem.l	(a7)+,a0/a5
-
 
 notthismem:
 				addq	#8,a5
@@ -242,8 +240,6 @@ ITSASFX:
 .SampleSize:	dc.l	0
 .FibList:		dc.b	-34,-21,-13,-8,-5,-3,-2,-1,0,1,2,3,5,8,13,21
 
-
-
 				cnop 0,4
 ITSPACKED:
 
@@ -286,77 +282,4 @@ unLhaTempBuffer	ds.l	4096		; unLHA wants 16kb
 unpackedstart:
 				dc.l	0
 
-wallchunkdata:
-				dc.l	GreenMechanicNAME,18560
-				dc.l	BlueGreyMetalNAME,13056
-				dc.l	TechnoDetailNAME,13056
-				dc.l	BlueStoneNAME,10368
-				dc.l	RedAlertNAME,7552
-				dc.l	RockNAME,10368
-				dc.l	scummyNAME,24064
-				dc.l	stairfrontsNAME,2400
-				dc.l	bigdoorNAME,13056
-				dc.l	redrockNAME,13056
-				dc.l	dirtNAME,24064
-				dc.l	SwitchesNAME,3456
-				dc.l	shinyNAME,24064
-				dc.l	bluemechNAME,15744
-				dc.l	0,0
-
-GreenMechanicNAME:
-				dc.b	'AB3D1:includes/walls/greenmechanic.256wad'
-				dc.b	0
-				even
-BlueGreyMetalNAME:
-				dc.b	'AB3D1:includes/walls/bluegreymetal.256wad'
-				dc.b	0
-				even
-TechnoDetailNAME:
-				dc.b	'AB3D1:includes/walls/technodetail.256wad'
-				dc.b	0
-				even
-BlueStoneNAME:
-				dc.b	'AB3D1:includes/walls/bluestone.256wad'
-				dc.b	0
-				even
-RedAlertNAME:
-				dc.b	'AB3D1:includes/walls/redalert.256wad'
-				dc.b	0
-				even
-RockNAME:
-				dc.b	'AB3D1:includes/walls/rock.256wad'
-				dc.b	0
-				even
-scummyNAME:
-				dc.b	'AB3D1:includes/walls/scummy.256wad'
-				dc.b	0
-				even
-stairfrontsNAME:
-				dc.b	'AB3D1:includes/walls/stairfronts.256wad'
-				dc.b	0
-				even
-bigdoorNAME:
-				dc.b	'AB3D1:includes/walls/bigdoor.256wad'
-				dc.b	0
-				even
-redrockNAME:
-				dc.b	'AB3D1:includes/walls/redrock.256wad'
-				dc.b	0
-				even
-dirtNAME:
-				dc.b	'AB3D1:includes/walls/dirt.256wad'
-				dc.b	0
-				even
-SwitchesNAME:
-				dc.b	'AB3D1:includes/walls/switches.256wad'
-				dc.b	0
-				even
-shinyNAME:
-				dc.b	'AB3D1:includes/walls/shinymetal.256wad'
-				dc.b	0
-				even
-bluemechNAME:
-				dc.b	'AB3D1:includes/walls/bluemechanic.256wad'
-				dc.b	0
-				even
 
