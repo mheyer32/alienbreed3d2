@@ -818,7 +818,7 @@ NOCLTXT:
 				st		doanything
 				st		dosounds
 
-				jsr		CLRNASTYMEM
+				jsr		AI_ClearNastyMem
 
 				move.l	#COMPACTMAP,a0
 				move.l	a0,LASTZONE
@@ -907,7 +907,7 @@ NOALLWALLS
 				move.w	#100,timetodamage
 
 				move.w	#299,d0
-				move.l	#DAMAGED,a0
+				move.l	#AI_Damaged_vw,a0
 CLRDAM:
 				move.w	#0,(a0)+
 				dbra	d0,CLRDAM
@@ -2152,7 +2152,7 @@ plr1only:
 .allroomsdone2:
 
 				move.l	#%000001,d7
-				lea		TEAMWORK,a2
+				lea		AI_Teamwork_vl,a2
 				move.l	ObjectData,a0
 				sub.w	#64,a0
 .doallobs:
@@ -3340,7 +3340,7 @@ USEPLR1:
 				add.l	#AlienStats,a6
 				muls	#AlienStatLen,d1
 				add.l	d1,a6
-				move.b	A_GFXType+1(a6),VECOBJ
+				move.b	A_GFXType+1(a6),AI_VecObj_w
 				cmp.w	#1,A_GFXType(a6)
 				bne.s	.NOSIDES2
 
@@ -3391,7 +3391,7 @@ USEPLR1:
 				move.b	d0,11(a0)
 
 				move.w	#-1,6(a0)
-				cmp.b	#1,VECOBJ
+				cmp.b	#1,AI_VecObj_w
 				beq.s	.nosize
 				bgt.s	.setlight
 				move.w	2(a6,d1.w),6(a0)
@@ -3406,7 +3406,7 @@ USEPLR1:
 .setlight:
 				move.w	2(a6,d1.w),6(a0)
 
-				move.b	VECOBJ,d1
+				move.b	AI_VecObj_w,d1
 				or.b	d1,10(a0)
 
 .ddone:
@@ -3634,7 +3634,7 @@ USEPLR2:
 				add.l	#AlienStats,a6
 				muls	#AlienStatLen,d1
 				add.l	d1,a6
-				move.b	A_GFXType+1(a6),VECOBJ
+				move.b	A_GFXType+1(a6),AI_VecObj_w
 				cmp.w	#1,A_GFXType(a6)
 				bne.s	.NOSIDES2
 
@@ -3685,7 +3685,7 @@ USEPLR2:
 				move.b	d0,11(a0)
 
 				move.w	#-1,6(a0)
-				cmp.b	#1,VECOBJ
+				cmp.b	#1,AI_VecObj_w
 				beq.s	.nosize
 				bgt.s	.setlight
 				move.w	2(a6,d1.w),6(a0)
@@ -3700,7 +3700,7 @@ USEPLR2:
 .setlight:
 				move.w	2(a6,d1.w),6(a0)
 
-				move.b	VECOBJ,d1
+				move.b	AI_VecObj_w,d1
 				or.b	d1,10(a0)
 
 .ddone:

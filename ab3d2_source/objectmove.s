@@ -1415,7 +1415,7 @@ GetNextCPt:
 				move.l	a0,-(a7)
 
 				move.l	LINKS,a0
-				tst.b	FLYABIT
+				tst.b	AI_FlyABit_w
 				beq.s	.walklink
 				move.l	FLYLINKS,a0
 .walklink:
