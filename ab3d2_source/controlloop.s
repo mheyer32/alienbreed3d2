@@ -35,9 +35,9 @@ INTROTUNEADDR:	dc.l	0
 INTROTUNENAME:	dc.b	'sounds/abreed3d.med',0
 				even
 TITLESCRNADDR:	dc.l	0
-TITLESCRNNAME:	dc.b	'TKG1:includes/titlescrnraw1',0
+TITLESCRNNAME:	dc.b	'ab3:includes/titlescrnraw1',0
 				even
-TITLESCRNNAME2:	dc.b	'TKG2:includes/titlescrnraw1',0
+TITLESCRNNAME2:	dc.b	'ab3:includes/titlescrnraw1',0
 				even
 OPTSPRADDR:		dc.l	0
 TITLESCRNPTR:	dc.l	0
@@ -354,10 +354,10 @@ QUITTT:
 
 SSTACK:			dc.l	0
 
-backpicname:	dc.b	"tkg1:includes/rawbackpacked"
+backpicname:	dc.b	"ab3:includes/rawbackpacked"
 				dc.b	0
 
-bordername:		dc.b	"TKG2:includes/newborderRAW",0
+bordername:		dc.b	"ab3:includes/newborderRAW",0
 				even
 borderpacked:	incbin	"includes/newborderpacked"
 
@@ -1502,7 +1502,7 @@ SCRTOSPR:
 OPTNUM:			dc.w	0
 OptScrn:		dc.w	0
 
-SAVEGAMENAME:	dc.b	"tkg2:boot.dat",0
+SAVEGAMENAME:	dc.b	"ab3:boot.dat",0
 				even
 
 SAVEGAMEPOS:	dc.l	0
@@ -2424,7 +2424,7 @@ fadedownloop:
 				rts
 
 
-LEVELTEXTNAME:	dc.b	'TKG1:includes/TEXT_FILE'
+LEVELTEXTNAME:	dc.b	'ab3:includes/TEXT_FILE'
 
 				even
 

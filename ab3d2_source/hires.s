@@ -395,26 +395,26 @@ PotgoResourceBase
 
 mors:			dc.w	0						; this seems to be some sort of game state (single player, multiplayer etc)
 
-LDname:			dc.b	'tkg2:levels/level_'
+LDname:			dc.b	'ab3:levels/level_'
 LEVA:
 				dc.b	'a/twolev.bin',0
 				even
 LDhandle:		dc.l	0
-LGname:			dc.b	'tkg2:levels/level_'
+LGname:			dc.b	'ab3:levels/level_'
 LEVB:
 				dc.b	'a/twolev.graph.bin',0
 				even
 LGhandle:		dc.l	0
-LCname:			dc.b	'tkg2:levels/level_'
+LCname:			dc.b	'ab3:levels/level_'
 LEVC:
 				dc.b	'a/twolev.clips',0
 				even
 LChandle:		dc.l	0
-LLname:			dc.b	'tkg2:levels/level_'
+LLname:			dc.b	'ab3:levels/level_'
 LEVD:
 				dc.b	'a/twolev.map',0
 				even
-LLFname:		dc.b	'tkg2:levels/level_'
+LLFname:		dc.b	'ab3:levels/level_'
 LEVE:
 				dc.b	'a/twolev.flymap',0
 				even
@@ -12186,7 +12186,7 @@ FULLSCR:		dc.w	0
 * Link file !*****************************
 ******************************************
 
-LINKname:		dc.b	"TKG1:includes/test.lnk",0
+LINKname:		dc.b	"ab3:includes/test.lnk",0
 				even
 
 LINKFILE:		dc.l	0
