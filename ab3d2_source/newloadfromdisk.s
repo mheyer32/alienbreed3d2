@@ -179,9 +179,6 @@ TRYTOOPEN:
 
 OBJNAME:		ds.w	80
 
-OBJ_NAMES:
-				dc.l	-1,-1
-
 OBJ_ADDRS:		ds.l	160
 
 blocklen:		dc.l	0
@@ -372,70 +369,26 @@ LOAD_A_PALETTE
 				CNOP	0,4	; FileInfoBlock must be 4-byte aligned
 fib:			ds.b	fib_SIZEOF
 
-; FIXME: seems unused
-LOAD_AN_OBJ:
-				movem.l	a0/a1/a2/a3/a4,-(a7)
-
-				move.l	#OBJNAME,blockname
-
-				move.l	blockname,d1
-				move.l	#1005,d2
-				CALLDOS	Open
-				move.l	d0,handle
-
-				lea		fib,a5
-				move.l	handle,d1
-				move.l	a5,d2
-				CALLDOS	ExamineFH
-
-				move.l	$7c(a5),blocklen
-
-				move.l	#MEMF_ANY,d1
-				move.l	blocklen,d0
-				CALLEXEC AllocVec
-				move.l	d0,blockstart
-
-				move.l	handle,d1
-				move.l	blockstart,d2
-				move.l	blocklen,d3
-				CALLDOS	Read
-				move.l	handle,d1
-				CALLDOS	Close
-
-				movem.l	(a7)+,a0/a1/a2/a3/a4
-
-				move.l	blockstart,(a2)+
-				move.l	blocklen,(a2)+
-
-				rts
 
 RELEASEOBJMEM:
-
-
-				move.l	#OBJ_NAMES,a0
 				move.l	#OBJ_ADDRS,a2
 
-relobjlop
+.release_obj_loop:
 				move.l	(a2)+,blockstart
 				move.l	(a2)+,blocklen
-				addq	#8,a0
 				tst.l	blockstart
-				ble.s	nomoreovj
+				ble.s	.end_release_obj
 
-				movem.l	a0/a2,-(a7)
-
+				move.l	a2,-(a7) ; is this necessary? Does a2 get clobbered by FreeVec?
 				move.l	blockstart,d1
 				move.l	d1,a1
 				CALLEXEC FreeVec
 
-				movem.l	(a7)+,a0/a2
-				bra.s	relobjlop
+				move.l	(a7)+,a2
+				bra.s	.release_obj_loop
 
-nomoreovj:
-
+.end_release_obj:
 				rts
-
-
 
 TYPEOFMEM:		dc.l	0
 
