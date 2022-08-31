@@ -329,15 +329,15 @@ PLAYTHEGAME:
 				move.l	#_custom,a6
 				jsr		SETPLAYERS
 
-				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	#LLname,a0
-				jsr		LOADAFILE
+				jsr		IO_LoadFile
 				move.l	d0,LINKS
 *************************************
 
-				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	#LLFname,a0
-				jsr		LOADAFILE
+				jsr		IO_LoadFile
 				move.l	d0,FLYLINKS
 
 				moveq	#0,d1
@@ -347,26 +347,26 @@ PLAYTHEGAME:
 				move.l	LINKFILE,a0
 				lea		LevelMusic(a0),a0
 
-				move.l	#MEMF_CHIP,TYPEOFMEM
-				jsr		LOADAFILE
+				move.l	#MEMF_CHIP,IO_MemType_l
+				jsr		IO_LoadFile
 				move.l	d0,LEVELMUSIC
 *************************************
 
-				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	#LDname,a0
-				jsr		LOADAFILE
+				jsr		IO_LoadFile
 				move.l	d0,LEVELDATA
 *************************************
 
-				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	#LGname,a0
-				jsr		LOADAFILE
+				jsr		IO_LoadFile
 				move.l	d0,LEVELGRAPHICS
 *************************************
 
-				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	#LCname,a0
-				jsr		LOADAFILE
+				jsr		IO_LoadFile
 				move.l	d0,LEVELCLIPS
 *************************************
 
@@ -12264,8 +12264,8 @@ closeeverything:
 ;				CALLEXEC RemIntServer
 ;				ENDC
 ;
-				jsr		RELEASELEVELMEM
-				jsr		RELEASESCRNMEM
+				jsr		Res_FreeLevelData
+				jsr		Res_ReleaseScreenMemory
 ;
 ;				move.l	MiscResourceBase,d0
 ;				beq.s	.noMiscResourceBase
