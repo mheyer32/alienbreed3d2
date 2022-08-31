@@ -1655,14 +1655,14 @@ SAVEPOSITION:
 				move.l	#SAVEGAMENAME,d1
 				move.l	#1006,d2
 				CALLDOS	Open
-				move.l	d0,handle
+				move.l	d0,IO_DOSFileHandle_l
 
 				move.l	SAVEGAMEPOS,d2
-				move.l	handle,d1
+				move.l	IO_DOSFileHandle_l,d1
 				move.l	SAVEGAMELEN,d3
 				CALLDOS	Write
 
-				move.l	handle,d1
+				move.l	IO_DOSFileHandle_l,d1
 				CALLDOS	Close
 
 ;				move.l	#200,d1

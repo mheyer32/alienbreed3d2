@@ -1,4 +1,7 @@
 
+
+walltiles:		ds.l	40
+
 ; todo - this is not currently called
 Res_FreeWallTextures:
 				move.l	#walltiles,a0
@@ -59,13 +62,6 @@ IO_LoadWallTextures:
 .loaded_all:
 				rts
 
-handle:			dc.l	0
-
-io_UnpackedLength_l:		dc.l	0
-
-walltiles:
-				ds.l	40
-
 IO_LoadAndUnpackFile:
 				; Load a file in and unpack it if necessary.
 				; Pointer to name in a0
@@ -83,11 +79,11 @@ IO_LoadFile:
 				move.l	#1005,d2
 				CALLDOS	Open
 
-				move.l	d0,handle
+				move.l	d0,IO_DOSFileHandle_l
 
 io_LoadCommon:
-				lea		fib,a5
-				move.l	handle,d1
+				lea		io_FileInfoBlock_vb,a5
+				move.l	IO_DOSFileHandle_l,d1
 				move.l	a5,d2
 				CALLDOS	ExamineFH
 
@@ -98,20 +94,17 @@ io_LoadCommon:
 				CALLEXEC AllocVec
 
 				move.l	d0,io_BlockStart_l
-
-				move.l	handle,d1
+				move.l	IO_DOSFileHandle_l,d1
 				move.l	d0,d2
 				move.l	io_BlockLength_l,d3
 				CALLDOS	Read
 
-				move.l	handle,d1
+				move.l	IO_DOSFileHandle_l,d1
 				CALLDOS	Close
 
 				move.l	io_BlockStart_l,a0
-
 				clr.l	(a0,d3.l)		; clear last 8 bytes
 				clr.l	4(a0,d3.l)
-
 				move.l	(a0),d0
 				cmp.l	#'=SB=',d0
 				beq		io_HandlePacked
@@ -124,10 +117,8 @@ io_LoadCommon:
 
 ; Not a packed file so just return now.
 				movem.l	(a7)+,d0-d7/a0-a6
-
 				move.l	io_BlockStart_l,d0
 				move.l	io_BlockLength_l,d1
-
 				rts
 
 io_LoadSample:
@@ -136,11 +127,11 @@ io_LoadSample:
 				move.l	d0,a0
 				move.l	(a0)+,d0				;file size
 				move.l	d0,.sample_size_l
-				move.l	a0,.compressed_sample_position
+				move.l	a0,.compressed_sample_position_l
 				move.l	#MEMF_ANY,d1
 				CALLEXEC AllocVec
 				move.l	d0,.sample_position_l
-				move.l	.compressed_sample_position,a0
+				move.l	.compressed_sample_position_l,a0
 				move.l	d0,a1
 				move.l	.sample_size_l,d0
 				sub.w	#2,d0
@@ -167,7 +158,7 @@ io_LoadSample:
 				dbra	d0,.decompress_loop
 
 .sample_finished:
-				move.l	.compressed_sample_position,a1
+				move.l	.compressed_sample_position_l,a1
 				sub.l	#8,a1
 
 				CALLEXEC FreeVec
@@ -199,7 +190,7 @@ io_LoadSample:
 				rts
 
 				CNOP 0, 4
-.compressed_sample_position:	dc.l 0
+.compressed_sample_position_l:	dc.l 0
 .compressed_sample_size_l:		dc.l 0
 .sample_position_l:				dc.l 0
 .sample_size_l:					dc.l 0
@@ -207,15 +198,15 @@ io_LoadSample:
 
 io_HandlePacked:
 				move.l	4(a0),d0				; length of unpacked file.
-				move.l	d0,io_UnpackedLength_l
+				move.l	d0,.unpacked_length_l
 				move.l	IO_MemType_l,d1
 				CALLEXEC AllocVec
 
-				move.l	d0,io_UnpackedStart_l
+				move.l	d0,.unpacked_start_l
 				move.l	io_BlockStart_l,d0
 				moveq	#0,d1
-				move.l	io_UnpackedStart_l,a0
-				move.l	#unLhaTempBuffer,a1
+				move.l	.unpacked_start_l,a0
+				move.l	#.unlha_temp_buffer_vl,a1
 				lea		$0,a2
 				jsr		unLHA
 
@@ -223,23 +214,23 @@ io_HandlePacked:
 				move.l	d1,a1
 				CALLEXEC FreeVec
 
-				move.l	io_UnpackedStart_l,d0
-				move.l	io_UnpackedLength_l,d1
+				move.l	.unpacked_start_l,d0
+				move.l	.unpacked_length_l,d1
 				move.l	d0,a0
 				cmp.l	#'CSFX',(a0)
 				beq		io_LoadSample
 
 				movem.l	(a7)+,d0-d7/a0-a6
-				move.l	io_UnpackedStart_l,d0
-				move.l	io_UnpackedLength_l,d1
+				move.l	.unpacked_start_l,d0
+				move.l	.unpacked_length_l,d1
 				rts
 
+				CNOP 0, 4
+.unpacked_start_l:	dc.l	0
+.unpacked_length_l:	dc.l	0
+
 				section bss,bss
-unLhaTempBuffer:
+.unlha_temp_buffer_vl:
 				ds.l	4096		; unLHA wants 16kb
 
 				section code,code
-io_UnpackedStart_l:
-				dc.l	0
-
-

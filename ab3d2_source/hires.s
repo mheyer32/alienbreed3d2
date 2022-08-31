@@ -3056,14 +3056,14 @@ SAVETHESCREEN:
 				move.l	#SAVENAME,d1
 				move.l	#1006,d2
 				CALLDOS	Open
-				move.l	d0,handle
+				move.l	d0,IO_DOSFileHandle_l
 
 				move.l	SCRNDRAWPT,d2
-				move.l	handle,d1
+				move.l	IO_DOSFileHandle_l,d1
 				move.l	#10240*8,d3
 				CALLDOS	Write
 
-				move.l	handle,d1
+				move.l	IO_DOSFileHandle_l,d1
 				CALLDOS	Close
 
 				move.l	#200,d1
@@ -8471,10 +8471,6 @@ xoff34:			dc.w	0
 zoff34:			dc.w	0
 scosval:		dc.w	0
 ssinval:		dc.w	0
-
-
-floorsetbright:
-				move.l	#walltiles,a0
 
 			; Floor drawing
 pastfloorbright:

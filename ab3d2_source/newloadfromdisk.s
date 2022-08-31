@@ -2,6 +2,9 @@
 ; Memory class to use for next loaded entity
 IO_MemType_l:			dc.l	0
 
+; dos.llibrary file handle
+IO_DOSFileHandle_l:		dc.l	0
+
 ; Private stuff
 io_EndOfQueue_l:		dc.l	0
 
@@ -150,7 +153,7 @@ io_FlushPass:
 				tst.l	d0
 				beq.s	.load_failed
 
-				move.l	d0,handle
+				move.l	d0,IO_DOSFileHandle_l
 				jsr		IO_LoadAndUnpackFile
 
 				st		d7
@@ -181,6 +184,7 @@ io_TryToOpen:
 				move.l	a0,d1
 				move.l	#1005,d2
 				CALLDOS	Open
+
 				movem.l	(a7)+,d1-d7/a0-a6
 				rts
 
@@ -270,7 +274,7 @@ io_LoadMoreObjects:
 				rts
 
 				CNOP	0,4	; FileInfoBlock must be 4-byte aligned
-fib:			ds.b	fib_SIZEOF
+io_FileInfoBlock_vb:			ds.b	fib_SIZEOF
 
 Res_FreeObjects:
 				move.l	#io_ObjectPointers_vl,a2
