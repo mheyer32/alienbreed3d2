@@ -1,4 +1,18 @@
-******************************************************
+
+; *****************************************************************************
+; *
+; * modules/file_io.s
+; *
+; * Definitions specific to the loading of data from disk
+; *
+; * Mostly refactored from newloadfromdisk.s and wallchunk.s
+; *
+; *****************************************************************************
+
+IO_MAX_FILENAME_LEN	EQU 79
+
+				CNOP	0,4	;
+
 ; Memory class to use for next loaded entity
 IO_MemType_l:			dc.l	0
 
@@ -22,7 +36,14 @@ io_FileExtPointer_l:	dc.l	0
 io_ObjectName_vb:		ds.b	160
 io_Buffer_vb:			ds.b	80   ; todo - can these be merged ?
 
-IO_MAX_FILENAME_LEN	EQU 79
+; File info block
+io_FileInfoBlock_vb:	ds.b	fib_SIZEOF
+
+; *****************************************************************************
+; *
+; * IO Queue
+; *
+; *****************************************************************************
 
 IO_InitQueue:
 				move.l	#WorkSpace,io_EndOfQueue_l
@@ -188,238 +209,183 @@ io_TryToOpen:
 				movem.l	(a7)+,d1-d7/a0-a6
 				rts
 
-***************************************************
+; *****************************************************************************
+; *
+; * File Load
+; *
+; *****************************************************************************
 
-Res_LoadObjects:
-; PRSDG
-				move.l	#io_ObjectPointers_vl,a2
-				move.l	LINKFILE,a0
-				lea		ObjectGfxNames(a0),a0
-				move.l	#MEMF_ANY,IO_MemType_l
-				move.l	#Objects,a1
+IO_LoadAndUnpackFile:
+				; Load a file in and unpack it if necessary.
+				; Pointer to name in a0
+				; Returns address in d0 and length in d1
+				movem.l	d0-d7/a0-a6,-(a7)
+				bra.s	io_LoadCommon
 
-.load_object_loop:
-				move.l	a0,a4
-				move.l	#io_ObjectName_vb,a3
+IO_LoadFile:
+				; Load a file in and unpack it if necessary.
+				; Pointer to name in a0
+				; Returns address in d0 and length in d1
 
-.fill_name:
-				move.b	(a4)+,d0
-				beq.s	.done_name
-				move.b	d0,(a3)+
-				bra.s	.fill_name
+				movem.l	d0-d7/a0-a6,-(a7)
+				move.l	a0,d1
+				move.l	#1005,d2
+				CALLDOS	Open
 
-.done_name:
-				move.l	a0,-(a7)
-				move.l	a3,io_FileExtPointer_l
-				move.b	#'.',(a3)+
-				move.b	#'W',(a3)+
-				move.b	#'A',(a3)+
-				move.b	#'D',(a3)+
-				move.b	#0,(a3)+
-				move.l	#io_ObjectName_vb,a0
-				move.l	a1,d0
-				moveq	#0,d1
-				bsr		IO_QueueFile
+				move.l	d0,IO_DOSFileHandle_l
 
-				move.l	io_FileExtPointer_l,a3
-				move.b	#'.',(a3)+
-				move.b	#'P',(a3)+
-				move.b	#'T',(a3)+
-				move.b	#'R',(a3)+
-				move.b	#0,(a3)+
-				move.l	#io_ObjectName_vb,a0
-				move.l	a1,d0
-				add.l	#4,d0
-				moveq	#0,d1
-				bsr		IO_QueueFile
+io_LoadCommon:
+				lea		io_FileInfoBlock_vb,a5
+				move.l	IO_DOSFileHandle_l,d1
+				move.l	a5,d2
+				CALLDOS	ExamineFH
 
-				move.l	io_FileExtPointer_l,a3
-				move.b	#'.',(a3)+
-				move.b	#'2',(a3)+
-				move.b	#'5',(a3)+
-				move.b	#'6',(a3)+
-				move.b	#'P',(a3)+
-				move.b	#'A',(a3)+
-				move.b	#'L',(a3)+
-				move.b	#0,(a3)+
-				move.l	#io_ObjectName_vb,a0
-				move.l	a1,d0
-				add.l	#12,d0
-				moveq	#0,d1
-				bsr		IO_QueueFile
+				move.l	fib_Size(a5),d0
+				move.l	d0,io_BlockLength_l
+				add.l	#8,d0			; over-allocate by 8 bytes
+				move.l	IO_MemType_l,d1
+				CALLEXEC AllocVec
 
-				move.l	(a7)+,a0
-				add.l	#64,a0
-				add.l	#16,a1
-				tst.b	(a0)
-				bne		.load_object_loop
+				move.l	d0,io_BlockStart_l
+				move.l	IO_DOSFileHandle_l,d1
+				move.l	d0,d2
+				move.l	io_BlockLength_l,d3
+				CALLDOS	Read
 
-				move.l	#POLYOBJECTS,a2
-				move.l	LINKFILE,a0
-				add.l	#VectorGfxNames,a0
+				move.l	IO_DOSFileHandle_l,d1
+				CALLDOS	Close
 
-.load_vector_loop:
-				tst.b	(a0)
-				beq.s	.end_load_vectors
+				move.l	io_BlockStart_l,a0
+				clr.l	(a0,d3.l)		; clear last 8 bytes
+				clr.l	4(a0,d3.l)
+				move.l	(a0),d0
+				cmp.l	#'=SB=',d0
+				beq		io_HandlePacked
 
-				move.l	a2,d0
-				moveq	#0,d1
-				jsr		IO_QueueFile
-				addq	#4,a2
+				move.l	io_BlockStart_l,d0
+				move.l	io_BlockLength_l,d1
+				move.l	d0,a0
+				cmp.l	#'CSFX',(a0)
+				beq		io_LoadSample
 
-				adda.w	#64,a0
-				bra.s	.load_vector_loop
-
-.end_load_vectors:
+; Not a packed file so just return now.
+				movem.l	(a7)+,d0-d7/a0-a6
+				move.l	io_BlockStart_l,d0
+				move.l	io_BlockLength_l,d1
 				rts
 
-				CNOP	0,4	; FileInfoBlock must be 4-byte aligned
-io_FileInfoBlock_vb:			ds.b	fib_SIZEOF
+io_LoadSample:
+				add.l	#4,d0					;Skip "CSFX"
+				move.l	d1,.compressed_sample_size_l
+				move.l	d0,a0
+				move.l	(a0)+,d0				;file size
+				move.l	d0,.sample_size_l
+				move.l	a0,.compressed_sample_position_l
+				move.l	#MEMF_ANY,d1
+				CALLEXEC AllocVec
+				move.l	d0,.sample_position_l
+				move.l	.compressed_sample_position_l,a0
+				move.l	d0,a1
+				move.l	.sample_size_l,d0
+				sub.w	#2,d0
+				move.b	(a0)+,d1				;first byte (actual value)
+				move.b	d1,(a1)+
+				lea		.fibonnaci_lookup_vb(pc),a2
 
-Res_FreeObjects:
-				move.l	#io_ObjectPointers_vl,a2
+.decompress_loop:
+				move.b	(a0)+,d2
+				and.w	#$00ff,d2
+				move.w	d2,d3
+				lsr.w	#4,d2
+				and.w	#$000f,d3
+				move.b	(a2,d2.w),d4			;first fib value
+				add.b	d4,d1
+				move.b	d1,(a1)+				;store sample value
+				dbra	d0,.continue
+				bra.s	.sample_finished
 
-.release_obj_loop:
-				move.l	(a2)+,io_BlockStart_l
-				move.l	(a2)+,io_BlockLength_l
-				tst.l	io_BlockStart_l
-				ble.s	.end_release_obj
+.continue:
+				move.b	(a2,d3.w),d4			;second fib value
+				add.b	d4,d1
+				move.b	d1,(a1)+				;store sample value
+				dbra	d0,.decompress_loop
 
-				move.l	a2,-(a7) ; is this necessary? Does a2 get clobbered by FreeVec?
+.sample_finished:
+				move.l	.compressed_sample_position_l,a1
+				sub.l	#8,a1
+
+				CALLEXEC FreeVec
+
+				;Now check the sample and clip it if it ever gets
+				;too big
+
+				move.l	.sample_position_l,a0
+				move.l	.sample_size_l,d0
+				sub.w	#1,d0
+.clip_loop:
+				move.b	(a0),d1
+				cmp.b	#64,d1
+				blt.s	.not_too_big
+				move.b	#63,d1
+
+.not_too_big:
+				cmp.b	#-64,d1
+				bge.s	.not_too_small
+				move.b	#-64,d1
+
+.not_too_small:
+				move.b	d1,(a0)+
+				dbra	d0,.clip_loop
+
+				movem.l	(a7)+,d0-d7/a0-a6
+				move.l	.sample_position_l,d0
+				move.l	.sample_size_l,d1
+				rts
+
+				CNOP 0, 4
+.compressed_sample_position_l:	dc.l 0
+.compressed_sample_size_l:		dc.l 0
+.sample_position_l:				dc.l 0
+.sample_size_l:					dc.l 0
+.fibonnaci_lookup_vb:			dc.b -34,-21,-13,-8,-5,-3,-2,-1,0,1,2,3,5,8,13,21
+
+io_HandlePacked:
+				move.l	4(a0),d0				; length of unpacked file.
+				move.l	d0,.unpacked_length_l
+				move.l	IO_MemType_l,d1
+				CALLEXEC AllocVec
+
+				move.l	d0,.unpacked_start_l
+				move.l	io_BlockStart_l,d0
+				moveq	#0,d1
+				move.l	.unpacked_start_l,a0
+				move.l	#.unlha_temp_buffer_vl,a1
+				lea		$0,a2
+				jsr		unLHA
+
 				move.l	io_BlockStart_l,d1
 				move.l	d1,a1
 				CALLEXEC FreeVec
 
-				move.l	(a7)+,a2
-				bra.s	.release_obj_loop
+				move.l	.unpacked_start_l,d0
+				move.l	.unpacked_length_l,d1
+				move.l	d0,a0
+				cmp.l	#'CSFX',(a0)
+				beq		io_LoadSample
 
-.end_release_obj:
+				movem.l	(a7)+,d0-d7/a0-a6
+				move.l	.unpacked_start_l,d0
+				move.l	.unpacked_length_l,d1
 				rts
 
-Res_LoadSoundFx:
-				move.l	LINKFILE,a0
-				lea		SFXFilenames(a0),a0
-				move.l	#SampleList,a1
-				move.w	#58,d7
+				CNOP 0, 4
+.unpacked_start_l:	dc.l	0
+.unpacked_length_l:	dc.l	0
 
-.load_sound_loop:
-				tst.b	(a0)
-				bne.s	.ok_to_load
+				section bss,bss
+.unlha_temp_buffer_vl:
+				ds.l	4096		; unLHA wants 16kb
 
-				add.w	#64,a0
-				addq	#8,a1
-				dbra	d7,.load_sound_loop
-				move.l	#-1,(a1)+
-				rts
-
-.ok_to_load:
-				move.l	#MEMF_ANY,IO_MemType_l
-				move.l	a1,d0
-				move.l	d0,d1
-				add.l	#4,d1
-				jsr		IO_QueueFile
-
-				addq	#8,a1
-; move.l d0,(a1)+
-; add.l d1,d0
-; move.l d0,(a1)+
-				adda.w	#64,a0
-				dbra	d7,.load_sound_loop
-				move.l	#MEMF_ANY,IO_MemType_l
-				rts
-
-Res_PatchSoundFx:
-				move.w	#58,d7
-				move.l	#SampleList,a1
-
-.patch_loop:
-				move.l	(a1)+,d0
-				add.l	d0,(a1)+
-				dbra	d7,.patch_loop
-
-				rts
-
-Res_LoadFloorTextures:
-				move.l	LINKFILE,a0
-				add.l	#FloorTileFilename,a0
-				move.l	#floortile,d0
-				move.l	#0,d1
-				move.l	#MEMF_ANY,IO_MemType_l
-				jsr		IO_QueueFile
-
-; move.l d0,floortile
-				move.l	LINKFILE,a0
-				add.l	#TextureFilename,a0
-				move.l	#io_Buffer_vb,a1
-
-.copy_loop:
-				move.b	(a0)+,(a1)+
-				beq.s	.copied
-				bra.s	.copy_loop
-.copied:
-
-				subq	#1,a1
-				move.l	a1,io_FileExtPointer_l
-				move.l	#io_Buffer_vb,a0
-				move.l	#TextureMaps,d0
-				move.l	#0,d1
-				jsr		IO_QueueFile
-
-; move.l d0,TextureMaps
-				move.l	io_FileExtPointer_l,a1
-				move.l	#".pal",(a1)
-				move.l	#io_Buffer_vb,a0
-				move.l	#TexturePal,d0
-				move.l	#0,d1
-				jsr		IO_QueueFile
-
-; move.l d0,TexturePal
-				rts
-
-Res_FreeSoundFx:
-				move.l	#SampleList,a0
-.relmem:
-				move.l	(a0)+,d1
-				bge.s	.okrel
-				rts
-.okrel:
-				move.l	(a0)+,d0
-				sub.l	d1,d0
-				move.l	d1,a1
-				move.l	a0,-(a7)
-				CALLEXEC FreeVec
-				move.l	(a7)+,a0
-				bra		.relmem
-
-Res_FreeLevelData:
-				move.l	LINKS,a1
-				CALLEXEC FreeVec
-				clr.l	LINKS
-
-				move.l	FLYLINKS,a1
-				CALLEXEC FreeVec
-				clr.l	FLYLINKS
-
-				move.l	LEVELGRAPHICS,a1
-				CALLEXEC FreeVec
-				clr.l	LEVELGRAPHICS
-
-				move.l	LEVELCLIPS,a1
-				CALLEXEC FreeVec
-				clr.l	LEVELCLIPS
-
-				move.l	LEVELMUSIC,a1
-				CALLEXEC FreeVec
-				clr.l	LEVELMUSIC
-				rts
-
-Res_FreeFloorTextures:
-				move.l	floortile,d1
-				CALLEXEC FreeVec
-				clr.l	floortile
-				rts
-
-Res_ReleaseScreenMemory:
-				rts
+				section code,code
 
 unLHA:			incbin	"decomp4.raw"
