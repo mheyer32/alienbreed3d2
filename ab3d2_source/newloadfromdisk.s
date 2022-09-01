@@ -190,7 +190,7 @@ io_TryToOpen:
 
 ***************************************************
 
-IO_LoadObjects:
+Res_LoadObjects:
 ; PRSDG
 				move.l	#io_ObjectPointers_vl,a2
 				move.l	LINKFILE,a0
@@ -198,7 +198,7 @@ IO_LoadObjects:
 				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	#Objects,a1
 
-io_LoadMoreObjects:
+.load_object_loop:
 				move.l	a0,a4
 				move.l	#io_ObjectName_vb,a3
 
@@ -252,7 +252,7 @@ io_LoadMoreObjects:
 				add.l	#64,a0
 				add.l	#16,a1
 				tst.b	(a0)
-				bne		io_LoadMoreObjects
+				bne		.load_object_loop
 
 				move.l	#POLYOBJECTS,a2
 				move.l	LINKFILE,a0
@@ -296,7 +296,7 @@ Res_FreeObjects:
 .end_release_obj:
 				rts
 
-IO_LoadSoundFx:
+Res_LoadSoundFx:
 				move.l	LINKFILE,a0
 				lea		SFXFilenames(a0),a0
 				move.l	#SampleList,a1
@@ -328,7 +328,7 @@ IO_LoadSoundFx:
 				move.l	#MEMF_ANY,IO_MemType_l
 				rts
 
-Audio_PatchSounds:
+Res_PatchSoundFx:
 				move.w	#58,d7
 				move.l	#SampleList,a1
 
@@ -339,7 +339,7 @@ Audio_PatchSounds:
 
 				rts
 
-IO_LoadFloorTextures:
+Res_LoadFloorTextures:
 				move.l	LINKFILE,a0
 				add.l	#FloorTileFilename,a0
 				move.l	#floortile,d0

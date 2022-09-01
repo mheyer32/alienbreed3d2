@@ -26,7 +26,7 @@ Res_FreeWallTextures:
 .free_all:
 				rts
 
-IO_LoadWallTextures:
+Res_LoadWallTextures:
 				;* New loading system:
 				;* Send each filename to a 'server' along with
 				;* addresses for the return values (pos,len)

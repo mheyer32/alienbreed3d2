@@ -179,10 +179,10 @@ START:
 				;move.w	#31,FADEAMOUNT
 				;bsr		FADEUPTITLE
 
-				jsr		IO_LoadSoundFx
-				jsr		IO_LoadWallTextures
-				jsr		IO_LoadFloorTextures
-				jsr		IO_LoadObjects
+				jsr		Res_LoadSoundFx
+				jsr		Res_LoadWallTextures
+				jsr		Res_LoadFloorTextures
+				jsr		Res_LoadObjects
 
 				move.l	#backpicname,a0
 				move.l	#BackPicture,d0
@@ -197,7 +197,7 @@ START:
 				jsr		IO_FlushQueue
 ***********************************************
 
-				jsr		Audio_PatchSounds
+				jsr		Res_PatchSoundFx
 
 				;move.w	#23,FADEAMOUNT
 				;bsr		FADEDOWNTITLE
