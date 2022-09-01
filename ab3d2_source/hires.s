@@ -6499,7 +6499,7 @@ brightpt:
 ******************************
 				include	"objectmove.s"
 				include	"newanims.s"
-				include	"airoutine.s"
+				include	"modules/ai.s"
 ******************************
 
 ********** WALL STUFF *******************************
@@ -11806,8 +11806,10 @@ storeval:		ds.w	1
 
 				section code,code
 
-				include	"wallchunk.s"
-				include	"newloadfromdisk.s"
+;				include	"wallchunk.s"
+;				include	"newloadfromdisk.s"
+				include "modules/resource.s"
+				include "modules/file_io.s"
 				include	"controlloop.s"
 
 

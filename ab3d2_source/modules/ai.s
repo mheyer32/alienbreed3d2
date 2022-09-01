@@ -1,61 +1,13 @@
 ;
-; 0xABADCAFE Proposed coding style guide:
-;
-; As a stepping stone towards getting the code into a more modular state where the visibility of code and data can be
-; properly controlled, a set of style guides for labels are proposed that aim to encapsulate the following key facts:
-;
-; 1) The origin of the label (for modularisation purposes)
-; 2) The visibility of the label (for modularisation purposes)
-; 3) The type of label (i.e. code or data)
-; 4) The type of data for data labels (machine word type, singluar or vector)
-;
-;
-; Callable labels are formatted as <module id>_<function name>
-;    - Function names are camel case
-;    - Module ID signifies which module the label is defined in
-;    - The case of the module ID signifies the file or global scope of the label
-;
-;    - Examples:
-;        - AI_LookForPlayer1
-;            - Defined in AI module
-;            - Globally callable
-;
-;         - ai_TakeDamage
-;            - Defined in AI module
-;            - Locally callable from within module
-;
-; Data labels are formatted as <module id>_<entity name>_<size type>
-;    - Entity names are camel case
-;    - Module ID signifies which module the label is defined in
-;    - The case of the module ID signifies the file of global scope of the label
-;    - The size field indicates the basic storage type, e.g. b, w, l
-;    - For arrays declared using ds, the size field is prefixed with v
-;
-;    - Examples:
-;        - AI_Teamwork_vl
-;            - Defined in AI module
-;            - Globally accessable
-;            - Vector of longs
-;
-;        - ai_AnimFacing_w
-;            - Defined in AI module
-;            - Locally accessible from within module
-;            - Individual word
-;
-; Function scope labels sare formatted in lower snake case and do not contain module identifers. This is to indicate
-; their immediate scope.
-;
-;    - Examples:
-;        - .not_dead_yet
-;
-; Other visibility aids:
-;
-;    - Flow guides:
-;        - A blank line before any callable label
-;        - No code on the same line as a callable label
-;        - A blank line after any branch (bra, bsr, jsr, bcc, rts), except where part of a logical chain of tests.
-;
-
+; *****************************************************************************
+; *
+; * modules/ai.s
+; *
+; * Definitions specific to game AI
+; *
+; * Refactored from airoutine.s
+; *
+; *****************************************************************************
 
 lastx			EQU		0
 lasty			EQU		2
