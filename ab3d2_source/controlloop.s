@@ -148,11 +148,11 @@ START:
 				jsr		OpenMainScreen
 
 				move.l	#LINKname,a0
-				jsr		LOADAFILE
+				jsr		IO_LoadFile
 				move.l	d0,LINKFILE
 
 				move.l	#LEVELTEXTNAME,a0
-				jsr		LOADAFILE
+				jsr		IO_LoadFile
 				move.l	d0,LEVELTEXT
 
 				jsr		_InitLowLevel
@@ -172,32 +172,32 @@ START:
 
 
 **********************************************
-				jsr		INITQUEUE
+				jsr		IO_InitQueue
 **********************************************
 
 				;move.w	#0,FADEVAL
 				;move.w	#31,FADEAMOUNT
 				;bsr		FADEUPTITLE
 
-				jsr		LOAD_SFX
-				jsr		LOADWALLS
-				jsr		LOADFLOOR
-				jsr		LOADOBS
+				jsr		Res_LoadSoundFx
+				jsr		Res_LoadWallTextures
+				jsr		Res_LoadFloorTextures
+				jsr		Res_LoadObjects
 
 				move.l	#backpicname,a0
 				move.l	#BackPicture,d0
 				move.l	#0,d1
-				jsr		QUEUEFILE
+				jsr		IO_QueueFile
 
 ; jsr _StopPlayer
 ; jsr _RemPlayer
 
 
 ***********************************************
-				jsr		FLUSHQUEUE
+				jsr		IO_FlushQueue
 ***********************************************
 
-				jsr		PATCHSFX
+				jsr		Res_PatchSoundFx
 
 				;move.w	#23,FADEAMOUNT
 				;bsr		FADEDOWNTITLE
@@ -273,7 +273,7 @@ DONEMENU:
 				ENDR
 
 *************************************
-				jsr		INITQUEUE
+				jsr		IO_InitQueue
 
 				move.l	#borderpacked,d0
 				moveq	#0,d1
@@ -335,10 +335,10 @@ QUITTT:
 				CALLGRAF FreeRaster
 
 
-; jsr RELEASEWALLMEM
-				jsr		RELEASESAMPMEM
-				jsr		RELEASEFLOORMEM
-				jsr		RELEASEOBJMEM
+; jsr Res_FreeWallTextures
+				jsr		Res_FreeSoundFx
+				jsr		Res_FreeFloorTextures
+				jsr		Res_FreeObjects
 
 				lea		VBLANKInt,a1
 				moveq	#INTB_VERTB,d0
@@ -1513,9 +1513,9 @@ LOADPOSITION:
 				move.l	#SAVEGAMENAME,a0
 				move.l	#SAVEGAMEPOS,d0
 				move.l	#SAVEGAMELEN,d1
-				jsr		INITQUEUE
-				jsr		QUEUEFILE
-				jsr		FLUSHQUEUE
+				jsr		IO_InitQueue
+				jsr		IO_QueueFile
+				jsr		IO_FlushQueue
 
 				move.l	SAVEGAMEPOS,a2			; address of first saved game.
 
@@ -1589,9 +1589,9 @@ SAVEPOSITION:
 				move.l	#SAVEGAMENAME,a0
 				move.l	#SAVEGAMEPOS,d0
 				move.l	#SAVEGAMELEN,d1
-				jsr		INITQUEUE
-				jsr		QUEUEFILE
-				jsr		FLUSHQUEUE
+				jsr		IO_InitQueue
+				jsr		IO_QueueFile
+				jsr		IO_FlushQueue
 
 				move.l	SAVEGAMEPOS,a2			; address of first saved game.
 
@@ -1655,14 +1655,14 @@ SAVEPOSITION:
 				move.l	#SAVEGAMENAME,d1
 				move.l	#1006,d2
 				CALLDOS	Open
-				move.l	d0,handle
+				move.l	d0,IO_DOSFileHandle_l
 
 				move.l	SAVEGAMEPOS,d2
-				move.l	handle,d1
+				move.l	IO_DOSFileHandle_l,d1
 				move.l	SAVEGAMELEN,d3
 				CALLDOS	Write
 
-				move.l	handle,d1
+				move.l	IO_DOSFileHandle_l,d1
 				CALLDOS	Close
 
 ;				move.l	#200,d1

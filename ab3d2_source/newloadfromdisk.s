@@ -1,54 +1,72 @@
 ******************************************************
+; Memory class to use for next loaded entity
+IO_MemType_l:			dc.l	0
 
-ENDOFQUEUE:		dc.l	0
+; dos.llibrary file handle
+IO_DOSFileHandle_l:		dc.l	0
 
-INITQUEUE:
-				move.l	#WorkSpace,ENDOFQUEUE
+; Private stuff
+io_EndOfQueue_l:		dc.l	0
+
+; Array of object pointers
+io_ObjectPointers_vl:	ds.l	160
+
+; block properties
+io_BlockLength_l:		dc.l	0
+io_BlockName_l:			dc.l	0
+io_BlockStart_l:		dc.l	0
+
+; Pointer to the file extension (i.e. the substring starting at .)
+io_FileExtPointer_l:	dc.l	0
+
+io_ObjectName_vb:		ds.b	160
+io_Buffer_vb:			ds.b	80   ; todo - can these be merged ?
+
+IO_MAX_FILENAME_LEN	EQU 79
+
+IO_InitQueue:
+				move.l	#WorkSpace,io_EndOfQueue_l
 				rts
 
-QUEUEFILE:
-; On entry:
-; a0=Pointer to filename
-; d0=Ptr to dest. of addr
-; d1=ptr to dest. of len.
-; typeofmem=type of memory
-
+IO_QueueFile:
+				; On entry:
+				; a0=Pointer to filename
+				; d0=Ptr to dest. of addr
+				; d1=ptr to dest. of len.
+				; typeofmem=type of memory
 				movem.l	d0-d7/a0-a6,-(a7)
-
-				move.l	ENDOFQUEUE,a1
+				move.l	io_EndOfQueue_l,a1
 				move.l	d0,(a1)+
 				move.l	d1,(a1)+
-				move.l	TYPEOFMEM,(a1)+
-				move.w	#79,d0
+				move.l	IO_MemType_l,(a1)+
+				move.w	#IO_MAX_FILENAME_LEN,d0
 
-.copyname:
+.copy_name:
 				move.b	(a0)+,(a1)+
-				dbra	d0,.copyname
-				add.l	#100,ENDOFQUEUE
+				dbra	d0,.copy_name
+				add.l	#100,io_EndOfQueue_l
 				movem.l	(a7)+,d0-d7/a0-a6
 				rts
 
-FLUSHQUEUE:
-				bsr		FLUSHPASS
+IO_FlushQueue:
+				bsr		io_FlushPass
 
-tryagain
+.retry:
 				tst.b	d6
-				beq		.loadedall
+				beq		.loaded_all
 
 * Find first unloaded file and prompt for disk.
 				move.l	#WorkSpace,a2
 
-.findfind:
+.find_loop:
 				tst.l	(a2)
-				bne.s	.foundunloaded
+				bne.s	.found_unloaded
 				add.l	#100,a2
-				bra.s	.findfind
+				bra.s	.find_loop
 
-.foundunloaded:
-
-* A2 points at an unloaded file thingy.
-* Prompt for the disk.
-
+.found_unloaded:
+				; A2 points at an unloaded file thingy.
+				; Prompt for the disk.
 				move.l	#mnu_diskline,a3
 				move.l	#$20202020,(a3)+
 				move.l	#$20202020,(a3)+
@@ -58,26 +76,25 @@ tryagain
 
 ; move.l #VOLLINE,a3
 				move.l	#mnu_diskline+10,a3
-
 				moveq	#-1,d0
 				move.l	a2,a4
 				add.l	#12,a4
-.notfoundyet:
+
+.not_found_loop:
 				addq	#1,d0
 				cmp.b	#':',(a4)+
-				bne.s	.notfoundyet
+				bne.s	.not_found_loop
 
 				move.w	d0,d1
 				asr.w	#1,d1
 				sub.w	d1,a3
-
 				move.l	a2,a4
 				add.l	#12,a4
 
 ; move.w #79,d0
-.putinvol:
+.volume_name_loop:
 				move.b	(a4)+,(a3)+
-				dbra	d0,.putinvol
+				dbra	d0,.volume_name_loop
 
 				movem.l	d0-d7/a0-a6,-(a7)
 
@@ -110,42 +127,38 @@ tryagain
 ; jsr FADEUPTITLE
 
 				movem.l	(a7)+,d0-d7/a0-a6
+				bsr		io_FlushPass
+				bra		.retry
 
-				bsr		FLUSHPASS
-
-				bra		tryagain
-
-.loadedall
+.loaded_all:
 				rts
 
-FLUSHPASS:
+io_FlushPass:
 				move.l	#WorkSpace,a2
 				moveq	#0,d7					; loaded a file
 				moveq	#0,d6					; tried+failed
 
-.flushit
+.do_flush:
 				move.l	a2,d0
-				cmp.l	ENDOFQUEUE,d0
-				bge.s	FLUSHED
+				cmp.l	io_EndOfQueue_l,d0
+				bge.s	.flushed
 
 				tst.l	(a2)
-				beq.s	.donethisone
+				beq.s	.load_completed
 
 				lea		12(a2),a0				; ptr to name
+				move.l	8(a2),IO_MemType_l
+				jsr		io_TryToOpen
 
-				move.l	8(a2),TYPEOFMEM
-
-				jsr		TRYTOOPEN
 				tst.l	d0
-				beq.s	.failtoload
+				beq.s	.load_failed
 
-				move.l	d0,handle
-				jsr		DEFLOADFILE
+				move.l	d0,IO_DOSFileHandle_l
+				jsr		IO_LoadAndUnpackFile
+
 				st		d7
-
 				move.l	(a2),a3
 				move.l	d0,(a3)
-
 				move.l	4(a2),d0
 				beq.s	.nolenstore
 
@@ -154,143 +167,73 @@ FLUSHPASS:
 
 .nolenstore:
 				move.l	#0,(a2)
-				bra.s	.donethisone
+				bra.s	.load_completed
 
-.failtoload
+.load_failed:
 				st		d6
 
-.donethisone:
+.load_completed:
 				add.l	#100,a2
-				bra		.flushit
+				bra		.do_flush
 
-FLUSHED:
+.flushed:
 				rts
 
-
-TRYTOOPEN:
+io_TryToOpen:
 				movem.l	d1-d7/a0-a6,-(a7)
 				move.l	a0,d1
 				move.l	#1005,d2
 				CALLDOS	Open
+
 				movem.l	(a7)+,d1-d7/a0-a6
 				rts
 
 ***************************************************
 
-OBJNAME:		ds.w	80
-
-OBJ_ADDRS:		ds.l	160
-
-blocklen:		dc.l	0
-blockname:		dc.l	0
-blockstart:		dc.l	0
-
-BOTPICNAME:		dc.b	'includes/panelraw',0
-				even
-PanelLen:		dc.l	0
-
-FREEBOTMEM:
-				move.l	Panel,d1
-				move.l	d1,a1
-				CALLEXEC FreeVec
-
-				rts
-
-; FIXME: not used?
-;LOADBOTPIC:
-;
-;; PRSDb
-;
-;				move.l	#BOTPICNAME,blockname
-;
-;				move.l	blockname,d1
-;				move.l	#1005,d2
-;				CALLDOS	Open
-;				move.l	d0,handle
-;
-;				lea		fib,a5
-;				move.l	handle,d1
-;				move.l	a5,d2
-;				CALLDOS	ExamineFH
-;
-;				move.l	$7c(a5),blocklen
-;				move.l	#30720,PanelLen
-;
-;				move.l	#MEMF_CHIP|MEMF_CLEAR,d1
-;				move.l	PanelLen,d0
-;				CALLEXEC AllocVec
-;				move.l	d0,blockstart
-;
-;				move.l	handle,d1
-;				move.l	LEVELDATA,d2
-;				move.l	blocklen,d3
-;				CALLDOS	Read
-;				move.l	handle,d1
-;				CALLDOS	Close
-;
-;				move.l	blockstart,Panel
-;
-;				move.l	LEVELDATA,d0
-;				moveq	#0,d1
-;				move.l	Panel,a0
-;				lea		WorkSpace,a1
-;				lea		$0,a2
-;				jsr		unLHA
-;
-;				rts
-
-LOADOBS:
-
+Res_LoadObjects:
 ; PRSDG
-
-				move.l	#OBJ_ADDRS,a2
+				move.l	#io_ObjectPointers_vl,a2
 				move.l	LINKFILE,a0
 				lea		ObjectGfxNames(a0),a0
-
-				move.l	#MEMF_ANY,TYPEOFMEM
-
+				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	#Objects,a1
 
-LOADMOREOBS:
+.load_object_loop:
 				move.l	a0,a4
-				move.l	#OBJNAME,a3
-fillinname:
+				move.l	#io_ObjectName_vb,a3
+
+.fill_name:
 				move.b	(a4)+,d0
-				beq.s	donename
+				beq.s	.done_name
 				move.b	d0,(a3)+
-				bra.s	fillinname
+				bra.s	.fill_name
 
-donename:
-
+.done_name:
 				move.l	a0,-(a7)
-
-				move.l	a3,DOTPTR
+				move.l	a3,io_FileExtPointer_l
 				move.b	#'.',(a3)+
 				move.b	#'W',(a3)+
 				move.b	#'A',(a3)+
 				move.b	#'D',(a3)+
 				move.b	#0,(a3)+
-
-				move.l	#OBJNAME,a0
+				move.l	#io_ObjectName_vb,a0
 				move.l	a1,d0
 				moveq	#0,d1
-				bsr		QUEUEFILE
+				bsr		IO_QueueFile
 
-				move.l	DOTPTR,a3
+				move.l	io_FileExtPointer_l,a3
 				move.b	#'.',(a3)+
 				move.b	#'P',(a3)+
 				move.b	#'T',(a3)+
 				move.b	#'R',(a3)+
 				move.b	#0,(a3)+
-
-
-				move.l	#OBJNAME,a0
+				move.l	#io_ObjectName_vb,a0
 				move.l	a1,d0
 				add.l	#4,d0
 				moveq	#0,d1
-				bsr		QUEUEFILE
+				bsr		IO_QueueFile
 
-				move.l	DOTPTR,a3
+				move.l	io_FileExtPointer_l,a3
 				move.b	#'.',(a3)+
 				move.b	#'2',(a3)+
 				move.b	#'5',(a3)+
@@ -299,88 +242,51 @@ donename:
 				move.b	#'A',(a3)+
 				move.b	#'L',(a3)+
 				move.b	#0,(a3)+
-
-				move.l	#OBJNAME,a0
+				move.l	#io_ObjectName_vb,a0
 				move.l	a1,d0
 				add.l	#12,d0
 				moveq	#0,d1
-				bsr		QUEUEFILE
+				bsr		IO_QueueFile
 
 				move.l	(a7)+,a0
-
 				add.l	#64,a0
 				add.l	#16,a1
 				tst.b	(a0)
-				bne		LOADMOREOBS
+				bne		.load_object_loop
 
 				move.l	#POLYOBJECTS,a2
 				move.l	LINKFILE,a0
 				add.l	#VectorGfxNames,a0
 
-LOADMOREVECTORS
+.load_vector_loop:
 				tst.b	(a0)
-				beq.s	NOMOREVECTORS
+				beq.s	.end_load_vectors
 
 				move.l	a2,d0
 				moveq	#0,d1
-				jsr		QUEUEFILE
+				jsr		IO_QueueFile
 				addq	#4,a2
 
 				adda.w	#64,a0
-				bra.s	LOADMOREVECTORS
+				bra.s	.load_vector_loop
 
-NOMOREVECTORS:
-
-				rts
-
-DOTPTR:			dc.l	0
-
-LOAD_A_PALETTE
-				movem.l	d0-d7/a0-a6,-(a7)
-
-				move.l	#OBJNAME,blockname
-				move.l	blockname,d1
-				move.l	#1005,d2
-				CALLDOS	Open
-				move.l	d0,handle
-
-				move.l	#2048,blocklen
-
-				move.l	#MEMF_ANY,d1
-				move.l	blocklen,d0
-				CALLEXEC AllocVec
-				move.l	d0,blockstart
-
-				move.l	handle,d1
-				move.l	blockstart,d2
-				move.l	blocklen,d3
-				CALLDOS	Read
-
-				move.l	handle,d1
-				CALLDOS	Close
-
-				movem.l	(a7)+,d0-d7/a0-a6
-
-				move.l	blockstart,(a2)+
-				move.l	blocklen,(a2)+
-
+.end_load_vectors:
 				rts
 
 				CNOP	0,4	; FileInfoBlock must be 4-byte aligned
-fib:			ds.b	fib_SIZEOF
+io_FileInfoBlock_vb:			ds.b	fib_SIZEOF
 
-
-RELEASEOBJMEM:
-				move.l	#OBJ_ADDRS,a2
+Res_FreeObjects:
+				move.l	#io_ObjectPointers_vl,a2
 
 .release_obj_loop:
-				move.l	(a2)+,blockstart
-				move.l	(a2)+,blocklen
-				tst.l	blockstart
+				move.l	(a2)+,io_BlockStart_l
+				move.l	(a2)+,io_BlockLength_l
+				tst.l	io_BlockStart_l
 				ble.s	.end_release_obj
 
 				move.l	a2,-(a7) ; is this necessary? Does a2 get clobbered by FreeVec?
-				move.l	blockstart,d1
+				move.l	io_BlockStart_l,d1
 				move.l	d1,a1
 				CALLEXEC FreeVec
 
@@ -390,177 +296,87 @@ RELEASEOBJMEM:
 .end_release_obj:
 				rts
 
-TYPEOFMEM:		dc.l	0
-
-LOAD_SFX:
-
+Res_LoadSoundFx:
 				move.l	LINKFILE,a0
 				lea		SFXFilenames(a0),a0
-
 				move.l	#SampleList,a1
-
-
 				move.w	#58,d7
 
-LOADSAMPS:
+.load_sound_loop:
 				tst.b	(a0)
-				bne.s	oktoload
+				bne.s	.ok_to_load
 
 				add.w	#64,a0
 				addq	#8,a1
-				dbra	d7,LOADSAMPS
+				dbra	d7,.load_sound_loop
 				move.l	#-1,(a1)+
 				rts
 
-oktoload:
-
-				move.l	#MEMF_ANY,TYPEOFMEM
+.ok_to_load:
+				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	a1,d0
 				move.l	d0,d1
 				add.l	#4,d1
-				jsr		QUEUEFILE
+				jsr		IO_QueueFile
+
 				addq	#8,a1
 ; move.l d0,(a1)+
 ; add.l d1,d0
 ; move.l d0,(a1)+
 				adda.w	#64,a0
-				dbra	d7,LOADSAMPS
-
-				move.l	#MEMF_ANY,TYPEOFMEM
-
+				dbra	d7,.load_sound_loop
+				move.l	#MEMF_ANY,IO_MemType_l
 				rts
 
-PATCHSFX:
-
+Res_PatchSoundFx:
 				move.w	#58,d7
 				move.l	#SampleList,a1
-.patch
+
+.patch_loop:
 				move.l	(a1)+,d0
 				add.l	d0,(a1)+
-				dbra	d7,.patch
+				dbra	d7,.patch_loop
 
 				rts
 
-; PRSDJ
-;
-; move.l #SFX_NAMES,a0
-; move.l #SampleList,a1
-;LOADSAMPS
-; move.l (a0)+,a2
-; move.l a2,d0
-; tst.l d0
-; bgt.s oktoload
-; blt.s doneload
-;
-; addq #4,a0
-; addq #8,a1
-; bra LOADSAMPS
-;
-;doneload:
-;
-; move.l #-1,(a1)+
-; rts
-;oktoload:
-; move.l (a0)+,blocklen
-; move.l a2,blockname
-; movem.l a0/a1,-(a7)
-; move.l #2,d1
-; move.l 4.w,a6
-; move.l blocklen,d0
-; jsr -198(a6)
-; move.l d0,blockstart
-; move.l _DOSBase,a6
-; move.l blockname,d1
-; move.l #1005,d2
-; jsr -30(a6)
-; move.l _DOSBase,a6
-; move.l d0,handle
-; move.l d0,d1
-; move.l blockstart,d2
-; move.l blocklen,d3
-; jsr -42(a6)
-; move.l _DOSBase,a6
-; move.l handle,d1
-; jsr -36(a6)
-; movem.l (a7)+,a0/a1
-; move.l blockstart,d0
-; move.l d0,(a1)+
-; add.l blocklen,d0
-; move.l d0,(a1)+
-; bra LOADSAMPS
-
-
-
-LOADFLOOR
-; PRSDK
-; move.l #65536,d0
-; move.l #1,d1
-; move.l 4.w,a6
-; jsr -198(a6)
-; move.l d0,floortile
-;
-; move.l #floortilename,d1
-; move.l #1005,d2
-; move.l _DOSBase,a6
-; jsr -30(a6)
-; move.l _DOSBase,a6
-; move.l d0,handle
-; move.l d0,d1
-; move.l floortile,d2
-; move.l #65536,d3
-; jsr -42(a6)
-; move.l _DOSBase,a6
-; move.l handle,d1
-; jsr -36(a6)
-
+Res_LoadFloorTextures:
 				move.l	LINKFILE,a0
 				add.l	#FloorTileFilename,a0
 				move.l	#floortile,d0
 				move.l	#0,d1
-				move.l	#MEMF_ANY,TYPEOFMEM
-				jsr		QUEUEFILE
-; move.l d0,floortile
+				move.l	#MEMF_ANY,IO_MemType_l
+				jsr		IO_QueueFile
 
+; move.l d0,floortile
 				move.l	LINKFILE,a0
 				add.l	#TextureFilename,a0
-				move.l	#BUFFE,a1
+				move.l	#io_Buffer_vb,a1
 
-.copy:
+.copy_loop:
 				move.b	(a0)+,(a1)+
 				beq.s	.copied
-				bra.s	.copy
+				bra.s	.copy_loop
 .copied:
 
 				subq	#1,a1
-				move.l	a1,dotty
-
-				move.l	#BUFFE,a0
+				move.l	a1,io_FileExtPointer_l
+				move.l	#io_Buffer_vb,a0
 				move.l	#TextureMaps,d0
 				move.l	#0,d1
-				jsr		QUEUEFILE
+				jsr		IO_QueueFile
+
 ; move.l d0,TextureMaps
-
-				move.l	dotty,a1
+				move.l	io_FileExtPointer_l,a1
 				move.l	#".pal",(a1)
-
-				move.l	#BUFFE,a0
+				move.l	#io_Buffer_vb,a0
 				move.l	#TexturePal,d0
 				move.l	#0,d1
-				jsr		QUEUEFILE
-; move.l d0,TexturePal
+				jsr		IO_QueueFile
 
+; move.l d0,TexturePal
 				rts
 
-dotty:			dc.l	0
-BUFFE:			ds.b	80
-
-floortilename:
-				dc.b	'includes/floortile'
-				dc.b	0
-
-				even
-
-RELEASESAMPMEM:
+Res_FreeSoundFx:
 				move.l	#SampleList,a0
 .relmem:
 				move.l	(a0)+,d1
@@ -575,7 +391,7 @@ RELEASESAMPMEM:
 				move.l	(a7)+,a0
 				bra		.relmem
 
-RELEASELEVELMEM:
+Res_FreeLevelData:
 				move.l	LINKS,a1
 				CALLEXEC FreeVec
 				clr.l	LINKS
@@ -597,13 +413,13 @@ RELEASELEVELMEM:
 				clr.l	LEVELMUSIC
 				rts
 
-RELEASEFLOORMEM:
+Res_FreeFloorTextures:
 				move.l	floortile,d1
 				CALLEXEC FreeVec
 				clr.l	floortile
 				rts
 
-RELEASESCRNMEM:
+Res_ReleaseScreenMemory:
 				rts
 
 unLHA:			incbin	"decomp4.raw"
