@@ -1696,6 +1696,7 @@ makepals:
 				movem.l	(a7)+,d0-d7/a0-a6
 
 				move.l	#PALS,a4
+				clr.w	d0
 
 drawlightlop
 				swap	d7
@@ -1703,7 +1704,8 @@ drawlightlop
 				lea		(a5,d7.w*4),a5
 				swap	d7
 				add.l	a2,d7
-				move.l	WAD_PTR(PC),a0
+				move.l	WAD_PTR(PC),a0			; is this not always right? Seems to be connected to
+												; dead body of the blue priests, first seen in level C
 
 				move.l	toppt(pc),a6
 				adda.w	a1,a6
@@ -1717,9 +1719,9 @@ drawlightlop
 				move.l	d5,d1
 				move.w	d4,-(a7)
 .drawavertstrip
-				move.b	(a0,d1.w),d0
+				move.b	(a0,d1.w),d0				; a0 can be broken here
 				beq.s	.dontplotthisoneitsblack
-				move.b	(a4,d0.w),(a6)
+				move.b	(a4,d0.w),(a6)				; FIXME: causing enforcer hits in Level C, illegal reads
 .dontplotthisoneitsblack:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
