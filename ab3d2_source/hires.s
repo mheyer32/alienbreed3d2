@@ -9586,7 +9586,8 @@ VBlankInterrupt:
 
 				add.l	#1,counter
 				add.l	#1,main_counter
-				tst.l	timer
+
+				tst.l	timer					; used by menu system as delay
 				beq.s	.nodec
 				subq.l	#1,timer
 .nodec:

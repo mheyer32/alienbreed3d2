@@ -690,7 +690,7 @@ mnu_printxy:;in:a0,d0,d1=Text ptr,XPos,YPos (XPos in words YPos in pixels)
 				move.l	a1,a2
 .loop:			move.b	(a0)+,d2
 				beq		.exit
-				move.l	mnu_printdelay,timer
+				move.l	mnu_printdelay,timer	; wait a few VBLANKs
 .w8a:			tst.l	timer
 				bne.s	.w8a
 				and.l	#$ff,d2
@@ -830,7 +830,7 @@ mnu_pass4:		move.l	#mnu_pass1,bn_function(a1) ; restore first pass ptr
 
 
 				cnop	0,4
-mnu_cls:		lea		mnu_morescreen+40*256*6,a1
+mnu_cls:		lea		mnu_morescreen+40*256*6,a1 ; start from 6th plane, down to plane 3
 				moveq.l	#0,d1
 				move.w	#40*256*3/16-1,d0
 .loop:
@@ -2222,7 +2222,7 @@ MenuWindow		dc.l	0
 
 				section	data_c,data_c
 
-				cnop	64,64					; align for fetch mode 3
+				align	8				; align for fetch mode 3
 mnu_screen:		incbin	"menu/back2.raw"		; 4 color background
 				ds.b	40*256*2				; 2 more bitplanes
 mnu_morescreen:	ds.b	40*256*8				;
