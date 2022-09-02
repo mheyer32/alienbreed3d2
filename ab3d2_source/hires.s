@@ -329,15 +329,15 @@ PLAYTHEGAME:
 				move.l	#_custom,a6
 				jsr		SETPLAYERS
 
-				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	#LLname,a0
-				jsr		LOADAFILE
+				jsr		IO_LoadFile
 				move.l	d0,LINKS
 *************************************
 
-				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	#LLFname,a0
-				jsr		LOADAFILE
+				jsr		IO_LoadFile
 				move.l	d0,FLYLINKS
 
 				moveq	#0,d1
@@ -347,26 +347,26 @@ PLAYTHEGAME:
 				move.l	LINKFILE,a0
 				lea		LevelMusic(a0),a0
 
-				move.l	#MEMF_CHIP,TYPEOFMEM
-				jsr		LOADAFILE
+				move.l	#MEMF_CHIP,IO_MemType_l
+				jsr		IO_LoadFile
 				move.l	d0,LEVELMUSIC
 *************************************
 
-				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	#LDname,a0
-				jsr		LOADAFILE
+				jsr		IO_LoadFile
 				move.l	d0,LEVELDATA
 *************************************
 
-				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	#LGname,a0
-				jsr		LOADAFILE
+				jsr		IO_LoadFile
 				move.l	d0,LEVELGRAPHICS
 *************************************
 
-				move.l	#MEMF_ANY,TYPEOFMEM
+				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	#LCname,a0
-				jsr		LOADAFILE
+				jsr		IO_LoadFile
 				move.l	d0,LEVELCLIPS
 *************************************
 
@@ -3056,14 +3056,14 @@ SAVETHESCREEN:
 				move.l	#SAVENAME,d1
 				move.l	#1006,d2
 				CALLDOS	Open
-				move.l	d0,handle
+				move.l	d0,IO_DOSFileHandle_l
 
 				move.l	SCRNDRAWPT,d2
-				move.l	handle,d1
+				move.l	IO_DOSFileHandle_l,d1
 				move.l	#10240*8,d3
 				CALLDOS	Write
 
-				move.l	handle,d1
+				move.l	IO_DOSFileHandle_l,d1
 				CALLDOS	Close
 
 				move.l	#200,d1
@@ -6499,7 +6499,7 @@ brightpt:
 ******************************
 				include	"objectmove.s"
 				include	"newanims.s"
-				include	"airoutine.s"
+				include	"modules/ai.s"
 ******************************
 
 ********** WALL STUFF *******************************
@@ -8471,10 +8471,6 @@ xoff34:			dc.w	0
 zoff34:			dc.w	0
 scosval:		dc.w	0
 ssinval:		dc.w	0
-
-
-floorsetbright:
-				move.l	#walltiles,a0
 
 			; Floor drawing
 pastfloorbright:
@@ -11810,8 +11806,8 @@ storeval:		ds.w	1
 
 				section code,code
 
-				include	"wallchunk.s"
-				include	"newloadfromdisk.s"
+				include	"modules/res.s"
+				include	"modules/file_io.s"
 				include	"controlloop.s"
 
 
@@ -12264,8 +12260,8 @@ closeeverything:
 ;				CALLEXEC RemIntServer
 ;				ENDC
 ;
-				jsr		RELEASELEVELMEM
-				jsr		RELEASESCRNMEM
+				jsr		Res_FreeLevelData
+				jsr		Res_ReleaseScreenMemory
 ;
 ;				move.l	MiscResourceBase,d0
 ;				beq.s	.noMiscResourceBase
