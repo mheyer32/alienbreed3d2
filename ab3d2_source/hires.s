@@ -170,7 +170,7 @@ fillconst:
 
 ;*******************************************************************************
 
-FASTBUFFERSize	equ		SCREENWIDTH*256			+ 15 ; screen size plus alignment
+FASTBUFFERSize	equ		SCREENWIDTH*256+15		; screen size plus alignment
 
 FASTBUFFER:
 				dc.l	0						; aligned address
