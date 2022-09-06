@@ -164,9 +164,7 @@ START:
 
 				jsr		mnu_copycredz
 				jsr		mnu_setscreen
-				move.l	a7,mnu_mainstack
-
-				jsr		mnu_clearscreen
+				move.l	a7,mnu_mainstack	; not sure if this is the right thing or even in use...
 
 ******************************
 
@@ -210,9 +208,6 @@ START:
 				ENDC
 
 				bsr		DEFAULTGAME
-
-				jsr		mnu_setscreen
-				; jsr mnu_protection
 
 BACKTOMENU:
 
