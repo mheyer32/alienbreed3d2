@@ -6,6 +6,11 @@ MyAllocRaster:
 				rts
 
 OpenMainScreen:
+				lea		MainBitmap,a0
+				moveq.l	#8,d0
+				move.l	#320,d1
+				move.l	#256,d2
+				CALLGRAF InitBitMap
 
 				bsr		MyAllocRaster
 				;				beq	exit_closeall

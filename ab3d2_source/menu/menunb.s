@@ -305,6 +305,12 @@ mnu_clearscreen:
 				rts
 
 mnu_setscreen:
+				lea		Bitmap,a0
+				moveq.l	#8,d0
+				move.l	#320,d1
+				move.l	#256,d2
+				CALLGRAF InitBitMap
+
 				lea		Bitmap+bm_Planes,a0		; provide "fake" bitplane pointers such that
 				move.w	#7,d0					; opening the screen/window will not overwrite
 .setPlane		move.l	#mnu_morescreen,(a0)+	; the hardcoded background pattern
