@@ -58,8 +58,6 @@ intreqrl		equ		$01f
 				section code,code
 
 _start
-				jsr		MakePatch
-
 				lea.l	MiscResourceName,a1
 				CALLEXEC OpenResource			;Open "misc.resource"
 				tst.l	d0
@@ -2325,9 +2323,6 @@ LoadMainPalette:
 
 				add.l	#256*4*3+2+2+4+4,a7		;restore stack
 				rts
-
-; include "demo/system/keyboard.s"
-				include	"ab3diipatchidr.s"
 
 CLRTWOLINES:
 
