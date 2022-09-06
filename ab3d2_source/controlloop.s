@@ -257,13 +257,13 @@ DONEMENU:
 				move.l	#PLAYERTWOHEALTH,a4
 				move.l	#PLAYERTWOSHIELD,a5
 
-				REPT	11
-				move.l	(a0),(a2)+
+				REPT	11						; copy MASTERPLAYERONEHEALTH and
+				move.l	(a0),(a2)+				; MASTERPLAYERONEAMMO
 				move.l	(a0)+,(a4)+
 				ENDR
 
-				REPT	6
-				move.l	(a1),(a3)+
+				REPT	6						; copy MASTERPLAYERONESHIELD and
+				move.l	(a1),(a3)+				; MASTERPLAYERONEGUNS
 				move.l	(a1)+,(a5)+
 				ENDR
 
@@ -355,6 +355,7 @@ backpicname:	dc.b	"ab3:includes/rawbackpacked"
 bordername:		dc.b	"ab3:includes/newborderRAW",0
 				even
 borderpacked:	incbin	"includes/newborderpacked"
+				dc.l	0	; safety for unLha overrun
 
 ; KEY OPTIONS:
 CONTROLBUFFER:

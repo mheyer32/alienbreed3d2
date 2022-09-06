@@ -10813,13 +10813,13 @@ donechan2:
 				moveq	#0,d4
 				moveq	#0,d5
 				move.w	#49,d7
-loop3:
-				move.l	(a0)+,d0
+loop3:											; mixing two channels, 50 * 4
+				move.l	(a0)+,d0				; this is sometimes reading past beyond the sample buffer
 				move.b	(a1)+,d1
 				move.b	(a1)+,d2
 				move.b	(a1)+,d3
 				move.b	(a1)+,d4
-				move.b	(a2,d3.w),d5
+				move.b	(a2,d3.w),d5			; the audio stream in a1 gets scaled via a table?
 				swap	d5
 				move.b	(a2,d1.w),d5
 				asl.l	#8,d5
