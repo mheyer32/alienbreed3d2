@@ -127,7 +127,7 @@ _start
 				ENDC
 
 				; allocate chunky render buffer in fastmem
-				move.l	#MEMF_ANY,d1
+				move.l	#MEMF_ANY|MEMF_CLEAR,d1
 				move.l	#FASTBUFFERSize,d0
 				CALLEXEC AllocVec
 				move.l	d0,FASTBUFFERalloc
