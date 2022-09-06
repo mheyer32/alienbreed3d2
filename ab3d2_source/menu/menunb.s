@@ -310,8 +310,6 @@ mnu_setscreen:
 .setPlane		move.l	#mnu_morescreen,(a0)+	; the hardcoded background pattern
 				dbra	d0,.setPlane
 
-				CALLGRAF WaitTOF
-
 				lea		MainNewScreen,a0
 				lea		ScreenTags,a1
 				CALLINT	OpenScreenTagList
@@ -323,6 +321,7 @@ mnu_setscreen:
 				move.l	d0,WTagScreenPtr-WindowTags(a1) ; WA_CustomScreen
 				CALLINT	OpenWindowTagList
 				move.l	d0,MenuWindow
+
 				move.l	d0,a0
 				lea		emptySprite,a1
 				moveq	#1,d0
@@ -601,7 +600,6 @@ mnu_fadein:		clr.w	mnu_fadefactor
 				; Ramp up at discreet steps
 				CALLGRAF WaitTOF
 				bsr.w	mnu_fade
-				CALLGRAF WaitTOF
 
 				add.w	#mnu_fadespeed,mnu_fadefactor
 				move.l	(a7)+,d0
@@ -620,7 +618,6 @@ mnu_fadeout:	move.w	#256,mnu_fadefactor
 				; Ramp down at discreet steps
 				CALLGRAF WaitTOF
 				bsr.w	mnu_fade
-				CALLGRAF WaitTOF
 
 				sub.w	#mnu_fadespeed,mnu_fadefactor
 				move.l	(a7)+,d0
