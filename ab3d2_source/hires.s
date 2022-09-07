@@ -1290,28 +1290,28 @@ okwat:
 *********** TAKE THIS OUT *******************
 *********************************************
 
-				move.l	CHEATPTR,a4
-				add.l	#200000,a4
-				moveq	#0,d0
-				move.b	(a4),d0
-
-				move.l	#KeyMap,a5
-				tst.b	(a5,d0.w)
-				beq.s	.nocheat
-
-				addq	#1,a4
-				cmp.l	#ENDCHEAT,a4
-				blt.s	.nocheat
-				cmp.w	#0,CHEATNUM
-				beq.s	.nocheat
-				sub.w	#1,CHEATNUM
-				move.l	#CHEATFRAME,a4
-				move.w	#127,PLR1_energy
-				jsr		EnergyBar
-.nocheat
-
-				sub.l	#200000,a4
-				move.l	a4,CHEATPTR
+;				move.l	CHEATPTR,a4
+;				add.l	#200000,a4
+;				moveq	#0,d0
+;				move.b	(a4),d0
+;
+;				move.l	#KeyMap,a5
+;				tst.b	(a5,d0.w)
+;				beq.s	.nocheat
+;
+;				addq	#1,a4
+;				cmp.l	#ENDCHEAT,a4
+;				blt.s	.nocheat
+;				cmp.w	#0,CHEATNUM
+;				beq.s	.nocheat
+;				sub.w	#1,CHEATNUM
+;				move.l	#CHEATFRAME,a4
+;				move.w	#127,PLR1_energy
+;				jsr		EnergyBar
+;.nocheat
+;
+;				sub.l	#200000,a4
+;				move.l	a4,CHEATPTR
 
 **********************************************
 **********************************************
@@ -12374,9 +12374,9 @@ COMPACTMAP:		ds.l	257
 
 BIGMAP:			ds.l	256*10
 
-CHEATFRAME:
-				dc.b	26,20,33,27,17,12
-ENDCHEAT:
+;CHEATFRAME:
+;				dc.b	26,20,33,27,17,12
+;ENDCHEAT:
 
 UseAllChannels:	dc.w	0
 
