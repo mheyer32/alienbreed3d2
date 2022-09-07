@@ -12370,9 +12370,11 @@ STOPTIMER:
 
 digits:			incbin	"numbers.inc"
 
+				section bss,bss
 COMPACTMAP:		ds.l	257
 
 BIGMAP:			ds.l	256*10
+				section code,code
 
 ;CHEATFRAME:
 ;				dc.b	26,20,33,27,17,12
