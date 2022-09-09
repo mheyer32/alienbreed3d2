@@ -280,8 +280,9 @@ io_LoadSample:
 				move.l	d0,a0
 				move.l	(a0)+,d0				;file size
 				move.l	d0,.sample_size_l
+				add.l	#200,d0
 				move.l	a0,.compressed_sample_position_l
-				move.l	#MEMF_ANY,d1
+				move.l	#MEMF_ANY|MEMF_CLEAR,d1
 				CALLEXEC AllocVec
 				move.l	d0,.sample_position_l
 				move.l	.compressed_sample_position_l,a0
