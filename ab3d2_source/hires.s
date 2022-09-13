@@ -2172,7 +2172,7 @@ plr1only:
 				move.b	teamnumber(a0),d0
 				blt.s	.doallobs
 				asl.w	#4,d0
-				tst.w	SEENBY(a2,d0.w)
+				tst.w	AI_SeenBy_ofs(a2,d0.w)
 				blt.s	.doallobs
 .worryobj:
 				or.b	#127,worry(a0)

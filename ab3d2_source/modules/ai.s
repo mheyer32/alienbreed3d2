@@ -9,13 +9,13 @@
 ; *
 ; *****************************************************************************
 
-lastx			EQU		0
-lasty			EQU		2
-lastzone		EQU		4
-lastcpt			EQU		6
-SEENBY			EQU		8
-DAMAGEDONE		EQU		10
-DAMAGETAKEN		EQU		12
+AI_LastX_ofs			EQU		0
+AI_LastY_ofs			EQU		2
+AI_LastZone_ofs			EQU		4
+AI_LastControlPoint_ofs	EQU		6
+AI_SeenBy_ofs			EQU		8
+AI_DamageDone_ofs		EQU		10
+AI_DamageTaken_ofs		EQU		12
 
 ; Code
 AI_MainRoutine:
@@ -444,26 +444,26 @@ ai_Widget:
 				lea		AI_Teamwork_vl(pc),a2
 				asl.w	#4,d0
 				add.w	d0,a2
-				tst.w	SEENBY(a2)
+				tst.w	AI_SeenBy_ofs(a2)
 				blt.s	.no_team
 				move.w	(a0),d0
-				cmp.w	SEENBY(a2),d0
+				cmp.w	AI_SeenBy_ofs(a2),d0
 				bne.s	.no_remove
-				move.w	#-1,SEENBY(a2)
+				move.w	#-1,AI_SeenBy_ofs(a2)
 				bra.s	.no_team
 
 .no_remove:
 				asl.w	#4,d0
 				lea		ai_NastyWork_vl(pc),a1
 				add.w	d0,a1
-				move.w	#0,DAMAGEDONE(a1)
-				move.w	#0,DAMAGETAKEN(a1)
+				move.w	#0,AI_DamageDone_ofs(a1)
+				move.w	#0,AI_DamageTaken_ofs(a1)
 				move.l	(a2),(a1)
 				move.l	4(a2),4(a1)
 				move.l	8(a2),8(a1)
 				move.l	12(a2),12(a1)
-				move.w	lastcpt(a1),TargCPt(a0)
-				move.w	#-1,lastzone(a1)
+				move.w	AI_LastControlPoint_ofs(a1),TargCPt(a0)
+				move.w	#-1,AI_LastZone_ofs(a1)
 				bra.s	.not_seen
 
 .no_team:
@@ -471,12 +471,12 @@ ai_Widget:
 				asl.w	#4,d0
 				lea		ai_NastyWork_vl(pc),a1
 				add.w	d0,a1
-				move.w	#0,DAMAGEDONE(a1)
-				move.w	#0,DAMAGETAKEN(a1)
-				tst.w	lastzone(a1)
+				move.w	#0,AI_DamageDone_ofs(a1)
+				move.w	#0,AI_DamageTaken_ofs(a1)
+				tst.w	AI_LastZone_ofs(a1)
 				blt.s	.not_seen
-				move.w	lastcpt(a1),TargCPt(a0)
-				move.w	#-1,lastzone(a1)
+				move.w	AI_LastControlPoint_ofs(a1),TargCPt(a0)
+				move.w	#-1,AI_LastZone_ofs(a1)
 
 .not_seen:
 				move.w	CurrCPt(a0),d0			; where the alien is now.
@@ -1625,10 +1625,10 @@ ai_StorePlayerPosition:
 				move.l	#ai_NastyWork_vl,a2
 				asl.w	#4,d0
 				add.w	d0,a2
-				move.w	PLR1_xoff,lastx(a2)
-				move.w	PLR1_zoff,lasty(a2)
+				move.w	PLR1_xoff,AI_LastX_ofs(a2)
+				move.w	PLR1_zoff,AI_LastY_ofs(a2)
 				move.l	PLR1_Roompt,a3
-				move.w	(a3),lastzone(a2)
+				move.w	(a3),AI_LastZone_ofs(a2)
 				moveq	#0,d0
 				move.b	ToZoneCpt(a3),d0
 				tst.b	PLR1_StoodInTop
@@ -1636,16 +1636,16 @@ ai_StorePlayerPosition:
 				move.b	ToZoneCpt+1(a3),d0
 
 .player_not_in_top:
-				move.w	d0,lastcpt(a2)
+				move.w	d0,AI_LastControlPoint_ofs(a2)
 				move.b	teamnumber(a0),d0
 				blt.s	.no_team
 				move.l	#AI_Teamwork_vl,a2
 				asl.w	#4,d0
 				add.w	d0,a2
-				move.w	PLR1_xoff,lastx(a2)
-				move.w	PLR1_zoff,lasty(a2)
+				move.w	PLR1_xoff,AI_LastX_ofs(a2)
+				move.w	PLR1_zoff,AI_LastY_ofs(a2)
 				move.l	PLR1_Roompt,a3
-				move.w	(a3),lastzone(a2)
+				move.w	(a3),AI_LastZone_ofs(a2)
 				moveq	#0,d0
 				move.b	ToZoneCpt(a3),d0
 				tst.b	PLR1_StoodInTop
@@ -1653,8 +1653,8 @@ ai_StorePlayerPosition:
 				move.b	ToZoneCpt+1(a3),d0
 
 .player_not_in_top2:
-				move.w	d0,lastcpt(a2)
-				move.w	(a0),SEENBY(a2)
+				move.w	d0,AI_LastControlPoint_ofs(a2)
+				move.w	(a0),AI_SeenBy_ofs(a2)
 
 .no_team:
 				rts
@@ -1804,9 +1804,9 @@ ai_CheckDamage:
 				asl.w	#4,d0
 				add.w	d0,a2
 				move.w	(a0),d0
-				cmp.w	SEENBY(a2),d0
+				cmp.w	AI_SeenBy_ofs(a2),d0
 				bne.s	.no_team
-				move.w	#-1,SEENBY(a2)
+				move.w	#-1,AI_SeenBy_ofs(a2)
 .no_team
 
 				cmp.b	#1,d2
