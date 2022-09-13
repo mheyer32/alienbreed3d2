@@ -164,34 +164,38 @@ ObjInTop		EQU		63
 * Nasty definitions *********
 *****************************
 
-numlives		equ		18
-damagetaken		equ		19
-maxspd			equ		20
-currentmode		equ		20
-teamnumber		equ		21
-currspd			equ		22
-targheight		equ		24
+Ent_NumLives_ofs			equ		18
+Ent_DamageTaken_ofs			equ		19
 
-GraphicRoom		equ		26
-CurrCPt			Equ		28
-TargCPt			Equ		32
+;Ent_MaxSpeed_ofs			equ		20
 
-Facing			equ		30
-Lead			equ		32
-Active			equ		32
+Ent_CurrentMode_ofs			equ		20
+Ent_TeamNumber_ofs			equ		21
 
-ObjTimer		equ		34
-EnemyFlags		equ		36						;(lw)
-SecTimer		equ		40
+;Ent_CurrentSpeed_ofs		equ		22
+;Ent_TargetHeight_ofs		equ		24
+
+Ent_GraphicRoom_ofs			equ		26
+Ent_CurrentControlPoint_ofs	equ		28
+Ent_TargetControlPoint_ofs	equ		32
+Ent_CurrentAngle_ofs		equ		30
+
+;Ent_Lead_ofs				equ		32
+;Ent_Active_ofs				equ		32
+
+Ent_Timer1_ofs				equ		34
+
+Ent_EnemyFlags_ofs			equ		36						;(lw)
+Ent_Timer2_ofs				equ		40
 ImpactX			equ		42
 ImpactZ			equ		44
 ImpactY			equ		46
 objyvel			EQU		48
 TurnSpeed		EQU		50
 DoorsHeld		EQU		50
-ThirdTimer		EQU		52
+Ent_Timer3_ofs				equ		52
 LiftsHeld		EQU		52
-FourthTimer		EQU		54
+Ent_Timer4_ofs				equ		54
 TypeOfThing		equ		54
 WhichAnim		equ		55
 

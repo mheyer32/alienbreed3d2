@@ -17,7 +17,7 @@ ItsAnAlien:
 ; move.w #0,screamsound
 ; move.w #160,nasheight
 
-				move.w	12(a0),GraphicRoom(a0)
+				move.w	12(a0),Ent_GraphicRoom_ofs(a0)
 				move.w	12(a0),d2
 				bge.s	.okalive
 
@@ -146,7 +146,7 @@ Collectable:
 				tst.b	WhichAnim(a0)
 				bne.s	GUNHELD
 
-				move.w	d0,GraphicRoom(a0)
+				move.w	d0,Ent_GraphicRoom_ofs(a0)
 
 				tst.b	NASTY
 				beq.s	.nolocks
@@ -223,7 +223,7 @@ Activatable:
 				tst.b	WhichAnim(a0)
 				bne		ACTIVATED
 
-				move.w	d0,GraphicRoom(a0)
+				move.w	d0,Ent_GraphicRoom_ofs(a0)
 				tst.b	NASTY
 				beq.s	.nolocks
 				move.l	DoorsHeld(a0),d1
@@ -277,9 +277,9 @@ Activatable:
 				bsr		PLR1CollectObject
 
 
-				move.w	#0,ObjTimer(a0)
+				move.w	#0,Ent_Timer1_ofs(a0)
 				st		WhichAnim(a0)
-				move.w	#0,SecTimer(a0)
+				move.w	#0,Ent_Timer2_ofs(a0)
 				rts
 
 .NotActivated1:
@@ -299,9 +299,9 @@ Activatable:
 				bsr		PLR2CollectObject
 
 
-				move.w	#0,ObjTimer(a0)
+				move.w	#0,Ent_Timer1_ofs(a0)
 				st		WhichAnim(a0)
-				move.w	#0,SecTimer(a0)
+				move.w	#0,Ent_Timer2_ofs(a0)
 				rts
 
 .NotActivated2:
@@ -310,7 +310,7 @@ Activatable:
 
 ACTIVATED:
 
-				move.w	d0,GraphicRoom(a0)
+				move.w	d0,Ent_GraphicRoom_ofs(a0)
 ; move.l DoorsHeld(a0),d1
 ; or.l d1,DoorLocks
 				tst.b	worry(a0)
@@ -349,11 +349,11 @@ ACTIVATED:
 				bsr		ACTANIMOBJ
 
 				move.w	TempFrames,d0
-				add.w	d0,SecTimer(a0)
+				add.w	d0,Ent_Timer2_ofs(a0)
 				move.w	O_ActiveTimeout(a2),d0
 				blt.s	.nottimeout
 
-				cmp.w	SecTimer(a0),d0
+				cmp.w	Ent_Timer2_ofs(a0),d0
 				ble.s	.DEACTIVATE
 
 .nottimeout:
@@ -370,7 +370,7 @@ ACTIVATED:
 
 .DEACTIVATE:
 
-				move.w	#0,ObjTimer(a0)
+				move.w	#0,Ent_Timer1_ofs(a0)
 				clr.b	WhichAnim(a0)
 				rts
 
@@ -389,7 +389,7 @@ ACTIVATED:
 ; The player has pressed the spacebar
 ; within range of the object.
 
-				move.w	#0,ObjTimer(a0)
+				move.w	#0,Ent_Timer1_ofs(a0)
 				clr.b	WhichAnim(a0)
 				rts
 
@@ -407,11 +407,11 @@ Destructable:
 				add.l	d0,a3
 
 				moveq	#0,d0
-				move.b	damagetaken(a0),d0
+				move.b	Ent_DamageTaken_ofs(a0),d0
 				cmp.w	O_HitPoints(a3),d0
 				blt		StillHere
 
-				tst.b	numlives(a0)
+				tst.b	Ent_NumLives_ofs(a0)
 				beq.s	.alreadydead
 
 				cmp.b	#'n',mors
@@ -431,11 +431,11 @@ Destructable:
 
 .notext:
 
-				move.w	#0,ObjTimer(a0)
+				move.w	#0,Ent_Timer1_ofs(a0)
 
 .alreadydead
 
-				move.b	#0,numlives(a0)
+				move.b	#0,Ent_NumLives_ofs(a0)
 
 				move.w	12(a0),d0
 				bge.s	.okinroom
@@ -483,7 +483,7 @@ StillHere:
 				bge.s	.okinroom
 				rts
 .okinroom
-				move.b	#1,numlives(a0)
+				move.b	#1,Ent_NumLives_ofs(a0)
 
 				tst.b	NASTY
 				beq.s	.nolocks
@@ -850,7 +850,7 @@ DEFANIMOBJ:
 				move.b	TypeOfThing(a0),d0
 				muls	#O_AnimSize,d0
 				add.w	d0,a3
-				move.w	ObjTimer(a0),d0
+				move.w	Ent_Timer1_ofs(a0),d0
 
 				move.w	d0,d1
 				add.w	d0,d0
@@ -877,7 +877,7 @@ DEFANIMOBJ:
 
 				moveq	#0,d1
 				move.b	5(a3,d0.w),d1
-				move.w	d1,ObjTimer(a0)
+				move.w	d1,Ent_Timer1_ofs(a0)
 				rts
 
 .vector:
@@ -892,11 +892,11 @@ DEFANIMOBJ:
 				add.w	d1,d1
 				add.w	d1,4(a0)
 				move.w	2(a3,d0.w),d1
-				add.w	d1,Facing(a0)
+				add.w	d1,Ent_CurrentAngle_ofs(a0)
 
 				moveq	#0,d1
 				move.b	5(a3,d0.w),d1
-				move.w	d1,ObjTimer(a0)
+				move.w	d1,Ent_Timer1_ofs(a0)
 
 				rts
 
@@ -913,7 +913,7 @@ DEFANIMOBJ:
 
 				moveq	#0,d1
 				move.b	5(a3,d0.w),d1
-				move.w	d1,ObjTimer(a0)
+				move.w	d1,Ent_Timer1_ofs(a0)
 
 				rts
 
@@ -925,7 +925,7 @@ ACTANIMOBJ:
 				move.b	TypeOfThing(a0),d0
 				muls	#O_AnimSize,d0
 				add.w	d0,a3
-				move.w	ObjTimer(a0),d0
+				move.w	Ent_Timer1_ofs(a0),d0
 
 				move.w	d0,d1
 				add.w	d0,d0
@@ -952,7 +952,7 @@ ACTANIMOBJ:
 
 				moveq	#0,d1
 				move.b	5(a3,d0.w),d1
-				move.w	d1,ObjTimer(a0)
+				move.w	d1,Ent_Timer1_ofs(a0)
 
 				rts
 
@@ -967,11 +967,11 @@ ACTANIMOBJ:
 				add.w	d1,4(a0)
 
 				move.w	2(a3,d0.w),d1
-				add.w	d1,Facing(a0)
+				add.w	d1,Ent_CurrentAngle_ofs(a0)
 
 				moveq	#0,d1
 				move.b	5(a3,d0.w),d1
-				move.w	d1,ObjTimer(a0)
+				move.w	d1,Ent_Timer1_ofs(a0)
 
 				rts
 
@@ -988,7 +988,7 @@ ACTANIMOBJ:
 
 				moveq	#0,d1
 				move.b	5(a3,d0.w),d1
-				move.w	d1,ObjTimer(a0)
+				move.w	d1,Ent_Timer1_ofs(a0)
 
 				rts
 
@@ -1018,7 +1018,7 @@ ViewpointToDraw:
 ; move.w newz,d1
 ; sub.w oldz,d1
 
-				move.w	Facing(a0),d3
+				move.w	Ent_CurrentAngle_ofs(a0),d3
 				sub.w	angpos,d3
 
 ; add.w #2048,d3
@@ -1345,7 +1345,7 @@ FireAtPlayer1:
 				sub.w	oldz,d0
 				move.w	d0,shotzvel(a5)
 
-				move.l	#%110010,EnemyFlags(a5)
+				move.l	#%110010,Ent_EnemyFlags_ofs(a5)
 				move.w	12(a0),12(a5)
 				move.w	4(a0),d0
 				move.w	d0,4(a5)
@@ -1584,7 +1584,7 @@ FireAtPlayer2:
 				sub.w	oldz,d0
 				move.w	d0,shotzvel(a5)
 
-				move.l	#%110010,EnemyFlags(a5)
+				move.l	#%110010,Ent_EnemyFlags_ofs(a5)
 				move.w	12(a0),12(a5)
 				move.w	4(a0),d0
 				move.w	d0,4(a5)

@@ -31,7 +31,7 @@ PLR1_fall
 				move.w	DAMAGEWHENHIT,d3
 				sub.w	#100,d3
 				ble.s	.nodam
-				add.b	d3,damagetaken(a4)
+				add.b	d3,Ent_DamageTaken_ofs(a4)
 .nodam
 
 				st		SLOWDOWN
@@ -137,7 +137,7 @@ PLR1_fall
 				sub.w	#100,d3
 				ble.s	.nodam2
 				move.l	PLR1_Obj,a4
-				add.b	d3,damagetaken(a4)
+				add.b	d3,Ent_DamageTaken_ofs(a4)
 .nodam2
 				move.w	#0,DAMAGEWHENHIT
 
@@ -300,7 +300,7 @@ PLR2_fall
 				sub.w	#100,d3
 				ble.s	.nodam
 				move.l	PLR2_Obj,a4
-				add.b	d3,damagetaken(a4)
+				add.b	d3,Ent_DamageTaken_ofs(a4)
 .nodam
 				move.w	#0,DAMAGEWHENHIT
 
@@ -397,7 +397,7 @@ PLR2_fall
 				sub.w	#100,d3
 				ble.s	.nodam2
 				move.l	PLR2_Obj,a4
-				add.b	d3,damagetaken(a4)
+				add.b	d3,Ent_DamageTaken_ofs(a4)
 .nodam2
 				move.w	#0,DAMAGEWHENHIT
 

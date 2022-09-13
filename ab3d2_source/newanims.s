@@ -590,7 +590,7 @@ ExplodeIntoBits:
 				add.w	#2*128,d0
 				neg.w	d0
 				move.w	d0,shotyvel(a5)
-				move.l	#0,EnemyFlags(a5)
+				move.l	#0,Ent_EnemyFlags_ofs(a5)
 				move.w	12(a0),12(a5)
 
 ; jsr GetRand
@@ -1791,7 +1791,7 @@ ObjectHandler:
 Objectloop:
 				tst.w	(a0)
 				blt		doneallobj
-				move.w	12(a0),GraphicRoom(a0)
+				move.w	12(a0),Ent_GraphicRoom_ofs(a0)
 
 				move.b	16(a0),d0
 				cmp.b	#1,d0
@@ -1816,7 +1816,7 @@ JUMPALIEN
 				tst.w	12(a0)
 				blt.s	.dontworry
 
-				tst.b	numlives(a0)
+				tst.b	Ent_NumLives_ofs(a0)
 				beq.s	.nolock
 				move.l	DoorsHeld(a0),d0
 				or.l	d0,DoorLocks
@@ -1829,7 +1829,7 @@ JUMPALIEN
 				tst.w	12-64(a0)
 				blt.s	.notanaux
 				move.w	12(a0),12-64(a0)
-				move.w	12(a0),GraphicRoom-64(a0)
+				move.w	12(a0),Ent_GraphicRoom_ofs-64(a0)
 .notanaux:
 
 .dontworry
@@ -1850,30 +1850,30 @@ ItsAGasPipe:
 				clr.b	worry(a0)
 
 				move.w	TempFrames,d0
-				tst.w	ThirdTimer(a0)
+				tst.w	Ent_Timer3_ofs(a0)
 				ble.s	maybeflame
 
-				sub.w	d0,ThirdTimer(a0)
-				move.w	#5,SecTimer(a0)
-				move.w	#10,FourthTimer(a0)
+				sub.w	d0,Ent_Timer3_ofs(a0)
+				move.w	#5,Ent_Timer2_ofs(a0)
+				move.w	#10,Ent_Timer4_ofs(a0)
 				rts
 
 maybeflame:
 
-				sub.w	d0,FourthTimer(a0)
+				sub.w	d0,Ent_Timer4_ofs(a0)
 				blt.s	yesflame
 				rts
 
 yesflame:
-				move.w	#10,FourthTimer(a0)
-				sub.w	#1,SecTimer(a0)
+				move.w	#10,Ent_Timer4_ofs(a0)
+				sub.w	#1,Ent_Timer2_ofs(a0)
 				bgt.s	notdoneflame
 
-				move.w	ObjTimer(a0),ThirdTimer(a0)
+				move.w	Ent_Timer1_ofs(a0),Ent_Timer3_ofs(a0)
 
 notdoneflame:
 
-				cmp.w	#4,SecTimer(a0)
+				cmp.w	#4,Ent_Timer2_ofs(a0)
 				bne.s	.nowhoosh
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -1925,11 +1925,11 @@ notdoneflame:
 				move.w	#0,shotflags(a5)
 				move.w	#0,shotgrav(a5)
 				move.b	#7,shotpower(a5)
-				move.l	#%100000100000,EnemyFlags(a5)
+				move.l	#%100000100000,Ent_EnemyFlags_ofs(a5)
 				move.w	#0,shotanim(a5)
 				move.w	#0,shotlife(a5)
 				move.l	#SineTable,a1
-				move.w	Facing(a0),d0
+				move.w	Ent_CurrentAngle_ofs(a0),d0
 				move.w	(a1,d0.w),d1
 				adda.w	#2048,a1
 				move.w	(a1,d0.w),d2
@@ -1950,7 +1950,7 @@ notdoneflame:
 ItsABarrel:
 
 				clr.b	worry(a0)
-				move.w	12(a0),GraphicRoom(a0)
+				move.w	12(a0),Ent_GraphicRoom_ofs(a0)
 
 				cmp.w	#8,8(a0)
 				bne.s	notexploding
@@ -1963,7 +1963,7 @@ ItsABarrel:
 				bne.s	.notdone
 
 				move.w	#-1,12(a0)
-				move.w	#-1,GraphicRoom(a0)
+				move.w	#-1,Ent_GraphicRoom_ofs(a0)
 				rts
 
 .notdone:
@@ -1988,12 +1988,12 @@ notexploding:
 				move.w	d0,4(a0)
 
 				moveq	#0,d2
-				move.b	damagetaken(a0),d2
+				move.b	Ent_DamageTaken_ofs(a0),d2
 				beq.s	nodamage
-				move.b	#0,damagetaken(a0)
-				sub.b	d2,numlives(a0)
+				move.b	#0,Ent_DamageTaken_ofs(a0)
+				sub.b	d2,Ent_NumLives_ofs(a0)
 				bgt.s	nodamage
-				move.b	#0,numlives(a0)
+				move.b	#0,Ent_NumLives_ofs(a0)
 
 				movem.l	d0-d7/a0-a6,-(a7)
 
@@ -2079,7 +2079,7 @@ otherrip:		dc.l	256*18*65536
 ItsAMediKit:
 
 				clr.b	worry(a0)
-				move.w	12(a0),GraphicRoom(a0)
+				move.w	12(a0),Ent_GraphicRoom_ofs(a0)
 
 				move.w	12(a0),d0
 				move.l	ZoneAdds,a1
@@ -2135,7 +2135,7 @@ HealFactor		EQU		18
 				movem.l	(a7)+,a0/a1/d2/d6/d7
 
 				move.w	#-1,12(a0)
-				move.w	#-1,GraphicRoom(a0)
+				move.w	#-1,Ent_GraphicRoom_ofs(a0)
 				move.w	HealFactor(a0),d0
 				add.w	PLR1_energy,d0
 				cmp.w	#127,d0
@@ -2188,7 +2188,7 @@ MEDIPLR2
 				movem.l	(a7)+,a0/a1/d2/d6/d7
 
 				move.w	#-1,12(a0)
-				move.w	#-1,GraphicRoom(a0)
+				move.w	#-1,Ent_GraphicRoom_ofs(a0)
 				move.w	HealFactor(a0),d0
 				add.w	PLR2_energy,d0
 				cmp.w	#127,d0
@@ -2231,7 +2231,7 @@ ItsAKey:
 				rts
 .yesnas:
 
-				move.w	12(a0),GraphicRoom(a0)
+				move.w	12(a0),Ent_GraphicRoom_ofs(a0)
 				clr.b	worry(a0)
 
 				move.b	PLR1_StoodInTop,d0
@@ -2273,7 +2273,7 @@ ItsAKey:
 				movem.l	(a7)+,a0/a1/d2/d6/d7
 
 				move.w	#-1,12(a0)
-				move.w	#-1,GraphicRoom(a0)
+				move.w	#-1,Ent_GraphicRoom_ofs(a0)
 				move.b	17(a0),d0
 				or.b	d0,Conditions+1
 
@@ -3053,7 +3053,7 @@ ItsABullet:
 
 				move.b	#0,timeout
 				move.w	12(a0),d0
-				move.w	d0,GraphicRoom(a0)
+				move.w	d0,Ent_GraphicRoom_ofs(a0)
 				blt		doneshot
 
 				moveq	#0,d1
@@ -3141,7 +3141,7 @@ noworrylife:
 				ble.s	notdonepopping
 
 				move.w	#-1,12(a0)
-				move.w	#-1,GraphicRoom(a0)
+				move.w	#-1,Ent_GraphicRoom_ofs(a0)
 				clr.b	shotstatus(a0)
 				move.b	#0,shotanim(a0)
 				rts
@@ -3579,13 +3579,13 @@ lab:
 
 				move.l	objroom,a3
 				move.w	(a3),12(a0)
-				move.w	(a3),GraphicRoom(a0)
+				move.w	(a3),Ent_GraphicRoom_ofs(a0)
 				move.l	newx,(a1)
 				move.l	newz,4(a1)
 ************
 * Check if hit a nasty
 
-				tst.l	EnemyFlags(a0)
+				tst.l	Ent_EnemyFlags_ofs(a0)
 				bne.s	notasplut
 				rts
 notasplut:
@@ -3668,7 +3668,7 @@ notasplut:
 				moveq	#0,d1
 				move.b	16(a3),d1
 
-				move.l	EnemyFlags(a0),d7
+				move.l	Ent_EnemyFlags_ofs(a0),d7
 				btst	d1,d7
 				beq		.notanasty
 
@@ -3684,7 +3684,7 @@ notasplut:
 
 .notanobj:
 
-				tst.b	numlives(a3)
+				tst.b	Ent_NumLives_ofs(a3)
 				beq		.notanasty
 
 ; move.l #ColBoxTable,a6
@@ -3750,7 +3750,7 @@ notasplut:
 				bgt		.stillgoing
 
 				move.b	shotpower(a0),d6
-				add.b	d6,damagetaken(a3)
+				add.b	d6,Ent_DamageTaken_ofs(a3)
 				move.w	shotxvel(a0),ImpactX(a3)
 				move.w	shotzvel(a0),ImpactZ(a3)
 				move.b	#0,shotanim(a0)
@@ -3996,7 +3996,7 @@ HitObjLoop:
 				bra.s	.okblast
 
 .checkalien
-				tst.b	numlives(a2)
+				tst.b	Ent_NumLives_ofs(a2)
 				beq.s	HitObjLoop
 
 .okblast:
@@ -4094,7 +4094,7 @@ OkItsnotzero:
 				move.w	MaxDamage,d5
 
 okdamage:
-				add.b	d5,damagetaken(a2)
+				add.b	d5,Ent_DamageTaken_ofs(a2)
 				ext.l	d0
 				ext.l	d1
 				muls.l	d6,d0

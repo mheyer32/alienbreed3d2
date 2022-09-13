@@ -1897,7 +1897,7 @@ checkcol:
 				cmp.w	12(a0),d1
 				bne.s	checkcol
 
-				tst.b	numlives(a0)
+				tst.b	Ent_NumLives_ofs(a0)
 				beq.s	checkcol
 
 				move.b	ObjInTop(a0),d1
@@ -1921,7 +1921,7 @@ checkcol:
 				blt		checkcol
 				bgt		.ycol
 
-				tst.b	numlives(a0)
+				tst.b	Ent_NumLives_ofs(a0)
 				ble		checkcol
 
 .ycol
@@ -2178,7 +2178,7 @@ outin:
 
 foundclose:
 
-				move.w	d7,GraphicRoom(a0)
+				move.w	d7,Ent_GraphicRoom_ofs(a0)
 
 				rts
 
