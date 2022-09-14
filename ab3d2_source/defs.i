@@ -163,7 +163,9 @@ ObjInTop		EQU		63
 *****************************
 * Nasty definitions *********
 *****************************
-
+	; Extended data for AI entities
+	; TODO - move this to a .i definition file for the AI module
+	;      - Can this be reorganised ?
 	STRUCTURE AI_EntT,18
 		UBYTE AI_EntT_NumLives_b
 		UBYTE AI_EntT_DamageTaken_b
@@ -177,7 +179,6 @@ ObjInTop		EQU		63
 		UWORD AI_EntT_TargetControlPoint_w
 		UWORD AI_EntT_Timer1_w
 		ULONG AI_EntT_EnemyFlags_l
-
 		UWORD AI_EntT_Timer2_w
 		UWORD AI_EntT_ImpactX_w
 		UWORD AI_EntT_ImpactZ_w
