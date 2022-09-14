@@ -946,12 +946,12 @@ clrmessbuff:
 
 				move.l	PLR1_Obj,a0
 				move.l	PLR2_Obj,a1
-				move.w	#0,ImpactX(a0)
-				move.w	#0,ImpactY(a0)
-				move.w	#0,ImpactZ(a0)
-				move.w	#0,ImpactX(a1)
-				move.w	#0,ImpactY(a1)
-				move.w	#0,ImpactZ(a1)
+				move.w	#0,AI_EntT_ImpactX_w(a0)
+				move.w	#0,AI_EntT_ImpactY_w(a0)
+				move.w	#0,AI_EntT_ImpactZ_w(a0)
+				move.w	#0,AI_EntT_ImpactX_w(a1)
+				move.w	#0,AI_EntT_ImpactY_w(a1)
+				move.w	#0,AI_EntT_ImpactZ_w(a1)
 
 				move.l	#0,PLR1s_xspdval
 				move.l	#0,PLR1s_zspdval
@@ -1343,7 +1343,7 @@ okwat:
 
 				move.l	#$60000,p2_yoff
 				move.l	PLR2_Obj,a0
-				move.w	#-1,Ent_GraphicRoom_ofs(a0)
+				move.w	#-1,AI_EntT_GraphicRoom_w(a0)
 				move.w	#-1,12(a0)
 				move.b	#0,17(a0)
 				move.l	#BollocksRoom,PLR2_Roompt
@@ -2169,7 +2169,7 @@ plr1only:
 				btst	d0,d7
 				beq.s	.doallobs
 				moveq	#0,d0
-				move.b	Ent_TeamNumber_ofs(a0),d0
+				move.b	AI_EntT_TeamNumber_b(a0),d0
 				blt.s	.doallobs
 				asl.w	#4,d0
 				tst.w	AI_WorkspaceSeenBy_ofs(a2,d0.w)
@@ -3183,28 +3183,28 @@ USEPLR1:
 				move.l	PLR1_Roompt,a1
 
 				moveq	#0,d2
-				move.b	Ent_DamageTaken_ofs(a0),d2
+				move.b	AI_EntT_DamageTaken_b(a0),d2
 				beq		.notbeenshot
 
 				moveq	#0,d4
-				move.w	ImpactX(a0),d3
+				move.w	AI_EntT_ImpactX_w(a0),d3
 				beq.s	.notwist
 				move.w	d2,d4
 .notwist:
 				add.w	d3,PLR1s_xspdval
-				move.w	ImpactZ(a0),d3
+				move.w	AI_EntT_ImpactZ_w(a0),d3
 				beq.s	.notwist2
 				move.w	d2,d4
 .notwist2:
 				add.w	d3,PLR1s_zspdval
-				move.w	ImpactY(a0),d3
+				move.w	AI_EntT_ImpactY_w(a0),d3
 				ext.l	d3
 				asl.l	#8,d3
 				add.l	d3,PLR1s_yvel
 
-				move.w	#0,ImpactX(a0)
-				move.w	#0,ImpactY(a0)
-				move.w	#0,ImpactZ(a0)
+				move.w	#0,AI_EntT_ImpactX_w(a0)
+				move.w	#0,AI_EntT_ImpactY_w(a0)
+				move.w	#0,AI_EntT_ImpactZ_w(a0)
 
 				jsr		GetRand
 				muls	d4,d0
@@ -3226,10 +3226,10 @@ USEPLR1:
 				movem.l	(a7)+,d0-d7/a0-a6
 
 .notbeenshot
-				move.b	#0,Ent_DamageTaken_ofs(a0)
-				move.b	#10,Ent_NumLives_ofs(a0)
+				move.b	#0,AI_EntT_DamageTaken_b(a0)
+				move.b	#10,AI_EntT_NumLives_b(a0)
 
-				move.w	p1_angpos,Ent_CurrentAngle_ofs(a0)
+				move.w	p1_angpos,AI_EntT_CurrentAngle_w(a0)
 				move.b	PLR1_StoodInTop,ObjInTop(a0)
 
 				move.w	(a1),12(a0)
@@ -3264,7 +3264,7 @@ USEPLR1:
 
 				move.w	p2_angpos,d0
 				and.w	#8190,d0
-				move.w	d0,Ent_CurrentAngle_ofs(a0)
+				move.w	d0,AI_EntT_CurrentAngle_w(a0)
 ;
 ; jsr ViewpointToDraw
 ; asl.w #2,d0
@@ -3286,27 +3286,27 @@ USEPLR1:
 				move.l	PLR2_Roompt,a1
 
 				moveq	#0,d2
-				move.b	Ent_DamageTaken_ofs(a0),d2
+				move.b	AI_EntT_DamageTaken_b(a0),d2
 				beq		.notbeenshot2
-				move.w	ImpactX(a0),d3
+				move.w	AI_EntT_ImpactX_w(a0),d3
 				add.w	d3,PLR2s_xspdval
-				move.w	ImpactZ(a0),d3
+				move.w	AI_EntT_ImpactZ_w(a0),d3
 				add.w	d3,PLR2s_zspdval
-				move.w	ImpactY(a0),d3
+				move.w	AI_EntT_ImpactY_w(a0),d3
 				ext.l	d3
 				asl.l	#8,d3
 				add.l	d3,PLR2s_yvel
 
-				move.w	#0,ImpactX(a0)
-				move.w	#0,ImpactY(a0)
-				move.w	#0,ImpactZ(a0)
+				move.w	#0,AI_EntT_ImpactX_w(a0)
+				move.w	#0,AI_EntT_ImpactY_w(a0)
+				move.w	#0,AI_EntT_ImpactZ_w(a0)
 
 				sub.w	d2,PLAYERTWOHEALTH
 
 
 .notbeenshot2
-				move.b	#0,Ent_DamageTaken_ofs(a0)
-				move.b	#10,Ent_NumLives_ofs(a0)
+				move.b	#0,AI_EntT_DamageTaken_b(a0)
+				move.b	#10,AI_EntT_NumLives_b(a0)
 
 				move.b	PLR2_StoodInTop,ObjInTop(a0)
 
@@ -3361,7 +3361,7 @@ USEPLR1:
 				muls	#A_OptLen,d0
 				add.w	d0,a6
 
-				move.w	Ent_Timer2_ofs(a0),d1
+				move.w	AI_EntT_Timer2_w(a0),d1
 				move.w	d1,d2
 				muls	#A_FrameLen,d1
 
@@ -3373,7 +3373,7 @@ USEPLR1:
 				bge.s	.noendanim
 				move.w	#0,d2
 .noendanim
-				move.w	d2,Ent_Timer2_ofs(a0)
+				move.w	d2,AI_EntT_Timer2_w(a0)
 
 				move.w	d2,d1
 
@@ -3431,13 +3431,13 @@ USEPLR1:
 .notdead:
 				move.l	PLR1_Roompt,a1
 
-				move.w	Ent_CurrentAngle_ofs(a0),d0
+				move.w	AI_EntT_CurrentAngle_w(a0),d0
 				add.w	#4096,d0
 				and.w	#8190,d0
-				move.w	d0,Ent_CurrentAngle_ofs+128(a0)
+				move.w	d0,AI_EntT_CurrentAngle_w+128(a0)
 
 				move.w	(a1),12+128(a0)
-				move.w	(a1),Ent_GraphicRoom_ofs+128(a0)
+				move.w	(a1),AI_EntT_GraphicRoom_w+128(a0)
 
 				moveq	#0,d0
 				move.b	p1_gunselected,d0
@@ -3446,7 +3446,7 @@ USEPLR1:
 				add.l	#GunObjects,a1
 				move.w	(a1,d0.w*2),d0
 
-				move.b	d0,TypeOfThing+128(a0)
+				move.b	d0,AI_EntT_Type_b+128(a0)
 				move.b	#1,128+16(a0)
 
 				move.w	(a0),d0
@@ -3455,7 +3455,7 @@ USEPLR1:
 				move.l	(a1,d0.w*8),(a1,d1.w*8)
 				move.l	4(a1,d0.w*8),4(a1,d1.w*8)
 
-				st		WhichAnim+128(a0)
+				st		AI_EntT_WhichAnim_b+128(a0)
 
 				move.l	p1_yoff,d0
 				move.l	p1_height,d1
@@ -3492,16 +3492,16 @@ USEPLR2:
 				move.l	PLR2_Roompt,a1
 
 				moveq	#0,d2
-				move.b	Ent_DamageTaken_ofs(a0),d2
+				move.b	AI_EntT_DamageTaken_b(a0),d2
 				beq		.notbeenshot
 
 				moveq	#0,d4
-				move.w	ImpactX(a0),d3
+				move.w	AI_EntT_ImpactX_w(a0),d3
 				beq.s	.notwist
 				move.w	d2,d4
 .notwist:
 				add.w	d3,PLR2s_xspdval
-				move.w	ImpactZ(a0),d3
+				move.w	AI_EntT_ImpactZ_w(a0),d3
 				beq.s	.notwist2
 				move.w	d2,d4
 .notwist2:
@@ -3529,10 +3529,10 @@ USEPLR2:
 				movem.l	(a7)+,d0-d7/a0-a6
 
 .notbeenshot
-				move.b	#0,Ent_DamageTaken_ofs(a0)
-				move.b	#10,Ent_NumLives_ofs(a0)
+				move.b	#0,AI_EntT_DamageTaken_b(a0)
+				move.b	#10,AI_EntT_NumLives_b(a0)
 
-				move.w	p2_angpos,Ent_CurrentAngle_ofs(a0)
+				move.w	p2_angpos,AI_EntT_CurrentAngle_w(a0)
 				move.b	PLR2_StoodInTop,ObjInTop(a0)
 
 				move.w	(a1),12(a0)
@@ -3565,7 +3565,7 @@ USEPLR2:
 
 				move.w	PLR1_angpos,d0
 				and.w	#8190,d0
-				move.w	d0,Ent_CurrentAngle_ofs(a0)
+				move.w	d0,AI_EntT_CurrentAngle_w(a0)
 ;
 ; jsr ViewpointToDraw
 ; asl.w #2,d0
@@ -3587,20 +3587,20 @@ USEPLR2:
 				move.l	PLR1_Roompt,a1
 
 				moveq	#0,d2
-				move.b	Ent_DamageTaken_ofs(a0),d2
+				move.b	AI_EntT_DamageTaken_b(a0),d2
 				beq		.notbeenshot2
 
-				move.w	ImpactX(a0),d3
+				move.w	AI_EntT_ImpactX_w(a0),d3
 				add.w	d3,PLR1s_xspdval
-				move.w	ImpactZ(a0),d3
+				move.w	AI_EntT_ImpactZ_w(a0),d3
 				add.w	d3,PLR1s_zspdval
 
 				sub.w	d2,PLAYERONEHEALTH
 
 
 .notbeenshot2
-				move.b	#0,Ent_DamageTaken_ofs(a0)
-				move.b	#10,Ent_NumLives_ofs(a0)
+				move.b	#0,AI_EntT_DamageTaken_b(a0)
+				move.b	#10,AI_EntT_NumLives_b(a0)
 
 				move.b	PLR1_StoodInTop,ObjInTop(a0)
 
@@ -3655,7 +3655,7 @@ USEPLR2:
 				muls	#A_OptLen,d0
 				add.w	d0,a6
 
-				move.w	Ent_Timer2_ofs(a0),d1
+				move.w	AI_EntT_Timer2_w(a0),d1
 				move.w	d1,d2
 				muls	#A_FrameLen,d1
 
@@ -3667,7 +3667,7 @@ USEPLR2:
 				bge.s	.noendanim
 				move.w	#0,d2
 .noendanim
-				move.w	d2,Ent_Timer2_ofs(a0)
+				move.w	d2,AI_EntT_Timer2_w(a0)
 
 				move.w	d2,d1
 
@@ -3721,13 +3721,13 @@ USEPLR2:
 .notdead:
 				move.l	PLR2_Roompt,a1
 
-				move.w	Ent_CurrentAngle_ofs(a0),d0
+				move.w	AI_EntT_CurrentAngle_w(a0),d0
 				add.w	#4096,d0
 				and.w	#8190,d0
-				move.w	d0,Ent_CurrentAngle_ofs+64(a0)
+				move.w	d0,AI_EntT_CurrentAngle_w+64(a0)
 
 				move.w	(a1),12+64(a0)
-				move.w	(a1),Ent_GraphicRoom_ofs+64(a0)
+				move.w	(a1),AI_EntT_GraphicRoom_w+64(a0)
 
 				moveq	#0,d0
 				move.b	p2_gunselected,d0
@@ -3736,7 +3736,7 @@ USEPLR2:
 				add.l	#GunObjects,a1
 				move.w	(a1,d0.w*2),d0
 
-				move.b	d0,TypeOfThing+64(a0)
+				move.b	d0,AI_EntT_Type_b+64(a0)
 				move.b	#1,64+16(a0)
 
 				move.w	(a0),d0
@@ -3745,7 +3745,7 @@ USEPLR2:
 				move.l	(a1,d0.w*8),(a1,d1.w*8)
 				move.l	4(a1,d0.w*8),4(a1,d1.w*8)
 
-				st		WhichAnim+64(a0)
+				st		AI_EntT_WhichAnim_b+64(a0)
 
 				move.l	p2_yoff,d0
 				move.l	p2_height,d1
@@ -4286,7 +4286,7 @@ DrawDisplay:
 				bne.s	doplr2too
 				move.l	PLR2_Obj,a0
 				move.w	#-1,12(a0)
-				move.w	#-1,Ent_GraphicRoom_ofs(a0)
+				move.w	#-1,AI_EntT_GraphicRoom_w(a0)
 				bra		noplr2either
 
 doplr2too:
@@ -9635,7 +9635,7 @@ Objectloop2:
 				blt		doneallobj2
 				move.w	12(a0),d0
 				blt		doneobj2
-				move.w	d0,Ent_GraphicRoom_ofs(a0)
+				move.w	d0,AI_EntT_GraphicRoom_w(a0)
 				tst.b	worry(a0)
 				beq.s	doneobj2
 
@@ -9658,7 +9658,7 @@ doneallobj2:
 JUMPALIENANIM:
 
 				moveq	#0,d0
-				move.b	WhichAnim(a0),d0
+				move.b	AI_EntT_WhichAnim_b(a0),d0
 ; 0=walking
 ; 1=attacking
 ; 2=getting hit
@@ -9696,7 +9696,7 @@ ALWALK:
 ; move.l LINKFILE,a6
 ; add.l #AlienStats,a6
 ; moveq #0,d1
-; move.b TypeOfThing(a0),d1
+; move.b AI_EntT_Type_b(a0),d1
 ; muls #AlienStatLen,d1
 ; add.l d1,a6
 ; cmp.w #1,A_GFXType(a6)
@@ -9713,7 +9713,7 @@ NOSIDES2:
 				add.l	#AlienAnimData,a6
 
 				moveq	#0,d1
-				move.b	TypeOfThing(a0),d1
+				move.b	AI_EntT_Type_b(a0),d1
 				move.w	.valtables+4(pc,d1.w*8),d1
 ; muls #A_AnimLen,d1
 				add.l	d1,a6
@@ -9724,7 +9724,7 @@ NOSIDES2:
 				move.w	.valtables+2(pc,d0.w*8),d0
 				add.w	d0,a6
 
-				move.w	Ent_Timer2_ofs(a0),d1
+				move.w	AI_EntT_Timer2_w(a0),d1
 				move.w	d1,d2
 ; muls #A_FrameLen,d1
 				move.w	.valtables(pc,d1.w*8),d1
@@ -9800,7 +9800,7 @@ val				SET		val+1
 				st		3(a5)
 				move.w	#0,d2
 .noendanim
-				move.w	d2,Ent_Timer2_ofs(a0)
+				move.w	d2,AI_EntT_Timer2_w(a0)
 
 				bra		doneobj2
 
@@ -9846,7 +9846,7 @@ dosomething:
 				add.l	#FloorData,a0
 				move.w	(a0,d0.w*4),d0			; damage.
 				move.l	PLR1_Obj,a0
-				add.b	d0,Ent_DamageTaken_ofs(a0)
+				add.b	d0,AI_EntT_DamageTaken_b(a0)
 
 				move.l	PLR2_Roompt,a0
 				move.w	ToFloorNoise(a0),d0
@@ -9860,7 +9860,7 @@ dosomething:
 				move.w	(a0,d0.w*4),d0			; damage.
 
 				move.l	PLR2_Obj,a0
-				add.b	d0,Ent_DamageTaken_ofs(a0)
+				add.b	d0,AI_EntT_DamageTaken_b(a0)
 
 .nodam:
 

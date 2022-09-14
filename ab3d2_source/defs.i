@@ -164,40 +164,31 @@ ObjInTop		EQU		63
 * Nasty definitions *********
 *****************************
 
-Ent_NumLives_ofs			equ		18
-Ent_DamageTaken_ofs			equ		19
+	STRUCTURE AI_EntT,18
+		UBYTE AI_EntT_NumLives_b
+		UBYTE AI_EntT_DamageTaken_b
+		UBYTE AI_EntT_CurrentMode_b
+		UBYTE AI_EntT_TeamNumber_b
+		UWORD AI_EntT_CurrentSpeed_w ; unused
+		UWORD AI_EntT_TargetHeight_w ; unused
+		UWORD AI_EntT_GraphicRoom_w
+		UWORD AI_EntT_CurrentControlPoint_w
+		UWORD AI_EntT_CurrentAngle_w
+		UWORD AI_EntT_TargetControlPoint_w
+		UWORD AI_EntT_Timer1_w
+		ULONG AI_EntT_EnemyFlags_l
 
-;Ent_MaxSpeed_ofs			equ		20
-
-Ent_CurrentMode_ofs			equ		20
-Ent_TeamNumber_ofs			equ		21
-
-;Ent_CurrentSpeed_ofs		equ		22
-;Ent_TargetHeight_ofs		equ		24
-
-Ent_GraphicRoom_ofs			equ		26
-Ent_CurrentControlPoint_ofs	equ		28
-Ent_TargetControlPoint_ofs	equ		32
-Ent_CurrentAngle_ofs		equ		30
-
-;Ent_Lead_ofs				equ		32
-;Ent_Active_ofs				equ		32
-
-Ent_Timer1_ofs				equ		34
-
-Ent_EnemyFlags_ofs			equ		36						;(lw)
-Ent_Timer2_ofs				equ		40
-ImpactX			equ		42
-ImpactZ			equ		44
-ImpactY			equ		46
-objyvel			EQU		48
-TurnSpeed		EQU		50
-DoorsHeld		EQU		50
-Ent_Timer3_ofs				equ		52
-LiftsHeld		EQU		52
-Ent_Timer4_ofs				equ		54
-TypeOfThing		equ		54
-WhichAnim		equ		55
+		UWORD AI_EntT_Timer2_w
+		UWORD AI_EntT_ImpactX_w
+		UWORD AI_EntT_ImpactZ_w
+		UWORD AI_EntT_ImpactY_w
+		UWORD AI_EntT_VelocityY_w
+		UWORD AI_EntT_DoorsHeld_w
+		UWORD AI_EntT_Timer3_w
+		; union field of UWORD, UBYTE[2]
+		LABEL AI_EntT_Timer4_w
+		UBYTE AI_EntT_Type_b
+		UBYTE AI_EntT_WhichAnim_b
 
 *****************************
 * Door Definitions **********

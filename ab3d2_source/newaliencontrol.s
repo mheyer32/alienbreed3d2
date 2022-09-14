@@ -17,7 +17,7 @@ ItsAnAlien:
 ; move.w #0,screamsound
 ; move.w #160,nasheight
 
-				move.w	12(a0),Ent_GraphicRoom_ofs(a0)
+				move.w	12(a0),AI_EntT_GraphicRoom_w(a0)
 				move.w	12(a0),d2
 				bge.s	.okalive
 
@@ -42,7 +42,7 @@ ItsAnAlien:
 				moveq	#0,d0
 				move.l	LINKFILE,a6
 				move.l	a6,a5
-				move.b	TypeOfThing(a0),d0
+				move.b	AI_EntT_Type_b(a0),d0
 				add.l	#AlienBrights,a5
 				move.w	(a5,d0.w*2),d1
 				neg.w	d1
@@ -59,7 +59,7 @@ ItsAnAlien:
 
 				lea		AlienStats(a1),a1
 				moveq	#0,d0
-				move.b	TypeOfThing(a0),d0
+				move.b	AI_EntT_Type_b(a0),d0
 
 				move.l	(a2,d0.w*8),d1
 				asl.l	#7,d1
@@ -111,7 +111,7 @@ ItsAnObject:
 				move.l	LINKFILE,a1
 				lea		ObjectStats(a1),a1
 				moveq	#0,d0
-				move.b	TypeOfThing(a0),d0
+				move.b	AI_EntT_Type_b(a0),d0
 				muls	#ObjectStatLen,d0
 				add.w	d0,a1					; pointer to obj stats.
 
@@ -143,14 +143,14 @@ Collectable:
 				rts
 .okinroom
 
-				tst.b	WhichAnim(a0)
+				tst.b	AI_EntT_WhichAnim_b(a0)
 				bne.s	GUNHELD
 
-				move.w	d0,Ent_GraphicRoom_ofs(a0)
+				move.w	d0,AI_EntT_GraphicRoom_w(a0)
 
 				tst.b	NASTY
 				beq.s	.nolocks
-				move.l	DoorsHeld(a0),d1
+				move.l	AI_EntT_DoorsHeld_w(a0),d1
 				or.l	d1,DoorLocks
 .nolocks:
 				tst.b	worry(a0)
@@ -220,13 +220,13 @@ Activatable:
 				rts
 .okinroom
 
-				tst.b	WhichAnim(a0)
+				tst.b	AI_EntT_WhichAnim_b(a0)
 				bne		ACTIVATED
 
-				move.w	d0,Ent_GraphicRoom_ofs(a0)
+				move.w	d0,AI_EntT_GraphicRoom_w(a0)
 				tst.b	NASTY
 				beq.s	.nolocks
-				move.l	DoorsHeld(a0),d1
+				move.l	AI_EntT_DoorsHeld_w(a0),d1
 				or.l	d1,DoorLocks
 .nolocks
 				tst.b	worry(a0)
@@ -277,9 +277,9 @@ Activatable:
 				bsr		PLR1CollectObject
 
 
-				move.w	#0,Ent_Timer1_ofs(a0)
-				st		WhichAnim(a0)
-				move.w	#0,Ent_Timer2_ofs(a0)
+				move.w	#0,AI_EntT_Timer1_w(a0)
+				st		AI_EntT_WhichAnim_b(a0)
+				move.w	#0,AI_EntT_Timer2_w(a0)
 				rts
 
 .NotActivated1:
@@ -299,9 +299,9 @@ Activatable:
 				bsr		PLR2CollectObject
 
 
-				move.w	#0,Ent_Timer1_ofs(a0)
-				st		WhichAnim(a0)
-				move.w	#0,Ent_Timer2_ofs(a0)
+				move.w	#0,AI_EntT_Timer1_w(a0)
+				st		AI_EntT_WhichAnim_b(a0)
+				move.w	#0,AI_EntT_Timer2_w(a0)
 				rts
 
 .NotActivated2:
@@ -310,8 +310,8 @@ Activatable:
 
 ACTIVATED:
 
-				move.w	d0,Ent_GraphicRoom_ofs(a0)
-; move.l DoorsHeld(a0),d1
+				move.w	d0,AI_EntT_GraphicRoom_w(a0)
+; move.l AI_EntT_DoorsHeld_w(a0),d1
 ; or.l d1,DoorLocks
 				tst.b	worry(a0)
 				bne.s	.worryaboot
@@ -349,11 +349,11 @@ ACTIVATED:
 				bsr		ACTANIMOBJ
 
 				move.w	TempFrames,d0
-				add.w	d0,Ent_Timer2_ofs(a0)
+				add.w	d0,AI_EntT_Timer2_w(a0)
 				move.w	O_ActiveTimeout(a2),d0
 				blt.s	.nottimeout
 
-				cmp.w	Ent_Timer2_ofs(a0),d0
+				cmp.w	AI_EntT_Timer2_w(a0),d0
 				ble.s	.DEACTIVATE
 
 .nottimeout:
@@ -370,8 +370,8 @@ ACTIVATED:
 
 .DEACTIVATE:
 
-				move.w	#0,Ent_Timer1_ofs(a0)
-				clr.b	WhichAnim(a0)
+				move.w	#0,AI_EntT_Timer1_w(a0)
+				clr.b	AI_EntT_WhichAnim_b(a0)
 				rts
 
 .NotDeactivated1:
@@ -389,8 +389,8 @@ ACTIVATED:
 ; The player has pressed the spacebar
 ; within range of the object.
 
-				move.w	#0,Ent_Timer1_ofs(a0)
-				clr.b	WhichAnim(a0)
+				move.w	#0,AI_EntT_Timer1_w(a0)
+				clr.b	AI_EntT_WhichAnim_b(a0)
 				rts
 
 .NotDeactivated2:
@@ -402,16 +402,16 @@ Destructable:
 				move.l	LINKFILE,a3
 				add.l	#ObjectStats,a3
 				moveq	#0,d0
-				move.b	TypeOfThing(a0),d0
+				move.b	AI_EntT_Type_b(a0),d0
 				muls	#ObjectStatLen,d0
 				add.l	d0,a3
 
 				moveq	#0,d0
-				move.b	Ent_DamageTaken_ofs(a0),d0
+				move.b	AI_EntT_DamageTaken_b(a0),d0
 				cmp.w	O_HitPoints(a3),d0
 				blt		StillHere
 
-				tst.b	Ent_NumLives_ofs(a0)
+				tst.b	AI_EntT_NumLives_b(a0)
 				beq.s	.alreadydead
 
 				cmp.b	#'n',mors
@@ -431,11 +431,11 @@ Destructable:
 
 .notext:
 
-				move.w	#0,Ent_Timer1_ofs(a0)
+				move.w	#0,AI_EntT_Timer1_w(a0)
 
 .alreadydead
 
-				move.b	#0,Ent_NumLives_ofs(a0)
+				move.b	#0,AI_EntT_NumLives_b(a0)
 
 				move.w	12(a0),d0
 				bge.s	.okinroom
@@ -483,11 +483,11 @@ StillHere:
 				bge.s	.okinroom
 				rts
 .okinroom
-				move.b	#1,Ent_NumLives_ofs(a0)
+				move.b	#1,AI_EntT_NumLives_b(a0)
 
 				tst.b	NASTY
 				beq.s	.nolocks
-				move.l	DoorsHeld(a0),d1
+				move.l	AI_EntT_DoorsHeld_w(a0),d1
 				or.l	d1,DoorLocks
 .nolocks
 
@@ -582,7 +582,7 @@ PLR1CollectObject:
 				beq.s	.nodeftext
 
 				moveq	#0,d2
-				move.b	TypeOfThing(a0),d2
+				move.b	AI_EntT_Type_b(a0),d2
 				move.l	LINKFILE,a4
 				add.l	#ObjectNames,a4
 				muls	#20,d2
@@ -608,7 +608,7 @@ PLR1CollectObject:
 				lea		AmmoGive(a2),a3
 				add.l	#GunGive,a2
 				moveq	#0,d0
-				move.b	TypeOfThing(a0),d0
+				move.b	AI_EntT_Type_b(a0),d0
 				move.w	d0,d1
 				muls	#AmmoGiveLen,d0
 				muls	#GunGiveLen,d1
@@ -638,7 +638,7 @@ GiveGuns:
 				move.l	LINKFILE,a3
 				add.l	#ObjectStats,a3
 				moveq	#0,d0
-				move.b	TypeOfThing(a0),d0
+				move.b	AI_EntT_Type_b(a0),d0
 				muls	#ObjectStatLen,d0
 				add.l	d0,a3
 
@@ -668,7 +668,7 @@ PLR2CollectObject:
 				lea		AmmoGive(a2),a3
 				add.l	#GunGive,a2
 				moveq	#0,d0
-				move.b	TypeOfThing(a0),d0
+				move.b	AI_EntT_Type_b(a0),d0
 				move.w	d0,d1
 				muls	#AmmoGiveLen,d0
 				muls	#GunGiveLen,d1
@@ -698,7 +698,7 @@ GiveGuns2:
 				move.l	LINKFILE,a3
 				add.l	#ObjectStats,a3
 				moveq	#0,d0
-				move.b	TypeOfThing(a0),d0
+				move.b	AI_EntT_Type_b(a0),d0
 				muls	#ObjectStatLen,d0
 				add.l	d0,a3
 
@@ -847,10 +847,10 @@ DEFANIMOBJ:
 				move.l	LINKFILE,a3
 				lea		ObjectDefAnims(a3),a3
 				moveq	#0,d0
-				move.b	TypeOfThing(a0),d0
+				move.b	AI_EntT_Type_b(a0),d0
 				muls	#O_AnimSize,d0
 				add.w	d0,a3
-				move.w	Ent_Timer1_ofs(a0),d0
+				move.w	AI_EntT_Timer1_w(a0),d0
 
 				move.w	d0,d1
 				add.w	d0,d0
@@ -877,7 +877,7 @@ DEFANIMOBJ:
 
 				moveq	#0,d1
 				move.b	5(a3,d0.w),d1
-				move.w	d1,Ent_Timer1_ofs(a0)
+				move.w	d1,AI_EntT_Timer1_w(a0)
 				rts
 
 .vector:
@@ -892,11 +892,11 @@ DEFANIMOBJ:
 				add.w	d1,d1
 				add.w	d1,4(a0)
 				move.w	2(a3,d0.w),d1
-				add.w	d1,Ent_CurrentAngle_ofs(a0)
+				add.w	d1,AI_EntT_CurrentAngle_w(a0)
 
 				moveq	#0,d1
 				move.b	5(a3,d0.w),d1
-				move.w	d1,Ent_Timer1_ofs(a0)
+				move.w	d1,AI_EntT_Timer1_w(a0)
 
 				rts
 
@@ -913,7 +913,7 @@ DEFANIMOBJ:
 
 				moveq	#0,d1
 				move.b	5(a3,d0.w),d1
-				move.w	d1,Ent_Timer1_ofs(a0)
+				move.w	d1,AI_EntT_Timer1_w(a0)
 
 				rts
 
@@ -922,10 +922,10 @@ ACTANIMOBJ:
 				move.l	LINKFILE,a3
 				lea		ObjectActAnims(a3),a3
 				moveq	#0,d0
-				move.b	TypeOfThing(a0),d0
+				move.b	AI_EntT_Type_b(a0),d0
 				muls	#O_AnimSize,d0
 				add.w	d0,a3
-				move.w	Ent_Timer1_ofs(a0),d0
+				move.w	AI_EntT_Timer1_w(a0),d0
 
 				move.w	d0,d1
 				add.w	d0,d0
@@ -952,7 +952,7 @@ ACTANIMOBJ:
 
 				moveq	#0,d1
 				move.b	5(a3,d0.w),d1
-				move.w	d1,Ent_Timer1_ofs(a0)
+				move.w	d1,AI_EntT_Timer1_w(a0)
 
 				rts
 
@@ -967,11 +967,11 @@ ACTANIMOBJ:
 				add.w	d1,4(a0)
 
 				move.w	2(a3,d0.w),d1
-				add.w	d1,Ent_CurrentAngle_ofs(a0)
+				add.w	d1,AI_EntT_CurrentAngle_w(a0)
 
 				moveq	#0,d1
 				move.b	5(a3,d0.w),d1
-				move.w	d1,Ent_Timer1_ofs(a0)
+				move.w	d1,AI_EntT_Timer1_w(a0)
 
 				rts
 
@@ -988,7 +988,7 @@ ACTANIMOBJ:
 
 				moveq	#0,d1
 				move.b	5(a3,d0.w),d1
-				move.w	d1,Ent_Timer1_ofs(a0)
+				move.w	d1,AI_EntT_Timer1_w(a0)
 
 				rts
 
@@ -1018,7 +1018,7 @@ ViewpointToDraw:
 ; move.w newz,d1
 ; sub.w oldz,d1
 
-				move.w	Ent_CurrentAngle_ofs(a0),d3
+				move.w	AI_EntT_CurrentAngle_w(a0),d3
 				sub.w	angpos,d3
 
 ; add.w #2048,d3
@@ -1345,7 +1345,7 @@ FireAtPlayer1:
 				sub.w	oldz,d0
 				move.w	d0,shotzvel(a5)
 
-				move.l	#%110010,Ent_EnemyFlags_ofs(a5)
+				move.l	#%110010,AI_EntT_EnemyFlags_l(a5)
 				move.w	12(a0),12(a5)
 				move.w	4(a0),d0
 				move.w	d0,4(a5)
@@ -1584,7 +1584,7 @@ FireAtPlayer2:
 				sub.w	oldz,d0
 				move.w	d0,shotzvel(a5)
 
-				move.l	#%110010,Ent_EnemyFlags_ofs(a5)
+				move.l	#%110010,AI_EntT_EnemyFlags_l(a5)
 				move.w	12(a0),12(a5)
 				move.w	4(a0),d0
 				move.w	d0,4(a5)

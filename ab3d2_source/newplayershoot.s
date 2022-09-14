@@ -98,7 +98,7 @@ findclosestinline
 				btst	d6,d7
 				beq.s	notlinedup
 
-				tst.b	Ent_NumLives_ofs(a0)
+				tst.b	AI_EntT_NumLives_b(a0)
 				beq.s	notlinedup
 				move.w	(a0),d5
 				move.w	(a2,d5.w*2),d6
@@ -169,7 +169,7 @@ okdistthing
 				cmp.b	#'s',mors
 				beq.s	.notplr1
 				move.l	PLR1_Obj,a2
-				move.w	#1,Ent_Timer1_ofs+128(a2)
+				move.w	#1,AI_EntT_Timer1_w+128(a2)
 .notplr1
 
 				move.w	G_DelayBetweenShots(a6),PLR1_TimeToShoot
@@ -449,7 +449,7 @@ findclosestinline2
 				btst	d6,d7
 				beq.s	notlinedup2
 
-				tst.b	Ent_NumLives_ofs(a0)
+				tst.b	AI_EntT_NumLives_b(a0)
 				beq.s	notlinedup2
 				move.w	(a0),d5
 				move.w	(a2,d5.w*2),d6
@@ -520,7 +520,7 @@ okdistthing2
 				cmp.b	#'s',mors
 				bne.s	.notplr2
 				move.l	PLR1_Obj,a2
-				move.w	#1,Ent_Timer1_ofs+128(a2)
+				move.w	#1,AI_EntT_Timer1_w+128(a2)
 .notplr2:
 
 				move.w	G_DelayBetweenShots(a6),PLR2_TimeToShoot
@@ -818,7 +818,7 @@ firefive:
 				move.w	bulyspd,shotyvel(a0)
 				move.b	tempStoodInTop,ObjInTop(a0)
 				move.w	#0,shotlife(a0)
-				move.l	d7,Ent_EnemyFlags_ofs(a0)
+				move.l	d7,AI_EntT_EnemyFlags_l(a0)
 				move.l	tempRoompt,a2
 				move.w	(a2),12(a0)
 				move.l	tempyoff,d0
@@ -868,18 +868,18 @@ PLR1HITINSTANT:
 				move.w	4(a4),4(a0)
 
 				move.w	B_DamageToTarget+2(a5),d0
-				add.b	d0,Ent_DamageTaken_ofs(a4)
+				add.b	d0,AI_EntT_DamageTaken_b(a4)
 
 				move.w	tempxdir,d1
 				ext.l	d1
 				asl.l	#3,d1
 				swap	d1
-				move.w	d1,ImpactX(a4)
+				move.w	d1,AI_EntT_ImpactX_w(a4)
 				move.w	tempzdir,d1
 				ext.l	d1
 				asl.l	#3,d1
 				swap	d1
-				move.w	d1,ImpactZ(a4)
+				move.w	d1,AI_EntT_ImpactZ_w(a4)
 
 				rts
 
@@ -1010,18 +1010,18 @@ PLR2HITINSTANT:
 				move.w	4(a4),4(a0)
 
 				move.w	B_DamageToTarget+2(a5),d0
-				add.b	d0,Ent_DamageTaken_ofs(a4)
+				add.b	d0,AI_EntT_DamageTaken_b(a4)
 
 				move.w	tempxdir,d1
 				ext.l	d1
 				asl.l	#3,d1
 				swap	d1
-				move.w	d1,ImpactX(a4)
+				move.w	d1,AI_EntT_ImpactX_w(a4)
 				move.w	tempzdir,d1
 				ext.l	d1
 				asl.l	#3,d1
 				swap	d1
-				move.w	d1,ImpactZ(a4)
+				move.w	d1,AI_EntT_ImpactZ_w(a4)
 
 				rts
 
