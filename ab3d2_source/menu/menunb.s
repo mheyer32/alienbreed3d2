@@ -305,12 +305,16 @@ mnu_clearscreen:
 				rts
 
 mnu_setscreen:
+				lea		Bitmap,a0
+				moveq.l	#8,d0
+				move.l	#320,d1
+				move.l	#256,d2
+				CALLGRAF InitBitMap
+
 				lea		Bitmap+bm_Planes,a0		; provide "fake" bitplane pointers such that
 				move.w	#7,d0					; opening the screen/window will not overwrite
 .setPlane		move.l	#mnu_morescreen,(a0)+	; the hardcoded background pattern
 				dbra	d0,.setPlane
-
-				CALLGRAF WaitTOF
 
 				lea		MainNewScreen,a0
 				lea		ScreenTags,a1
@@ -323,6 +327,7 @@ mnu_setscreen:
 				move.l	d0,WTagScreenPtr-WindowTags(a1) ; WA_CustomScreen
 				CALLINT	OpenWindowTagList
 				move.l	d0,MenuWindow
+
 				move.l	d0,a0
 				lea		emptySprite,a1
 				moveq	#1,d0
@@ -601,7 +606,6 @@ mnu_fadein:		clr.w	mnu_fadefactor
 				; Ramp up at discreet steps
 				CALLGRAF WaitTOF
 				bsr.w	mnu_fade
-				CALLGRAF WaitTOF
 
 				add.w	#mnu_fadespeed,mnu_fadefactor
 				move.l	(a7)+,d0
@@ -620,7 +624,6 @@ mnu_fadeout:	move.w	#256,mnu_fadefactor
 				; Ramp down at discreet steps
 				CALLGRAF WaitTOF
 				bsr.w	mnu_fade
-				CALLGRAF WaitTOF
 
 				sub.w	#mnu_fadespeed,mnu_fadefactor
 				move.l	(a7)+,d0
@@ -2202,14 +2205,10 @@ MenuScreen		dc.l	0
 
 WindowTags		dc.l	WA_Left,0
 				dc.l	WA_Top,0
-				dc.l	WA_Width,0
-				dc.l	WA_Height,0
+				dc.l	WA_Width,320
+				dc.l	WA_Height,256
 				dc.l	WA_CustomScreen
 WTagScreenPtr	dc.l	0						; will fill in screen pointer later
-				; intution.i states "WA_Flags ;not implemented at present"
-				; But I have seen code using it...
-				dc.l	WA_Flags,WFLG_ACTIVATE!WFLG_BORDERLESS!WFLG_RMBTRAP!WFLG_SIMPLE_REFRESH!WFLG_BACKDROP!WFLG_NOCAREREFRESH
-				; Just to be sure, provide the same info again
 				dc.l	WA_Activate,1
 				dc.l	WA_Borderless,1
 				dc.l	WA_RMBTrap,1			; prevent menu rendering

@@ -142,7 +142,7 @@ Res_LoadSoundFx:
 				add.w	#64,a0
 				addq	#8,a1
 				dbra	d7,.load_sound_loop
-				move.l	#-1,(a1)+
+				move.l	#-1,(a1)+				; terminate list?
 				rts
 
 .ok_to_load:
@@ -161,8 +161,8 @@ Res_LoadSoundFx:
 				move.l	#MEMF_ANY,IO_MemType_l
 				rts
 
-Res_PatchSoundFx:
-				move.w	#58,d7
+Res_PatchSoundFx:								; transform the list of {{startaddress, length},...}
+				move.w	#58,d7					; into {{startaddress, endaddress},...}
 				move.l	#SampleList,a1
 
 .patch_loop:

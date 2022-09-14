@@ -54,8 +54,6 @@ intreqrl		equ		$01f
 				section code,code
 
 _start:
-				jsr		MakePatch
-
 				lea.l	MiscResourceName,a1
 				CALLEXEC OpenResource			;Open "misc.resource"
 				tst.l	d0
@@ -122,8 +120,10 @@ _start:
 				clr.b	PLR2JOY
 				ENDC
 
-                ; This needs to be xref'd
+
+        ; This needs to be xref'd
 				bsr     Draw_Init
+
 
 				; Setup constant table
 				move.l	#consttab,a0
@@ -1158,28 +1158,28 @@ okwat:
 *********** TAKE THIS OUT *******************
 *********************************************
 
-				move.l	CHEATPTR,a4
-				add.l	#200000,a4
-				moveq	#0,d0
-				move.b	(a4),d0
-
-				move.l	#KeyMap,a5
-				tst.b	(a5,d0.w)
-				beq.s	.nocheat
-
-				addq	#1,a4
-				cmp.l	#ENDCHEAT,a4
-				blt.s	.nocheat
-				cmp.w	#0,CHEATNUM
-				beq.s	.nocheat
-				sub.w	#1,CHEATNUM
-				move.l	#CHEATFRAME,a4
-				move.w	#127,PLR1_energy
-				jsr		EnergyBar
-.nocheat
-
-				sub.l	#200000,a4
-				move.l	a4,CHEATPTR
+;				move.l	CHEATPTR,a4
+;				add.l	#200000,a4
+;				moveq	#0,d0
+;				move.b	(a4),d0
+;
+;				move.l	#KeyMap,a5
+;				tst.b	(a5,d0.w)
+;				beq.s	.nocheat
+;
+;				addq	#1,a4
+;				cmp.l	#ENDCHEAT,a4
+;				blt.s	.nocheat
+;				cmp.w	#0,CHEATNUM
+;				beq.s	.nocheat
+;				sub.w	#1,CHEATNUM
+;				move.l	#CHEATFRAME,a4
+;				move.w	#127,PLR1_energy
+;				jsr		EnergyBar
+;.nocheat
+;
+;				sub.l	#200000,a4
+;				move.l	a4,CHEATPTR
 
 **********************************************
 **********************************************
@@ -2191,9 +2191,6 @@ LoadMainPalette:
 
 				add.l	#256*4*3+2+2+4+4,a7		;restore stack
 				rts
-
-; include "demo/system/keyboard.s"
-				include	"ab3diipatchidr.s"
 
 CLRTWOLINES:
 
@@ -10679,13 +10676,13 @@ donechan2:
 				moveq	#0,d4
 				moveq	#0,d5
 				move.w	#49,d7
-loop3:
-				move.l	(a0)+,d0
+loop3:											; mixing two channels, 50 * 4
+				move.l	(a0)+,d0				; this is sometimes reading past beyond the sample buffer
 				move.b	(a1)+,d1
 				move.b	(a1)+,d2
 				move.b	(a1)+,d3
 				move.b	(a1)+,d4
-				move.b	(a2,d3.w),d5
+				move.b	(a2,d3.w),d5			; the audio stream in a1 gets scaled via a table?
 				swap	d5
 				move.b	(a2,d1.w),d5
 				asl.l	#8,d5
@@ -12241,13 +12238,15 @@ STOPTIMER:
 
 digits:			incbin	"numbers.inc"
 
+				section bss,bss
 COMPACTMAP:		ds.l	257
 
 BIGMAP:			ds.l	256*10
+				section code,code
 
-CHEATFRAME:
-				dc.b	26,20,33,27,17,12
-ENDCHEAT:
+;CHEATFRAME:
+;				dc.b	26,20,33,27,17,12
+;ENDCHEAT:
 
 UseAllChannels:	dc.w	0
 
