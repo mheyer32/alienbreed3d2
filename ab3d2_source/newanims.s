@@ -3832,7 +3832,7 @@ putinbackdrop:
 				tst.b	FULLSCR
 				bne		BIGBACK
 
-				move.l	FASTBUFFER,a0
+				move.l	Draw_FastBufferPtr_l,a0
 				move.l	BackPicture,a5
 				move.l	a5,a3
 				add.l	#155520,a3
@@ -3895,7 +3895,7 @@ vertline:
 				rts
 
 BIGBACK:
-				move.l	FASTBUFFER,a0
+				move.l	Draw_FastBufferPtr_l,a0
 				move.l	BackPicture,a5
 				move.l	a5,a3
 				add.l	#155520,a3

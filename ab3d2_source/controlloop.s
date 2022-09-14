@@ -321,7 +321,7 @@ QUITTT:
 				move.l	LEVELDATA,a1
 				CALLEXEC FreeVec
 
-				move.l	FASTBUFFERalloc,a1
+				move.l	Draw_FastBufferAllocPtr_l,a1
 				CALLEXEC FreeVec
 
 				move.l	MyRaster0,a0

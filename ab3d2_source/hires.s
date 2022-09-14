@@ -7,10 +7,6 @@
 				xref	_custom
 				xref	_ciaa
 
-				IFND	CHEESEY
-CHEESEY			equ		0
-				ENDC
-
 *************************************************
 * Stuff to do to get a C2P version:
 * Change copperlist
@@ -128,15 +124,15 @@ _start
 
 				; allocate chunky render buffer in fastmem
 				move.l	#MEMF_ANY,d1
-				move.l	#FASTBUFFERSize,d0
+				move.l	#Draw_FastBufferSize,d0
 				CALLEXEC AllocVec
-				move.l	d0,FASTBUFFERalloc
+				move.l	d0,Draw_FastBufferAllocPtr_l
 				;align to 16byte for best C2P perf
 				moveq.l	#15,d1
 				add.l	d1,d0
 				moveq	#-16,d1					; $F0
 				and.l	d1,d0
-				move.l	d0,FASTBUFFER
+				move.l	d0,Draw_FastBufferPtr_l
 
 				; Setup constant table
 				move.l	#consttab,a0
@@ -170,129 +166,7 @@ fillconst:
 
 ;*******************************************************************************
 
-FASTBUFFERSize	equ		SCREENWIDTH*256			+ 15 ; screen size plus alignment
-
-FASTBUFFER:
-				dc.l	0						; aligned address
-FASTBUFFERalloc:
-				dc.l	0						; allocated address
-
-* Load level into buffers.
-				clr.b	doanything
-				clr.b	dosounds
-
-; DRAW TEXT SCREEN
-
-TWEENTEXT:
-				move.l	LEVELTEXT,a0
-				move.w	PLOPT,d0
-				muls	#82*16,d0
-				add.l	d0,a0
-				move.w	#15,d7
-				move.w	#0,d0
-DOWNTEXT:
-				move.l	TEXTSCRN,a1
-				jsr		DRAWLINEOFTEXT
-				addq	#1,d0
-				add.w	#82,a0
-				dbra	d7,DOWNTEXT
-				rts
-
-FONTADDRS:
-				dc.l	ENDFONT0,CHARWIDTHS0
-				dc.l	ENDFONT1,CHARWIDTHS1
-				dc.l	ENDFONT2,CHARWIDTHS2
-
-ENDFONT0:
-				incbin	"endfont0"
-CHARWIDTHS0:
-				incbin	"charwidths0"
-ENDFONT1:
-; incbin "endfont1"
-CHARWIDTHS1:
-; incbin "charwidths1"
-ENDFONT2:
-; incbin "endfont2"
-CHARWIDTHS2:
-; incbin "charwidths2"
-
-				even
-
-DRAWLINEOFTEXT:
-				movem.l	d0/a0/d7,-(a7)
-
-				muls	#80*16,d0
-				add.l	d0,a1					; screen pointer
-
-				move.l	#FONTADDRS,a3
-				moveq	#0,d0
-				move.b	(a0)+,d0
-				move.l	(a3,d0.w*8),a2
-				move.l	4(a3,d0.w*8),a3
-
-				moveq	#0,d4
-
-				moveq	#0,d1					; width counter:
-				move.w	#79,d6
-				tst.b	(a0)+
-				beq.s	NOTCENTRED
-				moveq	#-1,d5
-				move.l	a0,a4
-				moveq	#0,d2
-				moveq	#0,d3
-				move.w	#79,d0					; number of chars
-.addup:
-				addq	#1,d5
-				move.b	(a4)+,d2
-				move.b	-32(a3,d2.w),d4
-				add.w	d4,d3
-				cmp.b	#32,d2
-				beq.s	.DONTPUTIN
-				move.w	d5,d6
-				move.w	d3,d1
-.DONTPUTIN:
-				dbra	d0,.addup
-				asr.w	#1,d1
-				neg.w	d1
-				add.w	#SCREENWIDTH,d1			; horiz pos of start x
-
-NOTCENTRED:
-				move.w	d6,d7
-DOACHAR:
-				moveq	#0,d2
-				move.b	(a0)+,d2
-				sub.w	#32,d2
-				moveq	#0,d6
-				move.b	(a3,d2.w),d6
-				asl.w	#5,d2
-				lea		(a2,d2.w),a4			; char font
-val				SET		0
-				REPT	16
-				move.w	(a4)+,d0
-				bfins	d0,val(a1){d1:d6}
-val				SET		val+80
-				ENDR
-				add.w	d6,d1
-				dbra	d7,DOACHAR
-				movem.l	(a7)+,d0/a0/d7
-				rts
-
-
-CLRTWEENSCRN:
-				move.l	TEXTSCRN,a0
-				move.w	#(10240/16)-1,d0
-				move.l	#$0,d1
-.lll
-				move.l	d1,(a0)+
-				move.l	d1,(a0)+
-				move.l	d1,(a0)+
-				move.l	d1,(a0)+
-				move.l	d1,(a0)+
-				move.l	d1,(a0)+
-				move.l	d1,(a0)+
-				move.l	d1,(a0)+
-				dbra	d0,.lll
-				rts
+            include "modules/draw.s"
 
 COPYLINK:		dc.l	0
 
@@ -302,11 +176,11 @@ PLAYTHEGAME:
 ;				move.w	#0,MIXCOLL
 ;				move.w	#0,TOPCOLL
 ;
-;				bsr		CLRTWEENSCRN
+;				bsr		Draw_ClearLevelIntroText
 ;
 ;				cmp.b	#'n',mors
 ;				bne.s	.notext
-;				bsr		TWEENTEXT
+;				bsr		Draw_LevelIntroText
 .notext
 
 ;charlie
@@ -1923,7 +1797,7 @@ IWasPlayer1:
 ; add.l d0,d0
 ; add.l d0,yoff
 ;
-; move.l FASTBUFFER2,FASTBUFFER
+; move.l FASTBUFFER2,Draw_FastBufferPtr_l
 ; move.w #0,leftclip
 ; move.w RIGHTX,rightclip
 ; move.w #0,deftopclip
@@ -2728,7 +2602,7 @@ mapzoff:		dc.w	0
 				; FIXME: this is probably still on chunky screen
 DRAWAtransLINE:
 
-				move.l	FASTBUFFER,a0			; screen to render to.
+				move.l	Draw_FastBufferPtr_l,a0			; screen to render to.
 
 				tst.b	FULLSCR
 				beq.s	.nooffset
@@ -2846,7 +2720,7 @@ DRAWAMAPLINE:
 ;				tst.b	d5
 ;				bne		DOITFAT
 
-				move.l	FASTBUFFER,a0			; screen to render to.
+				move.l	Draw_FastBufferPtr_l,a0			; screen to render to.
 				cmp.w	d1,d3
 				bgt.s	.okdown
 				bne.s	.aline
@@ -2945,7 +2819,7 @@ downmoreright:
 
 
 DOITFAT:
-				move.l	FASTBUFFER,a0			; screen to render to.
+				move.l	Draw_FastBufferPtr_l,a0			; screen to render to.
 				cmp.w	d1,d3
 				bgt.s	.okdown
 				bne.s	.aline
@@ -4551,7 +4425,7 @@ NOGUNLOOK:
 				beq.s	nowaterfull
 
 				move.w	#FS_HEIGHT-1,d0
-				move.l	FASTBUFFER,a0
+				move.l	Draw_FastBufferPtr_l,a0
 				tst.b	fillscrnwater
 				beq		nowaterfull
 				bgt		oknothalf
@@ -6036,7 +5910,7 @@ ENDGAMESCROLL:
 ;				move.w	#$fff,MIXCOLL
 ;				move.w	#$1cc1,BOTOFTXT
 
-				jsr		CLRTWEENSCRN
+				jsr		Draw_ClearLevelIntroText
 
 ;				move.l	#TEXTCOP,$dff080
 
@@ -6082,7 +5956,7 @@ SCROLLUP16LINES:
 ;
 ;				WB
 ;
-;				move.l	TEXTSCRN,d1
+;				move.l	Draw_TextScreenPtr_l,d1
 ;				move.l	d1,bltdpt(a6)
 ;				add.l	#80,d1
 ;				move.l	d1,bltapt(a6)
@@ -6098,9 +5972,9 @@ SCROLLUP16LINES:
 ;
 ;				dbra	d0,do16
 ;
-;				move.l	TEXTSCRN,a1
+;				move.l	Draw_TextScreenPtr_l,a1
 ;				move.w	#15,d0
-;				jsr		DRAWLINEOFTEXT
+;				jsr		Draw_TextLine
 ;
 ;				add.l	#82,a0
 ;				cmp.l	#ENDENDGAMETEXT,a0
@@ -7474,7 +7348,7 @@ pastsides:
 ; add.l BIGMIDDLEY,a6
 ; move.l a6,REFPTR
 
-				move.l	FASTBUFFER,a6
+				move.l	Draw_FastBufferPtr_l,a6
 				add.l	BIGMIDDLEY,a6			; pointer to middle line of screen
 				move.w	(a0)+,d6				; floor scale?
 				add.w	SMALLIT,d6
@@ -12210,7 +12084,7 @@ BLANKSCROLL:
 				dc.b	"                                                                                "
 endtestscroll:
 
-TEXTSCRN:		dc.l	0
+;Draw_TextScreenPtr_l:		dc.l	0
 
 
 				SECTION	bss_c,bss_c

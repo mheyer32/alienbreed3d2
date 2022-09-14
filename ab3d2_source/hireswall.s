@@ -203,7 +203,7 @@ screendividethru:
 
 .scrdrawlop:
 				move.w	(a0)+,d0
-				move.l	FASTBUFFER,a3
+				move.l	Draw_FastBufferPtr_l,a3
 				move.l	(a0)+,d1
 
 				bra		.pastscrinto
@@ -357,7 +357,7 @@ scrdrawlop:
 				beq.s	thislinedone
 				move.w	d0,LASTSTIRRUP
 
-				move.l	FASTBUFFER,a3
+				move.l	Draw_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 
@@ -448,7 +448,7 @@ scrdrawlopDOUB:
 				beq.s	thislineodd
 				move.w	d0,LASTSTIRRUP
 
-				move.l	FASTBUFFER,a3
+				move.l	Draw_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 
@@ -541,7 +541,7 @@ screendivideFULL:
 
 scrdrawlopFULL:
 				move.w	(a0)+,d0
-				move.l	FASTBUFFER,a3
+				move.l	Draw_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 
@@ -631,7 +631,7 @@ scrdrawlopFULLDOUB:
 				move.w	(a0)+,d0
 				btst	#0,d0
 				bne.s	itsanoddone
-				move.l	FASTBUFFER,a3
+				move.l	Draw_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 

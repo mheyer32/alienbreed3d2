@@ -331,7 +331,7 @@ DrawtheObject:
 ;				move.l	#ontoscr,a6
 ;				move.l	(a6,d2.w*4),d2
 ;
-;				add.l	FASTBUFFER,d2
+;				add.l	Draw_FastBufferPtr_l,d2
 ;				move.l	d2,toppt
 ;
 ;				move.l	#WorkSpace,a5
@@ -692,7 +692,7 @@ objfitsonbotGLARE:
 
 				move.l	#ontoscr,a6
 				move.l	(a6,d2.w*4),d2
-				add.l	FASTBUFFER,d2
+				add.l	Draw_FastBufferPtr_l,d2
 				move.l	d2,toppt
 
 				cmp.w	leftclipb,d0
@@ -1124,7 +1124,7 @@ objfitsonbot:
 
 				move.l	#ontoscr,a6
 				move.l	(a6,d2.w*4),d2
-				add.l	FASTBUFFER,d2
+				add.l	Draw_FastBufferPtr_l,d2
 				move.l	d2,toppt
 
 				cmp.w	leftclipb,d0
@@ -2796,7 +2796,7 @@ usegour:
 dontusegour:
 
 				move.w	#SCREENWIDTH,linedir
-				move.l	FASTBUFFER,a6
+				move.l	Draw_FastBufferPtr_l,a6
 
 				tst.b	drawit(pc)
 				beq		polybehind

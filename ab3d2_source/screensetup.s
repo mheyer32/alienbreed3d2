@@ -15,7 +15,7 @@ OpenMainScreen:
 				and.l	#~7,d0
 				move.l	d0,scrn
 
-				move.l	d0,TEXTSCRN				; FIXME: TEXTSCRN should go
+				move.l	d0,Draw_TextScreenPtr_l				; FIXME: Draw_TextScreenPtr_l should go
 
 				bsr		MyAllocRaster
 				;				beq	exit_closeall

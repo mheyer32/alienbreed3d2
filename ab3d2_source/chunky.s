@@ -43,7 +43,7 @@ NEWCHUNKY
 				jsr		c2p1x1_8_c5_040_init
 
 				; scroffsy only accounts for the Y offset in the destination buffer
-				move.l	FASTBUFFER,a0
+				move.l	Draw_FastBufferPtr_l,a0
 				mulu.w	#SCREENWIDTH,d3
 				lea		(a0,d3.w),a0
 				move.l	SCRNDRAWPT,a1
@@ -75,7 +75,7 @@ NEWCHUNKY
 				jsr		c2p2x1_8_c5_gen_init
 
 				; scroffsy only accounts for the Y offset in the destination buffer
-				move.l	FASTBUFFER,a0
+				move.l	Draw_FastBufferPtr_l,a0
 				mulu.w	d6,d3
 				lea		(a0,d3.w),a0
 				move.l	SCRNDRAWPT,a1
@@ -97,7 +97,7 @@ NEWCHUNKY
 				jsr		c2p2x1_8_c5_gen_init
 
 				; scroffsy only accounts for the Y offset in the destination buffer
-				move.l	FASTBUFFER,a0
+				move.l	Draw_FastBufferPtr_l,a0
 				mulu.w	d6,d3
 				lea		(a0,d3.w),a0
 				move.l	SCRNDRAWPT,a1
@@ -119,7 +119,7 @@ NEWCHUNKY
 				move.l	#(SCREENWIDTH/8)*2,d5	; bpl rowmod
 				move.l	#(SCREENWIDTH/8)*256,d6	; bplsize
 
-				move.l	FASTBUFFER,a0
+				move.l	Draw_FastBufferPtr_l,a0
 				move.l	SCRNDRAWPT,a1
 				jsr		c2p_rect
 
@@ -143,7 +143,7 @@ NEWCHUNKY
 				move.l	#SCREENWIDTH/8,d5		; bpl rowmod
 				move.l	#(SCREENWIDTH/8)*256,d6	; bplsize
 
-				move.l	FASTBUFFER,a0
+				move.l	Draw_FastBufferPtr_l,a0
 				move.l	SCRNDRAWPT,a1
 				add.l	#(SCREENWIDTH/8)*20+(64/8),a1 ; top of regular small screen
 														; c2p_rect will apply d1 offset ontop
@@ -167,7 +167,7 @@ NEWCHUNKY
 				jsr		c2p2x1_8_c5_gen_init
 
 				; scroffsy only accounts for the Y offset in the destination buffer
-				move.l	FASTBUFFER,a0
+				move.l	Draw_FastBufferPtr_l,a0
 				mulu.w	d6,d3
 				lea		(a0,d3.w),a0
 				move.l	SCRNDRAWPT,a1
@@ -195,7 +195,7 @@ NEWCHUNKY
 				jsr		c2p2x1_8_c5_gen_init
 
 				; scroffsy only accounts for the Y offset in the destination buffer
-				move.l	FASTBUFFER,a0
+				move.l	Draw_FastBufferPtr_l,a0
 				mulu.w	d6,d3
 				lea		(a0,d3.w),a0
 				move.l	SCRNDRAWPT,a1
@@ -219,7 +219,7 @@ NEWCHUNKY
 				move.l	#(SCREENWIDTH/8)*2,d5	; bpl rowmod
 				move.l	#(SCREENWIDTH/8)*256,d6	; bplsize
 
-				move.l	FASTBUFFER,a0
+				move.l	Draw_FastBufferPtr_l,a0
 				move.l	SCRNDRAWPT,a1
 				add.l	#(SCREENWIDTH/8)*20+(64/8),a1 ; top of regular small screen
 														; c2p_rect will apply d1 offset ontop
@@ -264,7 +264,7 @@ NEWCHUNKYTEL:
 				move.w	#(SCREENWIDTH-FS_WIDTH),MODUL ; modulo chunky
 				move.w	#(SCREENWIDTH-FS_WIDTH)/8,SCRMOD ; modulo chipmem
 
-				move.l	FASTBUFFER,a0
+				move.l	Draw_FastBufferPtr_l,a0
 				move.w	#SCREENWIDTH,d3
 				mulu.w	d7,d3
 				lea		(a0,d3.w),a0			; offset for top letterbox in renderbuffer
@@ -288,7 +288,7 @@ NEWCHUNKYTEL:
 				move.w	#(SCREENWIDTH-SMALL_WIDTH),MODUL ; modulo chunky
 				move.w	#(SCREENWIDTH-SMALL_WIDTH)/8,SCRMOD ; modulo chipmem
 
-				move.l	FASTBUFFER,a0
+				move.l	Draw_FastBufferPtr_l,a0
 				move.w	#SCREENWIDTH,d3
 				mulu.w	d7,d3
 				lea		(a0,d3.w),a0			; offset for top letterbox in renderbuffer

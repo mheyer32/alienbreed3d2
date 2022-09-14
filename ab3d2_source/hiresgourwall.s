@@ -241,7 +241,7 @@ scrdrawlopG:
 				beq.s	thislinedoneG
 				move.w	d0,LASTSTIRRUP
 
-				move.l	FASTBUFFER,a3
+				move.l	Draw_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3			; point to start address of screen column
 				move.l	(a0)+,d1
 
@@ -351,7 +351,7 @@ scrdrawlopGDOUB:
 				beq.s	itsoddy
 				move.w	d0,LASTSTIRRUP
 
-				move.l	FASTBUFFER,a3
+				move.l	Draw_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 
@@ -448,7 +448,7 @@ scrdrawlopGDOUB:
 scrdrawlopGB:
 
 				move.w	(a0)+,d0
-				move.l	FASTBUFFER,a3
+				move.l	Draw_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 
@@ -551,7 +551,7 @@ scrdrawlopGBDOUB:
 				move.w	(a0)+,d0
 				btst	#0,d0
 				bne.s	itsbilloddy
-				move.l	FASTBUFFER,a3
+				move.l	Draw_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 
