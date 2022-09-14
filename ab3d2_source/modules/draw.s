@@ -10,17 +10,25 @@
 ; *****************************************************************************
 
 
-Draw_FastBufferSize	equ		SCREENWIDTH*256			+ 15 ; screen size plus alignment
+Draw_FastBufferSize			equ		SCREENWIDTH * 256 + 15	; screen size plus alignment
 
-Draw_FastBufferPtr_l:      dc.l	0						; aligned address
+Draw_FastBufferPtr_l:		dc.l	0						; aligned address
 Draw_FastBufferAllocPtr_l:	dc.l	0						; allocated address
 Draw_TextScreenPtr_l:		dc.l	0
 
-* Load level into buffers.
-;				clr.b	doanything
-;				clr.b	dosounds
-
-; DRAW TEXT SCREEN
+Draw_Init:
+				; allocate chunky render buffer in fastmem
+				move.l	#MEMF_ANY,d1
+				move.l	#Draw_FastBufferSize,d0
+				CALLEXEC AllocVec
+				move.l	d0,Draw_FastBufferAllocPtr_l
+				;align to 16byte for best C2P perf
+				moveq.l	#15,d1
+				add.l	d1,d0
+				moveq	#-16,d1					; $F0
+				and.l	d1,d0
+				move.l	d0,Draw_FastBufferPtr_l
+				rts
 
 Draw_LevelIntroText:
 				move.l	LEVELTEXT,a0

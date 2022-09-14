@@ -53,7 +53,7 @@ intreqrl		equ		$01f
 
 				section code,code
 
-_start
+_start:
 				jsr		MakePatch
 
 				lea.l	MiscResourceName,a1
@@ -122,17 +122,8 @@ _start
 				clr.b	PLR2JOY
 				ENDC
 
-				; allocate chunky render buffer in fastmem
-				move.l	#MEMF_ANY,d1
-				move.l	#Draw_FastBufferSize,d0
-				CALLEXEC AllocVec
-				move.l	d0,Draw_FastBufferAllocPtr_l
-				;align to 16byte for best C2P perf
-				moveq.l	#15,d1
-				add.l	d1,d0
-				moveq	#-16,d1					; $F0
-				and.l	d1,d0
-				move.l	d0,Draw_FastBufferPtr_l
+                ; This needs to be xref'd
+				bsr     Draw_Init
 
 				; Setup constant table
 				move.l	#consttab,a0
@@ -166,7 +157,8 @@ fillconst:
 
 ;*******************************************************************************
 
-            include "modules/draw.s"
+                ; draw code was here
+                include "modules/draw.s"
 
 COPYLINK:		dc.l	0
 
