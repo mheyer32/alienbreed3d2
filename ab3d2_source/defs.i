@@ -164,36 +164,33 @@ ObjInTop		EQU		63
 * Nasty definitions *********
 *****************************
 
-numlives		equ		18
-damagetaken		equ		19
-maxspd			equ		20
-currentmode		equ		20
-teamnumber		equ		21
-currspd			equ		22
-targheight		equ		24
-
-GraphicRoom		equ		26
-CurrCPt			Equ		28
-TargCPt			Equ		32
-
-Facing			equ		30
-Lead			equ		32
-Active			equ		32
-
-ObjTimer		equ		34
-EnemyFlags		equ		36						;(lw)
-SecTimer		equ		40
-ImpactX			equ		42
-ImpactZ			equ		44
-ImpactY			equ		46
-objyvel			EQU		48
-TurnSpeed		EQU		50
-DoorsHeld		EQU		50
-ThirdTimer		EQU		52
-LiftsHeld		EQU		52
-FourthTimer		EQU		54
-TypeOfThing		equ		54
-WhichAnim		equ		55
+	; Extended data for AI entities
+	; TODO - move this to a .i definition file for the AI module
+	;      - Can this be reorganised ?
+	STRUCTURE AI_EntT,18
+		UBYTE AI_EntT_NumLives_b
+		UBYTE AI_EntT_DamageTaken_b
+		UBYTE AI_EntT_CurrentMode_b
+		UBYTE AI_EntT_TeamNumber_b
+		UWORD AI_EntT_CurrentSpeed_w ; unused
+		UWORD AI_EntT_TargetHeight_w ; unused
+		UWORD AI_EntT_GraphicRoom_w
+		UWORD AI_EntT_CurrentControlPoint_w
+		UWORD AI_EntT_CurrentAngle_w
+		UWORD AI_EntT_TargetControlPoint_w
+		UWORD AI_EntT_Timer1_w
+		ULONG AI_EntT_EnemyFlags_l
+		UWORD AI_EntT_Timer2_w
+		UWORD AI_EntT_ImpactX_w
+		UWORD AI_EntT_ImpactZ_w
+		UWORD AI_EntT_ImpactY_w
+		UWORD AI_EntT_VelocityY_w
+		UWORD AI_EntT_DoorsHeld_w
+		UWORD AI_EntT_Timer3_w
+		; union field of UWORD, UBYTE[2]
+		LABEL AI_EntT_Timer4_w
+		UBYTE AI_EntT_Type_b
+		UBYTE AI_EntT_WhichAnim_b
 
 *****************************
 * Door Definitions **********

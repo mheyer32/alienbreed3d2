@@ -310,7 +310,7 @@ pickweap2
 				and.b	(a4)+,d0
 				beq.s	notgotweap2
 				move.b	d2,PLR2_GunSelected
-				move.w	#0,ObjTimer+64(a3)
+				move.w	#0,AI_EntT_Timer1_w+64(a3)
 
 ; move.l #TEMPSCROLL,SCROLLPOINTER
 ; move.w #0,SCROLLXPOS

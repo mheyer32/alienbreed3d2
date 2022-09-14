@@ -71,7 +71,7 @@ emptytab:
 insertanobj
 				move.w	(a1),d1
 				blt		sortedall
-				move.w	GraphicRoom(a1),d2
+				move.w	AI_EntT_GraphicRoom_w(a1),d2
 				cmp.w	currzone(pc),d2
 				beq.s	itsinthiszone
 
@@ -855,7 +855,7 @@ BitMapObj:
 				tst.l	8(a0)
 				blt		glareobj
 
-				move.w	Facing(a0),FACINGANG
+				move.w	AI_EntT_CurrentAngle_w(a0),FACINGANG
 
 				move.w	(a0)+,d0				;pt num
 
@@ -2153,7 +2153,7 @@ PolygonObj:
 
 ************************
 
-				move.w	Facing(a0),ObjAng
+				move.w	AI_EntT_CurrentAngle_w(a0),ObjAng
 
 				move.w	MIDDLEY,POLYMIDDLEY
 

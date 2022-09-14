@@ -1897,7 +1897,7 @@ checkcol:
 				cmp.w	12(a0),d1
 				bne.s	checkcol
 
-				tst.b	numlives(a0)
+				tst.b	AI_EntT_NumLives_b(a0)
 				beq.s	checkcol
 
 				move.b	ObjInTop(a0),d1
@@ -1915,13 +1915,13 @@ checkcol:
 				move.l	LINKFILE,a4
 				add.l	#ObjectStats,a4
 				moveq	#0,d1
-				move.b	TypeOfThing(a0),d1
+				move.b	AI_EntT_Type_b(a0),d1
 				muls	#ObjectStatLen,d1
 				cmp.w	#2,O_Behaviour(a4,d1.w)
 				blt		checkcol
 				bgt		.ycol
 
-				tst.b	numlives(a0)
+				tst.b	AI_EntT_NumLives_b(a0)
 				ble		checkcol
 
 .ycol
@@ -2178,7 +2178,7 @@ outin:
 
 foundclose:
 
-				move.w	d7,GraphicRoom(a0)
+				move.w	d7,AI_EntT_GraphicRoom_w(a0)
 
 				rts
 

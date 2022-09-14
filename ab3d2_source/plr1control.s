@@ -317,7 +317,7 @@ pickweap
 				and.b	(a4)+,d0
 				beq.s	notgotweap
 				move.b	d2,PLR1_GunSelected
-				move.w	#0,ObjTimer+128(a3)
+				move.w	#0,AI_EntT_Timer1_w+128(a3)
 
 
 ; SCROLLPOINTER
