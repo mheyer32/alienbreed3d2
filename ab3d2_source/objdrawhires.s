@@ -1406,7 +1406,7 @@ DRAWITLIGHTED:
 ; add.l LEVELDATA,a4
 ; move.l a4,a5
 ;
-; adda.w ToExitList(a4),a5
+; adda.w Lvl_ZoneT_ExitList_w(a4),a5
 ;
 ;.doallwalls
 ; move.w (a5)+,d0
@@ -1802,7 +1802,7 @@ CALCBRIGHTRINGS:
 				add.l	LEVELDATA,a4
 				move.l	a4,a5
 
-				adda.w	ToExitList(a4),a5
+				adda.w	Lvl_ZoneT_ExitList_w(a4),a5
 
 .doallwalls
 				move.w	(a5)+,d0

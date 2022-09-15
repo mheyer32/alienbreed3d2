@@ -426,7 +426,7 @@ ai_Widget:
 
 .player_not_in_top:
 				moveq	#0,d1
-				move.b	ToZoneCpt(a1),d1
+				move.b	Lvl_ZoneT_ControlPoint_w(a1),d1
 
 				move.w	AI_EntT_CurrentControlPoint_w(a0),d0
 				jsr		GetNextCPt
@@ -1592,12 +1592,12 @@ ai_CheckFloorCeiling:
 
 				move.l	objroom,a2
 
-				move.l	ToZoneFloor(a2),d0
-				move.l	ToZoneRoof(a2),d1
+				move.l	Lvl_ZoneT_Floor_l(a2),d0
+				move.l	Lvl_ZoneT_Roof_l(a2),d1
 				tst.b	ObjInTop(a0)
 				beq.s	.not_in_top
-				move.l	ToUpperFloor(a2),d0
-				move.l	ToUpperRoof(a2),d1
+				move.l	Lvl_ZoneT_UpperFloor_l(a2),d0
+				move.l	Lvl_ZoneT_UpperRoof_l(a2),d1
 
 .not_in_top:
 				asr.l	#7,d0
@@ -1632,10 +1632,10 @@ ai_StorePlayerPosition:
 				move.l	PLR1_Roompt,a3
 				move.w	(a3),AI_WorkT_LastZone_w(a2)
 				moveq	#0,d0
-				move.b	ToZoneCpt(a3),d0
+				move.b	Lvl_ZoneT_ControlPoint_w(a3),d0
 				tst.b	PLR1_StoodInTop
 				beq.s	.player_not_in_top
-				move.b	ToZoneCpt+1(a3),d0
+				move.b	Lvl_ZoneT_ControlPoint_w+1(a3),d0
 
 .player_not_in_top:
 				move.w	d0,AI_WorkT_LastControlPoint_w(a2)
@@ -1649,10 +1649,10 @@ ai_StorePlayerPosition:
 				move.l	PLR1_Roompt,a3
 				move.w	(a3),AI_WorkT_LastZone_w(a2)
 				moveq	#0,d0
-				move.b	ToZoneCpt(a3),d0
+				move.b	Lvl_ZoneT_ControlPoint_w(a3),d0
 				tst.b	PLR1_StoodInTop
 				beq.s	.player_not_in_top2
-				move.b	ToZoneCpt+1(a3),d0
+				move.b	Lvl_ZoneT_ControlPoint_w+1(a3),d0
 
 .player_not_in_top2:
 				move.w	d0,AI_WorkT_LastControlPoint_w(a2)
@@ -1681,10 +1681,10 @@ ai_GetRoomStatsStill:
 ;.okbit:
 ; move.w d0,2(a0)
 
-				move.l	ToZoneFloor(a2),d0
+				move.l	Lvl_ZoneT_Floor_l(a2),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.not_in_top2
-				move.l	ToUpperFloor(a2),d0
+				move.l	Lvl_ZoneT_UpperFloor_l(a2),d0
 
 .not_in_top2:
 				move.l	thingheight,d2
@@ -2211,10 +2211,10 @@ ai_CheckAttackOnGround:
 
 				move.l	PLR1_Roompt,a3
 				moveq	#0,d1
-				move.b	ToZoneCpt(a3),d1
+				move.b	Lvl_ZoneT_ControlPoint_w(a3),d1
 				tst.b	PLR1_StoodInTop
 				beq.s	.player_not_in_top
-				move.b	ToZoneCpt+1(a3),d1
+				move.b	Lvl_ZoneT_ControlPoint_w+1(a3),d1
 
 .player_not_in_top:
 				move.w	d1,d3
@@ -2238,11 +2238,11 @@ ai_CheckAttackOnGround:
 ai_GetRoomCPT:
 				move.l	objroom,a2
 				moveq	#0,d0
-				move.b	ToZoneCpt(a2),d0
+				move.b	Lvl_ZoneT_ControlPoint_w(a2),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.player_not_in_top
 
-				move.b	ToZoneCpt+1(a2),d0
+				move.b	Lvl_ZoneT_ControlPoint_w+1(a2),d0
 
 .player_not_in_top:
 				move.w	d0,AI_EntT_CurrentControlPoint_w(a0)

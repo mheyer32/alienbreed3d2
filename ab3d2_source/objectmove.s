@@ -38,7 +38,7 @@ MoveObject:
 gobackanddoitallagain:
 
 				move.l	a0,a5
-				adda.w	ToExitList(a5),a0
+				adda.w	Lvl_ZoneT_ExitList_w(a5),a0
 				move.l	a0,test
 				move.l	FloorLines,a1
 checkwalls:
@@ -69,9 +69,9 @@ checkwalls:
 				move.l	(a4,d1.w*4),a4
 				add.l	LEVELDATA,a4
 
-				move.l	ToZoneFloor(a4),d1
+				move.l	Lvl_ZoneT_Floor_l(a4),d1
 				move.l	d1,LowerFloorHeight
-				move.l	ToZoneRoof(a4),d2
+				move.l	Lvl_ZoneT_Roof_l(a4),d2
 				move.l	d2,LowerRoofHeight
 
 				bra		thisisawall1
@@ -83,7 +83,7 @@ checkwalls:
 				move.l	oldy,d0
 				move.l	d0,d1
 				add.l	thingheight,d1
-				sub.l	ToZoneFloor(a4),d1
+				sub.l	Lvl_ZoneT_Floor_l(a4),d1
 				bgt.s	chkstepup
 
 				neg.l	d1
@@ -99,16 +99,16 @@ chkstepup:
 
 botinsidebot:
 
-				sub.l	ToZoneRoof(a4),d0
+				sub.l	Lvl_ZoneT_Roof_l(a4),d0
 				blt.s	thisisawall1
 
 				bra		checkwalls
 
 thisisawall1:
 
-				move.l	ToUpperFloor(a4),d1
+				move.l	Lvl_ZoneT_UpperFloor_l(a4),d1
 				move.l	d1,UpperFloorHeight
-				move.l	ToUpperRoof(a4),d2
+				move.l	Lvl_ZoneT_UpperRoof_l(a4),d2
 				sub.l	d2,d1
 				move.l	d2,UpperRoofHeight
 
@@ -120,7 +120,7 @@ thisisawall1:
 				move.l	oldy,d0
 				move.l	d0,d1
 				add.l	thingheight,d1
-				sub.l	ToUpperFloor(a4),d1
+				sub.l	Lvl_ZoneT_UpperFloor_l(a4),d1
 				bgt.s	chkstepup2
 
 				neg.l	d1
@@ -137,7 +137,7 @@ chkstepup2:
 
 botinsidebot2:
 
-				sub.l	ToUpperRoof(a4),d0
+				sub.l	Lvl_ZoneT_UpperRoof_l(a4),d0
 				blt.s	thisisawall2
 
 				bra		checkwalls
@@ -470,7 +470,7 @@ nomorewalls:
 notstill:
 
 				move.l	a5,a0
-				add.w	ToExitList(a0),a0
+				add.w	Lvl_ZoneT_ExitList_w(a0),a0
 
 checkotherwalls:
 				move.w	(a0)+,d0
@@ -499,15 +499,15 @@ anotherwalls:
 				move.l	(a4,d1.w*4),a4
 				add.l	LEVELDATA,a4
 
-				move.l	ToZoneFloor(a4),d1
-				sub.l	ToZoneRoof(a4),d1
+				move.l	Lvl_ZoneT_Floor_l(a4),d1
+				sub.l	Lvl_ZoneT_Roof_l(a4),d1
 				cmp.l	thingheight,d1
 				ble		.thisisawall1
 
 				move.l	newy,d0
 				move.l	d0,d1
 				add.l	thingheight,d1
-				sub.l	ToZoneFloor(a4),d1
+				sub.l	Lvl_ZoneT_Floor_l(a4),d1
 				bgt.s	.chkstepup
 
 				neg.l	d1
@@ -525,22 +525,22 @@ anotherwalls:
 
 .botinsidebot:
 
-				sub.l	ToZoneRoof(a4),d0
+				sub.l	Lvl_ZoneT_Roof_l(a4),d0
 				blt.s	.thisisawall1
 
 				bra		checkotherwalls
 
 .thisisawall1:
 
-				move.l	ToUpperFloor(a4),d1
-				sub.l	ToUpperRoof(a4),d1
+				move.l	Lvl_ZoneT_UpperFloor_l(a4),d1
+				sub.l	Lvl_ZoneT_UpperRoof_l(a4),d1
 				cmp.l	thingheight,d1
 				ble		.thisisawall2
 
 				move.l	newy,d0
 				move.l	d0,d1
 				add.l	thingheight,d1
-				sub.l	ToUpperFloor(a4),d1
+				sub.l	Lvl_ZoneT_UpperFloor_l(a4),d1
 				bgt.s	.chkstepup2
 
 				neg.l	d1
@@ -558,7 +558,7 @@ anotherwalls:
 
 .botinsidebot2:
 
-				sub.l	ToUpperRoof(a4),d0
+				sub.l	Lvl_ZoneT_UpperRoof_l(a4),d0
 				blt.s	.thisisawall2
 
 				bra		checkotherwalls
@@ -795,7 +795,7 @@ NOOTHERWALLSNEEDED
 *****************************************************
 
 				move.l	a5,a0
-				adda.w	ToExitList(a5),a0
+				adda.w	Lvl_ZoneT_ExitList_w(a5),a0
 
 				move.l	FloorLines,a1
 CheckMoreFloorLines
@@ -815,46 +815,46 @@ CheckMoreFloorLines
 				move.l	(a4,d1.w*4),a4
 				add.l	LEVELDATA,a4
 
-				move.l	ToZoneRoof(a4),LowerRoofHeight
+				move.l	Lvl_ZoneT_Roof_l(a4),LowerRoofHeight
 
 ; move.l newy,d0
 ; move.l d0,d1
 ; add.l thingheight,d1
 ;
-; sub.l ToZoneRoof(a4),d0
+; sub.l Lvl_ZoneT_Roof_l(a4),d0
 ; blt.s NOTINLOWER
 ;
-; sub.l ToZoneFloor(a4),d1
+; sub.l Lvl_ZoneT_Floor_l(a4),d1
 ; blt.s okthebottom
 ;
 ; cmp.l StepUpVal,d1
 ; bgt.s NOTINLOWER
 ;
-; move.l ToZoneFloor(a4),d1
+; move.l Lvl_ZoneT_Floor_l(a4),d1
 ; sub.l thingheight,d1
 ; move.l d1,newy
 ; bra okthebottom
 ;
 ;NOTINLOWER:
 ;
-; move.l ToZoneRoof(a4),billy
-; move.l ToZoneRoof(a4),billy+4
+; move.l Lvl_ZoneT_Roof_l(a4),billy
+; move.l Lvl_ZoneT_Roof_l(a4),billy+4
 ; add.l d0,billy+4
 ;
 ; st CrossIntoTop
 ; move.l newy,d0
 ; move.l d0,d1
 ; add.l thingheight,d1
-; sub.l ToUpperRoof(a4),d0
+; sub.l Lvl_ZoneT_UpperRoof_l(a4),d0
 ; blt CheckMoreFloorLines
 ;
-; sub.l ToUpperFloor(a4),d1
+; sub.l Lvl_ZoneT_UpperFloor_l(a4),d1
 ; blt.s okthebottom
 ;
 ; cmp.l StepUpVal,d1
 ; bgt CheckMoreFloorLines
 
-; move.l ToUpperFloor(a4),d1
+; move.l Lvl_ZoneT_UpperFloor_l(a4),d1
 ; sub.l thingheight,d1
 ; move.l d1,newy
 
@@ -1460,7 +1460,7 @@ ItMightBeSeen:
 				move.l	ToRoom,a0
 				move.w	(a0),d0
 				move.l	FromRoom,a0
-				adda.w	#ToListOfGraph,a0
+				adda.w	#Lvl_ZoneT_ListOfGraph_w,a0
 				bra.s	InList
 
 Viewerx:		dc.l	0
@@ -1493,7 +1493,7 @@ CanItBeSeen:
 				cmp.l	a0,a1
 				beq.s	insameroom
 
-				adda.w	#ToListOfGraph,a0
+				adda.w	#Lvl_ZoneT_ListOfGraph_w,a0
 
 InList:
 				move.w	(a0),d1
@@ -1596,7 +1596,7 @@ nomorerclips:
 
 GoThroughZones:
 				move.l	a5,a0
-				adda.w	ToExitList(a0),a0
+				adda.w	Lvl_ZoneT_ExitList_w(a0),a0
 
 FindWayOut:
 				move.w	(a0)+,d5
@@ -1660,16 +1660,16 @@ sameheight:
 				tst.b	d2
 				beq.s	comparewithbottom
 
-				cmp.l	ToUpperRoof(a5),d5
+				cmp.l	Lvl_ZoneT_UpperRoof_l(a5),d5
 				blt		outlist
-				cmp.l	ToUpperFloor(a5),d5
+				cmp.l	Lvl_ZoneT_UpperFloor_l(a5),d5
 				bgt		outlist
 				bra.s	madeit
 
 comparewithbottom:
-				cmp.l	ToZoneRoof(a5),d5
+				cmp.l	Lvl_ZoneT_Roof_l(a5),d5
 				blt		outlist
-				cmp.l	ToZoneFloor(a5),d5
+				cmp.l	Lvl_ZoneT_Floor_l(a5),d5
 				bgt		outlist
 madeit:
 				st		donessomething
@@ -1681,14 +1681,14 @@ madeit:
 				add.l	LEVELDATA,a5
 
 				clr.b	d2
-				cmp.l	ToZoneFloor(a5),d5
+				cmp.l	Lvl_ZoneT_Floor_l(a5),d5
 				bgt		outlist
-				cmp.l	ToZoneRoof(a5),d5
+				cmp.l	Lvl_ZoneT_Roof_l(a5),d5
 				bgt.s	GotIn
 				st		d2
-				cmp.l	ToUpperFloor(a5),d5
+				cmp.l	Lvl_ZoneT_UpperFloor_l(a5),d5
 				bgt		outlist
-				cmp.l	ToUpperRoof(a5),d5
+				cmp.l	Lvl_ZoneT_UpperRoof_l(a5),d5
 				blt		outlist
 
 GotIn:
@@ -1729,7 +1729,7 @@ FindCollisionPt:
 
 .GoThroughZones:
 				move.l	a5,a0
-				adda.w	ToExitList(a0),a0
+				adda.w	Lvl_ZoneT_ExitList_w(a0),a0
 
 .FindWayOut:
 				move.w	(a0)+,d5
@@ -1797,14 +1797,14 @@ FindCollisionPt:
 				add.l	LEVELDATA,a5
 
 				clr.b	d2
-				cmp.l	ToZoneFloor(a5),d5
+				cmp.l	Lvl_ZoneT_Floor_l(a5),d5
 				bgt		foundpt
-				cmp.l	ToZoneRoof(a5),d5
+				cmp.l	Lvl_ZoneT_Roof_l(a5),d5
 				bgt.s	.GotIn
 				st		d2
-				cmp.l	ToUpperFloor(a5),d5
+				cmp.l	Lvl_ZoneT_UpperFloor_l(a5),d5
 				bgt		foundpt
-				cmp.l	ToUpperRoof(a5),d5
+				cmp.l	Lvl_ZoneT_UpperRoof_l(a5),d5
 				blt		foundpt
 
 .GotIn:
@@ -2037,22 +2037,22 @@ CheckTeleport:
 				move.l	ZoneAdds,a2
 				move.l	(a2,d0.w*4),a2
 				add.l	LEVELDATA,a2
-				tst.w	ToTelZone(a2)
+				tst.w	Lvl_ZoneT_TelZone_w(a2)
 				bge.s	ITSATEL
 				rts
 
 ITSATEL:
-				move.l	ToZoneFloor(a2),floortemp
-				move.w	ToTelZone(a2),d0
+				move.l	Lvl_ZoneT_Floor_l(a2),floortemp
+				move.w	Lvl_ZoneT_TelZone_w(a2),d0
 				move.l	ZoneAdds,a3
 				move.l	(a3,d0.w*4),a3
 				add.l	LEVELDATA,a3
-				move.l	ToZoneFloor(a3),d0
+				move.l	Lvl_ZoneT_Floor_l(a3),d0
 				sub.l	floortemp,d0
 				move.l	d0,floortemp
 				add.l	d0,newy
-				move.w	ToTelX(a2),newx
-				move.w	ToTelZ(a2),newz
+				move.w	Lvl_ZoneT_TelX_w(a2),newx
+				move.w	Lvl_ZoneT_TelZ_w(a2),newz
 				move.l	#%1111111111111111111,CollideFlags
 				movem.l	a0/a1/a2,-(a7)
 				bsr		Collision
@@ -2066,7 +2066,7 @@ ITSATEL:
 				beq.s	.teleport
 				rts
 .teleport:
-				move.w	ToTelZone(a2),d0
+				move.w	Lvl_ZoneT_TelZone_w(a2),d0
 				move.l	ZoneAdds,a2
 				move.l	(a2,d0.w*4),a2
 				add.l	LEVELDATA,a2

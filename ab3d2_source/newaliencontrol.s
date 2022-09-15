@@ -37,7 +37,7 @@ ItsAnAlien:
 				move.l	d0,objroom
 
 				move.l	d0,a6
-				move.b	ToEcho(a6),ALIENECHO
+				move.b	Lvl_ZoneT_Echo_b(a6),ALIENECHO
 
 				moveq	#0,d0
 				move.l	LINKFILE,a6
@@ -167,19 +167,19 @@ Collectable:
 
 				tst.w	O_FloorCeiling(a2)
 				beq.s	.onfloor
-				move.l	ToZoneRoof(a1),d0
+				move.l	Lvl_ZoneT_Roof_l(a1),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.okinbotc
-				move.l	ToUpperRoof(a1),d0
+				move.l	Lvl_ZoneT_UpperRoof_l(a1),d0
 .okinbotc:
 
 				bra.s	.onceiling
 
 .onfloor
-				move.l	ToZoneFloor(a1),d0
+				move.l	Lvl_ZoneT_Floor_l(a1),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.okinbot
-				move.l	ToUpperFloor(a1),d0
+				move.l	Lvl_ZoneT_UpperFloor_l(a1),d0
 .okinbot:
 .onceiling
 
@@ -243,19 +243,19 @@ Activatable:
 
 				tst.w	O_FloorCeiling(a2)
 				beq.s	.onfloor
-				move.l	ToZoneRoof(a1),d0
+				move.l	Lvl_ZoneT_Roof_l(a1),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.okinbotc
-				move.l	ToUpperRoof(a1),d0
+				move.l	Lvl_ZoneT_UpperRoof_l(a1),d0
 .okinbotc:
 
 				bra.s	.onceiling
 
 .onfloor
-				move.l	ToZoneFloor(a1),d0
+				move.l	Lvl_ZoneT_Floor_l(a1),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.okinbot
-				move.l	ToUpperFloor(a1),d0
+				move.l	Lvl_ZoneT_UpperFloor_l(a1),d0
 .okinbot:
 .onceiling
 
@@ -327,19 +327,19 @@ ACTIVATED:
 
 				tst.w	O_FloorCeiling(a2)
 				beq.s	.onfloor
-				move.l	ToZoneRoof(a1),d0
+				move.l	Lvl_ZoneT_Roof_l(a1),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.okinbotc
-				move.l	ToUpperRoof(a1),d0
+				move.l	Lvl_ZoneT_UpperRoof_l(a1),d0
 .okinbotc:
 
 				bra.s	.onceiling
 
 .onfloor
-				move.l	ToZoneFloor(a1),d0
+				move.l	Lvl_ZoneT_Floor_l(a1),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.okinbot
-				move.l	ToUpperFloor(a1),d0
+				move.l	Lvl_ZoneT_UpperFloor_l(a1),d0
 .okinbot:
 .onceiling
 
@@ -455,19 +455,19 @@ Destructable:
 
 				tst.w	O_FloorCeiling(a2)
 				beq.s	.onfloor
-				move.l	ToZoneRoof(a1),d0
+				move.l	Lvl_ZoneT_Roof_l(a1),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.okinbotc
-				move.l	ToUpperRoof(a1),d0
+				move.l	Lvl_ZoneT_UpperRoof_l(a1),d0
 .okinbotc:
 
 				bra.s	.onceiling
 
 .onfloor
-				move.l	ToZoneFloor(a1),d0
+				move.l	Lvl_ZoneT_Floor_l(a1),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.okinbot
-				move.l	ToUpperFloor(a1),d0
+				move.l	Lvl_ZoneT_UpperFloor_l(a1),d0
 .okinbot:
 .onceiling
 
@@ -534,19 +534,19 @@ intodeco:
 
 				tst.w	O_FloorCeiling(a2)
 				beq.s	.onfloor
-				move.l	ToZoneRoof(a1),d0
+				move.l	Lvl_ZoneT_Roof_l(a1),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.okinbotc
-				move.l	ToUpperRoof(a1),d0
+				move.l	Lvl_ZoneT_UpperRoof_l(a1),d0
 .okinbotc:
 
 				bra.s	.onceiling
 
 .onfloor
-				move.l	ToZoneFloor(a1),d0
+				move.l	Lvl_ZoneT_Floor_l(a1),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.okinbot
-				move.l	ToUpperFloor(a1),d0
+				move.l	Lvl_ZoneT_UpperFloor_l(a1),d0
 .okinbot:
 .onceiling
 

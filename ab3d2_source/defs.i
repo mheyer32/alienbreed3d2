@@ -209,30 +209,31 @@ DL_Never		EQU		1
 *****************************
 * Data Offset Defs **********
 *****************************
+	; todo - what gives with the 16-bit alignment of these?
+	STRUCTURE Lvl_ZoneT,2
+		ULONG Lvl_ZoneT_Floor_l
+		ULONG Lvl_ZoneT_Roof_l
+		ULONG Lvl_ZoneT_UpperFloor_l
+		ULONG Lvl_ZoneT_UpperRoof_l
+		ULONG Lvl_ZoneT_Water_l
 
-ToZoneFloor		EQU		2
-ToZoneRoof		EQU		6
-ToUpperFloor	EQU		10
-ToUpperRoof		EQU		14
+		UWORD Lvl_ZoneT_Brightness_w
+		UWORD Lvl_ZoneT_UpperBrightness_w
+		UWORD Lvl_ZoneT_ControlPoint_w		; really UBYTE[2]
+		UWORD Lvl_ZoneT_BackSFXMask_w		; Originally long but always accessed as word
+		UWORD Lvl_ZoneT_Unused_w            ; so this is the unused half
+		UWORD Lvl_ZoneT_ExitList_w
+		UWORD Lvl_ZoneT_Points_w
 
-ToZoneWater		EQU		18
+		UBYTE Lvl_ZoneT_Back_b				; unused
+		UBYTE Lvl_ZoneT_Echo_b
 
-ToZoneBrightness EQU	22
-ToUpperBrightness EQU	24
-ToZoneCpt		EQU		26
-ToWallList		EQU		28
-ToBackSFX		EQU		28
-
-ToExitList		EQU		32
-ToZonePts		EQU		34
-ToBack			EQU		36
-ToEcho			EQU		37
-ToTelZone		EQU		38
-ToTelX			EQU		40
-ToTelZ			EQU		42
-ToFloorNoise	EQU		44
-ToUpperFloorNoise EQU	46
-ToListOfGraph	EQU		48
+		UWORD Lvl_ZoneT_TelZone_w
+		UWORD Lvl_ZoneT_TelX_w
+		UWORD Lvl_ZoneT_TelZ_w
+		UWORD Lvl_ZoneT_FloorNoise_w
+		UWORD Lvl_ZoneT_UpperFloorNoise_w
+		UWORD Lvl_ZoneT_ListOfGraph_w
 
 *****************************
 * Graphics definitions ******

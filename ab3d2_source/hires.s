@@ -532,7 +532,7 @@ blag:
 assignclips:
 				move.l	(a0)+,a3
 				add.l	a4,a3					; pointer to a zone
-				adda.w	#ToListOfGraph,a3		; pointer to zonelist
+				adda.w	#Lvl_ZoneT_ListOfGraph_w,a3		; pointer to zonelist
 dowholezone:
 				tst.w	(a3)
 				blt.s	nomorethiszone
@@ -1334,7 +1334,7 @@ okwat:
 				bsr		PLR1_Control
 
 				move.l	PLR1_Roompt,a0
-				move.l	ToZoneRoof(a0),SplitHeight
+				move.l	Lvl_ZoneT_Roof_l(a0),SplitHeight
 				move.w	p1_xoff,THISPLRxoff
 				move.w	p1_zoff,THISPLRzoff
 
@@ -1466,7 +1466,7 @@ NotOnePlayer:
 				bsr		PLR1_Control
 				bsr		PLR2_Control
 				move.l	PLR1_Roompt,a0
-				move.l	ToZoneRoof(a0),SplitHeight
+				move.l	Lvl_ZoneT_Roof_l(a0),SplitHeight
 				move.w	p1_xoff,THISPLRxoff
 				move.w	p1_zoff,THISPLRzoff
 
@@ -1591,7 +1591,7 @@ ASlaveShouldWaitOnHisMaster:
 				move.w	p2_xoff,THISPLRxoff
 				move.w	p2_zoff,THISPLRzoff
 				move.l	PLR2_Roompt,a0
-				move.l	ToZoneRoof(a0),SplitHeight
+				move.l	Lvl_ZoneT_Roof_l(a0),SplitHeight
 
 donetalking:
 
@@ -1613,7 +1613,7 @@ doallz
 
 				move.l	(a2,d0.w*4),a3
 				add.l	LEVELDATA,a3
-				move.w	ToZoneBrightness(a3),d2
+				move.w	Lvl_ZoneT_Brightness_w(a3),d2
 
 				blt.s	justbright
 				move.w	d2,d3
@@ -1629,7 +1629,7 @@ justbright:
 				divs	#20,d2
 				move.w	d2,(a1,d0.w*4)
 
-				move.w	ToUpperBrightness(a3),d2
+				move.w	Lvl_ZoneT_UpperBrightness_w(a3),d2
 
 				blt.s	justbright2
 				move.w	d2,d3
@@ -1907,8 +1907,8 @@ IWasPlayer1:
 ;
 ; add.l LEVELDATA,a2
 ;
-; move.l ToZoneWater(a2),d0
-; cmp.l ToZoneFloor(a2),d0
+; move.l Lvl_ZoneT_Water_l(a2),d0
+; cmp.l Lvl_ZoneT_Floor_l(a2),d0
 ; blt.s WEHAVEAHEIGHT
 ;
 ; bra.s checkwaterheights
@@ -2124,7 +2124,7 @@ notdoubwidth2:
 				cmp.b	#'n',mors
 				beq.s	plr1only
 
-				lea		ToListOfGraph(a0),a0
+				lea		Lvl_ZoneT_ListOfGraph_w(a0),a0
 .doallrooms:
 				move.w	(a0),d0
 				blt.s	.allroomsdone
@@ -2138,7 +2138,7 @@ notdoubwidth2:
 plr1only:
 
 				move.l	PLR1_Roompt,a0
-				lea		ToListOfGraph(a0),a0
+				lea		Lvl_ZoneT_ListOfGraph_w(a0),a0
 .doallrooms2:
 				move.w	(a0),d0
 				blt.s	.allroomsdone2
@@ -3881,11 +3881,11 @@ PLR1_Control:
 				move.l	#$1000000,StepDownVal
 
 				move.l	PLR1_Roompt,a0
-				move.w	ToTelZone(a0),d0
+				move.w	Lvl_ZoneT_TelZone_w(a0),d0
 				blt		.noteleport
 
-				move.w	ToTelX(a0),newx
-				move.w	ToTelZ(a0),newz
+				move.w	Lvl_ZoneT_TelX_w(a0),newx
+				move.w	Lvl_ZoneT_TelZ_w(a0),newz
 
 				move.l	PLR1_Obj,a0
 				move.w	(a0),CollId
@@ -3904,16 +3904,16 @@ PLR1_Control:
 				st		PLR1_TELEPORTED
 
 				move.l	PLR1_Roompt,a0
-				move.w	ToTelZone(a0),d0
-				move.w	ToTelX(a0),PLR1_xoff
-				move.w	ToTelZ(a0),PLR1_zoff
+				move.w	Lvl_ZoneT_TelZone_w(a0),d0
+				move.w	Lvl_ZoneT_TelX_w(a0),PLR1_xoff
+				move.w	Lvl_ZoneT_TelZ_w(a0),PLR1_zoff
 				move.l	PLR1_yoff,d1
-				sub.l	ToZoneFloor(a0),d1
+				sub.l	Lvl_ZoneT_Floor_l(a0),d1
 				move.l	ZoneAdds,a0
 				move.l	(a0,d0.w*4),a0
 				add.l	LEVELDATA,a0
 				move.l	a0,PLR1_Roompt
-				add.l	ToZoneFloor(a0),d1
+				add.l	Lvl_ZoneT_Floor_l(a0),d1
 				move.l	d1,PLR1s_yoff
 				move.l	d1,PLR1_yoff
 				move.l	d1,PLR1s_tyoff
@@ -3968,13 +3968,13 @@ PLR1_Control:
 
 				move.l	PLR1_Roompt,a0
 
-				move.l	ToZoneFloor(a0),d0
+				move.l	Lvl_ZoneT_Floor_l(a0),d0
 				tst.b	PLR1_StoodInTop
 				beq.s	notintop
-				move.l	ToUpperFloor(a0),d0
+				move.l	Lvl_ZoneT_UpperFloor_l(a0),d0
 notintop:
 
-				adda.w	#ToZonePts,a0
+				adda.w	#Lvl_ZoneT_Points_w,a0
 				sub.l	PLR1_height,d0
 				move.l	d0,PLR1s_tyoff
 				move.w	p1_angpos,tmpangpos
@@ -4099,11 +4099,11 @@ PLR2_Control:
 				move.l	#$1000000,StepDownVal
 
 				move.l	PLR2_Roompt,a0
-				move.w	ToTelZone(a0),d0
+				move.w	Lvl_ZoneT_TelZone_w(a0),d0
 				blt		.noteleport
 
-				move.w	ToTelX(a0),newx
-				move.w	ToTelZ(a0),newz
+				move.w	Lvl_ZoneT_TelX_w(a0),newx
+				move.w	Lvl_ZoneT_TelZ_w(a0),newz
 				move.w	PLR2_Obj,a0
 				move.w	(a0),CollId
 				move.l	#%111111111111111111,CollideFlags
@@ -4120,16 +4120,16 @@ PLR2_Control:
 				st		PLR2_TELEPORTED
 
 				move.l	PLR2_Roompt,a0
-				move.w	ToTelZone(a0),d0
-				move.w	ToTelX(a0),PLR2_xoff
-				move.w	ToTelZ(a0),PLR2_zoff
+				move.w	Lvl_ZoneT_TelZone_w(a0),d0
+				move.w	Lvl_ZoneT_TelX_w(a0),PLR2_xoff
+				move.w	Lvl_ZoneT_TelZ_w(a0),PLR2_zoff
 				move.l	PLR2_yoff,d1
-				sub.l	ToZoneFloor(a0),d1
+				sub.l	Lvl_ZoneT_Floor_l(a0),d1
 				move.l	ZoneAdds,a0
 				move.l	(a0,d0.w*4),a0
 				add.l	LEVELDATA,a0
 				move.l	a0,PLR2_Roompt
-				add.l	ToZoneFloor(a0),d1
+				add.l	Lvl_ZoneT_Floor_l(a0),d1
 				move.l	d1,PLR2s_yoff
 				move.l	d1,PLR2_yoff
 				move.l	d1,PLR2s_tyoff
@@ -4184,13 +4184,13 @@ PLR2_Control:
 
 				move.l	PLR2_Roompt,a0
 
-				move.l	ToZoneFloor(a0),d0
+				move.l	Lvl_ZoneT_Floor_l(a0),d0
 				tst.b	PLR2_StoodInTop
 				beq.s	.notintop
-				move.l	ToUpperFloor(a0),d0
+				move.l	Lvl_ZoneT_UpperFloor_l(a0),d0
 .notintop:
 
-				adda.w	#ToZonePts,a0
+				adda.w	#Lvl_ZoneT_Points_w,a0
 				sub.l	PLR2_height,d0
 				move.l	d0,PLR2s_tyoff
 				move.w	p2_angpos,tmpangpos
@@ -4308,7 +4308,7 @@ subroomloop:
 				move.l	ZoneAdds,a0
 				move.l	(a0,d7.w*4),a0
 				add.l	LEVELDATA,a0
-				move.l	ToZoneRoof(a0),SplitHeight
+				move.l	Lvl_ZoneT_Roof_l(a0),SplitHeight
 				move.l	a0,ROOMBACK
 
 				move.l	ZoneGraphAdds,a0
@@ -4399,8 +4399,8 @@ outofrcliplop:
 				st		DOUPPER
 
 				move.l	ROOMBACK,a1
-				move.l	ToUpperRoof(a1),TOPOFROOM
-				move.l	ToUpperFloor(a1),BOTOFROOM
+				move.l	Lvl_ZoneT_UpperRoof_l(a1),TOPOFROOM
+				move.l	Lvl_ZoneT_UpperFloor_l(a1),BOTOFROOM
 
 				move.l	#CurrentPointBrights+4,PointBrightsPtr
 				bsr		dothisroom
@@ -4410,12 +4410,12 @@ noupperroom:
 				move.l	#CurrentPointBrights,PointBrightsPtr
 
 				move.l	ROOMBACK,a1
-				move.l	ToZoneRoof(a1),d0
+				move.l	Lvl_ZoneT_Roof_l(a1),d0
 				move.l	d0,TOPOFROOM
-				move.l	ToZoneFloor(a1),d1
+				move.l	Lvl_ZoneT_Floor_l(a1),d1
 				move.l	d1,BOTOFROOM
 
-				move.l	ToZoneWater(a1),d2
+				move.l	Lvl_ZoneT_Water_l(a1),d2
 				cmp.l	yoff,d2
 				blt.s	.abovefirst
 				move.l	d2,BEFOREWATTOP
@@ -4440,12 +4440,12 @@ botfirst:
 				move.l	#CurrentPointBrights,PointBrightsPtr
 
 				move.l	ROOMBACK,a1
-				move.l	ToZoneRoof(a1),d0
+				move.l	Lvl_ZoneT_Roof_l(a1),d0
 				move.l	d0,TOPOFROOM
-				move.l	ToZoneFloor(a1),d1
+				move.l	Lvl_ZoneT_Floor_l(a1),d1
 				move.l	d1,BOTOFROOM
 
-				move.l	ToZoneWater(a1),d2
+				move.l	Lvl_ZoneT_Water_l(a1),d2
 				cmp.l	yoff,d2
 				blt.s	.abovefirst
 				move.l	d2,BEFOREWATTOP
@@ -4468,8 +4468,8 @@ botfirst:
 				move.l	#CurrentPointBrights+4,PointBrightsPtr
 
 				move.l	ROOMBACK,a1
-				move.l	ToUpperRoof(a1),TOPOFROOM
-				move.l	ToUpperFloor(a1),BOTOFROOM
+				move.l	Lvl_ZoneT_UpperRoof_l(a1),TOPOFROOM
+				move.l	Lvl_ZoneT_UpperFloor_l(a1),BOTOFROOM
 
 				st		DOUPPER
 				bsr		dothisroom
@@ -9831,10 +9831,10 @@ dosomething:
 				move.w	#100,timetodamage
 
 				move.l	PLR1_Roompt,a0
-				move.w	ToFloorNoise(a0),d0
+				move.w	Lvl_ZoneT_FloorNoise_w(a0),d0
 				tst.b	PLR1_StoodInTop
 				beq.s	.okinbot
-				move.w	ToUpperFloorNoise(a0),d0
+				move.w	Lvl_ZoneT_UpperFloorNoise_w(a0),d0
 .okinbot:
 
 				move.l	LINKFILE,a0
@@ -9844,10 +9844,10 @@ dosomething:
 				add.b	d0,AI_EntT_DamageTaken_b(a0)
 
 				move.l	PLR2_Roompt,a0
-				move.w	ToFloorNoise(a0),d0
+				move.w	Lvl_ZoneT_FloorNoise_w(a0),d0
 				tst.b	PLR2_StoodInTop
 				beq.s	.okinbot2
-				move.w	ToUpperFloorNoise(a0),d0
+				move.w	Lvl_ZoneT_UpperFloorNoise_w(a0),d0
 .okinbot2:
 
 				move.l	LINKFILE,a0

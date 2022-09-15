@@ -25,7 +25,7 @@ BRIGHTENPOINTS:
 				move.l	Points,a3
 				move.l	ZoneBorderPts,a4
 
-				lea		ToListOfGraph(a0),a1
+				lea		Lvl_ZoneT_ListOfGraph_w(a0),a1
 BRIGHTPTS:
 				move.w	(a1),d4
 				blt		brightall
@@ -64,13 +64,13 @@ ROOMPTLOP
 				add.w	d6,d5
 
 				move.l	BRIGHTY,d4
-				cmp.l	ToZoneFloor(a0),d4
+				cmp.l	Lvl_ZoneT_Floor_l(a0),d4
 				bgt		.noBRIGHT1
-				cmp.l	ToZoneRoof(a0),d4
+				cmp.l	Lvl_ZoneT_Roof_l(a0),d4
 				blt		.noBRIGHT1
 
 				move.w	d5,d6
-				move.l	ToZoneRoof(a0),d4
+				move.l	Lvl_ZoneT_Roof_l(a0),d4
 				sub.l	BRIGHTY,d4
 				bgt.s	.noBRIGHT2
 				neg.l	d4
@@ -96,7 +96,7 @@ ROOMPTLOP
 .noBRIGHT2
 
 				move.w	d5,d6
-				move.l	ToZoneFloor(a0),d4
+				move.l	Lvl_ZoneT_Floor_l(a0),d4
 				sub.l	BRIGHTY,d4
 				blt.s	.noBRIGHT1
 				asr.l	#7,d4
@@ -122,13 +122,13 @@ ROOMPTLOP
 .noBRIGHT1
 
 				move.l	BRIGHTY,d4
-				cmp.l	ToUpperFloor(a0),d4
+				cmp.l	Lvl_ZoneT_UpperFloor_l(a0),d4
 				bgt		.noBRIGHT4
-				cmp.l	ToUpperRoof(a0),d4
+				cmp.l	Lvl_ZoneT_UpperRoof_l(a0),d4
 				blt		.noBRIGHT4
 
 				move.w	d5,d6
-				move.l	ToUpperFloor(a0),d4
+				move.l	Lvl_ZoneT_UpperFloor_l(a0),d4
 				sub.l	BRIGHTY,d4
 				blt.s	.noBRIGHT3
 				asr.l	#7,d4
@@ -155,7 +155,7 @@ ROOMPTLOP
 
 
 				move.w	d5,d6
-				move.l	ToUpperRoof(a0),d4
+				move.l	Lvl_ZoneT_UpperRoof_l(a0),d4
 				sub.l	BRIGHTY,d4
 				bgt.s	.noBRIGHT4
 				neg.l	d4
@@ -216,7 +216,7 @@ BRIGHTENPOINTSANGLE:
 				move.l	Points,a3
 				move.l	ZoneBorderPts,a4
 
-				lea		ToListOfGraph(a0),a1
+				lea		Lvl_ZoneT_ListOfGraph_w(a0),a1
 
 BRIGHTPTSA:
 				move.w	(a1),d4
@@ -297,13 +297,13 @@ ROOMPTLOPA
 				add.w	d4,d5
 
 				move.l	BRIGHTY,d4
-				cmp.l	ToZoneFloor(a0),d4
+				cmp.l	Lvl_ZoneT_Floor_l(a0),d4
 				bgt		.noBRIGHT1
-				cmp.l	ToZoneRoof(a0),d4
+				cmp.l	Lvl_ZoneT_Roof_l(a0),d4
 				blt		.noBRIGHT1
 
 				move.w	d5,d6
-				move.l	ToZoneRoof(a0),d4
+				move.l	Lvl_ZoneT_Roof_l(a0),d4
 				sub.l	BRIGHTY,d4
 				bgt.s	.noBRIGHT2
 				neg.l	d4
@@ -328,7 +328,7 @@ ROOMPTLOPA
 
 
 				move.w	d5,d6
-				move.l	ToZoneFloor(a0),d4
+				move.l	Lvl_ZoneT_Floor_l(a0),d4
 				sub.l	BRIGHTY,d4
 				blt.s	.noBRIGHT1
 				asr.l	#7,d4
@@ -351,13 +351,13 @@ ROOMPTLOPA
 .noBRIGHT1
 
 				move.l	BRIGHTY,d4
-				cmp.l	ToUpperFloor(a0),d4
+				cmp.l	Lvl_ZoneT_UpperFloor_l(a0),d4
 				bgt		.noBRIGHT4
-				cmp.l	ToUpperRoof(a0),d4
+				cmp.l	Lvl_ZoneT_UpperRoof_l(a0),d4
 				blt		.noBRIGHT4
 
 				move.w	d5,d6
-				move.l	ToUpperFloor(a0),d4
+				move.l	Lvl_ZoneT_UpperFloor_l(a0),d4
 				sub.l	BRIGHTY,d4
 				blt.s	.noBRIGHT3
 
@@ -382,7 +382,7 @@ ROOMPTLOPA
 
 
 				move.w	d5,d6
-				move.l	ToUpperRoof(a0),d4
+				move.l	Lvl_ZoneT_UpperRoof_l(a0),d4
 				sub.l	BRIGHTY,d4
 				bgt.s	.noBRIGHT4
 				neg.l	d4
@@ -434,7 +434,7 @@ DARKENPOINTS
 				move.l	Points,a3
 
 				move.l	a0,a1
-				add.w	ToZonePts(a0),a1
+				add.w	Lvl_ZoneT_Points_w(a0),a1
 DARKPTS:
 				move.w	(a1)+,d4
 				blt.s	DARKall
@@ -483,7 +483,7 @@ Flash:
 
 				move.l	a0,-(a7)
 
-				add.w	ToZonePts(a0),a0
+				add.w	Lvl_ZoneT_Points_w(a0),a0
 flashpts:
 				move.w	(a0)+,d2
 				blt.s	flashedall
@@ -498,7 +498,7 @@ flashedall:
 				add.w	d1,(a1,d0.w*4)
 				add.w	d1,2(a1,d0.w*4)
 
-				add.l	#ToListOfGraph,a0
+				add.l	#Lvl_ZoneT_ListOfGraph_w,a0
 
 doemall:
 				move.w	(a0),d0
@@ -756,7 +756,7 @@ BACKSFX:
 				sub.w	ODDEVEN,d0
 				move.w	d0,ODDEVEN
 
-				move.w	ToBackSFX(a0),d1		; mask for sfx
+				move.w	Lvl_ZoneT_BackSFXMask_w(a0),d1		; mask for sfx
 				beq		.nosfx
 
 				jsr		GetRand
@@ -895,7 +895,7 @@ okzone:
 				move.l	ZoneAdds,a1
 				move.l	(a1,d2.w*4),a1
 				add.l	LEVELDATA,a1
-				move.l	d1,ToZoneWater(a1)
+				move.l	d1,Lvl_ZoneT_Water_l(a1)
 
 				bra.s	morezones
 
@@ -970,7 +970,7 @@ notallliftsdone:
 				move.l	ZoneAdds,a1
 				move.l	(a1,d7.w*4),a1
 				add.l	LEVELDATA,a1
-				move.b	ToEcho(a1),PlayEcho
+				move.b	Lvl_ZoneT_Echo_b(a1),PlayEcho
 
 				move.w	d2,d7					; speed of movement.
 
@@ -1334,7 +1334,7 @@ notalldoorsdone:
 				move.l	ZoneAdds,a1
 				move.l	(a1,d7.w*4),a1
 				add.l	LEVELDATA,a1
-				move.b	ToEcho(a1),PlayEcho
+				move.b	Lvl_ZoneT_Echo_b(a1),PlayEcho
 
 				muls	TempFrames,d2
 				add.w	d2,d3
@@ -1978,10 +1978,10 @@ notexploding:
 				move.l	ZoneAdds,a1
 				move.l	(a1,d0.w*4),a1
 				add.l	LEVELDATA,a1
-				move.l	ToZoneFloor(a1),d0
+				move.l	Lvl_ZoneT_Floor_l(a1),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.okinbot
-				move.l	ToUpperFloor(a1),d0
+				move.l	Lvl_ZoneT_UpperFloor_l(a1),d0
 .okinbot:
 				asr.l	#7,d0
 				sub.w	#60,d0
@@ -2085,10 +2085,10 @@ ItsAMediKit:
 				move.l	ZoneAdds,a1
 				move.l	(a1,d0.w*4),a1
 				add.l	LEVELDATA,a1
-				move.l	ToZoneFloor(a1),d0
+				move.l	Lvl_ZoneT_Floor_l(a1),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.okinbot
-				move.l	ToUpperFloor(a1),d0
+				move.l	Lvl_ZoneT_UpperFloor_l(a1),d0
 .okinbot:
 				asr.l	#7,d0
 				sub.w	#32,d0
@@ -3228,7 +3228,7 @@ notdoneanim:
 
 ********************************
 				move.l	objroom,a3
-				move.b	ToEcho(a3),PlayEcho
+				move.b	Lvl_ZoneT_Echo_b(a3),PlayEcho
 
 				tst.b	ObjInTop(a0)
 				beq.s	.notintop
@@ -4243,12 +4243,12 @@ DOFLAMES:
 
 				move.l	newy,d0
 
-				move.l	ToZoneFloor(a2),d1
-				move.l	ToZoneRoof(a2),d2
+				move.l	Lvl_ZoneT_Floor_l(a2),d1
+				move.l	Lvl_ZoneT_Roof_l(a2),d2
 				tst.b	ObjInTop(a0)
 				beq.s	.okinbot
-				move.l	ToUpperFloor(a2),d1
-				move.l	ToUpperRoof(a2),d2
+				move.l	Lvl_ZoneT_UpperFloor_l(a2),d1
+				move.l	Lvl_ZoneT_UpperRoof_l(a2),d2
 
 .okinbot:
 				cmp.l	d0,d1

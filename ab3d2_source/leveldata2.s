@@ -13,7 +13,7 @@ INITPLAYER:
 				add.l	LEVELDATA,d0
 				move.l	d0,PLR1_Roompt
 				move.l	PLR1_Roompt,a0
-				move.l	ToZoneFloor(a0),d0
+				move.l	Lvl_ZoneT_Floor_l(a0),d0
 				sub.l	#playerheight,d0
 				move.l	d0,PLR1s_yoff
 				move.l	d0,PLR1_yoff
@@ -28,7 +28,7 @@ INITPLAYER:
 				add.l	LEVELDATA,d0
 				move.l	d0,PLR2_Roompt
 				move.l	PLR2_Roompt,a0
-				move.l	ToZoneFloor(a0),d0
+				move.l	Lvl_ZoneT_Floor_l(a0),d0
 				sub.l	#playerheight,d0
 				move.l	d0,PLR2s_yoff
 				move.l	d0,PLR2_yoff

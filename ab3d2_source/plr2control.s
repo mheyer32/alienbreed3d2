@@ -241,12 +241,12 @@ PLR2_alwayskeys
 .notduck:
 
 				move.l	PLR2_Roompt,a4
-				move.l	ToZoneFloor(a4),d0
-				sub.l	ToZoneRoof(a4),d0
+				move.l	Lvl_ZoneT_Floor_l(a4),d0
+				sub.l	Lvl_ZoneT_Roof_l(a4),d0
 				tst.b	PLR2_StoodInTop
 				beq.s	.usebottom
-				move.l	ToUpperFloor(a4),d0
-				sub.l	ToUpperRoof(a4),d0
+				move.l	Lvl_ZoneT_UpperFloor_l(a4),d0
+				sub.l	Lvl_ZoneT_UpperRoof_l(a4),d0
 .usebottom:
 
 				clr.b	PLR2_Squished
@@ -696,10 +696,10 @@ PLR2clump:
 
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.l	PLR2_Roompt,a0
-				move.w	ToFloorNoise(a0),d0
+				move.w	Lvl_ZoneT_FloorNoise_w(a0),d0
 
-				move.l	ToZoneWater(a0),d1
-				cmp.l	ToZoneFloor(a0),d1
+				move.l	Lvl_ZoneT_Water_l(a0),d1
+				cmp.l	Lvl_ZoneT_Floor_l(a0),d1
 				bge.s	THERESNOWATER2
 
 				cmp.l	PLR2_yoff,d1
@@ -715,7 +715,7 @@ THERESNOWATER2:
 
 				tst.b	PLR2_StoodInTop
 				beq.s	.okinbot
-				move.w	ToUpperFloorNoise(a0),d0
+				move.w	Lvl_ZoneT_UpperFloorNoise_w(a0),d0
 .okinbot:
 
 				move.l	LINKFILE,a0
