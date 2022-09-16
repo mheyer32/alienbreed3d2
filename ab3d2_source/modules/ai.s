@@ -880,17 +880,17 @@ ai_AttackCommon:
 				move.b	d0,SHOTTYPE
 				move.l	LINKFILE,a1
 				lea		BulletAnimData(a1),a1
-				muls	#B_BulStatLen,d0
+				muls	#GLF_BulT_Length_l,d0
 				add.l	d0,a1
-				move.l	B_DamageToTarget(a1),d0
+				move.l	GLF_BulT_DamageToTarget_l(a1),d0
 				move.b	d0,SHOTPOWER
 				clr.l	d1
-				move.l	B_MovementSpeed(a1),d0
+				move.l	GLF_BulT_MovementSpeed_l(a1),d0
 				bset	d0,d1
 				move.w	d1,SHOTSPEED
 				sub.w	#1,d0
 				move.w	d0,SHOTSHIFT
-				tst.l	B_VisibleOrInstant(a1)
+				tst.l	GLF_BulT_VisibleOrInstant_l(a1)
 				beq		ai_AttackWithProjectile
 
 ai_AttackWithHitScan:

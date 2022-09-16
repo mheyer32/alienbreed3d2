@@ -40,10 +40,10 @@ okcanfire:
 				move.l	#PLAYERONEAMMO,a0
 				move.w	(a0,d0.w*2),AmmoInMyGun
 
-				muls	#B_BulStatLen,d0
+				muls	#GLF_BulT_Length_l,d0
 				add.w	d0,a5
 
-				move.w	B_MovementSpeed+2(a5),BulletSpd
+				move.w	GLF_BulT_MovementSpeed_l+2(a5),BulletSpd
 
 ; tst.w (a6)
 ; beq.s .itsaclick
@@ -199,7 +199,7 @@ okdistthing
 				tst.w	d0
 				blt		nothingtoshoot
 
-				tst.l	B_Gravity(a5)
+				tst.l	GLF_BulT_Gravity_l(a5)
 				beq.s	.notuseaim
 				move.w	PLR1_AIMSPD,d2
 				move.w	#8,d1
@@ -208,7 +208,7 @@ okdistthing
 				move.w	d2,bulyspd
 .notuseaim
 
-				tst.w	B_VisibleOrInstant+2(a5)
+				tst.w	GLF_BulT_VisibleOrInstant_l+2(a5)
 				beq		PLR1FIREBULLET
 
 ; instant effect: check for hitting:
@@ -266,7 +266,7 @@ nothingtoshoot:
 				sub.w	BulletSpd,d1
 				asr.w	d1,d0
 				move.w	d0,bulyspd
-				tst.w	B_VisibleOrInstant+2(a5)
+				tst.w	GLF_BulT_VisibleOrInstant_l+2(a5)
 				beq		PLR1FIREBULLET
 
 				move.w	#0,bulyspd
@@ -391,10 +391,10 @@ okcanfire2:
 				move.l	#PLAYERTWOAMMO,a0
 				move.w	(a0,d0.w*2),AmmoInMyGun
 
-				muls	#B_BulStatLen,d0
+				muls	#GLF_BulT_Length_l,d0
 				add.w	d0,a5
 
-				move.w	B_MovementSpeed+2(a5),BulletSpd
+				move.w	GLF_BulT_MovementSpeed_l+2(a5),BulletSpd
 
 ; tst.w 12(a6)
 ; beq.s .itsaclick
@@ -550,7 +550,7 @@ okdistthing2
 				tst.w	d0
 				blt		nothingtoshoot2
 
-				tst.l	B_Gravity(a5)
+				tst.l	GLF_BulT_Gravity_l(a5)
 				beq.s	.notuseaim
 				move.w	PLR2_AIMSPD,d2
 				move.w	#8,d1
@@ -559,7 +559,7 @@ okdistthing2
 				move.w	d2,bulyspd
 .notuseaim
 
-				tst.w	B_VisibleOrInstant+2(a5)
+				tst.w	GLF_BulT_VisibleOrInstant_l+2(a5)
 				beq		PLR2FIREBULLET
 
 ; instant effect: check for hitting:
@@ -617,7 +617,7 @@ nothingtoshoot2:
 				sub.w	BulletSpd,d1
 				asr.w	d1,d0
 				move.w	d0,bulyspd
-				tst.w	B_VisibleOrInstant+2(a5)
+				tst.w	GLF_BulT_VisibleOrInstant_l+2(a5)
 				beq		PLR2FIREBULLET
 
 				move.w	#0,bulyspd
@@ -768,9 +768,9 @@ firefive:
 				rts
 
 .foundonefree
-				move.w	B_Gravity+2(a5),shotgrav(a0)
-				move.b	B_BounceOffWalls+3(a5),shotflags(a0)
-				move.b	B_BounceOffFloors+3(a5),shotflags+1(a0)
+				move.w	GLF_BulT_Gravity_l+2(a5),shotgrav(a0)
+				move.b	GLF_BulT_BounceOffWalls_l+3(a5),shotflags(a0)
+				move.b	GLF_BulT_BounceOffFloors_l+3(a5),shotflags+1(a0)
 
 				move.w	bulyspd,d0
 
@@ -790,7 +790,7 @@ firefive:
 
 				move.l	#ObjRotated,a2
 				move.b	BULTYPE+1,shotsize(a0)
-				move.b	B_DamageToTarget+3(a5),shotpower(a0)
+				move.b	GLF_BulT_DamageToTarget_l+3(a5),shotpower(a0)
 
 				move.l	ObjectPoints,a1
 				move.w	(a0),d1
@@ -867,7 +867,7 @@ PLR1HITINSTANT:
 				st		worry(a0)
 				move.w	4(a4),4(a0)
 
-				move.w	B_DamageToTarget+2(a5),d0
+				move.w	GLF_BulT_DamageToTarget_l+2(a5),d0
 				add.b	d0,AI_EntT_DamageTaken_b(a4)
 
 				move.w	tempxdir,d1
@@ -1009,7 +1009,7 @@ PLR2HITINSTANT:
 				st		worry(a0)
 				move.w	4(a4),4(a0)
 
-				move.w	B_DamageToTarget+2(a5),d0
+				move.w	GLF_BulT_DamageToTarget_l+2(a5),d0
 				add.b	d0,AI_EntT_DamageTaken_b(a4)
 
 				move.w	tempxdir,d1

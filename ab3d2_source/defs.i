@@ -2,41 +2,39 @@
 * Game link file offsets *
 **************************
 
-LevelName		EQU		64
+LevelName			EQU	64
+ObjectGfxNames		EQU	LevelName+40*16
+SFXFilenames		EQU	ObjectGfxNames+64*30
+FloorTileFilename	EQU	SFXFilenames+64*60
+TextureFilename		EQU	FloorTileFilename+64
+GunGFXFilename		EQU	FloorTileFilename+256
+BlurbFileName		EQU	GunGFXFilename+64
+BulletAnimData		EQU	BlurbFileName+64
 
-ObjectGfxNames	EQU		LevelName+40*16
+	; Game Link File: Bullet Definition
+	STRUCTURE GLF_BulT,0
+		ULONG GLF_BulT_VisibleOrInstant_l
+		ULONG GLF_BulT_Gravity_l
+		ULONG GLF_BulT_LifeTime_l
+		ULONG GLF_BulT_AmmoInClip_l
+		ULONG GLF_BulT_BounceOffWalls_l
+		ULONG GLF_BulT_BounceOffFloors_l
+		ULONG GLF_BulT_DamageToTarget_l
+		ULONG GLF_BulT_ExplosiveForce_l
+		ULONG GLF_BulT_MovementSpeed_l
+		ULONG GLF_BulT_AnimFrames_l
+		ULONG GLF_BulT_PopFrames_l
+		ULONG GLF_BulT_BounceSFX_l
+		ULONG GLF_BulT_ImpactSFX_l
+		ULONG GLF_BulT_GraphType_l
+		ULONG GLF_BulT_ImpactGraphicType_l
+		LABEL GLF_BulT_StartOfAnim_vb
+SOFFSET	    SET	    SOFFSET+(6*20)
+		LABEL GLF_BulT_StartOfPop_vb
+SOFFSET	    SET	    SOFFSET+(6*20)
+		LABEL GLF_BulT_Length_l
 
-SFXFilenames	EQU		ObjectGfxNames+64*30
-
-FloorTileFilename EQU	SFXFilenames+64*60
-TextureFilename	EQU		FloorTileFilename+64
-
-GunGFXFilename	equ		FloorTileFilename+256
-
-BlurbFileName	equ		GunGFXFilename+64
-
-BulletAnimData	equ		BlurbFileName+64
-B_VisibleOrInstant equ	0
-B_Gravity		equ		4
-B_LifeTime		equ		8
-B_AmmoInClip	equ		12
-B_BounceOffWalls equ	16
-B_BounceOffFloors equ	20
-B_DamageToTarget equ	24
-B_ExplosiveForce equ	28
-B_MovementSpeed	equ		32
-B_AnimFrames	equ		36
-B_PopFrames		equ		40
-B_BounceSFX		equ		44
-B_ImpactSFX		equ		48
-B_GraphType		equ		52
-B_ImpactGraphicType equ	56
-B_StartOfAnim	equ		60
-B_StartOfPop	equ		B_StartOfAnim+6*20
-B_BulStatLen	equ		B_StartOfAnim+(6*20*2)
-
-BulletNames		equ		BulletAnimData+(20*B_BulStatLen)
-
+BulletNames		equ		BulletAnimData+(20*GLF_BulT_Length_l)
 GunNames		equ		BulletNames+20*20
 
 GunBulletTypes	equ		GunNames+10*20

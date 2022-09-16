@@ -3058,7 +3058,7 @@ ItsABullet:
 
 				moveq	#0,d1
 				move.b	shotsize(a0),d1
-				muls	#B_BulStatLen,d1
+				muls	#GLF_BulT_Length_l,d1
 				move.l	LINKFILE,a6
 				lea		BulletAnimData(a6),a6
 				add.l	d1,a6
@@ -3071,7 +3071,7 @@ ItsABullet:
 				move.w	shotlife(a0),d2
 				blt.s	infinite
 
-				move.l	B_LifeTime(a6),d1
+				move.l	GLF_BulT_LifeTime_l(a6),d1
 				blt.s	infinite
 
 				cmp.w	d2,d1
@@ -3096,7 +3096,7 @@ noworrylife:
 				tst.b	shotstatus(a0)
 				beq		notpopping
 
-				lea		B_StartOfPop(a6),a1
+				lea		GLF_BulT_StartOfPop_vb(a6),a1
 				moveq	#0,d1
 				move.b	shotanim(a0),d1
 
@@ -3107,7 +3107,7 @@ noworrylife:
 
 				move.l	#0,8(a0)
 
-				cmp.l	#1,B_ImpactGraphicType(a6)
+				cmp.l	#1,GLF_BulT_ImpactGraphicType_l(a6)
 				blt.s	.bitmapgraph
 				beq.s	.glaregraph
 .additivegraph:
@@ -3137,7 +3137,7 @@ noworrylife:
 .donegraph:
 
 				addq	#1,d2
-				cmp.w	B_PopFrames+2(a6),d2
+				cmp.w	GLF_BulT_PopFrames_l+2(a6),d2
 				ble.s	notdonepopping
 
 				move.w	#-1,12(a0)
@@ -3171,7 +3171,7 @@ notpopping:
 
 				move.b	shotsize(a0),BLOODYGREATBOMB
 
-				lea		B_StartOfAnim(a6),a1
+				lea		GLF_BulT_StartOfAnim_vb(a6),a1
 				moveq	#0,d1
 				move.b	shotanim(a0),d1
 
@@ -3182,7 +3182,7 @@ notpopping:
 
 				move.l	#0,8(a0)
 
-				cmp.l	#1,B_GraphType(a6)
+				cmp.l	#1,GLF_BulT_GraphType_l(a6)
 				blt.s	.bitmapgraph
 				beq.s	.glaregraph
 .additivegraph:
@@ -3212,7 +3212,7 @@ notpopping:
 .donegraph:
 
 				addq	#1,d2
-				cmp.w	B_AnimFrames+2(a6),d2
+				cmp.w	GLF_BulT_AnimFrames_l+2(a6),d2
 				ble.s	notdoneanim
 
 				move.w	#0,d2
@@ -3249,7 +3249,7 @@ notdoneanim:
 				add.l	#10*128,d0
 				move.l	d0,accypos(a0)
 
-				tst.l	B_Gravity(a6)
+				tst.l	GLF_BulT_Gravity_l(a6)
 				beq		.nohitroof
 
 ; btst #1,shotflags+1(a0)
@@ -3269,7 +3269,7 @@ notdoneanim:
 				move.b	#0,shotanim(a0)
 				move.b	#1,shotstatus(a0)
 
-				move.l	B_ImpactSFX(a6),d0
+				move.l	GLF_BulT_ImpactSFX_l(a6),d0
 				subq.l	#1,d0
 				blt.s	.nohitnoise
 
@@ -3287,7 +3287,7 @@ notdoneanim:
 
 .nohitnoise:
 
-				move.l	B_ExplosiveForce(a6),d0
+				move.l	GLF_BulT_ExplosiveForce_l(a6),d0
 				beq.s	.noexplosion
 
 				move.w	newx,Viewerx
@@ -3309,7 +3309,7 @@ notdoneanim:
 				cmp.l	#10*128,d0
 				bgt		.nohitfloor
 
-				tst.l	B_BounceOffFloors(a6)
+				tst.l	GLF_BulT_BounceOffFloors_l(a6)
 				beq.s	.nobounceup
 
 				tst.w	shotyvel(a0)
@@ -3327,7 +3327,7 @@ notdoneanim:
 
 ; btst #1,shotflags+1(a0)
 ; beq .nohitfloor
-				tst.l	B_Gravity(a6)
+				tst.l	GLF_BulT_Gravity_l(a6)
 				beq		.nohitfloor
 
 				move.l	shotxvel(a0),d0
@@ -3344,7 +3344,7 @@ notdoneanim:
 
 				move.b	#0,shotanim(a0)
 				move.b	#1,shotstatus(a0)
-				move.l	B_ImpactSFX(a6),d0
+				move.l	GLF_BulT_ImpactSFX_l(a6),d0
 				subq.l	#1,d0
 				blt.s	.nohitnoise2
 
@@ -3359,7 +3359,7 @@ notdoneanim:
 				movem.l	(a7)+,d0-d7/a0-a6
 .nohitnoise2:
 				moveq	#0,d0
-				move.l	B_ExplosiveForce(a6),d0
+				move.l	GLF_BulT_ExplosiveForce_l(a6),d0
 				beq.s	.noexplosion2
 
 				move.w	4(a0),Viewery
@@ -3408,7 +3408,7 @@ notdoneanim:
 
 				move.w	shotyvel(a0),d3
 				muls	TempFrames,d3
-				move.l	B_Gravity(a6),d5
+				move.l	GLF_BulT_Gravity_l(a6),d5
 				beq.s	nograv
 				muls	TempFrames,d5
 				add.l	d5,d3
@@ -3431,7 +3431,7 @@ nograv:
 				add.l	#5*128,d4
 				asr.l	#7,d4
 				move.w	d4,4(a0)
-				tst.l	B_BounceOffWalls(a6)
+				tst.l	GLF_BulT_BounceOffWalls_l(a6)
 				sne		wallbounce
 				seq		exitfirst
 
@@ -3507,7 +3507,7 @@ nomovebul:
 ; btst #1,shotflags+1(a0)
 ; beq .nothitwall
 
-				tst.l	B_Gravity(a6)
+				tst.l	GLF_BulT_Gravity_l(a6)
 				beq		.nothitwall
 
 				move.l	shotxvel(a0),d0
@@ -3535,7 +3535,7 @@ nomovebul:
 				move.b	#0,shotanim(a0)
 				move.b	#1,shotstatus(a0)
 
-				move.l	B_ImpactSFX(a6),d0
+				move.l	GLF_BulT_ImpactSFX_l(a6),d0
 				subq.l	#1,d0
 				blt.s	.nohitnoise
 
@@ -3551,7 +3551,7 @@ nomovebul:
 
 .nohitnoise:
 
-				move.l	B_ExplosiveForce(a6),d0
+				move.l	GLF_BulT_ExplosiveForce_l(a6),d0
 				beq.s	.noexplosion
 
 				move.w	newx,Viewerx
@@ -3756,7 +3756,7 @@ notasplut:
 				move.b	#0,shotanim(a0)
 				move.b	#1,shotstatus(a0)
 
-				move.l	B_ImpactSFX(a6),d0
+				move.l	GLF_BulT_ImpactSFX_l(a6),d0
 				subq.l	#1,d0
 				blt.s	.nohitnoise3
 
@@ -3770,7 +3770,7 @@ notasplut:
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
 .nohitnoise3:
-				move.l	B_ExplosiveForce(a6),d0
+				move.l	GLF_BulT_ExplosiveForce_l(a6),d0
 				beq.s	.noexplosion3
 
 				move.w	4(a0),Viewery
@@ -3988,10 +3988,10 @@ HitObjLoop:
 				moveq	#0,d7
 				move.b	shotsize(a2),d7
 				move.l	LINKFILE,a3
-				muls	#B_BulStatLen,d7
+				muls	#GLF_BulT_Length_l,d7
 				add.l	#BulletAnimData,a3
 				add.l	d7,a3
-				tst.l	B_Gravity(a3)
+				tst.l	GLF_BulT_Gravity_l(a3)
 				beq.s	HitObjLoop
 				bra.s	.okblast
 
