@@ -23,7 +23,7 @@ walltiles:		ds.l	40
 Res_LoadObjects:
 ; PRSDG
 				move.l	#io_ObjectPointers_vl,a2
-				move.l	LINKFILE,a0
+				move.l	GLF_DatabasePtr_l,a0
 				lea		ObjectGfxNames(a0),a0
 				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	#Objects,a1
@@ -85,7 +85,7 @@ Res_LoadObjects:
 				bne		.load_object_loop
 
 				move.l	#POLYOBJECTS,a2
-				move.l	LINKFILE,a0
+				move.l	GLF_DatabasePtr_l,a0
 				add.l	#VectorGfxNames,a0
 
 .load_vector_loop:
@@ -130,7 +130,7 @@ Res_FreeObjects:
 ; *****************************************************************************
 
 Res_LoadSoundFx:
-				move.l	LINKFILE,a0
+				move.l	GLF_DatabasePtr_l,a0
 				lea		SFXFilenames(a0),a0
 				move.l	#SampleList,a1
 				move.w	#58,d7
@@ -194,7 +194,7 @@ Res_FreeSoundFx:
 ; *****************************************************************************
 
 Res_LoadFloorTextures:
-				move.l	LINKFILE,a0
+				move.l	GLF_DatabasePtr_l,a0
 				add.l	#FloorTileFilename,a0
 				move.l	#floortile,d0
 				move.l	#0,d1
@@ -202,7 +202,7 @@ Res_LoadFloorTextures:
 				jsr		IO_QueueFile
 
 ; move.l d0,floortile
-				move.l	LINKFILE,a0
+				move.l	GLF_DatabasePtr_l,a0
 				add.l	#TextureFilename,a0
 				move.l	#io_Buffer_vb,a1
 
@@ -257,7 +257,7 @@ Res_LoadWallTextures:
 				dbra	d7,.empty_walls
 
 				move.l	#walltiles,a4
-				move.l	LINKFILE,a3
+				move.l	GLF_DatabasePtr_l,a3
 				add.l	#WallGFXNames,a3
 				move.l	#MEMF_ANY,IO_MemType_l
 

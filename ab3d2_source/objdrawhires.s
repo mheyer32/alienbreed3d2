@@ -581,7 +581,7 @@ glareobj:
 ; height of object in pixels
 ; horizontal constants
 ; vertical constants.
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				lea		FrameData(a6),a6
 				move.l	#Objects,a5
 				move.w	2(a0),d7
@@ -977,7 +977,7 @@ pastobjscale:
 ; horizontal constants
 ; vertical constants.
 
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				lea		FrameData(a6),a6
 				move.l	#Objects,a5
 				move.w	2(a0),d7

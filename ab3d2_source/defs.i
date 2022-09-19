@@ -34,10 +34,10 @@ SOFFSET	    SET	    SOFFSET+(6*20)
 SOFFSET	    SET	    SOFFSET+(6*20)
 		LABEL GLF_BulT_SizeOf_l
 
-BulletNames		equ		BulletAnimData+(20*GLF_BulT_SizeOf_l)
-GunNames		equ		BulletNames+20*20
+BulletNames		EQU		BulletAnimData+(20*GLF_BulT_SizeOf_l)
+GunNames		EQU		BulletNames+20*20
 
-GunBulletTypes	equ		GunNames+10*20
+GunBulletTypes	EQU		GunNames+10*20
 
 	; Game Link File: Bullet shoot behaviours
 	STRUCTURE GLF_ShootT,0
@@ -46,36 +46,8 @@ GunBulletTypes	equ		GunNames+10*20
 		UWORD GLF_ShootT_Count_w
 		UWORD GLF_ShootT_SFX_w
 
-AlienNames		equ		GunBulletTypes+10*8
-
-AlienStats		equ		AlienNames+20*20
-;A_GFXType		equ		0
-;A_DefBeh		equ		2
-;A_ReactionTime	equ		4
-;A_DefSpeed		equ		6
-
-;A_ResBeh		equ		8
-;A_ResSpeed		equ		10
-;A_ResTimeout	equ		12
-;A_DamageToRet	equ		14
-
-;A_DamageToFol	equ		16
-;A_FolBeh		equ		18
-;A_FolSpeed		equ		20
-;A_FolTimeout	equ		22
-
-;A_RetBeh		equ		24
-;A_RetSpeed		equ		26
-;A_RetTimeout	equ		28
-;A_BulletType	equ		30
-
-;A_HitPoints		equ		32
-;A_Height		equ		34
-;A_WallCollDist	equ		36
-;A_TypeOfSplat	equ		38
-
-;A_Auxilliary	equ		40
-AlienStatLen	equ		21*2
+AlienNames		EQU		GunBulletTypes+10*8
+AlienStats		EQU		AlienNames+20*20
 
 	; Game Link File: Alien Defs
 	STRUCTURE GLF_AlienT,0
@@ -107,23 +79,25 @@ FrameData		equ		AlienStats+(GLF_AlienT_SizeOf_l*20)
 ObjectNames		equ		FrameData+7680
 
 ObjectStats		equ		ObjectNames+600
-O_Behaviour		equ		0
-O_GFXType		equ		2
-O_ActiveTimeout	equ		4
-O_HitPoints		equ		6
-O_ExplosiveForce equ	8
-O_Impassible	equ		10
-O_DefAnimLen	equ		12
-O_ColBoxRad		equ		14
-O_ColBoxHeight	equ		16
-O_FloorCeiling	equ		18
-O_LockToWall	equ		20
-O_ActAnimLen	equ		22
-O_SoundEffect	equ		24
 
-ObjectStatLen	equ		20*2
+	; Game Link File: Object Defs
+	STRUCTURE GLF_ObjT,0
+		UWORD GLF_ObjT_Behaviour_w
+		UWORD GLF_ObjT_GFXType_w
+		UWORD GLF_ObjT_ActiveTimeout_w
+		UWORD GLF_ObjT_HitPoints_w
+		UWORD GLF_ObjT_ExplosiveForce_w	; unused
+		UWORD GLF_ObjT_Impassible_w		; unused
+		UWORD GLF_ObjT_DefaultAnimLen_w	; unused
+		UWORD GLF_ObjT_CollideRadius_w
+		UWORD GLF_ObjT_CollideHeight_w
+		UWORD GLF_ObjT_FloorCeiling_w
+		UWORD GLF_ObjT_LockToWall_w		; unused
+		UWORD GLF_ObjT_ActiveAnimLen_w	; unused
+		UWORD GLF_ObjT_SFX_w
+GLF_ObjT_SizeOf_l	EQU	40
 
-ObjectDefAnims	equ		ObjectStats+(ObjectStatLen*30)
+ObjectDefAnims	equ		ObjectStats+(GLF_ObjT_SizeOf_l*30)
 O_FrameStoreSize equ	6
 O_AnimSize		equ		O_FrameStoreSize*20
 ObjectActAnims	equ		ObjectDefAnims+(O_AnimSize*30)

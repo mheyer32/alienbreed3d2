@@ -1912,12 +1912,12 @@ checkcol:
 				cmp.b	#1,d3
 				bne		checkcol
 
-				move.l	LINKFILE,a4
+				move.l	GLF_DatabasePtr_l,a4
 				add.l	#ObjectStats,a4
 				moveq	#0,d1
 				move.b	AI_EntT_Type_b(a0),d1
-				muls	#ObjectStatLen,d1
-				cmp.w	#2,O_Behaviour(a4,d1.w)
+				muls	#GLF_ObjT_SizeOf_l,d1
+				cmp.w	#2,GLF_ObjT_Behaviour_w(a4,d1.w)
 				blt		checkcol
 				bgt		.ycol
 

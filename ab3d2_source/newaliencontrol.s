@@ -40,7 +40,7 @@ ItsAnAlien:
 				move.b	Lvl_ZoneT_Echo_b(a6),ALIENECHO
 
 				moveq	#0,d0
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				move.l	a6,a5
 				move.b	AI_EntT_Type_b(a0),d0
 				add.l	#AlienBrights,a5
@@ -53,7 +53,7 @@ ItsAnAlien:
 
 				move.l	a6,ANIMPOINTER
 
-				move.l	LINKFILE,a1
+				move.l	GLF_DatabasePtr_l,a1
 				move.l	a1,a2
 				add.l	#AlienShotOffsets,a2
 
@@ -69,7 +69,7 @@ ItsAnAlien:
 				asl.w	#2,d1
 				move.w	d1,SHOTOFFMULT
 
-				muls	#AlienStatLen,d0
+				muls	#GLF_AlienT_SizeOf_l,d0
 				add.w	d0,a1					; ptr to alien stats
 
 				move.w	GLF_AlienT_Height_w(a1),d0
@@ -108,11 +108,11 @@ diststowall:
 
 ItsAnObject:
 
-				move.l	LINKFILE,a1
+				move.l	GLF_DatabasePtr_l,a1
 				lea		ObjectStats(a1),a1
 				moveq	#0,d0
 				move.b	AI_EntT_Type_b(a0),d0
-				muls	#ObjectStatLen,d0
+				muls	#GLF_ObjT_SizeOf_l,d0
 				add.w	d0,a1					; pointer to obj stats.
 
 				move.l	a1,StatPointer
@@ -165,7 +165,7 @@ Collectable:
 				move.l	(a1,d0.w*4),a1
 				add.l	LEVELDATA,a1
 
-				tst.w	O_FloorCeiling(a2)
+				tst.w	GLF_ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
 				move.l	Lvl_ZoneT_Roof_l(a1),d0
 				tst.b	ObjInTop(a0)
@@ -241,7 +241,7 @@ Activatable:
 				move.l	(a1,d0.w*4),a1
 				add.l	LEVELDATA,a1
 
-				tst.w	O_FloorCeiling(a2)
+				tst.w	GLF_ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
 				move.l	Lvl_ZoneT_Roof_l(a1),d0
 				tst.b	ObjInTop(a0)
@@ -325,7 +325,7 @@ ACTIVATED:
 				move.l	(a1,d0.w*4),a1
 				add.l	LEVELDATA,a1
 
-				tst.w	O_FloorCeiling(a2)
+				tst.w	GLF_ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
 				move.l	Lvl_ZoneT_Roof_l(a1),d0
 				tst.b	ObjInTop(a0)
@@ -350,7 +350,7 @@ ACTIVATED:
 
 				move.w	TempFrames,d0
 				add.w	d0,AI_EntT_Timer2_w(a0)
-				move.w	O_ActiveTimeout(a2),d0
+				move.w	GLF_ObjT_ActiveTimeout_w(a2),d0
 				blt.s	.nottimeout
 
 				cmp.w	AI_EntT_Timer2_w(a0),d0
@@ -399,16 +399,16 @@ ACTIVATED:
 
 Destructable:
 
-				move.l	LINKFILE,a3
+				move.l	GLF_DatabasePtr_l,a3
 				add.l	#ObjectStats,a3
 				moveq	#0,d0
 				move.b	AI_EntT_Type_b(a0),d0
-				muls	#ObjectStatLen,d0
+				muls	#GLF_ObjT_SizeOf_l,d0
 				add.l	d0,a3
 
 				moveq	#0,d0
 				move.b	AI_EntT_DamageTaken_b(a0),d0
-				cmp.w	O_HitPoints(a3),d0
+				cmp.w	GLF_ObjT_HitPoints_w(a3),d0
 				blt		StillHere
 
 				tst.b	AI_EntT_NumLives_b(a0)
@@ -453,7 +453,7 @@ Destructable:
 				move.l	(a1,d0.w*4),a1
 				add.l	LEVELDATA,a1
 
-				tst.w	O_FloorCeiling(a2)
+				tst.w	GLF_ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
 				move.l	Lvl_ZoneT_Roof_l(a1),d0
 				tst.b	ObjInTop(a0)
@@ -532,7 +532,7 @@ intodeco:
 				move.l	(a1,d0.w*4),a1
 				add.l	LEVELDATA,a1
 
-				tst.w	O_FloorCeiling(a2)
+				tst.w	GLF_ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
 				move.l	Lvl_ZoneT_Roof_l(a1),d0
 				tst.b	ObjInTop(a0)
@@ -583,7 +583,7 @@ PLR1CollectObject:
 
 				moveq	#0,d2
 				move.b	AI_EntT_Type_b(a0),d2
-				move.l	LINKFILE,a4
+				move.l	GLF_DatabasePtr_l,a4
 				add.l	#ObjectNames,a4
 				muls	#20,d2
 				add.l	d2,a4
@@ -604,7 +604,7 @@ PLR1CollectObject:
 
 .nodeftext:
 
-				move.l	LINKFILE,a2
+				move.l	GLF_DatabasePtr_l,a2
 				lea		AmmoGive(a2),a3
 				add.l	#GunGive,a2
 				moveq	#0,d0
@@ -635,14 +635,14 @@ GiveGuns:
 				or.w	d1,(a1)+
 				dbra	d0,GiveGuns
 
-				move.l	LINKFILE,a3
+				move.l	GLF_DatabasePtr_l,a3
 				add.l	#ObjectStats,a3
 				moveq	#0,d0
 				move.b	AI_EntT_Type_b(a0),d0
-				muls	#ObjectStatLen,d0
+				muls	#GLF_ObjT_SizeOf_l,d0
 				add.l	d0,a3
 
-				move.w	O_SoundEffect(a3),d0
+				move.w	GLF_ObjT_SFX_w(a3),d0
 				blt.s	.nosoundmake
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -664,7 +664,7 @@ dontcollect:
 
 PLR2CollectObject:
 
-				move.l	LINKFILE,a2
+				move.l	GLF_DatabasePtr_l,a2
 				lea		AmmoGive(a2),a3
 				add.l	#GunGive,a2
 				moveq	#0,d0
@@ -695,14 +695,14 @@ GiveGuns2:
 				or.w	d1,(a1)+
 				dbra	d0,GiveGuns2
 
-				move.l	LINKFILE,a3
+				move.l	GLF_DatabasePtr_l,a3
 				add.l	#ObjectStats,a3
 				moveq	#0,d0
 				move.b	AI_EntT_Type_b(a0),d0
-				muls	#ObjectStatLen,d0
+				muls	#GLF_ObjT_SizeOf_l,d0
 				add.l	d0,a3
 
-				move.w	O_SoundEffect(a3),d0
+				move.w	GLF_ObjT_SFX_w(a3),d0
 				blt.s	.nosoundmake
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -783,14 +783,14 @@ CHECKNEARBYONE:
 				neg.w	d7
 .okpos
 
-				cmp.w	O_ColBoxHeight(a2),d7
+				cmp.w	GLF_ObjT_CollideHeight_w(a2),d7
 				bgt		.NotSameZone
 
 				move.w	(a0),d0
 				move.l	ObjectPoints,a1
 				move.w	(a1,d0.w*8),newx
 				move.w	4(a1,d0.w*8),newz
-				move.w	O_ColBoxRad(a2),d2
+				move.w	GLF_ObjT_CollideRadius_w(a2),d2
 				muls	d2,d2
 				jsr		CheckHit
 				move.b	hitwall,d0
@@ -824,14 +824,14 @@ CHECKNEARBYTWO:
 				neg.w	d7
 .okpos
 
-				cmp.w	O_ColBoxHeight(a2),d7
+				cmp.w	GLF_ObjT_CollideHeight_w(a2),d7
 				bgt		.NotSameZone
 
 				move.w	(a0),d0
 				move.l	ObjectPoints,a1
 				move.w	(a1,d0.w*8),newx
 				move.w	4(a1,d0.w*8),newz
-				move.w	O_ColBoxRad(a2),d2
+				move.w	GLF_ObjT_CollideRadius_w(a2),d2
 				muls	d2,d2
 				jsr		CheckHit
 				move.b	hitwall,d0
@@ -844,7 +844,7 @@ StatPointer:	dc.l	0
 
 DEFANIMOBJ:
 
-				move.l	LINKFILE,a3
+				move.l	GLF_DatabasePtr_l,a3
 				lea		ObjectDefAnims(a3),a3
 				moveq	#0,d0
 				move.b	AI_EntT_Type_b(a0),d0
@@ -857,7 +857,7 @@ DEFANIMOBJ:
 				asl.w	#2,d1
 				add.w	d1,d0					;*6
 
-				cmp.w	#1,O_GFXType(a2)
+				cmp.w	#1,GLF_ObjT_GFXType_w(a2)
 				blt.s	.bitmap
 				beq.s	.vector
 
@@ -919,7 +919,7 @@ DEFANIMOBJ:
 
 ACTANIMOBJ:
 
-				move.l	LINKFILE,a3
+				move.l	GLF_DatabasePtr_l,a3
 				lea		ObjectActAnims(a3),a3
 				moveq	#0,d0
 				move.b	AI_EntT_Type_b(a0),d0
@@ -932,7 +932,7 @@ ACTANIMOBJ:
 				asl.w	#2,d1
 				add.w	d1,d0					;*6
 
-				cmp.w	#1,O_GFXType(a2)
+				cmp.w	#1,GLF_ObjT_GFXType_w(a2)
 				blt.s	.bitmap
 				beq.s	.vector
 

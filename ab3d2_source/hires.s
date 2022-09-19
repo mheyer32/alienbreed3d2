@@ -342,7 +342,7 @@ PLAYTHEGAME:
 				move.b	LEVA,d1
 				sub.b	#'a',d1
 				lsl.w	#6,d1
-				move.l	LINKFILE,a0
+				move.l	GLF_DatabasePtr_l,a0
 				lea		LevelMusic(a0),a0
 
 				move.l	#MEMF_CHIP,IO_MemType_l
@@ -990,13 +990,13 @@ lop:
 
 				move.l	PLR2_Obj,a0
 
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				add.l	#PLR2ALIEN,a6
 				move.w	(a6),d7
 				move.w	d7,d1
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				add.l	#AlienStats,a6
-				muls	#AlienStatLen,d1
+				muls	#GLF_AlienT_SizeOf_l,d1
 				add.l	d1,a6
 
 				move.b	GLF_AlienT_SplatType_w+1(a6),d0
@@ -1034,13 +1034,13 @@ lop:
 
 				move.l	PLR1_Obj,a0
 
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				add.l	#PLR1ALIEN,a6
 				move.w	(a6),d7
 				move.w	d7,d1
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				add.l	#AlienStats,a6
-				muls	#AlienStatLen,d1
+				muls	#GLF_AlienT_SizeOf_l,d1
 				add.l	d1,a6
 
 				move.b	GLF_AlienT_SplatType_w+1(a6),d0
@@ -1268,7 +1268,7 @@ okwat:
 
 				moveq	#0,d0
 				move.b	GunSelected,d0
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				add.l	#GunBulletTypes,a6
 				move.w	(a6,d0.w*8),d0
 
@@ -1361,7 +1361,7 @@ NotOnePlayer:
 
 				moveq	#0,d0
 				move.b	GunSelected,d0
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				add.l	#GunBulletTypes,a6
 				move.w	(a6,d0.w*8),d0
 
@@ -1482,7 +1482,7 @@ ASlaveShouldWaitOnHisMaster:
 
 				moveq	#0,d0
 				move.b	GunSelected,d0
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				add.l	#GunBulletTypes,a6
 				move.w	(a6,d0.w*8),d0
 
@@ -3326,14 +3326,14 @@ USEPLR1:
 				jsr		ViewpointToDraw
 				add.l	d0,d0
 
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				add.l	#PLR2ALIEN,a6
 				move.w	(a6),d7
 				move.w	d7,d1
 
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				add.l	#AlienStats,a6
-				muls	#AlienStatLen,d1
+				muls	#GLF_AlienT_SizeOf_l,d1
 				add.l	d1,a6
 				move.b	GLF_AlienT_GFXType_w+1(a6),AI_VecObj_w
 				cmp.w	#1,GLF_AlienT_GFXType_w(a6)
@@ -3343,7 +3343,7 @@ USEPLR1:
 
 .NOSIDES2:
 
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 
 				add.l	#AlienAnimData,a6
 
@@ -3437,7 +3437,7 @@ USEPLR1:
 				moveq	#0,d0
 				move.b	p1_gunselected,d0
 
-				move.l	LINKFILE,a1
+				move.l	GLF_DatabasePtr_l,a1
 				add.l	#GunObjects,a1
 				move.w	(a1,d0.w*2),d0
 
@@ -3620,14 +3620,14 @@ USEPLR2:
 				jsr		ViewpointToDraw
 				add.l	d0,d0
 
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				add.l	#PLR1ALIEN,a6
 				move.w	(a6),d7
 				move.w	d7,d1
 
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				add.l	#AlienStats,a6
-				muls	#AlienStatLen,d1
+				muls	#GLF_AlienT_SizeOf_l,d1
 				add.l	d1,a6
 				move.b	GLF_AlienT_GFXType_w+1(a6),AI_VecObj_w
 				cmp.w	#1,GLF_AlienT_GFXType_w(a6)
@@ -3637,7 +3637,7 @@ USEPLR2:
 
 .NOSIDES2:
 
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 
 				add.l	#AlienAnimData,a6
 
@@ -3727,7 +3727,7 @@ USEPLR2:
 				moveq	#0,d0
 				move.b	p2_gunselected,d0
 
-				move.l	LINKFILE,a1
+				move.l	GLF_DatabasePtr_l,a1
 				add.l	#GunObjects,a1
 				move.w	(a1,d0.w*2),d0
 
@@ -9688,11 +9688,11 @@ ALWALK:
 ; jsr ViewpointToDraw
 ; add.l d0,d0
 ;
-; move.l LINKFILE,a6
+; move.l GLF_DatabasePtr_l,a6
 ; add.l #AlienStats,a6
 ; moveq #0,d1
 ; move.b AI_EntT_Type_b(a0),d1
-; muls #AlienStatLen,d1
+; muls #GLF_AlienT_SizeOf_l,d1
 ; add.l d1,a6
 ; cmp.w #1,GLF_AlienT_GFXType_w(a6)
 ; bne.s NOSIDES2
@@ -9703,7 +9703,7 @@ intowalk:
 NOSIDES2:
 
 				move.b	d0,2(a5)
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 
 				add.l	#AlienAnimData,a6
 
@@ -9837,7 +9837,7 @@ dosomething:
 				move.w	Lvl_ZoneT_UpperFloorNoise_w(a0),d0
 .okinbot:
 
-				move.l	LINKFILE,a0
+				move.l	GLF_DatabasePtr_l,a0
 				add.l	#FloorData,a0
 				move.w	(a0,d0.w*4),d0			; damage.
 				move.l	PLR1_Obj,a0
@@ -9850,7 +9850,7 @@ dosomething:
 				move.w	Lvl_ZoneT_UpperFloorNoise_w(a0),d0
 .okinbot2:
 
-				move.l	LINKFILE,a0
+				move.l	GLF_DatabasePtr_l,a0
 				add.l	#FloorData,a0
 				move.w	(a0,d0.w*4),d0			; damage.
 
@@ -11460,7 +11460,7 @@ FOUNDALEFT:
 ;
 ;YESECHO:
 ;
-; move.l LINKFILE,a3
+; move.l GLF_DatabasePtr_l,a3
 ; add.l #EchoTable,a3
 ; move.b (a3,d5.w),d5
 ;
@@ -11685,7 +11685,7 @@ FOUNDACHAN:
 ;
 ;YESECHO2:
 ;
-; move.l LINKFILE,a3
+; move.l GLF_DatabasePtr_l,a3
 ; add.l #EchoTable,a3
 ; move.b (a3,d5.w),d5
 ;
@@ -12164,10 +12164,10 @@ FULLSCR:		dc.w	0
 * Link file !*****************************
 ******************************************
 
-LINKname:		dc.b	"ab3:includes/test.lnk",0
-				even
+GLF_DatabaseName_vb:		dc.b	"ab3:includes/test.lnk",0
 
-LINKFILE:		dc.l	0
+				CNOP 0,4
+GLF_DatabasePtr_l:		dc.l	0
 
 ******************************************
 

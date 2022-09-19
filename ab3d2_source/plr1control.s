@@ -394,7 +394,7 @@ SHOWPLR1GUNNAME:
 				moveq	#0,d2
 				move.b	PLR1_GunSelected,d2
 
-				move.l	LINKFILE,a4
+				move.l	GLF_DatabasePtr_l,a4
 				add.l	#GunNames,a4
 				muls	#20,d2
 				add.l	d2,a4
@@ -729,7 +729,7 @@ THERESNOWATER:
 				move.w	Lvl_ZoneT_UpperFloorNoise_w(a0),d0
 .okinbot:
 
-				move.l	LINKFILE,a0
+				move.l	GLF_DatabasePtr_l,a0
 				add.l	#FloorData,a0
 				move.w	2(a0,d0.w*4),d0			; sample number.
 

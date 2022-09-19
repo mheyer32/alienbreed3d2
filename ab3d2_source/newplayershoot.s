@@ -31,7 +31,7 @@ okcanfire:
 				move.b	d0,tempgun
 
 
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				lea		GunBulletTypes(a6),a6
 				lea		BulletAnimData-GunBulletTypes(a6),a5
 				lea		(a6,d0.w*8),a6
@@ -382,7 +382,7 @@ okcanfire2:
 				move.b	d0,tempgun
 
 
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				lea		GunBulletTypes(a6),a6
 				lea		BulletAnimData-GunBulletTypes(a6),a5
 				lea		(a6,d0.w*8),a6

@@ -768,7 +768,7 @@ BACKSFX:
 				btst	d0,d1
 				beq.s	.notfound
 
-				move.l	LINKFILE,a0
+				move.l	GLF_DatabasePtr_l,a0
 				add.l	#BackSFX,a0
 				move.w	(a0,d0.w*2),Samplenum
 				move.w	#$fff0,IDNUM
@@ -3059,7 +3059,7 @@ ItsABullet:
 				moveq	#0,d1
 				move.b	shotsize(a0),d1
 				muls	#GLF_BulT_SizeOf_l,d1
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				lea		BulletAnimData(a6),a6
 				add.l	d1,a6
 
@@ -3675,11 +3675,11 @@ notasplut:
 				cmp.b	#1,d1
 				bne.s	.notanobj
 
-				move.l	LINKFILE,a4
+				move.l	GLF_DatabasePtr_l,a4
 				add.l	#ObjectStats,a4
 				move.b	AI_EntT_Type_b(a3),d1
-				muls	#ObjectStatLen,d1
-				cmp.w	#2,O_Behaviour(a4,d1.w)
+				muls	#GLF_ObjT_SizeOf_l,d1
+				cmp.w	#2,GLF_ObjT_Behaviour_w(a4,d1.w)
 				bne		.notanasty
 
 .notanobj:
@@ -3987,7 +3987,7 @@ HitObjLoop:
 ; check bullet
 				moveq	#0,d7
 				move.b	shotsize(a2),d7
-				move.l	LINKFILE,a3
+				move.l	GLF_DatabasePtr_l,a3
 				muls	#GLF_BulT_SizeOf_l,d7
 				add.l	#BulletAnimData,a3
 				add.l	d7,a3
