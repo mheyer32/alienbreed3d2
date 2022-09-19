@@ -194,7 +194,7 @@ ai_JustDied:
 				move.l	LINKFILE,a2
 				lea		AlienStats(a2),a2
 				add.l	d0,a2
-				move.b	A_TypeOfSplat+1(a2),d0
+				move.b	GLF_AlienT_SplatType_w+1(a2),d0
 				move.b	d0,TypeOfSplat
 				cmp.b	#20,d0
 				blt		.go_splutch
@@ -230,7 +230,7 @@ ai_JustDied:
 				bra		.cant_shoot
 
 .found_one_free:
-				move.b	A_HitPoints+1(a4),AI_EntT_NumLives_b(a2)
+				move.b	GLF_AlienT_HitPoints_w+1(a4),AI_EntT_NumLives_b(a2)
 				move.b	TypeOfSplat,AI_EntT_Type_b(a2)
 				move.b	#-1,TextToShow(a2)
 				move.b	#0,16(a2)
@@ -253,7 +253,7 @@ ai_JustDied:
 				move.w	#0,AI_EntT_ImpactX_w(a2)
 				move.w	#0,AI_EntT_ImpactZ_w(a2)
 				move.w	#0,AI_EntT_ImpactY_w(a2)
-				move.b	A_HitPoints+1(a4),18(a2)
+				move.b	GLF_AlienT_HitPoints_w+1(a4),18(a2)
 				move.b	#0,19(a2)
 				move.l	AI_EntT_DoorsHeld_w(a0),AI_EntT_DoorsHeld_w(a2)
 				move.b	ObjInTop(a0),ObjInTop(a2)
@@ -876,11 +876,11 @@ ai_AttackCommon:
 				move.b	AI_EntT_Type_b(a0),d0
 				muls	#AlienStatLen,d0
 				add.w	d0,a1
-				move.w	A_BulletType(a1),d0
+				move.w	GLF_AlienT_BulType_w(a1),d0
 				move.b	d0,SHOTTYPE
 				move.l	LINKFILE,a1
 				lea		BulletAnimData(a1),a1
-				muls	#GLF_BulT_Length_l,d0
+				muls	#GLF_BulT_SizeOf_l,d0
 				add.l	d0,a1
 				move.l	GLF_BulT_DamageToTarget_l(a1),d0
 				move.b	d0,SHOTPOWER

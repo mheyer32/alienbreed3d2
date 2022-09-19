@@ -999,7 +999,7 @@ lop:
 				muls	#AlienStatLen,d1
 				add.l	d1,a6
 
-				move.b	A_TypeOfSplat+1(a6),d0
+				move.b	GLF_AlienT_SplatType_w+1(a6),d0
 				move.b	d0,TypeOfSplat
 
 				move.l	PLR2_Roompt,a1
@@ -1043,7 +1043,7 @@ lop:
 				muls	#AlienStatLen,d1
 				add.l	d1,a6
 
-				move.b	A_TypeOfSplat+1(a6),d0
+				move.b	GLF_AlienT_SplatType_w+1(a6),d0
 				move.b	d0,TypeOfSplat
 
 				move.l	PLR1_Roompt,a1
@@ -3335,8 +3335,8 @@ USEPLR1:
 				add.l	#AlienStats,a6
 				muls	#AlienStatLen,d1
 				add.l	d1,a6
-				move.b	A_GFXType+1(a6),AI_VecObj_w
-				cmp.w	#1,A_GFXType(a6)
+				move.b	GLF_AlienT_GFXType_w+1(a6),AI_VecObj_w
+				cmp.w	#1,GLF_AlienT_GFXType_w(a6)
 				bne.s	.NOSIDES2
 
 				moveq	#0,d0
@@ -3629,8 +3629,8 @@ USEPLR2:
 				add.l	#AlienStats,a6
 				muls	#AlienStatLen,d1
 				add.l	d1,a6
-				move.b	A_GFXType+1(a6),AI_VecObj_w
-				cmp.w	#1,A_GFXType(a6)
+				move.b	GLF_AlienT_GFXType_w+1(a6),AI_VecObj_w
+				cmp.w	#1,GLF_AlienT_GFXType_w(a6)
 				bne.s	.NOSIDES2
 
 				moveq	#0,d0
@@ -9694,7 +9694,7 @@ ALWALK:
 ; move.b AI_EntT_Type_b(a0),d1
 ; muls #AlienStatLen,d1
 ; add.l d1,a6
-; cmp.w #1,A_GFXType(a6)
+; cmp.w #1,GLF_AlienT_GFXType_w(a6)
 ; bne.s NOSIDES2
 
 				moveq	#0,d0

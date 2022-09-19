@@ -72,27 +72,27 @@ ItsAnAlien:
 				muls	#AlienStatLen,d0
 				add.w	d0,a1					; ptr to alien stats
 
-				move.w	A_Height(a1),d0
+				move.w	GLF_AlienT_Height_w(a1),d0
 				ext.l	d0
 				asl.l	#7,d0
 				move.l	d0,thingheight
 
-				move.w	A_Auxilliary(a1),AUXOBJ
+				move.w	GLF_AlienT_Auxilliary_w(a1),AUXOBJ
 
 				move.w	(a0),CollId
 
 				move.b	1(a1),AI_VecObj_w
-				move.w	A_ReactionTime(a1),AI_ReactionTime_w
-				move.w	A_DefBeh(a1),AI_DefaultMode_w
-				move.w	A_ResBeh(a1),AI_ResponseMode_w
-				move.w	A_RetBeh(a1),AI_RetreatMode_w
-				move.w	A_FolBeh(a1),AI_FollowupMode_w
-				move.w	A_DefSpeed(a1),AI_ProwlSpeed_w
-				move.w	A_ResSpeed(a1),AI_ResponseSpeed_w
-				move.w	A_RetSpeed(a1),AI_RetreatSpeed_w
-				move.w	A_FolSpeed(a1),AI_FollowupSpeed_w
-				move.w	A_FolTimeout(a1),AI_FollowupTimer_w
-				move.w	A_WallCollDist(a1),d0
+				move.w	GLF_AlienT_ReactionTime_w(a1),AI_ReactionTime_w
+				move.w	GLF_AlienT_DefaultBehaviour_w(a1),AI_DefaultMode_w
+				move.w	GLF_AlienT_ResponseBehaviour_w(a1),AI_ResponseMode_w
+				move.w	GLF_AlienT_RetreatBehaviour_w(a1),AI_RetreatMode_w
+				move.w	GLF_AlienT_FollowupBehaviour_w(a1),AI_FollowupMode_w
+				move.w	GLF_AlienT_DefaultSpeed_w(a1),AI_ProwlSpeed_w
+				move.w	GLF_AlienT_ResponseSpeed_w(a1),AI_ResponseSpeed_w
+				move.w	GLF_AlienT_RetreatSpeed_w(a1),AI_RetreatSpeed_w
+				move.w	GLF_AlienT_FollowupSpeed_w(a1),AI_FollowupSpeed_w
+				move.w	GLF_AlienT_FollowupTimeout_w(a1),AI_FollowupTimer_w
+				move.w	GLF_AlienT_Girth_w(a1),d0
 				move.b	diststowall+1(pc,d0.w*4),awayfromwall
 				move.w	diststowall+2(pc,d0.w*4),extlen
 				jsr		AI_MainRoutine

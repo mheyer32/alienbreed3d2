@@ -3058,7 +3058,7 @@ ItsABullet:
 
 				moveq	#0,d1
 				move.b	shotsize(a0),d1
-				muls	#GLF_BulT_Length_l,d1
+				muls	#GLF_BulT_SizeOf_l,d1
 				move.l	LINKFILE,a6
 				lea		BulletAnimData(a6),a6
 				add.l	d1,a6
@@ -3988,7 +3988,7 @@ HitObjLoop:
 				moveq	#0,d7
 				move.b	shotsize(a2),d7
 				move.l	LINKFILE,a3
-				muls	#GLF_BulT_Length_l,d7
+				muls	#GLF_BulT_SizeOf_l,d7
 				add.l	#BulletAnimData,a3
 				add.l	d7,a3
 				tst.l	GLF_BulT_Gravity_l(a3)

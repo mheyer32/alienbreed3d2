@@ -35,12 +35,12 @@ okcanfire:
 				lea		GunBulletTypes(a6),a6
 				lea		BulletAnimData-GunBulletTypes(a6),a5
 				lea		(a6,d0.w*8),a6
-				move.w	G_BulletType(a6),d0		; bullet type
+				move.w	GLF_ShootT_BulType_w(a6),d0		; bullet type
 				move.w	d0,BULTYPE
 				move.l	#PLAYERONEAMMO,a0
 				move.w	(a0,d0.w*2),AmmoInMyGun
 
-				muls	#GLF_BulT_Length_l,d0
+				muls	#GLF_BulT_SizeOf_l,d0
 				add.w	d0,a5
 
 				move.w	GLF_BulT_MovementSpeed_l+2(a5),BulletSpd
@@ -147,7 +147,7 @@ okdistthing
 				move.w	d5,bulyspd
 
 				move.w	AmmoInMyGun,d2
-				move.w	G_BulletsPerShot(a6),d1
+				move.w	GLF_ShootT_Count_w(a6),d1
 				cmp.w	d1,d2
 				bge.s	.okcanshoot
 
@@ -172,7 +172,7 @@ okdistthing
 				move.w	#1,AI_EntT_Timer1_w+128(a2)
 .notplr1
 
-				move.w	G_DelayBetweenShots(a6),PLR1_TimeToShoot
+				move.w	GLF_ShootT_Delay_w(a6),PLR1_TimeToShoot
 
 				move.b	MaxFrame,PLR1_GunFrame
 				sub.w	d1,d2
@@ -188,7 +188,7 @@ okdistthing
 				move.l	(a2,d2.w*8),Noisex
 				move.w	#100,AI_Player1NoiseVol_w
 				move.w	#300,Noisevol
-				move.w	G_SoundEffect(a6),Samplenum
+				move.w	GLF_ShootT_SFX_w(a6),Samplenum
 				move.b	#2,chanpick
 				clr.b	notifplaying
 				movem.l	d0/a0/d5/d6/d7/a6/a4/a5,-(a7)
@@ -213,7 +213,7 @@ okdistthing
 
 ; instant effect: check for hitting:
 
-				move.w	G_BulletsPerShot(a6),d7
+				move.w	GLF_ShootT_Count_w(a6),d7
 
 FIREBULLETS:
 
@@ -386,12 +386,12 @@ okcanfire2:
 				lea		GunBulletTypes(a6),a6
 				lea		BulletAnimData-GunBulletTypes(a6),a5
 				lea		(a6,d0.w*8),a6
-				move.w	G_BulletType(a6),d0		; bullet type
+				move.w	GLF_ShootT_BulType_w(a6),d0		; bullet type
 				move.w	d0,BULTYPE
 				move.l	#PLAYERTWOAMMO,a0
 				move.w	(a0,d0.w*2),AmmoInMyGun
 
-				muls	#GLF_BulT_Length_l,d0
+				muls	#GLF_BulT_SizeOf_l,d0
 				add.w	d0,a5
 
 				move.w	GLF_BulT_MovementSpeed_l+2(a5),BulletSpd
@@ -498,7 +498,7 @@ okdistthing2
 				move.w	d5,bulyspd
 
 				move.w	AmmoInMyGun,d2
-				move.w	G_BulletsPerShot(a6),d1
+				move.w	GLF_ShootT_Count_w(a6),d1
 				cmp.w	d1,d2
 				bge.s	.okcanshoot
 
@@ -523,7 +523,7 @@ okdistthing2
 				move.w	#1,AI_EntT_Timer1_w+128(a2)
 .notplr2:
 
-				move.w	G_DelayBetweenShots(a6),PLR2_TimeToShoot
+				move.w	GLF_ShootT_Delay_w(a6),PLR2_TimeToShoot
 
 				move.b	MaxFrame,PLR2_GunFrame
 				sub.w	d1,d2
@@ -539,7 +539,7 @@ okdistthing2
 				move.l	(a2,d2.w*8),Noisex
 				move.w	#100,AI_Player2NoiseVol_w
 				move.w	#300,Noisevol
-				move.w	G_SoundEffect(a6),Samplenum
+				move.w	GLF_ShootT_SFX_w(a6),Samplenum
 				move.b	#2,chanpick
 				clr.b	notifplaying
 				movem.l	d0/a0/d5/d6/d7/a6/a4/a5,-(a7)
@@ -564,7 +564,7 @@ okdistthing2
 
 ; instant effect: check for hitting:
 
-				move.w	G_BulletsPerShot(a6),d7
+				move.w	GLF_ShootT_Count_w(a6),d7
 
 FIREBULLETS2:
 
@@ -730,7 +730,7 @@ PLR1FIREBULLET:
 
 				move.b	MaxFrame,PLR1_GunFrame
 				move.l	PLR1_Obj,a2
-				move.w	G_BulletsPerShot(a6),d5
+				move.w	GLF_ShootT_Count_w(a6),d5
 
 				move.w	d5,d6
 				subq	#1,d6
@@ -746,7 +746,7 @@ PLR2FIREBULLET:
 
 				move.b	MaxFrame,PLR2_GunFrame
 				move.l	PLR2_Obj,a2
-				move.w	G_BulletsPerShot(a6),d5
+				move.w	GLF_ShootT_Count_w(a6),d5
 
 				move.w	d5,d6
 				subq	#1,d6

@@ -32,45 +32,77 @@ BulletAnimData		EQU	BlurbFileName+64
 SOFFSET	    SET	    SOFFSET+(6*20)
 		LABEL GLF_BulT_StartOfPop_vb
 SOFFSET	    SET	    SOFFSET+(6*20)
-		LABEL GLF_BulT_Length_l
+		LABEL GLF_BulT_SizeOf_l
 
-BulletNames		equ		BulletAnimData+(20*GLF_BulT_Length_l)
+BulletNames		equ		BulletAnimData+(20*GLF_BulT_SizeOf_l)
 GunNames		equ		BulletNames+20*20
 
 GunBulletTypes	equ		GunNames+10*20
-G_BulletType	equ		0
-G_DelayBetweenShots equ	2
-G_BulletsPerShot equ	4
-;G_InitialYVel equ 6
-G_SoundEffect	equ		6
+
+	; Game Link File: Bullet shoot behaviours
+	STRUCTURE GLF_ShootT,0
+		UWORD GLF_ShootT_BulType_w
+		UWORD GLF_ShootT_Delay_w
+		UWORD GLF_ShootT_Count_w
+		UWORD GLF_ShootT_SFX_w
 
 AlienNames		equ		GunBulletTypes+10*8
 
 AlienStats		equ		AlienNames+20*20
-A_GFXType		equ		0
-A_DefBeh		equ		2
-A_ReactionTime	equ		4
-A_DefSpeed		equ		6
-A_ResBeh		equ		8
-A_ResSpeed		equ		10
-A_ResTimeout	equ		12
-A_DamageToRet	equ		14
-A_DamageToFol	equ		16
-A_FolBeh		equ		18
-A_FolSpeed		equ		20
-A_FolTimeout	equ		22
-A_RetBeh		equ		24
-A_RetSpeed		equ		26
-A_RetTimeout	equ		28
-A_BulletType	equ		30
-A_HitPoints		equ		32
-A_Height		equ		34
-A_WallCollDist	equ		36
-A_TypeOfSplat	equ		38
-A_Auxilliary	equ		40
+;A_GFXType		equ		0
+;A_DefBeh		equ		2
+;A_ReactionTime	equ		4
+;A_DefSpeed		equ		6
+
+;A_ResBeh		equ		8
+;A_ResSpeed		equ		10
+;A_ResTimeout	equ		12
+;A_DamageToRet	equ		14
+
+;A_DamageToFol	equ		16
+;A_FolBeh		equ		18
+;A_FolSpeed		equ		20
+;A_FolTimeout	equ		22
+
+;A_RetBeh		equ		24
+;A_RetSpeed		equ		26
+;A_RetTimeout	equ		28
+;A_BulletType	equ		30
+
+;A_HitPoints		equ		32
+;A_Height		equ		34
+;A_WallCollDist	equ		36
+;A_TypeOfSplat	equ		38
+
+;A_Auxilliary	equ		40
 AlienStatLen	equ		21*2
 
-FrameData		equ		AlienStats+(AlienStatLen*20)
+	; Game Link File: Alien Defs
+	STRUCTURE GLF_AlienT,0
+		UWORD GLF_AlienT_GFXType_w
+		UWORD GLF_AlienT_DefaultBehaviour_w
+		UWORD GLF_AlienT_ReactionTime_w
+		UWORD GLF_AlienT_DefaultSpeed_w
+		UWORD GLF_AlienT_ResponseBehaviour_w
+		UWORD GLF_AlienT_ResponseSpeed_w
+		UWORD GLF_AlienT_ResponseTimeout_w
+		UWORD GLF_AlienT_DamageToRetreat_w
+		UWORD GLF_AlienT_DamageToFollowup_w
+		UWORD GLF_AlienT_FollowupBehaviour_w
+		UWORD GLF_AlienT_FollowupSpeed_w
+		UWORD GLF_AlienT_FollowupTimeout_w
+		UWORD GLF_AlienT_RetreatBehaviour_w
+		UWORD GLF_AlienT_RetreatSpeed_w
+		UWORD GLF_AlienT_RetreatTimeout_w
+		UWORD GLF_AlienT_BulType_w
+		UWORD GLF_AlienT_HitPoints_w
+		UWORD GLF_AlienT_Height_w
+		UWORD GLF_AlienT_Girth_w
+		UWORD GLF_AlienT_SplatType_w
+		UWORD GLF_AlienT_Auxilliary_w
+		LABEL GLF_AlienT_SizeOf_l
+
+FrameData		equ		AlienStats+(GLF_AlienT_SizeOf_l*20)
 
 ObjectNames		equ		FrameData+7680
 
