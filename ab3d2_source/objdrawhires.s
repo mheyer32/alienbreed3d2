@@ -71,7 +71,7 @@ emptytab:
 insertanobj
 				move.w	(a1),d1
 				blt		sortedall
-				move.w	AI_EntT_GraphicRoom_w(a1),d2
+				move.w	EntT_GraphicRoom_w(a1),d2
 				cmp.w	currzone(pc),d2
 				beq.s	itsinthiszone
 
@@ -855,7 +855,7 @@ BitMapObj:
 				tst.l	8(a0)
 				blt		glareobj
 
-				move.w	AI_EntT_CurrentAngle_w(a0),FACINGANG
+				move.w	EntT_CurrentAngle_w(a0),FACINGANG
 
 				move.w	(a0)+,d0				;pt num
 
@@ -1406,7 +1406,7 @@ DRAWITLIGHTED:
 ; add.l LEVELDATA,a4
 ; move.l a4,a5
 ;
-; adda.w Lvl_ZoneT_ExitList_w(a4),a5
+; adda.w ZoneT_ExitList_w(a4),a5
 ;
 ;.doallwalls
 ; move.w (a5)+,d0
@@ -1802,7 +1802,7 @@ CALCBRIGHTRINGS:
 				add.l	LEVELDATA,a4
 				move.l	a4,a5
 
-				adda.w	Lvl_ZoneT_ExitList_w(a4),a5
+				adda.w	ZoneT_ExitList_w(a4),a5
 
 .doallwalls
 				move.w	(a5)+,d0
@@ -2153,7 +2153,7 @@ PolygonObj:
 
 ************************
 
-				move.w	AI_EntT_CurrentAngle_w(a0),ObjAng
+				move.w	EntT_CurrentAngle_w(a0),ObjAng
 
 				move.w	MIDDLEY,POLYMIDDLEY
 

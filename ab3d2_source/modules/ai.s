@@ -24,20 +24,20 @@ AI_MainRoutine:
 				move.w	#-20,2(a0)
 
 ; bsr ai_CheckDamage
-; tst.b AI_EntT_NumLives_b(a0)
+; tst.b EntT_NumLives_b(a0)
 ; bgt.s .not_dead_yet
 ; rts
 ;.not_dead_yet:
 
-				cmp.b	#1,AI_EntT_CurrentMode_b(a0)
+				cmp.b	#1,EntT_CurrentMode_b(a0)
 				blt		ai_DoDefault
 				beq		ai_DoResponse
 
-				cmp.b	#3,AI_EntT_CurrentMode_b(a0)
+				cmp.b	#3,EntT_CurrentMode_b(a0)
 				blt		ai_DoFollowup
 				beq		ai_DoRetreat
 
-				cmp.b	#5,AI_EntT_CurrentMode_b(a0)
+				cmp.b	#5,EntT_CurrentMode_b(a0)
 				beq		ai_DoDie
 
 ai_DoTakeDamage:
@@ -55,9 +55,9 @@ ai_DoTakeDamage:
 				tst.b	ai_FinishedAnim_b
 				beq.s	.still_hurting
 
-				move.b	#0,AI_EntT_CurrentMode_b(a0)
-				move.b	#0,AI_EntT_WhichAnim_b(a0)
-				move.w	#0,AI_EntT_Timer2_w(a0)
+				move.b	#0,EntT_CurrentMode_b(a0)
+				move.b	#0,EntT_WhichAnim_b(a0)
+				move.w	#0,EntT_Timer2_w(a0)
 
 .still_hurting:
 				bsr		ai_DoTorch
@@ -65,7 +65,7 @@ ai_DoTakeDamage:
 				tst.w	12-64(a0)
 				blt.s	.no_copy_in
 				move.w	12(a0),12-64(a0)
-				move.w	AI_EntT_GraphicRoom_w(a0),AI_EntT_GraphicRoom_w-64(a0)
+				move.w	EntT_GraphicRoom_w(a0),EntT_GraphicRoom_w-64(a0)
 
 .no_copy_in:
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -82,7 +82,7 @@ ai_DoTakeDamage:
 
 				move.w	AngRet,d0
 				add.w	ai_AnimFacing_w,d0
-				move.w	d0,AI_EntT_CurrentAngle_w(a0)
+				move.w	d0,EntT_CurrentAngle_w(a0)
 				movem.l	(a7)+,d0-d7/a0-a6
 				rts
 
@@ -95,18 +95,18 @@ ai_DoDie:
 				beq.s	.still_dying
 
 				move.w	#-1,12(a0)
-				move.w	#-1,AI_EntT_GraphicRoom_w(a0)
+				move.w	#-1,EntT_GraphicRoom_w(a0)
 				move.b	#0,16(a0)
 				clr.b	worry(a0)
 				st		ai_GetOut_w
 
 .still_dying:
-				move.b	#0,AI_EntT_NumLives_b(a0)
+				move.b	#0,EntT_NumLives_b(a0)
 				tst.w	12-64(a0)
 				blt.s	.no_copy_in
 
 				move.w	12(a0),12-64(a0)
-				move.w	AI_EntT_GraphicRoom_w(a0),AI_EntT_GraphicRoom_w-64(a0)
+				move.w	EntT_GraphicRoom_w(a0),EntT_GraphicRoom_w-64(a0)
 
 .no_copy_in:
 				rts
@@ -114,19 +114,19 @@ ai_DoDie:
 ai_TakeDamage:
 				clr.b	ai_GetOut_w
 				moveq	#0,d0
-				move.b	AI_EntT_DamageTaken_b(a0),d0
+				move.b	EntT_DamageTaken_b(a0),d0
 				move.l	AI_DamagePtr_l,a2
 				add.w	d0,(a2)
 				move.w	(a2),d0
 				asr.w	#2,d0					; divide by 4
 				moveq	#0,d1
-				move.b	AI_EntT_NumLives_b(a0),d1
-				move.b	#0,AI_EntT_DamageTaken_b(a0)
+				move.b	EntT_NumLives_b(a0),d1
+				move.b	#0,EntT_DamageTaken_b(a0)
 				cmp.w	d0,d1
 				ble		ai_JustDied
 
-				move.w	#0,AI_EntT_Timer1_w(a0)
-				move.w	#0,AI_EntT_Timer2_w(a0)
+				move.w	#0,EntT_Timer1_w(a0)
+				move.w	#0,EntT_Timer2_w(a0)
 				jsr		GetRand
 
 				and.w	#3,d0
@@ -134,10 +134,10 @@ ai_TakeDamage:
 
 				move.l	WORKPTR,a5
 				st		1(a5)
-				move.b	#1,AI_EntT_CurrentMode_b(a0)
-				move.w	#0,AI_EntT_Timer2_w(a0)
-				move.w	#0,AI_EntT_Timer1_w(a0)
-				move.b	#1,AI_EntT_WhichAnim_b(a0)
+				move.b	#1,EntT_CurrentMode_b(a0)
+				move.w	#0,EntT_Timer2_w(a0)
+				move.w	#0,EntT_Timer1_w(a0)
+				move.b	#1,EntT_WhichAnim_b(a0)
 				move.w	(a0),d0
 				move.l	ObjectPoints,a1
 				move.w	(a1,d0.w*8),oldx
@@ -148,7 +148,7 @@ ai_TakeDamage:
 				move.w	#-20,Range
 				jsr		HeadTowardsAng
 
-				move.w	AngRet,AI_EntT_CurrentAngle_w(a0)
+				move.w	AngRet,EntT_CurrentAngle_w(a0)
 				st		ai_GetOut_w
 				rts
 
@@ -158,8 +158,8 @@ ai_TakeDamage:
 ; cmp.w d0,d2
 ; bgt.s .no_stop
 
-				move.b	#4,AI_EntT_CurrentMode_b(a0)		; do take damage.
-				move.b	#2,AI_EntT_WhichAnim_b(a0)		; get hit anim.
+				move.b	#4,EntT_CurrentMode_b(a0)		; do take damage.
+				move.b	#2,EntT_WhichAnim_b(a0)		; get hit anim.
 				move.l	WORKPTR,a5
 				st		1(a5)
 				st		ai_GetOut_w
@@ -169,7 +169,7 @@ ai_TakeDamage:
 				rts
 
 ai_JustDied:
-				move.b	#0,AI_EntT_NumLives_b(a0)
+				move.b	#0,EntT_NumLives_b(a0)
 				move.w	TextToShow(a0),d0
 				blt.s	.no_text
 
@@ -189,12 +189,12 @@ ai_JustDied:
 				move.w	(a2,d3.w*8),newx
 				move.w	4(a2,d3.w*8),newz
 				moveq	#0,d0
-				move.b	AI_EntT_Type_b(a0),d0
-				muls	#GLF_AlienT_SizeOf_l,d0
+				move.b	EntT_Type_b(a0),d0
+				muls	#AlienT_SizeOf_l,d0
 				move.l	GLF_DatabasePtr_l,a2
 				lea		AlienStats(a2),a2
 				add.l	d0,a2
-				move.b	GLF_AlienT_SplatType_w+1(a2),d0
+				move.b	AlienT_SplatType_w+1(a2),d0
 				move.b	d0,TypeOfSplat
 				cmp.b	#20,d0
 				blt		.go_splutch
@@ -204,7 +204,7 @@ ai_JustDied:
 				ext.w	d0
 				move.l	GLF_DatabasePtr_l,a2
 				add.l	#AlienStats,a2
-				muls	#GLF_AlienT_SizeOf_l,d0
+				muls	#AlienT_SizeOf_l,d0
 				add.l	d0,a2
 				move.l	a2,a4
 
@@ -222,7 +222,7 @@ ai_JustDied:
 .find_one_free:
 				move.w	12(a2),d2
 				blt.s	.found_one_free
-				tst.b	AI_EntT_NumLives_b(a2)
+				tst.b	EntT_NumLives_b(a2)
 				beq.s	.found_one_free
 
 				adda.w	#128,a2
@@ -230,8 +230,8 @@ ai_JustDied:
 				bra		.cant_shoot
 
 .found_one_free:
-				move.b	GLF_AlienT_HitPoints_w+1(a4),AI_EntT_NumLives_b(a2)
-				move.b	TypeOfSplat,AI_EntT_Type_b(a2)
+				move.b	AlienT_HitPoints_w+1(a4),EntT_NumLives_b(a2)
+				move.b	TypeOfSplat,EntT_Type_b(a2)
 				move.b	#-1,TextToShow(a2)
 				move.b	#0,16(a2)
 				move.w	(a2),d4
@@ -239,23 +239,23 @@ ai_JustDied:
 				move.l	d1,4(a1,d4.w*8)
 				move.w	4(a0),4(a2)
 				move.w	12(a0),12(a2)
-				move.w	12(a0),AI_EntT_GraphicRoom_w(a2)
+				move.w	12(a0),EntT_GraphicRoom_w(a2)
 				move.w	#-1,12-64(a2)
-				move.w	AI_EntT_CurrentControlPoint_w(a0),AI_EntT_CurrentControlPoint_w(a2)
-				move.w	AI_EntT_CurrentControlPoint_w(a0),AI_EntT_TargetControlPoint_w(a2)
-				move.b	#-1,AI_EntT_TeamNumber_b(a2)
-				move.w	AI_EntT_CurrentAngle_w(a0),AI_EntT_CurrentAngle_w(a2)
-				move.b	#0,AI_EntT_CurrentMode_b(a2)
-				move.b	#0,AI_EntT_WhichAnim_b(a2)
-				move.w	#0,AI_EntT_Timer2_w(a2)
-				move.b	#0,AI_EntT_DamageTaken_b(a2)
-				move.w	#0,AI_EntT_Timer1_w(a2)
-				move.w	#0,AI_EntT_ImpactX_w(a2)
-				move.w	#0,AI_EntT_ImpactZ_w(a2)
-				move.w	#0,AI_EntT_ImpactY_w(a2)
-				move.b	GLF_AlienT_HitPoints_w+1(a4),18(a2)
+				move.w	EntT_CurrentControlPoint_w(a0),EntT_CurrentControlPoint_w(a2)
+				move.w	EntT_CurrentControlPoint_w(a0),EntT_TargetControlPoint_w(a2)
+				move.b	#-1,EntT_TeamNumber_b(a2)
+				move.w	EntT_CurrentAngle_w(a0),EntT_CurrentAngle_w(a2)
+				move.b	#0,EntT_CurrentMode_b(a2)
+				move.b	#0,EntT_WhichAnim_b(a2)
+				move.w	#0,EntT_Timer2_w(a2)
+				move.b	#0,EntT_DamageTaken_b(a2)
+				move.w	#0,EntT_Timer1_w(a2)
+				move.w	#0,EntT_ImpactX_w(a2)
+				move.w	#0,EntT_ImpactZ_w(a2)
+				move.w	#0,EntT_ImpactY_w(a2)
+				move.b	AlienT_HitPoints_w+1(a4),18(a2)
 				move.b	#0,19(a2)
-				move.l	AI_EntT_DoorsHeld_w(a0),AI_EntT_DoorsHeld_w(a2)
+				move.l	EntT_DoorsHeld_w(a0),EntT_DoorsHeld_w(a2)
 				move.b	ObjInTop(a0),ObjInTop(a2)
 				move.b	#3,16-64(a2)
 				dbra	d7,.spawn_loop
@@ -268,9 +268,9 @@ ai_JustDied:
 				jsr		ExplodeIntoBits
 
 .spawned:
-				move.b	#5,AI_EntT_CurrentMode_b(a0)
-				move.b	#3,AI_EntT_WhichAnim_b(a0)
-				move.w	#0,AI_EntT_Timer2_w(a0)
+				move.b	#5,EntT_CurrentMode_b(a0)
+				move.b	#3,EntT_WhichAnim_b(a0)
+				move.w	#0,EntT_Timer2_w(a0)
 				move.l	WORKPTR,a5
 				st		1(a5)
 				st		ai_GetOut_w
@@ -332,7 +332,7 @@ ai_ProwlRandom:
 
 ai_ProwlFly:
 				move.l	#20*256,StepUpVal
-				tst.b	AI_EntT_DamageTaken_b(a0)
+				tst.b	EntT_DamageTaken_b(a0)
 				beq.s	.no_damage
 
 				bsr		ai_TakeDamage
@@ -388,18 +388,18 @@ ai_ProwlFly:
 				move.w	#7,d7
 
 .try_again:
-				move.w	d1,AI_EntT_TargetControlPoint_w(a0)
-				move.w	AI_EntT_CurrentControlPoint_w(a0),d0
+				move.w	d1,EntT_TargetControlPoint_w(a0)
+				move.w	EntT_CurrentControlPoint_w(a0),d0
 				jsr		GetNextCPt
 
-				cmp.w	AI_EntT_CurrentControlPoint_w(a0),d0
+				cmp.w	EntT_CurrentControlPoint_w(a0),d0
 				beq.s	.plus_again
 
 				cmp.b	#$7f,d0
 				bne.s	.okaway2
 
 .plus_again:
-				move.w	AI_EntT_TargetControlPoint_w(a0),d1
+				move.w	EntT_TargetControlPoint_w(a0),d1
 				add.w	#1,d1
 				cmp.w	NumCPts,d1
 				blt		.no_bin
@@ -426,21 +426,21 @@ ai_Widget:
 
 .player_not_in_top:
 				moveq	#0,d1
-				move.b	Lvl_ZoneT_ControlPoint_w(a1),d1
+				move.b	ZoneT_ControlPoint_w(a1),d1
 
-				move.w	AI_EntT_CurrentControlPoint_w(a0),d0
+				move.w	EntT_CurrentControlPoint_w(a0),d0
 				jsr		GetNextCPt
 
 				cmp.b	#$7f,d0
 				bne.s	.okaway
-				move.w	AI_EntT_CurrentControlPoint_w(a0),d0
+				move.w	EntT_CurrentControlPoint_w(a0),d0
 
 .okaway
-				move.w	d0,AI_EntT_TargetControlPoint_w(a0)
+				move.w	d0,EntT_TargetControlPoint_w(a0)
 
 .no_player_noise:
 				moveq	#0,d0
-				move.b	AI_EntT_TeamNumber_b(a0),d0
+				move.b	EntT_TeamNumber_b(a0),d0
 				blt.s	.no_team
 
 				lea		AI_Teamwork_vl(pc),a2
@@ -464,7 +464,7 @@ ai_Widget:
 				move.l	4(a2),4(a1)
 				move.l	8(a2),8(a1)
 				move.l	12(a2),12(a1)
-				move.w	AI_WorkT_LastControlPoint_w(a1),AI_EntT_TargetControlPoint_w(a0)
+				move.w	AI_WorkT_LastControlPoint_w(a1),EntT_TargetControlPoint_w(a0)
 				move.w	#-1,AI_WorkT_LastZone_w(a1)
 				bra.s	.not_seen
 
@@ -477,12 +477,12 @@ ai_Widget:
 				move.w	#0,AI_WorkT_DamageTaken_w(a1)
 				tst.w	AI_WorkT_LastZone_w(a1)
 				blt.s	.not_seen
-				move.w	AI_WorkT_LastControlPoint_w(a1),AI_EntT_TargetControlPoint_w(a0)
+				move.w	AI_WorkT_LastControlPoint_w(a1),EntT_TargetControlPoint_w(a0)
 				move.w	#-1,AI_WorkT_LastZone_w(a1)
 
 .not_seen:
-				move.w	AI_EntT_CurrentControlPoint_w(a0),d0			; where the alien is now.
-				move.w	AI_EntT_TargetControlPoint_w(a0),d1
+				move.w	EntT_CurrentControlPoint_w(a0),d0			; where the alien is now.
+				move.w	EntT_TargetControlPoint_w(a0),d1
 				jsr		GetNextCPt
 				cmp.b	#$7f,d0
 				beq.s	.yes_rand
@@ -500,16 +500,16 @@ ai_Widget:
 				move.w	#7,d7
 
 .try_again:
-				move.w	d1,AI_EntT_TargetControlPoint_w(a0)
-				move.w	AI_EntT_CurrentControlPoint_w(a0),d0
+				move.w	d1,EntT_TargetControlPoint_w(a0)
+				move.w	EntT_CurrentControlPoint_w(a0),d0
 				jsr		GetNextCPt
-				cmp.w	AI_EntT_CurrentControlPoint_w(a0),d0
+				cmp.w	EntT_CurrentControlPoint_w(a0),d0
 				beq.s	.plus_again
 				cmp.b	#$7f,d0
 				bne.s	.okaway2
 
 .plus_again:
-				move.w	AI_EntT_TargetControlPoint_w(a0),d1
+				move.w	EntT_TargetControlPoint_w(a0),d1
 				add.w	#1,d1
 				cmp.w	NumCPts,d1
 				blt		.no_bin
@@ -576,17 +576,17 @@ ai_Widget:
 				clr.b	canshove
 				clr.b	GotThere
 				jsr		HeadTowardsAng
-				move.w	AngRet,AI_EntT_CurrentAngle_w(a0)
+				move.w	AngRet,EntT_CurrentAngle_w(a0)
 
-; add.w #100,AI_EntT_CurrentAngle_w(a0)
-; and.w #8190,AI_EntT_CurrentAngle_w(a0)
+; add.w #100,EntT_CurrentAngle_w(a0)
+; and.w #8190,EntT_CurrentAngle_w(a0)
 
 				tst.b	GotThere
 				beq.s	.not_next_cpt
 
 				move.w	ai_MiddleCPT_w,d0
-				move.w	d0,AI_EntT_CurrentControlPoint_w(a0)
-				cmp.w	AI_EntT_TargetControlPoint_w(a0),d0
+				move.w	d0,EntT_CurrentControlPoint_w(a0)
+				cmp.w	EntT_TargetControlPoint_w(a0),d0
 				bne		.not_next_cpt
 
 * We have arrived at the target contol pt. Pick a
@@ -597,7 +597,7 @@ ai_Widget:
 				move.w	d0,d1
 				divs.w	NumCPts,d1
 				swap	d1
-				move.w	d1,AI_EntT_TargetControlPoint_w(a0)
+				move.w	d1,EntT_TargetControlPoint_w(a0)
 
 .not_next_cpt:
 				move.w	#%1000000000,wallflags
@@ -622,7 +622,7 @@ ai_Widget:
 				tst.w	12-64(a0)
 				blt.s	.no_copy_in
 				move.w	12(a0),12-64(a0)
-				move.w	AI_EntT_GraphicRoom_w(a0),AI_EntT_GraphicRoom_w-64(a0)
+				move.w	EntT_GraphicRoom_w(a0),EntT_GraphicRoom_w-64(a0)
 
 .no_copy_in:
 				move.w	4(a0),-(a7)
@@ -637,9 +637,9 @@ ai_Widget:
 .noflymove:
 				bsr		ai_DoTorch
 
-				move.b	#0,AI_EntT_CurrentMode_b(a0)
+				move.b	#0,EntT_CurrentMode_b(a0)
 				bsr		AI_LookForPlayer1
-				move.b	#0,AI_EntT_WhichAnim_b(a0)
+				move.b	#0,EntT_WhichAnim_b(a0)
 				tst.b	17(a0)
 				beq.s	.cant_see_player
 				bsr		ai_CheckInFront
@@ -647,7 +647,7 @@ ai_Widget:
 				beq.s	.cant_see_player
 
 				move.w	TempFrames,d0
-				sub.w	d0,AI_EntT_Timer1_w(a0)
+				sub.w	d0,EntT_Timer1_w(a0)
 				bgt.s	.notreacted
 				bsr		ai_CheckForDark
 				tst.b	d0
@@ -675,19 +675,19 @@ ai_Widget:
 				bra.s	.cant_see_player
 
 .attack_player:
-				move.w	#0,AI_EntT_Timer2_w(a0)
-				move.b	#1,AI_EntT_CurrentMode_b(a0)
-				move.b	#1,AI_EntT_WhichAnim_b(a0)
+				move.w	#0,EntT_Timer2_w(a0)
+				move.b	#1,EntT_CurrentMode_b(a0)
+				move.b	#1,EntT_WhichAnim_b(a0)
 
 .notreacted:
 				move.w	ai_AnimFacing_w,d0
-				add.w	d0,AI_EntT_CurrentAngle_w(a0)
+				add.w	d0,EntT_CurrentAngle_w(a0)
 				rts
 
 .cant_see_player:
-				move.w	AI_ReactionTime_w,AI_EntT_Timer1_w(a0)
+				move.w	AI_ReactionTime_w,EntT_Timer1_w(a0)
 				move.w	ai_AnimFacing_w,d0
-				add.w	d0,AI_EntT_CurrentAngle_w(a0)
+				add.w	d0,EntT_CurrentAngle_w(a0)
 				rts
 
 ***********************************************
@@ -706,7 +706,7 @@ ai_Charge:
 				move.l	#30*256,StepDownVal
 
 ai_ChargeCommon:
-				tst.b	AI_EntT_DamageTaken_b(a0)
+				tst.b	EntT_DamageTaken_b(a0)
 				beq.s	.no_damage
 				bsr		ai_TakeDamage
 				tst.b	ai_GetOut_w
@@ -718,9 +718,9 @@ ai_ChargeCommon:
 
 ; tst.b ai_FinishedAnim_b
 ; beq.s .not_finished_attacking
-; move.b #2,AI_EntT_CurrentMode_b(a0)
-; move.w AI_FollowupTimer_w,AI_EntT_Timer1_w(a0)
-; move.w #0,AI_EntT_Timer2_w(a0)
+; move.b #2,EntT_CurrentMode_b(a0)
+; move.w AI_FollowupTimer_w,EntT_Timer1_w(a0)
+; move.w #0,EntT_Timer2_w(a0)
 ; rts
 ;.not_finished_attacking:
 
@@ -799,13 +799,13 @@ ai_ChargeCommon:
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
 				move.b	StoodInTop,ObjInTop(a0)
-				move.w	AngRet,AI_EntT_CurrentAngle_w(a0)
+				move.w	AngRet,EntT_CurrentAngle_w(a0)
 
 .hit_something:
 				tst.w	12-64(a0)
 				blt.s	.no_copy_in
 				move.w	12(a0),12-64(a0)
-				move.w	AI_EntT_GraphicRoom_w(a0),AI_EntT_GraphicRoom_w-64(a0)
+				move.w	EntT_GraphicRoom_w(a0),EntT_GraphicRoom_w-64(a0)
 
 .no_copy_in:
 				tst.b	GotThere
@@ -815,17 +815,17 @@ ai_ChargeCommon:
 				move.l	PLR1_Obj,a5
 				move.b	ai_DoAction_b,d0
 				asl.w	#1,d0
-				add.b	d0,AI_EntT_DamageTaken_b(a5)
+				add.b	d0,EntT_DamageTaken_b(a5)
 				move.w	newx,d0
 				sub.w	oldx,d0
 				ext.l	d0
 				divs	TempFrames,d0
-				add.w	d0,AI_EntT_ImpactX_w(a5)
+				add.w	d0,EntT_ImpactX_w(a5)
 				move.w	newz,d0
 				sub.w	oldz,d0
 				ext.l	d0
 				divs	TempFrames,d0
-				add.w	d0,AI_EntT_ImpactZ_w(a5)
+				add.w	d0,EntT_ImpactZ_w(a5)
 
 .no_munch:
 				bsr		ai_StorePlayerPosition
@@ -833,7 +833,7 @@ ai_ChargeCommon:
 				bsr		ai_GetRoomCPT
 				bsr		ai_DoTorch
 				bsr		AI_LookForPlayer1
-				move.b	#0,AI_EntT_CurrentMode_b(a0)
+				move.b	#0,EntT_CurrentMode_b(a0)
 				tst.b	17(a0)
 				beq.s	.cant_see_player
 				bsr		ai_CheckInFront
@@ -850,16 +850,16 @@ ai_ChargeCommon:
 
 .attack_player
 				move.w	ai_AnimFacing_w,d0
-				add.w	d0,AI_EntT_CurrentAngle_w(a0)
-				move.b	#1,AI_EntT_CurrentMode_b(a0)
-				move.b	#1,AI_EntT_WhichAnim_b(a0)
+				add.w	d0,EntT_CurrentAngle_w(a0)
+				move.b	#1,EntT_CurrentMode_b(a0)
+				move.b	#1,EntT_WhichAnim_b(a0)
 				rts
 
 .cant_see_player:
-				move.b	#0,AI_EntT_WhichAnim_b(a0)
-				move.w	#0,AI_EntT_Timer2_w(a0)
+				move.b	#0,EntT_WhichAnim_b(a0)
+				move.w	#0,EntT_Timer2_w(a0)
 				move.w	ai_AnimFacing_w,d0
-				add.w	d0,AI_EntT_CurrentAngle_w(a0)
+				add.w	d0,EntT_CurrentAngle_w(a0)
 				rts
 
 ai_AttackWithGunFlying:
@@ -873,36 +873,36 @@ ai_AttackCommon:
 				move.l	GLF_DatabasePtr_l,a1
 				lea		AlienStats(a1),a1
 				moveq	#0,d0
-				move.b	AI_EntT_Type_b(a0),d0
-				muls	#GLF_AlienT_SizeOf_l,d0
+				move.b	EntT_Type_b(a0),d0
+				muls	#AlienT_SizeOf_l,d0
 				add.w	d0,a1
-				move.w	GLF_AlienT_BulType_w(a1),d0
+				move.w	AlienT_BulType_w(a1),d0
 				move.b	d0,SHOTTYPE
 				move.l	GLF_DatabasePtr_l,a1
 				lea		BulletAnimData(a1),a1
-				muls	#GLF_BulT_SizeOf_l,d0
+				muls	#BulT_SizeOf_l,d0
 				add.l	d0,a1
-				move.l	GLF_BulT_DamageToTarget_l(a1),d0
+				move.l	BulT_HitDamage_l(a1),d0
 				move.b	d0,SHOTPOWER
 				clr.l	d1
-				move.l	GLF_BulT_MovementSpeed_l(a1),d0
+				move.l	BulT_Speed_l(a1),d0
 				bset	d0,d1
 				move.w	d1,SHOTSPEED
 				sub.w	#1,d0
 				move.w	d0,SHOTSHIFT
-				tst.l	GLF_BulT_VisibleOrInstant_l(a1)
+				tst.l	BulT_IsHitScan_l(a1)
 				beq		ai_AttackWithProjectile
 
 ai_AttackWithHitScan:
-				tst.b	AI_EntT_DamageTaken_b(a0)
+				tst.b	EntT_DamageTaken_b(a0)
 				beq.s	.no_damage
 
-				move.b	#4,AI_EntT_CurrentMode_b(a0)
+				move.b	#4,EntT_CurrentMode_b(a0)
 				bsr		ai_TakeDamage
 				tst.b	ai_GetOut_w
 				beq.s	.no_damage
 ; move.w ai_AnimFacing_w,d0
-; add.w d0,AI_EntT_CurrentAngle_w(a0)
+; add.w d0,EntT_CurrentAngle_w(a0)
 				rts
 
 .no_damage:
@@ -919,33 +919,33 @@ ai_AttackWithHitScan:
 				move.w	#-20,Range
 				move.w	#20,speed
 				jsr		HeadTowardsAng
-				move.w	AngRet,AI_EntT_CurrentAngle_w(a0)
+				move.w	AngRet,EntT_CurrentAngle_w(a0)
 				movem.l	(a7)+,d0-d7/a0-a6
 
 				bsr		ai_StorePlayerPosition
 
 				bsr		AI_LookForPlayer1
 
-				move.b	#0,AI_EntT_CurrentMode_b(a0)
+				move.b	#0,EntT_CurrentMode_b(a0)
 				tst.b	17(a0)
 				beq.s	.cant_see_player
 				bsr		ai_CheckInFront
 				tst.b	d0
 				beq.s	.cant_see_player
 
-				move.b	#1,AI_EntT_CurrentMode_b(a0)
-				move.b	#1,AI_EntT_WhichAnim_b(a0)
+				move.b	#1,EntT_CurrentMode_b(a0)
+				move.b	#1,EntT_WhichAnim_b(a0)
 				move.w	ai_AnimFacing_w,d0
-				add.w	d0,AI_EntT_CurrentAngle_w(a0)
+				add.w	d0,EntT_CurrentAngle_w(a0)
 				bra		.can_see_player
 
 .cant_see_player:
-				move.b	#0,AI_EntT_WhichAnim_b(a0)
-				move.w	#0,AI_EntT_Timer2_w(a0)
-				move.w	AI_FollowupTimer_w,AI_EntT_Timer1_w(a0)
-				move.w	#0,AI_EntT_Timer2_w(a0)
+				move.b	#0,EntT_WhichAnim_b(a0)
+				move.w	#0,EntT_Timer2_w(a0)
+				move.w	AI_FollowupTimer_w,EntT_Timer1_w(a0)
+				move.w	#0,EntT_Timer2_w(a0)
 				move.w	ai_AnimFacing_w,d0
-				add.w	d0,AI_EntT_CurrentAngle_w(a0)
+				add.w	d0,EntT_CurrentAngle_w(a0)
 				rts
 
 .can_see_player:
@@ -992,7 +992,7 @@ ai_AttackWithHitScan:
 .hit_player:
 				move.l	PLR1_Obj,a1
 				move.b	SHOTPOWER,d0
-				add.b	d0,AI_EntT_DamageTaken_b(a1)
+				add.b	d0,EntT_DamageTaken_b(a1)
 
 				sub.l	#ObjRotated,a6
 				add.l	ObjectPoints,a6
@@ -1017,8 +1017,8 @@ ai_AttackWithHitScan:
 				muls	d3,d1
 				divs	d2,d1
 
-				sub.w	d0,AI_EntT_ImpactX_w(a1)
-				sub.w	d1,AI_EntT_ImpactZ_w(a1)
+				sub.w	d0,EntT_ImpactX_w(a1)
+				sub.w	d1,EntT_ImpactZ_w(a1)
 
 .missed_player:
 				movem.l	(a7)+,a0/a1
@@ -1035,27 +1035,27 @@ ai_AttackWithHitScan:
 
 				tst.b	ai_FinishedAnim_b
 				beq.s	.not_finished_attacking
-				move.b	#0,AI_EntT_WhichAnim_b(a0)
-				move.b	#2,AI_EntT_CurrentMode_b(a0)
-				move.w	AI_FollowupTimer_w,AI_EntT_Timer1_w(a0)
-				move.w	#0,AI_EntT_Timer2_w(a0)
+				move.b	#0,EntT_WhichAnim_b(a0)
+				move.b	#2,EntT_CurrentMode_b(a0)
+				move.w	AI_FollowupTimer_w,EntT_Timer1_w(a0)
+				move.w	#0,EntT_Timer2_w(a0)
 				move.w	ai_AnimFacing_w,d0
-				add.w	d0,AI_EntT_CurrentAngle_w(a0)
+				add.w	d0,EntT_CurrentAngle_w(a0)
 				rts
 
 .not_finished_attacking:
 				rts
 
 ai_AttackWithProjectile:
-				tst.b	AI_EntT_DamageTaken_b(a0)
+				tst.b	EntT_DamageTaken_b(a0)
 				beq.s	.no_damage
 
-				move.b	#4,AI_EntT_CurrentMode_b(a0)
+				move.b	#4,EntT_CurrentMode_b(a0)
 				bsr		ai_TakeDamage
 				tst.b	ai_GetOut_w
 				beq.s	.no_damage
 ; move.w ai_AnimFacing_w,d0
-; add.w d0,AI_EntT_CurrentAngle_w(a0)
+; add.w d0,EntT_CurrentAngle_w(a0)
 				rts
 
 .no_damage:
@@ -1072,7 +1072,7 @@ ai_AttackWithProjectile:
 				move.w	#-20,Range
 				move.w	#20,speed
 				jsr		HeadTowardsAng
-				move.w	AngRet,AI_EntT_CurrentAngle_w(a0)
+				move.w	AngRet,EntT_CurrentAngle_w(a0)
 				movem.l	(a7)+,d0-d7/a0-a6
 
 				bsr		ai_StorePlayerPosition
@@ -1103,35 +1103,35 @@ ai_AttackWithProjectile:
 
 				tst.b	ai_FinishedAnim_b
 				beq.s	.not_finished_attacking
-				move.b	#0,AI_EntT_WhichAnim_b(a0)
-				move.b	#2,AI_EntT_CurrentMode_b(a0)
-				move.w	AI_FollowupTimer_w,AI_EntT_Timer1_w(a0)
-				move.w	#0,AI_EntT_Timer2_w(a0)
+				move.b	#0,EntT_WhichAnim_b(a0)
+				move.b	#2,EntT_CurrentMode_b(a0)
+				move.w	AI_FollowupTimer_w,EntT_Timer1_w(a0)
+				move.w	#0,EntT_Timer2_w(a0)
 				move.w	ai_AnimFacing_w,d0
-				add.w	d0,AI_EntT_CurrentAngle_w(a0)
+				add.w	d0,EntT_CurrentAngle_w(a0)
 				rts
 
 .not_finished_attacking:
 				bsr		AI_LookForPlayer1
-				move.b	#0,AI_EntT_CurrentMode_b(a0)
+				move.b	#0,EntT_CurrentMode_b(a0)
 				tst.b	17(a0)
 				beq.s	.cant_see_player
 				bsr		ai_CheckInFront
 				tst.b	d0
 				beq.s	.cant_see_player
-				move.b	#1,AI_EntT_WhichAnim_b(a0)
-				move.b	#1,AI_EntT_CurrentMode_b(a0)
+				move.b	#1,EntT_WhichAnim_b(a0)
+				move.b	#1,EntT_CurrentMode_b(a0)
 				move.w	ai_AnimFacing_w,d0
-				add.w	d0,AI_EntT_CurrentAngle_w(a0)
+				add.w	d0,EntT_CurrentAngle_w(a0)
 				rts
 
 .cant_see_player:
-				move.b	#0,AI_EntT_WhichAnim_b(a0)
-				move.w	#0,AI_EntT_Timer2_w(a0)
-				move.w	AI_FollowupTimer_w,AI_EntT_Timer1_w(a0)
-				move.w	#0,AI_EntT_Timer2_w(a0)
+				move.b	#0,EntT_WhichAnim_b(a0)
+				move.w	#0,EntT_Timer2_w(a0)
+				move.w	AI_FollowupTimer_w,EntT_Timer1_w(a0)
+				move.w	#0,EntT_Timer2_w(a0)
 				move.w	ai_AnimFacing_w,d0
-				add.w	d0,AI_EntT_CurrentAngle_w(a0)
+				add.w	d0,EntT_CurrentAngle_w(a0)
 				rts
 
 ai_ChargeToSideFlying:
@@ -1146,23 +1146,23 @@ ai_ChargeFlying:
 				move.l	#1000*256,StepDownVal
 
 ai_ChargeFlyingCommon:
-				tst.b	AI_EntT_DamageTaken_b(a0)
+				tst.b	EntT_DamageTaken_b(a0)
 				beq.s	.no_damage
 
 				bsr		ai_TakeDamage
 				tst.b	ai_GetOut_w
 				beq.s	.no_damage
 ; move.w ai_AnimFacing_w,d0
-; add.w d0,AI_EntT_CurrentAngle_w(a0)
+; add.w d0,EntT_CurrentAngle_w(a0)
 				rts
 
 .no_damage:
 				jsr		ai_DoAttackAnim
 ; tst.b ai_FinishedAnim_b
 ; beq.s .not_finished_attacking
-; move.b #2,AI_EntT_CurrentMode_b(a0)
-; move.w AI_FollowupTimer_w,AI_EntT_Timer1_w(a0)
-; move.w #0,AI_EntT_Timer2_w(a0)
+; move.b #2,EntT_CurrentMode_b(a0)
+; move.w AI_FollowupTimer_w,EntT_Timer1_w(a0)
+; move.w #0,EntT_Timer2_w(a0)
 ; rts
 ;.not_finished_attacking:
 
@@ -1241,7 +1241,7 @@ ai_ChargeFlyingCommon:
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
 				move.b	StoodInTop,ObjInTop(a0)
-				move.w	AngRet,AI_EntT_CurrentAngle_w(a0)
+				move.w	AngRet,EntT_CurrentAngle_w(a0)
 
 .hit_something:
 				tst.b	GotThere
@@ -1251,7 +1251,7 @@ ai_ChargeFlyingCommon:
 				move.l	PLR1_Obj,a5
 				move.b	ai_DoAction_b,d0
 				asl.w	#1,d0
-				add.b	d0,AI_EntT_DamageTaken_b(a5)
+				add.b	d0,EntT_DamageTaken_b(a5)
 
 .no_munch:
 				bsr		ai_StorePlayerPosition
@@ -1264,22 +1264,22 @@ ai_ChargeFlyingCommon:
 				bsr		ai_FlyToPlayerHeight
 				bsr		ai_DoTorch
 				bsr		AI_LookForPlayer1
-				move.b	#0,AI_EntT_CurrentMode_b(a0)
+				move.b	#0,EntT_CurrentMode_b(a0)
 				tst.b	17(a0)
 				beq.s	.cant_see_player
 				bsr		ai_CheckInFront
 				tst.b	d0
 				beq.s	.cant_see_player
-				move.b	#1,AI_EntT_CurrentMode_b(a0)
-				move.b	#1,AI_EntT_WhichAnim_b(a0)
+				move.b	#1,EntT_CurrentMode_b(a0)
+				move.b	#1,EntT_WhichAnim_b(a0)
 				move.w	ai_AnimFacing_w,d0
-				add.w	d0,AI_EntT_CurrentAngle_w(a0)
+				add.w	d0,EntT_CurrentAngle_w(a0)
 				rts
 .cant_see_player:
-				move.b	#0,AI_EntT_WhichAnim_b(a0)
-				move.w	#0,AI_EntT_Timer2_w(a0)
+				move.b	#0,EntT_WhichAnim_b(a0)
+				move.w	#0,EntT_Timer2_w(a0)
 				move.w	ai_AnimFacing_w,d0
-				add.w	d0,AI_EntT_CurrentAngle_w(a0)
+				add.w	d0,EntT_CurrentAngle_w(a0)
 				rts
 
 
@@ -1292,7 +1292,7 @@ ai_ChargeFlyingCommon:
 ***********************************************
 
 ai_PauseBriefly:
-				tst.b	AI_EntT_DamageTaken_b(a0)
+				tst.b	EntT_DamageTaken_b(a0)
 				beq.s	.no_damage
 
 				bsr		ai_TakeDamage
@@ -1300,15 +1300,15 @@ ai_PauseBriefly:
 				beq.s	.no_damage
 
 ; move.w ai_AnimFacing_w,d0
-; add.w d0,AI_EntT_CurrentAngle_w(a0)
+; add.w d0,EntT_CurrentAngle_w(a0)
 				rts
 
 .no_damage:
-				move.w	#0,AI_EntT_Timer2_w(a0)
+				move.w	#0,EntT_Timer2_w(a0)
 				jsr		ai_DoWalkAnim
 
 				move.w	TempFrames,d0
-				sub.w	d0,AI_EntT_Timer1_w(a0)
+				sub.w	d0,EntT_Timer1_w(a0)
 				bgt.s	.stillwaiting
 
 				move.w	(a0),d1
@@ -1321,7 +1321,7 @@ ai_PauseBriefly:
 
 				bsr		AI_LookForPlayer1
 
-				move.b	#0,AI_EntT_CurrentMode_b(a0)
+				move.b	#0,EntT_CurrentMode_b(a0)
 				tst.b	17(a0)
 				beq.s	.cant_see_player
 				bsr		ai_CheckInFront
@@ -1330,21 +1330,21 @@ ai_PauseBriefly:
 				bsr		ai_CheckForDark
 				tst.b	d0
 				beq.s	.cant_see_player
-				move.b	#1,AI_EntT_WhichAnim_b(a0)
-				move.b	#1,AI_EntT_CurrentMode_b(a0)
+				move.b	#1,EntT_WhichAnim_b(a0)
+				move.b	#1,EntT_CurrentMode_b(a0)
 				move.w	ai_AnimFacing_w,d0
-				add.w	d0,AI_EntT_CurrentAngle_w(a0)
+				add.w	d0,EntT_CurrentAngle_w(a0)
 				rts
 
 .cant_see_player:
-				move.b	#0,AI_EntT_WhichAnim_b(a0)
+				move.b	#0,EntT_WhichAnim_b(a0)
 				move.w	ai_AnimFacing_w,d0
-				add.w	d0,AI_EntT_CurrentAngle_w(a0)
+				add.w	d0,EntT_CurrentAngle_w(a0)
 				rts
 
 .stillwaiting:
 				move.w	ai_AnimFacing_w,d0
-				add.w	d0,AI_EntT_CurrentAngle_w(a0)
+				add.w	d0,EntT_CurrentAngle_w(a0)
 				rts
 
 
@@ -1373,7 +1373,7 @@ ai_ApproachToSide:
 				move.l	#30*256,StepDownVal
 
 ai_ApproachCommon:
-				tst.b	AI_EntT_DamageTaken_b(a0)
+				tst.b	EntT_DamageTaken_b(a0)
 				beq.s	.no_damage
 				bsr		ai_TakeDamage
 				tst.b	ai_GetOut_w
@@ -1466,26 +1466,26 @@ ai_ApproachCommon:
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
 				move.b	StoodInTop,ObjInTop(a0)
-				move.w	AngRet,AI_EntT_CurrentAngle_w(a0)
+				move.w	AngRet,EntT_CurrentAngle_w(a0)
 
 .hit_something:
 				tst.w	12-64(a0)
 				blt.s	.no_copy_in
 				move.w	12(a0),12-64(a0)
-				move.w	AI_EntT_GraphicRoom_w(a0),AI_EntT_GraphicRoom_w-64(a0)
+				move.w	EntT_GraphicRoom_w(a0),EntT_GraphicRoom_w-64(a0)
 .no_copy_in:
 
 ; tst.b GotThere
 ; beq.s .no_munch
-; tst.w AI_EntT_Timer4_w(a0)
+; tst.w EntT_Timer4_w(a0)
 ; ble.s .OKtomunch
 ; move.w TempFrames,d0
-; sub.w d0,AI_EntT_Timer4_w(a0)
+; sub.w d0,EntT_Timer4_w(a0)
 ; bra.s .no_munch
 ;.OKtomunch:
-; move.w #40,AI_EntT_Timer4_w(a0)
+; move.w #40,EntT_Timer4_w(a0)
 ; move.l PLR1_Obj,a5
-; add.b #2,AI_EntT_DamageTaken_b(a5)
+; add.b #2,EntT_DamageTaken_b(a5)
 ;
 .no_munch:
 
@@ -1508,7 +1508,7 @@ ai_ApproachCommon:
 				bsr		ai_GetRoomCPT
 				bsr		ai_DoTorch
 
-				move.b	#0,AI_EntT_CurrentMode_b(a0)
+				move.b	#0,EntT_CurrentMode_b(a0)
 				tst.b	AI_FlyABit_w
 				bne.s	.is_flying
 				bsr		ai_CheckAttackOnGround
@@ -1522,24 +1522,24 @@ ai_ApproachCommon:
 				bsr		ai_CheckInFront
 				tst.b	d0
 				beq.s	.cant_see_player
-				move.b	#2,AI_EntT_CurrentMode_b(a0)
+				move.b	#2,EntT_CurrentMode_b(a0)
 				move.w	TempFrames,d0
-				sub.w	d0,AI_EntT_Timer1_w(a0)
+				sub.w	d0,EntT_Timer1_w(a0)
 				bgt.s	.cant_see_player
 				bsr		ai_CheckForDark
 				tst.b	d0
 				beq.s	.cant_see_player
-				move.b	#1,AI_EntT_CurrentMode_b(a0)
-				move.w	#0,AI_EntT_Timer2_w(a0)
-				move.b	#1,AI_EntT_WhichAnim_b(a0)
+				move.b	#1,EntT_CurrentMode_b(a0)
+				move.w	#0,EntT_Timer2_w(a0)
+				move.b	#1,EntT_WhichAnim_b(a0)
 				move.w	ai_AnimFacing_w,d0
-				add.w	d0,AI_EntT_CurrentAngle_w(a0)
+				add.w	d0,EntT_CurrentAngle_w(a0)
 				rts
 
 .cant_see_player:
-				move.b	#0,AI_EntT_WhichAnim_b(a0)
+				move.b	#0,EntT_WhichAnim_b(a0)
 				move.w	ai_AnimFacing_w,d0
-				add.w	d0,AI_EntT_CurrentAngle_w(a0)
+				add.w	d0,EntT_CurrentAngle_w(a0)
 				rts
 
 ***********************************************
@@ -1560,26 +1560,26 @@ ai_FlyToHeightCommon:
 				move.w	4(a0),d0
 				cmp.w	d0,d1
 				bgt.s	.fly_down
-				move.w	AI_EntT_VelocityY_w(a0),d2
+				move.w	EntT_VelocityY_w(a0),d2
 				sub.w	#2,d2
 				cmp.w	#-32,d2
 				bgt.s	.no_fast_up
 				move.w	#-32,d2
 
 .no_fast_up
-				move.w	d2,AI_EntT_VelocityY_w(a0)
+				move.w	d2,EntT_VelocityY_w(a0)
 				add.w	d2,4(a0)
 				bra		ai_CheckFloorCeiling
 
 .fly_down
-				move.w	AI_EntT_VelocityY_w(a0),d2
+				move.w	EntT_VelocityY_w(a0),d2
 				add.w	#2,d2
 				cmp.w	#32,d2
 				blt.s	.no_fast_down
 				move.w	#32,d2
 
 .no_fast_down
-				move.w	d2,AI_EntT_VelocityY_w(a0)
+				move.w	d2,EntT_VelocityY_w(a0)
 				add.w	d2,4(a0)
 
 ai_CheckFloorCeiling:
@@ -1592,12 +1592,12 @@ ai_CheckFloorCeiling:
 
 				move.l	objroom,a2
 
-				move.l	Lvl_ZoneT_Floor_l(a2),d0
-				move.l	Lvl_ZoneT_Roof_l(a2),d1
+				move.l	ZoneT_Floor_l(a2),d0
+				move.l	ZoneT_Roof_l(a2),d1
 				tst.b	ObjInTop(a0)
 				beq.s	.not_in_top
-				move.l	Lvl_ZoneT_UpperFloor_l(a2),d0
-				move.l	Lvl_ZoneT_UpperRoof_l(a2),d1
+				move.l	ZoneT_UpperFloor_l(a2),d0
+				move.l	ZoneT_UpperRoof_l(a2),d1
 
 .not_in_top:
 				asr.l	#7,d0
@@ -1632,14 +1632,14 @@ ai_StorePlayerPosition:
 				move.l	PLR1_Roompt,a3
 				move.w	(a3),AI_WorkT_LastZone_w(a2)
 				moveq	#0,d0
-				move.b	Lvl_ZoneT_ControlPoint_w(a3),d0
+				move.b	ZoneT_ControlPoint_w(a3),d0
 				tst.b	PLR1_StoodInTop
 				beq.s	.player_not_in_top
-				move.b	Lvl_ZoneT_ControlPoint_w+1(a3),d0
+				move.b	ZoneT_ControlPoint_w+1(a3),d0
 
 .player_not_in_top:
 				move.w	d0,AI_WorkT_LastControlPoint_w(a2)
-				move.b	AI_EntT_TeamNumber_b(a0),d0
+				move.b	EntT_TeamNumber_b(a0),d0
 				blt.s	.no_team
 				move.l	#AI_Teamwork_vl,a2
 				asl.w	#4,d0
@@ -1649,10 +1649,10 @@ ai_StorePlayerPosition:
 				move.l	PLR1_Roompt,a3
 				move.w	(a3),AI_WorkT_LastZone_w(a2)
 				moveq	#0,d0
-				move.b	Lvl_ZoneT_ControlPoint_w(a3),d0
+				move.b	ZoneT_ControlPoint_w(a3),d0
 				tst.b	PLR1_StoodInTop
 				beq.s	.player_not_in_top2
-				move.b	Lvl_ZoneT_ControlPoint_w+1(a3),d0
+				move.b	ZoneT_ControlPoint_w+1(a3),d0
 
 .player_not_in_top2:
 				move.w	d0,AI_WorkT_LastControlPoint_w(a2)
@@ -1681,10 +1681,10 @@ ai_GetRoomStatsStill:
 ;.okbit:
 ; move.w d0,2(a0)
 
-				move.l	Lvl_ZoneT_Floor_l(a2),d0
+				move.l	ZoneT_Floor_l(a2),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.not_in_top2
-				move.l	Lvl_ZoneT_UpperFloor_l(a2),d0
+				move.l	ZoneT_UpperFloor_l(a2),d0
 
 .not_in_top2:
 				move.l	thingheight,d2
@@ -1692,7 +1692,7 @@ ai_GetRoomStatsStill:
 				sub.l	d2,d0
 				asr.l	#7,d0
 				move.w	d0,4(a0)
-				move.w	12(a0),AI_EntT_GraphicRoom_w(a0)
+				move.w	12(a0),EntT_GraphicRoom_w(a0)
 				rts
 
 ai_CheckForDark:
@@ -1730,7 +1730,7 @@ ai_CheckInFront:
 				move.w	p1_zoff,d1
 				sub.w	newz,d1
 
-				move.w	AI_EntT_CurrentAngle_w(a0),d2
+				move.w	EntT_CurrentAngle_w(a0),d2
 				and.w	#8190,d2
 				move.l	#SineTable,a3
 				move.w	(a3,d2.w),d3
@@ -1792,14 +1792,14 @@ AI_ClearNastyMem:
 ai_CheckDamage:
 
 				moveq	#0,d2
-				move.b	AI_EntT_DamageTaken_b(a0),d2
+				move.b	EntT_DamageTaken_b(a0),d2
 				beq		.noscream
 
-				sub.b	d2,AI_EntT_NumLives_b(a0)
+				sub.b	d2,EntT_NumLives_b(a0)
 				bgt		.not_dead_yet
 
 				moveq	#0,d0
-				move.b	AI_EntT_TeamNumber_b(a0),d0
+				move.b	EntT_TeamNumber_b(a0),d0
 				blt.s	.no_team
 
 				lea		AI_Teamwork_vl(pc),a2
@@ -1843,7 +1843,7 @@ ai_CheckDamage:
 				blt		.noexplode
 
 				move.w	#-1,12(a0)
-				move.w	12(a0),AI_EntT_GraphicRoom_w(a0)
+				move.w	12(a0),EntT_GraphicRoom_w(a0)
 				rts
 
 .noexplode:
@@ -1862,12 +1862,12 @@ ai_CheckDamage:
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				move.w	#25,AI_EntT_Timer3_w(a0)
-				move.w	12(a0),AI_EntT_GraphicRoom_w(a0)
+				move.w	#25,EntT_Timer3_w(a0)
+				move.w	12(a0),EntT_GraphicRoom_w(a0)
 				rts
 
 .not_dead_yet:
-				clr.b	AI_EntT_DamageTaken_b(a0)
+				clr.b	EntT_DamageTaken_b(a0)
 				movem.l	d0-d7/a0-a6,-(a7)
 				sub.l	ObjectPoints,a1
 				add.l	#ObjRotated,a1
@@ -1904,7 +1904,7 @@ SPLIBBLE:
 				muls	#A_OptLen,d0
 				add.w	d0,a6
 
-				move.w	AI_EntT_Timer2_w(a0),d1
+				move.w	EntT_Timer2_w(a0),d1
 				add.w	#1,d1
 				move.w	d1,d2
 				muls	#A_FrameLen,d1
@@ -1913,7 +1913,7 @@ SPLIBBLE:
 				moveq	#0,d2
 				moveq	#0,d1
 .noendanim
-				move.w	d2,AI_EntT_Timer2_w(a0)
+				move.w	d2,EntT_Timer2_w(a0)
 
 				move.l	#0,8(a0)
 				move.b	(a6,d1.w),9(a0)
@@ -1960,7 +1960,7 @@ ai_DoTorch:
 				ext.l	d3
 				asl.l	#7,d3
 				move.l	d3,BRIGHTY
-				move.w	AI_EntT_CurrentAngle_w(a0),d4
+				move.w	EntT_CurrentAngle_w(a0),d4
 
 				move.w	12(a0),d3
 
@@ -1996,7 +1996,7 @@ ai_DoAttackAnim:
 				muls	#A_OptLen,d1
 				add.l	d1,a6
 
-				move.w	AI_EntT_Timer2_w(a0),d1
+				move.w	EntT_Timer2_w(a0),d1
 				tst.b	1(a5)
 				blt.s	.nospec
 
@@ -2031,7 +2031,7 @@ ai_DoAttackAnim:
 .noanimface:
 
 ******************************************
-				move.w	#-1,AI_EntT_GraphicRoom_w-64(a0)
+				move.w	#-1,EntT_GraphicRoom_w-64(a0)
 				move.w	#-1,12-64(a0)
 
 				move.w	AUXOBJ,d3
@@ -2041,7 +2041,7 @@ ai_DoAttackAnim:
 				blt		.noaux
 
 				move.w	12(a0),12-64(a0)
-				move.w	12(a0),AI_EntT_GraphicRoom_w-64(a0)
+				move.w	12(a0),EntT_GraphicRoom_w-64(a0)
 				move.w	4(a0),4-64(a0)
 				move.b	ObjInTop(a0),ObjInTop-64(a0)
 
@@ -2063,13 +2063,13 @@ ai_DoAttackAnim:
 
 				move.w	d3,d4
 				muls	#O_AnimSize,d3
-				muls	#GLF_ObjT_SizeOf_l,d4
+				muls	#ObjT_SizeOf_l,d4
 				add.l	d4,a2
 				add.l	d3,a4
 
 				muls	#O_FrameStoreSize,d0
 
-				cmp.w	#1,GLF_ObjT_GFXType_w(a2)
+				cmp.w	#1,ObjT_GFXType_w(a2)
 				blt.s	.bitmap
 				beq.s	.vector
 
@@ -2089,7 +2089,7 @@ ai_DoAttackAnim:
 
 ; moveq #0,d1
 ; move.b 5(a3,d0.w),d1
-; move.w d1,AI_EntT_Timer1_w(a0)
+; move.w d1,EntT_Timer1_w(a0)
 
 				bra		.noaux
 
@@ -2105,7 +2105,7 @@ ai_DoAttackAnim:
 
 ; moveq #0,d1
 ; move.b 5(a3,d0.w),d1
-; move.w d1,AI_EntT_Timer1_w(a0)
+; move.w d1,EntT_Timer1_w(a0)
 
 				bra		.noaux
 
@@ -2122,7 +2122,7 @@ ai_DoAttackAnim:
 
 ; moveq #0,d1
 ; move.b 5(a3,d0.w),d1
-; move.w d1,AI_EntT_Timer1_w(a0)
+; move.w d1,EntT_Timer1_w(a0)
 
 .noaux:
 
@@ -2162,7 +2162,7 @@ BLIBBLE:
 				muls	#A_OptLen,d0
 				add.w	d0,a6
 
-				move.w	AI_EntT_Timer2_w(a0),d1
+				move.w	EntT_Timer2_w(a0),d1
 				move.w	d1,d2
 				add.w	#1,d2
 				muls	#A_FrameLen,d1
@@ -2171,7 +2171,7 @@ BLIBBLE:
 				bge.s	.noendanim
 				moveq	#0,d2
 .noendanim
-				move.w	d2,AI_EntT_Timer2_w(a0)
+				move.w	d2,EntT_Timer2_w(a0)
 
 				move.l	#0,8(a0)
 				move.b	(a6,d1.w),9(a0)
@@ -2211,14 +2211,14 @@ ai_CheckAttackOnGround:
 
 				move.l	PLR1_Roompt,a3
 				moveq	#0,d1
-				move.b	Lvl_ZoneT_ControlPoint_w(a3),d1
+				move.b	ZoneT_ControlPoint_w(a3),d1
 				tst.b	PLR1_StoodInTop
 				beq.s	.player_not_in_top
-				move.b	Lvl_ZoneT_ControlPoint_w+1(a3),d1
+				move.b	ZoneT_ControlPoint_w+1(a3),d1
 
 .player_not_in_top:
 				move.w	d1,d3
-				move.w	AI_EntT_CurrentControlPoint_w(a0),d0
+				move.w	EntT_CurrentControlPoint_w(a0),d0
 				cmp.w	d0,d1
 				beq.s	.attack_player
 
@@ -2238,14 +2238,14 @@ ai_CheckAttackOnGround:
 ai_GetRoomCPT:
 				move.l	objroom,a2
 				moveq	#0,d0
-				move.b	Lvl_ZoneT_ControlPoint_w(a2),d0
+				move.b	ZoneT_ControlPoint_w(a2),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.player_not_in_top
 
-				move.b	Lvl_ZoneT_ControlPoint_w+1(a2),d0
+				move.b	ZoneT_ControlPoint_w+1(a2),d0
 
 .player_not_in_top:
-				move.w	d0,AI_EntT_CurrentControlPoint_w(a0)
+				move.w	d0,EntT_CurrentControlPoint_w(a0)
 				rts
 
 

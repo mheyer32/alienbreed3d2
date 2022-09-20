@@ -532,7 +532,7 @@ blag:
 assignclips:
 				move.l	(a0)+,a3
 				add.l	a4,a3					; pointer to a zone
-				adda.w	#Lvl_ZoneT_ListOfGraph_w,a3		; pointer to zonelist
+				adda.w	#ZoneT_ListOfGraph_w,a3		; pointer to zonelist
 dowholezone:
 				tst.w	(a3)
 				blt.s	nomorethiszone
@@ -944,12 +944,12 @@ clrmessbuff:
 
 				move.l	PLR1_Obj,a0
 				move.l	PLR2_Obj,a1
-				move.w	#0,AI_EntT_ImpactX_w(a0)
-				move.w	#0,AI_EntT_ImpactY_w(a0)
-				move.w	#0,AI_EntT_ImpactZ_w(a0)
-				move.w	#0,AI_EntT_ImpactX_w(a1)
-				move.w	#0,AI_EntT_ImpactY_w(a1)
-				move.w	#0,AI_EntT_ImpactZ_w(a1)
+				move.w	#0,EntT_ImpactX_w(a0)
+				move.w	#0,EntT_ImpactY_w(a0)
+				move.w	#0,EntT_ImpactZ_w(a0)
+				move.w	#0,EntT_ImpactX_w(a1)
+				move.w	#0,EntT_ImpactY_w(a1)
+				move.w	#0,EntT_ImpactZ_w(a1)
 
 				move.l	#0,PLR1s_xspdval
 				move.l	#0,PLR1s_zspdval
@@ -996,10 +996,10 @@ lop:
 				move.w	d7,d1
 				move.l	GLF_DatabasePtr_l,a6
 				add.l	#AlienStats,a6
-				muls	#GLF_AlienT_SizeOf_l,d1
+				muls	#AlienT_SizeOf_l,d1
 				add.l	d1,a6
 
-				move.b	GLF_AlienT_SplatType_w+1(a6),d0
+				move.b	AlienT_SplatType_w+1(a6),d0
 				move.b	d0,TypeOfSplat
 
 				move.l	PLR2_Roompt,a1
@@ -1040,10 +1040,10 @@ lop:
 				move.w	d7,d1
 				move.l	GLF_DatabasePtr_l,a6
 				add.l	#AlienStats,a6
-				muls	#GLF_AlienT_SizeOf_l,d1
+				muls	#AlienT_SizeOf_l,d1
 				add.l	d1,a6
 
-				move.b	GLF_AlienT_SplatType_w+1(a6),d0
+				move.b	AlienT_SplatType_w+1(a6),d0
 				move.b	d0,TypeOfSplat
 
 				move.l	PLR1_Roompt,a1
@@ -1334,14 +1334,14 @@ okwat:
 				bsr		PLR1_Control
 
 				move.l	PLR1_Roompt,a0
-				move.l	Lvl_ZoneT_Roof_l(a0),SplitHeight
+				move.l	ZoneT_Roof_l(a0),SplitHeight
 				move.w	p1_xoff,THISPLRxoff
 				move.w	p1_zoff,THISPLRzoff
 
 
 				move.l	#$60000,p2_yoff
 				move.l	PLR2_Obj,a0
-				move.w	#-1,AI_EntT_GraphicRoom_w(a0)
+				move.w	#-1,EntT_GraphicRoom_w(a0)
 				move.w	#-1,12(a0)
 				move.b	#0,17(a0)
 				move.l	#BollocksRoom,PLR2_Roompt
@@ -1466,7 +1466,7 @@ NotOnePlayer:
 				bsr		PLR1_Control
 				bsr		PLR2_Control
 				move.l	PLR1_Roompt,a0
-				move.l	Lvl_ZoneT_Roof_l(a0),SplitHeight
+				move.l	ZoneT_Roof_l(a0),SplitHeight
 				move.w	p1_xoff,THISPLRxoff
 				move.w	p1_zoff,THISPLRzoff
 
@@ -1591,7 +1591,7 @@ ASlaveShouldWaitOnHisMaster:
 				move.w	p2_xoff,THISPLRxoff
 				move.w	p2_zoff,THISPLRzoff
 				move.l	PLR2_Roompt,a0
-				move.l	Lvl_ZoneT_Roof_l(a0),SplitHeight
+				move.l	ZoneT_Roof_l(a0),SplitHeight
 
 donetalking:
 
@@ -1613,7 +1613,7 @@ doallz
 
 				move.l	(a2,d0.w*4),a3
 				add.l	LEVELDATA,a3
-				move.w	Lvl_ZoneT_Brightness_w(a3),d2
+				move.w	ZoneT_Brightness_w(a3),d2
 
 				blt.s	justbright
 				move.w	d2,d3
@@ -1629,7 +1629,7 @@ justbright:
 				divs	#20,d2
 				move.w	d2,(a1,d0.w*4)
 
-				move.w	Lvl_ZoneT_UpperBrightness_w(a3),d2
+				move.w	ZoneT_UpperBrightness_w(a3),d2
 
 				blt.s	justbright2
 				move.w	d2,d3
@@ -1907,8 +1907,8 @@ IWasPlayer1:
 ;
 ; add.l LEVELDATA,a2
 ;
-; move.l Lvl_ZoneT_Water_l(a2),d0
-; cmp.l Lvl_ZoneT_Floor_l(a2),d0
+; move.l ZoneT_Water_l(a2),d0
+; cmp.l ZoneT_Floor_l(a2),d0
 ; blt.s WEHAVEAHEIGHT
 ;
 ; bra.s checkwaterheights
@@ -2124,7 +2124,7 @@ notdoubwidth2:
 				cmp.b	#'n',mors
 				beq.s	plr1only
 
-				lea		Lvl_ZoneT_ListOfGraph_w(a0),a0
+				lea		ZoneT_ListOfGraph_w(a0),a0
 .doallrooms:
 				move.w	(a0),d0
 				blt.s	.allroomsdone
@@ -2138,7 +2138,7 @@ notdoubwidth2:
 plr1only:
 
 				move.l	PLR1_Roompt,a0
-				lea		Lvl_ZoneT_ListOfGraph_w(a0),a0
+				lea		ZoneT_ListOfGraph_w(a0),a0
 .doallrooms2:
 				move.w	(a0),d0
 				blt.s	.allroomsdone2
@@ -2167,7 +2167,7 @@ plr1only:
 				btst	d0,d7
 				beq.s	.doallobs
 				moveq	#0,d0
-				move.b	AI_EntT_TeamNumber_b(a0),d0
+				move.b	EntT_TeamNumber_b(a0),d0
 				blt.s	.doallobs
 				asl.w	#4,d0
 				tst.w	AI_WorkT_SeenBy_w(a2,d0.w)
@@ -3178,28 +3178,28 @@ USEPLR1:
 				move.l	PLR1_Roompt,a1
 
 				moveq	#0,d2
-				move.b	AI_EntT_DamageTaken_b(a0),d2
+				move.b	EntT_DamageTaken_b(a0),d2
 				beq		.notbeenshot
 
 				moveq	#0,d4
-				move.w	AI_EntT_ImpactX_w(a0),d3
+				move.w	EntT_ImpactX_w(a0),d3
 				beq.s	.notwist
 				move.w	d2,d4
 .notwist:
 				add.w	d3,PLR1s_xspdval
-				move.w	AI_EntT_ImpactZ_w(a0),d3
+				move.w	EntT_ImpactZ_w(a0),d3
 				beq.s	.notwist2
 				move.w	d2,d4
 .notwist2:
 				add.w	d3,PLR1s_zspdval
-				move.w	AI_EntT_ImpactY_w(a0),d3
+				move.w	EntT_ImpactY_w(a0),d3
 				ext.l	d3
 				asl.l	#8,d3
 				add.l	d3,PLR1s_yvel
 
-				move.w	#0,AI_EntT_ImpactX_w(a0)
-				move.w	#0,AI_EntT_ImpactY_w(a0)
-				move.w	#0,AI_EntT_ImpactZ_w(a0)
+				move.w	#0,EntT_ImpactX_w(a0)
+				move.w	#0,EntT_ImpactY_w(a0)
+				move.w	#0,EntT_ImpactZ_w(a0)
 
 				jsr		GetRand
 				muls	d4,d0
@@ -3221,10 +3221,10 @@ USEPLR1:
 				movem.l	(a7)+,d0-d7/a0-a6
 
 .notbeenshot
-				move.b	#0,AI_EntT_DamageTaken_b(a0)
-				move.b	#10,AI_EntT_NumLives_b(a0)
+				move.b	#0,EntT_DamageTaken_b(a0)
+				move.b	#10,EntT_NumLives_b(a0)
 
-				move.w	p1_angpos,AI_EntT_CurrentAngle_w(a0)
+				move.w	p1_angpos,EntT_CurrentAngle_w(a0)
 				move.b	PLR1_StoodInTop,ObjInTop(a0)
 
 				move.w	(a1),12(a0)
@@ -3259,7 +3259,7 @@ USEPLR1:
 
 				move.w	p2_angpos,d0
 				and.w	#8190,d0
-				move.w	d0,AI_EntT_CurrentAngle_w(a0)
+				move.w	d0,EntT_CurrentAngle_w(a0)
 ;
 ; jsr ViewpointToDraw
 ; asl.w #2,d0
@@ -3281,27 +3281,27 @@ USEPLR1:
 				move.l	PLR2_Roompt,a1
 
 				moveq	#0,d2
-				move.b	AI_EntT_DamageTaken_b(a0),d2
+				move.b	EntT_DamageTaken_b(a0),d2
 				beq		.notbeenshot2
-				move.w	AI_EntT_ImpactX_w(a0),d3
+				move.w	EntT_ImpactX_w(a0),d3
 				add.w	d3,PLR2s_xspdval
-				move.w	AI_EntT_ImpactZ_w(a0),d3
+				move.w	EntT_ImpactZ_w(a0),d3
 				add.w	d3,PLR2s_zspdval
-				move.w	AI_EntT_ImpactY_w(a0),d3
+				move.w	EntT_ImpactY_w(a0),d3
 				ext.l	d3
 				asl.l	#8,d3
 				add.l	d3,PLR2s_yvel
 
-				move.w	#0,AI_EntT_ImpactX_w(a0)
-				move.w	#0,AI_EntT_ImpactY_w(a0)
-				move.w	#0,AI_EntT_ImpactZ_w(a0)
+				move.w	#0,EntT_ImpactX_w(a0)
+				move.w	#0,EntT_ImpactY_w(a0)
+				move.w	#0,EntT_ImpactZ_w(a0)
 
 				sub.w	d2,PLAYERTWOHEALTH
 
 
 .notbeenshot2
-				move.b	#0,AI_EntT_DamageTaken_b(a0)
-				move.b	#10,AI_EntT_NumLives_b(a0)
+				move.b	#0,EntT_DamageTaken_b(a0)
+				move.b	#10,EntT_NumLives_b(a0)
 
 				move.b	PLR2_StoodInTop,ObjInTop(a0)
 
@@ -3333,10 +3333,10 @@ USEPLR1:
 
 				move.l	GLF_DatabasePtr_l,a6
 				add.l	#AlienStats,a6
-				muls	#GLF_AlienT_SizeOf_l,d1
+				muls	#AlienT_SizeOf_l,d1
 				add.l	d1,a6
-				move.b	GLF_AlienT_GFXType_w+1(a6),AI_VecObj_w
-				cmp.w	#1,GLF_AlienT_GFXType_w(a6)
+				move.b	AlienT_GFXType_w+1(a6),AI_VecObj_w
+				cmp.w	#1,AlienT_GFXType_w(a6)
 				bne.s	.NOSIDES2
 
 				moveq	#0,d0
@@ -3356,7 +3356,7 @@ USEPLR1:
 				muls	#A_OptLen,d0
 				add.w	d0,a6
 
-				move.w	AI_EntT_Timer2_w(a0),d1
+				move.w	EntT_Timer2_w(a0),d1
 				move.w	d1,d2
 				muls	#A_FrameLen,d1
 
@@ -3368,7 +3368,7 @@ USEPLR1:
 				bge.s	.noendanim
 				move.w	#0,d2
 .noendanim
-				move.w	d2,AI_EntT_Timer2_w(a0)
+				move.w	d2,EntT_Timer2_w(a0)
 
 				move.w	d2,d1
 
@@ -3426,13 +3426,13 @@ USEPLR1:
 .notdead:
 				move.l	PLR1_Roompt,a1
 
-				move.w	AI_EntT_CurrentAngle_w(a0),d0
+				move.w	EntT_CurrentAngle_w(a0),d0
 				add.w	#4096,d0
 				and.w	#8190,d0
-				move.w	d0,AI_EntT_CurrentAngle_w+128(a0)
+				move.w	d0,EntT_CurrentAngle_w+128(a0)
 
 				move.w	(a1),12+128(a0)
-				move.w	(a1),AI_EntT_GraphicRoom_w+128(a0)
+				move.w	(a1),EntT_GraphicRoom_w+128(a0)
 
 				moveq	#0,d0
 				move.b	p1_gunselected,d0
@@ -3441,7 +3441,7 @@ USEPLR1:
 				add.l	#GunObjects,a1
 				move.w	(a1,d0.w*2),d0
 
-				move.b	d0,AI_EntT_Type_b+128(a0)
+				move.b	d0,EntT_Type_b+128(a0)
 				move.b	#1,128+16(a0)
 
 				move.w	(a0),d0
@@ -3450,7 +3450,7 @@ USEPLR1:
 				move.l	(a1,d0.w*8),(a1,d1.w*8)
 				move.l	4(a1,d0.w*8),4(a1,d1.w*8)
 
-				st		AI_EntT_WhichAnim_b+128(a0)
+				st		EntT_WhichAnim_b+128(a0)
 
 				move.l	p1_yoff,d0
 				move.l	p1_height,d1
@@ -3487,16 +3487,16 @@ USEPLR2:
 				move.l	PLR2_Roompt,a1
 
 				moveq	#0,d2
-				move.b	AI_EntT_DamageTaken_b(a0),d2
+				move.b	EntT_DamageTaken_b(a0),d2
 				beq		.notbeenshot
 
 				moveq	#0,d4
-				move.w	AI_EntT_ImpactX_w(a0),d3
+				move.w	EntT_ImpactX_w(a0),d3
 				beq.s	.notwist
 				move.w	d2,d4
 .notwist:
 				add.w	d3,PLR2s_xspdval
-				move.w	AI_EntT_ImpactZ_w(a0),d3
+				move.w	EntT_ImpactZ_w(a0),d3
 				beq.s	.notwist2
 				move.w	d2,d4
 .notwist2:
@@ -3524,10 +3524,10 @@ USEPLR2:
 				movem.l	(a7)+,d0-d7/a0-a6
 
 .notbeenshot
-				move.b	#0,AI_EntT_DamageTaken_b(a0)
-				move.b	#10,AI_EntT_NumLives_b(a0)
+				move.b	#0,EntT_DamageTaken_b(a0)
+				move.b	#10,EntT_NumLives_b(a0)
 
-				move.w	p2_angpos,AI_EntT_CurrentAngle_w(a0)
+				move.w	p2_angpos,EntT_CurrentAngle_w(a0)
 				move.b	PLR2_StoodInTop,ObjInTop(a0)
 
 				move.w	(a1),12(a0)
@@ -3560,7 +3560,7 @@ USEPLR2:
 
 				move.w	PLR1_angpos,d0
 				and.w	#8190,d0
-				move.w	d0,AI_EntT_CurrentAngle_w(a0)
+				move.w	d0,EntT_CurrentAngle_w(a0)
 ;
 ; jsr ViewpointToDraw
 ; asl.w #2,d0
@@ -3582,20 +3582,20 @@ USEPLR2:
 				move.l	PLR1_Roompt,a1
 
 				moveq	#0,d2
-				move.b	AI_EntT_DamageTaken_b(a0),d2
+				move.b	EntT_DamageTaken_b(a0),d2
 				beq		.notbeenshot2
 
-				move.w	AI_EntT_ImpactX_w(a0),d3
+				move.w	EntT_ImpactX_w(a0),d3
 				add.w	d3,PLR1s_xspdval
-				move.w	AI_EntT_ImpactZ_w(a0),d3
+				move.w	EntT_ImpactZ_w(a0),d3
 				add.w	d3,PLR1s_zspdval
 
 				sub.w	d2,PLAYERONEHEALTH
 
 
 .notbeenshot2
-				move.b	#0,AI_EntT_DamageTaken_b(a0)
-				move.b	#10,AI_EntT_NumLives_b(a0)
+				move.b	#0,EntT_DamageTaken_b(a0)
+				move.b	#10,EntT_NumLives_b(a0)
 
 				move.b	PLR1_StoodInTop,ObjInTop(a0)
 
@@ -3627,10 +3627,10 @@ USEPLR2:
 
 				move.l	GLF_DatabasePtr_l,a6
 				add.l	#AlienStats,a6
-				muls	#GLF_AlienT_SizeOf_l,d1
+				muls	#AlienT_SizeOf_l,d1
 				add.l	d1,a6
-				move.b	GLF_AlienT_GFXType_w+1(a6),AI_VecObj_w
-				cmp.w	#1,GLF_AlienT_GFXType_w(a6)
+				move.b	AlienT_GFXType_w+1(a6),AI_VecObj_w
+				cmp.w	#1,AlienT_GFXType_w(a6)
 				bne.s	.NOSIDES2
 
 				moveq	#0,d0
@@ -3650,7 +3650,7 @@ USEPLR2:
 				muls	#A_OptLen,d0
 				add.w	d0,a6
 
-				move.w	AI_EntT_Timer2_w(a0),d1
+				move.w	EntT_Timer2_w(a0),d1
 				move.w	d1,d2
 				muls	#A_FrameLen,d1
 
@@ -3662,7 +3662,7 @@ USEPLR2:
 				bge.s	.noendanim
 				move.w	#0,d2
 .noendanim
-				move.w	d2,AI_EntT_Timer2_w(a0)
+				move.w	d2,EntT_Timer2_w(a0)
 
 				move.w	d2,d1
 
@@ -3716,13 +3716,13 @@ USEPLR2:
 .notdead:
 				move.l	PLR2_Roompt,a1
 
-				move.w	AI_EntT_CurrentAngle_w(a0),d0
+				move.w	EntT_CurrentAngle_w(a0),d0
 				add.w	#4096,d0
 				and.w	#8190,d0
-				move.w	d0,AI_EntT_CurrentAngle_w+64(a0)
+				move.w	d0,EntT_CurrentAngle_w+64(a0)
 
 				move.w	(a1),12+64(a0)
-				move.w	(a1),AI_EntT_GraphicRoom_w+64(a0)
+				move.w	(a1),EntT_GraphicRoom_w+64(a0)
 
 				moveq	#0,d0
 				move.b	p2_gunselected,d0
@@ -3731,7 +3731,7 @@ USEPLR2:
 				add.l	#GunObjects,a1
 				move.w	(a1,d0.w*2),d0
 
-				move.b	d0,AI_EntT_Type_b+64(a0)
+				move.b	d0,EntT_Type_b+64(a0)
 				move.b	#1,64+16(a0)
 
 				move.w	(a0),d0
@@ -3740,7 +3740,7 @@ USEPLR2:
 				move.l	(a1,d0.w*8),(a1,d1.w*8)
 				move.l	4(a1,d0.w*8),4(a1,d1.w*8)
 
-				st		AI_EntT_WhichAnim_b+64(a0)
+				st		EntT_WhichAnim_b+64(a0)
 
 				move.l	p2_yoff,d0
 				move.l	p2_height,d1
@@ -3881,11 +3881,11 @@ PLR1_Control:
 				move.l	#$1000000,StepDownVal
 
 				move.l	PLR1_Roompt,a0
-				move.w	Lvl_ZoneT_TelZone_w(a0),d0
+				move.w	ZoneT_TelZone_w(a0),d0
 				blt		.noteleport
 
-				move.w	Lvl_ZoneT_TelX_w(a0),newx
-				move.w	Lvl_ZoneT_TelZ_w(a0),newz
+				move.w	ZoneT_TelX_w(a0),newx
+				move.w	ZoneT_TelZ_w(a0),newz
 
 				move.l	PLR1_Obj,a0
 				move.w	(a0),CollId
@@ -3904,16 +3904,16 @@ PLR1_Control:
 				st		PLR1_TELEPORTED
 
 				move.l	PLR1_Roompt,a0
-				move.w	Lvl_ZoneT_TelZone_w(a0),d0
-				move.w	Lvl_ZoneT_TelX_w(a0),PLR1_xoff
-				move.w	Lvl_ZoneT_TelZ_w(a0),PLR1_zoff
+				move.w	ZoneT_TelZone_w(a0),d0
+				move.w	ZoneT_TelX_w(a0),PLR1_xoff
+				move.w	ZoneT_TelZ_w(a0),PLR1_zoff
 				move.l	PLR1_yoff,d1
-				sub.l	Lvl_ZoneT_Floor_l(a0),d1
+				sub.l	ZoneT_Floor_l(a0),d1
 				move.l	ZoneAdds,a0
 				move.l	(a0,d0.w*4),a0
 				add.l	LEVELDATA,a0
 				move.l	a0,PLR1_Roompt
-				add.l	Lvl_ZoneT_Floor_l(a0),d1
+				add.l	ZoneT_Floor_l(a0),d1
 				move.l	d1,PLR1s_yoff
 				move.l	d1,PLR1_yoff
 				move.l	d1,PLR1s_tyoff
@@ -3968,13 +3968,13 @@ PLR1_Control:
 
 				move.l	PLR1_Roompt,a0
 
-				move.l	Lvl_ZoneT_Floor_l(a0),d0
+				move.l	ZoneT_Floor_l(a0),d0
 				tst.b	PLR1_StoodInTop
 				beq.s	notintop
-				move.l	Lvl_ZoneT_UpperFloor_l(a0),d0
+				move.l	ZoneT_UpperFloor_l(a0),d0
 notintop:
 
-				adda.w	#Lvl_ZoneT_Points_w,a0
+				adda.w	#ZoneT_Points_w,a0
 				sub.l	PLR1_height,d0
 				move.l	d0,PLR1s_tyoff
 				move.w	p1_angpos,tmpangpos
@@ -4099,11 +4099,11 @@ PLR2_Control:
 				move.l	#$1000000,StepDownVal
 
 				move.l	PLR2_Roompt,a0
-				move.w	Lvl_ZoneT_TelZone_w(a0),d0
+				move.w	ZoneT_TelZone_w(a0),d0
 				blt		.noteleport
 
-				move.w	Lvl_ZoneT_TelX_w(a0),newx
-				move.w	Lvl_ZoneT_TelZ_w(a0),newz
+				move.w	ZoneT_TelX_w(a0),newx
+				move.w	ZoneT_TelZ_w(a0),newz
 				move.w	PLR2_Obj,a0
 				move.w	(a0),CollId
 				move.l	#%111111111111111111,CollideFlags
@@ -4120,16 +4120,16 @@ PLR2_Control:
 				st		PLR2_TELEPORTED
 
 				move.l	PLR2_Roompt,a0
-				move.w	Lvl_ZoneT_TelZone_w(a0),d0
-				move.w	Lvl_ZoneT_TelX_w(a0),PLR2_xoff
-				move.w	Lvl_ZoneT_TelZ_w(a0),PLR2_zoff
+				move.w	ZoneT_TelZone_w(a0),d0
+				move.w	ZoneT_TelX_w(a0),PLR2_xoff
+				move.w	ZoneT_TelZ_w(a0),PLR2_zoff
 				move.l	PLR2_yoff,d1
-				sub.l	Lvl_ZoneT_Floor_l(a0),d1
+				sub.l	ZoneT_Floor_l(a0),d1
 				move.l	ZoneAdds,a0
 				move.l	(a0,d0.w*4),a0
 				add.l	LEVELDATA,a0
 				move.l	a0,PLR2_Roompt
-				add.l	Lvl_ZoneT_Floor_l(a0),d1
+				add.l	ZoneT_Floor_l(a0),d1
 				move.l	d1,PLR2s_yoff
 				move.l	d1,PLR2_yoff
 				move.l	d1,PLR2s_tyoff
@@ -4184,13 +4184,13 @@ PLR2_Control:
 
 				move.l	PLR2_Roompt,a0
 
-				move.l	Lvl_ZoneT_Floor_l(a0),d0
+				move.l	ZoneT_Floor_l(a0),d0
 				tst.b	PLR2_StoodInTop
 				beq.s	.notintop
-				move.l	Lvl_ZoneT_UpperFloor_l(a0),d0
+				move.l	ZoneT_UpperFloor_l(a0),d0
 .notintop:
 
-				adda.w	#Lvl_ZoneT_Points_w,a0
+				adda.w	#ZoneT_Points_w,a0
 				sub.l	PLR2_height,d0
 				move.l	d0,PLR2s_tyoff
 				move.w	p2_angpos,tmpangpos
@@ -4281,7 +4281,7 @@ DrawDisplay:
 				bne.s	doplr2too
 				move.l	PLR2_Obj,a0
 				move.w	#-1,12(a0)
-				move.w	#-1,AI_EntT_GraphicRoom_w(a0)
+				move.w	#-1,EntT_GraphicRoom_w(a0)
 				bra		noplr2either
 
 doplr2too:
@@ -4308,7 +4308,7 @@ subroomloop:
 				move.l	ZoneAdds,a0
 				move.l	(a0,d7.w*4),a0
 				add.l	LEVELDATA,a0
-				move.l	Lvl_ZoneT_Roof_l(a0),SplitHeight
+				move.l	ZoneT_Roof_l(a0),SplitHeight
 				move.l	a0,ROOMBACK
 
 				move.l	ZoneGraphAdds,a0
@@ -4399,8 +4399,8 @@ outofrcliplop:
 				st		DOUPPER
 
 				move.l	ROOMBACK,a1
-				move.l	Lvl_ZoneT_UpperRoof_l(a1),TOPOFROOM
-				move.l	Lvl_ZoneT_UpperFloor_l(a1),BOTOFROOM
+				move.l	ZoneT_UpperRoof_l(a1),TOPOFROOM
+				move.l	ZoneT_UpperFloor_l(a1),BOTOFROOM
 
 				move.l	#CurrentPointBrights+4,PointBrightsPtr
 				bsr		dothisroom
@@ -4410,12 +4410,12 @@ noupperroom:
 				move.l	#CurrentPointBrights,PointBrightsPtr
 
 				move.l	ROOMBACK,a1
-				move.l	Lvl_ZoneT_Roof_l(a1),d0
+				move.l	ZoneT_Roof_l(a1),d0
 				move.l	d0,TOPOFROOM
-				move.l	Lvl_ZoneT_Floor_l(a1),d1
+				move.l	ZoneT_Floor_l(a1),d1
 				move.l	d1,BOTOFROOM
 
-				move.l	Lvl_ZoneT_Water_l(a1),d2
+				move.l	ZoneT_Water_l(a1),d2
 				cmp.l	yoff,d2
 				blt.s	.abovefirst
 				move.l	d2,BEFOREWATTOP
@@ -4440,12 +4440,12 @@ botfirst:
 				move.l	#CurrentPointBrights,PointBrightsPtr
 
 				move.l	ROOMBACK,a1
-				move.l	Lvl_ZoneT_Roof_l(a1),d0
+				move.l	ZoneT_Roof_l(a1),d0
 				move.l	d0,TOPOFROOM
-				move.l	Lvl_ZoneT_Floor_l(a1),d1
+				move.l	ZoneT_Floor_l(a1),d1
 				move.l	d1,BOTOFROOM
 
-				move.l	Lvl_ZoneT_Water_l(a1),d2
+				move.l	ZoneT_Water_l(a1),d2
 				cmp.l	yoff,d2
 				blt.s	.abovefirst
 				move.l	d2,BEFOREWATTOP
@@ -4468,8 +4468,8 @@ botfirst:
 				move.l	#CurrentPointBrights+4,PointBrightsPtr
 
 				move.l	ROOMBACK,a1
-				move.l	Lvl_ZoneT_UpperRoof_l(a1),TOPOFROOM
-				move.l	Lvl_ZoneT_UpperFloor_l(a1),BOTOFROOM
+				move.l	ZoneT_UpperRoof_l(a1),TOPOFROOM
+				move.l	ZoneT_UpperFloor_l(a1),BOTOFROOM
 
 				st		DOUPPER
 				bsr		dothisroom
@@ -9630,7 +9630,7 @@ Objectloop2:
 				blt		doneallobj2
 				move.w	12(a0),d0
 				blt		doneobj2
-				move.w	d0,AI_EntT_GraphicRoom_w(a0)
+				move.w	d0,EntT_GraphicRoom_w(a0)
 				tst.b	worry(a0)
 				beq.s	doneobj2
 
@@ -9653,7 +9653,7 @@ doneallobj2:
 JUMPALIENANIM:
 
 				moveq	#0,d0
-				move.b	AI_EntT_WhichAnim_b(a0),d0
+				move.b	EntT_WhichAnim_b(a0),d0
 ; 0=walking
 ; 1=attacking
 ; 2=getting hit
@@ -9691,10 +9691,10 @@ ALWALK:
 ; move.l GLF_DatabasePtr_l,a6
 ; add.l #AlienStats,a6
 ; moveq #0,d1
-; move.b AI_EntT_Type_b(a0),d1
-; muls #GLF_AlienT_SizeOf_l,d1
+; move.b EntT_Type_b(a0),d1
+; muls #AlienT_SizeOf_l,d1
 ; add.l d1,a6
-; cmp.w #1,GLF_AlienT_GFXType_w(a6)
+; cmp.w #1,AlienT_GFXType_w(a6)
 ; bne.s NOSIDES2
 
 				moveq	#0,d0
@@ -9708,7 +9708,7 @@ NOSIDES2:
 				add.l	#AlienAnimData,a6
 
 				moveq	#0,d1
-				move.b	AI_EntT_Type_b(a0),d1
+				move.b	EntT_Type_b(a0),d1
 				move.w	.valtables+4(pc,d1.w*8),d1
 ; muls #A_AnimLen,d1
 				add.l	d1,a6
@@ -9719,7 +9719,7 @@ NOSIDES2:
 				move.w	.valtables+2(pc,d0.w*8),d0
 				add.w	d0,a6
 
-				move.w	AI_EntT_Timer2_w(a0),d1
+				move.w	EntT_Timer2_w(a0),d1
 				move.w	d1,d2
 ; muls #A_FrameLen,d1
 				move.w	.valtables(pc,d1.w*8),d1
@@ -9795,7 +9795,7 @@ val				SET		val+1
 				st		3(a5)
 				move.w	#0,d2
 .noendanim
-				move.w	d2,AI_EntT_Timer2_w(a0)
+				move.w	d2,EntT_Timer2_w(a0)
 
 				bra		doneobj2
 
@@ -9831,23 +9831,23 @@ dosomething:
 				move.w	#100,timetodamage
 
 				move.l	PLR1_Roompt,a0
-				move.w	Lvl_ZoneT_FloorNoise_w(a0),d0
+				move.w	ZoneT_FloorNoise_w(a0),d0
 				tst.b	PLR1_StoodInTop
 				beq.s	.okinbot
-				move.w	Lvl_ZoneT_UpperFloorNoise_w(a0),d0
+				move.w	ZoneT_UpperFloorNoise_w(a0),d0
 .okinbot:
 
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#FloorData,a0
 				move.w	(a0,d0.w*4),d0			; damage.
 				move.l	PLR1_Obj,a0
-				add.b	d0,AI_EntT_DamageTaken_b(a0)
+				add.b	d0,EntT_DamageTaken_b(a0)
 
 				move.l	PLR2_Roompt,a0
-				move.w	Lvl_ZoneT_FloorNoise_w(a0),d0
+				move.w	ZoneT_FloorNoise_w(a0),d0
 				tst.b	PLR2_StoodInTop
 				beq.s	.okinbot2
-				move.w	Lvl_ZoneT_UpperFloorNoise_w(a0),d0
+				move.w	ZoneT_UpperFloorNoise_w(a0),d0
 .okinbot2:
 
 				move.l	GLF_DatabasePtr_l,a0
@@ -9855,7 +9855,7 @@ dosomething:
 				move.w	(a0,d0.w*4),d0			; damage.
 
 				move.l	PLR2_Obj,a0
-				add.b	d0,AI_EntT_DamageTaken_b(a0)
+				add.b	d0,EntT_DamageTaken_b(a0)
 
 .nodam:
 

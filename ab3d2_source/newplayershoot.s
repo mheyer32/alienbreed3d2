@@ -35,15 +35,15 @@ okcanfire:
 				lea		GunBulletTypes(a6),a6
 				lea		BulletAnimData-GunBulletTypes(a6),a5
 				lea		(a6,d0.w*8),a6
-				move.w	GLF_ShootT_BulType_w(a6),d0		; bullet type
+				move.w	ShootT_BulType_w(a6),d0		; bullet type
 				move.w	d0,BULTYPE
 				move.l	#PLAYERONEAMMO,a0
 				move.w	(a0,d0.w*2),AmmoInMyGun
 
-				muls	#GLF_BulT_SizeOf_l,d0
+				muls	#BulT_SizeOf_l,d0
 				add.w	d0,a5
 
-				move.w	GLF_BulT_MovementSpeed_l+2(a5),BulletSpd
+				move.w	BulT_Speed_l+2(a5),BulletSpd
 
 ; tst.w (a6)
 ; beq.s .itsaclick
@@ -98,7 +98,7 @@ findclosestinline
 				btst	d6,d7
 				beq.s	notlinedup
 
-				tst.b	AI_EntT_NumLives_b(a0)
+				tst.b	EntT_NumLives_b(a0)
 				beq.s	notlinedup
 				move.w	(a0),d5
 				move.w	(a2,d5.w*2),d6
@@ -147,7 +147,7 @@ okdistthing
 				move.w	d5,bulyspd
 
 				move.w	AmmoInMyGun,d2
-				move.w	GLF_ShootT_Count_w(a6),d1
+				move.w	ShootT_BulCount_w(a6),d1
 				cmp.w	d1,d2
 				bge.s	.okcanshoot
 
@@ -169,10 +169,10 @@ okdistthing
 				cmp.b	#'s',mors
 				beq.s	.notplr1
 				move.l	PLR1_Obj,a2
-				move.w	#1,AI_EntT_Timer1_w+128(a2)
+				move.w	#1,EntT_Timer1_w+128(a2)
 .notplr1
 
-				move.w	GLF_ShootT_Delay_w(a6),PLR1_TimeToShoot
+				move.w	ShootT_Delay_w(a6),PLR1_TimeToShoot
 
 				move.b	MaxFrame,PLR1_GunFrame
 				sub.w	d1,d2
@@ -188,7 +188,7 @@ okdistthing
 				move.l	(a2,d2.w*8),Noisex
 				move.w	#100,AI_Player1NoiseVol_w
 				move.w	#300,Noisevol
-				move.w	GLF_ShootT_SFX_w(a6),Samplenum
+				move.w	ShootT_SFX_w(a6),Samplenum
 				move.b	#2,chanpick
 				clr.b	notifplaying
 				movem.l	d0/a0/d5/d6/d7/a6/a4/a5,-(a7)
@@ -199,7 +199,7 @@ okdistthing
 				tst.w	d0
 				blt		nothingtoshoot
 
-				tst.l	GLF_BulT_Gravity_l(a5)
+				tst.l	BulT_Gravity_l(a5)
 				beq.s	.notuseaim
 				move.w	PLR1_AIMSPD,d2
 				move.w	#8,d1
@@ -208,12 +208,12 @@ okdistthing
 				move.w	d2,bulyspd
 .notuseaim
 
-				tst.w	GLF_BulT_VisibleOrInstant_l+2(a5)
+				tst.w	BulT_IsHitScan_l+2(a5)
 				beq		PLR1FIREBULLET
 
 ; instant effect: check for hitting:
 
-				move.w	GLF_ShootT_Count_w(a6),d7
+				move.w	ShootT_BulCount_w(a6),d7
 
 FIREBULLETS:
 
@@ -266,7 +266,7 @@ nothingtoshoot:
 				sub.w	BulletSpd,d1
 				asr.w	d1,d0
 				move.w	d0,bulyspd
-				tst.w	GLF_BulT_VisibleOrInstant_l+2(a5)
+				tst.w	BulT_IsHitScan_l+2(a5)
 				beq		PLR1FIREBULLET
 
 				move.w	#0,bulyspd
@@ -386,15 +386,15 @@ okcanfire2:
 				lea		GunBulletTypes(a6),a6
 				lea		BulletAnimData-GunBulletTypes(a6),a5
 				lea		(a6,d0.w*8),a6
-				move.w	GLF_ShootT_BulType_w(a6),d0		; bullet type
+				move.w	ShootT_BulType_w(a6),d0		; bullet type
 				move.w	d0,BULTYPE
 				move.l	#PLAYERTWOAMMO,a0
 				move.w	(a0,d0.w*2),AmmoInMyGun
 
-				muls	#GLF_BulT_SizeOf_l,d0
+				muls	#BulT_SizeOf_l,d0
 				add.w	d0,a5
 
-				move.w	GLF_BulT_MovementSpeed_l+2(a5),BulletSpd
+				move.w	BulT_Speed_l+2(a5),BulletSpd
 
 ; tst.w 12(a6)
 ; beq.s .itsaclick
@@ -449,7 +449,7 @@ findclosestinline2
 				btst	d6,d7
 				beq.s	notlinedup2
 
-				tst.b	AI_EntT_NumLives_b(a0)
+				tst.b	EntT_NumLives_b(a0)
 				beq.s	notlinedup2
 				move.w	(a0),d5
 				move.w	(a2,d5.w*2),d6
@@ -498,7 +498,7 @@ okdistthing2
 				move.w	d5,bulyspd
 
 				move.w	AmmoInMyGun,d2
-				move.w	GLF_ShootT_Count_w(a6),d1
+				move.w	ShootT_BulCount_w(a6),d1
 				cmp.w	d1,d2
 				bge.s	.okcanshoot
 
@@ -520,10 +520,10 @@ okdistthing2
 				cmp.b	#'s',mors
 				bne.s	.notplr2
 				move.l	PLR1_Obj,a2
-				move.w	#1,AI_EntT_Timer1_w+128(a2)
+				move.w	#1,EntT_Timer1_w+128(a2)
 .notplr2:
 
-				move.w	GLF_ShootT_Delay_w(a6),PLR2_TimeToShoot
+				move.w	ShootT_Delay_w(a6),PLR2_TimeToShoot
 
 				move.b	MaxFrame,PLR2_GunFrame
 				sub.w	d1,d2
@@ -539,7 +539,7 @@ okdistthing2
 				move.l	(a2,d2.w*8),Noisex
 				move.w	#100,AI_Player2NoiseVol_w
 				move.w	#300,Noisevol
-				move.w	GLF_ShootT_SFX_w(a6),Samplenum
+				move.w	ShootT_SFX_w(a6),Samplenum
 				move.b	#2,chanpick
 				clr.b	notifplaying
 				movem.l	d0/a0/d5/d6/d7/a6/a4/a5,-(a7)
@@ -550,7 +550,7 @@ okdistthing2
 				tst.w	d0
 				blt		nothingtoshoot2
 
-				tst.l	GLF_BulT_Gravity_l(a5)
+				tst.l	BulT_Gravity_l(a5)
 				beq.s	.notuseaim
 				move.w	PLR2_AIMSPD,d2
 				move.w	#8,d1
@@ -559,12 +559,12 @@ okdistthing2
 				move.w	d2,bulyspd
 .notuseaim
 
-				tst.w	GLF_BulT_VisibleOrInstant_l+2(a5)
+				tst.w	BulT_IsHitScan_l+2(a5)
 				beq		PLR2FIREBULLET
 
 ; instant effect: check for hitting:
 
-				move.w	GLF_ShootT_Count_w(a6),d7
+				move.w	ShootT_BulCount_w(a6),d7
 
 FIREBULLETS2:
 
@@ -617,7 +617,7 @@ nothingtoshoot2:
 				sub.w	BulletSpd,d1
 				asr.w	d1,d0
 				move.w	d0,bulyspd
-				tst.w	GLF_BulT_VisibleOrInstant_l+2(a5)
+				tst.w	BulT_IsHitScan_l+2(a5)
 				beq		PLR2FIREBULLET
 
 				move.w	#0,bulyspd
@@ -730,7 +730,7 @@ PLR1FIREBULLET:
 
 				move.b	MaxFrame,PLR1_GunFrame
 				move.l	PLR1_Obj,a2
-				move.w	GLF_ShootT_Count_w(a6),d5
+				move.w	ShootT_BulCount_w(a6),d5
 
 				move.w	d5,d6
 				subq	#1,d6
@@ -746,7 +746,7 @@ PLR2FIREBULLET:
 
 				move.b	MaxFrame,PLR2_GunFrame
 				move.l	PLR2_Obj,a2
-				move.w	GLF_ShootT_Count_w(a6),d5
+				move.w	ShootT_BulCount_w(a6),d5
 
 				move.w	d5,d6
 				subq	#1,d6
@@ -768,9 +768,9 @@ firefive:
 				rts
 
 .foundonefree
-				move.w	GLF_BulT_Gravity_l+2(a5),shotgrav(a0)
-				move.b	GLF_BulT_BounceOffWalls_l+3(a5),shotflags(a0)
-				move.b	GLF_BulT_BounceOffFloors_l+3(a5),shotflags+1(a0)
+				move.w	BulT_Gravity_l+2(a5),shotgrav(a0)
+				move.b	BulT_BounceHoriz_l+3(a5),shotflags(a0)
+				move.b	BulT_BounceVert_l+3(a5),shotflags+1(a0)
 
 				move.w	bulyspd,d0
 
@@ -790,7 +790,7 @@ firefive:
 
 				move.l	#ObjRotated,a2
 				move.b	BULTYPE+1,shotsize(a0)
-				move.b	GLF_BulT_DamageToTarget_l+3(a5),shotpower(a0)
+				move.b	BulT_HitDamage_l+3(a5),shotpower(a0)
 
 				move.l	ObjectPoints,a1
 				move.w	(a0),d1
@@ -818,7 +818,7 @@ firefive:
 				move.w	bulyspd,shotyvel(a0)
 				move.b	tempStoodInTop,ObjInTop(a0)
 				move.w	#0,shotlife(a0)
-				move.l	d7,AI_EntT_EnemyFlags_l(a0)
+				move.l	d7,EntT_EnemyFlags_l(a0)
 				move.l	tempRoompt,a2
 				move.w	(a2),12(a0)
 				move.l	tempyoff,d0
@@ -867,19 +867,19 @@ PLR1HITINSTANT:
 				st		worry(a0)
 				move.w	4(a4),4(a0)
 
-				move.w	GLF_BulT_DamageToTarget_l+2(a5),d0
-				add.b	d0,AI_EntT_DamageTaken_b(a4)
+				move.w	BulT_HitDamage_l+2(a5),d0
+				add.b	d0,EntT_DamageTaken_b(a4)
 
 				move.w	tempxdir,d1
 				ext.l	d1
 				asl.l	#3,d1
 				swap	d1
-				move.w	d1,AI_EntT_ImpactX_w(a4)
+				move.w	d1,EntT_ImpactX_w(a4)
 				move.w	tempzdir,d1
 				ext.l	d1
 				asl.l	#3,d1
 				swap	d1
-				move.w	d1,AI_EntT_ImpactZ_w(a4)
+				move.w	d1,EntT_ImpactZ_w(a4)
 
 				rts
 
@@ -1009,19 +1009,19 @@ PLR2HITINSTANT:
 				st		worry(a0)
 				move.w	4(a4),4(a0)
 
-				move.w	GLF_BulT_DamageToTarget_l+2(a5),d0
-				add.b	d0,AI_EntT_DamageTaken_b(a4)
+				move.w	BulT_HitDamage_l+2(a5),d0
+				add.b	d0,EntT_DamageTaken_b(a4)
 
 				move.w	tempxdir,d1
 				ext.l	d1
 				asl.l	#3,d1
 				swap	d1
-				move.w	d1,AI_EntT_ImpactX_w(a4)
+				move.w	d1,EntT_ImpactX_w(a4)
 				move.w	tempzdir,d1
 				ext.l	d1
 				asl.l	#3,d1
 				swap	d1
-				move.w	d1,AI_EntT_ImpactZ_w(a4)
+				move.w	d1,EntT_ImpactZ_w(a4)
 
 				rts
 

@@ -31,7 +31,7 @@ PLR1_fall
 				move.w	DAMAGEWHENHIT,d3
 				sub.w	#100,d3
 				ble.s	.nodam
-				add.b	d3,AI_EntT_DamageTaken_b(a4)
+				add.b	d3,EntT_DamageTaken_b(a4)
 .nodam
 
 				st		SLOWDOWN
@@ -57,7 +57,7 @@ PLR1_fall
 				move.l	#-1024,JUMPSPD
 
 				move.l	PLR1_Roompt,a2
-				move.l	Lvl_ZoneT_Water_l(a2),d0
+				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	.notinwater
 
@@ -137,7 +137,7 @@ PLR1_fall
 				sub.w	#100,d3
 				ble.s	.nodam2
 				move.l	PLR1_Obj,a4
-				add.b	d3,AI_EntT_DamageTaken_b(a4)
+				add.b	d3,EntT_DamageTaken_b(a4)
 .nodam2
 				move.w	#0,DAMAGEWHENHIT
 
@@ -152,7 +152,7 @@ PLR1_fall
 				add.w	#1,DAMAGEWHENHIT
 
 				move.l	PLR1_Roompt,a2
-				move.l	Lvl_ZoneT_Water_l(a2),d0
+				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	CARRYON
 
@@ -179,10 +179,10 @@ PLR1_fall
 CARRYON:
 
 				move.l	PLR1_Roompt,a2
-				move.l	Lvl_ZoneT_Roof_l(a2),d3
+				move.l	ZoneT_Roof_l(a2),d3
 				tst.b	PLR1_StoodInTop
 				beq.s	.okbot
-				move.l	Lvl_ZoneT_UpperRoof_l(a2),d3
+				move.l	ZoneT_UpperRoof_l(a2),d3
 .okbot:
 
 				add.l	#10*256,d3
@@ -223,7 +223,7 @@ ARSE:
 				move.l	#-1024,JUMPSPD
 
 				move.l	PLR1_Roompt,a2
-				move.l	Lvl_ZoneT_Water_l(a2),d0
+				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	.pastitall
 
@@ -246,10 +246,10 @@ ARSE:
 nothrust2:
 
 				move.l	PLR1_Roompt,a5
-				move.l	Lvl_ZoneT_Roof_l(a5),d0
+				move.l	ZoneT_Roof_l(a5),d0
 				tst.b	PLR1_StoodInTop
 				beq.s	.usebottom
-				move.l	Lvl_ZoneT_UpperRoof_l(a5),d0
+				move.l	ZoneT_UpperRoof_l(a5),d0
 .usebottom:
 
 				move.l	PLR1s_yoff,d1
@@ -300,7 +300,7 @@ PLR2_fall
 				sub.w	#100,d3
 				ble.s	.nodam
 				move.l	PLR2_Obj,a4
-				add.b	d3,AI_EntT_DamageTaken_b(a4)
+				add.b	d3,EntT_DamageTaken_b(a4)
 .nodam
 				move.w	#0,DAMAGEWHENHIT
 
@@ -325,7 +325,7 @@ PLR2_fall
 				move.l	#-1024,JUMPSPD
 
 				move.l	PLR2_Roompt,a2
-				move.l	Lvl_ZoneT_Water_l(a2),d0
+				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	.notinwater
 
@@ -397,7 +397,7 @@ PLR2_fall
 				sub.w	#100,d3
 				ble.s	.nodam2
 				move.l	PLR2_Obj,a4
-				add.b	d3,AI_EntT_DamageTaken_b(a4)
+				add.b	d3,EntT_DamageTaken_b(a4)
 .nodam2
 				move.w	#0,DAMAGEWHENHIT
 
@@ -410,7 +410,7 @@ PLR2_fall
 				add.w	#1,DAMAGEWHENHIT
 
 				move.l	PLR2_Roompt,a2
-				move.l	Lvl_ZoneT_Water_l(a2),d0
+				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	CARRYON2
 
@@ -441,10 +441,10 @@ PLR2_fall
 CARRYON2:
 
 				move.l	PLR2_Roompt,a2
-				move.l	Lvl_ZoneT_Roof_l(a2),d3
+				move.l	ZoneT_Roof_l(a2),d3
 				tst.b	PLR2_StoodInTop
 				beq.s	.okbot
-				move.l	Lvl_ZoneT_UpperRoof_l(a2),d3
+				move.l	ZoneT_UpperRoof_l(a2),d3
 .okbot:
 
 				add.l	#10*256,d3

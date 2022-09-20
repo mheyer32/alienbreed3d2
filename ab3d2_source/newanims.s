@@ -25,7 +25,7 @@ BRIGHTENPOINTS:
 				move.l	Points,a3
 				move.l	ZoneBorderPts,a4
 
-				lea		Lvl_ZoneT_ListOfGraph_w(a0),a1
+				lea		ZoneT_ListOfGraph_w(a0),a1
 BRIGHTPTS:
 				move.w	(a1),d4
 				blt		brightall
@@ -64,13 +64,13 @@ ROOMPTLOP
 				add.w	d6,d5
 
 				move.l	BRIGHTY,d4
-				cmp.l	Lvl_ZoneT_Floor_l(a0),d4
+				cmp.l	ZoneT_Floor_l(a0),d4
 				bgt		.noBRIGHT1
-				cmp.l	Lvl_ZoneT_Roof_l(a0),d4
+				cmp.l	ZoneT_Roof_l(a0),d4
 				blt		.noBRIGHT1
 
 				move.w	d5,d6
-				move.l	Lvl_ZoneT_Roof_l(a0),d4
+				move.l	ZoneT_Roof_l(a0),d4
 				sub.l	BRIGHTY,d4
 				bgt.s	.noBRIGHT2
 				neg.l	d4
@@ -96,7 +96,7 @@ ROOMPTLOP
 .noBRIGHT2
 
 				move.w	d5,d6
-				move.l	Lvl_ZoneT_Floor_l(a0),d4
+				move.l	ZoneT_Floor_l(a0),d4
 				sub.l	BRIGHTY,d4
 				blt.s	.noBRIGHT1
 				asr.l	#7,d4
@@ -122,13 +122,13 @@ ROOMPTLOP
 .noBRIGHT1
 
 				move.l	BRIGHTY,d4
-				cmp.l	Lvl_ZoneT_UpperFloor_l(a0),d4
+				cmp.l	ZoneT_UpperFloor_l(a0),d4
 				bgt		.noBRIGHT4
-				cmp.l	Lvl_ZoneT_UpperRoof_l(a0),d4
+				cmp.l	ZoneT_UpperRoof_l(a0),d4
 				blt		.noBRIGHT4
 
 				move.w	d5,d6
-				move.l	Lvl_ZoneT_UpperFloor_l(a0),d4
+				move.l	ZoneT_UpperFloor_l(a0),d4
 				sub.l	BRIGHTY,d4
 				blt.s	.noBRIGHT3
 				asr.l	#7,d4
@@ -155,7 +155,7 @@ ROOMPTLOP
 
 
 				move.w	d5,d6
-				move.l	Lvl_ZoneT_UpperRoof_l(a0),d4
+				move.l	ZoneT_UpperRoof_l(a0),d4
 				sub.l	BRIGHTY,d4
 				bgt.s	.noBRIGHT4
 				neg.l	d4
@@ -216,7 +216,7 @@ BRIGHTENPOINTSANGLE:
 				move.l	Points,a3
 				move.l	ZoneBorderPts,a4
 
-				lea		Lvl_ZoneT_ListOfGraph_w(a0),a1
+				lea		ZoneT_ListOfGraph_w(a0),a1
 
 BRIGHTPTSA:
 				move.w	(a1),d4
@@ -297,13 +297,13 @@ ROOMPTLOPA
 				add.w	d4,d5
 
 				move.l	BRIGHTY,d4
-				cmp.l	Lvl_ZoneT_Floor_l(a0),d4
+				cmp.l	ZoneT_Floor_l(a0),d4
 				bgt		.noBRIGHT1
-				cmp.l	Lvl_ZoneT_Roof_l(a0),d4
+				cmp.l	ZoneT_Roof_l(a0),d4
 				blt		.noBRIGHT1
 
 				move.w	d5,d6
-				move.l	Lvl_ZoneT_Roof_l(a0),d4
+				move.l	ZoneT_Roof_l(a0),d4
 				sub.l	BRIGHTY,d4
 				bgt.s	.noBRIGHT2
 				neg.l	d4
@@ -328,7 +328,7 @@ ROOMPTLOPA
 
 
 				move.w	d5,d6
-				move.l	Lvl_ZoneT_Floor_l(a0),d4
+				move.l	ZoneT_Floor_l(a0),d4
 				sub.l	BRIGHTY,d4
 				blt.s	.noBRIGHT1
 				asr.l	#7,d4
@@ -351,13 +351,13 @@ ROOMPTLOPA
 .noBRIGHT1
 
 				move.l	BRIGHTY,d4
-				cmp.l	Lvl_ZoneT_UpperFloor_l(a0),d4
+				cmp.l	ZoneT_UpperFloor_l(a0),d4
 				bgt		.noBRIGHT4
-				cmp.l	Lvl_ZoneT_UpperRoof_l(a0),d4
+				cmp.l	ZoneT_UpperRoof_l(a0),d4
 				blt		.noBRIGHT4
 
 				move.w	d5,d6
-				move.l	Lvl_ZoneT_UpperFloor_l(a0),d4
+				move.l	ZoneT_UpperFloor_l(a0),d4
 				sub.l	BRIGHTY,d4
 				blt.s	.noBRIGHT3
 
@@ -382,7 +382,7 @@ ROOMPTLOPA
 
 
 				move.w	d5,d6
-				move.l	Lvl_ZoneT_UpperRoof_l(a0),d4
+				move.l	ZoneT_UpperRoof_l(a0),d4
 				sub.l	BRIGHTY,d4
 				bgt.s	.noBRIGHT4
 				neg.l	d4
@@ -434,7 +434,7 @@ DARKENPOINTS
 				move.l	Points,a3
 
 				move.l	a0,a1
-				add.w	Lvl_ZoneT_Points_w(a0),a1
+				add.w	ZoneT_Points_w(a0),a1
 DARKPTS:
 				move.w	(a1)+,d4
 				blt.s	DARKall
@@ -483,7 +483,7 @@ Flash:
 
 				move.l	a0,-(a7)
 
-				add.w	Lvl_ZoneT_Points_w(a0),a0
+				add.w	ZoneT_Points_w(a0),a0
 flashpts:
 				move.w	(a0)+,d2
 				blt.s	flashedall
@@ -498,7 +498,7 @@ flashedall:
 				add.w	d1,(a1,d0.w*4)
 				add.w	d1,2(a1,d0.w*4)
 
-				add.l	#Lvl_ZoneT_ListOfGraph_w,a0
+				add.l	#ZoneT_ListOfGraph_w,a0
 
 doemall:
 				move.w	(a0),d0
@@ -575,7 +575,7 @@ ExplodeIntoBits:
 				ext.l	d4
 				asl.l	d0,d3
 				asl.l	d0,d4
-				move.l	AI_EntT_ImpactX_w(a0),d0
+				move.l	EntT_ImpactX_w(a0),d0
 				swap	d4
 				asr.w	#1,d0
 				add.w	d0,d4
@@ -590,7 +590,7 @@ ExplodeIntoBits:
 				add.w	#2*128,d0
 				neg.w	d0
 				move.w	d0,shotyvel(a5)
-				move.l	#0,AI_EntT_EnemyFlags_l(a5)
+				move.l	#0,EntT_EnemyFlags_l(a5)
 				move.w	12(a0),12(a5)
 
 ; jsr GetRand
@@ -756,7 +756,7 @@ BACKSFX:
 				sub.w	ODDEVEN,d0
 				move.w	d0,ODDEVEN
 
-				move.w	Lvl_ZoneT_BackSFXMask_w(a0),d1		; mask for sfx
+				move.w	ZoneT_BackSFXMask_w(a0),d1		; mask for sfx
 				beq		.nosfx
 
 				jsr		GetRand
@@ -895,7 +895,7 @@ okzone:
 				move.l	ZoneAdds,a1
 				move.l	(a1,d2.w*4),a1
 				add.l	LEVELDATA,a1
-				move.l	d1,Lvl_ZoneT_Water_l(a1)
+				move.l	d1,ZoneT_Water_l(a1)
 
 				bra.s	morezones
 
@@ -970,7 +970,7 @@ notallliftsdone:
 				move.l	ZoneAdds,a1
 				move.l	(a1,d7.w*4),a1
 				add.l	LEVELDATA,a1
-				move.b	Lvl_ZoneT_Echo_b(a1),PlayEcho
+				move.b	ZoneT_Echo_b(a1),PlayEcho
 
 				move.w	d2,d7					; speed of movement.
 
@@ -1334,7 +1334,7 @@ notalldoorsdone:
 				move.l	ZoneAdds,a1
 				move.l	(a1,d7.w*4),a1
 				add.l	LEVELDATA,a1
-				move.b	Lvl_ZoneT_Echo_b(a1),PlayEcho
+				move.b	ZoneT_Echo_b(a1),PlayEcho
 
 				muls	TempFrames,d2
 				add.w	d2,d3
@@ -1791,7 +1791,7 @@ ObjectHandler:
 Objectloop:
 				tst.w	(a0)
 				blt		doneallobj
-				move.w	12(a0),AI_EntT_GraphicRoom_w(a0)
+				move.w	12(a0),EntT_GraphicRoom_w(a0)
 
 				move.b	16(a0),d0
 				cmp.b	#1,d0
@@ -1816,9 +1816,9 @@ JUMPALIEN
 				tst.w	12(a0)
 				blt.s	.dontworry
 
-				tst.b	AI_EntT_NumLives_b(a0)
+				tst.b	EntT_NumLives_b(a0)
 				beq.s	.nolock
-				move.l	AI_EntT_DoorsHeld_w(a0),d0
+				move.l	EntT_DoorsHeld_w(a0),d0
 				or.l	d0,DoorLocks
 .nolock
 
@@ -1829,7 +1829,7 @@ JUMPALIEN
 				tst.w	12-64(a0)
 				blt.s	.notanaux
 				move.w	12(a0),12-64(a0)
-				move.w	12(a0),AI_EntT_GraphicRoom_w-64(a0)
+				move.w	12(a0),EntT_GraphicRoom_w-64(a0)
 .notanaux:
 
 .dontworry
@@ -1850,30 +1850,30 @@ ItsAGasPipe:
 				clr.b	worry(a0)
 
 				move.w	TempFrames,d0
-				tst.w	AI_EntT_Timer3_w(a0)
+				tst.w	EntT_Timer3_w(a0)
 				ble.s	maybeflame
 
-				sub.w	d0,AI_EntT_Timer3_w(a0)
-				move.w	#5,AI_EntT_Timer2_w(a0)
-				move.w	#10,AI_EntT_Timer4_w(a0)
+				sub.w	d0,EntT_Timer3_w(a0)
+				move.w	#5,EntT_Timer2_w(a0)
+				move.w	#10,EntT_Timer4_w(a0)
 				rts
 
 maybeflame:
 
-				sub.w	d0,AI_EntT_Timer4_w(a0)
+				sub.w	d0,EntT_Timer4_w(a0)
 				blt.s	yesflame
 				rts
 
 yesflame:
-				move.w	#10,AI_EntT_Timer4_w(a0)
-				sub.w	#1,AI_EntT_Timer2_w(a0)
+				move.w	#10,EntT_Timer4_w(a0)
+				sub.w	#1,EntT_Timer2_w(a0)
 				bgt.s	notdoneflame
 
-				move.w	AI_EntT_Timer1_w(a0),AI_EntT_Timer3_w(a0)
+				move.w	EntT_Timer1_w(a0),EntT_Timer3_w(a0)
 
 notdoneflame:
 
-				cmp.w	#4,AI_EntT_Timer2_w(a0)
+				cmp.w	#4,EntT_Timer2_w(a0)
 				bne.s	.nowhoosh
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -1925,11 +1925,11 @@ notdoneflame:
 				move.w	#0,shotflags(a5)
 				move.w	#0,shotgrav(a5)
 				move.b	#7,shotpower(a5)
-				move.l	#%100000100000,AI_EntT_EnemyFlags_l(a5)
+				move.l	#%100000100000,EntT_EnemyFlags_l(a5)
 				move.w	#0,shotanim(a5)
 				move.w	#0,shotlife(a5)
 				move.l	#SineTable,a1
-				move.w	AI_EntT_CurrentAngle_w(a0),d0
+				move.w	EntT_CurrentAngle_w(a0),d0
 				move.w	(a1,d0.w),d1
 				adda.w	#2048,a1
 				move.w	(a1,d0.w),d2
@@ -1950,7 +1950,7 @@ notdoneflame:
 ItsABarrel:
 
 				clr.b	worry(a0)
-				move.w	12(a0),AI_EntT_GraphicRoom_w(a0)
+				move.w	12(a0),EntT_GraphicRoom_w(a0)
 
 				cmp.w	#8,8(a0)
 				bne.s	notexploding
@@ -1963,7 +1963,7 @@ ItsABarrel:
 				bne.s	.notdone
 
 				move.w	#-1,12(a0)
-				move.w	#-1,AI_EntT_GraphicRoom_w(a0)
+				move.w	#-1,EntT_GraphicRoom_w(a0)
 				rts
 
 .notdone:
@@ -1978,22 +1978,22 @@ notexploding:
 				move.l	ZoneAdds,a1
 				move.l	(a1,d0.w*4),a1
 				add.l	LEVELDATA,a1
-				move.l	Lvl_ZoneT_Floor_l(a1),d0
+				move.l	ZoneT_Floor_l(a1),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.okinbot
-				move.l	Lvl_ZoneT_UpperFloor_l(a1),d0
+				move.l	ZoneT_UpperFloor_l(a1),d0
 .okinbot:
 				asr.l	#7,d0
 				sub.w	#60,d0
 				move.w	d0,4(a0)
 
 				moveq	#0,d2
-				move.b	AI_EntT_DamageTaken_b(a0),d2
+				move.b	EntT_DamageTaken_b(a0),d2
 				beq.s	nodamage
-				move.b	#0,AI_EntT_DamageTaken_b(a0)
-				sub.b	d2,AI_EntT_NumLives_b(a0)
+				move.b	#0,EntT_DamageTaken_b(a0)
+				sub.b	d2,EntT_NumLives_b(a0)
 				bgt.s	nodamage
-				move.b	#0,AI_EntT_NumLives_b(a0)
+				move.b	#0,EntT_NumLives_b(a0)
 
 				movem.l	d0-d7/a0-a6,-(a7)
 
@@ -2079,16 +2079,16 @@ otherrip:		dc.l	256*18*65536
 ItsAMediKit:
 
 				clr.b	worry(a0)
-				move.w	12(a0),AI_EntT_GraphicRoom_w(a0)
+				move.w	12(a0),EntT_GraphicRoom_w(a0)
 
 				move.w	12(a0),d0
 				move.l	ZoneAdds,a1
 				move.l	(a1,d0.w*4),a1
 				add.l	LEVELDATA,a1
-				move.l	Lvl_ZoneT_Floor_l(a1),d0
+				move.l	ZoneT_Floor_l(a1),d0
 				tst.b	ObjInTop(a0)
 				beq.s	.okinbot
-				move.l	Lvl_ZoneT_UpperFloor_l(a1),d0
+				move.l	ZoneT_UpperFloor_l(a1),d0
 .okinbot:
 				asr.l	#7,d0
 				sub.w	#32,d0
@@ -2135,7 +2135,7 @@ HealFactor		EQU		18
 				movem.l	(a7)+,a0/a1/d2/d6/d7
 
 				move.w	#-1,12(a0)
-				move.w	#-1,AI_EntT_GraphicRoom_w(a0)
+				move.w	#-1,EntT_GraphicRoom_w(a0)
 				move.w	HealFactor(a0),d0
 				add.w	PLR1_energy,d0
 				cmp.w	#127,d0
@@ -2188,7 +2188,7 @@ MEDIPLR2
 				movem.l	(a7)+,a0/a1/d2/d6/d7
 
 				move.w	#-1,12(a0)
-				move.w	#-1,AI_EntT_GraphicRoom_w(a0)
+				move.w	#-1,EntT_GraphicRoom_w(a0)
 				move.w	HealFactor(a0),d0
 				add.w	PLR2_energy,d0
 				cmp.w	#127,d0
@@ -2231,7 +2231,7 @@ ItsAKey:
 				rts
 .yesnas:
 
-				move.w	12(a0),AI_EntT_GraphicRoom_w(a0)
+				move.w	12(a0),EntT_GraphicRoom_w(a0)
 				clr.b	worry(a0)
 
 				move.b	PLR1_StoodInTop,d0
@@ -2273,7 +2273,7 @@ ItsAKey:
 				movem.l	(a7)+,a0/a1/d2/d6/d7
 
 				move.w	#-1,12(a0)
-				move.w	#-1,AI_EntT_GraphicRoom_w(a0)
+				move.w	#-1,EntT_GraphicRoom_w(a0)
 				move.b	17(a0),d0
 				or.b	d0,Conditions+1
 
@@ -3053,12 +3053,12 @@ ItsABullet:
 
 				move.b	#0,timeout
 				move.w	12(a0),d0
-				move.w	d0,AI_EntT_GraphicRoom_w(a0)
+				move.w	d0,EntT_GraphicRoom_w(a0)
 				blt		doneshot
 
 				moveq	#0,d1
 				move.b	shotsize(a0),d1
-				muls	#GLF_BulT_SizeOf_l,d1
+				muls	#BulT_SizeOf_l,d1
 				move.l	GLF_DatabasePtr_l,a6
 				lea		BulletAnimData(a6),a6
 				add.l	d1,a6
@@ -3071,7 +3071,7 @@ ItsABullet:
 				move.w	shotlife(a0),d2
 				blt.s	infinite
 
-				move.l	GLF_BulT_LifeTime_l(a6),d1
+				move.l	BulT_Lifetime_l(a6),d1
 				blt.s	infinite
 
 				cmp.w	d2,d1
@@ -3096,7 +3096,7 @@ noworrylife:
 				tst.b	shotstatus(a0)
 				beq		notpopping
 
-				lea		GLF_BulT_StartOfPop_vb(a6),a1
+				lea		BulT_PopData_vb(a6),a1
 				moveq	#0,d1
 				move.b	shotanim(a0),d1
 
@@ -3107,7 +3107,7 @@ noworrylife:
 
 				move.l	#0,8(a0)
 
-				cmp.l	#1,GLF_BulT_ImpactGraphicType_l(a6)
+				cmp.l	#1,BulT_ImpactGraphicType_l(a6)
 				blt.s	.bitmapgraph
 				beq.s	.glaregraph
 .additivegraph:
@@ -3137,11 +3137,11 @@ noworrylife:
 .donegraph:
 
 				addq	#1,d2
-				cmp.w	GLF_BulT_PopFrames_l+2(a6),d2
+				cmp.w	BulT_PopFrames_l+2(a6),d2
 				ble.s	notdonepopping
 
 				move.w	#-1,12(a0)
-				move.w	#-1,AI_EntT_GraphicRoom_w(a0)
+				move.w	#-1,EntT_GraphicRoom_w(a0)
 				clr.b	shotstatus(a0)
 				move.b	#0,shotanim(a0)
 				rts
@@ -3171,7 +3171,7 @@ notpopping:
 
 				move.b	shotsize(a0),BLOODYGREATBOMB
 
-				lea		GLF_BulT_StartOfAnim_vb(a6),a1
+				lea		BulT_AnimData_vb(a6),a1
 				moveq	#0,d1
 				move.b	shotanim(a0),d1
 
@@ -3182,7 +3182,7 @@ notpopping:
 
 				move.l	#0,8(a0)
 
-				cmp.l	#1,GLF_BulT_GraphType_l(a6)
+				cmp.l	#1,BulT_GraphicType_l(a6)
 				blt.s	.bitmapgraph
 				beq.s	.glaregraph
 .additivegraph:
@@ -3212,7 +3212,7 @@ notpopping:
 .donegraph:
 
 				addq	#1,d2
-				cmp.w	GLF_BulT_AnimFrames_l+2(a6),d2
+				cmp.w	BulT_AnimFrames_l+2(a6),d2
 				ble.s	notdoneanim
 
 				move.w	#0,d2
@@ -3228,7 +3228,7 @@ notdoneanim:
 
 ********************************
 				move.l	objroom,a3
-				move.b	Lvl_ZoneT_Echo_b(a3),PlayEcho
+				move.b	ZoneT_Echo_b(a3),PlayEcho
 
 				tst.b	ObjInTop(a0)
 				beq.s	.notintop
@@ -3249,7 +3249,7 @@ notdoneanim:
 				add.l	#10*128,d0
 				move.l	d0,accypos(a0)
 
-				tst.l	GLF_BulT_Gravity_l(a6)
+				tst.l	BulT_Gravity_l(a6)
 				beq		.nohitroof
 
 ; btst #1,shotflags+1(a0)
@@ -3269,7 +3269,7 @@ notdoneanim:
 				move.b	#0,shotanim(a0)
 				move.b	#1,shotstatus(a0)
 
-				move.l	GLF_BulT_ImpactSFX_l(a6),d0
+				move.l	BulT_ImpactSFX_l(a6),d0
 				subq.l	#1,d0
 				blt.s	.nohitnoise
 
@@ -3287,7 +3287,7 @@ notdoneanim:
 
 .nohitnoise:
 
-				move.l	GLF_BulT_ExplosiveForce_l(a6),d0
+				move.l	BulT_ExplosiveForce_l(a6),d0
 				beq.s	.noexplosion
 
 				move.w	newx,Viewerx
@@ -3309,7 +3309,7 @@ notdoneanim:
 				cmp.l	#10*128,d0
 				bgt		.nohitfloor
 
-				tst.l	GLF_BulT_BounceOffFloors_l(a6)
+				tst.l	BulT_BounceVert_l(a6)
 				beq.s	.nobounceup
 
 				tst.w	shotyvel(a0)
@@ -3327,7 +3327,7 @@ notdoneanim:
 
 ; btst #1,shotflags+1(a0)
 ; beq .nohitfloor
-				tst.l	GLF_BulT_Gravity_l(a6)
+				tst.l	BulT_Gravity_l(a6)
 				beq		.nohitfloor
 
 				move.l	shotxvel(a0),d0
@@ -3344,7 +3344,7 @@ notdoneanim:
 
 				move.b	#0,shotanim(a0)
 				move.b	#1,shotstatus(a0)
-				move.l	GLF_BulT_ImpactSFX_l(a6),d0
+				move.l	BulT_ImpactSFX_l(a6),d0
 				subq.l	#1,d0
 				blt.s	.nohitnoise2
 
@@ -3359,7 +3359,7 @@ notdoneanim:
 				movem.l	(a7)+,d0-d7/a0-a6
 .nohitnoise2:
 				moveq	#0,d0
-				move.l	GLF_BulT_ExplosiveForce_l(a6),d0
+				move.l	BulT_ExplosiveForce_l(a6),d0
 				beq.s	.noexplosion2
 
 				move.w	4(a0),Viewery
@@ -3408,7 +3408,7 @@ notdoneanim:
 
 				move.w	shotyvel(a0),d3
 				muls	TempFrames,d3
-				move.l	GLF_BulT_Gravity_l(a6),d5
+				move.l	BulT_Gravity_l(a6),d5
 				beq.s	nograv
 				muls	TempFrames,d5
 				add.l	d5,d3
@@ -3431,7 +3431,7 @@ nograv:
 				add.l	#5*128,d4
 				asr.l	#7,d4
 				move.w	d4,4(a0)
-				tst.l	GLF_BulT_BounceOffWalls_l(a6)
+				tst.l	BulT_BounceHoriz_l(a6)
 				sne		wallbounce
 				seq		exitfirst
 
@@ -3507,7 +3507,7 @@ nomovebul:
 ; btst #1,shotflags+1(a0)
 ; beq .nothitwall
 
-				tst.l	GLF_BulT_Gravity_l(a6)
+				tst.l	BulT_Gravity_l(a6)
 				beq		.nothitwall
 
 				move.l	shotxvel(a0),d0
@@ -3535,7 +3535,7 @@ nomovebul:
 				move.b	#0,shotanim(a0)
 				move.b	#1,shotstatus(a0)
 
-				move.l	GLF_BulT_ImpactSFX_l(a6),d0
+				move.l	BulT_ImpactSFX_l(a6),d0
 				subq.l	#1,d0
 				blt.s	.nohitnoise
 
@@ -3551,7 +3551,7 @@ nomovebul:
 
 .nohitnoise:
 
-				move.l	GLF_BulT_ExplosiveForce_l(a6),d0
+				move.l	BulT_ExplosiveForce_l(a6),d0
 				beq.s	.noexplosion
 
 				move.w	newx,Viewerx
@@ -3579,13 +3579,13 @@ lab:
 
 				move.l	objroom,a3
 				move.w	(a3),12(a0)
-				move.w	(a3),AI_EntT_GraphicRoom_w(a0)
+				move.w	(a3),EntT_GraphicRoom_w(a0)
 				move.l	newx,(a1)
 				move.l	newz,4(a1)
 ************
 * Check if hit a nasty
 
-				tst.l	AI_EntT_EnemyFlags_l(a0)
+				tst.l	EntT_EnemyFlags_l(a0)
 				bne.s	notasplut
 				rts
 notasplut:
@@ -3668,7 +3668,7 @@ notasplut:
 				moveq	#0,d1
 				move.b	16(a3),d1
 
-				move.l	AI_EntT_EnemyFlags_l(a0),d7
+				move.l	EntT_EnemyFlags_l(a0),d7
 				btst	d1,d7
 				beq		.notanasty
 
@@ -3677,14 +3677,14 @@ notasplut:
 
 				move.l	GLF_DatabasePtr_l,a4
 				add.l	#ObjectStats,a4
-				move.b	AI_EntT_Type_b(a3),d1
-				muls	#GLF_ObjT_SizeOf_l,d1
-				cmp.w	#2,GLF_ObjT_Behaviour_w(a4,d1.w)
+				move.b	EntT_Type_b(a3),d1
+				muls	#ObjT_SizeOf_l,d1
+				cmp.w	#2,ObjT_Behaviour_w(a4,d1.w)
 				bne		.notanasty
 
 .notanobj:
 
-				tst.b	AI_EntT_NumLives_b(a3)
+				tst.b	EntT_NumLives_b(a3)
 				beq		.notanasty
 
 ; move.l #ColBoxTable,a6
@@ -3750,13 +3750,13 @@ notasplut:
 				bgt		.stillgoing
 
 				move.b	shotpower(a0),d6
-				add.b	d6,AI_EntT_DamageTaken_b(a3)
-				move.w	shotxvel(a0),AI_EntT_ImpactX_w(a3)
-				move.w	shotzvel(a0),AI_EntT_ImpactZ_w(a3)
+				add.b	d6,EntT_DamageTaken_b(a3)
+				move.w	shotxvel(a0),EntT_ImpactX_w(a3)
+				move.w	shotzvel(a0),EntT_ImpactZ_w(a3)
 				move.b	#0,shotanim(a0)
 				move.b	#1,shotstatus(a0)
 
-				move.l	GLF_BulT_ImpactSFX_l(a6),d0
+				move.l	BulT_ImpactSFX_l(a6),d0
 				subq.l	#1,d0
 				blt.s	.nohitnoise3
 
@@ -3770,7 +3770,7 @@ notasplut:
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
 .nohitnoise3:
-				move.l	GLF_BulT_ExplosiveForce_l(a6),d0
+				move.l	BulT_ExplosiveForce_l(a6),d0
 				beq.s	.noexplosion3
 
 				move.w	4(a0),Viewery
@@ -3988,15 +3988,15 @@ HitObjLoop:
 				moveq	#0,d7
 				move.b	shotsize(a2),d7
 				move.l	GLF_DatabasePtr_l,a3
-				muls	#GLF_BulT_SizeOf_l,d7
+				muls	#BulT_SizeOf_l,d7
 				add.l	#BulletAnimData,a3
 				add.l	d7,a3
-				tst.l	GLF_BulT_Gravity_l(a3)
+				tst.l	BulT_Gravity_l(a3)
 				beq.s	HitObjLoop
 				bra.s	.okblast
 
 .checkalien
-				tst.b	AI_EntT_NumLives_b(a2)
+				tst.b	EntT_NumLives_b(a2)
 				beq.s	HitObjLoop
 
 .okblast:
@@ -4094,7 +4094,7 @@ OkItsnotzero:
 				move.w	MaxDamage,d5
 
 okdamage:
-				add.b	d5,AI_EntT_DamageTaken_b(a2)
+				add.b	d5,EntT_DamageTaken_b(a2)
 				ext.l	d0
 				ext.l	d1
 				muls.l	d6,d0
@@ -4126,8 +4126,8 @@ okdamage:
 				bra.s	.impactedbul
 
 .impactalien:
-				move.w	d0,AI_EntT_ImpactX_w(a2)
-				move.w	d1,AI_EntT_ImpactZ_w(a2)
+				move.w	d0,EntT_ImpactX_w(a2)
+				move.w	d1,EntT_ImpactZ_w(a2)
 				move.l	d6,d1
 				asl.l	#4,d1
 				divs	d7,d1
@@ -4142,7 +4142,7 @@ okdamage:
 				move.w	#-8,d1
 
 .okbl2
-				move.w	d1,AI_EntT_ImpactY_w(a2)
+				move.w	d1,EntT_ImpactY_w(a2)
 
 .impactedbul:
 				bra		HitObjLoop
@@ -4243,12 +4243,12 @@ DOFLAMES:
 
 				move.l	newy,d0
 
-				move.l	Lvl_ZoneT_Floor_l(a2),d1
-				move.l	Lvl_ZoneT_Roof_l(a2),d2
+				move.l	ZoneT_Floor_l(a2),d1
+				move.l	ZoneT_Roof_l(a2),d2
 				tst.b	ObjInTop(a0)
 				beq.s	.okinbot
-				move.l	Lvl_ZoneT_UpperFloor_l(a2),d1
-				move.l	Lvl_ZoneT_UpperRoof_l(a2),d2
+				move.l	ZoneT_UpperFloor_l(a2),d1
+				move.l	ZoneT_UpperRoof_l(a2),d2
 
 .okinbot:
 				cmp.l	d0,d1

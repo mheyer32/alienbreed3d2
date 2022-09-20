@@ -87,7 +87,7 @@ RunThroughList:
 				move.l	(a0,d0.w*4),a0
 				add.l	LEVELDATA,a0
 
-				adda.w	Lvl_ZoneT_ExitList_w(a0),a0
+				adda.w	ZoneT_ExitList_w(a0),a0
 
 				move.l	a5,a4
 ; tst.b farendfound
