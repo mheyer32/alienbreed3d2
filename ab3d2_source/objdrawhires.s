@@ -71,7 +71,7 @@ emptytab:
 insertanobj
 				move.w	(a1),d1
 				blt		sortedall
-				move.w	GraphicRoom(a1),d2
+				move.w	EntT_GraphicRoom_w(a1),d2
 				cmp.w	currzone(pc),d2
 				beq.s	itsinthiszone
 
@@ -83,7 +83,7 @@ notinthiszone:
 itsinthiszone:
 
 				move.b	DOUPPER,d4
-				move.b	ObjInTop(a1),d3
+				move.b	ShotT_InUpperZone_b(a1),d3
 				eor.b	d4,d3
 				bne.s	notinthiszone
 
@@ -141,7 +141,7 @@ DrawtheObject:
 				asl.w	#6,d0
 				adda.w	d0,a0
 
-				move.b	ObjInTop(a0),IMINTHETOPDAD
+				move.b	ShotT_InUpperZone_b(a0),IMINTHETOPDAD
 
 				move.w	(a0),d0
 				move.w	2(a1,d0.w*8),d1			; z pos
@@ -581,7 +581,7 @@ glareobj:
 ; height of object in pixels
 ; horizontal constants
 ; vertical constants.
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				lea		FrameData(a6),a6
 				move.l	#Objects,a5
 				move.w	2(a0),d7
@@ -847,15 +847,15 @@ BitMapObj:
 				cmp.b	#3,16(a0)
 				bne.s	.NOTAUX
 
-				move.w	auxxoff(a0),AUXX
-				move.w	auxyoff(a0),AUXY
+				move.w	ShotT_AuxOffsetX_w(a0),AUXX
+				move.w	ShotT_AuxOffsetY_w(a0),AUXY
 
 .NOTAUX:
 
 				tst.l	8(a0)
 				blt		glareobj
 
-				move.w	Facing(a0),FACINGANG
+				move.w	EntT_CurrentAngle_w(a0),FACINGANG
 
 				move.w	(a0)+,d0				;pt num
 
@@ -977,7 +977,7 @@ pastobjscale:
 ; horizontal constants
 ; vertical constants.
 
-				move.l	LINKFILE,a6
+				move.l	GLF_DatabasePtr_l,a6
 				lea		FrameData(a6),a6
 				move.l	#Objects,a5
 				move.w	2(a0),d7
@@ -1406,7 +1406,7 @@ DRAWITLIGHTED:
 ; add.l LEVELDATA,a4
 ; move.l a4,a5
 ;
-; adda.w ToExitList(a4),a5
+; adda.w ZoneT_ExitList_w(a4),a5
 ;
 ;.doallwalls
 ; move.w (a5)+,d0
@@ -1802,7 +1802,7 @@ CALCBRIGHTRINGS:
 				add.l	LEVELDATA,a4
 				move.l	a4,a5
 
-				adda.w	ToExitList(a4),a5
+				adda.w	ZoneT_ExitList_w(a4),a5
 
 .doallwalls
 				move.w	(a5)+,d0
@@ -2153,7 +2153,7 @@ PolygonObj:
 
 ************************
 
-				move.w	Facing(a0),ObjAng
+				move.w	EntT_CurrentAngle_w(a0),ObjAng
 
 				move.w	MIDDLEY,POLYMIDDLEY
 
