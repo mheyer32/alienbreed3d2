@@ -83,7 +83,7 @@ notinthiszone:
 itsinthiszone:
 
 				move.b	DOUPPER,d4
-				move.b	ObjInTop(a1),d3
+				move.b	ShotT_InUpperZone_b(a1),d3
 				eor.b	d4,d3
 				bne.s	notinthiszone
 
@@ -141,7 +141,7 @@ DrawtheObject:
 				asl.w	#6,d0
 				adda.w	d0,a0
 
-				move.b	ObjInTop(a0),IMINTHETOPDAD
+				move.b	ShotT_InUpperZone_b(a0),IMINTHETOPDAD
 
 				move.w	(a0),d0
 				move.w	2(a1,d0.w*8),d1			; z pos
@@ -847,8 +847,8 @@ BitMapObj:
 				cmp.b	#3,16(a0)
 				bne.s	.NOTAUX
 
-				move.w	auxxoff(a0),AUXX
-				move.w	auxyoff(a0),AUXY
+				move.w	ShotT_AuxOffsetX_w(a0),AUXX
+				move.w	ShotT_AuxOffsetY_w(a0),AUXY
 
 .NOTAUX:
 

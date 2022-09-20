@@ -2173,7 +2173,7 @@ plr1only:
 				tst.w	AI_WorkT_SeenBy_w(a2,d0.w)
 				blt.s	.doallobs
 .worryobj:
-				or.b	#127,worry(a0)
+				or.b	#127,ShotT_Worry_b(a0)
 				bra.s	.doallobs
 .allobsdone:
 
@@ -3225,7 +3225,7 @@ USEPLR1:
 				move.b	#10,EntT_NumLives_b(a0)
 
 				move.w	p1_angpos,EntT_CurrentAngle_w(a0)
-				move.b	PLR1_StoodInTop,ObjInTop(a0)
+				move.b	PLR1_StoodInTop,ShotT_InUpperZone_b(a0)
 
 				move.w	(a1),12(a0)
 				move.w	(a1),d2
@@ -3303,7 +3303,7 @@ USEPLR1:
 				move.b	#0,EntT_DamageTaken_b(a0)
 				move.b	#10,EntT_NumLives_b(a0)
 
-				move.b	PLR2_StoodInTop,ObjInTop(a0)
+				move.b	PLR2_StoodInTop,ShotT_InUpperZone_b(a0)
 
 				move.w	(a1),12(a0)
 				move.w	(a1),d2
@@ -3466,7 +3466,7 @@ USEPLR1:
 				add.l	d0,d1
 				add.w	d1,4+128(a0)
 
-				move.b	ObjInTop(a0),ObjInTop+128(a0)
+				move.b	ShotT_InUpperZone_b(a0),ShotT_InUpperZone_b+128(a0)
 
 				rts
 
@@ -3528,7 +3528,7 @@ USEPLR2:
 				move.b	#10,EntT_NumLives_b(a0)
 
 				move.w	p2_angpos,EntT_CurrentAngle_w(a0)
-				move.b	PLR2_StoodInTop,ObjInTop(a0)
+				move.b	PLR2_StoodInTop,ShotT_InUpperZone_b(a0)
 
 				move.w	(a1),12(a0)
 				move.w	(a1),d2
@@ -3597,7 +3597,7 @@ USEPLR2:
 				move.b	#0,EntT_DamageTaken_b(a0)
 				move.b	#10,EntT_NumLives_b(a0)
 
-				move.b	PLR1_StoodInTop,ObjInTop(a0)
+				move.b	PLR1_StoodInTop,ShotT_InUpperZone_b(a0)
 
 				move.w	(a1),12(a0)
 				move.w	(a1),d2
@@ -3756,7 +3756,7 @@ USEPLR2:
 				add.l	d0,d1
 				add.w	d1,4+64(a0)
 
-				move.b	ObjInTop(a0),ObjInTop+64(a0)
+				move.b	ShotT_InUpperZone_b(a0),ShotT_InUpperZone_b+64(a0)
 
 				rts
 
@@ -9631,7 +9631,7 @@ Objectloop2:
 				move.w	12(a0),d0
 				blt		doneobj2
 				move.w	d0,EntT_GraphicRoom_w(a0)
-				tst.b	worry(a0)
+				tst.b	ShotT_Worry_b(a0)
 				beq.s	doneobj2
 
 				move.b	16(a0),d0
@@ -12228,7 +12228,7 @@ null4:			ds.w	500
 SCROLLSCRN:		ds.l	20*16
 
 ********************************************
-* Stuff you don't have to worry about yet. *
+* Stuff you don't have to ShotT_Worry_b about yet. *
 ********************************************
 
 				section	code,code

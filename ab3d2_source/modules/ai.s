@@ -97,7 +97,7 @@ ai_DoDie:
 				move.w	#-1,12(a0)
 				move.w	#-1,EntT_GraphicRoom_w(a0)
 				move.b	#0,16(a0)
-				clr.b	worry(a0)
+				clr.b	ShotT_Worry_b(a0)
 				st		ai_GetOut_w
 
 .still_dying:
@@ -170,7 +170,7 @@ ai_TakeDamage:
 
 ai_JustDied:
 				move.b	#0,EntT_NumLives_b(a0)
-				move.w	TextToShow(a0),d0
+				move.w	EntT_DisplayText_w(a0),d0
 				blt.s	.no_text
 
 				muls	#160,d0
@@ -232,7 +232,7 @@ ai_JustDied:
 .found_one_free:
 				move.b	AlienT_HitPoints_w+1(a4),EntT_NumLives_b(a2)
 				move.b	TypeOfSplat,EntT_Type_b(a2)
-				move.b	#-1,TextToShow(a2)
+				move.b	#-1,EntT_DisplayText_w(a2)
 				move.b	#0,16(a2)
 				move.w	(a2),d4
 				move.l	d0,(a1,d4.w*8)
@@ -256,7 +256,7 @@ ai_JustDied:
 				move.b	AlienT_HitPoints_w+1(a4),18(a2)
 				move.b	#0,19(a2)
 				move.l	EntT_DoorsHeld_w(a0),EntT_DoorsHeld_w(a2)
-				move.b	ObjInTop(a0),ObjInTop(a2)
+				move.b	ShotT_InUpperZone_b(a0),ShotT_InUpperZone_b(a2)
 				move.b	#3,16-64(a2)
 				dbra	d7,.spawn_loop
 
@@ -571,7 +571,7 @@ ai_Widget:
 				move.l	d0,newy
 				move.l	d0,oldy
 
-				move.b	ObjInTop(a0),StoodInTop
+				move.b	ShotT_InUpperZone_b(a0),StoodInTop
 				movem.l	d0/a0/a1/a3/a4/d7,-(a7)
 				clr.b	canshove
 				clr.b	GotThere
@@ -615,7 +615,7 @@ ai_Widget:
 				clr.b	wallbounce
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
-				move.b	StoodInTop,ObjInTop(a0)
+				move.b	StoodInTop,ShotT_InUpperZone_b(a0)
 
 
 .hit_something:
@@ -765,7 +765,7 @@ ai_ChargeCommon:
 				move.l	d0,newy
 				move.l	d0,oldy
 
-				move.b	ObjInTop(a0),StoodInTop
+				move.b	ShotT_InUpperZone_b(a0),StoodInTop
 				movem.l	d0/a0/a1/a3/a4/d7,-(a7)
 				clr.b	canshove
 				clr.b	GotThere
@@ -798,7 +798,7 @@ ai_ChargeCommon:
 				clr.b	wallbounce
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
-				move.b	StoodInTop,ObjInTop(a0)
+				move.b	StoodInTop,ShotT_InUpperZone_b(a0)
 				move.w	AngRet,EntT_CurrentAngle_w(a0)
 
 .hit_something:
@@ -1086,7 +1086,7 @@ ai_AttackWithProjectile:
 				move.l	ObjectPoints,a1
 				lea		(a1,d1.w*8),a1
 
-				move.b	ObjInTop(a0),SHOTINTOP
+				move.b	ShotT_InUpperZone_b(a0),SHOTINTOP
 
 				jsr		FireAtPlayer1
 				movem.l	(a7)+,d0-d7/a0-a6
@@ -1207,7 +1207,7 @@ ai_ChargeFlyingCommon:
 				move.l	d0,newy
 				move.l	d0,oldy
 
-				move.b	ObjInTop(a0),StoodInTop
+				move.b	ShotT_InUpperZone_b(a0),StoodInTop
 				movem.l	d0/a0/a1/a3/a4/d7,-(a7)
 				clr.b	canshove
 				clr.b	GotThere
@@ -1240,7 +1240,7 @@ ai_ChargeFlyingCommon:
 				clr.b	wallbounce
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
-				move.b	StoodInTop,ObjInTop(a0)
+				move.b	StoodInTop,ShotT_InUpperZone_b(a0)
 				move.w	AngRet,EntT_CurrentAngle_w(a0)
 
 .hit_something:
@@ -1432,7 +1432,7 @@ ai_ApproachCommon:
 				move.l	d0,newy
 				move.l	d0,oldy
 
-				move.b	ObjInTop(a0),StoodInTop
+				move.b	ShotT_InUpperZone_b(a0),StoodInTop
 				movem.l	d0/a0/a1/a3/a4/d7,-(a7)
 				clr.b	canshove
 				clr.b	GotThere
@@ -1465,7 +1465,7 @@ ai_ApproachCommon:
 				clr.b	wallbounce
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
-				move.b	StoodInTop,ObjInTop(a0)
+				move.b	StoodInTop,ShotT_InUpperZone_b(a0)
 				move.w	AngRet,EntT_CurrentAngle_w(a0)
 
 .hit_something:
@@ -1594,7 +1594,7 @@ ai_CheckFloorCeiling:
 
 				move.l	ZoneT_Floor_l(a2),d0
 				move.l	ZoneT_Roof_l(a2),d1
-				tst.b	ObjInTop(a0)
+				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.not_in_top
 				move.l	ZoneT_UpperFloor_l(a2),d0
 				move.l	ZoneT_UpperRoof_l(a2),d1
@@ -1675,14 +1675,14 @@ ai_GetRoomStatsStill:
 ; move.w (a2),d0
 ; move.l #ZoneBrightTable,a5
 ; move.l (a5,d0.w*4),d0
-; tst.b ObjInTop(a0)
+; tst.b ShotT_InUpperZone_b(a0)
 ; bne.s .okbit
 ; swap d0
 ;.okbit:
 ; move.w d0,2(a0)
 
 				move.l	ZoneT_Floor_l(a2),d0
-				tst.b	ObjInTop(a0)
+				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.not_in_top2
 				move.l	ZoneT_UpperFloor_l(a2),d0
 
@@ -1746,7 +1746,7 @@ ai_CheckInFront:
 AI_LookForPlayer1:
 				clr.b	17(a0)
 				clr.b	CanSee
-				move.b	ObjInTop(a0),ViewerTop
+				move.b	ShotT_InUpperZone_b(a0),ViewerTop
 				move.b	PLR1_StoodInTop,TargetTop
 				move.l	PLR1_Roompt,ToRoom
 				move.l	objroom,FromRoom
@@ -2043,7 +2043,7 @@ ai_DoAttackAnim:
 				move.w	12(a0),12-64(a0)
 				move.w	12(a0),EntT_GraphicRoom_w-64(a0)
 				move.w	4(a0),4-64(a0)
-				move.b	ObjInTop(a0),ObjInTop-64(a0)
+				move.b	ShotT_InUpperZone_b(a0),ShotT_InUpperZone_b-64(a0)
 
 				move.b	9(a6,d1.w),d4
 				move.b	10(a6,d1.w),d5
@@ -2053,8 +2053,8 @@ ai_DoAttackAnim:
 				add.w	d4,d4
 				add.w	d5,d5
 
-				move.w	d4,auxxoff-64(a0)
-				move.w	d5,auxyoff-64(a0)
+				move.w	d4,ShotT_AuxOffsetX_w-64(a0)
+				move.w	d5,ShotT_AuxOffsetY_w-64(a0)
 
 				move.l	GLF_DatabasePtr_l,a4
 				move.l	a4,a2
@@ -2239,7 +2239,7 @@ ai_GetRoomCPT:
 				move.l	objroom,a2
 				moveq	#0,d0
 				move.b	ZoneT_ControlPoint_w(a2),d0
-				tst.b	ObjInTop(a0)
+				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.player_not_in_top
 
 				move.b	ZoneT_ControlPoint_w+1(a2),d0

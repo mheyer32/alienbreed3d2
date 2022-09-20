@@ -1900,7 +1900,7 @@ checkcol:
 				tst.b	EntT_NumLives_b(a0)
 				beq.s	checkcol
 
-				move.b	ObjInTop(a0),d1
+				move.b	ShotT_InUpperZone_b(a0),d1
 				eor.b	d6,d1
 				bne		checkcol
 

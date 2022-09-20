@@ -153,12 +153,12 @@ Collectable:
 				move.l	EntT_DoorsHeld_w(a0),d1
 				or.l	d1,DoorLocks
 .nolocks:
-				tst.b	worry(a0)
+				tst.b	ShotT_Worry_b(a0)
 				bne.s	.worryaboot
 				rts
 .worryaboot:
 
-				and.b	#$80,worry(a0)
+				and.b	#$80,ShotT_Worry_b(a0)
 				move.l	a1,a2
 
 				move.l	ZoneAdds,a1
@@ -168,7 +168,7 @@ Collectable:
 				tst.w	ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
 				move.l	ZoneT_Roof_l(a1),d0
-				tst.b	ObjInTop(a0)
+				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.okinbotc
 				move.l	ZoneT_UpperRoof_l(a1),d0
 .okinbotc:
@@ -177,7 +177,7 @@ Collectable:
 
 .onfloor
 				move.l	ZoneT_Floor_l(a1),d0
-				tst.b	ObjInTop(a0)
+				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.okinbot
 				move.l	ZoneT_UpperFloor_l(a1),d0
 .okinbot:
@@ -194,7 +194,7 @@ Collectable:
 
 				bsr		PLR1CollectObject
 				move.w	#-1,12(a0)
-				clr.b	worry(a0)
+				clr.b	ShotT_Worry_b(a0)
 
 .NotCollected1
 
@@ -206,7 +206,7 @@ Collectable:
 
 				bsr		PLR2CollectObject
 				move.w	#-1,12(a0)
-				clr.b	worry(a0)
+				clr.b	ShotT_Worry_b(a0)
 
 .NotCollected2
 
@@ -229,12 +229,12 @@ Activatable:
 				move.l	EntT_DoorsHeld_w(a0),d1
 				or.l	d1,DoorLocks
 .nolocks
-				tst.b	worry(a0)
+				tst.b	ShotT_Worry_b(a0)
 				bne.s	.worryaboot
 				rts
 .worryaboot:
 
-				and.b	#$80,worry(a0)
+				and.b	#$80,ShotT_Worry_b(a0)
 				move.l	a1,a2
 
 				move.l	ZoneAdds,a1
@@ -244,7 +244,7 @@ Activatable:
 				tst.w	ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
 				move.l	ZoneT_Roof_l(a1),d0
-				tst.b	ObjInTop(a0)
+				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.okinbotc
 				move.l	ZoneT_UpperRoof_l(a1),d0
 .okinbotc:
@@ -253,7 +253,7 @@ Activatable:
 
 .onfloor
 				move.l	ZoneT_Floor_l(a1),d0
-				tst.b	ObjInTop(a0)
+				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.okinbot
 				move.l	ZoneT_UpperFloor_l(a1),d0
 .okinbot:
@@ -313,12 +313,12 @@ ACTIVATED:
 				move.w	d0,EntT_GraphicRoom_w(a0)
 ; move.l EntT_DoorsHeld_w(a0),d1
 ; or.l d1,DoorLocks
-				tst.b	worry(a0)
+				tst.b	ShotT_Worry_b(a0)
 				bne.s	.worryaboot
 				rts
 .worryaboot:
 
-				and.b	#$80,worry(a0)
+				and.b	#$80,ShotT_Worry_b(a0)
 				move.l	a1,a2
 
 				move.l	ZoneAdds,a1
@@ -328,7 +328,7 @@ ACTIVATED:
 				tst.w	ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
 				move.l	ZoneT_Roof_l(a1),d0
-				tst.b	ObjInTop(a0)
+				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.okinbotc
 				move.l	ZoneT_UpperRoof_l(a1),d0
 .okinbotc:
@@ -337,7 +337,7 @@ ACTIVATED:
 
 .onfloor
 				move.l	ZoneT_Floor_l(a1),d0
-				tst.b	ObjInTop(a0)
+				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.okinbot
 				move.l	ZoneT_UpperFloor_l(a1),d0
 .okinbot:
@@ -417,7 +417,7 @@ Destructable:
 				cmp.b	#'n',mors
 				bne.s	.notext
 
-				move.w	TextToShow(a0),d0
+				move.w	EntT_DisplayText_w(a0),d0
 				blt.s	.notext
 
 				muls	#160,d0
@@ -442,7 +442,7 @@ Destructable:
 				rts
 .okinroom
 
-				tst.b	worry(a0)
+				tst.b	ShotT_Worry_b(a0)
 				bne.s	.worryaboot
 				rts
 .worryaboot:
@@ -456,7 +456,7 @@ Destructable:
 				tst.w	ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
 				move.l	ZoneT_Roof_l(a1),d0
-				tst.b	ObjInTop(a0)
+				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.okinbotc
 				move.l	ZoneT_UpperRoof_l(a1),d0
 .okinbotc:
@@ -465,7 +465,7 @@ Destructable:
 
 .onfloor
 				move.l	ZoneT_Floor_l(a1),d0
-				tst.b	ObjInTop(a0)
+				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.okinbot
 				move.l	ZoneT_UpperFloor_l(a1),d0
 .okinbot:
@@ -491,7 +491,7 @@ StillHere:
 				or.l	d1,DoorLocks
 .nolocks
 
-				tst.b	worry(a0)
+				tst.b	ShotT_Worry_b(a0)
 				bne.s	.worryaboot
 				rts
 .worryaboot:
@@ -519,7 +519,7 @@ Decoration
 				rts
 .okinroom
 
-				tst.b	worry(a0)
+				tst.b	ShotT_Worry_b(a0)
 				bne.s	.worryaboot
 				rts
 .worryaboot:
@@ -535,7 +535,7 @@ intodeco:
 				tst.w	ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
 				move.l	ZoneT_Roof_l(a1),d0
-				tst.b	ObjInTop(a0)
+				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.okinbotc
 				move.l	ZoneT_UpperRoof_l(a1),d0
 .okinbotc:
@@ -544,7 +544,7 @@ intodeco:
 
 .onfloor
 				move.l	ZoneT_Floor_l(a1),d0
-				tst.b	ObjInTop(a0)
+				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.okinbot
 				move.l	ZoneT_UpperFloor_l(a1),d0
 .okinbot:
@@ -562,7 +562,7 @@ PLR1CollectObject:
 				cmp.b	#'n',mors
 				bne.s	.nodeftext
 
-				move.w	TextToShow(a0),d0
+				move.w	EntT_DisplayText_w(a0),d0
 				blt.s	.notext
 
 				muls	#160,d0
@@ -720,7 +720,7 @@ GiveGuns2:
 .nosoundmake
 
 				move.w	#-1,12(a0)
-				clr.b	worry(a0)
+				clr.b	ShotT_Worry_b(a0)
 
 dontcollect2:
 				rts
@@ -762,7 +762,7 @@ CHECKNEARBYONE:
 
 				move.l	StatPointer,a2
 				move.b	PLR1_StoodInTop,d0
-				move.b	ObjInTop(a0),d1
+				move.b	ShotT_InUpperZone_b(a0),d1
 				eor.b	d0,d1
 				bne		.NotSameZone
 
@@ -803,7 +803,7 @@ CHECKNEARBYTWO:
 
 				move.l	StatPointer,a2
 				move.b	PLR2_StoodInTop,d0
-				move.b	ObjInTop(a0),d1
+				move.b	ShotT_InUpperZone_b(a0),d1
 				eor.b	d0,d1
 				bne		.NotSameZone
 
@@ -1171,7 +1171,7 @@ SHOOTPLAYER1
 				asl.l	#7,d1
 				move.l	d1,oldy
 
-				move.b	ObjInTop(a0),StoodInTop
+				move.b	ShotT_InUpperZone_b(a0),StoodInTop
 
 				st		exitfirst
 				move.w	#0,extlen
@@ -1229,16 +1229,16 @@ SHOOTPLAYER1
 				move.w	(a0),d2
 				move.w	newx,(a1,d2.w*8)
 				move.w	newz,4(a1,d2.w*8)
-				move.b	#1,shotstatus(a0)
-				move.w	#0,shotgrav(a0)
-				move.b	#0,shotsize(a0)
-				move.b	#0,shotanim(a0)
+				move.b	#1,ShotT_Status_b(a0)
+				move.w	#0,ShotT_Gravity_w(a0)
+				move.b	#0,ShotT_Size_b(a0)
+				move.b	#0,ShotT_Anim_b(a0)
 
 				move.l	backroom,a1
 				move.w	(a1),12(a0)
-				st		worry(a0)
+				st		ShotT_Worry_b(a0)
 				move.l	wallhitheight,d0
-				move.l	d0,accypos(a0)
+				move.l	d0,ShotT_AccYPos_w(a0)
 				asr.l	#7,d0
 				move.w	d0,4(a0)
 
@@ -1282,10 +1282,10 @@ FireAtPlayer1:
 				move.b	#1,chanpick
 				clr.b	notifplaying
 				move.b	SHOTTYPE,d0
-				move.w	#0,shotlife(a5)
-				move.b	d0,shotsize(a5)
+				move.w	#0,ShotT_Lifetime_w(a5)
+				move.b	d0,ShotT_Size_b(a5)
 				move.b	ALIENECHO,PlayEcho
-				move.b	SHOTPOWER,shotpower(a5)
+				move.b	SHOTPOWER,ShotT_Power_w(a5)
 				movem.l	a5/a1/a0,-(a7)
 				move.w	(a0),IDNUM
 				jsr		MakeSomeNoise
@@ -1339,11 +1339,11 @@ FireAtPlayer1:
 				move.w	newx,d0
 				move.w	d0,(a2)
 				sub.w	oldx,d0
-				move.w	d0,shotxvel(a5)
+				move.w	d0,ShotT_VelocityX_w(a5)
 				move.w	newz,d0
 				move.w	d0,4(a2)
 				sub.w	oldz,d0
-				move.w	d0,shotzvel(a5)
+				move.w	d0,ShotT_VelocityZ_w(a5)
 
 				move.l	#%110010,EntT_EnemyFlags_l(a5)
 				move.w	12(a0),12(a5)
@@ -1352,8 +1352,8 @@ FireAtPlayer1:
 				ext.l	d0
 				asl.l	#7,d0
 				add.l	SHOTYOFF,d0
-				move.l	d0,accypos(a5)
-				move.b	SHOTINTOP,ObjInTop(a5)
+				move.l	d0,ShotT_AccYPos_w(a5)
+				move.b	SHOTINTOP,ShotT_InUpperZone_b(a5)
 				move.l	PLR1_Obj,a2
 				move.w	4(a2),d1
 				sub.w	#20,d1
@@ -1371,24 +1371,24 @@ FireAtPlayer1:
 .okokokok
 
 				divs	d0,d1
-				move.w	d1,shotyvel(a5)
-				st		worry(a5)
+				move.w	d1,ShotT_VelocityY_w(a5)
+				st		ShotT_Worry_b(a5)
 
 ; FIXME: this is causing Enforcer hits. It looks like the places that put a
 ; value into GunData are all commented out. On the other hand, most other places
-; writing to shotgrav just write a 0. Maybe no alien weapon has gravity applied?
-; similar with shotflags
+; writing to ShotT_Gravity_w just write a 0. Maybe no alien weapon has gravity applied?
+; similar with ShotT_Flags_w
 ;				move.l	GunData,a6
 ;				moveq	#0,d0
 ;				move.b	SHOTTYPE,d0
 ;				asl.w	#5,d0
 ;				add.w	d0,a6
-;				move.w	16(a6),shotgrav(a5)
-;				move.w	18(a6),shotflags(a5)
+;				move.w	16(a6),ShotT_Gravity_w(a5)
+;				move.w	18(a6),ShotT_Flags_w(a5)
 
 
 ; move.w 20(a6),d0
-; add.w d0,shotyvel(a5)
+; add.w d0,ShotT_VelocityY_w(a5)
 
 .cantshoot
 				rts
@@ -1433,7 +1433,7 @@ SHOOTPLAYER2
 				ext.l	d1
 				asl.l	#7,d1
 				move.l	d1,oldy
-				move.b	ObjInTop(a0),StoodInTop
+				move.b	ShotT_InUpperZone_b(a0),StoodInTop
 
 				st		exitfirst
 				move.w	#0,extlen
@@ -1491,16 +1491,16 @@ SHOOTPLAYER2
 				move.w	(a0),d2
 				move.w	newx,(a1,d2.w*8)
 				move.w	newz,4(a1,d2.w*8)
-				move.b	#1,shotstatus(a0)
-				move.w	#0,shotgrav(a0)
-				move.b	#0,shotsize(a0)
-				move.b	#0,shotanim(a0)
+				move.b	#1,ShotT_Status_b(a0)
+				move.w	#0,ShotT_Gravity_w(a0)
+				move.b	#0,ShotT_Size_b(a0)
+				move.b	#0,ShotT_Anim_b(a0)
 
 				move.l	backroom,a1
 				move.w	(a1),12(a0)
-				st		worry(a0)
+				st		ShotT_Worry_b(a0)
 				move.l	wallhitheight,d0
-				move.l	d0,accypos(a0)
+				move.l	d0,ShotT_AccYPos_w(a0)
 				asr.l	#7,d0
 				move.w	d0,4(a0)
 
@@ -1535,9 +1535,9 @@ FireAtPlayer2:
 				move.b	#1,chanpick
 				clr.b	notifplaying
 				move.b	SHOTPOWER,d0
-				move.w	#0,shotlife(a5)
-				move.b	d0,shotsize(a5)
-				move.b	SHOTPOWER,shotpower(a5)
+				move.w	#0,ShotT_Lifetime_w(a5)
+				move.b	d0,ShotT_Size_b(a5)
+				move.b	SHOTPOWER,ShotT_Power_w(a5)
 				movem.l	a5/a1/a0,-(a7)
 				move.w	(a0),IDNUM
 				move.b	ALIENECHO,PlayEcho
@@ -1578,11 +1578,11 @@ FireAtPlayer2:
 				move.w	newx,d0
 				move.w	d0,(a2)
 				sub.w	oldx,d0
-				move.w	d0,shotxvel(a5)
+				move.w	d0,ShotT_VelocityX_w(a5)
 				move.w	newz,d0
 				move.w	d0,4(a2)
 				sub.w	oldz,d0
-				move.w	d0,shotzvel(a5)
+				move.w	d0,ShotT_VelocityZ_w(a5)
 
 				move.l	#%110010,EntT_EnemyFlags_l(a5)
 				move.w	12(a0),12(a5)
@@ -1591,8 +1591,8 @@ FireAtPlayer2:
 				ext.l	d0
 				asl.l	#7,d0
 				add.l	SHOTYOFF,d0
-				move.l	d0,accypos(a5)
-				move.b	SHOTINTOP,ObjInTop(a5)
+				move.l	d0,ShotT_AccYPos_w(a5)
+				move.b	SHOTINTOP,ShotT_InUpperZone_b(a5)
 				move.l	PLR2_Obj,a2
 				move.w	4(a2),d1
 				sub.w	#20,d1
@@ -1608,9 +1608,9 @@ FireAtPlayer2:
 				moveq	#1,d0
 .okokokok
 				divs	d0,d1
-				move.w	d1,shotyvel(a5)
-				st		worry(a5)
-				move.w	#0,shotgrav(a5)
+				move.w	d1,ShotT_VelocityY_w(a5)
+				st		ShotT_Worry_b(a5)
+				move.w	#0,ShotT_Gravity_w(a5)
 .cantshoot
 				rts
 

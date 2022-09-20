@@ -343,16 +343,16 @@ nothingtoshoot:
 				move.w	(a0),d2
 				move.w	newx,(a1,d2.w*8)
 				move.w	newz,4(a1,d2.w*8)
-				move.b	#1,shotstatus(a0)
-				move.w	#0,shotgrav(a0)
-				move.b	BULTYPE+1,shotsize(a0)
-				move.b	#0,shotanim(a0)
+				move.b	#1,ShotT_Status_b(a0)
+				move.w	#0,ShotT_Gravity_w(a0)
+				move.b	BULTYPE+1,ShotT_Size_b(a0)
+				move.b	#0,ShotT_Anim_b(a0)
 
 				move.l	objroom,a1
 				move.w	(a1),12(a0)
-				st		worry(a0)
+				st		ShotT_Worry_b(a0)
 				move.l	wallhitheight,d0
-				move.l	d0,accypos(a0)
+				move.l	d0,ShotT_AccYPos_w(a0)
 				asr.l	#7,d0
 				move.w	d0,4(a0)
 
@@ -694,16 +694,16 @@ nothingtoshoot2:
 				move.w	(a0),d2
 				move.w	newx,(a1,d2.w*8)
 				move.w	newz,4(a1,d2.w*8)
-				move.b	#1,shotstatus(a0)
-				move.w	#0,shotgrav(a0)
-				move.b	BULTYPE+1,shotsize(a0)
-				move.b	#0,shotanim(a0)
+				move.b	#1,ShotT_Status_b(a0)
+				move.w	#0,ShotT_Gravity_w(a0)
+				move.b	BULTYPE+1,ShotT_Size_b(a0)
+				move.b	#0,ShotT_Anim_b(a0)
 
 				move.l	objroom,a1
 				move.w	(a1),12(a0)
-				st		worry(a0)
+				st		ShotT_Worry_b(a0)
 				move.l	wallhitheight,d0
-				move.l	d0,accypos(a0)
+				move.l	d0,ShotT_AccYPos_w(a0)
 				asr.l	#7,d0
 				move.w	d0,4(a0)
 
@@ -768,9 +768,9 @@ firefive:
 				rts
 
 .foundonefree
-				move.w	BulT_Gravity_l+2(a5),shotgrav(a0)
-				move.b	BulT_BounceHoriz_l+3(a5),shotflags(a0)
-				move.b	BulT_BounceVert_l+3(a5),shotflags+1(a0)
+				move.w	BulT_Gravity_l+2(a5),ShotT_Gravity_w(a0)
+				move.b	BulT_BounceHoriz_l+3(a5),ShotT_Flags_w(a0)
+				move.b	BulT_BounceVert_l+3(a5),ShotT_Flags_w+1(a0)
 
 				move.w	bulyspd,d0
 
@@ -789,8 +789,8 @@ firefive:
 				move.w	d0,bulyspd
 
 				move.l	#ObjRotated,a2
-				move.b	BULTYPE+1,shotsize(a0)
-				move.b	BulT_HitDamage_l+3(a5),shotpower(a0)
+				move.b	BULTYPE+1,ShotT_Size_b(a0)
+				move.b	BulT_HitDamage_l+3(a5),ShotT_Power_w(a0)
 
 				move.l	ObjectPoints,a1
 				move.w	(a0),d1
@@ -810,21 +810,21 @@ firefive:
 
 				move.w	BulletSpd,d1
 				asl.l	d1,d0
-				move.l	d0,shotxvel(a0)
+				move.l	d0,ShotT_VelocityX_w(a0)
 				ext.l	d2
 				asl.l	d1,d2
 				move.b	#2,16(a0)
-				move.l	d2,shotzvel(a0)
-				move.w	bulyspd,shotyvel(a0)
-				move.b	tempStoodInTop,ObjInTop(a0)
-				move.w	#0,shotlife(a0)
+				move.l	d2,ShotT_VelocityZ_w(a0)
+				move.w	bulyspd,ShotT_VelocityY_w(a0)
+				move.b	tempStoodInTop,ShotT_InUpperZone_b(a0)
+				move.w	#0,ShotT_Lifetime_w(a0)
 				move.l	d7,EntT_EnemyFlags_l(a0)
 				move.l	tempRoompt,a2
 				move.w	(a2),12(a0)
 				move.l	tempyoff,d0
 				add.l	#20*128,d0
-				move.l	d0,accypos(a0)
-				st		worry(a0)
+				move.l	d0,ShotT_AccYPos_w(a0)
+				st		ShotT_Worry_b(a0)
 				asr.l	#7,d0
 				move.w	d0,4(a0)
 
@@ -854,17 +854,17 @@ PLR1HITINSTANT:
 				move.w	(a0),d2
 				move.l	(a1,d0.w*8),(a1,d2.w*8)
 				move.l	4(a1,d0.w*8),4(a1,d2.w*8)
-				move.b	#1,shotstatus(a0)
-				move.w	#0,shotgrav(a0)
-				move.b	BULTYPE+1,shotsize(a0)
-				move.b	#0,shotanim(a0)
+				move.b	#1,ShotT_Status_b(a0)
+				move.w	#0,ShotT_Gravity_w(a0)
+				move.b	BULTYPE+1,ShotT_Size_b(a0)
+				move.b	#0,ShotT_Anim_b(a0)
 
 				move.w	4(a4),d1
 				ext.l	d1
 				asl.l	#7,d1
-				move.l	d1,accypos(a0)
+				move.l	d1,ShotT_AccYPos_w(a0)
 				move.w	12(a4),12(a0)
-				st		worry(a0)
+				st		ShotT_Worry_b(a0)
 				move.w	4(a4),4(a0)
 
 				move.w	BulT_HitDamage_l+2(a5),d0
@@ -959,16 +959,16 @@ PLR1MISSINSTANT:
 				move.w	(a0),d2
 				move.w	newx,(a1,d2.w*8)
 				move.w	newz,4(a1,d2.w*8)
-				move.b	#1,shotstatus(a0)
-				move.w	#0,shotgrav(a0)
-				move.b	BULTYPE+1,shotsize(a0)
-				move.b	#0,shotanim(a0)
+				move.b	#1,ShotT_Status_b(a0)
+				move.w	#0,ShotT_Gravity_w(a0)
+				move.b	BULTYPE+1,ShotT_Size_b(a0)
+				move.b	#0,ShotT_Anim_b(a0)
 
 				move.l	objroom,a1
 				move.w	(a1),12(a0)
-				st		worry(a0)
+				st		ShotT_Worry_b(a0)
 				move.l	newy,d1
-				move.l	d1,accypos(a0)
+				move.l	d1,ShotT_AccYPos_w(a0)
 				asr.l	#7,d1
 				move.w	d1,4(a0)
 
@@ -996,17 +996,17 @@ PLR2HITINSTANT:
 				move.w	(a0),d2
 				move.l	(a1,d0.w*8),(a1,d2.w*8)
 				move.l	4(a1,d0.w*8),4(a1,d2.w*8)
-				move.b	#1,shotstatus(a0)
-				move.w	#0,shotgrav(a0)
-				move.b	BULTYPE+1,shotsize(a0)
-				move.b	#0,shotanim(a0)
+				move.b	#1,ShotT_Status_b(a0)
+				move.w	#0,ShotT_Gravity_w(a0)
+				move.b	BULTYPE+1,ShotT_Size_b(a0)
+				move.b	#0,ShotT_Anim_b(a0)
 
 				move.w	4(a4),d1
 				ext.l	d1
 				asl.l	#7,d1
-				move.l	d1,accypos(a0)
+				move.l	d1,ShotT_AccYPos_w(a0)
 				move.w	12(a4),12(a0)
-				st		worry(a0)
+				st		ShotT_Worry_b(a0)
 				move.w	4(a4),4(a0)
 
 				move.w	BulT_HitDamage_l+2(a5),d0
@@ -1101,16 +1101,16 @@ PLR2MISSINSTANT:
 				move.w	(a0),d2
 				move.w	newx,(a1,d2.w*8)
 				move.w	newz,4(a1,d2.w*8)
-				move.b	#1,shotstatus(a0)
-				move.w	#0,shotgrav(a0)
-				move.b	BULTYPE+1,shotsize(a0)
-				move.b	#0,shotanim(a0)
+				move.b	#1,ShotT_Status_b(a0)
+				move.w	#0,ShotT_Gravity_w(a0)
+				move.b	BULTYPE+1,ShotT_Size_b(a0)
+				move.b	#0,ShotT_Anim_b(a0)
 
 				move.l	objroom,a1
 				move.w	(a1),12(a0)
-				st		worry(a0)
+				st		ShotT_Worry_b(a0)
 				move.l	newy,d1
-				move.l	d1,accypos(a0)
+				move.l	d1,ShotT_AccYPos_w(a0)
 				asr.l	#7,d1
 				move.w	d1,4(a0)
 
