@@ -67,7 +67,7 @@ SOFFSET		SET    SOFFSET+\1
 		UWORD AlienT_Auxilliary_w			; 40, 2
 		LABEL AlienT_SizeOf_l				; 42
 
-	; Game Link File: Object Defs
+	; Object Definition
 	STRUCTURE ObjT,0
 		UWORD ObjT_Behaviour_w		;  0, 2
 		UWORD ObjT_GFXType_w		;  2, 2
@@ -114,10 +114,7 @@ SOFFSET		SET    SOFFSET+\1
 		UBYTE EntT_WhichAnim_b				; 55, 1
 		LABEL EntT_SizeOf_l					; 56
 
-*****************************
-* Bullet object definitions *
-*****************************
-
+	; Shot Definition
 	STRUCTURE ShotT,18
 		UWORD ShotT_VelocityX_w		; 18, 2
 		PADDING 2           		; 20, 2
@@ -143,6 +140,30 @@ SOFFSET		SET    SOFFSET+\1
 		UBYTE ShotT_Worry_b			; 62, 1
 		UBYTE ShotT_InUpperZone_b	; 63, 1
 		LABEL ShotT_SizeOf_l		; 64
+
+	; Zone Structure todo - what gives with the 16-bit alignment of these?
+	STRUCTURE ZoneT,2
+		ULONG ZoneT_Floor_l				;  2, 4
+		ULONG ZoneT_Roof_l				;  6, 4
+		ULONG ZoneT_UpperFloor_l		; 10, 4
+		ULONG ZoneT_UpperRoof_l			; 14, 4
+		ULONG ZoneT_Water_l				; 18, 4
+		UWORD ZoneT_Brightness_w		; 22, 2
+		UWORD ZoneT_UpperBrightness_w	; 24, 2
+		UWORD ZoneT_ControlPoint_w		; 26, 2 really UBYTE[2]
+		UWORD ZoneT_BackSFXMask_w		; 28, 2 Originally long but always accessed as word
+		UWORD ZoneT_Unused_w            ; 30, 2 so this is the unused half
+		UWORD ZoneT_ExitList_w			; 32, 2
+		UWORD ZoneT_Points_w			; 34, 2
+		UBYTE ZoneT_Back_b				; 36, 1 unused
+		UBYTE ZoneT_Echo_b				; 37, 1
+		UWORD ZoneT_TelZone_w			; 38, 2
+		UWORD ZoneT_TelX_w				; 40, 2
+		UWORD ZoneT_TelZ_w				; 42, 2
+		UWORD ZoneT_FloorNoise_w		; 44, 2
+		UWORD ZoneT_UpperFloorNoise_w	; 46, 2
+		UWORD ZoneT_ListOfGraph_w		; 48, 2
+		LABEL ZoneT_SizeOf_l			; 50
 
 **************************
 * Game link file offsets *
@@ -200,48 +221,6 @@ DR_Bul			EQU		2
 DR_Alien		EQU		3
 DR_Timeout		EQU		4
 DR_Never		EQU		5
-
 DL_Timeout		EQU		0
 DL_Never		EQU		1
-
-*****************************
-* Data Offset Defs **********
-*****************************
-	; todo - what gives with the 16-bit alignment of these?
-	STRUCTURE ZoneT,2
-		ULONG ZoneT_Floor_l
-		ULONG ZoneT_Roof_l
-		ULONG ZoneT_UpperFloor_l
-		ULONG ZoneT_UpperRoof_l
-		ULONG ZoneT_Water_l
-
-		UWORD ZoneT_Brightness_w
-		UWORD ZoneT_UpperBrightness_w
-		UWORD ZoneT_ControlPoint_w		; really UBYTE[2]
-		UWORD ZoneT_BackSFXMask_w		; Originally long but always accessed as word
-		UWORD ZoneT_Unused_w            ; so this is the unused half
-		UWORD ZoneT_ExitList_w
-		UWORD ZoneT_Points_w
-
-		UBYTE ZoneT_Back_b				; unused
-		UBYTE ZoneT_Echo_b
-
-		UWORD ZoneT_TelZone_w
-		UWORD ZoneT_TelX_w
-		UWORD ZoneT_TelZ_w
-		UWORD ZoneT_FloorNoise_w
-		UWORD ZoneT_UpperFloorNoise_w
-		UWORD ZoneT_ListOfGraph_w
-
-*****************************
-* Graphics definitions ******
-*****************************
-
-KeyGraph0		EQU		256*65536*19
-KeyGraph1		EQU		256*65536*19+32
-KeyGraph2		EQU		(256*19+128)*65536
-KeyGraph3		EQU		(256*19+128)*65536+32
-Nas1ClosedMouth	EQU		256*5*65536
-MediKit_Graph	EQU		256*10*65536
-BigGun_Graph	EQU		256*10*65536+32
 
