@@ -343,7 +343,7 @@ PLAYTHEGAME:
 				sub.b	#'a',d1
 				lsl.w	#6,d1
 				move.l	GLF_DatabasePtr_l,a0
-				lea		LevelMusic(a0),a0
+				lea		GLFT_LevelMusic_l(a0),a0
 
 				move.l	#MEMF_CHIP,IO_MemType_l
 				jsr		IO_LoadFile
@@ -991,7 +991,7 @@ lop:
 				move.l	PLR2_Obj,a0
 
 				move.l	GLF_DatabasePtr_l,a6
-				add.l	#PLR2ALIEN,a6
+				add.l	#GLFT_Player2Graphic_w,a6
 				move.w	(a6),d7
 				move.w	d7,d1
 				move.l	GLF_DatabasePtr_l,a6
@@ -1035,7 +1035,7 @@ lop:
 				move.l	PLR1_Obj,a0
 
 				move.l	GLF_DatabasePtr_l,a6
-				add.l	#PLR1ALIEN,a6
+				add.l	#GLFT_Player1Graphic_w,a6
 				move.w	(a6),d7
 				move.w	d7,d1
 				move.l	GLF_DatabasePtr_l,a6
@@ -3327,7 +3327,7 @@ USEPLR1:
 				add.l	d0,d0
 
 				move.l	GLF_DatabasePtr_l,a6
-				add.l	#PLR2ALIEN,a6
+				add.l	#GLFT_Player2Graphic_w,a6
 				move.w	(a6),d7
 				move.w	d7,d1
 
@@ -3345,7 +3345,7 @@ USEPLR1:
 
 				move.l	GLF_DatabasePtr_l,a6
 
-				add.l	#AlienAnimData,a6
+				add.l	#GLFT_AlienAnims_l,a6
 
 				move.w	d7,d1
 				muls	#A_AnimLen,d1
@@ -3438,7 +3438,7 @@ USEPLR1:
 				move.b	p1_gunselected,d0
 
 				move.l	GLF_DatabasePtr_l,a1
-				add.l	#GunObjects,a1
+				add.l	#GLFT_GunObjects_l,a1
 				move.w	(a1,d0.w*2),d0
 
 				move.b	d0,EntT_Type_b+128(a0)
@@ -3621,7 +3621,7 @@ USEPLR2:
 				add.l	d0,d0
 
 				move.l	GLF_DatabasePtr_l,a6
-				add.l	#PLR1ALIEN,a6
+				add.l	#GLFT_Player1Graphic_w,a6
 				move.w	(a6),d7
 				move.w	d7,d1
 
@@ -3639,7 +3639,7 @@ USEPLR2:
 
 				move.l	GLF_DatabasePtr_l,a6
 
-				add.l	#AlienAnimData,a6
+				add.l	#GLFT_AlienAnims_l,a6
 
 				move.w	d7,d1
 				muls	#A_AnimLen,d1
@@ -3728,7 +3728,7 @@ USEPLR2:
 				move.b	p2_gunselected,d0
 
 				move.l	GLF_DatabasePtr_l,a1
-				add.l	#GunObjects,a1
+				add.l	#GLFT_GunObjects_l,a1
 				move.w	(a1,d0.w*2),d0
 
 				move.b	d0,EntT_Type_b+64(a0)
@@ -9705,7 +9705,7 @@ NOSIDES2:
 				move.b	d0,2(a5)
 				move.l	GLF_DatabasePtr_l,a6
 
-				add.l	#AlienAnimData,a6
+				add.l	#GLFT_AlienAnims_l,a6
 
 				moveq	#0,d1
 				move.b	EntT_Type_b(a0),d1
@@ -9838,7 +9838,7 @@ dosomething:
 .okinbot:
 
 				move.l	GLF_DatabasePtr_l,a0
-				add.l	#FloorData,a0
+				add.l	#GLFT_FloorData_l,a0
 				move.w	(a0,d0.w*4),d0			; damage.
 				move.l	PLR1_Obj,a0
 				add.b	d0,EntT_DamageTaken_b(a0)
@@ -9851,7 +9851,7 @@ dosomething:
 .okinbot2:
 
 				move.l	GLF_DatabasePtr_l,a0
-				add.l	#FloorData,a0
+				add.l	#GLFT_FloorData_l,a0
 				move.w	(a0,d0.w*4),d0			; damage.
 
 				move.l	PLR2_Obj,a0
@@ -11461,7 +11461,7 @@ FOUNDALEFT:
 ;YESECHO:
 ;
 ; move.l GLF_DatabasePtr_l,a3
-; add.l #EchoTable,a3
+; add.l #GLFT_EchoTable_l,a3
 ; move.b (a3,d5.w),d5
 ;
 ;NOECHO:
@@ -11686,7 +11686,7 @@ FOUNDACHAN:
 ;YESECHO2:
 ;
 ; move.l GLF_DatabasePtr_l,a3
-; add.l #EchoTable,a3
+; add.l #GLFT_EchoTable_l,a3
 ; move.b (a3,d5.w),d5
 ;
 ;NOECHO2:

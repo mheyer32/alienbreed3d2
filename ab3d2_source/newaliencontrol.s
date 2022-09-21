@@ -43,19 +43,19 @@ ItsAnAlien:
 				move.l	GLF_DatabasePtr_l,a6
 				move.l	a6,a5
 				move.b	EntT_Type_b(a0),d0
-				add.l	#AlienBrights,a5
+				add.l	#GLFT_AlienBrights_l,a5
 				move.w	(a5,d0.w*2),d1
 				neg.w	d1
 				move.w	d1,ALIENBRIGHT
 				muls	#A_AnimLen,d0
-				add.l	#AlienAnimData,a6
+				add.l	#GLFT_AlienAnims_l,a6
 				add.l	d0,a6
 
 				move.l	a6,ANIMPOINTER
 
 				move.l	GLF_DatabasePtr_l,a1
 				move.l	a1,a2
-				add.l	#AlienShotOffsets,a2
+				add.l	#GLFT_AlienShootDefs_l,a2
 
 				lea		GLFT_AlienDefs_l(a1),a1
 				moveq	#0,d0
@@ -605,8 +605,8 @@ PLR1CollectObject:
 .nodeftext:
 
 				move.l	GLF_DatabasePtr_l,a2
-				lea		AmmoGive(a2),a3
-				add.l	#GunGive,a2
+				lea		GLFT_AmmoGive_l(a2),a3
+				add.l	#GLFT_GunGive_l,a2
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 				move.w	d0,d1
@@ -665,8 +665,8 @@ dontcollect:
 PLR2CollectObject:
 
 				move.l	GLF_DatabasePtr_l,a2
-				lea		AmmoGive(a2),a3
-				add.l	#GunGive,a2
+				lea		GLFT_AmmoGive_l(a2),a3
+				add.l	#GLFT_GunGive_l,a2
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 				move.w	d0,d1
@@ -845,7 +845,7 @@ StatPointer:	dc.l	0
 DEFANIMOBJ:
 
 				move.l	GLF_DatabasePtr_l,a3
-				lea		ObjectDefAnims(a3),a3
+				lea		GLFT_ObjectDefAnims_l(a3),a3
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 				muls	#O_AnimSize,d0
@@ -920,7 +920,7 @@ DEFANIMOBJ:
 ACTANIMOBJ:
 
 				move.l	GLF_DatabasePtr_l,a3
-				lea		ObjectActAnims(a3),a3
+				lea		GLFT_ObjectActAnims_l(a3),a3
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 				muls	#O_AnimSize,d0

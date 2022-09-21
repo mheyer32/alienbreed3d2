@@ -719,7 +719,7 @@ THERESNOWATER2:
 .okinbot:
 
 				move.l	GLF_DatabasePtr_l,a0
-				add.l	#FloorData,a0
+				add.l	#GLFT_FloorData_l,a0
 				move.w	2(a0,d0.w*4),d0			; sample number.
 
 				subq	#1,d0

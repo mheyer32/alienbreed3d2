@@ -769,7 +769,7 @@ BACKSFX:
 				beq.s	.notfound
 
 				move.l	GLF_DatabasePtr_l,a0
-				add.l	#BackSFX,a0
+				add.l	#GLFT_AmbientSFX_l,a0
 				move.w	(a0,d0.w*2),Samplenum
 				move.w	#$fff0,IDNUM
 				st.b	notifplaying

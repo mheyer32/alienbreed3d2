@@ -2058,7 +2058,7 @@ ai_DoAttackAnim:
 
 				move.l	GLF_DatabasePtr_l,a4
 				move.l	a4,a2
-				add.l	#ObjectDefAnims,a4
+				add.l	#GLFT_ObjectDefAnims_l,a4
 				add.l	#GLFT_ObjectDefs,a2
 
 				move.w	d3,d4

@@ -86,7 +86,7 @@ Res_LoadObjects:
 
 				move.l	#POLYOBJECTS,a2
 				move.l	GLF_DatabasePtr_l,a0
-				add.l	#VectorGfxNames,a0
+				add.l	#GLFT_VectorNames_l,a0
 
 .load_vector_loop:
 				tst.b	(a0)
@@ -258,7 +258,7 @@ Res_LoadWallTextures:
 
 				move.l	#walltiles,a4
 				move.l	GLF_DatabasePtr_l,a3
-				add.l	#WallGFXNames,a3
+				add.l	#GLFT_WallGFXNames_l,a3
 				move.l	#MEMF_ANY,IO_MemType_l
 
 .load_loop:
