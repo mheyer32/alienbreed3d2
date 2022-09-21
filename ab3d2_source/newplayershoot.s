@@ -32,8 +32,8 @@ okcanfire:
 
 
 				move.l	GLF_DatabasePtr_l,a6
-				lea		GunBulletTypes(a6),a6
-				lea		BulletAnimData-GunBulletTypes(a6),a5
+				lea		GLFT_ShootDefs_l(a6),a6
+				lea		GLFT_BulletDefs_l-GLFT_ShootDefs_l(a6),a5
 				lea		(a6,d0.w*8),a6
 				move.w	ShootT_BulType_w(a6),d0		; bullet type
 				move.w	d0,BULTYPE
@@ -383,8 +383,8 @@ okcanfire2:
 
 
 				move.l	GLF_DatabasePtr_l,a6
-				lea		GunBulletTypes(a6),a6
-				lea		BulletAnimData-GunBulletTypes(a6),a5
+				lea		GLFT_ShootDefs_l(a6),a6
+				lea		GLFT_BulletDefs_l-GLFT_ShootDefs_l(a6),a5
 				lea		(a6,d0.w*8),a6
 				move.w	ShootT_BulType_w(a6),d0		; bullet type
 				move.w	d0,BULTYPE

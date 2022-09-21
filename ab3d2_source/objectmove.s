@@ -1913,7 +1913,7 @@ checkcol:
 				bne		checkcol
 
 				move.l	GLF_DatabasePtr_l,a4
-				add.l	#ObjectStats,a4
+				add.l	#GLFT_ObjectDefs,a4
 				moveq	#0,d1
 				move.b	EntT_Type_b(a0),d1
 				muls	#ObjT_SizeOf_l,d1

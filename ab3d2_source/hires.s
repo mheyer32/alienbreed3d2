@@ -995,7 +995,7 @@ lop:
 				move.w	(a6),d7
 				move.w	d7,d1
 				move.l	GLF_DatabasePtr_l,a6
-				add.l	#AlienStats,a6
+				add.l	#GLFT_AlienDefs_l,a6
 				muls	#AlienT_SizeOf_l,d1
 				add.l	d1,a6
 
@@ -1039,7 +1039,7 @@ lop:
 				move.w	(a6),d7
 				move.w	d7,d1
 				move.l	GLF_DatabasePtr_l,a6
-				add.l	#AlienStats,a6
+				add.l	#GLFT_AlienDefs_l,a6
 				muls	#AlienT_SizeOf_l,d1
 				add.l	d1,a6
 
@@ -1269,7 +1269,7 @@ okwat:
 				moveq	#0,d0
 				move.b	GunSelected,d0
 				move.l	GLF_DatabasePtr_l,a6
-				add.l	#GunBulletTypes,a6
+				add.l	#GLFT_ShootDefs_l,a6
 				move.w	(a6,d0.w*8),d0
 
 				move.l	#PLAYERONEAMMO,a6
@@ -1362,7 +1362,7 @@ NotOnePlayer:
 				moveq	#0,d0
 				move.b	GunSelected,d0
 				move.l	GLF_DatabasePtr_l,a6
-				add.l	#GunBulletTypes,a6
+				add.l	#GLFT_ShootDefs_l,a6
 				move.w	(a6,d0.w*8),d0
 
 				move.l	#PLAYERONEAMMO,a6
@@ -1483,7 +1483,7 @@ ASlaveShouldWaitOnHisMaster:
 				moveq	#0,d0
 				move.b	GunSelected,d0
 				move.l	GLF_DatabasePtr_l,a6
-				add.l	#GunBulletTypes,a6
+				add.l	#GLFT_ShootDefs_l,a6
 				move.w	(a6,d0.w*8),d0
 
 				move.l	#PLAYERTWOAMMO,a6
@@ -3332,7 +3332,7 @@ USEPLR1:
 				move.w	d7,d1
 
 				move.l	GLF_DatabasePtr_l,a6
-				add.l	#AlienStats,a6
+				add.l	#GLFT_AlienDefs_l,a6
 				muls	#AlienT_SizeOf_l,d1
 				add.l	d1,a6
 				move.b	AlienT_GFXType_w+1(a6),AI_VecObj_w
@@ -3626,7 +3626,7 @@ USEPLR2:
 				move.w	d7,d1
 
 				move.l	GLF_DatabasePtr_l,a6
-				add.l	#AlienStats,a6
+				add.l	#GLFT_AlienDefs_l,a6
 				muls	#AlienT_SizeOf_l,d1
 				add.l	d1,a6
 				move.b	AlienT_GFXType_w+1(a6),AI_VecObj_w
@@ -9689,7 +9689,7 @@ ALWALK:
 ; add.l d0,d0
 ;
 ; move.l GLF_DatabasePtr_l,a6
-; add.l #AlienStats,a6
+; add.l #GLFT_AlienDefs_l,a6
 ; moveq #0,d1
 ; move.b EntT_Type_b(a0),d1
 ; muls #AlienT_SizeOf_l,d1

@@ -395,7 +395,7 @@ SHOWPLR1GUNNAME:
 				move.b	PLR1_GunSelected,d2
 
 				move.l	GLF_DatabasePtr_l,a4
-				add.l	#GunNames,a4
+				add.l	#GLFT_GunNames_l,a4
 				muls	#20,d2
 				add.l	d2,a4
 				move.l	#TEMPSCROLL,a2

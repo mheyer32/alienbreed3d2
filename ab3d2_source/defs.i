@@ -169,6 +169,9 @@ SOFFSET		SET    SOFFSET+\1
 * Game link file offsets *
 **************************
 
+O_FrameStoreSize 	EQU		6
+O_AnimSize			EQU		O_FrameStoreSize*20
+
 LevelName			EQU		64
 ObjectGfxNames		EQU		LevelName+40*16
 SFXFilenames		EQU		ObjectGfxNames+64*30
@@ -186,10 +189,10 @@ FrameData			EQU		AlienStats+(AlienT_SizeOf_l*20)
 ObjectNames			EQU		FrameData+7680
 ObjectStats			EQU		ObjectNames+600
 ObjectDefAnims		EQU		ObjectStats+(ObjT_SizeOf_l*30)
-O_FrameStoreSize 	EQU		6
-O_AnimSize			EQU		O_FrameStoreSize*20
+
 ObjectActAnims		EQU		ObjectDefAnims+(O_AnimSize*30)
 AmmoGive			EQU		ObjectActAnims+(O_AnimSize*30)
+
 AmmoGiveLen			EQU		22*2
 GunGive				EQU		AmmoGive+(AmmoGiveLen*30)
 GunGiveLen			EQU		12*2
@@ -210,6 +213,31 @@ BackSFX				EQU		AlienShotOffsets+20*8
 LevelMusic			EQU		BackSFX+16*2
 EchoTable			EQU		LevelMusic+16*64
 LinkFileLen			EQU		EchoTable+60
+
+NUM_LEVELS			EQU	16
+NUM_BULLET_DEFS		EQU 20
+NUM_GUN_DEFS		EQU 10
+NUM_ALIEN_DEFS		EQU 20
+NUM_OBJECT_DEFS		EQU 30
+NUM_SFX				EQU 64
+
+	STRUCTURE GLFT,64
+		STRUCT GLFT_LevelNames_l,40*NUM_LEVELS
+		STRUCT GLFT_ObjGfxNames_l,(NUM_OBJECT_DEFS*64)
+		STRUCT GLFT_SFXFilenames_l,64*60
+		STRUCT GLFT_FloorFilename_l,64
+		STRUCT GLFT_TextureFilename_l,192
+		STRUCT GLFT_GunGFXFilename_l,64
+		STRUCT GLFT_StoryFilename_l,64
+		STRUCT GLFT_BulletDefs_l,(NUM_BULLET_DEFS*BulT_SizeOf_l)
+		STRUCT GLFT_BulletNames_l,(NUM_BULLET_DEFS*20)
+		STRUCT GLFT_GunNames_l,(NUM_GUN_DEFS*20)
+		STRUCT GLFT_ShootDefs_l,(NUM_GUN_DEFS*ShootT_SizeOf_l)
+		STRUCT GLFT_AlienNames_l,(NUM_ALIEN_DEFS*20)
+		STRUCT GLFT_AlienDefs_l,(NUM_ALIEN_DEFS*AlienT_SizeOf_l)
+		STRUCT GLFT_FrameData_l,7680 ; todo - figure out how this is derived
+		STRUCT GLFT_ObjectNames_l,(NUM_OBJECT_DEFS*20)
+		STRUCT GLFT_ObjectDefs,(NUM_OBJECT_DEFS*ObjT_SizeOf_l)
 
 *****************************
 * Door Definitions **********

@@ -57,7 +57,7 @@ ItsAnAlien:
 				move.l	a1,a2
 				add.l	#AlienShotOffsets,a2
 
-				lea		AlienStats(a1),a1
+				lea		GLFT_AlienDefs_l(a1),a1
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 
@@ -109,7 +109,7 @@ diststowall:
 ItsAnObject:
 
 				move.l	GLF_DatabasePtr_l,a1
-				lea		ObjectStats(a1),a1
+				lea		GLFT_ObjectDefs(a1),a1
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 				muls	#ObjT_SizeOf_l,d0
@@ -400,7 +400,7 @@ ACTIVATED:
 Destructable:
 
 				move.l	GLF_DatabasePtr_l,a3
-				add.l	#ObjectStats,a3
+				add.l	#GLFT_ObjectDefs,a3
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 				muls	#ObjT_SizeOf_l,d0
@@ -584,7 +584,7 @@ PLR1CollectObject:
 				moveq	#0,d2
 				move.b	EntT_Type_b(a0),d2
 				move.l	GLF_DatabasePtr_l,a4
-				add.l	#ObjectNames,a4
+				add.l	#GLFT_ObjectNames_l,a4
 				muls	#20,d2
 				add.l	d2,a4
 				move.l	#TEMPSCROLL,a2
@@ -636,7 +636,7 @@ GiveGuns:
 				dbra	d0,GiveGuns
 
 				move.l	GLF_DatabasePtr_l,a3
-				add.l	#ObjectStats,a3
+				add.l	#GLFT_ObjectDefs,a3
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 				muls	#ObjT_SizeOf_l,d0
@@ -696,7 +696,7 @@ GiveGuns2:
 				dbra	d0,GiveGuns2
 
 				move.l	GLF_DatabasePtr_l,a3
-				add.l	#ObjectStats,a3
+				add.l	#GLFT_ObjectDefs,a3
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 				muls	#ObjT_SizeOf_l,d0

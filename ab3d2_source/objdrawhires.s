@@ -582,7 +582,7 @@ glareobj:
 ; horizontal constants
 ; vertical constants.
 				move.l	GLF_DatabasePtr_l,a6
-				lea		FrameData(a6),a6
+				lea		GLFT_FrameData_l(a6),a6
 				move.l	#Objects,a5
 				move.w	2(a0),d7
 				neg.w	d7
@@ -978,7 +978,7 @@ pastobjscale:
 ; vertical constants.
 
 				move.l	GLF_DatabasePtr_l,a6
-				lea		FrameData(a6),a6
+				lea		GLFT_FrameData_l(a6),a6
 				move.l	#Objects,a5
 				move.w	2(a0),d7
 				asl.w	#4,d7
