@@ -490,7 +490,7 @@ READMAINMENU:
 				move.l	#mnu_CURRENTLEVELLINE,a1
 				muls	#40,d0
 				move.l	GLF_DatabasePtr_l,a0
-				add.l	#LevelName,a0
+				add.l	#GLFT_LevelNames_l,a0
 				add.l	d0,a0
 				bsr		PUTINLINE
 
@@ -809,7 +809,7 @@ MASTERMENU:
 				move.l	#mnu_CURRENTLEVELLINEM,a1
 				muls	#40,d0
 				move.l	GLF_DatabasePtr_l,a0
-				add.l	#LevelName,a0
+				add.l	#GLFT_LevelNames_l,a0
 				add.l	d0,a0
 				bsr		PUTINLINE
 
@@ -848,7 +848,7 @@ MASTERMENU:
 				move.l	#mnu_CURRENTLEVELLINEM,a1
 				muls	#40,d0
 				move.l	GLF_DatabasePtr_l,a0
-				add.l	#LevelName,a0
+				add.l	#GLFT_LevelNames_l,a0
 				add.l	d0,a0
 				bsr		PUTINLINE
 
@@ -1046,7 +1046,7 @@ DEFAULTGAME:
 				move.w	#$ff,MASTERPLAYERONEGUNS
 
 				move.l	GLF_DatabasePtr_l,a5
-				add.l	#GunBulletTypes,a5
+				add.l	#GLFT_ShootDefs_l,a5
 				move.w	(a5),d0
 
 				move.l	#MASTERPLAYERONEAMMO,a5
@@ -1526,7 +1526,7 @@ LOADPOSITION:
 				move.w	(a3),d1
 				muls	#40,d1
 				move.l	GLF_DatabasePtr_l,a0
-				add.l	#LevelName,a0
+				add.l	#GLFT_LevelNames_l,a0
 				add.l	d1,a0
 				jsr		PUTINLINE
 				add.l	#21,a4
@@ -1569,7 +1569,7 @@ LOADPOSITION:
 				move.l	#mnu_CURRENTLEVELLINE,a1
 				muls	#40,d0
 				move.l	GLF_DatabasePtr_l,a0
-				add.l	#LevelName,a0
+				add.l	#GLFT_LevelNames_l,a0
 				add.l	d0,a0
 				bsr		PUTINLINE
 
@@ -1603,7 +1603,7 @@ SAVEPOSITION:
 				move.w	(a3),d1
 				muls	#40,d1
 				move.l	GLF_DatabasePtr_l,a0
-				add.l	#LevelName,a0
+				add.l	#GLFT_LevelNames_l,a0
 				add.l	d1,a0
 				jsr		PUTINLINE
 				add.l	#21,a4

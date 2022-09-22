@@ -43,21 +43,21 @@ ItsAnAlien:
 				move.l	GLF_DatabasePtr_l,a6
 				move.l	a6,a5
 				move.b	EntT_Type_b(a0),d0
-				add.l	#AlienBrights,a5
+				add.l	#GLFT_AlienBrights_l,a5
 				move.w	(a5,d0.w*2),d1
 				neg.w	d1
 				move.w	d1,ALIENBRIGHT
 				muls	#A_AnimLen,d0
-				add.l	#AlienAnimData,a6
+				add.l	#GLFT_AlienAnims_l,a6
 				add.l	d0,a6
 
 				move.l	a6,ANIMPOINTER
 
 				move.l	GLF_DatabasePtr_l,a1
 				move.l	a1,a2
-				add.l	#AlienShotOffsets,a2
+				add.l	#GLFT_AlienShootDefs_l,a2
 
-				lea		AlienStats(a1),a1
+				lea		GLFT_AlienDefs_l(a1),a1
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 
@@ -109,7 +109,7 @@ diststowall:
 ItsAnObject:
 
 				move.l	GLF_DatabasePtr_l,a1
-				lea		ObjectStats(a1),a1
+				lea		GLFT_ObjectDefs(a1),a1
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 				muls	#ObjT_SizeOf_l,d0
@@ -400,7 +400,7 @@ ACTIVATED:
 Destructable:
 
 				move.l	GLF_DatabasePtr_l,a3
-				add.l	#ObjectStats,a3
+				add.l	#GLFT_ObjectDefs,a3
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 				muls	#ObjT_SizeOf_l,d0
@@ -584,7 +584,7 @@ PLR1CollectObject:
 				moveq	#0,d2
 				move.b	EntT_Type_b(a0),d2
 				move.l	GLF_DatabasePtr_l,a4
-				add.l	#ObjectNames,a4
+				add.l	#GLFT_ObjectNames_l,a4
 				muls	#20,d2
 				add.l	d2,a4
 				move.l	#TEMPSCROLL,a2
@@ -605,8 +605,8 @@ PLR1CollectObject:
 .nodeftext:
 
 				move.l	GLF_DatabasePtr_l,a2
-				lea		AmmoGive(a2),a3
-				add.l	#GunGive,a2
+				lea		GLFT_AmmoGive_l(a2),a3
+				add.l	#GLFT_GunGive_l,a2
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 				move.w	d0,d1
@@ -636,7 +636,7 @@ GiveGuns:
 				dbra	d0,GiveGuns
 
 				move.l	GLF_DatabasePtr_l,a3
-				add.l	#ObjectStats,a3
+				add.l	#GLFT_ObjectDefs,a3
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 				muls	#ObjT_SizeOf_l,d0
@@ -665,8 +665,8 @@ dontcollect:
 PLR2CollectObject:
 
 				move.l	GLF_DatabasePtr_l,a2
-				lea		AmmoGive(a2),a3
-				add.l	#GunGive,a2
+				lea		GLFT_AmmoGive_l(a2),a3
+				add.l	#GLFT_GunGive_l,a2
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 				move.w	d0,d1
@@ -696,7 +696,7 @@ GiveGuns2:
 				dbra	d0,GiveGuns2
 
 				move.l	GLF_DatabasePtr_l,a3
-				add.l	#ObjectStats,a3
+				add.l	#GLFT_ObjectDefs,a3
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 				muls	#ObjT_SizeOf_l,d0
@@ -845,7 +845,7 @@ StatPointer:	dc.l	0
 DEFANIMOBJ:
 
 				move.l	GLF_DatabasePtr_l,a3
-				lea		ObjectDefAnims(a3),a3
+				lea		GLFT_ObjectDefAnims_l(a3),a3
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 				muls	#O_AnimSize,d0
@@ -920,7 +920,7 @@ DEFANIMOBJ:
 ACTANIMOBJ:
 
 				move.l	GLF_DatabasePtr_l,a3
-				lea		ObjectActAnims(a3),a3
+				lea		GLFT_ObjectActAnims_l(a3),a3
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 				muls	#O_AnimSize,d0

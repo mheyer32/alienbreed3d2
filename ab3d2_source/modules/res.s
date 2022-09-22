@@ -24,7 +24,7 @@ Res_LoadObjects:
 ; PRSDG
 				move.l	#io_ObjectPointers_vl,a2
 				move.l	GLF_DatabasePtr_l,a0
-				lea		ObjectGfxNames(a0),a0
+				lea		GLFT_ObjGfxNames_l(a0),a0
 				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	#Objects,a1
 
@@ -86,7 +86,7 @@ Res_LoadObjects:
 
 				move.l	#POLYOBJECTS,a2
 				move.l	GLF_DatabasePtr_l,a0
-				add.l	#VectorGfxNames,a0
+				add.l	#GLFT_VectorNames_l,a0
 
 .load_vector_loop:
 				tst.b	(a0)
@@ -131,7 +131,7 @@ Res_FreeObjects:
 
 Res_LoadSoundFx:
 				move.l	GLF_DatabasePtr_l,a0
-				lea		SFXFilenames(a0),a0
+				lea		GLFT_SFXFilenames_l(a0),a0
 				move.l	#SampleList,a1
 				move.w	#58,d7
 
@@ -195,7 +195,7 @@ Res_FreeSoundFx:
 
 Res_LoadFloorTextures:
 				move.l	GLF_DatabasePtr_l,a0
-				add.l	#FloorTileFilename,a0
+				add.l	#GLFT_FloorFilename_l,a0
 				move.l	#floortile,d0
 				move.l	#0,d1
 				move.l	#MEMF_ANY,IO_MemType_l
@@ -203,7 +203,7 @@ Res_LoadFloorTextures:
 
 ; move.l d0,floortile
 				move.l	GLF_DatabasePtr_l,a0
-				add.l	#TextureFilename,a0
+				add.l	#GLFT_TextureFilename_l,a0
 				move.l	#io_Buffer_vb,a1
 
 .copy_loop:
@@ -258,7 +258,7 @@ Res_LoadWallTextures:
 
 				move.l	#walltiles,a4
 				move.l	GLF_DatabasePtr_l,a3
-				add.l	#WallGFXNames,a3
+				add.l	#GLFT_WallGFXNames_l,a3
 				move.l	#MEMF_ANY,IO_MemType_l
 
 .load_loop:

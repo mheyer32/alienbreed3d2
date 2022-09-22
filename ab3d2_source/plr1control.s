@@ -395,7 +395,7 @@ SHOWPLR1GUNNAME:
 				move.b	PLR1_GunSelected,d2
 
 				move.l	GLF_DatabasePtr_l,a4
-				add.l	#GunNames,a4
+				add.l	#GLFT_GunNames_l,a4
 				muls	#20,d2
 				add.l	d2,a4
 				move.l	#TEMPSCROLL,a2
@@ -730,7 +730,7 @@ THERESNOWATER:
 .okinbot:
 
 				move.l	GLF_DatabasePtr_l,a0
-				add.l	#FloorData,a0
+				add.l	#GLFT_FloorData_l,a0
 				move.w	2(a0,d0.w*4),d0			; sample number.
 
 				subq	#1,d0

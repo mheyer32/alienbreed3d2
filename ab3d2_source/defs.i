@@ -28,10 +28,8 @@ SOFFSET		SET    SOFFSET+\1
 		ULONG BulT_ImpactSFX_l			;  48, 4
 		ULONG BulT_GraphicType_l		;  52, 4
 		ULONG BulT_ImpactGraphicType_l	;  56, 4
-		LABEL BulT_AnimData_vb			;  60, 0
-		PADDING 120						;  60, 120
-		LABEL BulT_PopData_vb			; 180, 0
-		PADDING 120						; 180, 120
+		STRUCT BulT_AnimData_vb,120		;  60, 120
+		STRUCT BulT_PopData_vb,120		; 180, 0
 		LABEL BulT_SizeOf_l				; 300
 
 	; Bullet shoot definition
@@ -169,47 +167,60 @@ SOFFSET		SET    SOFFSET+\1
 * Game link file offsets *
 **************************
 
-LevelName			EQU		64
-ObjectGfxNames		EQU		LevelName+40*16
-SFXFilenames		EQU		ObjectGfxNames+64*30
-FloorTileFilename	EQU		SFXFilenames+64*60
-TextureFilename		EQU		FloorTileFilename+64
-GunGFXFilename		EQU		FloorTileFilename+256
-BlurbFileName		EQU		GunGFXFilename+64
-BulletAnimData		EQU		BlurbFileName+64
-BulletNames			EQU		BulletAnimData+(20*BulT_SizeOf_l)
-GunNames			EQU		BulletNames+20*20
-GunBulletTypes		EQU		GunNames+10*20
-AlienNames			EQU		GunBulletTypes+10*8
-AlienStats			EQU		AlienNames+20*20
-FrameData			EQU		AlienStats+(AlienT_SizeOf_l*20)
-ObjectNames			EQU		FrameData+7680
-ObjectStats			EQU		ObjectNames+600
-ObjectDefAnims		EQU		ObjectStats+(ObjT_SizeOf_l*30)
 O_FrameStoreSize 	EQU		6
 O_AnimSize			EQU		O_FrameStoreSize*20
-ObjectActAnims		EQU		ObjectDefAnims+(O_AnimSize*30)
-AmmoGive			EQU		ObjectActAnims+(O_AnimSize*30)
 AmmoGiveLen			EQU		22*2
-GunGive				EQU		AmmoGive+(AmmoGiveLen*30)
 GunGiveLen			EQU		12*2
-AlienAnimData		EQU		GunGive+(GunGiveLen*30)
 A_FrameLen			EQU		11
 A_OptLen			EQU		A_FrameLen*20
 A_AnimLen			EQU		A_OptLen*11
-VectorGfxNames		EQU		AlienAnimData+A_AnimLen*20
-WallGFXNames		EQU		VectorGfxNames+64*30
-WallHeights			EQU		WallGFXNames+(64*16)
-AlienBrights		EQU		WallHeights+(16*2)
-GunObjects			EQU		AlienBrights+20*2
-PLR1ALIEN			EQU		GunObjects+(10*2)
-PLR2ALIEN			EQU		PLR1ALIEN+2
-FloorData			EQU		PLR2ALIEN+2
-AlienShotOffsets	EQU		FloorData+16*4
-BackSFX				EQU		AlienShotOffsets+20*8
-LevelMusic			EQU		BackSFX+16*2
-EchoTable			EQU		LevelMusic+16*64
-LinkFileLen			EQU		EchoTable+60
+
+
+NUM_LEVELS			EQU	16
+NUM_BULLET_DEFS		EQU 20
+NUM_GUN_DEFS		EQU 10
+NUM_ALIEN_DEFS		EQU 20
+NUM_OBJECT_DEFS		EQU 30
+NUM_SFX				EQU 64
+NUM_WALL_TEXTURES	EQU 16
+
+	; Game Link File Offsets
+	; Where possible, these are defined in terms the NUM limits above.
+	STRUCTURE GLFT,64
+		STRUCT GLFT_LevelNames_l,(NUM_LEVELS*40)
+		STRUCT GLFT_ObjGfxNames_l,(NUM_OBJECT_DEFS*64)
+		STRUCT GLFT_SFXFilenames_l,(NUM_SFX*60)
+		STRUCT GLFT_FloorFilename_l,64
+		STRUCT GLFT_TextureFilename_l,192
+		STRUCT GLFT_GunGFXFilename_l,64
+		STRUCT GLFT_StoryFilename_l,64
+		STRUCT GLFT_BulletDefs_l,(NUM_BULLET_DEFS*BulT_SizeOf_l)
+		STRUCT GLFT_BulletNames_l,(NUM_BULLET_DEFS*20)
+		STRUCT GLFT_GunNames_l,(NUM_GUN_DEFS*20)
+		STRUCT GLFT_ShootDefs_l,(NUM_GUN_DEFS*ShootT_SizeOf_l)
+		STRUCT GLFT_AlienNames_l,(NUM_ALIEN_DEFS*20)
+		STRUCT GLFT_AlienDefs_l,(NUM_ALIEN_DEFS*AlienT_SizeOf_l)
+		STRUCT GLFT_FrameData_l,7680 								; todo - figure out how this is derived
+		STRUCT GLFT_ObjectNames_l,(NUM_OBJECT_DEFS*20)
+		STRUCT GLFT_ObjectDefs,(NUM_OBJECT_DEFS*ObjT_SizeOf_l)
+		STRUCT GLFT_ObjectDefAnims_l,(NUM_OBJECT_DEFS*O_AnimSize)
+		STRUCT GLFT_ObjectActAnims_l,(NUM_OBJECT_DEFS*O_AnimSize)
+		STRUCT GLFT_AmmoGive_l,(NUM_OBJECT_DEFS*AmmoGiveLen)		; ammo given per (collectable) object
+		STRUCT GLFT_GunGive_l,(NUM_OBJECT_DEFS*GunGiveLen)			; guns given per (collectable) object
+		STRUCT GLFT_AlienAnims_l,(NUM_ALIEN_DEFS*A_AnimLen)
+		STRUCT GLFT_VectorNames_l,(NUM_OBJECT_DEFS*64)
+		STRUCT GLFT_WallGFXNames_l,(NUM_WALL_TEXTURES*64)
+		STRUCT GLFT_WallHeights_l,(NUM_WALL_TEXTURES*2)
+		STRUCT GLFT_AlienBrights_l,(NUM_ALIEN_DEFS*2)
+		STRUCT GLFT_GunObjects_l,(NUM_GUN_DEFS*2)
+		UWORD  GLFT_Player1Graphic_w
+		UWORD  GLFT_Player2Graphic_w
+		STRUCT GLFT_FloorData_l,(16*4) ; MSW is damage, LSW is sound effect
+		STRUCT GLFT_AlienShootDefs_l,(NUM_ALIEN_DEFS*ShootT_SizeOf_l)
+		STRUCT GLFT_AmbientSFX_l,(16*2)
+		STRUCT GLFT_LevelMusic_l,(NUM_LEVELS*64)
+		STRUCT GLFT_EchoTable_l,(60)
+		LABEL  GLFT_SizeOf_l
 
 *****************************
 * Door Definitions **********

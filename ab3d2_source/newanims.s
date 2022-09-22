@@ -769,7 +769,7 @@ BACKSFX:
 				beq.s	.notfound
 
 				move.l	GLF_DatabasePtr_l,a0
-				add.l	#BackSFX,a0
+				add.l	#GLFT_AmbientSFX_l,a0
 				move.w	(a0,d0.w*2),Samplenum
 				move.w	#$fff0,IDNUM
 				st.b	notifplaying
@@ -3060,7 +3060,7 @@ ItsABullet:
 				move.b	ShotT_Size_b(a0),d1
 				muls	#BulT_SizeOf_l,d1
 				move.l	GLF_DatabasePtr_l,a6
-				lea		BulletAnimData(a6),a6
+				lea		GLFT_BulletDefs_l(a6),a6
 				add.l	d1,a6
 
 				tst.b	ShotT_Status_b(a0)
@@ -3676,7 +3676,7 @@ notasplut:
 				bne.s	.notanobj
 
 				move.l	GLF_DatabasePtr_l,a4
-				add.l	#ObjectStats,a4
+				add.l	#GLFT_ObjectDefs,a4
 				move.b	EntT_Type_b(a3),d1
 				muls	#ObjT_SizeOf_l,d1
 				cmp.w	#2,ObjT_Behaviour_w(a4,d1.w)
@@ -3989,7 +3989,7 @@ HitObjLoop:
 				move.b	ShotT_Size_b(a2),d7
 				move.l	GLF_DatabasePtr_l,a3
 				muls	#BulT_SizeOf_l,d7
-				add.l	#BulletAnimData,a3
+				add.l	#GLFT_BulletDefs_l,a3
 				add.l	d7,a3
 				tst.l	BulT_Gravity_l(a3)
 				beq.s	HitObjLoop

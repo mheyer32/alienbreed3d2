@@ -192,7 +192,7 @@ ai_JustDied:
 				move.b	EntT_Type_b(a0),d0
 				muls	#AlienT_SizeOf_l,d0
 				move.l	GLF_DatabasePtr_l,a2
-				lea		AlienStats(a2),a2
+				lea		GLFT_AlienDefs_l(a2),a2
 				add.l	d0,a2
 				move.b	AlienT_SplatType_w+1(a2),d0
 				move.b	d0,TypeOfSplat
@@ -203,7 +203,7 @@ ai_JustDied:
 				sub.b	#20,d0
 				ext.w	d0
 				move.l	GLF_DatabasePtr_l,a2
-				add.l	#AlienStats,a2
+				add.l	#GLFT_AlienDefs_l,a2
 				muls	#AlienT_SizeOf_l,d0
 				add.l	d0,a2
 				move.l	a2,a4
@@ -871,7 +871,7 @@ ai_AttackWithGun:
 
 ai_AttackCommon:
 				move.l	GLF_DatabasePtr_l,a1
-				lea		AlienStats(a1),a1
+				lea		GLFT_AlienDefs_l(a1),a1
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
 				muls	#AlienT_SizeOf_l,d0
@@ -879,7 +879,7 @@ ai_AttackCommon:
 				move.w	AlienT_BulType_w(a1),d0
 				move.b	d0,SHOTTYPE
 				move.l	GLF_DatabasePtr_l,a1
-				lea		BulletAnimData(a1),a1
+				lea		GLFT_BulletDefs_l(a1),a1
 				muls	#BulT_SizeOf_l,d0
 				add.l	d0,a1
 				move.l	BulT_HitDamage_l(a1),d0
@@ -2058,8 +2058,8 @@ ai_DoAttackAnim:
 
 				move.l	GLF_DatabasePtr_l,a4
 				move.l	a4,a2
-				add.l	#ObjectDefAnims,a4
-				add.l	#ObjectStats,a2
+				add.l	#GLFT_ObjectDefAnims_l,a4
+				add.l	#GLFT_ObjectDefs,a2
 
 				move.w	d3,d4
 				muls	#O_AnimSize,d3
