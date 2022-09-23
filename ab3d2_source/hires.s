@@ -368,7 +368,6 @@ PLAYTHEGAME:
 				move.l	d0,LEVELCLIPS
 *************************************
 
-
 noload:
 				; What for?
 				IFNE	CD32VER
@@ -610,22 +609,22 @@ noclips:
 				; clear audio modulation settings
 				move.w	#$00ff,_custom+adkcon
 
-; move.l #Blurbfield,$dff080
+				; FIXME: reimplement level blurb
+				; move.l #Blurbfield,$dff080
 
-				move.l	MainScreen,a1
-				lea		sc_ViewPort(a1),a1
-				move.l	a1,a0
-				move.l	vp_RasInfo(a1),a1
-				move.l	ri_BitMap(a1),a1
-				lea		bm_Planes(a1),a1
+				; Flip screen once, to initiate the message queue.
+				; Otherwise we'd be stuck on the very first frame
+				; waiting on DisplayMsgPort for a message that'll
+				; never arrive.
+XXX				move.w	ScreenBufferIndex,d0
+				lea		ScreenBuffers,a1
+				eor.w	#1,d0					; flip  screen index
+				move.w	d0,ScreenBufferIndex
 
-				move.l	scrn,d0
-				moveq.l	#7,d1
-.putPlanePtr	move.l	d0,(a1)+
-				add.l	#10240,d0
-				dbra	d1,.putPlanePtr
-				; viewport still in a0
-				CALLGRAF ScrollVPort
+				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
+
+				move.l	MainScreen,a0
+				CALLINT	ChangeScreenBuffer
 
 ****************************
 				jsr		INITPLAYER
@@ -1215,21 +1214,32 @@ waitmaster:
 
 *****************************************************************
 
-
 				; Flip screens
-				move.l	MainScreen,a1
-				lea		sc_ViewPort(a1),a1
-				move.l	a1,a0
-				move.l	vp_RasInfo(a1),a1
-				move.l	ri_BitMap(a1),a1
-				lea		bm_Planes(a1),a1
 
-				moveq.l	#7,d1
-.putPlanePtr	move.l	d0,(a1)+
-				add.l	#10240,d0
-				dbra	d1,.putPlanePtr
-				; viewport still in a0
-				CALLGRAF ScrollVPort
+				; Wait on prior frame to be displayed.
+				; FIXME: this could waste time synchrously waiting on the scanout to happen if we manage
+				; to fully produce the next frame before the last frame has been scanned out.
+				; We could move the screen flipping into its own thread that flips asynchronously.
+				; It does not seem very practical, though as this scenario
+
+				move.l	DisplayMsgPort,a0
+				move.l	a0,a3
+				CALLEXEC WaitPort
+.clrMsgPort			move.l	a3,a0
+				CALLEXEC GetMsg
+				tst.l	d0
+				bne.s	.clrMsgPort
+
+				move.w	ScreenBufferIndex,d0
+				lea		ScreenBuffers,a1
+
+				eor.w	#1,d0					; flip  screen index
+				move.w	d0,ScreenBufferIndex
+
+				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
+
+				move.l	MainScreen,a0
+				CALLINT	ChangeScreenBuffer		; DisplayMsgPort will be notified if this image had been fully scanned out
 
 *****************************************************************
 
@@ -2032,6 +2042,8 @@ nodrawp2:
 				move.b	PLR2_TELEPORTED,d5
 				clr.b	PLR2_TELEPORTED
 .notplr2
+
+
 				jsr		CHUNKYTOPLANAR
 
 

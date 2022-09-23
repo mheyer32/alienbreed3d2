@@ -6,14 +6,15 @@ MyAllocRaster:
 				rts
 
 OpenMainScreen:
-				lea		MainBitmap,a0
+				; Allocate Buffer 0
+				lea		MainBitmap0,a0
 				moveq.l	#8,d0
 				move.l	#320,d1
 				move.l	#256,d2
 				CALLGRAF InitBitMap
 
 				bsr		MyAllocRaster
-				;				beq	exit_closeall
+				; beq	exit_closeall
 				move.l	d0,MyRaster0
 
 				addq.l	#7,d0					; align to 8 byte for FMOD3
@@ -22,35 +23,88 @@ OpenMainScreen:
 
 				move.l	d0,TEXTSCRN				; FIXME: TEXTSCRN should go
 
+				lea		MainBitmap0+bm_Planes,a1
+				moveq.l	#7,d1
+.storePlanePtr0	move.l	d0,(a1)+
+				add.l	#(256*(320/8)),d0
+				dbra	d1,.storePlanePtr0
+
+				; Allocate Buffer 1
+				lea		MainBitmap1,a0
+				moveq.l	#8,d0
+				move.l	#320,d1
+				move.l	#256,d2
+				CALLGRAF InitBitMap
+
 				bsr		MyAllocRaster
-				;				beq	exit_closeall
+				; beq	exit_closeall
 				move.l	d0,MyRaster1
 
 				addq.l	#7,d0					; align to 8 byte for FMOD3
 				and.l	#~7,d0
 				move.l	d0,scrn2
 
-				lea		MainBitmap+bm_Planes,a1
+				lea		MainBitmap1+bm_Planes,a1
 				moveq.l	#7,d1
-.storePlanePtr	move.l	d0,(a1)+
+.storePlanePtr1	move.l	d0,(a1)+
 				add.l	#(256*(320/8)),d0
-				dbra	d1,.storePlanePtr
+				dbra	d1,.storePlanePtr1
 
 				lea		MainNewScreen,a0
 				lea		MainScreenTags,a1
 				CALLINT	OpenScreenTagList
 				tst.l	d0
-				;	beq	exit_closeall		if failed the close both, exit
+				;	beq	exit_closeall
 				move.l	d0,MainScreen
+
+				move.l	MainScreen,a0
+				lea		MainBitmap0,a1
+				clr.l	d0
+				CALLINT	AllocScreenBuffer
+				tst.l	d0
+				;	beq	exit_closeall
+				move.l	d0,ScreenBuffers+0		; FIXME: free upon exit
+
+				move.l	MainScreen,a0
+				lea		MainBitmap1,a1
+				clr.l	d0
+				CALLINT	AllocScreenBuffer
+				tst.l	d0
+				;	beq	exit_closeall
+				move.l	d0,ScreenBuffers+4		; FIXME: free upon exit
+
+
+				;CALLEXEC CreateMsgPort
+				;tst.l	d0
+				;;	beq	exit_closeall
+				;move.l	d0,SafeMsgPort			; FIXME: free upon exit
+
+				CALLEXEC CreateMsgPort
+				tst.l	d0
+				;	beq	exit_closeall
+				move.l	d0,DisplayMsgPort		; FIXME: free upon exit
+
+YYY				move.l	ScreenBuffers+0,a0
+				move.l	sb_DBufInfo(a0),a0		; getDBufInfo ptr
+				; not using SafeMsgPort atm.
+				; Would need to use it to prevent C2P to write to a bitmap thats
+				; currently scanned out, but haven't seen issues with that so far
+				;move.l	SafeMsgPort,dbi_SafeMessage+MN_REPLYPORT(a0)
+				move.l	DisplayMsgPort,dbi_DispMessage+MN_REPLYPORT(a0)
+
+				move.l	ScreenBuffers+4,a0
+				move.l	sb_DBufInfo(a0),a0		; getDBufInfo ptr
+				;move.l	SafeMsgPort,dbi_SafeMessage+MN_REPLYPORT(a0)
+				move.l	DisplayMsgPort,dbi_DispMessage+MN_REPLYPORT(a0)
 
 				; need a window to be able to clear out mouse pointer
 				; may later also serve as IDCMP input source
 				sub.l	a0,a0
 				lea		MainWindowTags,a1
-				move.l	d0,MainWTagScreenPtr-MainWindowTags(a1) ; WA_CustomScreen
+				move.l	MainScreen,MainWTagScreenPtr-MainWindowTags(a1) ; WA_CustomScreen
 				CALLINT	OpenWindowTagList
 				tst.l	d0
-				;				beq	exit_closeall
+				; beq	exit_closeall
 				move.l	d0,MainWindow
 				move.l	d0,a0
 				lea		emptySprite,a1
@@ -127,7 +181,7 @@ MyRaster1		dc.l	0
 MainScreenTags	dc.l	SA_Width,320
 				dc.l	SA_Height,256
 				dc.l	SA_Depth,8
-				dc.l	SA_BitMap,MainBitmap
+				dc.l	SA_BitMap,MainBitmap0
 				dc.l	SA_Type,CUSTOMSCREEN
 				dc.l	SA_Quiet,1
 				dc.l	SA_AutoScroll,0
@@ -169,7 +223,14 @@ MainWTagScreenPtr dc.l	0						; will fill in screen pointer later
 MainWindow		dc.l	0
 
 				align	4
-MainBitmap		dc.w	320/8					; bm_BytesPerRow
+MainBitmap0		dc.w	320/8					; bm_BytesPerRow
+				dc.w	256						; bm_Rows
+				dc.b	BMF_DISPLAYABLE			; bm_Flags
+				dc.b	8						; bm_Depth
+				dc.w	0						; bm_Pad
+				ds.l	8						; bm_Planes
+
+MainBitmap1		dc.w	320/8					; bm_BytesPerRow
 				dc.w	256						; bm_Rows
 				dc.b	BMF_DISPLAYABLE			; bm_Flags
 				dc.b	8						; bm_Depth
@@ -182,3 +243,11 @@ MyUCopList		ds.b	ucl_SIZEOF				; see copper.i
 				align	4
 VidControlTags	dc.l	VTAG_USERCLIP_SET,1
 				dc.l	VTAG_END_CM,0
+
+				align	4
+ScreenBuffers	ds.l	2
+DisplayMsgPort	dc.l	0						; this message port receives messages when the current screen has been scanned out
+;SafeMsgPort		dc.l	0						; this message port reveives messages when the old screen bitmap can be safely written to
+												; i.e. when the screen flip actually happened
+ScreenBufferIndex dc.w	0						; Index (0/1) of current screen buffer displayed.
+												; FIXME: unify the buffer index handling with SCRNDRAWPT/SCRNSHOWPT
