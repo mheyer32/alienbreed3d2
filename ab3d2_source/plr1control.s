@@ -73,8 +73,8 @@ PLR1_mouse_control
 				move.l	#KeyMap,a5
 				moveq	#0,d7
 
-;the right mouse button triggers the next_weapon key
-				move.b	next_weapon_key,d7
+;the right mouse button triggers the forward key AL;next_weapon key
+				move.b	forward_key,d7;changed to forward key AL ; was next_weapon_key,d7
 				btst	#2,$dff000+potinp		; right button
 				seq		(a5,d7.w)
 
@@ -350,6 +350,21 @@ gogog:
 				clr.b	lastscr
 
 .notswapscr2:
+
+				;tst.b	$56(a5)				;$56=F7
+				move.b	frame_limit_key,d7
+				tst.b	(a5,d7.w)
+				beq.s	.noframelimit
+				clr.b (a5,d7.w)
+				cmp.l #5,FPSLIMITER
+				beq.s .resetfpslimit
+				move.l	FPSLIMITER,d0
+				addq.l #1,d0
+				move.l	d0,FPSLIMITER
+				bra.s .noframelimit
+.resetfpslimit
+				move.l #0,FPSLIMITER
+.noframelimit:
 				rts
 
 FULLSCRTEMP:	dc.w	0
@@ -484,7 +499,7 @@ PLR1_keyboard_control:
 				moveq	#0,d7
 				move.b	run_key,d7
 				tst.b	(a5,d7.w)
-				beq.s	nofaster
+				bne.s	nofaster;was beq.s. now we run till we press left shift hahahahaaa AL
 				move.w	#60,d1
 				move.w	#3,d2
 				move.w	#14,TURNSPD
