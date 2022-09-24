@@ -355,7 +355,7 @@ backpicname:	dc.b	"ab3:includes/rawbackpacked"
 bordername:		dc.b	"ab3:includes/newborderRAW",0
 				even
 borderpacked:	incbin	"includes/newborderpacked"
-				dc.l	0	; safety for unLha overrun
+				ds.b	8	; safety for unLha overrun
 
 ; KEY OPTIONS:
 CONTROLBUFFER:
