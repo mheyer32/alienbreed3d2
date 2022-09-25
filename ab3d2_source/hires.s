@@ -58,6 +58,19 @@ intreqrl		equ		$01f
 				section code,code
 
 _start
+				movem.l	d1-a6,-(sp)
+**************************************************************************************
+;ich bin hack  -----  invert FULLSCRTEMP to start game in fullsreen if cpu is 68040 AL
+				;movem.l	d0-d1/a0,-(a7)	
+				move.l	4.w,a0
+				move.b	$129(a0),d0
+				move.l	#68040,d1	;68040
+				btst	#$03,d0
+				beq.b	.not040
+				not.b	FULLSCRTEMP
+.not040
+**************************************************************************************
+
 				lea.l	MiscResourceName,a1
 				CALLEXEC OpenResource			;Open "misc.resource"
 				tst.l	d0
