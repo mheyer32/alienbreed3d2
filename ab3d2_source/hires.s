@@ -9633,6 +9633,7 @@ VBlankInterrupt:
 				add.l	#1,counter
 				add.l	#1,main_counter
 				add.l	#1,VBLCOUNT
+				subq.w	#1,animtimer
 
 				tst.l	timer					; used by menu system as delay
 				beq.s	.nodec
