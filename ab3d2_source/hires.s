@@ -619,13 +619,17 @@ noclips:
 XXX				move.w	ScreenBufferIndex,d0
 				lea		ScreenBuffers,a1
 				eor.w	#1,d0					; flip  screen index
-				move.w	d0,ScreenBufferIndex
-
 				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
 
 				move.l	MainScreen,a0
 				CALLINT	ChangeScreenBuffer
 
+				tst.l d0
+				beq.s	.failed
+				move.w	d0,ScreenBufferIndex
+				bra.s	.cont
+.failed			FLASHER	$fff,$000
+.cont
 ****************************
 				jsr		INITPLAYER
 ; bsr initobjpos
@@ -1225,7 +1229,7 @@ waitmaster:
 				move.l	DisplayMsgPort,a0
 				move.l	a0,a3
 				CALLEXEC WaitPort
-.clrMsgPort			move.l	a3,a0
+.clrMsgPort		move.l	a3,a0
 				CALLEXEC GetMsg
 				tst.l	d0
 				bne.s	.clrMsgPort
@@ -1234,14 +1238,19 @@ waitmaster:
 				lea		ScreenBuffers,a1
 
 				eor.w	#1,d0					; flip  screen index
-				move.w	d0,ScreenBufferIndex
-
 				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
 
 				move.l	MainScreen,a0
 				CALLINT	ChangeScreenBuffer		; DisplayMsgPort will be notified if this image had been fully scanned out
 
+				tst.l	d0
+				beq.s	.failed
+				move.w	d0,ScreenBufferIndex
+				bra.s	.cont
+.failed			;FLASHER	$fff,$000
+.cont
 *****************************************************************
+
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
