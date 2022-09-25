@@ -350,6 +350,21 @@ gogog:
 				clr.b	lastscr
 
 .notswapscr2:
+
+				;tst.b	$56(a5)				;$56=F7
+				move.b	frame_limit_key,d7
+				tst.b	(a5,d7.w)
+				beq.s	.noframelimit
+				clr.b (a5,d7.w)
+				cmp.l #5,FPSLIMITER
+				beq.s .resetfpslimit
+				move.l	FPSLIMITER,d0
+				addq.l #1,d0
+				move.l	d0,FPSLIMITER
+				bra.s .noframelimit
+.resetfpslimit
+				move.l #0,FPSLIMITER
+.noframelimit:
 				rts
 
 FULLSCRTEMP:	dc.w	0
