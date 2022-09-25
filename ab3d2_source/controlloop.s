@@ -393,8 +393,6 @@ centre_view_key:
 				dc.b	41
 next_weapon_key:
 				dc.b	13
-frame_limit_key:
-				dc.b	$56
 
 templeftkey:	dc.b	0
 temprightkey:	dc.b	0
