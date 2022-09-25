@@ -110,6 +110,15 @@ _start
 				moveq	#INTB_VERTB,d0
 				CALLEXEC AddIntServer
 
+		lea	timername,a0
+		lea	timerrequest,a1
+		moveq	#0,d0
+		moveq	#0,d1
+		jsr	_LVOOpenDevice(a6)
+		move.l	timerrequest+IO_DEVICE,timerbase
+		move.l	d0,timerflag
+		;bne	error_exit
+		
 				IFEQ	CD32VER
 				lea		KEYInt(pc),a1
 				moveq	#INTB_PORTS,d0
@@ -977,7 +986,7 @@ clrmessbuff:
 				move.l	#0,PLR2_zspdval
 				move.l	#0,PLR2_yvel
 
-
+				jsr	FPS_time1
 lop:
 				move.w	#%110000000000,_custom+potgo
 
@@ -1256,7 +1265,9 @@ waitmaster:
 				move.l	MainScreen,a0
 				CALLINT	ChangeScreenBuffer		; DisplayMsgPort will be notified if this image had been fully scanned out
 
+				jsr	FPS_time2				;fps counter c/o Grond
 *****************************************************************
+				jsr	FPS_time1				;fps counter c/o Grond
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
