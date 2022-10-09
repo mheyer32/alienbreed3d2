@@ -182,27 +182,25 @@ syncDblBuffer:
 				lea	ScreenBuffers,a1
 
 				tst.w	d0
-				beq.s	.notZero
+				beq.s	.zero
 
-				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
-				move.l	MainScreen,a0
-				CALLINT	ChangeScreenBuffer
-				move.w	ScreenBufferIndex,d0
 				eor.w	#1,d0					; flip  screen index
 				move.w	d0,ScreenBufferIndex
-				lea	ScreenBuffers,a1
 				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
 				move.l	MainScreen,a0
 				CALLINT	ChangeScreenBuffer
 				bra	.done
-.notZero
+.zero
+				eor.w	#1,d0					; flip  screen index
 				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
 				move.l	MainScreen,a0
 				CALLINT	ChangeScreenBuffer
 
 				move.w	ScreenBufferIndex,d0
-				eor.w	#1,d0					; flip  screen index
-				move.w	d0,ScreenBufferIndex
+				lea	ScreenBuffers,a1
+				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
+				move.l	MainScreen,a0
+				CALLINT	ChangeScreenBuffer
 .done
 				move.l	(sp)+,a6
 				rts
@@ -227,13 +225,11 @@ doDblBuffer:
 
 				move.w	ScreenBufferIndex,d0
 				lea	ScreenBuffers,a1
+				eor.w	#1,d0					; flip  screen index
+				move.w	d0,ScreenBufferIndex
 				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
 				move.l	MainScreen,a0
 				CALLINT	ChangeScreenBuffer		; DisplayMsgPort will be notified if this image had been fully scanned out
-
-				move.w	ScreenBufferIndex,d0
-				eor.w	#1,d0					; flip  screen index
-				move.w	d0,ScreenBufferIndex
 
 				move.l	(sp)+,a6
 				rts
