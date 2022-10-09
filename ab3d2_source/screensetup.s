@@ -181,6 +181,21 @@ syncDblBuffer:
 				move.w	ScreenBufferIndex,d0
 				lea	ScreenBuffers,a1
 
+				tst.w	d0
+				beq.s	.notZero
+
+				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
+				move.l	MainScreen,a0
+				CALLINT	ChangeScreenBuffer
+				move.w	ScreenBufferIndex,d0
+				eor.w	#1,d0					; flip  screen index
+				move.w	d0,ScreenBufferIndex
+				lea	ScreenBuffers,a1
+				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
+				move.l	MainScreen,a0
+				CALLINT	ChangeScreenBuffer
+				bra	.done
+.notZero
 				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
 				move.l	MainScreen,a0
 				CALLINT	ChangeScreenBuffer
@@ -188,7 +203,7 @@ syncDblBuffer:
 				move.w	ScreenBufferIndex,d0
 				eor.w	#1,d0					; flip  screen index
 				move.w	d0,ScreenBufferIndex
-				
+.done
 				move.l	(sp)+,a6
 				rts
 ****************************************************************
