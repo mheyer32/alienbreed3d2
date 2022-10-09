@@ -1,0 +1,2318 @@
+ZoneAdds:
+ dc.l ZoneDat0
+ dc.l ZoneDat1
+ dc.l ZoneDat2
+ dc.l ZoneDat3
+ dc.l ZoneDat4
+ dc.l ZoneDat5
+ dc.l ZoneDat6
+ dc.l ZoneDat7
+ dc.l ZoneDat8
+ dc.l ZoneDat9
+ dc.l ZoneDat10
+ dc.l ZoneDat11
+ dc.l ZoneDat12
+ dc.l ZoneDat13
+ dc.l ZoneDat14
+ dc.l ZoneDat15
+ dc.l ZoneDat16
+ dc.l ZoneDat17
+ dc.l ZoneDat18
+ dc.l ZoneDat19
+ dc.l ZoneDat20
+ dc.l ZoneDat21
+ dc.l ZoneDat22
+ dc.l ZoneDat23
+ dc.l ZoneDat24
+ dc.l ZoneDat25
+ dc.l ZoneDat26
+ dc.l ZoneDat27
+ dc.l ZoneDat28
+ dc.l ZoneDat29
+ dc.l ZoneDat30
+ dc.l ZoneDat31
+ dc.l ZoneDat32
+ dc.l ZoneDat33
+ dc.l ZoneDat34
+ dc.l ZoneDat35
+ dc.l ZoneDat36
+ dc.l ZoneDat37
+ dc.l ZoneDat38
+ dc.l ZoneDat39
+ dc.l ZoneDat40
+ dc.l ZoneDat41
+ dc.l ZoneDat42
+ dc.l ZoneDat43
+ dc.l ZoneDat44
+ dc.l ZoneDat45
+ dc.l ZoneDat46
+ dc.l ZoneDat47
+ dc.l ZoneDat48
+ dc.l ZoneDat49
+ dc.l ZoneDat50
+ dc.l ZoneDat51
+ dc.l ZoneDat52
+ dc.l ZoneDat53
+ dc.l ZoneDat54
+ dc.l ZoneDat55
+ dc.l ZoneDat56
+ dc.l ZoneDat57
+ dc.l ZoneDat58
+ dc.l ZoneDat59
+ dc.l ZoneDat60
+ dc.l ZoneDat61
+ dc.l ZoneDat62
+ dc.l ZoneDat63
+ dc.l ZoneDat64
+ dc.l ZoneDat65
+ dc.l ZoneDat66
+ZoneGraph0: dc.w 0
+ dc.w wall,8,7,0,144
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l -16*1024,0*1024
+ 
+ dc.w wall,3,4,0,144
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l -16*1024,0*1024
+ 
+ dc.w floor,0*4,3
+ dc.w 4,8,7,3,4
+ dc.w -1,515,0
+ 
+ dc.w roof,-16*4,3
+ dc.w 4,8,7,3,4
+ dc.w -1,1,0
+ dc.w object
+ dc.l 4*1024,-16*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph1: dc.w 1
+ dc.w wall,7,6,0,64
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l -16*1024,0*1024
+ 
+ dc.w wall,2,3,0,16
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l -16*1024,0*1024
+ 
+ dc.w floor,0*4,3
+ dc.w 3,7,6,2,3
+ dc.w -1,515,0
+ 
+ dc.w roof,-16*4,3
+ dc.w 3,7,6,2,3
+ dc.w -1,1,0
+ dc.w object
+ dc.l 4*1024,-16*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph2: dc.w 2
+ dc.w wall,4,16,0,95
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l -16*1024,0*1024
+ 
+ dc.w wall,11,8,0,47
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l -16*1024,0*1024
+ 
+ dc.w floor,0*4,3
+ dc.w 4,16,11,8,4
+ dc.w -1,515,0
+ 
+ dc.w roof,-16*4,3
+ dc.w 4,16,11,8,4
+ dc.w -1,1,0
+ dc.w object
+ dc.l 4*1024,-16*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph3: dc.w 3
+ dc.w wall,16,5,0,335
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -20*1024,0*1024
+ 
+ dc.w wall,5,15,0,304
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -20*1024,0*1024
+ 
+ dc.w wall,15,14,0,144
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -20*1024,0*1024
+ 
+ dc.w wall,12,11,0,160
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -20*1024,0*1024
+ 
+ dc.w wall,11,16,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -20*1024,-16*1024
+ 
+ dc.w floor,0*4,5
+ dc.w 16,5,15,14,12,11,16
+ dc.w -1,0,0
+ 
+ dc.w roof,-20*4,5
+ dc.w 16,5,15,14,12,11,16
+ dc.w -1,0,0
+ dc.w object
+ dc.l 4*1024,-20*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph4: dc.w 4
+ dc.w wall,14,13,0,95
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -20*1024,0*1024
+ 
+ dc.w wall,13,10,0,288
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -20*1024,0*1024
+ 
+ dc.w wall,10,9,0,191
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -20*1024,0*1024
+ 
+ dc.w wall,9,12,0,95
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -20*1024,0*1024
+ 
+ dc.w floor,0*4,4
+ dc.w 14,13,10,9,12,14
+ dc.w -1,0,0
+ 
+ dc.w roof,-20*4,4
+ dc.w 14,13,10,9,12,14
+ dc.w -1,0,0
+ dc.w object
+ dc.l 4*1024,-20*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph5: dc.w 5
+ dc.w wall,0,1,0,144
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -20*1024,4*1024
+ 
+ dc.w wall,1,2,0,144
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -20*1024,4*1024
+ 
+ dc.w wall,2,6,0,47
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l 0*1024,4*1024
+ 
+ dc.w wall,2,6,0,47
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -20*1024,-16*1024
+ 
+ dc.w wall,22,0,0,320
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -20*1024,4*1024
+ 
+ dc.w floor,4*4,4
+ dc.w 0,1,2,6,22,0
+ dc.w -1,515,0
+ 
+ dc.w roof,-20*4,4
+ dc.w 0,1,2,6,22,0
+ dc.w -1,514,0
+ dc.w object
+ dc.l 8*1024,-20*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph6: dc.w 6
+ dc.w wall,6,17,0,223
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -20*1024,4*1024
+ 
+ dc.w floor,4*4,2
+ dc.w 6,17,22,6
+ dc.w -1,515,0
+ 
+ dc.w roof,-20*4,2
+ dc.w 6,17,22,6
+ dc.w -1,514,0
+ dc.w object
+ dc.l 8*1024,-20*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph7: dc.w 7
+ dc.w wall,17,18,0,97
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l 4*1024,8*1024
+ 
+ dc.w wall,18,21,0,181
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -20*1024,-16*1024
+ 
+ dc.w wall,21,22,0,320
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -20*1024,8*1024
+ 
+ dc.w wall,22,17,0,173
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l 4*1024,8*1024
+ 
+ dc.w floor,8*4,3
+ dc.w 17,18,21,22,17
+ dc.w -1,515,0
+ 
+ dc.w roof,-20*4,3
+ dc.w 17,18,21,22,17
+ dc.w -1,768,0
+ dc.w object
+ dc.l 12*1024,5*1024
+ dc.w water,5*4,3
+ dc.w 17,18,21,22,17
+ dc.w 0,768,0
+ dc.w object
+ dc.l 5*1024,-20*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph8: dc.w 8
+ dc.w wall,18,19,0,288
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -16*1024,11*1024
+ 
+ dc.w wall,19,20,0,160
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -16*1024,11*1024
+ 
+ dc.w wall,20,21,0,256
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -16*1024,11*1024
+ 
+ dc.w wall,21,18,0,181
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l 8*1024,11*1024
+ 
+ dc.w floor,11*4,3
+ dc.w 18,19,20,21,18
+ dc.w -1,515,0
+ 
+ dc.w roof,-16*4,3
+ dc.w 18,19,20,21,18
+ dc.w -1,768,0
+ dc.w object
+ dc.l 15*1024,5*1024
+ dc.w water,5*4,3
+ dc.w 18,19,20,21,18
+ dc.w 0,768,0
+ dc.w object
+ dc.l 5*1024,-16*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph9: dc.w 9
+ dc.w wall,17,23,0,272
+ dc.l 2*4096
+ dc.w 0,0,0
+ dc.l -24*1024,4*1024
+ 
+ dc.w wall,23,24,0,95
+ dc.l 2*4096
+ dc.w 0,0,0
+ dc.l -24*1024,4*1024
+ 
+ dc.w wall,24,25,0,95
+ dc.l 2*4096
+ dc.w 0,0,0
+ dc.l -24*1024,4*1024
+ 
+ dc.w wall,25,26,0,47
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l 2*1024,4*1024
+ 
+DW_9_3:
+ dc.w wall,25,26,0,47
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -24*1024,2*1024
+ 
+ dc.w wall,26,18,0,144
+ dc.l 2*4096
+ dc.w 0,0,0
+ dc.l -24*1024,4*1024
+ 
+ dc.w wall,18,17,0,97
+ dc.l 2*4096
+ dc.w 0,0,0
+ dc.l -24*1024,-20*1024
+ 
+ dc.w floor,4*4,5
+ dc.w 17,23,24,25,26,18,17
+ dc.w -1,3,0
+ 
+ dc.w roof,-24*4,5
+ dc.w 17,23,24,25,26,18,17
+ dc.w -1,770,0
+ dc.w object
+ dc.l 8*1024,-24*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph10: dc.w 10
+ dc.w wall,28,26,0,16
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -18*1024,2*1024
+ 
+ dc.w wall,25,27,0,16
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -18*1024,2*1024
+ 
+ dc.w wall,27,28,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l 0*1024,2*1024
+ 
+ dc.w floor,2*4,3
+ dc.w 28,26,25,27,28
+ dc.w -1,512,0
+ 
+DR_10:
+ dc.w roof,-18*4,3
+ dc.w 28,26,25,27,28
+ dc.w -1,514,0
+ dc.w object
+ dc.l 6*1024,-18*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph11: dc.w 11
+ dc.w wall,27,38,0,128
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -28*1024,-24*1024
+ 
+ dc.w wall,38,39,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -28*1024,0*1024
+ 
+ dc.w wall,39,28,0,131
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -28*1024,-24*1024
+ 
+DW_11_3:
+ dc.w wall,28,27,0,47
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -28*1024,2*1024
+ 
+ dc.w floor,0*4,3
+ dc.w 27,38,39,28,27
+ dc.w -1,0,0
+ 
+ dc.w roof,-28*4,3
+ dc.w 27,38,39,28,27
+ dc.w -1,768,0
+ dc.w object
+ dc.l 4*1024,-28*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph12: dc.w 12
+ dc.w wall,27,29,0,95
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l -24*1024,4*1024
+ 
+ dc.w wall,29,45,0,178
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l 0*1024,4*1024
+ 
+ dc.w wall,45,38,0,45
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -24*1024,4*1024
+ 
+ dc.w wall,38,27,0,128
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l 0*1024,4*1024
+ 
+ dc.w floor,4*4,3
+ dc.w 27,29,45,38,27
+ dc.w -1,0,0
+ 
+ dc.w roof,-24*4,3
+ dc.w 27,29,45,38,27
+ dc.w -1,1,0
+ dc.w object
+ dc.l 8*1024,1*1024
+ dc.w water,1*4,3
+ dc.w 27,29,45,38,27
+ dc.w 0,1,0
+ dc.w object
+ dc.l 1*1024,-24*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph13: dc.w 13
+ dc.w wall,29,30,0,320
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l -28*1024,0*1024
+ 
+ dc.w wall,30,44,0,124
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -28*1024,-24*1024
+ 
+ dc.w wall,44,45,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -28*1024,0*1024
+ 
+ dc.w wall,45,29,0,178
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -28*1024,-24*1024
+ 
+ dc.w floor,0*4,3
+ dc.w 29,30,44,45,29
+ dc.w -1,0,0
+ 
+ dc.w roof,-28*4,3
+ dc.w 29,30,44,45,29
+ dc.w -1,768,0
+ dc.w object
+ dc.l 4*1024,-28*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph14: dc.w 14
+ dc.w wall,31,28,0,128
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l -24*1024,4*1024
+ 
+ dc.w wall,28,39,0,131
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l 0*1024,4*1024
+ 
+ dc.w wall,39,40,0,45
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -24*1024,4*1024
+ 
+ dc.w floor,4*4,3
+ dc.w 31,28,39,40,31
+ dc.w -1,0,0
+ 
+ dc.w roof,-24*4,3
+ dc.w 31,28,39,40,31
+ dc.w -1,1,0
+ dc.w object
+ dc.l 8*1024,1*1024
+ dc.w water,1*4,3
+ dc.w 31,28,39,40,31
+ dc.w 0,1,0
+ dc.w object
+ dc.l 1*1024,-24*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph15: dc.w 15
+ dc.w wall,32,31,0,288
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l -28*1024,4*1024
+ 
+ dc.w wall,31,40,0,172
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -28*1024,-24*1024
+ 
+ dc.w wall,40,41,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -28*1024,4*1024
+ 
+ dc.w wall,41,32,0,90
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -28*1024,-24*1024
+ 
+ dc.w floor,4*4,3
+ dc.w 32,31,40,41,32
+ dc.w -1,0,0
+ 
+ dc.w roof,-28*4,3
+ dc.w 32,31,40,41,32
+ dc.w -1,768,0
+ dc.w object
+ dc.l 8*1024,1*1024
+ dc.w water,1*4,3
+ dc.w 32,31,40,41,32
+ dc.w 0,768,0
+ dc.w object
+ dc.l 1*1024,-28*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph16: dc.w 16
+ dc.w wall,30,46,0,95
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -24*1024,-16*1024
+ 
+ dc.w wall,46,47,0,111
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l -24*1024,0*1024
+ 
+ dc.w wall,43,44,0,45
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -24*1024,0*1024
+ 
+ dc.w floor,0*4,4
+ dc.w 30,46,47,43,44,30
+ dc.w -1,0,0
+ 
+ dc.w roof,-24*4,4
+ dc.w 30,46,47,43,44,30
+ dc.w -1,1,0
+ dc.w object
+ dc.l 4*1024,-24*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph17: dc.w 17
+ dc.w wall,37,42,0,186
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -28*1024,-24*1024
+ 
+ dc.w wall,42,43,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -28*1024,4*1024
+ 
+ dc.w wall,43,47,0,160
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l 0*1024,4*1024
+ 
+ dc.w wall,43,47,0,160
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -28*1024,-24*1024
+ 
+ dc.w wall,47,37,0,160
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l -28*1024,4*1024
+ 
+ dc.w floor,4*4,3
+ dc.w 37,42,43,47,37
+ dc.w -1,0,0
+ 
+ dc.w roof,-28*4,3
+ dc.w 37,42,43,47,37
+ dc.w -1,768,0
+ dc.w object
+ dc.l 8*1024,1*1024
+ dc.w water,1*4,3
+ dc.w 37,42,43,47,37
+ dc.w 0,768,0
+ dc.w object
+ dc.l 1*1024,-28*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph18: dc.w 18
+ dc.w wall,37,32,0,128
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l 0*1024,4*1024
+ 
+ dc.w wall,37,32,0,128
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l -24*1024,-16*1024
+ 
+ dc.w wall,41,42,0,45
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -24*1024,4*1024
+ 
+ dc.w floor,4*4,3
+ dc.w 37,32,41,42,37
+ dc.w -1,0,0
+ 
+ dc.w roof,-24*4,3
+ dc.w 37,32,41,42,37
+ dc.w -1,1,0
+ dc.w object
+ dc.l 8*1024,1*1024
+ dc.w water,1*4,3
+ dc.w 37,32,41,42,37
+ dc.w 0,1,0
+ dc.w object
+ dc.l 1*1024,-24*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph19: dc.w 19
+ dc.w wall,36,48,0,272
+ dc.l 5*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-6*1024
+ 
+ dc.w wall,50,49,0,144
+ dc.l 3*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-6*1024
+ 
+ dc.w floor,-6*4,3
+ dc.w 49,36,48,50,49
+ dc.w -1,0,0
+ 
+ dc.w roof,-30*4,3
+ dc.w 49,36,48,50,49
+ dc.w -1,0,0
+ dc.w object
+ dc.l -2*1024,-30*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph20: dc.w 20
+ dc.w wall,37,34,0,144
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -3*1024,0*1024
+ 
+DW_20_0:
+ dc.w wall,37,34,0,144
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -16*1024,-3*1024
+ 
+ dc.w wall,34,33,0,16
+ dc.l 5*4096
+ dc.w 0,0,0
+ dc.l -16*1024,0*1024
+ 
+ dc.w wall,33,32,0,182
+ dc.l 5*4096
+ dc.w 0,0,0
+ dc.l -16*1024,0*1024
+ 
+ dc.w floor,0*4,3
+ dc.w 37,34,33,32,37
+ dc.w -1,768,0
+ 
+ dc.w roof,-16*4,3
+ dc.w 37,34,33,32,37
+ dc.w -1,1,0
+ dc.w object
+ dc.l 4*1024,-16*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph21: dc.w 21
+ dc.w wall,35,34,0,32
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -19*1024,-3*1024
+ 
+ dc.w wall,34,37,0,144
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -19*1024,-16*1024
+ 
+ dc.w wall,37,36,0,32
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -19*1024,-3*1024
+ 
+ dc.w wall,36,35,0,144
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -6*1024,-3*1024
+ 
+ dc.w floor,-3*4,3
+ dc.w 35,34,37,36,35
+ dc.w -1,0,0
+ 
+DR_21:
+ dc.w roof,-19*4,3
+ dc.w 35,34,37,36,35
+ dc.w -1,0,0
+ dc.w object
+ dc.l 1*1024,-19*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph22: dc.w 22
+ dc.w wall,48,56,0,399
+ dc.l 5*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-6*1024
+ 
+ dc.w wall,51,50,0,111
+ dc.l 3*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-6*1024
+ 
+ dc.w floor,-6*4,3
+ dc.w 48,56,51,50,48
+ dc.w -1,0,0
+ 
+ dc.w roof,-30*4,3
+ dc.w 48,56,51,50,48
+ dc.w -1,0,0
+ dc.w object
+ dc.l -2*1024,-30*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph23: dc.w 23
+DW_23_0:
+ dc.w wall,35,36,0,144
+ dc.l 5*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-3*1024
+ 
+ dc.w wall,49,52,0,111
+ dc.l 3*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-6*1024
+ 
+ dc.w wall,53,54,0,144
+ dc.l 5*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-6*1024
+ 
+ dc.w wall,54,35,0,399
+ dc.l 5*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-6*1024
+ 
+ dc.w floor,-6*4,5
+ dc.w 35,36,49,52,53,54,35
+ dc.w -1,0,0
+ 
+ dc.w roof,-30*4,5
+ dc.w 35,36,49,52,53,54,35
+ dc.w -1,0,0
+ dc.w object
+ dc.l -2*1024,-30*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph24: dc.w 24
+ dc.w wall,52,51,0,144
+ dc.l 3*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-6*1024
+ 
+ dc.w wall,56,55,0,128
+ dc.l 5*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-6*1024
+ 
+ dc.w wall,55,53,0,144
+ dc.l 6*4096
+ dc.w 0,0,0
+ dc.l -9*1024,-6*1024
+ 
+ dc.w floor,-6*4,4
+ dc.w 52,51,56,55,53,52
+ dc.w -1,0,0
+ 
+ dc.w roof,-30*4,4
+ dc.w 52,51,56,55,53,52
+ dc.w -1,0,0
+ dc.w object
+ dc.l -2*1024,-30*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph25: dc.w 25
+ dc.w wall,58,59,0,67
+ dc.l 6*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-12*1024
+ 
+ dc.w wall,59,63,0,191
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -15*1024,-12*1024
+ 
+ dc.w floor,-12*4,3
+ dc.w 58,59,63,57,58
+ dc.w -1,0,0
+ 
+ dc.w roof,-30*4,3
+ dc.w 58,59,63,57,58
+ dc.w -1,0,0
+ dc.w object
+ dc.l -8*1024,-30*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph26: dc.w 26
+ dc.w wall,57,53,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-9*1024
+ 
+ dc.w wall,55,58,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-9*1024
+ 
+ dc.w wall,58,57,0,144
+ dc.l 6*4096
+ dc.w 0,0,0
+ dc.l -12*1024,-9*1024
+ 
+ dc.w floor,-9*4,3
+ dc.w 57,53,55,58,57
+ dc.w -1,0,0
+ 
+ dc.w roof,-30*4,3
+ dc.w 57,53,55,58,57
+ dc.w -1,0,0
+ dc.w object
+ dc.l -5*1024,-30*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph27: dc.w 27
+ dc.w wall,61,57,0,144
+ dc.l 6*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-12*1024
+ 
+ dc.w wall,63,64,0,151
+ dc.l 6*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-12*1024
+ 
+ dc.w wall,64,65,0,144
+ dc.l 6*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-12*1024
+ 
+ dc.w wall,65,66,0,203
+ dc.l 6*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-12*1024
+ 
+ dc.w wall,66,61,0,239
+ dc.l 6*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-12*1024
+ 
+ dc.w floor,-12*4,5
+ dc.w 61,57,63,64,65,66,61
+ dc.w -1,0,0
+ 
+ dc.w roof,-30*4,5
+ dc.w 61,57,63,64,65,66,61
+ dc.w -1,0,0
+ dc.w object
+ dc.l -8*1024,-30*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph28: dc.w 28
+ dc.w wall,59,60,0,80
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -35*1024,-15*1024
+ 
+ dc.w wall,62,63,0,80
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -35*1024,-15*1024
+ 
+ dc.w wall,63,59,0,191
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -35*1024,-30*1024
+ 
+ dc.w floor,-15*4,3
+ dc.w 59,60,62,63,59
+ dc.w -1,0,0
+ 
+ dc.w roof,-35*4,3
+ dc.w 59,60,62,63,59
+ dc.w -1,0,0
+ dc.w object
+ dc.l -11*1024,-35*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph29: dc.w 29
+ dc.w wall,30,67,0,95
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l -16*1024,4*1024
+ 
+ dc.w wall,68,46,0,95
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l -16*1024,4*1024
+ 
+ dc.w wall,46,30,0,95
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l 0*1024,4*1024
+ 
+ dc.w floor,4*4,3
+ dc.w 30,67,68,46,30
+ dc.w -1,3,0
+ 
+ dc.w roof,-16*4,3
+ dc.w 30,67,68,46,30
+ dc.w -1,2,0
+ dc.w object
+ dc.l 8*1024,-16*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph30: dc.w 30
+ dc.w wall,82,83,0,320
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l -40*1024,0*1024
+ 
+ dc.w wall,81,76,0,304
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -40*1024,0*1024
+ 
+ dc.w wall,76,73,0,151
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-32*1024
+ 
+ dc.w wall,73,82,0,64
+ dc.l 7*4096
+ dc.w 0,0,0
+ dc.l -2*1024,0*1024
+ 
+ dc.w wall,73,82,0,64
+ dc.l 7*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-18*1024
+ 
+ dc.w floor,0*4,4
+ dc.w 82,83,81,76,73,82
+ dc.w -1,769,0
+ 
+ dc.w roof,-40*4,4
+ dc.w 82,83,81,76,73,82
+ dc.w -1,515,0
+ dc.w object
+ dc.l 4*1024,-40*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph31: dc.w 31
+ dc.w wall,67,71,0,144
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l -32*1024,4*1024
+ 
+ dc.w wall,71,73,0,256
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l -32*1024,4*1024
+ 
+ dc.w wall,73,76,0,151
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l 0*1024,4*1024
+ 
+ dc.w floor,4*4,3
+ dc.w 67,71,73,76,67
+ dc.w -1,769,0
+ 
+ dc.w roof,-32*4,3
+ dc.w 67,71,73,76,67
+ dc.w -1,768,0
+ dc.w object
+ dc.l 8*1024,-32*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph32: dc.w 32
+ dc.w wall,68,67,0,95
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l 4*1024,8*1024
+ 
+ dc.w wall,68,67,0,95
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l -32*1024,-16*1024
+ 
+ dc.w wall,67,76,0,207
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l 4*1024,8*1024
+ 
+ dc.w wall,76,74,0,160
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -32*1024,8*1024
+ 
+ dc.w wall,74,68,0,217
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l -32*1024,-26*1024
+ 
+ dc.w floor,8*4,3
+ dc.w 68,67,76,74,68
+ dc.w -1,769,0
+ 
+ dc.w roof,-32*4,3
+ dc.w 68,67,76,74,68
+ dc.w -1,768,0
+ dc.w object
+ dc.l 12*1024,-32*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph33: dc.w 33
+ dc.w wall,70,69,0,207
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l -26*1024,8*1024
+ 
+ dc.w wall,69,68,0,160
+ dc.l 8*4096
+ dc.w 0,0,0
+ dc.l -26*1024,8*1024
+ 
+ dc.w floor,8*4,3
+ dc.w 74,70,69,68,74
+ dc.w -1,769,0
+ 
+ dc.w roof,-26*4,3
+ dc.w 74,70,69,68,74
+ dc.w -1,768,0
+ dc.w object
+ dc.l 12*1024,-26*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph34: dc.w 34
+ dc.w wall,74,75,0,16
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -30*1024,8*1024
+ 
+ dc.w wall,75,84,0,124
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l 4*1024,8*1024
+ 
+ dc.w wall,75,84,0,124
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-26*1024
+ 
+ dc.w wall,84,87,0,223
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -30*1024,8*1024
+ 
+ dc.w wall,86,70,0,223
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -30*1024,8*1024
+ 
+ dc.w wall,70,74,0,95
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-26*1024
+ 
+ dc.w floor,8*4,5
+ dc.w 74,75,84,87,86,70,74
+ dc.w -1,0,0
+ 
+ dc.w roof,-30*4,5
+ dc.w 74,75,84,87,86,70,74
+ dc.w -1,0,0
+ dc.w object
+ dc.l 12*1024,-30*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph35: dc.w 35
+ dc.w wall,75,79,0,272
+ dc.l 3*4096
+ dc.w 0,0,0
+ dc.l 0*1024,4*1024
+ 
+ dc.w wall,96,84,0,191
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l -26*1024,4*1024
+ 
+ dc.w floor,4*4,3
+ dc.w 75,79,96,84,75
+ dc.w -1,0,0
+ 
+ dc.w roof,-26*4,3
+ dc.w 75,79,96,84,75
+ dc.w -1,0,0
+ dc.w object
+ dc.l 8*1024,-26*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph36: dc.w 36
+ dc.w wall,88,89,0,207
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l -30*1024,4*1024
+ 
+ dc.w wall,89,92,0,121
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l 2*1024,4*1024
+ 
+ dc.w wall,92,91,0,95
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -30*1024,4*1024
+ 
+ dc.w floor,4*4,3
+ dc.w 88,89,92,91,88
+ dc.w -1,768,0
+ 
+ dc.w roof,-30*4,3
+ dc.w 88,89,92,91,88
+ dc.w -1,513,0
+ dc.w object
+ dc.l 8*1024,-30*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph37: dc.w 37
+ dc.w wall,93,92,0,16
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l -30*1024,2*1024
+ 
+ dc.w wall,89,90,0,160
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l -30*1024,2*1024
+ 
+ dc.w wall,90,93,0,147
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l 0*1024,2*1024
+ 
+ dc.w floor,2*4,3
+ dc.w 93,92,89,90,93
+ dc.w -1,768,0
+ 
+ dc.w roof,-30*4,3
+ dc.w 93,92,89,90,93
+ dc.w -1,513,0
+ dc.w object
+ dc.l 6*1024,-30*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph38: dc.w 38
+ dc.w wall,90,95,0,191
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l -30*1024,0*1024
+ 
+ dc.w wall,95,94,0,95
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l -30*1024,0*1024
+ 
+ dc.w wall,94,93,0,80
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l -30*1024,0*1024
+ 
+ dc.w floor,0*4,3
+ dc.w 90,95,94,93,90
+ dc.w -1,768,0
+ 
+ dc.w roof,-30*4,3
+ dc.w 90,95,94,93,90
+ dc.w -1,513,0
+ dc.w object
+ dc.l 4*1024,-30*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph39: dc.w 39
+ dc.w wall,75,77,0,144
+ dc.l 2*4096
+ dc.w 0,0,0
+ dc.l -40*1024,0*1024
+ 
+ dc.w wall,77,78,0,272
+ dc.l 2*4096
+ dc.w 0,0,0
+ dc.l -40*1024,0*1024
+ 
+ dc.w wall,78,79,0,144
+ dc.l 2*4096
+ dc.w 0,0,0
+ dc.l -40*1024,0*1024
+ 
+ dc.w wall,79,75,0,272
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-26*1024
+ 
+ dc.w floor,0*4,3
+ dc.w 75,77,78,79,75
+ dc.w -1,0,0
+ 
+ dc.w roof,-40*4,3
+ dc.w 75,77,78,79,75
+ dc.w -1,0,0
+ dc.w object
+ dc.l 4*1024,-40*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph40: dc.w 40
+ dc.w wall,80,81,0,160
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -60*1024,4*1024
+ 
+ dc.w wall,81,83,0,192
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l 0*1024,4*1024
+ 
+ dc.w wall,81,83,0,192
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -60*1024,-40*1024
+ 
+ dc.w wall,83,98,0,80
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l 0*1024,4*1024
+ 
+ dc.w wall,83,98,0,80
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -60*1024,-26*1024
+ 
+ dc.w wall,98,99,0,187
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -60*1024,4*1024
+ 
+ dc.w wall,99,102,0,223
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -60*1024,4*1024
+ 
+ dc.w wall,102,101,0,128
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -60*1024,4*1024
+ 
+ dc.w wall,101,100,0,144
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -60*1024,4*1024
+ 
+ dc.w wall,100,80,0,136
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -60*1024,-30*1024
+ 
+ dc.w floor,4*4,7
+ dc.w 80,81,83,98,99,102,101,100,80
+ dc.w -1,0,0
+ 
+ dc.w roof,-60*4,7
+ dc.w 80,81,83,98,99,102,101,100,80
+ dc.w -1,0,0
+ dc.w object
+ dc.l 8*1024,-60*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph41: dc.w 41
+ dc.w wall,60,85,0,203
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,8*1024
+ 
+ dc.w wall,85,86,0,160
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,8*1024
+ 
+ dc.w wall,108,107,0,320
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,8*1024
+ 
+ dc.w wall,107,62,0,203
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,8*1024
+ 
+ dc.w wall,62,60,0,191
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -15*1024,8*1024
+ 
+ dc.w wall,62,60,0,191
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-35*1024
+ 
+ dc.w floor,8*4,5
+ dc.w 60,85,86,108,107,62,60
+ dc.w -1,0,0
+ 
+ dc.w roof,-40*4,5
+ dc.w 60,85,86,108,107,62,60
+ dc.w -1,0,0
+ dc.w object
+ dc.l 12*1024,-40*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph42: dc.w 42
+ dc.w wall,86,87,0,95
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-30*1024
+ 
+ dc.w wall,87,88,0,16
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l -40*1024,8*1024
+ 
+ dc.w wall,88,91,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l 4*1024,8*1024
+ 
+ dc.w wall,88,91,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-30*1024
+ 
+ dc.w wall,91,97,0,128
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l -40*1024,8*1024
+ 
+ dc.w floor,8*4,5
+ dc.w 86,87,88,91,97,108,86
+ dc.w -1,0,0
+ 
+ dc.w roof,-40*4,5
+ dc.w 86,87,88,91,97,108,86
+ dc.w -1,0,0
+ dc.w object
+ dc.l 12*1024,-40*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph43: dc.w 43
+ dc.w wall,97,103,0,144
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-20*1024
+ 
+ dc.w wall,103,104,0,32
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,8*1024
+ 
+ dc.w wall,109,108,0,528
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,8*1024
+ 
+ dc.w floor,8*4,4
+ dc.w 97,103,104,109,108,97
+ dc.w -1,0,0
+ 
+ dc.w roof,-40*4,4
+ dc.w 97,103,104,109,108,97
+ dc.w -1,0,0
+ dc.w object
+ dc.l 12*1024,-40*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph44: dc.w 44
+ dc.w wall,104,105,0,239
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,8*1024
+ 
+ dc.w wall,105,106,0,223
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,8*1024
+ 
+ dc.w wall,106,109,0,720
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,8*1024
+ 
+ dc.w floor,8*4,3
+ dc.w 104,105,106,109,104
+ dc.w -1,0,0
+ 
+ dc.w roof,-40*4,3
+ dc.w 104,105,106,109,104
+ dc.w -1,0,0
+ dc.w object
+ dc.l 12*1024,-40*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph45: dc.w 45
+ dc.w wall,96,79,0,95
+ dc.l 3*4096
+ dc.w 0,0,0
+ dc.l 4*1024,8*1024
+ 
+ dc.w wall,96,79,0,95
+ dc.l 3*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-26*1024
+ 
+ dc.w wall,79,80,0,16
+ dc.l 1*4096
+ dc.w 0,0,0
+ dc.l -30*1024,8*1024
+ 
+ dc.w wall,80,100,0,136
+ dc.l 3*4096
+ dc.w 0,0,0
+ dc.l 4*1024,8*1024
+ 
+ dc.w wall,100,96,0,151
+ dc.l 3*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-20*1024
+ 
+ dc.w floor,8*4,3
+ dc.w 96,79,80,100,96
+ dc.w -1,0,0
+ 
+ dc.w roof,-30*4,3
+ dc.w 96,79,80,100,96
+ dc.w -1,0,0
+ dc.w object
+ dc.l 12*1024,-30*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph46: dc.w 46
+ dc.w wall,100,103,0,272
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -20*1024,8*1024
+ 
+ dc.w wall,97,96,0,223
+ dc.l 4*4096
+ dc.w 0,0,0
+ dc.l -20*1024,8*1024
+ 
+ dc.w floor,8*4,3
+ dc.w 100,103,97,96,100
+ dc.w -1,0,0
+ 
+ dc.w roof,-20*4,3
+ dc.w 100,103,97,96,100
+ dc.w -1,0,0
+ dc.w object
+ dc.l 12*1024,-20*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph47: dc.w 47
+ dc.w wall,72,110,0,304
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-16*1024
+ 
+ dc.w wall,110,111,0,80
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-16*1024
+ 
+ dc.w wall,111,112,0,223
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-16*1024
+ 
+DW_47_3:
+ dc.w wall,112,72,0,113
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-16*1024
+ 
+ dc.w floor,-16*4,3
+ dc.w 72,110,111,112,72
+ dc.w -1,0,0
+ 
+ dc.w roof,-40*4,3
+ dc.w 72,110,111,112,72
+ dc.w -1,0,0
+ dc.w object
+ dc.l -12*1024,-40*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph48: dc.w 48
+ dc.w wall,112,113,0,32
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-16*1024
+ 
+ dc.w wall,116,72,0,207
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-16*1024
+ 
+ dc.w floor,-16*4,3
+ dc.w 112,113,116,72,112
+ dc.w -1,0,0
+ 
+DR_48:
+ dc.w roof,-40*4,3
+ dc.w 112,113,116,72,112
+ dc.w -1,0,0
+ dc.w object
+ dc.l -12*1024,-40*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph49: dc.w 49
+ dc.w wall,113,114,0,223
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-16*1024
+ 
+ dc.w wall,115,116,0,304
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-16*1024
+ 
+DW_49_3:
+ dc.w wall,116,113,0,124
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-16*1024
+ 
+ dc.w floor,-16*4,3
+ dc.w 113,114,115,116,113
+ dc.w -1,0,0
+ 
+ dc.w roof,-40*4,3
+ dc.w 113,114,115,116,113
+ dc.w -1,0,0
+ dc.w object
+ dc.l -12*1024,-40*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph50: dc.w 50
+ dc.w wall,135,118,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-14*1024
+ 
+ dc.w wall,118,119,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -16*1024,-14*1024
+ 
+ dc.w wall,119,124,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-14*1024
+ 
+ dc.w wall,124,135,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-28*1024
+ 
+ dc.w floor,-14*4,3
+ dc.w 135,118,119,124,135
+ dc.w -1,0,0
+ 
+ dc.w roof,-30*4,3
+ dc.w 135,118,119,124,135
+ dc.w -1,0,0
+ dc.w object
+ dc.l -10*1024,-30*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph51: dc.w 51
+ dc.w wall,134,135,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -28*1024,-12*1024
+ 
+ dc.w wall,135,124,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -14*1024,-12*1024
+ 
+ dc.w wall,124,125,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -28*1024,-12*1024
+ 
+ dc.w wall,125,134,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -28*1024,-26*1024
+ 
+ dc.w floor,-12*4,3
+ dc.w 134,135,124,125,134
+ dc.w -1,0,0
+ 
+ dc.w roof,-28*4,3
+ dc.w 134,135,124,125,134
+ dc.w -1,0,0
+ dc.w object
+ dc.l -8*1024,-28*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph52: dc.w 52
+ dc.w wall,133,134,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -26*1024,-10*1024
+ 
+ dc.w wall,134,125,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -12*1024,-10*1024
+ 
+ dc.w wall,125,126,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -26*1024,-10*1024
+ 
+ dc.w wall,126,133,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -26*1024,-24*1024
+ 
+ dc.w floor,-10*4,3
+ dc.w 133,134,125,126,133
+ dc.w -1,0,0
+ 
+ dc.w roof,-26*4,3
+ dc.w 133,134,125,126,133
+ dc.w -1,0,0
+ dc.w object
+ dc.l -6*1024,-26*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph53: dc.w 53
+ dc.w wall,132,133,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -24*1024,-8*1024
+ 
+ dc.w wall,133,126,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -10*1024,-8*1024
+ 
+ dc.w wall,126,127,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -24*1024,-8*1024
+ 
+ dc.w wall,127,132,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -24*1024,-22*1024
+ 
+ dc.w floor,-8*4,3
+ dc.w 132,133,126,127,132
+ dc.w -1,0,0
+ 
+ dc.w roof,-24*4,3
+ dc.w 132,133,126,127,132
+ dc.w -1,0,0
+ dc.w object
+ dc.l -4*1024,-24*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph54: dc.w 54
+ dc.w wall,131,132,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -22*1024,-6*1024
+ 
+ dc.w wall,132,127,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -8*1024,-6*1024
+ 
+ dc.w wall,127,128,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -22*1024,-6*1024
+ 
+ dc.w wall,128,131,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -22*1024,-20*1024
+ 
+ dc.w floor,-6*4,3
+ dc.w 131,132,127,128,131
+ dc.w -1,0,0
+ 
+ dc.w roof,-22*4,3
+ dc.w 131,132,127,128,131
+ dc.w -1,0,0
+ dc.w object
+ dc.l -2*1024,-22*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph55: dc.w 55
+ dc.w wall,130,131,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -20*1024,-4*1024
+ 
+ dc.w wall,131,128,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -6*1024,-4*1024
+ 
+ dc.w wall,128,129,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -20*1024,-4*1024
+ 
+ dc.w wall,129,130,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -20*1024,-18*1024
+ 
+ dc.w floor,-4*4,3
+ dc.w 130,131,128,129,130
+ dc.w -1,0,0
+ 
+ dc.w roof,-20*4,3
+ dc.w 130,131,128,129,130
+ dc.w -1,0,0
+ dc.w object
+ dc.l 0*1024,-20*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph56: dc.w 56
+ dc.w wall,129,82,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -18*1024,-2*1024
+ 
+ dc.w wall,73,130,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -18*1024,-2*1024
+ 
+ dc.w wall,130,129,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -4*1024,-2*1024
+ 
+ dc.w floor,-2*4,3
+ dc.w 129,82,73,130,129
+ dc.w -1,0,0
+ 
+ dc.w roof,-18*4,3
+ dc.w 129,82,73,130,129
+ dc.w -1,0,0
+ dc.w object
+ dc.l 2*1024,-18*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph57: dc.w 57
+ dc.w wall,136,142,0,82
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -4*1024,-2*1024
+ 
+ dc.w wall,142,139,0,40
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -28*1024,-2*1024
+ 
+ dc.w wall,139,136,0,80
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -28*1024,-26*1024
+ 
+ dc.w floor,-2*4,2
+ dc.w 136,142,139,136
+ dc.w -1,0,0
+ 
+ dc.w roof,-28*4,2
+ dc.w 136,142,139,136
+ dc.w -1,0,0
+ dc.w object
+ dc.l 2*1024,-28*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph58: dc.w 58
+ dc.w wall,136,141,0,82
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -6*1024,-4*1024
+ 
+ dc.w wall,141,142,0,45
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-4*1024
+ 
+ dc.w wall,142,136,0,82
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -30*1024,-28*1024
+ 
+ dc.w floor,-4*4,2
+ dc.w 136,141,142,136
+ dc.w -1,0,0
+ 
+ dc.w roof,-30*4,2
+ dc.w 136,141,142,136
+ dc.w -1,0,0
+ dc.w object
+ dc.l 0*1024,-30*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph59: dc.w 59
+ dc.w wall,136,137,0,88
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -8*1024,-6*1024
+ 
+ dc.w wall,137,141,0,43
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -32*1024,-6*1024
+ 
+ dc.w wall,141,136,0,82
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -32*1024,-30*1024
+ 
+ dc.w floor,-6*4,2
+ dc.w 136,137,141,136
+ dc.w -1,0,0
+ 
+ dc.w roof,-32*4,2
+ dc.w 136,137,141,136
+ dc.w -1,0,0
+ dc.w object
+ dc.l -2*1024,-32*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph60: dc.w 60
+ dc.w wall,136,123,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -34*1024,-8*1024
+ 
+ dc.w wall,123,138,0,88
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -10*1024,-8*1024
+ 
+ dc.w wall,138,137,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -34*1024,-8*1024
+ 
+ dc.w wall,137,136,0,88
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -34*1024,-32*1024
+ 
+ dc.w floor,-8*4,3
+ dc.w 136,123,138,137,136
+ dc.w -1,0,0
+ 
+ dc.w roof,-34*4,3
+ dc.w 136,123,138,137,136
+ dc.w -1,0,0
+ dc.w object
+ dc.l -4*1024,-34*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph61: dc.w 61
+ dc.w wall,123,143,0,82
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -12*1024,-10*1024
+ 
+ dc.w wall,143,138,0,43
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -36*1024,-10*1024
+ 
+ dc.w wall,138,123,0,88
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -36*1024,-34*1024
+ 
+ dc.w floor,-10*4,2
+ dc.w 123,143,138,123
+ dc.w -1,0,0
+ 
+ dc.w roof,-36*4,2
+ dc.w 123,143,138,123
+ dc.w -1,0,0
+ dc.w object
+ dc.l -6*1024,-36*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph62: dc.w 62
+ dc.w wall,123,144,0,82
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -14*1024,-12*1024
+ 
+ dc.w wall,144,143,0,45
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -38*1024,-12*1024
+ 
+ dc.w wall,143,123,0,82
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -38*1024,-36*1024
+ 
+ dc.w floor,-12*4,2
+ dc.w 123,144,143,123
+ dc.w -1,0,0
+ 
+ dc.w roof,-38*4,2
+ dc.w 123,144,143,123
+ dc.w -1,0,0
+ dc.w object
+ dc.l -8*1024,-38*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph63: dc.w 63
+ dc.w wall,123,140,0,80
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -16*1024,-14*1024
+ 
+ dc.w wall,140,144,0,40
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-14*1024
+ 
+ dc.w wall,144,123,0,82
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -40*1024,-38*1024
+ 
+ dc.w floor,-14*4,2
+ dc.w 123,140,144,123
+ dc.w -1,0,0
+ 
+ dc.w roof,-40*4,2
+ dc.w 123,140,144,123
+ dc.w -1,0,0
+ dc.w object
+ dc.l -10*1024,-40*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph64: dc.w 64
+ dc.w wall,83,136,0,576
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -26*1024,0*1024
+ 
+ dc.w wall,136,139,0,80
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -2*1024,0*1024
+ 
+ dc.w wall,139,98,0,576
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -26*1024,0*1024
+ 
+ dc.w floor,0*4,3
+ dc.w 83,136,139,98,83
+ dc.w -1,0,0
+ 
+ dc.w roof,-26*4,3
+ dc.w 83,136,139,98,83
+ dc.w -1,0,0
+ dc.w object
+ dc.l 4*1024,-26*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph65: dc.w 65
+ dc.w wall,120,119,0,80
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -50*1024,-16*1024
+ 
+ dc.w wall,119,118,0,64
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -50*1024,-30*1024
+ 
+ dc.w wall,118,115,0,47
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -50*1024,-16*1024
+ 
+ dc.w wall,115,114,0,95
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -50*1024,-40*1024
+ 
+ dc.w wall,114,117,0,223
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -50*1024,-16*1024
+ 
+ dc.w wall,117,140,0,399
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -50*1024,-16*1024
+ 
+ dc.w floor,-16*4,6
+ dc.w 140,120,119,118,115,114,117,140
+ dc.w -1,0,0
+ 
+ dc.w roof,-50*4,6
+ dc.w 140,120,119,118,115,114,117,140
+ dc.w -1,0,0
+ dc.w object
+ dc.l -12*1024,-50*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+ZoneGraph66: dc.w 66
+ dc.w wall,123,122,0,528
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -60*1024,-16*1024
+ 
+ dc.w wall,122,121,0,191
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -60*1024,-16*1024
+ 
+ dc.w wall,121,120,0,304
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -60*1024,-16*1024
+ 
+ dc.w wall,120,140,0,250
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -60*1024,-50*1024
+ 
+ dc.w wall,140,123,0,80
+ dc.l 0*4096
+ dc.w 0,0,0
+ dc.l -60*1024,-40*1024
+ 
+ dc.w floor,-16*4,4
+ dc.w 123,122,121,120,140,123
+ dc.w -1,0,0
+ 
+ dc.w roof,-60*4,4
+ dc.w 123,122,121,120,140,123
+ dc.w -1,0,0
+ dc.w object
+ dc.l -12*1024,-60*1024
+ dc.w setclip,-1,-1,-1
+ 
+ dc.l -1
+ 
+DoorData:
+ dc.w 2,-18
+ dc.w 2,0
+ dc.l DR_10
+ dc.l ZoneRoof10
+ dc.w 0
+ dc.w 25
+ dc.l DW_9_3
+ dc.l 1*4096
+ dc.w 30
+ dc.l DW_11_3
+ dc.l 1*4096
+ dc.w -1
+ dc.w -3,-19
+ dc.w -3,0
+ dc.l DR_21
+ dc.l ZoneRoof21
+ dc.w 0
+ dc.w 46
+ dc.l DW_20_0
+ dc.l 1*4096
+ dc.w 53
+ dc.l DW_23_0
+ dc.l 5*4096
+ dc.w -1
+ dc.w -16,-40
+ dc.w -16,0
+ dc.l DR_48
+ dc.l ZoneRoof48
+ dc.w 0
+ dc.w 114
+ dc.l DW_47_3
+ dc.l 0*4096
+ dc.w 119
+ dc.l DW_49_3
+ dc.l 0*4096
+ dc.w -1
+ dc.w 999

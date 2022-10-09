@@ -1,0 +1,13 @@
+red_des:
+ dc.l redPts
+ dc.l redLines
+
+redPts:
+ incbin "work:amos_pro/redind.obj"
+ dc.w -1
+
+redLines:
+ dc.l 0
+ dc.w 0*10
+ dc.l -1
+

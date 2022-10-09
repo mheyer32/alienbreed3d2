@@ -1,0 +1,14 @@
+0 nopoints (w)
+2 noframes (w)
+4 start of pointers to frames
+
+. . . .
+
+List of object data; pointer to object (w)
+then sort point of obj (w)
+
+-1
+
+Each object has polygons etc stored same as before.
+
+Set of frames of points (x,y,z) all w

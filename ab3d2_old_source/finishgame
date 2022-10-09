@@ -1,0 +1,61 @@
+STUFF REMAINING:
+
+ Level Design: 6 more levels.
+ 	Put in Mike's level, and two more of
+ 	Ben's levels. This leaves THREE to be
+ 	designed on paper before entering.
+ 	REMEMBER DESIGNS:
+ 	Admin Block: Lots of intersecting
+ 	passages, very few rooms, lots of
+ 	stairwells and overhead bits.
+ 	Good place for the sentry droids,
+ 	marines, eyeball monsters.
+ 	
+ 	The Abyss: deep pit with lift slowly
+ 	going down it. Holes in the walls let
+ 	in aliens and have goodies in them too.
+ 	Could have more than one joined by
+ 	a narrow passage uncovered at the
+ 	bottom.
+ 	
+ 	NEED ONE MORE DESIGN.
+ 	
+ Guns:
+ 	Put in shotgun code.
+ 	This requires firing several shots
+ 	each with a chance of hitting
+ 	dependant on distance (use alien code
+ 	for this). Include miss/hit code
+ 	all the time for other instant effect
+ 	weapons too, so accuracy is affected
+ 	by distance. This means shotgun simply
+ 	fires more bullets in one go to achieve
+ 	effect desired.
+ 
+ 	Flame thrower. Not much to do here.
+ 	Fix noise.
+ 	
+ 	Grenade launcher:
+ 	Make bounce noises off walls and
+ 	make an explosion noise occur too.
+ 	
+ Aliens:
+ 
+ 	Put in crawly spiky thing (large).
+ 	Is quite big and slow, and difficult to
+ 	kill, and breathes fire.
+ 	
+ 	Underwater monster:
+ 	Fires twin energy pulses from eyes.
+ 	Cannot leave water.
+ 	
+ 	Red marine: fires shotgun at you
+ 	(multiple bullets) and does quite a
+ 	bit of damage. Also harder to kill.
+ 
+Misc:
+	Option screen needs doing.
+
+Known Bugs:
+	Duck and fire sometimes fails. Move up
+	bullets?

@@ -1,0 +1,104 @@
+
+	Alien Behaviour Ideas
+	=====================
+
+1.	Control points around a level, together with a table of
+	'nearest pt in direction of one point from another' values
+	can be used for the following purposes:
+	
+	a.	To give a direction for sounds to come from when a noise
+		is made in a remote location.
+	
+	b.	To give aliens a means of tracking you by sound alone.
+		To allow aliens to 'know' their way around and so, in
+		later levels, fight more intelligently.
+
+Expansion of ideas:
+
+1b:
+	Aliens can 'hear' a noise coming from the nearest point, and
+	head towards it. They will remember, until another sound distracts
+	them for example, the way they have come, and so not retrace their
+	steps. So if they are in a corridor, they will continue until they
+	are unsure of which way to go. Then they will either decide to
+	guess, or stop and wait for another sound to give them a clue as
+	to where you are.
+	Levels of difficulty:
+		Easiest: The aliens have no memory of where they have been
+			 and behave in a purely reactionary fashion; they
+			 either have to hear or see something to move, and
+			 do not remember the last seen position of the
+			 player.
+		Hardest:
+			The aliens have a good memory for where they have
+			been and can decide to guess or wait at crossroads
+			or points of uncertainty. If a guess is made and
+			a subsequent noise makes them retrace their steps,
+			they will continue to the last point of uncertainty
+			and make another guess. They can also look ahead to
+			the next point of uncertainty, and see if they could
+			send another group to the same point via a different
+			route.
+	
+	To make sure the game does not become impossibly hard, it is
+	important to balance the intelligence and teamwork of the aliens
+	with devastating firepower and the ability of the player to 'fool'
+	the aliens into doing things wrong. For example, leaving time-delay
+	bombs around will distract them, setting off sirens will draw them
+	into killing-grounds (hopefully) and setting pressure mines in
+	corridors and then making lots of noise at the other end will blow
+	them up as they come charging to attack. Access to the computer will
+	become more important tactically, to close doors, activate robot
+	or turret sentries and so on. Say you have a large room with two
+	dormant turrets, and sealable doors. Careful scrutiny of the
+	map via the computer will reveal this fact, and the player could
+	arrange to lure a large number of aliens into the room, seal the
+	doors and activate the sentries, which would eliminate a good deal
+	of the threat. The aliens would also be guarding certain important
+	areas such as egg-chambers, and sending in robot attack drones would
+	cause marauding aliens to retreat and defend. Certain objectives
+	would need to be accomplished before a level could be left
+	successfully.
+	
+Example Mission objectives:
+
+	Retrieve a communications device from the inoperative command centre.
+Attract minimum of alien attention and get out as quickly as possible. This
+mission could be played in many ways; for example there could be security
+zones the player could either try and bypass, obtain clearance through
+hacking of a terminal (which happens to have some aliens lurking nearby)
+or just plough through, activating the alarms and the robot sentries and
+attracting the attention of the aliens, and try to blast a path back to the
+exit.
+
+	Clear out a section so medics can get through to attend wounded
+people on the other side. First the area must be sealed from further
+infestation (By accessing the computer terminals and getting clearance) and
+then you must wipe out the aliens already present.
+
+	Act as an escort to some people (Techs or medics or survivors) to
+get them out of a section alive. You can tell them where to head for
+and try to keep them out of trouble (seal them in rooms so the aliens cant
+get at them, then try and clear a path) or just run through as quickly as
+possible, blasting away. People might panic and run away; you have to
+decide whether to go after them and try and save them, save the rest and
+then go back and rescue the others before implantation, or whatever.
+Take too long and the aliens will find you and ambush you, killing everyone.
+
+	You might have to seal areas to restrict the movement of aliens
+around the ship, by closing and welding shut doors or whatever.
+
+	The alien queen will obviously come into things at the end, and
+will be really hard to kill, really clever and able to control things like
+doors and so on, so it will be a challenge trying to weaken her with
+different tactics before going in for the kill.
+
+Different types of alien will be around; humanoid aliens, four-legged small
+but fast types, large and really thick-skinned, and so on. The best way
+is to use the kit-form aliens with heads, arms and so on applied seperately.
+That way huge numbers of frames are possible (Say 25 frames for running,
+special moves for when they are looking around, uncertain of where to head
+next), leaping attacks and feasting on victims, dismembered aliens lying
+around, injured aliens with arms blown off and screaming defiance.
+Aliens can also 'play dead', waiting until your back is turned or you
+step too close before attacking.	

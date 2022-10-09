@@ -1,0 +1,90 @@
+Bulkhead_des:
+ dc.l BulkheadPts
+ dc.l BulkheadLines
+
+BulkheadPts:
+ dc.w 7
+ dc.w 20,-200,0
+ dc.w 20,-60,0
+ dc.w -20,-60,0
+ dc.w -20,-200,0
+ dc.w 10,-180,-20
+ dc.w 10,-80,-20
+ dc.w -10,-80,-20
+ dc.w -10,-180,-20
+
+BulkheadLines:
+ dc.l Bulkhead_only
+ dc.w 0*10
+ dc.l -1
+
+Bulkhead_only:
+ dc.w 0
+ 
+ dc.w 3,0
+ 	dc.w 0
+ 	dc.b 32,0
+ 	dc.w 4
+ 	dc.b 32,16
+ 	dc.w 7
+ 	dc.b 16,16
+ 	dc.w 3
+ 	dc.b 16,0
+ 	dc.w 0
+ 	dc.b 32,0
+ 	dc.w 513,300,0
+
+ dc.w 3,0
+ 	dc.w 5
+ 	dc.b 32,0
+ 	dc.w 1
+ 	dc.b 32,16
+ 	dc.w 2
+ 	dc.b 16,16
+ 	dc.w 6
+ 	dc.b 16,0
+ 	dc.w 5
+ 	dc.b 32,0
+ 	dc.w 513,300,0
+
+ 
+ dc.w 3,0
+ 	dc.w 4
+ 	dc.b 64,0
+ 	dc.w 5
+ 	dc.b 64,64
+  	dc.w 6
+ 	dc.b 48,64
+ 	dc.w 7
+ 	dc.b 48,0
+ 	dc.w 4
+ 	dc.b 64,0
+ 	dc.w 513,300,0
+ 	
+ dc.w 3,0
+ 	dc.w 7
+ 	dc.b 64,0
+ 	dc.w 6
+ 	dc.b 64,64
+ 	dc.w 2
+ 	dc.b 48,64
+ 	dc.w 3
+ 	dc.b 48,0
+ 	dc.w 7
+ 	dc.b 64,0
+ 	dc.w 513,300,0
+
+ dc.w 3,0
+ 	dc.w 0
+ 	dc.b 64,0
+ 	dc.w 1
+ 	dc.b 64,64
+ 	dc.w 5
+ 	dc.b 48,64	
+ 	dc.w 4
+ 	dc.b 48,0
+ 	dc.w 0
+ 	dc.b 64,0
+ 	dc.w 513,300,0
+ 	
+ dc.w -1

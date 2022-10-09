@@ -1,0 +1,42 @@
+
+ move.b #131,d0
+ move.b #131,d1
+ move.b #131,d2
+ move.b #131,d3
+ move.b #131,d4
+ move.b #131,d5
+ move.b #131,d6
+ move.b #131,d7
+
+ swap d0
+ swap d1
+ swap d2
+ swap d3
+ swap d4
+ swap d5
+ swap d6
+ swap d7
+
+ add.l d0,d0
+ addx.l d0,d0
+ addx.l d1,d1
+ addx.l d0,d0
+ addx.l d2,d2
+ addx.l d0,d0
+ addx.l d3,d3
+ addx.l d0,d0
+ addx.l d4,d4
+ addx.l d0,d0
+ addx.l d5,d5
+ addx.l d0,d0
+ addx.l d6,d6
+ addx.l d0,d0
+ addx.l d7,d7
+ addx.w d0,d0
+
+ move.b d0,byte0
+ rts
+ 
+byte0: dc.b 0
+ 
+

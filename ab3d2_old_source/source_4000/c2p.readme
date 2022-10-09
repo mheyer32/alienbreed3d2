@@ -1,0 +1,6 @@
+
+The CPU + blitter routine is best suited for slow machines (A1200 with
+fast ram) while the CPU only routine is best suited for fast machines
+where the conversion process takes the same amount of time as just
+writing to chip ram (A4000/040 or a A1200 + 50MHz 030).
+

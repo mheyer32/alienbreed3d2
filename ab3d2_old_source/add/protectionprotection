@@ -1,0 +1,214 @@
+CALCEDK SET 0
+
+; PROTFCHECK
+; PROTGCHECK
+; PROTHCHECK
+; PROTICHECK a0
+; PROTKCHECK a0
+; PROTLCHECK a0
+; PROTMCHECK a0
+
+
+; Protcheck a-f are protsetup decoding parts.
+; Protchech G is the call to PROTSETUP and must
+; be well protected.
+; Protcheck H is the call to DEFAULTGAME.
+; Protcheck I is the call to the protection
+; routine for the second time.
+; J is the protection setup routine (encrypted.)
+; needs to be checksummed before and after use.
+; K is the hidden routine iteslf. Also needs checking
+; L is the initial check for correct entering of
+; the protection code.
+; M is a random addition to RVAL2
+; N is an addition to RVAL1
+
+PROTACALC MACRO
+ ENDM
+
+PROTACHECK MACRO
+ ENDM
+ 
+
+PROTBCALC MACRO
+ ENDM
+
+PROTBCHECK MACRO
+ ENDM
+ 
+ 
+PROTCCALC MACRO
+ ENDM
+
+PROTCCHECK MACRO
+ ENDM
+ 
+
+PROTDCALC MACRO
+ ENDM
+
+PROTDCHECK MACRO
+ ENDM
+ 
+ 
+PROTECALC MACRO
+ ENDM
+
+PROTECHECK MACRO
+ ENDM
+ 
+
+PROTFCALC MACRO
+ ENDM
+
+PROTFCHECK MACRO
+ ENDM
+ 
+ 
+PROTGCALC MACRO
+ ENDM
+
+PROTGCHECK MACRO
+ ENDM
+ 
+ 
+PROTHCALC MACRO
+ move.l ProtChkHLev1,d0
+ add.l ProtChkHLev1+4,d0
+ move.l d0,ProtValH
+ ENDM
+
+PROTHCHECK MACRO
+; move.l ProtChkHLev1,d0
+; add.l ProtChkHLev1+4,d0
+; cmp.l #$f5a70d5b,d0
+; beq.s NOBLOWI
+; rts
+;NOBLOWI:
+; 
+ ENDM
+ 
+ 
+PROTICALC MACRO
+ ENDM
+
+PROTICHECK MACRO
+;
+; lea ProtChkILev1-2300,\1
+; cmp.l #RealTable-2000,2300+2(\1)
+; bne.s .BLOWUPH
+; cmp.l #PROTCALC-5000,2300+6+2(\1)
+; bne.s .BLOWUPH
+; cmp.l #ASKFORPROT-10000,2300+12+2(\1)
+; bne.s .BLOWUPH
+; cmp.l #PROTCALLENC-800,2300+18+2(\1)
+; bne.s .BLOWUPH
+; cmp.l #800,26+2300(\1)
+; beq.s .NOBLOWUPH
+;.BLOWUPH:
+; sub.l #4001,a7
+; jmp $504000
+;.NOBLOWUPH:
+;
+
+ ENDM
+ 
+ 
+PROTJCALC MACRO
+
+ ENDM
+
+PROTJCHECK MACRO
+
+ ENDM
+
+PROTKCALC MACRO
+
+ move.l #PROTCALLENC,a0
+ move.l #(ENDPROT-PROTCALLENC)/4-1,d1
+ move.l #0,d0
+codeitup:
+ add.l (a0)+,d0
+ ror.l #1,d0
+ dbra d1,codeitup
+ 
+ move.l d0,ProtValK
+ 
+ ENDM
+
+PROTKCHECK MACRO
+; move.l #PROTCALLENC-2500,\1
+; add.l #2500,\1
+; move.l #(ENDPROT-PROTCALLENC)/4-1,d1
+; move.l #0,d0
+;codeitupk:
+; add.l (\1)+,d0
+; ror.l #1,d0
+; dbra d1,codeitupk
+;
+; cmp.l #$CEE52EF9,d0
+; beq.s .NOBLOWUPK
+; movem.l (a7)+,d0/d3/d5/d7/a2/a4/a6
+; rts
+;.NOBLOWUPK:
+
+ ENDM
+
+
+
+PROTLCALC MACRO
+
+ ENDM
+
+PROTLCHECK MACRO
+; move.l #ProtChkLLev1-4000,\1
+; add.l #4000,\1
+; cmp.l #protA,2(\1)
+; bne.s .BLOWUP
+; cmp.l #$66062e7c,6(\1)
+; bne.s .BLOWUP
+; tst.l 10(\1)
+; beq.s .NOBLOWUP
+;.BLOWUP
+; addq #8,a7
+;.NOBLOWUP:
+;
+ ENDM
+ 
+PROTMCALC MACRO
+
+; move.l #ProtChkMLev1,a0
+; moveq #0,d0
+; add.l (a0)+,d0
+; sub.l (a0)+,d0
+; add.l (a0)+,d0
+; add.w (a0)+,d0
+; move.l d0,ProtValM
+
+ ENDM
+
+PROTMCHECK MACRO
+; move.l #ProtChkMLev1-3400,\1
+; add.l #3400,\1
+; moveq #0,d0
+; add.l (\1)+,d0
+; sub.l (\1)+,d0
+; add.l (\1)+,d0
+; add.w (\1)+,d0
+; cmp.l #$888990b1,d0
+; beq.s .NOBLOWUPM
+;
+; add.l #2000,a7
+; jmp $40000
+;
+;.NOBLOWUPM:
+;
+ ENDM
+PROTNCALC MACRO
+
+ ENDM
+
+PROTNCHECK MACRO
+
+ ENDM
+ 

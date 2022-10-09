@@ -1,0 +1,1128 @@
+Robot_des:
+ dc.l RobotPts
+ dc.l RobotLines
+
+RobotPts:
+ dc.w 88
+ ds.w 38*3
+; Pt 28
+
+ dc.w 0,-100,-20
+
+BodyPlace:
+ dc.w -30,-130,20
+ dc.w 30,-130,30
+ dc.w 30,-90,30
+ dc.w -30,-90,30
+
+ dc.w -30,-130,-20
+ dc.w 30,-130,-20
+ dc.w 30,-90,-20
+ dc.w -30,-90,-20
+
+ dc.w -10,-130,-30
+ dc.w 10,-130,-30
+ dc.w 10,-90,-30
+ dc.w -10,-90,-30
+ 
+ dc.w -40,-100,0
+ dc.w 40,-100,0
+ dc.w 0,-100,10
+ 
+ dc.w -20,-10,-40
+ dc.w 20,-10,-40
+ dc.w 20,-5,-40
+ dc.w -20,-5,-40
+ 
+ dc.w -20,0,30
+ dc.w 20,0,30
+ dc.w 20,0,-20
+ dc.w -20,0,-20
+
+ dc.w -20,-30,30
+ dc.w 20,-30,30
+ dc.w 20,-30,-30
+ dc.w -20,-30,-30
+ 
+ dc.w -40,-20,20
+ dc.w -40,-20,-20
+ dc.w -40,-10,-20
+ dc.w -40,-10,20
+
+ dc.w 40,-20,20
+ dc.w 40,-20,-20
+ dc.w 40,-10,-20
+ dc.w 40,-10,20
+ 
+RightArm: ds.w 14*3
+
+ dc.w -60,-100,0
+
+Robotanim:
+ incbin "robotstomp"
+Armanim:
+ incbin "Robotarms"
+ 
+Robot_MainBody:
+ dc.w 34
+ dc.w 0
+ dc.w 0
+ dc.w 30
+ dc.w 30
+
+ dc.w 0
+ dc.w 0
+ dc.w 30
+ dc.w 30
+
+ dc.w 0
+ dc.w 0
+ dc.w 50
+ dc.w 50
+ 
+ dc.w 0
+ dc.w 0
+ dc.w 0
+ 
+ dc.w -10,-10,-5,-5
+ 
+ dc.w 0,0,0,0
+ dc.w -30,-30,-20,-20
+ dc.w -20,-20,-10,-10
+ dc.w -20,-20,-10,-10
+ 
+RobotLines:
+ dc.l Robot_BodyFront
+ dc.w 38*10
+ dc.l Robot_BodyBack
+ dc.w 53*10
+ dc.l Robot_RightLeg
+ dc.w 51*10
+ dc.l Robot_LeftLeg
+ dc.w 52*10
+; dc.l Robot_RightArm
+; dc.w 78*10
+ dc.l -1
+
+Robot_BodyBack:
+
+ dc.w 0
+
+ dc.w 3,0
+	dc.w 40
+	dc.b 0,0
+	dc.w 39
+	dc.b 32,0
+	dc.w 42
+	dc.b 32,16
+	dc.w 41
+	dc.b 0,16
+	dc.w 40
+	dc.b 0,0
+	dc.w 257,1000,0
+
+ dc.w -1
+
+Robot_BodyFront:
+
+ dc.w 10
+
+ dc.w 3,0
+	dc.w 51
+	dc.b 0,64
+	dc.w 55
+	dc.b 0,0
+	dc.w 44
+	dc.b 32,30
+	dc.w 47
+	dc.b 32,34
+	dc.w 51
+	dc.b 0,64
+	dc.w 3,800,0
+
+ dc.w 3,0
+ 	dc.w 54
+ 	dc.b 0,0
+ 	dc.w 50
+ 	dc.b 0,64
+ 	dc.w 46
+ 	dc.b 32,34
+ 	dc.w 45
+ 	dc.b 32,32
+ 	dc.w 54
+ 	dc.b 0,0
+ 	dc.w 3,800,0
+ 
+ dc.w 3,0
+ 	dc.w 57
+ 	dc.b 16,0
+ 	dc.w 55
+ 	dc.b 32,0
+ 	dc.w 51
+ 	dc.b 32,48
+ 	dc.w 58
+ 	dc.b 16,48
+  	dc.w 57
+  	dc.b 16,0
+  	dc.w 259,800,0
+  	
+ dc.w 3,0
+	dc.w 54
+	dc.b 16,0
+	dc.w 61
+	dc.b 32,0
+	dc.w 62
+	dc.b 32,48
+	dc.w 50
+	dc.b 16,48
+	dc.w 54
+	dc.b 16,0
+	dc.w 259,800,0
+
+  	
+ dc.w 3,0
+ 	dc.w 52
+	dc.b 0,0
+ 	dc.w 55
+ 	dc.b 64,0
+ 	dc.w 57
+ 	dc.b 64,64
+ 	dc.w 56
+ 	dc.b 0,64
+ 	dc.w 52
+ 	dc.b 0,0
+ 	dc.w 3,600,0
+
+ dc.w 3,0
+ 	dc.w 54
+	dc.b 0,0
+ 	dc.w 53
+ 	dc.b 64,0
+ 	dc.w 60
+ 	dc.b 64,64
+ 	dc.w 61
+ 	dc.b 0,64
+ 	dc.w 54
+ 	dc.b 0,0
+ 	dc.w 3,600,0
+
+ dc.w 3,0
+ 	dc.w 59
+	dc.b 0,0
+ 	dc.w 58
+ 	dc.b 64,0
+ 	dc.w 51
+ 	dc.b 64,64
+ 	dc.w 48
+ 	dc.b 0,64
+ 	dc.w 59
+ 	dc.b 0,0
+ 	dc.w 3,1000,0
+
+ dc.w 3,0
+ 	dc.w 62
+	dc.b 0,0
+ 	dc.w 63
+ 	dc.b 64,0
+ 	dc.w 49
+ 	dc.b 64,64
+ 	dc.w 50
+ 	dc.b 0,64
+ 	dc.w 62
+ 	dc.b 0,0
+ 	dc.w 3,1000,0
+
+
+ dc.w 3,0
+ 	dc.w 56
+	dc.b 0,0
+ 	dc.w 57
+ 	dc.b 64,0
+ 	dc.w 58
+ 	dc.b 64,64
+ 	dc.w 59
+ 	dc.b 0,64
+ 	dc.w 56
+ 	dc.b 0,0
+ 	dc.w 3,1000,0
+
+ dc.w 3,0
+ 	dc.w 61
+	dc.b 0,0
+ 	dc.w 60
+ 	dc.b 64,0
+ 	dc.w 63
+ 	dc.b 64,64
+ 	dc.w 62
+ 	dc.b 0,64
+ 	dc.w 61
+ 	dc.b 0,0
+ 	dc.w 3,1000,0
+
+
+ dc.w 3,0
+ 	dc.w 52
+	dc.b 0,0
+ 	dc.w 56
+ 	dc.b 64,0
+ 	dc.w 59
+ 	dc.b 64,64
+ 	dc.w 48
+ 	dc.b 0,64
+ 	dc.w 52
+ 	dc.b 0,0
+ 	dc.w 3,1000,0
+
+
+ dc.w 3,0
+ 	dc.w 60
+	dc.b 0,0
+ 	dc.w 53
+ 	dc.b 64,0
+ 	dc.w 49
+ 	dc.b 64,64
+ 	dc.w 63
+ 	dc.b 0,64
+ 	dc.w 60
+ 	dc.b 0,0
+ 	dc.w 3,1000,0
+
+ dc.w 3,0
+	dc.w 52
+	dc.b 0,0
+	dc.w 53
+	dc.b 64,0
+	dc.w 54
+	dc.b 64,64
+	dc.w 55
+	dc.b 0,64
+	dc.w 52
+	dc.b 0,0
+	dc.w 3,600,0
+	
+ dc.w 3,0
+	dc.w 53
+	dc.b 0,0
+	dc.w 52
+	dc.b 64,0
+	dc.w 48
+	dc.b 64,64
+	dc.w 49
+	dc.b 0,64
+	dc.w 53
+	dc.b 0,0
+	dc.w 1,1000,0
+ 
+ dc.w 3,0
+ 	dc.w 50
+ 	dc.b 64,64
+ 	dc.w 51
+ 	dc.b 0,64
+ 	dc.w 47
+ 	dc.b 0,0
+ 	dc.w 46
+ 	dc.b 64,0
+ 	dc.w 50
+ 	dc.b 64,64
+ 	dc.w 1,1000,0
+ 
+ dc.w 3,0
+	dc.w 44
+	dc.b 0,64
+	dc.w 55
+	dc.b 0,0
+	dc.w 54
+	dc.b 64,0
+	dc.w 45
+	dc.b 64,64
+	dc.w 44
+	dc.b 0,64
+	dc.w 3,500,0
+ 
+VISOR:
+ dc.w 3,0
+ 	dc.w 44
+ 	dc.b 0,0
+ 	dc.w 45
+ 	dc.b 63,0
+ 	dc.w 46
+ 	dc.b 63,3
+ 	dc.w 47
+ 	dc.b 0,3
+ 	dc.w 44
+ 	dc.b 0,0
+ 	dc.w 768,1,0
+ 
+ dc.w 2,0
+	dc.w 31
+	dc.b 0,32
+	dc.w 39
+	dc.b 64,0
+	dc.w 35
+	dc.b 64,32
+	dc.w 31
+	dc.b 0,32
+	dc.w 1,1000,0
+
+ dc.w 2,0
+ 	dc.w 32
+ 	dc.b 0,32
+ 	dc.w 36
+ 	dc.b 64,32
+ 	dc.w 40
+ 	dc.b 64,0
+ 	dc.w 32
+ 	dc.b 0,32
+ 	dc.w 1,1000,0
+ 	
+ dc.w 3,0
+	dc.w 31
+	dc.b 64,64
+	dc.w 32
+	dc.b 0,64
+	dc.w 40
+	dc.b 0,0
+	dc.w 39
+	dc.b 64,0
+	dc.w 31
+	dc.b 64,64
+	dc.w 3,1000,0
+ 
+ dc.w 3,0
+	dc.w 37
+	dc.b 16,0
+	dc.w 38
+	dc.b 48,0
+	dc.w 39
+	dc.b 48,32
+	dc.w 40
+	dc.b 16,32
+	dc.w 37
+	dc.b 16,0
+	dc.w 3,800,0
+
+ dc.w 3,0
+	dc.w 33
+	dc.b 16,0
+	dc.w 37
+	dc.b 32,0
+	dc.w 40
+	dc.b 32,48
+	dc.w 36
+	dc.b 16,48
+	dc.w 33
+	dc.b 16,0
+	dc.w 259,400,0
+
+ dc.w 3,0
+	dc.w 38
+	dc.b 16,0
+	dc.w 34
+	dc.b 32,0
+	dc.w 35
+	dc.b 32,48
+	dc.w 39
+	dc.b 16,48
+	dc.w 38
+	dc.b 16,0
+	dc.w 259,400,0
+
+ dc.w -1
+
+Robot_RightLeg: 
+
+ dc.w 0
+
+ dc.w 3,0
+	dc.w 28
+	dc.b 0,0
+	dc.w 0
+	dc.b 16,0
+	dc.w 30
+	dc.b 16,32
+	dc.w 31
+	dc.b 0,32
+	dc.w 28
+	dc.b 0,0
+	dc.w 0,800,0
+
+ dc.w 3,0
+	dc.w 39
+	dc.b 32,0
+	dc.w 43
+	dc.b 64,0
+	dc.w 46
+	dc.b 64,32
+	dc.w 42
+	dc.b 32,32
+	dc.w 39
+	dc.b 32,0
+	dc.w 259,400,0
+
+ dc.w 3,0
+ 	dc.w 28
+ 	dc.b 0,16
+ 	dc.w 33
+ 	dc.b 0,0
+ 	dc.w 32
+ 	dc.b 16,0
+ 	dc.w 0
+ 	dc.b 16,16
+ 	dc.w 28
+ 	dc.b 0,16
+ 	dc.w 3,200,0
+
+ dc.w 2,0
+	dc.w 28
+	dc.b 8,32
+	dc.w 2
+	dc.b 0,0
+	dc.w 3
+	dc.b 16,0
+	dc.w 28
+	dc.b 8,32
+	dc.w 3,800,0
+
+ dc.w 3,0
+	dc.w 0
+	dc.b 0,32
+	dc.w 1
+	dc.b 0,0
+	dc.w 2
+	dc.b 16,0
+	dc.w 28
+	dc.b 16,32
+	dc.w 0
+	dc.b 0,32
+	dc.w 3,800,0
+
+ dc.w 3,0
+ 	dc.w 30
+ 	dc.b 0,32
+ 	dc.w 32
+ 	dc.b 0,0
+ 	dc.w 33
+ 	dc.b 16,0
+ 	dc.w 31
+ 	dc.b 16,32
+ 	dc.w 30
+ 	dc.b 0,32
+ 	dc.w 3,400,0
+ 	
+ dc.w 2,0
+	dc.w 0
+	dc.b 0,8
+	dc.w 32
+	dc.b 8,0
+	dc.w 30
+	dc.b 32,8
+	dc.w 0
+	dc.b 0,8
+	dc.w 3,400,0
+ 	
+ dc.w 2,0
+ 	dc.w 31
+ 	dc.b 0,8
+ 	dc.w 33
+ 	dc.b 24,0
+ 	dc.w 28
+ 	dc.b 32,8
+ 	dc.w 31
+ 	dc.b 0,8
+ 	dc.w 3,400,0
+ 	
+ dc.w 3,0
+ 	dc.w 14
+ 	dc.b 0,64
+ 	dc.w 16
+ 	dc.b 0,0
+ 	dc.w 17
+ 	dc.b 16,0
+ 	dc.w 15
+ 	dc.b 16,64
+ 	dc.w 14
+ 	dc.b 0,64
+ 	dc.w 3,800,0
+
+ dc.w 3,0
+	dc.w 16
+	dc.b 0,16
+	dc.w 1
+	dc.b 0,0
+	dc.w 2
+	dc.b 16,0
+	dc.w 17
+	dc.b 16,16
+	dc.w 16
+	dc.b 0,16
+	dc.w 3,400,0
+	
+ dc.w 3,0
+	dc.w 28
+	dc.b 0,32
+	dc.w 3
+	dc.b 0,0
+	dc.w 4
+	dc.b 16,0
+	dc.w 0
+	dc.b 16,32
+	dc.w 28
+	dc.b 0,32
+	dc.w 3,800,0
+
+; dc.w 3,0
+; 	dc.w 4
+; 	dc.b 16,16
+; 	dc.w 3
+; 	dc.b 0,16
+; 	dc.w 2
+; 	dc.b 0,0
+; 	dc.w 1
+; 	dc.b 16,0
+; 	dc.w 4
+; 	dc.b 16,16
+; 	dc.w 258,400,0
+
+ dc.w 2,0
+	dc.w 26
+	dc.b 64,0
+	dc.w 2
+	dc.b 64,64
+	dc.w 1
+	dc.b 0,64
+	dc.w 26
+	dc.b 0,0
+	dc.w 1,400,0
+ dc.w 2,0
+	dc.w 26
+	dc.b 64,0
+	dc.w 1
+	dc.b 64,64
+	dc.w 4
+	dc.b 0,64
+	dc.w 26
+	dc.b 0,0
+	dc.w 1,400,0
+ dc.w 2,0
+	dc.w 26
+	dc.b 64,0
+	dc.w 4
+	dc.b 64,64
+	dc.w 3
+	dc.b 0,64
+	dc.w 26
+	dc.b 0,0
+	dc.w 1,400,0
+ dc.w 2,0
+	dc.w 26
+	dc.b 64,0
+	dc.w 3
+	dc.b 64,64
+	dc.w 2
+	dc.b 0,64
+	dc.w 26
+	dc.b 0,0
+	dc.w 1,400,0
+
+ dc.w 3,0
+ 	dc.w 10
+ 	dc.b 0,16
+ 	dc.w 12
+ 	dc.b 0,0
+ 	dc.w 13
+ 	dc.b 16,0
+ 	dc.w 11
+ 	dc.b 16,16
+ 	dc.w 10
+ 	dc.b 0,64
+ 	dc.w 3,400,0
+
+ dc.w 3,0
+ 	dc.w 12
+ 	dc.b 0,16
+ 	dc.w 14
+ 	dc.b 0,0
+ 	dc.w 15
+ 	dc.b 16,0
+ 	dc.w 13
+ 	dc.b 16,16
+ 	dc.w 12
+ 	dc.b 0,64
+ 	dc.w 3,400,0
+
+
+ dc.w 3,0
+ 	dc.w 1
+ 	dc.b 0,64
+ 	dc.w 10
+ 	dc.b 0,0
+ 	dc.w 11
+ 	dc.b 16,0
+ 	dc.w 2
+ 	dc.b 16,64
+ 	dc.w 1
+ 	dc.b 0,64
+ 	dc.w 3,800,0
+
+
+ dc.w 2,0
+	dc.w 0
+	dc.b 8,32
+	dc.w 4
+	dc.b 0,0
+	dc.w 1
+	dc.b 16,0
+	dc.w 0
+	dc.b 8,32
+	dc.w 3,800,0
+
+ dc.w 4,0
+ 	dc.w 1
+ 	dc.b 16,64
+ 	dc.w 16
+ 	dc.b 0,64
+ 	dc.w 14
+ 	dc.b 0,8
+ 	dc.w 12
+ 	dc.b 16,0
+ 	dc.w 10
+ 	dc.b 32,8
+ 	dc.w 1
+ 	dc.b 16,64
+ 	dc.w 3,800,0
+
+ dc.w 4,0
+ 	dc.w 2
+ 	dc.b 16,64
+ 	dc.w 11
+ 	dc.b 32,8
+ 	dc.w 13
+ 	dc.b 16,0
+ 	dc.w 15
+ 	dc.b 0,8
+ 	dc.w 17
+ 	dc.b 0,64
+ 	dc.w 2
+ 	dc.b 16,64
+ 	dc.w 3,800,0
+
+ dc.w -1
+
+Robot_RightArm:
+
+ dc.w 3,0
+	dc.w 64
+	dc.b 0,16
+	dc.w 68
+	dc.b 64,16
+	dc.w 69
+	dc.b 64,48
+	dc.w 65
+	dc.b 0,48
+	dc.w 64
+	dc.b 0,16
+	dc.w 2,700,0
+
+ dc.w 3,0
+ 	dc.w 75
+ 	dc.b 0,48
+ 	dc.w 70
+ 	dc.b 0,16
+ 	dc.w 69
+ 	dc.b 64,16
+ 	dc.w 72
+ 	dc.b 64,48
+ 	dc.w 75
+ 	dc.b 0,48
+ 	dc.w 2,500,0
+
+ dc.w 3,0
+ 	dc.w 70
+ 	dc.b 0,48
+ 	dc.w 66
+ 	dc.b 0,16
+ 	dc.w 65
+ 	dc.b 64,16
+ 	dc.w 69
+ 	dc.b 64,48
+ 	dc.w 70
+ 	dc.b 0,48
+ 	dc.w 2,500,0
+
+
+
+ dc.w 3,0
+ 	dc.w 64
+ 	dc.b 64,16
+ 	dc.w 65
+ 	dc.b 64,48
+ 	dc.w 66
+ 	dc.b 0,48
+ 	dc.w 67
+ 	dc.b 0,16
+ 	dc.w 64
+ 	dc.b 64,16
+ 	dc.w 2,400,0
+
+ dc.w 3,0
+ 	dc.w 70
+ 	dc.b 0,48
+ 	dc.w 71
+ 	dc.b 0,16
+ 	dc.w 67
+ 	dc.b 64,16
+ 	dc.w 66
+ 	dc.b 64,48
+ 	dc.w 70
+ 	dc.b 0,48
+ 	dc.w 2,800,0
+ 	
+ dc.w 3,0
+	dc.w 72
+	dc.b 64,16
+	dc.w 73
+	dc.b 64,48
+	dc.w 74
+	dc.b 0,48
+	dc.w 75
+	dc.b 0,16
+	dc.w 72
+	dc.b 64,16
+	dc.w 2,400,0
+
+ dc.w 3,0
+	dc.w 75
+	dc.b 64,16
+	dc.w 74
+	dc.b 64,48
+	dc.w 76
+	dc.b 0,48
+	dc.w 70
+	dc.b 0,16
+	dc.w 75
+	dc.b 64,16
+	dc.w 2,800,0
+
+ dc.w 3,0
+	dc.w 68
+	dc.b 0,16
+	dc.w 71
+	dc.b 32,16
+	dc.w 70
+	dc.b 32,48
+	dc.w 69
+	dc.b 0,48
+	dc.w 68
+	dc.b 0,16
+	dc.w 2,400,0
+
+ dc.w 3,0
+	dc.w 69
+	dc.b 0,16
+	dc.w 70
+	dc.b 32,16
+	dc.w 76
+	dc.b 32,48
+	dc.w 77
+	dc.b 0,48
+	dc.w 69
+	dc.b 0,16
+	dc.w 2,400,0
+
+
+ dc.w -1
+
+Robot_LeftLeg:
+
+ dc.w 0
+
+ dc.w 3,0
+ 	dc.w 29
+ 	dc.b 0,0
+ 	dc.w 5
+ 	dc.b 16,0
+ 	dc.w 34
+ 	dc.b 16,32
+ 	dc.w 35
+ 	dc.b 0,32
+ 	dc.w 29
+ 	dc.b 0,0
+ 	dc.w 0,800,0
+ 
+ dc.w 3,0
+	dc.w 29
+	dc.b 0,16
+	dc.w 37
+	dc.b 0,0
+	dc.w 36
+	dc.b 16,0
+	dc.w 5
+	dc.b 16,16
+	dc.w 29
+	dc.b 0,16
+	dc.w 3,200,0
+
+ dc.w 3,0
+	dc.w 44
+	dc.b 32,0
+	dc.w 40
+	dc.b 64,0
+	dc.w 41
+	dc.b 64,32
+	dc.w 45
+	dc.b 32,32
+	dc.w 44
+	dc.b 32,0
+	dc.w 259,400,0
+
+ dc.w 2,0
+	dc.w 0+5
+	dc.b 8,32
+	dc.w 4+5
+	dc.b 0,0
+	dc.w 1+5
+	dc.b 16,0
+	dc.w 0+5
+	dc.b 8,32
+	dc.w 3,800,0
+
+ dc.w 3,0
+	dc.w 5
+	dc.b 0,32
+	dc.w 6
+	dc.b 0,0
+	dc.w 7
+	dc.b 16,0
+	dc.w 29
+	dc.b 16,32
+	dc.w 5
+	dc.b 0,32
+	dc.w 3,800,0
+
+ dc.w 3,0
+ 	dc.w 34
+ 	dc.b 0,32
+ 	dc.w 36
+ 	dc.b 0,0
+ 	dc.w 37
+ 	dc.b 16,0
+ 	dc.w 35
+ 	dc.b 16,32
+ 	dc.w 34
+ 	dc.b 0,32
+ 	dc.w 3,800,0
+ 	
+ dc.w 2,0
+	dc.w 5
+	dc.b 0,8
+	dc.w 36
+	dc.b 8,0
+	dc.w 34
+	dc.b 32,8
+	dc.w 5
+	dc.b 0,8
+	dc.w 3,800,0
+
+ dc.w 2,0
+	dc.w 35
+	dc.b 0,8
+	dc.w 37
+	dc.b 24,0
+	dc.w 29
+	dc.b 32,8
+	dc.w 35
+	dc.b 0,8
+	dc.w 3,800,0
+
+*****
+
+
+
+ 	
+ dc.w 3,0
+ 	dc.w 22
+ 	dc.b 0,64
+ 	dc.w 24
+ 	dc.b 0,0
+ 	dc.w 25
+ 	dc.b 16,0
+ 	dc.w 23
+ 	dc.b 16,64
+ 	dc.w 22
+ 	dc.b 0,64
+ 	dc.w 3,800,0
+
+
+ dc.w 3,0
+ 	dc.w 24
+ 	dc.b 0,16
+ 	dc.w 6
+ 	dc.b 0,0
+ 	dc.w 7
+ 	dc.b 16,0
+ 	dc.w 25
+ 	dc.b 16,16
+ 	dc.w 24
+ 	dc.b 0,16
+ 	dc.w 3,400,0
+
+
+*****
+
+ dc.w 3,0
+	dc.w 0+5
+	dc.b 16,32
+	dc.w 29
+	dc.b 0,32
+	dc.w 3+5
+	dc.b 0,0
+	dc.w 4+5
+	dc.b 16,0
+	dc.w 0+5
+	dc.b 16,32
+	dc.w 3,800,0
+	
+
+; dc.w 3,0
+; 	dc.w 4+5
+; 	dc.b 16,16
+; 	dc.w 3+5
+; 	dc.b 0,16
+; 	dc.w 2+5
+; 	dc.b 0,0
+; 	dc.w 1+5
+; 	dc.b 16,0
+; 	dc.w 4+5
+; 	dc.b 16,16
+; 	dc.w 258,400,0
+
+ dc.w 2,0
+	dc.w 27
+	dc.b 64,0
+	dc.w 7
+	dc.b 64,64
+	dc.w 6
+	dc.b 0,64
+	dc.w 27
+	dc.b 0,0
+	dc.w 1,400,0
+ dc.w 2,0
+	dc.w 27
+	dc.b 64,0
+	dc.w 6
+	dc.b 64,64
+	dc.w 9
+	dc.b 0,64
+	dc.w 27
+	dc.b 0,0
+	dc.w 1,400,0
+ dc.w 2,0
+	dc.w 27
+	dc.b 64,0
+	dc.w 9
+	dc.b 64,64
+	dc.w 8
+	dc.b 0,64
+	dc.w 27
+	dc.b 0,0
+	dc.w 1,400,0
+ dc.w 2,0
+	dc.w 27
+	dc.b 64,0
+	dc.w 8
+	dc.b 64,64
+	dc.w 7
+	dc.b 0,64
+	dc.w 27
+	dc.b 0,0
+	dc.w 1,400,0
+
+
+
+ dc.w 2,0
+	dc.w 29
+	dc.b 8,32
+	dc.w 2+5
+	dc.b 0,0
+	dc.w 3+5
+	dc.b 16,0
+	dc.w 29
+	dc.b 8,32
+	dc.w 3,800,0
+
+*****
+ dc.w 3,0
+ 	dc.w 6
+ 	dc.b 0,64
+ 	dc.w 18
+ 	dc.b 0,0
+ 	dc.w 19
+ 	dc.b 16,0
+ 	dc.w 7
+ 	dc.b 16,64
+ 	dc.w 6
+ 	dc.b 0,64
+ 	dc.w 3,800,0
+
+ dc.w 3,0
+ 	dc.w 18
+ 	dc.b 0,16
+ 	dc.w 20
+ 	dc.b 0,0
+ 	dc.w 21
+ 	dc.b 16,0
+ 	dc.w 19
+ 	dc.b 16,16
+ 	dc.w 18
+ 	dc.b 0,64
+ 	dc.w 3,400,0
+
+ dc.w 3,0
+ 	dc.w 20
+ 	dc.b 0,16
+ 	dc.w 22
+ 	dc.b 0,0
+ 	dc.w 23
+ 	dc.b 16,0
+ 	dc.w 21
+ 	dc.b 16,16
+ 	dc.w 20
+ 	dc.b 0,64
+ 	dc.w 3,400,0
+
+
+ dc.w 4,0
+ 	dc.w 7
+ 	dc.b 16,64
+ 	dc.w 19
+ 	dc.b 32,8
+ 	dc.w 21
+ 	dc.b 16,0
+ 	dc.w 23
+ 	dc.b 0,8
+ 	dc.w 25
+ 	dc.b 0,64
+ 	dc.w 7
+ 	dc.b 16,64
+ 	dc.w 3,800,0
+
+ dc.w 4,0
+ 	dc.w 6
+ 	dc.b 16,64
+ 	dc.w 24
+ 	dc.b 0,64
+ 	dc.w 22
+ 	dc.b 0,8
+ 	dc.w 20
+ 	dc.b 16,0
+ 	dc.w 18
+ 	dc.b 32,8
+ 	dc.w 6
+ 	dc.b 16,64
+ 	dc.w 3,800,0
+
+ dc.w -1
+
+*****
+
+

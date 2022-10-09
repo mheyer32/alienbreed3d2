@@ -1,0 +1,14 @@
+
+yellow_des:
+ dc.l yellowPts
+ dc.l yellowLines
+
+yellowPts:
+ incbin "work:amos_pro/yellowind.obj"
+ dc.w -1
+
+yellowLines:
+ dc.l 0
+ dc.w 0*10
+ dc.l -1
+

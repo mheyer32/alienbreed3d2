@@ -1,0 +1,2 @@
+TITLEPAL:
+				incbin	"includes/newtitlepal"

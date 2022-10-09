@@ -1,0 +1,15 @@
+CHANGES MADE TODAY:
+
+ Stopped lazer bullets slowing down
+ (no gravity value=no slowdown)
+ Files Changed: NEWANIMS (itsabullet)
+
+ Define a 'centre view' key.
+ Files Changed: PLR1&2control.s (keyboard control)
+ 		Controlloop.s (new line for centre key
+ 				and name.
+ 
+ Changes the blaster bolt.
+ Made a new bullet type which moves 2x faster, is
+ a bit smaller, but otherwise the same.
+ 		

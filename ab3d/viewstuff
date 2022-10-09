@@ -1,0 +1,12 @@
+*-----------------------------------------------------------------------------------------------------*
+		Lea	Oss__GfxName(a5),a1	
+		Moveq.l	#0,d0
+		Move.l	$4.w,a6		
+		Jsr	-$228(a6)			OpenLibrary
+		Move.l 	d0,Oss__GfxBase(a5)		Save Gfx Base
+		Move.l	d0,a6				Use As Base Reg
+		Move.l	34(a6),Oss__OldWBView(a5)	Save Olb View
+*-----------------------------------------------------------------------------------------------------*
+		Move.l	Oss__GfxBase(a5),a6	
+		Move.l	Oss__OldWBView(a5),a1	
+		Jsr	-$de(a6)		

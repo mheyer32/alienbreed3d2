@@ -1,0 +1,58 @@
+start: 
+ move.l #GUNVALS,a5
+ moveq #0,d0
+ move.w #7,d2
+ move.l #GOTGUNS,a6
+
+.findcurrent: 
+ cmp.b (a5,d0.w),d2
+ beq.s .foundcurrent
+ add.b #1,d0
+ bra .findcurrent
+
+.foundcurrent:
+ 
+ moveq #0,d2
+.picknext:
+ add.b #1,d0
+ cmp.b #4,d0
+ ble.s .notfirst
+ move.b #0,d0
+.notfirst:
+ 
+ moveq #0,d2
+ moveq #0,d3 
+ move.b (a5,d0.w),d2
+ move.b d2,d3
+; lsl.w #5,d2
+ tst.b (a6,d2.w)
+ beq.s .picknext
+ move.b d3,newgun
+
+ rts
+ 
+newgun:
+ dc.w 0
+ 
+GUNVALS:
+; machine gun
+ dc.b 0
+; shotgun
+ dc.b 7
+; plasma
+ dc.b 1
+; grenade
+ dc.b 4
+; rocket
+ dc.b 2
+
+GOTGUNS:
+ dc.b 1
+ dc.b 0
+ dc.b 0
+ dc.b 0
+ dc.b 0
+ dc.b 0
+ dc.b 0
+ dc.b 1
+ 

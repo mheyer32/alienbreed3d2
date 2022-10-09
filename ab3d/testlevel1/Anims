@@ -1,0 +1,284 @@
+ objvels: ds.l 8
+maxmin: 
+ dc.w 10,-10
+ dc.w 8,-8
+ dc.w 7,-7
+ dc.w 9,-9
+
+objmoveanim:
+ bsr Nasties
+ bsr PlayerShot
+ bsr fruitmove
+ rts
+ 
+rotcount:
+ dc.w 0
+ 
+fruitmove:
+
+ move.l #ObjectData+5*16,a0
+ move.l #fruitadds,a1
+ move.l #fruitvels,a3
+ move.w rotcount,d0
+ add.w #16*64,d0
+ cmp.w #16*64*6,d0
+ blt.s notresetrot
+ move.w #0,d0
+notresetrot
+ move.w d0,rotcount
+ moveq #3,d7
+rotfruit
+ move.l (a1)+,a2
+ adda.w d0,a2
+ move.l a2,8(a0)
+ 
+ move.w (a3),d1
+ 
+ move.w 4(a0),d2
+ add.w d1,d2
+ cmp.w #64+96,d2
+ blt.s notbounce
+ neg.w d1
+ sub.w #1,d1
+notbounce:
+ add.w #1,d1
+ move.w d2,4(a0)
+ move.w d1,(a3)+
+ 
+ add.w #16,a0
+ dbra d7,rotfruit
+
+ rts
+ 
+fruitvels:
+ dc.w 0,-3,2,-4 
+ 
+fruitadds:
+ dc.l Objects+4096*6
+ dc.l Objects+4096*6+16
+ dc.l Objects+4096*6+32
+ dc.l Objects+4096*6+48
+
+shotxvel: dc.w 50
+shotzvel: dc.w 0
+
+clicked: dc.w 0
+
+PlayerShot:
+
+ tst.b clicked
+ bne pressedfire
+
+ move.l #ObjectData+10*16,a0
+ move.w 12(a0),d0
+ bge.s inplay
+ 
+ rts
+ 
+inplay:
+
+ move.l #Points,a1
+ move.w (a0),d1
+ lea (a1,d1.w*4),a1
+ 
+ move.w (a1),d2
+ move.w d2,oldx
+ add.w shotxvel,d2
+ move.w d2,newx
+ move.w 2(a1),d2
+ move.w d2,oldz
+ add.w shotzvel,d2
+ move.w d2,newz
+ move.l #ZoneAdds,a2
+ move.l (a2,d0.w*4),objroom
+ move.w shotxvel,xdiff
+ move.w shotzvel,zdiff
+ movem.l a0/a1/a2/d0,-(a7)
+ jsr MoveObject
+ movem.l (a7)+,a0/a1/a2/d0
+ tst.b hitwall
+ beq.s nothitwall
+ 
+ move.w #-1,12(a0)
+ rts
+ 
+nothitwall:
+
+ move.l objroom,a3
+ move.w (a3),12(a0)
+ move.w newx,(a1)
+ move.w newz,2(a1)
+
+ rts
+
+pressedfire:
+
+ move.l #ObjectData+10*16,a0
+ move.w 12(a0),d0
+; bge inplay
+
+ move.l #Points,a1
+ move.w (a0),d1
+ lea (a1,d1.w*4),a1
+ move.w xoff,(a1)
+ move.w zoff,2(a1)
+ move.w angpos,d0
+ move.l #SineTable,a2
+ adda.w d0,a2
+ move.w (a2),d0
+ ext.l d0
+ asl.l #7,d0
+ swap d0
+ move.w d0,shotxvel
+ move.w 2048(a2),d0
+ ext.l d0
+ asl.l #7,d0
+ swap d0
+ move.w d0,shotzvel
+ move.l Roompt,a2
+ move.w (a2),12(a0)
+ move.l 2(a2),d0
+ asr.l #7,d0
+ move.w d0,4(a0)
+ move.w (a2),d0
+ 
+ bra inplay
+
+ rts
+
+Nasties:
+
+ move.l #objvels,a3
+ move.l #maxmin,a4
+ moveq #3,d7
+ move.l #ObjectData,a0
+ move.l #Points+34*4,a1
+objloop: 
+ move.l #0,(a3)
+
+ move.w 4(a0),d0
+ cmp.w 4(a3),d0
+ beq.s rightheight
+ bgt.s goingdown
+ add.w #10,d0
+goingdown:
+ subq #8,d0
+rightheight:
+ move.w d0,4(a0)
+ 
+ move.w (a1),d0
+ move.w 2(a1),d1
+ move.w xoff,d2
+ move.w zoff,d3
+ sub.w d0,d2
+ sub.w d1,d3
+ move.w (a4)+,d4
+ move.w (a4)+,d5
+ cmp.w d4,d2
+ blt.s .notoofastr
+ move.w d4,d2
+.notoofastr
+ cmp.w d5,d2
+ bgt.s .notoofastl
+ move.w d5,d2
+.notoofastl
+ cmp.w d4,d3
+ blt.s .notoofasti
+ move.w d4,d3
+.notoofasti
+ cmp.w d5,d3
+ bgt.s .notoofasto
+ move.w d5,d3
+.notoofasto
+
+ move.w d2,(a3)
+ move.w d3,2(a3)
+
+ move.w 12(a0),d2
+ move.l ZoneAdds(pc,d2.w*4),objroom
+ move.w d0,oldx
+ move.w d1,oldz
+ add.w (a3),d0
+ add.w 2(a3),d1
+ move.w d0,newx
+ move.w d1,newz
+ move.w (a3),xdiff
+ move.w 2(a3),zdiff
+ movem.l a0/a1/a3/a4/d7,-(a7)
+ Jsr MoveObject
+ movem.l (a7)+,a0/a1/a3/a4/d7
+ 
+ move.l objroom,a2
+ move.w (a2),12(a0)
+ move.w 6(a2),2(a0)
+ move.l 2(a2),d0
+ asr.l #7,d0
+ move.w d0,4(a3)
+ 
+ move.w newx,(a1)+
+ move.w newz,(a1)+
+ addq #6,a3
+ adda.w #16,a0
+ dbra d7,objloop
+
+ rts
+ 
+ZoneAdds:
+ dc.l ZoneDat0
+ dc.l ZoneDat1
+ dc.l ZoneDat2
+ dc.l ZoneDat3
+ dc.l ZoneDat4
+ dc.l ZoneDat5
+ dc.l ZoneDat6
+ dc.l ZoneDat7
+ dc.l ZoneDat8
+ dc.l ZoneDat9
+ dc.l ZoneDat10
+ dc.l ZoneDat11
+ dc.l ZoneDat12
+ dc.l ZoneDat13
+ dc.l ZoneDat14
+ dc.l ZoneDat15
+ 
+putinbackdrop:
+
+ move.w angpos,d5
+ add.w #2048,d5
+ and.w #8191,d5
+ muls #432,d5
+ divs #8192,d5
+ muls #160,d5
+
+ CACHE_ON d1
+
+ move.l frompt,a0
+ adda.w #104*4,a0
+ move.l #BackPicture,a1
+ add.l d5,a1
+ move.w #104*4,d1
+ move.w #2,d4
+allbars:
+ move.w #31,d3
+onebar:
+ move.w #1,d0
+ move.l a0,a2
+vertline:
+ REPT 20
+ move.w (a1)+,(a2)
+ adda.w d1,a2
+ ENDR
+ dbra d0,vertline
+ 
+ adda.w #80,a1
+ 
+ cmp.l #EndBackPicture,a1
+ blt.s notoffrightend
+ move.l #BackPicture,a1
+notoffrightend
+ 
+ addq #4,a0
+ dbra d3,onebar
+ addq #4,a0
+ dbra d4,allbars
+ rts

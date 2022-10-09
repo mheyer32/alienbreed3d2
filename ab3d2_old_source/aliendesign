@@ -1,0 +1,102 @@
+
+	Enemies to design:
+	
+NB * = already used for something else so no more
+	memory used.
+	
+Overall guidelines:
+	32 colours
+	3 directions to draw: front view,
+	right view and back view.
+	4 frames of animation on each view
+	+ a single front frame with gun firing
+	or spitting etc.
+	4-frame dying animation.
+	
+	Aliens can be of any size but unless
+	VERY big+important should be no more
+	than 64*64 pixels. Large impressive
+	ones can be 128*128 but it should be
+	noted that using these in a level may
+	restrict the variety of other aliens
+	available for that level.
+	
+	No aliens should be entirely robotic-
+	if they are, we will design a vector
+	object version (less memory+better
+	looking)
+	
+	Any bullets required for the alien to
+	fire must also be drawn. If a seperate
+	palette is necessary, draw on a seperate
+	screen; don't use 64 colour screen!
+	
+	Any 'special moves' the alien does
+	can only sensibly be drawn from front
+	view + no more than 4 frames. Would
+	be possible to construct longer anims
+	from those four frames (eg pulsing before
+	shooting).
+	
+	If animations are of any form other than
+	1,2,3,4,1,2,3,4,1,2,3,4,1,2,3,4 etc,
+	could you make a list of the order?
+
+Red aliens:
+	First Generation Breed
+
+	Cannon fodder to force usage of ammo!
+	Change palette slightly?
+	NEED DYING FRAMES.	
+
+Mutant marines
+	Hybrids
+
+	same as ordinary marines but with
+	some sort of mutant growth on head etc.
+	
+	Fires a rifle-type weapon (no bullets
+	visible) so a single frame with small
+	gun flash and front illuminated. Also
+	in a different pallete to the player 2
+	graphics. Use existing marine graphics
+	as basis for this enemy.
+
+	ALSO NEED DYING FRAMES FOR PLAYER 2
+	AND MUTANT MARINES.
+	
+	Sounds:
+	
+	gargling dying sound (avail)
+	shooting sound	(avail)	*
+	shuffling walk (?)
+	Scream of pain (muffled)
+	Gurgling sound (as he wanders around)
+
+Flying pink balls:
+
+	Floaters
+
+	Palette redesign needed. Need other
+	anim frames (only one in each direction
+	at the moment) + dying and shooting.
+
+Large humanoid with blade hands:
+	Second Generation Cyborg Hybrid
+
+	128*128 pixels? Probably, for detail.
+	Special move: blade slash close up.
+	(3 FRAMES)
+	Firing: At range, points other arm and
+	fires volley of automatic fire. (1 FRAME)
+	Also: pushes back arms (like someone
+	skydiving) and fires large burst of plasma
+	bolts(1 frame) from face/chest area
+	
+	NB: Frames for this alien should be RUNNING
+	not walking.
+
+	Very hard to kill, this one. Also very big
+	and tall. Probably used for a mid-game
+	big baddie (perhaps two or three of them in
+	a specially designed level)

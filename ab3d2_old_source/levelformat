@@ -1,0 +1,97 @@
+
+0	PLAYERSTARTX	(w)
+2	PLAYERSTARTZ	(w)
+4	PLAYERSTARTZONE (w)
+6	NUM CONTOL PTS	(w)
+8	NUM POINTS	(w)
+10	NUM ZONES	(w)
+12	NUM FLOORLINES	(w)
+14	NUM OBJECT PTS	(w)
+16	PTR TO POINTS	(l)
+20	PTR TO FLOORLINES (l)
+24	PTR TO OBJECTS	(l)
+28	PTR TO PLAYERSHOTS (l)
+32	PTR TO ENEMYSHOTS (l)
+36	PTR TO OBJECTPTS (L)
+40	PTR TO PLR1_OBJ (L)
+44	PTR TO PLR2_OBJ (L)
+
+	CONTROL POINTS... (w*2)
+
+	OBJECT PTS (lw*2)
+
+	OBJECT DATA (64bytes each)
+	-1 (w)
+
+	Points (w*2)
+
+	FloorLines (32 bytes each)
+	
+	***********************
+	ZoneBorders (ends in -1)
+	ZoneDat:
+		numzone (w)
+		floorheight (L)
+		roofheight (l)
+		zb (w) ?
+		cpt (w)
+		0 (l)
+		Offset to borders(w)
+			from zonedat
+		Offset to points(w)
+			from zonedat
+		DrawBackDrop(w)
+	
+	(ZoneGraphNumber,clip addr (w)
+	CORD (l))
+	-1 (l) at end of list.
+	Then list of points (w)
+	terminated with -1
+	
+	***********************
+	
+GRAPHICS FILE FORMAT:
+
+0 Pointer to doors (l)
+4 pointer to lifts (l)
+8 pointer to switches (l)
+12 pointer to zone graph offsets
+
+Offsets to zonedata from start of level
+data (already filled in) (l)
+
+Offsets to zone graph data from start
+of this file (already filled in)
+
+Zone Graph data
+(starts with zone number)
+
+Door Data:
+	Bottom,top,currheight,dir (w)
+	Pointer to roof (l)
+	number of zone (w)
+ 	conditions (l)
+ 	
+ 	***
+ 	wall number
+ 	pointer to wall graph
+ 	graphic
+ 	***
+ 
+ LiftData:
+ 	Bottom,top,currheight,dir (w)
+	Pointer to roof (l)
+	number of zone (w)
+ 	conditions (l)
+ 	
+ 	***
+ 	wall number
+ 	pointer to wall graph
+ 	graphic
+ 	***
+
+SwitchData:
+	NUM ZONE (w)
+	First point (w)
+	Ptr to graphics (l)
+	status (l)
