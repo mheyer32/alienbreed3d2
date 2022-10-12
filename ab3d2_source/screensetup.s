@@ -317,3 +317,4 @@ DisplayMsgPort	dc.l	0						; this message port receives messages when the curren
 												; i.e. when the screen flip actually happened
 ScreenBufferIndex dc.w	0						; Index (0/1) of current screen buffer displayed.
 												; FIXME: unify the buffer index handling with SCRNDRAWPT/SCRNSHOWPT
+MsgStarted	dc.w	0							;used for a test to nothing before syncDblBuffer in hires.s

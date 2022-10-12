@@ -613,7 +613,10 @@ noclips:
 				; move.l #Blurbfield,$dff080
 
 ******************************************************************************************************************
+				tst.w	MsgStarted		;if I remove this test I get garbage ong the screen
+				bne.s	.done			;Don't understand why...
 				jsr	syncDblBuffer		;moved to screensetup.s
+.done
 ******************************************************************************************************************
 
 				jsr		INITPLAYER
