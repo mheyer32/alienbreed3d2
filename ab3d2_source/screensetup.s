@@ -174,34 +174,33 @@ SetupDoubleheightCopperlist:
 ****************************************************************
 syncDblBuffer:
 				move.l	a6,-(sp)
+
+				;empty DisplayMsgPort and set ScreenBufferIndex to 0
+				;so the starting point is the same every time
+.clrMsgPort			move.l	DisplayMsgPort,a0
+				CALLEXEC GetMsg
+				tst.l	d0
+				bne.s	.clrMsgPort
+				move.l	#0,ScreenBufferIndex
+
 				; Flip screen once, to initiate the message queue.
 				; Otherwise we'd be stuck on the very first frame
 				; waiting on DisplayMsgPort for a message that'll
 				; never arrive.
-				move.w	ScreenBufferIndex,d0
+.nok
 				lea	ScreenBuffers,a1
+				move.w	ScreenBufferIndex,d0
+				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
+				move.l	MainScreen,a0
+				CALLINT	ChangeScreenBuffer		; DisplayMsgPort will be notified if this image had been fully scanned out
+				tst.l	d0
+				beq.s	.nok
 
-				tst.w	d0
-				beq.s	.zero
+				move.w	ScreenBufferIndex,d0
 
 				eor.w	#1,d0					; flip  screen index
 				move.w	d0,ScreenBufferIndex
-				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
-				move.l	MainScreen,a0
-				CALLINT	ChangeScreenBuffer
-				bra	.done
-.zero
-				eor.w	#1,d0					; flip  screen index
-				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
-				move.l	MainScreen,a0
-				CALLINT	ChangeScreenBuffer
 
-				move.w	ScreenBufferIndex,d0
-				lea	ScreenBuffers,a1
-				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
-				move.l	MainScreen,a0
-				CALLINT	ChangeScreenBuffer
-.done
 				move.l	(sp)+,a6
 				rts
 ****************************************************************
@@ -222,14 +221,18 @@ doDblBuffer:
 				CALLEXEC GetMsg
 				tst.l	d0
 				bne.s	.clrMsgPort
-
-				move.w	ScreenBufferIndex,d0
+.nok
 				lea	ScreenBuffers,a1
-				eor.w	#1,d0					; flip  screen index
-				move.w	d0,ScreenBufferIndex
+				move.w	ScreenBufferIndex,d0
+
 				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
 				move.l	MainScreen,a0
 				CALLINT	ChangeScreenBuffer		; DisplayMsgPort will be notified if this image had been fully scanned out
+				tst.l	d0
+				beq.s	.nok
+				move.w	ScreenBufferIndex,d0
+				eor.w	#1,d0					; flip  screen index
+				move.w	d0,ScreenBufferIndex
 
 				move.l	(sp)+,a6
 				rts
