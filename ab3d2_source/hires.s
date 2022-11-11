@@ -430,18 +430,18 @@ AppName:		dc.b	'TheKillingGrounds',0
 				cnop	0,4
 
 VBLANKInt:
-				dc.l	0,0						;is_Node
-				dc.b	NT_INTERRUPT,9			;is_Node
-				dc.l	AppName					;is_Node
+				dc.l	0,0						;is_Node ln_Succ, ln_Pred
+				dc.b	NT_INTERRUPT,9			;is_Node ln_Type; ln_Pri
+				dc.l	AppName					;is_Node ln_Name
 				dc.l	0						;is_Data
 				dc.l	VBlankInterrupt			;is_Code
 
 KEYInt:
-				dc.l	0,0
-				dc.b	NT_INTERRUPT,127
-				dc.l	AppName
-				dc.l	0
-				dc.l	key_interrupt
+				dc.l	0,0						;is_Node ln_Succ, ln_Pred
+				dc.b	NT_INTERRUPT,127		;is_Node ln_Type; ln_Pri
+				dc.l	AppName					;is_Node ln_Name
+				dc.l	0						;is_Data
+				dc.l	key_interrupt			;is_Code
 
 blag:
 ****************************
@@ -9608,7 +9608,8 @@ VBlankInterrupt:
 .noint:
 				GETREGS
 				lea		_custom,a0				; place custom base into a0 (See autodocs for AddIntServer)
-				moveq	#1,d0
+				moveq	#0,d0					; VERTB interrupt needs to return Z flag set
+
 				rts
 .routine
 ;FIXME:  Wait, does the whole game run as part of the VBLank (formerly copper interrupt)?
@@ -9618,6 +9619,7 @@ VBlankInterrupt:
 				movem.l	d0-d7/a0-a6,-(a7)
 				bra		JUSTSOUNDS
 
+				moveq	#0,d0					; VERTB interrupt needs to return Z flag set
 				rts
 
 tabheld:		dc.w	0
