@@ -612,19 +612,15 @@ noclips:
 				; FIXME: reimplement level blurb
 				; move.l #Blurbfield,$dff080
 
-				; Flip screen once, to initiate the message queue.
-				; Otherwise we'd be stuck on the very first frame
-				; waiting on DisplayMsgPort for a message that'll
-				; never arrive.
-XXX				move.w	ScreenBufferIndex,d0
-				lea		ScreenBuffers,a1
-				eor.w	#1,d0					; flip  screen index
-				move.w	d0,ScreenBufferIndex
+				clr.w	ScreenBufferIndex
 
-				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
-
+.tryAgain		move.l	ScreenBuffers,a1
 				move.l	MainScreen,a0
 				CALLINT	ChangeScreenBuffer
+				tst.l	d0
+				beq.s	.tryAgain
+
+				clr.b	WaitForDisplayMsg
 
 ****************************
 				jsr		INITPLAYER
@@ -1221,26 +1217,35 @@ waitmaster:
 				; to fully produce the next frame before the last frame has been scanned out.
 				; We could move the screen flipping into its own thread that flips asynchronously.
 				; It does not seem very practical, though as this scenario
+				tst.b	WaitForDisplayMsg
+				beq.s	.noWait
 
 				move.l	DisplayMsgPort,a0
 				move.l	a0,a3
-				CALLEXEC WaitPort
-.clrMsgPort			move.l	a3,a0
-				CALLEXEC GetMsg
+				CALLEXEC WaitPort				; wait for when the old image has been displayed
+.clrMsgPort		move.l	a3,a0
+				CALLEXEC GetMsg					; clear message port
 				tst.l	d0
 				bne.s	.clrMsgPort
 
-				move.w	ScreenBufferIndex,d0
+.noWait			move.w	ScreenBufferIndex,d2
 				lea		ScreenBuffers,a1
-
-				eor.w	#1,d0					; flip  screen index
-				move.w	d0,ScreenBufferIndex
-
-				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
+				eor.w	#1,d2					; flip  screen index
+				move.l	(a1,d2.w*4),a1			; grab ScreenBuffer pointer
 
 				move.l	MainScreen,a0
 				CALLINT	ChangeScreenBuffer		; DisplayMsgPort will be notified if this image had been fully scanned out
 
+				tst.l	d0
+				beq.s	.failed
+
+				move.w	d2,ScreenBufferIndex
+				st.b	WaitForDisplayMsg
+				bra.s	.screenSwapDone
+
+.failed			clr.b	WaitForDisplayMsg		; last attempt failed, so don't wait for next message
+
+.screenSwapDone
 *****************************************************************
 
 				move.l	#SMIDDLEY,a0
