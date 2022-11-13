@@ -15,6 +15,7 @@
 				include	exec/semaphores.i
 				include	exec/tasks.i
 				include	exec/types.i
+				include exec/execbase.i
 
 				include	graphics/clip.i
 				include	graphics/copper.i
