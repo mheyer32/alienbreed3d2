@@ -1139,7 +1139,7 @@ lop:
 ;				move.l	d0,hitcol
 nofadedownhc:
 
-				bsr		LoadMainPalette
+				;bsr		LoadMainPalette		; should only reload the palatte when hit
 
 				st		READCONTROLS
 				move.l	#$dff000,a6
