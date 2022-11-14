@@ -10572,8 +10572,12 @@ JUSTSOUNDS:
 
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				moveq	#0,d0
+				moveq	#0,d0					; VERTB interrupt needs to return Z flag set
 				rts
+
+********************************************************************
+* End of VBlank code
+********************************************************************
 
 
 dosounds:		dc.w	0
@@ -10964,7 +10968,7 @@ notoffendsamp4:
 
 				move.w	#$820f,$dff000+dmacon
 
-				moveq	#0,d0
+				moveq	#0,d0					; VERTB interrupt needs to return Z flag set
 				rts
 
 ***********************************
@@ -11157,7 +11161,7 @@ chan3still:
 
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				moveq	#0,d0
+				moveq	#0,d0					; VERTB interrupt needs to return Z flag set
 				rts
 
 backbeat:		dc.w	0
