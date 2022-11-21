@@ -9842,7 +9842,7 @@ dosomething:
 				bsr		DOALLANIMS
 
 				sub.w	#1,timetodamage
-				bgt.s	.nodam
+				bgt		.nodam
 
 				move.w	#100,timetodamage
 
