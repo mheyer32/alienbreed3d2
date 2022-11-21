@@ -9856,7 +9856,7 @@ dosomething:
 				; Issue #1 - Check we are on the floor before applying any floor damage.
 				; TODO - add water checks. Water in areas with floor damage could be acid pools.
 				move.l	PLR1s_tyoff,d1
-				sub.l	PLR1s_yoff,d1
+				cmp.l	PLR1s_yoff,d1
 				bgt.b	.not_on_floor1
 
 				move.l	GLF_DatabasePtr_l,a0
@@ -9876,7 +9876,7 @@ dosomething:
 				; Issue #1 - Check we are on the floor before applying any floor damage.
 				; TODO - add water checks. Water in areas with floor damage could be acid pools.
 				move.l	PLR2s_tyoff,d1
-				sub.l	PLR2s_yoff,d1
+				cmp.l	PLR2s_yoff,d1
 				bgt.b	.not_on_floor2
 
 				move.l	GLF_DatabasePtr_l,a0
