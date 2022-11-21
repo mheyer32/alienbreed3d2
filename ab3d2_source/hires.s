@@ -9847,18 +9847,23 @@ dosomething:
 				move.w	#100,timetodamage
 
 				move.l	PLR1_Roompt,a0
+				move.l	ZoneT_Water_l(a0),d2      ; Water depth in d2
 				move.w	ZoneT_FloorNoise_w(a0),d0
 				tst.b	PLR1_StoodInTop
 				beq.s	.okinbot
 				move.w	ZoneT_UpperFloorNoise_w(a0),d0
 
 .okinbot:
-				; Issue #1 - Check we are on the floor before applying any floor damage.
-				; TODO - add water checks. Water in areas with floor damage could be acid pools.
+				; Issue #1 - Check we are on the floor or swimming before applying any floor damage.
+				cmp.l	PLR1s_yoff,d2
+				blt.b   .in_toxic_liquid1
+
+				; Player not in liquid, check if on floor.
 				move.l	PLR1s_tyoff,d1
 				cmp.l	PLR1s_yoff,d1
 				bgt.b	.not_on_floor1
 
+.in_toxic_liquid1:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_FloorData_l,a0
 				move.w	(a0,d0.w*4),d0			; floor damage.
@@ -9867,18 +9872,23 @@ dosomething:
 
 .not_on_floor1:
 				move.l	PLR2_Roompt,a0
+				move.l	ZoneT_Water_l(a0),d2      ; Water depth in d2
 				move.w	ZoneT_FloorNoise_w(a0),d0
 				tst.b	PLR2_StoodInTop
 				beq.s	.okinbot2
 				move.w	ZoneT_UpperFloorNoise_w(a0),d0
 
 .okinbot2:
-				; Issue #1 - Check we are on the floor before applying any floor damage.
-				; TODO - add water checks. Water in areas with floor damage could be acid pools.
+				; Issue #1 - Check we are on the floor or swimming before applying any floor damage.
+				cmp.l	PLR2s_yoff,d2
+				blt.b   .in_toxic_liquid2
+
+				; Player not in liquid, check if on floor.
 				move.l	PLR2s_tyoff,d1
 				cmp.l	PLR2s_yoff,d1
 				bgt.b	.not_on_floor2
 
+.in_toxic_liquid2:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_FloorData_l,a0
 				move.w	(a0,d0.w*4),d0			; floor damage.
