@@ -9834,9 +9834,6 @@ timetodamage:	dc.w	0
 SAVESAVE:		dc.w	0
 
 dosomething:
-
-
-
 				addq.w	#1,FramesToDraw
 				movem.l	d0-d7/a0-a6,-(a7)
 
@@ -9845,7 +9842,7 @@ dosomething:
 				bsr		DOALLANIMS
 
 				sub.w	#1,timetodamage
-				bgt.s	.nodam
+				bgt		.nodam
 
 				move.w	#100,timetodamage
 
@@ -9854,30 +9851,42 @@ dosomething:
 				tst.b	PLR1_StoodInTop
 				beq.s	.okinbot
 				move.w	ZoneT_UpperFloorNoise_w(a0),d0
+
 .okinbot:
+				; Issue #1 - Check we are on the floor before applying any floor damage.
+				; TODO - add water checks. Water in areas with floor damage could be acid pools.
+				move.l	PLR1s_tyoff,d1
+				cmp.l	PLR1s_yoff,d1
+				bgt.b	.not_on_floor1
 
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_FloorData_l,a0
-				move.w	(a0,d0.w*4),d0			; damage.
+				move.w	(a0,d0.w*4),d0			; floor damage.
 				move.l	PLR1_Obj,a0
 				add.b	d0,EntT_DamageTaken_b(a0)
 
+.not_on_floor1:
 				move.l	PLR2_Roompt,a0
 				move.w	ZoneT_FloorNoise_w(a0),d0
 				tst.b	PLR2_StoodInTop
 				beq.s	.okinbot2
 				move.w	ZoneT_UpperFloorNoise_w(a0),d0
+
 .okinbot2:
+				; Issue #1 - Check we are on the floor before applying any floor damage.
+				; TODO - add water checks. Water in areas with floor damage could be acid pools.
+				move.l	PLR2s_tyoff,d1
+				cmp.l	PLR2s_yoff,d1
+				bgt.b	.not_on_floor2
 
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_FloorData_l,a0
-				move.w	(a0,d0.w*4),d0			; damage.
-
+				move.w	(a0,d0.w*4),d0			; floor damage.
 				move.l	PLR2_Obj,a0
 				add.b	d0,EntT_DamageTaken_b(a0)
 
+.not_on_floor2:
 .nodam:
-
 				move.l	#KeyMap,a5
 
 				tst.b	82(a5)					;f3
