@@ -453,18 +453,18 @@ AppName:		dc.b	'TheKillingGrounds',0
 				cnop	0,4
 
 VBLANKInt:
-				dc.l	0,0						;is_Node
-				dc.b	NT_INTERRUPT,9			;is_Node
-				dc.l	AppName					;is_Node
+				dc.l	0,0						;is_Node ln_Succ, ln_Pred
+				dc.b	NT_INTERRUPT,9			;is_Node ln_Type; ln_Pri
+				dc.l	AppName					;is_Node ln_Name
 				dc.l	0						;is_Data
 				dc.l	VBlankInterrupt			;is_Code
 
 KEYInt:
-				dc.l	0,0
-				dc.b	NT_INTERRUPT,127
-				dc.l	AppName
-				dc.l	0
-				dc.l	key_interrupt
+				dc.l	0,0						;is_Node ln_Succ, ln_Pred
+				dc.b	NT_INTERRUPT,127		;is_Node ln_Type; ln_Pri
+				dc.l	AppName					;is_Node ln_Name
+				dc.l	0						;is_Data
+				dc.l	key_interrupt			;is_Code
 
 blag:
 ****************************
@@ -635,19 +635,15 @@ noclips:
 				; FIXME: reimplement level blurb
 ; move.l #Blurbfield,$dff080
 
-				; Flip screen once, to initiate the message queue.
-				; Otherwise we'd be stuck on the very first frame
-				; waiting on DisplayMsgPort for a message that'll
-				; never arrive.
-XXX				move.w	ScreenBufferIndex,d0
-				lea		ScreenBuffers,a1
-				eor.w	#1,d0					; flip  screen index
-				move.w	d0,ScreenBufferIndex
+				clr.w	ScreenBufferIndex
 
-				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
-
+.tryAgain		move.l	ScreenBuffers,a1
 				move.l	MainScreen,a0
 				CALLINT	ChangeScreenBuffer
+				tst.l	d0
+				beq.s	.tryAgain
+
+				clr.b	WaitForDisplayMsg
 
 ****************************
 				jsr		INITPLAYER
@@ -1166,7 +1162,7 @@ lop:
 ;				move.l	d0,hitcol
 nofadedownhc:
 
-				bsr		LoadMainPalette
+				;bsr		LoadMainPalette		; should only reload the palatte when hit
 
 				st		READCONTROLS
 				move.l	#$dff000,a6
@@ -1256,26 +1252,35 @@ waitmaster:
 				; to fully produce the next frame before the last frame has been scanned out.
 				; We could move the screen flipping into its own thread that flips asynchronously.
 				; It does not seem very practical, though as this scenario
+				tst.b	WaitForDisplayMsg
+				beq.s	.noWait
 
 				move.l	DisplayMsgPort,a0
 				move.l	a0,a3
-				CALLEXEC WaitPort
-.clrMsgPort			move.l	a3,a0
-				CALLEXEC GetMsg
+				CALLEXEC WaitPort				; wait for when the old image has been displayed
+.clrMsgPort		move.l	a3,a0
+				CALLEXEC GetMsg					; clear message port
 				tst.l	d0
 				bne.s	.clrMsgPort
 
-				move.w	ScreenBufferIndex,d0
+.noWait			move.w	ScreenBufferIndex,d2
 				lea		ScreenBuffers,a1
-
-				eor.w	#1,d0					; flip  screen index
-				move.w	d0,ScreenBufferIndex
-
-				move.l	(a1,d0.w*4),a1			; grab ScreenBuffer pointer
+				eor.w	#1,d2					; flip  screen index
+				move.l	(a1,d2.w*4),a1			; grab ScreenBuffer pointer
 
 				move.l	MainScreen,a0
 				CALLINT	ChangeScreenBuffer		; DisplayMsgPort will be notified if this image had been fully scanned out
 
+				tst.l	d0
+				beq.s	.failed
+
+				move.w	d2,ScreenBufferIndex
+				st.b	WaitForDisplayMsg
+				bra.s	.screenSwapDone
+
+.failed			clr.b	WaitForDisplayMsg		; last attempt failed, so don't wait for next message
+
+.screenSwapDone
 				jsr	FPS_time2				;fps counter c/o Grond
 *****************************************************************
 				jsr	FPS_time1				;fps counter c/o Grond
@@ -3096,7 +3101,7 @@ downmorerightFAT:
 SAVETHESCREEN:
 
 				move.l	#SAVENAME,d1
-				move.l	#1006,d2
+				move.l	#MODE_NEWFILE,d2
 				CALLDOS	Open
 				move.l	d0,IO_DOSFileHandle_l
 
@@ -9649,7 +9654,8 @@ VBlankInterrupt:
 .noint:
 				GETREGS
 				lea		_custom,a0				; place custom base into a0 (See autodocs for AddIntServer)
-				moveq	#1,d0
+				moveq	#0,d0					; VERTB interrupt needs to return Z flag set
+
 				rts
 .routine
 ;FIXME:  Wait, does the whole game run as part of the VBLank (formerly copper interrupt)?
@@ -9659,6 +9665,7 @@ VBlankInterrupt:
 				movem.l	d0-d7/a0-a6,-(a7)
 				bra		JUSTSOUNDS
 
+				moveq	#0,d0					; VERTB interrupt needs to return Z flag set
 				rts
 
 tabheld:		dc.w	0
@@ -9868,9 +9875,6 @@ timetodamage:	dc.w	0
 SAVESAVE:		dc.w	0
 
 dosomething:
-
-
-
 				addq.w	#1,FramesToDraw
 				movem.l	d0-d7/a0-a6,-(a7)
 
@@ -9879,7 +9883,7 @@ dosomething:
 				bsr		DOALLANIMS
 
 				sub.w	#1,timetodamage
-				bgt.s	.nodam
+				bgt		.nodam
 
 				move.w	#100,timetodamage
 
@@ -9888,30 +9892,42 @@ dosomething:
 				tst.b	PLR1_StoodInTop
 				beq.s	.okinbot
 				move.w	ZoneT_UpperFloorNoise_w(a0),d0
+
 .okinbot:
+				; Issue #1 - Check we are on the floor before applying any floor damage.
+				; TODO - add water checks. Water in areas with floor damage could be acid pools.
+				move.l	PLR1s_tyoff,d1
+				cmp.l	PLR1s_yoff,d1
+				bgt.b	.not_on_floor1
 
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_FloorData_l,a0
-				move.w	(a0,d0.w*4),d0			; damage.
+				move.w	(a0,d0.w*4),d0			; floor damage.
 				move.l	PLR1_Obj,a0
 				add.b	d0,EntT_DamageTaken_b(a0)
 
+.not_on_floor1:
 				move.l	PLR2_Roompt,a0
 				move.w	ZoneT_FloorNoise_w(a0),d0
 				tst.b	PLR2_StoodInTop
 				beq.s	.okinbot2
 				move.w	ZoneT_UpperFloorNoise_w(a0),d0
+
 .okinbot2:
+				; Issue #1 - Check we are on the floor before applying any floor damage.
+				; TODO - add water checks. Water in areas with floor damage could be acid pools.
+				move.l	PLR2s_tyoff,d1
+				cmp.l	PLR2s_yoff,d1
+				bgt.b	.not_on_floor2
 
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_FloorData_l,a0
-				move.w	(a0,d0.w*4),d0			; damage.
-
+				move.w	(a0,d0.w*4),d0			; floor damage.
 				move.l	PLR2_Obj,a0
 				add.b	d0,EntT_DamageTaken_b(a0)
 
+.not_on_floor2:
 .nodam:
-
 				move.l	#KeyMap,a5
 
 				tst.b	82(a5)					;f3
@@ -10606,8 +10622,12 @@ JUSTSOUNDS:
 
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				moveq	#0,d0
+				moveq	#0,d0					; VERTB interrupt needs to return Z flag set
 				rts
+
+********************************************************************
+* End of VBlank code
+********************************************************************
 
 
 dosounds:		dc.w	0
@@ -10998,7 +11018,7 @@ notoffendsamp4:
 
 				move.w	#$820f,$dff000+dmacon
 
-				moveq	#0,d0
+				moveq	#0,d0					; VERTB interrupt needs to return Z flag set
 				rts
 
 ***********************************
@@ -11191,7 +11211,7 @@ chan3still:
 
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				moveq	#0,d0
+				moveq	#0,d0					; VERTB interrupt needs to return Z flag set
 				rts
 
 backbeat:		dc.w	0

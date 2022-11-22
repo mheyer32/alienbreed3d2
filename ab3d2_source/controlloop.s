@@ -1651,7 +1651,7 @@ SAVEPOSITION:
 				ENDR
 
 				move.l	#SAVEGAMENAME,d1
-				move.l	#1006,d2
+				move.l	#MODE_NEWFILE,d2
 				CALLDOS	Open
 				move.l	d0,IO_DOSFileHandle_l
 

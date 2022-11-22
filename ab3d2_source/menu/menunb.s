@@ -363,22 +363,24 @@ mnu_vblint:		bsr.w	mnu_movescreen
 
 mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				bsr.w	mnu_createpalette
-				tst.w	.cp
-				bne.w	.skipfs
 
 				; copy menu background (2bitplanes) a second time underneath (for scrolling meny background)
 				; At the same time, this "moves" the second plane one screen downwards
-				lea		mnu_screen,a0
-				lea		mnu_screen+40*256,a1
-				lea		mnu_screen+40*256*2,a2
-				lea		mnu_screen+40*256*3,a3
+				lea		mnu_background,a0
+				lea		mnu_background+40*256,a1
+
+				lea		mnu_screen,a2
+				lea		40*256*1(a2),a3
+				lea		40*256*2(a2),a4
+				lea		40*256*3(a2),a5
 				move.w	#40*256/4-1,d1			; one screen worth in longwords
-.fsloop:		move.l	(a1),d0
+.fsloop:		move.l	(a0)+,d0
 				move.l	d0,(a2)+
 				move.l	d0,(a3)+
-				move.l	(a0)+,(a1)+
+				move.l	(a1)+,d0
+				move.l	d0,(a4)+
+				move.l	d0,(a5)+
 				dbra	d1,.fsloop
-.skipfs:		st.b	.cp
 ;-------------------------------------------------------------- Clear screen --
 				lea		mnu_morescreen,a0
 				move.l	#40*256*3/16-1,d0
@@ -418,8 +420,6 @@ mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				add.l	#40*256,d0
 				dbra	d1,.setbplptrs
 				rts
-
-.cp:			dc.w	0
 
 ;-------------------------------------------------------------- Init palette --
 mnu_setpalette:	lea		mnu_palette,a2
@@ -2182,14 +2182,7 @@ Bitmap			dc.w	320/8					; bm_BytesPerRow
 				dc.b	BMF_DISPLAYABLE			; bm_Flags
 				dc.b	8						; bm_Depth
 				dc.w	0						; bm_Pad
-				dc.l	mnu_morescreen			; mnu_screen				; The lower two bitplanes are the scrolling
-				dc.l	mnu_morescreen			; mnu_screen+1*40*512		; background, 512 lines high
-				dc.l	mnu_morescreen			; The upper planes are for drawing characters and
-				dc.l	mnu_morescreen			; the fire effect
-				dc.l	mnu_morescreen
-				dc.l	mnu_morescreen
-				dc.l	mnu_morescreen
-				dc.l	mnu_morescreen
+				ds.l	8						; bm_Planes
 
 ScreenTags		dc.l	SA_Width,320
 				dc.l	SA_Height,256
@@ -2219,12 +2212,16 @@ WTagScreenPtr	dc.l	0						; will fill in screen pointer later
 
 MenuWindow		dc.l	0
 
-				section	data_c,data_c
+				section	data,data
+
+mnu_background	incbin	"menu/back2.raw"		; 2x320x256 bitplanes
+
+				section	bss_c,bss_c
+
+mnu_screen:		ds.b	2*40*512				; 4 color background,. 320x512 pixels
+mnu_morescreen:	ds.b	8*40*256				; 8 bitplanes 320x256 pixels
 
 				align	8				; align for fetch mode 3
-mnu_screen:		incbin	"menu/back2.raw"		; 4 color background
-				ds.b	40*256*2				; 2 more bitplanes
-mnu_morescreen:	ds.b	40*256*8				;
 
 emptySprite		ds.w	6,0
 

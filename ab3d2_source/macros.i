@@ -248,7 +248,7 @@ BLUE			macro
 DataCacheOff	macro
 				movem.l	a0-a6/d0-d7,-(sp)
 				moveq	#0,d0
-				move.l	#%0000000100000000,d1
+				move.l	#CACRF_EnableD,d1
 				CALLEXEC CacheControl
 				movem.l	(sp)+,a0-a6/d0-d7
 				endm
@@ -256,7 +256,7 @@ DataCacheOff	macro
 DataCacheOn		macro
 				movem.l	a0-a6/d0-d7,-(sp)
 				moveq	#-1,d0
-				move.l	#%0000000100000000,d1
+				move.l	#CACRF_EnableD|CACRF_WriteAllocate|CACRF_DBE,d1
 				CALLEXEC CacheControl
 				movem.l	(sp)+,a0-a6/d0-d7
 				endm

@@ -203,7 +203,7 @@ io_FlushPass:
 io_TryToOpen:
 				movem.l	d1-d7/a0-a6,-(a7)
 				move.l	a0,d1
-				move.l	#1005,d2
+				move.l	#MODE_OLDFILE,d2
 				CALLDOS	Open
 
 				movem.l	(a7)+,d1-d7/a0-a6
@@ -229,7 +229,7 @@ IO_LoadFile:
 
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.l	a0,d1
-				move.l	#1005,d2
+				move.l	#MODE_OLDFILE,d2
 				CALLDOS	Open
 
 				move.l	d0,IO_DOSFileHandle_l
