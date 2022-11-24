@@ -58,6 +58,19 @@ intreqrl		equ		$01f
 				section code,code
 
 _start
+				movem.l	d1-a6,-(sp)
+**************************************************************************************
+;ich bin hack  -----  invert FULLSCRTEMP to start game in fullsreen if cpu is 68040 AL
+				;movem.l	d0-d1/a0,-(a7)	
+				move.l	4.w,a0
+				move.b	$129(a0),d0
+				move.l	#68040,d1	;68040
+				btst	#$03,d0
+				beq.b	.not040
+				not.b	FULLSCRTEMP
+.not040
+**************************************************************************************
+
 				lea.l	MiscResourceName,a1
 				CALLEXEC OpenResource			;Open "misc.resource"
 				tst.l	d0
@@ -97,6 +110,15 @@ _start
 				moveq	#INTB_VERTB,d0
 				CALLEXEC AddIntServer
 
+		lea	timername,a0
+		lea	timerrequest,a1
+		moveq	#0,d0
+		moveq	#0,d1
+		jsr	_LVOOpenDevice(a6)
+		move.l	timerrequest+IO_DEVICE,timerbase
+		move.l	d0,timerflag
+		;bne	error_exit
+		
 				IFEQ	CD32VER
 				lea		KEYInt(pc),a1
 				moveq	#INTB_PORTS,d0
@@ -368,6 +390,7 @@ PLAYTHEGAME:
 				move.l	d0,LEVELCLIPS
 *************************************
 
+
 noload:
 				; What for?
 				IFNE	CD32VER
@@ -610,7 +633,7 @@ noclips:
 				move.w	#$00ff,_custom+adkcon
 
 				; FIXME: reimplement level blurb
-				; move.l #Blurbfield,$dff080
+; move.l #Blurbfield,$dff080
 
 				clr.w	ScreenBufferIndex
 
@@ -959,7 +982,7 @@ clrmessbuff:
 				move.l	#0,PLR2_zspdval
 				move.l	#0,PLR2_yvel
 
-
+				jsr	FPS_time1
 lop:
 				move.w	#%110000000000,_custom+potgo
 
@@ -1185,6 +1208,17 @@ nofadedownhc:
 
 .nopause:
 
+				move.l	VBLCOUNTLAST,d2
+				add.l	FPSLIMITER,d2
+.waitvbl
+				move.l	VBLCOUNT,d3
+				cmp.l	d2,d3
+				bhi.s	.skipWaitTOF
+				CALLGRAF	WaitTOF
+				bra.s	.waitvbl
+.skipWaitTOF
+				move.l	d3,VBLCOUNTLAST
+				
 ; Swap screen bitmaps
 				move.l	SCRNDRAWPT,d0
 				move.l	SCRNSHOWPT,SCRNDRAWPT
@@ -1209,6 +1243,7 @@ nowaitslave:
 waitmaster:
 
 *****************************************************************
+
 
 				; Flip screens
 
@@ -1246,7 +1281,9 @@ waitmaster:
 .failed			clr.b	WaitForDisplayMsg		; last attempt failed, so don't wait for next message
 
 .screenSwapDone
+				jsr	FPS_time2				;fps counter c/o Grond
 *****************************************************************
+				jsr	FPS_time1				;fps counter c/o Grond
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
@@ -2047,8 +2084,6 @@ nodrawp2:
 				move.b	PLR2_TELEPORTED,d5
 				clr.b	PLR2_TELEPORTED
 .notplr2
-
-
 				jsr		CHUNKYTOPLANAR
 
 
@@ -9586,6 +9621,10 @@ COUNTER:		dc.w	0
 COUNTER2:		dc.w	0
 COUNTSPACE:		ds.b	160
 
+VBLCOUNT:		dc.l	0
+VBLCOUNTLAST:		dc.l	0
+FPSLIMITER		dc.l	0
+
 OtherInter:
 				move.w	#$0010,$dff000+intreq
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -9598,6 +9637,8 @@ VBlankInterrupt:
 
 				add.l	#1,counter
 				add.l	#1,main_counter
+				add.l	#1,VBLCOUNT
+				subq.w	#1,animtimer
 
 				tst.l	timer					; used by menu system as delay
 				beq.s	.nodec
