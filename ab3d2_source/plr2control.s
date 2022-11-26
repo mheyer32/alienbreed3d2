@@ -278,26 +278,26 @@ oktostand2:
 
 				tst.b	$27(a5)
 				beq.s	.notselkey
-				st		PLR2KEYS
-				clr.b	PLR2PATH
-				clr.b	PLR2MOUSE
-				clr.b	PLR2JOY
+				st		Plr2_Keys_b
+				clr.b	Plr2_Path_b
+				clr.b	Plr2_Mouse_b
+				clr.b	Plr2_Joystick_b
 .notselkey:
 
 				tst.b	$26(a5)
 				beq.s	.notseljoy
-				clr.b	PLR2KEYS
-				clr.b	PLR2PATH
-				clr.b	PLR2MOUSE
-				st		PLR2JOY
+				clr.b	Plr2_Keys_b
+				clr.b	Plr2_Path_b
+				clr.b	Plr2_Mouse_b
+				st		Plr2_Joystick_b
 .notseljoy:
 
 				tst.b	$37(a5)
 				beq.s	.notselmouse
-				clr.b	PLR2KEYS
-				clr.b	PLR2PATH
-				st		PLR2MOUSE
-				clr.b	PLR2JOY
+				clr.b	Plr2_Keys_b
+				clr.b	Plr2_Path_b
+				st		Plr2_Mouse_b
+				clr.b	Plr2_Joystick_b
 .notselmouse:
 
 				lea		1(a5),a4

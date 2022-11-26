@@ -44,12 +44,12 @@
 
 				cmp.b	#'s',mors
 				beq.s	.otherk
-				tst.b	PLR1JOY
+				tst.b	Plr1_Joystick_b
 				beq.s	.NOJOY
 				jsr		_ReadJoy1
 				bra		.thisk
 .otherk:
-				tst.b	PLR2JOY
+				tst.b	Plr2_Joystick_b
 				beq.s	.NOJOY
 				jsr		_ReadJoy2
 .thisk:
@@ -65,12 +65,12 @@
 
 				cmp.b	#'s',mors
 				beq.s	.otherk2
-				tst.b	PLR1JOY
+				tst.b	Plr1_Joystick_b
 				beq.s	.NOJOY2
 				jsr		_ReadJoy1
 				bra		.thisk2
 .otherk2:
-				tst.b	PLR2JOY
+				tst.b	Plr2_Joystick_b
 				beq.s	.NOJOY2
 				jsr		_ReadJoy2
 .thisk2:
@@ -113,11 +113,11 @@ CHECKUPDOWN
 
 				cmp.b	#'s',mors
 				beq.s	.slavechk
-				tst.b	PLR1JOY
+				tst.b	Plr1_Joystick_b
 				bne.s	.nofing
 				bra.s	.maschk
 .slavechk:
-				tst.b	PLR2JOY
+				tst.b	Plr2_Joystick_b
 				bne.s	.nofing
 
 .maschk:

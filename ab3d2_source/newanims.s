@@ -788,8 +788,8 @@ BACKSFX:
 
 objmoveanim:
 
-				move.l	PLR1_Roompt,a0
-				move.w	(a0),PLR1_Zone
+				move.l	Plr1_RoomPtr_l,a0
+				move.w	(a0),Plr1_Zone_w
 				move.l	PLR2_Roompt,a0
 				move.w	(a0),PLR2_Zone
 
@@ -812,8 +812,8 @@ objmoveanim:
 				bsr		DoorRoutine
 
 
-				move.w	#0,PLR1_FloorSpd
-				move.w	#0,PLR2_FloorSpd
+				move.w	#0,Plr1_FloorSpd_l
+				move.w	#0,Plr2_FloorSpd_l
 
 				bsr		LiftRoutine
 				cmp	#0,animtimer		;animtimer decriment moved to VBlankInterrupt:
@@ -1044,7 +1044,7 @@ notallliftsdone:
 				move.l	(a1,d5.w*4),a1
 				add.l	LEVELDATA,a1
 				move.w	(a1),d5
-				move.l	PLR1_Roompt,a3
+				move.l	Plr1_RoomPtr_l,a3
 				move.l	d3,2(a1)
 				neg.w	d0
 
@@ -1052,7 +1052,7 @@ notallliftsdone:
 				seq		PLR1_stoodonlift
 				bne.s	.nosetfloorspd1
 
-				move.w	FLOORMOVESPD,PLR1_FloorSpd
+				move.w	FLOORMOVESPD,Plr1_FloorSpd_l
 
 .nosetfloorspd1:
 
@@ -1061,7 +1061,7 @@ notallliftsdone:
 				seq		PLR2_stoodonlift
 				bne.s	.nosetfloorspd2
 
-				move.w	FLOORMOVESPD,PLR2_FloorSpd
+				move.w	FLOORMOVESPD,Plr2_FloorSpd_l
 
 .nosetfloorspd2:
 
@@ -1415,7 +1415,7 @@ NOTMOVING:
 
 				cmp.w	PLR2_Zone,d5
 				beq.s	.gobackup
-				cmp.w	PLR1_Zone,d5
+				cmp.w	Plr1_Zone_w,d5
 				bne.s	NotGoBackUp
 .gobackup:
 				tst.b	dooropen
@@ -2025,8 +2025,8 @@ nodamage:
 				move.w	(a1,d0.w*8),Viewerx
 				move.w	4(a1,d0.w*8),Viewerz
 				move.b	ShotT_InUpperZone_b(a0),ViewerTop
-				move.b	PLR1_StoodInTop,TargetTop
-				move.l	PLR1_Roompt,ToRoom
+				move.b	Plr1_StoodInTop_b,TargetTop
+				move.l	Plr1_RoomPtr_l,ToRoom
 
 				move.w	12(a0),d0
 				move.l	ZoneAdds,a1
@@ -2034,9 +2034,9 @@ nodamage:
 				add.l	LEVELDATA,a1
 				move.l	a1,FromRoom
 
-				move.w	PLR1_xoff,Targetx
-				move.w	PLR1_zoff,Targetz
-				move.l	PLR1_yoff,d0
+				move.w	Plr1_XOff_l,Targetx
+				move.w	Plr1_ZOff_l,Targetz
+				move.l	Plr1_YOff_l,d0
 				asr.l	#7,d0
 				move.w	d0,Targety
 				move.w	4(a0),Viewery
@@ -2097,17 +2097,17 @@ ItsAMediKit:
 HealFactor		EQU		18
 
 
-				cmp.w	#127,PLR1_energy
+				cmp.w	#127,Plr1_Energy_w
 				bge		.NotSameZone
 
-				move.b	PLR1_StoodInTop,d0
+				move.b	Plr1_StoodInTop_b,d0
 				move.b	ShotT_InUpperZone_b(a0),d1
 				eor.b	d1,d0
 				bne		.NotSameZone
 
-				move.w	PLR1_xoff,oldx
-				move.w	PLR1_zoff,oldz
-				move.w	PLR1_Zone,d7
+				move.w	Plr1_XOff_l,oldx
+				move.w	Plr1_ZOff_l,oldz
+				move.w	Plr1_Zone_w,d7
 
 				cmp.w	12(a0),d7
 				bne		.NotSameZone
@@ -2136,12 +2136,12 @@ HealFactor		EQU		18
 				move.w	#-1,12(a0)
 				move.w	#-1,EntT_GraphicRoom_w(a0)
 				move.w	HealFactor(a0),d0
-				add.w	PLR1_energy,d0
+				add.w	Plr1_Energy_w,d0
 				cmp.w	#127,d0
 				ble.s	.okokokokokok
 				move.w	#127,d0
 .okokokokokok:
-				move.w	d0,PLR1_energy
+				move.w	d0,Plr1_Energy_w
 
 .NotPickedUp:
 
@@ -2233,14 +2233,14 @@ ItsAKey:
 				move.w	12(a0),EntT_GraphicRoom_w(a0)
 				clr.b	ShotT_Worry_b(a0)
 
-				move.b	PLR1_StoodInTop,d0
+				move.b	Plr1_StoodInTop_b,d0
 				move.b	ShotT_InUpperZone_b(a0),d1
 				eor.b	d1,d0
 				bne		.NotSameZone
 
-				move.w	PLR1_xoff,oldx
-				move.w	PLR1_zoff,oldz
-				move.w	PLR1_Zone,d7
+				move.w	Plr1_XOff_l,oldx
+				move.w	Plr1_ZOff_l,oldz
+				move.w	Plr1_Zone_w,d7
 				move.w	12(a0),d0
 				move.l	ZoneAdds,a1
 				move.l	(a1,d0.w*4),a1

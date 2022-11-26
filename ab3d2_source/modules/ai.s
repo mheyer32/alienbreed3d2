@@ -69,8 +69,8 @@ ai_DoTakeDamage:
 
 .no_copy_in:
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.w	PLR1_xoff,newx
-				move.w	PLR1_zoff,newz
+				move.w	Plr1_XOff_l,newx
+				move.w	Plr1_ZOff_l,newz
 				move.w	(a0),d1
 				move.l	ObjectPoints,a1
 				lea		(a1,d1.w*8),a1
@@ -142,8 +142,8 @@ ai_TakeDamage:
 				move.l	ObjectPoints,a1
 				move.w	(a1,d0.w*8),oldx
 				move.w	4(a1,d0.w*8),oldz
-				move.w	PLR1_xoff,newx
-				move.w	PLR1_zoff,newz
+				move.w	Plr1_XOff_l,newx
+				move.w	Plr1_ZOff_l,newz
 				move.w	#100,speed
 				move.w	#-20,Range
 				jsr		HeadTowardsAng
@@ -418,8 +418,8 @@ ai_Widget:
 				tst.w	AI_Player1NoiseVol_w
 				beq.s	.no_player_noise
 
-				move.l	PLR1_Roompt,a1
-				tst.b	PLR1_StoodInTop
+				move.l	Plr1_RoomPtr_l,a1
+				tst.b	Plr1_StoodInTop_b
 				beq.s	.player_not_in_top
 
 				addq	#1,a1
@@ -734,10 +734,10 @@ ai_ChargeCommon:
 				bra		.no_munch
 
 .no_teleport:
-				move.w	PLR1_xoff,newx
-				move.w	PLR1_zoff,newz
-				move.w	PLR1_sinval,tempsin
-				move.w	PLR1_cosval,tempcos
+				move.w	Plr1_XOff_l,newx
+				move.w	Plr1_ZOff_l,newz
+				move.w	Plr1_SinVal_w,tempsin
+				move.w	Plr1_CosVal_w,tempcos
 				move.w	p1_xoff,tempx
 				move.w	p1_zoff,tempz
 				tst.b	ai_ToSide_w
@@ -909,8 +909,8 @@ ai_AttackWithHitScan:
 				jsr		ai_DoAttackAnim
 
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.w	PLR1_xoff,newx
-				move.w	PLR1_zoff,newz
+				move.w	Plr1_XOff_l,newx
+				move.w	Plr1_ZOff_l,newz
 				move.w	(a0),d1
 				move.l	ObjectPoints,a1
 				lea		(a1,d1.w*8),a1
@@ -1062,8 +1062,8 @@ ai_AttackWithProjectile:
 				jsr		ai_DoAttackAnim
 
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.w	PLR1_xoff,newx
-				move.w	PLR1_zoff,newz
+				move.w	Plr1_XOff_l,newx
+				move.w	Plr1_ZOff_l,newz
 				move.w	(a0),d1
 				move.l	ObjectPoints,a1
 				lea		(a1,d1.w*8),a1
@@ -1183,10 +1183,10 @@ ai_ChargeFlyingCommon:
 				lea		(a6,d1.w*8),a6
 				move.w	(a1),oldx
 				move.w	4(a1),oldz
-				move.w	PLR1_xoff,newx
-				move.w	PLR1_zoff,newz
-				move.w	PLR1_sinval,tempsin
-				move.w	PLR1_cosval,tempcos
+				move.w	Plr1_XOff_l,newx
+				move.w	Plr1_ZOff_l,newz
+				move.w	Plr1_SinVal_w,tempsin
+				move.w	Plr1_CosVal_w,tempcos
 				move.w	p1_xoff,tempx
 				move.w	p1_zoff,tempz
 				tst.b	ai_ToSide_w
@@ -1401,10 +1401,10 @@ ai_ApproachCommon:
 				move.w	(a1),oldx
 				move.w	4(a1),oldz
 
-				move.w	PLR1_xoff,newx
-				move.w	PLR1_zoff,newz
-				move.w	PLR1_sinval,tempsin
-				move.w	PLR1_cosval,tempcos
+				move.w	Plr1_XOff_l,newx
+				move.w	Plr1_ZOff_l,newz
+				move.w	Plr1_SinVal_w,tempsin
+				move.w	Plr1_CosVal_w,tempcos
 				move.w	p1_xoff,tempx
 				move.w	p1_zoff,tempz
 				tst.b	ai_ToSide_w
@@ -1553,7 +1553,7 @@ ai_FlyToCPTHeight:
 				bra		ai_FlyToHeightCommon
 
 ai_FlyToPlayerHeight:
-				move.l	PLR1_yoff,d1
+				move.l	Plr1_YOff_l,d1
 				asr.l	#7,d1
 
 ai_FlyToHeightCommon:
@@ -1627,13 +1627,13 @@ ai_StorePlayerPosition:
 				move.l	#ai_NastyWork_vl,a2
 				asl.w	#4,d0
 				add.w	d0,a2
-				move.w	PLR1_xoff,AI_WorkT_LastX_w(a2)
-				move.w	PLR1_zoff,AI_WorkT_LastY_w(a2)
-				move.l	PLR1_Roompt,a3
+				move.w	Plr1_XOff_l,AI_WorkT_LastX_w(a2)
+				move.w	Plr1_ZOff_l,AI_WorkT_LastY_w(a2)
+				move.l	Plr1_RoomPtr_l,a3
 				move.w	(a3),AI_WorkT_LastZone_w(a2)
 				moveq	#0,d0
 				move.b	ZoneT_ControlPoint_w(a3),d0
-				tst.b	PLR1_StoodInTop
+				tst.b	Plr1_StoodInTop_b
 				beq.s	.player_not_in_top
 				move.b	ZoneT_ControlPoint_w+1(a3),d0
 
@@ -1644,13 +1644,13 @@ ai_StorePlayerPosition:
 				move.l	#AI_Teamwork_vl,a2
 				asl.w	#4,d0
 				add.w	d0,a2
-				move.w	PLR1_xoff,AI_WorkT_LastX_w(a2)
-				move.w	PLR1_zoff,AI_WorkT_LastY_w(a2)
-				move.l	PLR1_Roompt,a3
+				move.w	Plr1_XOff_l,AI_WorkT_LastX_w(a2)
+				move.w	Plr1_ZOff_l,AI_WorkT_LastY_w(a2)
+				move.l	Plr1_RoomPtr_l,a3
 				move.w	(a3),AI_WorkT_LastZone_w(a2)
 				moveq	#0,d0
 				move.b	ZoneT_ControlPoint_w(a3),d0
-				tst.b	PLR1_StoodInTop
+				tst.b	Plr1_StoodInTop_b
 				beq.s	.player_not_in_top2
 				move.b	ZoneT_ControlPoint_w+1(a3),d0
 
@@ -1697,14 +1697,14 @@ ai_GetRoomStatsStill:
 
 ai_CheckForDark:
 				move.w	(a0),d0
-				move.l	PLR1_Roompt,a3
+				move.l	Plr1_RoomPtr_l,a3
 				move.w	(a3),d1
 				cmp.w	d1,d0
 				beq.s	.not_in_dark
 
 				jsr		GetRand
 				and.w	#31,d0
-				cmp.w	PLR1_RoomBright,d0
+				cmp.w	Plr1_RoomBright_w,d0
 				bge.s	.not_in_dark
 
 .in_dark:
@@ -1747,14 +1747,14 @@ AI_LookForPlayer1:
 				clr.b	17(a0)
 				clr.b	CanSee
 				move.b	ShotT_InUpperZone_b(a0),ViewerTop
-				move.b	PLR1_StoodInTop,TargetTop
-				move.l	PLR1_Roompt,ToRoom
+				move.b	Plr1_StoodInTop_b,TargetTop
+				move.l	Plr1_RoomPtr_l,ToRoom
 				move.l	objroom,FromRoom
 				move.w	newx,Viewerx
 				move.w	newz,Viewerz
-				move.w	PLR1_xoff,Targetx
-				move.w	PLR1_zoff,Targetz
-				move.l	PLR1_yoff,d0
+				move.w	Plr1_XOff_l,Targetx
+				move.w	Plr1_ZOff_l,Targetz
+				move.l	Plr1_YOff_l,d0
 				asr.l	#7,d0
 				move.w	d0,Targety
 				move.w	4(a0),Viewery
@@ -2209,10 +2209,10 @@ BLIBBLE:
 
 ai_CheckAttackOnGround:
 
-				move.l	PLR1_Roompt,a3
+				move.l	Plr1_RoomPtr_l,a3
 				moveq	#0,d1
 				move.b	ZoneT_ControlPoint_w(a3),d1
-				tst.b	PLR1_StoodInTop
+				tst.b	Plr1_StoodInTop_b
 				beq.s	.player_not_in_top
 				move.b	ZoneT_ControlPoint_w+1(a3),d1
 

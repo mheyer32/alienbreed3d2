@@ -761,20 +761,20 @@ CHECKPLAYERGOT:
 CHECKNEARBYONE:
 
 				move.l	StatPointer,a2
-				move.b	PLR1_StoodInTop,d0
+				move.b	Plr1_StoodInTop_b,d0
 				move.b	ShotT_InUpperZone_b(a0),d1
 				eor.b	d0,d1
 				bne		.NotSameZone
 
-				move.w	PLR1_xoff,oldx
-				move.w	PLR1_zoff,oldz
-				move.w	PLR1_Zone,d7
+				move.w	Plr1_XOff_l,oldx
+				move.w	Plr1_ZOff_l,oldz
+				move.w	Plr1_Zone_w,d7
 
 				cmp.w	12(a0),d7
 				bne		.NotSameZone
 
-				move.l	PLR1_yoff,d7
-				move.l	PLR1_height,d6
+				move.l	Plr1_YOff_l,d7
+				move.l	Plr1_Height_l,d6
 				asr.l	#1,d6
 				add.l	d6,d7
 				asr.l	#7,d7
@@ -1296,8 +1296,8 @@ FireAtPlayer1:
 				lea		(a2,d1.w*8),a2
 				move.w	(a1),oldx
 				move.w	4(a1),oldz
-				move.w	PLR1_xoff,newx
-				move.w	PLR1_zoff,newz
+				move.w	Plr1_XOff_l,newx
+				move.w	Plr1_ZOff_l,newz
 
 				jsr		CalcDist
 				move.w	XDIFF1,d6

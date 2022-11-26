@@ -239,11 +239,11 @@ DONEMENU:
 
 				clr.b	FINISHEDLEVEL
 
-				move.w	#0,PLR1s_angpos
+				move.w	#0,Plr1_AltAngPos_w
 				move.w	#0,PLR2s_angpos
-				move.w	#0,PLR1_angpos
+				move.w	#0,Plr1_AngPos_w
 				move.w	#0,PLR2_angpos
-				move.b	#0,PLR1_GunSelected
+				move.b	#0,Plr1_GunSelected_w
 				move.b	#0,PLR2_GunSelected
 
 **************************8
@@ -1012,7 +1012,7 @@ TWOPLAYER:
 				jsr		AmmoBar
 				move.w	#0,OldAmmo
 
-				move.b	#0,PLR1_GunSelected
+				move.b	#0,Plr1_GunSelected_w
 
 				move.b	#0,PLR2_GunSelected
 				rts

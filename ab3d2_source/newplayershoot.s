@@ -58,18 +58,18 @@ okcanfire:
 ;
 ;.itsahold:
 
-				move.w	PLR1_angpos,d0
+				move.w	Plr1_AngPos_w,d0
 				move.w	d0,tempangpos
 				move.l	#SineTable,a0
 				lea		(a0,d0.w),a0
 				move.w	(a0),tempxdir
 				move.w	2048(a0),tempzdir
-				move.w	PLR1_xoff,tempxoff
-				move.w	PLR1_zoff,tempzoff
-				move.l	PLR1_yoff,tempyoff
+				move.w	Plr1_XOff_l,tempxoff
+				move.w	Plr1_ZOff_l,tempzoff
+				move.l	Plr1_YOff_l,tempyoff
 				add.l	#10*128,tempyoff
-				move.b	PLR1_StoodInTop,tempStoodInTop
-				move.l	PLR1_Roompt,tempRoompt
+				move.b	Plr1_StoodInTop_b,tempStoodInTop
+				move.l	Plr1_RoomPtr_l,tempRoompt
 				move.l	#%100011,d7
 				move.w	#-1,d0
 				move.l	#0,targetydiff
@@ -105,7 +105,7 @@ findclosestinline
 				move.w	4(a0),d2
 				ext.l	d2
 				asl.l	#7,d2
-				sub.l	PLR1_yoff,d2
+				sub.l	Plr1_YOff_l,d2
 				move.l	d2,d3
 				bge.s	.oknotneg
 				neg.l	d2
@@ -133,7 +133,7 @@ outofline:
 				move.w	d1,targdist
 
 				move.l	targetydiff,d5
-				sub.l	PLR1_height,d5
+				sub.l	Plr1_Height_l,d5
 				add.l	#18*256,d5
 				move.w	d1,closedist
 
@@ -226,10 +226,10 @@ FIREBULLETS:
 
 				and.w	#$7fff,d0
 				move.w	(a1),d1
-				sub.w	PLR1_xoff,d1
+				sub.w	Plr1_XOff_l,d1
 				muls	d1,d1
 				move.w	4(a1),d2
-				sub.w	PLR1_zoff,d2
+				sub.w	Plr1_ZOff_l,d2
 				muls	d2,d2
 				add.l	d2,d1
 				asr.l	#6,d1
@@ -271,17 +271,17 @@ nothingtoshoot:
 
 				move.w	#0,bulyspd
 
-				move.w	PLR1_xoff,oldx
-				move.w	PLR1_zoff,oldz
-				move.w	PLR1_sinval,d0
+				move.w	Plr1_XOff_l,oldx
+				move.w	Plr1_ZOff_l,oldz
+				move.w	Plr1_SinVal_w,d0
 				asr.w	#7,d0
 				add.w	oldx,d0
 				move.w	d0,newx
-				move.w	PLR1_cosval,d0
+				move.w	Plr1_CosVal_w,d0
 				asr.w	#7,d0
 				add.w	oldz,d0
 				move.w	d0,newz
-				move.l	PLR1_yoff,d0
+				move.l	Plr1_YOff_l,d0
 				add.l	#10*128,d0
 				move.l	d0,oldy
 
@@ -302,7 +302,7 @@ nothingtoshoot:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	PLR1_Roompt,objroom
+				move.l	Plr1_RoomPtr_l,objroom
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:
@@ -885,9 +885,9 @@ PLR1HITINSTANT:
 
 PLR1MISSINSTANT:
 
-				move.w	PLR1_xoff,oldx
-				move.w	PLR1_zoff,oldz
-				move.l	PLR1_yoff,d1
+				move.w	Plr1_XOff_l,oldx
+				move.w	Plr1_ZOff_l,oldz
+				move.l	Plr1_YOff_l,d1
 				add.l	#10*128,d1
 				move.l	d1,oldy
 
@@ -917,7 +917,7 @@ PLR1MISSINSTANT:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	PLR1_Roompt,objroom
+				move.l	Plr1_RoomPtr_l,objroom
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:

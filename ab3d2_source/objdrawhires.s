@@ -1583,8 +1583,8 @@ INMIDDLE:
 ; brightnesses.
 
 
-; move.w PLR1_xoff,newx
-; move.w PLR1_zoff,newz
+; move.w Plr1_XOff_l,newx
+; move.w Plr1_ZOff_l,newz
 ; move.w thisxpos,oldx
 ; move.w thiszpos,oldz
 ; movem.l d0-d7/a0-a6,-(a7)
