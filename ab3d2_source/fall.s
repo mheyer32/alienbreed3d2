@@ -23,7 +23,7 @@ PLR1_fall
 				bra		CARRYON
 
 .onground:
-				move.w	Plr1_FloorSpd_l,d2
+				move.w	Plr1_FloorSpd_w,d2
 				ext.l	d2
 				asl.l	#6,d2
 
@@ -141,7 +141,7 @@ PLR1_fall
 .nodam2
 				move.w	#0,DAMAGEWHENHIT
 
-				move.w	Plr1_FloorSpd_l,d2
+				move.w	Plr1_FloorSpd_w,d2
 				ext.l	d2
 				asl.l	#6,d2
 

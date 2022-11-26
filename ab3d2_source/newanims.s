@@ -812,7 +812,7 @@ objmoveanim:
 				bsr		DoorRoutine
 
 
-				move.w	#0,Plr1_FloorSpd_l
+				move.w	#0,Plr1_FloorSpd_w
 				move.w	#0,Plr2_FloorSpd_l
 
 				bsr		LiftRoutine
@@ -1052,7 +1052,7 @@ notallliftsdone:
 				seq		PLR1_stoodonlift
 				bne.s	.nosetfloorspd1
 
-				move.w	FLOORMOVESPD,Plr1_FloorSpd_l
+				move.w	FLOORMOVESPD,Plr1_FloorSpd_w
 
 .nosetfloorspd1:
 

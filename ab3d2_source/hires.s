@@ -975,9 +975,6 @@ clrmessbuff:
 				move.l	#0,PLR2s_xspdval
 				move.l	#0,PLR2s_zspdval
 				move.l	#0,PLR2s_yvel
-				move.l	#0,Plr1_XSpdVal_l
-				move.l	#0,Plr1_ZSpdVal_l
-				move.l	#0,Plr1_YVel_l
 				move.l	#0,PLR2_xspdval
 				move.l	#0,PLR2_zspdval
 				move.l	#0,PLR2_yvel
@@ -3846,10 +3843,8 @@ PLR1_Control:
 ; Take a snapshot of everything.
 
 				move.l	Plr1_XOff_l,d2
-				move.l	d2,Plr1_OldXOff_l
 				move.l	d2,oldx
 				move.l	Plr1_ZOff_l,d3
-				move.l	d3,Plr1_OldYOff_l
 				move.l	d3,oldz
 				move.l	p1_xoff,d0
 				move.l	d0,Plr1_XOff_l
@@ -12003,37 +11998,36 @@ Zone:			dc.w	0
 
 ; Player data definiton - TODO remove unused, tighten definitions, fix alignments
 PLR1:			dc.b	$ff
-				even
-Plr1_Energy_w:	dc.w	191
-Plr1_GunSelected_w: dc.w	0
-Plr1_CosVal_w:	dc.w	0
-Plr1_SinVal_w:	dc.w	0
-Plr1_AngPos_w:	dc.w	0
-Plr1_AngSpd_w:	dc.w	0 ; unused
-Plr1_XOff_l:		dc.l	0 ; sometimes accessed as w - todo understand real size
-Plr1_YOff_l:		dc.l	0
-Plr1_YVel_l:		dc.l	0 ; write once, never read
-Plr1_ZOff_l:		dc.l	0
-Plr1_TYOff_l:		dc.l	0 ; unused
-Plr1_XSpdVal_l:	dc.l	0 ; write once, never read
-Plr1_ZSpdVal_l:	dc.l	0 ; write once, never read
-Plr1_Zone_w:		dc.w	0
-Plr1_RoomPtr_l:	dc.l	0
-Plr1_FloorSpd_l:	dc.l	0
-Plr2_FloorSpd_l:	dc.l	0
-Plr1_OldRoomPtr_l:	dc.l	0
-Plr1_PointsToRotatePtr_l: dc.l 0
-Plr1_ListOfGraphRoomsPtr_l: dc.l 0
-Plr1_OldXOff_l:	dc.l	0 ; write once, never read
-Plr1_OldYOff_l:	dc.l	0 ; write once, never read
-Plr1_StoodInTop_b: dc.b	0
-				even
-Plr1_Height_l:	dc.l	0
-Plr1_RoomBright_w: dc.w	0
+				CNOP 0, 4
+; long aligned fields first
+Plr1_XOff_l:				dc.l	0 ; sometimes accessed as w - todo understand real size
+Plr1_YOff_l:				dc.l	0
+Plr1_ZOff_l:				dc.l	0 ; sometimes accessed as w - todo understand real size
+Plr1_RoomPtr_l:				dc.l	0
+Plr1_OldRoomPtr_l:			dc.l	0
+Plr1_PointsToRotatePtr_l:	dc.l	0
+Plr1_ListOfGraphRoomsPtr_l:	dc.l	0
+Plr1_Height_l:				dc.l	0
 
+; word aligned fields next
+Plr1_Energy_w:				dc.w	191
+Plr1_GunSelected_w: 		dc.w	0
+Plr1_CosVal_w:				dc.w	0
+Plr1_SinVal_w:				dc.w	0
+Plr1_AngPos_w:				dc.w	0
+Plr1_Zone_w:				dc.w	0
+Plr1_FloorSpd_w:			dc.w	0
+Plr1_RoomBright_w: 			dc.w	0
+
+; byte aligned fields next
+Plr1_StoodInTop_b: 			dc.b	0
+Plr1_Teleported_b:			dc.b	0 ; delcared as word, accessed as byte
+Plr1_Echo_b:				dc.b	0 ; declared as word, accessed as byte
+
+				even
 DOUBLEWIDTH:	dc.b	$0,0
 DOUBLEHEIGHT:	dc.b	0,0
-Plr1_Teleported_b: dc.w	0 ; delcared as word, accessed as byte
+
 Plr2_Teleported_b: dc.w	0 ; delcared as word, accessed as byte
 
 				ds.w	4
@@ -12048,6 +12042,7 @@ ZDIFF1:			dc.l	0
 XDIFF2:			dc.l	0
 ZDIFF2:			dc.l	0
 
+; Snapshot
 Plr1_AltCosVal_w:	dc.w	0
 Plr1_AltSinVal_w:	dc.w	0
 Plr1_AltAngPos_w:	dc.w	0
@@ -12059,17 +12054,9 @@ Plr1_AltZOff_l:		dc.l	0
 Plr1_AltTYOff_l:	dc.l	0
 Plr1_AltXSpdVal_l:	dc.l	0
 Plr1_AltZSpdVal_l:	dc.l	0
-Plr1_AltZone_w:		dc.w	0 ; unused
-Plr1_AltRoomPtr_l:	dc.l	0 ; unused
-Plr1_AltOldRoomPtr_l: dc.l	0 ; unused
-Plr1_AltPointsToRotatePtr_l: dc.l 0 ; unused
-Plr1_AltListOfGraphRooms_l: dc.l 0 ; unused
-Plr1_AltOldXOff_l:	dc.l	0 ; unused
-Plr1_AltOldZOff_l:	dc.l	0 ; unused
 Plr1_AltHeight_l:	dc.l	0
 Plr1_AltTargHeight_l: dc.l	0
 
-Plr1_Echo_b:		dc.w	0 ; declared as word, accessed as byte
 
 p1_xoff:		dc.l	0
 p1_zoff:		dc.l	0
@@ -12114,6 +12101,8 @@ PLR2_StoodInTop: dc.b	0
 PLR2_height:	dc.l	0
 PLR2_Echo:		dc.w	0
 PlayEcho:		dc.w	0
+
+Plr2_FloorSpd_l:			dc.l	0
 
 				ds.w	4
 
