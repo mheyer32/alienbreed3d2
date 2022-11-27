@@ -1300,12 +1300,12 @@ FireAtPlayer1:
 				move.w	Plr1_ZOff_l,newz
 
 				jsr		CalcDist
-				move.w	XDIFF1,d6
+				move.w	XDiff_w,d6
 				muls	distaway,d6
 				divs	SHOTSPEED,d6
 				asr.w	#4,d6
 				add.w	d6,newx
-				move.w	ZDIFF1,d6
+				move.w	ZDiff_w,d6
 				muls	distaway,d6
 				divs	SHOTSPEED,d6
 				asr.w	#4,d6

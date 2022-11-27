@@ -819,8 +819,8 @@ NOCLTXT:
 
 				;FIXME: need to load the game palette here?
 
-				clr.b	PLR1_Ducked
-				clr.b	PLR2_Ducked
+				clr.b	Plr1_Ducked_b
+				clr.b	Plr2_Ducked_b
 				clr.b	Plr1_TmpDucked_b
 				clr.b	Plr2_TmpDucked_b
 
@@ -1374,7 +1374,7 @@ okwat:
 				clr.b	PLR1_clicked
 				move.b	PLR1_SPCTAP,Plr1_TmpSpcTap_b
 				clr.b	PLR1_SPCTAP
-				move.b	PLR1_Ducked,Plr1_TmpDucked_b
+				move.b	Plr1_Ducked_b,Plr1_TmpDucked_b
 				move.b	Plr1_GunSelected_b,Plr1_TmpGunSelected_b
 
 				bsr		PLR1_Control
@@ -1436,7 +1436,7 @@ NotOnePlayer:
 				move.b	PLR1_fire,Plr1_TmpFire_b
 				move.b	PLR1_SPCTAP,Plr1_TmpSpcTap_b
 				clr.b	PLR1_SPCTAP
-				move.b	PLR1_Ducked,Plr1_TmpDucked_b
+				move.b	Plr1_Ducked_b,Plr1_TmpDucked_b
 				move.b	Plr1_GunSelected_b,Plr1_TmpGunSelected_b
 
 				move.l	PLR1_AIMSPD,d0
@@ -1481,7 +1481,7 @@ NotOnePlayer:
 				move.w	Rand1,d0
 				swap	d0
 				move.b	Plr1_TmpDucked_b,d0
-				or.b	PLR1_Squished,d0
+				or.b	Plr1_Squished_b,d0
 				lsl.w	#8,d0
 				move.b	Plr1_TmpGunSelected_b,d0
 				jsr		SENDFIRST
@@ -1559,7 +1559,7 @@ ASlaveShouldWaitOnHisMaster:
 				move.b	PLR2_fire,Plr2_TmpFire_b
 				move.b	PLR2_SPCTAP,Plr2_TmpSpcTap_b
 				clr.b	PLR2_SPCTAP
-				move.b	PLR2_Ducked,Plr2_TmpDucked_b
+				move.b	Plr2_Ducked_b,Plr2_TmpDucked_b
 				move.b	Plr2_GunSelected_b,Plr2_TmpGunSelected_b
 
 				move.l	PLR2_AIMSPD,d0
@@ -1602,7 +1602,7 @@ ASlaveShouldWaitOnHisMaster:
 				move.w	d0,TempFrames
 
 				move.b	Plr2_TmpDucked_b,d0
-				or.b	PLR2_Squished,d0
+				or.b	Plr2_Squished_b,d0
 				lsl.w	#8,d0
 				move.b	Plr2_TmpGunSelected_b,d0
 				jsr		RECFIRST
@@ -1872,25 +1872,23 @@ noze:
 				asl.w	#4,d0
 				ext.l	d0
 				divs	d1,d0
-				move.w	d0,XDIFF1
+				move.w	d0,XDiff_w
 				move.w	Plr2_XOff_l,d0
 				sub.w	OldX2_l,d0
 				asl.w	#4,d0
 				ext.l	d0
 				divs	d1,d0
-				move.w	d0,XDIFF2
 				move.w	Plr1_ZOff_l,d0
 				sub.w	OldZ1_l,d0
 				asl.w	#4,d0
 				ext.l	d0
 				divs	d1,d0
-				move.w	d0,ZDIFF1
+				move.w	d0,ZDiff_w
 				move.w	Plr2_ZOff_l,d0
 				sub.w	OldZ2_l,d0
 				asl.w	#4,d0
 				ext.l	d0
 				divs	d1,d0
-				move.w	d0,ZDIFF2
 
 				cmp.b	#'s',mors
 				beq.s	ImPlayer2OhYesIAm
@@ -3875,9 +3873,9 @@ PLR1_Control:
 				add.w	#16384,d1
 				asr.w	#4,d1
 
-				tst.b	PLR1_Ducked
+				tst.b	Plr1_Ducked_b
 				bne.s	.notdouble
-				tst.b	PLR1_Squished
+				tst.b	Plr1_Squished_b
 				bne.s	.notdouble
 				add.w	d1,d1
 .notdouble
@@ -3913,9 +3911,9 @@ PLR1_Control:
 
 				move.l	d4,thingheight
 				move.l	#40*256,StepUpVal
-				tst.b	PLR1_Squished
+				tst.b	Plr1_Squished_b
 				bne.s	.smallstep
-				tst.b	PLR1_Ducked
+				tst.b	Plr1_Ducked_b
 				beq.s	.okbigstep
 .smallstep
 				move.l	#10*256,StepUpVal
@@ -4093,9 +4091,9 @@ PLR2_Control:
 				add.w	#16384,d1
 				asr.w	#4,d1
 
-				tst.b	PLR2_Ducked
+				tst.b	Plr2_Ducked_b
 				bne.s	.notdouble
-				tst.b	PLR2_Squished
+				tst.b	Plr2_Squished_b
 				bne.s	.notdouble
 				add.w	d1,d1
 .notdouble
@@ -4131,9 +4129,9 @@ PLR2_Control:
 
 				move.l	d4,thingheight
 				move.l	#40*256,StepUpVal
-				tst.b	PLR2_Squished
+				tst.b	Plr2_Squished_b
 				bne.s	.smallstep
-				tst.b	PLR2_Ducked
+				tst.b	Plr2_Ducked_b
 				beq.s	.okbigstep
 .smallstep:
 				move.l	#10*256,StepUpVal
@@ -6529,9 +6527,9 @@ PLR2_fire:		dc.b	0
 * This routine animates brightnesses.
 
 
-liftpt:			dc.l	liftanimtab
+;liftpt:			dc.l	liftanimtab
 
-brightpt:
+;brightpt:
 				dc.l	brightanimtab
 
 ******************************
@@ -8364,7 +8362,7 @@ val				SET		val+4
 leftedge:		dc.w	0
 rightedge:		dc.w	0
 
-rndpt:			dc.l	rndtab
+;rndpt:			dc.l	rndtab
 
 
 dst:			dc.l	0
@@ -8408,7 +8406,6 @@ FloorLine:
 ConstCol:		dc.w	0
 
 BumpLine:
-
 				tst.b	smoothbumps
 				beq.s	Chunky
 
@@ -8417,7 +8414,6 @@ BumpLine:
 				bra		pastast
 
 Chunky:
-
 				moveq	#0,d2
 				move.l	#Bumptile,a0
 				move.w	whichtile,d2
@@ -9520,20 +9516,11 @@ OldSpace:		dc.b	0
 SpaceTapped:	dc.b	0
 PLR1_SPCTAP:	dc.b	0
 PLR2_SPCTAP:	dc.b	0
-PLR1_Ducked:	dc.b	0
-PLR2_Ducked:	dc.b	0
 				even
-
-PLR1_Squished:	dc.w	0
-PLR2_Squished:	dc.w	0
-PLR1s_SquishedHeight: dc.l 0
-PLR2s_SquishedHeight: dc.l 0
 
 				include	"plr1control.s"
 				include	"plr2control.s"
 				include	"fall.s"
-
-
 
 *******************************************8
 
@@ -11982,16 +11969,16 @@ EndBackPicture:				; FIXME: this obviously doesn't work anymore, yet is still re
 SineTable:
 				incbin	"bigsine"				; sine/cosine << 15
 
-angspd:			dc.w	0
+;angspd:			dc.w	0
 flooryoff:		dc.w	0						; viewer y pos << 6
 xoff:			dc.l	0
 zoff:			dc.l	0
 yoff:			dc.l	0
-yvel:			dc.l	0
-tyoff:			dc.l	0
-xspdval:		dc.l	0
-zspdval:		dc.l	0
-Zone:			dc.w	0
+;yvel:			dc.l	0
+;tyoff:			dc.l	0
+;xspdval:		dc.l	0
+;zspdval:		dc.l	0
+;Zone:			dc.w	0
 
 ; // READY PLAYER ONE /////////////////////////////////////////////////////////////////////
 
@@ -12021,6 +12008,8 @@ Plr1_RoomBright_w: 			dc.w	0
 Plr1_GunSelected_b: 		dc.b	0
 Plr1_StoodInTop_b: 			dc.b	0
 Plr1_Teleported_b:			dc.b	0
+Plr1_Ducked_b:				dc.b	0
+Plr1_Squished_b:			dc.b	0
 Plr1_Echo_b:				dc.b	0
 
 				CNOP 0,4
@@ -12033,6 +12022,7 @@ Plr1_SnapTYOff_l:			dc.l	0
 Plr1_SnapXSpdVal_l:			dc.l	0
 Plr1_SnapZSpdVal_l:			dc.l	0
 Plr1_SnapHeight_l:			dc.l	0
+Plr1_SnapSquishedHeight_l:	dc.l	0
 Plr1_SnapTargHeight_l: 		dc.l	0
 
 ; Player 1 snapshot data, word aligned next
@@ -12088,6 +12078,8 @@ Plr2_FloorSpd_w:			dc.w	0
 Plr2_GunSelected_b:			dc.b	0
 Plr2_StoodInTop_b:			dc.b	0
 Plr2_Teleported_b:			dc.b	0
+Plr2_Ducked_b:				dc.b	0
+Plr2_Squished_b:			dc.b	0
 Plr2_Echo_b:				dc.b	0
 
 				CNOP 0,4
@@ -12100,6 +12092,7 @@ Plr2_SnapTYOff_l:			dc.l	0
 Plr2_SnapXSpdVal_l:			dc.l	0
 Plr2_SnapZSpdVal_l:			dc.l	0
 Plr2_SnapHeight_l:			dc.l	0
+Plr2_SnapSquishedHeight_l:	dc.l	0
 Plr2_SnapTargHeight_l:		dc.l	0
 
 ; Player 2 snapshot data, word aligned next
@@ -12145,27 +12138,25 @@ OldX2_l:			dc.l	0
 OldZ1_l:			dc.l	0
 OldZ2_l:			dc.l	0
 
-XDIFF1:			dc.l	0
-ZDIFF1:			dc.l	0
-XDIFF2:			dc.l	0
-ZDIFF2:			dc.l	0
+XDiff_w:			dc.w	0
+ZDiff_w:			dc.w	0
 
 				even
 
 				ds.w	4
 
-liftanimtab:
+;liftanimtab:
 
-endliftanimtab:
+;endliftanimtab:
 
-glassball:
+;glassball:
 ; incbin "glassball.inc"
 
-endglass
-glassballpt:	dc.l	glassball
+;endglass
+;glassballpt:	dc.l	glassball
 
-rndtab:			;		incbin					"randfile"
-endrnd:
+;rndtab:			;		incbin					"randfile"
+;endrnd:
 
 brightanimtab:
 ; dcb.w 200,20

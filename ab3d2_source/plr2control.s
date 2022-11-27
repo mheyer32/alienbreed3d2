@@ -84,9 +84,9 @@ PLR2_mouse_control
 
 				move.w	#-20,d2
 
-				tst.b	PLR2_Squished
+				tst.b	Plr2_Squished_b
 				bne.s	.halve
-				tst.b	PLR2_Ducked
+				tst.b	Plr2_Ducked_b
 				beq.s	.nohalve
 .halve
 				asr.w	#1,d2
@@ -235,7 +235,7 @@ PLR2_alwayskeys
 				beq.s	.notduck
 				clr.b	(a5,d7.w)
 				move.l	#playerheight,Plr2_SnapTargHeight_l
-				not.b	PLR2_Ducked
+				not.b	Plr2_Ducked_b
 				beq.s	.notduck
 				move.l	#playercrouched,Plr2_SnapTargHeight_l
 .notduck:
@@ -249,17 +249,17 @@ PLR2_alwayskeys
 				sub.l	ZoneT_UpperRoof_l(a4),d0
 .usebottom:
 
-				clr.b	PLR2_Squished
-				move.l	#playerheight,PLR2s_SquishedHeight
+				clr.b	Plr2_Squished_b
+				move.l	#playerheight,Plr2_SnapSquishedHeight_l
 
 				cmp.l	#playerheight+3*1024,d0
 				bgt.s	oktostand2
-				st		PLR2_Squished
-				move.l	#playercrouched,PLR2s_SquishedHeight
+				st		Plr2_Squished_b
+				move.l	#playercrouched,Plr2_SnapSquishedHeight_l
 oktostand2:
 
 				move.l	Plr2_SnapTargHeight_l,d1
-				move.l	PLR2s_SquishedHeight,d0
+				move.l	Plr2_SnapSquishedHeight_l,d0
 				cmp.l	d0,d1
 				blt.s	.notsqu
 				move.l	d0,d1
@@ -482,9 +482,9 @@ PLR2_keyboard_control:
 				move.w	#3,d2
 				move.w	#14,TURNSPD
 .nofaster:
-				tst.b	PLR2_Squished
+				tst.b	Plr2_Squished_b
 				bne.s	.halve
-				tst.b	PLR2_Ducked
+				tst.b	Plr2_Ducked_b
 				beq.s	.nohalve
 .halve:
 				asr.w	#1,d2
