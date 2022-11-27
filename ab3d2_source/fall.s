@@ -1,8 +1,8 @@
 
 PLR1_fall
-				move.l	Plr1_AltTYOff_l,d0
-				move.l	Plr1_AltYOff_l,d1
-				move.l	Plr1_AltYVel_l,d2
+				move.l	Plr1_SnapTYOff_l,d0
+				move.l	Plr1_SnapYOff_l,d1
+				move.l	Plr1_SnapYVel_l,d2
 
 				cmp.l	d1,d0
 				bgt		.aboveground
@@ -194,8 +194,8 @@ CARRYON:
 				moveq	#0,d2
 .okroof:
 
-				move.l	d2,Plr1_AltYVel_l
-				move.l	d1,Plr1_AltYOff_l
+				move.l	d2,Plr1_SnapYVel_l
+				move.l	d1,Plr1_SnapYOff_l
 
 				rts
 
@@ -213,7 +213,7 @@ ARSE:
 				sub.l	d2,d0
 				blt.s	.pastitall
 				move.l	#0,d2
-				move.l	Plr1_AltTYOff_l,d1
+				move.l	Plr1_SnapTYOff_l,d1
 				bra.s	.pastitall
 
 .aboveground:
@@ -234,15 +234,15 @@ ARSE:
 
 .pastitall:
 
-				move.l	d2,Plr1_AltYVel_l
-				move.l	d1,Plr1_AltYOff_l
+				move.l	d2,Plr1_SnapYVel_l
+				move.l	d1,Plr1_SnapYOff_l
 
 				move.l	#KeyMap,a5
 				tst.b	$1d(a5)
 				beq.s	nothrust2
 				tst.b	CANJUMP
 				beq.s	nothrust2
-				move.l	JUMPSPD,Plr1_AltYVel_l
+				move.l	JUMPSPD,Plr1_SnapYVel_l
 nothrust2:
 
 				move.l	Plr1_RoomPtr_l,a5
@@ -252,10 +252,10 @@ nothrust2:
 				move.l	ZoneT_UpperRoof_l(a5),d0
 .usebottom:
 
-				move.l	Plr1_AltYOff_l,d1
-				move.l	Plr1_AltYVel_l,d2
+				move.l	Plr1_SnapYOff_l,d1
+				move.l	Plr1_SnapYVel_l,d2
 
-				sub.l	Plr1_AltHeight_l,d1
+				sub.l	Plr1_SnapHeight_l,d1
 				sub.l	#10*256,d1
 				cmp.l	d1,d0
 				blt.s	.notinroof
@@ -265,17 +265,17 @@ nothrust2:
 				moveq	#0,d2
 .notinroof
 				add.l	#10*256,d1
-				add.l	Plr1_AltHeight_l,d1
-				move.l	d1,Plr1_AltYOff_l
+				add.l	Plr1_SnapHeight_l,d1
+				move.l	d1,Plr1_SnapYOff_l
 
-				move.l	d2,Plr1_AltYVel_l
+				move.l	d2,Plr1_SnapYVel_l
 
 				rts
 
 PLR2_fall
-				move.l	PLR2s_tyoff,d0
-				move.l	PLR2s_yoff,d1
-				move.l	PLR2s_yvel,d2
+				move.l	Plr2_SnapTYOff_l,d0
+				move.l	Plr2_SnapYOff_l,d1
+				move.l	Plr2_SnapYVel_l,d2
 
 				cmp.l	d1,d0
 				bgt		.aboveground
@@ -324,7 +324,7 @@ PLR2_fall
 
 				move.l	#-1024,JUMPSPD
 
-				move.l	PLR2_Roompt,a2
+				move.l	Plr2_RoomPtr_l,a2
 				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	.notinwater
@@ -409,7 +409,7 @@ PLR2_fall
 
 				add.w	#1,DAMAGEWHENHIT
 
-				move.l	PLR2_Roompt,a2
+				move.l	Plr2_RoomPtr_l,a2
 				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	CARRYON2
@@ -440,9 +440,9 @@ PLR2_fall
 
 CARRYON2:
 
-				move.l	PLR2_Roompt,a2
+				move.l	Plr2_RoomPtr_l,a2
 				move.l	ZoneT_Roof_l(a2),d3
-				tst.b	PLR2_StoodInTop
+				tst.b	Plr2_StoodInTop_b
 				beq.s	.okbot
 				move.l	ZoneT_UpperRoof_l(a2),d3
 .okbot:
@@ -456,8 +456,8 @@ CARRYON2:
 				moveq	#0,d2
 .okroof:
 
-				move.l	d2,PLR2s_yvel
-				move.l	d1,PLR2s_yoff
+				move.l	d2,Plr2_SnapYVel_l
+				move.l	d1,Plr2_SnapYOff_l
 
 				rts
 

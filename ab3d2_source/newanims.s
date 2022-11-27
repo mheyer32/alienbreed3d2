@@ -790,12 +790,12 @@ objmoveanim:
 
 				move.l	Plr1_RoomPtr_l,a0
 				move.w	(a0),Plr1_Zone_w
-				move.l	PLR2_Roompt,a0
-				move.w	(a0),PLR2_Zone
+				move.l	Plr2_RoomPtr_l,a0
+				move.w	(a0),Plr2_Zone_w
 
 				cmp.b	#'n',mors
 				bne.s	.okp2
-				move.w	#-5,PLR2_Zone
+				move.w	#-5,Plr2_Zone_w
 .okp2:
 
 				move.w	#0,AI_Player1NoiseVol_w
@@ -813,7 +813,7 @@ objmoveanim:
 
 
 				move.w	#0,Plr1_FloorSpd_w
-				move.w	#0,Plr2_FloorSpd_l
+				move.w	#0,Plr2_FloorSpd_w
 
 				bsr		LiftRoutine
 				cmp	#0,animtimer		;animtimer decriment moved to VBlankInterrupt:
@@ -939,8 +939,8 @@ notallliftsdone:
 				subq.w	#1,CLOSEDSFX
 				move.w	(a0)+,d2
 				move.w	(a0)+,d3
-				sub.w	p1_xoff,d2
-				sub.w	p1_zoff,d3
+				sub.w	Plr1_TmpXOff_l,d2
+				sub.w	Plr1_TmpZOff_l,d3
 				move.w	cosval,d4
 				move.w	sinval,d5
 
@@ -1056,12 +1056,12 @@ notallliftsdone:
 
 .nosetfloorspd1:
 
-				move.l	PLR2_Roompt,a3
+				move.l	Plr2_RoomPtr_l,a3
 				cmp.w	(a3),d5
 				seq		PLR2_stoodonlift
 				bne.s	.nosetfloorspd2
 
-				move.w	FLOORMOVESPD,Plr2_FloorSpd_l
+				move.w	FLOORMOVESPD,Plr2_FloorSpd_w
 
 .nosetfloorspd2:
 
@@ -1155,7 +1155,7 @@ tstliftlower:
 lift0:
 
 				moveq	#0,d1
-				tst.b	p1_spctap
+				tst.b	Plr1_TmpSpcTap_b
 				beq.s	.noplr1
 				move.w	#%100000000,d1
 				move.w	CLOSINGSPEED,d7
@@ -1165,7 +1165,7 @@ lift0:
 				bra		backfromlift
 
 .noplr1:
-				tst.b	p2_spctap
+				tst.b	Plr2_TmpSpcTap_b
 				beq.s	.noplr2
 				or.w	#%100000000000,d1
 				move.w	CLOSINGSPEED,d7
@@ -1210,7 +1210,7 @@ tstliftraise:
 rlift0:
 
 				moveq	#0,d1
-				tst.b	p1_spctap
+				tst.b	Plr1_TmpSpcTap_b
 				beq.s	.noplr1
 				move.w	#%100000000,d1
 				move.w	OPENINGSPEED,d7
@@ -1220,7 +1220,7 @@ rlift0:
 				bra		backfromlift
 
 .noplr1:
-				tst.b	p2_spctap
+				tst.b	Plr2_TmpSpcTap_b
 				beq.s	.noplr2
 				or.w	#%100000000000,d1
 				move.w	OPENINGSPEED,d7
@@ -1304,8 +1304,8 @@ notalldoorsdone:
 				subq.w	#1,CLOSEDSFX
 				move.w	(a0)+,d2
 				move.w	(a0)+,d3
-				sub.w	p1_xoff,d2
-				sub.w	p1_zoff,d3
+				sub.w	Plr1_TmpXOff_l,d2
+				sub.w	Plr1_TmpZOff_l,d3
 				move.w	cosval,d4
 				move.w	sinval,d5
 
@@ -1413,7 +1413,7 @@ NOTMOVING:
 				and.w	#255,d0
 ; add.w #64,d0
 
-				cmp.w	PLR2_Zone,d5
+				cmp.w	Plr2_Zone_w,d5
 				beq.s	.gobackup
 				cmp.w	Plr1_Zone_w,d5
 				bne.s	NotGoBackUp
@@ -1524,11 +1524,11 @@ tstdoortoopen:
 door0:
 
 				move.w	#$0,d1
-				tst.b	p1_spctap
+				tst.b	Plr1_TmpSpcTap_b
 				beq.s	.noplr1
 				move.w	#%100000000,d1
 .noplr1:
-				tst.b	p2_spctap
+				tst.b	Plr2_TmpSpcTap_b
 				beq.s	.noplr2
 				or.w	#%100000000000,d1
 .noplr2:
@@ -1590,10 +1590,10 @@ SwitchRoutine:
 				move.l	Points,a1
 CheckSwitches
 
-				tst.b	p1_spctap
+				tst.b	Plr1_TmpSpcTap_b
 				bne		p1_SpaceIsPressed
 backtop2
-				tst.b	p2_spctap
+				tst.b	Plr2_TmpSpcTap_b
 				bne		p2_SpaceIsPressed
 backtoend
 
@@ -1640,8 +1640,8 @@ nobutt:
 				rts
 
 p1_SpaceIsPressed:
-				move.w	p1_xoff,d1
-				move.w	p1_zoff,d2
+				move.w	Plr1_TmpXOff_l,d1
+				move.w	Plr1_TmpZOff_l,d2
 				move.w	(a0),d3
 				blt		.NotCloseEnough
 				move.w	4(a0),d3
@@ -1691,8 +1691,8 @@ p1_SpaceIsPressed:
 				bra		backtop2
 
 p2_SpaceIsPressed:
-				move.w	p2_xoff,d1
-				move.w	p2_zoff,d2
+				move.w	Plr2_TmpXOff_l,d1
+				move.w	Plr2_TmpZOff_l,d2
 				move.w	(a0),d3
 				blt		.NotCloseEnough
 				move.w	4(a0),d3
@@ -2049,11 +2049,11 @@ nodamage:
 
 .noseeplr1:
 
-				move.b	PLR2_StoodInTop,TargetTop
-				move.l	PLR2_Roompt,ToRoom
-				move.w	PLR2_xoff,Targetx
-				move.w	PLR2_zoff,Targetz
-				move.l	PLR2_yoff,d0
+				move.b	Plr2_StoodInTop_b,TargetTop
+				move.l	Plr2_RoomPtr_l,ToRoom
+				move.w	Plr2_XOff_l,Targetx
+				move.w	Plr2_ZOff_l,Targetz
+				move.l	Plr2_YOff_l,d0
 				asr.l	#7,d0
 				move.w	d0,Targety
 				move.w	4(a0),Viewery
@@ -2149,17 +2149,17 @@ HealFactor		EQU		18
 
 MEDIPLR2
 
-				cmp.w	#127,PLR2_energy
+				cmp.w	#127,Plr2_Energy_w
 				bge		.NotSameZone
 
-				move.b	PLR2_StoodInTop,d0
+				move.b	Plr2_StoodInTop_b,d0
 				move.b	ShotT_InUpperZone_b(a0),d1
 				eor.b	d1,d0
 				bne		.NotSameZone
 
-				move.w	PLR2_xoff,oldx
-				move.w	PLR2_zoff,oldz
-				move.w	PLR2_Zone,d7
+				move.w	Plr2_XOff_l,oldx
+				move.w	Plr2_ZOff_l,oldz
+				move.w	Plr2_Zone_w,d7
 				move.w	12(a0),d0
 
 				cmp.w	12(a0),d7
@@ -2189,12 +2189,12 @@ MEDIPLR2
 				move.w	#-1,12(a0)
 				move.w	#-1,EntT_GraphicRoom_w(a0)
 				move.w	HealFactor(a0),d0
-				add.w	PLR2_energy,d0
+				add.w	Plr2_Energy_w,d0
 				cmp.w	#127,d0
 				ble.s	.okokokokokok
 				move.w	#127,d0
 .okokokokokok:
-				move.w	d0,PLR2_energy
+				move.w	d0,Plr2_Energy_w
 
 .NotPickedUp:
 

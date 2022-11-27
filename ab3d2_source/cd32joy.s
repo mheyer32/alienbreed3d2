@@ -162,7 +162,7 @@ _ReadJoy1
 				st		.heldlast
 
 				moveq	#0,d0
-				move.b	Plr1_GunSelected_w,d0
+				move.b	Plr1_GunSelected_b,d0
 				move.l	#PLAYERONEGUNS,a0
 
 
@@ -175,7 +175,7 @@ _ReadJoy1
 				tst.w	(a0,d0.w*2)
 				beq.s	.findnext
 
-				move.b	d0,Plr1_GunSelected_w
+				move.b	d0,Plr1_GunSelected_b
 				jsr		SHOWPLR1GUNNAME
 
 				bra		.nonextweap
@@ -348,7 +348,7 @@ _ReadJoy2
 				st		.heldlast
 
 				moveq	#0,d0
-				move.b	PLR2_GunSelected,d0
+				move.b	Plr2_GunSelected_b,d0
 				move.l	#PLAYERTWOGUNS,a0
 
 .findnext
@@ -360,7 +360,7 @@ _ReadJoy2
 				tst.w	(a0,d0.w*2)
 				beq.s	.findnext
 
-				move.b	d0,PLR2_GunSelected
+				move.b	d0,Plr2_GunSelected_b
 				jsr		SHOWPLR2GUNNAME
 
 				bra		.nonextweap

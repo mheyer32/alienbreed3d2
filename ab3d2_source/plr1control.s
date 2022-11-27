@@ -3,16 +3,16 @@ PLR1_mouse_control
 				jsr		ReadMouse
 
 				move.l	#SineTable,a0
-				move.w	Plr1_AltAngSpd_w,d1
+				move.w	Plr1_SnapAngSpd_w,d1
 				move.w	angpos,d0
 				and.w	#8190,d0
-				move.w	d0,Plr1_AltAngPos_w
-				move.w	(a0,d0.w),Plr1_AltSinVal_w
+				move.w	d0,Plr1_SnapAngPos_w
+				move.w	(a0,d0.w),Plr1_SnapSinVal_w
 				adda.w	#2048,a0
-				move.w	(a0,d0.w),Plr1_AltCosVal_w
+				move.w	(a0,d0.w),Plr1_SnapCosVal_w
 
-				move.l	Plr1_AltXSpdVal_l,d6
-				move.l	Plr1_AltZSpdVal_l,d7
+				move.l	Plr1_SnapXSpdVal_l,d6
+				move.l	Plr1_SnapZSpdVal_l,d7
 
 				neg.l	d6
 				ble.s	.nobug1
@@ -107,8 +107,8 @@ PLR1_mouse_control
 
 				move.w	d1,ADDTOBOBBLE
 
-				move.w	Plr1_AltSinVal_w,d1
-				move.w	Plr1_AltCosVal_w,d2
+				move.w	Plr1_SnapSinVal_w,d1
+				move.w	Plr1_SnapCosVal_w,d2
 
 				move.w	d2,d4
 				move.w	d1,d5
@@ -122,12 +122,12 @@ PLR1_mouse_control
 
 				sub.l	d1,d6
 				sub.l	d2,d7
-				add.l	d6,Plr1_AltXSpdVal_l
-				add.l	d7,Plr1_AltZSpdVal_l
-				move.l	Plr1_AltXSpdVal_l,d6
-				move.l	Plr1_AltZSpdVal_l,d7
-				add.l	d6,Plr1_AltXOff_l
-				add.l	d7,Plr1_AltZOff_l
+				add.l	d6,Plr1_SnapXSpdVal_l
+				add.l	d7,Plr1_SnapZSpdVal_l
+				move.l	Plr1_SnapXSpdVal_l,d6
+				move.l	Plr1_SnapZSpdVal_l,d7
+				add.l	d6,Plr1_SnapXOff_l
+				add.l	d7,Plr1_SnapZOff_l
 
 				tst.b	PLR1_fire
 				beq.s	.firenotpressed
@@ -167,9 +167,9 @@ PLR1_follow_path:
 
 				move.l	pathpt,a0
 				move.w	(a0),d1
-				move.w	d1,Plr1_AltXOff_l
+				move.w	d1,Plr1_SnapXOff_l
 				move.w	2(a0),d1
-				move.w	d1,Plr1_AltZOff_l
+				move.w	d1,Plr1_SnapZOff_l
 				move.w	4(a0),d0
 				add.w	d0,d0
 				and.w	#8190,d0
@@ -206,7 +206,7 @@ PLR1_alwayskeys
 				st		gunheldlast
 
 				moveq	#0,d0
-				move.b	Plr1_GunSelected_w,d0
+				move.b	Plr1_GunSelected_b,d0
 				move.l	#PLAYERONEGUNS,a0
 
 .findnext
@@ -218,7 +218,7 @@ PLR1_alwayskeys
 				tst.w	(a0,d0.w*2)
 				beq.s	.findnext
 
-				move.b	d0,Plr1_GunSelected_w
+				move.b	d0,Plr1_GunSelected_b
 				bsr		SHOWPLR1GUNNAME
 
 				bra		.nonextweap
@@ -241,10 +241,10 @@ nottapped:
 				tst.b	(a5,d7.w)
 				beq.s	notduck
 				clr.b	(a5,d7.w)
-				move.l	#playerheight,Plr1_AltTargHeight_l
+				move.l	#playerheight,Plr1_SnapTargHeight_l
 				not.b	PLR1_Ducked
 				beq.s	notduck
-				move.l	#playercrouched,Plr1_AltTargHeight_l
+				move.l	#playercrouched,Plr1_SnapTargHeight_l
 notduck:
 
 				move.l	Plr1_RoomPtr_l,a4
@@ -265,14 +265,14 @@ usebottom:
 				move.l	#playercrouched,PLR1s_SquishedHeight
 oktostand:
 
-				move.l	Plr1_AltTargHeight_l,d1
+				move.l	Plr1_SnapTargHeight_l,d1
 				move.l	PLR1s_SquishedHeight,d0
 				cmp.l	d0,d1
 				blt.s	.notsqu
 				move.l	d0,d1
 .notsqu:
 
-				move.l	Plr1_AltHeight_l,d0
+				move.l	Plr1_SnapHeight_l,d0
 				cmp.l	d1,d0
 				beq.s	noupordown
 				bgt.s	crouch
@@ -281,7 +281,7 @@ oktostand:
 crouch:
 				sub.l	#1024,d0
 noupordown:
-				move.l	d0,Plr1_AltHeight_l
+				move.l	d0,Plr1_SnapHeight_l
 
 				tst.b	$27(a5)
 				beq.s	notselkey
@@ -316,7 +316,7 @@ pickweap
 				move.w	(a2)+,d0
 				and.b	(a4)+,d0
 				beq.s	notgotweap
-				move.b	d2,Plr1_GunSelected_w
+				move.b	d2,Plr1_GunSelected_b
 				move.w	#0,EntT_Timer1_w+128(a3)
 
 
@@ -407,7 +407,7 @@ WIPEDISPLAY:
 
 SHOWPLR1GUNNAME:
 				moveq	#0,d2
-				move.b	Plr1_GunSelected_w,d2
+				move.b	Plr1_GunSelected_b,d2
 
 				move.l	GLF_DatabasePtr_l,a4
 				add.l	#GLFT_GunNames_l,a4
@@ -491,8 +491,8 @@ PLR1_keyboard_control:
 				muls	#SCREENWIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 
-				move.w	Plr1_AltAngPos_w,d0
-				move.w	Plr1_AltAngSpd_w,d3
+				move.w	Plr1_SnapAngPos_w,d0
+				move.w	Plr1_SnapAngSpd_w,d3
 				move.w	#35,d1
 				move.w	#2,d2
 				move.w	#10,TURNSPD
@@ -571,7 +571,7 @@ noturnposs:
 
 				add.w	d3,d0
 				add.w	d3,d0
-				move.w	d3,Plr1_AltAngSpd_w
+				move.w	d3,Plr1_SnapAngSpd_w
 
 				move.b	tempslkey,d7
 				tst.b	(a5,d7.w)
@@ -593,14 +593,14 @@ norightslide
 noslide:
 
 				and.w	#8191,d0
-				move.w	d0,Plr1_AltAngPos_w
+				move.w	d0,Plr1_SnapAngPos_w
 
-				move.w	(a0,d0.w),Plr1_AltSinVal_w
+				move.w	(a0,d0.w),Plr1_SnapSinVal_w
 				adda.w	#2048,a0
-				move.w	(a0,d0.w),Plr1_AltCosVal_w
+				move.w	(a0,d0.w),Plr1_SnapCosVal_w
 
-				move.l	Plr1_AltXSpdVal_l,d6
-				move.l	Plr1_AltZSpdVal_l,d7
+				move.l	Plr1_SnapXSpdVal_l,d6
+				move.l	Plr1_SnapZSpdVal_l,d7
 
 				tst.b	SLOWDOWN
 				beq.s	.nofriction
@@ -648,29 +648,29 @@ nobackward:
 ; add.w d2,d1
 				move.w	d1,ADDTOBOBBLE
 
-				move.w	Plr1_AltSinVal_w,d1
+				move.w	Plr1_SnapSinVal_w,d1
 				muls	d3,d1
-				move.w	Plr1_AltCosVal_w,d2
+				move.w	Plr1_SnapCosVal_w,d2
 				muls	d3,d2
 
 				sub.l	d1,d6
 				sub.l	d2,d7
-				move.w	Plr1_AltSinVal_w,d1
+				move.w	Plr1_SnapSinVal_w,d1
 				muls	d4,d1
-				move.w	Plr1_AltCosVal_w,d2
+				move.w	Plr1_SnapCosVal_w,d2
 				muls	d4,d2
 				sub.l	d2,d6
 				add.l	d1,d7
 
 				tst.b	SLOWDOWN
 				beq.s	.nocontrolposs
-				add.l	d6,Plr1_AltXSpdVal_l
-				add.l	d7,Plr1_AltZSpdVal_l
+				add.l	d6,Plr1_SnapXSpdVal_l
+				add.l	d7,Plr1_SnapZSpdVal_l
 .nocontrolposs
-				move.l	Plr1_AltXSpdVal_l,d6
-				move.l	Plr1_AltZSpdVal_l,d7
-				add.l	d6,Plr1_AltXOff_l
-				add.l	d7,Plr1_AltZOff_l
+				move.l	Plr1_SnapXSpdVal_l,d6
+				move.l	Plr1_SnapZSpdVal_l,d7
+				add.l	d6,Plr1_SnapXOff_l
+				add.l	d7,Plr1_SnapZOff_l
 
 				move.b	fire_key,d5
 				tst.b	PLR1_fire

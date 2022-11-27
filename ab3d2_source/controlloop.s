@@ -239,12 +239,12 @@ DONEMENU:
 
 				clr.b	FINISHEDLEVEL
 
-				move.w	#0,Plr1_AltAngPos_w
-				move.w	#0,PLR2s_angpos
+				move.w	#0,Plr1_SnapAngPos_w
+				move.w	#0,Plr2_SnapAngPos_w
 				move.w	#0,Plr1_AngPos_w
-				move.w	#0,PLR2_angpos
-				move.b	#0,Plr1_GunSelected_w
-				move.b	#0,PLR2_GunSelected
+				move.w	#0,Plr2_AngPos_w
+				move.b	#0,Plr1_GunSelected_b
+				move.b	#0,Plr2_GunSelected_b
 
 **************************8
 				clr.b	NASTY
@@ -1012,9 +1012,9 @@ TWOPLAYER:
 				jsr		AmmoBar
 				move.w	#0,OldAmmo
 
-				move.b	#0,Plr1_GunSelected_w
+				move.b	#0,Plr1_GunSelected_b
 
-				move.b	#0,PLR2_GunSelected
+				move.b	#0,Plr2_GunSelected_b
 				rts
 
 newdum:

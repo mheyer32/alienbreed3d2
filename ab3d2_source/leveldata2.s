@@ -15,9 +15,9 @@ INITPLAYER:
 				move.l	Plr1_RoomPtr_l,a0
 				move.l	ZoneT_Floor_l(a0),d0
 				sub.l	#playerheight,d0
-				move.l	d0,Plr1_AltYOff_l
+				move.l	d0,Plr1_SnapYOff_l
 				move.l	d0,Plr1_YOff_l
-				move.l	d0,Plr1_AltTYOff_l
+				move.l	d0,Plr1_SnapTYOff_l
 				move.l	Plr1_RoomPtr_l,Plr1_OldRoomPtr_l
 
 				move.l	LEVELDATA,a1
@@ -26,26 +26,26 @@ INITPLAYER:
 				move.l	ZoneAdds,a0
 				move.l	(a0,d0.w*4),d0
 				add.l	LEVELDATA,d0
-				move.l	d0,PLR2_Roompt
-				move.l	PLR2_Roompt,a0
+				move.l	d0,Plr2_RoomPtr_l
+				move.l	Plr2_RoomPtr_l,a0
 				move.l	ZoneT_Floor_l(a0),d0
 				sub.l	#playerheight,d0
-				move.l	d0,PLR2s_yoff
-				move.l	d0,PLR2_yoff
-				move.l	d0,PLR2s_tyoff
-				move.l	d0,PLR2_yoff
+				move.l	d0,Plr2_SnapYOff_l
+				move.l	d0,Plr2_YOff_l
+				move.l	d0,Plr2_SnapTYOff_l
+				move.l	d0,Plr2_YOff_l
 
-				move.l	PLR2_Roompt,PLR2_OldRoompt
+				move.l	Plr2_RoomPtr_l,Plr2_OldRoomPtr_l
 
 
-				move.w	(a1),Plr1_AltXOff_l
-				move.w	2(a1),Plr1_AltZOff_l
+				move.w	(a1),Plr1_SnapXOff_l
+				move.w	2(a1),Plr1_SnapZOff_l
 				move.w	(a1),Plr1_XOff_l
 				move.w	2(a1),Plr1_ZOff_l
-				move.w	6(a1),PLR2s_xoff
-				move.w	8(a1),PLR2s_zoff
-				move.w	6(a1),PLR2_xoff
-				move.w	8(a1),PLR2_zoff
+				move.w	6(a1),Plr2_SnapXOff_l
+				move.w	8(a1),Plr2_SnapZOff_l
+				move.w	6(a1),Plr2_XOff_l
+				move.w	8(a1),Plr2_ZOff_l
 				rts
 
 *************************************************

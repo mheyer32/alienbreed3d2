@@ -738,8 +738,8 @@ ai_ChargeCommon:
 				move.w	Plr1_ZOff_l,newz
 				move.w	Plr1_SinVal_w,tempsin
 				move.w	Plr1_CosVal_w,tempcos
-				move.w	p1_xoff,tempx
-				move.w	p1_zoff,tempz
+				move.w	Plr1_TmpXOff_l,tempx
+				move.w	Plr1_TmpZOff_l,tempz
 				tst.b	ai_ToSide_w
 				beq.s	.no_side
 				jsr		RunAround
@@ -997,9 +997,9 @@ ai_AttackWithHitScan:
 				sub.l	#ObjRotated,a6
 				add.l	ObjectPoints,a6
 				move.w	(a6),d0
-				sub.w	p1_xoff,d0				;dx
+				sub.w	Plr1_TmpXOff_l,d0				;dx
 				move.w	4(a6),d1
-				sub.w	p1_zoff,d1				;dz
+				sub.w	Plr1_TmpZOff_l,d1				;dz
 
 				move.w	d0,d2
 				move.w	d1,d3
@@ -1187,8 +1187,8 @@ ai_ChargeFlyingCommon:
 				move.w	Plr1_ZOff_l,newz
 				move.w	Plr1_SinVal_w,tempsin
 				move.w	Plr1_CosVal_w,tempcos
-				move.w	p1_xoff,tempx
-				move.w	p1_zoff,tempz
+				move.w	Plr1_TmpXOff_l,tempx
+				move.w	Plr1_TmpZOff_l,tempz
 				tst.b	ai_ToSide_w
 				beq.s	.no_side
 				jsr		RunAround
@@ -1405,8 +1405,8 @@ ai_ApproachCommon:
 				move.w	Plr1_ZOff_l,newz
 				move.w	Plr1_SinVal_w,tempsin
 				move.w	Plr1_CosVal_w,tempcos
-				move.w	p1_xoff,tempx
-				move.w	p1_zoff,tempz
+				move.w	Plr1_TmpXOff_l,tempx
+				move.w	Plr1_TmpZOff_l,tempz
 				tst.b	ai_ToSide_w
 				beq.s	.no_side
 				jsr		RunAround
@@ -1725,9 +1725,9 @@ ai_CheckInFront:
 				move.w	(a1,d0.w*8),newx
 				move.w	4(a1,d0.w*8),newz
 
-				move.w	p1_xoff,d0
+				move.w	Plr1_TmpXOff_l,d0
 				sub.w	newx,d0
-				move.w	p1_zoff,d1
+				move.w	Plr1_TmpZOff_l,d1
 				sub.w	newz,d1
 
 				move.w	EntT_CurrentAngle_w(a0),d2

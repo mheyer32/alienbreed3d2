@@ -606,7 +606,7 @@ noclips:
 ;njc:
 
 				clr.b	Plr1_StoodInTop_b
-				move.l	#playerheight,Plr1_AltHeight_l
+				move.l	#playerheight,Plr1_SnapHeight_l
 
 				move.l	#empty,pos1LEFT
 				move.l	#empty,pos2LEFT
@@ -744,10 +744,10 @@ scaledownlop:
 
 				move.l	SampleList+6*8,pos0LEFT
 				move.l	SampleList+6*8+4,Samp0endLEFT
-				move.l	#playerheight,Plr1_AltTargHeight_l
-				move.l	#playerheight,Plr1_AltHeight_l
-				move.l	#playerheight,PLR2s_targheight
-				move.l	#playerheight,PLR2s_height
+				move.l	#playerheight,Plr1_SnapTargHeight_l
+				move.l	#playerheight,Plr1_SnapHeight_l
+				move.l	#playerheight,Plr2_SnapTargHeight_l
+				move.l	#playerheight,Plr2_SnapHeight_l
 
 ; cmp.b #'n',mors
 ; beq.s nohandshake
@@ -821,8 +821,8 @@ NOCLTXT:
 
 				clr.b	PLR1_Ducked
 				clr.b	PLR2_Ducked
-				clr.b	p1_ducked
-				clr.b	p2_ducked
+				clr.b	Plr1_TmpDucked_b
+				clr.b	Plr2_TmpDucked_b
 
 ********************************************
 
@@ -953,9 +953,9 @@ clrmessbuff:
 				jsr		SENDMESSAGE
 
 				clr.b	PLR2_fire
-				clr.b	p2_fire
+				clr.b	Plr2_TmpFire_b
 				clr.b	PLR2_SPCTAP
-				clr.b	p2_spctap
+				clr.b	Plr2_TmpSpcTap_b
 
 				clr.b	PLR1_dead
 				clr.b	PLR2_dead
@@ -969,15 +969,12 @@ clrmessbuff:
 				move.w	#0,EntT_ImpactY_w(a1)
 				move.w	#0,EntT_ImpactZ_w(a1)
 
-				move.l	#0,Plr1_AltXSpdVal_l
-				move.l	#0,Plr1_AltZSpdVal_l
-				move.l	#0,Plr1_AltYVel_l
-				move.l	#0,PLR2s_xspdval
-				move.l	#0,PLR2s_zspdval
-				move.l	#0,PLR2s_yvel
-				move.l	#0,PLR2_xspdval
-				move.l	#0,PLR2_zspdval
-				move.l	#0,PLR2_yvel
+				move.l	#0,Plr1_SnapXSpdVal_l
+				move.l	#0,Plr1_SnapZSpdVal_l
+				move.l	#0,Plr1_SnapYVel_l
+				move.l	#0,Plr2_SnapXSpdVal_l
+				move.l	#0,Plr2_SnapZSpdVal_l
+				move.l	#0,Plr2_SnapYVel_l
 
 				jsr	FPS_time1
 lop:
@@ -1017,10 +1014,10 @@ lop:
 				move.b	AlienT_SplatType_w+1(a6),d0
 				move.b	d0,TypeOfSplat
 
-				move.l	PLR2_Roompt,a1
+				move.l	Plr2_RoomPtr_l,a1
 				move.w	(a1),12(a0)
-				move.w	p2_xoff,newx
-				move.w	p2_zoff,newz
+				move.w	Plr2_TmpXOff_l,newx
+				move.w	Plr2_TmpZOff_l,newz
 				move.w	#7,d2
 				jsr		ExplodeIntoBits
 				move.w	#-1,12(a0)
@@ -1063,8 +1060,8 @@ lop:
 
 				move.l	Plr1_RoomPtr_l,a1
 				move.w	(a1),12(a0)
-				move.w	p1_xoff,newx
-				move.w	p1_zoff,newz
+				move.w	Plr1_TmpXOff_l,newx
+				move.w	Plr1_TmpZOff_l,newz
 				move.w	#7,d2
 				jsr		ExplodeIntoBits
 				move.w	#-1,12(a0)
@@ -1231,12 +1228,12 @@ nofadedownhc:
 ;				move.w	#$1,intreq(a6)
 
 ; move.l #PLR1_GunData,GunData
-				move.b	Plr1_GunSelected_w,GunSelected
+				move.b	Plr1_GunSelected_b,GunSelected
 				bra		waitmaster
 
 nowaitslave:
 ; move.l #PLR2_GunData,GunData
-				move.b	PLR2_GunSelected,GunSelected
+				move.b	Plr2_GunSelected_b,GunSelected
 waitmaster:
 
 *****************************************************************
@@ -1300,10 +1297,10 @@ okwat:
 				add.l	#1,wateroff
 				and.l	#$3fff3fff,wateroff
 
-				move.l	Plr1_XOff_l,OLDX1
-				move.l	Plr1_ZOff_l,OLDZ1
-				move.l	PLR2_xoff,OLDX2
-				move.l	PLR2_zoff,OLDZ2
+				move.l	Plr1_XOff_l,OldX1_l
+				move.l	Plr1_ZOff_l,OldZ1_l
+				move.l	Plr2_XOff_l,OldX2_l
+				move.l	Plr2_ZOff_l,OldZ2_l
 
 				move.l	#$dff000,a6
 
@@ -1366,34 +1363,34 @@ okwat:
 **********************************************
 **********************************************
 
-				move.l	Plr1_AltXOff_l,p1_xoff
-				move.l	Plr1_AltZOff_l,p1_zoff
-				move.l	Plr1_AltYOff_l,p1_yoff
-				move.l	Plr1_AltHeight_l,p1_height
-				move.w	Plr1_AltAngPos_w,p1_angpos
-				move.w	Plr1_Bobble_w,p1_bobble
-				move.b	PLR1_clicked,p1_clicked
-				move.b	PLR1_fire,p1_fire
+				move.l	Plr1_SnapXOff_l,Plr1_TmpXOff_l
+				move.l	Plr1_SnapZOff_l,Plr1_TmpZOff_l
+				move.l	Plr1_SnapYOff_l,Plr1_TmpYOff_l
+				move.l	Plr1_SnapHeight_l,Plr1_TmpHeight_l
+				move.w	Plr1_SnapAngPos_w,Plr1_TmpAngPos_w
+				move.w	Plr1_Bobble_w,Plr1_TmpBobble_w
+				move.b	PLR1_clicked,Plr1_TmpClicked_b
+				move.b	PLR1_fire,Plr1_TmpFire_b
 				clr.b	PLR1_clicked
-				move.b	PLR1_SPCTAP,p1_spctap
+				move.b	PLR1_SPCTAP,Plr1_TmpSpcTap_b
 				clr.b	PLR1_SPCTAP
-				move.b	PLR1_Ducked,p1_ducked
-				move.b	Plr1_GunSelected_w,p1_gunselected
+				move.b	PLR1_Ducked,Plr1_TmpDucked_b
+				move.b	Plr1_GunSelected_b,Plr1_TmpGunSelected_b
 
 				bsr		PLR1_Control
 
 				move.l	Plr1_RoomPtr_l,a0
 				move.l	ZoneT_Roof_l(a0),SplitHeight
-				move.w	p1_xoff,THISPLRxoff
-				move.w	p1_zoff,THISPLRzoff
+				move.w	Plr1_TmpXOff_l,THISPLRxoff
+				move.w	Plr1_TmpZOff_l,THISPLRzoff
 
 
-				move.l	#$60000,p2_yoff
+				move.l	#$60000,Plr2_TmpYOff_l
 				move.l	PLR2_Obj,a0
 				move.w	#-1,EntT_GraphicRoom_w(a0)
 				move.w	#-1,12(a0)
 				move.b	#0,17(a0)
-				move.l	#BollocksRoom,PLR2_Roompt
+				move.l	#BollocksRoom,Plr2_RoomPtr_l
 
 				bra		donetalking
 
@@ -1428,71 +1425,71 @@ NotOnePlayer:
 .okframe:
 				move.w	#0,FramesToDraw
 
-				move.l	Plr1_AltXOff_l,p1_xoff
-				move.l	Plr1_AltZOff_l,p1_zoff
-				move.l	Plr1_AltYOff_l,p1_yoff
-				move.l	Plr1_AltHeight_l,p1_height
-				move.w	Plr1_AltAngPos_w,p1_angpos
-				move.w	Plr1_Bobble_w,p1_bobble
-				move.b	PLR1_clicked,p1_clicked
+				move.l	Plr1_SnapXOff_l,Plr1_TmpXOff_l
+				move.l	Plr1_SnapZOff_l,Plr1_TmpZOff_l
+				move.l	Plr1_SnapYOff_l,Plr1_TmpYOff_l
+				move.l	Plr1_SnapHeight_l,Plr1_TmpHeight_l
+				move.w	Plr1_SnapAngPos_w,Plr1_TmpAngPos_w
+				move.w	Plr1_Bobble_w,Plr1_TmpBobble_w
+				move.b	PLR1_clicked,Plr1_TmpClicked_b
 				clr.b	PLR1_clicked
-				move.b	PLR1_fire,p1_fire
-				move.b	PLR1_SPCTAP,p1_spctap
+				move.b	PLR1_fire,Plr1_TmpFire_b
+				move.b	PLR1_SPCTAP,Plr1_TmpSpcTap_b
 				clr.b	PLR1_SPCTAP
-				move.b	PLR1_Ducked,p1_ducked
-				move.b	Plr1_GunSelected_w,p1_gunselected
+				move.b	PLR1_Ducked,Plr1_TmpDucked_b
+				move.b	Plr1_GunSelected_b,Plr1_TmpGunSelected_b
 
 				move.l	PLR1_AIMSPD,d0
 				jsr		SENDFIRST
 				move.l	d0,PLR2_AIMSPD
 
-				move.l	p1_xoff,d0
+				move.l	Plr1_TmpXOff_l,d0
 				jsr		SENDFIRST
-				move.l	d0,p2_xoff
+				move.l	d0,Plr2_TmpXOff_l
 
-				move.l	p1_zoff,d0
+				move.l	Plr1_TmpZOff_l,d0
 				jsr		SENDFIRST
-				move.l	d0,p2_zoff
+				move.l	d0,Plr2_TmpZOff_l
 
-				move.l	p1_yoff,d0
+				move.l	Plr1_TmpYOff_l,d0
 				jsr		SENDFIRST
-				move.l	d0,p2_yoff
+				move.l	d0,Plr2_TmpYOff_l
 
-				move.l	p1_height,d0
+				move.l	Plr1_TmpHeight_l,d0
 				jsr		SENDFIRST
-				move.l	d0,p2_height
+				move.l	d0,Plr2_TmpHeight_l
 
-				move.w	p1_angpos,d0
+				move.w	Plr1_TmpAngPos_w,d0
 				swap	d0
-				move.w	p1_bobble,d0
+				move.w	Plr1_TmpBobble_w,d0
 				jsr		SENDFIRST
-				move.w	d0,p2_bobble
+				move.w	d0,Plr2_TmpBobble_w
 				swap	d0
-				move.w	d0,p2_angpos
+				move.w	d0,Plr2_TmpAngPos_w
 
 
 				move.w	TempFrames,d0
 				swap	d0
-				move.b	p1_spctap,d0
+				move.b	Plr1_TmpSpcTap_b,d0
 				lsl.w	#8,d0
-				move.b	p1_clicked,d0
+				move.b	Plr1_TmpClicked_b,d0
 				jsr		SENDFIRST
-				move.b	d0,p2_clicked
+				move.b	d0,Plr2_TmpClicked_b
 				lsr.w	#8,d0
-				move.b	d0,p2_spctap
+				move.b	d0,Plr2_TmpSpcTap_b
 
 				move.w	Rand1,d0
 				swap	d0
-				move.b	p1_ducked,d0
+				move.b	Plr1_TmpDucked_b,d0
 				or.b	PLR1_Squished,d0
 				lsl.w	#8,d0
-				move.b	p1_gunselected,d0
+				move.b	Plr1_TmpGunSelected_b,d0
 				jsr		SENDFIRST
-				move.b	d0,p2_gunselected
+				move.b	d0,Plr2_TmpGunSelected_b
 				lsr.w	#8,d0
-				move.b	d0,p2_ducked
+				move.b	d0,Plr2_TmpDucked_b
 
-				move.b	p1_fire,d0
+				move.b	Plr1_TmpFire_b,d0
 				lsl.w	#8,d0
 				move.b	MASTERQUITTING,d0
 				or.b	d0,SLAVEQUITTING
@@ -1506,7 +1503,7 @@ NotOnePlayer:
 				or.b	d0,SLAVEQUITTING
 				or.b	d0,MASTERQUITTING
 				lsr.w	#8,d0
-				move.b	d0,p2_fire
+				move.b	d0,Plr2_TmpFire_b
 
 				move.w	PLAYERONEHEALTH,d0
 				jsr		SENDFIRST
@@ -1516,8 +1513,8 @@ NotOnePlayer:
 				bsr		PLR2_Control
 				move.l	Plr1_RoomPtr_l,a0
 				move.l	ZoneT_Roof_l(a0),SplitHeight
-				move.w	p1_xoff,THISPLRxoff
-				move.w	p1_zoff,THISPLRzoff
+				move.w	Plr1_TmpXOff_l,THISPLRxoff
+				move.w	Plr1_TmpZOff_l,THISPLRzoff
 
 				bra		donetalking
 
@@ -1551,71 +1548,71 @@ ASlaveShouldWaitOnHisMaster:
 
 
 
-				move.l	PLR2s_xoff,p2_xoff
-				move.l	PLR2s_zoff,p2_zoff
-				move.l	PLR2s_yoff,p2_yoff
-				move.l	PLR2s_height,p2_height
-				move.w	PLR2s_angpos,p2_angpos
-				move.w	Plr2_Bobble_w,p2_bobble
-				move.b	PLR2_clicked,p2_clicked
+				move.l	Plr2_SnapXOff_l,Plr2_TmpXOff_l
+				move.l	Plr2_SnapZOff_l,Plr2_TmpZOff_l
+				move.l	Plr2_SnapYOff_l,Plr2_TmpYOff_l
+				move.l	Plr2_SnapHeight_l,Plr2_TmpHeight_l
+				move.w	Plr2_SnapAngPos_w,Plr2_TmpAngPos_w
+				move.w	Plr2_Bobble_w,Plr2_TmpBobble_w
+				move.b	PLR2_clicked,Plr2_TmpClicked_b
 				clr.b	PLR2_clicked
-				move.b	PLR2_fire,p2_fire
-				move.b	PLR2_SPCTAP,p2_spctap
+				move.b	PLR2_fire,Plr2_TmpFire_b
+				move.b	PLR2_SPCTAP,Plr2_TmpSpcTap_b
 				clr.b	PLR2_SPCTAP
-				move.b	PLR2_Ducked,p2_ducked
-				move.b	PLR2_GunSelected,p2_gunselected
+				move.b	PLR2_Ducked,Plr2_TmpDucked_b
+				move.b	Plr2_GunSelected_b,Plr2_TmpGunSelected_b
 
 				move.l	PLR2_AIMSPD,d0
 				jsr		RECFIRST
 				move.l	d0,PLR1_AIMSPD
 
-				move.l	p2_xoff,d0
+				move.l	Plr2_TmpXOff_l,d0
 				jsr		RECFIRST
-				move.l	d0,p1_xoff
+				move.l	d0,Plr1_TmpXOff_l
 
-				move.l	p2_zoff,d0
+				move.l	Plr2_TmpZOff_l,d0
 				jsr		RECFIRST
-				move.l	d0,p1_zoff
+				move.l	d0,Plr1_TmpZOff_l
 
-				move.l	p2_yoff,d0
+				move.l	Plr2_TmpYOff_l,d0
 				jsr		RECFIRST
-				move.l	d0,p1_yoff
+				move.l	d0,Plr1_TmpYOff_l
 
-				move.l	p2_height,d0
+				move.l	Plr2_TmpHeight_l,d0
 				jsr		RECFIRST
-				move.l	d0,p1_height
+				move.l	d0,Plr1_TmpHeight_l
 
-				move.w	p2_angpos,d0
+				move.w	Plr2_TmpAngPos_w,d0
 				swap	d0
-				move.w	p2_bobble,d0
+				move.w	Plr2_TmpBobble_w,d0
 				jsr		RECFIRST
-				move.w	d0,p1_bobble
+				move.w	d0,Plr1_TmpBobble_w
 				swap	d0
-				move.w	d0,p1_angpos
+				move.w	d0,Plr1_TmpAngPos_w
 
 
-				move.b	p2_spctap,d0
+				move.b	Plr2_TmpSpcTap_b,d0
 				lsl.w	#8,d0
-				move.b	p2_clicked,d0
+				move.b	Plr2_TmpClicked_b,d0
 				jsr		RECFIRST
-				move.b	d0,p1_clicked
+				move.b	d0,Plr1_TmpClicked_b
 				lsr.w	#8,d0
-				move.b	d0,p1_spctap
+				move.b	d0,Plr1_TmpSpcTap_b
 				swap	d0
 				move.w	d0,TempFrames
 
-				move.b	p2_ducked,d0
+				move.b	Plr2_TmpDucked_b,d0
 				or.b	PLR2_Squished,d0
 				lsl.w	#8,d0
-				move.b	p2_gunselected,d0
+				move.b	Plr2_TmpGunSelected_b,d0
 				jsr		RECFIRST
-				move.b	d0,p1_gunselected
+				move.b	d0,Plr1_TmpGunSelected_b
 				lsr.w	#8,d0
-				move.b	d0,p1_ducked
+				move.b	d0,Plr1_TmpDucked_b
 				swap	d0
 				move.w	d0,Rand1
 
-				move.b	p2_fire,d0
+				move.b	Plr2_TmpFire_b,d0
 				lsl.w	#8,d0
 				move.b	SLAVEQUITTING,d0
 				or.b	d0,MASTERQUITTING
@@ -1629,7 +1626,7 @@ ASlaveShouldWaitOnHisMaster:
 				or.b	d0,SLAVEQUITTING
 				or.b	d0,MASTERQUITTING
 				lsr.w	#8,d0
-				move.b	d0,p1_fire
+				move.b	d0,Plr1_TmpFire_b
 
 				move.w	PLAYERTWOHEALTH,d0
 				jsr		RECFIRST
@@ -1637,9 +1634,9 @@ ASlaveShouldWaitOnHisMaster:
 
 				bsr		PLR1_Control
 				bsr		PLR2_Control
-				move.w	p2_xoff,THISPLRxoff
-				move.w	p2_zoff,THISPLRzoff
-				move.l	PLR2_Roompt,a0
+				move.w	Plr2_TmpXOff_l,THISPLRxoff
+				move.w	Plr2_TmpZOff_l,THISPLRzoff
+				move.l	Plr2_RoomPtr_l,a0
 				move.l	ZoneT_Roof_l(a0),SplitHeight
 
 donetalking:
@@ -1647,8 +1644,8 @@ donetalking:
 
 				move.l	#ZoneBrightTable,a1
 				move.l	ZoneAdds,a2
-				move.l	PLR2_ListOfGraphRooms,a0
-; move.l PLR2_PointsToRotatePtr,a5
+				move.l	Plr2_ListOfGraphRoomsPtr_l,a0
+; move.l Plr2_PointsToRotatePtr_l,a5
 				move.l	a0,a5
 				cmp.b	#'s',mors
 				beq.s	doallz
@@ -1784,19 +1781,19 @@ findaverage:
 				beq		nosee
 
 				move.l	Plr1_RoomPtr_l,FromRoom
-				move.l	PLR2_Roompt,ToRoom
-				move.w	p1_xoff,Viewerx
-				move.w	p1_zoff,Viewerz
-				move.l	p1_yoff,d0
+				move.l	Plr2_RoomPtr_l,ToRoom
+				move.w	Plr1_TmpXOff_l,Viewerx
+				move.w	Plr1_TmpZOff_l,Viewerz
+				move.l	Plr1_TmpYOff_l,d0
 				asr.l	#7,d0
 				move.w	d0,Viewery
-				move.w	p2_xoff,Targetx
-				move.w	p2_zoff,Targetz
-				move.l	p2_yoff,d0
+				move.w	Plr2_TmpXOff_l,Targetx
+				move.w	Plr2_TmpZOff_l,Targetz
+				move.l	Plr2_TmpYOff_l,d0
 				asr.l	#7,d0
 				move.w	d0,Targety
 				move.b	Plr1_StoodInTop_b,ViewerTop
-				move.b	PLR2_StoodInTop,TargetTop
+				move.b	Plr2_StoodInTop_b,TargetTop
 				jsr		CanItBeSeen
 
 				move.l	PLR1_Obj,a0
@@ -1812,34 +1809,34 @@ nosee:
 
 
 				move.w	TempFrames,d0
-				add.w	d0,p1_holddown
-				cmp.w	#30,p1_holddown
+				add.w	d0,Plr1_TmpHoldDown_w
+				cmp.w	#30,Plr1_TmpHoldDown_w
 				blt.s	oklength
-				move.w	#30,p1_holddown
+				move.w	#30,Plr1_TmpHoldDown_w
 oklength:
 
-				tst.b	p1_fire
+				tst.b	Plr1_TmpFire_b
 				bne.s	okstillheld
-				sub.w	d0,p1_holddown
+				sub.w	d0,Plr1_TmpHoldDown_w
 				bge.s	okstillheld
-				move.w	#0,p1_holddown
+				move.w	#0,Plr1_TmpHoldDown_w
 
 okstillheld:
 
 				move.w	TempFrames,d0
-				add.w	d0,p2_holddown
+				add.w	d0,Plr2_TmpHoldDown_w
 
-				cmp.w	#30,p2_holddown
+				cmp.w	#30,Plr2_TmpHoldDown_w
 				blt.s	oklength2
-				move.w	#30,p2_holddown
+				move.w	#30,Plr2_TmpHoldDown_w
 oklength2:
 
 
-				tst.b	p2_fire
+				tst.b	Plr2_TmpFire_b
 				bne.s	okstillheld2
-				sub.w	d0,p2_holddown
+				sub.w	d0,Plr2_TmpHoldDown_w
 				bge.s	okstillheld2
-				move.w	#0,p2_holddown
+				move.w	#0,Plr2_TmpHoldDown_w
 okstillheld2:
 
 ***** CHECKING LIGHT *********
@@ -1856,10 +1853,10 @@ okstillheld2:
 ******************************
 
 ; move.l #PLR1_GunData,a1
-; move.w p1_holddown,d0
+; move.w Plr1_TmpHoldDown_w,d0
 ; move.w #50,10+32*3(a1)
 ; move.l #PLR2_GunData,a1
-; move.w p2_holddown,d0
+; move.w Plr2_TmpHoldDown_w,d0
 ; move.w #50,10+32*3(a1)
 
 ******************************************
@@ -1871,25 +1868,25 @@ okstillheld2:
 noze:
 
 				move.w	Plr1_XOff_l,d0
-				sub.w	OLDX1,d0
+				sub.w	OldX1_l,d0
 				asl.w	#4,d0
 				ext.l	d0
 				divs	d1,d0
 				move.w	d0,XDIFF1
-				move.w	PLR2_xoff,d0
-				sub.w	OLDX2,d0
+				move.w	Plr2_XOff_l,d0
+				sub.w	OldX2_l,d0
 				asl.w	#4,d0
 				ext.l	d0
 				divs	d1,d0
 				move.w	d0,XDIFF2
 				move.w	Plr1_ZOff_l,d0
-				sub.w	OLDZ1,d0
+				sub.w	OldZ1_l,d0
 				asl.w	#4,d0
 				ext.l	d0
 				divs	d1,d0
 				move.w	d0,ZDIFF1
-				move.w	PLR2_zoff,d0
-				sub.w	OLDZ2,d0
+				move.w	Plr2_ZOff_l,d0
+				sub.w	OldZ2_l,d0
 				asl.w	#4,d0
 				ext.l	d0
 				divs	d1,d0
@@ -2016,19 +2013,19 @@ IWasPlayer1:
 drawplayer2
 
 				move.w	#0,scaleval
-				move.l	PLR2_xoff,xoff
-				move.l	PLR2_yoff,yoff
-				move.l	PLR2_zoff,zoff
-				move.w	PLR2_angpos,angpos
-				move.w	PLR2_cosval,cosval
-				move.w	PLR2_sinval,sinval
+				move.l	Plr2_XOff_l,xoff
+				move.l	Plr2_YOff_l,yoff
+				move.l	Plr2_ZOff_l,zoff
+				move.w	Plr2_AngPos_w,angpos
+				move.w	Plr2_CosVal_w,cosval
+				move.w	Plr2_SinVal_w,sinval
 
 
 
-				move.l	PLR2_ListOfGraphRooms,ListOfGraphRooms
-				move.l	PLR2_PointsToRotatePtr,PointsToRotatePtr
-				move.b	PLR2_Echo,PLREcho
-				move.l	PLR2_Roompt,Roompt
+				move.l	Plr2_ListOfGraphRoomsPtr_l,ListOfGraphRooms
+				move.l	Plr2_PointsToRotatePtr_l,PointsToRotatePtr
+				move.b	Plr2_Echo_b,PLREcho
+				move.l	Plr2_RoomPtr_l,Roompt
 
 				move.l	#KeyMap,a5
 				moveq	#0,d5
@@ -2159,7 +2156,7 @@ notdoubwidth:
 notdoubwidth2:
 
 *****************************************
-				move.l	PLR2_Roompt,a0
+				move.l	Plr2_RoomPtr_l,a0
 				move.l	#WorkSpace,a1
 				clr.l	(a1)
 				clr.l	4(a1)
@@ -3235,16 +3232,16 @@ USEPLR1:
 				beq.s	.notwist
 				move.w	d2,d4
 .notwist:
-				add.w	d3,Plr1_AltXSpdVal_l
+				add.w	d3,Plr1_SnapXSpdVal_l
 				move.w	EntT_ImpactZ_w(a0),d3
 				beq.s	.notwist2
 				move.w	d2,d4
 .notwist2:
-				add.w	d3,Plr1_AltZSpdVal_l
+				add.w	d3,Plr1_SnapZSpdVal_l
 				move.w	EntT_ImpactY_w(a0),d3
 				ext.l	d3
 				asl.l	#8,d3
-				add.l	d3,Plr1_AltYVel_l
+				add.l	d3,Plr1_SnapYVel_l
 
 				move.w	#0,EntT_ImpactX_w(a0)
 				move.w	#0,EntT_ImpactY_w(a0)
@@ -3254,7 +3251,7 @@ USEPLR1:
 				muls	d4,d0
 				asr.l	#8,d0
 				asr.l	#4,d0
-				add.w	d0,Plr1_AltAngSpd_w
+				add.w	d0,Plr1_SnapAngSpd_w
 
 				move.l	#7*2116,hitcol
 				sub.w	d2,PLAYERONEHEALTH
@@ -3273,7 +3270,7 @@ USEPLR1:
 				move.b	#0,EntT_DamageTaken_b(a0)
 				move.b	#10,EntT_NumLives_b(a0)
 
-				move.w	p1_angpos,EntT_CurrentAngle_w(a0)
+				move.w	Plr1_TmpAngPos_w,EntT_CurrentAngle_w(a0)
 				move.b	Plr1_StoodInTop_b,ShotT_InUpperZone_b(a0)
 
 				move.w	(a1),12(a0)
@@ -3288,8 +3285,8 @@ USEPLR1:
 				move.w	d2,2(a0)
 
 
-				move.l	p1_yoff,d0
-				move.l	p1_height,d1
+				move.l	Plr1_TmpYOff_l,d0
+				move.l	Plr1_TmpHeight_l,d1
 				asr.l	#1,d1
 				add.l	d1,d0
 				asr.l	#7,d0
@@ -3306,14 +3303,14 @@ USEPLR1:
 				move.l	PLR2_Obj,a0
 				move.b	#5,16(a0)
 
-				move.w	p2_angpos,d0
+				move.w	Plr2_TmpAngPos_w,d0
 				and.w	#8190,d0
 				move.w	d0,EntT_CurrentAngle_w(a0)
 ;
 ; jsr ViewpointToDraw
 ; asl.w #2,d0
 ; moveq #0,d1
-; move.b p2_bobble,d1
+; move.b Plr2_TmpBobble_w,d1
 ; not.b d1
 ; lsr.b #3,d1
 ; and.b #$3,d1
@@ -3325,21 +3322,21 @@ USEPLR1:
 				move.l	ObjectPoints,a1
 				move.l	#ObjRotated,a2
 				move.w	(a0),d0
-				move.l	PLR2_xoff,(a1,d0.w*8)
-				move.l	PLR2_zoff,4(a1,d0.w*8)
-				move.l	PLR2_Roompt,a1
+				move.l	Plr2_XOff_l,(a1,d0.w*8)
+				move.l	Plr2_ZOff_l,4(a1,d0.w*8)
+				move.l	Plr2_RoomPtr_l,a1
 
 				moveq	#0,d2
 				move.b	EntT_DamageTaken_b(a0),d2
 				beq		.notbeenshot2
 				move.w	EntT_ImpactX_w(a0),d3
-				add.w	d3,PLR2s_xspdval
+				add.w	d3,Plr2_SnapXSpdVal_l
 				move.w	EntT_ImpactZ_w(a0),d3
-				add.w	d3,PLR2s_zspdval
+				add.w	d3,Plr2_SnapZSpdVal_l
 				move.w	EntT_ImpactY_w(a0),d3
 				ext.l	d3
 				asl.l	#8,d3
-				add.l	d3,PLR2s_yvel
+				add.l	d3,Plr2_SnapYVel_l
 
 				move.w	#0,EntT_ImpactX_w(a0)
 				move.w	#0,EntT_ImpactY_w(a0)
@@ -3352,21 +3349,21 @@ USEPLR1:
 				move.b	#0,EntT_DamageTaken_b(a0)
 				move.b	#10,EntT_NumLives_b(a0)
 
-				move.b	PLR2_StoodInTop,ShotT_InUpperZone_b(a0)
+				move.b	Plr2_StoodInTop_b,ShotT_InUpperZone_b(a0)
 
 				move.w	(a1),12(a0)
 				move.w	(a1),d2
 				move.l	#ZoneBrightTable,a1
 				move.l	(a1,d2.w*4),d2
-				tst.b	PLR2_StoodInTop
+				tst.b	Plr2_StoodInTop_b
 				bne.s	.okinbott2
 				swap	d2
 .okinbott2:
 
 				move.w	d2,2(a0)
 
-				move.l	p2_yoff,d0
-				move.l	p2_height,d1
+				move.l	Plr2_TmpYOff_l,d0
+				move.l	Plr2_TmpHeight_l,d1
 				asr.l	#1,d1
 				add.l	d1,d0
 				asr.l	#7,d0
@@ -3484,7 +3481,7 @@ USEPLR1:
 				move.w	(a1),EntT_GraphicRoom_w+128(a0)
 
 				moveq	#0,d0
-				move.b	p1_gunselected,d0
+				move.b	Plr1_TmpGunSelected_b,d0
 
 				move.l	GLF_DatabasePtr_l,a1
 				add.l	#GLFT_GunObjects_l,a1
@@ -3501,8 +3498,8 @@ USEPLR1:
 
 				st		EntT_WhichAnim_b+128(a0)
 
-				move.l	p1_yoff,d0
-				move.l	p1_height,d1
+				move.l	Plr1_TmpYOff_l,d0
+				move.l	Plr1_TmpHeight_l,d1
 				asr.l	#2,d1
 				add.l	#10*128,d1
 				add.l	d1,d0
@@ -3531,9 +3528,9 @@ USEPLR2:
 				move.l	ObjectPoints,a1
 				move.l	#ObjRotated,a2
 				move.w	(a0),d0
-				move.l	PLR2_xoff,(a1,d0.w*8)
-				move.l	PLR2_zoff,4(a1,d0.w*8)
-				move.l	PLR2_Roompt,a1
+				move.l	Plr2_XOff_l,(a1,d0.w*8)
+				move.l	Plr2_ZOff_l,4(a1,d0.w*8)
+				move.l	Plr2_RoomPtr_l,a1
 
 				moveq	#0,d2
 				move.b	EntT_DamageTaken_b(a0),d2
@@ -3544,18 +3541,18 @@ USEPLR2:
 				beq.s	.notwist
 				move.w	d2,d4
 .notwist:
-				add.w	d3,PLR2s_xspdval
+				add.w	d3,Plr2_SnapXSpdVal_l
 				move.w	EntT_ImpactZ_w(a0),d3
 				beq.s	.notwist2
 				move.w	d2,d4
 .notwist2:
-				add.w	d3,PLR2s_zspdval
+				add.w	d3,Plr2_SnapZSpdVal_l
 
 				jsr		GetRand
 				muls	d4,d0
 				asr.l	#8,d0
 				asr.l	#4,d0
-				add.w	d0,PLR2s_angspd
+				add.w	d0,Plr2_SnapAngSpd_w
 
 				move.l	#7*2116,hitcol
 				sub.w	d2,PLAYERTWOHEALTH
@@ -3576,22 +3573,22 @@ USEPLR2:
 				move.b	#0,EntT_DamageTaken_b(a0)
 				move.b	#10,EntT_NumLives_b(a0)
 
-				move.w	p2_angpos,EntT_CurrentAngle_w(a0)
-				move.b	PLR2_StoodInTop,ShotT_InUpperZone_b(a0)
+				move.w	Plr2_TmpAngPos_w,EntT_CurrentAngle_w(a0)
+				move.b	Plr2_StoodInTop_b,ShotT_InUpperZone_b(a0)
 
 				move.w	(a1),12(a0)
 				move.w	(a1),d2
 				move.l	#ZoneBrightTable,a1
 				move.l	(a1,d2.w*4),d2
-				tst.b	PLR2_StoodInTop
+				tst.b	Plr2_StoodInTop_b
 				bne.s	.okinbott
 				swap	d2
 .okinbott:
 
 				move.w	d2,2(a0)
 
-				move.l	PLR2_yoff,d0
-				move.l	p2_height,d1
+				move.l	Plr2_YOff_l,d0
+				move.l	Plr2_TmpHeight_l,d1
 				asr.l	#1,d1
 				add.l	d1,d0
 				asr.l	#7,d0
@@ -3614,7 +3611,7 @@ USEPLR2:
 ; jsr ViewpointToDraw
 ; asl.w #2,d0
 ; moveq #0,d1
-; move.b p2_bobble,d1
+; move.b Plr2_TmpBobble_w,d1
 ; not.b d1
 ; lsr.b #3,d1
 ; and.b #$3,d1
@@ -3635,9 +3632,9 @@ USEPLR2:
 				beq		.notbeenshot2
 
 				move.w	EntT_ImpactX_w(a0),d3
-				add.w	d3,Plr1_AltXSpdVal_l
+				add.w	d3,Plr1_SnapXSpdVal_l
 				move.w	EntT_ImpactZ_w(a0),d3
-				add.w	d3,Plr1_AltZSpdVal_l
+				add.w	d3,Plr1_SnapZSpdVal_l
 
 				sub.w	d2,PLAYERONEHEALTH
 
@@ -3659,8 +3656,8 @@ USEPLR2:
 
 				move.w	d2,2(a0)
 
-				move.l	p1_yoff,d0
-				move.l	p1_height,d1
+				move.l	Plr1_TmpYOff_l,d0
+				move.l	Plr1_TmpHeight_l,d1
 				asr.l	#1,d1
 				add.l	d1,d0
 				asr.l	#7,d0
@@ -3763,7 +3760,7 @@ USEPLR2:
 				rts
 
 .notdead:
-				move.l	PLR2_Roompt,a1
+				move.l	Plr2_RoomPtr_l,a1
 
 				move.w	EntT_CurrentAngle_w(a0),d0
 				add.w	#4096,d0
@@ -3774,7 +3771,7 @@ USEPLR2:
 				move.w	(a1),EntT_GraphicRoom_w+64(a0)
 
 				moveq	#0,d0
-				move.b	p2_gunselected,d0
+				move.b	Plr2_TmpGunSelected_b,d0
 
 				move.l	GLF_DatabasePtr_l,a1
 				add.l	#GLFT_GunObjects_l,a1
@@ -3791,8 +3788,8 @@ USEPLR2:
 
 				st		EntT_WhichAnim_b+64(a0)
 
-				move.l	p2_yoff,d0
-				move.l	p2_height,d1
+				move.l	Plr2_TmpYOff_l,d0
+				move.l	Plr2_TmpHeight_l,d1
 				asr.l	#2,d1
 				add.l	#10*128,d1
 				add.l	d1,d0
@@ -3846,20 +3843,20 @@ PLR1_Control:
 				move.l	d2,oldx
 				move.l	Plr1_ZOff_l,d3
 				move.l	d3,oldz
-				move.l	p1_xoff,d0
+				move.l	Plr1_TmpXOff_l,d0
 				move.l	d0,Plr1_XOff_l
 				move.l	d0,newx
-				move.l	p1_zoff,d1
+				move.l	Plr1_TmpZOff_l,d1
 				move.l	d1,newz
 				move.l	d1,Plr1_ZOff_l
 
-				move.l	p1_height,Plr1_Height_l
+				move.l	Plr1_TmpHeight_l,Plr1_Height_l
 
 				sub.l	d2,d0
 				sub.l	d3,d1
 				move.l	d0,xdiff
 				move.l	d1,zdiff
-				move.w	p1_angpos,d0
+				move.w	Plr1_TmpAngPos_w,d0
 				move.w	d0,Plr1_AngPos_w
 
 				move.l	#SineTable,a1
@@ -3868,8 +3865,8 @@ PLR1_Control:
 				and.w	#8190,d0
 				move.w	(a1,d0.w),Plr1_CosVal_w
 
-				move.l	p1_yoff,d0
-				move.w	p1_bobble,d1
+				move.l	Plr1_TmpYOff_l,d0
+				move.w	Plr1_TmpBobble_w,d1
 				move.w	(a1,d1.w),d1
 				move.w	d1,d3
 				ble.s	.notnegative
@@ -3960,11 +3957,11 @@ PLR1_Control:
 				add.l	LEVELDATA,a0
 				move.l	a0,Plr1_RoomPtr_l
 				add.l	ZoneT_Floor_l(a0),d1
-				move.l	d1,Plr1_AltYOff_l
+				move.l	d1,Plr1_SnapYOff_l
 				move.l	d1,Plr1_YOff_l
-				move.l	d1,Plr1_AltTYOff_l
-				move.l	Plr1_XOff_l,Plr1_AltXOff_l
-				move.l	Plr1_ZOff_l,Plr1_AltZOff_l
+				move.l	d1,Plr1_SnapTYOff_l
+				move.l	Plr1_XOff_l,Plr1_SnapXOff_l
+				move.l	Plr1_ZOff_l,Plr1_SnapZOff_l
 
 				SAVEREGS
 				move.w	#0,Noisex
@@ -3992,8 +3989,8 @@ PLR1_Control:
 				beq.s	.nothitanything
 				move.w	oldx,Plr1_XOff_l
 				move.w	oldz,Plr1_ZOff_l
-				move.l	Plr1_XOff_l,Plr1_AltXOff_l
-				move.l	Plr1_ZOff_l,Plr1_AltZOff_l
+				move.l	Plr1_XOff_l,Plr1_SnapXOff_l
+				move.l	Plr1_ZOff_l,Plr1_SnapZOff_l
 				bra		.cantmove
 .nothitanything:
 
@@ -4007,8 +4004,8 @@ PLR1_Control:
 				move.l	objroom,Plr1_RoomPtr_l
 				move.w	newx,Plr1_XOff_l
 				move.w	newz,Plr1_ZOff_l
-				move.l	Plr1_XOff_l,Plr1_AltXOff_l
-				move.l	Plr1_ZOff_l,Plr1_AltZOff_l
+				move.l	Plr1_XOff_l,Plr1_SnapXOff_l
+				move.l	Plr1_ZOff_l,Plr1_SnapZOff_l
 
 .cantmove:
 
@@ -4022,8 +4019,8 @@ notintop:
 
 				adda.w	#ZoneT_Points_w,a0
 				sub.l	Plr1_Height_l,d0
-				move.l	d0,Plr1_AltTYOff_l
-				move.w	p1_angpos,tmpangpos
+				move.l	d0,Plr1_SnapTYOff_l
+				move.w	Plr1_TmpAngPos_w,tmpangpos
 
 ; move.l (a0),a0		; jump to viewpoint list
 * A0 is pointing at a pointer to list of points to rotate
@@ -4058,36 +4055,36 @@ PLR2_Control:
 
 ; Take a snapshot of everything.
 
-				move.l	PLR2_xoff,d2
-				move.l	d2,PLR2_oldxoff
-				move.l	d2,oldx
-				move.l	PLR2_zoff,d3
-				move.l	d3,PLR2_oldzoff
-				move.l	d3,oldz
-				move.l	p2_xoff,d0
-				move.l	d0,PLR2_xoff
-				move.l	d0,newx
-				move.l	p2_zoff,d1
-				move.l	d1,newz
-				move.l	d1,PLR2_zoff
+				move.l	Plr2_XOff_l,d2
 
-				move.l	p2_height,PLR2_height
+				move.l	d2,oldx
+				move.l	Plr2_ZOff_l,d3
+
+				move.l	d3,oldz
+				move.l	Plr2_TmpXOff_l,d0
+				move.l	d0,Plr2_XOff_l
+				move.l	d0,newx
+				move.l	Plr2_TmpZOff_l,d1
+				move.l	d1,newz
+				move.l	d1,Plr2_ZOff_l
+
+				move.l	Plr2_TmpHeight_l,Plr2_Height_l
 
 				sub.l	d2,d0
 				sub.l	d3,d1
 				move.l	d0,xdiff
 				move.l	d1,zdiff
-				move.w	p2_angpos,d0
-				move.w	d0,PLR2_angpos
+				move.w	Plr2_TmpAngPos_w,d0
+				move.w	d0,Plr2_AngPos_w
 
 				move.l	#SineTable,a1
-				move.w	(a1,d0.w),PLR2_sinval
+				move.w	(a1,d0.w),Plr2_SinVal_w
 				add.w	#2048,d0
 				and.w	#8190,d0
-				move.w	(a1,d0.w),PLR2_cosval
+				move.w	(a1,d0.w),Plr2_CosVal_w
 
-				move.l	p2_yoff,d0
-				move.w	p2_bobble,d1
+				move.l	Plr2_TmpYOff_l,d0
+				move.w	Plr2_TmpBobble_w,d1
 				move.w	(a1,d1.w),d1
 				move.w	d1,d3
 				ble.s	.notnegative
@@ -4106,7 +4103,7 @@ PLR2_Control:
 
 				move.l	d1,PLR2_BOBBLEY
 
-				move.l	PLR2_height,d4
+				move.l	Plr2_Height_l,d4
 				sub.l	d1,d4
 				add.l	d1,d0
 
@@ -4115,9 +4112,9 @@ PLR2_Control:
 				asr.w	#6,d3
 				ext.l	d3
 				move.l	d3,xwobble
-				move.w	PLR2_sinval,d1
+				move.w	Plr2_SinVal_w,d1
 				muls	d3,d1
-				move.w	PLR2_cosval,d2
+				move.w	Plr2_CosVal_w,d2
 				muls	d3,d2
 				swap	d1
 				swap	d2
@@ -4128,7 +4125,7 @@ PLR2_Control:
 				move.w	d2,xwobzoff
 .otherwob
 
-				move.l	d0,PLR2_yoff
+				move.l	d0,Plr2_YOff_l
 				move.l	d0,newy
 				move.l	d0,oldy
 
@@ -4144,7 +4141,7 @@ PLR2_Control:
 
 				move.l	#$1000000,StepDownVal
 
-				move.l	PLR2_Roompt,a0
+				move.l	Plr2_RoomPtr_l,a0
 				move.w	ZoneT_TelZone_w(a0),d0
 				blt		.noteleport
 
@@ -4157,30 +4154,30 @@ PLR2_Control:
 				tst.b	hitwall
 				beq.s	.teleport
 
-				move.w	PLR2_xoff,newx
-				move.w	PLR2_zoff,newz
+				move.w	Plr2_XOff_l,newx
+				move.w	Plr2_ZOff_l,newz
 				bra		.noteleport
 
 .teleport:
 
 				st		Plr2_Teleported_b
 
-				move.l	PLR2_Roompt,a0
+				move.l	Plr2_RoomPtr_l,a0
 				move.w	ZoneT_TelZone_w(a0),d0
-				move.w	ZoneT_TelX_w(a0),PLR2_xoff
-				move.w	ZoneT_TelZ_w(a0),PLR2_zoff
-				move.l	PLR2_yoff,d1
+				move.w	ZoneT_TelX_w(a0),Plr2_XOff_l
+				move.w	ZoneT_TelZ_w(a0),Plr2_ZOff_l
+				move.l	Plr2_YOff_l,d1
 				sub.l	ZoneT_Floor_l(a0),d1
 				move.l	ZoneAdds,a0
 				move.l	(a0,d0.w*4),a0
 				add.l	LEVELDATA,a0
-				move.l	a0,PLR2_Roompt
+				move.l	a0,Plr2_RoomPtr_l
 				add.l	ZoneT_Floor_l(a0),d1
-				move.l	d1,PLR2s_yoff
-				move.l	d1,PLR2_yoff
-				move.l	d1,PLR2s_tyoff
-				move.l	PLR2_xoff,PLR2s_xoff
-				move.l	PLR2_zoff,PLR2s_zoff
+				move.l	d1,Plr2_SnapYOff_l
+				move.l	d1,Plr2_YOff_l
+				move.l	d1,Plr2_SnapTYOff_l
+				move.l	Plr2_XOff_l,Plr2_SnapXOff_l
+				move.l	Plr2_ZOff_l,Plr2_SnapZOff_l
 
 				SAVEREGS
 				move.w	#0,Noisex
@@ -4195,9 +4192,9 @@ PLR2_Control:
 
 .noteleport:
 
-				move.l	PLR2_Roompt,objroom
+				move.l	Plr2_RoomPtr_l,objroom
 				move.w	#%100000000000,wallflags
-				move.b	PLR2_StoodInTop,StoodInTop
+				move.b	Plr2_StoodInTop_b,StoodInTop
 
 				move.l	#%1011111010111100011,CollideFlags
 				move.l	PLR2_Obj,a0
@@ -4206,10 +4203,10 @@ PLR2_Control:
 				jsr		Collision
 				tst.b	hitwall
 				beq.s	.nothitanything
-				move.w	oldx,PLR2_xoff
-				move.w	oldz,PLR2_zoff
-				move.l	PLR2_xoff,PLR2s_xoff
-				move.l	PLR2_zoff,PLR2s_zoff
+				move.w	oldx,Plr2_XOff_l
+				move.w	oldz,Plr2_ZOff_l
+				move.l	Plr2_XOff_l,Plr2_SnapXOff_l
+				move.l	Plr2_ZOff_l,Plr2_SnapZOff_l
 				bra		.cantmove
 .nothitanything:
 
@@ -4219,34 +4216,34 @@ PLR2_Control:
 				clr.b	exitfirst
 				clr.b	wallbounce
 				bsr		MoveObject
-				move.b	StoodInTop,PLR2_StoodInTop
-				move.l	objroom,PLR2_Roompt
-				move.w	newx,PLR2_xoff
-				move.w	newz,PLR2_zoff
-				move.l	PLR2_xoff,PLR2s_xoff
-				move.l	PLR2_zoff,PLR2s_zoff
+				move.b	StoodInTop,Plr2_StoodInTop_b
+				move.l	objroom,Plr2_RoomPtr_l
+				move.w	newx,Plr2_XOff_l
+				move.w	newz,Plr2_ZOff_l
+				move.l	Plr2_XOff_l,Plr2_SnapXOff_l
+				move.l	Plr2_ZOff_l,Plr2_SnapZOff_l
 
 .cantmove
 
-				move.l	PLR2_Roompt,a0
+				move.l	Plr2_RoomPtr_l,a0
 
 				move.l	ZoneT_Floor_l(a0),d0
-				tst.b	PLR2_StoodInTop
+				tst.b	Plr2_StoodInTop_b
 				beq.s	.notintop
 				move.l	ZoneT_UpperFloor_l(a0),d0
 .notintop:
 
 				adda.w	#ZoneT_Points_w,a0
-				sub.l	PLR2_height,d0
-				move.l	d0,PLR2s_tyoff
-				move.w	p2_angpos,tmpangpos
+				sub.l	Plr2_Height_l,d0
+				move.l	d0,Plr2_SnapTYOff_l
+				move.w	Plr2_TmpAngPos_w,tmpangpos
 
 ; move.l (a0),a0		; jump to viewpoint list
 * A0 is pointing at a pointer to list of points to rotate
 				move.w	(a0)+,d1
 				ext.l	d1
-				add.l	PLR2_Roompt,d1
-				move.l	d1,PLR2_PointsToRotatePtr
+				add.l	Plr2_RoomPtr_l,d1
+				move.l	d1,Plr2_PointsToRotatePtr_l
 				tst.b	(a0)+
 				sne		DRAWNGRAPHTOP
 				beq.s	.nobackgraphics
@@ -4257,10 +4254,10 @@ PLR2_Control:
 				move.l	(a7)+,a0
 .nobackgraphics:
 
-				move.b	(a0)+,PLR2_Echo
+				move.b	(a0)+,Plr2_Echo_b
 
 				adda.w	#10,a0
-				move.l	a0,PLR2_ListOfGraphRooms
+				move.l	a0,Plr2_ListOfGraphRoomsPtr_l
 
 *****************************************************
 				rts
@@ -4547,7 +4544,7 @@ jumpoutofrooms:
 				beq.s	drawslavegun
 
 				moveq	#0,d0
-				move.b	Plr1_GunSelected_w,d0
+				move.b	Plr1_GunSelected_b,d0
 				moveq	#0,d1
 				move.b	PLR1_GunFrame,d1
 ; bsr DRAWINGUN
@@ -4555,7 +4552,7 @@ jumpoutofrooms:
 
 drawslavegun
 				moveq	#0,d0
-				move.b	PLR2_GunSelected,d0
+				move.b	Plr2_GunSelected_b,d0
 				moveq	#0,d1
 				move.b	PLR2_GunFrame,d1
 ; bsr DRAWINGUN
@@ -5382,8 +5379,8 @@ CalcPLR1InLine:
 
 CalcPLR2InLine:
 
-				move.w	PLR2_sinval,d5
-				move.w	PLR2_cosval,d6
+				move.w	Plr2_SinVal_w,d5
+				move.w	Plr2_CosVal_w,d6
 				move.l	ObjectData,a4
 				move.l	ObjectPoints,a0
 				move.w	NumObjectPoints,d7
@@ -5396,7 +5393,7 @@ CalcPLR2InLine:
 				beq.s	.itaux
 
 				move.w	(a0),d0
-				sub.w	PLR2_xoff,d0
+				sub.w	Plr2_XOff_l,d0
 				move.w	4(a0),d1
 				addq	#8,a0
 
@@ -5408,7 +5405,7 @@ CalcPLR2InLine:
 ; move.l #ColBoxTable,a6
 ; lea (a6,d2.w*8),a6
 
-				sub.w	PLR2_zoff,d1
+				sub.w	Plr2_ZOff_l,d1
 				move.w	d0,d2
 				muls	d6,d2
 				move.w	d1,d3
@@ -5704,12 +5701,12 @@ AmmoBar:
 * Do guns first.
 
 				move.l	#borderchars,a4
-				move.b	p1_gunselected,d0
+				move.b	Plr1_TmpGunSelected_b,d0
 				move.l	#PLAYERONEGUNS,a5
 				cmp.b	#'s',mors
 				bne.s	.notplr2
 				move.l	#PLAYERTWOGUNS,a5
-				move.b	p2_gunselected,d0
+				move.b	Plr2_TmpGunSelected_b,d0
 .notplr2:
 
 				move.b	d0,gunny
@@ -9890,12 +9887,12 @@ dosomething:
 
 .okinbot:
 				; Issue #1 - Check we are on the floor or swimming before applying any floor damage.
-				cmp.l	Plr1_AltYOff_l,d2
+				cmp.l	Plr1_SnapYOff_l,d2
 				blt.b   .in_toxic_liquid1
 
 				; Player not in liquid, check if on floor.
-				move.l	Plr1_AltTYOff_l,d1
-				cmp.l	Plr1_AltYOff_l,d1
+				move.l	Plr1_SnapTYOff_l,d1
+				cmp.l	Plr1_SnapYOff_l,d1
 				bgt.b	.not_on_floor1
 
 .in_toxic_liquid1:
@@ -9906,21 +9903,21 @@ dosomething:
 				add.b	d0,EntT_DamageTaken_b(a0)
 
 .not_on_floor1:
-				move.l	PLR2_Roompt,a0
+				move.l	Plr2_RoomPtr_l,a0
 				move.l	ZoneT_Water_l(a0),d2      ; Water depth in d2
 				move.w	ZoneT_FloorNoise_w(a0),d0
-				tst.b	PLR2_StoodInTop
+				tst.b	Plr2_StoodInTop_b
 				beq.s	.okinbot2
 				move.w	ZoneT_UpperFloorNoise_w(a0),d0
 
 .okinbot2:
 				; Issue #1 - Check we are on the floor or swimming before applying any floor damage.
-				cmp.l	PLR2s_yoff,d2
+				cmp.l	Plr2_SnapYOff_l,d2
 				blt.b   .in_toxic_liquid2
 
 				; Player not in liquid, check if on floor.
-				move.l	PLR2s_tyoff,d1
-				cmp.l	PLR2s_yoff,d1
+				move.l	Plr2_SnapTYOff_l,d1
+				cmp.l	Plr2_SnapYOff_l,d1
 				bgt.b	.not_on_floor2
 
 .in_toxic_liquid2:
@@ -10376,7 +10373,7 @@ nostartalan:
 				clr.b	PLR1_fire
 				clr.b	PLR1_clicked
 				move.w	#0,ADDTOBOBBLE
-				move.l	#playercrouched,Plr1_AltHeight_l
+				move.l	#playercrouched,Plr1_SnapHeight_l
 				move.w	#-80,d0					; Is this related to render buffer height
 				move.w	d0,STOPOFFSET
 				neg.w	d0
@@ -10386,8 +10383,8 @@ nostartalan:
 				move.l	d0,SBIGMIDDLEY
 				jsr		PLR1_fall
 
-				move.l	Plr1_AltXSpdVal_l,d6
-				move.l	Plr1_AltZSpdVal_l,d7
+				move.l	Plr1_SnapXSpdVal_l,d6
+				move.l	Plr1_SnapZSpdVal_l,d7
 
 				tst.b	SLOWDOWN
 				beq.s	.nofriction
@@ -10410,16 +10407,16 @@ nostartalan:
 				asr.l	#3,d7
 .bug2:
 
-				add.l	d6,Plr1_AltXSpdVal_l
-				add.l	d7,Plr1_AltZSpdVal_l
+				add.l	d6,Plr1_SnapXSpdVal_l
+				add.l	d7,Plr1_SnapZSpdVal_l
 
 .nofriction:
-				move.l	Plr1_AltXSpdVal_l,d6
-				move.l	Plr1_AltZSpdVal_l,d7
-				add.l	d6,Plr1_AltXOff_l
-				add.l	d7,Plr1_AltZOff_l
+				move.l	Plr1_SnapXSpdVal_l,d6
+				move.l	Plr1_SnapZSpdVal_l,d7
+				add.l	d6,Plr1_SnapXOff_l
+				add.l	d7,Plr1_SnapZOff_l
 
-				move.w	Plr1_AltAngSpd_w,d3
+				move.w	Plr1_SnapAngSpd_w,d3
 				tst.b	SLOWDOWN
 				beq.s	.nofric
 				asr.w	#2,d3
@@ -10428,10 +10425,10 @@ nostartalan:
 .nneg:
 .nofric:
 
-				move.w	d3,Plr1_AltAngSpd_w
-				add.w	d3,Plr1_AltAngPos_w
-				add.w	d3,Plr1_AltAngPos_w
-				and.w	#8190,Plr1_AltAngPos_w
+				move.w	d3,Plr1_SnapAngSpd_w
+				add.w	d3,Plr1_SnapAngPos_w
+				add.w	d3,Plr1_SnapAngPos_w
+				and.w	#8190,Plr1_SnapAngPos_w
 
 				bra		nocontrols
 
@@ -10464,7 +10461,7 @@ control2:
 				move.w	#-1,12+128(a0)
 				clr.b	PLR2_fire
 				move.w	#0,ADDTOBOBBLE
-				move.l	#playercrouched,PLR2s_height
+				move.l	#playercrouched,Plr2_SnapHeight_l
 				move.w	#-80,d0
 				move.w	d0,STOPOFFSET
 				neg.w	d0
@@ -10475,8 +10472,8 @@ control2:
 
 				jsr		PLR2_fall
 
-				move.l	PLR2s_xspdval,d6
-				move.l	PLR2s_zspdval,d7
+				move.l	Plr2_SnapXSpdVal_l,d6
+				move.l	Plr2_SnapZSpdVal_l,d7
 
 				tst.b	SLOWDOWN
 				beq.s	.nofriction
@@ -10499,16 +10496,16 @@ control2:
 				asr.l	#3,d7
 .bug2:
 
-				add.l	d6,PLR2s_xspdval
-				add.l	d7,PLR2s_zspdval
+				add.l	d6,Plr2_SnapXSpdVal_l
+				add.l	d7,Plr2_SnapZSpdVal_l
 
 .nofriction:
-				move.l	PLR2s_xspdval,d6
-				move.l	PLR2s_zspdval,d7
-				add.l	d6,PLR2s_xoff
-				add.l	d7,PLR2s_zoff
+				move.l	Plr2_SnapXSpdVal_l,d6
+				move.l	Plr2_SnapZSpdVal_l,d7
+				add.l	d6,Plr2_SnapXOff_l
+				add.l	d7,Plr2_SnapZOff_l
 
-				move.w	PLR2s_angspd,d3
+				move.w	Plr2_SnapAngSpd_w,d3
 				tst.b	SLOWDOWN
 				beq.s	.nofric
 				asr.w	#2,d3
@@ -10517,10 +10514,10 @@ control2:
 
 .nneg:
 .nofric:
-				move.w	d3,PLR2s_angspd
-				add.w	d3,PLR2s_angpos
-				add.w	d3,PLR2s_angpos
-				and.w	#8190,PLR2s_angpos
+				move.w	d3,Plr2_SnapAngSpd_w
+				add.w	d3,Plr2_SnapAngPos_w
+				add.w	d3,Plr2_SnapAngPos_w
+				and.w	#8190,Plr2_SnapAngPos_w
 				bra.s	nocontrols
 
 .propercontrol:
@@ -11996,6 +11993,8 @@ xspdval:		dc.l	0
 zspdval:		dc.l	0
 Zone:			dc.w	0
 
+; // READY PLAYER ONE /////////////////////////////////////////////////////////////////////
+
 ; Player data definiton - TODO remove unused, tighten definitions, fix alignments
 PLR1:			dc.b	$ff
 				CNOP 0, 4
@@ -12011,7 +12010,6 @@ Plr1_Height_l:				dc.l	0
 
 ; word aligned fields next
 Plr1_Energy_w:				dc.w	191
-Plr1_GunSelected_w: 		dc.w	0
 Plr1_CosVal_w:				dc.w	0
 Plr1_SinVal_w:				dc.w	0
 Plr1_AngPos_w:				dc.w	0
@@ -12020,128 +12018,141 @@ Plr1_FloorSpd_w:			dc.w	0
 Plr1_RoomBright_w: 			dc.w	0
 
 ; byte aligned fields next
+Plr1_GunSelected_b: 		dc.b	0
 Plr1_StoodInTop_b: 			dc.b	0
-Plr1_Teleported_b:			dc.b	0 ; delcared as word, accessed as byte
-Plr1_Echo_b:				dc.b	0 ; declared as word, accessed as byte
+Plr1_Teleported_b:			dc.b	0
+Plr1_Echo_b:				dc.b	0
+
+				CNOP 0,4
+; Player 1 snapshot data, long aligned first
+Plr1_SnapXOff_l:			dc.l	0
+Plr1_SnapYOff_l:			dc.l	0
+Plr1_SnapYVel_l:			dc.l	0
+Plr1_SnapZOff_l:			dc.l	0
+Plr1_SnapTYOff_l:			dc.l	0
+Plr1_SnapXSpdVal_l:			dc.l	0
+Plr1_SnapZSpdVal_l:			dc.l	0
+Plr1_SnapHeight_l:			dc.l	0
+Plr1_SnapTargHeight_l: 		dc.l	0
+
+; Player 1 snapshot data, word aligned next
+Plr1_SnapCosVal_w:			dc.w	0
+Plr1_SnapSinVal_w:			dc.w	0
+Plr1_SnapAngPos_w:			dc.w	0
+Plr1_SnapAngSpd_w:			dc.w	0
+
+; Player 1 temporary data, long aligned first
+Plr1_TmpXOff_l:				dc.l	0 ; also accessed as w, todo determine correct size
+Plr1_TmpZOff_l:				dc.l	0
+Plr1_TmpYOff_l:				dc.l	0
+Plr1_TmpHeight_l:			dc.l	0
+
+; Player 1 temporary data, word aligned next
+Plr1_TmpAngPos_w:			dc.w	0
+Plr1_TmpBobble_w:			dc.w	0
+Plr1_TmpHoldDown_w:			dc.w	0
+
+; Player 1 temporary data, byte aligned last
+Plr1_TmpClicked_b:			dc.b	0
+Plr1_TmpSpcTap_b:			dc.b	0
+Plr1_TmpDucked_b:			dc.b	0
+Plr1_TmpGunSelected_b:		dc.b	0
+Plr1_TmpFire_b:				dc.b	0
+
+; // END PLAYER TWO /////////////////////////////////////////////////////////////////////
+
+
+; // READY PLAYER TWO /////////////////////////////////////////////////////////////////////
+
+PLR2:			dc.b	$ff
+				CNOP 0, 4
+; long aligned fields first
+Plr2_XOff_l:				dc.l	0
+Plr2_YOff_l:				dc.l	0
+Plr2_ZOff_l:				dc.l	0
+Plr2_RoomPtr_l:				dc.l	0
+Plr2_OldRoomPtr_l:			dc.l	0
+Plr2_PointsToRotatePtr_l:	dc.l 	0
+Plr2_ListOfGraphRoomsPtr_l: dc.l 	0
+Plr2_Height_l:				dc.l	0
+
+; word aligned fields next
+Plr2_Energy_w:				dc.w	191
+Plr2_CosVal_w:				dc.w	0
+Plr2_SinVal_w:				dc.w	0
+Plr2_AngPos_w:				dc.w	0
+Plr2_Zone_w:				dc.w	0
+Plr2_FloorSpd_w:			dc.w	0
+
+; byte aligned fields next
+Plr2_GunSelected_b:			dc.b	0
+Plr2_StoodInTop_b:			dc.b	0
+Plr2_Teleported_b:			dc.b	0
+Plr2_Echo_b:				dc.b	0
+
+				CNOP 0,4
+; Player 2 snapshot data, long aligned first
+Plr2_SnapXOff_l:			dc.l	0
+Plr2_SnapYOff_l:			dc.l	0
+Plr2_SnapYVel_l:			dc.l	0
+Plr2_SnapZOff_l:			dc.l	0
+Plr2_SnapTYOff_l:			dc.l	0
+Plr2_SnapXSpdVal_l:			dc.l	0
+Plr2_SnapZSpdVal_l:			dc.l	0
+Plr2_SnapHeight_l:			dc.l	0
+Plr2_SnapTargHeight_l:		dc.l	0
+
+; Player 2 snapshot data, word aligned next
+Plr2_SnapCosVal_w:			dc.w	0
+Plr2_SnapSinVal_w:			dc.w	0
+Plr2_SnapAngPos_w:			dc.w	0
+Plr2_SnapAngSpd_w:			dc.w	0
+
+; Player 2 temporary data, long aligned first
+Plr2_TmpXOff_l:				dc.l	0
+Plr2_TmpZOff_l:				dc.l	0
+Plr2_TmpYOff_l:				dc.l	0
+Plr2_TmpHeight_l:			dc.l	0
+
+; Player 2 temporary data, word aligned next
+Plr2_TmpAngPos_w:			dc.w	0
+Plr2_TmpBobble_w:			dc.w	0
+Plr2_TmpHoldDown_w:			dc.w	0
+
+; Player 2 temporary data, byte aligned last
+Plr2_TmpClicked_b:			dc.b	0
+Plr2_TmpSpcTap_b:			dc.b	0
+Plr2_TmpDucked_b:			dc.b	0
+Plr2_TmpGunSelected_b:		dc.b	0
+Plr2_TmpFire_b:				dc.b	0
+
+
+; // END PLAYER TWO /////////////////////////////////////////////////////////////////////
 
 				even
+
+
+PlayEcho:		dc.w	0 ; accessed as byte
+
 DOUBLEWIDTH:	dc.b	$0,0
 DOUBLEHEIGHT:	dc.b	0,0
 
-Plr2_Teleported_b: dc.w	0 ; delcared as word, accessed as byte
-
 				ds.w	4
+				CNOP 0, 4
 
-OLDX1:			dc.l	0
-OLDX2:			dc.l	0
-OLDZ1:			dc.l	0
-OLDZ2:			dc.l	0
+OldX1_l:			dc.l	0
+OldX2_l:			dc.l	0
+OldZ1_l:			dc.l	0
+OldZ2_l:			dc.l	0
 
 XDIFF1:			dc.l	0
 ZDIFF1:			dc.l	0
 XDIFF2:			dc.l	0
 ZDIFF2:			dc.l	0
 
-; Snapshot
-Plr1_AltCosVal_w:	dc.w	0
-Plr1_AltSinVal_w:	dc.w	0
-Plr1_AltAngPos_w:	dc.w	0
-Plr1_AltAngSpd_w:	dc.w	0
-Plr1_AltXOff_l:		dc.l	0
-Plr1_AltYOff_l:		dc.l	0
-Plr1_AltYVel_l:		dc.l	0
-Plr1_AltZOff_l:		dc.l	0
-Plr1_AltTYOff_l:	dc.l	0
-Plr1_AltXSpdVal_l:	dc.l	0
-Plr1_AltZSpdVal_l:	dc.l	0
-Plr1_AltHeight_l:	dc.l	0
-Plr1_AltTargHeight_l: dc.l	0
-
-
-p1_xoff:		dc.l	0
-p1_zoff:		dc.l	0
-p1_yoff:		dc.l	0
-p1_height:		dc.l	0
-p1_angpos:		dc.w	0
-p1_bobble:		dc.w	0
-p1_clicked:		dc.b	0
-p1_spctap:		dc.b	0
-p1_ducked:		dc.b	0
-p1_gunselected:	dc.b	0
-p1_fire:		dc.b	0
 				even
-p1_holddown:	dc.w	0
 
 				ds.w	4
-
-PLR2:			dc.b	$ff
-				even
-PLR2_GunSelected: dc.w	0
-PLR2_energy:	dc.w	191
-PLR2_cosval:	dc.w	0
-PLR2_sinval:	dc.w	0
-PLR2_angpos:	dc.w	0
-PLR2_angspd:	dc.w	0
-PLR2_xoff:		dc.l	0
-PLR2_yoff:		dc.l	0
-PLR2_yvel:		dc.l	0
-PLR2_zoff:		dc.l	0
-PLR2_tyoff:		dc.l	0
-PLR2_xspdval:	dc.l	0
-PLR2_zspdval:	dc.l	0
-PLR2_Zone:		dc.w	0
-PLR2_Roompt:	dc.l	0
-PLR2_OldRoompt:	dc.l	0
-PLR2_PointsToRotatePtr: dc.l 0
-PLR2_ListOfGraphRooms: dc.l 0
-PLR2_oldxoff:	dc.l	0
-PLR2_oldzoff:	dc.l	0
-PLR2_StoodInTop: dc.b	0
-				even
-PLR2_height:	dc.l	0
-PLR2_Echo:		dc.w	0
-PlayEcho:		dc.w	0
-
-Plr2_FloorSpd_l:			dc.l	0
-
-				ds.w	4
-
-PLR2s_cosval:	dc.w	0
-PLR2s_sinval:	dc.w	0
-PLR2s_angpos:	dc.w	0
-PLR2s_angspd:	dc.w	0
-PLR2s_xoff:		dc.l	0
-PLR2s_yoff:		dc.l	0
-PLR2s_yvel:		dc.l	0
-PLR2s_zoff:		dc.l	0
-PLR2s_tyoff:	dc.l	0
-PLR2s_xspdval:	dc.l	0
-PLR2s_zspdval:	dc.l	0
-PLR2s_Zone:		dc.w	0
-PLR2s_Roompt:	dc.l	0
-PLR2s_OldRoompt: dc.l	0
-PLR2s_PointsToRotatePtr: dc.l 0
-PLR2s_ListOfGraphRooms: dc.l 0
-PLR2s_oldxoff:	dc.l	0
-PLR2s_oldzoff:	dc.l	0
-PLR2s_height:	dc.l	0
-PLR2s_targheight: dc.l	0
-
-				ds.w	4
-
-p2_xoff:		dc.l	0
-p2_zoff:		dc.l	0
-p2_yoff:		dc.l	0
-p2_height:		dc.l	0
-p2_angpos:		dc.w	0
-p2_bobble:		dc.w	0
-p2_clicked:		dc.b	0
-p2_spctap:		dc.b	0
-p2_ducked:		dc.b	0
-p2_gunselected:	dc.b	0
-p2_fire:		dc.b	0
-				even
-p2_holddown:	dc.w	0
 
 liftanimtab:
 
