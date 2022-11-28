@@ -1,8 +1,8 @@
 
 PLR1_fall
-				move.l	PLR1s_tyoff,d0
-				move.l	PLR1s_yoff,d1
-				move.l	PLR1s_yvel,d2
+				move.l	Plr1_SnapTYOff_l,d0
+				move.l	Plr1_SnapYOff_l,d1
+				move.l	Plr1_SnapYVel_l,d2
 
 				cmp.l	d1,d0
 				bgt		.aboveground
@@ -23,7 +23,7 @@ PLR1_fall
 				bra		CARRYON
 
 .onground:
-				move.w	PLR1_FloorSpd,d2
+				move.w	Plr1_FloorSpd_w,d2
 				ext.l	d2
 				asl.l	#6,d2
 
@@ -39,9 +39,9 @@ PLR1_fall
 
 				move.w	ADDTOBOBBLE,d3
 				move.w	d3,d4
-				add.w	PLR1_bobble,d3
+				add.w	Plr1_Bobble_w,d3
 				and.w	#8190,d3
-				move.w	d3,PLR1_bobble
+				move.w	d3,Plr1_Bobble_w
 				add.w	PLR1_clumptime,d4
 				move.w	d4,d3
 				and.w	#4095,d4
@@ -56,7 +56,7 @@ PLR1_fall
 
 				move.l	#-1024,JUMPSPD
 
-				move.l	PLR1_Roompt,a2
+				move.l	Plr1_RoomPtr_l,a2
 				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	.notinwater
@@ -112,9 +112,9 @@ PLR1_fall
 				add.l	JUMPSPD,d2
 				move.w	#0,DAMAGEWHENHIT
 				move.w	#40,d3
-				add.w	PLR1_bobble,d3
+				add.w	Plr1_Bobble_w,d3
 				and.w	#8190,d3
-				move.w	d3,PLR1_bobble
+				move.w	d3,Plr1_Bobble_w
 .nofly:
 
 				move.l	d0,d3
@@ -141,7 +141,7 @@ PLR1_fall
 .nodam2
 				move.w	#0,DAMAGEWHENHIT
 
-				move.w	PLR1_FloorSpd,d2
+				move.w	Plr1_FloorSpd_w,d2
 				ext.l	d2
 				asl.l	#6,d2
 
@@ -151,7 +151,7 @@ PLR1_fall
 				add.l	#64,d2
 				add.w	#1,DAMAGEWHENHIT
 
-				move.l	PLR1_Roompt,a2
+				move.l	Plr1_RoomPtr_l,a2
 				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	CARRYON
@@ -178,9 +178,9 @@ PLR1_fall
 				move.l	#512,d2					; reached terminal velocity.
 CARRYON:
 
-				move.l	PLR1_Roompt,a2
+				move.l	Plr1_RoomPtr_l,a2
 				move.l	ZoneT_Roof_l(a2),d3
-				tst.b	PLR1_StoodInTop
+				tst.b	Plr1_StoodInTop_b
 				beq.s	.okbot
 				move.l	ZoneT_UpperRoof_l(a2),d3
 .okbot:
@@ -194,8 +194,8 @@ CARRYON:
 				moveq	#0,d2
 .okroof:
 
-				move.l	d2,PLR1s_yvel
-				move.l	d1,PLR1s_yoff
+				move.l	d2,Plr1_SnapYVel_l
+				move.l	d1,Plr1_SnapYOff_l
 
 				rts
 
@@ -213,7 +213,7 @@ ARSE:
 				sub.l	d2,d0
 				blt.s	.pastitall
 				move.l	#0,d2
-				move.l	PLR1s_tyoff,d1
+				move.l	Plr1_SnapTYOff_l,d1
 				bra.s	.pastitall
 
 .aboveground:
@@ -222,7 +222,7 @@ ARSE:
 
 				move.l	#-1024,JUMPSPD
 
-				move.l	PLR1_Roompt,a2
+				move.l	Plr1_RoomPtr_l,a2
 				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	.pastitall
@@ -234,28 +234,28 @@ ARSE:
 
 .pastitall:
 
-				move.l	d2,PLR1s_yvel
-				move.l	d1,PLR1s_yoff
+				move.l	d2,Plr1_SnapYVel_l
+				move.l	d1,Plr1_SnapYOff_l
 
 				move.l	#KeyMap,a5
 				tst.b	$1d(a5)
 				beq.s	nothrust2
 				tst.b	CANJUMP
 				beq.s	nothrust2
-				move.l	JUMPSPD,PLR1s_yvel
+				move.l	JUMPSPD,Plr1_SnapYVel_l
 nothrust2:
 
-				move.l	PLR1_Roompt,a5
+				move.l	Plr1_RoomPtr_l,a5
 				move.l	ZoneT_Roof_l(a5),d0
-				tst.b	PLR1_StoodInTop
+				tst.b	Plr1_StoodInTop_b
 				beq.s	.usebottom
 				move.l	ZoneT_UpperRoof_l(a5),d0
 .usebottom:
 
-				move.l	PLR1s_yoff,d1
-				move.l	PLR1s_yvel,d2
+				move.l	Plr1_SnapYOff_l,d1
+				move.l	Plr1_SnapYVel_l,d2
 
-				sub.l	PLR1s_height,d1
+				sub.l	Plr1_SnapHeight_l,d1
 				sub.l	#10*256,d1
 				cmp.l	d1,d0
 				blt.s	.notinroof
@@ -265,17 +265,17 @@ nothrust2:
 				moveq	#0,d2
 .notinroof
 				add.l	#10*256,d1
-				add.l	PLR1s_height,d1
-				move.l	d1,PLR1s_yoff
+				add.l	Plr1_SnapHeight_l,d1
+				move.l	d1,Plr1_SnapYOff_l
 
-				move.l	d2,PLR1s_yvel
+				move.l	d2,Plr1_SnapYVel_l
 
 				rts
 
 PLR2_fall
-				move.l	PLR2s_tyoff,d0
-				move.l	PLR2s_yoff,d1
-				move.l	PLR2s_yvel,d2
+				move.l	Plr2_SnapTYOff_l,d0
+				move.l	Plr2_SnapYOff_l,d1
+				move.l	Plr2_SnapYVel_l,d2
 
 				cmp.l	d1,d0
 				bgt		.aboveground
@@ -308,9 +308,9 @@ PLR2_fall
 
 				move.w	ADDTOBOBBLE,d3
 				move.w	d3,d4
-				add.w	PLR2_bobble,d3
+				add.w	Plr2_Bobble_w,d3
 				and.w	#8190,d3
-				move.w	d3,PLR2_bobble
+				move.w	d3,Plr2_Bobble_w
 				add.w	PLR2_clumptime,d4
 				move.w	d4,d3
 				and.w	#4095,d4
@@ -324,7 +324,7 @@ PLR2_fall
 
 				move.l	#-1024,JUMPSPD
 
-				move.l	PLR2_Roompt,a2
+				move.l	Plr2_RoomPtr_l,a2
 				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	.notinwater
@@ -381,9 +381,9 @@ PLR2_fall
 				move.w	#0,DAMAGEWHENHIT
 				sub.w	#1,PLAYERTWOFUEL
 				move.w	#40,d3
-				add.w	PLR2_bobble,d3
+				add.w	Plr2_Bobble_w,d3
 				and.w	#8190,d3
-				move.w	d3,PLR2_bobble
+				move.w	d3,Plr2_Bobble_w
 
 .nofly:
 
@@ -409,7 +409,7 @@ PLR2_fall
 
 				add.w	#1,DAMAGEWHENHIT
 
-				move.l	PLR2_Roompt,a2
+				move.l	Plr2_RoomPtr_l,a2
 				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	CARRYON2
@@ -440,9 +440,9 @@ PLR2_fall
 
 CARRYON2:
 
-				move.l	PLR2_Roompt,a2
+				move.l	Plr2_RoomPtr_l,a2
 				move.l	ZoneT_Roof_l(a2),d3
-				tst.b	PLR2_StoodInTop
+				tst.b	Plr2_StoodInTop_b
 				beq.s	.okbot
 				move.l	ZoneT_UpperRoof_l(a2),d3
 .okbot:
@@ -456,8 +456,8 @@ CARRYON2:
 				moveq	#0,d2
 .okroof:
 
-				move.l	d2,PLR2s_yvel
-				move.l	d1,PLR2s_yoff
+				move.l	d2,Plr2_SnapYVel_l
+				move.l	d1,Plr2_SnapYOff_l
 
 				rts
 

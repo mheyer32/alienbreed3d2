@@ -1552,7 +1552,7 @@ INMIDDLE:
 				muls	#7*16,d2
 				add.l	d2,a1
 
-				move.w	p1_angpos,d0
+				move.w	Plr1_TmpAngPos_w,d0
 				neg.w	d0
 				add.w	#4096,d0
 				and.w	#8191,d0
@@ -1583,8 +1583,8 @@ INMIDDLE:
 ; brightnesses.
 
 
-; move.w PLR1_xoff,newx
-; move.w PLR1_zoff,newz
+; move.w Plr1_XOff_l,newx
+; move.w Plr1_ZOff_l,newz
 ; move.w thisxpos,oldx
 ; move.w thiszpos,oldz
 ; movem.l d0-d7/a0-a6,-(a7)
@@ -1594,7 +1594,7 @@ INMIDDLE:
 
 ; move.w #0,d0
 ; move.w AngRet,d0
-; move.w p1_angpos,d0
+; move.w Plr1_TmpAngPos_w,d0
 ; neg.w d0
 ; add.w #4096,d0
 ; and.w #8191,d0

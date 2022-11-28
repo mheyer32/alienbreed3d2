@@ -268,7 +268,7 @@ Activatable:
 				tst.b	d0
 				beq.s	.NotActivated1
 
-				tst.b	p1_spctap
+				tst.b	Plr1_TmpSpcTap_b
 				beq.s	.NotActivated1
 
 ; The player has pressed the spacebar
@@ -291,7 +291,7 @@ Activatable:
 				tst.b	d0
 				beq.s	.NotActivated2
 
-				tst.b	p2_spctap
+				tst.b	Plr2_TmpSpcTap_b
 				beq.s	.NotActivated2
 
 ; The player has pressed the spacebar
@@ -362,7 +362,7 @@ ACTIVATED:
 				tst.b	d0
 				beq.s	.NotDeactivated1
 
-				tst.b	p1_spctap
+				tst.b	Plr1_TmpSpcTap_b
 				beq.s	.NotDeactivated1
 
 ; The player has pressed the spacebar
@@ -383,7 +383,7 @@ ACTIVATED:
 				tst.b	d0
 				beq.s	.NotDeactivated2
 
-				tst.b	p2_spctap
+				tst.b	Plr2_TmpSpcTap_b
 				beq.s	.NotDeactivated2
 
 ; The player has pressed the spacebar
@@ -761,20 +761,20 @@ CHECKPLAYERGOT:
 CHECKNEARBYONE:
 
 				move.l	StatPointer,a2
-				move.b	PLR1_StoodInTop,d0
+				move.b	Plr1_StoodInTop_b,d0
 				move.b	ShotT_InUpperZone_b(a0),d1
 				eor.b	d0,d1
 				bne		.NotSameZone
 
-				move.w	PLR1_xoff,oldx
-				move.w	PLR1_zoff,oldz
-				move.w	PLR1_Zone,d7
+				move.w	Plr1_XOff_l,oldx
+				move.w	Plr1_ZOff_l,oldz
+				move.w	Plr1_Zone_w,d7
 
 				cmp.w	12(a0),d7
 				bne		.NotSameZone
 
-				move.l	PLR1_yoff,d7
-				move.l	PLR1_height,d6
+				move.l	Plr1_YOff_l,d7
+				move.l	Plr1_Height_l,d6
 				asr.l	#1,d6
 				add.l	d6,d7
 				asr.l	#7,d7
@@ -802,20 +802,20 @@ CHECKNEARBYONE:
 CHECKNEARBYTWO:
 
 				move.l	StatPointer,a2
-				move.b	PLR2_StoodInTop,d0
+				move.b	Plr2_StoodInTop_b,d0
 				move.b	ShotT_InUpperZone_b(a0),d1
 				eor.b	d0,d1
 				bne		.NotSameZone
 
-				move.w	PLR2_xoff,oldx
-				move.w	PLR2_zoff,oldz
-				move.w	PLR2_Zone,d7
+				move.w	Plr2_XOff_l,oldx
+				move.w	Plr2_ZOff_l,oldz
+				move.w	Plr2_Zone_w,d7
 
 				cmp.w	12(a0),d7
 				bne		.NotSameZone
 
-				move.l	PLR2_yoff,d7
-				move.l	PLR2_height,d6
+				move.l	Plr2_YOff_l,d7
+				move.l	Plr2_Height_l,d6
 				asr.l	#1,d6
 				add.l	d6,d7
 				asr.l	#7,d7
@@ -1138,8 +1138,8 @@ SHOOTPLAYER1
 				move.w	newx,fsx
 				move.w	newz,fsz
 
-				move.w	p1_xoff,newx
-				move.w	p1_zoff,newz
+				move.w	Plr1_TmpXOff_l,newx
+				move.w	Plr1_TmpZOff_l,newz
 				move.w	(a1),oldx
 				move.w	4(a1),oldz
 
@@ -1156,7 +1156,7 @@ SHOOTPLAYER1
 				add.w	d1,newz
 				sub.w	d2,newx
 
-				move.l	p1_yoff,d1
+				move.l	Plr1_TmpYOff_l,d1
 				add.l	#15*128,d1
 				asr.l	#7,d1
 				move.w	d1,d2
@@ -1296,16 +1296,16 @@ FireAtPlayer1:
 				lea		(a2,d1.w*8),a2
 				move.w	(a1),oldx
 				move.w	4(a1),oldz
-				move.w	PLR1_xoff,newx
-				move.w	PLR1_zoff,newz
+				move.w	Plr1_XOff_l,newx
+				move.w	Plr1_ZOff_l,newz
 
 				jsr		CalcDist
-				move.w	XDIFF1,d6
+				move.w	XDiff_w,d6
 				muls	distaway,d6
 				divs	SHOTSPEED,d6
 				asr.w	#4,d6
 				add.w	d6,newx
-				move.w	ZDIFF1,d6
+				move.w	ZDiff_w,d6
 				muls	distaway,d6
 				divs	SHOTSPEED,d6
 				asr.w	#4,d6
@@ -1401,8 +1401,8 @@ SHOOTPLAYER2
 				move.w	newx,fsx
 				move.w	oldx,fsz
 
-				move.w	p2_xoff,newx
-				move.w	p2_zoff,newz
+				move.w	Plr2_TmpXOff_l,newx
+				move.w	Plr2_TmpZOff_l,newz
 				move.w	(a1),oldx
 				move.w	4(a1),oldz
 
@@ -1419,7 +1419,7 @@ SHOOTPLAYER2
 				add.w	d1,newz
 				sub.w	d2,newx
 
-				move.l	p2_yoff,d1
+				move.l	Plr2_TmpYOff_l,d1
 				add.l	#15*128,d1
 				asr.l	#7,d1
 				move.w	d1,d2
@@ -1549,8 +1549,8 @@ FireAtPlayer2:
 				lea		(a2,d1.w*8),a2
 				move.w	(a1),oldx
 				move.w	4(a1),oldz
-				move.w	PLR2_xoff,newx
-				move.w	PLR2_zoff,newz
+				move.w	Plr2_XOff_l,newx
+				move.w	Plr2_ZOff_l,newz
 				move.w	SHOTSPEED,speed
 				move.w	#0,Range
 				jsr		HeadTowards
@@ -1568,8 +1568,8 @@ FireAtPlayer2:
 				asr.l	#8,d1
 				add.w	d1,oldx
 				sub.w	d0,oldz
-				move.w	PLR2_xoff,newx
-				move.w	PLR2_zoff,newz
+				move.w	Plr2_XOff_l,newx
+				move.w	Plr2_ZOff_l,newz
 				jsr		HeadTowards
 
 .nooffset:
