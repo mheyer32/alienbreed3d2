@@ -2561,12 +2561,23 @@ CLIPANDDRAW:
 
 				; This is likely scaling the coordinates by 2/3 for Fullscreen
 				; go from 288 to 196 wide?
-				add.w	d0,d0
-				add.w	d2,d2
-				ext.l	d0
-				ext.l	d2
-				divs.w	#3,d0					288 * 2/3 = 196
-				divs.w	#3,d2
+				;add.w	d0,d0
+				;add.w	d2,d2
+				;ext.l	d0
+				;ext.l	d2
+				;divs.w	#3,d0					288 * 2/3 = 192
+				;divs.w	#3,d2
+
+				; for 320 wide, we are have a 3/5 ratio rather than 2/3
+				; use a 10 bit approximation based on 615/1024
+				move.l d1,-(sp) ; todo - find a free register
+				move.w #615,d1
+				muls  d1,d0 ; 320 * 3/5 = 192
+				muls  d1,d2
+				move.l #10,d1
+				asr.l d1,d0
+				asr.l d1,d2
+				move.l (sp)+,d1
 
 .nodov:
 				tst.b	DOUBLEWIDTH				; correct aspect ratio for DW/DH
