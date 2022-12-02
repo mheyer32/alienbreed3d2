@@ -2559,16 +2559,8 @@ CLIPANDDRAW:
 				tst.b	FULLSCR
 				beq.s	.nodov
 
-				; This is likely scaling the coordinates by 2/3 for Fullscreen
-				; go from 288 to 196 wide?
-				;add.w	d0,d0
-				;add.w	d2,d2
-				;ext.l	d0
-				;ext.l	d2
-				;divs.w	#3,d0					288 * 2/3 = 192
-				;divs.w	#3,d2
-
-				; for 320 wide, we are have a 3/5 ratio rather than 2/3
+				; This is scaling the coordinates by 3/5 for Fullscreen (used to be 2/3 for 288 wide)
+				; For 320 wide, we are have a 3/5 ratio rather than 2/3
 				; use a 10 bit approximation based on 1229/2048
 				move.l d1,-(sp) ; todo - find a free register
 				move.w #1229,d1
@@ -5068,7 +5060,6 @@ onrightsomewhere:
 				move.w	RIGHTX,d2
 				bra		putin
 ptnotbehind:
-
 				divs.w	d1,d2					; x / z perspective projection
 				add.w	MIDDLEX,d2
 putin:
@@ -5109,19 +5100,6 @@ pointrotlop2B:
 				muls	d6,d1					; z * cos <<16
 				add.l	d0,d1					; z' = (x*sin + z*sin)<<16
 
-;				divs.l	#3,d1	; is this what differentiates fullscreen vs. smallscreen?
-;				asr.l	#8,d1
-;				asr.l	#5,d1	; achieves d1/(3*2<<13) - we could roll this into the divs above
-
-				;divs.w	#3*4096,d1				; 3*8192 doesn't quite fit into 16bits divisor
-				;asr.w	#2,d1					; z' = (z' << 16) / (3 * 2 << 13)
-				;ext.l	d1
-									; z' = z' * 8 / 3		; Is the factor in z' here determining the prespective factor?
-; asl.l #3,d1
-; swap d1
-; ext.l d1
-; divs #3,d1
-
 				; 0xABADCAFE
 				; Use 3/5 rather than 2/3 here for 320 wide - z' * 2 * 3/5 -> z' * 6/5
 				; Shift d1 to get 2 extra input bits for our scale by 3/5 approximation
@@ -5142,6 +5120,7 @@ pointrotlop2B:
 				bgt.s	onrightsomewhereB
 				moveq.l	#0,d2
 				bra		putinB
+
 onrightsomewhereB:
 				move.w	RIGHTX,d2
 				bra		putinB
@@ -5273,17 +5252,6 @@ BIGLONELY:
 				swap	d6
 				muls	d6,d1
 				add.l	d0,d1
-
-;				asl.l	#2,d1		; z' * 2 *2
-;				swap	d1
-;				ext.l	d1
-;				divs	#3,d1		; z' * 2 *2/3
-
-				;divs.w	#3*4096,d1	; 3*8192 doesn't quite fit into 16bits divisor
-				;asr.w	#2,d1		; z' = (z' << 16) / (3 * 2 << 13)
-									; z' = z' * 8 / 3
-									; Is the factor in z' here determining the prespective factor?
-				;ext.l	d1
 
 				; 0xABADCAFE
 				; Use 3/5 rather than 2/3 here for 320 wide - z' * 2 * 3/5 -> z' * 6/5
@@ -8601,19 +8569,10 @@ scaleprog:
 				; if the clipped left edge of the floor line is > 0,
 				; need  to inset the start of the floorspace coordinate accordingly
 
-				; 0xABADCAFE - Apply fullscreen multiplier.
-				if SCREENWIDTH=320
-				; Pipper's fullscreen: Scale factor is 192/320 => 3/5
-				; Use quicker evaluation of 3/5, 154/256 => 0.6015625
-				muls.l  #154,d6
+				; 0xABADCAFE - Apply fullscreen multiplier (3/5)), approximating as 1229/2048
+				muls	#1229,d6
 				asr.l	#8,d6
-				else
-				; Original fullscreen: Scale factor is 192/288 => 2/3
-				; Use quicker evaluation of 2/3 multiplier, 171/256 => 0.66796875
-				muls.l	#171,d6
-				asr.l	#8,d6
-
-				endif
+				asr.l	#3,d6
 
 				move.l	d1,a4					; save width * cos * scale
 				move.l	d2,a5					; save width * sin * scale
@@ -8649,19 +8608,11 @@ scaleprog:
 				asr.l	#6,d1					; don't shift by 7, but 6, to achieve 2/3
 				asr.l	#6,d2
 
-				; 0xABADCAFE - Apply fullscreen multiplier.
-				if SCREENWIDTH=320
+				; 0xABADCAFE - Apply fullscreen multiplier (uses 3/5 here)
 				; Pipper's fullscreen: Scale factor is 192/320
 				; Use quicker evaluation of 3/10, 77/256 => 0.30078125
 				muls.l  #77,d1
 				muls.l  #77,d2
-				else
-				; Original fullscreen: Scale factor is 192/288
-				; 0xABADCAFE quicker evaluation of 1/3 multiplier, 85/256 => 0.33203125
-				muls.l  #85,d1
-				muls.l  #85,d2
-				endif
-
 				asr.l	#8,d1
 				asr.l	#8,d2
 
