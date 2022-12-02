@@ -2440,10 +2440,11 @@ rotobj:
 				tst.b	FULLSCR
 				beq.s	smallconv
 
+				; this multiplication by 3/2 may not be what it looks like
 				move.w	d1,d3
 				asl.w	#1,d1
 				add.w	d3,d1					; d1 * 3  because 288 is ~1.5times larger than 196?
-									; if I change this, 3d objects start "swimming" with regard to the world
+												; if I change this, 3d objects start "swimming" with regard to the world
 
 				ext.l	d2
 				asl.l	#7,d2					; (view_ypos *128 - yoff) *2
@@ -2463,16 +2464,20 @@ rotobj:
 
 				; FIXME: can we factor the 3/2 scaling into Z somewhere else?
 				add.w	d5,d5					; z'' * 2  to achieve  3/2 scaling for fullscreen
+				move.l	#3413,d6
 
-				move.l	d4,d6
-				add.l	d6,d6
-				add.l	d6,d4					; y'' * 3
-				divs	d5,d4					; ys = (x*3)/(z*2)
+				; approximate 3.333 => 3413/1024
+				muls.l	d6,d4
+				asr.l	#8,d4
+				asr.l	#2,d4		; y'' * 3.333
+				divs	d5,d4		; ys = (x*3)/(z*2)
 
-				move.l	d3,d6					;
-				add.l	d6,d6
-				add.l	d6,d3		; x'' * 3
+				; approximate 3.333 => 3413/1024
+				muls.l	d6,d3
+				asr.l	#8,d3
+				asr.l	#2,d3		; x'' * 3.333
 				divs	d5,d3		; xs = (x*3)/(z*2)
+
 				add.w	MIDDLEX,d3	; mid_x of screen
 				add.w	POLYMIDDLEY,d4	; mid_y of screen
 				move.w	d3,(a3)+	; store xs,ys in boxonscr
