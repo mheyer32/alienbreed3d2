@@ -5113,15 +5113,25 @@ pointrotlop2B:
 ;				asr.l	#8,d1
 ;				asr.l	#5,d1	; achieves d1/(3*2<<13) - we could roll this into the divs above
 
-				divs.w	#3*4096,d1				; 3*8192 doesn't quite fit into 16bits divisor
-				asr.w	#2,d1					; z' = (z' << 16) / (3 * 2 << 13)
-				ext.l	d1
+				;divs.w	#3*4096,d1				; 3*8192 doesn't quite fit into 16bits divisor
+				;asr.w	#2,d1					; z' = (z' << 16) / (3 * 2 << 13)
+				;ext.l	d1
 									; z' = z' * 8 / 3		; Is the factor in z' here determining the prespective factor?
 ; asl.l #3,d1
 ; swap d1
 ; ext.l d1
 ; divs #3,d1
-				move.l	d1,(a1)+				; this stores the rotated points, but why does it factor in the scale factor
+
+				; 0xABADCAFE
+				; Use 3/5 rather than 2/3 here for 320 wide - z' * 2 * 3/5 -> z' * 6/5
+				; Shift d1 to get 2 extra input bits for our scale by 3/5 approximation
+				lsl.l	#2,d1
+				swap	d1
+				muls	#1229,d1 ; 1229/2048 = 0.600097
+				asr.l	#8,d1
+				asr.l	#4,d1    ; z' * 6/5
+
+				move.l	d1,(a1)+	; this stores the rotated points, but why does it factor in the scale factor
 									; for the screen? Or is storing in view space with aspect ratio applied actually
 									; convenient?
 									; WOuld here a good opportunity to factor in DOUBLEWIDTH?
@@ -5275,6 +5285,7 @@ BIGLONELY:
 									; Is the factor in z' here determining the prespective factor?
 				;ext.l	d1
 
+				; 0xABADCAFE
 				; Use 3/5 rather than 2/3 here for 320 wide - z' * 2 * 3/5 -> z' * 6/5
 				; Shift d1 to get 2 extra input bits for our scale by 3/5 approximation
 				lsl.l	#2,d1
