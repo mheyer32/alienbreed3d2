@@ -2569,12 +2569,12 @@ CLIPANDDRAW:
 				;divs.w	#3,d2
 
 				; for 320 wide, we are have a 3/5 ratio rather than 2/3
-				; use a 10 bit approximation based on 615/1024
+				; use a 10 bit approximation based on 1229/2048
 				move.l d1,-(sp) ; todo - find a free register
-				move.w #615,d1
+				move.w #1229,d1
 				muls  d1,d0 ; 320 * 3/5 = 192
 				muls  d1,d2
-				move.l #10,d1
+				move.l #11,d1
 				asr.l d1,d0
 				asr.l d1,d2
 				move.l (sp)+,d1
@@ -5268,7 +5268,6 @@ BIGLONELY:
 ;				swap	d1
 ;				ext.l	d1
 ;				divs	#3,d1		; z' * 2 *2/3
-
 
 				;divs.w	#3*4096,d1	; 3*8192 doesn't quite fit into 16bits divisor
 				;asr.w	#2,d1		; z' = (z' << 16) / (3 * 2 << 13)
