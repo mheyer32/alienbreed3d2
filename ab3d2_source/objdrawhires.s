@@ -2440,7 +2440,7 @@ rotobj:
 				tst.b	FULLSCR
 				beq.s	smallconv
 
-				; this multiplication by 3/2 may not be what it looks like
+				; this multiplication by 3/2 does not appear to require changing
 				move.w	d1,d3
 				asl.w	#1,d1
 				add.w	d3,d1					; d1 * 3  because 288 is ~1.5times larger than 196?
@@ -2464,14 +2464,18 @@ rotobj:
 
 				; FIXME: can we factor the 3/2 scaling into Z somewhere else?
 				add.w	d5,d5					; z'' * 2  to achieve  3/2 scaling for fullscreen
+
+				; 0xABADCAFE - going to be multiplying by 5/3 here for the 320 fullscreen
 				move.l	#3413,d6
 
+				; todo lower precision, 16 bit multiply?
 				; approximate 3.333 => 3413/1024
 				muls.l	d6,d4
 				asr.l	#8,d4
 				asr.l	#2,d4		; y'' * 3.333
 				divs	d5,d4		; ys = (x*3)/(z*2)
 
+				; todo lower precision, 16 bit multiply?
 				; approximate 3.333 => 3413/1024
 				muls.l	d6,d3
 				asr.l	#8,d3
