@@ -1860,7 +1860,7 @@ MYROOM:			dc.w	0
 
 Collision:
 
-				move.l	ObjectData,a0
+				move.l	ObjectDataPtr_l,a0
 				move.w	CollId,d0
 				asl.w	#6,d0
 				move.w	12(a0,d0.w),MYROOM

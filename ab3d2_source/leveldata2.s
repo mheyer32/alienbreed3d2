@@ -76,7 +76,7 @@ ListOfGraphRooms: dc.l	0
 NastyShotData:	dc.l	0
 ObjectPoints:	dc.l	0
 PlayerShotData:	dc.l	0
-ObjectData:		dc.l	0
+ObjectDataPtr_l:		dc.l	0
 FloorLines:		dc.l	0
 Points:			dc.l	0						; Pointer to array of all 2D points in the world
 PLR1_Obj:		dc.l	0

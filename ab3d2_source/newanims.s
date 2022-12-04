@@ -1786,7 +1786,7 @@ ObjectHandler:
 				move.l	#ObjWork,WORKPTR
 				move.l	#AI_Damaged_vw,AI_DamagePtr_l
 
-				move.l	ObjectData,a0
+				move.l	ObjectDataPtr_l,a0
 Objectloop:
 				tst.w	(a0)
 				blt		doneallobj
@@ -1876,7 +1876,7 @@ notdoneflame:
 				bne.s	.nowhoosh
 
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.l	#ObjRotated,a1
+				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
 				move.l	(a1),Noisex
@@ -2004,7 +2004,7 @@ notexploding:
 				jsr		ComputeBlast
 
 				move.w	(a0),d0
-				move.l	#ObjRotated,a1
+				move.l	#ObjRotated_vl,a1
 				move.l	(a1,d0.w*8),Noisex
 				move.w	#300,Noisevol
 				move.w	#15,Samplenum
@@ -2122,7 +2122,7 @@ HealFactor		EQU		18
 
 				move.l	PLR1_Obj,a2
 				move.w	(a2),d0
-				move.l	#ObjRotated,a2
+				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d0.w*8),Noisex
 				move.w	#50,Noisevol
 				move.w	#4,Samplenum
@@ -2175,7 +2175,7 @@ MEDIPLR2
 
 				move.l	PLR2_Obj,a2
 				move.w	(a2),d0
-				move.l	#ObjRotated,a2
+				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d0.w*8),Noisex
 				move.w	#50,Noisevol
 				move.w	#4,Samplenum
@@ -3272,7 +3272,7 @@ notdoneanim:
 				subq.l	#1,d0
 				blt.s	.nohitnoise
 
-				move.l	#ObjRotated,a1
+				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d1
 				move.l	(a1,d1.w*8),Noisex
 ; move.w d0,Noisevol
@@ -3347,7 +3347,7 @@ notdoneanim:
 				subq.l	#1,d0
 				blt.s	.nohitnoise2
 
-				move.l	#ObjRotated,a1
+				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d1
 				move.l	(a1,d1.w*8),Noisex
 				move.w	#200,Noisevol
@@ -3538,7 +3538,7 @@ nomovebul:
 				subq.l	#1,d0
 				blt.s	.nohitnoise
 
-				move.l	#ObjRotated,a1
+				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d1
 				move.l	(a1,d1.w*8),Noisex
 				move.w	#200,Noisevol
@@ -3590,7 +3590,7 @@ lab:
 notasplut:
 
 
-				move.l	ObjectData,a3
+				move.l	ObjectDataPtr_l,a3
 				move.l	ObjectPoints,a1
 				move.w	newx,d2
 				sub.w	oldx,d2
@@ -3759,7 +3759,7 @@ notasplut:
 				subq.l	#1,d0
 				blt.s	.nohitnoise3
 
-				move.l	#ObjRotated,a1
+				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d1
 				move.l	(a1,d1.w*8),Noisex
 				move.w	#200,Noisevol
@@ -3962,7 +3962,7 @@ ComputeBlast:
 				add.l	LEVELDATA,a2
 				move.l	a2,MiddleRoom
 
-				move.l	ObjectData,a2
+				move.l	ObjectDataPtr_l,a2
 				suba.w	#64,a2
 				ext.l	d6
 				move.l	a0,-(a7)

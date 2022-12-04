@@ -515,7 +515,7 @@ blag:
 				move.w	-2(a2),ENDZONE
 				move.l	24+6(a1),a2
 				add.l	a4,a2
-				move.l	a2,ObjectData
+				move.l	a2,ObjectDataPtr_l
 *****************************************
 * Just for charles
 
@@ -1541,13 +1541,6 @@ ASlaveShouldWaitOnHisMaster:
 
 				jsr		RECFIRST
 
-
-
-
-
-
-
-
 				move.l	Plr2_SnapXOff_l,Plr2_TmpXOff_l
 				move.l	Plr2_SnapZOff_l,Plr2_TmpZOff_l
 				move.l	Plr2_SnapYOff_l,Plr2_TmpYOff_l
@@ -1640,8 +1633,6 @@ ASlaveShouldWaitOnHisMaster:
 				move.l	ZoneT_Roof_l(a0),SplitHeight
 
 donetalking:
-
-
 				move.l	#ZoneBrightTable,a1
 				move.l	ZoneAdds,a2
 				move.l	Plr2_ListOfGraphRoomsPtr_l,a0
@@ -2195,7 +2186,7 @@ plr1only:
 
 				move.l	#%000001,d7
 				lea		AI_Teamwork_vl,a2
-				move.l	ObjectData,a0
+				move.l	ObjectDataPtr_l,a0
 				sub.w	#64,a0
 .doallobs:
 				add.w	#64,a0
@@ -2561,7 +2552,7 @@ CLIPANDDRAW:
 
 				; This is scaling the coordinates by 3/5 for Fullscreen (used to be 2/3 for 288 wide)
 				; For 320 wide, we are have a 3/5 ratio rather than 2/3
-				; use a 10 bit approximation based on 1229/2048
+				; use an 11 bit approximation based on 1229/2048
 				move.l d1,-(sp) ; todo - find a free register
 				move.w #1229,d1
 				muls  d1,d0 ; 320 * 3/5 = 192
@@ -3218,7 +3209,7 @@ USEPLR1:
 				move.l	PLR1_Obj,a0
 				move.b	#4,16(a0)
 				move.l	ObjectPoints,a1
-				move.l	#ObjRotated,a2
+				move.l	#ObjRotated_vl,a2
 				move.w	(a0),d0
 				move.l	Plr1_XOff_l,(a1,d0.w*8)
 				move.l	Plr1_ZOff_l,4(a1,d0.w*8)
@@ -3321,7 +3312,7 @@ USEPLR1:
 ;
 
 				move.l	ObjectPoints,a1
-				move.l	#ObjRotated,a2
+				move.l	#ObjRotated_vl,a2
 				move.w	(a0),d0
 				move.l	Plr2_XOff_l,(a1,d0.w*8)
 				move.l	Plr2_ZOff_l,4(a1,d0.w*8)
@@ -3527,7 +3518,7 @@ USEPLR2:
 				move.l	PLR2_Obj,a0
 				move.b	#5,16(a0)
 				move.l	ObjectPoints,a1
-				move.l	#ObjRotated,a2
+				move.l	#ObjRotated_vl,a2
 				move.w	(a0),d0
 				move.l	Plr2_XOff_l,(a1,d0.w*8)
 				move.l	Plr2_ZOff_l,4(a1,d0.w*8)
@@ -3622,7 +3613,7 @@ USEPLR2:
 ;
 
 				move.l	ObjectPoints,a1
-				move.l	#ObjRotated,a2
+				move.l	#ObjRotated_vl,a2
 				move.w	(a0),d0
 				move.l	Plr1_XOff_l,(a1,d0.w*8)
 				move.l	Plr1_ZOff_l,4(a1,d0.w*8)
@@ -5301,7 +5292,7 @@ CalcPLR1InLine:
 
 				move.w	Plr1_SinVal_w,d5
 				move.w	Plr1_CosVal_w,d6
-				move.l	ObjectData,a4
+				move.l	ObjectDataPtr_l,a4
 				move.l	ObjectPoints,a0
 				move.w	NumObjectPoints,d7
 				move.l	#PLR1_ObsInLine,a2
@@ -5378,7 +5369,7 @@ CalcPLR2InLine:
 
 				move.w	Plr2_SinVal_w,d5
 				move.w	Plr2_CosVal_w,d6
-				move.l	ObjectData,a4
+				move.l	ObjectDataPtr_l,a4
 				move.l	ObjectPoints,a0
 				move.w	NumObjectPoints,d7
 				move.l	#PLR2_ObsInLine,a2
@@ -5455,10 +5446,10 @@ RotateObjectPts:
 				move.w	sinval,d5				; fetch sine of rotation
 				move.w	cosval,d6				; consine
 
-				move.l	ObjectData,a4
+				move.l	ObjectDataPtr_l,a4
 				move.l	ObjectPoints,a0
 				move.w	NumObjectPoints,d7
-				move.l	#ObjRotated,a1
+				move.l	#ObjRotated_vl,a1
 
 				tst.b	FULLSCR
 				bne		BIGOBJPTS
@@ -5474,7 +5465,7 @@ RotateObjectPts:
 				move.w	4(a0),d1				; z of object point
 				addq	#8,a0					; next point? or next object?
 
-				tst.w	12(a4)					; ObjectData
+				tst.w	12(a4)					; ObjectDataPtr_l
 				blt		.noworkout
 
 				sub.w	zoff,d1					; viewZ = Z - cam Z
@@ -9644,7 +9635,7 @@ DOALLANIMS:
 
 
 				move.l	#ObjWork,a5
-				move.l	ObjectData,a0
+				move.l	ObjectDataPtr_l,a0
 Objectloop2:
 				tst.w	(a0)
 				blt		doneallobj2
@@ -9754,7 +9745,7 @@ NOSIDES2:
 				clr.b	notifplaying
 				move.w	(a0),IDNUM
 				move.w	#80,Noisevol
-				move.l	#ObjRotated,a1
+				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
 				move.l	(a1),Noisex
@@ -12168,7 +12159,7 @@ floorpt:		dc.l	0
 
 Rotated:		ds.l	2*800					; store rotated X and Z coordinates with Z scaling applied
 
-ObjRotated:		ds.l	2*500
+ObjRotated_vl:		ds.l	2*500
 
 OnScreen:		ds.l	2*800					; store screen projected X coordinates for rotated points
 

@@ -23,28 +23,28 @@ whichdoing:		dc.w	0
 ObjDraw:
 				move.w	(a0)+,d0
 				cmp.w	#1,d0
-				blt.s	beforewat
-				beq.s	afterwat
-				bgt.s	fullroom
+				blt.s	.before_wat
+				beq.s	.after_wat
+				bgt.s	.full_room
 
-beforewat:
+.before_wat:
 				move.l	BEFOREWATTOP,ty3d
 				move.l	BEFOREWATBOT,by3d
 				move.b	#1,whichdoing
-				bra.s	donetopbot
+				bra.s	.done_top_bot
 
-afterwat:
+.after_wat:
 				move.l	AFTERWATTOP,ty3d
 				move.l	AFTERWATBOT,by3d
 				move.b	#0,whichdoing
-				bra.s	donetopbot
+				bra.s	.done_top_bot
 
-fullroom:
+.full_room:
 				move.l	TOPOFROOM(pc),ty3d
 				move.l	BOTOFROOM(pc),by3d
 				move.b	#0,whichdoing
 
-donetopbot:
+.done_top_bot:
 
 ; move.l (a0)+,by3d
 ; move.l (a0)+,ty3d
@@ -54,90 +54,86 @@ donetopbot:
 				move.w	rightclip,d0
 				sub.w	leftclip,d0
 				subq	#1,d0
-				ble		doneallinfront
+				ble		done_all_in_front
 
 ; CACHE_ON d6
 
-				move.l	ObjectData,a1
-				move.l	#ObjRotated,a2
-				move.l	#depthtable,a3
+				move.l	ObjectDataPtr_l,a1
+				move.l	#ObjRotated_vl,a2
+				move.l	#draw_DepthTable_vl,a3
 				move.l	a3,a4
 				move.w	#79,d7
-emptytab:
+
+.empty_tab:
 				move.l	#$80010000,(a3)+
-				dbra	d7,emptytab
+				dbra	d7,.empty_tab
 
 				moveq	#0,d0
-insertanobj
+
+insert_an_object:
 				move.w	(a1),d1
-				blt		sortedall
+				blt		sorted_all
 				move.w	EntT_GraphicRoom_w(a1),d2
 				cmp.w	currzone(pc),d2
-				beq.s	itsinthiszone
+				beq.s	its_in_this_zone
 
-notinthiszone:
+not_in_this_zone:
 				adda.w	#64,a1
 				addq	#1,d0
-				bra		insertanobj
+				bra		insert_an_object
 
-itsinthiszone:
-
+its_in_this_zone:
 				move.b	DOUPPER,d4
 				move.b	ShotT_InUpperZone_b(a1),d3
 				eor.b	d4,d3
-				bne.s	notinthiszone
+				bne.s	not_in_this_zone
 
 				move.w	2(a2,d1.w*8),d1			; zpos
+				move.l	#draw_DepthTable_vl-4,a4
 
-				move.l	#depthtable-4,a4
-stillinfront:
+.still_in_front:
 				addq	#4,a4
 				cmp.w	(a4),d1
-				blt		stillinfront
+				blt		.still_in_front
 				move.l	#enddepthtab-4,a5
-finishedshift
+
+.finished_shift:
 				move.l	-(a5),4(a5)
 				cmp.l	a4,a5
-				bgt.s	finishedshift
+				bgt.s	.finished_shift
 
 				move.w	d1,(a4)
 				move.w	d0,2(a4)
-
 				adda.w	#64,a1
 				addq	#1,d0
+				bra		insert_an_object
 
-				bra		insertanobj
+sorted_all:
+				move.l	#draw_DepthTable_vl,a3
 
-sortedall:
-
-				move.l	#depthtable,a3
-
-gobackanddoanother
+.go_back_and_do_another:
 				move.w	(a3)+,d0
-				blt.s	doneallinfront
+				blt.s	done_all_in_front
 
 				move.w	(a3)+,d0
 				bsr		DrawtheObject
-				bra		gobackanddoanother
+				bra		.go_back_and_do_another
 
-doneallinfront
-
+done_all_in_front:
 				movem.l	(a7)+,d0-d7/a1-a6
 				rts
 
-depthtable:		ds.l	80
+				CNOP 0,4
+draw_DepthTable_vl:		ds.l	80
 enddepthtab:
 
 ********************************************************************************
 
 DrawtheObject:
-
-
 				movem.l	d0-d7/a0-a6,-(a7)
 
-
-				move.l	ObjectData,a0
-				move.l	#ObjRotated,a1
+				move.l	ObjectDataPtr_l,a0
+				move.l	#ObjRotated_vl,a1
 				asl.w	#6,d0
 				adda.w	d0,a0
 
@@ -264,8 +260,8 @@ DrawtheObject:
 ;
 ;				add.w	d4,d4
 ;
-;				move.w	d3,realwidth
-;				move.w	d4,realheight
+;				move.w	d3,draw_RealWidth_w
+;				move.w	d4,draw_RealHeight_w
 ;
 ;* OBTAIN POINTERS TO HORIZ AND VERT
 ;* CONSTANTS FOR MOVING ACROSS AND
@@ -504,26 +500,25 @@ DrawtheObject:
 
 ********************************************************************************
 
-realwidth:		dc.w	0
-realheight:		dc.w	0
+;draw_RealWidth_w:		dc.w	0 ; write once ?
+;draw_RealHeight_w:		dc.w	0 ; write once ?
 
-AUXX:			dc.w	0
-AUXY:			dc.w	0
+draw_AuxX_w:	dc.w	0
+draw_AuxY_w:	dc.w	0
 
-midglass:
-				dc.l	0
-times128:
-val				SET		0
-				REPT	100
-				dc.w	val*128
-val				SET		val+1
-				ENDR
+;midglass:
+;dc.l	0
 
-BRIGHTTOADD:	dc.w	0
+;times128:
+;val				SET		0
+;				REPT	100
+;				dc.w	val*128
+;val				SET		val+1
+;				ENDR
+
+draw_BrightToAdd_w:	dc.w	0
 
 glareobj:
-
-
 				move.w	(a0)+,d0				;pt num
 				move.w	2(a1,d0.w*8),d1
 				cmp.w	#25,d1
@@ -557,7 +552,7 @@ glareobj:
 				move.w	d6,objclipb
 				move.l	4(a1,d0.w*8),d0
 
-				move.w	AUXX,d2
+				move.w	draw_AuxX_w,d2
 				ext.l	d2
 				asl.l	#7,d2
 				add.l	d2,d0
@@ -566,7 +561,7 @@ glareobj:
 				sub.l	#512,a4
 
 				move.w	(a0)+,d2				; height
-				add.w	AUXY,d2
+				add.w	draw_AuxY_w,d2
 				ext.l	d2
 				asl.l	#7,d2
 				sub.l	yoff,d2
@@ -677,7 +672,6 @@ glareobj:
 				move.w	objclipt,d2
 
 objfitsontopGLARE:
-
 				move.w	objclipb,d6
 				sub.w	d2,d6
 				cmp.w	d6,d4
@@ -686,7 +680,6 @@ objfitsontopGLARE:
 				move.w	d6,d4
 
 objfitsonbotGLARE:
-
 				subq	#1,d4
 				blt		objbehind
 
@@ -714,7 +707,6 @@ objfitsonbotGLARE:
 				move.w	leftclipb,d0
 
 okonleftGLARE:
-
 				move.w	d0,d6
 				add.w	d3,d6
 				sub.w	rightclipb,d6
@@ -724,11 +716,8 @@ okonleftGLARE:
 				sub.w	d6,d3
 
 okrightsideGLARE:
-
 				ext.l	d0
 				add.l	d0,toppt
-
-
 				move.w	(a3),d5
 				move.w	2(a3),d6
 				muls	d7,d5
@@ -839,20 +828,17 @@ ThirdThirdGLARE:
 				movem.l	(a7)+,d0-d7/a0-a6
 				rts
 
-
-
 BitMapObj:
-				move.l	#0,AUXX
+				move.l	#0,draw_AuxX_w
 
 				cmp.b	#3,16(a0)
 				bne.s	.NOTAUX
 
-				move.w	ShotT_AuxOffsetX_w(a0),AUXX
-				move.w	ShotT_AuxOffsetY_w(a0),AUXY
+				move.w	ShotT_AuxOffsetX_w(a0),draw_AuxX_w
+				move.w	ShotT_AuxOffsetY_w(a0),draw_AuxY_w
 
 .NOTAUX:
-
-				tst.l	8(a0)
+				tst.l   8(a0)
 				blt		glareobj
 
 				move.w	EntT_CurrentAngle_w(a0),FACINGANG
@@ -861,8 +847,8 @@ BitMapObj:
 
 				move.l	ObjectPoints,a4
 
-				move.w	(a4,d0.w*8),thisxpos
-				move.w	4(a4,d0.w*8),thiszpos
+				move.w	(a4,d0.w*8),draw_obj_xpos_w
+				move.w	4(a4,d0.w*8),draw_obj_zpos_w
 
 				move.w	2(a1,d0.w*8),d1
 				cmp.w	#25,d1
@@ -899,7 +885,7 @@ BitMapObj:
 				move.w	d6,objclipb				; bottom object clip
 
 				move.l	4(a1,d0.w*8),d0
-				move.w	AUXX,d2
+				move.w	draw_AuxX_w,d2
 				ext.l	d2
 				asl.l	#7,d2
 				add.l	d2,d0
@@ -907,16 +893,17 @@ BitMapObj:
 				move.w	d1,d6
 				asr.w	#6,d6
 				add.w	(a0)+,d6
-				move.w	d6,BRIGHTTOADD
+				move.w	d6,draw_BrightToAdd_w
 
 				bge.s	brighttoonot
 				moveq	#0,d6
 brighttoonot
 				sub.l	a4,a4
-				move.w	objscalecols(pc,d6.w*2),a4 ; is this the table that scales vertically?
+				move.w	draw_ObjScaleCols_vw(pc,d6.w*2),a4 ; is this the table that scales vertically?
 				bra		pastobjscale
 
-objscalecols:
+				CNOP 0,4
+draw_ObjScaleCols_vw:
 				dcb.w	1,64*0
 				dcb.w	2,64*1
 				dcb.w	2,64*2
@@ -950,17 +937,16 @@ objscalecols:
 				dcb.w	2,64*30
 				dcb.w	20,64*31
 
-WHICHLIGHTPAL:	dc.w	0
-FLIPIT:			dc.w	0						; BOOL flip on/off
-FLIPPEDIT:		dc.w	0
-LIGHTIT:		dc.w	0						; BOOL Lighting for object on/off
-ADDITIVE:		dc.w	0						; BOOL Additive translucency for object on/off
-BASEPAL:		dc.l	0
+draw_BasePalPtr_l:		dc.l	0
+draw_WhichLightPal_b:	dc.b	0 ; BOOL
+draw_FlipIt_b:			dc.b	0 ; BOOL flip on/off
+draw_LightIt_b:			dc.b	0 ; BOOL Lighting for object on/off
+draw_Additive_b:		dc.b	0 ; BOOL Additive translucency for object on/off
+
 
 pastobjscale:
-
 				move.w	(a0)+,d2				; height
-				add.w	AUXY,d2
+				add.w	draw_AuxY_w,d2
 				ext.l	d2
 				asl.l	#7,d2
 				sub.l	yoff,d2
@@ -986,11 +972,11 @@ pastobjscale:
 				asl.w	#4,d7
 				adda.w	d7,a6					; a6 pointing to?
 
-				clr.b	LIGHTIT
-				clr.b	ADDITIVE
+				clr.b	draw_LightIt_b
+				clr.b	draw_Additive_b
 				move.b	4(a0),d7
 				btst	#7,d7
-				sne		FLIPIT
+				sne		draw_FlipIt_b
 				and.b	#127,d7
 				sub.b	#2,d7
 				blt.s	.NOTALIGHT
@@ -998,15 +984,13 @@ pastobjscale:
 				cmp.b	#4,d7
 				blt.s	.isalight
 
-				st		ADDITIVE
+				st		draw_Additive_b
 				bra.s	.NOTALIGHT
 .isalight:
-
-				st		LIGHTIT
-				move.b	d7,WHICHLIGHTPAL
+				st		draw_LightIt_b
+				move.b	d7,draw_WhichLightPal_b
 
 .NOTALIGHT:
-
 				moveq	#0,d7
 				move.b	5(a0),d7				; current frame of animation
 				lea		(a6,d7.w*8),a6			; a6 pointing to frame?
@@ -1039,13 +1023,13 @@ pastobjscale:
 				move.l	(a5)+,WAD_PTR
 				move.l	(a5)+,PTR_PTR
 				add.l	4(a5),a4				; a5: #Objects
-				move.l	4(a5),BASEPAL
+				move.l	4(a5),draw_BasePalPtr_l
 
 				move.l	(a6),d7					; pointer to current frame
 				move.w	d7,DOWN_STRIP			; leftmost strip?
 				move.l	PTR_PTR,a5
 
-				tst.b	FLIPIT
+				tst.b	draw_FlipIt_b
 				beq.s	.nfl1
 
 				move.w	4(a6),d6				; mhhm, somehow this flips the frame?
@@ -1144,7 +1128,7 @@ objfitsonbot:
 				move.w	leftclipb,d0
 
 				asl.w	#2,d1
-				tst.b	FLIPIT
+				tst.b	draw_FlipIt_b
 				beq.s	.nfl2
 
 				suba.w	d1,a5
@@ -1181,7 +1165,7 @@ okrightside:
 				add.l	#$80000000,d5
 
 				move.l	(a2),d7					; what is a2 pointing to?
-				tst.b	FLIPIT
+				tst.b	draw_FlipIt_b
 				beq.s	.nfl3
 				neg.l	d7
 .nfl3:
@@ -1193,10 +1177,10 @@ okrightside:
 
 				move.l	#0,a1
 
-				tst.b	LIGHTIT
+				tst.b	draw_LightIt_b
 				bne		DRAWITLIGHTED
 
-				tst.b	ADDITIVE
+				tst.b	draw_Additive_b
 				bne		DRAWITADDED
 
 drawrightside:
@@ -1285,7 +1269,7 @@ objbehind:
 				rts
 
 DRAWITADDED:
-				move.l	BASEPAL,a4
+				move.l	draw_BasePalPtr_l,a4
 
 drawrightsideADD:
 				swap	d7
@@ -1585,8 +1569,8 @@ INMIDDLE:
 
 ; move.w Plr1_XOff_l,newx
 ; move.w Plr1_ZOff_l,newz
-; move.w thisxpos,oldx
-; move.w thiszpos,oldz
+; move.w draw_obj_xpos_w,oldx
+; move.w draw_obj_zpos_w,oldz
 ; movem.l d0-d7/a0-a6,-(a7)
 ; jsr HeadTowardsAng
 ; movem.l (a7)+,d0-d7/a0-a6
@@ -1638,7 +1622,7 @@ INMIDDLE:
 ; dbra d1,.across
 
 
-				move.w	BRIGHTTOADD,d0
+				move.w	draw_BrightToAdd_w,d0
 				move.l	#willy,a0
 				move.l	#willybright,a1
 				move.w	#48,d1
@@ -1658,7 +1642,7 @@ ADDITIN:
 
 
 
-				tst.b	FLIPIT
+				tst.b	draw_FlipIt_b
 				beq.s	LEFTTORIGHT
 
 				move.l	#Brights2,a0
@@ -1669,8 +1653,8 @@ LEFTTORIGHT:
 				move.l	#Brights,a0
 DONERIGHTTOLEFT:
 				move.l	#willy,a2
-				move.l	BASEPAL,a1
-				move.b	WHICHLIGHTPAL,d0
+				move.l	draw_BasePalPtr_l,a1
+				move.b	draw_WhichLightPal_b,d0
 				asl.w	#8,d0
 				add.w	d0,a1
 				move.l	#PALS,a3
@@ -1976,8 +1960,8 @@ CALCBRIGHTSINZONE:
 
 				move.l	Points,a3
 
-				move.w	thisxpos,oldx
-				move.w	thiszpos,oldz
+				move.w	draw_obj_xpos_w,oldx
+				move.w	draw_obj_zpos_w,oldz
 				move.w	#10,speed
 				move.w	#0,Range
 
@@ -2036,8 +2020,8 @@ DOPTBR
 DONEPTBR
 				rts
 
-thisxpos:		dc.w	0
-thiszpos:		dc.w	0
+draw_obj_xpos_w:		dc.w	0
+draw_obj_zpos_w:		dc.w	0
 FACINGANG:		dc.w	0
 
 ANGLEBRIGHTS:	ds.l	8*2
@@ -2160,8 +2144,8 @@ PolygonObj:
 				move.w	(a0)+,d0				; object Id?
 				move.l	ObjectPoints,a4
 
-				move.w	(a4,d0.w*8),thisxpos
-				move.w	4(a4,d0.w*8),thiszpos
+				move.w	(a4,d0.w*8),draw_obj_xpos_w
+				move.w	4(a4,d0.w*8),draw_obj_zpos_w
 
 				move.w	2(a1,d0.w*8),d1			; zpos of mid; is this the view position ?
 				blt		polybehind
@@ -2884,7 +2868,7 @@ dontusegour:
 				add.w	d5,d1
 
 
-				move.l	#objscalecols,a1
+				move.l	#draw_ObjScaleCols_vw,a1
 ; move.w objbright(pc),d0
 ; add.w d0,d1
 				tst.w	d1
@@ -3365,7 +3349,7 @@ gotholesin:
 				add.w	d5,d1
 
 
-				move.l	#objscalecols,a1
+				move.l	#draw_ObjScaleCols_vw,a1
 
 ; move.w objbright(pc),d0
 ; add.w d0,d1

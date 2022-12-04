@@ -78,7 +78,7 @@ okcanfire:
 				move.l	ZoneAdds,a3
 
 				move.l	#PLR1_ObsInLine,a1
-				move.l	ObjectData,a0
+				move.l	ObjectDataPtr_l,a0
 				move.l	#PLR1_ObjDists,a2
 findclosestinline
 
@@ -153,7 +153,7 @@ okdistthing
 
 				move.l	PLR1_Obj,a2
 				move.w	(a2),d0
-				move.l	#ObjRotated,a2
+				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d0.w*8),Noisex
 				move.w	#100,Noisevol
 				move.w	#100,AI_Player1NoiseVol_w
@@ -184,7 +184,7 @@ okdistthing
 
 				move.l	PLR1_Obj,a2
 				move.w	(a2),d2
-				move.l	#ObjRotated,a2
+				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d2.w*8),Noisex
 				move.w	#100,AI_Player1NoiseVol_w
 				move.w	#300,Noisevol
@@ -429,7 +429,7 @@ okcanfire2:
 				move.l	ZoneAdds,a3
 
 				move.l	#PLR2_ObsInLine,a1
-				move.l	ObjectData,a0
+				move.l	ObjectDataPtr_l,a0
 				move.l	#PLR2_ObjDists,a2
 findclosestinline2
 
@@ -504,7 +504,7 @@ okdistthing2
 
 				move.l	PLR2_Obj,a2
 				move.w	(a2),d0
-				move.l	#ObjRotated,a2
+				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d0.w*8),Noisex
 				move.w	#300,Noisevol
 				move.w	#100,AI_Player2NoiseVol_w
@@ -535,7 +535,7 @@ okdistthing2
 
 				move.l	PLR2_Obj,a2
 				move.w	(a2),d2
-				move.l	#ObjRotated,a2
+				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d2.w*8),Noisex
 				move.w	#100,AI_Player2NoiseVol_w
 				move.w	#300,Noisevol
@@ -788,7 +788,7 @@ firefive:
 
 				move.w	d0,bulyspd
 
-				move.l	#ObjRotated,a2
+				move.l	#ObjRotated_vl,a2
 				move.b	BULTYPE+1,ShotT_Size_b(a0)
 				move.b	BulT_HitDamage_l+3(a5),ShotT_Power_w(a0)
 
