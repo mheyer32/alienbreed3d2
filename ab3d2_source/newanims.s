@@ -3828,7 +3828,7 @@ putinbackdrop:
 
 ; CACHE_ON d1
 
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				bne		BIGBACK
 
 				move.l	Vid_FastBufferPtr_l,a0

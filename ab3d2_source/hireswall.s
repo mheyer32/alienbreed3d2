@@ -335,7 +335,7 @@ outofcalc:
 .somethingtodraw:
 				move.l	#consttab,a1
 				move.l	#WorkSpace,a0
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				bne		screendivideFULL
 
 ; tst.b seethru

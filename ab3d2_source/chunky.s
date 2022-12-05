@@ -24,7 +24,7 @@ CHUNKYTOPLANAR:
 
 
 NEWCHUNKY
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				beq		.smallscreen
 
 				; fullscreen
@@ -250,7 +250,7 @@ NEWCHUNKYTEL:
 ;256 colour / 8 bitplane
 
 				; fullscreen
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				beq		.smallscreenTele
 
 				move.w	#(FS_WIDTH/8)-1,WTC		; width in chipmem?

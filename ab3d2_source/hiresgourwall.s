@@ -220,7 +220,7 @@ outofcalcG:
 ; tst.b seethru
 ; bne screendividethru
 
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				bne		scrdrawlopGB
 
 ;				tst.b	DOUBLEWIDTH

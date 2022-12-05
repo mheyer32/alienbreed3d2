@@ -913,7 +913,7 @@ NOALLWALLS
 				move.w	#SMALL_WIDTH,RIGHTX
 				move.w	#SMALL_HEIGHT,BOTTOMY
 				move.w	#SMALL_HEIGHT/2,TOTHEMIDDLE
-				clr.b	FULLSCR
+				clr.b	Vid_FullScreen_b
 				move.l	scrn,a0
 				jsr		WIPEDISPLAY
 				move.l	scrn2,a0
@@ -1115,11 +1115,11 @@ lop:
 				move.b	MAPON,REALMAPON
 
 				move.b	FULLSCRTEMP,d0
-				move.b	FULLSCR,d1
+				move.b	Vid_FullScreen_b,d1
 				eor.b	d1,d0
 				beq		.noFullscreenSwitch
 
-				move.b	FULLSCRTEMP,FULLSCR
+				move.b	FULLSCRTEMP,Vid_FullScreen_b
 
 				bsr		SetupRenderbufferSize
 
@@ -2078,7 +2078,7 @@ nodrawp2:
 
 				; clamp wide screen
 				move.w	#100,d0					; maximum in fullscreen mode
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				bne.s	.isFullscreen
 				move.w	#60,d0					; maximum in small screen mode
 .isFullscreen:
@@ -2303,7 +2303,7 @@ SetupRenderbufferSize:
 				move.w	#100,WIDESCRN
 
 .wideScreenOk
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				beq.s	.setupSmallScreen
 
 				move.w	#FS_WIDTH,d0
@@ -2549,7 +2549,7 @@ shownmap:
 
 
 CLIPANDDRAW:
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				beq.s	.nodov
 
 				; This is scaling the coordinates by 3/5 for Fullscreen (used to be 2/3 for 288 wide)
@@ -2765,7 +2765,7 @@ DRAWAtransLINE:
 
 				move.l	Vid_FastBufferPtr_l,a0			; screen to render to.
 
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				beq.s	.nooffset
 
 				add.l	#(SCREENWIDTH*40)+(48*2),a0
@@ -4597,7 +4597,7 @@ oknothalf:
 				add.l	#256*40,a2
 				moveq	#0,d2
 
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				bne.s	DOALLSCREEN
 
 DOSOMESCREEN:
@@ -4998,7 +4998,7 @@ RotateLevelPts:	;		Does					this rotate ALL points in the level EVERY frame?
 
 				move.w	NumLevPts,d7
 
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				bne		BIGALL
 
 				; rotate all level points, small screen
@@ -5143,7 +5143,7 @@ ONLYTHELONELY:
 ; move.w #$c40,$dff106
 ; move.w #$f00,$dff180
 
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				bne		BIGLONELY
 
 pointrotlop:
@@ -5451,7 +5451,7 @@ RotateObjectPts:
 				move.w	NumObjectPoints,d7
 				move.l	#ObjRotated_vl,a1
 
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				bne		BIGOBJPTS
 
 
@@ -7518,7 +7518,7 @@ groundfloor:
 				add.w	xwobxoff,d6				; this was adding xwobxoff to d7, was this a bug?
 				add.w	xwobzoff,d7
 
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				beq.s	.shiftit
 
 				;ext.l	d6
@@ -8546,7 +8546,7 @@ scaleprog:
 				add.l	sxoff,d4				; d4/d5 is the texture starting position?
 				add.l	szoff,d5
 
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				beq.s	.nob
 
 				moveq	#0,d6
@@ -12195,7 +12195,7 @@ consttab:
 				dc.l	0
 Vid_CentreX_w:		dc.w	SMALL_WIDTH/2
 RIGHTX:			dc.w	SMALL_WIDTH
-FULLSCR:		dc.w	0
+Vid_FullScreen_b:		dc.w	0
 
 ;SHADINGTABLE: incbin "shadefile"
 

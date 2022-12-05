@@ -1,5 +1,6 @@
 
-DRAW_NEAR_PLANE	EQU		25 ; Values lower than this are considered behind the observer
+DRAW_BITMAP_NEAR_PLANE	EQU		25  ; Distances lower than this for bitmaps are considered behind the observer
+DRAW_VECTOR_NEAR_PLANE	EQU		130 ; Distances lower than this for vectors are considered behind the observer
 
 				CNOP 0,16
 draw_DepthTable_vl:		ds.l	80
@@ -15,16 +16,25 @@ BEFOREWATTOP:	dc.l	0
 BEFOREWATBOT:	dc.l	0
 ROOMBACK:		dc.l	0
 
-Draw_CurrentZone_w:	dc.w	0
-draw_ObjClipT_w:	dc.w	0
-draw_ObjClipB_w:	dc.w	0
-draw_RightClipB_w:	dc.w	0
-draw_LeftClipB_w:	dc.w	0
-draw_AuxX_w:		dc.w	0
-draw_AuxY_w:		dc.w	0
-draw_BrightToAdd_w:	dc.w	0
-draw_WhichDoing_b:	dc.w	0 ; BOOL
-draw_InUpperZone_b:	dc.w	0 ; BOOL
+draw_ObjectOnOff_w:		dc.l	0
+
+Draw_CurrentZone_w:		dc.w	0 ; public
+draw_SortIt_w:			dc.w	0
+draw_ObjectBright_w:	dc.w	0
+draw_ObjectAng_w:		dc.w	0
+draw_PolygonCentreY_w:	dc.w	0
+draw_ObjClipT_w:		dc.w	0
+draw_ObjClipB_w:		dc.w	0
+draw_RightClipB_w:		dc.w	0
+draw_LeftClipB_w:		dc.w	0
+draw_AuxX_w:			dc.w	0
+draw_AuxY_w:			dc.w	0
+draw_BrightToAdd_w:		dc.w	0
+draw_Obj_XPos_w:		dc.w	0
+draw_Obj_ZPos_w:		dc.w	0
+
+draw_WhichDoing_b:	dc.b	0 ; BOOL
+draw_InUpperZone_b:	dc.b	0 ; BOOL
 
 ********************************************************************************
 
@@ -191,12 +201,12 @@ draw_Object:
 				rts
 
 ********************************************************************************
-* Glass objects are not suported and likely broken
+;* Glass objects are not suported and likely broken
 ;				IFNE	0
 ;glassobj:
 ;				move.w	(a0)+,d0				;pt num
 ;				move.w	2(a1,d0.w*8),d1
-;				cmp.w	#DRAW_NEAR_PLANE,d1
+;				cmp.w	#DRAW_BITMAP_NEAR_PLANE,d1
 ;				ble		object_behind
 ;
 ;				move.w	draw_TopClip_w,d2
@@ -519,11 +529,22 @@ draw_Object:
 ;				ENDR
 
 draw_bitmap_glare:
-				move.w	(a0)+,d0				;pt num
-				move.w	2(a1,d0.w*8),d1
-				cmp.w	#DRAW_NEAR_PLANE,d1
+				move.w	(a0)+,d0				; Point number
+				move.w	2(a1,d0.w*8),d1			; depth
+				cmp.w	#DRAW_BITMAP_NEAR_PLANE,d1
 				ble		object_behind
 
+				; 0xABADCAFE: Billboard distance hack. The depth here is still scaled by the old factor,
+				; in fullscreen so we compensate by scaling again by 3/3.3333 = 0.9.
+				; TODO - there has to be a better way of doing this, it's terrible.
+				tst.b	Vid_FullScreen_b
+				beq.s	.no_depth_adjust
+
+				muls	#927,d1 ; 927 / 1024 ~= 0.9
+				asr.l	#8,d1
+				asr.l	#2,d1
+
+.no_depth_adjust:
 				move.w	draw_TopClip_w,d2
 				move.w	draw_BottomClip_w,d3
 				move.l	draw_TopY_3D_l,d6
@@ -532,8 +553,10 @@ draw_bitmap_glare:
 				add.w	Vid_CentreY_w,d6
 				cmp.w	d3,d6
 				bge		object_behind
+
 				cmp.w	d2,d6
 				bge.s	.okobtc
+
 				move.w	d2,d6
 
 .okobtc:
@@ -834,15 +857,25 @@ draw_Bitmap:
 				tst.l   8(a0)
 				blt		draw_bitmap_glare
 
-;				move.w	EntT_CurrentAngle_w(a0),draw_FacingAng_w
 				move.w	(a0)+,d0				;pt num
 				move.l	ObjectPoints,a4
-				move.w	(a4,d0.w*8),draw_obj_xpos_w
-				move.w	4(a4,d0.w*8),draw_obj_zpos_w
+				move.w	(a4,d0.w*8),draw_Obj_XPos_w
+				move.w	4(a4,d0.w*8),draw_Obj_ZPos_w
 				move.w	2(a1,d0.w*8),d1
-				cmp.w	#DRAW_NEAR_PLANE,d1
+				cmp.w	#DRAW_BITMAP_NEAR_PLANE,d1
 				ble		object_behind
 
+				; 0xABADCAFE: Billboard distance hack. The depth here is still scaled by the old factor
+				; in fullscreen so we compensate by scaling again by 3/3.3333 = 0.9.
+				; TODO - there has to be a better way of doing this, it's terrible.
+				tst.b	Vid_FullScreen_b
+				beq.s	.no_depth_adjust
+
+				muls	#927,d1 ; // 927/1024 ~= 0.9
+				asr.l	#8,d1
+				asr.l	#2,d1
+
+.no_depth_adjust:
 				move.w	draw_TopClip_w,d2
 				move.w	draw_BottomClip_w,d3
 				move.l	draw_TopY_3D_l,d6
@@ -1408,7 +1441,7 @@ draw_bitmap_lighted:
 ;
 ;.no_more_walls:
 
-				move.l	#xzangs,a0
+				move.l	#draw_XZAngs_vw,a0
 				move.l	#draw_AngleBrights_vl,a1
 				move.w	#15,d7
 				sub.l	a2,a2
@@ -1548,8 +1581,8 @@ INMIDDLE:
 
 ; move.w Plr1_XOff_l,newx
 ; move.w Plr1_ZOff_l,newz
-; move.w draw_obj_xpos_w,oldx
-; move.w draw_obj_zpos_w,oldz
+; move.w draw_Obj_XPos_w,oldx
+; move.w draw_Obj_ZPos_w,oldz
 ; movem.l d0-d7/a0-a6,-(a7)
 ; jsr HeadTowardsAng
 ; movem.l (a7)+,d0-d7/a0-a6
@@ -1935,8 +1968,8 @@ draw_CalcBrightsInZone:
 ; list is terminated with -1.
 
 				move.l	Points,a3
-				move.w	draw_obj_xpos_w,oldx
-				move.w	draw_obj_zpos_w,oldz
+				move.w	draw_Obj_XPos_w,oldx
+				move.w	draw_Obj_ZPos_w,oldz
 				move.w	#10,speed
 				move.w	#0,Range
 
@@ -2000,10 +2033,7 @@ draw_CalcBrightsInZone:
 .done_point_bright:
 				rts
 
-draw_obj_xpos_w:		dc.w	0
-draw_obj_zpos_w:		dc.w	0
-;draw_FacingAng_w:		dc.w	0 ; written once
-
+				CNOP 0,4
 draw_AngleBrights_vl:	ds.l	8*2
 
 draw_Brights_vw:
@@ -2045,7 +2075,7 @@ willybright:
 				dc.w	30,20,20,20,20,20,30
 				dc.w	30,30,30,30,30,30,30
 
-xzangs:
+draw_XZAngs_vw:
 				dc.w	0,23,10,20,16,16,20,10
 				dc.w	23,0,20,-10,16,-16,10,-20
 				dc.w	0,-23,-10,-20,-16,-16,-20,-10
@@ -2053,6 +2083,8 @@ xzangs:
 
 guff:
 				incbin	"includes/guff"
+
+
 
 midx:			dc.w	0
 objpixwidth:	dc.w	0
@@ -2080,14 +2112,8 @@ tstddd:			dc.l	0
 polybehind:
 				rts
 
-SORTIT:			dc.w	0
 
-objbright:
-				dc.w	0
-ObjAng:			dc.w	0
 
-POLYMIDDLEY:	dc.w	0
-OBJONOFF:		dc.l	0
 
 
 
@@ -2116,12 +2142,12 @@ draw_PolygonModel:
 
 ************************
 
-				move.w	EntT_CurrentAngle_w(a0),ObjAng
-				move.w	Vid_CentreY_w,POLYMIDDLEY
+				move.w	EntT_CurrentAngle_w(a0),draw_ObjectAng_w
+				move.w	Vid_CentreY_w,draw_PolygonCentreY_w
 				move.w	(a0)+,d0				; object Id?
 				move.l	ObjectPoints,a4
-				move.w	(a4,d0.w*8),draw_obj_xpos_w
-				move.w	4(a4,d0.w*8),draw_obj_zpos_w
+				move.w	(a4,d0.w*8),draw_Obj_XPos_w
+				move.w	4(a4,d0.w*8),draw_Obj_ZPos_w
 				move.w	2(a1,d0.w*8),d1			; zpos of mid; is this the view position ?
 				blt		polybehind
 
@@ -2129,7 +2155,7 @@ draw_PolygonModel:
 
 				move.l	a0,a3
 				sub.l	PLR1_Obj,a3
-				cmp.l	#130,a3
+				cmp.l	#DRAW_VECTOR_NEAR_PLANE,a3
 				bne		polybehind
 
 				tst.b	draw_WhichDoing_b
@@ -2138,11 +2164,11 @@ draw_PolygonModel:
 				move.w	#1,d1
 				; FIMXE: the original values here were 80 and 120
 				; which sets weapons slighly lower in the view
-				move.w	#SMALL_HEIGHT/2,POLYMIDDLEY
-				tst.b	FULLSCR
+				move.w	#SMALL_HEIGHT/2,draw_PolygonCentreY_w
+				tst.b	Vid_FullScreen_b
 				beq.s	.okinfront
 
-				move.w	#FS_HEIGHT/2,POLYMIDDLEY
+				move.w	#FS_HEIGHT/2,draw_PolygonCentreY_w
 
 .okinfront:
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -2257,7 +2283,7 @@ BOTPART:
 				move.w	d1,d3
 				asr.w	#7,d3
 				add.w	d3,d2
-				move.w	d2,objbright
+				move.w	d2,draw_ObjectBright_w
 				move.w	draw_TopClip_w,d2
 				move.w	draw_BottomClip_w,d3
 				move.w	d2,draw_ObjClipT_w
@@ -2267,7 +2293,7 @@ BOTPART:
 				move.w	6(a0),d5
 				move.l	#Draw_PolyObjects_vl,a3
 				move.l	(a3,d5.w*4),a3
-				move.w	(a3)+,SORTIT
+				move.w	(a3)+,draw_SortIt_w
 				move.l	a3,draw_StartOfObjPtr_l
 
 *******************************************************************
@@ -2302,7 +2328,7 @@ BOTPART:
 				move.l	d5,PolyAngPtr
 				move.l	d2,a3
 				move.w	draw_NumPoints_w,d5
-				move.l	(a3)+,OBJONOFF
+				move.l	(a3)+,draw_ObjectOnOff_w
 				move.l	a3,PointAngPtr
 				move.w	d5,d2
 				moveq	#0,d3
@@ -2312,7 +2338,7 @@ BOTPART:
 				add.w	d2,a3
 				subq	#1,d5
 				move.l	#boxrot,a4				; temp storage for rotated points?
-				move.w	ObjAng,d2
+				move.w	draw_ObjectAng_w,d2
 				sub.w	#2048,d2				; 90deg
 				sub.w	angpos,d2				; view angle
 				and.w	#8191,d2				; wrap 360deg
@@ -2377,11 +2403,12 @@ rotate_object:
 				subq	#1,d7
 				asl.l	#1,d0					;
 ; Projection for polygonal objects to screen here?
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				beq.s	smallscreen_conv
 
 fullscreen_conv:
-				; this multiplication by 3/2 does not appear to require changing
+				; 0xABADCAFE - this is very weird. If I supply the correct factor of 5/3, vector models break
+				; but if I don't correct for it in billboard rendering, the bitmap depth is incorrect.
 				move.w	d1,d3
 				asl.w	#1,d1
 				add.w	d3,d1					; d1 * 3  because 288 is ~1.5times larger than 196?
@@ -2424,7 +2451,7 @@ fullscreen_conv:
 				asr.l	#2,d3		; x'' * 3.333
 				divs	d5,d3		; xs = (x*3)/(z*2)
 				add.w	Vid_CentreX_w,d3	; mid_x of screen
-				add.w	POLYMIDDLEY,d4	; mid_y of screen
+				add.w	draw_PolygonCentreY_w,d4	; mid_y of screen
 				move.w	d3,(a3)+	; store xs,ys in boxonscr
 				move.w	d4,(a3)+
 				dbra	d7,.convert_to_screen
@@ -2462,7 +2489,7 @@ smallscreen_conv:
 				divs	d5,d3
 				divs	d5,d4
 				add.w	Vid_CentreX_w,d3
-				add.w	POLYMIDDLEY,d4
+				add.w	draw_PolygonCentreY_w,d4
 				move.w	d3,(a3)+
 				move.w	d4,(a3)+
 				dbra	d7,.convert_to_screen
@@ -2483,7 +2510,7 @@ done_conv:
 				subq	#1,d7
 				move.l	PointAngPtr,a0
 				move.l	#draw_PointAndPolyBrights_vl,a2
-				move.w	ObjAng,d2
+				move.w	draw_ObjectAng_w,d2
 				asr.w	#8,d2
 				asr.w	#1,d2
 				st		d5
@@ -2527,8 +2554,8 @@ clrpartbuff:
 				dbra	d0,clrpartbuff
 
 				move.l	#boxrot,a2
-				move.l	OBJONOFF,d5
-				tst.w	SORTIT
+				move.l	draw_ObjectOnOff_w,d5
+				tst.w	draw_SortIt_w
 				bne.s	PutinParts
 
 putinunsorted:
@@ -2777,7 +2804,7 @@ dontusegour:
 				tst.b	draw_Gouraud_b(pc)
 				bne		gotlurvelyshading
 
-				move.w	ObjAng,d4
+				move.w	draw_ObjectAng_w,d4
 				asr.w	#8,d4
 				asr.w	#1,d4
 				moveq	#0,d2
@@ -2795,7 +2822,7 @@ dontusegour:
 				move.b	(a1,d2.w),d5
 				add.w	d5,d1
 				move.l	#draw_ObjScaleCols_vw,a1
-; move.w objbright(pc),d0
+; move.w draw_ObjectBright_w(pc),d0
 ; add.w d0,d1
 				tst.w	d1
 				bge.s	toobright
@@ -3219,7 +3246,7 @@ val				SET		val+SCREENWIDTH
 				ENDR
 
 gotholesin:
-				move.w	ObjAng,d4
+				move.w	draw_ObjectAng_w,d4
 				asr.w	#8,d4
 				asr.w	#1,d4
 				moveq	#0,d2
@@ -3249,7 +3276,7 @@ gotholesin:
 				add.w	d5,d1
 				move.l	#draw_ObjScaleCols_vw,a1
 
-; move.w objbright(pc),d0
+; move.w draw_ObjectBright_w(pc),d0
 ; add.w d0,d1
 				tst.w	d1
 				bge.s	toobrighth
