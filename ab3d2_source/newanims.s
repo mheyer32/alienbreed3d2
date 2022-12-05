@@ -3831,7 +3831,7 @@ putinbackdrop:
 				tst.b	FULLSCR
 				bne		BIGBACK
 
-				move.l	FASTBUFFER,a0
+				move.l	Vid_FastBufferPtr_l,a0
 				move.l	BackPicture,a5
 				move.l	a5,a3
 				add.l	#155520,a3
@@ -3843,7 +3843,7 @@ putinbackdrop:
 				add.l	d5,a1
 				add.w	#240,a1
 
-				move.w	MIDDLEY,d7
+				move.w	Vid_CentreY_w,d7
 
 				move.w	d7,d6
 				move.w	d6,d5
@@ -3894,7 +3894,7 @@ vertline:
 				rts
 
 BIGBACK:
-				move.l	FASTBUFFER,a0
+				move.l	Vid_FastBufferPtr_l,a0
 				move.l	BackPicture,a5
 				move.l	a5,a3
 				add.l	#155520,a3
@@ -3905,7 +3905,7 @@ BIGBACK:
 				add.l	d5,a1
 				add.w	#240,a1
 
-				move.w	MIDDLEY,d7
+				move.w	Vid_CentreY_w,d7
 
 				move.w	d7,d6
 				sub.w	d6,a1

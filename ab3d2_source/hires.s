@@ -29,11 +29,11 @@ CHEESEY			equ		0
 * as it will look gorgeous now.
 *************************************************
 
-;MIDDLEX set 96
+;Vid_CentreX_w set 96
 ;RIGHTX set 191
 ;BOTTOMY set 160
 
-;MIDDLEX set 96
+;Vid_CentreX_w set 96
 ;RIGHTX set 191
 ;BOTTOMY set 160
 
@@ -156,7 +156,7 @@ _start
 				add.l	d1,d0
 				moveq	#-16,d1					; $F0
 				and.l	d1,d0
-				move.l	d0,FASTBUFFER
+				move.l	d0,Vid_FastBufferPtr_l
 
 				; Setup constant table
 				move.l	#consttab,a0
@@ -192,7 +192,7 @@ fillconst:
 
 FASTBUFFERSize	equ		SCREENWIDTH*256+15		; screen size plus alignment
 
-FASTBUFFER:
+Vid_FastBufferPtr_l:
 				dc.l	0						; aligned address
 FASTBUFFERalloc:
 				dc.l	0						; allocated address
@@ -212,7 +212,7 @@ TWEENTEXT:
 				move.w	#0,d0
 DOWNTEXT:
 				move.l	TEXTSCRN,a1
-				jsr		DRAWLINEOFTEXT
+				jsr		Draw_LineOfText
 				addq	#1,d0
 				add.w	#82,a0
 				dbra	d7,DOWNTEXT
@@ -238,7 +238,7 @@ CHARWIDTHS2:
 
 				even
 
-DRAWLINEOFTEXT:
+Draw_LineOfText:
 				movem.l	d0/a0/d7,-(a7)
 
 				muls	#80*16,d0
@@ -907,7 +907,7 @@ nomorezones:
 
 NOALLWALLS
 
-				move.w	#SMALL_WIDTH/2,MIDDLEX
+				move.w	#SMALL_WIDTH/2,Vid_CentreX_w
 				move.w	#SMALL_WIDTH,RIGHTX
 				move.w	#SMALL_HEIGHT,BOTTOMY
 				move.w	#SMALL_HEIGHT/2,TOTHEMIDDLE
@@ -1281,8 +1281,8 @@ waitmaster:
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
-				move.l	d0,MIDDLEY
-				move.l	d1,MIDDLEY+4
+				move.l	d0,Vid_CentreY_w
+				move.l	d1,Vid_CentreY_w+4
 
 				move.l	waterpt,a0
 				move.l	(a0)+,watertouse
@@ -1956,7 +1956,7 @@ IWasPlayer1:
 ; add.l d0,d0
 ; add.l d0,yoff
 ;
-; move.l FASTBUFFER2,FASTBUFFER
+; move.l FASTBUFFER2,Vid_FastBufferPtr_l
 ; move.w #0,leftclip
 ; move.w RIGHTX,rightclip
 ; move.w #0,deftopclip
@@ -2311,7 +2311,7 @@ SetupRenderbufferSize:
 .noDoubleWidth
 				move.w	d0,RIGHTX
 				lsr.w	#1,d0
-				move.w	d0,MIDDLEX
+				move.w	d0,Vid_CentreX_w
 				move.w	#FS_HEIGHT,BOTTOMY
 				move.w	#FS_HEIGHT/2,TOTHEMIDDLE
 				bra.s	.wipeScreen
@@ -2324,7 +2324,7 @@ SetupRenderbufferSize:
 .noDoubleWidth2
 				move.w	d0,RIGHTX
 				lsr.w	#1,d0
-				move.w	d0,MIDDLEX
+				move.w	d0,Vid_CentreX_w
 				move.w	#SMALL_HEIGHT,BOTTOMY
 				move.w	#SMALL_HEIGHT/2,TOTHEMIDDLE
 
@@ -2580,10 +2580,10 @@ CLIPANDDRAW:
 				asr.w	d5,d3
 
 
-NOSCALING:		add.w	MIDDLEX,d0
+NOSCALING:		add.w	Vid_CentreX_w,d0
 				bge		p1xpos
 
-				add.w	MIDDLEX,d2
+				add.w	Vid_CentreX_w,d2
 				blt		OFFSCREEN
 
 x1nx2p:			;		X1<0					X2>0, clip against X=0
@@ -2602,7 +2602,7 @@ x1nx2p:			;		X1<0					X2>0, clip against X=0
 				bra		doneleftclip
 
 p1xpos:
-				add.w	MIDDLEX,d2
+				add.w	Vid_CentreX_w,d2
 				bge		doneleftclip
 
 				move.w	d0,d6
@@ -2761,7 +2761,7 @@ mapzoff:		dc.w	0
 				; FIXME: this is probably still on chunky screen
 DRAWAtransLINE:
 
-				move.l	FASTBUFFER,a0			; screen to render to.
+				move.l	Vid_FastBufferPtr_l,a0			; screen to render to.
 
 				tst.b	FULLSCR
 				beq.s	.nooffset
@@ -2879,7 +2879,7 @@ DRAWAMAPLINE:
 ;				tst.b	d5
 ;				bne		DOITFAT
 
-				move.l	FASTBUFFER,a0			; screen to render to.
+				move.l	Vid_FastBufferPtr_l,a0			; screen to render to.
 				cmp.w	d1,d3
 				bgt.s	.okdown
 				bne.s	.aline
@@ -2978,7 +2978,7 @@ downmoreright:
 
 
 DOITFAT:
-				move.l	FASTBUFFER,a0			; screen to render to.
+				move.l	Vid_FastBufferPtr_l,a0			; screen to render to.
 				cmp.w	d1,d3
 				bgt.s	.okdown
 				bne.s	.aline
@@ -4581,7 +4581,7 @@ NOGUNLOOK:
 				beq.s	nowaterfull
 
 				move.w	#FS_HEIGHT-1,d0
-				move.l	FASTBUFFER,a0
+				move.l	Vid_FastBufferPtr_l,a0
 				tst.b	fillscrnwater
 				beq		nowaterfull
 				bgt		oknothalf
@@ -4687,7 +4687,7 @@ DOUPPER:		dc.w	0
 dothisroom
 
 				move.w	(a0)+,d0
-				move.w	d0,currzone
+				move.w	d0,Draw_CurrentZone_w
 				move.w	d0,d1
 				muls	#40,d1
 				add.l	#BIGMAP,d1
@@ -4802,7 +4802,7 @@ itsafloor:
 
 				move.l	PointBrightsPtr,FloorPtBrights
 
-				move.w	currzone,d1
+				move.w	Draw_CurrentZone_w,d1
 				muls	#80,d1
 
 				cmp.w	#2,d0
@@ -5052,7 +5052,7 @@ onrightsomewhere:
 				bra		putin
 ptnotbehind:
 				divs.w	d1,d2					; x / z perspective projection
-				add.w	MIDDLEX,d2
+				add.w	Vid_CentreX_w,d2
 putin:
 				move.w	d2,(a2)+				; store to OnScreen
 
@@ -5117,7 +5117,7 @@ onrightsomewhereB:
 				bra		putinB
 ptnotbehindB:
 				divs.w	d1,d2
-				add.w	MIDDLEX,d2
+				add.w	Vid_CentreX_w,d2
 putinB:
 				move.w	d2,(a2)+				; store fully projected X
 
@@ -5199,7 +5199,7 @@ pointrotlop:
 .ptnotbehind:
 
 				divs	d1,d2
-				add.w	MIDDLEX,d2
+				add.w	Vid_CentreX_w,d2
 .putin:
 				move.w	d2,(a2,d7*2)
 
@@ -5267,7 +5267,7 @@ BIGLONELY:
 .ptnotbehind:
 
 				divs	d1,d2
-				add.w	MIDDLEX,d2
+				add.w	Vid_CentreX_w,d2
 .putin:
 				move.w	d2,(a2,d7*2)			; this means the a2 array will also be sparsely written to,
 										; but then again doesn't need reindeexing the input indices.
@@ -6126,7 +6126,7 @@ SCROLLUP16LINES:
 ;
 ;				move.l	TEXTSCRN,a1
 ;				move.w	#15,d0
-;				jsr		DRAWLINEOFTEXT
+;				jsr		Draw_LineOfText
 ;
 ;				add.l	#82,a0
 ;				cmp.l	#ENDENDGAMETEXT,a0
@@ -6547,7 +6547,7 @@ checkforwater:
 
 				move.l	Roompt,a1
 				move.w	(a1),d7
-				cmp.w	currzone,d7
+				cmp.w	Draw_CurrentZone_w,d7
 				bne.s	.notwater
 
 				move.b	#$f,fillscrnwater
@@ -6603,7 +6603,7 @@ itsafloordraw:
 
 				move.l	Roompt,a1
 				move.w	(a1),d7
-				cmp.w	currzone,d7
+				cmp.w	Draw_CurrentZone_w,d7
 
 				bne.s	.notwater
 
@@ -6625,7 +6625,7 @@ aboveplayer:
 
 				move.l	Roompt,a1
 				move.w	(a1),d7
-				cmp.w	currzone,d7
+				cmp.w	Draw_CurrentZone_w,d7
 				bne.s	.notwater
 
 				move.b	#$f,fillscrnwater
@@ -6635,7 +6635,7 @@ aboveplayer:
 				beq.s	dontdrawreturn
 
 				; its a ceiling
-				move.w	MIDDLEY,d7
+				move.w	Vid_CentreY_w,d7
 				sub.w	topclip,d7
 				ble.s	dontdrawreturn
 
@@ -6647,7 +6647,7 @@ aboveplayer:
 				; is below camera
 below:
 				move.w	botclip,d7
-				sub.w	MIDDLEY,d7
+				sub.w	Vid_CentreY_w,d7
 				ble.s	dontdrawreturn			; don't draw if no room between screen center amd bottom clip
 
 
@@ -6657,7 +6657,7 @@ notbelow:
 
 				move.w	d6,View2FloorDist		; (floorY - ViewerY) in worldspace
 				;		|
-				;-------+---------------------- MIDDLEY
+				;-------+---------------------- Vid_CentreY_w
 				;***    |
 				;   *** |
 				;      *** clipY
@@ -6793,7 +6793,7 @@ sideloop:
 				move.w	minz,d4					; z' = minZ
 				move.w	(a2,d3*2),d2
 				divs.w	d4,d0					; x' - x' / minz
-				add.w	MIDDLEX,d0
+				add.w	Vid_CentreX_w,d0
 
 				move.l	ypos,d3
 				divs	d5,d3					; y2' = y2 / z2
@@ -6823,7 +6823,7 @@ firstinfront:
 				move.w	minz,d5
 				move.w	(a2,d1*2),d0
 				divs	d5,d2
-				add.w	MIDDLEX,d2
+				add.w	Vid_CentreX_w,d2
 				move.l	ypos,d1
 				divs	d4,d1
 				move.w	bottomline,d3
@@ -7127,7 +7127,7 @@ sideloopGOUR:
 				move.w	minz,d4
 				move.w	(a2,d3*2),d2
 				divs	d4,d0
-				add.w	MIDDLEX,d0
+				add.w	Vid_CentreX_w,d0
 				move.l	ypos,d3
 				divs	d5,d3
 
@@ -7161,7 +7161,7 @@ firstinfrontGOUR:
 				move.w	minz,d5					; minz = nearclip distance?
 				move.w	(a2,d1*2),d0
 				divs	d5,d2
-				add.w	MIDDLEX,d2
+				add.w	Vid_CentreX_w,d2
 				move.l	ypos,d1
 				divs	d4,d1
 				move.w	bottomline,d3
@@ -7500,7 +7500,7 @@ pastsides:
 ; add.l BIGMIDDLEY,a6
 ; move.l a6,REFPTR
 
-				move.l	FASTBUFFER,a6
+				move.l	Vid_FastBufferPtr_l,a6
 				add.l	BIGMIDDLEY,a6			; pointer to middle line of screen
 				move.w	(a0)+,d6				; floor scale?
 				add.w	SMALLIT,d6
@@ -7632,12 +7632,12 @@ pastscale:
 
 ; Its a ceiling, clip it to top/bottom
 ; For ceilings, the top and bottom have reversed roles
-; The ceiling's +Y goes "up" on the screen, with MIDDLEY of screen mapping to 0.
-; That's why there's the gymnastics with ; (MIDDLEY - N) to transform the
+; The ceiling's +Y goes "up" on the screen, with Vid_CentreY_w of screen mapping to 0.
+; That's why there's the gymnastics with ; (Vid_CentreY_w - N) to transform the
 ; screen clipping coordinates into "ceiling coordinates"
 ; This turns the 'top' variable actually into the bottommost Y of the ceiling.
 
-				move.w	MIDDLEY,d7
+				move.w	Vid_CentreY_w,d7
 				btst	#0,d7
 				bne.s	.evenMiddleRoof
 				sub.w	#SCREENWIDTH,a6			; with regular nx1 rendering, we usually start at an odd line for ceiling rendering
@@ -7647,17 +7647,17 @@ pastscale:
 				move.w	d7,disttobot
 
 				move.w	bottom(pc),d7			; bottom of floor
-				move.w	MIDDLEY,d3
+				move.w	Vid_CentreY_w,d3
 				move.w	d3,d4
 				sub.w	topclip,d3
 				sub.w	botclip,d4
 				cmp.w	d3,d1
-				bge		predontdrawfloor		; top_of_floor >= (MIDDLEY-topclip)
+				bge		predontdrawfloor		; top_of_floor >= (Vid_CentreY_w-topclip)
 				cmp.w	d4,d7
-				blt		predontdrawfloor		; bottom_of_floor < (MIDDLEY-botclip) ?
+				blt		predontdrawfloor		; bottom_of_floor < (Vid_CentreY_w-botclip) ?
 				cmp.w	d4,d1
-				bge.s	.nocliptoproof			; top_of_floor >= (MIDDLEY-botclip)  ?
-				move.w	d4,d1					; clip top_of_floor to (MIDDLEY-botclip)
+				bge.s	.nocliptoproof			; top_of_floor >= (Vid_CentreY_w-botclip)  ?
+				move.w	d4,d1					; clip top_of_floor to (Vid_CentreY_w-botclip)
 .nocliptoproof
 				cmp.w	d3,d7
 				blt		.doneclip
@@ -7670,7 +7670,7 @@ pastscale:
 
 .clipfloor:
 				move.w	BOTTOMY,d7
-				move.w	MIDDLEY,d4
+				move.w	Vid_CentreY_w,d4
 				btst	#0,d4
 				beq.s	.evenMiddleFloor
 				add.w	#SCREENWIDTH,a6
@@ -7683,19 +7683,19 @@ pastscale:
 				move.w	bottom(pc),d7
 
 				move.w	botclip,d4
-				sub.w	MIDDLEY,d4
+				sub.w	Vid_CentreY_w,d4
 				cmp.w	d4,d1
-				bge		predontdrawfloor		; top >= (botclip - MIDDLEY)
+				bge		predontdrawfloor		; top >= (botclip - Vid_CentreY_w)
 
 				move.w	topclip,d3
-				sub.w	MIDDLEY,d3
+				sub.w	Vid_CentreY_w,d3
 				cmp.w	d3,d1
-				bge.s	.nocliptopfloor			; top >= (topclip - MIDDLEY)
+				bge.s	.nocliptopfloor			; top >= (topclip - Vid_CentreY_w)
 
-				move.w	d3,d1					; clip top_of_floor to (topclip - MIDDLEY)
+				move.w	d3,d1					; clip top_of_floor to (topclip - Vid_CentreY_w)
 .nocliptopfloor
 				cmp.w	d3,d7
-				ble		predontdrawfloor		; (bottom) <= (topclip - MIDDLEY) : bottom <= topclip (bottom of floor above topclip)
+				ble		predontdrawfloor		; (bottom) <= (topclip - Vid_CentreY_w) : bottom <= topclip (bottom of floor above topclip)
 				cmp.w	d4,d7
 				blt.s	.noclipbotfloor			; (bottom) < (botclip)
 				move.w	d4,d7					; bottom = botclip
@@ -7749,23 +7749,23 @@ pix1h:
 				beq.s	clipfloor
 
 				; clip roof?
-				move.w	MIDDLEY,d7
+				move.w	Vid_CentreY_w,d7
 				subq	#1,d7
 				sub.w	d1,d7
 				move.w	d7,disttobot
 
 				move.w	bottom(pc),d7
-				move.w	MIDDLEY,d3
+				move.w	Vid_CentreY_w,d3
 				move.w	d3,d4
 				sub.w	topclip,d3
 				sub.w	botclip,d4
 				cmp.w	d3,d1
-				bge		predontdrawfloor		; top >= MIDDLEY - topclip
+				bge		predontdrawfloor		; top >= Vid_CentreY_w - topclip
 				cmp.w	d4,d7
-				blt		predontdrawfloor		; bottom >= MIDDLEY - bottomclip
+				blt		predontdrawfloor		; bottom >= Vid_CentreY_w - bottomclip
 				cmp.w	d4,d1
-				bge.s	.nocliptoproof			; top >= MIDDLEY - bottomclip
-				move.w	d4,d1					; top = MIDDLEY - bottomclip
+				bge.s	.nocliptoproof			; top >= Vid_CentreY_w - bottomclip
+				move.w	d4,d1					; top = Vid_CentreY_w - bottomclip
 .nocliptoproof
 				cmp.w	d3,d7
 				blt		doneclip
@@ -7774,27 +7774,27 @@ pix1h:
 
 clipfloor:
 				move.w	BOTTOMY,d7
-				sub.w	MIDDLEY,d7
+				sub.w	Vid_CentreY_w,d7
 				subq	#1,d7
 				sub.w	d1,d7
 				move.w	d7,disttobot
 
 				move.w	bottom(pc),d7
 				move.w	botclip,d4
-				sub.w	MIDDLEY,d4
+				sub.w	Vid_CentreY_w,d4
 				cmp.w	d4,d1
-				bge		predontdrawfloor		; top >= (botclip - MIDDLEY)
+				bge		predontdrawfloor		; top >= (botclip - Vid_CentreY_w)
 				move.w	topclip,d3
-				sub.w	MIDDLEY,d3
+				sub.w	Vid_CentreY_w,d3
 				cmp.w	d3,d1
-				bge.s	.nocliptopfloor			; top >= (topclip - MIDDLEY)
-				move.w	d3,d1					; top =  (topclip - MIDDLEY)
+				bge.s	.nocliptopfloor			; top >= (topclip - Vid_CentreY_w)
+				move.w	d3,d1					; top =  (topclip - Vid_CentreY_w)
 .nocliptopfloor
 				cmp.w	d3,d7
-				ble		predontdrawfloor		; bottom <=  (topclip - MIDDLEY)
+				ble		predontdrawfloor		; bottom <=  (topclip - Vid_CentreY_w)
 				cmp.w	d4,d7
-				blt.s	.noclipbotfloor			; bottom <= (botclip - MIDDLEY)
-				move.w	d4,d7					; botom = (botclip - MIDDLEY)
+				blt.s	.noclipbotfloor			; bottom <= (botclip - Vid_CentreY_w)
+				move.w	d4,d7					; botom = (botclip - Vid_CentreY_w)
 .noclipbotfloor:
 
 doneclip:
@@ -12197,7 +12197,7 @@ consttab:
 ; ENDR
 ; incbin "darkenfile"
 				dc.l	0
-MIDDLEX:		dc.w	SMALL_WIDTH/2
+Vid_CentreX_w:		dc.w	SMALL_WIDTH/2
 RIGHTX:			dc.w	SMALL_WIDTH
 FULLSCR:		dc.w	0
 
