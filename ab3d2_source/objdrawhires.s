@@ -1,4 +1,6 @@
 
+DRAW_NEAR_PLANE	EQU		25 ; Values lower than this are considered behind the observer
+
 				CNOP 0,16
 draw_DepthTable_vl:		ds.l	80
 draw_EndDepthTable:
@@ -194,7 +196,7 @@ draw_Object:
 ;glassobj:
 ;				move.w	(a0)+,d0				;pt num
 ;				move.w	2(a1,d0.w*8),d1
-;				cmp.w	#25,d1
+;				cmp.w	#DRAW_NEAR_PLANE,d1
 ;				ble		object_behind
 ;
 ;				move.w	draw_TopClip_w,d2
@@ -519,7 +521,7 @@ draw_Object:
 draw_bitmap_glare:
 				move.w	(a0)+,d0				;pt num
 				move.w	2(a1,d0.w*8),d1
-				cmp.w	#25,d1
+				cmp.w	#DRAW_NEAR_PLANE,d1
 				ble		object_behind
 
 				move.w	draw_TopClip_w,d2
@@ -838,7 +840,7 @@ draw_Bitmap:
 				move.w	(a4,d0.w*8),draw_obj_xpos_w
 				move.w	4(a4,d0.w*8),draw_obj_zpos_w
 				move.w	2(a1,d0.w*8),d1
-				cmp.w	#25,d1
+				cmp.w	#DRAW_NEAR_PLANE,d1
 				ble		object_behind
 
 				move.w	draw_TopClip_w,d2

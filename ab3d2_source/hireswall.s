@@ -2633,5 +2633,5 @@ oldxoff:		dc.w	0
 oldzoff:		dc.w	0
 
 draw_TopClip_w:		dc.w	0
-draw_BottomClip_w:		dc.w	0
-seethru:		dc.w	0
+draw_BottomClip_w:	dc.w	0
+seethru:			dc.w	0 ; bool
