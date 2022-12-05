@@ -43,7 +43,7 @@ gobackanddoitallagain:
 				move.l	FloorLines,a1
 checkwalls:
 				move.w	(a0)+,d0
-				blt		nomorewalls
+				blt		no_more_walls
 
 				asl.w	#4,d0
 				lea		(a1,d0.w),a2
@@ -456,7 +456,7 @@ hitthewall:
 oknothitwall:
 
 				bra		checkwalls
-nomorewalls:
+no_more_walls:
 
 				tst.w	extlen
 				beq		NOOTHERWALLSNEEDED

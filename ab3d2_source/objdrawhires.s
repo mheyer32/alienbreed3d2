@@ -20,7 +20,7 @@ whichdoing:		dc.w	0
 
 ********************************************************************************
 
-ObjDraw:
+Draw_Object:
 				move.w	(a0)+,d0
 				cmp.w	#1,d0
 				blt.s	.before_wat
@@ -50,14 +50,11 @@ ObjDraw:
 ; move.l (a0)+,ty3d
 
 				movem.l	d0-d7/a1-a6,-(a7)
-
 				move.w	rightclip,d0
 				sub.w	leftclip,d0
 				subq	#1,d0
-				ble		done_all_in_front
-
+				ble		.done_all_in_front
 ; CACHE_ON d6
-
 				move.l	ObjectDataPtr_l,a1
 				move.l	#ObjRotated_vl,a2
 				move.l	#draw_DepthTable_vl,a3
@@ -70,23 +67,23 @@ ObjDraw:
 
 				moveq	#0,d0
 
-insert_an_object:
+.insert_an_object:
 				move.w	(a1),d1
-				blt		sorted_all
+				blt		.sorted_all
 				move.w	EntT_GraphicRoom_w(a1),d2
 				cmp.w	currzone(pc),d2
-				beq.s	its_in_this_zone
+				beq.s	.in_this_zone
 
-not_in_this_zone:
+.not_in_this_zone:
 				adda.w	#64,a1
 				addq	#1,d0
-				bra		insert_an_object
+				bra		.insert_an_object
 
-its_in_this_zone:
+.in_this_zone:
 				move.b	DOUPPER,d4
 				move.b	ShotT_InUpperZone_b(a1),d3
 				eor.b	d4,d3
-				bne.s	not_in_this_zone
+				bne.s	.not_in_this_zone
 
 				move.w	2(a2,d1.w*8),d1			; zpos
 				move.l	#draw_DepthTable_vl-4,a4
@@ -95,7 +92,7 @@ its_in_this_zone:
 				addq	#4,a4
 				cmp.w	(a4),d1
 				blt		.still_in_front
-				move.l	#enddepthtab-4,a5
+				move.l	#draw_EndDepthTable-4,a5
 
 .finished_shift:
 				move.l	-(a5),4(a5)
@@ -106,39 +103,36 @@ its_in_this_zone:
 				move.w	d0,2(a4)
 				adda.w	#64,a1
 				addq	#1,d0
-				bra		insert_an_object
+				bra		.insert_an_object
 
-sorted_all:
+.sorted_all:
 				move.l	#draw_DepthTable_vl,a3
 
 .go_back_and_do_another:
 				move.w	(a3)+,d0
-				blt.s	done_all_in_front
+				blt.s	.done_all_in_front
 
 				move.w	(a3)+,d0
-				bsr		DrawtheObject
+				bsr		draw_Object
 				bra		.go_back_and_do_another
 
-done_all_in_front:
+.done_all_in_front:
 				movem.l	(a7)+,d0-d7/a1-a6
 				rts
 
 				CNOP 0,4
 draw_DepthTable_vl:		ds.l	80
-enddepthtab:
+draw_EndDepthTable:
 
-********************************************************************************
+;********************************************************************************
 
-DrawtheObject:
+draw_Object:
 				movem.l	d0-d7/a0-a6,-(a7)
-
 				move.l	ObjectDataPtr_l,a0
 				move.l	#ObjRotated_vl,a1
 				asl.w	#6,d0
 				adda.w	d0,a0
-
-				move.b	ShotT_InUpperZone_b(a0),IMINTHETOPDAD
-
+				move.b	ShotT_InUpperZone_b(a0),draw_InUpperZone_b
 				move.w	(a0),d0
 				move.w	2(a1,d0.w*8),d1			; z pos
 
@@ -179,9 +173,9 @@ DrawtheObject:
 				move.w	rightclip,rightclipb
 
 				cmp.b	#$ff,6(a0)
-				bne		BitMapObj
+				bne		draw_Bitmap
 
-				bsr		PolygonObj
+				bsr		draw_PolygonModel
 				movem.l	(a7)+,d0-d7/a0-a6
 				rts
 
@@ -192,7 +186,7 @@ DrawtheObject:
 ;				move.w	(a0)+,d0				;pt num
 ;				move.w	2(a1,d0.w*8),d1
 ;				cmp.w	#25,d1
-;				ble		objbehind
+;				ble		obj_behind
 ;
 ;				move.w	topclip,d2
 ;				move.w	botclip,d3
@@ -202,7 +196,7 @@ DrawtheObject:
 ;				divs	d1,d6
 ;				add.w	MIDDLEY,d6
 ;				cmp.w	d3,d6
-;				bge		objbehind
+;				bge		obj_behind
 ;				cmp.w	d2,d6
 ;				bge.s	.okobtc
 ;				move.w	d2,d6
@@ -214,7 +208,7 @@ DrawtheObject:
 ;				divs	d1,d6
 ;				add.w	MIDDLEY,d6
 ;				cmp.w	d2,d6
-;				ble		objbehind
+;				ble		obj_behind
 ;				cmp.w	d3,d6
 ;				ble.s	.okobbc
 ;				move.w	d3,d6
@@ -253,10 +247,10 @@ DrawtheObject:
 ;				sub.w	d4,d2
 ;				sub.w	d3,d0
 ;				cmp.w	rightclipb,d0
-;				bge		objbehind
+;				bge		obj_behind
 ;				add.w	d3,d3
 ;				cmp.w	objclipb,d2
-;				bge		objbehind
+;				bge		obj_behind
 ;
 ;				add.w	d4,d4
 ;
@@ -297,12 +291,12 @@ DrawtheObject:
 ;
 ;				moveq	#0,d7
 ;				cmp.w	objclipt,d2
-;				bge.s	.objfitsontop
+;				bge.s	.object_fits_on_top
 ;
 ;				sub.w	objclipt,d2
 ;				add.w	d2,d4					;new height in
 ;;pixels
-;				ble		objbehind				; nothing to draw
+;				ble		obj_behind				; nothing to draw
 ;
 ;				move.w	d2,d7
 ;				neg.w	d7						; factor to mult.
@@ -310,19 +304,19 @@ DrawtheObject:
 ;; at top of obj.
 ;				move.w	objclipt,d2
 ;
-;.objfitsontop:
+;.object_fits_on_top:
 ;
 ;				move.w	objclipb,d6
 ;				sub.w	d2,d6
 ;				cmp.w	d6,d4
-;				ble.s	.objfitsonbot
+;				ble.s	.object_fits_on_bottom
 ;
 ;				move.w	d6,d4
 ;
-;.objfitsonbot:
+;.object_fits_on_bottom:
 ;
 ;				subq	#1,d4
-;				blt		objbehind
+;				blt		obj_behind
 ;
 ;				move.l	#ontoscr,a6
 ;				move.l	(a6,d2.w*4),d2
@@ -333,11 +327,11 @@ DrawtheObject:
 ;				move.l	#WorkSpace,a5
 ;				move.l	#glassball,a4
 ;				cmp.w	leftclipb,d0
-;				bge.s	.okonleft
+;				bge.s	.ok_on_left
 ;
 ;				sub.w	leftclipb,d0
 ;				add.w	d0,d3
-;				ble		objbehind
+;				ble		obj_behind
 ;
 ;				move.w	(a2),d1
 ;				move.w	2(a2),d2
@@ -352,17 +346,17 @@ DrawtheObject:
 ;
 ;				move.w	leftclipb,d0
 ;
-;.okonleft:
+;.ok_on_left:
 ;
 ;				move.w	d0,d6
 ;				add.w	d3,d6
 ;				sub.w	rightclipb,d6
-;				blt.s	.okrightside
+;				blt.s	.ok_right_side
 ;
 ;				sub.w	#1,d3
 ;				sub.w	d6,d3
 ;
-;.okrightside:
+;.ok_right_side:
 ;				move.w	d0,a1
 ;				add.w	a1,a1
 ;
@@ -467,7 +461,7 @@ DrawtheObject:
 ;				move.l	d6,a1
 ;				moveq	#0,d6
 ;
-;.drawrightside:
+;.draw_right_side:
 ;				swap	d7
 ;				move.l	midglass(pc),a4
 ;				adda.w	(a0,d7.w*2),a4
@@ -479,7 +473,7 @@ DrawtheObject:
 ;				move.l	d5,d1
 ;				move.w	d4,-(a7)
 ;				swap	d3
-;.drawavertstrip
+;.draw_vertical_strip
 ;				move.w	(a4,d1.w*2),d3
 ;				blt.s	.itsbackground
 ;				move.b	(a5,d3.w*2),d6
@@ -487,11 +481,11 @@ DrawtheObject:
 ;.itsbackground
 ;				adda.w	#SCREENWIDTH,a6
 ;				addx.l	d2,d1
-;				dbra	d4,.drawavertstrip
+;				dbra	d4,.draw_vertical_strip
 ;				swap	d3
 ;				move.w	(a7)+,d4
 ;
-;				dbra	d3,.drawrightside
+;				dbra	d3,.draw_right_side
 ;				movem.l	(a7)+,d0-d7/a0-a6
 ;
 ;				rts
@@ -522,7 +516,7 @@ glareobj:
 				move.w	(a0)+,d0				;pt num
 				move.w	2(a1,d0.w*8),d1
 				cmp.w	#25,d1
-				ble		objbehind
+				ble		obj_behind
 
 				move.w	topclip,d2
 				move.w	botclip,d3
@@ -532,26 +526,26 @@ glareobj:
 				divs	d1,d6
 				add.w	MIDDLEY,d6
 				cmp.w	d3,d6
-				bge		objbehind
+				bge		obj_behind
 				cmp.w	d2,d6
 				bge.s	.okobtc
 				move.w	d2,d6
+
 .okobtc:
 				move.w	d6,objclipt
-
 				move.l	by3d,d6
 				sub.l	yoff,d6
 				divs	d1,d6
 				add.w	MIDDLEY,d6
 				cmp.w	d2,d6
-				ble		objbehind
+				ble		obj_behind
 				cmp.w	d3,d6
 				ble.s	.okobbc
 				move.w	d3,d6
+
 .okobbc:
 				move.w	d6,objclipb
 				move.l	4(a1,d0.w*8),d0
-
 				move.w	draw_AuxX_w,d2
 				ext.l	d2
 				asl.l	#7,d2
@@ -559,7 +553,6 @@ glareobj:
 				addq	#2,a0
 				move.l	TexturePal,a4
 				sub.l	#512,a4
-
 				move.w	(a0)+,d2				; height
 				add.w	draw_AuxY_w,d2
 				ext.l	d2
@@ -567,7 +560,6 @@ glareobj:
 				sub.l	yoff,d2
 				divs	d1,d2
 				add.w	MIDDLEY,d2
-
 				divs	d1,d0
 				add.w	MIDDLEX,d0				;x pos of middle
 
@@ -603,16 +595,16 @@ glareobj:
 				sub.w	d4,d2
 				sub.w	d3,d0
 				cmp.w	rightclipb,d0
-				bge		objbehind
+				bge		obj_behind
 				add.w	d3,d3
 				cmp.w	objclipb,d2
-				bge		objbehind
+				bge		obj_behind
 
 				add.w	d4,d4
 
-* OBTAIN POINTERS TO HORIZ AND VERT
-* CONSTANTS FOR MOVING ACROSS AND
-* DOWN THE OBJECT GRAPHIC.
+; * OBTAIN POINTERS TO HORIZ AND VERT
+; * CONSTANTS FOR MOVING ACROSS AND
+; * DOWN THE OBJECT GRAPHIC.
 
 				move.l	(a5)+,WAD_PTR
 				move.l	(a5)+,PTR_PTR
@@ -632,7 +624,7 @@ glareobj:
 				mulu	d6,d7
 				moveq	#0,d6
 				move.b	-2(a0),d6
-				beq		objbehind
+				beq		obj_behind
 				divu	d6,d7
 				swap	d7
 				clr.w	d7
@@ -646,7 +638,7 @@ glareobj:
 				mulu	d6,d7
 				moveq	#0,d6
 				move.b	-1(a0),d6
-				beq		objbehind
+				beq		obj_behind
 				divu	d6,d7
 				swap	d7
 				clr.w	d7
@@ -654,8 +646,8 @@ glareobj:
 
 				lea		(a3,d7.l*8),a3			; pointer to vertical c.
 
-* CLIP OBJECT TO TOP AND BOTTOM
-* OF THE VISIBLE DISPLAY
+; * CLIP OBJECT TO TOP AND BOTTOM
+; * OF THE VISIBLE DISPLAY
 
 				moveq	#0,d7
 				cmp.w	objclipt,d2
@@ -663,7 +655,7 @@ glareobj:
 
 				sub.w	objclipt,d2
 				add.w	d2,d4					;new height in pixels
-				ble		objbehind				; nothing to draw
+				ble		obj_behind				; nothing to draw
 
 				move.w	d2,d7
 				neg.w	d7						; factor to mult.
@@ -681,7 +673,7 @@ objfitsontopGLARE:
 
 objfitsonbotGLARE:
 				subq	#1,d4
-				blt		objbehind
+				blt		obj_behind
 
 				move.l	#ontoscr,a6
 				move.l	(a6,d2.w*4),d2
@@ -693,7 +685,7 @@ objfitsonbotGLARE:
 
 				sub.w	leftclipb,d0
 				add.w	d0,d3
-				ble		objbehind
+				ble		obj_behind
 
 				move.w	(a2),d1
 				move.w	2(a2),d2
@@ -728,15 +720,12 @@ okrightsideGLARE:
 ;top offset into
 ;each strip.
 				add.l	#$80000000,d5
-
 				move.l	(a2),a2
 				moveq.l	#0,d7
 				move.l	a5,midobj
 				move.l	(a3),d2
 				swap	d2
-
 				move.l	#0,a1
-
 
 drawrightsideGLARE:
 				swap	d7
@@ -744,19 +733,14 @@ drawrightsideGLARE:
 				lea		(a5,d7.w*4),a5
 				swap	d7
 				add.l	a2,d7					; step fractional column
-
-
 				move.l	WAD_PTR(PC),a0
-
 				move.l	toppt(pc),a6
 				adda.w	a1,a6
 				addq	#1,a1
 				move.l	(a5),d1
 				beq		blankstripGLARE
-
 				and.l	#$ffffff,d1
 				add.l	d1,a0
-
 				move.b	(a5),d1
 				cmp.b	#1,d1
 				bgt.s	ThirdThirdGLARE
@@ -764,140 +748,140 @@ drawrightsideGLARE:
 				move.l	d5,d6
 				move.l	d5,d1
 				move.w	d4,-(a7)
-.drawavertstrip
+
+.draw_vertical_strip
 				move.b	1(a0,d1.w*2),d0
 				and.b	#%00011111,d0
-				beq.s	.dontplotthisoneitsblack
+				beq.s	.skip_black
 				lsl.w	#8,d0
 				add.w	d0,d0
 				move.b	(a6),d0
 				move.b	(a4,d0.w),(a6)
-.dontplotthisoneitsblack:
+
+.skip_black:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
-				dbra	d4,.drawavertstrip
+				dbra	d4,.draw_vertical_strip
 				move.w	(a7)+,d4
+
 blankstripGLARE:
 				dbra	d3,drawrightsideGLARE
-				bra		objbehind
+				bra		obj_behind
 
 SecThirdGLARE:
 				move.l	d5,d1
 				move.l	d5,d6
 				move.w	d4,-(a7)
-.drawavertstrip
+
+.draw_vertical_strip:
 				move.w	(a0,d1.w*2),d0
 				lsr.w	#5,d0
 				and.w	#%11111,d0
-				beq.s	.dontplotthisoneitsblack
+				beq.s	.skip_black
 				lsl.w	#8,d0
 				add.w	d0,d0
 				move.b	(a6),d0
 				move.b	(a4,d0.w),(a6)
-.dontplotthisoneitsblack:
+
+.skip_black:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
-				dbra	d4,.drawavertstrip
+				dbra	d4,.draw_vertical_strip
 				move.w	(a7)+,d4
 				dbra	d3,drawrightsideGLARE
-				bra		objbehind
+				bra		obj_behind
 
 ThirdThirdGLARE:
 				move.l	d5,d1
 				move.l	d5,d6
 				move.w	d4,-(a7)
-.drawavertstrip
+
+.draw_vertical_strip:
 				move.b	(a0,d1.w*2),d0
 				lsr.b	#2,d0
 				and.b	#%11111,d0
-				beq.s	.dontplotthisoneitsblack
+				beq.s	.skip_black
 				lsl.w	#8,d0
 				add.w	d0,d0
 				move.b	(a6),d0
 				move.b	(a4,d0.w),(a6)
-.dontplotthisoneitsblack:
+
+.skip_black:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
-				dbra	d4,.drawavertstrip
+				dbra	d4,.draw_vertical_strip
 				move.w	(a7)+,d4
 				dbra	d3,drawrightsideGLARE
 
 				movem.l	(a7)+,d0-d7/a0-a6
 				rts
 
-BitMapObj:
+draw_Bitmap:
 				move.l	#0,draw_AuxX_w
-
 				cmp.b	#3,16(a0)
-				bne.s	.NOTAUX
+				bne.s	.not_auxilliary_object
 
 				move.w	ShotT_AuxOffsetX_w(a0),draw_AuxX_w
 				move.w	ShotT_AuxOffsetY_w(a0),draw_AuxY_w
 
-.NOTAUX:
+.not_auxilliary_object:
 				tst.l   8(a0)
 				blt		glareobj
 
-				move.w	EntT_CurrentAngle_w(a0),FACINGANG
-
+;				move.w	EntT_CurrentAngle_w(a0),draw_FacingAng_w
 				move.w	(a0)+,d0				;pt num
-
 				move.l	ObjectPoints,a4
-
 				move.w	(a4,d0.w*8),draw_obj_xpos_w
 				move.w	4(a4,d0.w*8),draw_obj_zpos_w
-
 				move.w	2(a1,d0.w*8),d1
 				cmp.w	#25,d1
-				ble		objbehind
+				ble		obj_behind
 
 				move.w	topclip,d2
 				move.w	botclip,d3
-
 				move.l	ty3d,d6
 				sub.l	yoff,d6
 				divs	d1,d6
 				add.w	MIDDLEY,d6
-
 				cmp.w	d3,d6
-				bge		objbehind
+				bge		obj_behind
 
 				cmp.w	d2,d6
 				bge.s	.okobtc
 				move.w	d2,d6
+
 .okobtc:
 				move.w	d6,objclipt				; top object clip
-
 				move.l	by3d,d6
 				sub.l	yoff,d6
 				divs	d1,d6
 				add.w	MIDDLEY,d6
 				cmp.w	d2,d6					; bottom of object over top of screen?
+				ble		obj_behind
 
-				ble		objbehind
 				cmp.w	d3,d6
 				ble.s	.okobbc
 				move.w	d3,d6					; clip bottom of object to lower clip
+
 .okobbc:
 				move.w	d6,objclipb				; bottom object clip
-
 				move.l	4(a1,d0.w*8),d0
 				move.w	draw_AuxX_w,d2
 				ext.l	d2
 				asl.l	#7,d2
 				add.l	d2,d0
-
 				move.w	d1,d6
 				asr.w	#6,d6
 				add.w	(a0)+,d6
 				move.w	d6,draw_BrightToAdd_w
+				bge.s	.brighttoonot
 
-				bge.s	brighttoonot
 				moveq	#0,d6
-brighttoonot
+
+.brighttoonot:
 				sub.l	a4,a4
 				move.w	draw_ObjScaleCols_vw(pc,d6.w*2),a4 ; is this the table that scales vertically?
 				bra		pastobjscale
@@ -943,7 +927,6 @@ draw_FlipIt_b:			dc.b	0 ; BOOL flip on/off
 draw_LightIt_b:			dc.b	0 ; BOOL Lighting for object on/off
 draw_Additive_b:		dc.b	0 ; BOOL Additive translucency for object on/off
 
-
 pastobjscale:
 				move.w	(a0)+,d2				; height
 				add.w	draw_AuxY_w,d2
@@ -952,8 +935,6 @@ pastobjscale:
 				sub.l	yoff,d2
 				divs	d1,d2
 				add.w	MIDDLEY,d2
-
-
 				divs	d1,d0
 				add.w	MIDDLEX,d0				;x pos of middle
 
@@ -979,24 +960,22 @@ pastobjscale:
 				sne		draw_FlipIt_b
 				and.b	#127,d7
 				sub.b	#2,d7
-				blt.s	.NOTALIGHT
+				blt.s	.not_a_light
 
 				cmp.b	#4,d7
-				blt.s	.isalight
+				blt.s	.is_a_light
 
 				st		draw_Additive_b
-				bra.s	.NOTALIGHT
-.isalight:
+				bra.s	.not_a_light
+.is_a_light:
 				st		draw_LightIt_b
 				move.b	d7,draw_WhichLightPal_b
 
-.NOTALIGHT:
+.not_a_light:
 				moveq	#0,d7
 				move.b	5(a0),d7				; current frame of animation
 				lea		(a6,d7.w*8),a6			; a6 pointing to frame?
-
 				move.l	#consttab,a3
-
 				moveq	#0,d3
 				moveq	#0,d4
 				move.b	(a0)+,d3
@@ -1009,16 +988,16 @@ pastobjscale:
 				sub.w	d4,d2
 				sub.w	d3,d0
 				cmp.w	rightclipb,d0
-				bge		objbehind
+				bge		obj_behind
 				add.w	d3,d3
 				cmp.w	objclipb,d2
-				bge		objbehind
+				bge		obj_behind
 
 				add.w	d4,d4
 
-* OBTAIN POINTERS TO HORIZ AND VERT
-* CONSTANTS FOR MOVING ACROSS AND
-* DOWN THE OBJECT GRAPHIC.
+; * OBTAIN POINTERS TO HORIZ AND VERT
+; * CONSTANTS FOR MOVING ACROSS AND
+; * DOWN THE OBJECT GRAPHIC.
 
 				move.l	(a5)+,WAD_PTR
 				move.l	(a5)+,PTR_PTR
@@ -1030,19 +1009,17 @@ pastobjscale:
 				move.l	PTR_PTR,a5
 
 				tst.b	draw_FlipIt_b
-				beq.s	.nfl1
+				beq.s	.no_flip
 
 				move.w	4(a6),d6				; mhhm, somehow this flips the frame?
 				add.w	d6,d6					; go to next frame and subtract
 				subq	#1,d6
 				lea		(a5,d6.w*4),a5
 
-.nfl1:
+.no_flip:
 				swap	d7
 				asl.w	#2,d7
 				adda.w	d7,a5
-fl1:
-
 				move.w	d1,d7
 				moveq	#0,d6
 				move.w	4(a6),d6
@@ -1051,7 +1028,7 @@ fl1:
 				mulu	d6,d7
 				moveq	#0,d6
 				move.b	-2(a0),d6
-				beq		objbehind
+				beq		obj_behind
 				divu	d6,d7
 				swap	d7
 				clr.w	d7
@@ -1065,7 +1042,7 @@ fl1:
 				mulu	d6,d7
 				moveq	#0,d6
 				move.b	-1(a0),d6
-				beq		objbehind
+				beq		obj_behind
 				divu	d6,d7
 
 				swap	d7
@@ -1074,17 +1051,17 @@ fl1:
 				lea		(a3,d7.l*8),a3			; pointer to vertical scale table?
 ; vertical c.
 
-* CLIP OBJECT TO TOP AND BOTTOM
-* OF THE VISIBLE DISPLAY
+;* CLIP OBJECT TO TOP AND BOTTOM
+;* OF THE VISIBLE DISPLAY
 
 				moveq	#0,d7
 				cmp.w	objclipt,d2
-				bge.s	objfitsontop
+				bge.s	.object_fits_on_top
 
 				sub.w	objclipt,d2
 				add.w	d2,d4					;new height in
 ;pixels
-				ble		objbehind				; nothing to draw
+				ble		obj_behind				; nothing to draw
 
 				move.w	d2,d7
 				neg.w	d7						; factor to mult.
@@ -1092,31 +1069,28 @@ fl1:
 ; at top of obj.
 				move.w	objclipt,d2
 
-objfitsontop:
-
+.object_fits_on_top:
 				move.w	objclipb,d6
 				sub.w	d2,d6
 				cmp.w	d6,d4
-				ble.s	objfitsonbot
+				ble.s	.object_fits_on_bottom
 
 				move.w	d6,d4
 
-objfitsonbot:
-
+.object_fits_on_bottom:
 				subq	#1,d4
-				blt		objbehind
+				blt		obj_behind
 
 				move.l	#ontoscr,a6
 				move.l	(a6,d2.w*4),d2
 				add.l	FASTBUFFER,d2
 				move.l	d2,toppt
-
 				cmp.w	leftclipb,d0
-				bge.s	okonleft
+				bge.s	.ok_on_left
 
 				sub.w	leftclipb,d0
 				add.w	d0,d3
-				ble		objbehind
+				ble		obj_behind
 
 				move.w	(a2),d1
 				move.w	2(a2),d2
@@ -1126,33 +1100,28 @@ objfitsonbot:
 				swap	d2
 				add.w	d2,d1
 				move.w	leftclipb,d0
-
 				asl.w	#2,d1
 				tst.b	draw_FlipIt_b
-				beq.s	.nfl2
+				beq.s	.no_flip_2
 
 				suba.w	d1,a5
 				suba.w	d1,a5
 
-.nfl2:
-
+.no_flip_2:
 				adda.w	d1,a5
 
-okonleft:
-
+.ok_on_left:
 				move.w	d0,d6
 				add.w	d3,d6
 				sub.w	rightclipb,d6
-				blt.s	okrightside
+				blt.s	.ok_right_side
 
 				sub.w	#1,d3
 				sub.w	d6,d3
 
-okrightside:
-
+.ok_right_side:
 				ext.l	d0
 				add.l	d0,toppt
-
 				move.w	(a3),d5
 				move.w	2(a3),d6
 				muls	d7,d5
@@ -1166,24 +1135,23 @@ okrightside:
 
 				move.l	(a2),d7					; what is a2 pointing to?
 				tst.b	draw_FlipIt_b
-				beq.s	.nfl3
+				beq.s	.no_flip_3
 				neg.l	d7
-.nfl3:
+
+.no_flip_3:
 				move.l	d7,a2					; store fractional column offset
 				moveq.l	#0,d7
 				move.l	a5,midobj
 				move.l	(a3),d2
 				swap	d2
-
 				move.l	#0,a1
-
 				tst.b	draw_LightIt_b
-				bne		DRAWITLIGHTED
+				bne		draw_bitmap_lighted
 
 				tst.b	draw_Additive_b
-				bne		DRAWITADDED
+				bne		draw_bitmap_additive
 
-drawrightside:
+draw_right_side:
 				swap	d7
 				move.l	midobj(pc),a5
 				lea		(a5,d7.w*4),a5
@@ -1211,64 +1179,71 @@ drawrightside:
 				move.l	d5,d6
 				move.l	d5,d1
 				move.w	d4,-(a7)
+
 				; Inner loops of 2D object drawing
-.drawavertstrip
+.draw_vertical_strip:
 				move.b	1(a0,d1.w*2),d0
 				and.b	#%00011111,d0
-				beq.s	.dontplotthisoneitsblack
+				beq.s	.skip_black
 				move.b	(a4,d0.w*2),(a6)
-.dontplotthisoneitsblack:
+
+.skip_black:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6					; is d2 the vertical step, fraction|integer?
 				addx.w	d2,d1
-				dbra	d4,.drawavertstrip
+				dbra	d4,.draw_vertical_strip
 				move.w	(a7)+,d4
+
 blankstrip:
-				dbra	d3,drawrightside
-				bra.s	objbehind
+				dbra	d3,draw_right_side
+				bra.s	obj_behind
 
 SecThird:
 				move.l	d5,d1
 				move.l	d5,d6
 				move.w	d4,-(a7)
-.drawavertstrip
+
+.draw_vertical_strip:
 				move.w	(a0,d1.w*2),d0
 				lsr.w	#5,d0
 				and.w	#%11111,d0
-				beq.s	.dontplotthisoneitsblack
+				beq.s	.skip_black
 				move.b	(a4,d0.w*2),(a6)
-.dontplotthisoneitsblack:
+
+.skip_black:
 				adda.w	#SCREENWIDTH,a6			; next line on screen
 				add.l	d2,d6
 				addx.w	d2,d1					; is d2 the vertical step, fraction|integer?
-				dbra	d4,.drawavertstrip
+				dbra	d4,.draw_vertical_strip
 				move.w	(a7)+,d4
-				dbra	d3,drawrightside
-				bra.s	objbehind
+				dbra	d3,draw_right_side
+				bra.s	obj_behind
 
 ThirdThird:
 				move.l	d5,d1
 				move.l	d5,d6
 				move.w	d4,-(a7)
-.drawavertstrip
+
+.draw_vertical_strip:
 				move.b	(a0,d1.w*2),d0
 				lsr.b	#2,d0
 				and.b	#%11111,d0
-				beq.s	.dontplotthisoneitsblack
+				beq.s	.skip_black
 				move.b	(a4,d0.w*2),(a6)
-.dontplotthisoneitsblack:
+
+.skip_black:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1					; is d2 the vertical dy/dt step, fraction|integer?
-				dbra	d4,.drawavertstrip
+				dbra	d4,.draw_vertical_strip
 				move.w	(a7)+,d4
-				dbra	d3,drawrightside
+				dbra	d3,draw_right_side
 
-objbehind:
+obj_behind:
 				movem.l	(a7)+,d0-d7/a0-a6
 				rts
 
-DRAWITADDED:
+draw_bitmap_additive:
 				move.l	draw_BasePalPtr_l,a4
 
 drawrightsideADD:
@@ -1295,7 +1270,8 @@ drawrightsideADD:
 				move.l	d5,d6
 				move.l	d5,d1
 				move.w	d4,-(a7)
-.drawavertstrip
+
+.draw_vertical_strip:
 				move.b	1(a0,d1.w*2),d0
 				and.b	#%00011111,d0
 				lsl.w	#8,d0
@@ -1304,17 +1280,18 @@ drawrightsideADD:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
-				dbra	d4,.drawavertstrip
+				dbra	d4,.draw_vertical_strip
 				move.w	(a7)+,d4
 blankstripADD:
 				dbra	d3,drawrightsideADD
-				bra		objbehind
+				bra		obj_behind
 
 SecThirdADD:
 				move.l	d5,d1
 				move.l	d5,d6
 				move.w	d4,-(a7)
-.drawavertstrip
+
+.draw_vertical_strip:
 				move.w	(a0,d1.w*2),d0
 				lsr.w	#5,d0
 				and.w	#%11111,d0
@@ -1324,39 +1301,41 @@ SecThirdADD:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
-				dbra	d4,.drawavertstrip
+				dbra	d4,.draw_vertical_strip
 				move.w	(a7)+,d4
 				dbra	d3,drawrightsideADD
-				bra		objbehind
+				bra		obj_behind
 
 ThirdThirdADD:
 				move.l	d5,d1
 				move.l	d5,d6
 				move.w	d4,-(a7)
-.drawavertstrip
+
+.draw_vertical_strip:
 				move.b	(a0,d1.w*2),d0
 				lsr.b	#2,d0
 				and.b	#%11111,d0
 				lsl.w	#8,d0
 				move.b	(a6),d0
 				move.b	(a4,d0.w),(a6)
-.dontplotthisoneitsblack:
+
+.skip_black:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
-				dbra	d4,.drawavertstrip
+				dbra	d4,.draw_vertical_strip
 				move.w	(a7)+,d4
 				dbra	d3,drawrightsideADD
 
-				bra		objbehind
+				bra		obj_behind
 
-DRAWITLIGHTED:
+draw_bitmap_lighted:
 
 ; Make up lighting values
 
 				movem.l	d0-d7/a0-a6,-(a7)
 
-				move.l	#ANGLEBRIGHTS,a2
+				move.l	#draw_AngleBrights_vl,a2
 				move.l	#$80808080,(a2)
 				move.l	#$80808080,4(a2)
 				move.l	#$80808080,8(a2)
@@ -1376,9 +1355,9 @@ DRAWITLIGHTED:
 				move.l	#$80808080,60(a2)
 
 				move.w	currzone(pc),d0
-				bsr		CALCBRIGHTSINZONE
+				bsr		draw_CalcBrightsInZone
 
-				move.l	#ANGLEBRIGHTS+32,a2
+				move.l	#draw_AngleBrights_vl+32,a2
 
 ; Now do the brightnesses of surrounding
 ; zones:
@@ -1392,9 +1371,9 @@ DRAWITLIGHTED:
 ;
 ; adda.w ZoneT_ExitList_w(a4),a5
 ;
-;.doallwalls
+;.do_all_walls
 ; move.w (a5)+,d0
-; blt .nomorewalls
+; blt .no_more_walls
 ;
 ; asl.w #4,d0
 ; lea (a1,d0.w),a3
@@ -1403,9 +1382,9 @@ DRAWITLIGHTED:
 ; blt.s .solidwall ; a wall not an exit.
 ;
 ; movem.l a1/a4/a5,-(a7)
-; bsr CALCBRIGHTSINZONE
+; bsr draw_CalcBrightsInZone
 ; movem.l (a7)+,a1/a4/a5
-; bra .doallwalls
+; bra .do_all_walls
 ;
 ;.solidwall:
 ; move.w 4(a3),d1
@@ -1427,12 +1406,12 @@ DRAWITLIGHTED:
 
 ; move.b #48,(a2,d1.w)
 ; move.b #48,16(a2,d1.w)
-; bra .doallwalls
+; bra .do_all_walls
 ;
-;.nomorewalls:
+;.no_more_walls:
 
 				move.l	#xzangs,a0
-				move.l	#ANGLEBRIGHTS,a1
+				move.l	#draw_AngleBrights_vl,a1
 				move.w	#15,d7
 				sub.l	a2,a2
 				sub.l	a3,a3
@@ -1440,8 +1419,8 @@ DRAWITLIGHTED:
 				sub.l	a5,a5
 				moveq	#00,d0
 				moveq	#00,d1
-averageangle:
 
+averageangle:
 				moveq	#0,d4
 				move.b	16(a1),d4
 				cmp.b	#$80,d4
@@ -1452,9 +1431,8 @@ averageangle:
 				cmp.b	d1,d4
 				ble.s	.nobrightest
 				move.b	d4,d1
+
 .nobrightest:
-
-
 				move.w	(a0),d5
 				move.w	2(a0),d6
 				muls	d4,d5
@@ -1465,7 +1443,6 @@ averageangle:
 .nobright:
 
 BOTTYL:
-
 				moveq	#0,d4
 				move.b	(a1),d4
 				cmp.b	#$80,d4
@@ -1475,8 +1452,8 @@ BOTTYL:
 				cmp.b	d0,d4
 				blt.s	.nobrightest
 				move.b	d4,d0
-.nobrightest:
 
+.nobrightest:
 				move.w	(a0),d5
 				move.w	2(a0),d6
 				muls	d4,d5
@@ -1487,7 +1464,6 @@ BOTTYL:
 .nobright:
 				addq	#4,a0
 				addq	#1,a1
-
 				dbra	d7,averageangle
 
 				move.l	a2,d2
@@ -1501,7 +1477,6 @@ BOTTYL:
 				bsr		FINDROUGHANG
 
 foundang:
-
 				move.w	#7,d2
 				move.w	d1,d3
 				cmp.w	d0,d1
@@ -1526,11 +1501,11 @@ INMIDDLE:
 
 				move.l	#willy,a0
 				move.l	#guff,a1
-				add.l	guffptr,a1
-; add.l #16*7,guffptr
-; cmp.l #16*7*15,guffptr
+				add.l	draw_TempPtr_l,a1
+; add.l #16*7,draw_TempPtr_l
+; cmp.l #16*7*15,draw_TempPtr_l
 ; ble.s .noreguff
-; move.l #0,guffptr
+; move.l #0,draw_TempPtr_l
 ;.noreguff:
 
 				muls	#7*16,d2
@@ -1547,19 +1522,22 @@ INMIDDLE:
 				add.b	d4,d0
 				and.w	#15,d0
 				move.w	#6,d1
-.across:
+
+.across_loop:
 				move.w	#6,d2
 				move.w	d0,d5
-.down
+
+.down_loop:
 				move.b	(a1,d5),d4
 				add.b	d3,d4
 				ext.w	d4
 				move.w	d4,(a0)+
 				addq	#1,d5
 				and.w	#15,d5
-				dbra	d2,.down
+				dbra	d2,.down_loop
+
 				add.w	#16,a1
-				dbra	d1,.across
+				dbra	d1,.across_loop
 
 ; jsr CALCBRIGHTRINGS
 
@@ -1587,7 +1565,7 @@ INMIDDLE:
 ;
 ; sub.b #6,d0
 ; and.b #15,d0
-; move.l #ANGLEBRIGHTS,a1
+; move.l #draw_AngleBrights_vl,a1
 ;
 ; move.l #willy,a0
 ; moveq #6,d1
@@ -1626,8 +1604,8 @@ INMIDDLE:
 				move.l	#willy,a0
 				move.l	#willybright,a1
 				move.w	#48,d1
-ADDITIN:
 
+.add_it_in:
 				move.w	d0,d2
 				add.w	(a1)+,d2
 				ble.s	.nopos
@@ -1635,54 +1613,49 @@ ADDITIN:
 				moveq	#0,d2
 
 .nopos:
-
 				add.w	d2,(a0)+
-
-				dbra	d1,ADDITIN
-
-
+				dbra	d1,.add_it_in
 
 				tst.b	draw_FlipIt_b
-				beq.s	LEFTTORIGHT
+				beq.s	.left_or_right
 
-				move.l	#Brights2,a0
-				bra		DONERIGHTTOLEFT
+				move.l	#draw_Brights2_vw,a0
+				bra		.done_right_to_left
 
-LEFTTORIGHT:
+.left_or_right:
+				move.l	#draw_Brights_vw,a0
 
-				move.l	#Brights,a0
-DONERIGHTTOLEFT:
+.done_right_to_left:
 				move.l	#willy,a2
 				move.l	draw_BasePalPtr_l,a1
 				move.b	draw_WhichLightPal_b,d0
 				asl.w	#8,d0
 				add.w	d0,a1
-				move.l	#PALS,a3
+				move.l	#draw_Pals_vl,a3
 				move.w	#28,d0
-makepals:
 
+.make_pals_loop:
 				move.w	(a0)+,d1
 				move.w	(a2,d1.w*2),d1
 				bge.s	.okpos
 				moveq	#0,d1
+
 .okpos:
 				cmp.w	#31,d1
 				blt.s	.okneg
 				move.w	#31,d1
-.okneg:
 
+.okneg:
 				move.l	(a1,d1.w*8),(a3)+
 				move.b	#0,-4(a3)
 				move.l	4(a1,d1.w*8),(a3)+
-
-				dbra	d0,makepals
+				dbra	d0,.make_pals_loop
 
 				movem.l	(a7)+,d0-d7/a0-a6
-
-				move.l	#PALS,a4
+				move.l	#draw_Pals_vl,a4
 				clr.w	d0
 
-drawlightlop
+.draw_light_loop:
 				swap	d7
 				move.l	midobj(pc),a5
 				lea		(a5,d7.w*4),a5
@@ -1690,7 +1663,6 @@ drawlightlop
 				add.l	a2,d7
 				move.l	WAD_PTR(PC),a0			; is this not always right? Seems to be connected to
 												; dead body of the blue priests, first seen in level C
-
 				move.l	toppt(pc),a6
 				adda.w	a1,a6
 				addq	#1,a1
@@ -1702,19 +1674,21 @@ drawlightlop
 				move.l	d5,d6
 				move.l	d5,d1
 				move.w	d4,-(a7)
-.drawavertstrip
+
+.draw_vertical_strip:
 				move.b	(a0,d1.w),d0				; a0 can be broken here
-				beq.s	.dontplotthisoneitsblack
+				beq.s	.skip_black
 				move.b	(a4,d0.w),(a6)				; FIXME: causing enforcer hits in Level C, illegal reads
-.dontplotthisoneitsblack:
+
+.skip_black:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
-				dbra	d4,.drawavertstrip
+				dbra	d4,.draw_vertical_strip
 				move.w	(a7)+,d4
 .blankstrip:
-				dbra	d3,drawlightlop
-				bra		objbehind
+				dbra	d3,.draw_light_loop
+				bra		obj_behind
 
 *********************************************
 FINDROUGHANG:
@@ -1724,35 +1698,38 @@ FINDROUGHANG:
 				bge.s	.no8
 				add.w	#8,d7
 				neg.l	d4
-.no8
+
+.no8:
 				tst.l	d5
 				bge.s	.no4
 				neg.l	d5
 				add.w	#4,d7
-.no4
+
+.no4:
 				cmp.l	d5,d4
 				bge.s	.no2
 				addq	#2,d7
 				exg		d4,d5
+
 .no2:
 				asr.l	#1,d4
 				cmp.l	d5,d4
 				bge.s	.no1
 				addq	#1,d7
-.no1
 
-				move.w	maptoang(pc,d7.w*2),d4	; retun angle
+.no1
+				move.w	draw_MapToAng_vw(pc,d7.w*2),d4	; retun angle
 				rts
 
-maptoang:
+draw_MapToAng_vw:
 				dc.w	3,2,0,1,4,5,7,6
 				dc.w	12,13,15,14,11,10,8,9
 
-guffptr:		dc.l	0
+draw_TempPtr_l:		dc.l	0
 
 *********************************************
 CALCBRIGHTRINGS:
-				move.l	#ANGLEBRIGHTS,a2
+				move.l	#draw_AngleBrights_vl,a2
 				move.l	#$80808080,(a2)
 				move.l	#$80808080,4(a2)
 				move.l	#$80808080,8(a2)
@@ -1772,9 +1749,9 @@ CALCBRIGHTRINGS:
 				move.l	#$80808080,60(a2)
 
 				move.w	currzone(pc),d0
-				bsr		CALCBRIGHTSINZONE
+				bsr		draw_CalcBrightsInZone
 
-				move.l	#ANGLEBRIGHTS+32,a2
+				move.l	#draw_AngleBrights_vl+32,a2
 
 ; Now do the brightnesses of surrounding
 ; zones:
@@ -1788,9 +1765,9 @@ CALCBRIGHTRINGS:
 
 				adda.w	ZoneT_ExitList_w(a4),a5
 
-.doallwalls
+.do_all_walls:
 				move.w	(a5)+,d0
-				blt		.nomorewalls
+				blt		.no_more_walls
 
 				asl.w	#4,d0
 				lea		(a1,d0.w),a3
@@ -1799,9 +1776,9 @@ CALCBRIGHTRINGS:
 				blt.s	.solidwall				; a wall not an exit.
 
 				movem.l	a1/a4/a5,-(a7)
-				bsr		CALCBRIGHTSINZONE
+				bsr		draw_CalcBrightsInZone
 				movem.l	(a7)+,a1/a4/a5
-				bra		.doallwalls
+				bra		.do_all_walls
 
 .solidwall:
 				move.w	4(a3),d1
@@ -1823,9 +1800,9 @@ CALCBRIGHTRINGS:
 
 				move.b	#48,(a2,d1.w)
 				move.b	#48,16(a2,d1.w)
-				bra		.doallwalls
+				bra		.do_all_walls
 
-.nomorewalls:
+.no_more_walls:
 
 
 ; move.b #0,(a2)
@@ -1833,19 +1810,19 @@ CALCBRIGHTRINGS:
 ; move.b #0,16(a2)
 ; move.b #20,24(a2)
 
-				move.l	#ANGLEBRIGHTS,a0
-				bsr		TWEENBRIGHTS
-				move.l	#ANGLEBRIGHTS+16,a0
-				bsr		TWEENBRIGHTS
-				move.l	#ANGLEBRIGHTS+32,a0
-				bsr		TWEENBRIGHTS
-				move.l	#ANGLEBRIGHTS+48,a0
-				bsr		TWEENBRIGHTS
+				move.l	#draw_AngleBrights_vl,a0
+				bsr		draw_TweenBrights
+				move.l	#draw_AngleBrights_vl+16,a0
+				bsr		draw_TweenBrights
+				move.l	#draw_AngleBrights_vl+32,a0
+				bsr		draw_TweenBrights
+				move.l	#draw_AngleBrights_vl+48,a0
+				bsr		draw_TweenBrights
 
-				move.l	#ANGLEBRIGHTS,a0
+				move.l	#draw_AngleBrights_vl,a0
 				move.b	#15,d0
-ADDBRIGHTS
 
+ADDBRIGHTS
 				moveq	#0,d3
 				moveq	#0,d4
 				move.b	32(a0),d3
@@ -1879,9 +1856,9 @@ ADDBRIGHTS
 
 **********************************************
 
-TWEENBRIGHTS:
-
+draw_TweenBrights:
 				moveq	#0,d0
+
 .backinto:
 				cmp.b	#-128,(a0,d0.w)
 				bne.s	.okbr
@@ -1889,7 +1866,6 @@ TWEENBRIGHTS:
 				bra.s	.backinto
 
 .okbr:
-
 				move.b	d0,d7					;starting pos
 				move.b	d0,d1					;previous pos
 
@@ -1919,29 +1895,28 @@ TWEENBRIGHTS:
 
 				subq	#1,d4					; number of tweens
 
-.putintween
+.put_in_tween_loop:
 				swap	d2
 				move.b	d2,(a0,d1.w)
 				swap	d2
 				add.l	d3,d2
 				addq	#1,d1
 				and.w	#15,d1
-				dbra	d4,.putintween
+				dbra	d4,.put_in_tween_loop
 
 				cmp.b	d0,d7
-				beq.s	.doneall
+				beq.s	.done_all
 
 				move.w	d0,d1
 				bra		.findnext
 
-.doneall
-
+.done_all:
 				rts
 
-IMINTHETOPDAD:	dc.w	0
+draw_InUpperZone_b:	dc.w	0; BOOL
 
 *************************************
-CALCBRIGHTSINZONE:
+draw_CalcBrightsInZone:
 				move.w	d0,d1
 				muls	#20,d1
 				move.l	ZoneBorderPts,a1
@@ -1949,11 +1924,11 @@ CALCBRIGHTSINZONE:
 				move.l	#CurrentPointBrights,a0
 				lea		(a0,d1.l*4),a0
 
-				tst.b	IMINTHETOPDAD
-				beq.s	.notintopdad
+				tst.b	draw_InUpperZone_b
+				beq.s	.not_in_upper_zone
 				adda.w	#4,a0
-.notintopdad
 
+.not_in_upper_zone:
 ; A0 points at the brightnesses of the zone points.
 ; a1 points at the border points of the zone.
 ; list is terminated with -1.
@@ -1965,9 +1940,9 @@ CALCBRIGHTSINZONE:
 				move.w	#10,speed
 				move.w	#0,Range
 
-DOPTBR
+.do_point_bright:
 				move.w	(a1)+,d0				;pt number
-				blt		DONEPTBR
+				blt		.done_point_bright
 
 				move.w	(a3,d0.w*4),newx
 				move.w	2(a3,d0.w*4),newz
@@ -1989,9 +1964,10 @@ DOPTBR
 				neg.w	d0
 				add.w	#332,d0
 
-.okpos
+.okpos:
 				sub.w	#300,d0
 				bge.s	.okpos3
+
 				move.w	#0,d0
 .okpos3:
 				move.b	d0,d2
@@ -2000,11 +1976,13 @@ DOPTBR
 				move.b	d0,(a2,d1.w)
 				move.w	2(a0),d0
 				bge.s	.okpos2
+
 				add.w	#332,d0
 				asr.w	#2,d0
 				neg.w	d0
 				add.w	#332,d0
-.okpos2
+
+.okpos2:
 				sub.w	#300,d0
 				bge.s	.okpos4
 				move.w	#0,d0
@@ -2016,17 +1994,18 @@ DOPTBR
 				move.b	d0,16(a2,d1.w)
 				adda.w	#8,a0
 
-				bra		DOPTBR
-DONEPTBR
+				bra		.do_point_bright
+
+.done_point_bright:
 				rts
 
 draw_obj_xpos_w:		dc.w	0
 draw_obj_zpos_w:		dc.w	0
-FACINGANG:		dc.w	0
+;draw_FacingAng_w:		dc.w	0 ; written once
 
-ANGLEBRIGHTS:	ds.l	8*2
+draw_AngleBrights_vl:	ds.l	8*2
 
-Brights:
+draw_Brights_vw:
 				dc.w	3
 				dc.w	8,9,10,11,12
 				dc.w	15,16,17,18,19
@@ -2035,7 +2014,7 @@ Brights:
 				dc.w	36,37,38,39,40
 				dc.w	45
 
-Brights2:
+draw_Brights2_vw:
 				dc.w	3
 				dc.w	12,11,10,9,8
 				dc.w	19,18,17,16,15
@@ -2044,8 +2023,7 @@ Brights2:
 				dc.w	40,39,38,37,36
 				dc.w	45
 
-
-PALS:
+draw_Pals_vl:
 				ds.l	2*49
 
 willy:
@@ -2116,7 +2094,7 @@ OBJONOFF:		dc.l	0
 ; a0 : object ; struct object {short id,x,y,z}
 ; a1 : view?
 ; struct ObjectPoints {short x,y,z}
-PolygonObj:
+draw_PolygonModel:
 
 ************************
 
@@ -2172,8 +2150,8 @@ PolygonObj:
 
 				jsr		CALCBRIGHTRINGS
 
-				move.l	#ANGLEBRIGHTS,a0
-				move.l	#PointAndPolyBrights,a1
+				move.l	#draw_AngleBrights_vl,a0
+				move.l	#draw_PointAndPolyBrights_vl,a1
 				move.w	#15,d7
 				move.w	#8,d6
 MYacross:
@@ -2294,7 +2272,7 @@ BOTPART:
 ; dont use d1 here.
 
 				move.w	6(a0),d5
-				move.l	#POLYOBJECTS,a3
+				move.l	#Draw_PolyObjects_vl,a3
 				move.l	(a3,d5.w*4),a3
 
 				move.w	(a3)+,SORTIT
@@ -2309,7 +2287,7 @@ BOTPART:
 				move.w	(a3)+,d6				; num_frames
 
 
-				move.l	a3,POINTER_TO_POINTERS
+				move.l	a3,draw_PointerTablePtr_l
 				lea		(a3,d6.w*4),a3
 
 				move.l	a3,LinesPtr
@@ -2328,7 +2306,7 @@ BOTPART:
 ************************************************
 
 				moveq	#0,d2
-				move.l	POINTER_TO_POINTERS,a4
+				move.l	draw_PointerTablePtr_l,a4
 				move.w	(a4,d5.w*4),d2
 				add.l	START_OF_OBJ,d2
 				move.l	d2,PtsPtr
@@ -2525,7 +2503,7 @@ DONECONV
 				move.l	#boxbrights,a6
 				subq	#1,d7
 				move.l	PointAngPtr,a0
-				move.l	#PointAndPolyBrights,a2
+				move.l	#draw_PointAndPolyBrights_vl,a2
 				move.w	ObjAng,d2
 				asr.w	#8,d2
 				asr.w	#1,d2
@@ -2861,7 +2839,7 @@ dontusegour:
 				and.w	#$f0,d2
 				add.b	d3,d2
 
-				move.l	#PointAndPolyBrights,a1
+				move.l	#draw_PointAndPolyBrights_vl,a1
 				moveq	#0,d5
 				move.b	(a1,d2.w),d5
 
@@ -3335,7 +3313,7 @@ gotholesin:
 				add.b	d4,d2
 				and.w	#$f,d2
 
-				move.l	#ANGLEBRIGHTS,a1
+				move.l	#draw_AngleBrights_vl,a1
 				moveq	#0,d4
 				moveq	#0,d5
 				move.b	(a1,d2.w),d4			;top
@@ -3982,19 +3960,19 @@ thislineontopgour:
 				move.w	offleftby(pc),d4
 				dbra	d4,.calcnodraw
 				bra		.nodrawoffleft
-.calcnodraw
+
+.calcnodraw:
 				add.l	d1,d0
 				add.l	a5,d3
 				add.l	a6,d6
 				add.l	d5,d2
 				dbra	d4,.calcnodraw
+
 .nodrawoffleft:
 				move.w	(a7)+,d4
+
 .noneoffleft:
-
-
 .putinline:
-
 				swap	d3
 				move.w	d3,(a4)+
 				swap	d3
@@ -4004,12 +3982,10 @@ thislineontopgour:
 				move.w	d0,(a4)
 				addq	#6,a4
 				swap	d0
-
 				add.l	d1,d0
 				add.l	a5,d3
 				add.l	a6,d6
 				add.l	d5,d2
-
 				dbra	d4,.putinline
 
 thislineflatgour:
@@ -4024,15 +4000,15 @@ Right:			ds.w	1
 
 				section	bss,bss
 
-PointAndPolyBrights:
+draw_PointAndPolyBrights_vl:
 				ds.l	4*16
 
 
-POINTER_TO_POINTERS: ds.l 1
+draw_PointerTablePtr_l: ds.l 1
 START_OF_OBJ:	ds.l	1
 num_points:		ds.w	1
 
-POLYOBJECTS:
+Draw_PolyObjects_vl:
 				ds.l	40
 
 			; FIMXE: screenconv stores word sized points, why are they using ds.l here?

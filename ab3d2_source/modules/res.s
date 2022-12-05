@@ -84,7 +84,7 @@ Res_LoadObjects:
 				tst.b	(a0)
 				bne		.load_object_loop
 
-				move.l	#POLYOBJECTS,a2
+				move.l	#Draw_PolyObjects_vl,a2
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_VectorNames_l,a0
 
