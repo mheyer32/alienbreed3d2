@@ -110,14 +110,14 @@ _start
 				moveq	#INTB_VERTB,d0
 				CALLEXEC AddIntServer
 
-		lea	timername,a0
-		lea	timerrequest,a1
-		moveq	#0,d0
-		moveq	#0,d1
-		jsr	_LVOOpenDevice(a6)
-		move.l	timerrequest+IO_DEVICE,timerbase
-		move.l	d0,timerflag
-		;bne	error_exit
+				lea	timername,a0
+				lea	timerrequest,a1
+				moveq	#0,d0
+				moveq	#0,d1
+				jsr	_LVOOpenDevice(a6)
+				move.l	timerrequest+IO_DEVICE,timerbase
+				move.l	d0,timerflag
+				;bne	error_exit
 
 				IFEQ	CD32VER
 				lea		KEYInt(pc),a1
@@ -551,10 +551,12 @@ blag:
 				moveq	#0,d0
 				move.w	10+6(a1),d7				;numzones
 				move.w	d7,NUMZONES
+
 assignclips:
 				move.l	(a0)+,a3
 				add.l	a4,a3					; pointer to a zone
 				adda.w	#ZoneT_ListOfGraph_w,a3		; pointer to zonelist
+
 dowholezone:
 				tst.w	(a3)
 				blt.s	nomorethiszone
@@ -1961,8 +1963,8 @@ IWasPlayer1:
 ; move.w RIGHTX,rightclip
 ; move.w #0,deftopclip
 ; move.w #BOTTOMY/2,defbotclip
-; move.w #0,topclip
-; move.w #BOTTOMY/2,botclip
+; move.w #0,draw_TopClip_w
+; move.w #BOTTOMY/2,draw_BottomClip_w
 ;
 ; clr.b DOANYWATER
 ;
@@ -1986,10 +1988,10 @@ IWasPlayer1:
 				move.w	BOTTOMY,defbotclip
 				sub.w	d0,defbotclip
 
-				move.w	#0,topclip
-				add.w	d0,topclip
-				move.w	BOTTOMY,botclip
-				sub.w	d0,botclip
+				move.w	#0,draw_TopClip_w
+				add.w	d0,draw_TopClip_w
+				move.w	BOTTOMY,draw_BottomClip_w
+				sub.w	d0,draw_BottomClip_w
 ; sub.l #10*104*4,frompt
 ; sub.l #10*104*4,midpt
 
@@ -2045,10 +2047,10 @@ drawplayer2
 				move.w	BOTTOMY,defbotclip
 				sub.w	d0,defbotclip
 
-				move.w	#0,topclip
-				add.w	d0,topclip
-				move.w	BOTTOMY,botclip
-				sub.w	d0,botclip
+				move.w	#0,draw_TopClip_w
+				add.w	d0,draw_TopClip_w
+				move.w	BOTTOMY,draw_BottomClip_w
+				sub.w	d0,draw_BottomClip_w
 
 				st		DOANYWATER
 				bsr		DrawDisplay
@@ -4788,14 +4790,14 @@ itsachunkyfloor:
 				move.w	#1,SMALLIT
 				subq.w	#7,d0
 				st		usebumps
-				sub.w	#12,topclip
-; add.w #10,botclip
+				sub.w	#12,draw_TopClip_w
+; add.w #10,draw_BottomClip_w
 				clr.b	smoothbumps
 				clr.b	usewater
 				move.l	#BumpLine,LineToUse
 				jsr		itsafloordraw
-				add.w	#12,topclip
-; sub.w #10,botclip
+				add.w	#12,draw_TopClip_w
+; sub.w #10,draw_BottomClip_w
 				bra		polyloop
 
 itsafloor:
@@ -5002,12 +5004,12 @@ RotateLevelPts:	;		Does					this rotate ALL points in the level EVERY frame?
 				; rotate all level points, small screen
 pointrotlop2:
 				move.w	(a3)+,d0
-*				asr.w	#1,d0
+;*				asr.w	#1,d0
 				sub.w	d4,d0
 				move.w	d0,d2					; view X
 
 				move.w	(a3)+,d1
-*				asr.w	#1,d1
+;*				asr.w	#1,d1
 				sub.w	d5,d1					; view Z
 
 				muls	d6,d2					; x' = (cos*viewX)<<16
@@ -5127,7 +5129,6 @@ putinB:
 
 				; This only rotates a subset of the points, with indices pointed to at PointsToRotatePtr
 ONLYTHELONELY:
-
 				move.w	sinval,d6
 				swap	d6
 				move.w	cosval,d6
@@ -5193,11 +5194,12 @@ pointrotlop:
 				bgt.s	.onrightsomewhere
 				move.w	#0,d2
 				bra		.putin
+
 .onrightsomewhere:
 				move.w	RIGHTX,d2
 				bra		.putin
-.ptnotbehind:
 
+.ptnotbehind:
 				divs	d1,d2
 				add.w	Vid_CentreX_w,d2
 .putin:
@@ -5261,9 +5263,11 @@ BIGLONELY:
 				bgt.s	.onrightsomewhere
 				move.w	#0,d2
 				bra		.putin
+
 .onrightsomewhere:
 				move.w	RIGHTX,d2
 				bra		.putin
+
 .ptnotbehind:
 
 				divs	d1,d2
@@ -5289,7 +5293,6 @@ PLR2_ObjDists
 				ds.w	250
 
 CalcPLR1InLine:
-
 				move.w	Plr1_SinVal_w,d5
 				move.w	Plr1_CosVal_w,d6
 				move.l	ObjectDataPtr_l,a4
@@ -5364,9 +5367,7 @@ CalcPLR1InLine:
 				dbra	d7,.objpointrotlop
 				rts
 
-
 CalcPLR2InLine:
-
 				move.w	Plr2_SinVal_w,d5
 				move.w	Plr2_CosVal_w,d6
 				move.l	ObjectDataPtr_l,a4
@@ -5376,7 +5377,6 @@ CalcPLR2InLine:
 				move.l	#PLR2_ObjDists,a3
 
 .objpointrotlop:
-
 				cmp.b	#3,16(a4)
 				beq.s	.itaux
 
@@ -5456,7 +5456,6 @@ RotateObjectPts:
 
 
 .objpointrotlop:
-
 				cmp.b	#3,16(a4)
 				beq.s	.itaux
 
@@ -5831,13 +5830,12 @@ EnergyBar:
 				move.w	#6,d1
 				bsr		DRAWDIGIT
 
-
 				rts
-
 
 DRAWDIGIT:
 				ext.w	d0
 				lea		(a0,d0.w),a2
+
 charlines:
 				lea		30720(a1),a3
 				move.b	(a2),(a1)
@@ -5971,8 +5969,8 @@ endlevel:
 				st		UseAllChannels
 				clr.b	reachedend
 				jsr		mt_init
-playgameover:
 
+playgameover:
 				CALLGRAF WaitTOF
 
 				jsr		mt_music
@@ -5981,7 +5979,6 @@ playgameover:
 				beq.s	playgameover
 
 				bra		wevelost
-
 
 wevewon:
 				; Disable audio DMA
@@ -6636,7 +6633,7 @@ aboveplayer:
 
 				; its a ceiling
 				move.w	Vid_CentreY_w,d7
-				sub.w	topclip,d7
+				sub.w	draw_TopClip_w,d7
 				ble.s	dontdrawreturn
 
 				move.w	#1,d0
@@ -6646,7 +6643,7 @@ aboveplayer:
 
 				; is below camera
 below:
-				move.w	botclip,d7
+				move.w	draw_BottomClip_w,d7
 				sub.w	Vid_CentreY_w,d7
 				ble.s	dontdrawreturn			; don't draw if no room between screen center amd bottom clip
 
@@ -6747,7 +6744,6 @@ cornerprocessloop: ;	figure					out if any left/right clipping is necessary
 				bne		dontdrawreturn
 
 somefloortodraw:
-
 				tst.b	gourfloor
 				bne		goursides
 
@@ -6860,13 +6856,13 @@ lineclipped:
 				lea		(a3,d1*2),a3			; start of left side buffer
 
 				cmp.w	top(pc),d1
-				bge.s	.nonewtop
+				bge.s	.no_new_top
 				move.w	d1,top
-.nonewtop:
+.no_new_top:
 				cmp.w	bottom(pc),d3
-				ble.s	.nonewbot
+				ble.s	.no_new_bottom
 				move.w	d3,bottom
-.nonewbot:
+.no_new_bottom:
 
 				sub.w	d1,d3					; dy
 				sub.w	d0,d2					; dx
@@ -6961,13 +6957,13 @@ lineonright:
 				lea		(a3,d1*2),a3			;right line entry start
 
 				cmp.w	top(pc),d1
-				bge.s	.nonewtop
+				bge.s	.no_new_top
 				move.w	d1,top
-.nonewtop:
+.no_new_top:
 				cmp.w	bottom(pc),d3
-				ble.s	.nonewbot
+				ble.s	.no_new_bottom
 				move.w	d3,bottom
-.nonewbot:
+.no_new_bottom:
 
 				sub.w	d1,d3					; dy
 				sub.w	d0,d2					; dx
@@ -7211,13 +7207,13 @@ linenotflatGOUR
 				lea		leftbrighttab-leftsidetab(a3),a4 ; left side brightness entry
 
 				cmp.w	top(pc),d1
-				bge.s	.nonewtop
+				bge.s	.no_new_top
 				move.w	d1,top
-.nonewtop:
+.no_new_top:
 				cmp.w	bottom(pc),d3
-				ble.s	.nonewbot
+				ble.s	.no_new_bottom
 				move.w	d3,bottom
-.nonewbot:
+.no_new_bottom:
 
 				sub.w	d1,d3					; dy
 				sub.w	d0,d2					; dx
@@ -7349,13 +7345,13 @@ lineonrightGOUR:
 				lea		rightbrighttab-rightsidetab(a3),a4 ; right brightness entry
 
 				cmp.w	top(pc),d1
-				bge.s	.nonewtop
+				bge.s	.no_new_top
 				move.w	d1,top
-.nonewtop:
+.no_new_top:
 				cmp.w	bottom(pc),d3
-				ble.s	.nonewbot
+				ble.s	.no_new_bottom
 				move.w	d3,bottom
-.nonewbot:
+.no_new_bottom:
 
 				sub.w	d1,d3					; dy
 				sub.w	d0,d2					; dx
@@ -7649,15 +7645,15 @@ pastscale:
 				move.w	bottom(pc),d7			; bottom of floor
 				move.w	Vid_CentreY_w,d3
 				move.w	d3,d4
-				sub.w	topclip,d3
-				sub.w	botclip,d4
+				sub.w	draw_TopClip_w,d3
+				sub.w	draw_BottomClip_w,d4
 				cmp.w	d3,d1
-				bge		predontdrawfloor		; top_of_floor >= (Vid_CentreY_w-topclip)
+				bge		predontdrawfloor		; top_of_floor >= (Vid_CentreY_w-draw_TopClip_w)
 				cmp.w	d4,d7
-				blt		predontdrawfloor		; bottom_of_floor < (Vid_CentreY_w-botclip) ?
+				blt		predontdrawfloor		; bottom_of_floor < (Vid_CentreY_w-draw_BottomClip_w) ?
 				cmp.w	d4,d1
-				bge.s	.nocliptoproof			; top_of_floor >= (Vid_CentreY_w-botclip)  ?
-				move.w	d4,d1					; clip top_of_floor to (Vid_CentreY_w-botclip)
+				bge.s	.nocliptoproof			; top_of_floor >= (Vid_CentreY_w-draw_BottomClip_w)  ?
+				move.w	d4,d1					; clip top_of_floor to (Vid_CentreY_w-draw_BottomClip_w)
 .nocliptoproof
 				cmp.w	d3,d7
 				blt		.doneclip
@@ -7682,23 +7678,23 @@ pastscale:
 
 				move.w	bottom(pc),d7
 
-				move.w	botclip,d4
+				move.w	draw_BottomClip_w,d4
 				sub.w	Vid_CentreY_w,d4
 				cmp.w	d4,d1
-				bge		predontdrawfloor		; top >= (botclip - Vid_CentreY_w)
+				bge		predontdrawfloor		; top >= (draw_BottomClip_w - Vid_CentreY_w)
 
-				move.w	topclip,d3
+				move.w	draw_TopClip_w,d3
 				sub.w	Vid_CentreY_w,d3
 				cmp.w	d3,d1
-				bge.s	.nocliptopfloor			; top >= (topclip - Vid_CentreY_w)
+				bge.s	.nocliptopfloor			; top >= (draw_TopClip_w - Vid_CentreY_w)
 
-				move.w	d3,d1					; clip top_of_floor to (topclip - Vid_CentreY_w)
+				move.w	d3,d1					; clip top_of_floor to (draw_TopClip_w - Vid_CentreY_w)
 .nocliptopfloor
 				cmp.w	d3,d7
-				ble		predontdrawfloor		; (bottom) <= (topclip - Vid_CentreY_w) : bottom <= topclip (bottom of floor above topclip)
+				ble		predontdrawfloor		; (bottom) <= (draw_TopClip_w - Vid_CentreY_w) : bottom <= draw_TopClip_w (bottom of floor above draw_TopClip_w)
 				cmp.w	d4,d7
-				blt.s	.noclipbotfloor			; (bottom) < (botclip)
-				move.w	d4,d7					; bottom = botclip
+				blt.s	.noclipbotfloor			; (bottom) < (draw_BottomClip_w)
+				move.w	d4,d7					; bottom = draw_BottomClip_w
 .noclipbotfloor:
 
 
@@ -7757,10 +7753,10 @@ pix1h:
 				move.w	bottom(pc),d7
 				move.w	Vid_CentreY_w,d3
 				move.w	d3,d4
-				sub.w	topclip,d3
-				sub.w	botclip,d4
+				sub.w	draw_TopClip_w,d3
+				sub.w	draw_BottomClip_w,d4
 				cmp.w	d3,d1
-				bge		predontdrawfloor		; top >= Vid_CentreY_w - topclip
+				bge		predontdrawfloor		; top >= Vid_CentreY_w - draw_TopClip_w
 				cmp.w	d4,d7
 				blt		predontdrawfloor		; bottom >= Vid_CentreY_w - bottomclip
 				cmp.w	d4,d1
@@ -7780,21 +7776,21 @@ clipfloor:
 				move.w	d7,disttobot
 
 				move.w	bottom(pc),d7
-				move.w	botclip,d4
+				move.w	draw_BottomClip_w,d4
 				sub.w	Vid_CentreY_w,d4
 				cmp.w	d4,d1
-				bge		predontdrawfloor		; top >= (botclip - Vid_CentreY_w)
-				move.w	topclip,d3
+				bge		predontdrawfloor		; top >= (draw_BottomClip_w - Vid_CentreY_w)
+				move.w	draw_TopClip_w,d3
 				sub.w	Vid_CentreY_w,d3
 				cmp.w	d3,d1
-				bge.s	.nocliptopfloor			; top >= (topclip - Vid_CentreY_w)
-				move.w	d3,d1					; top =  (topclip - Vid_CentreY_w)
+				bge.s	.nocliptopfloor			; top >= (draw_TopClip_w - Vid_CentreY_w)
+				move.w	d3,d1					; top =  (draw_TopClip_w - Vid_CentreY_w)
 .nocliptopfloor
 				cmp.w	d3,d7
-				ble		predontdrawfloor		; bottom <=  (topclip - Vid_CentreY_w)
+				ble		predontdrawfloor		; bottom <=  (draw_TopClip_w - Vid_CentreY_w)
 				cmp.w	d4,d7
-				blt.s	.noclipbotfloor			; bottom <= (botclip - Vid_CentreY_w)
-				move.w	d4,d7					; botom = (botclip - Vid_CentreY_w)
+				blt.s	.noclipbotfloor			; bottom <= (draw_BottomClip_w - Vid_CentreY_w)
+				move.w	d4,d7					; botom = (draw_BottomClip_w - Vid_CentreY_w)
 .noclipbotfloor:
 
 doneclip:

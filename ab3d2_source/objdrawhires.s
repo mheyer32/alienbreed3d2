@@ -1,11 +1,9 @@
 
 				CNOP 0,16
-draw_DepthTable_vl:
-				ds.l	80
+draw_DepthTable_vl:		ds.l	80
 draw_EndDepthTable:
-
-ty3d:			dc.l	-100*1024
-by3d:			dc.l	1*1024
+draw_TopY_3D_l:			dc.l	-100*1024
+draw_BottomY_3D_l:		dc.l	1*1024
 
 TOPOFROOM:		dc.l	0
 BOTOFROOM:		dc.l	0
@@ -38,26 +36,26 @@ Draw_Object:
 				bgt.s	.full_room
 
 .before_wat:
-				move.l	BEFOREWATTOP,ty3d
-				move.l	BEFOREWATBOT,by3d
+				move.l	BEFOREWATTOP,draw_TopY_3D_l
+				move.l	BEFOREWATBOT,draw_BottomY_3D_l
 				move.b	#1,draw_WhichDoing_b
 				bra.s	.done_top_bot
 
 .after_wat:
-				move.l	AFTERWATTOP,ty3d
-				move.l	AFTERWATBOT,by3d
+				move.l	AFTERWATTOP,draw_TopY_3D_l
+				move.l	AFTERWATBOT,draw_BottomY_3D_l
 				move.b	#0,draw_WhichDoing_b
 				bra.s	.done_top_bot
 
 .full_room:
-				move.l	TOPOFROOM(pc),ty3d
-				move.l	BOTOFROOM(pc),by3d
+				move.l	TOPOFROOM(pc),draw_TopY_3D_l
+				move.l	BOTOFROOM(pc),draw_BottomY_3D_l
 				move.b	#0,draw_WhichDoing_b
 
 .done_top_bot:
 
-; move.l (a0)+,by3d
-; move.l (a0)+,ty3d
+; move.l (a0)+,draw_BottomY_3D_l
+; move.l (a0)+,draw_TopY_3D_l
 
 				movem.l	d0-d7/a1-a6,-(a7)
 				move.w	rightclip,d0
@@ -199,10 +197,10 @@ draw_Object:
 ;				cmp.w	#25,d1
 ;				ble		object_behind
 ;
-;				move.w	topclip,d2
-;				move.w	botclip,d3
+;				move.w	draw_TopClip_w,d2
+;				move.w	draw_BottomClip_w,d3
 ;
-;				move.l	ty3d,d6
+;				move.l	draw_TopY_3D_l,d6
 ;				sub.l	yoff,d6
 ;				divs	d1,d6
 ;				add.w	Vid_CentreY_w,d6
@@ -214,7 +212,7 @@ draw_Object:
 ;.okobtc:
 ;				move.w	d6,draw_ObjClipT_w
 ;
-;				move.l	by3d,d6
+;				move.l	draw_BottomY_3D_l,d6
 ;				sub.l	yoff,d6
 ;				divs	d1,d6
 ;				add.w	Vid_CentreY_w,d6
@@ -524,9 +522,9 @@ draw_bitmap_glare:
 				cmp.w	#25,d1
 				ble		object_behind
 
-				move.w	topclip,d2
-				move.w	botclip,d3
-				move.l	ty3d,d6
+				move.w	draw_TopClip_w,d2
+				move.w	draw_BottomClip_w,d3
+				move.l	draw_TopY_3D_l,d6
 				sub.l	yoff,d6
 				divs	d1,d6
 				add.w	Vid_CentreY_w,d6
@@ -538,7 +536,7 @@ draw_bitmap_glare:
 
 .okobtc:
 				move.w	d6,draw_ObjClipT_w
-				move.l	by3d,d6
+				move.l	draw_BottomY_3D_l,d6
 				sub.l	yoff,d6
 				divs	d1,d6
 				add.w	Vid_CentreY_w,d6
@@ -631,8 +629,7 @@ draw_bitmap_glare:
 				swap	d7
 				clr.w	d7
 				swap	d7
-				lea		(a3,d7.l*8),a2			; pointer to
-; horiz const
+				lea		(a3,d7.l*8),a2			; pointer to horiz const
 				move.w	d1,d7
 				move.w	6(a6),d6
 				add.w	d6,d6
@@ -646,22 +643,21 @@ draw_bitmap_glare:
 				clr.w	d7
 				swap	d7
 				lea		(a3,d7.l*8),a3			; pointer to vertical c.
-
-; * CLIP OBJECT TO TOP AND BOTTOM
-; * OF THE VISIBLE DISPLAY
+												; * CLIP OBJECT TO TOP AND BOTTOM
+												; * OF THE VISIBLE DISPLAY
 
 				moveq	#0,d7
 				cmp.w	draw_ObjClipT_w,d2
 				bge.s	.object_fits_on_top
 
 				sub.w	draw_ObjClipT_w,d2
-				add.w	d2,d4					;new height in pixels
-				ble		object_behind				; nothing to draw
+				add.w	d2,d4					; new height in pixels
+				ble		object_behind			; nothing to draw
 
 				move.w	d2,d7
 				neg.w	d7						; factor to mult.
-; constants by
-; at top of obj.
+												; constants by
+												; at top of obj.
 				move.w	draw_ObjClipT_w,d2
 
 .object_fits_on_top:
@@ -717,8 +713,8 @@ draw_bitmap_glare:
 				swap	d6
 				add.w	d6,d5
 				add.w	DOWN_STRIP(PC),d5		;d5 contains
-;top offset into
-;each strip.
+												;top offset into
+												;each strip.
 				add.l	#$80000000,d5
 				move.l	(a2),a2
 				moveq.l	#0,d7
@@ -738,84 +734,86 @@ draw_right_side_glare:
 				adda.w	a1,a6
 				addq	#1,a1
 				move.l	(a5),d1
-				beq		blankstripGLARE
+				beq		.blank_strip
 
 				and.l	#$ffffff,d1
 				add.l	d1,a0
 				move.b	(a5),d1
 				cmp.b	#1,d1
-				bgt.s	ThirdThirdGLARE
+				bgt.s	.third_third
 
-				beq.s	SecThirdGLARE
+				beq.s	.second_third
 
 				move.l	d5,d6
 				move.l	d5,d1
 				move.w	d4,-(a7)
 
-.draw_vertical_strip:
+.draw_vertical_strip_1:
 				move.b	1(a0,d1.w*2),d0
 				and.b	#%00011111,d0
-				beq.s	.skip_black
+				beq.s	.skip_black_1
+
 				lsl.w	#8,d0
 				add.w	d0,d0
 				move.b	(a6),d0
 				move.b	(a4,d0.w),(a6)
 
-.skip_black:
+.skip_black_1:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
-				dbra	d4,.draw_vertical_strip
+				dbra	d4,.draw_vertical_strip_1
 				move.w	(a7)+,d4
 
-blankstripGLARE:
+.blank_strip:
 				dbra	d3,draw_right_side_glare
 				bra		object_behind
 
-SecThirdGLARE:
+.second_third:
 				move.l	d5,d1
 				move.l	d5,d6
 				move.w	d4,-(a7)
 
-.draw_vertical_strip:
+.draw_vertical_strip_2:
 				move.w	(a0,d1.w*2),d0
 				lsr.w	#5,d0
 				and.w	#%11111,d0
-				beq.s	.skip_black
+				beq.s	.skip_black_2
+
 				lsl.w	#8,d0
 				add.w	d0,d0
 				move.b	(a6),d0
 				move.b	(a4,d0.w),(a6)
 
-.skip_black:
+.skip_black_2:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
-				dbra	d4,.draw_vertical_strip
+				dbra	d4,.draw_vertical_strip_2
 				move.w	(a7)+,d4
 				dbra	d3,draw_right_side_glare
 				bra		object_behind
 
-ThirdThirdGLARE:
+.third_third:
 				move.l	d5,d1
 				move.l	d5,d6
 				move.w	d4,-(a7)
 
-.draw_vertical_strip:
+.draw_vertical_strip_3:
 				move.b	(a0,d1.w*2),d0
 				lsr.b	#2,d0
 				and.b	#%11111,d0
-				beq.s	.skip_black
+				beq.s	.skip_black_3
 				lsl.w	#8,d0
 				add.w	d0,d0
 				move.b	(a6),d0
 				move.b	(a4,d0.w),(a6)
 
-.skip_black:
+.skip_black_3:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
-				dbra	d4,.draw_vertical_strip
+				dbra	d4,.draw_vertical_strip_3
 				move.w	(a7)+,d4
 				dbra	d3,draw_right_side_glare
 
@@ -843,9 +841,9 @@ draw_Bitmap:
 				cmp.w	#25,d1
 				ble		object_behind
 
-				move.w	topclip,d2
-				move.w	botclip,d3
-				move.l	ty3d,d6
+				move.w	draw_TopClip_w,d2
+				move.w	draw_BottomClip_w,d3
+				move.l	draw_TopY_3D_l,d6
 				sub.l	yoff,d6
 				divs	d1,d6
 				add.w	Vid_CentreY_w,d6
@@ -858,7 +856,7 @@ draw_Bitmap:
 
 .okobtc:
 				move.w	d6,draw_ObjClipT_w				; top object clip
-				move.l	by3d,d6
+				move.l	draw_BottomY_3D_l,d6
 				sub.l	yoff,d6
 				divs	d1,d6
 				add.w	Vid_CentreY_w,d6
@@ -1006,11 +1004,9 @@ pastobjscale:
 				move.l	(a5)+,PTR_PTR
 				add.l	4(a5),a4				; a5: #Objects
 				move.l	4(a5),draw_BasePalPtr_l
-
 				move.l	(a6),d7					; pointer to current frame
 				move.w	d7,DOWN_STRIP			; leftmost strip?
 				move.l	PTR_PTR,a5
-
 				tst.b	draw_FlipIt_b
 				beq.s	.no_flip
 
@@ -1037,8 +1033,7 @@ pastobjscale:
 				swap	d7
 				clr.w	d7
 				swap	d7
-				lea		(a3,d7.l*8),a2			; pointer to
-; horiz const
+				lea		(a3,d7.l*8),a2			; pointer to horiz const
 				move.w	d1,d7
 				move.w	6(a6),d6
 				add.w	d6,d6
@@ -1063,14 +1058,13 @@ pastobjscale:
 				bge.s	.object_fits_on_top
 
 				sub.w	draw_ObjClipT_w,d2
-				add.w	d2,d4					;new height in
-;pixels
-				ble		object_behind				; nothing to draw
+				add.w	d2,d4					; new height in pixels
+				ble		object_behind			; nothing to draw
 
 				move.w	d2,d7
 				neg.w	d7						; factor to mult.
-; constants by
-; at top of obj.
+												; constants by
+												; at top of obj.
 				move.w	draw_ObjClipT_w,d2
 
 .object_fits_on_top:
@@ -1133,8 +1127,8 @@ pastobjscale:
 				swap	d6
 				add.w	d6,d5
 				add.w	DOWN_STRIP(PC),d5		;d5 contains
-											;top offset into
-											;strip?
+												;top offset into
+												;strip?
 				add.l	#$80000000,d5
 
 				move.l	(a2),d7					; what is a2 pointing to?
@@ -1166,7 +1160,7 @@ draw_right_side:
 				adda.w	a1,a6
 				addq	#1,a1
 				move.l	(a5),d1
-				beq		blankstrip
+				beq		.blank_strip
 
 				and.l	#$ffffff,d1
 				add.l	d1,a0
@@ -1176,57 +1170,57 @@ draw_right_side:
 				; To not waste memory, 3 strips are stored in 16bit words
 				; Here we decide which strip to extract
 				cmp.b	#1,d1
-				bgt.s	ThirdThird
-				beq.s	SecThird
+				bgt.s	.third_third
+				beq.s	.second_third
 				move.l	d5,d6
 				move.l	d5,d1
 				move.w	d4,-(a7)
 
 				; Inner loops of 2D object drawing
-.draw_vertical_strip:
+.draw_vertical_strip_1:
 				move.b	1(a0,d1.w*2),d0
 				and.b	#%00011111,d0
-				beq.s	.skip_black
+				beq.s	.skip_black_1
 				move.b	(a4,d0.w*2),(a6)
 
-.skip_black:
+.skip_black_1:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6					; is d2 the vertical step, fraction|integer?
 				addx.w	d2,d1
-				dbra	d4,.draw_vertical_strip
+				dbra	d4,.draw_vertical_strip_1
 				move.w	(a7)+,d4
 
-blankstrip:
+.blank_strip:
 				dbra	d3,draw_right_side
 				bra.s	object_behind
 
-SecThird:
+.second_third:
 				move.l	d5,d1
 				move.l	d5,d6
 				move.w	d4,-(a7)
 
-.draw_vertical_strip:
+.draw_vertical_strip_2:
 				move.w	(a0,d1.w*2),d0
 				lsr.w	#5,d0
 				and.w	#%11111,d0
-				beq.s	.skip_black
+				beq.s	.skip_black_2
 				move.b	(a4,d0.w*2),(a6)
 
-.skip_black:
+.skip_black_2:
 				adda.w	#SCREENWIDTH,a6			; next line on screen
 				add.l	d2,d6
 				addx.w	d2,d1					; is d2 the vertical step, fraction|integer?
-				dbra	d4,.draw_vertical_strip
+				dbra	d4,.draw_vertical_strip_2
 				move.w	(a7)+,d4
 				dbra	d3,draw_right_side
 				bra.s	object_behind
 
-ThirdThird:
+.third_third:
 				move.l	d5,d1
 				move.l	d5,d6
 				move.w	d4,-(a7)
 
-.draw_vertical_strip:
+.draw_vertical_strip_3:
 				move.b	(a0,d1.w*2),d0
 				lsr.b	#2,d0
 				and.b	#%11111,d0
@@ -1237,7 +1231,7 @@ ThirdThird:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1					; is d2 the vertical dy/dt step, fraction|integer?
-				dbra	d4,.draw_vertical_strip
+				dbra	d4,.draw_vertical_strip_3
 				move.w	(a7)+,d4
 				dbra	d3,draw_right_side
 
@@ -1260,20 +1254,20 @@ draw_right_side_additive:
 				adda.w	a1,a6
 				addq	#1,a1
 				move.l	(a5),d1
-				beq		blank_strip_additive
+				beq		.blank_strip_additive
 
 				and.l	#$ffffff,d1
 				add.l	d1,a0
 
 				move.b	(a5),d1
 				cmp.b	#1,d1
-				bgt.s	third_third_additive
-				beq.s	second_third_additive
+				bgt.s	.third_third_additive
+				beq.s	.second_third_additive
 				move.l	d5,d6
 				move.l	d5,d1
 				move.w	d4,-(a7)
 
-.draw_vertical_strip:
+.draw_vertical_strip_1:
 				move.b	1(a0,d1.w*2),d0
 				and.b	#%00011111,d0
 				lsl.w	#8,d0
@@ -1282,19 +1276,19 @@ draw_right_side_additive:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
-				dbra	d4,.draw_vertical_strip
+				dbra	d4,.draw_vertical_strip_1
 				move.w	(a7)+,d4
 
-blank_strip_additive:
+.blank_strip_additive:
 				dbra	d3,draw_right_side_additive
 				bra		object_behind
 
-second_third_additive:
+.second_third_additive:
 				move.l	d5,d1
 				move.l	d5,d6
 				move.w	d4,-(a7)
 
-.draw_vertical_strip:
+.draw_vertical_strip_2:
 				move.w	(a0,d1.w*2),d0
 				lsr.w	#5,d0
 				and.w	#%11111,d0
@@ -1304,17 +1298,17 @@ second_third_additive:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
-				dbra	d4,.draw_vertical_strip
+				dbra	d4,.draw_vertical_strip_2
 				move.w	(a7)+,d4
 				dbra	d3,draw_right_side_additive
 				bra		object_behind
 
-third_third_additive:
+.third_third_additive:
 				move.l	d5,d1
 				move.l	d5,d6
 				move.w	d4,-(a7)
 
-.draw_vertical_strip:
+.draw_vertical_strip_3:
 				move.b	(a0,d1.w*2),d0
 				lsr.b	#2,d0
 				and.b	#%11111,d0
@@ -1326,7 +1320,7 @@ third_third_additive:
 				adda.w	#SCREENWIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
-				dbra	d4,.draw_vertical_strip
+				dbra	d4,.draw_vertical_strip_3
 				move.w	(a7)+,d4
 				dbra	d3,draw_right_side_additive
 
@@ -1347,7 +1341,6 @@ draw_bitmap_lighted:
 				move.l	#$80808080,20(a2)
 				move.l	#$80808080,24(a2)
 				move.l	#$80808080,28(a2)
-
 				move.l	#$80808080,32(a2)
 				move.l	#$80808080,36(a2)
 				move.l	#$80808080,40(a2)
@@ -1673,7 +1666,7 @@ INMIDDLE:
 				adda.w	a1,a6
 				addq	#1,a1
 				move.l	(a5),d1
-				beq		.blankstrip
+				beq		.blank_strip
 
 				add.l	d1,a0
 
@@ -1692,7 +1685,7 @@ INMIDDLE:
 				addx.w	d2,d1
 				dbra	d4,.draw_vertical_strip
 				move.w	(a7)+,d4
-.blankstrip:
+.blank_strip:
 				dbra	d3,.draw_light_loop
 				bra		object_behind
 
@@ -2263,8 +2256,8 @@ BOTPART:
 				asr.w	#7,d3
 				add.w	d3,d2
 				move.w	d2,objbright
-				move.w	topclip,d2
-				move.w	botclip,d3
+				move.w	draw_TopClip_w,d2
+				move.w	draw_BottomClip_w,d3
 				move.w	d2,draw_ObjClipT_w
 				move.w	d3,draw_ObjClipB_w
 
@@ -2324,7 +2317,7 @@ BOTPART:
 				move.l	#SineTable,a2
 				lea		(a2,d2.w),a5			; sine of object rotation wrt view
 				move.l	#boxbrights,a6
-				move.w	(a5),d6					; sine of object rottaion
+				move.w	(a5),d6					; sine of object rotation
 				move.w	2048(a5),d7				; cosine of object rotation. WHY DOES IT NOT NEED OOB/WRAP CHECK?
 												; bigsine is 16kb, so 8192 words
 												; this may mean the table is covering 4pi/720deg
@@ -2637,8 +2630,8 @@ polybright:		dc.l	0
 PolyAng:		dc.w	0
 
 doapoly:
-				move.w	#960,Left
-				move.w	#-10,Right
+				move.w	#960,draw_Left_w
+				move.w	#-10,draw_Right_w
 				move.w	(a1)+,d7				; lines to draw
 				move.w	(a1)+,draw_PreHoles_b
 				move.w	12(a1,d7.w*4),draw_PreGouraud_b
@@ -2716,12 +2709,12 @@ checkbeh:
 				tst.b	draw_Gouraud_b(pc)
 				bne.s	usegour
 
-				bsr		putinlines
+				bsr		draw_PutInLines
 
 				bra.s	dontusegour
 
 usegour:
-				bsr		putingourlines
+				bsr		draw_PutInLinesGouraud
 
 dontusegour:
 				move.w	#SCREENWIDTH,linedir
@@ -2730,8 +2723,8 @@ dontusegour:
 				beq		polybehind
 
 				move.l	#PolyTopTab,a4
-				move.w	Left(pc),d1
-				move.w	Right(pc),d7
+				move.w	draw_Left_w(pc),d1
+				move.w	draw_Right_w(pc),d7
 				move.w	draw_LeftClipB_w,d3
 				move.w	draw_RightClipB_w,d4
 				cmp.w	d3,d7
@@ -3242,8 +3235,14 @@ gotholesin:
 				move.b	(a1,d2.w),d4			;top
 				move.b	16(a1,d2.w),d5			;bottom
 				sub.w	d4,d5
+
+				;muls	d3,d5
+				;divs	#14,d5 ; wat?
+
+				add.w	#73,d3 ; 73/1024 ~= 1/14. Accumulate here.
 				muls	d3,d5
-				divs	#14,d5 ; wat?
+				asr.l	#8,d5
+				asr.l	#2,d5
 				add.w	d4,d5
 				add.w	d5,d1
 				move.l	#draw_ObjScaleCols_vw,a1
@@ -3389,15 +3388,15 @@ val				SET		val+SCREENWIDTH
 
 				EVEN
 draw_PreGouraud_b:
-				dc.b	0
+				dc.b	0 ; written as word, which also sets next byte
 draw_Gouraud_b:
-				dc.b	0
+				dc.b	0 ; tested as byte
 draw_PreHoles_b:
-				dc.b	0 ; accessed as word?
+				dc.b	0 ; written as word, which also sets next byte
 draw_Holes_b:
-				dc.b	0
+				dc.b	0 ; tested as byte
 
-putinlines:
+draw_PutInLines:
 				move.w	(a1),d0
 				move.w	4(a1),d1
 				move.w	(a3,d0.w*4),d2
@@ -3408,44 +3407,44 @@ putinlines:
 ; d2=x1 d3=y1 d4=x2 d5=y2
 
 				cmp.w	d2,d4
-				beq		thislineflat
+				beq		this_line_flat
 
-				bgt		thislineontop
+				bgt		this_line_on_top
 
 				move.l	#PolyBotTab,a4
 				exg		d2,d4
 				exg		d3,d5
 				cmp.w	draw_RightClipB_w,d2
-				bge		thislineflat
+				bge		this_line_flat
 
 				cmp.w	draw_LeftClipB_w,d4
-				ble		thislineflat
+				ble		this_line_flat
 
 				move.w	draw_RightClipB_w,d6
 				sub.w	d4,d6
-				ble.s	.clipr
+				ble.s	.clip_right
 
 				move.w	#0,-(a7)
-				cmp.w	Right(pc),d4
-				ble.s	.nonewbot
+				cmp.w	draw_Right_w(pc),d4
+				ble.s	.no_new_bottom
 
-				move.w	d4,Right
-				bra.s	.nonewbot
+				move.w	d4,draw_Right_w
+				bra.s	.no_new_bottom
 
-.clipr:
+.clip_right:
 				move.w	d6,-(a7)
-				move.w	draw_RightClipB_w,Right
-				sub.w	#1,Right
+				move.w	draw_RightClipB_w,draw_Right_w
+				sub.w	#1,draw_Right_w
 
-.nonewbot:
-				move.w	#0,offleftby
+.no_new_bottom:
+				move.w	#0,draw_OffLeftBy_w
 				move.w	d2,d6
 				cmp.w	draw_LeftClipB_w,d6
 				bge		.okt
 
 				move.w	draw_LeftClipB_w,d6
 				sub.w	d2,d6
-				move.w	d6,offleftby
+				move.w	d6,draw_OffLeftBy_w
 				add.w	d2,d6
 
 .okt:
@@ -3453,12 +3452,12 @@ putinlines:
 				add.w	d6,d6
 				lea		(a4,d6.w*8),a4
 				asr.w	#1,d6
-				cmp.w	Left(pc),d6
-				bge.s	.nonewtop
+				cmp.w	draw_Left_w(pc),d6
+				bge.s	.no_new_top
 
-				move.w	d6,Left
+				move.w	d6,draw_Left_w
 
-.nonewtop
+.no_new_top:
 				sub.w	d3,d5					; dy
 				swap	d3
 				clr.w	d3						; d2=xpos
@@ -3490,29 +3489,29 @@ putinlines:
 				clr.w	d5
 				divs.l	d4,d5
 				add.w	(a7)+,d4
-				sub.w	offleftby(pc),d4
-				blt		thislineflat
+				sub.w	draw_OffLeftBy_w(pc),d4
+				blt		this_line_flat
 
-				tst.w	offleftby(pc)
-				beq.s	.noneoffleft
+				tst.w	draw_OffLeftBy_w(pc)
+				beq.s	.none_off_left
 
 				move.w	d4,-(a7)
-				move.w	offleftby(pc),d4
-				dbra	d4,.calcnodraw
+				move.w	draw_OffLeftBy_w(pc),d4
+				dbra	d4,.calc_no_draw
 
-				bra		.nodrawoffleft
+				bra		.no_draw_off_left
 
-.calcnodraw:
+.calc_no_draw:
 				add.l	a5,d3
 				add.l	a6,d6
 				add.l	d5,d2
-				dbra	d4,.calcnodraw
+				dbra	d4,.calc_no_draw
 
-.nodrawoffleft:
+.no_draw_off_left:
 				move.w	(a7)+,d4
 
-.noneoffleft:
-.putinline:
+.none_off_left:
+.put_in_line:
 				swap	d3
 				move.w	d3,(a4)+
 				swap	d3
@@ -3522,43 +3521,43 @@ putinlines:
 				add.l	a5,d3
 				add.l	a6,d6
 				add.l	d5,d2
-				dbra	d4,.putinline
+				dbra	d4,.put_in_line
 
-				bra		thislineflat
+				bra		this_line_flat
 
-thislineontop:
+this_line_on_top:
 				move.l	#PolyTopTab,a4
 				cmp.w	draw_RightClipB_w,d2
-				bge		thislineflat
+				bge		this_line_flat
 
 				cmp.w	draw_LeftClipB_w,d4
-				ble		thislineflat
+				ble		this_line_flat
 
 				move.w	draw_RightClipB_w,d6
 				sub.w	d4,d6
-				ble.s	.clipr
+				ble.s	.clip_right
 
 				move.w	#0,-(a7)
-				cmp.w	Right(pc),d4
-				ble.s	.nonewbot
+				cmp.w	draw_Right_w(pc),d4
+				ble.s	.no_new_bottom
 
-				move.w	d4,Right
-				bra.s	.nonewbot
+				move.w	d4,draw_Right_w
+				bra.s	.no_new_bottom
 
-.clipr
+.clip_right:
 				move.w	d6,-(a7)
-				move.w	draw_RightClipB_w,Right
-				sub.w	#1,Right
+				move.w	draw_RightClipB_w,draw_Right_w
+				sub.w	#1,draw_Right_w
 
-.nonewbot:
-				move.w	#0,offleftby
+.no_new_bottom:
+				move.w	#0,draw_OffLeftBy_w
 				move.w	d2,d6
 				cmp.w	draw_LeftClipB_w,d6
 				bge		.okt
 
 				move.w	draw_LeftClipB_w,d6
 				sub.w	d2,d6
-				move.w	d6,offleftby
+				move.w	d6,draw_OffLeftBy_w
 				add.w	d2,d6
 
 .okt:
@@ -3566,12 +3565,12 @@ thislineontop:
 				add.w	d6,d6
 				lea		(a4,d6.w*8),a4
 				asr.w	#1,d6
-				cmp.w	Left(pc),d6
-				bge.s	.nonewtop
+				cmp.w	draw_Left_w(pc),d6
+				bge.s	.no_new_top
 
-				move.w	d6,Left
+				move.w	d6,draw_Left_w
 
-.nonewtop
+.no_new_top:
 				sub.w	d3,d5					; dy
 				swap	d3
 				clr.w	d3						; d2=xpos
@@ -3603,29 +3602,29 @@ thislineontop:
 				clr.w	d5
 				divs.l	d4,d5
 				add.w	(a7)+,d4
-				sub.w	offleftby(pc),d4
-				blt.s	thislineflat
+				sub.w	draw_OffLeftBy_w(pc),d4
+				blt.s	this_line_flat
 
-				tst.w	offleftby(pc)
-				beq.s	.noneoffleft
+				tst.w	draw_OffLeftBy_w(pc)
+				beq.s	.none_off_left
 
 				move.w	d4,-(a7)
-				move.w	offleftby(pc),d4
-				dbra	d4,.calcnodraw
+				move.w	draw_OffLeftBy_w(pc),d4
+				dbra	d4,.calc_no_draw
 
-				bra		.nodrawoffleft
+				bra		.no_draw_off_left
 
-.calcnodraw
+.calc_no_draw:
 				add.l	a5,d3
 				add.l	a6,d6
 				add.l	d5,d2
-				dbra	d4,.calcnodraw
+				dbra	d4,.calc_no_draw
 
-.nodrawoffleft:
+.no_draw_off_left:
 				move.w	(a7)+,d4
 
-.noneoffleft:
-.putinline:
+.none_off_left:
+.put_in_line:
 				swap	d3
 				move.w	d3,(a4)+
 				swap	d3
@@ -3635,16 +3634,16 @@ thislineontop:
 				add.l	a5,d3
 				add.l	a6,d6
 				add.l	d5,d2
-				dbra	d4,.putinline
+				dbra	d4,.put_in_line
 
-thislineflat:
+this_line_flat:
 				addq	#4,a1
-				dbra	d7,putinlines
+				dbra	d7,draw_PutInLines
 
 				addq	#4,a1
 				rts
 
-putingourlines:
+draw_PutInLinesGouraud:
 				move.l	#boxbrights,a2
 
 piglloop:
@@ -3655,44 +3654,44 @@ piglloop:
 				move.w	(a3,d1.w*4),d4
 				move.w	2(a3,d1.w*4),d5
 				cmp.w	d2,d4
-				beq		thislineflatgour
+				beq		this_line_flat_gouraud
 
-				bgt		thislineontopgour
+				bgt		this_line_on_top_gouraud
 
 				move.l	#PolyBotTab,a4
 				exg		d2,d4
 				exg		d3,d5
 				cmp.w	draw_RightClipB_w,d2
-				bge		thislineflatgour
+				bge		this_line_flat_gouraud
 
 				cmp.w	draw_LeftClipB_w,d4
-				ble		thislineflatgour
+				ble		this_line_flat_gouraud
 
 				move.w	draw_RightClipB_w,d6
 				sub.w	d4,d6
-				ble.s	.clipr
+				ble.s	.clip_right
 
 				move.w	#0,-(a7)
-				cmp.w	Right(pc),d4
-				ble.s	.nonewbot
+				cmp.w	draw_Right_w(pc),d4
+				ble.s	.no_new_bottom
 
-				move.w	d4,Right
-				bra.s	.nonewbot
+				move.w	d4,draw_Right_w
+				bra.s	.no_new_bottom
 
-.clipr
+.clip_right:
 				move.w	d6,-(a7)
-				move.w	draw_RightClipB_w,Right
-				sub.w	#1,Right
+				move.w	draw_RightClipB_w,draw_Right_w
+				sub.w	#1,draw_Right_w
 
-.nonewbot:
-				move.w	#0,offleftby
+.no_new_bottom:
+				move.w	#0,draw_OffLeftBy_w
 				move.w	d2,d6
 				cmp.w	draw_LeftClipB_w,d6
 				bge		.okt
 
 				move.w	draw_LeftClipB_w,d6
 				sub.w	d2,d6
-				move.w	d6,offleftby
+				move.w	d6,draw_OffLeftBy_w
 				add.w	d2,d6
 
 .okt:
@@ -3700,12 +3699,12 @@ piglloop:
 				add.w	d6,d6
 				lea		(a4,d6.w*8),a4
 				asr.w	#1,d6
-				cmp.w	Left(pc),d6
-				bge.s	.nonewtop
+				cmp.w	draw_Left_w(pc),d6
+				bge.s	.no_new_top
 
-				move.w	d6,Left
+				move.w	d6,draw_Left_w
 
-.nonewtop:
+.no_new_top:
 				sub.w	d3,d5					; dy
 				swap	d3
 				clr.w	d3						; d2=xpos
@@ -3745,30 +3744,30 @@ piglloop:
 				clr.w	d1
 				divs.l	d4,d0
 				add.w	(a7)+,d4
-				sub.w	offleftby(pc),d4
-				blt		thislineflatgour
+				sub.w	draw_OffLeftBy_w(pc),d4
+				blt		this_line_flat_gouraud
 
-				tst.w	offleftby(pc)
-				beq.s	.noneoffleft
+				tst.w	draw_OffLeftBy_w(pc)
+				beq.s	.none_off_left
 
 				move.w	d4,-(a7)
-				move.w	offleftby(pc),d4
-				dbra	d4,.calcnodraw
+				move.w	draw_OffLeftBy_w(pc),d4
+				dbra	d4,.calc_no_draw
 
-				bra		.nodrawoffleft
+				bra		.no_draw_off_left
 
-.calcnodraw:
+.calc_no_draw:
 				add.l	d0,d1
 				add.l	a5,d3
 				add.l	a6,d6
 				add.l	d5,d2
-				dbra	d4,.calcnodraw
+				dbra	d4,.calc_no_draw
 
-.nodrawoffleft:
+.no_draw_off_left:
 				move.w	(a7)+,d4
 
-.noneoffleft:
-.putinline:
+.none_off_left:
+.put_in_line:
 				swap	d3
 				move.w	d3,(a4)+
 				swap	d3
@@ -3782,55 +3781,55 @@ piglloop:
 				add.l	a5,d3
 				add.l	a6,d6
 				add.l	d5,d2
-				dbra	d4,.putinline
+				dbra	d4,.put_in_line
 
-				bra		thislineflatgour
+				bra		this_line_flat_gouraud
 
-thislineontopgour:
+this_line_on_top_gouraud:
 				move.l	#PolyTopTab,a4
 				cmp.w	draw_RightClipB_w,d2
-				bge		thislineflatgour
+				bge		this_line_flat_gouraud
 
 				cmp.w	draw_LeftClipB_w,d4
-				ble		thislineflatgour
+				ble		this_line_flat_gouraud
 
 				move.w	draw_RightClipB_w,d6
 				sub.w	d4,d6
-				ble.s	.clipr
+				ble.s	.clip_right
 
 				move.w	#0,-(a7)
-				cmp.w	Right(pc),d4
-				ble.s	.nonewbot
+				cmp.w	draw_Right_w(pc),d4
+				ble.s	.no_new_bottom
 
-				move.w	d4,Right
-				bra.s	.nonewbot
+				move.w	d4,draw_Right_w
+				bra.s	.no_new_bottom
 
-.clipr:
+.clip_right:
 				move.w	d6,-(a7)
-				move.w	draw_RightClipB_w,Right
-				sub.w	#1,Right
+				move.w	draw_RightClipB_w,draw_Right_w
+				sub.w	#1,draw_Right_w
 
-.nonewbot:
-				move.w	#0,offleftby
+.no_new_bottom:
+				move.w	#0,draw_OffLeftBy_w
 				move.w	d2,d6
 				cmp.w	draw_LeftClipB_w,d6
 				bge		.okt
 
 				move.w	draw_LeftClipB_w,d6
 				sub.w	d2,d6
-				move.w	d6,offleftby
+				move.w	d6,draw_OffLeftBy_w
 				add.w	d2,d6
 .okt:
 				st		drawit
 				add.w	d6,d6
 				lea		(a4,d6.w*8),a4
 				asr.w	#1,d6
-				cmp.w	Left(pc),d6
-				bge.s	.nonewtop
+				cmp.w	draw_Left_w(pc),d6
+				bge.s	.no_new_top
 
-				move.w	d6,Left
+				move.w	d6,draw_Left_w
 
-.nonewtop:
+.no_new_top:
 				sub.w	d3,d5					; dy
 				swap	d3
 				clr.w	d3						; d2=xpos
@@ -3870,30 +3869,30 @@ thislineontopgour:
 				clr.w	d1
 				divs.l	d4,d1
 				add.w	(a7)+,d4
-				sub.w	offleftby(pc),d4
-				blt.s	thislineflatgour
+				sub.w	draw_OffLeftBy_w(pc),d4
+				blt.s	this_line_flat_gouraud
 
-				tst.w	offleftby(pc)
-				beq.s	.noneoffleft
+				tst.w	draw_OffLeftBy_w(pc)
+				beq.s	.none_off_left
 
 				move.w	d4,-(a7)
-				move.w	offleftby(pc),d4
+				move.w	draw_OffLeftBy_w(pc),d4
 
-				dbra	d4,.calcnodraw
-				bra		.nodrawoffleft
+				dbra	d4,.calc_no_draw
+				bra		.no_draw_off_left
 
-.calcnodraw:
+.calc_no_draw:
 				add.l	d1,d0
 				add.l	a5,d3
 				add.l	a6,d6
 				add.l	d5,d2
-				dbra	d4,.calcnodraw
+				dbra	d4,.calc_no_draw
 
-.nodrawoffleft:
+.no_draw_off_left:
 				move.w	(a7)+,d4
 
-.noneoffleft:
-.putinline:
+.none_off_left:
+.put_in_line:
 				swap	d3
 				move.w	d3,(a4)+
 				swap	d3
@@ -3907,25 +3906,25 @@ thislineontopgour:
 				add.l	a5,d3
 				add.l	a6,d6
 				add.l	d5,d2
-				dbra	d4,.putinline
+				dbra	d4,.put_in_line
 
-thislineflatgour:
+this_line_flat_gouraud:
 				addq	#4,a1
 				dbra	d7,piglloop
 				addq	#4,a1
 				rts
 
-offleftby:		ds.w	1
-Left:			ds.w	1
-Right:			ds.w	1
-
+draw_OffLeftBy_w:		ds.w	1
+draw_Left_w:			ds.w	1
+draw_Right_w:			ds.w	1
 
 				section	bss,bss
+				align 4
 draw_PointAndPolyBrights_vl:	ds.l	4*16
 draw_PointerTablePtr_l: 		ds.l	1
 draw_StartOfObjPtr_l:			ds.l	1
-draw_NumPoints_w:				ds.w	1
 Draw_PolyObjects_vl:			ds.l	40
+draw_NumPoints_w:				ds.w	1
 
 			; FIMXE: screenconv stores word sized points, why are they using ds.l here?
 boxonscr:		ds.l	250*2					; projected 2D points in screenspace

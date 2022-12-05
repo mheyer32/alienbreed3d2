@@ -1487,20 +1487,20 @@ nostripq:
 
 ScreenWallstripdraw:
 				move.w	d4,d6
-				cmp.w	topclip(pc),d6
+				cmp.w	draw_TopClip_w(pc),d6
 				blt.s	nostripq
-				cmp.w	botclip(pc),d3
+				cmp.w	draw_BottomClip_w(pc),d3
 				bgt.s	nostripq
 
-				cmp.w	botclip(pc),d6
+				cmp.w	draw_BottomClip_w(pc),d6
 				ble.s	noclipbot
-				move.w	botclip(pc),d6
+				move.w	draw_BottomClip_w(pc),d6
 
 noclipbot:
 				move.w	d3,d5
-				cmp.w	topclip(pc),d5
+				cmp.w	draw_TopClip_w(pc),d5
 				bge.s	nocliptop
-				move.w	topclip(pc),d5
+				move.w	draw_TopClip_w(pc),d5
 				btst	#0,d5
 				beq.s	.nsbd
 				exg		a2,a4
@@ -1841,20 +1841,20 @@ val				SET		val+SCREENWIDTH
 
 ScreenWallstripdrawBIG:
 				move.w	d4,d6
-				cmp.w	topclip(pc),d6
+				cmp.w	draw_TopClip_w(pc),d6
 				blt		nostripq
-				cmp.w	botclip(pc),d3
+				cmp.w	draw_BottomClip_w(pc),d3
 				bgt		nostripq
 
-				cmp.w	botclip(pc),d6
+				cmp.w	draw_BottomClip_w(pc),d6
 				ble.s	.noclipbot
-				move.w	botclip(pc),d6
+				move.w	draw_BottomClip_w(pc),d6
 
 .noclipbot:
 				move.w	d3,d5
-				cmp.w	topclip(pc),d5
+				cmp.w	draw_TopClip_w(pc),d5
 				bge.s	.nocliptop
-				move.w	topclip(pc),d5
+				move.w	draw_TopClip_w(pc),d5
 				btst	#0,d5
 				beq.s	.nsbd
 				exg		a2,a4
@@ -1997,19 +1997,19 @@ nostripqthru:
 
 ScreenWallstripdrawthru:
 				move.w	d4,d6
-				cmp.w	topclip(pc),d6
+				cmp.w	draw_TopClip_w(pc),d6
 				blt.s	nostripqthru
-				cmp.w	botclip(pc),d3
+				cmp.w	draw_BottomClip_w(pc),d3
 				bgt.s	nostripqthru
-				cmp.w	botclip(pc),d6
+				cmp.w	draw_BottomClip_w(pc),d6
 				ble.s	.noclipbot
-				move.w	botclip(pc),d6
+				move.w	draw_BottomClip_w(pc),d6
 
 .noclipbot:
 				move.w	d3,d5
-				cmp.w	topclip(pc),d5
+				cmp.w	draw_TopClip_w(pc),d5
 				bge.s	.nocliptop
-				move.w	topclip(pc),d5
+				move.w	draw_TopClip_w(pc),d5
 				btst	#0,d5
 				beq.s	.nsbd
 				exg		a2,a4
@@ -2632,6 +2632,6 @@ cosval:			dc.w	0
 oldxoff:		dc.w	0
 oldzoff:		dc.w	0
 
-topclip:		dc.w	0
-botclip:		dc.w	0
+draw_TopClip_w:		dc.w	0
+draw_BottomClip_w:		dc.w	0
 seethru:		dc.w	0

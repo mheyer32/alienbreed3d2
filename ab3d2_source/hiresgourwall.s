@@ -1111,28 +1111,28 @@ ScreenWallstripdrawGOUR:
 				divs.l	d6,d7					; speed through gouraud table.
 
 				move.w	d4,d6
-				cmp.w	topclip(pc),d6
+				cmp.w	draw_TopClip_w(pc),d6
 				blt.s	nostripqG
-				cmp.w	botclip(pc),d3
+				cmp.w	draw_BottomClip_w(pc),d3
 				bgt.s	nostripqG
 
-				cmp.w	botclip(pc),d6
+				cmp.w	draw_BottomClip_w(pc),d6
 				ble.s	noclipbotG
-				move.w	botclip(pc),d6
+				move.w	draw_BottomClip_w(pc),d6
 noclipbotG:
 
 				move.w	d3,d5
-				cmp.w	topclip(pc),d5
+				cmp.w	draw_TopClip_w(pc),d5
 				bge.s	nocliptopG
 
-				sub.w	topclip(pc),d5
+				sub.w	draw_TopClip_w(pc),d5
 				neg.w	d5
 				ext.l	d5
 				move.l	d7,d0
 				muls.l	d5,d0
 				add.l	d0,STARTGOUR
 
-				move.w	topclip(pc),d5
+				move.w	draw_TopClip_w(pc),d5
 
 
 ; bra gotoendG
@@ -1475,28 +1475,28 @@ ScreenWallstripdrawGOURB:
 				divs.l	d6,d7					; speed through gouraud table.
 
 				move.w	d4,d6
-				cmp.w	topclip(pc),d6
+				cmp.w	draw_TopClip_w(pc),d6
 				blt		nostripqG
-				cmp.w	botclip(pc),d3
+				cmp.w	draw_BottomClip_w(pc),d3
 				bgt		nostripqG
 
-				cmp.w	botclip(pc),d6
+				cmp.w	draw_BottomClip_w(pc),d6
 				ble.s	noclipbotGb
-				move.w	botclip(pc),d6
+				move.w	draw_BottomClip_w(pc),d6
 noclipbotGb:
 
 				move.w	d3,d5
-				cmp.w	topclip(pc),d5
+				cmp.w	draw_TopClip_w(pc),d5
 				bge.s	nocliptopGB
 
-				sub.w	topclip(pc),d5
+				sub.w	draw_TopClip_w(pc),d5
 				neg.w	d5
 				ext.l	d5
 				move.l	d7,d0
 				muls.l	d5,d0
 				add.l	d0,STARTGOUR
 
-				move.w	topclip(pc),d5
+				move.w	draw_TopClip_w(pc),d5
 
 nocliptopGB:
 
