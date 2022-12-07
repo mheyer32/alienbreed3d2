@@ -220,7 +220,7 @@ outofcalcG:
 ; tst.b seethru
 ; bne screendividethru
 
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				bne		scrdrawlopGB
 
 ;				tst.b	DOUBLEWIDTH
@@ -241,7 +241,7 @@ scrdrawlopG:
 				beq.s	thislinedoneG
 				move.w	d0,LASTSTIRRUP
 
-				move.l	FASTBUFFER,a3
+				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3			; point to start address of screen column
 				move.l	(a0)+,d1
 
@@ -351,7 +351,7 @@ scrdrawlopGDOUB:
 				beq.s	itsoddy
 				move.w	d0,LASTSTIRRUP
 
-				move.l	FASTBUFFER,a3
+				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 
@@ -448,7 +448,7 @@ scrdrawlopGDOUB:
 scrdrawlopGB:
 
 				move.w	(a0)+,d0
-				move.l	FASTBUFFER,a3
+				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 
@@ -551,7 +551,7 @@ scrdrawlopGBDOUB:
 				move.w	(a0)+,d0
 				btst	#0,d0
 				bne.s	itsbilloddy
-				move.l	FASTBUFFER,a3
+				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 
@@ -902,16 +902,16 @@ CalcAndDrawG:
 
 				divs.l	d0,d1
 				moveq	#0,d5
-				move.w	MIDDLEX,d5
+				move.w	Vid_CentreX_w,d5
 				add.l	d5,d1
 
 				move.l	topofwall(pc),d5
 				divs	d0,d5
-				add.w	MIDDLEY,d5
+				add.w	Vid_CentreY_w,d5
 				move.w	d5,strtop
 				move.l	botofwall(pc),d5
 				divs	d0,d5
-				add.w	MIDDLEY,d5
+				add.w	Vid_CentreY_w,d5
 				move.w	d5,strbot
 
 .computeloop:
@@ -925,7 +925,7 @@ CalcAndDrawG:
 				ext.l	d2
 				divs.l	d2,d3
 				moveq	#0,d5
-				move.w	MIDDLEX,d5
+				move.w	Vid_CentreX_w,d5
 				add.l	d5,d3
 
 
@@ -934,12 +934,12 @@ CalcAndDrawG:
 				move.l	topofwall(pc),d6
 				divs	d2,d6
 				move.w	strbot(pc),16(a0)
-				add.w	MIDDLEY,d6
+				add.w	Vid_CentreY_w,d6
 				move.w	d6,strtop
 				move.w	d6,14(a0)
 				move.l	botofwall(pc),d6
 				divs	d2,d6
-				add.w	MIDDLEY,d6
+				add.w	Vid_CentreY_w,d6
 				move.w	d6,strbot
 				move.w	d6,18(a0)
 				move.l	d3,(a1)
@@ -1007,7 +1007,7 @@ computeloop2G:
 				move.l	(a1),d3
 				divs.l	d2,d3					; this could be divs.w, no?
 				moveq	#0,d5
-				move.w	MIDDLEX,d5
+				move.w	Vid_CentreX_w,d5
 				add.l	d5,d3					; making this an add.w ?
 
 				move.w	8(a1),d5
@@ -1015,12 +1015,12 @@ computeloop2G:
 				move.l	topofwall(pc),d6
 				divs	d2,d6
 				move.w	strbot(pc),16(a0)
-				add.w	MIDDLEY,d6
+				add.w	Vid_CentreY_w,d6
 				move.w	d6,strtop
 				move.w	d6,14(a0)
 				move.l	botofwall(pc),d6
 				divs	d2,d6
-				add.w	MIDDLEY,d6
+				add.w	Vid_CentreY_w,d6
 				move.w	d6,strbot
 				move.w	d6,18(a0)
 				move.l	d3,(a1)
@@ -1111,28 +1111,28 @@ ScreenWallstripdrawGOUR:
 				divs.l	d6,d7					; speed through gouraud table.
 
 				move.w	d4,d6
-				cmp.w	topclip(pc),d6
+				cmp.w	draw_TopClip_w(pc),d6
 				blt.s	nostripqG
-				cmp.w	botclip(pc),d3
+				cmp.w	draw_BottomClip_w(pc),d3
 				bgt.s	nostripqG
 
-				cmp.w	botclip(pc),d6
+				cmp.w	draw_BottomClip_w(pc),d6
 				ble.s	noclipbotG
-				move.w	botclip(pc),d6
+				move.w	draw_BottomClip_w(pc),d6
 noclipbotG:
 
 				move.w	d3,d5
-				cmp.w	topclip(pc),d5
+				cmp.w	draw_TopClip_w(pc),d5
 				bge.s	nocliptopG
 
-				sub.w	topclip(pc),d5
+				sub.w	draw_TopClip_w(pc),d5
 				neg.w	d5
 				ext.l	d5
 				move.l	d7,d0
 				muls.l	d5,d0
 				add.l	d0,STARTGOUR
 
-				move.w	topclip(pc),d5
+				move.w	draw_TopClip_w(pc),d5
 
 
 ; bra gotoendG
@@ -1475,28 +1475,28 @@ ScreenWallstripdrawGOURB:
 				divs.l	d6,d7					; speed through gouraud table.
 
 				move.w	d4,d6
-				cmp.w	topclip(pc),d6
+				cmp.w	draw_TopClip_w(pc),d6
 				blt		nostripqG
-				cmp.w	botclip(pc),d3
+				cmp.w	draw_BottomClip_w(pc),d3
 				bgt		nostripqG
 
-				cmp.w	botclip(pc),d6
+				cmp.w	draw_BottomClip_w(pc),d6
 				ble.s	noclipbotGb
-				move.w	botclip(pc),d6
+				move.w	draw_BottomClip_w(pc),d6
 noclipbotGb:
 
 				move.w	d3,d5
-				cmp.w	topclip(pc),d5
+				cmp.w	draw_TopClip_w(pc),d5
 				bge.s	nocliptopGB
 
-				sub.w	topclip(pc),d5
+				sub.w	draw_TopClip_w(pc),d5
 				neg.w	d5
 				ext.l	d5
 				move.l	d7,d0
 				muls.l	d5,d0
 				add.l	d0,STARTGOUR
 
-				move.w	topclip(pc),d5
+				move.w	draw_TopClip_w(pc),d5
 
 nocliptopGB:
 

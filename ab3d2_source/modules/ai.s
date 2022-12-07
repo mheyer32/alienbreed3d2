@@ -544,7 +544,7 @@ ai_Widget:
 				add.w	d2,newz
 
 				move.w	(a0),d1
-				move.l	#ObjRotated,a6
+				move.l	#ObjRotated_vl,a6
 				move.l	ObjectPoints,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
@@ -746,7 +746,7 @@ ai_ChargeCommon:
 
 .no_side:
 				move.w	(a0),d1
-				move.l	#ObjRotated,a6
+				move.l	#ObjRotated_vl,a6
 				move.l	ObjectPoints,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
@@ -953,7 +953,7 @@ ai_AttackWithHitScan:
 				beq		.no_shooty_thang
 
 				move.w	(a0),d1
-				move.l	#ObjRotated,a6
+				move.l	#ObjRotated_vl,a6
 				move.l	ObjectPoints,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
@@ -961,7 +961,7 @@ ai_AttackWithHitScan:
 				movem.l	a0/a1,-(a7)
 				jsr		GetRand
 
-				move.l	#ObjRotated,a6
+				move.l	#ObjRotated_vl,a6
 				move.w	(a0),d1
 				lea		(a6,d1.w*8),a6
 
@@ -994,7 +994,7 @@ ai_AttackWithHitScan:
 				move.b	SHOTPOWER,d0
 				add.b	d0,EntT_DamageTaken_b(a1)
 
-				sub.l	#ObjRotated,a6
+				sub.l	#ObjRotated_vl,a6
 				add.l	ObjectPoints,a6
 				move.w	(a6),d0
 				sub.w	Plr1_TmpXOff_l,d0				;dx
@@ -1177,7 +1177,7 @@ ai_ChargeFlyingCommon:
 
 .no_teleport:
 				move.w	(a0),d1
-				move.l	#ObjRotated,a6
+				move.l	#ObjRotated_vl,a6
 				move.l	ObjectPoints,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
@@ -1394,7 +1394,7 @@ ai_ApproachCommon:
 
 .no_teleport:
 				move.w	(a0),d1
-				move.l	#ObjRotated,a6
+				move.l	#ObjRotated_vl,a6
 				move.l	ObjectPoints,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
@@ -1816,7 +1816,7 @@ ai_CheckDamage:
 
 				movem.l	d0-d7/a0-a6,-(a7)
 				sub.l	ObjectPoints,a1
-				add.l	#ObjRotated,a1
+				add.l	#ObjRotated_vl,a1
 				move.l	(a1),Noisex
 				move.w	#400,Noisevol
 				move.w	#14,Samplenum
@@ -1850,7 +1850,7 @@ ai_CheckDamage:
 
 				movem.l	d0-d7/a0-a6,-(a7)
 				sub.l	ObjectPoints,a1
-				add.l	#ObjRotated,a1
+				add.l	#ObjRotated_vl,a1
 				move.l	(a1),Noisex
 				move.w	#200,Noisevol
 				move.w	screamsound,Samplenum
@@ -1870,7 +1870,7 @@ ai_CheckDamage:
 				clr.b	EntT_DamageTaken_b(a0)
 				movem.l	d0-d7/a0-a6,-(a7)
 				sub.l	ObjectPoints,a1
-				add.l	#ObjRotated,a1
+				add.l	#ObjRotated_vl,a1
 				move.l	(a1),Noisex
 				move.w	#200,Noisevol
 				move.w	screamsound,Samplenum
@@ -1935,7 +1935,7 @@ SPLIBBLE:
 				clr.b	notifplaying
 				move.w	(a0),IDNUM
 				move.w	#200,Noisevol
-				move.l	#ObjRotated,a1
+				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
 				move.l	(a1),Noisex
@@ -2193,7 +2193,7 @@ BLIBBLE:
 				clr.b	notifplaying
 				move.w	(a0),IDNUM
 				move.w	#200,Noisevol
-				move.l	#ObjRotated,a1
+				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
 				move.l	(a1),Noisex

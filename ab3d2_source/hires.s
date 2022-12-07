@@ -29,11 +29,11 @@ CHEESEY			equ		0
 * as it will look gorgeous now.
 *************************************************
 
-;MIDDLEX set 96
+;Vid_CentreX_w set 96
 ;RIGHTX set 191
 ;BOTTOMY set 160
 
-;MIDDLEX set 96
+;Vid_CentreX_w set 96
 ;RIGHTX set 191
 ;BOTTOMY set 160
 
@@ -110,14 +110,14 @@ _start
 				moveq	#INTB_VERTB,d0
 				CALLEXEC AddIntServer
 
-		lea	timername,a0
-		lea	timerrequest,a1
-		moveq	#0,d0
-		moveq	#0,d1
-		jsr	_LVOOpenDevice(a6)
-		move.l	timerrequest+IO_DEVICE,timerbase
-		move.l	d0,timerflag
-		;bne	error_exit
+				lea	timername,a0
+				lea	timerrequest,a1
+				moveq	#0,d0
+				moveq	#0,d1
+				jsr	_LVOOpenDevice(a6)
+				move.l	timerrequest+IO_DEVICE,timerbase
+				move.l	d0,timerflag
+				;bne	error_exit
 
 				IFEQ	CD32VER
 				lea		KEYInt(pc),a1
@@ -156,7 +156,7 @@ _start
 				add.l	d1,d0
 				moveq	#-16,d1					; $F0
 				and.l	d1,d0
-				move.l	d0,FASTBUFFER
+				move.l	d0,Vid_FastBufferPtr_l
 
 				; Setup constant table
 				move.l	#consttab,a0
@@ -192,7 +192,7 @@ fillconst:
 
 FASTBUFFERSize	equ		SCREENWIDTH*256+15		; screen size plus alignment
 
-FASTBUFFER:
+Vid_FastBufferPtr_l:
 				dc.l	0						; aligned address
 FASTBUFFERalloc:
 				dc.l	0						; allocated address
@@ -212,7 +212,7 @@ TWEENTEXT:
 				move.w	#0,d0
 DOWNTEXT:
 				move.l	TEXTSCRN,a1
-				jsr		DRAWLINEOFTEXT
+				jsr		Draw_LineOfText
 				addq	#1,d0
 				add.w	#82,a0
 				dbra	d7,DOWNTEXT
@@ -238,7 +238,7 @@ CHARWIDTHS2:
 
 				even
 
-DRAWLINEOFTEXT:
+Draw_LineOfText:
 				movem.l	d0/a0/d7,-(a7)
 
 				muls	#80*16,d0
@@ -515,7 +515,7 @@ blag:
 				move.w	-2(a2),ENDZONE
 				move.l	24+6(a1),a2
 				add.l	a4,a2
-				move.l	a2,ObjectData
+				move.l	a2,ObjectDataPtr_l
 *****************************************
 * Just for charles
 
@@ -551,10 +551,12 @@ blag:
 				moveq	#0,d0
 				move.w	10+6(a1),d7				;numzones
 				move.w	d7,NUMZONES
+
 assignclips:
 				move.l	(a0)+,a3
 				add.l	a4,a3					; pointer to a zone
 				adda.w	#ZoneT_ListOfGraph_w,a3		; pointer to zonelist
+
 dowholezone:
 				tst.w	(a3)
 				blt.s	nomorethiszone
@@ -907,11 +909,11 @@ nomorezones:
 
 NOALLWALLS
 
-				move.w	#SMALL_WIDTH/2,MIDDLEX
+				move.w	#SMALL_WIDTH/2,Vid_CentreX_w
 				move.w	#SMALL_WIDTH,RIGHTX
 				move.w	#SMALL_HEIGHT,BOTTOMY
 				move.w	#SMALL_HEIGHT/2,TOTHEMIDDLE
-				clr.b	FULLSCR
+				clr.b	Vid_FullScreen_b
 				move.l	scrn,a0
 				jsr		WIPEDISPLAY
 				move.l	scrn2,a0
@@ -1113,11 +1115,11 @@ lop:
 				move.b	MAPON,REALMAPON
 
 				move.b	FULLSCRTEMP,d0
-				move.b	FULLSCR,d1
+				move.b	Vid_FullScreen_b,d1
 				eor.b	d1,d0
 				beq		.noFullscreenSwitch
 
-				move.b	FULLSCRTEMP,FULLSCR
+				move.b	FULLSCRTEMP,Vid_FullScreen_b
 
 				bsr		SetupRenderbufferSize
 
@@ -1281,8 +1283,8 @@ waitmaster:
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
-				move.l	d0,MIDDLEY
-				move.l	d1,MIDDLEY+4
+				move.l	d0,Vid_CentreY_w
+				move.l	d1,Vid_CentreY_w+4
 
 				move.l	waterpt,a0
 				move.l	(a0)+,watertouse
@@ -1541,13 +1543,6 @@ ASlaveShouldWaitOnHisMaster:
 
 				jsr		RECFIRST
 
-
-
-
-
-
-
-
 				move.l	Plr2_SnapXOff_l,Plr2_TmpXOff_l
 				move.l	Plr2_SnapZOff_l,Plr2_TmpZOff_l
 				move.l	Plr2_SnapYOff_l,Plr2_TmpYOff_l
@@ -1640,8 +1635,6 @@ ASlaveShouldWaitOnHisMaster:
 				move.l	ZoneT_Roof_l(a0),SplitHeight
 
 donetalking:
-
-
 				move.l	#ZoneBrightTable,a1
 				move.l	ZoneAdds,a2
 				move.l	Plr2_ListOfGraphRoomsPtr_l,a0
@@ -1965,13 +1958,13 @@ IWasPlayer1:
 ; add.l d0,d0
 ; add.l d0,yoff
 ;
-; move.l FASTBUFFER2,FASTBUFFER
+; move.l FASTBUFFER2,Vid_FastBufferPtr_l
 ; move.w #0,leftclip
 ; move.w RIGHTX,rightclip
 ; move.w #0,deftopclip
 ; move.w #BOTTOMY/2,defbotclip
-; move.w #0,topclip
-; move.w #BOTTOMY/2,botclip
+; move.w #0,draw_TopClip_w
+; move.w #BOTTOMY/2,draw_BottomClip_w
 ;
 ; clr.b DOANYWATER
 ;
@@ -1995,10 +1988,10 @@ IWasPlayer1:
 				move.w	BOTTOMY,defbotclip
 				sub.w	d0,defbotclip
 
-				move.w	#0,topclip
-				add.w	d0,topclip
-				move.w	BOTTOMY,botclip
-				sub.w	d0,botclip
+				move.w	#0,draw_TopClip_w
+				add.w	d0,draw_TopClip_w
+				move.w	BOTTOMY,draw_BottomClip_w
+				sub.w	d0,draw_BottomClip_w
 ; sub.l #10*104*4,frompt
 ; sub.l #10*104*4,midpt
 
@@ -2054,10 +2047,10 @@ drawplayer2
 				move.w	BOTTOMY,defbotclip
 				sub.w	d0,defbotclip
 
-				move.w	#0,topclip
-				add.w	d0,topclip
-				move.w	BOTTOMY,botclip
-				sub.w	d0,botclip
+				move.w	#0,draw_TopClip_w
+				add.w	d0,draw_TopClip_w
+				move.w	BOTTOMY,draw_BottomClip_w
+				sub.w	d0,draw_BottomClip_w
 
 				st		DOANYWATER
 				bsr		DrawDisplay
@@ -2085,7 +2078,7 @@ nodrawp2:
 
 				; clamp wide screen
 				move.w	#100,d0					; maximum in fullscreen mode
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				bne.s	.isFullscreen
 				move.w	#60,d0					; maximum in small screen mode
 .isFullscreen:
@@ -2195,7 +2188,7 @@ plr1only:
 
 				move.l	#%000001,d7
 				lea		AI_Teamwork_vl,a2
-				move.l	ObjectData,a0
+				move.l	ObjectDataPtr_l,a0
 				sub.w	#64,a0
 .doallobs:
 				add.w	#64,a0
@@ -2310,7 +2303,7 @@ SetupRenderbufferSize:
 				move.w	#100,WIDESCRN
 
 .wideScreenOk
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				beq.s	.setupSmallScreen
 
 				move.w	#FS_WIDTH,d0
@@ -2320,7 +2313,7 @@ SetupRenderbufferSize:
 .noDoubleWidth
 				move.w	d0,RIGHTX
 				lsr.w	#1,d0
-				move.w	d0,MIDDLEX
+				move.w	d0,Vid_CentreX_w
 				move.w	#FS_HEIGHT,BOTTOMY
 				move.w	#FS_HEIGHT/2,TOTHEMIDDLE
 				bra.s	.wipeScreen
@@ -2333,7 +2326,7 @@ SetupRenderbufferSize:
 .noDoubleWidth2
 				move.w	d0,RIGHTX
 				lsr.w	#1,d0
-				move.w	d0,MIDDLEX
+				move.w	d0,Vid_CentreX_w
 				move.w	#SMALL_HEIGHT,BOTTOMY
 				move.w	#SMALL_HEIGHT/2,TOTHEMIDDLE
 
@@ -2556,17 +2549,20 @@ shownmap:
 
 
 CLIPANDDRAW:
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				beq.s	.nodov
 
-				; This is likely scaling the coordinates by 2/3 for Fullscreen
-				; go from 288 to 196 wide?
-				add.w	d0,d0
-				add.w	d2,d2
-				ext.l	d0
-				ext.l	d2
-				divs.w	#3,d0					288 * 2/3 = 196
-				divs.w	#3,d2
+				; This is scaling the coordinates by 3/5 for Fullscreen (used to be 2/3 for 288 wide)
+				; For 320 wide, we are have a 3/5 ratio rather than 2/3
+				; use an 11 bit approximation based on 1229/2048
+				move.l d1,-(sp) ; todo - find a free register
+				move.w #1229,d1
+				muls  d1,d0 ; 320 * 3/5 = 192
+				muls  d1,d2
+				move.l #11,d1
+				asr.l d1,d0
+				asr.l d1,d2
+				move.l (sp)+,d1
 
 .nodov:
 				tst.b	DOUBLEWIDTH				; correct aspect ratio for DW/DH
@@ -2586,10 +2582,10 @@ CLIPANDDRAW:
 				asr.w	d5,d3
 
 
-NOSCALING:		add.w	MIDDLEX,d0
+NOSCALING:		add.w	Vid_CentreX_w,d0
 				bge		p1xpos
 
-				add.w	MIDDLEX,d2
+				add.w	Vid_CentreX_w,d2
 				blt		OFFSCREEN
 
 x1nx2p:			;		X1<0					X2>0, clip against X=0
@@ -2608,7 +2604,7 @@ x1nx2p:			;		X1<0					X2>0, clip against X=0
 				bra		doneleftclip
 
 p1xpos:
-				add.w	MIDDLEX,d2
+				add.w	Vid_CentreX_w,d2
 				bge		doneleftclip
 
 				move.w	d0,d6
@@ -2767,9 +2763,9 @@ mapzoff:		dc.w	0
 				; FIXME: this is probably still on chunky screen
 DRAWAtransLINE:
 
-				move.l	FASTBUFFER,a0			; screen to render to.
+				move.l	Vid_FastBufferPtr_l,a0			; screen to render to.
 
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				beq.s	.nooffset
 
 				add.l	#(SCREENWIDTH*40)+(48*2),a0
@@ -2885,7 +2881,7 @@ DRAWAMAPLINE:
 ;				tst.b	d5
 ;				bne		DOITFAT
 
-				move.l	FASTBUFFER,a0			; screen to render to.
+				move.l	Vid_FastBufferPtr_l,a0			; screen to render to.
 				cmp.w	d1,d3
 				bgt.s	.okdown
 				bne.s	.aline
@@ -2984,7 +2980,7 @@ downmoreright:
 
 
 DOITFAT:
-				move.l	FASTBUFFER,a0			; screen to render to.
+				move.l	Vid_FastBufferPtr_l,a0			; screen to render to.
 				cmp.w	d1,d3
 				bgt.s	.okdown
 				bne.s	.aline
@@ -3215,7 +3211,7 @@ USEPLR1:
 				move.l	PLR1_Obj,a0
 				move.b	#4,16(a0)
 				move.l	ObjectPoints,a1
-				move.l	#ObjRotated,a2
+				move.l	#ObjRotated_vl,a2
 				move.w	(a0),d0
 				move.l	Plr1_XOff_l,(a1,d0.w*8)
 				move.l	Plr1_ZOff_l,4(a1,d0.w*8)
@@ -3318,7 +3314,7 @@ USEPLR1:
 ;
 
 				move.l	ObjectPoints,a1
-				move.l	#ObjRotated,a2
+				move.l	#ObjRotated_vl,a2
 				move.w	(a0),d0
 				move.l	Plr2_XOff_l,(a1,d0.w*8)
 				move.l	Plr2_ZOff_l,4(a1,d0.w*8)
@@ -3524,7 +3520,7 @@ USEPLR2:
 				move.l	PLR2_Obj,a0
 				move.b	#5,16(a0)
 				move.l	ObjectPoints,a1
-				move.l	#ObjRotated,a2
+				move.l	#ObjRotated_vl,a2
 				move.w	(a0),d0
 				move.l	Plr2_XOff_l,(a1,d0.w*8)
 				move.l	Plr2_ZOff_l,4(a1,d0.w*8)
@@ -3619,7 +3615,7 @@ USEPLR2:
 ;
 
 				move.l	ObjectPoints,a1
-				move.l	#ObjRotated,a2
+				move.l	#ObjRotated_vl,a2
 				move.w	(a0),d0
 				move.l	Plr1_XOff_l,(a1,d0.w*8)
 				move.l	Plr1_ZOff_l,4(a1,d0.w*8)
@@ -4587,7 +4583,7 @@ NOGUNLOOK:
 				beq.s	nowaterfull
 
 				move.w	#FS_HEIGHT-1,d0
-				move.l	FASTBUFFER,a0
+				move.l	Vid_FastBufferPtr_l,a0
 				tst.b	fillscrnwater
 				beq		nowaterfull
 				bgt		oknothalf
@@ -4601,7 +4597,7 @@ oknothalf:
 				add.l	#256*40,a2
 				moveq	#0,d2
 
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				bne.s	DOALLSCREEN
 
 DOSOMESCREEN:
@@ -4693,7 +4689,7 @@ DOUPPER:		dc.w	0
 dothisroom
 
 				move.w	(a0)+,d0
-				move.w	d0,currzone
+				move.w	d0,Draw_CurrentZone_w
 				move.w	d0,d1
 				muls	#40,d1
 				add.l	#BIGMAP,d1
@@ -4773,7 +4769,7 @@ itswater:
 ;				bra		polyloop
 
 itsanobject:
-				jsr		ObjDraw
+				jsr		Draw_Object
 				bra		polyloop
 
 ;itsalightbeam:
@@ -4794,21 +4790,21 @@ itsachunkyfloor:
 				move.w	#1,SMALLIT
 				subq.w	#7,d0
 				st		usebumps
-				sub.w	#12,topclip
-; add.w #10,botclip
+				sub.w	#12,draw_TopClip_w
+; add.w #10,draw_BottomClip_w
 				clr.b	smoothbumps
 				clr.b	usewater
 				move.l	#BumpLine,LineToUse
 				jsr		itsafloordraw
-				add.w	#12,topclip
-; sub.w #10,botclip
+				add.w	#12,draw_TopClip_w
+; sub.w #10,draw_BottomClip_w
 				bra		polyloop
 
 itsafloor:
 
 				move.l	PointBrightsPtr,FloorPtBrights
 
-				move.w	currzone,d1
+				move.w	Draw_CurrentZone_w,d1
 				muls	#80,d1
 
 				cmp.w	#2,d0
@@ -5002,18 +4998,18 @@ RotateLevelPts:	;		Does					this rotate ALL points in the level EVERY frame?
 
 				move.w	NumLevPts,d7
 
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				bne		BIGALL
 
 				; rotate all level points, small screen
 pointrotlop2:
 				move.w	(a3)+,d0
-*				asr.w	#1,d0
+;*				asr.w	#1,d0
 				sub.w	d4,d0
 				move.w	d0,d2					; view X
 
 				move.w	(a3)+,d1
-*				asr.w	#1,d1
+;*				asr.w	#1,d1
 				sub.w	d5,d1					; view Z
 
 				muls	d6,d2					; x' = (cos*viewX)<<16
@@ -5057,9 +5053,8 @@ onrightsomewhere:
 				move.w	RIGHTX,d2
 				bra		putin
 ptnotbehind:
-
 				divs.w	d1,d2					; x / z perspective projection
-				add.w	MIDDLEX,d2
+				add.w	Vid_CentreX_w,d2
 putin:
 				move.w	d2,(a2)+				; store to OnScreen
 
@@ -5098,19 +5093,16 @@ pointrotlop2B:
 				muls	d6,d1					; z * cos <<16
 				add.l	d0,d1					; z' = (x*sin + z*sin)<<16
 
-;				divs.l	#3,d1	; is this what differentiates fullscreen vs. smallscreen?
-;				asr.l	#8,d1
-;				asr.l	#5,d1	; achieves d1/(3*2<<13) - we could roll this into the divs above
+				; 0xABADCAFE
+				; Use 3/5 rather than 2/3 here for 320 wide - z' * 2 * 3/5 -> z' * 6/5
+				; Shift d1 to get 2 extra input bits for our scale by 3/5 approximation
+				lsl.l	#2,d1
+				swap	d1
+				muls	#1229,d1 ; 1229/2048 = 0.600097
+				asr.l	#8,d1
+				asr.l	#4,d1    ; z' * 6/5
 
-				divs.w	#3*4096,d1				; 3*8192 doesn't quite fit into 16bits divisor
-				asr.w	#2,d1					; z' = (z' << 16) / (3 * 2 << 13)
-				ext.l	d1
-									; z' = z' * 8 / 3		; Is the factor in z' here determining the prespective factor?
-; asl.l #3,d1
-; swap d1
-; ext.l d1
-; divs #3,d1
-				move.l	d1,(a1)+				; this stores the rotated points, but why does it factor in the scale factor
+				move.l	d1,(a1)+	; this stores the rotated points, but why does it factor in the scale factor
 									; for the screen? Or is storing in view space with aspect ratio applied actually
 									; convenient?
 									; WOuld here a good opportunity to factor in DOUBLEWIDTH?
@@ -5121,12 +5113,13 @@ pointrotlop2B:
 				bgt.s	onrightsomewhereB
 				moveq.l	#0,d2
 				bra		putinB
+
 onrightsomewhereB:
 				move.w	RIGHTX,d2
 				bra		putinB
 ptnotbehindB:
 				divs.w	d1,d2
-				add.w	MIDDLEX,d2
+				add.w	Vid_CentreX_w,d2
 putinB:
 				move.w	d2,(a2)+				; store fully projected X
 
@@ -5136,7 +5129,6 @@ putinB:
 
 				; This only rotates a subset of the points, with indices pointed to at PointsToRotatePtr
 ONLYTHELONELY:
-
 				move.w	sinval,d6
 				swap	d6
 				move.w	cosval,d6
@@ -5151,7 +5143,7 @@ ONLYTHELONELY:
 ; move.w #$c40,$dff106
 ; move.w #$f00,$dff180
 
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				bne		BIGLONELY
 
 pointrotlop:
@@ -5202,13 +5194,14 @@ pointrotlop:
 				bgt.s	.onrightsomewhere
 				move.w	#0,d2
 				bra		.putin
+
 .onrightsomewhere:
 				move.w	RIGHTX,d2
 				bra		.putin
-.ptnotbehind:
 
+.ptnotbehind:
 				divs	d1,d2
-				add.w	MIDDLEX,d2
+				add.w	Vid_CentreX_w,d2
 .putin:
 				move.w	d2,(a2,d7*2)
 
@@ -5253,15 +5246,14 @@ BIGLONELY:
 				muls	d6,d1
 				add.l	d0,d1
 
-;				asl.l	#2,d1		; z' * 2 *2
-;				swap	d1
-;				ext.l	d1
-;				divs	#3,d1		; z' * 2 *2/3
-
-				divs.w	#3*4096,d1				; 3*8192 doesn't quite fit into 16bits divisor
-				asr.w	#2,d1					; z' = (z' << 16) / (3 * 2 << 13)
-									; z' = z' * 8 / 3		; Is the factor in z' here determining the prespective factor?
-				ext.l	d1
+				; 0xABADCAFE
+				; Use 3/5 rather than 2/3 here for 320 wide - z' * 2 * 3/5 -> z' * 6/5
+				; Shift d1 to get 2 extra input bits for our scale by 3/5 approximation
+				lsl.l	#2,d1
+				swap	d1
+				muls	#1229,d1 ; 1229/2048 = 0.600097
+				asr.l	#8,d1
+				asr.l	#4,d1    ; z' * 6/5
 
 				move.l	d1,4(a1,d7*8)
 
@@ -5271,13 +5263,15 @@ BIGLONELY:
 				bgt.s	.onrightsomewhere
 				move.w	#0,d2
 				bra		.putin
+
 .onrightsomewhere:
 				move.w	RIGHTX,d2
 				bra		.putin
+
 .ptnotbehind:
 
 				divs	d1,d2
-				add.w	MIDDLEX,d2
+				add.w	Vid_CentreX_w,d2
 .putin:
 				move.w	d2,(a2,d7*2)			; this means the a2 array will also be sparsely written to,
 										; but then again doesn't need reindeexing the input indices.
@@ -5299,10 +5293,9 @@ PLR2_ObjDists
 				ds.w	250
 
 CalcPLR1InLine:
-
 				move.w	Plr1_SinVal_w,d5
 				move.w	Plr1_CosVal_w,d6
-				move.l	ObjectData,a4
+				move.l	ObjectDataPtr_l,a4
 				move.l	ObjectPoints,a0
 				move.w	NumObjectPoints,d7
 				move.l	#PLR1_ObsInLine,a2
@@ -5374,19 +5367,16 @@ CalcPLR1InLine:
 				dbra	d7,.objpointrotlop
 				rts
 
-
 CalcPLR2InLine:
-
 				move.w	Plr2_SinVal_w,d5
 				move.w	Plr2_CosVal_w,d6
-				move.l	ObjectData,a4
+				move.l	ObjectDataPtr_l,a4
 				move.l	ObjectPoints,a0
 				move.w	NumObjectPoints,d7
 				move.l	#PLR2_ObsInLine,a2
 				move.l	#PLR2_ObjDists,a3
 
 .objpointrotlop:
-
 				cmp.b	#3,16(a4)
 				beq.s	.itaux
 
@@ -5456,17 +5446,16 @@ RotateObjectPts:
 				move.w	sinval,d5				; fetch sine of rotation
 				move.w	cosval,d6				; consine
 
-				move.l	ObjectData,a4
+				move.l	ObjectDataPtr_l,a4
 				move.l	ObjectPoints,a0
 				move.w	NumObjectPoints,d7
-				move.l	#ObjRotated,a1
+				move.l	#ObjRotated_vl,a1
 
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				bne		BIGOBJPTS
 
 
 .objpointrotlop:
-
 				cmp.b	#3,16(a4)
 				beq.s	.itaux
 
@@ -5475,7 +5464,7 @@ RotateObjectPts:
 				move.w	4(a0),d1				; z of object point
 				addq	#8,a0					; next point? or next object?
 
-				tst.w	12(a4)					; ObjectData
+				tst.w	12(a4)					; ObjectDataPtr_l
 				blt		.noworkout
 
 				sub.w	zoff,d1					; viewZ = Z - cam Z
@@ -5841,13 +5830,12 @@ EnergyBar:
 				move.w	#6,d1
 				bsr		DRAWDIGIT
 
-
 				rts
-
 
 DRAWDIGIT:
 				ext.w	d0
 				lea		(a0,d0.w),a2
+
 charlines:
 				lea		30720(a1),a3
 				move.b	(a2),(a1)
@@ -5981,8 +5969,8 @@ endlevel:
 				st		UseAllChannels
 				clr.b	reachedend
 				jsr		mt_init
-playgameover:
 
+playgameover:
 				CALLGRAF WaitTOF
 
 				jsr		mt_music
@@ -5991,7 +5979,6 @@ playgameover:
 				beq.s	playgameover
 
 				bra		wevelost
-
 
 wevewon:
 				; Disable audio DMA
@@ -6136,7 +6123,7 @@ SCROLLUP16LINES:
 ;
 ;				move.l	TEXTSCRN,a1
 ;				move.w	#15,d0
-;				jsr		DRAWLINEOFTEXT
+;				jsr		Draw_LineOfText
 ;
 ;				add.l	#82,a0
 ;				cmp.l	#ENDENDGAMETEXT,a0
@@ -6557,7 +6544,7 @@ checkforwater:
 
 				move.l	Roompt,a1
 				move.w	(a1),d7
-				cmp.w	currzone,d7
+				cmp.w	Draw_CurrentZone_w,d7
 				bne.s	.notwater
 
 				move.b	#$f,fillscrnwater
@@ -6613,7 +6600,7 @@ itsafloordraw:
 
 				move.l	Roompt,a1
 				move.w	(a1),d7
-				cmp.w	currzone,d7
+				cmp.w	Draw_CurrentZone_w,d7
 
 				bne.s	.notwater
 
@@ -6635,7 +6622,7 @@ aboveplayer:
 
 				move.l	Roompt,a1
 				move.w	(a1),d7
-				cmp.w	currzone,d7
+				cmp.w	Draw_CurrentZone_w,d7
 				bne.s	.notwater
 
 				move.b	#$f,fillscrnwater
@@ -6645,8 +6632,8 @@ aboveplayer:
 				beq.s	dontdrawreturn
 
 				; its a ceiling
-				move.w	MIDDLEY,d7
-				sub.w	topclip,d7
+				move.w	Vid_CentreY_w,d7
+				sub.w	draw_TopClip_w,d7
 				ble.s	dontdrawreturn
 
 				move.w	#1,d0
@@ -6656,8 +6643,8 @@ aboveplayer:
 
 				; is below camera
 below:
-				move.w	botclip,d7
-				sub.w	MIDDLEY,d7
+				move.w	draw_BottomClip_w,d7
+				sub.w	Vid_CentreY_w,d7
 				ble.s	dontdrawreturn			; don't draw if no room between screen center amd bottom clip
 
 
@@ -6667,7 +6654,7 @@ notbelow:
 
 				move.w	d6,View2FloorDist		; (floorY - ViewerY) in worldspace
 				;		|
-				;-------+---------------------- MIDDLEY
+				;-------+---------------------- Vid_CentreY_w
 				;***    |
 				;   *** |
 				;      *** clipY
@@ -6757,7 +6744,6 @@ cornerprocessloop: ;	figure					out if any left/right clipping is necessary
 				bne		dontdrawreturn
 
 somefloortodraw:
-
 				tst.b	gourfloor
 				bne		goursides
 
@@ -6803,7 +6789,7 @@ sideloop:
 				move.w	minz,d4					; z' = minZ
 				move.w	(a2,d3*2),d2
 				divs.w	d4,d0					; x' - x' / minz
-				add.w	MIDDLEX,d0
+				add.w	Vid_CentreX_w,d0
 
 				move.l	ypos,d3
 				divs	d5,d3					; y2' = y2 / z2
@@ -6833,7 +6819,7 @@ firstinfront:
 				move.w	minz,d5
 				move.w	(a2,d1*2),d0
 				divs	d5,d2
-				add.w	MIDDLEX,d2
+				add.w	Vid_CentreX_w,d2
 				move.l	ypos,d1
 				divs	d4,d1
 				move.w	bottomline,d3
@@ -6870,13 +6856,13 @@ lineclipped:
 				lea		(a3,d1*2),a3			; start of left side buffer
 
 				cmp.w	top(pc),d1
-				bge.s	.nonewtop
+				bge.s	.no_new_top
 				move.w	d1,top
-.nonewtop:
+.no_new_top:
 				cmp.w	bottom(pc),d3
-				ble.s	.nonewbot
+				ble.s	.no_new_bottom
 				move.w	d3,bottom
-.nonewbot:
+.no_new_bottom:
 
 				sub.w	d1,d3					; dy
 				sub.w	d0,d2					; dx
@@ -6971,13 +6957,13 @@ lineonright:
 				lea		(a3,d1*2),a3			;right line entry start
 
 				cmp.w	top(pc),d1
-				bge.s	.nonewtop
+				bge.s	.no_new_top
 				move.w	d1,top
-.nonewtop:
+.no_new_top:
 				cmp.w	bottom(pc),d3
-				ble.s	.nonewbot
+				ble.s	.no_new_bottom
 				move.w	d3,bottom
-.nonewbot:
+.no_new_bottom:
 
 				sub.w	d1,d3					; dy
 				sub.w	d0,d2					; dx
@@ -7137,7 +7123,7 @@ sideloopGOUR:
 				move.w	minz,d4
 				move.w	(a2,d3*2),d2
 				divs	d4,d0
-				add.w	MIDDLEX,d0
+				add.w	Vid_CentreX_w,d0
 				move.l	ypos,d3
 				divs	d5,d3
 
@@ -7171,7 +7157,7 @@ firstinfrontGOUR:
 				move.w	minz,d5					; minz = nearclip distance?
 				move.w	(a2,d1*2),d0
 				divs	d5,d2
-				add.w	MIDDLEX,d2
+				add.w	Vid_CentreX_w,d2
 				move.l	ypos,d1
 				divs	d4,d1
 				move.w	bottomline,d3
@@ -7221,13 +7207,13 @@ linenotflatGOUR
 				lea		leftbrighttab-leftsidetab(a3),a4 ; left side brightness entry
 
 				cmp.w	top(pc),d1
-				bge.s	.nonewtop
+				bge.s	.no_new_top
 				move.w	d1,top
-.nonewtop:
+.no_new_top:
 				cmp.w	bottom(pc),d3
-				ble.s	.nonewbot
+				ble.s	.no_new_bottom
 				move.w	d3,bottom
-.nonewbot:
+.no_new_bottom:
 
 				sub.w	d1,d3					; dy
 				sub.w	d0,d2					; dx
@@ -7359,13 +7345,13 @@ lineonrightGOUR:
 				lea		rightbrighttab-rightsidetab(a3),a4 ; right brightness entry
 
 				cmp.w	top(pc),d1
-				bge.s	.nonewtop
+				bge.s	.no_new_top
 				move.w	d1,top
-.nonewtop:
+.no_new_top:
 				cmp.w	bottom(pc),d3
-				ble.s	.nonewbot
+				ble.s	.no_new_bottom
 				move.w	d3,bottom
-.nonewbot:
+.no_new_bottom:
 
 				sub.w	d1,d3					; dy
 				sub.w	d0,d2					; dx
@@ -7510,7 +7496,7 @@ pastsides:
 ; add.l BIGMIDDLEY,a6
 ; move.l a6,REFPTR
 
-				move.l	FASTBUFFER,a6
+				move.l	Vid_FastBufferPtr_l,a6
 				add.l	BIGMIDDLEY,a6			; pointer to middle line of screen
 				move.w	(a0)+,d6				; floor scale?
 				add.w	SMALLIT,d6
@@ -7532,7 +7518,7 @@ groundfloor:
 				add.w	xwobxoff,d6				; this was adding xwobxoff to d7, was this a bug?
 				add.w	xwobzoff,d7
 
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				beq.s	.shiftit
 
 				;ext.l	d6
@@ -7642,12 +7628,12 @@ pastscale:
 
 ; Its a ceiling, clip it to top/bottom
 ; For ceilings, the top and bottom have reversed roles
-; The ceiling's +Y goes "up" on the screen, with MIDDLEY of screen mapping to 0.
-; That's why there's the gymnastics with ; (MIDDLEY - N) to transform the
+; The ceiling's +Y goes "up" on the screen, with Vid_CentreY_w of screen mapping to 0.
+; That's why there's the gymnastics with ; (Vid_CentreY_w - N) to transform the
 ; screen clipping coordinates into "ceiling coordinates"
 ; This turns the 'top' variable actually into the bottommost Y of the ceiling.
 
-				move.w	MIDDLEY,d7
+				move.w	Vid_CentreY_w,d7
 				btst	#0,d7
 				bne.s	.evenMiddleRoof
 				sub.w	#SCREENWIDTH,a6			; with regular nx1 rendering, we usually start at an odd line for ceiling rendering
@@ -7657,17 +7643,17 @@ pastscale:
 				move.w	d7,disttobot
 
 				move.w	bottom(pc),d7			; bottom of floor
-				move.w	MIDDLEY,d3
+				move.w	Vid_CentreY_w,d3
 				move.w	d3,d4
-				sub.w	topclip,d3
-				sub.w	botclip,d4
+				sub.w	draw_TopClip_w,d3
+				sub.w	draw_BottomClip_w,d4
 				cmp.w	d3,d1
-				bge		predontdrawfloor		; top_of_floor >= (MIDDLEY-topclip)
+				bge		predontdrawfloor		; top_of_floor >= (Vid_CentreY_w-draw_TopClip_w)
 				cmp.w	d4,d7
-				blt		predontdrawfloor		; bottom_of_floor < (MIDDLEY-botclip) ?
+				blt		predontdrawfloor		; bottom_of_floor < (Vid_CentreY_w-draw_BottomClip_w) ?
 				cmp.w	d4,d1
-				bge.s	.nocliptoproof			; top_of_floor >= (MIDDLEY-botclip)  ?
-				move.w	d4,d1					; clip top_of_floor to (MIDDLEY-botclip)
+				bge.s	.nocliptoproof			; top_of_floor >= (Vid_CentreY_w-draw_BottomClip_w)  ?
+				move.w	d4,d1					; clip top_of_floor to (Vid_CentreY_w-draw_BottomClip_w)
 .nocliptoproof
 				cmp.w	d3,d7
 				blt		.doneclip
@@ -7680,7 +7666,7 @@ pastscale:
 
 .clipfloor:
 				move.w	BOTTOMY,d7
-				move.w	MIDDLEY,d4
+				move.w	Vid_CentreY_w,d4
 				btst	#0,d4
 				beq.s	.evenMiddleFloor
 				add.w	#SCREENWIDTH,a6
@@ -7692,23 +7678,23 @@ pastscale:
 
 				move.w	bottom(pc),d7
 
-				move.w	botclip,d4
-				sub.w	MIDDLEY,d4
+				move.w	draw_BottomClip_w,d4
+				sub.w	Vid_CentreY_w,d4
 				cmp.w	d4,d1
-				bge		predontdrawfloor		; top >= (botclip - MIDDLEY)
+				bge		predontdrawfloor		; top >= (draw_BottomClip_w - Vid_CentreY_w)
 
-				move.w	topclip,d3
-				sub.w	MIDDLEY,d3
+				move.w	draw_TopClip_w,d3
+				sub.w	Vid_CentreY_w,d3
 				cmp.w	d3,d1
-				bge.s	.nocliptopfloor			; top >= (topclip - MIDDLEY)
+				bge.s	.nocliptopfloor			; top >= (draw_TopClip_w - Vid_CentreY_w)
 
-				move.w	d3,d1					; clip top_of_floor to (topclip - MIDDLEY)
+				move.w	d3,d1					; clip top_of_floor to (draw_TopClip_w - Vid_CentreY_w)
 .nocliptopfloor
 				cmp.w	d3,d7
-				ble		predontdrawfloor		; (bottom) <= (topclip - MIDDLEY) : bottom <= topclip (bottom of floor above topclip)
+				ble		predontdrawfloor		; (bottom) <= (draw_TopClip_w - Vid_CentreY_w) : bottom <= draw_TopClip_w (bottom of floor above draw_TopClip_w)
 				cmp.w	d4,d7
-				blt.s	.noclipbotfloor			; (bottom) < (botclip)
-				move.w	d4,d7					; bottom = botclip
+				blt.s	.noclipbotfloor			; (bottom) < (draw_BottomClip_w)
+				move.w	d4,d7					; bottom = draw_BottomClip_w
 .noclipbotfloor:
 
 
@@ -7759,23 +7745,23 @@ pix1h:
 				beq.s	clipfloor
 
 				; clip roof?
-				move.w	MIDDLEY,d7
+				move.w	Vid_CentreY_w,d7
 				subq	#1,d7
 				sub.w	d1,d7
 				move.w	d7,disttobot
 
 				move.w	bottom(pc),d7
-				move.w	MIDDLEY,d3
+				move.w	Vid_CentreY_w,d3
 				move.w	d3,d4
-				sub.w	topclip,d3
-				sub.w	botclip,d4
+				sub.w	draw_TopClip_w,d3
+				sub.w	draw_BottomClip_w,d4
 				cmp.w	d3,d1
-				bge		predontdrawfloor		; top >= MIDDLEY - topclip
+				bge		predontdrawfloor		; top >= Vid_CentreY_w - draw_TopClip_w
 				cmp.w	d4,d7
-				blt		predontdrawfloor		; bottom >= MIDDLEY - bottomclip
+				blt		predontdrawfloor		; bottom >= Vid_CentreY_w - bottomclip
 				cmp.w	d4,d1
-				bge.s	.nocliptoproof			; top >= MIDDLEY - bottomclip
-				move.w	d4,d1					; top = MIDDLEY - bottomclip
+				bge.s	.nocliptoproof			; top >= Vid_CentreY_w - bottomclip
+				move.w	d4,d1					; top = Vid_CentreY_w - bottomclip
 .nocliptoproof
 				cmp.w	d3,d7
 				blt		doneclip
@@ -7784,27 +7770,27 @@ pix1h:
 
 clipfloor:
 				move.w	BOTTOMY,d7
-				sub.w	MIDDLEY,d7
+				sub.w	Vid_CentreY_w,d7
 				subq	#1,d7
 				sub.w	d1,d7
 				move.w	d7,disttobot
 
 				move.w	bottom(pc),d7
-				move.w	botclip,d4
-				sub.w	MIDDLEY,d4
+				move.w	draw_BottomClip_w,d4
+				sub.w	Vid_CentreY_w,d4
 				cmp.w	d4,d1
-				bge		predontdrawfloor		; top >= (botclip - MIDDLEY)
-				move.w	topclip,d3
-				sub.w	MIDDLEY,d3
+				bge		predontdrawfloor		; top >= (draw_BottomClip_w - Vid_CentreY_w)
+				move.w	draw_TopClip_w,d3
+				sub.w	Vid_CentreY_w,d3
 				cmp.w	d3,d1
-				bge.s	.nocliptopfloor			; top >= (topclip - MIDDLEY)
-				move.w	d3,d1					; top =  (topclip - MIDDLEY)
+				bge.s	.nocliptopfloor			; top >= (draw_TopClip_w - Vid_CentreY_w)
+				move.w	d3,d1					; top =  (draw_TopClip_w - Vid_CentreY_w)
 .nocliptopfloor
 				cmp.w	d3,d7
-				ble		predontdrawfloor		; bottom <=  (topclip - MIDDLEY)
+				ble		predontdrawfloor		; bottom <=  (draw_TopClip_w - Vid_CentreY_w)
 				cmp.w	d4,d7
-				blt.s	.noclipbotfloor			; bottom <= (botclip - MIDDLEY)
-				move.w	d4,d7					; botom = (botclip - MIDDLEY)
+				blt.s	.noclipbotfloor			; bottom <= (draw_BottomClip_w - Vid_CentreY_w)
+				move.w	d4,d7					; botom = (draw_BottomClip_w - Vid_CentreY_w)
 .noclipbotfloor:
 
 doneclip:
@@ -8560,7 +8546,7 @@ scaleprog:
 				add.l	sxoff,d4				; d4/d5 is the texture starting position?
 				add.l	szoff,d5
 
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				beq.s	.nob
 
 				moveq	#0,d6
@@ -8570,19 +8556,10 @@ scaleprog:
 				; if the clipped left edge of the floor line is > 0,
 				; need  to inset the start of the floorspace coordinate accordingly
 
-				; 0xABADCAFE - Apply fullscreen multiplier.
-				if SCREENWIDTH=320
-				; Pipper's fullscreen: Scale factor is 192/320 => 3/5
-				; Use quicker evaluation of 3/5, 154/256 => 0.6015625
-				muls.l  #154,d6
+				; 0xABADCAFE - Apply fullscreen multiplier (3/5)), approximating as 1229/2048
+				muls	#1229,d6
 				asr.l	#8,d6
-				else
-				; Original fullscreen: Scale factor is 192/288 => 2/3
-				; Use quicker evaluation of 2/3 multiplier, 171/256 => 0.66796875
-				muls.l	#171,d6
-				asr.l	#8,d6
-
-				endif
+				asr.l	#3,d6
 
 				move.l	d1,a4					; save width * cos * scale
 				move.l	d2,a5					; save width * sin * scale
@@ -8618,19 +8595,11 @@ scaleprog:
 				asr.l	#6,d1					; don't shift by 7, but 6, to achieve 2/3
 				asr.l	#6,d2
 
-				; 0xABADCAFE - Apply fullscreen multiplier.
-				if SCREENWIDTH=320
+				; 0xABADCAFE - Apply fullscreen multiplier (uses 3/5 here)
 				; Pipper's fullscreen: Scale factor is 192/320
 				; Use quicker evaluation of 3/10, 77/256 => 0.30078125
 				muls.l  #77,d1
 				muls.l  #77,d2
-				else
-				; Original fullscreen: Scale factor is 192/288
-				; 0xABADCAFE quicker evaluation of 1/3 multiplier, 85/256 => 0.33203125
-				muls.l  #85,d1
-				muls.l  #85,d2
-				endif
-
 				asr.l	#8,d1
 				asr.l	#8,d2
 
@@ -9662,7 +9631,7 @@ DOALLANIMS:
 
 
 				move.l	#ObjWork,a5
-				move.l	ObjectData,a0
+				move.l	ObjectDataPtr_l,a0
 Objectloop2:
 				tst.w	(a0)
 				blt		doneallobj2
@@ -9772,7 +9741,7 @@ NOSIDES2:
 				clr.b	notifplaying
 				move.w	(a0),IDNUM
 				move.w	#80,Noisevol
-				move.l	#ObjRotated,a1
+				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
 				move.l	(a1),Noisex
@@ -12186,7 +12155,7 @@ floorpt:		dc.l	0
 
 Rotated:		ds.l	2*800					; store rotated X and Z coordinates with Z scaling applied
 
-ObjRotated:		ds.l	2*500
+ObjRotated_vl:		ds.l	2*500
 
 OnScreen:		ds.l	2*800					; store screen projected X coordinates for rotated points
 
@@ -12224,9 +12193,9 @@ consttab:
 ; ENDR
 ; incbin "darkenfile"
 				dc.l	0
-MIDDLEX:		dc.w	SMALL_WIDTH/2
+Vid_CentreX_w:		dc.w	SMALL_WIDTH/2
 RIGHTX:			dc.w	SMALL_WIDTH
-FULLSCR:		dc.w	0
+Vid_FullScreen_b:		dc.w	0
 
 ;SHADINGTABLE: incbin "shadefile"
 

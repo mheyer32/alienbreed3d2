@@ -203,7 +203,7 @@ screendividethru:
 
 .scrdrawlop:
 				move.w	(a0)+,d0
-				move.l	FASTBUFFER,a3
+				move.l	Vid_FastBufferPtr_l,a3
 				move.l	(a0)+,d1
 
 				bra		.pastscrinto
@@ -335,7 +335,7 @@ outofcalc:
 .somethingtodraw:
 				move.l	#consttab,a1
 				move.l	#WorkSpace,a0
-				tst.b	FULLSCR
+				tst.b	Vid_FullScreen_b
 				bne		screendivideFULL
 
 ; tst.b seethru
@@ -357,7 +357,7 @@ scrdrawlop:
 				beq.s	thislinedone
 				move.w	d0,LASTSTIRRUP
 
-				move.l	FASTBUFFER,a3
+				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 
@@ -448,7 +448,7 @@ scrdrawlopDOUB:
 				beq.s	thislineodd
 				move.w	d0,LASTSTIRRUP
 
-				move.l	FASTBUFFER,a3
+				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 
@@ -541,7 +541,7 @@ screendivideFULL:
 
 scrdrawlopFULL:
 				move.w	(a0)+,d0
-				move.l	FASTBUFFER,a3
+				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 
@@ -631,7 +631,7 @@ scrdrawlopFULLDOUB:
 				move.w	(a0)+,d0
 				btst	#0,d0
 				bne.s	itsanoddone
-				move.l	FASTBUFFER,a3
+				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 
@@ -911,15 +911,15 @@ storage:		ds.l	500
 ;
 ;				asr.w	d1					; DOUBLEWIDTH test
 ;
-;				add.w	MIDDLEX,d1
+;				add.w	Vid_CentreX_w,d1
 ;
 ;				move.l	topofwall(pc),d5
 ;				divs	d0,d5
-;				add.w	MIDDLEY,d5
+;				add.w	Vid_CentreY_w,d5
 ;				move.w	d5,strtop
 ;				move.l	botofwall(pc),d5
 ;				divs	d0,d5
-;				add.w	MIDDLEY,d5
+;				add.w	Vid_CentreY_w,d5
 ;				move.w	d5,strbot
 ;
 ;; CACHE_OFF d2
@@ -945,17 +945,17 @@ storage:		ds.l	500
 ;
 ;				asr.w	d3					; DOUBLEWIDTH test
 ;
-;				add.w	MIDDLEX,d3
+;				add.w	Vid_CentreX_w,d3
 ;				move.w	strtop(pc),12(a0)
 ;				move.w	strbot(pc),16(a0)
 ;				move.l	topofwall(pc),d6
 ;				divs	d2,d6
-;				add.w	MIDDLEY,d6
+;				add.w	Vid_CentreY_w,d6
 ;				move.w	d6,strtop
 ;				move.w	d6,14(a0)
 ;				move.l	botofwall(pc),d6
 ;				divs	d2,d6
-;				add.w	MIDDLEY,d6
+;				add.w	Vid_CentreY_w,d6
 ;				move.w	d6,strbot
 ;				move.w	d6,18(a0)
 ;				move.w	d3,2(a1)
@@ -1297,16 +1297,16 @@ CalcAndDraw:
 
 				divs.l	d0,d1
 				moveq	#0,d5
-				move.w	MIDDLEX,d5
+				move.w	Vid_CentreX_w,d5
 				add.l	d5,d1
 
 				move.l	topofwall(pc),d5
 				divs	d0,d5
-				add.w	MIDDLEY,d5
+				add.w	Vid_CentreY_w,d5
 				move.w	d5,strtop
 				move.l	botofwall(pc),d5
 				divs	d0,d5
-				add.w	MIDDLEY,d5
+				add.w	Vid_CentreY_w,d5
 				move.w	d5,strbot
 
 .computeloop:
@@ -1320,19 +1320,19 @@ CalcAndDraw:
 				move.l	(a1),d3
 				divs.l	d2,d3
 				moveq	#0,d5
-				move.w	MIDDLEX,d5
+				move.w	Vid_CentreX_w,d5
 				add.l	d5,d3
 				move.w	6(a1),d5
 				move.w	strtop(pc),12(a0)
 				move.l	topofwall(pc),d6
 				divs	d2,d6
 				move.w	strbot(pc),16(a0)
-				add.w	MIDDLEY,d6
+				add.w	Vid_CentreY_w,d6
 				move.w	d6,strtop
 				move.w	d6,14(a0)
 				move.l	botofwall(pc),d6
 				divs	d2,d6
-				add.w	MIDDLEY,d6
+				add.w	Vid_CentreY_w,d6
 				move.w	d6,strbot
 				move.w	d6,18(a0)
 				move.l	d3,(a1)
@@ -1397,19 +1397,19 @@ computeloop2:
 				move.l	(a1),d3
 				divs.l	d2,d3
 				moveq	#0,d5
-				move.w	MIDDLEX,d5
+				move.w	Vid_CentreX_w,d5
 				add.l	d5,d3
 				move.w	6(a1),d5
 				move.w	strtop(pc),12(a0)
 				move.l	topofwall(pc),d6
 				divs	d2,d6
 				move.w	strbot(pc),16(a0)
-				add.w	MIDDLEY,d6
+				add.w	Vid_CentreY_w,d6
 				move.w	d6,strtop
 				move.w	d6,14(a0)
 				move.l	botofwall(pc),d6
 				divs	d2,d6
-				add.w	MIDDLEY,d6
+				add.w	Vid_CentreY_w,d6
 				move.w	d6,strbot
 				move.w	d6,18(a0)
 				move.l	d3,(a1)
@@ -1487,20 +1487,20 @@ nostripq:
 
 ScreenWallstripdraw:
 				move.w	d4,d6
-				cmp.w	topclip(pc),d6
+				cmp.w	draw_TopClip_w(pc),d6
 				blt.s	nostripq
-				cmp.w	botclip(pc),d3
+				cmp.w	draw_BottomClip_w(pc),d3
 				bgt.s	nostripq
 
-				cmp.w	botclip(pc),d6
+				cmp.w	draw_BottomClip_w(pc),d6
 				ble.s	noclipbot
-				move.w	botclip(pc),d6
+				move.w	draw_BottomClip_w(pc),d6
 
 noclipbot:
 				move.w	d3,d5
-				cmp.w	topclip(pc),d5
+				cmp.w	draw_TopClip_w(pc),d5
 				bge.s	nocliptop
-				move.w	topclip(pc),d5
+				move.w	draw_TopClip_w(pc),d5
 				btst	#0,d5
 				beq.s	.nsbd
 				exg		a2,a4
@@ -1706,7 +1706,7 @@ simplewallPACK2:
 				align	4
 TOTHEMIDDLE:	dc.w	0
 BOTTOMY:		dc.w	0
-MIDDLEY:		dc.w	FS_HEIGHT/2
+Vid_CentreY_w:		dc.w	FS_HEIGHT/2
 TOPOFFSET:		dc.w	0
 BIGMIDDLEY:		dc.l	SCREENWIDTH*FS_HEIGHT/2
 SMIDDLEY:		dc.w	FS_HEIGHT/2
@@ -1841,20 +1841,20 @@ val				SET		val+SCREENWIDTH
 
 ScreenWallstripdrawBIG:
 				move.w	d4,d6
-				cmp.w	topclip(pc),d6
+				cmp.w	draw_TopClip_w(pc),d6
 				blt		nostripq
-				cmp.w	botclip(pc),d3
+				cmp.w	draw_BottomClip_w(pc),d3
 				bgt		nostripq
 
-				cmp.w	botclip(pc),d6
+				cmp.w	draw_BottomClip_w(pc),d6
 				ble.s	.noclipbot
-				move.w	botclip(pc),d6
+				move.w	draw_BottomClip_w(pc),d6
 
 .noclipbot:
 				move.w	d3,d5
-				cmp.w	topclip(pc),d5
+				cmp.w	draw_TopClip_w(pc),d5
 				bge.s	.nocliptop
-				move.w	topclip(pc),d5
+				move.w	draw_TopClip_w(pc),d5
 				btst	#0,d5
 				beq.s	.nsbd
 				exg		a2,a4
@@ -1997,19 +1997,19 @@ nostripqthru:
 
 ScreenWallstripdrawthru:
 				move.w	d4,d6
-				cmp.w	topclip(pc),d6
+				cmp.w	draw_TopClip_w(pc),d6
 				blt.s	nostripqthru
-				cmp.w	botclip(pc),d3
+				cmp.w	draw_BottomClip_w(pc),d3
 				bgt.s	nostripqthru
-				cmp.w	botclip(pc),d6
+				cmp.w	draw_BottomClip_w(pc),d6
 				ble.s	.noclipbot
-				move.w	botclip(pc),d6
+				move.w	draw_BottomClip_w(pc),d6
 
 .noclipbot:
 				move.w	d3,d5
-				cmp.w	topclip(pc),d5
+				cmp.w	draw_TopClip_w(pc),d5
 				bge.s	.nocliptop
-				move.w	topclip(pc),d5
+				move.w	draw_TopClip_w(pc),d5
 				btst	#0,d5
 				beq.s	.nsbd
 				exg		a2,a4
@@ -2417,12 +2417,12 @@ cliptotestfirstbehind:
 				ext.l	d4
 				divs.l	d4,d6
 
-; move.w MIDDLEX,d4
+; move.w Vid_CentreX_w,d4
 ; ext.l d4
 ; sub.l d4,d6
 
 ; move.w (a6,d2*2),d6
-; sub.w MIDDLEX,d6
+; sub.w Vid_CentreX_w,d6
 ; ext.l d6
 				cmp.l	d6,d3
 				bge		wallfacingaway
@@ -2443,7 +2443,7 @@ cliptotestsecbehind:
 				add.l	(a5,d0*8),d3
 
 ; move.w (a6,d0*2),d6
-; sub.w MIDDLEX,d6
+; sub.w Vid_CentreX_w,d6
 ; ext.l d6
 
 				move.l	(a5,d0*8),d6
@@ -2451,7 +2451,7 @@ cliptotestsecbehind:
 				ext.l	d4
 				divs.l	d4,d6
 
-; move.w MIDDLEX,d4
+; move.w Vid_CentreX_w,d4
 ; ext.l d4
 ; sub.l d4,d6
 
@@ -2464,7 +2464,7 @@ pastclip:
 				move.w	6(a5,d0*8),d4
 				ext.l	d4
 				divs.l	d4,d3
-				move.w	MIDDLEX,d4
+				move.w	Vid_CentreX_w,d4
 				ext.l	d4
 				add.l	d4,d3
 
@@ -2472,7 +2472,7 @@ pastclip:
 				move.w	6(a5,d2*8),d4
 				ext.l	d4
 				divs.l	d4,d6
-				move.w	MIDDLEX,d4
+				move.w	Vid_CentreX_w,d4
 				ext.l	d4
 				add.l	d4,d6
 
@@ -2526,7 +2526,7 @@ cant_tell:
 				add.w	#4,a5
 .notupper
 
-				move.w	currzone,d0
+				move.w	Draw_CurrentZone_w,d0
 				move.b	WHICHPBR,d4
 				btst	#3,d4
 				beq.s	.nototherzone
@@ -2560,7 +2560,7 @@ cant_tell:
 				add.w	wallbrightoff,d0
 				move.w	d0,rightwallbright
 
-				move.w	currzone,d0
+				move.w	Draw_CurrentZone_w,d0
 				move.b	WHICHPBR,d4
 				lsr.w	#4,d4
 				btst	#3,d4
@@ -2632,6 +2632,6 @@ cosval:			dc.w	0
 oldxoff:		dc.w	0
 oldzoff:		dc.w	0
 
-topclip:		dc.w	0
-botclip:		dc.w	0
-seethru:		dc.w	0
+draw_TopClip_w:		dc.w	0
+draw_BottomClip_w:	dc.w	0
+seethru:			dc.w	0 ; bool

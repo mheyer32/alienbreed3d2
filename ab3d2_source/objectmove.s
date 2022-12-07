@@ -43,7 +43,7 @@ gobackanddoitallagain:
 				move.l	FloorLines,a1
 checkwalls:
 				move.w	(a0)+,d0
-				blt		nomorewalls
+				blt		no_more_walls
 
 				asl.w	#4,d0
 				lea		(a1,d0.w),a2
@@ -456,7 +456,7 @@ hitthewall:
 oknothitwall:
 
 				bra		checkwalls
-nomorewalls:
+no_more_walls:
 
 				tst.w	extlen
 				beq		NOOTHERWALLSNEEDED
@@ -1860,7 +1860,7 @@ MYROOM:			dc.w	0
 
 Collision:
 
-				move.l	ObjectData,a0
+				move.l	ObjectDataPtr_l,a0
 				move.w	CollId,d0
 				asl.w	#6,d0
 				move.w	12(a0,d0.w),MYROOM
