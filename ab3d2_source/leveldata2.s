@@ -14,7 +14,7 @@ Plr_Initialise:
 				move.l	d0,Plr1_RoomPtr_l
 				move.l	Plr1_RoomPtr_l,a0
 				move.l	ZoneT_Floor_l(a0),d0
-				sub.l	#PLR_HEIGHT,d0
+				sub.l	#PLR_STAND_HEIGHT,d0
 				move.l	d0,Plr1_SnapYOff_l
 				move.l	d0,Plr1_YOff_l
 				move.l	d0,Plr1_SnapTYOff_l
@@ -28,7 +28,7 @@ Plr_Initialise:
 				move.l	d0,Plr2_RoomPtr_l
 				move.l	Plr2_RoomPtr_l,a0
 				move.l	ZoneT_Floor_l(a0),d0
-				sub.l	#PLR_HEIGHT,d0
+				sub.l	#PLR_STAND_HEIGHT,d0
 				move.l	d0,Plr2_SnapYOff_l
 				move.l	d0,Plr2_YOff_l
 				move.l	d0,Plr2_SnapTYOff_l

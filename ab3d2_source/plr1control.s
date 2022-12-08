@@ -236,10 +236,10 @@ nottapped:
 				tst.b	(a5,d7.w)
 				beq.s	notduck
 				clr.b	(a5,d7.w)
-				move.l	#PLR_HEIGHT,Plr1_SnapTargHeight_l
+				move.l	#PLR_STAND_HEIGHT,Plr1_SnapTargHeight_l
 				not.b	Plr1_Ducked_b
 				beq.s	notduck
-				move.l	#playercrouched,Plr1_SnapTargHeight_l
+				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapTargHeight_l
 notduck:
 
 				move.l	Plr1_RoomPtr_l,a4
@@ -252,12 +252,12 @@ notduck:
 usebottom:
 
 				clr.b	Plr1_Squished_b
-				move.l	#PLR_HEIGHT,Plr1_SnapSquishedHeight_l
+				move.l	#PLR_STAND_HEIGHT,Plr1_SnapSquishedHeight_l
 
-				cmp.l	#PLR_HEIGHT+3*1024,d0
+				cmp.l	#PLR_STAND_HEIGHT+3*1024,d0
 				bgt.s	oktostand
 				st		Plr1_Squished_b
-				move.l	#playercrouched,Plr1_SnapSquishedHeight_l
+				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapSquishedHeight_l
 oktostand:
 
 				move.l	Plr1_SnapTargHeight_l,d1

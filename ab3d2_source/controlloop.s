@@ -128,7 +128,7 @@ int_name		INTNAME
 
 START:
 
-				move.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
 
 				move.l	#doslibname,a1
 				moveq	#0,d0
@@ -413,11 +413,11 @@ SETPLAYERS:
 
 				move.w	PLOPT,d0
 				add.b	#'a',d0
-				move.b	d0,LEVA
-				move.b	d0,LEVB
-				move.b	d0,LEVC
-				move.b	d0,LEVD
-				move.b	d0,LEVE
+				move.b	d0,Lvl_BinFilenameX_vb
+				move.b	d0,Lvl_GfxFilenameX_vb
+				move.b	d0,Lvl_ClipsFilenameX_vb
+				move.b	d0,Lvl_MapFilenameX_vb
+				move.b	d0,Lvl_FlyMapFilenameX_vb
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq		SLAVESETUP
@@ -445,11 +445,11 @@ SLAVESETUP:
 				jsr		RECFIRST
 				move.w	d0,PLOPT
 				add.b	#'a',d0
-				move.b	d0,LEVA
-				move.b	d0,LEVB
-				move.b	d0,LEVC
-				move.b	d0,LEVD
-				move.b	d0,LEVE
+				move.b	d0,Lvl_BinFilenameX_vb
+				move.b	d0,Lvl_GfxFilenameX_vb
+				move.b	d0,Lvl_ClipsFilenameX_vb
+				move.b	d0,Lvl_MapFilenameX_vb
+				move.b	d0,Lvl_FlyMapFilenameX_vb
 
 				jsr		RECFIRST
 				move.w	d0,Rand1
@@ -484,7 +484,7 @@ wtclick:
 
 READMAINMENU:
 
-				move.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
 
 				move.w	MAXLEVEL,d0
 

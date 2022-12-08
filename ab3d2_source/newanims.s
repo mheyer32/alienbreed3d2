@@ -793,7 +793,7 @@ objmoveanim:
 				move.l	Plr2_RoomPtr_l,a0
 				move.w	(a0),Plr2_Zone_w
 
-				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.okp2
 				move.w	#-5,Plr2_Zone_w
 .okp2:

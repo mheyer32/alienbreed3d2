@@ -198,7 +198,7 @@ Collectable:
 
 .NotCollected1
 
-				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq.s	.NotCollected2
 				bsr		CHECKNEARBYTWO
 				tst.b	d0
@@ -285,7 +285,7 @@ Activatable:
 .NotActivated1:
 
 
-				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq		.NotActivated2
 				bsr		CHECKNEARBYTWO
 				tst.b	d0
@@ -376,7 +376,7 @@ ACTIVATED:
 
 .NotDeactivated1:
 
-				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq.s	.NotDeactivated2
 
 				bsr		CHECKNEARBYTWO
@@ -414,7 +414,7 @@ Destructable:
 				tst.b	EntT_NumLives_b(a0)
 				beq.s	.alreadydead
 
-				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.notext
 
 				move.w	EntT_DisplayText_w(a0),d0
@@ -559,7 +559,7 @@ intodeco:
 
 PLR1CollectObject:
 
-				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.nodeftext
 
 				move.w	EntT_DisplayText_w(a0),d0

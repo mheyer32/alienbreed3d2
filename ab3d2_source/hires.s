@@ -29,24 +29,28 @@ CHEESEY			equ		0
 ;* as it will look gorgeous now.
 ;*************************************************
 
-CD32VER			equ		0
+CD32VER					equ		0
 
-FS_WIDTH		equ		320
-FS_HEIGHT		equ		232
-SMALL_WIDTH		equ		192
-SMALL_HEIGHT	equ		160
+FS_WIDTH				equ		320
+FS_HEIGHT				equ		232
+SMALL_WIDTH				equ		192
+SMALL_HEIGHT			equ		160
+SCREENWIDTH				equ		320
+VID_FAST_BUFFER_SIZE	equ		SCREENWIDTH*256+15		; screen size plus alignment
 
-SCREENWIDTH		equ		320
+maxscrdiv				equ		8
+max3ddiv				equ		5
+PLR_STAND_HEIGHT		equ		12*1024
+PLR_CROUCH_HEIGHT		equ		8*1024
+scrheight				equ		80
+intreqrl				equ		$01f
 
-maxscrdiv		EQU		8
-max3ddiv		EQU		5
-PLR_HEIGHT	EQU		12*1024
-playercrouched	EQU		8*1024
-scrheight		EQU		80
-intreqrl		equ		$01f
+PLR_MASTER				equ 'm' ; two player master
+PLR_SLAVE				equ 's' ; two player slave
+PLR_SINGLE				equ 'n' ; Single player
 
 				section code,code
-
+; Startup Code
 _start:
 				movem.l	d1-a6,-(sp)
 **************************************************************************************
@@ -58,7 +62,7 @@ _start:
 				btst	#$03,d0
 				beq.b	.not040
 				not.b	FULLSCRTEMP
-.not040
+.not040:
 **************************************************************************************
 
 				lea.l	MiscResourceName,a1
@@ -153,7 +157,7 @@ _start:
 				moveq	#1,d0
 				move.w	#8191,d1
 
-fillconst:
+.fill_const:
 				move.l	#16384*64,d2
 				divs.l	d0,d2
 ; ext.l d2	;c#
@@ -162,34 +166,70 @@ fillconst:
 ; move.l d3,d4
 ; asr.l #6,d4
 				move.l	d3,(a0)+				;e#
-
 				asr.l	#1,d2					; c#/2.0
 				sub.l	#40*64,d2				; d#
 				muls.l	d3,d2					; d#*e#
-
 				asr.l	#6,d2
 				move.l	d2,(a0)+
-
 				addq	#1,d0
-
-				dbra	d1,fillconst
+				dbra	d1,.fill_const
 
 				jsr		START
 
 				rts
 
 ;*******************************************************************************
-
-VID_FAST_BUFFER_SIZE		equ		SCREENWIDTH*256+15		; screen size plus alignment
+; Global data
+				align 4
+; Long aligned
 Vid_FastBufferPtr_l:		dc.l	0	; aligned address
 Vid_FastBufferAllocPtr_l:	dc.l	0	; allocated address
+_DOSBase:					dc.l	0
+MiscResourceBase:			dc.l	0
+PotgoResourceBase:			dc.l	0
 
-;* Load level into buffers.
-				clr.b	doanything
-				clr.b	dosounds
+; Word aligned
 
-; DRAW TEXT SCREEN
+; Byte Aligned
+Plr_MultiplayerType_b:		dc.w	0	; CHAR enum - m(aster), s(lave), n(either)
 
+; Level data filenames. These are null terminated strings that are split on the character for the
+; name. This is poked in during loading.
+Lvl_BinFilename_vb:			dc.b	'ab3:levels/level_'
+Lvl_BinFilenameX_vb:		dc.b	'a/twolev.bin',0
+Lvl_GfxFilename_vb:			dc.b	'ab3:levels/level_'
+Lvl_GfxFilenameX_vb:		dc.b	'a/twolev.graph.bin',0
+Lvl_ClipsFilename_vb:		dc.b	'ab3:levels/level_'
+Lvl_ClipsFilenameX_vb:		dc.b	'a/twolev.clips',0
+Lvl_MapFilename_vb:			dc.b	'ab3:levels/level_'
+Lvl_MapFilenameX_vb:		dc.b	'a/twolev.map',0
+Lvl_FlyMapFilename_vb:		dc.b	'ab3:levels/level_'
+Lvl_FlyMapFilenameX_vb:		dc.b	'a/twolev.flymap',0
+AppName:					dc.b	'TheKillingGrounds',0
+doslibname:					DOSNAME
+MiscResourceName:			MISCNAME
+PotgoResourceName:			POTGONAME
+
+; OS structures
+				align 4
+VBLANKInt:
+				dc.l	0,0						;is_Node ln_Succ, ln_Pred
+				dc.b	NT_INTERRUPT,9			;is_Node ln_Type; ln_Pri
+				dc.l	AppName					;is_Node ln_Name
+				dc.l	0						;is_Data
+				dc.l	VBlankInterrupt			;is_Code
+
+				align 4
+KEYInt:
+				dc.l	0,0						;is_Node ln_Succ, ln_Pred
+				dc.b	NT_INTERRUPT,127		;is_Node ln_Type; ln_Pri
+				dc.l	AppName					;is_Node ln_Name
+				dc.l	0						;is_Data
+				dc.l	key_interrupt			;is_Code
+
+;*******************************************************************************
+
+				align 4
 Game_ShowIntroText:
 				move.l	Lvl_IntroTextPtr_l,a0
 				move.w	PLOPT,d0
@@ -217,14 +257,9 @@ ENDFONT0:
 CHARWIDTHS0:
 				incbin	"charwidths0"
 ENDFONT1:
-; incbin "endfont1"
 CHARWIDTHS1:
-; incbin "charwidths1"
 ENDFONT2:
-; incbin "endfont2"
 CHARWIDTHS2:
-; incbin "charwidths2"
-
 				even
 
 Draw_LineOfText:
@@ -303,72 +338,6 @@ Game_ClearIntroText:
 				dbra	d0,.lll
 				rts
 
-
-doslibname:		DOSNAME
-MiscResourceName: MISCNAME
-PotgoResourceName: POTGONAME
-
-				align	4
-COPYLINK:			dc.l	0
-_DOSBase:			dc.l	0
-MiscResourceBase:	dc.l	0
-PotgoResourceBase:	dc.l	0
-
-Plr_MultiplayerType_b:	dc.w	0	; CHAR enum - m(aster), s(lave), n(either)
-
-PLR_MASTER		equ 'm' ; two player master
-PLR_SLAVE		equ 's' ; two player slave
-PLR_NEITHER		equ 'n' ; Single player?
-
-LDname:			dc.b	'ab3:levels/level_'
-LEVA:
-				dc.b	'a/twolev.bin',0
-				even
-LDhandle:		dc.l	0
-LGname:			dc.b	'ab3:levels/level_'
-LEVB:
-				dc.b	'a/twolev.graph.bin',0
-				even
-LGhandle:		dc.l	0
-LCname:			dc.b	'ab3:levels/level_'
-LEVC:
-				dc.b	'a/twolev.clips',0
-				even
-LChandle:		dc.l	0
-LLname:			dc.b	'ab3:levels/level_'
-LEVD:
-				dc.b	'a/twolev.map',0
-				even
-LLFname:		dc.b	'ab3:levels/level_'
-LEVE:
-				dc.b	'a/twolev.flymap',0
-				even
-LLhandle:		dc.l	0
-
-				cnop	0,4
-
-Prefsname:		dc.b	'ram:prefs',0
-				even
-Prefshandle:	dc.l	0
-
-AppName:		dc.b	'TheKillingGrounds',0
-				cnop	0,4
-
-VBLANKInt:
-				dc.l	0,0						;is_Node ln_Succ, ln_Pred
-				dc.b	NT_INTERRUPT,9			;is_Node ln_Type; ln_Pri
-				dc.l	AppName					;is_Node ln_Name
-				dc.l	0						;is_Data
-				dc.l	VBlankInterrupt			;is_Code
-
-KEYInt:
-				dc.l	0,0						;is_Node ln_Succ, ln_Pred
-				dc.b	NT_INTERRUPT,127		;is_Node ln_Type; ln_Pri
-				dc.l	AppName					;is_Node ln_Name
-				dc.l	0						;is_Data
-				dc.l	key_interrupt			;is_Code
-
-
 Game_Begin:
 ;				move.w	#0,TXTCOLL
 ;				move.w	#0,MIXCOLL
@@ -376,7 +345,7 @@ Game_Begin:
 ;
 ;				bsr		Game_ClearIntroText
 ;
-;				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+;				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 ;				bne.s	.notext
 ;				bsr		Game_ShowIntroText
 .notext
@@ -402,18 +371,17 @@ Game_Begin:
 				jsr		SETPLAYERS
 
 				move.l	#MEMF_ANY,IO_MemType_l
-				move.l	#LLname,a0
+				move.l	#Lvl_MapFilename_vb,a0
 				jsr		IO_LoadFile
 				move.l	d0,Lvl_WalkLinksPtr_l
-*************************************
 
 				move.l	#MEMF_ANY,IO_MemType_l
-				move.l	#LLFname,a0
+				move.l	#Lvl_FlyMapFilename_vb,a0
 				jsr		IO_LoadFile
 				move.l	d0,Lvl_FlyLinksPtr_l
 
 				moveq	#0,d1
-				move.b	LEVA,d1
+				move.b	Lvl_BinFilenameX_vb,d1
 				sub.b	#'a',d1
 				lsl.w	#6,d1
 				move.l	GLF_DatabasePtr_l,a0
@@ -422,25 +390,21 @@ Game_Begin:
 				move.l	#MEMF_CHIP,IO_MemType_l
 				jsr		IO_LoadFile
 				move.l	d0,Lvl_MusicPtr_l
-*************************************
 
 				move.l	#MEMF_ANY,IO_MemType_l
-				move.l	#LDname,a0
+				move.l	#Lvl_BinFilename_vb,a0
 				jsr		IO_LoadFile
 				move.l	d0,Lvl_DataPtr_l
-*************************************
 
 				move.l	#MEMF_ANY,IO_MemType_l
-				move.l	#LGname,a0
+				move.l	#Lvl_GfxFilename_vb,a0
 				jsr		IO_LoadFile
 				move.l	d0,Lvl_GraphicsPtr_l
-*************************************
 
 				move.l	#MEMF_ANY,IO_MemType_l
-				move.l	#LCname,a0
+				move.l	#Lvl_ClipsFilename_vb,a0
 				jsr		IO_LoadFile
 				move.l	d0,Lvl_ClipsPtr_l
-*************************************
 
 noload:
 				; What for?
@@ -590,7 +554,7 @@ noclips:
 ;njc:
 
 				clr.b	Plr1_StoodInTop_b
-				move.l	#PLR_HEIGHT,Plr1_SnapHeight_l
+				move.l	#PLR_STAND_HEIGHT,Plr1_SnapHeight_l
 
 				move.l	#empty,pos1LEFT
 				move.l	#empty,pos2LEFT
@@ -684,7 +648,7 @@ scaledownlop:
 				move.w	#$0,potgo(a6)
 				move.w	#0,Conditions
 
-				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq.s	.nokeys
 				move.w	#%111111111111,Conditions
 .nokeys:
@@ -728,12 +692,12 @@ scaledownlop:
 
 				move.l	SampleList+6*8,pos0LEFT
 				move.l	SampleList+6*8+4,Samp0endLEFT
-				move.l	#PLR_HEIGHT,Plr1_SnapTargHeight_l
-				move.l	#PLR_HEIGHT,Plr1_SnapHeight_l
-				move.l	#PLR_HEIGHT,Plr2_SnapTargHeight_l
-				move.l	#PLR_HEIGHT,Plr2_SnapHeight_l
+				move.l	#PLR_STAND_HEIGHT,Plr1_SnapTargHeight_l
+				move.l	#PLR_STAND_HEIGHT,Plr1_SnapHeight_l
+				move.l	#PLR_STAND_HEIGHT,Plr2_SnapTargHeight_l
+				move.l	#PLR_STAND_HEIGHT,Plr2_SnapHeight_l
 
-; cmp.b #PLR_NEITHER,Plr_MultiplayerType_b
+; cmp.b #PLR_SINGLE,Plr_MultiplayerType_b
 ; beq.s nohandshake
 ;
 ; move.b #%11011000,$bfd200
@@ -756,7 +720,7 @@ scaledownlop:
 
 				clr.b	MASTERQUITTING
 
-				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				seq		SLAVEQUITTING
 
 ; move.w #200,PLAYERTWOHEALTH
@@ -766,7 +730,7 @@ scaledownlop:
 
 				move.l	#0,hitcol
 
-;				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b 	; 0xABADCAFE - commented out as dependent branch commented out
+;				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b 	; 0xABADCAFE - commented out as dependent branch commented out
 ;				bne.s	NOCLTXT		; 0xABADCAFE - commented out to avoid "branch converted to nop"
 
 
@@ -1107,7 +1071,7 @@ lop:
 
 				move.l	#KeyMap,a5
 
-				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne		.nopause
 				tst.b	$19(a5)
 				beq.s	.nopause
@@ -1143,7 +1107,7 @@ nofadedownhc:
 				st		READCONTROLS
 				move.l	#$dff000,a6
 
-				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq		.nopause
 
 				move.b	SLAVEPAUSE,d0
@@ -1289,7 +1253,7 @@ okwat:
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq		ASlaveShouldWaitOnHisMaster
 
-				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne		NotOnePlayer
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -1750,7 +1714,7 @@ findaverage:
 				sub.w	#300,d1
 				move.w	d1,Plr1_RoomBright_w
 
-				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq		nosee
 
 				move.l	Plr1_RoomPtr_l,FromRoom
@@ -2138,7 +2102,7 @@ notdoubwidth2:
 				clr.l	24(a1)
 				clr.l	28(a1)
 
-				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq.s	plr1only
 
 				lea		ZoneT_ListOfGraph_w(a0),a0
@@ -2233,7 +2197,7 @@ noend:
 				jmp		endnomusic
 .noquit
 
-				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	noexit
 				move.l	Plr1_RoomPtr_l,a0
 				move.w	(a0),d0
@@ -4294,7 +4258,7 @@ DrawDisplay:
 				bsr		RotateObjectPts
 				bsr		CalcPLR1InLine
 
-				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	doplr2too
 				move.l	Plr2_ObjectPtr_l,a0
 				move.w	#-1,12(a0)
@@ -5966,7 +5930,7 @@ wevewon:
 
 				bsr		EnergyBar
 
-				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.nonextlev
 				add.w	#1,MAXLEVEL
 				st		FINISHEDLEVEL
@@ -5986,7 +5950,7 @@ playwelldone:
 				tst.b	reachedend
 				beq.s	playwelldone
 
-				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	wevelost
 				cmp.w	#16,MAXLEVEL
 				bne.s	wevelost
@@ -6008,7 +5972,7 @@ endnomusic
 ; jsr mt_end
 ;.noback
 *******************************
-; cmp.b #PLR_NEITHER,Plr_MultiplayerType_b
+; cmp.b #PLR_SINGLE,Plr_MultiplayerType_b
 ; bne.s .nonextlev
 ; cmp.w #15,MAXLEVEL
 ; bge.s .nonextlev
@@ -10305,7 +10269,7 @@ nostartalan:
 				clr.b	PLR1_fire
 				clr.b	PLR1_clicked
 				move.w	#0,ADDTOBOBBLE
-				move.l	#playercrouched,Plr1_SnapHeight_l
+				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapHeight_l
 				move.w	#-80,d0					; Is this related to render buffer height
 				move.w	d0,STOPOFFSET
 				neg.w	d0
@@ -10393,7 +10357,7 @@ control2:
 				move.w	#-1,12+128(a0)
 				clr.b	PLR2_fire
 				move.w	#0,ADDTOBOBBLE
-				move.l	#playercrouched,Plr2_SnapHeight_l
+				move.l	#PLR_CROUCH_HEIGHT,Plr2_SnapHeight_l
 				move.w	#-80,d0
 				move.w	d0,STOPOFFSET
 				neg.w	d0
