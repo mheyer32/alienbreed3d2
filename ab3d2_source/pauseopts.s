@@ -42,7 +42,7 @@
 
 ; bsr CHANGEPOPTS
 
-				cmp.b	#'s',mors
+				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.otherk
 				tst.b	Plr1_Joystick_b
 				beq.s	.NOJOY
@@ -63,7 +63,7 @@
 .wr2:
 
 
-				cmp.b	#'s',mors
+				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.otherk2
 				tst.b	Plr1_Joystick_b
 				beq.s	.NOJOY2
@@ -111,7 +111,7 @@ CHECKUPDOWN
 				eor.b	d0,d2
 				eor.b	d1,d3
 
-				cmp.b	#'s',mors
+				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.slavechk
 				tst.b	Plr1_Joystick_b
 				bne.s	.nofing

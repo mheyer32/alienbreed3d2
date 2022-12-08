@@ -27,7 +27,7 @@ PLR1_fall
 				ext.l	d2
 				asl.l	#6,d2
 
-				move.l	#PLR1_Obj,a4
+				move.l	#Plr1_ObjectPtr_l,a4
 				move.w	DAMAGEWHENHIT,d3
 				sub.w	#100,d3
 				ble.s	.nodam
@@ -49,7 +49,7 @@ PLR1_fall
 				and.w	#-4096,d3
 				beq.s	.noclump
 
-				bsr		PLR1clump
+				bsr		Plr1_FootstepFX
 
 .noclump
 
@@ -136,7 +136,7 @@ PLR1_fall
 				move.w	DAMAGEWHENHIT,d3
 				sub.w	#100,d3
 				ble.s	.nodam2
-				move.l	PLR1_Obj,a4
+				move.l	Plr1_ObjectPtr_l,a4
 				add.b	d3,EntT_DamageTaken_b(a4)
 .nodam2
 				move.w	#0,DAMAGEWHENHIT
@@ -299,7 +299,7 @@ PLR2_fall
 				move.w	DAMAGEWHENHIT,d3
 				sub.w	#100,d3
 				ble.s	.nodam
-				move.l	PLR2_Obj,a4
+				move.l	Plr2_ObjectPtr_l,a4
 				add.b	d3,EntT_DamageTaken_b(a4)
 .nodam
 				move.w	#0,DAMAGEWHENHIT
@@ -396,7 +396,7 @@ PLR2_fall
 				move.w	DAMAGEWHENHIT,d3
 				sub.w	#100,d3
 				ble.s	.nodam2
-				move.l	PLR2_Obj,a4
+				move.l	Plr2_ObjectPtr_l,a4
 				add.b	d3,EntT_DamageTaken_b(a4)
 .nodam2
 				move.w	#0,DAMAGEWHENHIT

@@ -18,21 +18,21 @@ BRIGHTENPOINTS:
 
 				movem.l	d0-d7/a0-a6,-(a7)
 
-				move.l	ZoneAdds,a0
+				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d3.w*4),a0
-				add.l	LEVELDATA,a0
+				add.l	Lvl_DataPtr_l,a0
 				move.l	#CurrentPointBrights,a2
-				move.l	Points,a3
-				move.l	ZoneBorderPts,a4
+				move.l	Lvl_PointsPtr_l,a3
+				move.l	Lvl_ZoneBorderPointsPtr_l,a4
 
 				lea		ZoneT_ListOfGraph_w(a0),a1
 BRIGHTPTS:
 				move.w	(a1),d4
 				blt		brightall
 
-				move.l	ZoneAdds,a0
+				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d4.w*4),a0
-				add.l	LEVELDATA,a0
+				add.l	Lvl_DataPtr_l,a0
 
 				add.w	#8,a1
 				moveq	#9,d7
@@ -209,21 +209,21 @@ BRIGHTENPOINTSANGLE:
 				move.l	#SineTable,a0
 				lea		(a0,d4.w),a6
 
-				move.l	ZoneAdds,a0
+				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d3.w*4),a0
-				add.l	LEVELDATA,a0
+				add.l	Lvl_DataPtr_l,a0
 				move.l	#CurrentPointBrights,a2
-				move.l	Points,a3
-				move.l	ZoneBorderPts,a4
+				move.l	Lvl_PointsPtr_l,a3
+				move.l	Lvl_ZoneBorderPointsPtr_l,a4
 
 				lea		ZoneT_ListOfGraph_w(a0),a1
 
 BRIGHTPTSA:
 				move.w	(a1),d4
 				blt		brightallA
-				move.l	ZoneAdds,a0
+				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d4.w*4),a0
-				add.l	LEVELDATA,a0
+				add.l	Lvl_DataPtr_l,a0
 
 				add.w	#8,a1
 				moveq	#9,d3
@@ -427,11 +427,11 @@ brightallA:
 DARKENPOINTS
 				movem.l	d0-d7/a0-a6,-(a7)
 
-				move.l	ZoneAdds,a0
+				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d3.w*4),a0
-				add.l	LEVELDATA,a0
+				add.l	Lvl_DataPtr_l,a0
 				move.l	#CurrentPointBrights,a2
-				move.l	Points,a3
+				move.l	Lvl_PointsPtr_l,a3
 
 				move.l	a0,a1
 				add.w	ZoneT_Points_w(a0),a1
@@ -477,9 +477,9 @@ Flash:
 
 				move.l	#CurrentPointBrights,a1
 
-				move.l	ZoneAdds,a0
+				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d0.w*4),a0
-				add.l	LEVELDATA,a0
+				add.l	Lvl_DataPtr_l,a0
 
 				move.l	a0,-(a7)
 
@@ -526,7 +526,7 @@ ExplodeIntoBits:
 				move.w	#7,d2
 .oksplut:
 
-				move.l	NastyShotData,a5
+				move.l	NastyShotDataPtr_l,a5
 				move.w	#19,d1
 .findeight
 				move.w	12(a5),d0
@@ -540,7 +540,7 @@ ExplodeIntoBits:
 				move.b	#0,ShotT_Power_w(a5)
 
 
-				move.l	ObjectPoints,a2
+				move.l	Lvl_ObjectPointsPtr_l,a2
 				move.w	(a5),d3
 				lea		(a2,d3.w*8),a2
 ; jsr GetRand
@@ -793,7 +793,7 @@ objmoveanim:
 				move.l	Plr2_RoomPtr_l,a0
 				move.w	(a0),Plr2_Zone_w
 
-				cmp.b	#'n',mors
+				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
 				bne.s	.okp2
 				move.w	#-5,Plr2_Zone_w
 .okp2:
@@ -887,13 +887,13 @@ morezones:
 okzone:
 
 				move.l	(a0)+,a1
-				add.l	LEVELGRAPHICS,a1
+				add.l	Lvl_GraphicsPtr_l,a1
 				move.l	d1,d3
 				asr.l	#6,d3
 				move.w	d3,2(a1)
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d2.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 				move.l	d1,ZoneT_Water_l(a1)
 
 				bra.s	morezones
@@ -906,7 +906,7 @@ FLOORMOVESPD:	dc.w	0
 LiftRoutine:
 
 				move.w	#-1,ThisDoor
-				move.l	LiftData,a0
+				move.l	Lvl_LiftDataPtr_l,a0
 				move.l	#liftheighttab,a6
 
 doalift:
@@ -966,9 +966,9 @@ notallliftsdone:
 				move.w	2(a0),d2
 
 				move.w	8(a0),d7
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d7.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 				move.b	ZoneT_Echo_b(a1),PlayEcho
 
 				move.w	d2,d7					; speed of movement.
@@ -1031,7 +1031,7 @@ notallliftsdone:
 				move.w	d2,d7
 
 				move.l	(a0)+,a1
-				add.l	LEVELGRAPHICS,a1
+				add.l	Lvl_GraphicsPtr_l,a1
 				asr.w	#2,d3
 				move.w	d3,d0
 				asl.w	#2,d0
@@ -1040,9 +1040,9 @@ notallliftsdone:
 				muls	#256,d3
 				move.w	(a0)+,d5
 
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d5.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 				move.w	(a1),d5
 				move.l	Plr1_RoomPtr_l,a3
 				move.l	d3,2(a1)
@@ -1076,7 +1076,7 @@ notallliftsdone:
 				move.w	(a0)+,d5
 
 .dothesimplething:
-				move.l	FloorLines,a3
+				move.l	Lvl_FloorLinesPtr_l,a3
 .simplecheck:
 				move.w	(a0)+,d5
 				blt		nomoreliftwalls
@@ -1084,7 +1084,7 @@ notallliftsdone:
 				lea		(a3,d5.w),a4
 				move.w	#0,14(a4)
 				move.l	(a0)+,a1
-				add.l	LEVELGRAPHICS,a1
+				add.l	Lvl_GraphicsPtr_l,a1
 				move.l	(a0)+,a2
 				adda.w	d0,a2
 				move.l	a2,10(a1)
@@ -1094,7 +1094,7 @@ notallliftsdone:
 
 .satisfied:
 
-				move.l	FloorLines,a3
+				move.l	Lvl_FloorLinesPtr_l,a3
 				moveq	#0,d4
 				moveq	#0,d5
 				move.b	(a0)+,d4
@@ -1131,7 +1131,7 @@ liftwalls:
 				movem.l	(a7)+,a0/a3/a4/d0/d1/d2/d3/d6/d7
 .nothinghit:
 				move.l	(a0)+,a1
-				add.l	LEVELGRAPHICS,a1
+				add.l	Lvl_GraphicsPtr_l,a1
 				move.l	(a0)+,a2
 				adda.w	d0,a2
 				move.l	a2,10(a1)
@@ -1275,7 +1275,7 @@ CLOSEDSFX:		dc.w	0
 				DoorRoutine:
 
 				move.l	#doorheighttab,a6
-				move.l	DoorData,a0
+				move.l	Lvl_DoorDataPtr_l,a0
 				move.w	#-1,ThisDoor
 
 doadoor:
@@ -1330,9 +1330,9 @@ notalldoorsdone:
 				move.w	2(a0),d2
 
 				move.w	8(a0),d7
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d7.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 				move.b	ZoneT_Echo_b(a1),PlayEcho
 
 				muls	TempFrames,d2
@@ -1395,19 +1395,19 @@ NOTMOVING:
 				move.w	d2,d7
 
 				move.l	(a0)+,a1
-				add.l	LEVELGRAPHICS,a1
+				add.l	Lvl_GraphicsPtr_l,a1
 				asr.w	#2,d3
 				move.w	d3,d0
 				asl.w	#2,d0
 				move.w	d0,2(a1)
 				move.w	d3,d0
 				muls	#256,d3
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.w	(a0)+,d5
 
 
 				move.l	(a1,d5.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 				move.l	d3,6(a1)
 				neg.w	d0
 				and.w	#255,d0
@@ -1439,7 +1439,7 @@ NotGoBackUp:
 				move.w	(a0)+,d5
 
 dothesimplething:
-				move.l	FloorLines,a3
+				move.l	Lvl_FloorLinesPtr_l,a3
 simplecheck:
 				move.w	(a0)+,d5
 				blt		nomoredoorwalls
@@ -1447,7 +1447,7 @@ simplecheck:
 				lea		(a3,d5.w),a4
 				move.w	#0,14(a4)
 				move.l	(a0)+,a1
-				add.l	LEVELGRAPHICS,a1
+				add.l	Lvl_GraphicsPtr_l,a1
 				move.l	(a0)+,a2
 				adda.w	d0,a2
 				move.l	a2,10(a1)
@@ -1470,7 +1470,7 @@ satisfied:
 
 backfromtst:
 
-				move.l	FloorLines,a3
+				move.l	Lvl_FloorLinesPtr_l,a3
 
 doorwalls:
 				move.w	(a0)+,d5
@@ -1493,7 +1493,7 @@ doorwalls:
 				movem.l	(a7)+,a0/a3/d0/d1/d2/d3/d6/d7
 nothinghit:
 				move.l	(a0)+,a1
-				add.l	LEVELGRAPHICS,a1
+				add.l	Lvl_GraphicsPtr_l,a1
 				move.l	(a0)+,a2
 				adda.w	d0,a2
 				move.l	a2,10(a1)
@@ -1585,9 +1585,9 @@ dclose1:
 
 SwitchRoutine:
 
-				move.l	SwitchData,a0
+				move.l	Lvl_SwitchDataPtr_l,a0
 				move.w	#7,d0
-				move.l	Points,a1
+				move.l	Lvl_PointsPtr_l,a1
 CheckSwitches
 
 				tst.b	Plr1_TmpSpcTap_b
@@ -1611,7 +1611,7 @@ backtoend
 
 				move.b	#0,10(a0)
 				move.l	6(a0),a3
-				add.l	LEVELGRAPHICS,a3
+				add.l	Lvl_GraphicsPtr_l,a3
 				move.w	#11,4(a3)
 				move.w	(a3),d3
 				and.w	#%00000111100,d3
@@ -1660,7 +1660,7 @@ p1_SpaceIsPressed:
 				cmp.l	#60*60,d4
 				bge		.NotCloseEnough
 				move.l	6(a0),a3
-				add.l	LEVELGRAPHICS,a3
+				add.l	Lvl_GraphicsPtr_l,a3
 				move.w	#11,4(a3)
 				move.w	(a3),d3
 				and.w	#%00000111100,d3
@@ -1711,7 +1711,7 @@ p2_SpaceIsPressed:
 				cmp.l	#60*60,d4
 				bge		.NotCloseEnough
 				move.l	6(a0),a3
-				add.l	LEVELGRAPHICS,a3
+				add.l	Lvl_GraphicsPtr_l,a3
 				move.w	#11,4(a3)
 				move.w	(a3),d3
 				and.w	#%00000111100,d3
@@ -1786,7 +1786,7 @@ ObjectHandler:
 				move.l	#ObjWork,WORKPTR
 				move.l	#AI_Damaged_vw,AI_DamagePtr_l
 
-				move.l	ObjectDataPtr_l,a0
+				move.l	Lvl_ObjectDataPtr_l,a0
 Objectloop:
 				tst.w	(a0)
 				blt		doneallobj
@@ -1893,7 +1893,7 @@ notdoneflame:
 ; Gas pipe: facing direction is given by
 ; leved (perpendicular to wall) so
 ; just continuously spray out flame!
-				move.l	NastyShotData,a5
+				move.l	NastyShotDataPtr_l,a5
 				move.w	#19,d1
 .findonefree
 				move.w	12(a5),d0
@@ -1917,7 +1917,7 @@ notdoneflame:
 				move.w	#0,ShotT_VelocityY_w(a5)
 				move.w	(a0),d0
 				move.w	(a5),d1
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.l	(a1,d0.w*8),(a1,d1.w*8)
 				move.l	4(a1,d0.w*8),4(a1,d1.w*8)
 				move.b	#3,ShotT_Size_b(a5)
@@ -1974,9 +1974,9 @@ notexploding:
 				move.w	#$1f1f,14(a0)
 
 				move.w	12(a0),d0
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 				move.l	ZoneT_Floor_l(a1),d0
 				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.okinbot
@@ -1997,7 +1997,7 @@ notexploding:
 				movem.l	d0-d7/a0-a6,-(a7)
 
 				move.w	(a0),d0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),Viewerx
 				move.w	4(a1,d0.w*8),Viewerz
 				move.w	#40,d0
@@ -2021,7 +2021,7 @@ notexploding:
 nodamage:
 
 				move.w	(a0),d0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),Viewerx
 				move.w	4(a1,d0.w*8),Viewerz
 				move.b	ShotT_InUpperZone_b(a0),ViewerTop
@@ -2029,9 +2029,9 @@ nodamage:
 				move.l	Plr1_RoomPtr_l,ToRoom
 
 				move.w	12(a0),d0
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 				move.l	a1,FromRoom
 
 				move.w	Plr1_XOff_l,Targetx
@@ -2081,9 +2081,9 @@ ItsAMediKit:
 				move.w	12(a0),EntT_GraphicRoom_w(a0)
 
 				move.w	12(a0),d0
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 				move.l	ZoneT_Floor_l(a1),d0
 				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.okinbot
@@ -2112,7 +2112,7 @@ HealFactor		EQU		18
 				cmp.w	12(a0),d7
 				bne		.NotSameZone
 				move.w	(a0),d0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),newx
 				move.w	4(a1,d0.w*8),newz
 				move.l	#100*100,d2
@@ -2120,7 +2120,7 @@ HealFactor		EQU		18
 				tst.b	hitwall
 				beq		.NotPickedUp
 
-				move.l	PLR1_Obj,a2
+				move.l	Plr1_ObjectPtr_l,a2
 				move.w	(a2),d0
 				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d0.w*8),Noisex
@@ -2165,7 +2165,7 @@ MEDIPLR2
 				cmp.w	12(a0),d7
 				bne		.NotSameZone
 				move.w	(a0),d0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),newx
 				move.w	4(a1,d0.w*8),newz
 				move.l	#100*100,d2
@@ -2173,7 +2173,7 @@ MEDIPLR2
 				tst.b	hitwall
 				beq		.NotPickedUp
 
-				move.l	PLR2_Obj,a2
+				move.l	Plr2_ObjectPtr_l,a2
 				move.w	(a2),d0
 				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d0.w*8),Noisex
@@ -2242,9 +2242,9 @@ ItsAKey:
 				move.w	Plr1_ZOff_l,oldz
 				move.w	Plr1_Zone_w,d7
 				move.w	12(a0),d0
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 				move.l	2(a1),d0
 				asr.l	#7,d0
 				sub.w	#16,d0
@@ -2252,7 +2252,7 @@ ItsAKey:
 				cmp.w	12(a0),d7
 				bne		.NotSameZone
 				move.w	(a0),d0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),newx
 				move.w	4(a1,d0.w*8),newz
 				move.l	#100*100,d2
@@ -3152,7 +3152,7 @@ notdonepopping:
 				beq.s	.nobright
 				neg.w	d0
 				move.w	(a0),d2
-				move.l	ObjectPoints,a2
+				move.l	Lvl_ObjectPointsPtr_l,a2
 				move.w	(a2,d2.w*8),d1
 				move.w	4(a2,d2.w*8),d2
 				move.w	4(a0),d3
@@ -3220,9 +3220,9 @@ notdoneanim:
 
 				move.b	d2,ShotT_Anim_b(a0)
 
-				move.l	ZoneAdds,a2
+				move.l	Lvl_ZoneAddsPtr_l,a2
 				move.l	(a2,d0.w*4),d0
-				add.l	LEVELDATA,d0
+				add.l	Lvl_DataPtr_l,d0
 				move.l	d0,objroom
 
 ********************************
@@ -3375,7 +3375,7 @@ notdoneanim:
 
 
 
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d1
 				lea		(a1,d1.w*8),a1
 				move.l	(a1),d2
@@ -3590,8 +3590,8 @@ lab:
 notasplut:
 
 
-				move.l	ObjectDataPtr_l,a3
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectDataPtr_l,a3
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	newx,d2
 				sub.w	oldx,d2
 				move.w	d2,xdiff
@@ -3957,12 +3957,12 @@ ComputeBlast:
 				move.w	12(a0),d0
 ; jsr Flash
 
-				move.l	ZoneAdds,a2
+				move.l	Lvl_ZoneAddsPtr_l,a2
 				move.l	(a2,d0.w*4),a2
-				add.l	LEVELDATA,a2
+				add.l	Lvl_DataPtr_l,a2
 				move.l	a2,MiddleRoom
 
-				move.l	ObjectDataPtr_l,a2
+				move.l	Lvl_ObjectDataPtr_l,a2
 				suba.w	#64,a2
 				ext.l	d6
 				move.l	a0,-(a7)
@@ -4000,11 +4000,11 @@ HitObjLoop:
 
 .okblast:
 				move.w	12(a2),d1
-				move.l	ZoneAdds,a3
+				move.l	Lvl_ZoneAddsPtr_l,a3
 				move.l	(a3,d1.w*4),a3
-				add.l	LEVELDATA,a3
+				add.l	Lvl_DataPtr_l,a3
 				move.l	a3,ToRoom
-				move.l	ObjectPoints,a3
+				move.l	Lvl_ObjectPointsPtr_l,a3
 				move.w	(a3,d0.w*8),Targetx
 				move.w	4(a3,d0.w*8),Targetz
 				move.w	4(a2),Targety
@@ -4152,7 +4152,7 @@ CheckedEmAll:
 				move.l	(a7)+,a0
 
 				move.w	(a0),d0
-				move.l	ObjectPoints,a2
+				move.l	Lvl_ObjectPointsPtr_l,a2
 				move.w	(a2,d0.w*8),d1
 				move.w	4(a2,d0.w*8),d2
 
@@ -4164,12 +4164,12 @@ CheckedEmAll:
 				clr.b	exitfirst
 				st.b	wallbounce
 				move.w	12(a0),d0
-				move.l	ZoneAdds,a3
+				move.l	Lvl_ZoneAddsPtr_l,a3
 				move.l	(a3,d0.w*4),a3
-				add.l	LEVELDATA,a3
+				add.l	Lvl_DataPtr_l,a3
 				move.l	a3,MiddleRoom
 
-				move.l	PlayerShotData,a3
+				move.l	Plr_ShotDataPtr_l,a3
 				move.w	4(a0),d0
 				ext.l	d0
 				asl.l	#7,d0
@@ -4271,7 +4271,7 @@ DOFLAMES:
 				move.b	BLOODYGREATBOMB,ShotT_Size_b(a3)
 				st		ShotT_Worry_b(a3)
 				move.w	(a3),d0
-				move.l	ObjectPoints,a2
+				move.l	Lvl_ObjectPointsPtr_l,a2
 				move.w	newx,(a2,d0.w*8)
 				move.w	newz,4(a2,d0.w*8)
 

@@ -21,7 +21,7 @@ OpenMainScreen:
 				and.l	#~7,d0
 				move.l	d0,scrn
 
-				move.l	d0,TEXTSCRN				; FIXME: TEXTSCRN should go
+				move.l	d0,Vid_TextScreenPtr_l				; FIXME: Vid_TextScreenPtr_l should go
 
 				lea		MainBitmap0+bm_Planes,a1
 				moveq.l	#7,d1

@@ -960,7 +960,7 @@ storage:		ds.l	500
 ;				move.w	d6,18(a0)
 ;				move.w	d3,2(a1)
 ;				blt.s	.alloffleft
-;				cmp.w	RIGHTX,d1
+;				cmp.w	Vid_RightX_w,d1
 ;				bgt.s	.alloffleft
 ;
 ;				cmp.w	d1,d3
@@ -1357,11 +1357,11 @@ CalcAndDraw:
 				add.w	d2,d0
 				bset	d0,d1
 				btst	#4,d3
-				beq.s	.nodoor
+				beq.s	.no_door
 				addq	#2,d0
 				bset	d0,d1
 
-.nodoor:
+.no_door:
 				or.l	d1,(a0)
 				move.l	BIGPTR,a0
 
@@ -1705,7 +1705,7 @@ simplewallPACK2:
 ; There's code that expects	these in the right order to allow for movem
 				align	4
 TOTHEMIDDLE:	dc.w	0
-BOTTOMY:		dc.w	0
+Vid_BottomY_w:		dc.w	0
 Vid_CentreY_w:		dc.w	FS_HEIGHT/2
 TOPOFFSET:		dc.w	0
 BIGMIDDLEY:		dc.l	SCREENWIDTH*FS_HEIGHT/2
@@ -2476,7 +2476,7 @@ pastclip:
 				ext.l	d4
 				add.l	d4,d6
 
-				move.w	RIGHTX,d4
+				move.w	Vid_RightX_w,d4
 				ext.l	d4
 				cmp.l	d4,d3
 				bge		wallfacingaway

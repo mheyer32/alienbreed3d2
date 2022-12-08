@@ -1,5 +1,5 @@
 
-PLR1_mouse_control
+Plr1_MouseControl:
 				jsr		ReadMouse
 
 				move.l	#SineTable,a0
@@ -19,19 +19,21 @@ PLR1_mouse_control
 				asr.l	#1,d6
 				add.l	#1,d6
 				bra.s	.bug1
-.nobug1
-				asr.l	#1,d6
-.bug1:
 
+.nobug1:
+				asr.l	#1,d6
+
+.bug1:
 				neg.l	d7
 				ble.s	.nobug2
 				asr.l	#1,d7
 				add.l	#1,d7
 				bra.s	.bug2
-.nobug2
-				asr.l	#1,d7
-.bug2:
 
+.nobug2:
+				asr.l	#1,d7
+
+.bug2:
 				move.w	ymouse,d3
 				sub.w	oldymouse,d3
 				add.w	d3,oldymouse
@@ -55,21 +57,20 @@ PLR1_mouse_control
 				bgt.s	.nolookup
 				move.w	#-512*20,PLR1_AIMSPD
 				move.w	#-80,d0
+
 .nolookup:
 				cmp.w	#80,d0
 				blt.s	.nolookdown
 				move.w	#512*20,PLR1_AIMSPD
 				move.w	#80,d0
-.nolookdown
 
+.nolookdown:
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
 				muls	#SCREENWIDTH,d0
 				move.l	d0,SBIGMIDDLEY
-
-
 				move.l	#KeyMap,a5
 				moveq	#0,d7
 
@@ -83,8 +84,8 @@ PLR1_mouse_control
 				btst	#CIAB_GAMEPORT0,$bfe001+ciapra ; left button
 				seq		(a5,d7.w)
 
-.cont
-				bra		PLR1_keyboard_control
+.cont:
+				bra		Plr1_KeyboardControl
 
 				move.w	#-20,d2
 
@@ -92,34 +93,30 @@ PLR1_mouse_control
 				bne.s	.halve
 				tst.b	Plr1_Ducked_b
 				beq.s	.nohalve
-.halve
-				asr.w	#1,d2
-.nohalve
 
+.halve:
+				asr.w	#1,d2
+
+.nohalve:
 				btst	#6,$bfe001
 				beq.s	.moving
 				moveq	#0,d2
-.moving:
 
+.moving:
 				move.w	d2,d3
 				asl.w	#4,d2
 				move.w	d2,d1
-
 				move.w	d1,ADDTOBOBBLE
-
 				move.w	Plr1_SnapSinVal_w,d1
 				move.w	Plr1_SnapCosVal_w,d2
-
 				move.w	d2,d4
 				move.w	d1,d5
 				muls	lrs,d4
 				muls	lrs,d5
-
 				muls	d3,d2
 				muls	d3,d1
 				sub.l	d4,d1
 				add.l	d5,d2
-
 				sub.l	d1,d6
 				sub.l	d2,d7
 				add.l	d6,Plr1_SnapXSpdVal_l
@@ -128,12 +125,13 @@ PLR1_mouse_control
 				move.l	Plr1_SnapZSpdVal_l,d7
 				add.l	d6,Plr1_SnapXOff_l
 				add.l	d7,Plr1_SnapZOff_l
-
 				tst.b	PLR1_fire
 				beq.s	.firenotpressed
+
 ; fire was pressed last time.
 				btst	#7,$bfe001
 				bne.s	.firenownotpressed
+
 ; fire is still pressed this time.
 				st		PLR1_fire
 				bra		.doneplr1
@@ -156,15 +154,13 @@ PLR1_mouse_control
 				st		PLR1_fire
 
 .doneplr1:
-
 				bsr		PLR1_fall
 
 				rts
 
 ADDTOBOBBLE:	dc.w	0
 
-PLR1_follow_path:
-
+Plr1_FollowPath:
 				move.l	pathpt,a0
 				move.w	(a0),d1
 				move.w	d1,Plr1_SnapXOff_l
@@ -174,13 +170,12 @@ PLR1_follow_path:
 				add.w	d0,d0
 				and.w	#8190,d0
 				move.w	d0,Plr1_AngPos_w
-
 				move.w	TempFrames,d0
 				asl.w	#3,d0
 				adda.w	d0,a0
-
 				cmp.l	#endpath,a0
 				blt		notrestartpath
+
 				move.l	#Path,a0
 notrestartpath:
 				move.l	a0,pathpt
@@ -190,7 +185,7 @@ notrestartpath:
 gunheldlast:
 				dc.w	0
 
-PLR1_alwayskeys
+Plr1_AlwaysKeys:
 				move.l	#KeyMap,a5
 				moveq	#0,d7
 
@@ -241,7 +236,7 @@ nottapped:
 				tst.b	(a5,d7.w)
 				beq.s	notduck
 				clr.b	(a5,d7.w)
-				move.l	#playerheight,Plr1_SnapTargHeight_l
+				move.l	#PLR_HEIGHT,Plr1_SnapTargHeight_l
 				not.b	Plr1_Ducked_b
 				beq.s	notduck
 				move.l	#playercrouched,Plr1_SnapTargHeight_l
@@ -257,9 +252,9 @@ notduck:
 usebottom:
 
 				clr.b	Plr1_Squished_b
-				move.l	#playerheight,Plr1_SnapSquishedHeight_l
+				move.l	#PLR_HEIGHT,Plr1_SnapSquishedHeight_l
 
-				cmp.l	#playerheight+3*1024,d0
+				cmp.l	#PLR_HEIGHT+3*1024,d0
 				bgt.s	oktostand
 				st		Plr1_Squished_b
 				move.l	#playercrouched,Plr1_SnapSquishedHeight_l
@@ -309,7 +304,7 @@ notselmouse:
 
 				lea		1(a5),a4
 				move.l	#PLAYERONEGUNS,a2
-				move.l	PLR1_Obj,a3
+				move.l	Plr1_ObjectPtr_l,a3
 				move.w	#9,d1
 				move.w	#0,d2
 pickweap
@@ -434,11 +429,11 @@ BIGsmall:		dc.b	0
 lastscr:		dc.b	0
 
 				cnop	0,4
-PLR1_keyboard_control:
+Plr1_KeyboardControl:
 
 				move.l	#SineTable,a0
 
-				jsr		PLR1_alwayskeys
+				jsr		Plr1_AlwaysKeys
 				move.l	#KeyMap,a5
 
 				move.w	STOPOFFSET,d0
@@ -711,15 +706,13 @@ TEMPSCROLL
 passspace:
 				ds.l	400
 
-PLR1_JoyStick_control:
-
+Plr1_JoystickControl:
 				jsr		_ReadJoy1
-				bra		PLR1_keyboard_control
+				bra		Plr1_KeyboardControl
 
 PLR1_clumptime:	dc.w	0
 
-PLR1clump:
-
+Plr1_FootstepFX:
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.l	Plr1_RoomPtr_l,a0
 				move.w	ZoneT_FloorNoise_w(a0),d0

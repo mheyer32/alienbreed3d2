@@ -72,7 +72,7 @@ ai_DoTakeDamage:
 				move.w	Plr1_XOff_l,newx
 				move.w	Plr1_ZOff_l,newz
 				move.w	(a0),d1
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				move.w	(a1),oldx
 				move.w	4(a1),oldz
@@ -139,7 +139,7 @@ ai_TakeDamage:
 				move.w	#0,EntT_Timer1_w(a0)
 				move.b	#1,EntT_WhichAnim_b(a0)
 				move.w	(a0),d0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),oldx
 				move.w	4(a1,d0.w*8),oldz
 				move.w	Plr1_XOff_l,newx
@@ -174,7 +174,7 @@ ai_JustDied:
 				blt.s	.no_text
 
 				muls	#160,d0
-				add.l	LEVELDATA,d0
+				add.l	Lvl_DataPtr_l,d0
 				jsr		SENDMESSAGE
 
 ; move.w #0,SCROLLXPOS
@@ -184,7 +184,7 @@ ai_JustDied:
 ; move.w #40,SCROLLTIMER
 
 .no_text:
-				move.l	ObjectPoints,a2
+				move.l	Lvl_ObjectPointsPtr_l,a2
 				move.w	(a0),d3
 				move.w	(a2,d3.w*8),newx
 				move.w	4(a2,d3.w*8),newz
@@ -210,9 +210,9 @@ ai_JustDied:
 
 				; * Spawn some smaller aliens...
 				move.w	#2,d7					; number to do.
-				move.l	OtherNastyData,a2
+				move.l	OtherNastyDataPtr_vl,a2
 				add.l	#64,a2
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d1
 				move.l	(a1,d1.w*8),d0
 				move.l	4(a1,d1.w*8),d1
@@ -348,7 +348,7 @@ ai_ProwlFly:
 				move.l	AI_BoredomPtr_l,a1
 				move.w	2(a1),d1
 				move.w	4(a1),d2
-				move.l	ObjectPoints,a2
+				move.l	Lvl_ObjectPointsPtr_l,a2
 				move.w	(a0),d3
 				move.w	4(a2,d3.w*8),d4
 				move.w	(a2,d3.w*8),d3
@@ -383,7 +383,7 @@ ai_ProwlFly:
 
 				moveq	#0,d1
 				move.w	d0,d1
-				divs.w	NumCPts,d1
+				divs.w	Lvl_NumControlPoints_w,d1
 				swap	d1
 				move.w	#7,d7
 
@@ -401,7 +401,7 @@ ai_ProwlFly:
 .plus_again:
 				move.w	EntT_TargetControlPoint_w(a0),d1
 				add.w	#1,d1
-				cmp.w	NumCPts,d1
+				cmp.w	Lvl_NumControlPoints_w,d1
 				blt		.no_bin
 
 				moveq	#0,d1
@@ -495,7 +495,7 @@ ai_Widget:
 				jsr		GetRand
 				moveq	#0,d1
 				move.w	d0,d1
-				divs.w	NumCPts,d1
+				divs.w	Lvl_NumControlPoints_w,d1
 				swap	d1
 				move.w	#7,d7
 
@@ -511,7 +511,7 @@ ai_Widget:
 .plus_again:
 				move.w	EntT_TargetControlPoint_w(a0),d1
 				add.w	#1,d1
-				cmp.w	NumCPts,d1
+				cmp.w	Lvl_NumControlPoints_w,d1
 				blt		.no_bin
 				moveq	#0,d1
 
@@ -522,7 +522,7 @@ ai_Widget:
 .no_rand:
 				move.w	d0,ai_MiddleCPT_w
 
-				move.l	CPtPos,a1
+				move.l	Lvl_ControlPointCoordsPtr_l,a1
 				move.w	(a1,d0.w*8),newx
 				move.w	2(a1,d0.w*8),newz
 
@@ -545,7 +545,7 @@ ai_Widget:
 
 				move.w	(a0),d1
 				move.l	#ObjRotated_vl,a6
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
 				move.w	(a1),oldx
@@ -595,7 +595,7 @@ ai_Widget:
 				jsr		GetRand
 				moveq	#0,d1
 				move.w	d0,d1
-				divs.w	NumCPts,d1
+				divs.w	Lvl_NumControlPoints_w,d1
 				swap	d1
 				move.w	d1,EntT_TargetControlPoint_w(a0)
 
@@ -747,7 +747,7 @@ ai_ChargeCommon:
 .no_side:
 				move.w	(a0),d1
 				move.l	#ObjRotated_vl,a6
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
 				move.w	(a1),oldx
@@ -812,7 +812,7 @@ ai_ChargeCommon:
 				beq.s	.no_munch
 				tst.b	ai_DoAction_b
 				beq.s	.no_munch
-				move.l	PLR1_Obj,a5
+				move.l	Plr1_ObjectPtr_l,a5
 				move.b	ai_DoAction_b,d0
 				asl.w	#1,d0
 				add.b	d0,EntT_DamageTaken_b(a5)
@@ -912,7 +912,7 @@ ai_AttackWithHitScan:
 				move.w	Plr1_XOff_l,newx
 				move.w	Plr1_ZOff_l,newz
 				move.w	(a0),d1
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				move.w	(a1),oldx
 				move.w	4(a1),oldz
@@ -954,7 +954,7 @@ ai_AttackWithHitScan:
 
 				move.w	(a0),d1
 				move.l	#ObjRotated_vl,a6
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
 
@@ -990,12 +990,12 @@ ai_AttackWithHitScan:
 				bra.s	.missed_player
 
 .hit_player:
-				move.l	PLR1_Obj,a1
+				move.l	Plr1_ObjectPtr_l,a1
 				move.b	SHOTPOWER,d0
 				add.b	d0,EntT_DamageTaken_b(a1)
 
 				sub.l	#ObjRotated_vl,a6
-				add.l	ObjectPoints,a6
+				add.l	Lvl_ObjectPointsPtr_l,a6
 				move.w	(a6),d0
 				sub.w	Plr1_TmpXOff_l,d0				;dx
 				move.w	4(a6),d1
@@ -1025,7 +1025,7 @@ ai_AttackWithHitScan:
 
 .no_shooty_thang:
 				move.w	(a0),d1
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 
 				move.w	(a1),newx
@@ -1065,7 +1065,7 @@ ai_AttackWithProjectile:
 				move.w	Plr1_XOff_l,newx
 				move.w	Plr1_ZOff_l,newz
 				move.w	(a0),d1
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				move.w	(a1),oldx
 				move.w	4(a1),oldz
@@ -1083,7 +1083,7 @@ ai_AttackWithProjectile:
 				movem.l	d0-d7/a0-a6,-(a7)
 
 				move.w	(a0),d1
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 
 				move.b	ShotT_InUpperZone_b(a0),SHOTINTOP
@@ -1093,7 +1093,7 @@ ai_AttackWithProjectile:
 
 .no_shooty_thang:
 				move.w	(a0),d1
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 
 				move.w	(a1),newx
@@ -1178,7 +1178,7 @@ ai_ChargeFlyingCommon:
 .no_teleport:
 				move.w	(a0),d1
 				move.l	#ObjRotated_vl,a6
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
 				move.w	(a1),oldx
@@ -1248,7 +1248,7 @@ ai_ChargeFlyingCommon:
 				beq.s	.no_munch
 				tst.b	ai_DoAction_b
 				beq.s	.no_munch
-				move.l	PLR1_Obj,a5
+				move.l	Plr1_ObjectPtr_l,a5
 				move.b	ai_DoAction_b,d0
 				asl.w	#1,d0
 				add.b	d0,EntT_DamageTaken_b(a5)
@@ -1312,7 +1312,7 @@ ai_PauseBriefly:
 				bgt.s	.stillwaiting
 
 				move.w	(a0),d1
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 
 				move.w	(a1),newx
@@ -1395,7 +1395,7 @@ ai_ApproachCommon:
 .no_teleport:
 				move.w	(a0),d1
 				move.l	#ObjRotated_vl,a6
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
 				move.w	(a1),oldx
@@ -1484,7 +1484,7 @@ ai_ApproachCommon:
 ; bra.s .no_munch
 ;.OKtomunch:
 ; move.w #40,EntT_Timer4_w(a0)
-; move.l PLR1_Obj,a5
+; move.l Plr1_ObjectPtr_l,a5
 ; add.b #2,EntT_DamageTaken_b(a5)
 ;
 .no_munch:
@@ -1548,7 +1548,7 @@ ai_ApproachCommon:
 
 ai_FlyToCPTHeight:
 				move.w	ai_MiddleCPT_w,d0
-				move.l	CPtPos,a1
+				move.l	Lvl_ControlPointCoordsPtr_l,a1
 				move.w	4(a1,d0.w*8),d1
 				bra		ai_FlyToHeightCommon
 
@@ -1663,7 +1663,7 @@ ai_StorePlayerPosition:
 
 ai_GetRoomStats:
 				move.w	(a0),d0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d0.w*8),a1
 				move.w	newx,(a1)
 				move.w	newz,4(a1)
@@ -1721,7 +1721,7 @@ ai_CheckInFront:
 ; rts
 
 				move.w	(a0),d0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),newx
 				move.w	4(a1,d0.w*8),newz
 
@@ -1815,7 +1815,7 @@ ai_CheckDamage:
 				ble		.noexplode
 
 				movem.l	d0-d7/a0-a6,-(a7)
-				sub.l	ObjectPoints,a1
+				sub.l	Lvl_ObjectPointsPtr_l,a1
 				add.l	#ObjRotated_vl,a1
 				move.l	(a1),Noisex
 				move.w	#400,Noisevol
@@ -1849,7 +1849,7 @@ ai_CheckDamage:
 .noexplode:
 
 				movem.l	d0-d7/a0-a6,-(a7)
-				sub.l	ObjectPoints,a1
+				sub.l	Lvl_ObjectPointsPtr_l,a1
 				add.l	#ObjRotated_vl,a1
 				move.l	(a1),Noisex
 				move.w	#200,Noisevol
@@ -1869,7 +1869,7 @@ ai_CheckDamage:
 .not_dead_yet:
 				clr.b	EntT_DamageTaken_b(a0)
 				movem.l	d0-d7/a0-a6,-(a7)
-				sub.l	ObjectPoints,a1
+				sub.l	Lvl_ObjectPointsPtr_l,a1
 				add.l	#ObjRotated_vl,a1
 				move.l	(a1),Noisex
 				move.w	#200,Noisevol

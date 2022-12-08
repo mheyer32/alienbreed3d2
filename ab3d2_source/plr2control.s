@@ -1,5 +1,5 @@
 
-PLR2_mouse_control
+Plr2_MouseControl
 				jsr		ReadMouse
 
 				move.l	#SineTable,a0
@@ -157,33 +157,7 @@ PLR2_mouse_control
 
 				rts
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-PLR2_alwayskeys
+Plr2_AlwaysKeys
 				move.l	#KeyMap,a5
 				moveq	#0,d7
 
@@ -234,7 +208,7 @@ PLR2_alwayskeys
 				tst.b	(a5,d7.w)
 				beq.s	.notduck
 				clr.b	(a5,d7.w)
-				move.l	#playerheight,Plr2_SnapTargHeight_l
+				move.l	#PLR_HEIGHT,Plr2_SnapTargHeight_l
 				not.b	Plr2_Ducked_b
 				beq.s	.notduck
 				move.l	#playercrouched,Plr2_SnapTargHeight_l
@@ -250,9 +224,9 @@ PLR2_alwayskeys
 .usebottom:
 
 				clr.b	Plr2_Squished_b
-				move.l	#playerheight,Plr2_SnapSquishedHeight_l
+				move.l	#PLR_HEIGHT,Plr2_SnapSquishedHeight_l
 
-				cmp.l	#playerheight+3*1024,d0
+				cmp.l	#PLR_HEIGHT+3*1024,d0
 				bgt.s	oktostand2
 				st		Plr2_Squished_b
 				move.l	#playercrouched,Plr2_SnapSquishedHeight_l
@@ -302,7 +276,7 @@ oktostand2:
 
 				lea		1(a5),a4
 				move.l	#PLAYERTWOGUNS,a2
-				move.l	PLR2_Obj,a3
+				move.l	Plr2_ObjectPtr_l,a3
 				move.w	#9,d1
 				move.w	#0,d2
 pickweap2
@@ -416,7 +390,7 @@ PLR2_keyboard_control:
 
 				move.l	#SineTable,a0
 
-				jsr		PLR2_alwayskeys
+				jsr		Plr2_AlwaysKeys
 				move.l	#KeyMap,a5
 
 				move.w	STOPOFFSET,d0

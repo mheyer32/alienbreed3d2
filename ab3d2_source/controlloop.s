@@ -128,7 +128,7 @@ int_name		INTNAME
 
 START:
 
-				move.b	#'n',mors
+				move.b	#PLR_NEITHER,Plr_MultiplayerType_b
 
 				move.l	#doslibname,a1
 				moveq	#0,d0
@@ -153,7 +153,7 @@ START:
 
 				move.l	#LEVELTEXTNAME,a0
 				jsr		IO_LoadFile
-				move.l	d0,LEVELTEXT
+				move.l	d0,Lvl_IntroTextPtr_l
 
 				jsr		_InitLowLevel
 
@@ -214,9 +214,9 @@ BACKTOMENU:
 				jsr		CLEARKEYBOARD
 
 
-				cmp.b	#'s',mors
+				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	BACKTOSLAVE
-				cmp.b	#'m',mors
+				cmp.b	#PLR_MASTER,Plr_MultiplayerType_b
 				beq.s	BACKTOMASTER
 				bsr		READMAINMENU
 				bra		DONEMENU
@@ -286,7 +286,7 @@ DONEMENU:
 
 *************************************
 
-				jsr		PLAYTHEGAME
+				jsr		Game_Begin
 
 *************************************
 
@@ -313,10 +313,10 @@ dontusestats:
 				bra		BACKTOMENU
 
 QUITTT:
-				move.l	LEVELDATA,a1
+				move.l	Lvl_DataPtr_l,a1
 				CALLEXEC FreeVec
 
-				move.l	FASTBUFFERalloc,a1
+				move.l	Vid_FastBufferAllocPtr_l,a1
 				CALLEXEC FreeVec
 
 				move.l	MyRaster0,a0
@@ -419,9 +419,9 @@ SETPLAYERS:
 				move.b	d0,LEVD
 				move.b	d0,LEVE
 
-				cmp.b	#'s',mors
+				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq		SLAVESETUP
-				cmp.b	#'m',mors
+				cmp.b	#PLR_MASTER,Plr_MultiplayerType_b
 				beq		MASTERSETUP
 				st		NASTY
 onepla:
@@ -484,7 +484,7 @@ wtclick:
 
 READMAINMENU:
 
-				move.b	#'n',mors
+				move.b	#PLR_NEITHER,Plr_MultiplayerType_b
 
 				move.w	MAXLEVEL,d0
 
@@ -803,7 +803,7 @@ GETACHAR:
 
 MASTERMENU:
 
-				move.b	#'m',mors
+				move.b	#PLR_MASTER,Plr_MultiplayerType_b
 
 				move.w	#0,LEVELSELECTED
 
@@ -898,7 +898,7 @@ MASTERMENU:
 
 SLAVEMENU:
 
-				move.b	#'s',mors
+				move.b	#PLR_SLAVE,Plr_MultiplayerType_b
 
 ; Stay here until 'play game' is selected.
 
@@ -2426,7 +2426,7 @@ LEVELTEXTNAME:	dc.b	'ab3:includes/TEXT_FILE'
 
 				even
 
-LEVELTEXT:
+Lvl_IntroTextPtr_l:
 				dc.l	0
 
 font:

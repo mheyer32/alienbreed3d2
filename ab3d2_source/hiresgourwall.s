@@ -964,10 +964,10 @@ CalcAndDrawG:
 				add.w	d2,d0
 				bset	d0,d1
 				btst	#4,d3
-				beq.s	.nodoor
+				beq.s	.no_door
 				addq	#2,d0
 				bset	d0,d1
-.nodoor:
+.no_door:
 
 				or.l	d1,(a0)
 				move.l	BIGPTR,a0

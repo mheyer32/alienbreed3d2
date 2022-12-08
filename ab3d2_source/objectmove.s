@@ -40,7 +40,7 @@ gobackanddoitallagain:
 				move.l	a0,a5
 				adda.w	ZoneT_ExitList_w(a5),a0
 				move.l	a0,test
-				move.l	FloorLines,a1
+				move.l	Lvl_FloorLinesPtr_l,a1
 checkwalls:
 				move.w	(a0)+,d0
 				blt		no_more_walls
@@ -65,9 +65,9 @@ checkwalls:
 				moveq	#0,d1
 				move.w	8(a2),d1
 				blt		thisisawall2
-				move.l	ZoneAdds,a4
+				move.l	Lvl_ZoneAddsPtr_l,a4
 				move.l	(a4,d1.w*4),a4
-				add.l	LEVELDATA,a4
+				add.l	Lvl_DataPtr_l,a4
 
 				move.l	ZoneT_Floor_l(a4),d1
 				move.l	d1,LowerFloorHeight
@@ -495,9 +495,9 @@ anotherwalls:
 				moveq	#0,d1
 				move.w	8(a2),d1
 				blt		.thisisawall2
-				move.l	ZoneAdds,a4
+				move.l	Lvl_ZoneAddsPtr_l,a4
 				move.l	(a4,d1.w*4),a4
-				add.l	LEVELDATA,a4
+				add.l	Lvl_DataPtr_l,a4
 
 				move.l	ZoneT_Floor_l(a4),d1
 				sub.l	ZoneT_Roof_l(a4),d1
@@ -797,7 +797,7 @@ NOOTHERWALLSNEEDED
 				move.l	a5,a0
 				adda.w	ZoneT_ExitList_w(a5),a0
 
-				move.l	FloorLines,a1
+				move.l	Lvl_FloorLinesPtr_l,a1
 CheckMoreFloorLines
 				move.w	(a0)+,d0				; Either a floor line or -1
 				blt		NoMoreFloorLines
@@ -811,9 +811,9 @@ CheckMoreFloorLines
 
 				moveq	#0,d1
 				move.w	8(a2),d1
-				move.l	ZoneAdds,a4
+				move.l	Lvl_ZoneAddsPtr_l,a4
 				move.l	(a4,d1.w*4),a4
-				add.l	LEVELDATA,a4
+				add.l	Lvl_DataPtr_l,a4
 
 				move.l	ZoneT_Roof_l(a4),LowerRoofHeight
 
@@ -868,9 +868,9 @@ okthebottom
 				muls	6(a2),d0
 				moveq	#0,d3
 				move.w	8(a2),d3
-				move.l	ZoneAdds,a3
+				move.l	Lvl_ZoneAddsPtr_l,a3
 				move.l	(a3,d3.w*4),a3
-				add.l	LEVELDATA,a3
+				add.l	Lvl_DataPtr_l,a3
 				sub.l	d1,d0
 				bge		StillSameSide
 
@@ -1414,10 +1414,10 @@ GetNextCPt:
 				add.l	d1,d0
 				move.l	a0,-(a7)
 
-				move.l	LINKS,a0
+				move.l	Lvl_WalkLinksPtr_l,a0
 				tst.b	AI_FlyABit_w
 				beq.s	.walklink
-				move.l	FLYLINKS,a0
+				move.l	Lvl_FlyLinksPtr_l,a0
 .walklink:
 				move.b	(a0,d0.w),d0
 				move.b	d0,d1
@@ -1499,9 +1499,9 @@ InList:
 				move.w	(a0),d1
 				tst.w	d1
 				blt		outlist
-				move.l	ZoneGraphAdds,a1
+				move.l	Lvl_ZoneGraphAddsPtr_l,a1
 				move.l	(a1,d1.w*8),a1
-				add.l	LEVELGRAPHICS,a1
+				add.l	Lvl_GraphicsPtr_l,a1
 
 				adda.w	#8,a0
 				cmp.w	(a1),d0
@@ -1518,7 +1518,7 @@ isinlist:
 
 				st		CanSee
 
-				move.l	Points,a2
+				move.l	Lvl_PointsPtr_l,a2
 				move.w	Targetx,d1
 				move.w	Targetz,d2
 				sub.w	Viewerx,d1
@@ -1527,7 +1527,7 @@ isinlist:
 				moveq	#0,d3
 				move.w	-6(a0),d3
 				blt		nomorerclips
-				move.l	LEVELCLIPS,a1
+				move.l	Lvl_ClipsPtr_l,a1
 				lea		(a1,d3.l*2),a1
 				move.l	a1,clipstocheck
 checklcliploop:
@@ -1588,7 +1588,7 @@ nomorerclips:
 				sub.w	Viewerx,d0
 				sub.w	Viewerz,d1
 				move.l	FromRoom,a5
-				move.l	FloorLines,a1
+				move.l	Lvl_FloorLinesPtr_l,a1
 				move.b	ViewerTop,d2
 				move.w	Targety,d7
 				sub.w	Viewery,d7
@@ -1676,9 +1676,9 @@ madeit:
 
 				moveq	#0,d3
 				move.w	8(a2),d3
-				move.l	ZoneAdds,a3
+				move.l	Lvl_ZoneAddsPtr_l,a3
 				move.l	(a3,d3.w*4),a5
-				add.l	LEVELDATA,a5
+				add.l	Lvl_DataPtr_l,a5
 
 				clr.b	d2
 				cmp.l	ZoneT_Floor_l(a5),d5
@@ -1721,7 +1721,7 @@ FindCollisionPt:
 				sub.w	Viewerx,d0
 				sub.w	Viewerz,d1
 				move.l	FromRoom,a5
-				move.l	FloorLines,a1
+				move.l	Lvl_FloorLinesPtr_l,a1
 				move.b	ViewerTop,d2
 				move.w	Targety,d7
 				sub.w	Viewery,d7
@@ -1792,9 +1792,9 @@ FindCollisionPt:
 				moveq	#0,d3
 				move.w	8(a2),d3
 				blt		foundpt
-				move.l	ZoneAdds,a3
+				move.l	Lvl_ZoneAddsPtr_l,a3
 				move.l	(a3,d3.w*4),a5
-				add.l	LEVELDATA,a5
+				add.l	Lvl_DataPtr_l,a5
 
 				clr.b	d2
 				cmp.l	ZoneT_Floor_l(a5),d5
@@ -1860,7 +1860,7 @@ MYROOM:			dc.w	0
 
 Collision:
 
-				move.l	ObjectDataPtr_l,a0
+				move.l	Lvl_ObjectDataPtr_l,a0
 				move.w	CollId,d0
 				asl.w	#6,d0
 				move.w	12(a0,d0.w),MYROOM
@@ -1868,7 +1868,7 @@ Collision:
 				ext.w	d0
 
 				sub.w	#64,a0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.l	#ColBoxTable,a2
 				lea		(a2,d0.w*8),a3
 
@@ -2034,9 +2034,9 @@ floortemp:		dc.l	0
 CheckTeleport:
 				clr.b	OKTEL
 				move.w	FromZone,d0
-				move.l	ZoneAdds,a2
+				move.l	Lvl_ZoneAddsPtr_l,a2
 				move.l	(a2,d0.w*4),a2
-				add.l	LEVELDATA,a2
+				add.l	Lvl_DataPtr_l,a2
 				tst.w	ZoneT_TelZone_w(a2)
 				bge.s	ITSATEL
 				rts
@@ -2044,9 +2044,9 @@ CheckTeleport:
 ITSATEL:
 				move.l	ZoneT_Floor_l(a2),floortemp
 				move.w	ZoneT_TelZone_w(a2),d0
-				move.l	ZoneAdds,a3
+				move.l	Lvl_ZoneAddsPtr_l,a3
 				move.l	(a3,d0.w*4),a3
-				add.l	LEVELDATA,a3
+				add.l	Lvl_DataPtr_l,a3
 				move.l	ZoneT_Floor_l(a3),d0
 				sub.l	floortemp,d0
 				move.l	d0,floortemp
@@ -2067,9 +2067,9 @@ ITSATEL:
 				rts
 .teleport:
 				move.w	ZoneT_TelZone_w(a2),d0
-				move.l	ZoneAdds,a2
+				move.l	Lvl_ZoneAddsPtr_l,a2
 				move.l	(a2,d0.w*4),a2
-				add.l	LEVELDATA,a2
+				add.l	Lvl_DataPtr_l,a2
 				move.l	a2,objroom
 
 				rts
@@ -2084,15 +2084,15 @@ FindCloseRoom:
 				move.l	d1,newy
 
 				move.w	(a0),d1
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				move.w	(a1),oldx
 				move.w	4(a1),oldz
 
 				move.w	12(a0),d2
-				move.l	ZoneAdds,a5
+				move.l	Lvl_ZoneAddsPtr_l,a5
 				move.l	(a5,d2.w*4),d2
-				add.l	LEVELDATA,d2
+				add.l	Lvl_DataPtr_l,d2
 				move.l	d2,objroom
 
 				move.w	THISPLRxoff,newx

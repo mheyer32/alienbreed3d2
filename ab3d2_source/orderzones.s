@@ -3,7 +3,7 @@ tmplistgraph:	dc.l	0
 
 OrderZones:
 
-				move.l	ListOfGraphRooms,a0
+				move.l	Lvl_ListOfGraphRoomsPtr_l,a0
 ; a0=list of rooms to draw.
 
 				move.l	a0,tmplistgraph
@@ -46,9 +46,9 @@ nomoreset:
 putinn:
 				move.w	(a0),d2
 				blt		putallin
-				move.l	ZoneGraphAdds,a1
+				move.l	Lvl_ZoneGraphAddsPtr_l,a1
 				move.l	(a1,d2.w*4),a1
-				add.l	LEVELGRAPHICS,a1
+				add.l	Lvl_GraphicsPtr_l,a1
 				addq	#8,a2
 
 				move.w	d2,2(a2)
@@ -77,15 +77,15 @@ putallin:
 
 RunThroughList:
 
-				move.l	FloorLines,a1
+				move.l	Lvl_FloorLinesPtr_l,a1
 
 				move.w	2(a5),d0
 				move.l	#WorkSpace,a6
 				lea		(a6,d0.w*4),a6
 				move.l	(a6),d6
-				move.l	ZoneAdds,a0
+				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d0.w*4),a0
-				add.l	LEVELDATA,a0
+				add.l	Lvl_DataPtr_l,a0
 
 				adda.w	ZoneT_ExitList_w(a0),a0
 

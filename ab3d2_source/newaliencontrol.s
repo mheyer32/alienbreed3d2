@@ -31,9 +31,9 @@ ItsAnAlien:
 
 .okalive:
 
-				move.l	ZoneAdds,a5
+				move.l	Lvl_ZoneAddsPtr_l,a5
 				move.l	(a5,d2.w*4),d0
-				add.l	LEVELDATA,d0
+				add.l	Lvl_DataPtr_l,d0
 				move.l	d0,objroom
 
 				move.l	d0,a6
@@ -161,9 +161,9 @@ Collectable:
 				and.b	#$80,ShotT_Worry_b(a0)
 				move.l	a1,a2
 
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 
 				tst.w	ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
@@ -198,7 +198,7 @@ Collectable:
 
 .NotCollected1
 
-				cmp.b	#'n',mors
+				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
 				beq.s	.NotCollected2
 				bsr		CHECKNEARBYTWO
 				tst.b	d0
@@ -237,9 +237,9 @@ Activatable:
 				and.b	#$80,ShotT_Worry_b(a0)
 				move.l	a1,a2
 
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 
 				tst.w	ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
@@ -285,7 +285,7 @@ Activatable:
 .NotActivated1:
 
 
-				cmp.b	#'n',mors
+				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
 				beq		.NotActivated2
 				bsr		CHECKNEARBYTWO
 				tst.b	d0
@@ -321,9 +321,9 @@ ACTIVATED:
 				and.b	#$80,ShotT_Worry_b(a0)
 				move.l	a1,a2
 
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 
 				tst.w	ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
@@ -376,7 +376,7 @@ ACTIVATED:
 
 .NotDeactivated1:
 
-				cmp.b	#'n',mors
+				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
 				beq.s	.NotDeactivated2
 
 				bsr		CHECKNEARBYTWO
@@ -414,14 +414,14 @@ Destructable:
 				tst.b	EntT_NumLives_b(a0)
 				beq.s	.alreadydead
 
-				cmp.b	#'n',mors
+				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
 				bne.s	.notext
 
 				move.w	EntT_DisplayText_w(a0),d0
 				blt.s	.notext
 
 				muls	#160,d0
-				add.l	LEVELDATA,d0
+				add.l	Lvl_DataPtr_l,d0
 				jsr		SENDMESSAGE
 ; move.w #0,SCROLLXPOS
 ; move.l d0,SCROLLPOINTER
@@ -449,9 +449,9 @@ Destructable:
 
 				move.l	a1,a2
 
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 
 				tst.w	ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
@@ -499,13 +499,13 @@ StillHere:
 				movem.l	d0-d7/a0-a6,-(a7)
 
 				move.w	12(a0),d2
-				move.l	ZoneAdds,a5
+				move.l	Lvl_ZoneAddsPtr_l,a5
 				move.l	(a5,d2.w*4),d0
-				add.l	LEVELDATA,d0
+				add.l	Lvl_DataPtr_l,d0
 				move.l	d0,objroom
 
 				move.w	(a0),d0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),newx
 				move.w	4(a1,d0.w*8),newz
 
@@ -528,9 +528,9 @@ Decoration
 intodeco:
 				move.l	a1,a2
 
-				move.l	ZoneAdds,a1
+				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	LEVELDATA,a1
+				add.l	Lvl_DataPtr_l,a1
 
 				tst.w	ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
@@ -559,14 +559,14 @@ intodeco:
 
 PLR1CollectObject:
 
-				cmp.b	#'n',mors
+				cmp.b	#PLR_NEITHER,Plr_MultiplayerType_b
 				bne.s	.nodeftext
 
 				move.w	EntT_DisplayText_w(a0),d0
 				blt.s	.notext
 
 				muls	#160,d0
-				add.l	LEVELDATA,d0
+				add.l	Lvl_DataPtr_l,d0
 				jsr		SENDMESSAGE
 ; move.w #0,SCROLLXPOS
 ; move.l d0,SCROLLPOINTER
@@ -578,7 +578,7 @@ PLR1CollectObject:
 
 .notext:
 
-				cmp.b	#'s',mors
+				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.nodeftext
 
 				moveq	#0,d2
@@ -787,7 +787,7 @@ CHECKNEARBYONE:
 				bgt		.NotSameZone
 
 				move.w	(a0),d0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),newx
 				move.w	4(a1,d0.w*8),newz
 				move.w	ObjT_CollideRadius_w(a2),d2
@@ -828,7 +828,7 @@ CHECKNEARBYTWO:
 				bgt		.NotSameZone
 
 				move.w	(a0),d0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),newx
 				move.w	4(a1,d0.w*8),newz
 				move.w	ObjT_CollideRadius_w(a2),d2
@@ -999,7 +999,7 @@ THISPLRzoff:	dc.w	0
 ViewpointToDraw:
 ; Calculate which side to display:
 
-; move.l ObjectPoints,a1
+; move.l Lvl_ObjectPointsPtr_l,a1
 ; move.w (a0),d1
 ; lea (a1,d1.w*8),a1	; ptr to points
 
@@ -1102,7 +1102,7 @@ RunAround:
 				sub.w	newz,d1					; dz
 				asr.w	#1,d1
 
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
 				lea		(a1,d2.w*8),a1
 				move.w	(a1),d2
@@ -1208,7 +1208,7 @@ SHOOTPLAYER1
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	(a7)+,objroom
 
-				move.l	PlayerShotData,a0
+				move.l	Plr_ShotDataPtr_l,a0
 				move.w	#19,d1
 .findonefree2
 				move.w	12(a0),d2
@@ -1225,7 +1225,7 @@ SHOOTPLAYER1
 
 .foundonefree2:
 
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
 				move.w	newx,(a1,d2.w*8)
 				move.w	newz,4(a1,d2.w*8)
@@ -1255,11 +1255,11 @@ futurez:		dc.w	0
 
 FireAtPlayer1:
 
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d1
 				lea		(a1,d1.w*8),a1
 
-				move.l	NastyShotData,a5
+				move.l	NastyShotDataPtr_l,a5
 				move.w	#19,d1
 .findonefree
 				move.w	12(a5),d0
@@ -1291,7 +1291,7 @@ FireAtPlayer1:
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,a5/a1/a0
 
-				move.l	ObjectPoints,a2
+				move.l	Lvl_ObjectPointsPtr_l,a2
 				move.w	(a5),d1
 				lea		(a2,d1.w*8),a2
 				move.w	(a1),oldx
@@ -1354,7 +1354,7 @@ FireAtPlayer1:
 				add.l	SHOTYOFF,d0
 				move.l	d0,ShotT_AccYPos_w(a5)
 				move.b	SHOTINTOP,ShotT_InUpperZone_b(a5)
-				move.l	PLR1_Obj,a2
+				move.l	Plr1_ObjectPtr_l,a2
 				move.w	4(a2),d1
 				sub.w	#20,d1
 				ext.l	d1
@@ -1470,7 +1470,7 @@ SHOOTPLAYER2
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	(a7)+,objroom
 
-				move.l	NastyShotData,a0
+				move.l	NastyShotDataPtr_l,a0
 				move.w	#19,d1
 .findonefree2
 				move.w	12(a0),d2
@@ -1487,7 +1487,7 @@ SHOOTPLAYER2
 
 .foundonefree2:
 
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
 				move.w	newx,(a1,d2.w*8)
 				move.w	newz,4(a1,d2.w*8)
@@ -1512,7 +1512,7 @@ SHOOTPLAYER2
 				rts
 
 FireAtPlayer2:
-				move.l	NastyShotData,a5
+				move.l	NastyShotDataPtr_l,a5
 				move.w	#19,d1
 .findonefree
 				move.w	12(a5),d0
@@ -1544,7 +1544,7 @@ FireAtPlayer2:
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,a5/a1/a0
 
-				move.l	ObjectPoints,a2
+				move.l	Lvl_ObjectPointsPtr_l,a2
 				move.w	(a5),d1
 				lea		(a2,d1.w*8),a2
 				move.w	(a1),oldx
@@ -1593,7 +1593,7 @@ FireAtPlayer2:
 				add.l	SHOTYOFF,d0
 				move.l	d0,ShotT_AccYPos_w(a5)
 				move.b	SHOTINTOP,ShotT_InUpperZone_b(a5)
-				move.l	PLR2_Obj,a2
+				move.l	Plr2_ObjectPtr_l,a2
 				move.w	4(a2),d1
 				sub.w	#20,d1
 				ext.l	d1

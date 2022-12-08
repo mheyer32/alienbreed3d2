@@ -308,25 +308,25 @@ Res_FreeWallTextures:
 ; *****************************************************************************
 
 Res_FreeLevelData:
-				move.l	LINKS,a1
+				move.l	Lvl_WalkLinksPtr_l,a1
 				CALLEXEC FreeVec
-				clr.l	LINKS
+				clr.l	Lvl_WalkLinksPtr_l
 
-				move.l	FLYLINKS,a1
+				move.l	Lvl_FlyLinksPtr_l,a1
 				CALLEXEC FreeVec
-				clr.l	FLYLINKS
+				clr.l	Lvl_FlyLinksPtr_l
 
-				move.l	LEVELGRAPHICS,a1
+				move.l	Lvl_GraphicsPtr_l,a1
 				CALLEXEC FreeVec
-				clr.l	LEVELGRAPHICS
+				clr.l	Lvl_GraphicsPtr_l
 
-				move.l	LEVELCLIPS,a1
+				move.l	Lvl_ClipsPtr_l,a1
 				CALLEXEC FreeVec
-				clr.l	LEVELCLIPS
+				clr.l	Lvl_ClipsPtr_l
 
-				move.l	LEVELMUSIC,a1
+				move.l	Lvl_MusicPtr_l,a1
 				CALLEXEC FreeVec
-				clr.l	LEVELMUSIC
+				clr.l	Lvl_MusicPtr_l
 				rts
 
 ; *****************************************************************************
@@ -337,5 +337,3 @@ Res_FreeLevelData:
 
 Res_ReleaseScreenMemory:
 				rts
-
-

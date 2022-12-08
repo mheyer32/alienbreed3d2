@@ -75,10 +75,10 @@ okcanfire:
 				move.l	#0,targetydiff
 				move.l	#$7fff,d1
 
-				move.l	ZoneAdds,a3
+				move.l	Lvl_ZoneAddsPtr_l,a3
 
 				move.l	#PLR1_ObsInLine,a1
-				move.l	ObjectDataPtr_l,a0
+				move.l	Lvl_ObjectDataPtr_l,a0
 				move.l	#PLR1_ObjDists,a2
 findclosestinline
 
@@ -151,7 +151,7 @@ okdistthing
 				cmp.w	d1,d2
 				bge.s	.okcanshoot
 
-				move.l	PLR1_Obj,a2
+				move.l	Plr1_ObjectPtr_l,a2
 				move.w	(a2),d0
 				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d0.w*8),Noisex
@@ -166,9 +166,9 @@ okdistthing
 
 .okcanshoot:
 
-				cmp.b	#'s',mors
+				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.notplr1
-				move.l	PLR1_Obj,a2
+				move.l	Plr1_ObjectPtr_l,a2
 				move.w	#1,EntT_Timer1_w+128(a2)
 .notplr1
 
@@ -182,7 +182,7 @@ okdistthing
 				add.w	BULTYPE,a2
 				move.w	d2,(a2)
 
-				move.l	PLR1_Obj,a2
+				move.l	Plr1_ObjectPtr_l,a2
 				move.w	(a2),d2
 				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d2.w*8),Noisex
@@ -220,7 +220,7 @@ FIREBULLETS:
 				movem.l	a0/a1/d7/d0/a4/a5,-(a7)
 				jsr		GetRand
 
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a4),d1
 				lea		(a1,d1.w*8),a1
 
@@ -327,7 +327,7 @@ nothingtoshoot:
 
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				move.l	PlayerShotData,a0
+				move.l	Plr_ShotDataPtr_l,a0
 				move.w	#19,d1
 .findonefree2
 				move.w	12(a0),d2
@@ -339,7 +339,7 @@ nothingtoshoot:
 
 .foundonefree2:
 
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
 				move.w	newx,(a1,d2.w*8)
 				move.w	newz,4(a1,d2.w*8)
@@ -426,10 +426,10 @@ okcanfire2:
 				move.l	#0,targetydiff
 				move.l	#$7fff,d1
 
-				move.l	ZoneAdds,a3
+				move.l	Lvl_ZoneAddsPtr_l,a3
 
 				move.l	#PLR2_ObsInLine,a1
-				move.l	ObjectDataPtr_l,a0
+				move.l	Lvl_ObjectDataPtr_l,a0
 				move.l	#PLR2_ObjDists,a2
 findclosestinline2
 
@@ -502,7 +502,7 @@ okdistthing2
 				cmp.w	d1,d2
 				bge.s	.okcanshoot
 
-				move.l	PLR2_Obj,a2
+				move.l	Plr2_ObjectPtr_l,a2
 				move.w	(a2),d0
 				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d0.w*8),Noisex
@@ -517,9 +517,9 @@ okdistthing2
 
 .okcanshoot:
 
-				cmp.b	#'s',mors
+				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				bne.s	.notplr2
-				move.l	PLR1_Obj,a2
+				move.l	Plr1_ObjectPtr_l,a2
 				move.w	#1,EntT_Timer1_w+128(a2)
 .notplr2:
 
@@ -533,7 +533,7 @@ okdistthing2
 				add.w	BULTYPE,a2
 				move.w	d2,(a2)
 
-				move.l	PLR2_Obj,a2
+				move.l	Plr2_ObjectPtr_l,a2
 				move.w	(a2),d2
 				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d2.w*8),Noisex
@@ -571,7 +571,7 @@ FIREBULLETS2:
 				movem.l	a0/a1/d7/d0/a4/a5,-(a7)
 				jsr		GetRand
 
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a4),d1
 				lea		(a1,d1.w*8),a1
 
@@ -678,7 +678,7 @@ nothingtoshoot2:
 
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				move.l	PlayerShotData,a0
+				move.l	Plr_ShotDataPtr_l,a0
 				move.w	#19,d1
 .findonefree2
 				move.w	12(a0),d2
@@ -690,7 +690,7 @@ nothingtoshoot2:
 
 .foundonefree2:
 
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
 				move.w	newx,(a1,d2.w*8)
 				move.w	newz,4(a1,d2.w*8)
@@ -729,7 +729,7 @@ PLR1FIREBULLET:
 				move.l	#%100011,d7
 
 				move.b	MaxFrame,PLR1_GunFrame
-				move.l	PLR1_Obj,a2
+				move.l	Plr1_ObjectPtr_l,a2
 				move.w	ShootT_BulCount_w(a6),d5
 
 				move.w	d5,d6
@@ -745,7 +745,7 @@ PLR2FIREBULLET:
 				move.l	#%10011,d7
 
 				move.b	MaxFrame,PLR2_GunFrame
-				move.l	PLR2_Obj,a2
+				move.l	Plr2_ObjectPtr_l,a2
 				move.w	ShootT_BulCount_w(a6),d5
 
 				move.w	d5,d6
@@ -757,7 +757,7 @@ PLR2FIREBULLET:
 
 firefive:
 
-				move.l	PlayerShotData,a0
+				move.l	Plr_ShotDataPtr_l,a0
 				move.w	#19,d1
 .findonefree
 				move.w	12(a0),d0
@@ -792,7 +792,7 @@ firefive:
 				move.b	BULTYPE+1,ShotT_Size_b(a0)
 				move.b	BulT_HitDamage_l+3(a5),ShotT_Power_w(a0)
 
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d1
 				lea		(a1,d1.w*8),a1
 				move.w	tempxoff,(a1)
@@ -837,7 +837,7 @@ PLR1HITINSTANT:
 
 ; Just blow it up.
 
-				move.l	PlayerShotData,a0
+				move.l	Plr_ShotDataPtr_l,a0
 				move.w	#19,d1
 .findonefree
 				move.w	12(a0),d2
@@ -850,7 +850,7 @@ PLR1HITINSTANT:
 .foundonefree:
 
 				move.b	#2,16(a0)
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
 				move.l	(a1,d0.w*8),(a1,d2.w*8)
 				move.l	4(a1,d0.w*8),4(a1,d2.w*8)
@@ -892,7 +892,7 @@ PLR1MISSINSTANT:
 				move.l	d1,oldy
 
 				move.w	(a4),d0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),d2
 				sub.w	oldx,d2
 				asr.w	#1,d2
@@ -942,7 +942,7 @@ PLR1MISSINSTANT:
 
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				move.l	PlayerShotData,a0
+				move.l	Plr_ShotDataPtr_l,a0
 				move.w	#19,d1
 .findonefree2
 				move.w	12(a0),d2
@@ -955,7 +955,7 @@ PLR1MISSINSTANT:
 .foundonefree2:
 
 				move.b	#2,16(a0)
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
 				move.w	newx,(a1,d2.w*8)
 				move.w	newz,4(a1,d2.w*8)
@@ -979,7 +979,7 @@ PLR2HITINSTANT:
 
 ; Just blow it up.
 
-				move.l	PlayerShotData,a0
+				move.l	Plr_ShotDataPtr_l,a0
 				move.w	#19,d1
 .findonefree
 				move.w	12(a0),d2
@@ -992,7 +992,7 @@ PLR2HITINSTANT:
 .foundonefree:
 
 				move.b	#2,16(a0)
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
 				move.l	(a1,d0.w*8),(a1,d2.w*8)
 				move.l	4(a1,d0.w*8),4(a1,d2.w*8)
@@ -1034,7 +1034,7 @@ PLR2MISSINSTANT:
 				move.l	d1,oldy
 
 				move.w	(a4),d0
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),d2
 				sub.w	oldx,d2
 				asr.w	#1,d2
@@ -1084,7 +1084,7 @@ PLR2MISSINSTANT:
 
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				move.l	PlayerShotData,a0
+				move.l	Plr_ShotDataPtr_l,a0
 				move.w	#19,d1
 .findonefree2
 				move.w	12(a0),d2
@@ -1097,7 +1097,7 @@ PLR2MISSINSTANT:
 .foundonefree2:
 
 				move.b	#2,16(a0)
-				move.l	ObjectPoints,a1
+				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
 				move.w	newx,(a1,d2.w*8)
 				move.w	newz,4(a1,d2.w*8)

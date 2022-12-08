@@ -76,7 +76,7 @@ Draw_Object:
 				ble		.done_all_in_front
 
 ; CACHE_ON d6
-				move.l	ObjectDataPtr_l,a1
+				move.l	Lvl_ObjectDataPtr_l,a1
 				move.l	#ObjRotated_vl,a2
 				move.l	#draw_DepthTable_vl,a3
 				move.l	a3,a4
@@ -148,7 +148,7 @@ Draw_Object:
 
 draw_Object:
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.l	ObjectDataPtr_l,a0
+				move.l	Lvl_ObjectDataPtr_l,a0
 				move.l	#ObjRotated_vl,a1
 				asl.w	#6,d0
 				adda.w	d0,a0
@@ -858,7 +858,7 @@ draw_Bitmap:
 				blt		draw_bitmap_glare
 
 				move.w	(a0)+,d0				;pt num
-				move.l	ObjectPoints,a4
+				move.l	Lvl_ObjectPointsPtr_l,a4
 				move.w	(a4,d0.w*8),draw_Obj_XPos_w
 				move.w	4(a4,d0.w*8),draw_Obj_ZPos_w
 				move.w	2(a1,d0.w*8),d1
@@ -1393,11 +1393,11 @@ draw_bitmap_lighted:
 ; Now do the brightnesses of surrounding
 ; zones:
 
-; move.l FloorLines,a1
+; move.l Lvl_FloorLinesPtr_l,a1
 ; move.w Draw_CurrentZone_w,d0
-; move.l ZoneAdds,a4
+; move.l Lvl_ZoneAddsPtr_l,a4
 ; move.l (a4,d0.w*4),a4
-; add.l LEVELDATA,a4
+; add.l Lvl_DataPtr_l,a4
 ; move.l a4,a5
 ;
 ; adda.w ZoneT_ExitList_w(a4),a5
@@ -1794,11 +1794,11 @@ draw_CalcBrightRings:
 ; Now do the brightnesses of surrounding
 ; zones:
 
-				move.l	FloorLines,a1
+				move.l	Lvl_FloorLinesPtr_l,a1
 				move.w	Draw_CurrentZone_w,d0
-				move.l	ZoneAdds,a4
+				move.l	Lvl_ZoneAddsPtr_l,a4
 				move.l	(a4,d0.w*4),a4
-				add.l	LEVELDATA,a4
+				add.l	Lvl_DataPtr_l,a4
 				move.l	a4,a5
 				adda.w	ZoneT_ExitList_w(a4),a5
 
@@ -1953,7 +1953,7 @@ draw_TweenBrights:
 draw_CalcBrightsInZone:
 				move.w	d0,d1
 				muls	#20,d1
-				move.l	ZoneBorderPts,a1
+				move.l	Lvl_ZoneBorderPointsPtr_l,a1
 				add.l	d1,a1
 				move.l	#CurrentPointBrights,a0
 				lea		(a0,d1.l*4),a0
@@ -1967,7 +1967,7 @@ draw_CalcBrightsInZone:
 ; a1 points at the border points of the zone.
 ; list is terminated with -1.
 
-				move.l	Points,a3
+				move.l	Lvl_PointsPtr_l,a3
 				move.w	draw_Obj_XPos_w,oldx
 				move.w	draw_Obj_ZPos_w,oldz
 				move.w	#10,speed
@@ -2120,7 +2120,7 @@ polybehind:
 ;  Polygonal Object rendering
 ; a0 : object ; struct object {short id,x,y,z}
 ; a1 : view?
-; struct ObjectPoints {short x,y,z}
+; struct Lvl_ObjectPointsPtr_l {short x,y,z}
 draw_PolygonModel:
 
 ************************
@@ -2145,7 +2145,7 @@ draw_PolygonModel:
 				move.w	EntT_CurrentAngle_w(a0),draw_ObjectAng_w
 				move.w	Vid_CentreY_w,draw_PolygonCentreY_w
 				move.w	(a0)+,d0				; object Id?
-				move.l	ObjectPoints,a4
+				move.l	Lvl_ObjectPointsPtr_l,a4
 				move.w	(a4,d0.w*8),draw_Obj_XPos_w
 				move.w	4(a4,d0.w*8),draw_Obj_ZPos_w
 				move.w	2(a1,d0.w*8),d1			; zpos of mid; is this the view position ?
@@ -2154,7 +2154,7 @@ draw_PolygonModel:
 				bgt.s	.okinfront
 
 				move.l	a0,a3
-				sub.l	PLR1_Obj,a3
+				sub.l	Plr1_ObjectPtr_l,a3
 				cmp.l	#DRAW_VECTOR_NEAR_PLANE,a3
 				bne		polybehind
 
