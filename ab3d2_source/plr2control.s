@@ -423,7 +423,7 @@ PLR2_keyboard_control:
 
 				moveq	#0,d4
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	.nofric
 				move.w	d3,d5
 				add.w	d5,d5
@@ -450,7 +450,7 @@ PLR2_keyboard_control:
 
 .noalwayssidestep:
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	noturnposs2
 
 
@@ -511,7 +511,7 @@ noslide2:
 				move.l	Plr2_SnapXSpdVal_l,d6
 				move.l	Plr2_SnapZSpdVal_l,d7
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	.nofriction
 
 				neg.l	d6
@@ -571,7 +571,7 @@ noslide2:
 				sub.l	d2,d6
 				add.l	d1,d7
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	.nocontrolposs
 				add.l	d6,Plr2_SnapXSpdVal_l
 				add.l	d7,Plr2_SnapZSpdVal_l

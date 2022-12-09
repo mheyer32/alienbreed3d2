@@ -10279,12 +10279,12 @@ nostartalan:
 				move.w	d0,SMIDDLEY
 				muls	#SCREENWIDTH,d0
 				move.l	d0,SBIGMIDDLEY
-				jsr		PLR1_fall
+				jsr		Plr1_Fall
 
 				move.l	Plr1_SnapXSpdVal_l,d6
 				move.l	Plr1_SnapZSpdVal_l,d7
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	.nofriction
 
 				neg.l	d6
@@ -10315,7 +10315,7 @@ nostartalan:
 				add.l	d7,Plr1_SnapZOff_l
 
 				move.w	Plr1_SnapAngSpd_w,d3
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	.nofric
 				asr.w	#2,d3
 				bge.s	.nneg
@@ -10373,7 +10373,7 @@ control2:
 				move.l	Plr2_SnapXSpdVal_l,d6
 				move.l	Plr2_SnapZSpdVal_l,d7
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	.nofriction
 
 				neg.l	d6
@@ -10404,7 +10404,7 @@ control2:
 				add.l	d7,Plr2_SnapZOff_l
 
 				move.w	Plr2_SnapAngSpd_w,d3
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	.nofric
 				asr.w	#2,d3
 				bge.s	.nneg

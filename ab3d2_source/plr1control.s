@@ -154,7 +154,7 @@ Plr1_MouseControl:
 				st		PLR1_fire
 
 .doneplr1:
-				bsr		PLR1_fall
+				bsr		Plr1_Fall
 
 				rts
 
@@ -509,7 +509,7 @@ nofaster:
 
 				moveq	#0,d4
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	.nofric
 				move.w	d3,d5
 				add.w	d5,d5
@@ -536,7 +536,7 @@ nofaster:
 
 .noalwayssidestep:
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	noturnposs
 
 
@@ -597,7 +597,7 @@ noslide:
 				move.l	Plr1_SnapXSpdVal_l,d6
 				move.l	Plr1_SnapZSpdVal_l,d7
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	.nofriction
 
 				neg.l	d6
@@ -657,7 +657,7 @@ nobackward:
 				sub.l	d2,d6
 				add.l	d1,d7
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	.nocontrolposs
 				add.l	d6,Plr1_SnapXSpdVal_l
 				add.l	d7,Plr1_SnapZSpdVal_l
@@ -696,7 +696,7 @@ nobackward:
 
 .doneplr1:
 
-				bsr		PLR1_fall
+				bsr		Plr1_Fall
 
 				rts
 

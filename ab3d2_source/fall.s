@@ -1,5 +1,5 @@
 
-PLR1_fall
+Plr1_Fall:
 				move.l	Plr1_SnapTYOff_l,d0
 				move.l	Plr1_SnapYOff_l,d1
 				move.l	Plr1_SnapYVel_l,d2
@@ -8,7 +8,7 @@ PLR1_fall
 				bgt		.aboveground
 				beq.s	.onground
 
-				st		SLOWDOWN
+				st		Plr_Decelerate_b
 
 ; we are under the ground.
 
@@ -34,7 +34,7 @@ PLR1_fall
 				add.b	d3,EntT_DamageTaken_b(a4)
 .nodam
 
-				st		SLOWDOWN
+				st		Plr_Decelerate_b
 				move.w	#0,DAMAGEWHENHIT
 
 				move.w	ADDTOBOBBLE,d3
@@ -86,7 +86,7 @@ PLR1_fall
 
 .aboveground
 
-				clr.b	SLOWDOWN
+				clr.b	Plr_Decelerate_b
 
 				tst.w	Plr1_Jetpack_w
 				beq.s	.nofly
@@ -101,7 +101,7 @@ PLR1_fall
 
 .okfuel:
 
-				st		SLOWDOWN
+				st		Plr_Decelerate_b
 				move.l	#-128,JUMPSPD
 				move.l	#KeyMap,a5
 				moveq	#0,d7
@@ -122,7 +122,7 @@ PLR1_fall
 				cmp.l	#16*64,d3
 				bgt.s	.nonearmove
 
-				st		SLOWDOWN
+				st		Plr_Decelerate_b
 
 .nonearmove:
 
@@ -171,7 +171,7 @@ PLR1_fall
 
 .nosplash:
 
-				st		SLOWDOWN
+				st		Plr_Decelerate_b
 				move.w	#0,DAMAGEWHENHIT
 				cmp.l	#512,d2
 				blt.s	CARRYON
@@ -233,7 +233,6 @@ ARSE:
 				move.l	#256*2,d2
 
 .pastitall:
-
 				move.l	d2,Plr1_SnapYVel_l
 				move.l	d1,Plr1_SnapYOff_l
 
@@ -281,7 +280,7 @@ PLR2_fall
 				bgt		.aboveground
 				beq.s	.onground
 
-				st		SLOWDOWN
+				st		Plr_Decelerate_b
 ; we are under the ground.
 
 				move.l	#0,d2
@@ -304,7 +303,7 @@ PLR2_fall
 .nodam
 				move.w	#0,DAMAGEWHENHIT
 
-				st		SLOWDOWN
+				st		Plr_Decelerate_b
 
 				move.w	ADDTOBOBBLE,d3
 				move.w	d3,d4
@@ -353,7 +352,7 @@ PLR2_fall
 
 .aboveground
 
-				clr.b	SLOWDOWN
+				clr.b	Plr_Decelerate_b
 ; need to fall down (possibly).
 
 				tst.w	Plr2_Jetpack_w
@@ -369,7 +368,7 @@ PLR2_fall
 
 .okfuel:
 
-				st		SLOWDOWN
+				st		Plr_Decelerate_b
 
 				move.l	#-128,JUMPSPD
 				move.l	#KeyMap,a5
@@ -430,7 +429,7 @@ PLR2_fall
 .nosplash:
 
 
-				st		SLOWDOWN
+				st		Plr_Decelerate_b
 				move.w	#0,DAMAGEWHENHIT
 
 				cmp.l	#512,d2
@@ -463,6 +462,6 @@ CARRYON2:
 
 CANJUMP:		dc.w	0
 JUMPSPD:		dc.l	0
-SLOWDOWN:		dc.w	0
+Plr_Decelerate_b:		dc.w	0
 DAMAGEWHENHIT:	dc.w	0
 oldheight:		dc.l	0
