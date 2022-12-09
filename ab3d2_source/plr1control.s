@@ -202,7 +202,7 @@ Plr1_AlwaysKeys:
 
 				moveq	#0,d0
 				move.b	Plr1_GunSelected_b,d0
-				move.l	#PLAYERONEGUNS,a0
+				move.l	#Plr1_Weapons_vb,a0
 
 .findnext
 				addq	#1,d0
@@ -303,7 +303,7 @@ notseljoy:
 notselmouse:
 
 				lea		1(a5),a4
-				move.l	#PLAYERONEGUNS,a2
+				move.l	#Plr1_Weapons_vb,a2
 				move.l	Plr1_ObjectPtr_l,a3
 				move.w	#9,d1
 				move.w	#0,d2

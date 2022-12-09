@@ -174,7 +174,7 @@ Plr2_AlwaysKeys
 
 				moveq	#0,d0
 				move.b	Plr2_GunSelected_b,d0
-				move.l	#PLAYERTWOGUNS,a0
+				move.l	#Plr2_Weapons_vb,a0
 
 .findnext
 				addq	#1,d0
@@ -275,7 +275,7 @@ oktostand2:
 .notselmouse:
 
 				lea		1(a5),a4
-				move.l	#PLAYERTWOGUNS,a2
+				move.l	#Plr2_Weapons_vb,a2
 				move.l	Plr2_ObjectPtr_l,a3
 				move.w	#9,d1
 				move.w	#0,d2
@@ -340,49 +340,6 @@ SHOWPLR2GUNNAME:
 				move.l	#TEMPSCROLL,d0
 				jsr		SENDMESSAGENORET
 				rts
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 TURNSPD:		dc.w	0
 

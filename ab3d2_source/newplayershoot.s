@@ -37,7 +37,7 @@ okcanfire:
 				lea		(a6,d0.w*8),a6
 				move.w	ShootT_BulType_w(a6),d0		; bullet type
 				move.w	d0,BULTYPE
-				move.l	#PLAYERONEAMMO,a0
+				move.l	#Plr1_AmmoCounts_vw,a0
 				move.w	(a0,d0.w*2),AmmoInMyGun
 
 				muls	#BulT_SizeOf_l,d0
@@ -177,7 +177,7 @@ okdistthing
 				move.b	MaxFrame,PLR1_GunFrame
 				sub.w	d1,d2
 
-				move.l	#PLAYERONEAMMO,a2
+				move.l	#Plr1_AmmoCounts_vw,a2
 				add.w	BULTYPE,a2
 				add.w	BULTYPE,a2
 				move.w	d2,(a2)
@@ -388,7 +388,7 @@ okcanfire2:
 				lea		(a6,d0.w*8),a6
 				move.w	ShootT_BulType_w(a6),d0		; bullet type
 				move.w	d0,BULTYPE
-				move.l	#PLAYERTWOAMMO,a0
+				move.l	#Plr2_AmmoCounts_vw,a0
 				move.w	(a0,d0.w*2),AmmoInMyGun
 
 				muls	#BulT_SizeOf_l,d0
@@ -528,7 +528,7 @@ okdistthing2
 				move.b	MaxFrame,PLR2_GunFrame
 				sub.w	d1,d2
 
-				move.l	#PLAYERTWOAMMO,a2
+				move.l	#Plr2_AmmoCounts_vw,a2
 				add.w	BULTYPE,a2
 				add.w	BULTYPE,a2
 				move.w	d2,(a2)

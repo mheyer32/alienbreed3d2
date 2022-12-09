@@ -188,11 +188,11 @@ Collectable:
 
 				bsr		DEFANIMOBJ
 
-				bsr		CHECKNEARBYONE
+				bsr		Plr1_CheckObjectCollide
 				tst.b	d0
 				beq.s	.NotCollected1
 
-				bsr		PLR1CollectObject
+				bsr		Plr1_CollectItem
 				move.w	#-1,12(a0)
 				clr.b	ShotT_Worry_b(a0)
 
@@ -200,11 +200,11 @@ Collectable:
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq.s	.NotCollected2
-				bsr		CHECKNEARBYTWO
+				bsr		Plr2_CheckObjectCollide
 				tst.b	d0
 				beq.s	.NotCollected2
 
-				bsr		PLR2CollectObject
+				bsr		Plr2_CollectItem
 				move.w	#-1,12(a0)
 				clr.b	ShotT_Worry_b(a0)
 
@@ -264,7 +264,7 @@ Activatable:
 
 				bsr		DEFANIMOBJ
 
-				bsr		CHECKNEARBYONE
+				bsr		Plr1_CheckObjectCollide
 				tst.b	d0
 				beq.s	.NotActivated1
 
@@ -274,7 +274,7 @@ Activatable:
 ; The player has pressed the spacebar
 ; within range of the object.
 
-				bsr		PLR1CollectObject
+				bsr		Plr1_CollectItem
 
 
 				move.w	#0,EntT_Timer1_w(a0)
@@ -287,7 +287,7 @@ Activatable:
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq		.NotActivated2
-				bsr		CHECKNEARBYTWO
+				bsr		Plr2_CheckObjectCollide
 				tst.b	d0
 				beq.s	.NotActivated2
 
@@ -296,7 +296,7 @@ Activatable:
 
 ; The player has pressed the spacebar
 ; within range of the object.
-				bsr		PLR2CollectObject
+				bsr		Plr2_CollectItem
 
 
 				move.w	#0,EntT_Timer1_w(a0)
@@ -358,7 +358,7 @@ ACTIVATED:
 
 .nottimeout:
 
-				bsr		CHECKNEARBYONE
+				bsr		Plr1_CheckObjectCollide
 				tst.b	d0
 				beq.s	.NotDeactivated1
 
@@ -379,7 +379,7 @@ ACTIVATED:
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq.s	.NotDeactivated2
 
-				bsr		CHECKNEARBYTWO
+				bsr		Plr2_CheckObjectCollide
 				tst.b	d0
 				beq.s	.NotDeactivated2
 
@@ -557,8 +557,7 @@ intodeco:
 
 				rts
 
-PLR1CollectObject:
-
+Plr1_CollectItem:
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.nodeftext
 
@@ -617,23 +616,23 @@ PLR1CollectObject:
 
 ; Check if player has max of all ammo types:
 
-				bsr		CHECKPLAYERGOT
-				tst.b	d0
-				beq		dontcollect
+;				bsr		CHECKPLAYERGOT
+;				tst.b	d0
+;				beq		.no_collect
 
 				move.w	#21,d0
-				move.l	#PLAYERONEHEALTH,a1
-GiveAmmo:
+				move.l	#Plr1_Health_w,a1
+.add_ammo:
 				move.w	(a3)+,d1
 				add.w	d1,(a1)+
-				dbra	d0,GiveAmmo
+				dbra	d0,.add_ammo
 
 				move.w	#11,d0
-				move.l	#PLAYERONESHIELD,a1
-GiveGuns:
+				move.l	#Plr1_Shield_w,a1
+.add_weapons:
 				move.w	(a2)+,d1
 				or.w	d1,(a1)+
-				dbra	d0,GiveGuns
+				dbra	d0,.add_weapons
 
 				move.l	GLF_DatabasePtr_l,a3
 				add.l	#GLFT_ObjectDefs,a3
@@ -641,7 +640,6 @@ GiveGuns:
 				move.b	EntT_Type_b(a0),d0
 				muls	#ObjT_SizeOf_l,d0
 				add.l	d0,a3
-
 				move.w	ObjT_SFX_w(a3),d0
 				blt.s	.nosoundmake
 
@@ -656,14 +654,12 @@ GiveGuns:
 				move.l	(a1),Noisex
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
-.nosoundmake
 
-
-dontcollect:
+.nosoundmake:
+.no_collect:
 				rts
 
-PLR2CollectObject:
-
+Plr2_CollectItem:
 				move.l	GLF_DatabasePtr_l,a2
 				lea		GLFT_AmmoGive_l(a2),a3
 				add.l	#GLFT_GunGive_l,a2
@@ -676,24 +672,23 @@ PLR2CollectObject:
 				add.w	d0,a3
 
 ; Check if player has max of all ammo types:
-
-				bsr		CHECKPLAYERGOT
-				tst.b	d0
-				beq		dontcollect2
+;				bsr		CHECKPLAYERGOT
+;				tst.b	d0
+;				beq		.no_collect
 
 				move.w	#21,d0
-				move.l	#PLAYERTWOHEALTH,a1
-GiveAmmo2:
+				move.l	#Plr2_Health_w,a1
+.add_ammo:
 				move.w	(a3)+,d1
 				add.w	d1,(a1)+
-				dbra	d0,GiveAmmo2
+				dbra	d0,.add_ammo
 
 				move.w	#11,d0
-				move.l	#PLAYERTWOSHIELD,a1
-GiveGuns2:
+				move.l	#Plr2_Shield_w,a1 ; Armour!
+.add_weapons:
 				move.w	(a2)+,d1
 				or.w	d1,(a1)+
-				dbra	d0,GiveGuns2
+				dbra	d0,.add_weapons
 
 				move.l	GLF_DatabasePtr_l,a3
 				add.l	#GLFT_ObjectDefs,a3
@@ -717,49 +712,35 @@ GiveGuns2:
 				move.b	#0,PlayEcho
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
-.nosoundmake
 
+.nosoundmake:
 				move.w	#-1,12(a0)
 				clr.b	ShotT_Worry_b(a0)
 
-dontcollect2:
+.no_collect:
 				rts
 
-PLAYERONEHEALTH:
-				dc.w	0
-PLAYERONEFUEL:
-				dc.w	0
-PLAYERONEAMMO:
-				ds.w	20
+Plr1_Health_w:			dc.w	0
+Plr1_JetpackFuel_w:		dc.w	0
+Plr1_AmmoCounts_vw:		ds.w	20
+Plr1_Shield_w:			dc.w	0
+Plr1_Jetpack_w:			dc.w	0
+Plr1_Weapons_vb:		dcb.w	10,0 ; todo - convert to bytes or bitfield
 
-PLAYERONESHIELD:
-				dc.w	0
-PLAYERONEJETPACK:
-				dc.w	0
-PLAYERONEGUNS:
-				dcb.w	10,0
+Plr2_Health_w:			dc.w	0
+Plr2_JetpackFuel_w:		dc.w	0
+Plr2_AmmoCounts_vw:		ds.w	20
 
-PLAYERTWOHEALTH:
-				dc.w	0
-PLAYERTWOFUEL:
-				dc.w	0
-PLAYERTWOAMMO:
-				ds.w	20
-
-PLAYERTWOSHIELD:
-				dc.w	0
-PLAYERTWOJETPACK:
-				dc.w	0
-PLAYERTWOGUNS:
-				dcb.w	10,0
+Plr2_Shield_w:			dc.w	0
+Plr2_Jetpack_w:			dc.w	0
+Plr2_Weapons_vb:		dcb.w	10,0 ; todo - convert to bytes or bitfield
 
 
 CHECKPLAYERGOT:
 				move.b	#1,d0
 				rts
 
-CHECKNEARBYONE:
-
+Plr1_CheckObjectCollide:
 				move.l	StatPointer,a2
 				move.b	Plr1_StoodInTop_b,d0
 				move.b	ShotT_InUpperZone_b(a0),d1
@@ -799,8 +780,7 @@ CHECKNEARBYONE:
 				moveq	#0,d0
 				rts
 
-CHECKNEARBYTWO:
-
+Plr2_CheckObjectCollide:
 				move.l	StatPointer,a2
 				move.b	Plr2_StoodInTop_b,d0
 				move.b	ShotT_InUpperZone_b(a0),d1
@@ -1130,9 +1110,7 @@ tsz:			dc.w	0
 fsx:			dc.w	0
 fsz:			dc.w	0
 
-SHOOTPLAYER1
-
-
+SHOOTPLAYER1:
 				move.w	oldx,tsx
 				move.w	oldz,tsz
 				move.w	newx,fsx
@@ -1202,7 +1180,6 @@ SHOOTPLAYER1
 				bra		.again
 
 .nofurther:
-
 				move.l	objroom,backroom
 
 				movem.l	(a7)+,d0-d7/a0-a6
@@ -1210,7 +1187,8 @@ SHOOTPLAYER1
 
 				move.l	Plr_ShotDataPtr_l,a0
 				move.w	#19,d1
-.findonefree2
+
+.findonefree2:
 				move.w	12(a0),d2
 				blt.s	.foundonefree2
 				adda.w	#64,a0
@@ -1224,7 +1202,6 @@ SHOOTPLAYER1
 				rts
 
 .foundonefree2:
-
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
 				move.w	newx,(a1,d2.w*8)
@@ -1270,7 +1247,6 @@ FireAtPlayer1:
 				bra		.cantshoot
 
 .foundonefree:
-
 				move.b	#2,16(a5)
 
 				move.l	#ObjRotated_vl,a6
@@ -1335,7 +1311,6 @@ FireAtPlayer1:
 				jsr		HeadTowards
 
 .nooffset:
-
 				move.w	newx,d0
 				move.w	d0,(a2)
 				sub.w	oldx,d0
@@ -1375,10 +1350,10 @@ FireAtPlayer1:
 				st		ShotT_Worry_b(a5)
 
 ; FIXME: this is causing Enforcer hits. It looks like the places that put a
-; value into GunData are all commented out. On the other hand, most other places
+; value into Plr_GunDataPtr_l are all commented out. On the other hand, most other places
 ; writing to ShotT_Gravity_w just write a 0. Maybe no alien weapon has gravity applied?
 ; similar with ShotT_Flags_w
-;				move.l	GunData,a6
+;				move.l	Plr_GunDataPtr_l,a6
 ;				moveq	#0,d0
 ;				move.b	SHOTTYPE,d0
 ;				asl.w	#5,d0
@@ -1573,8 +1548,6 @@ FireAtPlayer2:
 				jsr		HeadTowards
 
 .nooffset:
-
-
 				move.w	newx,d0
 				move.w	d0,(a2)
 				sub.w	oldx,d0
@@ -1614,6 +1587,8 @@ FireAtPlayer2:
 .cantshoot
 				rts
 
+				align 4
+backroom:		dc.l	0
 SHOTYOFF:		dc.l	0
 SHOTTYPE:		dc.w	0
 SHOTPOWER:		dc.w	0
@@ -1622,4 +1597,3 @@ SHOTOFFMULT:	dc.w	0
 SHOTSHIFT:		dc.w	0
 SHOTINTOP:		dc.w	0
 
-backroom:		dc.l	0

@@ -163,7 +163,7 @@ _ReadJoy1
 
 				moveq	#0,d0
 				move.b	Plr1_GunSelected_b,d0
-				move.l	#PLAYERONEGUNS,a0
+				move.l	#Plr1_Weapons_vb,a0
 
 
 .findnext
@@ -349,7 +349,7 @@ _ReadJoy2
 
 				moveq	#0,d0
 				move.b	Plr2_GunSelected_b,d0
-				move.l	#PLAYERTWOGUNS,a0
+				move.l	#Plr2_Weapons_vb,a0
 
 .findnext
 				addq	#1,d0

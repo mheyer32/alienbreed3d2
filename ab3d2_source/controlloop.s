@@ -252,10 +252,10 @@ DONEMENU:
 
 				move.l	#MASTERPLAYERONEHEALTH,a0
 				move.l	#MASTERPLAYERONESHIELD,a1
-				move.l	#PLAYERONEHEALTH,a2
-				move.l	#PLAYERONESHIELD,a3
-				move.l	#PLAYERTWOHEALTH,a4
-				move.l	#PLAYERTWOSHIELD,a5
+				move.l	#Plr1_Health_w,a2
+				move.l	#Plr1_Shield_w,a3
+				move.l	#Plr2_Health_w,a4
+				move.l	#Plr2_Shield_w,a5
 
 				REPT	11						; copy MASTERPLAYERONEHEALTH and
 				move.l	(a0),(a2)+				; MASTERPLAYERONEAMMO
@@ -295,8 +295,8 @@ DONEMENU:
 
 				move.l	#MASTERPLAYERONEHEALTH,a0
 				move.l	#MASTERPLAYERONESHIELD,a1
-				move.l	#PLAYERONEHEALTH,a2
-				move.l	#PLAYERONESHIELD,a3
+				move.l	#Plr1_Health_w,a2
+				move.l	#Plr1_Shield_w,a3
 
 				REPT	11
 				move.l	(a2)+,(a0)+
@@ -957,41 +957,41 @@ STATBACK:		ds.w	34
 
 TWOPLAYER:
 
-				move.w	#200,PLAYERONEHEALTH
-				move.w	#200,PLAYERTWOHEALTH
+				move.w	#200,Plr1_Health_w
+				move.w	#200,Plr2_Health_w
 
-				move.w	#0,PLAYERONEFUEL
+				move.w	#0,Plr1_JetpackFuel_w
 
-				st.b	PLAYERONEGUNS+1
-				st.b	PLAYERONEGUNS+3
-				st.b	PLAYERONEGUNS+5
-				st.b	PLAYERONEGUNS+7
-				st.b	PLAYERONEGUNS+9
-				st.b	PLAYERONEGUNS+11
-				st.b	PLAYERONEGUNS+13
-				st.b	PLAYERONEGUNS+15
-				st.b	PLAYERONEGUNS+17
-				st.b	PLAYERONEGUNS+19
+				st.b	Plr1_Weapons_vb+1
+				st.b	Plr1_Weapons_vb+3
+				st.b	Plr1_Weapons_vb+5
+				st.b	Plr1_Weapons_vb+7
+				st.b	Plr1_Weapons_vb+9
+				st.b	Plr1_Weapons_vb+11
+				st.b	Plr1_Weapons_vb+13
+				st.b	Plr1_Weapons_vb+15
+				st.b	Plr1_Weapons_vb+17
+				st.b	Plr1_Weapons_vb+19
 
-				st.b	PLAYERONEJETPACK+1
+				st.b	Plr1_Jetpack_w+1
 
-				st.b	PLAYERTWOGUNS+1
-				st.b	PLAYERTWOGUNS+3
-				st.b	PLAYERTWOGUNS+5
-				st.b	PLAYERTWOGUNS+7
-				st.b	PLAYERTWOGUNS+9
-				st.b	PLAYERTWOGUNS+11
-				st.b	PLAYERTWOGUNS+13
-				st.b	PLAYERTWOGUNS+15
-				st.b	PLAYERTWOGUNS+17
-				st.b	PLAYERTWOGUNS+19
+				st.b	Plr2_Weapons_vb+1
+				st.b	Plr2_Weapons_vb+3
+				st.b	Plr2_Weapons_vb+5
+				st.b	Plr2_Weapons_vb+7
+				st.b	Plr2_Weapons_vb+9
+				st.b	Plr2_Weapons_vb+11
+				st.b	Plr2_Weapons_vb+13
+				st.b	Plr2_Weapons_vb+15
+				st.b	Plr2_Weapons_vb+17
+				st.b	Plr2_Weapons_vb+19
 
-				move.w	#0,PLAYERTWOFUEL
+				move.w	#0,Plr2_JetpackFuel_w
 
-				st.b	PLAYERTWOJETPACK+1
+				st.b	Plr2_Jetpack_w+1
 
-				move.l	#PLAYERONEAMMO,a0
-				move.l	#PLAYERTWOAMMO,a1
+				move.l	#Plr1_AmmoCounts_vw,a0
+				move.l	#Plr2_AmmoCounts_vw,a1
 				move.w	#19,d1
 .putinvals
 				jsr		GetRand

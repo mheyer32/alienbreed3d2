@@ -180,6 +180,7 @@ _start:
 
 ;*******************************************************************************
 ; Global data
+
 				align 4
 ; Long aligned
 Vid_FastBufferPtr_l:		dc.l	0	; aligned address
@@ -188,10 +189,43 @@ _DOSBase:					dc.l	0
 MiscResourceBase:			dc.l	0
 PotgoResourceBase:			dc.l	0
 
+LastZonePtr_l:				dc.l	0
+
+Plr1_BobbleY_l:				dc.l	0
+Plr2_BobbleY_l:				dc.l	0
+
+Plr_GunDataPtr_l:			dc.l	0
+
+xwobble:					dc.l	0
+
 ; Word aligned
+Plr1_Bobble_w:				dc.w	0
+Plr2_Bobble_w:				dc.w	0
+
+xwobxoff:					dc.w	0
+xwobzoff:					dc.w	0
+CollId:						dc.w	0
 
 ; Byte Aligned
-Plr_MultiplayerType_b:		dc.w	0	; CHAR enum - m(aster), s(lave), n(either)
+Plr_MultiplayerType_b:		dc.b	0	; CHAR enum - m(aster), s(lave), n(either)
+Plr_GunSelected_b:			dc.b	0
+
+Plr1_Keys_b:				dc.b	0
+Plr1_Path_b:				dc.b	0
+Plr1_Mouse_b:				dc.b	-1
+Plr1_Joystick_b:			dc.b	0
+Plr2_Keys_b:				dc.b	0
+Plr2_Path_b:				dc.b	0
+Plr2_Mouse_b:				dc.b	-1
+Plr2_Joystick_b:			dc.b	0
+
+Game_MasterQuit_b:			dc.b	0
+Game_SlaveQuit_b:			dc.b	0
+Game_MasterPaused_b:		dc.b	0
+Game_SlavePaused_b:			dc.b	0
+
+KeyMap:						ds.b	256
+
 
 ; Level data filenames. These are null terminated strings that are split on the character for the
 ; name. This is poked in during loading.
@@ -206,6 +240,8 @@ Lvl_MapFilenameX_vb:		dc.b	'a/twolev.map',0
 Lvl_FlyMapFilename_vb:		dc.b	'ab3:levels/level_'
 Lvl_FlyMapFilenameX_vb:		dc.b	'a/twolev.flymap',0
 AppName:					dc.b	'TheKillingGrounds',0
+
+
 doslibname:					DOSNAME
 MiscResourceName:			MISCNAME
 PotgoResourceName:			POTGONAME
@@ -247,14 +283,14 @@ Game_ShowIntroText:
 				dbra	d7,.next_line_loop
 				rts
 
-FONTADDRS:
-				dc.l	ENDFONT0,CHARWIDTHS0
+draw_FontPtrs_vl:
+				dc.l	draw_EndFont0_vb,draw_CharWidths0_vb
 				dc.l	ENDFONT1,CHARWIDTHS1
 				dc.l	ENDFONT2,CHARWIDTHS2
 
-ENDFONT0:
+draw_EndFont0_vb:
 				incbin	"endfont0"
-CHARWIDTHS0:
+draw_CharWidths0_vb:
 				incbin	"charwidths0"
 ENDFONT1:
 CHARWIDTHS1:
@@ -266,7 +302,7 @@ Draw_LineOfText:
 				movem.l	d0/a0/d7,-(a7)
 				muls	#80*16,d0
 				add.l	d0,a1					; screen pointer
-				move.l	#FONTADDRS,a3
+				move.l	#draw_FontPtrs_vl,a3
 				moveq	#0,d0
 				move.b	(a0)+,d0
 				move.l	(a3,d0.w*8),a2
@@ -624,7 +660,7 @@ noclips:
 				move.l	#tab,a1
 				move.w	#64,d7
 				move.w	#0,d6
-outerlop
+outerlop:
 				move.l	#pretab,a0
 				move.w	#255,d5
 scaledownlop:
@@ -718,13 +754,13 @@ scaledownlop:
 				jsr		CLEARKEYBOARD
 ; jsr MAKEBACKROUT
 
-				clr.b	MASTERQUITTING
+				clr.b	Game_MasterQuit_b
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
-				seq		SLAVEQUITTING
+				seq		Game_SlaveQuit_b
 
-; move.w #200,PLAYERTWOHEALTH
-; move.w #200,PLAYERONEHEALTH
+; move.w #200,Plr2_Health_w
+; move.w #200,Plr1_Health_w
 
 				DataCacheOn
 
@@ -864,8 +900,8 @@ NOALLWALLS:
 				move.l	scrn2,a0
 				jsr		WIPEDISPLAY
 
-				st		PLAYERONEGUNS+1
-				st		PLAYERTWOGUNS+1
+				st		Plr1_Weapons_vb+1
+				st		Plr2_Weapons_vb+1
 				move.w	#100,timetodamage
 				move.w	#299,d0
 				move.l	#AI_Damaged_vw,a0
@@ -931,7 +967,7 @@ lop:
 				tst.b	PLR2_dead
 				bne		.notmess
 
-				tst.w	PLAYERTWOHEALTH
+				tst.w	Plr2_Health_w
 				bgt		.notmess
 
 				st		PLR2_dead
@@ -975,7 +1011,7 @@ lop:
 				tst.b	PLR1_dead
 				bne		.notmess2
 
-				tst.w	PLAYERONEHEALTH
+				tst.w	Plr1_Health_w
 				bgt		.notmess2
 
 				st		PLR1_dead
@@ -1110,8 +1146,8 @@ nofadedownhc:
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq		.nopause
 
-				move.b	SLAVEPAUSE,d0
-				or.b	MASTERPAUSE,d0
+				move.b	Game_SlavePaused_b,d0
+				or.b	Game_MasterPaused_b,d0
 				beq.s	.nopause
 				clr.b	doanything
 
@@ -1142,8 +1178,8 @@ nofadedownhc:
 .slavelast
 				Jsr		RECFIRST
 .masfirst:
-				clr.b	SLAVEPAUSE
-				clr.b	MASTERPAUSE
+				clr.b	Game_SlavePaused_b
+				clr.b	Game_MasterPaused_b
 				st		doanything
 
 .nopause:
@@ -1173,13 +1209,13 @@ nofadedownhc:
 ;				beq.b	waitfortop
 ;				move.w	#$1,intreq(a6)
 
-; move.l #PLR1_GunData,GunData
-				move.b	Plr1_GunSelected_b,GunSelected
+; move.l #PLR1_GunData,Plr_GunDataPtr_l
+				move.b	Plr1_GunSelected_b,Plr_GunSelected_b
 				bra		waitmaster
 
 nowaitslave:
-; move.l #PLR2_GunData,GunData
-				move.b	Plr2_GunSelected_b,GunSelected
+; move.l #PLR2_GunData,Plr_GunDataPtr_l
+				move.b	Plr2_GunSelected_b,Plr_GunSelected_b
 waitmaster:
 
 *****************************************************************
@@ -1259,17 +1295,17 @@ okwat:
 				movem.l	d0-d7/a0-a6,-(a7)
 
 				moveq	#0,d0
-				move.b	GunSelected,d0
+				move.b	Plr_GunSelected_b,d0
 				move.l	GLF_DatabasePtr_l,a6
 				add.l	#GLFT_ShootDefs_l,a6
 				move.w	(a6,d0.w*8),d0
 
-				move.l	#PLAYERONEAMMO,a6
+				move.l	#Plr1_AmmoCounts_vw,a6
 				move.w	(a6,d0.w*2),d0
 				move.w	d0,Ammo
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				move.w	PLAYERONEHEALTH,Energy
+				move.w	Plr1_Health_w,Energy
 
 				move.w	FramesToDraw,TempFrames
 				cmp.w	#15,TempFrames
@@ -1323,7 +1359,7 @@ okwat:
 				move.b	Plr1_Ducked_b,Plr1_TmpDucked_b
 				move.b	Plr1_GunSelected_b,Plr1_TmpGunSelected_b
 
-				bsr		PLR1_Control
+				bsr		Plr1_Control
 
 				move.l	Plr1_RoomPtr_l,a0
 				move.l	ZoneT_Roof_l(a0),SplitHeight
@@ -1343,21 +1379,21 @@ okwat:
 NotOnePlayer:
 				move.l	#KeyMap,a5
 				tst.b	$19(a5)
-				sne		MASTERPAUSE
+				sne		Game_MasterPaused_b
 
 *********************************
-				move.w	PLAYERONEHEALTH,Energy
+				move.w	Plr1_Health_w,Energy
 ; change this back
 *********************************
 				movem.l	d0-d7/a0-a6,-(a7)
 
 				moveq	#0,d0
-				move.b	GunSelected,d0
+				move.b	Plr_GunSelected_b,d0
 				move.l	GLF_DatabasePtr_l,a6
 				add.l	#GLFT_ShootDefs_l,a6
 				move.w	(a6,d0.w*8),d0
 
-				move.l	#PLAYERONEAMMO,a6
+				move.l	#Plr1_AmmoCounts_vw,a6
 				move.w	(a6,d0.w*2),d0
 				move.w	d0,Ammo
 				movem.l	(a7)+,d0-d7/a0-a6
@@ -1437,26 +1473,26 @@ NotOnePlayer:
 
 				move.b	Plr1_TmpFire_b,d0
 				lsl.w	#8,d0
-				move.b	MASTERQUITTING,d0
-				or.b	d0,SLAVEQUITTING
+				move.b	Game_MasterQuit_b,d0
+				or.b	d0,Game_SlaveQuit_b
 				swap	d0
-				move.b	MASTERPAUSE,d0
-				or.b	d0,SLAVEPAUSE
+				move.b	Game_MasterPaused_b,d0
+				or.b	d0,Game_SlavePaused_b
 				jsr		SENDFIRST
-				or.b	d0,MASTERPAUSE
-				or.b	d0,SLAVEPAUSE
+				or.b	d0,Game_MasterPaused_b
+				or.b	d0,Game_SlavePaused_b
 				swap	d0
-				or.b	d0,SLAVEQUITTING
-				or.b	d0,MASTERQUITTING
+				or.b	d0,Game_SlaveQuit_b
+				or.b	d0,Game_MasterQuit_b
 				lsr.w	#8,d0
 				move.b	d0,Plr2_TmpFire_b
 
-				move.w	PLAYERONEHEALTH,d0
+				move.w	Plr1_Health_w,d0
 				jsr		SENDFIRST
-				move.w	d0,PLAYERTWOHEALTH
+				move.w	d0,Plr2_Health_w
 
-				bsr		PLR1_Control
-				bsr		PLR2_Control
+				bsr		Plr1_Control
+				bsr		Plr2_Control
 				move.l	Plr1_RoomPtr_l,a0
 				move.l	ZoneT_Roof_l(a0),SplitHeight
 				move.w	Plr1_TmpXOff_l,THISPLRxoff
@@ -1468,22 +1504,22 @@ ASlaveShouldWaitOnHisMaster:
 
 				move.l	#KeyMap,a5
 				tst.b	$19(a5)
-				sne		SLAVEPAUSE
+				sne		Game_SlavePaused_b
 
 				movem.l	d0-d7/a0-a6,-(a7)
 
 				moveq	#0,d0
-				move.b	GunSelected,d0
+				move.b	Plr_GunSelected_b,d0
 				move.l	GLF_DatabasePtr_l,a6
 				add.l	#GLFT_ShootDefs_l,a6
 				move.w	(a6,d0.w*8),d0
 
-				move.l	#PLAYERTWOAMMO,a6
+				move.l	#Plr2_AmmoCounts_vw,a6
 				move.w	(a6,d0.w*2),d0
 				move.w	d0,Ammo
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				move.w	PLAYERTWOHEALTH,Energy
+				move.w	Plr2_Health_w,Energy
 
 				jsr		RECFIRST
 
@@ -1553,26 +1589,26 @@ ASlaveShouldWaitOnHisMaster:
 
 				move.b	Plr2_TmpFire_b,d0
 				lsl.w	#8,d0
-				move.b	SLAVEQUITTING,d0
-				or.b	d0,MASTERQUITTING
+				move.b	Game_SlaveQuit_b,d0
+				or.b	d0,Game_MasterQuit_b
 				swap	d0
-				move.b	SLAVEPAUSE,d0
-				or.b	d0,MASTERPAUSE
+				move.b	Game_SlavePaused_b,d0
+				or.b	d0,Game_MasterPaused_b
 				jsr		RECFIRST
-				or.b	d0,MASTERPAUSE
-				or.b	d0,SLAVEPAUSE
+				or.b	d0,Game_MasterPaused_b
+				or.b	d0,Game_SlavePaused_b
 				swap	d0
-				or.b	d0,SLAVEQUITTING
-				or.b	d0,MASTERQUITTING
+				or.b	d0,Game_SlaveQuit_b
+				or.b	d0,Game_MasterQuit_b
 				lsr.w	#8,d0
 				move.b	d0,Plr1_TmpFire_b
 
-				move.w	PLAYERTWOHEALTH,d0
+				move.w	Plr2_Health_w,d0
 				jsr		RECFIRST
-				move.w	d0,PLAYERONEHEALTH
+				move.w	d0,Plr1_Health_w
 
-				bsr		PLR1_Control
-				bsr		PLR2_Control
+				bsr		Plr1_Control
+				bsr		Plr2_Control
 				move.w	Plr2_TmpXOff_l,THISPLRxoff
 				move.w	Plr2_TmpZOff_l,THISPLRzoff
 				move.l	Plr2_RoomPtr_l,a0
@@ -2183,16 +2219,16 @@ plr1only:
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq		plr2quit
 
-				st		MASTERQUITTING
+				st		Game_MasterQuit_b
 				bra		noend
 
 plr2quit:
-				st		SLAVEQUITTING
+				st		Game_SlaveQuit_b
 noend:
 
-				tst.b	MASTERQUITTING
+				tst.b	Game_MasterQuit_b
 				beq.s	.noquit
-				tst.b	SLAVEQUITTING
+				tst.b	Game_SlaveQuit_b
 				beq.s	.noquit
 				jmp		endnomusic
 .noquit
@@ -2216,11 +2252,11 @@ zzzz:
 				jmp		endlevel
 noexit:
 
-				tst.w PLAYERONEHEALTH
+				tst.w Plr1_Health_w
 				bgt nnoend1
 				jmp endlevel
 nnoend1:
-				tst.w PLAYERTWOHEALTH
+				tst.w Plr2_Health_w
 				bgt nnoend2
 				jmp endlevel
 nnoend2:
@@ -3061,10 +3097,10 @@ SAVELETTER:		dc.b	'd',0
 				include	"chunky.s"
 
 
-MASTERQUITTING:	dc.b	0
-SLAVEQUITTING:	dc.b	0
-MASTERPAUSE:	dc.b	0
-SLAVEPAUSE:		dc.b	0
+;Game_MasterQuit_b:	dc.b	0
+;Game_SlaveQuit_b:	dc.b	0
+;Game_MasterPaused_b:	dc.b	0
+;Game_SlavePaused_b:		dc.b	0
 
 PAUSEOPTS:
 				include	"pauseopts.s"
@@ -3107,8 +3143,6 @@ GUNYOFFS:
 				dc.w	0
 				dc.w	20
 
-PLR1_BOBBLEY:	dc.l	0
-PLR2_BOBBLEY:	dc.l	0
 
 IVEWONTEXT:
 ;      12345678901234567890123456789012345678901234567890123456789012345678901234567890
@@ -3192,7 +3226,7 @@ USEPLR1:
 				add.w	d0,Plr1_SnapAngSpd_w
 
 				move.l	#7*2116,hitcol
-				sub.w	d2,PLAYERONEHEALTH
+				sub.w	d2,Plr1_Health_w
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.w	#$fffa,IDNUM
 				move.w	#19,Samplenum
@@ -3230,7 +3264,7 @@ USEPLR1:
 				asr.l	#7,d0
 				move.w	d0,4(a0)
 
-				tst.w	PLAYERONEHEALTH
+				tst.w	Plr1_Health_w
 				bgt.s	.okh1
 				move.w	#-1,12(a0)
 .okh1:
@@ -3280,7 +3314,7 @@ USEPLR1:
 				move.w	#0,EntT_ImpactY_w(a0)
 				move.w	#0,EntT_ImpactZ_w(a0)
 
-				sub.w	d2,PLAYERTWOHEALTH
+				sub.w	d2,Plr2_Health_w
 
 
 .notbeenshot2
@@ -3391,7 +3425,7 @@ USEPLR1:
 .ddone:
 
 
-				tst.w	PLAYERTWOHEALTH
+				tst.w	Plr2_Health_w
 				bgt.s	.okh
 				move.w	#-1,12(a0)
 .okh:
@@ -3401,7 +3435,7 @@ USEPLR1:
 
 				move.l	Plr1_ObjectPtr_l,a0
 
-				tst.w	PLAYERONEHEALTH
+				tst.w	Plr1_Health_w
 				bgt.s	.notdead
 
 				move.w	#-1,12+128(a0)
@@ -3443,7 +3477,7 @@ USEPLR1:
 				add.l	d1,d0
 				asr.l	#7,d0
 				move.w	d0,4+128(a0)
-				move.l	PLR1_BOBBLEY,d1
+				move.l	Plr1_BobbleY_l,d1
 				asr.l	#8,d1
 				move.l	d1,d0
 				asr.l	#1,d0
@@ -3493,7 +3527,7 @@ USEPLR2:
 				add.w	d0,Plr2_SnapAngSpd_w
 
 				move.l	#7*2116,hitcol
-				sub.w	d2,PLAYERTWOHEALTH
+				sub.w	d2,Plr2_Health_w
 
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -3532,7 +3566,7 @@ USEPLR2:
 				asr.l	#7,d0
 				move.w	d0,4(a0)
 
-				tst.w	PLAYERTWOHEALTH
+				tst.w	Plr2_Health_w
 				bgt.s	.okh55
 				move.w	#-1,12(a0)
 .okh55:
@@ -3574,7 +3608,7 @@ USEPLR2:
 				move.w	EntT_ImpactZ_w(a0),d3
 				add.w	d3,Plr1_SnapZSpdVal_l
 
-				sub.w	d2,PLAYERONEHEALTH
+				sub.w	d2,Plr1_Health_w
 
 
 .notbeenshot2
@@ -3684,7 +3718,7 @@ USEPLR2:
 
 .ddone:
 
-				tst.w	PLAYERONEHEALTH
+				tst.w	Plr1_Health_w
 				bgt.s	.okh
 				move.w	#-1,12(a0)
 .okh:
@@ -3692,7 +3726,7 @@ USEPLR2:
 **********************************
 
 				move.l	Plr2_ObjectPtr_l,a0
-				tst.w	PLAYERTWOHEALTH
+				tst.w	Plr2_Health_w
 				bgt.s	.notdead
 				move.w	#-1,12+64(a0)
 				rts
@@ -3733,7 +3767,7 @@ USEPLR2:
 				add.l	d1,d0
 				asr.l	#7,d0
 				move.w	d0,4+64(a0)
-				move.l	PLR2_BOBBLEY,d1
+				move.l	Plr2_BobbleY_l,d1
 				asr.l	#8,d1
 				move.l	d1,d0
 				asr.l	#1,d0
@@ -3744,11 +3778,7 @@ USEPLR2:
 
 				rts
 
-GunSelected:	dc.b	0
-				even
-
-
-GunData:		dc.l	0
+				align 4
 
 Path:
 ; incbin "testpath"
@@ -3756,27 +3786,8 @@ endpath:
 pathpt:			dc.l	Path
 
 
-Plr1_Keys_b:		dc.b	0
-Plr1_Path_b:		dc.b	0
-Plr1_Mouse_b:		dc.b	-1
-Plr1_Joystick_b:	dc.b	0
-Plr2_Keys_b:		dc.b	0
-Plr2_Path_b:		dc.b	0
-Plr2_Mouse_b:		dc.b	-1
-Plr2_Joystick_b:	dc.b	0
-
-				even
-
-Plr1_Bobble_w:	dc.w	0
-Plr2_Bobble_w:	dc.w	0
-xwobble:		dc.l	0
-xwobxoff:		dc.w	0
-xwobzoff:		dc.w	0
-
-PLR1_Control:
-
+Plr1_Control:
 ; Take a snapshot of everything.
-
 				move.l	Plr1_XOff_l,d2
 				move.l	d2,oldx
 				move.l	Plr1_ZOff_l,d3
@@ -3821,7 +3832,7 @@ PLR1_Control:
 .notdouble
 				ext.l	d1
 
-				move.l	d1,PLR1_BOBBLEY
+				move.l	d1,Plr1_BobbleY_l
 
 				move.l	Plr1_Height_l,d4
 				sub.l	d1,d4
@@ -3967,7 +3978,7 @@ notintop:
 				add.l	Plr1_RoomPtr_l,d1
 				move.l	d1,Plr1_PointsToRotatePtr_l
 				tst.b	(a0)+
-				sne		DRAWNGRAPHTOP
+				;sne		DRAWNGRAPHTOP
 				beq.s	nobackgraphics
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	nobackgraphics
@@ -3984,15 +3995,11 @@ nobackgraphics:
 *************************************************
 				rts
 
-DRAWNGRAPHTOP
-				dc.w	0
-tstzone:		dc.l	0
-CollId:			dc.w	0
+;DRAWNGRAPHTOP:	dc.w	0
+;tstzone:		dc.l	0
 
-PLR2_Control:
-
+Plr2_Control:
 ; Take a snapshot of everything.
-
 				move.l	Plr2_XOff_l,d2
 
 				move.l	d2,oldx
@@ -4039,7 +4046,7 @@ PLR2_Control:
 .notdouble
 				ext.l	d1
 
-				move.l	d1,PLR2_BOBBLEY
+				move.l	d1,Plr2_BobbleY_l
 
 				move.l	Plr2_Height_l,d4
 				sub.l	d1,d4
@@ -4183,7 +4190,7 @@ PLR2_Control:
 				add.l	Plr2_RoomPtr_l,d1
 				move.l	d1,Plr2_PointsToRotatePtr_l
 				tst.b	(a0)+
-				sne		DRAWNGRAPHTOP
+				;sne		DRAWNGRAPHTOP
 				beq.s	.nobackgraphics
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				bne.s	.nobackgraphics
@@ -4200,8 +4207,6 @@ PLR2_Control:
 *****************************************************
 				rts
 
-
-KeyMap:			ds.b	256
 
 fillscrnwater:
 				dc.w	0
@@ -4302,8 +4307,6 @@ subroomloop:
 				move.l	a0,ThisRoomToDraw
 
 				move.l	Lvl_ListOfGraphRoomsPtr_l,a1
-
-
 
 finditit:
 				tst.w	(a1)
@@ -4802,7 +4805,6 @@ itsawall:
 jumpoutofloop:
 				rts
 
-LastZonePtr_l:		dc.l	0
 COMPACTPTR:		dc.l	0
 BIGPTR:			dc.l	0
 WALLIDENT:		dc.w	0
@@ -5633,10 +5635,10 @@ AmmoBar:
 
 				move.l	#borderchars,a4
 				move.b	Plr1_TmpGunSelected_b,d0
-				move.l	#PLAYERONEGUNS,a5
+				move.l	#Plr1_Weapons_vb,a5
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				bne.s	.notplr2
-				move.l	#PLAYERTWOGUNS,a5
+				move.l	#Plr2_Weapons_vb,a5
 				move.b	Plr2_TmpGunSelected_b,d0
 .notplr2:
 
@@ -5893,10 +5895,10 @@ endlevel:
 ;				move.w	#$f,$dff000+dmacon
 
 
-				move.w	PLAYERONEHEALTH,Energy
+				move.w	Plr1_Health_w,Energy
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				bne.s	.notsl
-				move.w	PLAYERTWOHEALTH,Energy
+				move.w	Plr2_Health_w,Energy
 .notsl:
 
 ; cmp.b #'b',Prefsfile+3
@@ -10259,7 +10261,7 @@ nostartalan:
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq		control2
 
-				tst.w	PLAYERONEHEALTH
+				tst.w	Plr1_Health_w
 				bgt		.propercontrol
 
 				move.l	#7*2116,hitcol
@@ -10349,7 +10351,7 @@ nostartalan:
 				bra		nocontrols
 
 control2:
-				tst.w	PLAYERTWOHEALTH
+				tst.w	Plr2_Health_w
 				bgt		.propercontrol
 
 				move.l	#7*2116,hitcol

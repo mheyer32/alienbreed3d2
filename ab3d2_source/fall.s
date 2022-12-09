@@ -65,7 +65,7 @@ PLR1_fall
 
 .notinwater:
 
-				tst.w	PLAYERONEHEALTH
+				tst.w	Plr1_Health_w
 				ble.s	.nothrust
 
 				move.l	#KeyMap,a5
@@ -88,16 +88,16 @@ PLR1_fall
 
 				clr.b	SLOWDOWN
 
-				tst.w	PLAYERONEJETPACK
+				tst.w	Plr1_Jetpack_w
 				beq.s	.nofly
 
-				tst.w	PLAYERONEFUEL
+				tst.w	Plr1_JetpackFuel_w
 				beq.s	.nofly
 
-				cmp.w	#250,PLAYERONEFUEL
+				cmp.w	#250,Plr1_JetpackFuel_w
 				ble.s	.okfuel
 
-				move.w	#250,PLAYERONEFUEL
+				move.w	#250,Plr1_JetpackFuel_w
 
 .okfuel:
 
@@ -108,7 +108,7 @@ PLR1_fall
 				move.b	jump_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.nofly
-				sub.w	#1,PLAYERONEFUEL
+				sub.w	#1,Plr1_JetpackFuel_w
 				add.l	JUMPSPD,d2
 				move.w	#0,DAMAGEWHENHIT
 				move.w	#40,d3
@@ -333,7 +333,7 @@ PLR2_fall
 
 .notinwater:
 
-				tst.w	PLAYERTWOHEALTH
+				tst.w	Plr2_Health_w
 				ble.s	.nothrust
 				move.l	#KeyMap,a5
 				moveq	#0,d7
@@ -356,16 +356,16 @@ PLR2_fall
 				clr.b	SLOWDOWN
 ; need to fall down (possibly).
 
-				tst.w	PLAYERTWOJETPACK
+				tst.w	Plr2_Jetpack_w
 				beq.s	.nofly
 
-				tst.w	PLAYERTWOFUEL
+				tst.w	Plr2_JetpackFuel_w
 				beq.s	.nofly
 
-				cmp.w	#250,PLAYERTWOFUEL
+				cmp.w	#250,Plr2_JetpackFuel_w
 				ble.s	.okfuel
 
-				move.w	#250,PLAYERTWOFUEL
+				move.w	#250,Plr2_JetpackFuel_w
 
 .okfuel:
 
@@ -379,7 +379,7 @@ PLR2_fall
 				beq.s	.nofly
 				add.l	JUMPSPD,d2
 				move.w	#0,DAMAGEWHENHIT
-				sub.w	#1,PLAYERTWOFUEL
+				sub.w	#1,Plr2_JetpackFuel_w
 				move.w	#40,d3
 				add.w	Plr2_Bobble_w,d3
 				and.w	#8190,d3
