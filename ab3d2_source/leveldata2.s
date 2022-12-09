@@ -69,12 +69,12 @@ Lvl_ConnectTablePtr_l:			dc.l	0
 Lvl_ListOfGraphRoomsPtr_l:		dc.l	0
 NastyShotDataPtr_l:				dc.l	0
 Lvl_ObjectPointsPtr_l:			dc.l	0
-Plr_ShotDataPtr_l:				dc.l	0
+;Plr_ShotDataPtr_l:				dc.l	0
 Lvl_ObjectDataPtr_l:			dc.l	0
 Lvl_FloorLinesPtr_l:			dc.l	0
 Lvl_PointsPtr_l:				dc.l	0	; Pointer to array of all 2D points in the world
-Plr1_ObjectPtr_l:				dc.l	0
-Plr2_ObjectPtr_l:				dc.l	0
+;Plr1_ObjectPtr_l:				dc.l	0
+;Plr2_ObjectPtr_l:				dc.l	0
 Lvl_ZoneGraphAddsPtr_l:			dc.l	0
 Lvl_ZoneAddsPtr_l:				dc.l	0
 Lvl_LiftDataPtr_l:				dc.l	0

@@ -49,9 +49,18 @@ PLR_MASTER				equ 'm' ; two player master
 PLR_SLAVE				equ 's' ; two player slave
 PLR_SINGLE				equ 'n' ; Single player
 
+
+				include "bss/ai_bss.s"
+				include "bss/player_bss.s"
+
 				section code,code
 ; Startup Code
 _start:
+				not.b Plr1_Mouse_b
+				not.b Plr2_Mouse_b
+				move.w #191,Plr1_Energy_w
+				move.w #191,Plr2_Energy_w
+
 				movem.l	d1-a6,-(sp)
 **************************************************************************************
 ;ich bin hack  -----  invert FULLSCRTEMP to start game in fullsreen if cpu is 68040 AL
@@ -191,33 +200,32 @@ PotgoResourceBase:			dc.l	0
 
 LastZonePtr_l:				dc.l	0
 
-Plr1_BobbleY_l:				dc.l	0
-Plr2_BobbleY_l:				dc.l	0
-
-Plr_GunDataPtr_l:			dc.l	0
+;Plr1_BobbleY_l:				dc.l	0
+;Plr2_BobbleY_l:				dc.l	0
+;Plr_GunDataPtr_l:			dc.l	0
 
 xwobble:					dc.l	0
 
 ; Word aligned
-Plr1_Bobble_w:				dc.w	0
-Plr2_Bobble_w:				dc.w	0
+;Plr1_Bobble_w:				dc.w	0
+;Plr2_Bobble_w:				dc.w	0
 
 xwobxoff:					dc.w	0
 xwobzoff:					dc.w	0
 CollId:						dc.w	0
 
 ; Byte Aligned
-Plr_MultiplayerType_b:		dc.b	0	; CHAR enum - m(aster), s(lave), n(either)
-Plr_GunSelected_b:			dc.b	0
+;Plr_MultiplayerType_b:		dc.b	0	; CHAR enum - m(aster), s(lave), n(either)
+;Plr_GunSelected_b:			dc.b	0
 
-Plr1_Keys_b:				dc.b	0
-Plr1_Path_b:				dc.b	0
-Plr1_Mouse_b:				dc.b	-1
-Plr1_Joystick_b:			dc.b	0
-Plr2_Keys_b:				dc.b	0
-Plr2_Path_b:				dc.b	0
-Plr2_Mouse_b:				dc.b	-1
-Plr2_Joystick_b:			dc.b	0
+;Plr1_Keys_b:				dc.b	0
+;Plr1_Path_b:				dc.b	0
+;Plr1_Mouse_b:				dc.b	-1
+;Plr1_Joystick_b:			dc.b	0
+;Plr2_Keys_b:				dc.b	0
+;Plr2_Path_b:				dc.b	0
+;Plr2_Mouse_b:				dc.b	-1
+;Plr2_Joystick_b:			dc.b	0
 
 Game_MasterQuit_b:			dc.b	0
 Game_SlaveQuit_b:			dc.b	0
@@ -11895,143 +11903,7 @@ yoff:			dc.l	0
 
 ; Player data definiton - TODO remove unused, tighten definitions, fix alignments
 PLR1:			dc.b	$ff
-				CNOP 0, 4
-; long aligned fields first
-Plr1_XOff_l:				dc.l	0 ; sometimes accessed as w - todo understand real size
-Plr1_YOff_l:				dc.l	0
-Plr1_ZOff_l:				dc.l	0 ; sometimes accessed as w - todo understand real size
-Plr1_RoomPtr_l:				dc.l	0
-Plr1_OldRoomPtr_l:			dc.l	0
-Plr1_PointsToRotatePtr_l:	dc.l	0
-Plr1_ListOfGraphRoomsPtr_l:	dc.l	0
-Plr1_Height_l:				dc.l	0
-
-; word aligned fields next
-Plr1_Energy_w:				dc.w	191
-Plr1_CosVal_w:				dc.w	0
-Plr1_SinVal_w:				dc.w	0
-Plr1_AngPos_w:				dc.w	0
-Plr1_Zone_w:				dc.w	0
-Plr1_FloorSpd_w:			dc.w	0
-Plr1_RoomBright_w: 			dc.w	0
-
-; byte aligned fields next
-Plr1_GunSelected_b: 		dc.b	0
-Plr1_StoodInTop_b: 			dc.b	0
-Plr1_Teleported_b:			dc.b	0
-Plr1_Ducked_b:				dc.b	0
-Plr1_Squished_b:			dc.b	0
-Plr1_Echo_b:				dc.b	0
-
-				CNOP 0,4
-; Player 1 snapshot data, long aligned first
-Plr1_SnapXOff_l:			dc.l	0
-Plr1_SnapYOff_l:			dc.l	0
-Plr1_SnapYVel_l:			dc.l	0
-Plr1_SnapZOff_l:			dc.l	0
-Plr1_SnapTYOff_l:			dc.l	0
-Plr1_SnapXSpdVal_l:			dc.l	0
-Plr1_SnapZSpdVal_l:			dc.l	0
-Plr1_SnapHeight_l:			dc.l	0
-Plr1_SnapSquishedHeight_l:	dc.l	0
-Plr1_SnapTargHeight_l: 		dc.l	0
-
-; Player 1 snapshot data, word aligned next
-Plr1_SnapCosVal_w:			dc.w	0
-Plr1_SnapSinVal_w:			dc.w	0
-Plr1_SnapAngPos_w:			dc.w	0
-Plr1_SnapAngSpd_w:			dc.w	0
-
-; Player 1 temporary data, long aligned first
-Plr1_TmpXOff_l:				dc.l	0 ; also accessed as w, todo determine correct size
-Plr1_TmpZOff_l:				dc.l	0
-Plr1_TmpYOff_l:				dc.l	0
-Plr1_TmpHeight_l:			dc.l	0
-
-; Player 1 temporary data, word aligned next
-Plr1_TmpAngPos_w:			dc.w	0
-Plr1_TmpBobble_w:			dc.w	0
-Plr1_TmpHoldDown_w:			dc.w	0
-
-; Player 1 temporary data, byte aligned last
-Plr1_TmpClicked_b:			dc.b	0
-Plr1_TmpSpcTap_b:			dc.b	0
-Plr1_TmpDucked_b:			dc.b	0
-Plr1_TmpGunSelected_b:		dc.b	0
-Plr1_TmpFire_b:				dc.b	0
-
-; // END PLAYER TWO /////////////////////////////////////////////////////////////////////
-
-
-; // READY PLAYER TWO /////////////////////////////////////////////////////////////////////
-
 PLR2:			dc.b	$ff
-				CNOP 0, 4
-; long aligned fields first
-Plr2_XOff_l:				dc.l	0
-Plr2_YOff_l:				dc.l	0
-Plr2_ZOff_l:				dc.l	0
-Plr2_RoomPtr_l:				dc.l	0
-Plr2_OldRoomPtr_l:			dc.l	0
-Plr2_PointsToRotatePtr_l:	dc.l 	0
-Plr2_ListOfGraphRoomsPtr_l: dc.l 	0
-Plr2_Height_l:				dc.l	0
-
-; word aligned fields next
-Plr2_Energy_w:				dc.w	191
-Plr2_CosVal_w:				dc.w	0
-Plr2_SinVal_w:				dc.w	0
-Plr2_AngPos_w:				dc.w	0
-Plr2_Zone_w:				dc.w	0
-Plr2_FloorSpd_w:			dc.w	0
-
-; byte aligned fields next
-Plr2_GunSelected_b:			dc.b	0
-Plr2_StoodInTop_b:			dc.b	0
-Plr2_Teleported_b:			dc.b	0
-Plr2_Ducked_b:				dc.b	0
-Plr2_Squished_b:			dc.b	0
-Plr2_Echo_b:				dc.b	0
-
-				CNOP 0,4
-; Player 2 snapshot data, long aligned first
-Plr2_SnapXOff_l:			dc.l	0
-Plr2_SnapYOff_l:			dc.l	0
-Plr2_SnapYVel_l:			dc.l	0
-Plr2_SnapZOff_l:			dc.l	0
-Plr2_SnapTYOff_l:			dc.l	0
-Plr2_SnapXSpdVal_l:			dc.l	0
-Plr2_SnapZSpdVal_l:			dc.l	0
-Plr2_SnapHeight_l:			dc.l	0
-Plr2_SnapSquishedHeight_l:	dc.l	0
-Plr2_SnapTargHeight_l:		dc.l	0
-
-; Player 2 snapshot data, word aligned next
-Plr2_SnapCosVal_w:			dc.w	0
-Plr2_SnapSinVal_w:			dc.w	0
-Plr2_SnapAngPos_w:			dc.w	0
-Plr2_SnapAngSpd_w:			dc.w	0
-
-; Player 2 temporary data, long aligned first
-Plr2_TmpXOff_l:				dc.l	0
-Plr2_TmpZOff_l:				dc.l	0
-Plr2_TmpYOff_l:				dc.l	0
-Plr2_TmpHeight_l:			dc.l	0
-
-; Player 2 temporary data, word aligned next
-Plr2_TmpAngPos_w:			dc.w	0
-Plr2_TmpBobble_w:			dc.w	0
-Plr2_TmpHoldDown_w:			dc.w	0
-
-; Player 2 temporary data, byte aligned last
-Plr2_TmpClicked_b:			dc.b	0
-Plr2_TmpSpcTap_b:			dc.b	0
-Plr2_TmpDucked_b:			dc.b	0
-Plr2_TmpGunSelected_b:		dc.b	0
-Plr2_TmpFire_b:				dc.b	0
-
-
-; // END PLAYER TWO /////////////////////////////////////////////////////////////////////
 
 				even
 
@@ -12860,8 +12732,8 @@ mt_voice4:		ds.w	10
 				dc.w	8
 				ds.w	3
 
-PLR1_dead:		dc.w	0
-PLR2_dead:		dc.w	0
+;PLR1_dead:		dc.w	0
+;PLR2_dead:		dc.w	0
 
 CHEATPTR:		dc.l	0
 CHEATNUM:		dc.l	0

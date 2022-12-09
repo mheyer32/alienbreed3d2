@@ -11,7 +11,7 @@
 
 IO_MAX_FILENAME_LEN	EQU 79
 
-				CNOP	0,4	;
+				align 4
 
 ; Memory class to use for next loaded entity
 IO_MemType_l:			dc.l	0

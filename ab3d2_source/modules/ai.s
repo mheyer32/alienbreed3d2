@@ -442,8 +442,7 @@ ai_Widget:
 				moveq	#0,d0
 				move.b	EntT_TeamNumber_b(a0),d0
 				blt.s	.no_team
-
-				lea		AI_Teamwork_vl(pc),a2
+				move.l	#AI_Teamwork_vl,a2
 				asl.w	#4,d0
 				add.w	d0,a2
 				tst.w	AI_WorkT_SeenBy_w(a2)
@@ -456,7 +455,7 @@ ai_Widget:
 
 .no_remove:
 				asl.w	#4,d0
-				lea		ai_NastyWork_vl(pc),a1
+				move.l	#ai_NastyWork_vl,a1
 				add.w	d0,a1
 				move.w	#0,AI_WorkT_DamageDone_w(a1)
 				move.w	#0,AI_WorkT_DamageTaken_w(a1)
@@ -471,7 +470,7 @@ ai_Widget:
 .no_team:
 				move.w	(a0),d0
 				asl.w	#4,d0
-				lea		ai_NastyWork_vl(pc),a1
+				move.l	#ai_NastyWork_vl,a1
 				add.w	d0,a1
 				move.w	#0,AI_WorkT_DamageDone_w(a1)
 				move.w	#0,AI_WorkT_DamageTaken_w(a1)
@@ -1802,15 +1801,15 @@ ai_CheckDamage:
 				move.b	EntT_TeamNumber_b(a0),d0
 				blt.s	.no_team
 
-				lea		AI_Teamwork_vl(pc),a2
+				move.l	#AI_Teamwork_vl,a2
 				asl.w	#4,d0
 				add.w	d0,a2
 				move.w	(a0),d0
 				cmp.w	AI_WorkT_SeenBy_w(a2),d0
 				bne.s	.no_team
 				move.w	#-1,AI_WorkT_SeenBy_w(a2)
-.no_team
 
+.no_team:
 				cmp.b	#1,d2
 				ble		.noexplode
 
@@ -1847,7 +1846,6 @@ ai_CheckDamage:
 				rts
 
 .noexplode:
-
 				movem.l	d0-d7/a0-a6,-(a7)
 				sub.l	Lvl_ObjectPointsPtr_l,a1
 				add.l	#ObjRotated_vl,a1
@@ -1882,14 +1880,11 @@ ai_CheckDamage:
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
 
-
-.noscream
-
+.noscream:
 				rts
 
 
 SPLIBBLE:
-
 				move.l	ANIMPOINTER,a6
 
 				jsr		ViewpointToDraw
@@ -1900,7 +1895,6 @@ SPLIBBLE:
 				moveq	#0,d0
 
 .NOSIDES:
-
 				muls	#A_OptLen,d0
 				add.w	d0,a6
 
@@ -1912,19 +1906,18 @@ SPLIBBLE:
 				bge.s	.noendanim
 				moveq	#0,d2
 				moveq	#0,d1
-.noendanim
-				move.w	d2,EntT_Timer2_w(a0)
 
+.noendanim:
+				move.w	d2,EntT_Timer2_w(a0)
 				move.l	#0,8(a0)
 				move.b	(a6,d1.w),9(a0)
 				move.b	1(a6,d1.w),11(a0)
-
 				move.w	#-1,6(a0)
 				cmp.b	#1,AI_VecObj_w
 				beq.s	.nosize
 				move.w	2(a6,d1.w),6(a0)
-.nosize
 
+.nosize:
 				moveq	#0,d0
 				move.b	5(a6,d1.w),d0
 				beq.s	.nosoundmake
@@ -1942,13 +1935,11 @@ SPLIBBLE:
 				move.b	ALIENECHO,PlayEcho
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
-.nosoundmake
 
+.nosoundmake:
 				move.b	6(a6,d1.w),d0
 				sne		ai_DoAction_b
-
 				rts
-
 
 ai_DoTorch:
 				move.w	ALIENBRIGHT,d0
@@ -2003,15 +1994,12 @@ ai_DoAttackAnim:
 				move.b	1(a5),d1
 
 .nospec:
-
 				muls	#A_FrameLen,d1
-
 				st		1(a5)
 				move.b	(a5),ai_DoAction_b
 				clr.b	(a5)
 				move.b	3(a5),ai_FinishedAnim_b
 				clr.b	3(a5)
-
 				move.l	#0,8(a0)
 				move.b	(a6,d1.w),9(a0)
 				move.b	1(a6,d1.w),d0
@@ -2019,18 +2007,16 @@ ai_DoAttackAnim:
 				bgt.s	.noflip
 				move.b	#128,10(a0)
 				neg.w	d0
+
 .noflip:
 				sub.w	#1,d0
 				move.b	d0,11(a0)
-
-
 				move.w	#0,ai_AnimFacing_w
 				cmp.b	#1,AI_VecObj_w
 				bne.s	.noanimface
 				move.w	2(a6,d1.w),ai_AnimFacing_w
-.noanimface:
 
-******************************************
+.noanimface:
 				move.w	#-1,EntT_GraphicRoom_w-64(a0)
 				move.w	#-1,12-64(a0)
 
@@ -2044,31 +2030,24 @@ ai_DoAttackAnim:
 				move.w	12(a0),EntT_GraphicRoom_w-64(a0)
 				move.w	4(a0),4-64(a0)
 				move.b	ShotT_InUpperZone_b(a0),ShotT_InUpperZone_b-64(a0)
-
 				move.b	9(a6,d1.w),d4
 				move.b	10(a6,d1.w),d5
-
 				ext.w	d4
 				ext.w	d5
 				add.w	d4,d4
 				add.w	d5,d5
-
 				move.w	d4,ShotT_AuxOffsetX_w-64(a0)
 				move.w	d5,ShotT_AuxOffsetY_w-64(a0)
-
 				move.l	GLF_DatabasePtr_l,a4
 				move.l	a4,a2
 				add.l	#GLFT_ObjectDefAnims_l,a4
 				add.l	#GLFT_ObjectDefs,a2
-
 				move.w	d3,d4
 				muls	#O_AnimSize,d3
 				muls	#ObjT_SizeOf_l,d4
 				add.l	d4,a2
 				add.l	d3,a4
-
 				muls	#O_FrameStoreSize,d0
-
 				cmp.w	#1,ObjT_GFXType_w(a2)
 				blt.s	.bitmap
 				beq.s	.vector
@@ -2110,7 +2089,6 @@ ai_DoAttackAnim:
 				bra		.noaux
 
 .bitmap:
-
 				move.l	#0,8-64(a0)
 				move.b	(a4,d0.w),9-64(a0)
 				move.b	1(a4,d0.w),11-64(a0)
@@ -2125,10 +2103,6 @@ ai_DoAttackAnim:
 ; move.w d1,EntT_Timer1_w(a0)
 
 .noaux:
-
-******************************************
-
-
 				move.w	#-1,6(a0)
 				cmp.b	#1,AI_VecObj_w
 				beq.s	.nosize
@@ -2137,7 +2111,7 @@ ai_DoAttackAnim:
 				move.l	(a7)+,d0
 				rts
 
-.nosize
+.nosize:
 
 ; move.l #$00090001,8(a0)
 
@@ -2154,14 +2128,10 @@ ai_DoAttackAnim:
 				rts
 
 BLIBBLE:
-
 				move.l	ANIMPOINTER,a6
-
 				move.w	#8,d0
-
 				muls	#A_OptLen,d0
 				add.w	d0,a6
-
 				move.w	EntT_Timer2_w(a0),d1
 				move.w	d1,d2
 				add.w	#1,d2
@@ -2169,20 +2139,21 @@ BLIBBLE:
 				tst.b	A_FrameLen(a6,d1.w)
 				slt		ai_FinishedAnim_b
 				bge.s	.noendanim
-				moveq	#0,d2
-.noendanim
-				move.w	d2,EntT_Timer2_w(a0)
 
+				moveq	#0,d2
+
+.noendanim:
+				move.w	d2,EntT_Timer2_w(a0)
 				move.l	#0,8(a0)
 				move.b	(a6,d1.w),9(a0)
 				move.b	1(a6,d1.w),11(a0)
-
 				move.w	#-1,6(a0)
 				cmp.b	#1,AI_VecObj_w
 				beq.s	.nosize
-				move.w	2(a6,d1.w),6(a0)
-.nosize
 
+				move.w	2(a6,d1.w),6(a0)
+
+.nosize:
 				moveq	#0,d0
 				move.b	5(a6,d1.w),d0
 				beq.s	.nosoundmake
@@ -2199,16 +2170,15 @@ BLIBBLE:
 				move.l	(a1),Noisex
 				move.b	ALIENECHO,PlayEcho
 				jsr		MakeSomeNoise
-				movem.l	(a7)+,d0-d7/a0-a6
-.nosoundmake
 
+				movem.l	(a7)+,d0-d7/a0-a6
+
+.nosoundmake:
 				move.b	6(a6,d1.w),d0
 				sne		ai_DoAction_b
-
 				rts
 
 ai_CheckAttackOnGround:
-
 				move.l	Plr1_RoomPtr_l,a3
 				moveq	#0,d1
 				move.b	ZoneT_ControlPoint_w(a3),d1
@@ -2256,12 +2226,12 @@ ai_CalcSqrt:
 				movem.l	d0/d1/d3-d7/a0-a6,-(a7)
 				move.w	#31,d0
 
-.findhigh
+.findhigh:
 				btst	d0,d2
 				bne		.foundhigh
 				dbra	d0,.findhigh
 
-.foundhigh
+.foundhigh:
 				asr.w	#1,d0
 				clr.l	d3
 				bset	d0,d3
@@ -2276,7 +2246,7 @@ ai_CalcSqrt:
 				bgt		.stillnot0
 				move.w	#1,d0
 
-.stillnot0
+.stillnot0:
 				move.w	d0,d1
 				muls	d1,d1
 				sub.l	d2,d1
@@ -2286,7 +2256,7 @@ ai_CalcSqrt:
 				bgt		.stillnot02
 				move.w	#1,d0
 
-.stillnot02
+.stillnot02:
 				move.w	d0,d1
 				muls	d1,d1
 				sub.l	d2,d1
@@ -2296,42 +2266,10 @@ ai_CalcSqrt:
 				bgt		.stillnot03
 				move.w	#1,d0
 
-.stillnot03
+.stillnot03:
 				move.w	d0,d2
 				ext.l	d2
 				movem.l	(a7)+,d0/d1/d3-d7/a0-a6
 
-.oksqr
+.oksqr:
 				rts
-
-ai_MiddleCPT_w:		dc.w	0
-ai_GetOut_w:		dc.w	0
-ai_ToSide_w:		dc.w	0
-ai_AnimFacing_w:	dc.w	0
-ai_DoAction_b:		dc.b	0
-ai_FinishedAnim_b:	dc.b	0
-
-				CNOP 0,4
-ai_NastyWork_vl:	ds.l	4*300
-AI_Teamwork_vl:		ds.l	4*30
-AI_Damaged_vw:		ds.w	300
-
-AI_DamagePtr_l:			dc.l	0
-AI_BoredomPtr_l:		dc.l	0
-AI_BoredomSpace_vl:		ds.l	2*300
-
-AI_FlyABit_w:			dc.w	0
-AI_DefaultMode_w:		dc.w	0
-AI_ResponseMode_w:		dc.w	0
-AI_FollowupMode_w:		dc.w	0
-AI_RetreatMode_w:		dc.w	0
-AI_CurrentMode_w:		dc.w	0 ; unused ?
-AI_ProwlSpeed_w:		dc.w	0
-AI_ResponseSpeed_w:		dc.w	0
-AI_RetreatSpeed_w:		dc.w	0
-AI_FollowupSpeed_w:		dc.w	0
-AI_FollowupTimer_w:		dc.w	0
-AI_ReactionTime_w:		dc.w	0
-AI_VecObj_w:			dc.w	0
-AI_Player1NoiseVol_w:	dc.w	0
-AI_Player2NoiseVol_w:	dc.w	0
