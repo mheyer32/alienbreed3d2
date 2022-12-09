@@ -125,7 +125,7 @@ Plr1_MouseControl:
 				move.l	Plr1_SnapZSpdVal_l,d7
 				add.l	d6,Plr1_SnapXOff_l
 				add.l	d7,Plr1_SnapZOff_l
-				tst.b	PLR1_fire
+				tst.b	Plr1_Fire_b
 				beq.s	.firenotpressed
 
 ; fire was pressed last time.
@@ -133,12 +133,12 @@ Plr1_MouseControl:
 				bne.s	.firenownotpressed
 
 ; fire is still pressed this time.
-				st		PLR1_fire
+				st		Plr1_Fire_b
 				bra		.doneplr1
 
 .firenownotpressed:
 ; fire has been released.
-				clr.b	PLR1_fire
+				clr.b	Plr1_Fire_b
 				bra		.doneplr1
 
 .firenotpressed
@@ -151,7 +151,7 @@ Plr1_MouseControl:
 ; fire was not pressed last time, and was this time, so has
 ; been clicked.
 				st		PLR1_clicked
-				st		PLR1_fire
+				st		Plr1_Fire_b
 
 .doneplr1:
 				bsr		Plr1_Fall
@@ -668,18 +668,18 @@ nobackward:
 				add.l	d7,Plr1_SnapZOff_l
 
 				move.b	fire_key,d5
-				tst.b	PLR1_fire
+				tst.b	Plr1_Fire_b
 				beq.s	.firenotpressed
 ; fire was pressed last time.
 				tst.b	(a5,d5.w)
 				beq.s	.firenownotpressed
 ; fire is still pressed this time.
-				st		PLR1_fire
+				st		Plr1_Fire_b
 				bra		.doneplr1
 
 .firenownotpressed:
 ; fire has been released.
-				clr.b	PLR1_fire
+				clr.b	Plr1_Fire_b
 				bra		.doneplr1
 
 .firenotpressed
@@ -692,7 +692,7 @@ nobackward:
 ; fire was not pressed last time, and was this time, so has
 ; been clicked.
 				st		PLR1_clicked
-				st		PLR1_fire
+				st		Plr1_Fire_b
 
 .doneplr1:
 

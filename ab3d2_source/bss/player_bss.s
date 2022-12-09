@@ -36,9 +36,10 @@ Plr1_TmpXOff_l:				ds.l	1 ; also accessed as w, todo determine correct size
 Plr1_TmpZOff_l:				ds.l	1
 Plr1_TmpYOff_l:				ds.l	1
 Plr1_TmpHeight_l:			ds.l	1
+OldX1_l:					ds.l	1
+OldZ1_l:					ds.l	1
 
 ; Word data
-PLR1_dead:					ds.w	1
 Plr1_Energy_w:				ds.w	1
 Plr1_CosVal_w:				ds.w	1
 Plr1_SinVal_w:				ds.w	1
@@ -68,11 +69,14 @@ Plr1_Teleported_b:			ds.b	1
 Plr1_Ducked_b:				ds.b	1
 Plr1_Squished_b:			ds.b	1
 Plr1_Echo_b:				ds.b	1
+Plr1_Dead_b:				ds.b	1
+Plr1_Fire_b:				ds.b	1
 Plr1_TmpClicked_b:			ds.b	1
 Plr1_TmpSpcTap_b:			ds.b	1
 Plr1_TmpDucked_b:			ds.b	1
 Plr1_TmpGunSelected_b:		ds.b	1
 Plr1_TmpFire_b:				ds.b	1
+
 
 ; READY PLAYER TWO !
 
@@ -104,9 +108,9 @@ Plr2_TmpXOff_l:				ds.l	1
 Plr2_TmpZOff_l:				ds.l	1
 Plr2_TmpYOff_l:				ds.l	1
 Plr2_TmpHeight_l:			ds.l	1
-
+OldX2_l:					ds.l	1
+OldZ2_l:					ds.l	1
 ; Word Data
-PLR2_dead:					ds.w	1
 Plr2_Energy_w:				ds.w	1
 Plr2_CosVal_w:				ds.w	1
 Plr2_SinVal_w:				ds.w	1
@@ -135,7 +139,8 @@ Plr2_Teleported_b:			ds.b	1
 Plr2_Ducked_b:				ds.b	1
 Plr2_Squished_b:			ds.b	1
 Plr2_Echo_b:				ds.b	1
-
+Plr2_Dead_b:				ds.b	1
+Plr2_Fire_b:				ds.b	1
 Plr2_TmpClicked_b:			ds.b	1
 Plr2_TmpSpcTap_b:			ds.b	1
 Plr2_TmpDucked_b:			ds.b	1
@@ -146,10 +151,13 @@ Plr2_TmpFire_b:				ds.b	1
 			align 4
 Plr_GunDataPtr_l:			ds.l	1
 Plr_ShotDataPtr_l:			ds.l	1
-
-
-
+Plr_JumpSpeed_l:			ds.l	1
 Plr_MultiplayerType_b:		ds.b	1	; CHAR enum - m(aster), s(lave), n(either)
 Plr_GunSelected_b:			ds.b	1
+Plr_Decelerate_b:			ds.b	1
+Plr_CanJump_b:				ds.b	1
 
-
+; Tables...
+			align 4
+PLR1_ObjDists:				ds.w	250
+PLR2_ObjDists:				ds.w	250

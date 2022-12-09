@@ -54,14 +54,14 @@ Plr1_Fall:
 .noclump
 
 
-				move.l	#-1024,JUMPSPD
+				move.l	#-1024,Plr_JumpSpeed_l
 
 				move.l	Plr1_RoomPtr_l,a2
 				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	.notinwater
 
-				move.l	#-512,JUMPSPD
+				move.l	#-512,Plr_JumpSpeed_l
 
 .notinwater:
 
@@ -73,7 +73,7 @@ Plr1_Fall:
 				move.b	jump_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.nothrust
-				move.l	JUMPSPD,d2
+				move.l	Plr_JumpSpeed_l,d2
 .nothrust:
 
 				tst.l	d2
@@ -102,14 +102,14 @@ Plr1_Fall:
 .okfuel:
 
 				st		Plr_Decelerate_b
-				move.l	#-128,JUMPSPD
+				move.l	#-128,Plr_JumpSpeed_l
 				move.l	#KeyMap,a5
 				moveq	#0,d7
 				move.b	jump_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.nofly
 				sub.w	#1,Plr1_JetpackFuel_w
-				add.l	JUMPSPD,d2
+				add.l	Plr_JumpSpeed_l,d2
 				move.w	#0,DAMAGEWHENHIT
 				move.w	#40,d3
 				add.w	Plr1_Bobble_w,d3
@@ -202,7 +202,7 @@ CARRYON:
 ARSE:
 
 				sub.l	d1,d0
-				slt		CANJUMP
+				slt		Plr_CanJump_b
 				bgt.s	.aboveground
 				beq.s	.notfast
 				sub.l	#512,d2
@@ -220,14 +220,14 @@ ARSE:
 				add.l	d2,d1
 				add.l	#64,d2
 
-				move.l	#-1024,JUMPSPD
+				move.l	#-1024,Plr_JumpSpeed_l
 
 				move.l	Plr1_RoomPtr_l,a2
 				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	.pastitall
 
-				move.l	#-512,JUMPSPD
+				move.l	#-512,Plr_JumpSpeed_l
 				cmp.l	#256*2,d2
 				blt.s	.pastitall
 				move.l	#256*2,d2
@@ -239,9 +239,9 @@ ARSE:
 				move.l	#KeyMap,a5
 				tst.b	$1d(a5)
 				beq.s	nothrust2
-				tst.b	CANJUMP
+				tst.b	Plr_CanJump_b
 				beq.s	nothrust2
-				move.l	JUMPSPD,Plr1_SnapYVel_l
+				move.l	Plr_JumpSpeed_l,Plr1_SnapYVel_l
 nothrust2:
 
 				move.l	Plr1_RoomPtr_l,a5
@@ -321,14 +321,14 @@ PLR2_fall
 
 .noclump
 
-				move.l	#-1024,JUMPSPD
+				move.l	#-1024,Plr_JumpSpeed_l
 
 				move.l	Plr2_RoomPtr_l,a2
 				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	.notinwater
 
-				move.l	#-512,JUMPSPD
+				move.l	#-512,Plr_JumpSpeed_l
 
 .notinwater:
 
@@ -339,7 +339,7 @@ PLR2_fall
 				move.b	jump_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.nothrust
-				move.l	JUMPSPD,d2
+				move.l	Plr_JumpSpeed_l,d2
 .nothrust:
 
 				tst.l	d2
@@ -370,13 +370,13 @@ PLR2_fall
 
 				st		Plr_Decelerate_b
 
-				move.l	#-128,JUMPSPD
+				move.l	#-128,Plr_JumpSpeed_l
 				move.l	#KeyMap,a5
 				moveq	#0,d7
 				move.b	jump_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.nofly
-				add.l	JUMPSPD,d2
+				add.l	Plr_JumpSpeed_l,d2
 				move.w	#0,DAMAGEWHENHIT
 				sub.w	#1,Plr2_JetpackFuel_w
 				move.w	#40,d3
@@ -460,8 +460,5 @@ CARRYON2:
 
 				rts
 
-CANJUMP:		dc.w	0
-JUMPSPD:		dc.l	0
-Plr_Decelerate_b:		dc.w	0
 DAMAGEWHENHIT:	dc.w	0
 oldheight:		dc.l	0

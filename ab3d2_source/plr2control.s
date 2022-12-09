@@ -125,18 +125,18 @@ Plr2_MouseControl
 				add.l	d6,Plr2_SnapXOff_l
 				add.l	d7,Plr2_SnapZOff_l
 
-				tst.b	PLR2_fire
+				tst.b	Plr2_Fire_b
 				beq.s	.firenotpressed
 ; fire was pressed last time.
 				btst	#6,$bfe001
 				bne.s	.firenownotpressed
 ; fire is still pressed this time.
-				st		PLR2_fire
+				st		Plr2_Fire_b
 				bra		.donePLR2
 
 .firenownotpressed:
 ; fire has been released.
-				clr.b	PLR2_fire
+				clr.b	Plr2_Fire_b
 				bra		.donePLR2
 
 .firenotpressed
@@ -149,7 +149,7 @@ Plr2_MouseControl
 ; fire was not pressed last time, and was this time, so has
 ; been clicked.
 				st		PLR2_clicked
-				st		PLR2_fire
+				st		Plr2_Fire_b
 
 .donePLR2:
 
@@ -582,18 +582,18 @@ noslide2:
 				add.l	d7,Plr2_SnapZOff_l
 
 				move.b	fire_key,d5
-				tst.b	PLR2_fire
+				tst.b	Plr2_Fire_b
 				beq.s	.firenotpressed
 ; fire was pressed last time.
 				tst.b	(a5,d5.w)
 				beq.s	.firenownotpressed
 ; fire is still pressed this time.
-				st		PLR2_fire
+				st		Plr2_Fire_b
 				bra		.doneplr2
 
 .firenownotpressed:
 ; fire has been released.
-				clr.b	PLR2_fire
+				clr.b	Plr2_Fire_b
 				bra		.doneplr2
 
 .firenotpressed
@@ -606,7 +606,7 @@ noslide2:
 ; fire was not pressed last time, and was this time, so has
 ; been clicked.
 				st		PLR2_clicked
-				st		PLR2_fire
+				st		Plr2_Fire_b
 
 .doneplr2:
 

@@ -49,13 +49,16 @@ PLR_MASTER				equ 'm' ; two player master
 PLR_SLAVE				equ 's' ; two player slave
 PLR_SINGLE				equ 'n' ; Single player
 
-
+; BSS DATA
+				include "bss/system_bss.s"
+				include "bss/io_bss.s"
 				include "bss/ai_bss.s"
 				include "bss/player_bss.s"
-
+				include "bss/tables_bss.s
 				section code,code
 ; Startup Code
 _start:
+				; since these moved to bss, they need explicit initialisation
 				not.b Plr1_Mouse_b
 				not.b Plr2_Mouse_b
 				move.w #191,Plr1_Energy_w
@@ -194,39 +197,16 @@ _start:
 ; Long aligned
 Vid_FastBufferPtr_l:		dc.l	0	; aligned address
 Vid_FastBufferAllocPtr_l:	dc.l	0	; allocated address
-_DOSBase:					dc.l	0
-MiscResourceBase:			dc.l	0
-PotgoResourceBase:			dc.l	0
 
 LastZonePtr_l:				dc.l	0
-
-;Plr1_BobbleY_l:				dc.l	0
-;Plr2_BobbleY_l:				dc.l	0
-;Plr_GunDataPtr_l:			dc.l	0
-
 xwobble:					dc.l	0
 
 ; Word aligned
-;Plr1_Bobble_w:				dc.w	0
-;Plr2_Bobble_w:				dc.w	0
-
 xwobxoff:					dc.w	0
 xwobzoff:					dc.w	0
 CollId:						dc.w	0
 
 ; Byte Aligned
-;Plr_MultiplayerType_b:		dc.b	0	; CHAR enum - m(aster), s(lave), n(either)
-;Plr_GunSelected_b:			dc.b	0
-
-;Plr1_Keys_b:				dc.b	0
-;Plr1_Path_b:				dc.b	0
-;Plr1_Mouse_b:				dc.b	-1
-;Plr1_Joystick_b:			dc.b	0
-;Plr2_Keys_b:				dc.b	0
-;Plr2_Path_b:				dc.b	0
-;Plr2_Mouse_b:				dc.b	-1
-;Plr2_Joystick_b:			dc.b	0
-
 Game_MasterQuit_b:			dc.b	0
 Game_SlaveQuit_b:			dc.b	0
 Game_MasterPaused_b:		dc.b	0
@@ -248,7 +228,6 @@ Lvl_MapFilenameX_vb:		dc.b	'a/twolev.map',0
 Lvl_FlyMapFilename_vb:		dc.b	'ab3:levels/level_'
 Lvl_FlyMapFilenameX_vb:		dc.b	'a/twolev.flymap',0
 AppName:					dc.b	'TheKillingGrounds',0
-
 
 doslibname:					DOSNAME
 MiscResourceName:			MISCNAME
@@ -942,13 +921,13 @@ clrmessbuff:
 				move.l	#nullmessage,d0
 				jsr		SENDMESSAGE
 
-				clr.b	PLR2_fire
+				clr.b	Plr2_Fire_b
 				clr.b	Plr2_TmpFire_b
 				clr.b	PLR2_SPCTAP
 				clr.b	Plr2_TmpSpcTap_b
 
-				clr.b	PLR1_dead
-				clr.b	PLR2_dead
+				clr.b	Plr1_Dead_b
+				clr.b	Plr2_Dead_b
 
 				move.l	Plr1_ObjectPtr_l,a0
 				move.l	Plr2_ObjectPtr_l,a1
@@ -972,13 +951,13 @@ lop:
 
 				cmp.b	#PLR_MASTER,Plr_MultiplayerType_b
 				bne		.notmess
-				tst.b	PLR2_dead
+				tst.b	Plr2_Dead_b
 				bne		.notmess
 
 				tst.w	Plr2_Health_w
 				bgt		.notmess
 
-				st		PLR2_dead
+				st		Plr2_Dead_b
 
 				jsr		GetRand
 				swap	d0
@@ -1016,13 +995,13 @@ lop:
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				bne		.notmess2
-				tst.b	PLR1_dead
+				tst.b	Plr1_Dead_b
 				bne		.notmess2
 
 				tst.w	Plr1_Health_w
 				bgt		.notmess2
 
-				st		PLR1_dead
+				st		Plr1_Dead_b
 
 				jsr		GetRand
 				swap	d0
@@ -1360,7 +1339,7 @@ okwat:
 				move.w	Plr1_SnapAngPos_w,Plr1_TmpAngPos_w
 				move.w	Plr1_Bobble_w,Plr1_TmpBobble_w
 				move.b	PLR1_clicked,Plr1_TmpClicked_b
-				move.b	PLR1_fire,Plr1_TmpFire_b
+				move.b	Plr1_Fire_b,Plr1_TmpFire_b
 				clr.b	PLR1_clicked
 				move.b	PLR1_SPCTAP,Plr1_TmpSpcTap_b
 				clr.b	PLR1_SPCTAP
@@ -1423,7 +1402,7 @@ NotOnePlayer:
 				move.w	Plr1_Bobble_w,Plr1_TmpBobble_w
 				move.b	PLR1_clicked,Plr1_TmpClicked_b
 				clr.b	PLR1_clicked
-				move.b	PLR1_fire,Plr1_TmpFire_b
+				move.b	Plr1_Fire_b,Plr1_TmpFire_b
 				move.b	PLR1_SPCTAP,Plr1_TmpSpcTap_b
 				clr.b	PLR1_SPCTAP
 				move.b	Plr1_Ducked_b,Plr1_TmpDucked_b
@@ -1539,7 +1518,7 @@ ASlaveShouldWaitOnHisMaster:
 				move.w	Plr2_Bobble_w,Plr2_TmpBobble_w
 				move.b	PLR2_clicked,Plr2_TmpClicked_b
 				clr.b	PLR2_clicked
-				move.b	PLR2_fire,Plr2_TmpFire_b
+				move.b	Plr2_Fire_b,Plr2_TmpFire_b
 				move.b	PLR2_SPCTAP,Plr2_TmpSpcTap_b
 				clr.b	PLR2_SPCTAP
 				move.b	Plr2_Ducked_b,Plr2_TmpDucked_b
@@ -3104,12 +3083,6 @@ SAVELETTER:		dc.b	'd',0
 				include "screensetup.s"
 				include	"chunky.s"
 
-
-;Game_MasterQuit_b:	dc.b	0
-;Game_SlaveQuit_b:	dc.b	0
-;Game_MasterPaused_b:	dc.b	0
-;Game_SlavePaused_b:		dc.b	0
-
 PAUSEOPTS:
 				include	"pauseopts.s"
 
@@ -4637,8 +4610,8 @@ nowaterfull:
 				bset.b	#1,$bfe001
 				rts
 
-ClipTable:		ds.l	30
-EndOfClipPt:	dc.l	0
+;ClipTable:		ds.l	30
+;EndOfClipPt:	dc.l	0
 DOUPPER:		dc.w	0
 
 dothisroom
@@ -5241,10 +5214,10 @@ BIGLONELY:
 				rts
 
 
-PLR1_ObjDists
-				ds.w	250
-PLR2_ObjDists
-				ds.w	250
+;PLR1_ObjDists
+;				ds.w	250
+;PLR2_ObjDists
+;				ds.w	250
 
 CalcPLR1InLine:
 				move.w	Plr1_SinVal_w,d5
@@ -6459,8 +6432,7 @@ ZoneBright:		dc.w	0
 
 npolys:			dc.w	0
 
-PLR1_fire:		dc.b	0
-PLR2_fire:		dc.b	0
+
 
 *****************************************************
 
@@ -6880,8 +6852,6 @@ lineclipped:
 ; bge.s .makecol
 ;.nocol
 ; add.w d3,d2
-
-
 
 				move.w	d3,d4
 				move.w	d3,d5
@@ -7533,19 +7503,13 @@ View2FloorDist:	dc.w	0
 
 minz:			dc.l	0
 
-leftsidetab:
-				ds.w	512*2
-rightsidetab:
-				ds.w	512*2
-leftbrighttab:
-				ds.w	512*2
-rightbrighttab:
-				ds.w	512*2
+;leftsidetab:	ds.w	512*2
+;rightsidetab:	ds.w	512*2
+;leftbrighttab:	ds.w	512*2
+;rightbrighttab:	ds.w	512*2
 
-PointBrights:
-				dc.l	0
-CurrentPointBrights:
-				ds.l	2*256*10
+;PointBrights: dc.l	0
+;CurrentPointBrights:	ds.l	2*256*10
 
 movespd:		dc.w	0
 largespd:		dc.l	0
@@ -8396,7 +8360,7 @@ pastast:
 				add.l	floorbright(pc,d1.w*4),a1
 				bra		pastfloorbright
 
-
+				align 4
 floorbright:
 				dc.l	512*0
 				dc.l	512*1
@@ -10166,11 +10130,7 @@ justshake:
 
 ; cmp.b #'b',Prefsfile+3
 ; bne.s .noback
-
-
 				jsr		mt_music
-
-
 
 ;.noback:
 
@@ -10276,7 +10236,7 @@ nostartalan:
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	#-1,12+128(a0)
 
-				clr.b	PLR1_fire
+				clr.b	Plr1_Fire_b
 				clr.b	PLR1_clicked
 				move.w	#0,ADDTOBOBBLE
 				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapHeight_l
@@ -10365,7 +10325,7 @@ control2:
 				move.l	#7*2116,hitcol
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	#-1,12+128(a0)
-				clr.b	PLR2_fire
+				clr.b	Plr2_Fire_b
 				move.w	#0,ADDTOBOBBLE
 				move.l	#PLR_CROUCH_HEIGHT,Plr2_SnapHeight_l
 				move.w	#-80,d0
@@ -10480,18 +10440,18 @@ noturnoff3:
 nomuckabout:
 
 
-; tst.b PLR2_fire
+; tst.b Plr2_Fire_b
 ; beq.s firenotpressed2
 ; fire was pressed last time.
 ; btst #7,$bfe001
 ; bne.s firenownotpressed2
 ; fire is still pressed this time.
-; st PLR2_fire
+; st Plr2_Fire_b
 ; bra dointer
 
 firenownotpressed2:
 ; fire has been released.
-; clr.b PLR2_fire
+; clr.b Plr2_Fire_b
 ; bra dointer
 
 firenotpressed2
@@ -10504,12 +10464,11 @@ firenotpressed2
 ; fire was not pressed last time, and was this time, so has
 ; been clicked.
 ; st PLR2_clicked
-; st PLR2_fire
+; st Plr2_Fire_b
 
 dointer
 
 JUSTSOUNDS:
-
 				tst.b	dosounds
 				beq.s	.notthing
 
@@ -10538,9 +10497,6 @@ dosounds:		dc.w	0
 swappedem:		dc.w	0
 
 newsampbitl:
-
-
-
 				move.w	#$200,$dff000+intreq
 
 				tst.b	CHANNELDATA
@@ -11902,31 +11858,16 @@ yoff:			dc.l	0
 ; // READY PLAYER ONE /////////////////////////////////////////////////////////////////////
 
 ; Player data definiton - TODO remove unused, tighten definitions, fix alignments
+
+
+				even
+XDiff_w:		dc.w	0
+ZDiff_w:		dc.w	0
+PlayEcho:		dc.w	0 ; accessed as byte
 PLR1:			dc.b	$ff
 PLR2:			dc.b	$ff
-
-				even
-
-
-PlayEcho:		dc.w	0 ; accessed as byte
-
 DOUBLEWIDTH:	dc.b	$0,0
 DOUBLEHEIGHT:	dc.b	0,0
-
-				ds.w	4
-				CNOP 0, 4
-
-OldX1_l:			dc.l	0
-OldX2_l:			dc.l	0
-OldZ1_l:			dc.l	0
-OldZ2_l:			dc.l	0
-
-XDiff_w:			dc.w	0
-ZDiff_w:			dc.w	0
-
-				even
-
-				ds.w	4
 
 ;liftanimtab:
 
@@ -11967,11 +11908,9 @@ OldRoompt:		dc.l	0
 wallpt:			dc.l	0
 floorpt:		dc.l	0
 
-Rotated:		ds.l	2*800					; store rotated X and Z coordinates with Z scaling applied
-
-ObjRotated_vl:		ds.l	2*500
-
-OnScreen:		ds.l	2*800					; store screen projected X coordinates for rotated points
+;Rotated:		ds.l	2*800					; store rotated X and Z coordinates with Z scaling applied
+;ObjRotated_vl:		ds.l	2*500
+;OnScreen:		ds.l	2*800					; store screen projected X coordinates for rotated points
 
 startwait:		dc.w	0
 endwait:		dc.w	0
@@ -11981,19 +11920,6 @@ endwait:		dc.w	0
 
 Lvl_WalkLinksPtr_l:			dc.l	0
 Lvl_FlyLinksPtr_l:		dc.l	0
-*************************************************************
-
-				section	bss,bss
-consttab:
-				ds.b	65536
-
-				section	code,code
-
-*******************************************************************
-
-
-
-*********************************
 
 ; include "loadmod.a"
 ; include "proplayer.a"
@@ -12027,10 +11953,6 @@ GLF_DatabasePtr_l:		dc.l	0
 
 ;brightentab:
 ; incbin "brightenfile"
-				section	bss,bss
-WorkSpace:
-				ds.l	8192
-
 				section	data,data
 waterfile:
 				incbin	"waterfile"
@@ -12149,10 +12071,8 @@ OpenGraphics:
 				rts
 
 gfxname			GRAFNAME
-				cnop	0,4
-_GfxBase:		dc.l	0
 
-
+				align 4
 Panel:			dc.l	0
 
 				cnop	0,64
@@ -12511,7 +12431,7 @@ mt_clrport:
 				clr.w	$18(a6)
 mt_rt:			rts
 
-CODESTORE:		dc.l	0
+;CODESTORE:		dc.l	0
 
 mt_myport:
 				move.b	$3(a6),d0
@@ -12732,8 +12652,8 @@ mt_voice4:		ds.w	10
 				dc.w	8
 				ds.w	3
 
-;PLR1_dead:		dc.w	0
-;PLR2_dead:		dc.w	0
+;Plr1_Dead_b:		dc.w	0
+;Plr2_Dead_b:		dc.w	0
 
 CHEATPTR:		dc.l	0
 CHEATNUM:		dc.l	0
