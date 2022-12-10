@@ -21,7 +21,7 @@ BRIGHTENPOINTS:
 				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d3.w*4),a0
 				add.l	Lvl_DataPtr_l,a0
-				move.l	#CurrentPointBrights,a2
+				move.l	#CurrentPointBrights_vl,a2
 				move.l	Lvl_PointsPtr_l,a3
 				move.l	Lvl_ZoneBorderPointsPtr_l,a4
 
@@ -40,7 +40,7 @@ BRIGHTPTS:
 				muls	#20,d4
 
 				lea		(a4,d4.w),a5
-				move.l	#CurrentPointBrights,a2
+				move.l	#CurrentPointBrights_vl,a2
 				lea		(a2,d4.w*4),a2
 
 ; Do a room.
@@ -212,7 +212,7 @@ BRIGHTENPOINTSANGLE:
 				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d3.w*4),a0
 				add.l	Lvl_DataPtr_l,a0
-				move.l	#CurrentPointBrights,a2
+				move.l	#CurrentPointBrights_vl,a2
 				move.l	Lvl_PointsPtr_l,a3
 				move.l	Lvl_ZoneBorderPointsPtr_l,a4
 
@@ -231,7 +231,7 @@ BRIGHTPTSA:
 				muls	#20,d4
 
 				lea		(a4,d4.w),a5
-				move.l	#CurrentPointBrights,a2
+				move.l	#CurrentPointBrights_vl,a2
 				lea		(a2,d4.w*4),a2
 
 ROOMPTLOPA
@@ -430,7 +430,7 @@ DARKENPOINTS
 				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d3.w*4),a0
 				add.l	Lvl_DataPtr_l,a0
-				move.l	#CurrentPointBrights,a2
+				move.l	#CurrentPointBrights_vl,a2
 				move.l	Lvl_PointsPtr_l,a3
 
 				move.l	a0,a1
@@ -475,7 +475,7 @@ Flash:
 
 				movem.l	d0/a0/a1,-(a7)
 
-				move.l	#CurrentPointBrights,a1
+				move.l	#CurrentPointBrights_vl,a1
 
 				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d0.w*4),a0
@@ -1876,7 +1876,7 @@ notdoneflame:
 				bne.s	.nowhoosh
 
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.l	#ObjRotated_vl,a1
+				move.l	#ObjRotated_vl_vl,a1
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
 				move.l	(a1),Noisex
@@ -2004,7 +2004,7 @@ notexploding:
 				jsr		ComputeBlast
 
 				move.w	(a0),d0
-				move.l	#ObjRotated_vl,a1
+				move.l	#ObjRotated_vl_vl,a1
 				move.l	(a1,d0.w*8),Noisex
 				move.w	#300,Noisevol
 				move.w	#15,Samplenum
@@ -2122,7 +2122,7 @@ HealFactor		EQU		18
 
 				move.l	Plr1_ObjectPtr_l,a2
 				move.w	(a2),d0
-				move.l	#ObjRotated_vl,a2
+				move.l	#ObjRotated_vl_vl,a2
 				move.l	(a2,d0.w*8),Noisex
 				move.w	#50,Noisevol
 				move.w	#4,Samplenum
@@ -2175,7 +2175,7 @@ MEDIPLR2
 
 				move.l	Plr2_ObjectPtr_l,a2
 				move.w	(a2),d0
-				move.l	#ObjRotated_vl,a2
+				move.l	#ObjRotated_vl_vl,a2
 				move.l	(a2,d0.w*8),Noisex
 				move.w	#50,Noisevol
 				move.w	#4,Samplenum
@@ -3272,7 +3272,7 @@ notdoneanim:
 				subq.l	#1,d0
 				blt.s	.nohitnoise
 
-				move.l	#ObjRotated_vl,a1
+				move.l	#ObjRotated_vl_vl,a1
 				move.w	(a0),d1
 				move.l	(a1,d1.w*8),Noisex
 ; move.w d0,Noisevol
@@ -3347,7 +3347,7 @@ notdoneanim:
 				subq.l	#1,d0
 				blt.s	.nohitnoise2
 
-				move.l	#ObjRotated_vl,a1
+				move.l	#ObjRotated_vl_vl,a1
 				move.w	(a0),d1
 				move.l	(a1,d1.w*8),Noisex
 				move.w	#200,Noisevol
@@ -3538,7 +3538,7 @@ nomovebul:
 				subq.l	#1,d0
 				blt.s	.nohitnoise
 
-				move.l	#ObjRotated_vl,a1
+				move.l	#ObjRotated_vl_vl,a1
 				move.w	(a0),d1
 				move.l	(a1,d1.w*8),Noisex
 				move.w	#200,Noisevol
@@ -3759,7 +3759,7 @@ notasplut:
 				subq.l	#1,d0
 				blt.s	.nohitnoise3
 
-				move.l	#ObjRotated_vl,a1
+				move.l	#ObjRotated_vl_vl,a1
 				move.w	(a0),d1
 				move.l	(a1,d1.w*8),Noisex
 				move.w	#200,Noisevol

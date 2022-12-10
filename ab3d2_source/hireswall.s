@@ -787,7 +787,7 @@ storage:		ds.l	500
 ;
 ;				move.w	(a0)+,d0				; centre of rotation
 ;				move.w	(a0)+,d1				; point on arc
-;				move.l	#Rotated,a1
+;				move.l	#Rotated_vl,a1
 ;				move.l	#xmiddle,a2
 ;				move.l	(a1,d0.w*8),d2
 ;				move.l	d2,18(a2)
@@ -2322,8 +2322,8 @@ OTHERZONE:		dc.w	0
 				; Is this THE wall draw entrypoint?
 				; a0 pointing to wall description?
 itsawalldraw:
-				move.l	#Rotated,a5
-				move.l	#OnScreen,a6
+				move.l	#Rotated_vl,a5
+				move.l	#OnScreen_vl,a6
 
 				move.w	(a0)+,d0				; left point index
 				move.w	(a0)+,d2				; right point index
@@ -2398,7 +2398,7 @@ cantell:
 				bra		pastclip
 
 cliptotestfirstbehind:
-				;	a5 Rotated
+				;	a5 Rotated_vl
 				move.l	(a5,d0*8),d3			; prerotated points,
 				sub.l	(a5,d2*8),d3			; line dx, integer part ?
 				move.w	6(a5,d0*8),d6
@@ -2520,7 +2520,7 @@ cant_tell:
 ; add.l a2,a2
 				move.w	6(a5,d2*8),d3
 
-				move.l	#CurrentPointBrights,a5
+				move.l	#CurrentPointBrights_vl,a5
 				tst.b	DOUPPER
 				beq.s	.notupper
 				add.w	#4,a5

@@ -648,7 +648,7 @@ Plr1_CollectItem:
 				clr.b	notifplaying
 				move.w	(a0),IDNUM
 				move.w	#80,Noisevol
-				move.l	#ObjRotated_vl,a1
+				move.l	#ObjRotated_vl_vl,a1
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
 				move.l	(a1),Noisex
@@ -705,7 +705,7 @@ Plr2_CollectItem:
 				clr.b	notifplaying
 				move.w	(a0),IDNUM
 				move.w	#80,Noisevol
-				move.l	#ObjRotated_vl,a1
+				move.l	#ObjRotated_vl_vl,a1
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
 				move.l	(a1),Noisex
@@ -1249,7 +1249,7 @@ FireAtPlayer1:
 .foundonefree:
 				move.b	#2,16(a5)
 
-				move.l	#ObjRotated_vl,a6
+				move.l	#ObjRotated_vl_vl,a6
 				move.w	(a0),d0
 				lea		(a6,d0.w*8),a6
 
@@ -1501,7 +1501,7 @@ FireAtPlayer2:
 
 				move.b	#2,16(a5)
 
-				move.l	#ObjRotated_vl,a6
+				move.l	#ObjRotated_vl_vl,a6
 				move.w	(a0),d0
 				lea		(a6,d0.w*8),a6
 

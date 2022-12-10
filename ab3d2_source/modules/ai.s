@@ -543,7 +543,7 @@ ai_Widget:
 				add.w	d2,newz
 
 				move.w	(a0),d1
-				move.l	#ObjRotated_vl,a6
+				move.l	#ObjRotated_vl_vl,a6
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
@@ -745,7 +745,7 @@ ai_ChargeCommon:
 
 .no_side:
 				move.w	(a0),d1
-				move.l	#ObjRotated_vl,a6
+				move.l	#ObjRotated_vl_vl,a6
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
@@ -952,7 +952,7 @@ ai_AttackWithHitScan:
 				beq		.no_shooty_thang
 
 				move.w	(a0),d1
-				move.l	#ObjRotated_vl,a6
+				move.l	#ObjRotated_vl_vl,a6
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
@@ -960,7 +960,7 @@ ai_AttackWithHitScan:
 				movem.l	a0/a1,-(a7)
 				jsr		GetRand
 
-				move.l	#ObjRotated_vl,a6
+				move.l	#ObjRotated_vl_vl,a6
 				move.w	(a0),d1
 				lea		(a6,d1.w*8),a6
 
@@ -993,7 +993,7 @@ ai_AttackWithHitScan:
 				move.b	SHOTPOWER,d0
 				add.b	d0,EntT_DamageTaken_b(a1)
 
-				sub.l	#ObjRotated_vl,a6
+				sub.l	#ObjRotated_vl_vl,a6
 				add.l	Lvl_ObjectPointsPtr_l,a6
 				move.w	(a6),d0
 				sub.w	Plr1_TmpXOff_l,d0				;dx
@@ -1176,7 +1176,7 @@ ai_ChargeFlyingCommon:
 
 .no_teleport:
 				move.w	(a0),d1
-				move.l	#ObjRotated_vl,a6
+				move.l	#ObjRotated_vl_vl,a6
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
@@ -1393,7 +1393,7 @@ ai_ApproachCommon:
 
 .no_teleport:
 				move.w	(a0),d1
-				move.l	#ObjRotated_vl,a6
+				move.l	#ObjRotated_vl_vl,a6
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
@@ -1789,7 +1789,6 @@ AI_ClearNastyMem:
 				rts
 
 ai_CheckDamage:
-
 				moveq	#0,d2
 				move.b	EntT_DamageTaken_b(a0),d2
 				beq		.noscream
@@ -1815,7 +1814,7 @@ ai_CheckDamage:
 
 				movem.l	d0-d7/a0-a6,-(a7)
 				sub.l	Lvl_ObjectPointsPtr_l,a1
-				add.l	#ObjRotated_vl,a1
+				add.l	#ObjRotated_vl_vl,a1
 				move.l	(a1),Noisex
 				move.w	#400,Noisevol
 				move.w	#14,Samplenum
@@ -1848,7 +1847,7 @@ ai_CheckDamage:
 .noexplode:
 				movem.l	d0-d7/a0-a6,-(a7)
 				sub.l	Lvl_ObjectPointsPtr_l,a1
-				add.l	#ObjRotated_vl,a1
+				add.l	#ObjRotated_vl_vl,a1
 				move.l	(a1),Noisex
 				move.w	#200,Noisevol
 				move.w	screamsound,Samplenum
@@ -1868,7 +1867,7 @@ ai_CheckDamage:
 				clr.b	EntT_DamageTaken_b(a0)
 				movem.l	d0-d7/a0-a6,-(a7)
 				sub.l	Lvl_ObjectPointsPtr_l,a1
-				add.l	#ObjRotated_vl,a1
+				add.l	#ObjRotated_vl_vl,a1
 				move.l	(a1),Noisex
 				move.w	#200,Noisevol
 				move.w	screamsound,Samplenum
@@ -1883,63 +1882,6 @@ ai_CheckDamage:
 .noscream:
 				rts
 
-
-SPLIBBLE:
-				move.l	ANIMPOINTER,a6
-
-				jsr		ViewpointToDraw
-				add.l	d0,d0
-
-				cmp.b	#1,AI_VecObj_w
-				bne.s	.NOSIDES
-				moveq	#0,d0
-
-.NOSIDES:
-				muls	#A_OptLen,d0
-				add.w	d0,a6
-
-				move.w	EntT_Timer2_w(a0),d1
-				add.w	#1,d1
-				move.w	d1,d2
-				muls	#A_FrameLen,d1
-				tst.b	(a6,d1.w)
-				bge.s	.noendanim
-				moveq	#0,d2
-				moveq	#0,d1
-
-.noendanim:
-				move.w	d2,EntT_Timer2_w(a0)
-				move.l	#0,8(a0)
-				move.b	(a6,d1.w),9(a0)
-				move.b	1(a6,d1.w),11(a0)
-				move.w	#-1,6(a0)
-				cmp.b	#1,AI_VecObj_w
-				beq.s	.nosize
-				move.w	2(a6,d1.w),6(a0)
-
-.nosize:
-				moveq	#0,d0
-				move.b	5(a6,d1.w),d0
-				beq.s	.nosoundmake
-
-				movem.l	d0-d7/a0-a6,-(a7)
-				subq	#1,d0
-				move.w	d0,Samplenum
-				clr.b	notifplaying
-				move.w	(a0),IDNUM
-				move.w	#200,Noisevol
-				move.l	#ObjRotated_vl,a1
-				move.w	(a0),d0
-				lea		(a1,d0.w*8),a1
-				move.l	(a1),Noisex
-				move.b	ALIENECHO,PlayEcho
-				jsr		MakeSomeNoise
-				movem.l	(a7)+,d0-d7/a0-a6
-
-.nosoundmake:
-				move.b	6(a6,d1.w),d0
-				sne		ai_DoAction_b
-				rts
 
 ai_DoTorch:
 				move.w	ALIENBRIGHT,d0
@@ -1962,31 +1904,25 @@ ai_DoTorch:
 
 ai_DoWalkAnim:
 ai_DoAttackAnim:
-
 				move.l	d0,-(a7)
-
 				move.l	ANIMPOINTER,a6
-
 				move.l	WORKPTR,a5
-
 				moveq	#0,d1
 				move.b	2(a5),d1
 				bne.s	.notview
 
 				moveq	#0,d1
-
 				cmp.b	#1,AI_VecObj_w
 				beq.s	.notview
 
 				jsr		ViewpointToDraw
+
 				add.w	d0,d0
 				move.w	d0,d1
 
-.notview
-
+.notview:
 				muls	#A_OptLen,d1
 				add.l	d1,a6
-
 				move.w	EntT_Timer2_w(a0),d1
 				tst.b	1(a5)
 				blt.s	.nospec
@@ -2019,7 +1955,6 @@ ai_DoAttackAnim:
 .noanimface:
 				move.w	#-1,EntT_GraphicRoom_w-64(a0)
 				move.w	#-1,12-64(a0)
-
 				move.w	AUXOBJ,d3
 				blt		.noaux
 
@@ -2120,63 +2055,11 @@ ai_DoAttackAnim:
 
 .setlight:
 				move.w	2(a6,d1.w),6(a0)
-
 				move.b	AI_VecObj_w,d1
 				or.b	d1,10(a0)
-
 				move.l	(a7)+,d0
 				rts
 
-BLIBBLE:
-				move.l	ANIMPOINTER,a6
-				move.w	#8,d0
-				muls	#A_OptLen,d0
-				add.w	d0,a6
-				move.w	EntT_Timer2_w(a0),d1
-				move.w	d1,d2
-				add.w	#1,d2
-				muls	#A_FrameLen,d1
-				tst.b	A_FrameLen(a6,d1.w)
-				slt		ai_FinishedAnim_b
-				bge.s	.noendanim
-
-				moveq	#0,d2
-
-.noendanim:
-				move.w	d2,EntT_Timer2_w(a0)
-				move.l	#0,8(a0)
-				move.b	(a6,d1.w),9(a0)
-				move.b	1(a6,d1.w),11(a0)
-				move.w	#-1,6(a0)
-				cmp.b	#1,AI_VecObj_w
-				beq.s	.nosize
-
-				move.w	2(a6,d1.w),6(a0)
-
-.nosize:
-				moveq	#0,d0
-				move.b	5(a6,d1.w),d0
-				beq.s	.nosoundmake
-
-				movem.l	d0-d7/a0-a6,-(a7)
-				subq	#1,d0
-				move.w	d0,Samplenum
-				clr.b	notifplaying
-				move.w	(a0),IDNUM
-				move.w	#200,Noisevol
-				move.l	#ObjRotated_vl,a1
-				move.w	(a0),d0
-				lea		(a1,d0.w*8),a1
-				move.l	(a1),Noisex
-				move.b	ALIENECHO,PlayEcho
-				jsr		MakeSomeNoise
-
-				movem.l	(a7)+,d0-d7/a0-a6
-
-.nosoundmake:
-				move.b	6(a6,d1.w),d0
-				sne		ai_DoAction_b
-				rts
 
 ai_CheckAttackOnGround:
 				move.l	Plr1_RoomPtr_l,a3

@@ -54,6 +54,7 @@ PLR_SINGLE				equ 'n' ; Single player
 				include "bss/io_bss.s"
 				include "bss/ai_bss.s"
 				include "bss/player_bss.s"
+				include "bss/draw_bss.s"
 				include "bss/tables_bss.s
 				section code,code
 ; Startup Code
@@ -1657,7 +1658,7 @@ justbright2:
 doneallz:
 
 				move.l	PointBrights,a2
-				move.l	#CurrentPointBrights,a3
+				move.l	#CurrentPointBrights_vl,a3
 justtheone:
 				move.w	(a5),d0
 				blt		whythehell
@@ -1708,7 +1709,7 @@ allinzone:
 whythehell:
 
 				move.l	Plr1_RoomPtr_l,a0
-				move.l	#CurrentPointBrights,a1
+				move.l	#CurrentPointBrights_vl,a1
 				move.l	Lvl_ZoneBorderPointsPtr_l,a2
 				move.w	(a0),d0
 				muls	#10,d0
@@ -2390,7 +2391,7 @@ DoTheMapWotNastyCharlesIsForcingMeToDo:
 
 .nodimmer:
 
-				move.l	#Rotated,a1
+				move.l	#Rotated_vl,a1
 				move.l	#COMPACTMAP,a2
 				move.l	#BIGMAP-40,a3
 
@@ -3170,7 +3171,7 @@ USEPLR1:
 				move.l	Plr1_ObjectPtr_l,a0
 				move.b	#4,16(a0)
 				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.l	#ObjRotated_vl,a2
+				move.l	#ObjRotated_vl_vl,a2
 				move.w	(a0),d0
 				move.l	Plr1_XOff_l,(a1,d0.w*8)
 				move.l	Plr1_ZOff_l,4(a1,d0.w*8)
@@ -3273,7 +3274,7 @@ USEPLR1:
 ;
 
 				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.l	#ObjRotated_vl,a2
+				move.l	#ObjRotated_vl_vl,a2
 				move.w	(a0),d0
 				move.l	Plr2_XOff_l,(a1,d0.w*8)
 				move.l	Plr2_ZOff_l,4(a1,d0.w*8)
@@ -3479,7 +3480,7 @@ USEPLR2:
 				move.l	Plr2_ObjectPtr_l,a0
 				move.b	#5,16(a0)
 				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.l	#ObjRotated_vl,a2
+				move.l	#ObjRotated_vl_vl,a2
 				move.w	(a0),d0
 				move.l	Plr2_XOff_l,(a1,d0.w*8)
 				move.l	Plr2_ZOff_l,4(a1,d0.w*8)
@@ -3574,7 +3575,7 @@ USEPLR2:
 ;
 
 				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.l	#ObjRotated_vl,a2
+				move.l	#ObjRotated_vl_vl,a2
 				move.w	(a0),d0
 				move.l	Plr1_XOff_l,(a1,d0.w*8)
 				move.l	Plr1_ZOff_l,4(a1,d0.w*8)
@@ -4367,12 +4368,12 @@ outofrcliplop:
 				move.l	ZoneT_UpperRoof_l(a1),TOPOFROOM
 				move.l	ZoneT_UpperFloor_l(a1),BOTOFROOM
 
-				move.l	#CurrentPointBrights+4,PointBrightsPtr
+				move.l	#CurrentPointBrights_vl+4,PointBrightsPtr
 				bsr		dothisroom
 noupperroom:
 				move.l	ThisRoomToDraw,a0
 				clr.b	DOUPPER
-				move.l	#CurrentPointBrights,PointBrightsPtr
+				move.l	#CurrentPointBrights_vl,PointBrightsPtr
 
 				move.l	ROOMBACK,a1
 				move.l	ZoneT_Roof_l(a1),d0
@@ -4402,7 +4403,7 @@ botfirst:
 
 				move.l	ThisRoomToDraw,a0
 				clr.b	DOUPPER
-				move.l	#CurrentPointBrights,PointBrightsPtr
+				move.l	#CurrentPointBrights_vl,PointBrightsPtr
 
 				move.l	ROOMBACK,a1
 				move.l	ZoneT_Roof_l(a1),d0
@@ -4430,7 +4431,7 @@ botfirst:
 				move.l	ThisRoomToDraw+4,a0
 				cmp.l	Lvl_GraphicsPtr_l,a0
 				beq.s	noupperroom2
-				move.l	#CurrentPointBrights+4,PointBrightsPtr
+				move.l	#CurrentPointBrights_vl+4,PointBrightsPtr
 
 				move.l	ROOMBACK,a1
 				move.l	ZoneT_UpperRoof_l(a1),TOPOFROOM
@@ -4610,8 +4611,8 @@ nowaterfull:
 				bset.b	#1,$bfe001
 				rts
 
-;ClipTable:		ds.l	30
-;EndOfClipPt:	dc.l	0
+;ClipsTable_vl:		ds.l	30
+;EndOfClipPtr_l:	dc.l	0
 DOUPPER:		dc.w	0
 
 dothisroom
@@ -4913,8 +4914,8 @@ RotateLevelPts:	;		Does					this rotate ALL points in the level EVERY frame?
 				move.w	cosval,d6
 
 				move.l	Lvl_PointsPtr_l,a3
-				move.l	#Rotated,a1				; stores only 2x800 points
-				move.l	#OnScreen,a2
+				move.l	#Rotated_vl,a1				; stores only 2x800 points
+				move.l	#OnScreen_vl,a2
 				move.w	xoff,d4
 				;asr.w	#1,d4
 				move.w	zoff,d5
@@ -4983,7 +4984,7 @@ ptnotbehind:
 				divs.w	d1,d2					; x / z perspective projection
 				add.w	Vid_CentreX_w,d2
 putin:
-				move.w	d2,(a2)+				; store to OnScreen
+				move.w	d2,(a2)+				; store to OnScreen_vl
 
 				dbra	d7,pointrotlop2
 outofpointrot:
@@ -5062,8 +5063,8 @@ ONLYTHELONELY:
 
 				move.l	PointsToRotatePtr_l,a0	; -1 terminated array of point indices to rotate
 				move.l	Lvl_PointsPtr_l,a3
-				move.l	#Rotated,a1
-				move.l	#OnScreen,a2
+				move.l	#Rotated_vl,a1
+				move.l	#OnScreen_vl,a2
 				move.w	xoff,d4
 				move.w	zoff,d5
 
@@ -5376,7 +5377,7 @@ RotateObjectPts:
 				move.l	Lvl_ObjectDataPtr_l,a4
 				move.l	Lvl_ObjectPointsPtr_l,a0
 				move.w	Lvl_NumObjectPoints_w,d7
-				move.l	#ObjRotated_vl,a1
+				move.l	#ObjRotated_vl_vl,a1
 
 				tst.b	Vid_FullScreen_b
 				bne		BIGOBJPTS
@@ -5504,7 +5505,7 @@ BIGOBJPTS:
 ;
 ;				move.w	(a0)+,d0
 ;				move.w	(a0)+,d1
-;				move.l	#Rotated,a1
+;				move.l	#Rotated_vl,a1
 ;				move.w	6(a1,d0.w*8),d2
 ;				ble.s	oneendbehind
 ;				move.w	6(a1,d1.w*8),d3
@@ -5514,7 +5515,7 @@ BIGOBJPTS:
 ;				rts
 ;bothendsinfront:
 ;
-;				move.l	#OnScreen,a2
+;				move.l	#OnScreen_vl,a2
 ;				move.w	(a2,d0.w*2),d0
 ;				bge.s	okleftend
 ;				moveq	#0,d0
@@ -6232,8 +6233,8 @@ ENDENDGAMETEXT:
 
 
 NEWsetlclip:
-				move.l	#OnScreen,a1
-				move.l	#Rotated,a2
+				move.l	#OnScreen_vl,a1
+				move.l	#Rotated_vl,a2
 				move.l	Lvl_ConnectTablePtr_l,a3
 				move.l	Lvl_PointsPtr_l,a4
 
@@ -6308,8 +6309,8 @@ NEWsetlclip:
 				rts
 
 NEWsetrclip
-				move.l	#OnScreen,a1
-				move.l	#Rotated,a2
+				move.l	#OnScreen_vl,a1
+				move.l	#Rotated_vl,a2
 				move.l	Lvl_ConnectTablePtr_l,a3
 				move.w	(a0),d0
 				bge.s	.notignoreright
@@ -6371,8 +6372,8 @@ NEWsetrclip
 				rts
 
 FIRSTsetlrclip:
-				move.l	#OnScreen,a1
-				move.l	#Rotated,a2
+				move.l	#OnScreen_vl,a1
+				move.l	#Rotated_vl,a2
 
 				move.w	(a0)+,d0
 				bge.s	.notignoreleft
@@ -6620,8 +6621,8 @@ notbelow:
 				move.l	a0,-(a7)
 
 				move.w	(a0)+,d7				; number of sides
-				move.l	#Rotated,a1
-				move.l	#OnScreen,a2
+				move.l	#Rotated_vl,a1
+				move.l	#OnScreen_vl,a2
 ; move.l #NewCornerBuff,a3
 				moveq	#0,d4					; some points left to left clip
 				moveq	#0,d5					; some points fully between left and right clip
@@ -6676,8 +6677,8 @@ somefloortodraw:
 				move.w	#300,top				; running top clip
 				move.w	#-1,bottom				; running bottom clip
 				move.w	#0,drawit
-				move.l	#Rotated,a1
-				move.l	#OnScreen,a2
+				move.l	#Rotated_vl,a1
+				move.l	#OnScreen_vl,a2
 				move.w	(a0)+,d7				; no of sides
 
 ; clip floor polygon against closest possible visible z (due to bottom/top clipping) "minz"
@@ -6983,8 +6984,8 @@ goursides:
 				move.w	#300,top
 				move.w	#-1,bottom
 				move.w	#0,drawit
-				move.l	#Rotated,a1
-				move.l	#OnScreen,a2
+				move.l	#Rotated_vl,a1
+				move.l	#OnScreen_vl,a2
 				move.w	(a0)+,d7				; no of sides
 sideloopGOUR:
 				move.w	minz,d6
@@ -7509,7 +7510,7 @@ minz:			dc.l	0
 ;rightbrighttab:	ds.w	512*2
 
 ;PointBrights: dc.l	0
-;CurrentPointBrights:	ds.l	2*256*10
+;CurrentPointBrights_vl:	ds.l	2*256*10
 
 movespd:		dc.w	0
 largespd:		dc.l	0
@@ -9655,7 +9656,7 @@ NOSIDES2:
 				clr.b	notifplaying
 				move.w	(a0),IDNUM
 				move.w	#80,Noisevol
-				move.l	#ObjRotated_vl,a1
+				move.l	#ObjRotated_vl_vl,a1
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
 				move.l	(a1),Noisex
@@ -11908,9 +11909,9 @@ OldRoompt:		dc.l	0
 wallpt:			dc.l	0
 floorpt:		dc.l	0
 
-;Rotated:		ds.l	2*800					; store rotated X and Z coordinates with Z scaling applied
-;ObjRotated_vl:		ds.l	2*500
-;OnScreen:		ds.l	2*800					; store screen projected X coordinates for rotated points
+;Rotated_vl:		ds.l	2*800					; store rotated X and Z coordinates with Z scaling applied
+;ObjRotated_vl_vl:		ds.l	2*500
+;OnScreen_vl:		ds.l	2*800					; store screen projected X coordinates for rotated points
 
 startwait:		dc.w	0
 endwait:		dc.w	0
