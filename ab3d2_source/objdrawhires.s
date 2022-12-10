@@ -2,38 +2,9 @@
 DRAW_BITMAP_NEAR_PLANE	EQU		25  ; Distances lower than this for bitmaps are considered behind the observer
 DRAW_VECTOR_NEAR_PLANE	EQU		130 ; Distances lower than this for vectors are considered behind the observer
 
-;draw_DepthTable_vl:		ds.l	80
-;draw_EndDepthTable:
+				align 4
 draw_TopY_3D_l:			dc.l	-100*1024
 draw_BottomY_3D_l:		dc.l	1*1024
-
-;TOPOFROOM:		dc.l	0
-;BOTOFROOM:		dc.l	0
-;AFTERWATTOP:	dc.l	0
-;AFTERWATBOT:	dc.l	0
-;BEFOREWATTOP:	dc.l	0
-;BEFOREWATBOT:	dc.l	0
-;ROOMBACK:		dc.l	0
-
-;draw_ObjectOnOff_l:		dc.l	0
-
-;Draw_CurrentZone_w:		dc.w	0 ; public
-;draw_SortIt_w:			dc.w	0
-;draw_ObjectBright_w:	dc.w	0
-;draw_ObjectAng_w:		dc.w	0
-;draw_PolygonCentreY_w:	dc.w	0
-;draw_ObjClipT_w:		dc.w	0
-;draw_ObjClipB_w:		dc.w	0
-;draw_RightClipB_w:		dc.w	0
-;draw_LeftClipB_w:		dc.w	0
-;draw_AuxX_w:			dc.w	0
-;draw_AuxY_w:			dc.w	0
-;draw_BrightToAdd_w:		dc.w	0
-;draw_Obj_XPos_w:		dc.w	0
-;draw_Obj_ZPos_w:		dc.w	0
-
-;draw_WhichDoing_b:	dc.b	0 ; BOOL
-;draw_InUpperZone_b:	dc.b	0 ; BOOL
 
 ********************************************************************************
 

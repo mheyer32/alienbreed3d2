@@ -55,7 +55,8 @@ PLR_SINGLE				equ 'n' ; Single player
 				include "bss/ai_bss.s"
 				include "bss/player_bss.s"
 				include "bss/draw_bss.s"
-				include "bss/tables_bss.s
+				include "bss/tables_bss.s"
+
 				section code,code
 ; Startup Code
 _start:
@@ -271,6 +272,7 @@ Game_ShowIntroText:
 				dbra	d7,.next_line_loop
 				rts
 
+				align 4
 draw_FontPtrs_vl:
 				dc.l	draw_EndFont0_vb,draw_CharWidths0_vb
 				dc.l	ENDFONT1,CHARWIDTHS1
