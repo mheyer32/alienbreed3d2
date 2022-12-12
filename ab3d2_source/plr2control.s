@@ -69,7 +69,7 @@ Plr2_MouseControl
 				muls	#SCREENWIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 				move.b	forward_key,d7
 
@@ -158,7 +158,7 @@ Plr2_MouseControl
 				rts
 
 Plr2_AlwaysKeys
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 
 				move.b	next_weapon_key,d7
@@ -348,7 +348,7 @@ PLR2_keyboard_control:
 				move.l	#SineTable,a0
 
 				jsr		Plr2_AlwaysKeys
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 
 				move.w	STOPOFFSET,d0
 				moveq	#0,d7
@@ -459,7 +459,7 @@ PLR2_keyboard_control:
 				beq.s	.noleftturn
 				sub.w	TURNSPD,d3
 .noleftturn
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				move.b	temprightkey,d7
 				tst.b	(a5,d7.w)
 				beq.s	.norightturn
@@ -489,7 +489,7 @@ noturnposs2:
 				add.w	d2,d4
 				asr.w	#1,d4
 .noleftslide
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				move.b	tempsrkey,d7
 				tst.b	(a5,d7.w)
 				beq.s	.norightslide

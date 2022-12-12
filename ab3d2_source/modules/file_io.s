@@ -18,7 +18,7 @@ IO_MAX_FILENAME_LEN	EQU 79
 ; *****************************************************************************
 
 IO_InitQueue:
-				move.l	#WorkSpace,io_EndOfQueue_l
+				move.l	#Sys_Workspace_vl,io_EndOfQueue_l
 				rts
 
 IO_QueueFile:
@@ -49,7 +49,7 @@ IO_FlushQueue:
 				beq		.loaded_all
 
 * Find first unloaded file and prompt for disk.
-				move.l	#WorkSpace,a2
+				move.l	#Sys_Workspace_vl,a2
 
 .find_loop:
 				tst.l	(a2)
@@ -127,7 +127,7 @@ IO_FlushQueue:
 				rts
 
 io_FlushPass:
-				move.l	#WorkSpace,a2
+				move.l	#Sys_Workspace_vl,a2
 				moveq	#0,d7					; loaded a file
 				moveq	#0,d6					; tried+failed
 

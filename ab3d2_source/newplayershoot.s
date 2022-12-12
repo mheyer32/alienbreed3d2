@@ -75,7 +75,7 @@ okcanfire:
 
 				move.l	#PLR1_ObsInLine,a1
 				move.l	Lvl_ObjectDataPtr_l,a0
-				move.l	#PLR1_ObjDists,a2
+				move.l	#Plr1_ObjectDistances_vw,a2
 
 findclosestinline:
 
@@ -424,7 +424,7 @@ okcanfire2:
 
 				move.l	#PLR2_ObsInLine,a1
 				move.l	Lvl_ObjectDataPtr_l,a0
-				move.l	#PLR2_ObjDists,a2
+				move.l	#Plr2_ObjectDistances_vw,a2
 findclosestinline2
 
 				tst.w	(a0)

@@ -123,7 +123,7 @@ CHECKUPDOWN
 .maschk:
 
 				moveq	#0,d6
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				move.b	forward_key,d6
 				tst.b	(a5,d6.w)
 				sne		d0

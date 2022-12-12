@@ -7,23 +7,23 @@
 				; d4 !=0 use doublewidth
 				; d5 !=0 use teleport effect
 
-CHUNKYTOPLANAR:
+Vid_ConvertC2P:
 				tst.b	d5
 				beq.s	.noteleffect
 
-				move.w	#8,TELVAL				; Start a number of teleporter frames
+				move.w	#8,Game_TeleportFrame_w				; Start a number of teleporter frames
 
-.noteleffect
-				tst.w	TELVAL
-				beq		NEWCHUNKY
+.noteleffect:
+				tst.w	Game_TeleportFrame_w
+				beq		.chunky_to_planar
 
-				sub.w	#1,TELVAL
-				move.w	TELVAL,d5
+				sub.w	#1,Game_TeleportFrame_w
+				move.w	Game_TeleportFrame_w,d5
 
-				bra		NEWCHUNKYTEL
+				bra		.chunky_to_planar_teleport_fx
 
 
-NEWCHUNKY
+.chunky_to_planar:
 				tst.b	Vid_FullScreen_b
 				beq		.smallscreen
 
@@ -35,7 +35,7 @@ NEWCHUNKY
 				bne		.doubleheightFullscreen
 
 				move.w	#SCREENWIDTH,d0
-				move.w	WIDESCRN,d3				; height of black border top/bottom
+				move.w	Vid_LetterBoxMarginHeight_w,d3				; height of black border top/bottom
 				move.w	#232,d1
 				sub.w	d3,d1					; top letterbox
 				sub.w	d3,d1					; bottom letterbox: d1: number of lines
@@ -46,10 +46,11 @@ NEWCHUNKY
 				move.l	Vid_FastBufferPtr_l,a0
 				mulu.w	#SCREENWIDTH,d3
 				lea		(a0,d3.w),a0
-				move.l	SCRNDRAWPT,a1
+				move.l	Vid_DrawScreenPtr_l,a1
 				jsr		c2p1x1_8_c5_040
 
-.nothingLeft	rts
+.nothingLeft:
+			rts
 
 ; d0.w	chunkyx [chunky-pixels] (even multiple of 32)
 ; d1.w	chunkyy [chunky-pixels]
@@ -64,7 +65,7 @@ NEWCHUNKY
 				bne.s	.doublewidthheightFullscreen
 
 				move.w	#FS_WIDTH/2,d0
-				move.w	WIDESCRN,d3				; height of black border top/bottom
+				move.w	Vid_LetterBoxMarginHeight_w,d3				; height of black border top/bottom
 				move.w	#FS_HEIGHT,d1
 				sub.w	d3,d1					; top letterbox
 				sub.w	d3,d1					; bottom letterbox: d1: number of lines
@@ -78,14 +79,14 @@ NEWCHUNKY
 				move.l	Vid_FastBufferPtr_l,a0
 				mulu.w	d6,d3
 				lea		(a0,d3.w),a0
-				move.l	SCRNDRAWPT,a1
+				move.l	Vid_DrawScreenPtr_l,a1
 				jsr		c2p2x1_8_c5_gen
 
 				rts
 
 .doublewidthheightFullscreen
 				move.w	#FS_WIDTH/2,d0
-				move.w	WIDESCRN,d3				; height of black border top/bottom
+				move.w	Vid_LetterBoxMarginHeight_w,d3				; height of black border top/bottom
 				move.w	#FS_HEIGHT/2,d1
 				sub.w	d3,d1					; top letterbox
 				sub.w	d3,d1					; bottom letterbox: d1: number of lines
@@ -100,7 +101,7 @@ NEWCHUNKY
 				move.l	Vid_FastBufferPtr_l,a0
 				mulu.w	d6,d3
 				lea		(a0,d3.w),a0
-				move.l	SCRNDRAWPT,a1
+				move.l	Vid_DrawScreenPtr_l,a1
 				jsr		c2p2x1_8_c5_gen
 
 				rts
@@ -108,7 +109,7 @@ NEWCHUNKY
 
 .doubleheightFullscreen
 				moveq.l	#0,d0					; x
-				move.w	WIDESCRN,d1				; y, height of black border top/bottom
+				move.w	Vid_LetterBoxMarginHeight_w,d1				; y, height of black border top/bottom
 				add.w	d1,d1
 				move.l	#FS_WIDTH,d2			; width
 				move.l	#FS_HEIGHT/2,d3			; height
@@ -120,7 +121,7 @@ NEWCHUNKY
 				move.l	#(SCREENWIDTH/8)*256,d6	; bplsize
 
 				move.l	Vid_FastBufferPtr_l,a0
-				move.l	SCRNDRAWPT,a1
+				move.l	Vid_DrawScreenPtr_l,a1
 				jsr		c2p_rect
 
 				rts
@@ -134,7 +135,7 @@ NEWCHUNKY
 				bne		.doubleheightSmallscreen
 
 				moveq.l	#0,d0					; x
-				move.w	WIDESCRN,d1				; y, height of black border top/bottom
+				move.w	Vid_LetterBoxMarginHeight_w,d1				; y, height of black border top/bottom
 				move.l	#SMALL_WIDTH,d2			; width
 				move.l	#SMALL_HEIGHT,d3		; height
 				sub.w	d1,d3					; top letterbox
@@ -144,7 +145,7 @@ NEWCHUNKY
 				move.l	#(SCREENWIDTH/8)*256,d6	; bplsize
 
 				move.l	Vid_FastBufferPtr_l,a0
-				move.l	SCRNDRAWPT,a1
+				move.l	Vid_DrawScreenPtr_l,a1
 				add.l	#(SCREENWIDTH/8)*20+(64/8),a1 ; top of regular small screen
 														; c2p_rect will apply d1 offset ontop
 				jsr		c2p_rect
@@ -156,7 +157,7 @@ NEWCHUNKY
 				bne.s	.doublewidthheightSmallscreen
 
 				move.w	#SMALL_WIDTH/2,d0
-				move.w	WIDESCRN,d3				; height of black border top/bottom
+				move.w	Vid_LetterBoxMarginHeight_w,d3				; height of black border top/bottom
 				move.w	#SMALL_HEIGHT,d1
 				sub.w	d3,d1					; top letterbox
 				sub.w	d3,d1					; bottom letterbox: d1: number of lines
@@ -170,7 +171,7 @@ NEWCHUNKY
 				move.l	Vid_FastBufferPtr_l,a0
 				mulu.w	d6,d3
 				lea		(a0,d3.w),a0
-				move.l	SCRNDRAWPT,a1
+				move.l	Vid_DrawScreenPtr_l,a1
 				; top left of small render window in chipmem
 				add.l	#(SCREENWIDTH/8)*20+(64/8),a1
 
@@ -182,7 +183,7 @@ NEWCHUNKY
 .doublewidthheightSmallscreen
 
 				move.w	#SMALL_WIDTH/2,d0
-				move.w	WIDESCRN,d3				; height of black border top/bottom
+				move.w	Vid_LetterBoxMarginHeight_w,d3				; height of black border top/bottom
 				add.w	d3,d3
 				move.w	#SMALL_HEIGHT/2,d1
 				sub.w	d3,d1					; top letterbox
@@ -198,7 +199,7 @@ NEWCHUNKY
 				move.l	Vid_FastBufferPtr_l,a0
 				mulu.w	d6,d3
 				lea		(a0,d3.w),a0
-				move.l	SCRNDRAWPT,a1
+				move.l	Vid_DrawScreenPtr_l,a1
 				; top left of small render window in chipmem
 				add.l	#(SCREENWIDTH/8)*20+(64/8),a1
 
@@ -208,7 +209,7 @@ NEWCHUNKY
 
 .doubleheightSmallscreen
 				moveq.l	#0,d0					; x
-				move.w	WIDESCRN,d1				; y, height of black border top/bottom
+				move.w	Vid_LetterBoxMarginHeight_w,d1				; y, height of black border top/bottom
 				add.w	d1,d1
 				move.l	#SMALL_WIDTH,d2			; width
 				move.l	#SMALL_HEIGHT/2,d3		; height
@@ -220,7 +221,7 @@ NEWCHUNKY
 				move.l	#(SCREENWIDTH/8)*256,d6	; bplsize
 
 				move.l	Vid_FastBufferPtr_l,a0
-				move.l	SCRNDRAWPT,a1
+				move.l	Vid_DrawScreenPtr_l,a1
 				add.l	#(SCREENWIDTH/8)*20+(64/8),a1 ; top of regular small screen
 														; c2p_rect will apply d1 offset ontop
 				jsr		c2p_rect
@@ -237,15 +238,15 @@ NEWCHUNKY
 ; d5 !=0 use teleport effect
 
 
-*		Length	Cycles	Cyc/pix.
-*MainLoop	132 	508	63.5
-*Double Main	258 	1000	62.5
+;*		Length	Cycles	Cyc/pix.
+;*MainLoop	132 	508	63.5
+;*Double Main	258 	1000	62.5
+;
+;*Seeing as we will probably be averaging at least 50000 pixels per "frame" any
+;*cycle saving is significant
 
-*Seeing as we will probably be averaging at least 50000 pixels per "frame" any
-*cycle saving is significant
 
-
-NEWCHUNKYTEL:
+.chunky_to_planar_teleport_fx:
 ;a0 = byte pixels , a1 = plane 1
 ;256 colour / 8 bitplane
 
@@ -255,7 +256,7 @@ NEWCHUNKYTEL:
 
 				move.w	#(FS_WIDTH/8)-1,WTC		; width in chipmem?
 
-				move.w	WIDESCRN,d7
+				move.w	Vid_LetterBoxMarginHeight_w,d7
 				move.l	#FS_HEIGHT-1,d1			; height of area to convert
 				sub.w	d7,d1					; top letterbox
 				sub.w	d7,d1					; bottom letterbox: d1: number of lines
@@ -269,7 +270,7 @@ NEWCHUNKYTEL:
 				mulu.w	d7,d3
 				lea		(a0,d3.w),a0			; offset for top letterbox in renderbuffer
 
-				move.l	SCRNDRAWPT,a1
+				move.l	Vid_DrawScreenPtr_l,a1
 				move.w	#(SCREENWIDTH/8),d3
 				mulu.w	d7,d3					; offset for top letterbox in screenbuffer
 				lea		(a1,d3.w),a1
@@ -279,7 +280,7 @@ NEWCHUNKYTEL:
 .smallscreenTele
 				move.w	#(SMALL_WIDTH/8)-1,WTC	; width in chipmem?
 
-				move.w	WIDESCRN,d7
+				move.w	Vid_LetterBoxMarginHeight_w,d7
 				move.l	#SMALL_HEIGHT-1,d1		; height of area to convert
 				sub.w	d7,d1					; top letterbox
 				sub.w	d7,d1					; bottom letterbox: d1: number of lines
@@ -293,13 +294,13 @@ NEWCHUNKYTEL:
 				mulu.w	d7,d3
 				lea		(a0,d3.w),a0			; offset for top letterbox in renderbuffer
 
-				move.l	SCRNDRAWPT,a1
+				move.l	Vid_DrawScreenPtr_l,a1
 				move.w	#(SCREENWIDTH/8),d3
 				mulu.w	d7,d3					; offset for top letterbox in screenbuffer
 				lea		(a1,d3.w),a1
 				add.l	#(SCREENWIDTH/8)*20+(64/8),a1; top left corner of small render window in chipmem
 
-.startchunkytel
+.startchunkytel:
 				movem.l	d2-d7/a2-a6,-(a7)
 				move.l	#SHIMMER,a6
 				asl.w	#8,d5
@@ -316,7 +317,6 @@ NEWCHUNKYTEL:
 				lea		2*40*256(a1),a3			Plane3
 				lea		2*40*256(a3),a4			Plane5
 				lea		2*40*256(a4),a5			Plane7
-
 
 				bra.s	.BPPLoop
 .Const			dc.l	$0f0f0f0f,$55555555,$3333cccc
@@ -603,7 +603,7 @@ MODUL:			dc.w	0
 HTC:			dc.w	0
 WTC:			dc.w	0
 SCRMOD:			dc.w	0
-TELVAL:			dc.w	0
+Game_TeleportFrame_w:			dc.w	0
 
 SCREENPTRFLIG:	dc.l	0
 

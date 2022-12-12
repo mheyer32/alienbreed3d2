@@ -68,7 +68,7 @@ Plr1_Fall:
 				tst.w	Plr1_Health_w
 				ble.s	.nothrust
 
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 				move.b	jump_key,d7
 				tst.b	(a5,d7.w)
@@ -103,7 +103,7 @@ Plr1_Fall:
 
 				st		Plr_Decelerate_b
 				move.l	#-128,Plr_JumpSpeed_l
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 				move.b	jump_key,d7
 				tst.b	(a5,d7.w)
@@ -236,7 +236,7 @@ ARSE:
 				move.l	d2,Plr1_SnapYVel_l
 				move.l	d1,Plr1_SnapYOff_l
 
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				tst.b	$1d(a5)
 				beq.s	nothrust2
 				tst.b	Plr_CanJump_b
@@ -334,7 +334,7 @@ PLR2_fall
 
 				tst.w	Plr2_Health_w
 				ble.s	.nothrust
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 				move.b	jump_key,d7
 				tst.b	(a5,d7.w)
@@ -371,7 +371,7 @@ PLR2_fall
 				st		Plr_Decelerate_b
 
 				move.l	#-128,Plr_JumpSpeed_l
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 				move.b	jump_key,d7
 				tst.b	(a5,d7.w)

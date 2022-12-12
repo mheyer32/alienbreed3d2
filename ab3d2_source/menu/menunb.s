@@ -1864,7 +1864,7 @@ mnu_askfordisk:
 				dc.w	1
 				dc.l	2,0
 
-mnu_mainmenu:	dc.w	6,12					; X (bytes),Y (rows) of top left of scrn
+mnu_mainmenu:	dc.w	6,12					; X (bytes),Y (rows) of top left of Vid_Screen1Ptr_l
 				dc.l	mnu_maintext			; Text ptr
 				dc.w	4,70					; XCursor,YCursor
 				dc.w	20						; Spread

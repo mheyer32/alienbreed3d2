@@ -281,7 +281,7 @@ screendividethru:
 screendivide:
 				or.l	#$ffff0000,d7
 				move.w	leftclipandlast(pc),d6
-				move.l	#WorkSpace,a2
+				move.l	#Sys_Workspace_vl,a2
 
 				move.l	(a0),a3
 				move.l	4(a0),a4
@@ -334,7 +334,7 @@ outofcalc:
 
 .somethingtodraw:
 				move.l	#consttab,a1
-				move.l	#WorkSpace,a0
+				move.l	#Sys_Workspace_vl,a0
 				tst.b	Vid_FullScreen_b
 				bne		screendivideFULL
 
@@ -2521,7 +2521,7 @@ cant_tell:
 				move.w	6(a5,d2*8),d3
 
 				move.l	#CurrentPointBrights_vl,a5
-				tst.b	DOUPPER
+				tst.b	Draw_DoUpper_b
 				beq.s	.notupper
 				add.w	#4,a5
 .notupper

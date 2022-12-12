@@ -272,15 +272,15 @@ DONEMENU:
 
 				move.l	#borderpacked,d0
 				moveq	#0,d1
-				move.l	scrn,a0
-				lea		WorkSpace,a1
+				move.l	Vid_Screen1Ptr_l,a0
+				lea		Sys_Workspace_vl,a1
 				lea		$0,a2
 				jsr		unLHA
 
 				move.l	#borderpacked,d0
 				moveq	#0,d1
-				move.l	scrn2,a0
-				lea		WorkSpace,a1
+				move.l	Vid_Screen2Ptr_l,a0
+				lea		Sys_Workspace_vl,a1
 				lea		$0,a2
 				jsr		unLHA
 
@@ -1267,7 +1267,7 @@ WAITREL:
 
 				movem.l	d0/d1/d2/d3,-(a7)
 
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 WAITREL2:
 				btst	#7,$bfe001
 				beq.s	WAITREL2

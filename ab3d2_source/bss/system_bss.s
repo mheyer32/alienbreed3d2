@@ -11,4 +11,7 @@ MiscResourceBase:			ds.l	1
 PotgoResourceBase:			ds.l	1
 
 ; Chunk of statically allocated data for various calculations
-WorkSpace:					ds.l	8192
+Sys_Workspace_vl:			ds.l	8192
+
+Sys_Move16_b:				ds.b	1 ; Set if we have move16 available
+Sys_FPU_b:					ds.b	1 ; Set if we have FPU available

@@ -9,7 +9,7 @@ OrderZones:
 				move.l	a0,tmplistgraph
 
 				move.l	#ToDrawTab,a1
-				move.l	#WorkSpace,a4
+				move.l	#Sys_Workspace_vl,a4
 				move.l	a1,a3
 
 				moveq	#99,d0
@@ -80,7 +80,7 @@ RunThroughList:
 				move.l	Lvl_FloorLinesPtr_l,a1
 
 				move.w	2(a5),d0
-				move.l	#WorkSpace,a6
+				move.l	#Sys_Workspace_vl,a6
 				lea		(a6,d0.w*4),a6
 				move.l	(a6),d6
 				move.l	Lvl_ZoneAddsPtr_l,a0

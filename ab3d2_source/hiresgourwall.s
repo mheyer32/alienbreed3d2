@@ -144,7 +144,7 @@ screendivideGOUR:
 
 				or.l	#$ffff0000,d7			; high word for number of iterations/iterations mask
 				move.w	leftclipandlast(pc),d6	; left clip minus 1
-				move.l	#WorkSpace,a2
+				move.l	#Sys_Workspace_vl,a2
 
 				move.l	(a0),a3					; (Width<<16)>>widthShift
 				move.l	4(a0),a4				; dBM
@@ -215,7 +215,7 @@ outofcalcG:
 .somethingtodraw:
 
 				move.l	#consttab,a1
-				move.l	#WorkSpace,a0
+				move.l	#Sys_Workspace_vl,a0
 
 ; tst.b seethru
 ; bne screendividethru

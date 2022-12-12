@@ -18,20 +18,20 @@ Draw_Object:
 				bgt.s	.full_room
 
 .before_wat:
-				move.l	BEFOREWATTOP,draw_TopY_3D_l
-				move.l	BEFOREWATBOT,draw_BottomY_3D_l
+				move.l	Draw_BeforeWaterTop_l,draw_TopY_3D_l
+				move.l	Draw_BeforeWaterBottom_l,draw_BottomY_3D_l
 				move.b	#1,draw_WhichDoing_b
 				bra.s	.done_top_bot
 
 .after_wat:
-				move.l	AFTERWATTOP,draw_TopY_3D_l
-				move.l	AFTERWATBOT,draw_BottomY_3D_l
+				move.l	Draw_AfterWaterTop_l,draw_TopY_3D_l
+				move.l	Draw_AfterWaterBottom_l,draw_BottomY_3D_l
 				move.b	#0,draw_WhichDoing_b
 				bra.s	.done_top_bot
 
 .full_room:
-				move.l	TOPOFROOM,draw_TopY_3D_l
-				move.l	BOTOFROOM,draw_BottomY_3D_l
+				move.l	Draw_TopOfRoom_l,draw_TopY_3D_l
+				move.l	Draw_BottomOfRoom_l,draw_BottomY_3D_l
 				move.b	#0,draw_WhichDoing_b
 
 .done_top_bot:
@@ -72,7 +72,7 @@ Draw_Object:
 				bra		.insert_an_object
 
 .in_this_zone:
-				move.b	DOUPPER,d4
+				move.b	Draw_DoUpper_b,d4
 				move.b	ShotT_InUpperZone_b(a1),d3
 				eor.b	d4,d3
 				bne.s	.not_in_this_zone
@@ -315,7 +315,7 @@ draw_Object:
 ;				add.l	Vid_FastBufferPtr_l,d2
 ;				move.l	d2,toppt
 ;
-;				move.l	#WorkSpace,a5
+;				move.l	#Sys_Workspace_vl,a5
 ;				move.l	#glassball,a4
 ;				cmp.w	draw_LeftClipB_w,d0
 ;				bge.s	.ok_on_left
@@ -387,7 +387,7 @@ draw_Object:
 ;
 ;				muls	#SCREENWIDTH,d2
 ;
-;				move.l	#WorkSpace,a0
+;				move.l	#Sys_Workspace_vl,a0
 ;
 ;				move.w	#63,d0
 ;.readinto:
@@ -418,7 +418,7 @@ draw_Object:
 ;
 ;; Want to zoom an area d3*d4
 ;; in size up to 64*64 in size.
-;; move.l #WorkSpace,a0
+;; move.l #Sys_Workspace_vl,a0
 ;; move.l frompt,a2
 ;; move.w #104*4,d3
 ;; move.w #1,d6
@@ -551,7 +551,7 @@ draw_bitmap_glare:
 				asl.l	#7,d2
 				add.l	d2,d0
 				addq	#2,a0
-				move.l	TexturePal,a4
+				move.l	Draw_TexturePalettePtr_l,a4
 				sub.l	#512,a4
 				move.w	(a0)+,d2				; height
 				add.w	draw_AuxY_w,d2
@@ -570,7 +570,7 @@ draw_bitmap_glare:
 ; vertical constants.
 				move.l	GLF_DatabasePtr_l,a6
 				lea		GLFT_FrameData_l(a6),a6
-				move.l	#Objects,a5
+				move.l	#Draw_ObjectPtrs_vl,a5
 				move.w	2(a0),d7
 				neg.w	d7
 				asl.w	#4,d7
@@ -952,7 +952,7 @@ pastobjscale:
 
 				move.l	GLF_DatabasePtr_l,a6
 				lea		GLFT_FrameData_l(a6),a6
-				move.l	#Objects,a5
+				move.l	#Draw_ObjectPtrs_vl,a5
 				move.w	2(a0),d7
 				asl.w	#4,d7
 				adda.w	d7,a5					; a5 pointing to?
@@ -1007,7 +1007,7 @@ pastobjscale:
 
 				move.l	(a5)+,WAD_PTR
 				move.l	(a5)+,PTR_PTR
-				add.l	4(a5),a4				; a5: #Objects
+				add.l	4(a5),a4				; a5: #Draw_ObjectPtrs_vl
 				move.l	4(a5),draw_BasePalPtr_l
 				move.l	(a6),d7					; pointer to current frame
 				move.w	d7,DOWN_STRIP			; leftmost strip?
@@ -2721,7 +2721,7 @@ dontusegour:
 				tst.b	drawit(pc)
 				beq		polybehind
 
-				move.l	#PolyTopTab,a4
+				move.l	#draw_PolyTopTab_vw,a4
 				move.w	draw_Left_w,d1
 				move.w	draw_Right_w,d7
 				move.w	draw_LeftClipB_w,d3
@@ -2751,7 +2751,7 @@ dontusegour:
 
 				move.w	d1,a2
 				moveq	#0,d0
-				move.l	TextureMaps,a0
+				move.l	Draw_TextureMapsPtr_l,a0
 				move.w	(a1)+,d0
 				bge.s	.notsec
 
@@ -2808,7 +2808,7 @@ toobright:
 				asl.w	#8,d1
 ; move.w (a1,d1.w*2),d1
 ; asl.w #3,d1
-				move.l	TexturePal,a1
+				move.l	Draw_TexturePalettePtr_l,a1
 				add.l	#256*32,a1
 				lea		(a1,d1.w),a1
 				tst.b	draw_PreGouraud_b
@@ -2823,7 +2823,7 @@ dopoly:
 				cmp.w	draw_ObjClipB_w,d1
 				bge		nodl
 
-				move.w	PolyBotTab-PolyTopTab(a4),d2
+				move.w	draw_PolyBotTab_vw-draw_PolyTopTab_vw(a4),d2
 				cmp.w	draw_ObjClipT_w,d2
 				ble		nodl
 
@@ -2845,8 +2845,8 @@ nocl:
 nocr:
 ; d1=top end
 ; d2=bot end
-				move.l	2+PolyBotTab-PolyTopTab(a4),d3
-				move.l	6+PolyBotTab-PolyTopTab(a4),d4
+				move.l	2+draw_PolyBotTab_vw-draw_PolyTopTab_vw(a4),d3
+				move.l	6+draw_PolyBotTab_vw-draw_PolyTopTab_vw(a4),d4
 				move.l	2(a4),d5
 				move.l	6(a4),d6
 				sub.l	d5,d3
@@ -2940,7 +2940,7 @@ val				SET		val+SCREENWIDTH
 				ENDR
 
 predoglare:
-				move.l	TexturePal,a1
+				move.l	Draw_TexturePalettePtr_l,a1
 				sub.w	#512,a1
 
 DOGLAREPOLY:
@@ -2952,7 +2952,7 @@ DOGLAREPOLY:
 				cmp.w	draw_ObjClipB_w,d1
 				bge		nodlGL
 
-				move.w	PolyBotTab-PolyTopTab(a4),d2
+				move.w	draw_PolyBotTab_vw-draw_PolyTopTab_vw(a4),d2
 				cmp.w	draw_ObjClipT_w,d2
 				ble		nodlGL
 
@@ -2974,8 +2974,8 @@ noclGL:
 nocrGL:
 ; d1=top end
 ; d2=bot end
-				move.l	2+PolyBotTab-PolyTopTab(a4),d3
-				move.l	6+PolyBotTab-PolyTopTab(a4),d4
+				move.l	2+draw_PolyBotTab_vw-draw_PolyTopTab_vw(a4),d3
+				move.l	6+draw_PolyBotTab_vw-draw_PolyTopTab_vw(a4),d4
 				move.l	2(a4),d5
 				move.l	6(a4),d6
 				sub.l	d5,d3
@@ -3076,7 +3076,7 @@ LinesPtr:		dc.l	0
 PtsPtr:			dc.l	0
 
 gotlurvelyshading:
-				move.l	TexturePal,a1
+				move.l	Draw_TexturePalettePtr_l,a1
 				add.l	#256*32,a1
 				tst.b	draw_PreGouraud_b
 
@@ -3101,7 +3101,7 @@ dopolyg:
 				cmp.w	draw_ObjClipB_w,d1
 				bge		nodlg
 
-				move.w	PolyBotTab-PolyTopTab(a4),d2
+				move.w	draw_PolyBotTab_vw-draw_PolyTopTab_vw(a4),d2
 				cmp.w	draw_ObjClipT_w,d2
 				ble		nodlg
 
@@ -3122,8 +3122,8 @@ nocrg:
 
 ; d1=top end
 ; d2=bot end
-				move.l	2+PolyBotTab-PolyTopTab(a4),d3
-				move.l	6+PolyBotTab-PolyTopTab(a4),d4
+				move.l	2+draw_PolyBotTab_vw-draw_PolyTopTab_vw(a4),d3
+				move.l	6+draw_PolyBotTab_vw-draw_PolyTopTab_vw(a4),d4
 				move.l	2(a4),d5
 				move.l	6(a4),d6
 				sub.l	d5,d3
@@ -3166,7 +3166,7 @@ nocrg:
 				divs.l	d0,d3
 				divs.l	d0,d4
 				add.l	ontoscrg(pc,d1.w*4),a3
-				move.w	10+PolyBotTab-PolyTopTab(a4),d1
+				move.w	10+draw_PolyBotTab_vw-draw_PolyTopTab_vw(a4),d1
 				move.w	10(a4),d7
 				sub.w	d7,d1
 				asl.w	#8,d7
@@ -3263,7 +3263,7 @@ toodimh:
 
 ; move.w (a1,d1.w*2),d1
 ; asl.w #3,d1
-				move.l	TexturePal,a1
+				move.l	Draw_TexturePalettePtr_l,a1
 				add.l	#256*32,a1
 				add.w	d1,a1
 				tst.b	draw_PreGouraud_b
@@ -3280,7 +3280,7 @@ dopolyh:
 				cmp.w	draw_ObjClipB_w,d1
 				bge		nodlh
 
-				move.w	PolyBotTab-PolyTopTab(a4),d2
+				move.w	draw_PolyBotTab_vw-draw_PolyTopTab_vw(a4),d2
 				cmp.w	draw_ObjClipT_w,d2
 				ble		nodlh
 
@@ -3302,8 +3302,8 @@ noclh:
 nocrh:
 ; d1=top end
 ; d2=bot end
-				move.l	2+PolyBotTab-PolyTopTab(a4),d3
-				move.l	6+PolyBotTab-PolyTopTab(a4),d4
+				move.l	2+draw_PolyBotTab_vw-draw_PolyTopTab_vw(a4),d3
+				move.l	6+draw_PolyBotTab_vw-draw_PolyTopTab_vw(a4),d4
 				move.l	2(a4),d5
 				move.l	6(a4),d6
 				sub.l	d5,d3
@@ -3410,7 +3410,7 @@ draw_PutInLines:
 
 				bgt		this_line_on_top
 
-				move.l	#PolyBotTab,a4
+				move.l	#draw_PolyBotTab_vw,a4
 				exg		d2,d4
 				exg		d3,d5
 				cmp.w	draw_RightClipB_w,d2
@@ -3525,7 +3525,7 @@ draw_PutInLines:
 				bra		this_line_flat
 
 this_line_on_top:
-				move.l	#PolyTopTab,a4
+				move.l	#draw_PolyTopTab_vw,a4
 				cmp.w	draw_RightClipB_w,d2
 				bge		this_line_flat
 
@@ -3657,7 +3657,7 @@ piglloop:
 
 				bgt		this_line_on_top_gouraud
 
-				move.l	#PolyBotTab,a4
+				move.l	#draw_PolyBotTab_vw,a4
 				exg		d2,d4
 				exg		d3,d5
 				cmp.w	draw_RightClipB_w,d2
@@ -3785,7 +3785,7 @@ piglloop:
 				bra		this_line_flat_gouraud
 
 this_line_on_top_gouraud:
-				move.l	#PolyTopTab,a4
+				move.l	#draw_PolyTopTab_vw,a4
 				cmp.w	draw_RightClipB_w,d2
 				bge		this_line_flat_gouraud
 

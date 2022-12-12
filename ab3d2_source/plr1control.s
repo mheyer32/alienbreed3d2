@@ -71,7 +71,7 @@ Plr1_MouseControl:
 				move.w	d0,SMIDDLEY
 				muls	#SCREENWIDTH,d0
 				move.l	d0,SBIGMIDDLEY
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 
 ;the right mouse button triggers the next_weapon key
@@ -186,7 +186,7 @@ gunheldlast:
 				dc.w	0
 
 Plr1_AlwaysKeys:
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 
 				move.b	next_weapon_key,d7
@@ -371,7 +371,7 @@ FULLSCRTEMP:	dc.w	0
 WIPEDISPLAY:
 				move.l	#borderpacked,d0
 				moveq	#0,d1
-				lea		WorkSpace,a1
+				lea		Sys_Workspace_vl,a1
 				lea		$0,a2
 				jsr		unLHA
 
@@ -424,18 +424,16 @@ SHOWPLR1GUNNAME:
 				jsr		SENDMESSAGENORET
 				rts
 
-				align	4
+
 BIGsmall:		dc.b	0
 lastscr:		dc.b	0
 
-				cnop	0,4
+				align	4
 Plr1_KeyboardControl:
-
 				move.l	#SineTable,a0
-
 				jsr		Plr1_AlwaysKeys
-				move.l	#KeyMap,a5
 
+				move.l	#KeyMap_vb,a5
 				move.w	STOPOFFSET,d0
 				moveq	#0,d7
 				move.b	look_up_key,d7
@@ -448,6 +446,7 @@ Plr1_KeyboardControl:
 				bgt.s	.nolookup
 				move.w	#-512*20,Plr1_AimSpeed_l
 				move.w	#-80,d0
+
 .nolookup:
 				moveq	#0,d7
 				move.b	look_down_key,d7
@@ -460,7 +459,6 @@ Plr1_KeyboardControl:
 				move.w	#512*20,Plr1_AimSpeed_l
 				move.w	#80,d0
 .nolookdown:
-
 				move.b	centre_view_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.nocent
@@ -545,7 +543,7 @@ nofaster:
 				beq.s	noleftturn
 				sub.w	TURNSPD,d3
 noleftturn
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				move.b	temprightkey,d7
 				tst.b	(a5,d7.w)
 				beq.s	norightturn
@@ -575,7 +573,7 @@ noturnposs:
 				add.w	d2,d4
 				asr.w	#1,d4
 noleftslide
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				move.b	tempsrkey,d7
 				tst.b	(a5,d7.w)
 				beq.s	norightslide

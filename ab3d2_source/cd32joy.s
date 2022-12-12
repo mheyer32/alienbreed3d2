@@ -93,7 +93,7 @@ _ReadJoy1
 ;     JPF_JOY_LEFT            Left
 ;     JPF_JOY_RIGHT           Right
 
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				moveq	#0,d5
 				move.b	forward_key,d5
 				move.l	d0,d1
@@ -192,7 +192,7 @@ _ReadJoy1
 
 .Joystick
 
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				move.l	#SineTable,a0
 
 				btst	#1,$dff00c
@@ -278,7 +278,7 @@ _ReadJoy2
 ;     JPF_JOY_LEFT            Left
 ;     JPF_JOY_RIGHT           Right
 
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				moveq	#0,d5
 				move.b	forward_key,d5
 				move.l	d0,d1
@@ -377,7 +377,7 @@ _ReadJoy2
 
 .Joystick
 
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				move.l	#SineTable,a0
 
 				btst	#1,$dff00c

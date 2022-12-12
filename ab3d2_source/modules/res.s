@@ -15,7 +15,7 @@
 
 ; *****************************************************************************
 ; *
-; * Objects (bitmap and vector)
+; * Draw_ObjectPtrs_vl (bitmap and vector)
 ; *
 ; *****************************************************************************
 
@@ -25,7 +25,7 @@ Res_LoadObjects:
 				move.l	GLF_DatabasePtr_l,a0
 				lea		GLFT_ObjGfxNames_l(a0),a0
 				move.l	#MEMF_ANY,IO_MemType_l
-				move.l	#Objects,a1
+				move.l	#Draw_ObjectPtrs_vl,a1
 
 .load_object_loop:
 				move.l	a0,a4
@@ -214,19 +214,19 @@ Res_LoadFloorTextures:
 				subq	#1,a1
 				move.l	a1,io_FileExtPointer_l
 				move.l	#io_Buffer_vb,a0
-				move.l	#TextureMaps,d0
+				move.l	#Draw_TextureMapsPtr_l,d0
 				move.l	#0,d1
 				jsr		IO_QueueFile
 
-; move.l d0,TextureMaps
+; move.l d0,Draw_TextureMapsPtr_l
 				move.l	io_FileExtPointer_l,a1
 				move.l	#".pal",(a1)
 				move.l	#io_Buffer_vb,a0
-				move.l	#TexturePal,d0
+				move.l	#Draw_TexturePalettePtr_l,d0
 				move.l	#0,d1
 				jsr		IO_QueueFile
 
-; move.l d0,TexturePal
+; move.l d0,Draw_TexturePalettePtr_l
 				rts
 
 Res_FreeFloorTextures:

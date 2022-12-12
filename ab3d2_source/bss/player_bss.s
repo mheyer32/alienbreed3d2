@@ -163,5 +163,5 @@ Plr_CanJump_b:				ds.b	1
 
 ; Tables...
 			align 4
-PLR1_ObjDists:				ds.w	250
-PLR2_ObjDists:				ds.w	250
+Plr1_ObjectDistances_vw:	ds.w	250
+Plr2_ObjectDistances_vw:	ds.w	250

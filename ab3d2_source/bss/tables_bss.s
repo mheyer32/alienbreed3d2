@@ -17,9 +17,11 @@ OnScreen_vl:			ds.l	2*800	; store screen projected X coordinates for rotated poi
 
 walltiles:				ds.l	40
 
-leftsidetab:			ds.w	512*2
-rightsidetab:			ds.w	512*2
-leftbrighttab:			ds.w	512*2
-rightbrighttab:			ds.w	512*2
+LeftSideTable_vw:			ds.w	512*2
+RightSideTable_vw:			ds.w	512*2
+LeftBrightTable_vw:			ds.w	512*2
+RightBrightTable_vw:			ds.w	512*2
 
 consttab:				ds.b	65536
+
+KeyMap_vb:					ds.b	256
