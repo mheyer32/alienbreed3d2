@@ -223,7 +223,7 @@ outofcalcG:
 				tst.b	Vid_FullScreen_b
 				bne		scrdrawlopGB
 
-;				tst.b	DOUBLEWIDTH
+;				tst.b	Vid_DoubleWidth_b
 ;				bne		scrdrawlopGDOUB
 				bra		scrdrawlopG
 
@@ -1324,7 +1324,7 @@ simplewallPACK2G:
 GOURSPEED:		dc.l	0
 
 gotoendG:
-				tst.b	DOUBLEHEIGHT
+				tst.b	Vid_DoubleHeight_b
 				bne		doubwallGOUR
 
 				sub.w	d5,d6					; height to draw.
@@ -1504,7 +1504,7 @@ nocliptopGB:
 
 gotoendGB:
 
-				tst.b	DOUBLEHEIGHT
+				tst.b	Vid_DoubleHeight_b
 				bne		doubwallGOURBIG
 
 				sub.w	d5,d6					; height to draw.

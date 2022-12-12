@@ -455,7 +455,7 @@ ai_Widget:
 
 .no_remove:
 				asl.w	#4,d0
-				move.l	#ai_NastyWork_vl,a1
+				move.l	#ai_EnemyWorkspace_vl,a1
 				add.w	d0,a1
 				move.w	#0,AI_WorkT_DamageDone_w(a1)
 				move.w	#0,AI_WorkT_DamageTaken_w(a1)
@@ -470,7 +470,7 @@ ai_Widget:
 .no_team:
 				move.w	(a0),d0
 				asl.w	#4,d0
-				move.l	#ai_NastyWork_vl,a1
+				move.l	#ai_EnemyWorkspace_vl,a1
 				add.w	d0,a1
 				move.w	#0,AI_WorkT_DamageDone_w(a1)
 				move.w	#0,AI_WorkT_DamageTaken_w(a1)
@@ -1623,7 +1623,7 @@ ai_CheckFloorCeiling:
 
 ai_StorePlayerPosition:
 				move.w	(a0),d0
-				move.l	#ai_NastyWork_vl,a2
+				move.l	#ai_EnemyWorkspace_vl,a2
 				asl.w	#4,d0
 				add.w	d0,a2
 				move.w	Plr1_XOff_l,AI_WorkT_LastX_w(a2)
@@ -1768,7 +1768,7 @@ AI_LookForPlayer1:
 				rts
 
 AI_ClearNastyMem:
-				move.l	#ai_NastyWork_vl,a0
+				move.l	#ai_EnemyWorkspace_vl,a0
 				move.l	#299,d0
 .lopp
 				move.l	#0,(a0)

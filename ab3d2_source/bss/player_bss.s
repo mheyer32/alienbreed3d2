@@ -165,3 +165,13 @@ Plr_CanJump_b:				ds.b	1
 			align 4
 Plr1_ObjectDistances_vw:	ds.w	250
 Plr2_ObjectDistances_vw:	ds.w	250
+
+Plr_Health_w:				ds.w	2
+Plr_AmmoCounts_vw:			ds.w	20
+Plr_Shield_w:				ds.w	2
+Plr_Weapons_vw:				ds.w	10
+
+;MASTERPLAYERTWOHEALTH:		ds.w	2
+;MASTERPLAYERTWOAMMO:		ds.w	20
+;MASTERPLAYERTWOSHIELD:		ds.w	2
+;MASTERPLAYERTWOGUNS:		ds.w	10

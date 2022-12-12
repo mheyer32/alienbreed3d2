@@ -161,7 +161,7 @@ SetupDoubleheightCopperlist:
 
 				CALLEXEC Forbid
 
-				tst.b	DOUBLEHEIGHT
+				tst.b	Vid_DoubleHeight_b
 				beq.s	.noDoubleheight
 				move.l	#MyUCopList,vp_UCopIns(a2)
 				bra.s	.install

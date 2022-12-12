@@ -2224,7 +2224,7 @@ ItsAKey:
 
 				move.w	#$0f0f,14(a0)
 
-				tst.b	NASTY
+				tst.b	AI_NoEnemies_b
 				bne		.yesnas
 				move.w	#-1,12(a0)
 				rts

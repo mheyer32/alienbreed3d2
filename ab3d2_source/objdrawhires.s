@@ -215,7 +215,7 @@ draw_Object:
 ;				add.w	Vid_CentreY_w,d2
 ;
 ;				divs	d1,d0
-;				asr.w	d0						; DOUBLEWIDTH test
+;				asr.w	d0						; Vid_DoubleWidth_b test
 ;
 ;				add.w	Vid_CentreX_w,d0				;x pos of middle
 ;

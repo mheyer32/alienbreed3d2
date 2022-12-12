@@ -341,7 +341,7 @@ outofcalc:
 ; tst.b seethru
 ; bne screendividethru
 
-				;tst.b	DOUBLEWIDTH
+				;tst.b	Vid_DoubleWidth_b
 				;bne		scrdrawlopDOUB
 				bra		scrdrawlop
 
@@ -536,7 +536,7 @@ ffscrpickhowbrightD:
 				SCALE
 
 screendivideFULL:
-				tst.b	DOUBLEWIDTH
+				tst.b	Vid_DoubleWidth_b
 				bne		scrdrawlopFULLDOUB
 
 scrdrawlopFULL:
@@ -909,7 +909,7 @@ storage:		ds.l	500
 ;; d6=left angbright
 ;				divs	d0,d1
 ;
-;				asr.w	d1					; DOUBLEWIDTH test
+;				asr.w	d1					; Vid_DoubleWidth_b test
 ;
 ;				add.w	Vid_CentreX_w,d1
 ;
@@ -943,7 +943,7 @@ storage:		ds.l	500
 ;				move.w	d6,angbright
 ;				divs	d2,d3
 ;
-;				asr.w	d3					; DOUBLEWIDTH test
+;				asr.w	d3					; Vid_DoubleWidth_b test
 ;
 ;				add.w	Vid_CentreX_w,d3
 ;				move.w	strtop(pc),12(a0)
@@ -1714,7 +1714,7 @@ STOPOFFSET:		dc.w	0
 SBIGMIDDLEY:	dc.l	SCREENWIDTH*FS_HEIGHT/2		; renderbuffer offset to middle line
 
 gotoend:
-				tst.b	DOUBLEHEIGHT
+				tst.b	Vid_DoubleHeight_b
 				bne		doubwall
 				sub.w	d5,d6					; end-start; height to draw?
 				ble		nostripq
@@ -1869,7 +1869,7 @@ ScreenWallstripdrawBIG:
 .nsbd2:
 
 gotoendBIG
-				tst.b	DOUBLEHEIGHT
+				tst.b	Vid_DoubleHeight_b
 				bne		doubwallBIG
 				sub.w	d5,d6					; d6 = height to draw.
 				ble		nostripq

@@ -4,7 +4,7 @@
 ; BSS data - to be included in BSS section
 			align 4
 
-ai_NastyWork_vl:		ds.l	4*300
+ai_EnemyWorkspace_vl:	ds.l	4*300
 AI_Teamwork_vl:			ds.l	4*30
 AI_Damaged_vw:			ds.w	300
 AI_DamagePtr_l:			ds.l	1
@@ -31,3 +31,4 @@ ai_ToSide_w:			ds.w	1
 ai_AnimFacing_w:		ds.w	1
 ai_DoAction_b:			ds.b	1
 ai_FinishedAnim_b:		ds.b	1
+AI_NoEnemies_b:			ds.b	1

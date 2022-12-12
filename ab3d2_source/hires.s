@@ -190,7 +190,7 @@ _start:
 				addq	#1,d0
 				dbra	d1,.fill_const
 
-				jsr		START
+				jsr		Game_Start
 
 				rts
 
@@ -2088,7 +2088,7 @@ nodrawp2:
 				move.w	#0,d0
 				move.w	#0,d1
 
-				not.b	DOUBLEHEIGHT
+				not.b	Vid_DoubleHeight_b
 
 				; Check renderbuffer setup variables and clear screen
 				bsr		SetupRenderbufferSize
@@ -2104,7 +2104,7 @@ notdoubheight2
 				beq.s	notdoubwidth
 				tst.b	LASTDW
 				bne		notdoubwidth2
-				not.b	DOUBLEWIDTH
+				not.b	Vid_DoubleWidth_b
 
 				bsr		SetupRenderbufferSize
 
@@ -2275,7 +2275,7 @@ SetupRenderbufferSize:
 				beq.s	.setupSmallScreen
 
 				move.w	#FS_WIDTH,d0
-				tst.b	DOUBLEWIDTH
+				tst.b	Vid_DoubleWidth_b
 				beq.s	.noDoubleWidth
 				lsr.w	#1,d0
 .noDoubleWidth
@@ -2288,7 +2288,7 @@ SetupRenderbufferSize:
 
 .setupSmallScreen:
 				move.w	#SMALL_WIDTH,d0
-				tst.b	DOUBLEWIDTH
+				tst.b	Vid_DoubleWidth_b
 				beq.s	.noDoubleWidth2
 				lsr.w	#1,d0
 .noDoubleWidth2
@@ -2532,11 +2532,11 @@ CLIPANDDRAW:
 				move.l (sp)+,d1
 
 .nodov:
-				tst.b	DOUBLEWIDTH				; correct aspect ratio for DW/DH
+				tst.b	Vid_DoubleWidth_b				; correct aspect ratio for DW/DH
 				beq.s	.noDoubleWidth
 				asr.w	#1,d0
 				asr.w	#1,d2
-.noDoubleWidth	tst.b	DOUBLEHEIGHT
+.noDoubleWidth	tst.b	Vid_DoubleHeight_b
 				;beq.s	.noDoubleHeight         ; 0xABADCAFE - commented out to avoid branch converted to nop
 				;asr.w	#1,d1					; DOUBLEHIGHT renderbuffer is still full height
 				;asr.w	#1,d3
@@ -2843,8 +2843,8 @@ NOLINE:
 				rts
 
 DRAWAMAPLINE:
-;				move.b	DOUBLEHEIGHT,d5
-;				or.b	DOUBLEWIDTH,d5
+;				move.b	Vid_DoubleHeight_b,d5
+;				or.b	Vid_DoubleWidth_b,d5
 ;				tst.b	d5
 ;				bne		DOITFAT
 
@@ -3083,6 +3083,7 @@ SAVELETTER:		dc.b	'd',0
 				include "screensetup.s"
 				include	"chunky.s"
 
+				align 4
 PAUSEOPTS:
 				include	"pauseopts.s"
 
@@ -5031,7 +5032,7 @@ pointrotlop2B:
 				move.l	d1,(a1)+	; this stores the rotated points, but why does it factor in the scale factor
 									; for the screen? Or is storing in view space with aspect ratio applied actually
 									; convenient?
-									; WOuld here a good opportunity to factor in DOUBLEWIDTH?
+									; WOuld here a good opportunity to factor in Vid_DoubleWidth_b?
 
 				tst.l	d1
 				bgt.s	ptnotbehindB
@@ -7476,7 +7477,7 @@ groundfloor:
 
 
 .donsht:
-				move.w	scaleval(pc),d3			; FIMXE: is this an opportunity to scale for DOUBLEWIDTH/DOUBLEHEIGHT?
+				move.w	scaleval(pc),d3			; FIMXE: is this an opportunity to scale for Vid_DoubleWidth_b/Vid_DoubleHeight_b?
 				beq.s	.samescale
 				bgt.s	.scaledown
 				neg.w	d3
@@ -7530,10 +7531,10 @@ pastscale:
 				tst.b	drawit(pc)
 				beq		dontdrawfloor
 
-				tst.b	DOUBLEHEIGHT
+				tst.b	Vid_DoubleHeight_b
 				beq		pix1h
 
-				; DOUBLEHEIGHT rendering
+				; Vid_DoubleHeight_b rendering
 				move.l	a0,-(a7)
 				move.w	linedir,d1				; line to line in screen
 				add.w	d1,linedir				; x2
@@ -7623,10 +7624,10 @@ pastscale:
 				addq	#1,d7
 				sub.w	d1,d7					; number of lines
 
-				asr.w	#1,d7					; number of lines /2 for DOUBLEHEIGHT
+				asr.w	#1,d7					; number of lines /2 for Vid_DoubleHeight_b
 				ble		predontdrawfloor		; nothing left?
 
-				asr.w	#1,d1					; top line/2 for DOUBLEHEIGHT
+				asr.w	#1,d1					; top line/2 for Vid_DoubleHeight_b
 
 				move.w	View2FloorDist,d0		; ydist<<6 to floor/ceiling	; distance of viewer to floor
 				ext.l	d0
@@ -7637,7 +7638,7 @@ pastscale:
 				bne.s	.notzero
 				moveq	#1,d0					; always start at line 1?
 .notzero
-				add.w	d0,d0					; start line# *2 DOUBLEHEIGHT
+				add.w	d0,d0					; start line# *2 Vid_DoubleHeight_b
 
 				muls.w	linedir,d1				; top line in screen times renderwidth (typical 320)
 				add.l	d1,a6					; this is where we start writing?
@@ -8584,7 +8585,7 @@ doneallmult:
 ***********************************
 
 
-				;tst.b	DOUBLEWIDTH
+				;tst.b	Vid_DoubleWidth_b
 				;beq.s	.nodoub
 				bra.s	.nodoub
 
@@ -9153,7 +9154,7 @@ oknotoffbototot
 ; asr.w #7,d3
 ; add.w d3,d0
 
-				tst.b	DOUBLEHEIGHT
+				tst.b	Vid_DoubleHeight_b
 				beq.s	.nodoub
 				and.b	#$fe,d0
 .nodoub:
@@ -9246,7 +9247,7 @@ texturedwaterDOUB:
 ; asr.w #7,d3
 ; add.w d3,d0
 
-				tst.b	DOUBLEHEIGHT
+				tst.b	Vid_DoubleHeight_b
 				beq.s	.nodoub
 				and.b	#$fe,d0
 .nodoub:
@@ -11865,8 +11866,7 @@ ZDiff_w:		dc.w	0
 PlayEcho:		dc.w	0 ; accessed as byte
 PLR1:			dc.b	$ff
 PLR2:			dc.b	$ff
-DOUBLEWIDTH:	dc.b	$0,0
-DOUBLEHEIGHT:	dc.b	0,0
+
 
 ;liftanimtab:
 

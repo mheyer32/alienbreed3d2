@@ -7,6 +7,7 @@
 ; System resource pointers
 _DOSBase:					ds.l	1
 _GfxBase:					ds.l	1
+_IntuitionBase:				ds.l	1
 MiscResourceBase:			ds.l	1
 PotgoResourceBase:			ds.l	1
 

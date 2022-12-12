@@ -1,4 +1,4 @@
-
+				align 4
 tmplistgraph:	dc.l	0
 
 OrderZones:

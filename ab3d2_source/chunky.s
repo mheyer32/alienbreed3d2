@@ -28,10 +28,10 @@ Vid_ConvertC2P:
 				beq		.smallscreen
 
 				; fullscreen
-				tst.b	DOUBLEWIDTH
+				tst.b	Vid_DoubleWidth_b
 				bne		.doublewidthFullscreen
 
-				tst.b	DOUBLEHEIGHT
+				tst.b	Vid_DoubleHeight_b
 				bne		.doubleheightFullscreen
 
 				move.w	#SCREENWIDTH,d0
@@ -61,7 +61,7 @@ Vid_ConvertC2P:
 ; d6.l	chunkylen [bytes] -- offset between one row and the next in chunkybuffer
 
 .doublewidthFullscreen
-				tst.b	DOUBLEHEIGHT
+				tst.b	Vid_DoubleHeight_b
 				bne.s	.doublewidthheightFullscreen
 
 				move.w	#FS_WIDTH/2,d0
@@ -129,9 +129,9 @@ Vid_ConvertC2P:
 
 
 .smallscreen
-				tst.b	DOUBLEWIDTH
+				tst.b	Vid_DoubleWidth_b
 				bne		.doublewidthSmallscreen
-				tst.b	DOUBLEHEIGHT
+				tst.b	Vid_DoubleHeight_b
 				bne		.doubleheightSmallscreen
 
 				moveq.l	#0,d0					; x
@@ -153,7 +153,7 @@ Vid_ConvertC2P:
 				rts
 
 .doublewidthSmallscreen
-				tst.b	DOUBLEHEIGHT
+				tst.b	Vid_DoubleHeight_b
 				bne.s	.doublewidthheightSmallscreen
 
 				move.w	#SMALL_WIDTH/2,d0

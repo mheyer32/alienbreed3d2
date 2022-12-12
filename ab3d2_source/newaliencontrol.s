@@ -1,13 +1,13 @@
 
-gotgun:			dc.w	0
-
+;gotgun:			dc.w	0
+				align 4
 ANIMPOINTER:	dc.l	0
 
 ALIENBRIGHT:	dc.w	0
 
 ItsAnAlien:
 
-				tst.b	NASTY
+				tst.b	AI_NoEnemies_b
 				beq.s	.NONASIES
 
 				move.l	#32*256,StepUpVal
@@ -148,7 +148,7 @@ Collectable:
 
 				move.w	d0,EntT_GraphicRoom_w(a0)
 
-				tst.b	NASTY
+				tst.b	AI_NoEnemies_b
 				beq.s	.nolocks
 				move.l	EntT_DoorsHeld_w(a0),d1
 				or.l	d1,DoorLocks
@@ -224,7 +224,7 @@ Activatable:
 				bne		ACTIVATED
 
 				move.w	d0,EntT_GraphicRoom_w(a0)
-				tst.b	NASTY
+				tst.b	AI_NoEnemies_b
 				beq.s	.nolocks
 				move.l	EntT_DoorsHeld_w(a0),d1
 				or.l	d1,DoorLocks
@@ -485,7 +485,7 @@ StillHere:
 .okinroom
 				move.b	#1,EntT_NumLives_b(a0)
 
-				tst.b	NASTY
+				tst.b	AI_NoEnemies_b
 				beq.s	.nolocks
 				move.l	EntT_DoorsHeld_w(a0),d1
 				or.l	d1,DoorLocks
