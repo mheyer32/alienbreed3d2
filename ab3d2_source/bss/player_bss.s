@@ -20,6 +20,7 @@ Plr1_PointsToRotatePtr_l:	ds.l	1
 Plr1_ListOfGraphRoomsPtr_l:	ds.l	1
 Plr1_Height_l:				ds.l	1
 Plr1_BobbleY_l:				ds.l	1
+Plr1_AimSpeed_l:			ds.l	1
 
 Plr1_SnapXOff_l:			ds.l	1
 Plr1_SnapYOff_l:			ds.l	1
@@ -71,6 +72,7 @@ Plr1_Squished_b:			ds.b	1
 Plr1_Echo_b:				ds.b	1
 Plr1_Dead_b:				ds.b	1
 Plr1_Fire_b:				ds.b	1
+Plr1_Clicked_b:				ds.b    1
 Plr1_TmpClicked_b:			ds.b	1
 Plr1_TmpSpcTap_b:			ds.b	1
 Plr1_TmpDucked_b:			ds.b	1
@@ -92,6 +94,7 @@ Plr2_PointsToRotatePtr_l:	ds.l 	1
 Plr2_ListOfGraphRoomsPtr_l: ds.l 	1
 Plr2_Height_l:				ds.l	1
 Plr2_BobbleY_l:				ds.l	1
+Plr2_AimSpeed_l:			ds.l	1
 
 Plr2_SnapXOff_l:			ds.l	1
 Plr2_SnapYOff_l:			ds.l	1
@@ -141,6 +144,7 @@ Plr2_Squished_b:			ds.b	1
 Plr2_Echo_b:				ds.b	1
 Plr2_Dead_b:				ds.b	1
 Plr2_Fire_b:				ds.b	1
+Plr2_Clicked_b:				ds.b	1
 Plr2_TmpClicked_b:			ds.b	1
 Plr2_TmpSpcTap_b:			ds.b	1
 Plr2_TmpDucked_b:			ds.b	1

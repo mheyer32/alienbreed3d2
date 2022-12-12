@@ -1,27 +1,23 @@
 
-PLR1_clicked:	dc.b	0
-PLR2_clicked:	dc.b	0
 popping:		ds.l	5*4
 targdist:		dc.w	0
 targetydiff:	dc.l	0
-PLR1_TimeToShoot: dc.w	0
-PLR2_TimeToShoot: dc.w	0
+Plr1_TimeToShoot_w: dc.w	0
+Plr2_TimeToShoot_w: dc.w	0
 
 tempangpos:		dc.w	0
-
 MaxFrame:		dc.w	0
 BULTYPE:		dc.w	0
 AmmoInMyGun:	dc.w	0
 
 Player1Shot:
-
-				tst.w	PLR1_TimeToShoot
+				tst.w	Plr1_TimeToShoot_w
 				beq.s	okcanfire
 
 				move.w	TempFrames,d0
-				sub.w	d0,PLR1_TimeToShoot
+				sub.w	d0,Plr1_TimeToShoot_w
 				bge		PLR1_nofire
-				move.w	#0,PLR1_TimeToShoot
+				move.w	#0,Plr1_TimeToShoot_w
 				bra		PLR1_nofire
 
 okcanfire:
@@ -80,7 +76,8 @@ okcanfire:
 				move.l	#PLR1_ObsInLine,a1
 				move.l	Lvl_ObjectDataPtr_l,a0
 				move.l	#PLR1_ObjDists,a2
-findclosestinline
+
+findclosestinline:
 
 				tst.w	(a0)
 				blt		outofline
@@ -109,6 +106,7 @@ findclosestinline
 				move.l	d2,d3
 				bge.s	.oknotneg
 				neg.l	d2
+
 .oknotneg:
 				divs	#44,d2
 				cmp.w	d6,d2
@@ -128,8 +126,6 @@ notlinedup:
 				bra		findclosestinline
 
 outofline:
-
-
 				move.w	d1,targdist
 
 				move.l	targetydiff,d5
@@ -142,7 +138,8 @@ outofline:
 				tst.w	d1
 				bgt.s	okdistthing
 				moveq	#1,d1
-okdistthing
+
+okdistthing:
 				divs	d1,d5
 				move.w	d5,bulyspd
 
@@ -165,14 +162,13 @@ okdistthing
 				rts
 
 .okcanshoot:
-
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.notplr1
 				move.l	Plr1_ObjectPtr_l,a2
 				move.w	#1,EntT_Timer1_w+128(a2)
 .notplr1
 
-				move.w	ShootT_Delay_w(a6),PLR1_TimeToShoot
+				move.w	ShootT_Delay_w(a6),Plr1_TimeToShoot_w
 
 				move.b	MaxFrame,PLR1_GunFrame
 				sub.w	d1,d2
@@ -201,13 +197,13 @@ okdistthing
 
 				tst.l	BulT_Gravity_l(a5)
 				beq.s	.notuseaim
-				move.w	PLR1_AIMSPD,d2
+				move.w	Plr1_AimSpeed_l,d2
 				move.w	#8,d1
 				sub.w	BulletSpd,d1
 				asr.w	d1,d2
 				move.w	d2,bulyspd
-.notuseaim
 
+.notuseaim:
 				tst.w	BulT_IsHitScan_l+2(a5)
 				beq		PLR1FIREBULLET
 
@@ -258,10 +254,8 @@ FIREBULLETS:
 
 				rts
 
-PLR1_AIMSPD:	dc.l	0
-
 nothingtoshoot:
-				move.w	PLR1_AIMSPD,d0
+				move.w	Plr1_AimSpeed_l,d0
 				move.w	#8,d1
 				sub.w	BulletSpd,d1
 				asr.w	d1,d0
@@ -366,13 +360,13 @@ TESTY:			dc.l	0,0,0,0
 
 Player2Shot:
 
-				tst.w	PLR2_TimeToShoot
+				tst.w	Plr2_TimeToShoot_w
 				beq.s	okcanfire2
 
 				move.w	TempFrames,d0
-				sub.w	d0,PLR2_TimeToShoot
+				sub.w	d0,Plr2_TimeToShoot_w
 				bge		PLR2_nofire
-				move.w	#0,PLR2_TimeToShoot
+				move.w	#0,Plr2_TimeToShoot_w
 				bra		PLR2_nofire
 
 okcanfire2:
@@ -523,7 +517,7 @@ okdistthing2
 				move.w	#1,EntT_Timer1_w+128(a2)
 .notplr2:
 
-				move.w	ShootT_Delay_w(a6),PLR2_TimeToShoot
+				move.w	ShootT_Delay_w(a6),Plr2_TimeToShoot_w
 
 				move.b	MaxFrame,PLR2_GunFrame
 				sub.w	d1,d2
@@ -552,7 +546,7 @@ okdistthing2
 
 				tst.l	BulT_Gravity_l(a5)
 				beq.s	.notuseaim
-				move.w	PLR2_AIMSPD,d2
+				move.w	Plr2_AimSpeed_l,d2
 				move.w	#8,d1
 				sub.w	BulletSpd,d1
 				asr.w	d1,d2
@@ -609,10 +603,8 @@ FIREBULLETS2:
 
 				rts
 
-PLR2_AIMSPD:	dc.l	0
-
 nothingtoshoot2:
-				move.w	PLR2_AIMSPD,d0
+				move.w	Plr2_AimSpeed_l,d0
 				move.w	#8,d1
 				sub.w	BulletSpd,d1
 				asr.w	d1,d0
@@ -714,11 +706,11 @@ PLR2_nofire:
 				rts
 
 
-BulletSpd:		dc.w	0
 
 *******************************************************
-
+				align 4
 tempyoff:		dc.l	0
+BulletSpd:		dc.w	0
 tempStoodInTop:	dc.w	0
 tempxdir:		dc.w	0
 tempzdir:		dc.w	0

@@ -49,16 +49,16 @@ Plr2_MouseControl
 				move.w	d3,d2
 				asl.w	#7,d2
 
-				add.w	d2,PLR2_AIMSPD
+				add.w	d2,Plr2_AimSpeed_l
 				add.w	d3,d0
 				cmp.w	#-80,d0
 				bgt.s	.nolookup
-				move.w	#-512*20,PLR2_AIMSPD
+				move.w	#-512*20,Plr2_AimSpeed_l
 				move.w	#-80,d0
 .nolookup:
 				cmp.w	#80,d0
 				blt.s	.nolookdown
-				move.w	#512*20,PLR2_AIMSPD
+				move.w	#512*20,Plr2_AimSpeed_l
 				move.w	#80,d0
 .nolookdown
 
@@ -148,7 +148,7 @@ Plr2_MouseControl
 				bne.s	.firenownotpressed
 ; fire was not pressed last time, and was this time, so has
 ; been clicked.
-				st		PLR2_clicked
+				st		Plr2_Clicked_b
 				st		Plr2_Fire_b
 
 .donePLR2:
@@ -356,22 +356,22 @@ PLR2_keyboard_control:
 				tst.b	(a5,d7.w)
 				beq.s	.nolookup
 
-				sub.w	#512,PLR2_AIMSPD
+				sub.w	#512,Plr2_AimSpeed_l
 				sub.w	#4,d0
 				cmp.w	#-80,d0
 				bgt.s	.nolookup
-				move.w	#-512*20,PLR2_AIMSPD
+				move.w	#-512*20,Plr2_AimSpeed_l
 				move.w	#-80,d0
 .nolookup:
 				moveq	#0,d7
 				move.b	look_down_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.nolookdown
-				add.w	#512,PLR2_AIMSPD
+				add.w	#512,Plr2_AimSpeed_l
 				add.w	#4,d0
 				cmp.w	#80,d0
 				blt.s	.nolookdown
-				move.w	#512*20,PLR2_AIMSPD
+				move.w	#512*20,Plr2_AimSpeed_l
 				move.w	#80,d0
 .nolookdown:
 
@@ -384,7 +384,7 @@ PLR2_keyboard_control:
 				st		OLDCENT
 
 				move.w	#0,d0
-				move.w	#0,PLR2_AIMSPD
+				move.w	#0,Plr2_AimSpeed_l
 
 				bra.s	.nocent2
 
@@ -605,7 +605,7 @@ noslide2:
 				beq.s	.firenownotpressed
 ; fire was not pressed last time, and was this time, so has
 ; been clicked.
-				st		PLR2_clicked
+				st		Plr2_Clicked_b
 				st		Plr2_Fire_b
 
 .doneplr2:

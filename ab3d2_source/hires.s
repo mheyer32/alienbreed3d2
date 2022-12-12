@@ -908,8 +908,8 @@ CLRDAM:
 				muls	#SCREENWIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 
-				move.w	#0,PLR1_AIMSPD
-				move.w	#0,PLR2_AIMSPD
+				move.w	#0,Plr1_AimSpeed_l
+				move.w	#0,Plr2_AimSpeed_l
 
 ; init pointer to chipmem render buffers
 				move.l	scrn,SCRNSHOWPT
@@ -1341,9 +1341,9 @@ okwat:
 				move.l	Plr1_SnapHeight_l,Plr1_TmpHeight_l
 				move.w	Plr1_SnapAngPos_w,Plr1_TmpAngPos_w
 				move.w	Plr1_Bobble_w,Plr1_TmpBobble_w
-				move.b	PLR1_clicked,Plr1_TmpClicked_b
+				move.b	Plr1_Clicked_b,Plr1_TmpClicked_b
 				move.b	Plr1_Fire_b,Plr1_TmpFire_b
-				clr.b	PLR1_clicked
+				clr.b	Plr1_Clicked_b
 				move.b	PLR1_SPCTAP,Plr1_TmpSpcTap_b
 				clr.b	PLR1_SPCTAP
 				move.b	Plr1_Ducked_b,Plr1_TmpDucked_b
@@ -1403,17 +1403,17 @@ NotOnePlayer:
 				move.l	Plr1_SnapHeight_l,Plr1_TmpHeight_l
 				move.w	Plr1_SnapAngPos_w,Plr1_TmpAngPos_w
 				move.w	Plr1_Bobble_w,Plr1_TmpBobble_w
-				move.b	PLR1_clicked,Plr1_TmpClicked_b
-				clr.b	PLR1_clicked
+				move.b	Plr1_Clicked_b,Plr1_TmpClicked_b
+				clr.b	Plr1_Clicked_b
 				move.b	Plr1_Fire_b,Plr1_TmpFire_b
 				move.b	PLR1_SPCTAP,Plr1_TmpSpcTap_b
 				clr.b	PLR1_SPCTAP
 				move.b	Plr1_Ducked_b,Plr1_TmpDucked_b
 				move.b	Plr1_GunSelected_b,Plr1_TmpGunSelected_b
 
-				move.l	PLR1_AIMSPD,d0
+				move.l	Plr1_AimSpeed_l,d0
 				jsr		SENDFIRST
-				move.l	d0,PLR2_AIMSPD
+				move.l	d0,Plr2_AimSpeed_l
 
 				move.l	Plr1_TmpXOff_l,d0
 				jsr		SENDFIRST
@@ -1519,17 +1519,17 @@ ASlaveShouldWaitOnHisMaster:
 				move.l	Plr2_SnapHeight_l,Plr2_TmpHeight_l
 				move.w	Plr2_SnapAngPos_w,Plr2_TmpAngPos_w
 				move.w	Plr2_Bobble_w,Plr2_TmpBobble_w
-				move.b	PLR2_clicked,Plr2_TmpClicked_b
-				clr.b	PLR2_clicked
+				move.b	Plr2_Clicked_b,Plr2_TmpClicked_b
+				clr.b	Plr2_Clicked_b
 				move.b	Plr2_Fire_b,Plr2_TmpFire_b
 				move.b	PLR2_SPCTAP,Plr2_TmpSpcTap_b
 				clr.b	PLR2_SPCTAP
 				move.b	Plr2_Ducked_b,Plr2_TmpDucked_b
 				move.b	Plr2_GunSelected_b,Plr2_TmpGunSelected_b
 
-				move.l	PLR2_AIMSPD,d0
+				move.l	Plr2_AimSpeed_l,d0
 				jsr		RECFIRST
-				move.l	d0,PLR1_AIMSPD
+				move.l	d0,Plr1_AimSpeed_l
 
 				move.l	Plr2_TmpXOff_l,d0
 				jsr		RECFIRST
@@ -10240,7 +10240,7 @@ nostartalan:
 				move.w	#-1,12+128(a0)
 
 				clr.b	Plr1_Fire_b
-				clr.b	PLR1_clicked
+				clr.b	Plr1_Clicked_b
 				move.w	#0,ADDTOBOBBLE
 				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapHeight_l
 				move.w	#-80,d0					; Is this related to render buffer height
@@ -10466,7 +10466,7 @@ firenotpressed2
 ; bne.s firenownotpressed2
 ; fire was not pressed last time, and was this time, so has
 ; been clicked.
-; st PLR2_clicked
+; st Plr2_Clicked_b
 ; st Plr2_Fire_b
 
 dointer

@@ -51,17 +51,17 @@ Plr1_MouseControl:
 				move.w	d3,d2
 				asl.w	#7,d2
 
-				add.w	d2,PLR1_AIMSPD
+				add.w	d2,Plr1_AimSpeed_l
 				add.w	d3,d0
 				cmp.w	#-80,d0
 				bgt.s	.nolookup
-				move.w	#-512*20,PLR1_AIMSPD
+				move.w	#-512*20,Plr1_AimSpeed_l
 				move.w	#-80,d0
 
 .nolookup:
 				cmp.w	#80,d0
 				blt.s	.nolookdown
-				move.w	#512*20,PLR1_AIMSPD
+				move.w	#512*20,Plr1_AimSpeed_l
 				move.w	#80,d0
 
 .nolookdown:
@@ -88,9 +88,9 @@ Plr1_MouseControl:
 				bra		Plr1_KeyboardControl
 
 				move.w	#-20,d2
-
 				tst.b	Plr1_Squished_b
 				bne.s	.halve
+
 				tst.b	Plr1_Ducked_b
 				beq.s	.nohalve
 
@@ -150,7 +150,7 @@ Plr1_MouseControl:
 				bne.s	.firenownotpressed
 ; fire was not pressed last time, and was this time, so has
 ; been clicked.
-				st		PLR1_clicked
+				st		Plr1_Clicked_b
 				st		Plr1_Fire_b
 
 .doneplr1:
@@ -193,7 +193,7 @@ Plr1_AlwaysKeys:
 				tst.b	(a5,d7.w)
 				beq.s	.nonextweappre
 
-; tst.w PLR1_TimeToShoot
+; tst.w Plr1_TimeToShoot_w
 ; bne.s .nonextweappre
 
 				tst.b	gunheldlast
@@ -442,22 +442,22 @@ Plr1_KeyboardControl:
 				tst.b	(a5,d7.w)
 				beq.s	.nolookup
 
-				sub.w	#512,PLR1_AIMSPD
+				sub.w	#512,Plr1_AimSpeed_l
 				sub.w	#4,d0
 				cmp.w	#-80,d0
 				bgt.s	.nolookup
-				move.w	#-512*20,PLR1_AIMSPD
+				move.w	#-512*20,Plr1_AimSpeed_l
 				move.w	#-80,d0
 .nolookup:
 				moveq	#0,d7
 				move.b	look_down_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.nolookdown
-				add.w	#512,PLR1_AIMSPD
+				add.w	#512,Plr1_AimSpeed_l
 				add.w	#4,d0
 				cmp.w	#80,d0
 				blt.s	.nolookdown
-				move.w	#512*20,PLR1_AIMSPD
+				move.w	#512*20,Plr1_AimSpeed_l
 				move.w	#80,d0
 .nolookdown:
 
@@ -470,7 +470,7 @@ Plr1_KeyboardControl:
 				st		OLDCENT
 
 				move.w	#0,d0
-				move.w	#0,PLR1_AIMSPD
+				move.w	#0,Plr1_AimSpeed_l
 
 				bra.s	.nocent2
 
@@ -691,7 +691,7 @@ nobackward:
 				beq.s	.firenownotpressed
 ; fire was not pressed last time, and was this time, so has
 ; been clicked.
-				st		PLR1_clicked
+				st		Plr1_Clicked_b
 				st		Plr1_Fire_b
 
 .doneplr1:
