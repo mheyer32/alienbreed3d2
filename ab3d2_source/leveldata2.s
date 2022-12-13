@@ -18,7 +18,7 @@ Plr_Initialise:
 				move.l	d0,Plr1_SnapYOff_l
 				move.l	d0,Plr1_YOff_l
 				move.l	d0,Plr1_SnapTYOff_l
-				move.l	Plr1_RoomPtr_l,Plr1_OldRoomPtr_l
+				move.l	Plr1_RoomPtr_l,plr1_OldRoomPtr_l
 				move.l	Lvl_DataPtr_l,a1
 				add.l	#160*10,a1
 				move.w	10(a1),d0
@@ -33,7 +33,7 @@ Plr_Initialise:
 				move.l	d0,Plr2_YOff_l
 				move.l	d0,Plr2_SnapTYOff_l
 				move.l	d0,Plr2_YOff_l
-				move.l	Plr2_RoomPtr_l,Plr2_OldRoomPtr_l
+				move.l	Plr2_RoomPtr_l,plr2_OldRoomPtr_l
 				move.w	(a1),Plr1_SnapXOff_l
 				move.w	2(a1),Plr1_SnapZOff_l
 				move.w	(a1),Plr1_XOff_l

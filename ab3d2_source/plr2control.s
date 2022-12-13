@@ -1,15 +1,15 @@
 
 Plr2_MouseControl
-				jsr		ReadMouse
+				jsr		Sys_ReadMouse
 
-				move.l	#SineTable,a0
+				move.l	#SinCosTable_vw,a0
 				move.w	Plr2_SnapAngSpd_w,d1
 				move.w	angpos,d0
 				and.w	#8190,d0
 				move.w	d0,Plr2_SnapAngPos_w
-				move.w	(a0,d0.w),Plr2_SnapSinVal_w
+				move.w	(a0,d0.w),plr2_SnapSinVal_w
 				adda.w	#2048,a0
-				move.w	(a0,d0.w),Plr2_SnapCosVal_w
+				move.w	(a0,d0.w),plr2_SnapCosVal_w
 
 				move.l	Plr2_SnapXSpdVal_l,d6
 				move.l	Plr2_SnapZSpdVal_l,d7
@@ -103,8 +103,8 @@ Plr2_MouseControl
 
 				move.w	d1,ADDTOBOBBLE
 
-				move.w	Plr2_SnapSinVal_w,d1
-				move.w	Plr2_SnapCosVal_w,d2
+				move.w	plr2_SnapSinVal_w,d1
+				move.w	plr2_SnapCosVal_w,d2
 
 				move.w	d2,d4
 				move.w	d1,d5
@@ -153,7 +153,7 @@ Plr2_MouseControl
 
 .donePLR2:
 
-				bsr		PLR2_fall
+				bsr		Plr2_Fall
 
 				rts
 
@@ -218,22 +218,22 @@ Plr2_AlwaysKeys
 				move.l	ZoneT_Floor_l(a4),d0
 				sub.l	ZoneT_Roof_l(a4),d0
 				tst.b	Plr2_StoodInTop_b
-				beq.s	.usebottom
+				beq.s	.use_bottom
 				move.l	ZoneT_UpperFloor_l(a4),d0
 				sub.l	ZoneT_UpperRoof_l(a4),d0
-.usebottom:
+.use_bottom:
 
 				clr.b	Plr2_Squished_b
-				move.l	#PLR_STAND_HEIGHT,Plr2_SnapSquishedHeight_l
+				move.l	#PLR_STAND_HEIGHT,plr2_SnapSquishedHeight_l
 
 				cmp.l	#PLR_STAND_HEIGHT+3*1024,d0
 				bgt.s	oktostand2
 				st		Plr2_Squished_b
-				move.l	#PLR_CROUCH_HEIGHT,Plr2_SnapSquishedHeight_l
+				move.l	#PLR_CROUCH_HEIGHT,plr2_SnapSquishedHeight_l
 oktostand2:
 
 				move.l	Plr2_SnapTargHeight_l,d1
-				move.l	Plr2_SnapSquishedHeight_l,d0
+				move.l	plr2_SnapSquishedHeight_l,d0
 				cmp.l	d0,d1
 				blt.s	.notsqu
 				move.l	d0,d1
@@ -345,7 +345,7 @@ TURNSPD:		dc.w	0
 
 PLR2_keyboard_control:
 
-				move.l	#SineTable,a0
+				move.l	#SinCosTable_vw,a0
 
 				jsr		Plr2_AlwaysKeys
 				move.l	#KeyMap_vb,a5
@@ -504,9 +504,9 @@ noslide2:
 				and.w	#8191,d0
 				move.w	d0,Plr2_SnapAngPos_w
 
-				move.w	(a0,d0.w),Plr2_SnapSinVal_w
+				move.w	(a0,d0.w),plr2_SnapSinVal_w
 				adda.w	#2048,a0
-				move.w	(a0,d0.w),Plr2_SnapCosVal_w
+				move.w	(a0,d0.w),plr2_SnapCosVal_w
 
 				move.l	Plr2_SnapXSpdVal_l,d6
 				move.l	Plr2_SnapZSpdVal_l,d7
@@ -557,16 +557,16 @@ noslide2:
 ; add.w d2,d1
 				move.w	d1,ADDTOBOBBLE
 
-				move.w	Plr2_SnapSinVal_w,d1
+				move.w	plr2_SnapSinVal_w,d1
 				muls	d3,d1
-				move.w	Plr2_SnapCosVal_w,d2
+				move.w	plr2_SnapCosVal_w,d2
 				muls	d3,d2
 
 				sub.l	d1,d6
 				sub.l	d2,d7
-				move.w	Plr2_SnapSinVal_w,d1
+				move.w	plr2_SnapSinVal_w,d1
 				muls	d4,d1
-				move.w	Plr2_SnapCosVal_w,d2
+				move.w	plr2_SnapCosVal_w,d2
 				muls	d4,d2
 				sub.l	d2,d6
 				add.l	d1,d7
@@ -610,7 +610,7 @@ noslide2:
 
 .doneplr2:
 
-				bsr		PLR2_fall
+				bsr		Plr2_Fall
 
 				rts
 

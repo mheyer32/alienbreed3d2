@@ -193,7 +193,7 @@ _ReadJoy1
 .Joystick
 
 				move.l	#KeyMap_vb,a5
-				move.l	#SineTable,a0
+				move.l	#SinCosTable_vw,a0
 
 				btst	#1,$dff00c
 				sne		d0
@@ -378,7 +378,7 @@ _ReadJoy2
 .Joystick
 
 				move.l	#KeyMap_vb,a5
-				move.l	#SineTable,a0
+				move.l	#SinCosTable_vw,a0
 
 				btst	#1,$dff00c
 				sne		d0

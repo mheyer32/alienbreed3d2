@@ -206,7 +206,7 @@ BRIGHTENPOINTSANGLE:
 
 				movem.l	d0-d7/a0-a6,-(a7)
 
-				move.l	#SineTable,a0
+				move.l	#SinCosTable_vw,a0
 				lea		(a0,d4.w),a6
 
 				move.l	Lvl_ZoneAddsPtr_l,a0
@@ -564,7 +564,7 @@ ExplodeIntoBits:
 
 				jsr		GetRand
 				and.w	#8190,d0
-				move.l	#SineTable,a2
+				move.l	#SinCosTable_vw,a2
 				adda.w	d0,a2
 				move.w	(a2),d3
 				move.w	2048(a2),d4
@@ -805,15 +805,15 @@ objmoveanim:
 
 				bsr		BACKSFX
 
-				bsr		Player1Shot
-				bsr		Player2Shot
+				bsr		Plr1_Shot
+				bsr		Plr2_Shot
 ; bsr SwitchRoutine
 				bsr		ObjectHandler
 				bsr		DoorRoutine
 
 
 				move.w	#0,Plr1_FloorSpd_w
-				move.w	#0,Plr2_FloorSpd_w
+				move.w	#0,plr2_FloorSpd_w
 
 				bsr		LiftRoutine
 				cmp	#0,animtimer		;animtimer decriment moved to VBlankInterrupt:
@@ -831,19 +831,13 @@ objmoveanim:
 
 tstdir:			dc.w	0
 
-liftheighttab:	ds.w	40
-doorheighttab:	ds.w	40
-PLR1_stoodonlift: dc.b	0
-PLR2_stoodonlift: dc.b	0
+
 liftattop:		dc.b	0
 liftatbot:		dc.b	0
 
 
 DoorLocks:		dc.w	0
 LiftLocks:		dc.w	0
-
-ZoneBrightTable:
-				ds.l	300
 
 DoWaterAnims:
 
@@ -900,7 +894,7 @@ okzone:
 
 				rts
 
-FLOORMOVESPD:	dc.w	0
+FloorMoveSpeed_w:	dc.w	0
 
 				even
 LiftRoutine:
@@ -973,7 +967,7 @@ notallliftsdone:
 
 				move.w	d2,d7					; speed of movement.
 
-				move.w	d2,FLOORMOVESPD
+				move.w	d2,FloorMoveSpeed_w
 
 				muls	TempFrames,d2
 				add.w	d2,d3
@@ -1037,7 +1031,10 @@ notallliftsdone:
 				asl.w	#2,d0
 				move.w	d0,2(a1)
 				move.w	d3,d0
-				muls	#256,d3
+
+				;muls	#256,d3
+				ext.l	d3	; Safety - sign extend before shift
+				asl.l	#8,d3
 				move.w	(a0)+,d5
 
 				move.l	Lvl_ZoneAddsPtr_l,a1
@@ -1049,22 +1046,20 @@ notallliftsdone:
 				neg.w	d0
 
 				cmp.w	(a3),d5
-				seq		PLR1_stoodonlift
+				seq		plr1_StoodOnLift_b
 				bne.s	.nosetfloorspd1
 
-				move.w	FLOORMOVESPD,Plr1_FloorSpd_w
+				move.w	FloorMoveSpeed_w,Plr1_FloorSpd_w
 
 .nosetfloorspd1:
-
 				move.l	Plr2_RoomPtr_l,a3
 				cmp.w	(a3),d5
-				seq		PLR2_stoodonlift
+				seq		plr2_StoodOnLift_b
 				bne.s	.nosetfloorspd2
 
-				move.w	FLOORMOVESPD,Plr2_FloorSpd_w
+				move.w	FloorMoveSpeed_w,plr2_FloorSpd_w
 
 .nosetfloorspd2:
-
 				move.w	(a0)+,d2				; conditions
 ; and.w Conditions,d2
 ; cmp.w -2(a0),d2
@@ -1159,7 +1154,7 @@ lift0:
 				beq.s	.noplr1
 				move.w	#%100000000,d1
 				move.w	CLOSINGSPEED,d7
-				tst.b	PLR1_stoodonlift
+				tst.b	plr1_StoodOnLift_b
 				beq.s	.noplr1
 				move.w	#$8000,d1
 				bra		backfromlift
@@ -1169,7 +1164,7 @@ lift0:
 				beq.s	.noplr2
 				or.w	#%100000000000,d1
 				move.w	CLOSINGSPEED,d7
-				tst.b	PLR2_stoodonlift
+				tst.b	plr2_StoodOnLift_b
 				beq.s	.noplr2
 				move.w	#$8000,d1
 				bra		backfromlift
@@ -1179,9 +1174,9 @@ lift0:
 
 lift1:
 				move.w	CLOSINGSPEED,d7
-				tst.b	PLR1_stoodonlift
+				tst.b	plr1_StoodOnLift_b
 				bne.s	lift1b
-				tst.b	PLR2_stoodonlift
+				tst.b	plr2_StoodOnLift_b
 				bne.s	lift1b
 				move.w	#%100100000000,d1
 				bra		backfromlift
@@ -1214,7 +1209,7 @@ rlift0:
 				beq.s	.noplr1
 				move.w	#%100000000,d1
 				move.w	OPENINGSPEED,d7
-				tst.b	PLR1_stoodonlift
+				tst.b	plr1_StoodOnLift_b
 				beq.s	.noplr1
 				move.w	#$8000,d1
 				bra		backfromlift
@@ -1224,7 +1219,7 @@ rlift0:
 				beq.s	.noplr2
 				or.w	#%100000000000,d1
 				move.w	OPENINGSPEED,d7
-				tst.b	PLR2_stoodonlift
+				tst.b	plr2_StoodOnLift_b
 				beq.s	.noplr2
 				move.w	#$8000,d1
 				bra		backfromlift
@@ -1235,9 +1230,9 @@ rlift0:
 
 rlift1:
 				move.w	OPENINGSPEED,d7
-				tst.b	PLR1_stoodonlift
+				tst.b	plr1_StoodOnLift_b
 				bne.s	rlift1b
-				tst.b	PLR2_stoodonlift
+				tst.b	plr2_StoodOnLift_b
 				bne.s	rlift1b
 				move.w	#%100100000000,d1
 				bra		backfromlift
@@ -1401,7 +1396,11 @@ NOTMOVING:
 				asl.w	#2,d0
 				move.w	d0,2(a1)
 				move.w	d3,d0
-				muls	#256,d3
+
+				;muls	#256,d3
+				ext.l	d3		; Safety: Sign extend before shift
+				asl.l	#8,d3
+
 				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.w	(a0)+,d5
 
@@ -1783,7 +1782,7 @@ ivescreamed:	dc.w	0
 
 ObjectHandler:
 
-				move.l	#ObjWork,WORKPTR
+				move.l	#ObjWork,WorkspacePtr_l
 				move.l	#AI_Damaged_vw,AI_DamagePtr_l
 
 				move.l	Lvl_ObjectDataPtr_l,a0
@@ -1803,7 +1802,7 @@ doneobj:
 
 dontworryyourprettyhead:
 				adda.w	#64,a0
-				add.l	#8,WORKPTR
+				add.l	#8,WorkspacePtr_l
 				add.l	#2,AI_DamagePtr_l
 				add.l	#8,AI_BoredomPtr_l
 				bra		Objectloop
@@ -1927,7 +1926,7 @@ notdoneflame:
 				move.l	#%100000100000,EntT_EnemyFlags_l(a5)
 				move.w	#0,ShotT_Anim_b(a5)
 				move.w	#0,ShotT_Lifetime_w(a5)
-				move.l	#SineTable,a1
+				move.l	#SinCosTable_vw,a1
 				move.w	EntT_CurrentAngle_w(a0),d0
 				move.w	(a1,d0.w),d1
 				adda.w	#2048,a1
@@ -3823,7 +3822,9 @@ putinbackdrop:
 				move.w	tmpangpos,d5
 				and.w	#4095,d5
 				muls	#648,d5
-				divs	#4096,d5
+				;divs	#4096,d5
+				asr.l	#8,d5
+				asr.l	#4,d5
 				muls	#240,d5
 
 ; CACHE_ON d1
@@ -3832,14 +3833,14 @@ putinbackdrop:
 				bne		BIGBACK
 
 				move.l	Vid_FastBufferPtr_l,a0
-				move.l	BackPicture,a5
+				move.l	Draw_BackdropImagePtr_l,a5
 				move.l	a5,a3
 				add.l	#155520,a3
 				add.l	#240,a5
 ; move.l #EndBackPicture,a3
-; move.l #BackPicture+240,a5
-				move.l	BackPicture,a1
-; lea.l BackPicture,a1
+; move.l #Draw_BackdropImagePtr_l+240,a5
+				move.l	Draw_BackdropImagePtr_l,a1
+; lea.l Draw_BackdropImagePtr_l,a1
 				add.l	d5,a1
 				add.w	#240,a1
 
@@ -3895,13 +3896,13 @@ vertline:
 
 BIGBACK:
 				move.l	Vid_FastBufferPtr_l,a0
-				move.l	BackPicture,a5
+				move.l	Draw_BackdropImagePtr_l,a5
 				move.l	a5,a3
 				add.l	#155520,a3
 				add.l	#240,a5
 ; move.l #EndBackPicture,a3
-; move.l #BackPicture+240,a5
-				move.l	BackPicture,a1
+; move.l #Draw_BackdropImagePtr_l+240,a5
+				move.l	Draw_BackdropImagePtr_l,a1
 				add.l	d5,a1
 				add.w	#240,a1
 

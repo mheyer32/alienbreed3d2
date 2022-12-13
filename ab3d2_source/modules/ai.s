@@ -132,7 +132,7 @@ ai_TakeDamage:
 				and.w	#3,d0
 				beq.s	.dodododo
 
-				move.l	WORKPTR,a5
+				move.l	WorkspacePtr_l,a5
 				st		1(a5)
 				move.b	#1,EntT_CurrentMode_b(a0)
 				move.w	#0,EntT_Timer2_w(a0)
@@ -160,7 +160,7 @@ ai_TakeDamage:
 
 				move.b	#4,EntT_CurrentMode_b(a0)		; do take damage.
 				move.b	#2,EntT_WhichAnim_b(a0)		; get hit anim.
-				move.l	WORKPTR,a5
+				move.l	WorkspacePtr_l,a5
 				st		1(a5)
 				st		ai_GetOut_w
 				rts
@@ -271,7 +271,7 @@ ai_JustDied:
 				move.b	#5,EntT_CurrentMode_b(a0)
 				move.b	#3,EntT_WhichAnim_b(a0)
 				move.w	#0,EntT_Timer2_w(a0)
-				move.l	WORKPTR,a5
+				move.l	WorkspacePtr_l,a5
 				st		1(a5)
 				st		ai_GetOut_w
 				rts
@@ -442,7 +442,7 @@ ai_Widget:
 				moveq	#0,d0
 				move.b	EntT_TeamNumber_b(a0),d0
 				blt.s	.no_team
-				move.l	#AI_Teamwork_vl,a2
+				move.l	#AI_AlienTeamWorkspace_vl,a2
 				asl.w	#4,d0
 				add.w	d0,a2
 				tst.w	AI_WorkT_SeenBy_w(a2)
@@ -455,7 +455,7 @@ ai_Widget:
 
 .no_remove:
 				asl.w	#4,d0
-				move.l	#ai_EnemyWorkspace_vl,a1
+				move.l	#ai_AlienWorkspace_vl,a1
 				add.w	d0,a1
 				move.w	#0,AI_WorkT_DamageDone_w(a1)
 				move.w	#0,AI_WorkT_DamageTaken_w(a1)
@@ -470,7 +470,7 @@ ai_Widget:
 .no_team:
 				move.w	(a0),d0
 				asl.w	#4,d0
-				move.l	#ai_EnemyWorkspace_vl,a1
+				move.l	#ai_AlienWorkspace_vl,a1
 				add.w	d0,a1
 				move.w	#0,AI_WorkT_DamageDone_w(a1)
 				move.w	#0,AI_WorkT_DamageTaken_w(a1)
@@ -529,9 +529,9 @@ ai_Widget:
 				add.w	(a0),d0
 				muls	#$1347,d0
 				and.w	#4095,d0
-				move.l	#SineTable,a1
+				move.l	#SinCosTable_vw,a1
 				move.w	(a1,d0.w*2),d1
-				move.l	#SineTable+2048,a1
+				move.l	#SinCosTable_vw+2048,a1
 				move.w	(a1,d0.w*2),d2
 				ext.l	d1
 				ext.l	d2
@@ -1623,7 +1623,7 @@ ai_CheckFloorCeiling:
 
 ai_StorePlayerPosition:
 				move.w	(a0),d0
-				move.l	#ai_EnemyWorkspace_vl,a2
+				move.l	#ai_AlienWorkspace_vl,a2
 				asl.w	#4,d0
 				add.w	d0,a2
 				move.w	Plr1_XOff_l,AI_WorkT_LastX_w(a2)
@@ -1640,7 +1640,7 @@ ai_StorePlayerPosition:
 				move.w	d0,AI_WorkT_LastControlPoint_w(a2)
 				move.b	EntT_TeamNumber_b(a0),d0
 				blt.s	.no_team
-				move.l	#AI_Teamwork_vl,a2
+				move.l	#AI_AlienTeamWorkspace_vl,a2
 				asl.w	#4,d0
 				add.w	d0,a2
 				move.w	Plr1_XOff_l,AI_WorkT_LastX_w(a2)
@@ -1731,7 +1731,7 @@ ai_CheckInFront:
 
 				move.w	EntT_CurrentAngle_w(a0),d2
 				and.w	#8190,d2
-				move.l	#SineTable,a3
+				move.l	#SinCosTable_vw,a3
 				move.w	(a3,d2.w),d3
 				add.l	#2048,d2
 				move.w	(a3,d2.w),d4
@@ -1759,32 +1759,33 @@ AI_LookForPlayer1:
 				move.w	4(a0),Viewery
 				jsr		CanItBeSeen
 
-
 				tst.b	CanSee
 				beq		.carryonprowling
 
 				move.b	#1,17(a0)
+
 .carryonprowling:
 				rts
 
-AI_ClearNastyMem:
-				move.l	#ai_EnemyWorkspace_vl,a0
+AI_InitAlienWorkspace:
+				move.l	#ai_AlienWorkspace_vl,a0
 				move.l	#299,d0
-.lopp
-				move.l	#0,(a0)
-				move.l	#-1,4(a0)
-				move.l	#-1,8(a0)
-				add.w	#16,a0
-				dbra	d0,.lopp
 
-				move.l	#AI_Teamwork_vl,a0
-				move.l	#29,d0
-.lopp2
+.loop:
 				move.l	#0,(a0)
 				move.l	#-1,4(a0)
 				move.l	#-1,8(a0)
 				add.w	#16,a0
-				dbra	d0,.lopp2
+				dbra	d0,.loop
+
+				move.l	#AI_AlienTeamWorkspace_vl,a0
+				move.l	#29,d0
+.loop2:
+				move.l	#0,(a0)
+				move.l	#-1,4(a0)
+				move.l	#-1,8(a0)
+				add.w	#16,a0
+				dbra	d0,.loop2
 
 				rts
 
@@ -1800,7 +1801,7 @@ ai_CheckDamage:
 				move.b	EntT_TeamNumber_b(a0),d0
 				blt.s	.no_team
 
-				move.l	#AI_Teamwork_vl,a2
+				move.l	#AI_AlienTeamWorkspace_vl,a2
 				asl.w	#4,d0
 				add.w	d0,a2
 				move.w	(a0),d0
@@ -1824,19 +1825,21 @@ ai_CheckDamage:
 				move.w	(a0),IDNUM
 				move.b	ALIENECHO,PlayEcho
 				jsr		MakeSomeNoise
-				movem.l	(a7)+,d0-d7/a0-a6
 
+				movem.l	(a7)+,d0-d7/a0-a6
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.w	#0,d0
 				asr.w	#2,d2
 				tst.w	d2
 				bgt.s	.ko
+
 				moveq	#1,d2
+
 .ko:
 				move.w	#31,d3
 				jsr		ExplodeIntoBits
-				movem.l	(a7)+,d0-d7/a0-a6
 
+				movem.l	(a7)+,d0-d7/a0-a6
 				cmp.b	#40,d2
 				blt		.noexplode
 
@@ -1877,6 +1880,7 @@ ai_CheckDamage:
 				st		backbeat
 				move.b	ALIENECHO,PlayEcho
 				jsr		MakeSomeNoise
+
 				movem.l	(a7)+,d0-d7/a0-a6
 
 .noscream:
@@ -1905,8 +1909,8 @@ ai_DoTorch:
 ai_DoWalkAnim:
 ai_DoAttackAnim:
 				move.l	d0,-(a7)
-				move.l	ANIMPOINTER,a6
-				move.l	WORKPTR,a5
+				move.l	AlienAnimPtr_l,a6
+				move.l	WorkspacePtr_l,a5
 				moveq	#0,d1
 				move.b	2(a5),d1
 				bne.s	.notview

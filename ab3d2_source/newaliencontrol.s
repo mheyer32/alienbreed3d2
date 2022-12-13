@@ -1,7 +1,7 @@
 
 ;gotgun:			dc.w	0
 				align 4
-ANIMPOINTER:	dc.l	0
+AlienAnimPtr_l:	dc.l	0
 
 ALIENBRIGHT:	dc.w	0
 
@@ -51,7 +51,7 @@ ItsAnAlien:
 				add.l	#GLFT_AlienAnims_l,a6
 				add.l	d0,a6
 
-				move.l	a6,ANIMPOINTER
+				move.l	a6,AlienAnimPtr_l
 
 				move.l	GLF_DatabasePtr_l,a1
 				move.l	a1,a2
@@ -68,19 +68,14 @@ ItsAnAlien:
 				neg.w	d1
 				asl.w	#2,d1
 				move.w	d1,SHOTOFFMULT
-
 				muls	#AlienT_SizeOf_l,d0
 				add.w	d0,a1					; ptr to alien stats
-
 				move.w	AlienT_Height_w(a1),d0
 				ext.l	d0
 				asl.l	#7,d0
 				move.l	d0,thingheight
-
 				move.w	AlienT_Auxilliary_w(a1),AUXOBJ
-
 				move.w	(a0),CollId
-
 				move.b	1(a1),AI_VecObj_w
 				move.w	AlienT_ReactionTime_w(a1),AI_ReactionTime_w
 				move.w	AlienT_DefaultBehaviour_w(a1),AI_DefaultMode_w
@@ -1003,7 +998,7 @@ ViewpointToDraw:
 
 ; add.w #2048,d3
 				and.w	#8190,d3
-				move.l	#SineTable,a2
+				move.l	#SinCosTable_vw,a2
 				move.w	(a2,d3.w),d2
 				adda.w	#2048,a2
 				move.w	(a2,d3.w),d3

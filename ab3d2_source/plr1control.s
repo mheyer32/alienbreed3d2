@@ -1,15 +1,15 @@
 
 Plr1_MouseControl:
-				jsr		ReadMouse
+				jsr		Sys_ReadMouse
 
-				move.l	#SineTable,a0
+				move.l	#SinCosTable_vw,a0
 				move.w	Plr1_SnapAngSpd_w,d1
 				move.w	angpos,d0
 				and.w	#8190,d0
 				move.w	d0,Plr1_SnapAngPos_w
-				move.w	(a0,d0.w),Plr1_SnapSinVal_w
+				move.w	(a0,d0.w),plr1_SnapSinVal_w
 				adda.w	#2048,a0
-				move.w	(a0,d0.w),Plr1_SnapCosVal_w
+				move.w	(a0,d0.w),plr1_SnapCosVal_w
 
 				move.l	Plr1_SnapXSpdVal_l,d6
 				move.l	Plr1_SnapZSpdVal_l,d7
@@ -107,8 +107,8 @@ Plr1_MouseControl:
 				asl.w	#4,d2
 				move.w	d2,d1
 				move.w	d1,ADDTOBOBBLE
-				move.w	Plr1_SnapSinVal_w,d1
-				move.w	Plr1_SnapCosVal_w,d2
+				move.w	plr1_SnapSinVal_w,d1
+				move.w	plr1_SnapCosVal_w,d2
 				move.w	d2,d4
 				move.w	d1,d5
 				muls	lrs,d4
@@ -246,22 +246,22 @@ notduck:
 				move.l	ZoneT_Floor_l(a4),d0
 				sub.l	ZoneT_Roof_l(a4),d0
 				tst.b	Plr1_StoodInTop_b
-				beq.s	usebottom
+				beq.s	use_bottom
 				move.l	ZoneT_UpperFloor_l(a4),d0
 				sub.l	ZoneT_UpperRoof_l(a4),d0
-usebottom:
+use_bottom:
 
 				clr.b	Plr1_Squished_b
-				move.l	#PLR_STAND_HEIGHT,Plr1_SnapSquishedHeight_l
+				move.l	#PLR_STAND_HEIGHT,plr1_SnapSquishedHeight_l
 
 				cmp.l	#PLR_STAND_HEIGHT+3*1024,d0
 				bgt.s	oktostand
 				st		Plr1_Squished_b
-				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapSquishedHeight_l
+				move.l	#PLR_CROUCH_HEIGHT,plr1_SnapSquishedHeight_l
 oktostand:
 
 				move.l	Plr1_SnapTargHeight_l,d1
-				move.l	Plr1_SnapSquishedHeight_l,d0
+				move.l	plr1_SnapSquishedHeight_l,d0
 				cmp.l	d0,d1
 				blt.s	.notsqu
 				move.l	d0,d1
@@ -368,7 +368,7 @@ FULLSCRTEMP:	dc.w	0
 				; bottom panel.They are stored in a lha packed format
 
 				; a0 points to destination memory
-WIPEDISPLAY:
+Draw_ResetGameDisplay:
 				move.l	#borderpacked,d0
 				moveq	#0,d1
 				lea		Sys_Workspace_vl,a1
@@ -377,7 +377,7 @@ WIPEDISPLAY:
 
 				rts
 
-; The original WIPEDISPLAY seems to selectivel only clean the
+; The original Draw_ResetGameDisplay seems to selectivel only clean the
 ;				move.l	#231,d0
 ;				moveq	#0,d1
 ;				move.w	#7,d2
@@ -403,7 +403,6 @@ WIPEDISPLAY:
 SHOWPLR1GUNNAME:
 				moveq	#0,d2
 				move.b	Plr1_GunSelected_b,d2
-
 				move.l	GLF_DatabasePtr_l,a4
 				add.l	#GLFT_GunNames_l,a4
 				muls	#20,d2
@@ -430,7 +429,7 @@ lastscr:		dc.b	0
 
 				align	4
 Plr1_KeyboardControl:
-				move.l	#SineTable,a0
+				move.l	#SinCosTable_vw,a0
 				jsr		Plr1_AlwaysKeys
 
 				move.l	#KeyMap_vb,a5
@@ -475,8 +474,6 @@ Plr1_KeyboardControl:
 .nocent:
 				clr.b	OLDCENT
 .nocent2:
-
-
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
@@ -517,7 +514,6 @@ nofaster:
 				addq	#1,d3
 .nneg:
 .nofric:
-
 				move.b	turn_left_key,templeftkey
 				move.b	turn_right_key,temprightkey
 				move.b	sidestep_left_key,tempslkey
@@ -588,9 +584,9 @@ noslide:
 				and.w	#8191,d0
 				move.w	d0,Plr1_SnapAngPos_w
 
-				move.w	(a0,d0.w),Plr1_SnapSinVal_w
+				move.w	(a0,d0.w),plr1_SnapSinVal_w
 				adda.w	#2048,a0
-				move.w	(a0,d0.w),Plr1_SnapCosVal_w
+				move.w	(a0,d0.w),plr1_SnapCosVal_w
 
 				move.l	Plr1_SnapXSpdVal_l,d6
 				move.l	Plr1_SnapZSpdVal_l,d7
@@ -641,16 +637,16 @@ nobackward:
 ; add.w d2,d1
 				move.w	d1,ADDTOBOBBLE
 
-				move.w	Plr1_SnapSinVal_w,d1
+				move.w	plr1_SnapSinVal_w,d1
 				muls	d3,d1
-				move.w	Plr1_SnapCosVal_w,d2
+				move.w	plr1_SnapCosVal_w,d2
 				muls	d3,d2
 
 				sub.l	d1,d6
 				sub.l	d2,d7
-				move.w	Plr1_SnapSinVal_w,d1
+				move.w	plr1_SnapSinVal_w,d1
 				muls	d4,d1
-				move.w	Plr1_SnapCosVal_w,d2
+				move.w	plr1_SnapCosVal_w,d2
 				muls	d4,d2
 				sub.l	d2,d6
 				add.l	d1,d7
@@ -693,7 +689,6 @@ nobackward:
 				st		Plr1_Fire_b
 
 .doneplr1:
-
 				bsr		Plr1_Fall
 
 				rts
@@ -701,14 +696,14 @@ nobackward:
 TEMPSCROLL
 				dcb.b	160,32
 
-passspace:
-				ds.l	400
+;passspace:
+;				ds.l	400
 
 Plr1_JoystickControl:
 				jsr		_ReadJoy1
 				bra		Plr1_KeyboardControl
 
-PLR1_clumptime:	dc.w	0
+
 
 Plr1_FootstepFX:
 				movem.l	d0-d7/a0-a6,-(a7)

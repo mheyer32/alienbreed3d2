@@ -15,13 +15,17 @@ Rotated_vl:				ds.l	2*800	; store rotated X and Z coordinates with Z scaling app
 ObjRotated_vl_vl:		ds.l	2*500
 OnScreen_vl:			ds.l	2*800	; store screen projected X coordinates for rotated points
 
-walltiles:				ds.l	40
 
-LeftSideTable_vw:			ds.w	512*2
-RightSideTable_vw:			ds.w	512*2
-LeftBrightTable_vw:			ds.w	512*2
-RightBrightTable_vw:			ds.w	512*2
+
+ZoneBrightTable:		ds.l	300
+
+LeftSideTable_vw:		ds.w	512*2
+RightSideTable_vw:		ds.w	512*2
+LeftBrightTable_vw:		ds.w	512*2
+RightBrightTable_vw:	ds.w	512*2
+
+liftheighttab:			ds.w	40 ; newanims.s
+doorheighttab:			ds.w	40 ; newanims.s
 
 consttab:				ds.b	65536
-
-KeyMap_vb:					ds.b	256
+KeyMap_vb:				ds.b	256

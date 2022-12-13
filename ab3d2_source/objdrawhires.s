@@ -85,7 +85,7 @@ Draw_Object:
 				cmp.w	(a4),d1
 				blt		.still_in_front
 
-				move.l	#draw_EndDepthTable-4,a5
+				move.l	#draw_DepthTableEnd-4,a5
 
 .finished_shift:
 				move.l	-(a5),4(a5)
@@ -2312,7 +2312,7 @@ BOTPART:
 				sub.w	#2048,d2				; 90deg
 				sub.w	angpos,d2				; view angle
 				and.w	#8191,d2				; wrap 360deg
-				move.l	#SineTable,a2
+				move.l	#SinCosTable_vw,a2
 				lea		(a2,d2.w),a5			; sine of object rotation wrt view
 				move.l	#boxbrights,a6
 				move.w	(a5),d6					; sine of object rotation
@@ -2514,7 +2514,7 @@ done_conv:
 ; Now need to sort parts of object
 ; into order.
 
-				move.l	#PartBuffer,a0
+				move.l	#draw_PartBuffer_vw,a0
 				move.l	a0,a2
 				move.w	#63,d0
 
@@ -2567,14 +2567,14 @@ PutinParts:
 				move.w	8(a2,d6.w),d2
 				muls	d2,d2
 				add.l	d2,d0
-				move.l	#PartBuffer-8,a0
+				move.l	#draw_PartBuffer_vw-8,a0
 
 stillfront:
 				addq	#8,a0
 				cmp.l	(a0),d0
 				blt		stillfront
 
-				move.l	#endparttab-8,a5
+				move.l	#draw_PartBufferEnd-8,a5
 
 domoreshift:
 				move.l	-8(a5),(a5)
@@ -2588,7 +2588,7 @@ domoreshift:
 				bra		PutinParts
 
 doneallparts:
-				move.l	#PartBuffer,a0
+				move.l	#draw_PartBuffer_vw,a0
 
 Partloop:
 				move.l	(a0)+,d7
@@ -2619,13 +2619,9 @@ nomorepolys:
 nomoreparts:
 				rts
 
-firstpt:		dc.w	0
-
-PartBuffer:
-				ds.w	4*32
-endparttab:
-
+				align 4
 polybright:		dc.l	0
+firstpt:		dc.w	0
 PolyAng:		dc.w	0
 
 doapoly:
@@ -2764,8 +2760,16 @@ dontusegour:
 				moveq	#0,d1
 				move.b	(a1)+,d1
 				asl.w	#5,d1
-				ext.l	d1
-				divs	#100,d1
+
+				; 0xABADCAFE - division pogrom
+				;ext.l	d1
+				;divs	#100,d1
+
+				; Approximate as 41/4096
+				muls	#41,d1
+				asr.l	#8,d1
+				asr.l	#4,d1
+
 				neg.w	d1
 				add.w	#31,d1
 				tst.b	draw_Holes_b

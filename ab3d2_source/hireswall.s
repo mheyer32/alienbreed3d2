@@ -223,7 +223,7 @@ screendividethru:
 				add.l	#divthreetab,a5
 				move.w	(a5),StripData
 
-				move.l	ChunkAddr,a5
+				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
 				move.b	StripData,d6
 				add.w	d6,d6
@@ -255,7 +255,7 @@ screendividethru:
 				move.w	#32,d6
 
 .brnotpos
-				move.l	PaletteAddr,a2
+				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	.ffscrpickhowbright(pc,d6*2),a2
 ; and.b #$fe,d6
@@ -375,7 +375,7 @@ scrdrawlop:
 				add.l	#divthreetab,a5
 				move.w	(a5),StripData
 
-				move.l	ChunkAddr,a5
+				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
 				move.b	StripData,d6
 				add.w	d6,d6
@@ -412,7 +412,7 @@ scrdrawlop:
 				move.w	#64,d6
 
 .brnotpos
-				move.l	PaletteAddr,a2
+				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	ffscrpickhowbright(pc,d6*2),a2
 				and.b	#$fe,d6
@@ -465,7 +465,7 @@ scrdrawlopDOUB:
 				add.l	#divthreetab,a5
 				move.w	(a5),StripData
 
-				move.l	ChunkAddr,a5
+				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
 				move.b	StripData,d6
 				add.w	d6,d6
@@ -502,7 +502,7 @@ scrdrawlopDOUB:
 				move.w	#64,d6
 
 .brnotpos
-				move.l	PaletteAddr,a2
+				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	ffscrpickhowbrightD(pc,d6*2),a2
 				and.b	#$fe,d6
@@ -564,7 +564,7 @@ scrdrawlopFULL:
 				add.l	#divthreetab,a5
 				move.w	(a5),StripData
 
-				move.l	ChunkAddr,a5
+				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
 				move.b	StripData,d6
 				add.w	d6,d6
@@ -601,7 +601,7 @@ scrdrawlopFULL:
 				move.w	#64,d6
 
 .brnotpos
-				move.l	PaletteAddr,a2
+				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	ffscrpickhowbrightFULL(pc,d6*2),a2
 				and.b	#$fe,d6
@@ -654,7 +654,7 @@ scrdrawlopFULLDOUB:
 				add.l	#divthreetab,a5
 				move.w	(a5),StripData			;
 
-				move.l	ChunkAddr,a5
+				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
 				move.b	StripData,d6
 				add.w	d6,d6
@@ -691,7 +691,7 @@ scrdrawlopFULLDOUB:
 				move.w	#64,d6
 
 .brnotpos
-				move.l	PaletteAddr,a2
+				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	ffscrpickhowbrightFULLDOUB(pc,d6*2),a2
 				and.b	#$fe,d6
@@ -815,7 +815,7 @@ storage:		ds.l	500
 ;				move.l	#subdividevals,a3
 ;				move.l	(a3,d4.w*4),shift(a2)
 ;
-;				move.l	#walltiles,a3
+;				move.l	#Draw_WallTexturePtrs_vl,a3
 ;				add.l	(a0)+,a3
 ;				adda.w	wallyoff,a3
 ;				move.l	a3,fromtile
@@ -828,7 +828,7 @@ storage:		ds.l	500
 ;				sub.l	d6,botofwall
 ;
 ;				move.l	#databuffer,a1
-;				move.l	#SineTable,a3
+;				move.l	#SinCosTable_vw,a3
 ;				lea		2048(a3),a4
 ;				moveq	#0,d0
 ;				moveq	#0,d1
@@ -2345,11 +2345,11 @@ itsawalldraw:
 				move.w	d1,totalyoff
 
 				move.w	(a0)+,d1
-				move.l	#walltiles,a3
+				move.l	#Draw_WallTexturePtrs_vl,a3
 				move.l	(a3,d1.w*4),a3
-				move.l	a3,PaletteAddr
+				move.l	a3,Draw_PalettePtr_l
 				add.l	#64*32,a3
-				move.l	a3,ChunkAddr
+				move.l	a3,Draw_ChunkPtr_l
 
 ;move.w (a0)+,d1
 ;add.w ZoneBright,d1

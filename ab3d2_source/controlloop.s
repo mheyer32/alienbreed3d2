@@ -184,7 +184,7 @@ Game_Start:
 				jsr		Res_LoadObjects
 
 				move.l	#backpicname,a0
-				move.l	#BackPicture,d0
+				move.l	#Draw_BackdropImagePtr_l,d0
 				move.l	#0,d1
 				jsr		IO_QueueFile
 

@@ -195,12 +195,12 @@ Res_FreeSoundFx:
 Res_LoadFloorTextures:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_FloorFilename_l,a0
-				move.l	#floortile,d0
+				move.l	#Draw_FloorTexturesPtr_l,d0
 				move.l	#0,d1
 				move.l	#MEMF_ANY,IO_MemType_l
 				jsr		IO_QueueFile
 
-; move.l d0,floortile
+; move.l d0,Draw_FloorTexturesPtr_l
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_TextureFilename_l,a0
 				move.l	#io_Buffer_vb,a1
@@ -230,9 +230,9 @@ Res_LoadFloorTextures:
 				rts
 
 Res_FreeFloorTextures:
-				move.l	floortile,d1
+				move.l	Draw_FloorTexturesPtr_l,d1
 				CALLEXEC FreeVec
-				clr.l	floortile
+				clr.l	Draw_FloorTexturesPtr_l
 				rts
 
 ; *****************************************************************************
@@ -248,14 +248,14 @@ Res_LoadWallTextures:
 				;* then call FLUSHQUEUE, which actually loads
 				;* the files in...
 
-				move.l	#walltiles,a0
+				move.l	#Draw_WallTexturePtrs_vl,a0
 				moveq	#39,d7
 
 .empty_walls:
 				move.l	#0,(a0)+
 				dbra	d7,.empty_walls
 
-				move.l	#walltiles,a4
+				move.l	#Draw_WallTexturePtrs_vl,a4
 				move.l	GLF_DatabasePtr_l,a3
 				add.l	#GLFT_WallGFXNames_l,a3
 				move.l	#MEMF_ANY,IO_MemType_l
@@ -278,7 +278,7 @@ Res_LoadWallTextures:
 				rts
 
 Res_FreeWallTextures:
-				move.l	#walltiles,a0
+				move.l	#Draw_WallTexturePtrs_vl,a0
 .free_mem:
 				move.l	4(a5),d0
 				beq.s	.free_all

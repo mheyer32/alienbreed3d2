@@ -1349,7 +1349,7 @@ HeadTowardsAng:
 
 				move.w	SinRet,d0
 				move.w	#0,d2
-				move.l	#SineTable,a2
+				move.l	#SinCosTable_vw,a2
 				lea		2048(a2),a3
 				move.w	#3,d5
 				move.w	#2048,d6
@@ -1440,7 +1440,7 @@ CanItBeSeenAng:
 				movem.l	d0-d7/a0-a6,-(a7)
 
 				move.w	Facedir,d0
-				move.l	#SineTable,a0
+				move.l	#SinCosTable_vw,a0
 				add.w	d0,a0
 				move.w	(a0),d0
 				move.w	2048(a0),d1
@@ -1838,7 +1838,7 @@ GetRand:
 Rand1:			dc.w	234
 
 GoInDirection:
-				move.l	#SineTable,a0
+				move.l	#SinCosTable_vw,a0
 				lea		(a0,d0.w),a0
 				move.w	(a0),d1
 				move.w	2048(a0),d2
