@@ -337,7 +337,7 @@ gogog:
 				bne.s	.notswapscr2
 				st		lastscr
 
-				not.b	FULLSCRTEMP
+				not.b	Vid_FullScreenTemp_b
 
 				bra.s	.notswapscr2
 
@@ -361,8 +361,6 @@ gogog:
 				move.l #0,FPSLIMITER
 .noframelimit:
 				rts
-
-FULLSCRTEMP:	dc.w	0
 
 				; Restores the complete original screen left/right borders,
 				; bottom panel.They are stored in a lha packed format

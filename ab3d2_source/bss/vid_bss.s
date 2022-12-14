@@ -12,6 +12,7 @@ Vid_DrawScreenPtr_l:		ds.l	1
 Vid_DisplayScreen_Ptr_l:	ds.l	1
 
 Vid_LetterBoxMarginHeight_w:	ds.w	1	; Letter box rendering, height of black border
-
+Vid_FullScreen_b:				ds.b	1
+Vid_FullScreenTemp_b:			ds.b	1
 Vid_DoubleHeight_b:				ds.b	1	; Double Height Pixel Mode
 Vid_DoubleWidth_b:				ds.b	1	; Double Width Pixel Mode

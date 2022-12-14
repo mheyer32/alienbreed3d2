@@ -308,7 +308,7 @@ gogogogog:
 				bne.s	.notswapscr2
 				st		lastscr
 
-				not.b	FULLSCRTEMP
+				not.b	Vid_FullScreenTemp_b
 
 				bra.s	.notswapscr2
 

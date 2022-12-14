@@ -65,7 +65,7 @@ _start:
 
 				movem.l	d1-a6,-(sp)
 **************************************************************************************
-;ich bin hack  -----  invert FULLSCRTEMP to start game in fullsreen if cpu is 68040 AL
+;ich bin hack  -----  invert Vid_FullScreenTemp_b to start game in fullsreen if cpu is 68040 AL
 				;movem.l	d0-d1/a0,-(a7)
 				move.l	4.w,a0
 				move.b	$129(a0),d0
@@ -73,7 +73,7 @@ _start:
 				btst	#$03,d0
 				beq.b	.not040
 				not.b	Sys_Move16_b ; We can use move16
-				not.b	FULLSCRTEMP
+				not.b	Vid_FullScreenTemp_b
 .not040:
 **************************************************************************************
 
@@ -1076,12 +1076,12 @@ lop:
 
 				move.b	MAPON,REALMAPON
 
-				move.b	FULLSCRTEMP,d0
+				move.b	Vid_FullScreenTemp_b,d0
 				move.b	Vid_FullScreen_b,d1
 				eor.b	d1,d0
 				beq		.noFullscreenSwitch
 
-				move.b	FULLSCRTEMP,Vid_FullScreen_b
+				move.b	Vid_FullScreenTemp_b,Vid_FullScreen_b
 
 				bsr		SetupRenderbufferSize
 
@@ -6410,7 +6410,7 @@ npolys:			dc.w	0
 ;liftpt:			dc.l	liftanimtab
 
 ;brightpt:
-				dc.l	brightanimtab
+;				dc.l	brightanimtab
 
 ******************************
 				include	"objectmove.s"
@@ -9496,8 +9496,7 @@ VBlankInterrupt:
 				rts
 
 tabheld:		dc.w	0
-ObjWork:		ds.l	600
-WorkspacePtr_l:		dc.l	0
+
 thistime:		dc.w	0
 
 DOALLANIMS:
@@ -9507,7 +9506,7 @@ DOALLANIMS:
 
 .okdosome:
 				move.b	#5,thistime
-				move.l	#ObjWork,a5
+				move.l	#ObjectWorkspace_vl,a5
 				move.l	Lvl_ObjectDataPtr_l,a0
 
 Objectloop2:
@@ -11829,7 +11828,7 @@ PLR2:			dc.b	$ff
 ;rndtab:			;		incbin					"randfile"
 ;endrnd:
 
-brightanimtab:
+;brightanimtab:
 ; dcb.w 200,20
 ; dc.w 5
 ; dc.w 10,20
@@ -11865,7 +11864,7 @@ endwait:		dc.w	0
 ;Faces:
 ; incbin "faces2raw"
 
-Lvl_WalkLinksPtr_l:			dc.l	0
+Lvl_WalkLinksPtr_l:		dc.l	0
 Lvl_FlyLinksPtr_l:		dc.l	0
 
 ; include "loadmod.a"
@@ -11881,8 +11880,8 @@ Lvl_FlyLinksPtr_l:		dc.l	0
 ; incbin "darkenfile"
 				dc.l	0
 Vid_CentreX_w:		dc.w	SMALL_WIDTH/2
-Vid_RightX_w:			dc.w	SMALL_WIDTH
-Vid_FullScreen_b:		dc.w	0
+Vid_RightX_w:		dc.w	SMALL_WIDTH
+
 
 ;SHADINGTABLE: incbin "shadefile"
 

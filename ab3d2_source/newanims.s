@@ -1003,12 +1003,12 @@ notallliftsdone:
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,a0/a3/d0/d1/d2/d3/d6/d7
-.nonoise
 
+.nonoise:
 				moveq	#0,d2
 				move.w	d1,d3
-.noraise:
 
+.noraise:
 				sub.w	d3,d0
 				cmp.w	#15*16,d0
 				slt		d6
@@ -1777,7 +1777,7 @@ ivescreamed:	dc.w	0
 
 ObjectHandler:
 
-				move.l	#ObjWork,WorkspacePtr_l
+				move.l	#ObjectWorkspace_vl,WorkspacePtr_l
 				move.l	#AI_Damaged_vw,AI_DamagePtr_l
 
 				move.l	Lvl_ObjectDataPtr_l,a0

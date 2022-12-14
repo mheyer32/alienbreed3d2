@@ -17,7 +17,10 @@ OnScreen_vl:			ds.l	2*800	; store screen projected X coordinates for rotated poi
 
 ZoneBrightTable_vl:		ds.l	300
 
-ConstantTable_vl:		ds.l	8192
+WorkspacePtr_l:			ds.l	1	; hires.s - may depend on position relative to ObjectWorkspace_vl
+ObjectWorkspace_vl:		ds.l	600 ; hires.s
+
+ConstantTable_vl:		ds.l	8192*2 ; 8192 pairs of long
 
 LeftSideTable_vw:		ds.w	512*2
 RightSideTable_vw:		ds.w	512*2
