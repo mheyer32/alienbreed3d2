@@ -543,7 +543,7 @@ ai_Widget:
 				add.w	d2,newz
 
 				move.w	(a0),d1
-				move.l	#ObjRotated_vl_vl,a6
+				move.l	#ObjRotated_vl,a6
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
@@ -745,7 +745,7 @@ ai_ChargeCommon:
 
 .no_side:
 				move.w	(a0),d1
-				move.l	#ObjRotated_vl_vl,a6
+				move.l	#ObjRotated_vl,a6
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
@@ -952,7 +952,7 @@ ai_AttackWithHitScan:
 				beq		.no_shooty_thang
 
 				move.w	(a0),d1
-				move.l	#ObjRotated_vl_vl,a6
+				move.l	#ObjRotated_vl,a6
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
@@ -960,7 +960,7 @@ ai_AttackWithHitScan:
 				movem.l	a0/a1,-(a7)
 				jsr		GetRand
 
-				move.l	#ObjRotated_vl_vl,a6
+				move.l	#ObjRotated_vl,a6
 				move.w	(a0),d1
 				lea		(a6,d1.w*8),a6
 
@@ -993,7 +993,7 @@ ai_AttackWithHitScan:
 				move.b	SHOTPOWER,d0
 				add.b	d0,EntT_DamageTaken_b(a1)
 
-				sub.l	#ObjRotated_vl_vl,a6
+				sub.l	#ObjRotated_vl,a6
 				add.l	Lvl_ObjectPointsPtr_l,a6
 				move.w	(a6),d0
 				sub.w	Plr1_TmpXOff_l,d0				;dx
@@ -1176,7 +1176,7 @@ ai_ChargeFlyingCommon:
 
 .no_teleport:
 				move.w	(a0),d1
-				move.l	#ObjRotated_vl_vl,a6
+				move.l	#ObjRotated_vl,a6
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
@@ -1393,7 +1393,7 @@ ai_ApproachCommon:
 
 .no_teleport:
 				move.w	(a0),d1
-				move.l	#ObjRotated_vl_vl,a6
+				move.l	#ObjRotated_vl,a6
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				lea		(a6,d1.w*8),a6
@@ -1672,7 +1672,7 @@ ai_GetRoomStatsStill:
 				move.w	(a2),12(a0)
 
 ; move.w (a2),d0
-; move.l #ZoneBrightTable,a5
+; move.l #ZoneBrightTable_vl,a5
 ; move.l (a5,d0.w*4),d0
 ; tst.b ShotT_InUpperZone_b(a0)
 ; bne.s .okbit
@@ -1815,7 +1815,7 @@ ai_CheckDamage:
 
 				movem.l	d0-d7/a0-a6,-(a7)
 				sub.l	Lvl_ObjectPointsPtr_l,a1
-				add.l	#ObjRotated_vl_vl,a1
+				add.l	#ObjRotated_vl,a1
 				move.l	(a1),Noisex
 				move.w	#400,Noisevol
 				move.w	#14,Samplenum
@@ -1850,7 +1850,7 @@ ai_CheckDamage:
 .noexplode:
 				movem.l	d0-d7/a0-a6,-(a7)
 				sub.l	Lvl_ObjectPointsPtr_l,a1
-				add.l	#ObjRotated_vl_vl,a1
+				add.l	#ObjRotated_vl,a1
 				move.l	(a1),Noisex
 				move.w	#200,Noisevol
 				move.w	screamsound,Samplenum
@@ -1870,7 +1870,7 @@ ai_CheckDamage:
 				clr.b	EntT_DamageTaken_b(a0)
 				movem.l	d0-d7/a0-a6,-(a7)
 				sub.l	Lvl_ObjectPointsPtr_l,a1
-				add.l	#ObjRotated_vl_vl,a1
+				add.l	#ObjRotated_vl,a1
 				move.l	(a1),Noisex
 				move.w	#200,Noisevol
 				move.w	screamsound,Samplenum

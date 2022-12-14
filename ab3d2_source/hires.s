@@ -165,19 +165,19 @@ _start:
 				move.l	d0,Vid_FastBufferPtr_l
 
 				; Setup constant table
-				move.l	#consttab,a0
+				move.l	#ConstantTable_vl,a0
 				moveq	#1,d0
 				move.w	#8191,d1
 
 .fill_const:
-				move.l	#16384*64,d2
+				move.l	#16384*64,d2 ; 1<<10
 				divs.l	d0,d2
 ; ext.l d2	;c#
 				move.l	#64*64*65536,d3
 				divs.l	d2,d3
 ; move.l d3,d4
 ; asr.l #6,d4
-				move.l	d3,(a0)+				;e#
+				move.l	d3,(a0)+				; e#
 				asr.l	#1,d2					; c#/2.0
 				sub.l	#40*64,d2				; d#
 				muls.l	d3,d2					; d#*e#
@@ -468,7 +468,7 @@ noload:
 				move.l	a2,Lvl_PointsPtr_l
 				move.w	8+6(a1),d0
 				lea		4(a2,d0.w*4),a2
-				move.l	a2,PointBrights
+				move.l	a2,PointBrightsPtr_l
 				move.w	16(a1),d0
 				addq	#1,d0
 				muls	#80,d0
@@ -1597,7 +1597,7 @@ ASlaveShouldWaitOnHisMaster:
 				move.l	ZoneT_Roof_l(a0),SplitHeight
 
 donetalking:
-				move.l	#ZoneBrightTable,a1
+				move.l	#ZoneBrightTable_vl,a1
 				move.l	Lvl_ZoneAddsPtr_l,a2
 				move.l	plr2_ListOfGraphRoomsPtr_l,a0
 ; move.l plr2_PointsToRotatePtr_l,a5
@@ -1661,7 +1661,7 @@ justbright2:
 				bra		doallz
 
 doneallz:
-				move.l	PointBrights,a2
+				move.l	PointBrightsPtr_l,a2
 				move.l	#CurrentPointBrights_vl,a3
 
 justtheone:
@@ -3166,7 +3166,7 @@ Plr1_Use:
 				move.l	Plr1_ObjectPtr_l,a0
 				move.b	#4,16(a0)
 				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.l	#ObjRotated_vl_vl,a2
+				move.l	#ObjRotated_vl,a2
 				move.w	(a0),d0
 				move.l	Plr1_XOff_l,(a1,d0.w*8)
 				move.l	Plr1_ZOff_l,4(a1,d0.w*8)
@@ -3221,7 +3221,7 @@ Plr1_Use:
 				move.b	Plr1_StoodInTop_b,ShotT_InUpperZone_b(a0)
 				move.w	(a1),12(a0)
 				move.w	(a1),d2
-				move.l	#ZoneBrightTable,a1
+				move.l	#ZoneBrightTable_vl,a1
 				move.l	(a1,d2.w*4),d2
 				tst.b	Plr1_StoodInTop_b
 				bne.s	.okinbott
@@ -3260,7 +3260,7 @@ Plr1_Use:
 ;
 
 				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.l	#ObjRotated_vl_vl,a2
+				move.l	#ObjRotated_vl,a2
 				move.w	(a0),d0
 				move.l	Plr2_XOff_l,(a1,d0.w*8)
 				move.l	Plr2_ZOff_l,4(a1,d0.w*8)
@@ -3288,7 +3288,7 @@ Plr1_Use:
 				move.b	Plr2_StoodInTop_b,ShotT_InUpperZone_b(a0)
 				move.w	(a1),12(a0)
 				move.w	(a1),d2
-				move.l	#ZoneBrightTable,a1
+				move.l	#ZoneBrightTable_vl,a1
 				move.l	(a1,d2.w*4),d2
 				tst.b	Plr2_StoodInTop_b
 				bne.s	.okinbott2
@@ -3445,7 +3445,7 @@ Plr2_Use:
 				move.l	Plr2_ObjectPtr_l,a0
 				move.b	#5,16(a0)
 				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.l	#ObjRotated_vl_vl,a2
+				move.l	#ObjRotated_vl,a2
 				move.w	(a0),d0
 				move.l	Plr2_XOff_l,(a1,d0.w*8)
 				move.l	Plr2_ZOff_l,4(a1,d0.w*8)
@@ -3497,7 +3497,7 @@ Plr2_Use:
 
 				move.w	(a1),12(a0)
 				move.w	(a1),d2
-				move.l	#ZoneBrightTable,a1
+				move.l	#ZoneBrightTable_vl,a1
 				move.l	(a1,d2.w*4),d2
 				tst.b	Plr2_StoodInTop_b
 				bne.s	.okinbott
@@ -3540,7 +3540,7 @@ Plr2_Use:
 ;
 
 				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.l	#ObjRotated_vl_vl,a2
+				move.l	#ObjRotated_vl,a2
 				move.w	(a0),d0
 				move.l	Plr1_XOff_l,(a1,d0.w*8)
 				move.l	Plr1_ZOff_l,4(a1,d0.w*8)
@@ -3566,7 +3566,7 @@ Plr2_Use:
 
 				move.w	(a1),12(a0)
 				move.w	(a1),d2
-				move.l	#ZoneBrightTable,a1
+				move.l	#ZoneBrightTable_vl,a1
 				move.l	(a1,d2.w*4),d2
 				tst.b	Plr1_StoodInTop_b
 				bne.s	.okinbott2
@@ -4600,7 +4600,7 @@ dothisroom:
 				move.l	d1,LastZonePtr_l
 .nochange:
 
-				move.l	#ZoneBrightTable,a1
+				move.l	#ZoneBrightTable_vl,a1
 				move.l	(a1,d0.w*4),d1
 				tst.b	Draw_DoUpper_b
 				bne.s	.ok_bottom
@@ -5343,7 +5343,7 @@ RotateObjectPts:
 				move.l	Lvl_ObjectDataPtr_l,a4
 				move.l	Lvl_ObjectPointsPtr_l,a0
 				move.w	Lvl_NumObjectPoints_w,d7
-				move.l	#ObjRotated_vl_vl,a1
+				move.l	#ObjRotated_vl,a1
 
 				tst.b	Vid_FullScreen_b
 				bne		BIGOBJPTS
@@ -7475,7 +7475,7 @@ minz:			dc.l	0
 ;LeftBrightTable_vw:	ds.w	512*2
 ;RightBrightTable_vw:	ds.w	512*2
 
-;PointBrights: dc.l	0
+;PointBrightsPtr_l: dc.l	0
 ;CurrentPointBrights_vl:	ds.l	2*256*10
 
 movespd:		dc.w	0
@@ -9618,7 +9618,7 @@ NOSIDES2:
 				clr.b	notifplaying
 				move.w	(a0),IDNUM
 				move.w	#80,Noisevol
-				move.l	#ObjRotated_vl_vl,a1
+				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
 				move.l	(a1),Noisex
@@ -11856,7 +11856,7 @@ wallpt:			dc.l	0
 floorpt:		dc.l	0
 
 ;Rotated_vl:		ds.l	2*800					; store rotated X and Z coordinates with Z scaling applied
-;ObjRotated_vl_vl:		ds.l	2*500
+;ObjRotated_vl:		ds.l	2*500
 ;OnScreen_vl:		ds.l	2*800					; store screen projected X coordinates for rotated points
 
 startwait:		dc.w	0

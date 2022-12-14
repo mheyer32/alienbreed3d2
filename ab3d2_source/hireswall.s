@@ -333,7 +333,7 @@ outofcalc:
 				rts
 
 .somethingtodraw:
-				move.l	#consttab,a1
+				move.l	#ConstantTable_vl,a1
 				move.l	#Sys_Workspace_vl,a0
 				tst.b	Vid_FullScreen_b
 				bne		screendivideFULL

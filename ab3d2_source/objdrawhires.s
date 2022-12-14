@@ -47,7 +47,7 @@ Draw_Object:
 
 ; CACHE_ON d6
 				move.l	Lvl_ObjectDataPtr_l,a1
-				move.l	#ObjRotated_vl_vl,a2
+				move.l	#ObjRotated_vl,a2
 				move.l	#draw_DepthTable_vl,a3
 				move.l	a3,a4
 				move.w	#79,d7
@@ -119,7 +119,7 @@ Draw_Object:
 draw_Object:
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.l	Lvl_ObjectDataPtr_l,a0
-				move.l	#ObjRotated_vl_vl,a1
+				move.l	#ObjRotated_vl,a1
 				asl.w	#6,d0
 				adda.w	d0,a0
 				move.b	ShotT_InUpperZone_b(a0),draw_InUpperZone_b
@@ -225,7 +225,7 @@ draw_Object:
 ;; horizontal constants
 ;; vertical constants.
 ;
-;				move.l	#consttab,a3
+;				move.l	#ConstantTable_vl,a3
 ;
 ;				moveq	#0,d3
 ;				moveq	#0,d4
@@ -579,7 +579,7 @@ draw_bitmap_glare:
 				adda.w	d7,a6
 				move.w	4(a0),d7
 				lea		(a6,d7.w*8),a6
-				move.l	#consttab,a3
+				move.l	#ConstantTable_vl,a3
 				moveq	#0,d3
 				moveq	#0,d4
 				move.b	(a0)+,d3
@@ -981,7 +981,7 @@ pastobjscale:
 				moveq	#0,d7
 				move.b	5(a0),d7				; current frame of animation
 				lea		(a6,d7.w*8),a6			; a6 pointing to frame?
-				move.l	#consttab,a3
+				move.l	#ConstantTable_vl,a3
 				moveq	#0,d3
 				moveq	#0,d4
 				move.b	(a0)+,d3
@@ -1038,7 +1038,7 @@ pastobjscale:
 				swap	d7
 				clr.w	d7
 				swap	d7
-				lea		(a3,d7.l*8),a2			; pointer to horiz const
+				lea		(a3,d7.l*8),a2	; pointer to horiz const (d7th pair in ConstantTable_vl)
 				move.w	d1,d7
 				move.w	6(a6),d6
 				add.w	d6,d6

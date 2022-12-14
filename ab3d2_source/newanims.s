@@ -494,7 +494,7 @@ flashpts:
 flashedall:
 				move.l	(a7)+,a0
 
-				move.l	#ZoneBrightTable,a1
+				move.l	#ZoneBrightTable_vl,a1
 				add.w	d1,(a1,d0.w*4)
 				add.w	d1,2(a1,d0.w*4)
 
@@ -743,26 +743,23 @@ BACKSFX:
 				bgt		.nosfx
 
 				jsr		GetRand
+
 				lsr.w	#3,d0
 				and.w	#127,d0
 				add.w	#100,d0
 				move.w	d0,TimeToNoise
-
 				move.l	Roompt,a0
-
 				add.w	ODDEVEN,a0
-
 				move.w	#2,d0
 				sub.w	ODDEVEN,d0
 				move.w	d0,ODDEVEN
-
 				move.w	ZoneT_BackSFXMask_w(a0),d1		; mask for sfx
 				beq		.nosfx
 
 				jsr		GetRand
 				lsr.w	#3,d0
 
-.notfound
+.notfound:
 				addq	#1,d0
 				and.w	#15,d0
 				btst	d0,d1
@@ -776,6 +773,7 @@ BACKSFX:
 				move.l	#0,Noisex
 				move.b	#0,PlayEcho
 				jsr		GetRand
+
 				and.w	#15,d0
 				add.w	#32,d0
 				move.w	d0,Noisevol
@@ -787,17 +785,16 @@ BACKSFX:
 				rts
 
 objmoveanim:
-
 				move.l	Plr1_RoomPtr_l,a0
 				move.w	(a0),Plr1_Zone_w
 				move.l	Plr2_RoomPtr_l,a0
 				move.w	(a0),Plr2_Zone_w
-
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.okp2
-				move.w	#-5,Plr2_Zone_w
-.okp2:
 
+				move.w	#-5,Plr2_Zone_w
+
+.okp2:
 				move.w	#0,AI_Player1NoiseVol_w
 				move.w	#0,AI_Player2NoiseVol_w
 
@@ -810,7 +807,6 @@ objmoveanim:
 ; bsr SwitchRoutine
 				bsr		ObjectHandler
 				bsr		DoorRoutine
-
 
 				move.w	#0,Plr1_FloorSpd_w
 				move.w	#0,plr2_FloorSpd_w
@@ -834,8 +830,6 @@ tstdir:			dc.w	0
 
 liftattop:		dc.b	0
 liftatbot:		dc.b	0
-
-
 DoorLocks:		dc.w	0
 LiftLocks:		dc.w	0
 
@@ -901,7 +895,7 @@ LiftRoutine:
 
 				move.w	#-1,ThisDoor
 				move.l	Lvl_LiftDataPtr_l,a0
-				move.l	#liftheighttab,a6
+				move.l	#anim_LiftHeightTable_vw,a6
 
 doalift:
 				add.w	#1,ThisDoor
@@ -1269,7 +1263,7 @@ CLOSEDSFX:		dc.w	0
 				even
 				DoorRoutine:
 
-				move.l	#doorheighttab,a6
+				move.l	#anim_DoorHeightTable_vw,a6
 				move.l	Lvl_DoorDataPtr_l,a0
 				move.w	#-1,ThisDoor
 
@@ -1875,7 +1869,7 @@ notdoneflame:
 				bne.s	.nowhoosh
 
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.l	#ObjRotated_vl_vl,a1
+				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
 				move.l	(a1),Noisex
@@ -2003,7 +1997,7 @@ notexploding:
 				jsr		ComputeBlast
 
 				move.w	(a0),d0
-				move.l	#ObjRotated_vl_vl,a1
+				move.l	#ObjRotated_vl,a1
 				move.l	(a1,d0.w*8),Noisex
 				move.w	#300,Noisevol
 				move.w	#15,Samplenum
@@ -2121,7 +2115,7 @@ HealFactor		EQU		18
 
 				move.l	Plr1_ObjectPtr_l,a2
 				move.w	(a2),d0
-				move.l	#ObjRotated_vl_vl,a2
+				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d0.w*8),Noisex
 				move.w	#50,Noisevol
 				move.w	#4,Samplenum
@@ -2174,7 +2168,7 @@ MEDIPLR2
 
 				move.l	Plr2_ObjectPtr_l,a2
 				move.w	(a2),d0
-				move.l	#ObjRotated_vl_vl,a2
+				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d0.w*8),Noisex
 				move.w	#50,Noisevol
 				move.w	#4,Samplenum
@@ -3271,7 +3265,7 @@ notdoneanim:
 				subq.l	#1,d0
 				blt.s	.nohitnoise
 
-				move.l	#ObjRotated_vl_vl,a1
+				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d1
 				move.l	(a1,d1.w*8),Noisex
 ; move.w d0,Noisevol
@@ -3346,7 +3340,7 @@ notdoneanim:
 				subq.l	#1,d0
 				blt.s	.nohitnoise2
 
-				move.l	#ObjRotated_vl_vl,a1
+				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d1
 				move.l	(a1,d1.w*8),Noisex
 				move.w	#200,Noisevol
@@ -3537,7 +3531,7 @@ nomovebul:
 				subq.l	#1,d0
 				blt.s	.nohitnoise
 
-				move.l	#ObjRotated_vl_vl,a1
+				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d1
 				move.l	(a1,d1.w*8),Noisex
 				move.w	#200,Noisevol
@@ -3758,7 +3752,7 @@ notasplut:
 				subq.l	#1,d0
 				blt.s	.nohitnoise3
 
-				move.l	#ObjRotated_vl_vl,a1
+				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d1
 				move.l	(a1,d1.w*8),Noisex
 				move.w	#200,Noisevol
