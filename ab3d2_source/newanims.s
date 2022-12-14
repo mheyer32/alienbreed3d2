@@ -1026,9 +1026,10 @@ notallliftsdone:
 				move.w	d0,2(a1)
 				move.w	d3,d0
 
-				;muls	#256,d3
-				ext.l	d3	; Safety - sign extend before shift
-				asl.l	#8,d3
+				muls	#256,d3
+				; 0xABADCAFE - come back to the overflow here
+				;ext.l	d3	; Safety - sign extend before shift
+				;asl.l	#8,d3
 				move.w	(a0)+,d5
 
 				move.l	Lvl_ZoneAddsPtr_l,a1
