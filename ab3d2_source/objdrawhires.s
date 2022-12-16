@@ -2762,14 +2762,13 @@ dontusegour:
 				asl.w	#5,d1
 
 				; 0xABADCAFE - division pogrom
-				ext.l	d1
-				divs	#100,d1
+				;ext.l	d1
+				;divs	#100,d1
 
 				; Approximate as 41/4096
-            ; TODO - Enable next PR
-				;muls	#41,d1
-				;asr.l	#8,d1
-				;asr.l	#4,d1
+				muls.w	#41,d1
+				asr.l	#8,d1
+				asr.l	#4,d1
 
 				neg.w	d1
 				add.w	#31,d1

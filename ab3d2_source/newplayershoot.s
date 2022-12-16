@@ -97,14 +97,13 @@ Plr1_Shot:
 				neg.l	d2
 
 .not_negative:
-				divs	#44,d2 ; Hitscanning doesnt work without this. Why 44?
-
 				;0xABADCAFE division pogrom
+				;divs	#44,d2 ; Hitscanning doesnt work without this. But why 44?
+
 				; Approximate 1/44 as 93/4096
-            ; TODO - Enable next PR
-				;muls	#93,d2 ; todo - maybe needs to be muls.l
-				;asr.l	#8,d2
-				;asr.l	#4,d2
+				muls	#93,d2 ; todo - maybe needs to be muls.l ?
+				asr.l	#8,d2
+				asr.l	#4,d2
 
 				cmp.w	d6,d2
 				bgt.s	.not_lined_up
@@ -115,7 +114,7 @@ Plr1_Shot:
 				move.w	d6,d1
 				move.l	a0,a4
 
-; We have a closer enemy lined up.
+				; We have a closer enemy lined up.
 				move.l	d3,targetydiff
 				move.w	d5,d0
 
@@ -421,15 +420,15 @@ Plr2_Shot:
 				bge.s	.not_negative
 
 				neg.l	d2
+
 .not_negative:
+				; 0xABADCAFE division pogrom
 				divs	#44,d2 ; Hitscanning doesnt work without this. Why 44?
 
-				; 0xABADCAFE division pogrom
 				; Approximate 1/44 as 93/4096
-            ; TODO - Enable Next PR
-				;muls	#93,d2 ; todo - maybe needs to be muls.l
-				;asr.l	#8,d2
-				;asr.l	#4,d2
+				muls	#93,d2 ; todo - maybe needs to be muls.l
+				asr.l	#8,d2
+				asr.l	#4,d2
 
 				cmp.w	d6,d2
 				bgt.s	.not_lined_up

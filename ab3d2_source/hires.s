@@ -1628,13 +1628,12 @@ doallz
 justbright:
 				; 0xABADCAFE division pogrom
 				; Following code basically multiplies by 1.6
-				muls	#32,d2
-				divs	#20,d2
+				;muls	#32,d2
+				;divs	#20,d2
 
-				; TODO - Enable next PR
-            ; Approximation (8-bit prec)
-				;muls	#410,d2
-				;asr.l	#8,d2
+				; Approximation (8-bit prec)
+				muls	#410,d2
+				asr.l	#8,d2
 
 				move.w	d2,(a1,d0.w*4)
 				move.w	ZoneT_UpperBrightness_w(a3),d2
@@ -1651,13 +1650,12 @@ justbright:
 justbright2:
 				; 0xABADCAFE division pogrom
 				; Following code basically multiplies by 1.6
-				muls	#32,d2
-				divs	#20,d2
+				;muls	#32,d2
+				;divs	#20,d2
 
-				; TODO - Enable next PR
-            ; Approximation (8-bit prec)
-				;muls	#410,d2
-				;asr.l	#8,d2
+				; Approximation (8-bit prec)
+				muls	#410,d2
+				asr.l	#8,d2
 
 				move.w	d2,2(a1,d0.w*4)
 				bra		doallz
@@ -1670,9 +1668,7 @@ justtheone:
 				move.w	(a5),d0
 				blt		whythehell
 				addq	#8,a5
-
 				muls	#40,d0
-
 				move.w	#39,d7
 
 allinzone:
@@ -1702,13 +1698,12 @@ allinzone:
 				; 0xABADCAFE division pogrom
 				; Following code basically multiplies by 1.55
 				; TODO - was it meant to be 1.6 ?
-				muls	#31,d2
-				divs	#20,d2
+				;muls	#31,d2
+				;divs	#20,d2
 
-            ; TODO - Enable next PR
 				; Approximation (8-bit)
-				;muls	#397,d2
-				;asr.l	#8,d2
+				muls	#397,d2
+				asr.l	#8,d2
 
 				bge.s	.itspos
 				sub.w	#600,d2

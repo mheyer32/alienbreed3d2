@@ -1095,8 +1095,7 @@ notallliftsdone:
 				bne		tstliftraise
 				move.w	#0,d1
 
-backfromlift
-
+backfromlift:
 				and.w	#255,d0
 
 liftwalls:
@@ -1119,6 +1118,7 @@ liftwalls:
 				movem.l	a0/a3/a4/d0/d1/d2/d3/d6/d7,-(a7)
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,a0/a3/a4/d0/d1/d2/d3/d6/d7
+
 .nothinghit:
 				move.l	(a0)+,a1
 				add.l	Lvl_GraphicsPtr_l,a1
@@ -1143,7 +1143,6 @@ tstliftlower:
 				beq.s	lift3
 
 lift0:
-
 				moveq	#0,d1
 				tst.b	Plr1_TmpSpcTap_b
 				beq.s	.noplr1
@@ -1198,7 +1197,6 @@ tstliftraise:
 				beq.s	rlift3
 
 rlift0:
-
 				moveq	#0,d1
 				tst.b	Plr1_TmpSpcTap_b
 				beq.s	.noplr1
@@ -1220,7 +1218,6 @@ rlift0:
 				bra		backfromlift
 
 .noplr2:
-
 				bra		backfromlift
 
 rlift1:
@@ -1262,14 +1259,13 @@ OPENSFX:		dc.w	0
 CLOSEDSFX:		dc.w	0
 
 				even
-				DoorRoutine:
+DoorRoutine:
 
 				move.l	#anim_DoorHeightTable_vw,a6
 				move.l	Lvl_DoorDataPtr_l,a0
 				move.w	#-1,ThisDoor
 
 doadoor:
-
 				add.w	#1,ThisDoor
 				move.w	(a0)+,d0				; bottom of door movement
 				cmp.w	#999,d0
@@ -1277,9 +1273,9 @@ doadoor:
 				move.w	#999,(a6)
 				move.w	#0,DoorLocks
 				rts
+
 notalldoorsdone:
 				move.w	(a0)+,d1				; top of door movement.
-
 				move.w	(a0)+,OPENINGSPEED
 				neg.w	OPENINGSPEED
 				move.w	(a0)+,CLOSINGSPEED
@@ -1298,33 +1294,27 @@ notalldoorsdone:
 				sub.w	Plr1_TmpZOff_l,d3
 				move.w	cosval,d4
 				move.w	sinval,d5
-
 				muls	d2,d4
 				muls	d3,d5
 				sub.l	d5,d4
 				add.l	d4,d4
 				swap	d4
 				move.w	d4,Noisex
-
 				move.w	sinval,d4
 				move.w	cosval,d5
-
 				muls	d2,d4
 				muls	d3,d5
 				sub.l	d5,d4
 				add.l	d4,d4
 				swap	d4
 				move.w	d4,Noisez
-
 				move.w	(a0),d3
 				move.w	2(a0),d2
-
 				move.w	8(a0),d7
 				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d7.w*4),a1
 				add.l	Lvl_DataPtr_l,a1
 				move.b	ZoneT_Echo_b(a1),PlayEcho
-
 				muls	TempFrames,d2
 				add.w	d2,d3
 				move.w	2(a0),d2
@@ -1342,48 +1332,45 @@ notalldoorsdone:
 				move.w	#$fffd,IDNUM
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
 				jsr		MakeSomeNoise
-				movem.l	(a7)+,a0/a3/d0/d1/d2/d3/d6/d7
-.nonoise
 
+				movem.l	(a7)+,a0/a3/d0/d1/d2/d3/d6/d7
+.nonoise:
 				moveq	#0,d2
 				move.w	d3,d0
 
 nolower:
-
 				cmp.w	d3,d1
 				sge		dooropen
 				blt.s	noraise
 
-
 				tst.w	d2
 				beq.s	.nonoise
+
 				move.w	#0,(a6)
 				move.w	#50,Noisevol
 				move.w	OPENSFX,Samplenum
 				blt.s	.nonoise
+
 				move.b	#1,chanpick
 				clr.b	notifplaying
 				move.w	#$fffd,IDNUM
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
 				jsr		MakeSomeNoise
-				movem.l	(a7)+,a0/a3/d0/d1/d2/d3/d6/d7
-.nonoise
 
+				movem.l	(a7)+,a0/a3/d0/d1/d2/d3/d6/d7
+
+.nonoise:
 				move.w	d1,d3
 				moveq	#0,d2
 noraise:
-
 NOTMOVING:
-
 				sub.w	d3,d0
 				cmp.w	#15*16,d0
 				sge		d6
-
 				move.w	d3,(a0)+
 				move.l	a0,a5
 				move.w	d2,(a0)+
 				move.w	d2,d7
-
 				move.l	(a0)+,a1
 				add.l	Lvl_GraphicsPtr_l,a1
 				asr.w	#2,d3
@@ -1392,13 +1379,12 @@ NOTMOVING:
 				move.w	d0,2(a1)
 				move.w	d3,d0
 
-				;muls	#256,d3
-				ext.l	d3		; Safety: Sign extend before shift
-				asl.l	#8,d3
+				muls	#256,d3
+				;ext.l	d3		; Safety: Sign extend before shift
+				;asl.l	#8,d3
 
 				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.w	(a0)+,d5
-
 
 				move.l	(a1,d5.w*4),a1
 				add.l	Lvl_DataPtr_l,a1
@@ -1421,8 +1407,8 @@ NOTMOVING:
 				move.w	(a0)+,d2
 				move.w	(a0)+,d5
 				bra		backfromtst
-NotGoBackUp:
 
+NotGoBackUp:
 				move.w	(a0)+,d2				; conditions
 ; and.w Conditions,d2
 				move.w	ThisDoor,d2
@@ -1434,6 +1420,7 @@ NotGoBackUp:
 
 dothesimplething:
 				move.l	Lvl_FloorLinesPtr_l,a3
+
 simplecheck:
 				move.w	(a0)+,d5
 				blt		nomoredoorwalls
@@ -1449,9 +1436,7 @@ simplecheck:
 				bra.s	simplecheck
 				bra		nomoredoorwalls
 
-
 satisfied:
-
 				moveq	#0,d4
 				moveq	#0,d5
 				move.b	(a0)+,d5
@@ -1463,7 +1448,6 @@ satisfied:
 				move.w	#$0,d1
 
 backfromtst:
-
 				move.l	Lvl_FloorLinesPtr_l,a3
 
 doorwalls:
@@ -1475,16 +1459,20 @@ doorwalls:
 				move.w	#$8000,14(a4)
 				and.w	d1,d4
 				beq.s	nothinghit
+
 				move.w	d7,(a5)
 				move.w	#50,Noisevol
 				move.w	ACTIONNOISE,Samplenum
 				blt.s	nothinghit
+
 				move.b	#1,chanpick
 				clr.b	notifplaying
 				move.w	#$fffd,IDNUM
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
 				jsr		MakeSomeNoise
+
 				movem.l	(a7)+,a0/a3/d0/d1/d2/d3/d6/d7
+
 nothinghit:
 				move.l	(a0)+,a1
 				add.l	Lvl_GraphicsPtr_l,a1
@@ -1507,21 +1495,25 @@ tstdoortoopen:
 
 				cmp.w	#1,d5
 				blt.s	door0
+
 				beq.s	door1
+
 				cmp.w	#3,d5
 				blt.s	door2
+
 				beq.s	door3
+
 				cmp.w	#5,d5
 				blt.s	door4
 				beq.s	door5
 
 door0:
-
 				move.w	#$0,d1
 				tst.b	Plr1_TmpSpcTap_b
 				beq.s	.noplr1
 				move.w	#%100000000,d1
 .noplr1:
+
 				tst.b	Plr2_TmpSpcTap_b
 				beq.s	.noplr2
 				or.w	#%100000000000,d1
@@ -1562,7 +1554,6 @@ tstdoortoclose:
 				move.w	#1,d4
 
 .oktoclose:
-
 				move.w	CLOSINGSFX,ACTIONNOISE
 				tst.w	d4
 				beq.s	dclose0
@@ -1578,19 +1569,19 @@ dclose1:
 				bra		backfromtst
 
 SwitchRoutine:
-
 				move.l	Lvl_SwitchDataPtr_l,a0
 				move.w	#7,d0
 				move.l	Lvl_PointsPtr_l,a1
-CheckSwitches
 
+CheckSwitches:
 				tst.b	Plr1_TmpSpcTap_b
 				bne		p1_SpaceIsPressed
-backtop2
+
+backtop2:
 				tst.b	Plr2_TmpSpcTap_b
 				bne		p2_SpaceIsPressed
-backtoend
 
+backtoend:
 				tst.b	2(a0)
 				beq		nobutt
 
@@ -1628,7 +1619,6 @@ backtoend
 				movem.l	(a7)+,a0/a3/d0/d1/d2/d3/d6/d7
 
 nobutt:
-
 				adda.w	#14,a0
 				dbra	d0,CheckSwitches
 				rts
@@ -1661,6 +1651,7 @@ p1_SpaceIsPressed:
 				not.b	10(a0)
 				beq.s	.switchoff
 				or.w	#2,d3
+
 .switchoff:
 				move.w	d3,(a3)
 				move.w	#7,d3
@@ -1689,6 +1680,7 @@ p2_SpaceIsPressed:
 				move.w	Plr2_TmpZOff_l,d2
 				move.w	(a0),d3
 				blt		.NotCloseEnough
+
 				move.w	4(a0),d3
 				lea		(a1,d3.w*4),a2
 				move.w	(a2),d3
@@ -1711,7 +1703,9 @@ p2_SpaceIsPressed:
 				and.w	#%00000111100,d3
 				not.b	10(a0)
 				beq.s	.switchoff
+
 				or.w	#2,d3
+
 .switchoff:
 				move.w	d3,(a3)
 				move.w	#7,d3
@@ -1730,6 +1724,7 @@ p2_SpaceIsPressed:
 				move.w	#$fffc,IDNUM
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
 				jsr		MakeSomeNoise
+
 				movem.l	(a7)+,a0/a3/d0/d1/d2/d3/d6/d7
 
 				movem.l	(a7)+,a0/a1/d0
@@ -1776,7 +1771,6 @@ double:			dc.w	0
 ivescreamed:	dc.w	0
 
 ObjectHandler:
-
 				move.l	#ObjectWorkspace_vl,WorkspacePtr_l
 				move.l	#AI_Damaged_vw,AI_DamagePtr_l
 
@@ -1805,7 +1799,7 @@ dontworryyourprettyhead:
 doneallobj:
 				rts
 
-JUMPALIEN
+JUMPALIEN:
 				tst.w	12(a0)
 				blt.s	.dontworry
 
@@ -1813,8 +1807,8 @@ JUMPALIEN
 				beq.s	.nolock
 				move.l	EntT_DoorsHeld_w(a0),d0
 				or.l	d0,DoorLocks
-.nolock
 
+.nolock:
 				tst.b	ShotT_Worry_b(a0)
 				beq		.dontworry
 				jsr		ItsAnAlien
@@ -1824,11 +1818,10 @@ JUMPALIEN
 				move.w	12(a0),12-64(a0)
 				move.w	12(a0),EntT_GraphicRoom_w-64(a0)
 .notanaux:
-
-.dontworry
+.dontworry:
 				bra		doneobj
 
-JUMPOBJECT
+JUMPOBJECT:
 				tst.w	12(a0)
 				blt.s	.dontworry
 				jsr		ItsAnObject
@@ -1839,7 +1832,6 @@ JUMPBULLET:
 				bra		doneobj
 
 ItsAGasPipe:
-
 				clr.b	ShotT_Worry_b(a0)
 
 				move.w	TempFrames,d0
@@ -1852,7 +1844,6 @@ ItsAGasPipe:
 				rts
 
 maybeflame:
-
 				sub.w	d0,EntT_Timer4_w(a0)
 				blt.s	yesflame
 				rts
@@ -1865,7 +1856,6 @@ yesflame:
 				move.w	EntT_Timer1_w(a0),EntT_Timer3_w(a0)
 
 notdoneflame:
-
 				cmp.w	#4,EntT_Timer2_w(a0)
 				bne.s	.nowhoosh
 
@@ -1889,7 +1879,8 @@ notdoneflame:
 ; just continuously spray out flame!
 				move.l	NastyShotDataPtr_l,a5
 				move.w	#19,d1
-.findonefree
+
+.findonefree:
 				move.w	12(a5),d0
 				blt.s	.foundonefree
 				adda.w	#64,a5
@@ -1898,7 +1889,6 @@ notdoneflame:
 				rts
 
 .foundonefree:
-
 				move.b	#2,16(a5)
 				move.w	12(a0),12(a5)
 				move.w	4(a0),d0
@@ -1941,7 +1931,6 @@ notdoneflame:
 ; include "ai.s"
 
 ItsABarrel:
-
 				clr.b	ShotT_Worry_b(a0)
 				move.w	12(a0),EntT_GraphicRoom_w(a0)
 
@@ -1964,7 +1953,6 @@ ItsABarrel:
 				rts
 
 notexploding:
-
 				move.w	#$1f1f,14(a0)
 
 				move.w	12(a0),d0
@@ -1975,6 +1963,7 @@ notexploding:
 				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.okinbot
 				move.l	ZoneT_UpperFloor_l(a1),d0
+
 .okinbot:
 				asr.l	#7,d0
 				sub.w	#60,d0
@@ -2013,7 +2002,6 @@ notexploding:
 				rts
 
 nodamage:
-
 				move.w	(a0),d0
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),Viewerx
@@ -2042,7 +2030,6 @@ nodamage:
 				move.b	#1,17(a0)
 
 .noseeplr1:
-
 				move.b	Plr2_StoodInTop_b,TargetTop
 				move.l	Plr2_RoomPtr_l,ToRoom
 				move.w	Plr2_XOff_l,Targetx
@@ -2058,8 +2045,6 @@ nodamage:
 				or.b	#2,17(a0)
 
 .noseeplr2:
-
-
 				rts
 
 				include	"newaliencontrol.s"
@@ -2070,7 +2055,6 @@ RipTear:		dc.l	256*17*65536
 otherrip:		dc.l	256*18*65536
 
 ItsAMediKit:
-
 				clr.b	ShotT_Worry_b(a0)
 				move.w	12(a0),EntT_GraphicRoom_w(a0)
 
@@ -2082,6 +2066,7 @@ ItsAMediKit:
 				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.okinbot
 				move.l	ZoneT_UpperFloor_l(a1),d0
+
 .okinbot:
 				asr.l	#7,d0
 				sub.w	#32,d0
@@ -2089,7 +2074,6 @@ ItsAMediKit:
 
 
 HealFactor		EQU		18
-
 
 				cmp.w	#127,Plr1_Energy_w
 				bge		.NotSameZone
@@ -2134,6 +2118,7 @@ HealFactor		EQU		18
 				cmp.w	#127,d0
 				ble.s	.okokokokokok
 				move.w	#127,d0
+
 .okokokokokok:
 				move.w	d0,Plr1_Energy_w
 
@@ -2141,8 +2126,7 @@ HealFactor		EQU		18
 
 .NotSameZone:
 
-MEDIPLR2
-
+MEDIPLR2:
 				cmp.w	#127,Plr2_Energy_w
 				bge		.NotSameZone
 
@@ -2191,10 +2175,7 @@ MEDIPLR2
 				move.w	d0,Plr2_Energy_w
 
 .NotPickedUp:
-
 .NotSameZone:
-
-
 				rts
 
 
@@ -2215,7 +2196,6 @@ AmmoInGuns:
 				dc.w	5
 
 ItsAKey:
-
 				move.w	#$0f0f,14(a0)
 
 				tst.b	AI_NoEnemies_b
@@ -2223,7 +2203,6 @@ ItsAKey:
 				move.w	#-1,12(a0)
 				rts
 .yesnas:
-
 				move.w	12(a0),EntT_GraphicRoom_w(a0)
 				clr.b	ShotT_Worry_b(a0)
 
@@ -2281,19 +2260,16 @@ ItsAKey:
 				lsr.b	#1,d0
 				bcs.s	.done
 				addq	#1,d1
-.done
 
+.done:
 				move.l	#OFFSETTOGRAPH,a1
 				add.l	(a1,d1.w*4),a2
 				move.l	#PanelKeys,a1
-
 				muls	#6*22*8,d1
-
 				adda.w	d1,a1
-
 				move.w	#22*8-1,d0				;lines
-.lines:
 
+.lines:
 				move.l	(a1)+,d1
 				or.l	d1,(a2)
 				move.w	(a1)+,d1
@@ -2304,9 +2280,7 @@ ItsAKey:
 
 
 .NotPickedUp:
-
 .NotSameZone:
-
 				rts
 
 Conditions:		dc.l	0
@@ -2331,7 +2305,7 @@ Bul1Anim:
 				dc.w	0
 				dc.l	-1
 
-Bul1Pop
+Bul1Pop:
 				dc.b	25,25
 				dc.w	1,6
 				dc.w	0
@@ -3817,10 +3791,12 @@ putinbackdrop:
 				move.w	tmpangpos,d5
 				and.w	#4095,d5
 				muls	#648,d5
-				divs	#4096,d5
-            ; TODO - Next PR - Use this instead of divs
-				;asr.l	#8,d5
-				;asr.l	#4,d5
+
+				; 0xABADCAFE - division pogrom
+				;divs	#4096,d5
+
+				asr.l	#8,d5
+				asr.l	#4,d5
 				muls	#240,d5
 
 ; CACHE_ON d1
