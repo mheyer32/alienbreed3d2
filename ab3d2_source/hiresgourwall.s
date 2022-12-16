@@ -144,7 +144,7 @@ screendivideGOUR:
 
 				or.l	#$ffff0000,d7			; high word for number of iterations/iterations mask
 				move.w	leftclipandlast(pc),d6	; left clip minus 1
-				move.l	#WorkSpace,a2
+				move.l	#Sys_Workspace_vl,a2
 
 				move.l	(a0),a3					; (Width<<16)>>widthShift
 				move.l	4(a0),a4				; dBM
@@ -214,8 +214,8 @@ outofcalcG:
 				rts
 .somethingtodraw:
 
-				move.l	#consttab,a1
-				move.l	#WorkSpace,a0
+				move.l	#ConstantTable_vl,a1
+				move.l	#Sys_Workspace_vl,a0
 
 ; tst.b seethru
 ; bne screendividethru
@@ -223,7 +223,7 @@ outofcalcG:
 				tst.b	Vid_FullScreen_b
 				bne		scrdrawlopGB
 
-;				tst.b	DOUBLEWIDTH
+;				tst.b	Vid_DoubleWidth_b
 ;				bne		scrdrawlopGDOUB
 				bra		scrdrawlopG
 
@@ -264,7 +264,7 @@ scrdrawlopG:
 				add.l	#divthreetab,a5
 				move.w	(a5),StripData			; d6*2/3
 
-				move.l	ChunkAddr,a5
+				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
 				move.b	StripData,d6			; (d6*2/3)
 				add.w	d6,d6					; d6 *4/3
@@ -316,7 +316,7 @@ scrdrawlopG:
 				asr.w	#1,d7
 				sub.w	d6,d7
 
-				move.l	PaletteAddr,a4
+				move.l	Draw_PalettePtr_l,a4
 ; move.l a2,a4
 ; add.w ffscrpickhowbright(pc,d6*2),a2
 ; and.b #$fe,d6
@@ -374,7 +374,7 @@ scrdrawlopGDOUB:
 				add.l	#divthreetab,a5
 				move.w	(a5),StripData
 
-				move.l	ChunkAddr,a5
+				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
 				move.b	StripData,d6
 				add.w	d6,d6
@@ -426,7 +426,7 @@ scrdrawlopGDOUB:
 				asr.w	#1,d7
 				sub.w	d6,d7
 
-				move.l	PaletteAddr,a4
+				move.l	Draw_PalettePtr_l,a4
 ; move.l a2,a4
 ; add.w ffscrpickhowbright(pc,d6*2),a2
 ; and.b #$fe,d6
@@ -471,7 +471,7 @@ scrdrawlopGB:
 				add.l	#divthreetab,a5
 				move.w	(a5),StripData
 
-				move.l	ChunkAddr,a5
+				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
 				move.b	StripData,d6
 				add.w	d6,d6
@@ -523,7 +523,7 @@ scrdrawlopGB:
 				asr.w	#1,d7
 				sub.w	d6,d7
 
-				move.l	PaletteAddr,a4
+				move.l	Draw_PalettePtr_l,a4
 ; move.l a2,a4
 ; add.w ffscrpickhowbright(pc,d6*2),a2
 ; and.b #$fe,d6
@@ -574,7 +574,7 @@ scrdrawlopGBDOUB:
 				add.l	#divthreetab,a5
 				move.w	(a5),StripData
 
-				move.l	ChunkAddr,a5
+				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
 				move.b	StripData,d6
 				add.w	d6,d6
@@ -626,7 +626,7 @@ scrdrawlopGBDOUB:
 				asr.w	#1,d7
 				sub.w	d6,d7
 
-				move.l	PaletteAddr,a4
+				move.l	Draw_PalettePtr_l,a4
 ; move.l a2,a4
 ; add.w ffscrpickhowbright(pc,d6*2),a2
 ; and.b #$fe,d6
@@ -964,10 +964,10 @@ CalcAndDrawG:
 				add.w	d2,d0
 				bset	d0,d1
 				btst	#4,d3
-				beq.s	.nodoor
+				beq.s	.no_door
 				addq	#2,d0
 				bset	d0,d1
-.nodoor:
+.no_door:
 
 				or.l	d1,(a0)
 				move.l	BIGPTR,a0
@@ -1324,7 +1324,7 @@ simplewallPACK2G:
 GOURSPEED:		dc.l	0
 
 gotoendG:
-				tst.b	DOUBLEHEIGHT
+				tst.b	Vid_DoubleHeight_b
 				bne		doubwallGOUR
 
 				sub.w	d5,d6					; height to draw.
@@ -1504,7 +1504,7 @@ nocliptopGB:
 
 gotoendGB:
 
-				tst.b	DOUBLEHEIGHT
+				tst.b	Vid_DoubleHeight_b
 				bne		doubwallGOURBIG
 
 				sub.w	d5,d6					; height to draw.

@@ -1,15 +1,15 @@
 
-PLR2_mouse_control
-				jsr		ReadMouse
+Plr2_MouseControl
+				jsr		Sys_ReadMouse
 
-				move.l	#SineTable,a0
+				move.l	#SinCosTable_vw,a0
 				move.w	Plr2_SnapAngSpd_w,d1
 				move.w	angpos,d0
 				and.w	#8190,d0
 				move.w	d0,Plr2_SnapAngPos_w
-				move.w	(a0,d0.w),Plr2_SnapSinVal_w
+				move.w	(a0,d0.w),plr2_SnapSinVal_w
 				adda.w	#2048,a0
-				move.w	(a0,d0.w),Plr2_SnapCosVal_w
+				move.w	(a0,d0.w),plr2_SnapCosVal_w
 
 				move.l	Plr2_SnapXSpdVal_l,d6
 				move.l	Plr2_SnapZSpdVal_l,d7
@@ -49,16 +49,16 @@ PLR2_mouse_control
 				move.w	d3,d2
 				asl.w	#7,d2
 
-				add.w	d2,PLR2_AIMSPD
+				add.w	d2,Plr2_AimSpeed_l
 				add.w	d3,d0
 				cmp.w	#-80,d0
 				bgt.s	.nolookup
-				move.w	#-512*20,PLR2_AIMSPD
+				move.w	#-512*20,Plr2_AimSpeed_l
 				move.w	#-80,d0
 .nolookup:
 				cmp.w	#80,d0
 				blt.s	.nolookdown
-				move.w	#512*20,PLR2_AIMSPD
+				move.w	#512*20,Plr2_AimSpeed_l
 				move.w	#80,d0
 .nolookdown
 
@@ -69,7 +69,7 @@ PLR2_mouse_control
 				muls	#SCREENWIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 				move.b	forward_key,d7
 
@@ -103,8 +103,8 @@ PLR2_mouse_control
 
 				move.w	d1,ADDTOBOBBLE
 
-				move.w	Plr2_SnapSinVal_w,d1
-				move.w	Plr2_SnapCosVal_w,d2
+				move.w	plr2_SnapSinVal_w,d1
+				move.w	plr2_SnapCosVal_w,d2
 
 				move.w	d2,d4
 				move.w	d1,d5
@@ -125,18 +125,18 @@ PLR2_mouse_control
 				add.l	d6,Plr2_SnapXOff_l
 				add.l	d7,Plr2_SnapZOff_l
 
-				tst.b	PLR2_fire
+				tst.b	Plr2_Fire_b
 				beq.s	.firenotpressed
 ; fire was pressed last time.
 				btst	#6,$bfe001
 				bne.s	.firenownotpressed
 ; fire is still pressed this time.
-				st		PLR2_fire
+				st		Plr2_Fire_b
 				bra		.donePLR2
 
 .firenownotpressed:
 ; fire has been released.
-				clr.b	PLR2_fire
+				clr.b	Plr2_Fire_b
 				bra		.donePLR2
 
 .firenotpressed
@@ -148,43 +148,17 @@ PLR2_mouse_control
 				bne.s	.firenownotpressed
 ; fire was not pressed last time, and was this time, so has
 ; been clicked.
-				st		PLR2_clicked
-				st		PLR2_fire
+				st		Plr2_Clicked_b
+				st		Plr2_Fire_b
 
 .donePLR2:
 
-				bsr		PLR2_fall
+				bsr		Plr2_Fall
 
 				rts
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-PLR2_alwayskeys
-				move.l	#KeyMap,a5
+Plr2_AlwaysKeys
+				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 
 				move.b	next_weapon_key,d7
@@ -200,7 +174,7 @@ PLR2_alwayskeys
 
 				moveq	#0,d0
 				move.b	Plr2_GunSelected_b,d0
-				move.l	#PLAYERTWOGUNS,a0
+				move.l	#Plr2_Weapons_vb,a0
 
 .findnext
 				addq	#1,d0
@@ -234,32 +208,32 @@ PLR2_alwayskeys
 				tst.b	(a5,d7.w)
 				beq.s	.notduck
 				clr.b	(a5,d7.w)
-				move.l	#playerheight,Plr2_SnapTargHeight_l
+				move.l	#PLR_STAND_HEIGHT,Plr2_SnapTargHeight_l
 				not.b	Plr2_Ducked_b
 				beq.s	.notduck
-				move.l	#playercrouched,Plr2_SnapTargHeight_l
+				move.l	#PLR_CROUCH_HEIGHT,Plr2_SnapTargHeight_l
 .notduck:
 
 				move.l	Plr2_RoomPtr_l,a4
 				move.l	ZoneT_Floor_l(a4),d0
 				sub.l	ZoneT_Roof_l(a4),d0
 				tst.b	Plr2_StoodInTop_b
-				beq.s	.usebottom
+				beq.s	.use_bottom
 				move.l	ZoneT_UpperFloor_l(a4),d0
 				sub.l	ZoneT_UpperRoof_l(a4),d0
-.usebottom:
+.use_bottom:
 
 				clr.b	Plr2_Squished_b
-				move.l	#playerheight,Plr2_SnapSquishedHeight_l
+				move.l	#PLR_STAND_HEIGHT,plr2_SnapSquishedHeight_l
 
-				cmp.l	#playerheight+3*1024,d0
+				cmp.l	#PLR_STAND_HEIGHT+3*1024,d0
 				bgt.s	oktostand2
 				st		Plr2_Squished_b
-				move.l	#playercrouched,Plr2_SnapSquishedHeight_l
+				move.l	#PLR_CROUCH_HEIGHT,plr2_SnapSquishedHeight_l
 oktostand2:
 
 				move.l	Plr2_SnapTargHeight_l,d1
-				move.l	Plr2_SnapSquishedHeight_l,d0
+				move.l	plr2_SnapSquishedHeight_l,d0
 				cmp.l	d0,d1
 				blt.s	.notsqu
 				move.l	d0,d1
@@ -301,8 +275,8 @@ oktostand2:
 .notselmouse:
 
 				lea		1(a5),a4
-				move.l	#PLAYERTWOGUNS,a2
-				move.l	PLR2_Obj,a3
+				move.l	#Plr2_Weapons_vb,a2
+				move.l	Plr2_ObjectPtr_l,a3
 				move.w	#9,d1
 				move.w	#0,d2
 pickweap2
@@ -334,7 +308,7 @@ gogogogog:
 				bne.s	.notswapscr2
 				st		lastscr
 
-				not.b	FULLSCRTEMP
+				not.b	Vid_FullScreenTemp_b
 
 				bra.s	.notswapscr2
 
@@ -367,57 +341,14 @@ SHOWPLR2GUNNAME:
 				jsr		SENDMESSAGENORET
 				rts
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 TURNSPD:		dc.w	0
 
 PLR2_keyboard_control:
 
-				move.l	#SineTable,a0
+				move.l	#SinCosTable_vw,a0
 
-				jsr		PLR2_alwayskeys
-				move.l	#KeyMap,a5
+				jsr		Plr2_AlwaysKeys
+				move.l	#KeyMap_vb,a5
 
 				move.w	STOPOFFSET,d0
 				moveq	#0,d7
@@ -425,22 +356,22 @@ PLR2_keyboard_control:
 				tst.b	(a5,d7.w)
 				beq.s	.nolookup
 
-				sub.w	#512,PLR2_AIMSPD
+				sub.w	#512,Plr2_AimSpeed_l
 				sub.w	#4,d0
 				cmp.w	#-80,d0
 				bgt.s	.nolookup
-				move.w	#-512*20,PLR2_AIMSPD
+				move.w	#-512*20,Plr2_AimSpeed_l
 				move.w	#-80,d0
 .nolookup:
 				moveq	#0,d7
 				move.b	look_down_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.nolookdown
-				add.w	#512,PLR2_AIMSPD
+				add.w	#512,Plr2_AimSpeed_l
 				add.w	#4,d0
 				cmp.w	#80,d0
 				blt.s	.nolookdown
-				move.w	#512*20,PLR2_AIMSPD
+				move.w	#512*20,Plr2_AimSpeed_l
 				move.w	#80,d0
 .nolookdown:
 
@@ -453,7 +384,7 @@ PLR2_keyboard_control:
 				st		OLDCENT
 
 				move.w	#0,d0
-				move.w	#0,PLR2_AIMSPD
+				move.w	#0,Plr2_AimSpeed_l
 
 				bra.s	.nocent2
 
@@ -492,7 +423,7 @@ PLR2_keyboard_control:
 
 				moveq	#0,d4
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	.nofric
 				move.w	d3,d5
 				add.w	d5,d5
@@ -519,7 +450,7 @@ PLR2_keyboard_control:
 
 .noalwayssidestep:
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	noturnposs2
 
 
@@ -528,7 +459,7 @@ PLR2_keyboard_control:
 				beq.s	.noleftturn
 				sub.w	TURNSPD,d3
 .noleftturn
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				move.b	temprightkey,d7
 				tst.b	(a5,d7.w)
 				beq.s	.norightturn
@@ -558,7 +489,7 @@ noturnposs2:
 				add.w	d2,d4
 				asr.w	#1,d4
 .noleftslide
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				move.b	tempsrkey,d7
 				tst.b	(a5,d7.w)
 				beq.s	.norightslide
@@ -573,14 +504,14 @@ noslide2:
 				and.w	#8191,d0
 				move.w	d0,Plr2_SnapAngPos_w
 
-				move.w	(a0,d0.w),Plr2_SnapSinVal_w
+				move.w	(a0,d0.w),plr2_SnapSinVal_w
 				adda.w	#2048,a0
-				move.w	(a0,d0.w),Plr2_SnapCosVal_w
+				move.w	(a0,d0.w),plr2_SnapCosVal_w
 
 				move.l	Plr2_SnapXSpdVal_l,d6
 				move.l	Plr2_SnapZSpdVal_l,d7
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	.nofriction
 
 				neg.l	d6
@@ -626,21 +557,21 @@ noslide2:
 ; add.w d2,d1
 				move.w	d1,ADDTOBOBBLE
 
-				move.w	Plr2_SnapSinVal_w,d1
+				move.w	plr2_SnapSinVal_w,d1
 				muls	d3,d1
-				move.w	Plr2_SnapCosVal_w,d2
+				move.w	plr2_SnapCosVal_w,d2
 				muls	d3,d2
 
 				sub.l	d1,d6
 				sub.l	d2,d7
-				move.w	Plr2_SnapSinVal_w,d1
+				move.w	plr2_SnapSinVal_w,d1
 				muls	d4,d1
-				move.w	Plr2_SnapCosVal_w,d2
+				move.w	plr2_SnapCosVal_w,d2
 				muls	d4,d2
 				sub.l	d2,d6
 				add.l	d1,d7
 
-				tst.b	SLOWDOWN
+				tst.b	Plr_Decelerate_b
 				beq.s	.nocontrolposs
 				add.l	d6,Plr2_SnapXSpdVal_l
 				add.l	d7,Plr2_SnapZSpdVal_l
@@ -651,18 +582,18 @@ noslide2:
 				add.l	d7,Plr2_SnapZOff_l
 
 				move.b	fire_key,d5
-				tst.b	PLR2_fire
+				tst.b	Plr2_Fire_b
 				beq.s	.firenotpressed
 ; fire was pressed last time.
 				tst.b	(a5,d5.w)
 				beq.s	.firenownotpressed
 ; fire is still pressed this time.
-				st		PLR2_fire
+				st		Plr2_Fire_b
 				bra		.doneplr2
 
 .firenownotpressed:
 ; fire has been released.
-				clr.b	PLR2_fire
+				clr.b	Plr2_Fire_b
 				bra		.doneplr2
 
 .firenotpressed
@@ -674,12 +605,12 @@ noslide2:
 				beq.s	.firenownotpressed
 ; fire was not pressed last time, and was this time, so has
 ; been clicked.
-				st		PLR2_clicked
-				st		PLR2_fire
+				st		Plr2_Clicked_b
+				st		Plr2_Fire_b
 
 .doneplr2:
 
-				bsr		PLR2_fall
+				bsr		Plr2_Fall
 
 				rts
 

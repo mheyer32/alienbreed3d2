@@ -42,7 +42,7 @@
 
 ; bsr CHANGEPOPTS
 
-				cmp.b	#'s',mors
+				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.otherk
 				tst.b	Plr1_Joystick_b
 				beq.s	.NOJOY
@@ -63,7 +63,7 @@
 .wr2:
 
 
-				cmp.b	#'s',mors
+				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.otherk2
 				tst.b	Plr1_Joystick_b
 				beq.s	.NOJOY2
@@ -111,7 +111,7 @@ CHECKUPDOWN
 				eor.b	d0,d2
 				eor.b	d1,d3
 
-				cmp.b	#'s',mors
+				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.slavechk
 				tst.b	Plr1_Joystick_b
 				bne.s	.nofing
@@ -123,7 +123,7 @@ CHECKUPDOWN
 .maschk:
 
 				moveq	#0,d6
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 				move.b	forward_key,d6
 				tst.b	(a5,d6.w)
 				sne		d0
@@ -218,171 +218,171 @@ PUTINPLINE:
 pbuffpt:		dc.l	0
 pausept:		dc.l	0
 
-DRAWPAUSESCRN:
-				move.l	#PAUSEFONT,a0
-				move.l	#PAUSETXT,a1
-				move.l	pausept,a2
-				move.l	pbuffpt,a3
-				bsr		DRAWPAUSEBLOCK
-				add.w	#4,a2
-				add.w	#4,a3
-				bsr		DRAWPAUSEBLOCK
-				add.w	#4,a2
-				add.w	#4,a3
-				bsr		DRAWPAUSEBLOCK
-				rts
+;DRAWPAUSESCRN:
+;				move.l	#PAUSEFONT,a0
+;				move.l	#PAUSETXT,a1
+;				move.l	pausept,a2
+;				move.l	pbuffpt,a3
+;				bsr		DRAWPAUSEBLOCK
+;				add.w	#4,a2
+;				add.w	#4,a3
+;				bsr		DRAWPAUSEBLOCK
+;				add.w	#4,a2
+;				add.w	#4,a3
+;				bsr		DRAWPAUSEBLOCK
+;				rts
 
-DRAWPAUSEBLOCK:
-				move.w	#3,d0
-.across:
-				moveq	#0,d1
-				moveq	#0,d2
-				moveq	#9,d3
-				moveq	#0,d5
-.down:
-				moveq	#0,d4
-				move.b	(a1,d2.w),d4
-				add.w	#12,d2
-				sub.b	#'A',d4
-				bge		.itsalet
+;DRAWPAUSEBLOCK:
+;				move.w	#3,d0
+;.across:
+;				moveq	#0,d1
+;				moveq	#0,d2
+;				moveq	#9,d3
+;				moveq	#0,d5
+;.down:
+;				moveq	#0,d4
+;				move.b	(a1,d2.w),d4
+;				add.w	#12,d2
+;				sub.b	#'A',d4
+;				bge		.itsalet
+;
+;				moveq	#7,d6
+;.dospc:
+;				move.w	(a3,d5.l),d1
+;				and.w	#$eee,d1
+;				lsr.w	#1,d1
+;				move.w	d1,(a2,d5.l)
+;				move.w	4(a3,d5.l),d1
+;				and.w	#$eee,d1
+;				lsr.w	#1,d1
+;				move.w	d1,4(a2,d5.l)
+;				move.w	8(a3,d5.l),d1
+;				and.w	#$eee,d1
+;				lsr.w	#1,d1
+;				move.w	d1,8(a2,d5.l)
+;				move.w	12(a3,d5.l),d1
+;				and.w	#$eee,d1
+;				lsr.w	#1,d1
+;				move.w	d1,12(a2,d5.l)
+;				move.w	16(a3,d5.l),d1
+;				and.w	#$eee,d1
+;				lsr.w	#1,d1
+;				move.w	d1,16(a2,d5.l)
+;				move.w	20(a3,d5.l),d1
+;				and.w	#$eee,d1
+;				lsr.w	#1,d1
+;				move.w	d1,20(a2,d5.l)
+;				move.w	24(a3,d5.l),d1
+;				and.w	#$eee,d1
+;				lsr.w	#1,d1
+;				move.w	d1,24(a2,d5.l)
+;				move.w	28(a3,d5.l),d1
+;				and.w	#$eee,d1
+;				lsr.w	#1,d1
+;				move.w	d1,28(a2,d5.l)
+;				add.l	#104*4,d5
+;				dbra	d6,.dospc
+;				bra		.nolet
+;
+;.itsalet:
+;				asl.w	#7,d4
+;				lea		(a0,d4.w),a5
+;				moveq	#7,d6
+;.dolet:
+;				move.w	(a5)+,d1
+;				bne.s	.okpix1
+;				move.w	(a3,d5.l),d1
+;				and.w	#$eee,d1
+;				lsr.w	#1,d1
+;.okpix1:
+;				move.w	d1,(a2,d5.l)
+;				move.w	(a5)+,d1
+;				bne.s	.okpix2
+;				move.w	4(a3,d5.l),d1
+;				and.w	#$eee,d1
+;				lsr.w	#1,d1
+;.okpix2:
+;				move.w	d1,4(a2,d5.l)
+;				move.w	(a5)+,d1
+;				bne.s	.okpix3
+;				move.w	8(a3,d5.l),d1
+;				and.w	#$eee,d1
+;				lsr.w	#1,d1
+;.okpix3:
+;				move.w	d1,8(a2,d5.l)
+;				move.w	(a5)+,d1
+;				bne.s	.okpix4
+;				move.w	12(a3,d5.l),d1
+;				and.w	#$eee,d1
+;				lsr.w	#1,d1
+;.okpix4:
+;				move.w	d1,12(a2,d5.l)
+;				move.w	(a5)+,d1
+;				bne.s	.okpix5
+;				move.w	16(a3,d5.l),d1
+;				and.w	#$eee,d1
+;				lsr.w	#1,d1
+;.okpix5:
+;				move.w	d1,16(a2,d5.l)
+;				move.w	(a5)+,d1
+;				bne.s	.okpix6
+;				move.w	20(a3,d5.l),d1
+;				and.w	#$eee,d1
+;				lsr.w	#1,d1
+;.okpix6:
+;				move.w	d1,20(a2,d5.l)
+;				move.w	(a5)+,d1
+;				bne.s	.okpix7
+;				move.w	24(a3,d5.l),d1
+;				and.w	#$eee,d1
+;				lsr.w	#1,d1
+;.okpix7:
+;				move.w	d1,24(a2,d5.l)
+;				move.w	(a5)+,d1
+;				bne.s	.okpix8
+;				move.w	28(a3,d5.l),d1
+;				and.w	#$eee,d1
+;				lsr.w	#1,d1
+;.okpix8:
+;				move.w	d1,28(a2,d5.l)
+;				add.l	#104*4,d5
+;				dbra	d6,.dolet
+;
+;.nolet:
+;				dbra	d3,.down
+;				add.w	#4*8,a3
+;				add.w	#4*8,a2
+;				addq	#1,a1
+;				dbra	d0,.across
+;
+;				rts
 
-				moveq	#7,d6
-.dospc:
-				move.w	(a3,d5.l),d1
-				and.w	#$eee,d1
-				lsr.w	#1,d1
-				move.w	d1,(a2,d5.l)
-				move.w	4(a3,d5.l),d1
-				and.w	#$eee,d1
-				lsr.w	#1,d1
-				move.w	d1,4(a2,d5.l)
-				move.w	8(a3,d5.l),d1
-				and.w	#$eee,d1
-				lsr.w	#1,d1
-				move.w	d1,8(a2,d5.l)
-				move.w	12(a3,d5.l),d1
-				and.w	#$eee,d1
-				lsr.w	#1,d1
-				move.w	d1,12(a2,d5.l)
-				move.w	16(a3,d5.l),d1
-				and.w	#$eee,d1
-				lsr.w	#1,d1
-				move.w	d1,16(a2,d5.l)
-				move.w	20(a3,d5.l),d1
-				and.w	#$eee,d1
-				lsr.w	#1,d1
-				move.w	d1,20(a2,d5.l)
-				move.w	24(a3,d5.l),d1
-				and.w	#$eee,d1
-				lsr.w	#1,d1
-				move.w	d1,24(a2,d5.l)
-				move.w	28(a3,d5.l),d1
-				and.w	#$eee,d1
-				lsr.w	#1,d1
-				move.w	d1,28(a2,d5.l)
-				add.l	#104*4,d5
-				dbra	d6,.dospc
-				bra		.nolet
-
-.itsalet:
-				asl.w	#7,d4
-				lea		(a0,d4.w),a5
-				moveq	#7,d6
-.dolet:
-				move.w	(a5)+,d1
-				bne.s	.okpix1
-				move.w	(a3,d5.l),d1
-				and.w	#$eee,d1
-				lsr.w	#1,d1
-.okpix1:
-				move.w	d1,(a2,d5.l)
-				move.w	(a5)+,d1
-				bne.s	.okpix2
-				move.w	4(a3,d5.l),d1
-				and.w	#$eee,d1
-				lsr.w	#1,d1
-.okpix2:
-				move.w	d1,4(a2,d5.l)
-				move.w	(a5)+,d1
-				bne.s	.okpix3
-				move.w	8(a3,d5.l),d1
-				and.w	#$eee,d1
-				lsr.w	#1,d1
-.okpix3:
-				move.w	d1,8(a2,d5.l)
-				move.w	(a5)+,d1
-				bne.s	.okpix4
-				move.w	12(a3,d5.l),d1
-				and.w	#$eee,d1
-				lsr.w	#1,d1
-.okpix4:
-				move.w	d1,12(a2,d5.l)
-				move.w	(a5)+,d1
-				bne.s	.okpix5
-				move.w	16(a3,d5.l),d1
-				and.w	#$eee,d1
-				lsr.w	#1,d1
-.okpix5:
-				move.w	d1,16(a2,d5.l)
-				move.w	(a5)+,d1
-				bne.s	.okpix6
-				move.w	20(a3,d5.l),d1
-				and.w	#$eee,d1
-				lsr.w	#1,d1
-.okpix6:
-				move.w	d1,20(a2,d5.l)
-				move.w	(a5)+,d1
-				bne.s	.okpix7
-				move.w	24(a3,d5.l),d1
-				and.w	#$eee,d1
-				lsr.w	#1,d1
-.okpix7:
-				move.w	d1,24(a2,d5.l)
-				move.w	(a5)+,d1
-				bne.s	.okpix8
-				move.w	28(a3,d5.l),d1
-				and.w	#$eee,d1
-				lsr.w	#1,d1
-.okpix8:
-				move.w	d1,28(a2,d5.l)
-				add.l	#104*4,d5
-				dbra	d6,.dolet
-
-.nolet:
-				dbra	d3,.down
-				add.w	#4*8,a3
-				add.w	#4*8,a2
-				addq	#1,a1
-				dbra	d0,.across
-
-				rts
-
-PAUSETXT:
+;PAUSETXT:
 ;      012345678901
-				dc.b	'            '			;0
-				dc.b	'            '			;1
-				dc.b	'SFX  QUALITY'			;2
-SOUNDOPTLINE:
-				dc.b	'            '			;3
-				dc.b	'            '			;4
-				dc.b	'FLOOR DETAIL'			;5
-FLOOROPTLINE:
-				dc.b	'  GOURAUD   '			;6
-				dc.b	'            '			;7
-				dc.b	'            '			;8
-				dc.b	'            '			;9
-
-SOUNDOPTS:
-				dc.b	'FOUR CH MONO'
-				dc.b	' FOUR CH ST '
-				dc.b	'EIGHT C MONO'
-				dc.b	' EIGHT C ST '
-
-FLOOROPTS:
-				dc.b	'  GOURAUD   '
-				dc.b	'  TEXTURED  '
-				dc.b	'PLAIN SHADED'
-				dc.b	'    NONE    '
-
-PAUSEFONT:
-				incbin	"includes/pausefont"
+;				dc.b	'            '			;0
+;				dc.b	'            '			;1
+;				dc.b	'SFX  QUALITY'			;2
+;SOUNDOPTLINE:
+;				dc.b	'            '			;3
+;				dc.b	'            '			;4
+;				dc.b	'FLOOR DETAIL'			;5
+;FLOOROPTLINE:
+;				dc.b	'  GOURAUD   '			;6
+;				dc.b	'            '			;7
+;				dc.b	'            '			;8
+;				dc.b	'            '			;9
+;
+;SOUNDOPTS:
+;				dc.b	'FOUR CH MONO'
+;				dc.b	' FOUR CH ST '
+;				dc.b	'EIGHT C MONO'
+;				dc.b	' EIGHT C ST '
+;
+;FLOOROPTS:
+;				dc.b	'  GOURAUD   '
+;				dc.b	'  TEXTURED  '
+;				dc.b	'PLAIN SHADED'
+;				dc.b	'    NONE    '
+;
+;PAUSEFONT:
+;				incbin	"includes/pausefont"

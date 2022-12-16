@@ -19,9 +19,9 @@ OpenMainScreen:
 
 				addq.l	#7,d0					; align to 8 byte for FMOD3
 				and.l	#~7,d0
-				move.l	d0,scrn
+				move.l	d0,Vid_Screen1Ptr_l
 
-				move.l	d0,TEXTSCRN				; FIXME: TEXTSCRN should go
+				move.l	d0,Vid_TextScreenPtr_l				; FIXME: Vid_TextScreenPtr_l should go
 
 				lea		MainBitmap0+bm_Planes,a1
 				moveq.l	#7,d1
@@ -42,7 +42,7 @@ OpenMainScreen:
 
 				addq.l	#7,d0					; align to 8 byte for FMOD3
 				and.l	#~7,d0
-				move.l	d0,scrn2
+				move.l	d0,Vid_Screen2Ptr_l
 
 				lea		MainBitmap1+bm_Planes,a1
 				moveq.l	#7,d1
@@ -161,7 +161,7 @@ SetupDoubleheightCopperlist:
 
 				CALLEXEC Forbid
 
-				tst.b	DOUBLEHEIGHT
+				tst.b	Vid_DoubleHeight_b
 				beq.s	.noDoubleheight
 				move.l	#MyUCopList,vp_UCopIns(a2)
 				bra.s	.install
@@ -360,7 +360,7 @@ DisplayMsgPort	dc.l	0						; this message port receives messages when the curren
 ;SafeMsgPort		dc.l	0						; this message port reveives messages when the old screen bitmap can be safely written to
 												; i.e. when the screen flip actually happened
 ScreenBufferIndex dc.w	0						; Index (0/1) of current screen buffer displayed.
-												; FIXME: unify the buffer index handling with SCRNDRAWPT/SCRNSHOWPT
+												; FIXME: unify the buffer index handling with Vid_DrawScreenPtr_l/Vid_DisplayScreen_Ptr_l
 WaitForDisplayMsg dc.w	0
 
 				align 4

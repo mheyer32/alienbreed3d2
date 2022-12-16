@@ -22,7 +22,7 @@
 ; 3. Fade up title screen.
 ; 4. Add 'loading' message
 ; 5. Load samples and walls
-; 6: LOOP START
+; 6: LOOP Game_Start
 ; 7. Option select screens
 ; 8. Free music mem, allocate level mem.
 ; 9. Load level
@@ -31,104 +31,105 @@
 ;12. Reload title screen
 ;13. goto 6
 
-INTROTUNEADDR:	dc.l	0
-INTROTUNENAME:	dc.b	'sounds/abreed3d.med',0
-				even
-TITLESCRNADDR:	dc.l	0
-TITLESCRNNAME:	dc.b	'ab3:includes/titlescrnraw1',0
-				even
-TITLESCRNNAME2:	dc.b	'ab3:includes/titlescrnraw1',0
-				even
+;INTROTUNEADDR:	dc.l	0
+;INTROTUNENAME:	dc.b	'sounds/abreed3d.med',0
+;				even
+;TITLESCRNADDR:	dc.l	0
+;TITLESCRNNAME:	dc.b	'ab3:includes/titlescrnraw1',0
+;				even
+;TITLESCRNNAME2:	dc.b	'ab3:includes/titlescrnraw1',0
+;				even
+
+				align 4
 OPTSPRADDR:		dc.l	0
-TITLESCRNPTR:	dc.l	0
+;TITLESCRNPTR:	dc.l	0
 
-MASTERPLAYERONEHEALTH:
-				dc.w	0
-				dc.w	0
-MASTERPLAYERONEAMMO:
-				ds.w	20
+;Plr_Health_w:
+;				dc.w	0
+;				dc.w	0
+;Plr_AmmoCounts_vw:
+;				ds.w	20
 
-MASTERPLAYERONESHIELD:
-				dc.w	0
-				dc.w	0
-MASTERPLAYERONEGUNS:
-				dcb.w	10,0
+;Plr_Shield_w:
+;				dc.w	0
+;				dc.w	0
+;Plr_Weapons_vw:
+;				dcb.w	10,0
 
-MASTERPLAYERTWOHEALTH:
-				dc.w	0
-				dc.w	0
-MASTERPLAYERTWOAMMO:
-				ds.w	20
+;MASTERPLAYERTWOHEALTH:
+;				dc.w	0
+;				dc.w	0
+;MASTERPLAYERTWOAMMO:
+;				ds.w	20
 
-MASTERPLAYERTWOSHIELD:
-				dc.w	0
-				dc.w	0
-MASTERPLAYERTWOGUNS:
-				dcb.w	10,0
+;MASTERPLAYERTWOSHIELD:
+;				dc.w	0
+;				dc.w	0
+;MASTERPLAYERTWOGUNS:
+;				dcb.w	10,0
 
-KVALTOASC:
-				dc.b	" `  "," 1  "," 2  "," 3  "
-				dc.b	" 4  "," 5  "," 6  "," 7  "
-				dc.b	" 8  "," 9  "
+;KVALTOASC:
+;				dc.b	" `  "," 1  "," 2  "," 3  "
+;				dc.b	" 4  "," 5  "," 6  "," 7  "
+;				dc.b	" 8  "," 9  "
 ; 10
-				dc.b	" 0  "," -  "," +  "," \  "
-				dc.b	'    ','    '," Q  "," W  "
-				dc.b	" E  "," R  "
+;				dc.b	" 0  "," -  "," +  "," \  "
+;				dc.b	'    ','    '," Q  "," W  "
+;				dc.b	" E  "," R  "
 ; 20
-				dc.b	" T  "," Y  "," U  "," I  "
-				dc.b	" O  "," P  "," [  "," ]  "
-				dc.b	'    ','KP1 '
+;				dc.b	" T  "," Y  "," U  "," I  "
+;				dc.b	" O  "," P  "," [  "," ]  "
+;				dc.b	'    ','KP1 '
 ; 30
-				dc.b	'KP2 ','KP3 '," A  "," S  "
-				dc.b	" D  "," F  "," G  "," H  "
-				dc.b	" J  "," K  "
+;				dc.b	'KP2 ','KP3 '," A  "," S  "
+;				dc.b	" D  "," F  "," G  "," H  "
+;				dc.b	" J  "," K  "
 ;40
-				dc.b	" L  "," ;  "," #  ",'    '
-				dc.b	'    ','KP4 ','KP5 ','KP6 '
-				dc.b	'    '," Z  "
+;				dc.b	" L  "," ;  "," #  ",'    '
+;				dc.b	'    ','KP4 ','KP5 ','KP6 '
+;				dc.b	'    '," Z  "
 ;50
-				dc.b	" X  "," C  "," V  "," B  "
-				dc.b	" N  "," M  "," ,  "," .  "
-				dc.b	" /  ",'    '
+;				dc.b	" X  "," C  "," V  "," B  "
+;				dc.b	" N  "," M  "," ,  "," .  "
+;				dc.b	" /  ",'    '
 ;60
-				dc.b	'    ','KP7 ','KP8 ','KP9 '
-				dc.b	'SPC ','<-- ','TAB ','ENT '
-				dc.b	'RTN ','ESC '
+;				dc.b	'    ','KP7 ','KP8 ','KP9 '
+;				dc.b	'SPC ','<-- ','TAB ','ENT '
+;				dc.b	'RTN ','ESC '
 ;70
-				dc.b	'DEL ','    ','    ','    '
-				dc.b	'KP- ','    ','UCK ','DCK '
-				dc.b	'RCK ','LCK '
+;				dc.b	'DEL ','    ','    ','    '
+;				dc.b	'KP- ','    ','UCK ','DCK '
+;				dc.b	'RCK ','LCK '
 ;80
-				dc.b	'FK1 ','FK2 ','FK3 ','FK4 '
-				dc.b	'FK5 ','FK6 ','FK7 ','FK8 '
-				dc.b	'FK9 ','FK0 '
+;				dc.b	'FK1 ','FK2 ','FK3 ','FK4 '
+;				dc.b	'FK5 ','FK6 ','FK7 ','FK8 '
+;				dc.b	'FK9 ','FK0 '
 ;90
-				dc.b	'KP( ','KP) ','KP/ ','KP* '
-				dc.b	'KP+ ','HLP ','LSH ','RSH '
-				dc.b	'CPL ','CTL '
+;				dc.b	'KP( ','KP) ','KP/ ','KP* '
+;				dc.b	'KP+ ','HLP ','LSH ','RSH '
+;				dc.b	'CPL ','CTL '
 ;100
-				dc.b	'LAL ','RAL ','LAM ','RAM '
-				dc.b	'    ','    ','    ','    '
-				dc.b	'    ','    '
-				dc.b	'    ','    ','    ','    '
-				dc.b	'    ','    ','    ','    '
-				dc.b	'    ','    '
+;				dc.b	'LAL ','RAL ','LAM ','RAM '
+;				dc.b	'    ','    ','    ','    '
+;				dc.b	'    ','    '
+;				dc.b	'    ','    ','    ','    '
+;				dc.b	'    ','    ','    ','    '
+;				dc.b	'    ','    '
 
 				even
 
 FINISHEDLEVEL:	dc.w	0
 
 				align	4
-_IntuitionBase:	dc.l	0
+
 
 INTUITION_REV	equ		31						v1.1
 int_name		INTNAME
 				even
 
 
-START:
-
-				move.b	#'n',mors
+Game_Start:
+				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
 
 				move.l	#doslibname,a1
 				moveq	#0,d0
@@ -153,7 +154,7 @@ START:
 
 				move.l	#LEVELTEXTNAME,a0
 				jsr		IO_LoadFile
-				move.l	d0,LEVELTEXT
+				move.l	d0,Lvl_IntroTextPtr_l
 
 				jsr		_InitLowLevel
 
@@ -183,7 +184,7 @@ START:
 				jsr		Res_LoadObjects
 
 				move.l	#backpicname,a0
-				move.l	#BackPicture,d0
+				move.l	#Draw_BackdropImagePtr_l,d0
 				move.l	#0,d1
 				jsr		IO_QueueFile
 
@@ -214,9 +215,9 @@ BACKTOMENU:
 				jsr		CLEARKEYBOARD
 
 
-				cmp.b	#'s',mors
+				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	BACKTOSLAVE
-				cmp.b	#'m',mors
+				cmp.b	#PLR_MASTER,Plr_MultiplayerType_b
 				beq.s	BACKTOMASTER
 				bsr		READMAINMENU
 				bra		DONEMENU
@@ -246,24 +247,24 @@ DONEMENU:
 				move.b	#0,Plr1_GunSelected_b
 				move.b	#0,Plr2_GunSelected_b
 
-**************************8
-				clr.b	NASTY
+***************************
+				clr.b	AI_NoEnemies_b
 ***************************
 
-				move.l	#MASTERPLAYERONEHEALTH,a0
-				move.l	#MASTERPLAYERONESHIELD,a1
-				move.l	#PLAYERONEHEALTH,a2
-				move.l	#PLAYERONESHIELD,a3
-				move.l	#PLAYERTWOHEALTH,a4
-				move.l	#PLAYERTWOSHIELD,a5
+				move.l	#Plr_Health_w,a0
+				move.l	#Plr_Shield_w,a1
+				move.l	#Plr1_Health_w,a2
+				move.l	#Plr1_Shield_w,a3
+				move.l	#Plr2_Health_w,a4
+				move.l	#Plr2_Shield_w,a5
 
-				REPT	11						; copy MASTERPLAYERONEHEALTH and
-				move.l	(a0),(a2)+				; MASTERPLAYERONEAMMO
+				REPT	11						; copy Plr_Health_w and
+				move.l	(a0),(a2)+				; Plr_AmmoCounts_vw
 				move.l	(a0)+,(a4)+
 				ENDR
 
-				REPT	6						; copy MASTERPLAYERONESHIELD and
-				move.l	(a1),(a3)+				; MASTERPLAYERONEGUNS
+				REPT	6						; copy Plr_Shield_w and
+				move.l	(a1),(a3)+				; Plr_Weapons_vw
 				move.l	(a1)+,(a5)+
 				ENDR
 
@@ -272,31 +273,31 @@ DONEMENU:
 
 				move.l	#borderpacked,d0
 				moveq	#0,d1
-				move.l	scrn,a0
-				lea		WorkSpace,a1
+				move.l	Vid_Screen1Ptr_l,a0
+				lea		Sys_Workspace_vl,a1
 				lea		$0,a2
 				jsr		unLHA
 
 				move.l	#borderpacked,d0
 				moveq	#0,d1
-				move.l	scrn2,a0
-				lea		WorkSpace,a1
+				move.l	Vid_Screen2Ptr_l,a0
+				lea		Sys_Workspace_vl,a1
 				lea		$0,a2
 				jsr		unLHA
 
 *************************************
 
-				jsr		PLAYTHEGAME
+				jsr		Game_Begin
 
 *************************************
 
 				tst.b	FINISHEDLEVEL
 				beq		dontusestats
 
-				move.l	#MASTERPLAYERONEHEALTH,a0
-				move.l	#MASTERPLAYERONESHIELD,a1
-				move.l	#PLAYERONEHEALTH,a2
-				move.l	#PLAYERONESHIELD,a3
+				move.l	#Plr_Health_w,a0
+				move.l	#Plr_Shield_w,a1
+				move.l	#Plr1_Health_w,a2
+				move.l	#Plr1_Shield_w,a3
 
 				REPT	11
 				move.l	(a2)+,(a0)+
@@ -313,10 +314,10 @@ dontusestats:
 				bra		BACKTOMENU
 
 QUITTT:
-				move.l	LEVELDATA,a1
+				move.l	Lvl_DataPtr_l,a1
 				CALLEXEC FreeVec
 
-				move.l	FASTBUFFERalloc,a1
+				move.l	Vid_FastBufferAllocPtr_l,a1
 				CALLEXEC FreeVec
 
 				move.l	MyRaster0,a0
@@ -347,7 +348,7 @@ QUITTT:
 
 				rts
 
-SSTACK:			dc.l	0
+;SSTACK:			dc.l	0
 
 backpicname:	dc.b	"ab3:includes/rawbackpacked"
 				dc.b	0
@@ -410,27 +411,24 @@ GETSTATS:
 
 
 SETPLAYERS:
-
 				move.w	PLOPT,d0
 				add.b	#'a',d0
-				move.b	d0,LEVA
-				move.b	d0,LEVB
-				move.b	d0,LEVC
-				move.b	d0,LEVD
-				move.b	d0,LEVE
+				move.b	d0,Lvl_BinFilenameX_vb
+				move.b	d0,Lvl_GfxFilenameX_vb
+				move.b	d0,Lvl_ClipsFilenameX_vb
+				move.b	d0,Lvl_MapFilenameX_vb
+				move.b	d0,Lvl_FlyMapFilenameX_vb
 
-				cmp.b	#'s',mors
-				beq		SLAVESETUP
-				cmp.b	#'m',mors
-				beq		MASTERSETUP
-				st		NASTY
+				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
+				beq		Plr_InitSlave
+				cmp.b	#PLR_MASTER,Plr_MultiplayerType_b
+				beq		Plr_InitMaster
+				st		AI_NoEnemies_b
 onepla:
 				rts
 
-NASTY:			dc.w	0
-
-MASTERSETUP:
-				clr.b	NASTY
+Plr_InitMaster:
+				clr.b	AI_NoEnemies_b
 				move.w	PLOPT,d0
 				jsr		SENDFIRST
 
@@ -440,16 +438,16 @@ MASTERSETUP:
 				bsr		TWOPLAYER
 				rts
 
-SLAVESETUP:
-				clr.b	NASTY
+Plr_InitSlave:
+				clr.b	AI_NoEnemies_b
 				jsr		RECFIRST
 				move.w	d0,PLOPT
 				add.b	#'a',d0
-				move.b	d0,LEVA
-				move.b	d0,LEVB
-				move.b	d0,LEVC
-				move.b	d0,LEVD
-				move.b	d0,LEVE
+				move.b	d0,Lvl_BinFilenameX_vb
+				move.b	d0,Lvl_GfxFilenameX_vb
+				move.b	d0,Lvl_ClipsFilenameX_vb
+				move.b	d0,Lvl_MapFilenameX_vb
+				move.b	d0,Lvl_FlyMapFilenameX_vb
 
 				jsr		RECFIRST
 				move.w	d0,Rand1
@@ -484,7 +482,7 @@ wtclick:
 
 READMAINMENU:
 
-				move.b	#'n',mors
+				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
 
 				move.w	MAXLEVEL,d0
 
@@ -803,7 +801,7 @@ GETACHAR:
 
 MASTERMENU:
 
-				move.b	#'m',mors
+				move.b	#PLR_MASTER,Plr_MultiplayerType_b
 
 				move.w	#0,LEVELSELECTED
 
@@ -898,7 +896,7 @@ MASTERMENU:
 
 SLAVEMENU:
 
-				move.b	#'s',mors
+				move.b	#PLR_SLAVE,Plr_MultiplayerType_b
 
 ; Stay here until 'play game' is selected.
 
@@ -957,41 +955,41 @@ STATBACK:		ds.w	34
 
 TWOPLAYER:
 
-				move.w	#200,PLAYERONEHEALTH
-				move.w	#200,PLAYERTWOHEALTH
+				move.w	#200,Plr1_Health_w
+				move.w	#200,Plr2_Health_w
 
-				move.w	#0,PLAYERONEFUEL
+				move.w	#0,Plr1_JetpackFuel_w
 
-				st.b	PLAYERONEGUNS+1
-				st.b	PLAYERONEGUNS+3
-				st.b	PLAYERONEGUNS+5
-				st.b	PLAYERONEGUNS+7
-				st.b	PLAYERONEGUNS+9
-				st.b	PLAYERONEGUNS+11
-				st.b	PLAYERONEGUNS+13
-				st.b	PLAYERONEGUNS+15
-				st.b	PLAYERONEGUNS+17
-				st.b	PLAYERONEGUNS+19
+				st.b	Plr1_Weapons_vb+1
+				st.b	Plr1_Weapons_vb+3
+				st.b	Plr1_Weapons_vb+5
+				st.b	Plr1_Weapons_vb+7
+				st.b	Plr1_Weapons_vb+9
+				st.b	Plr1_Weapons_vb+11
+				st.b	Plr1_Weapons_vb+13
+				st.b	Plr1_Weapons_vb+15
+				st.b	Plr1_Weapons_vb+17
+				st.b	Plr1_Weapons_vb+19
 
-				st.b	PLAYERONEJETPACK+1
+				st.b	Plr1_Jetpack_w+1
 
-				st.b	PLAYERTWOGUNS+1
-				st.b	PLAYERTWOGUNS+3
-				st.b	PLAYERTWOGUNS+5
-				st.b	PLAYERTWOGUNS+7
-				st.b	PLAYERTWOGUNS+9
-				st.b	PLAYERTWOGUNS+11
-				st.b	PLAYERTWOGUNS+13
-				st.b	PLAYERTWOGUNS+15
-				st.b	PLAYERTWOGUNS+17
-				st.b	PLAYERTWOGUNS+19
+				st.b	Plr2_Weapons_vb+1
+				st.b	Plr2_Weapons_vb+3
+				st.b	Plr2_Weapons_vb+5
+				st.b	Plr2_Weapons_vb+7
+				st.b	Plr2_Weapons_vb+9
+				st.b	Plr2_Weapons_vb+11
+				st.b	Plr2_Weapons_vb+13
+				st.b	Plr2_Weapons_vb+15
+				st.b	Plr2_Weapons_vb+17
+				st.b	Plr2_Weapons_vb+19
 
-				move.w	#0,PLAYERTWOFUEL
+				move.w	#0,Plr2_JetpackFuel_w
 
-				st.b	PLAYERTWOJETPACK+1
+				st.b	Plr2_Jetpack_w+1
 
-				move.l	#PLAYERONEAMMO,a0
-				move.l	#PLAYERTWOAMMO,a1
+				move.l	#Plr1_AmmoCounts_vw,a0
+				move.l	#Plr2_AmmoCounts_vw,a1
 				move.w	#19,d1
 .putinvals
 				jsr		GetRand
@@ -1023,8 +1021,8 @@ newdum:
 DEFAULTGAME:
 				move.w	#0,MAXLEVEL
 
-				move.l	#MASTERPLAYERONEHEALTH,a0
-				move.l	#MASTERPLAYERONESHIELD,a1
+				move.l	#Plr_Health_w,a0
+				move.l	#Plr_Shield_w,a1
 				move.l	#0,(a0)+
 				move.l	#0,(a0)+
 				move.l	#0,(a0)+
@@ -1044,14 +1042,14 @@ DEFAULTGAME:
 				move.l	#0,(a1)+
 				move.l	#0,(a1)+
 
-				move.w	#200,MASTERPLAYERONEHEALTH
-				move.w	#$ff,MASTERPLAYERONEGUNS
+				move.w	#200,Plr_Health_w
+				move.w	#$ff,Plr_Weapons_vw
 
 				move.l	GLF_DatabasePtr_l,a5
 				add.l	#GLFT_ShootDefs_l,a5
 				move.w	(a5),d0
 
-				move.l	#MASTERPLAYERONEAMMO,a5
+				move.l	#Plr_AmmoCounts_vw,a5
 				move.w	#20,(a5,d0.w*2)
 
 				rts
@@ -1267,7 +1265,7 @@ WAITREL:
 
 				movem.l	d0/d1/d2/d3,-(a7)
 
-				move.l	#KeyMap,a5
+				move.l	#KeyMap_vb,a5
 WAITREL2:
 				btst	#7,$bfe001
 				beq.s	WAITREL2
@@ -1557,7 +1555,7 @@ LOADPOSITION:
 				muls	#2+(22*2)+(12*2),d0
 				add.l	d0,a0
 
-				move.l	#MASTERPLAYERONEHEALTH,a1
+				move.l	#Plr_Health_w,a1
 				move.w	(a0)+,MAXLEVEL
 
 				REPT	11
@@ -1600,7 +1598,6 @@ SAVEPOSITION:
 				move.l	a2,a3
 				move.w	#4,d7
 .findlevs:
-
 				move.l	a4,a1
 				move.w	(a3),d1
 				muls	#40,d1
@@ -1640,7 +1637,7 @@ SAVEPOSITION:
 				muls	#2+(22*2)+(12*2),d0
 				add.l	d0,a0
 
-				move.l	#MASTERPLAYERONEHEALTH,a1
+				move.l	#Plr_Health_w,a1
 				move.w	MAXLEVEL,(a0)+
 
 				REPT	11
@@ -1813,35 +1810,35 @@ SAVEMENU_TXT:
 				dc.b	'                                        ' ;6
 				dc.b	'                                        ' ;7
 				dc.b	'                                        ' ;8
-SSLOTA:
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-SSLOTB:
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-SSLOTC:
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-SSLOTD:
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-SSLOTE:
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-SSLOTF:
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'               * CANCEL *               ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
+;SSLOTA:
+;				dc.b	'                                        ' ;9
+;				dc.b	'                                        ' ;0
+;SSLOTB:
+;				dc.b	'                                        ' ;1
+;				dc.b	'                                        ' ;2
+;SSLOTC:
+;				dc.b	'                                        ' ;3
+;				dc.b	'                                        ' ;4
+;SSLOTD:
+;				dc.b	'                                        ' ;5
+;				dc.b	'                                        ' ;6
+;SSLOTE:
+;				dc.b	'                                        ' ;7
+;				dc.b	'                                        ' ;8
+;SSLOTF:
+;				dc.b	'                                        ' ;9
+;				dc.b	'                                        ' ;0
+;				dc.b	'               * CANCEL *               ' ;1
+;				dc.b	'                                        ' ;2
+;				dc.b	'                                        ' ;3
+;				dc.b	'                                        ' ;4
+;				dc.b	'                                        ' ;5
+;				dc.b	'                                        ' ;6
+;				dc.b	'                                        ' ;7
+;				dc.b	'                                        ' ;8
+;				dc.b	'                                        ' ;9
+;				dc.b	'                                        ' ;0
+;				dc.b	'                                        ' ;1
 
 SAVEMENU_OPTS:
 				dc.w	0,9,40,1
@@ -1871,24 +1868,24 @@ ASKFORDISK_TXT:
 				dc.b	'                                        ' ;2
 				dc.b	'         PLEASE INSERT VOLUME:          ' ;3
 				dc.b	'                                        ' ;4
-VOLLINE:
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;9
-				dc.b	'          PRESS MOUSE BUTTON            ' ;5
-				dc.b	'          WHEN DISK ACTIVITY            ' ;6
-				dc.b	'               FINISHES                 ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
+;VOLLINE:
+;				dc.b	'                                        ' ;9
+;				dc.b	'                                        ' ;9
+;				dc.b	'          PRESS MOUSE BUTTON            ' ;5
+;				dc.b	'          WHEN DISK ACTIVITY            ' ;6
+;				dc.b	'               FINISHES                 ' ;7
+;				dc.b	'                                        ' ;8
+;				dc.b	'                                        ' ;1
+;				dc.b	'                                        ' ;2
+;				dc.b	'                                        ' ;3
+;				dc.b	'                                        ' ;4
+;				dc.b	'                                        ' ;5
+;				dc.b	'                                        ' ;6
+;				dc.b	'                                        ' ;7
+;				dc.b	'                                        ' ;8
+;				dc.b	'                                        ' ;9
+;				dc.b	'                                        ' ;0
+;				dc.b	'                                        ' ;1
 
 ASKFORDISK_OPTS:
 				dc.w	-1
@@ -1907,29 +1904,29 @@ ONEPLAYERMENU_TXT:
 				dc.b	'                                        ' ;8
 				dc.b	'                                        ' ;9
 				dc.b	'                                        ' ;0
-CURRENTLEVELLINE:
-				dc.b	'         *** A.F DEMO LEVEL ***         ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                1 PLAYER                ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'               PLAY  GAME               ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'            CONTROL  OPTIONS            ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'              GAME CREDITS              ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'             LOAD  POSITION             ' ;1
-				dc.b	'                                        ' ;2
-PASSWORDLINE:
-				dc.b	'             SAVE  POSITION             ' ;1
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
+;CURRENTLEVELLINE:
+;				dc.b	'         *** A.F DEMO LEVEL ***         ' ;1
+;				dc.b	'                                        ' ;2
+;				dc.b	'                1 PLAYER                ' ;3
+;				dc.b	'                                        ' ;4
+;				dc.b	'               PLAY  GAME               ' ;5
+;				dc.b	'                                        ' ;6
+;				dc.b	'            CONTROL  OPTIONS            ' ;7
+;				dc.b	'                                        ' ;8
+;				dc.b	'              GAME CREDITS              ' ;9
+;				dc.b	'                                        ' ;0
+;				dc.b	'             LOAD  POSITION             ' ;1
+;				dc.b	'                                        ' ;2
+;PASSWORDLINE:
+;				dc.b	'             SAVE  POSITION             ' ;1
+;				dc.b	'                                        ' ;4
+;				dc.b	'                                        ' ;6
+;				dc.b	'                                        ' ;6
+;				dc.b	'                                        ' ;7
+;				dc.b	'                                        ' ;8
+;				dc.b	'                                        ' ;9
+;				dc.b	'                                        ' ;0
+;				dc.b	'                                        ' ;1
 
 ONEPLAYERMENU_OPTS:
 				dc.w	0,11,40,1
@@ -1958,25 +1955,25 @@ MASTERPLAYERMENU_TXT:
 				dc.b	'                                        ' ;1
 				dc.b	'            2 PLAYER  MASTER            ' ;2
 				dc.b	'                                        ' ;3
-CURRENTLEVELLINEM:
-				dc.b	'           LEVEL 1 : THE GATE           ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'               PLAY  GAME               ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'            CONTROL  OPTIONS            ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
+;CURRENTLEVELLINEM:
+;				dc.b	'           LEVEL 1 : THE GATE           ' ;4
+;				dc.b	'                                        ' ;5
+;				dc.b	'               PLAY  GAME               ' ;6
+;				dc.b	'                                        ' ;7
+;				dc.b	'            CONTROL  OPTIONS            ' ;8
+;				dc.b	'                                        ' ;9
+;				dc.b	'                                        ' ;0
+;				dc.b	'                                        ' ;1
+;				dc.b	'                                        ' ;2
+;				dc.b	'                                        ' ;3
+;				dc.b	'                                        ' ;4
+;				dc.b	'                                        ' ;5
+;				dc.b	'                                        ' ;6
+;				dc.b	'                                        ' ;7
+;				dc.b	'                                        ' ;8
+;				dc.b	'                                        ' ;9
+;				dc.b	'                                        ' ;0
+;				dc.b	'                                        ' ;1
 
 MASTERPLAYERMENU_OPTS:
 				dc.w	12,12,16,1
@@ -2071,24 +2068,24 @@ PLAYER_OPTS:
 				dc.b	'             2  PLAYER MASTER           '
 				dc.b	'              2 PLAYER SLAVE            '
 
-LEVEL_OPTS:
+;LEVEL_OPTS:
 ;      0123456789012345678901234567890123456789
-				dc.b	'       CU AMIGA *EXCLUSIVE* DEMO        '
-				dc.b	'      LEVEL  2 :       STORAGE BAY      '
-				dc.b	'      LEVEL  3 :     SEWER NETWORK      '
-				dc.b	'      LEVEL  4 :     THE COURTYARD      '
-				dc.b	'      LEVEL  5 :      SYSTEM PURGE      '
-				dc.b	'      LEVEL  6 :         THE MINES      '
-				dc.b	'      LEVEL  7 :       THE FURNACE      '
-				dc.b	'      LEVEL  8 :  TEST ARENA GAMMA      '
-				dc.b	'      LEVEL  9 :      SURFACE ZONE      '
-				dc.b	'      LEVEL 10 :     TRAINING AREA      '
-				dc.b	'      LEVEL 11 :       ADMIN BLOCK      '
-				dc.b	'      LEVEL 12 :           THE PIT      '
-				dc.b	'      LEVEL 13 :            STRATA      '
-				dc.b	'      LEVEL 14 :      REACTOR CORE      '
-				dc.b	'      LEVEL 15 :     COOLING TOWER      '
-				dc.b	'      LEVEL 16 :    COMMAND CENTRE      '
+;				dc.b	'       CU AMIGA *EXCLUSIVE* DEMO        '
+;				dc.b	'      LEVEL  2 :       STORAGE BAY      '
+;				dc.b	'      LEVEL  3 :     SEWER NETWORK      '
+;				dc.b	'      LEVEL  4 :     THE COURTYARD      '
+;				dc.b	'      LEVEL  5 :      SYSTEM PURGE      '
+;				dc.b	'      LEVEL  6 :         THE MINES      '
+;				dc.b	'      LEVEL  7 :       THE FURNACE      '
+;				dc.b	'      LEVEL  8 :  TEST ARENA GAMMA      '
+;				dc.b	'      LEVEL  9 :      SURFACE ZONE      '
+;				dc.b	'      LEVEL 10 :     TRAINING AREA      '
+;				dc.b	'      LEVEL 11 :       ADMIN BLOCK      '
+;				dc.b	'      LEVEL 12 :           THE PIT      '
+;				dc.b	'      LEVEL 13 :            STRATA      '
+;				dc.b	'      LEVEL 14 :      REACTOR CORE      '
+;				dc.b	'      LEVEL 15 :     COOLING TOWER      '
+;				dc.b	'      LEVEL 16 :    COMMAND CENTRE      '
 
 CONTROL_TXT:
 ;      0123456789012345678901234567890123456789
@@ -2293,140 +2290,133 @@ CREDITMENU_OPTS:
 
 ********************************************************
 
-PUTIN32:
-
-				moveq	#0,d2
-				moveq	#0,d3
-				moveq	#0,d4
-				moveq	#0,d5
-				moveq	#0,d6
-				moveq	#0,d7
-
-				move.w	#31,d2
-p32loop:
-				moveq	#0,d5
-				move.l	(a0)+,d3
-				move.w	d3,d4
-				swap	d3
-				move.b	d4,d5
-				lsr.w	#8,d4
-
-				muls	d0,d3
-				muls	d0,d4
-				muls	d0,d5
-				lsr.l	#8,d3
-				lsr.l	#8,d4
-				lsr.l	#8,d5
-				move.w	d3,d6
-				swap	d3
-				move.w	d6,d3
-				move.w	d4,d6
-				swap	d4
-				move.w	d6,d4
-				move.w	d5,d6
-				swap	d5
-				move.w	d6,d5
-				and.w	#%11110000,d3
-				and.w	#%11110000,d4
-				and.w	#%11110000,d5
-				lsl.w	#4,d3
-				add.w	d4,d3
-				lsr.w	#4,d5
-				add.w	d5,d3
-				move.w	d3,2(a1)
-				swap	d3
-				swap	d4
-				swap	d5
-				and.w	#%1111,d3
-				and.w	#%1111,d4
-				and.w	#%1111,d5
-				lsl.w	#8,d3
-				lsl.w	#4,d4
-				add.w	d4,d3
-				add.w	d5,d3
-				move.w	d3,2+(132*4)(a1)
-				addq	#4,a1
-				dbra	d2,p32loop
-
-
-				rts
+;PUTIN32:
+;				moveq	#0,d2
+;				moveq	#0,d3
+;				moveq	#0,d4
+;				moveq	#0,d5
+;				moveq	#0,d6
+;				moveq	#0,d7
+;				move.w	#31,d2
+;p32loop:
+;				moveq	#0,d5
+;				move.l	(a0)+,d3
+;				move.w	d3,d4
+;				swap	d3
+;				move.b	d4,d5
+;				lsr.w	#8,d4
+;
+;				muls	d0,d3
+;				muls	d0,d4
+;				muls	d0,d5
+;				lsr.l	#8,d3
+;				lsr.l	#8,d4
+;				lsr.l	#8,d5
+;				move.w	d3,d6
+;				swap	d3
+;				move.w	d6,d3
+;				move.w	d4,d6
+;				swap	d4
+;				move.w	d6,d4
+;				move.w	d5,d6
+;				swap	d5
+;				move.w	d6,d5
+;				and.w	#%11110000,d3
+;				and.w	#%11110000,d4
+;				and.w	#%11110000,d5
+;				lsl.w	#4,d3
+;				add.w	d4,d3
+;				lsr.w	#4,d5
+;				add.w	d5,d3
+;				move.w	d3,2(a1)
+;				swap	d3
+;				swap	d4
+;				swap	d5
+;				and.w	#%1111,d3
+;				and.w	#%1111,d4
+;				and.w	#%1111,d5
+;				lsl.w	#8,d3
+;				lsl.w	#4,d4
+;				add.w	d4,d3
+;				add.w	d5,d3
+;				move.w	d3,2+(132*4)(a1)
+;				addq	#4,a1
+;				dbra	d2,p32loop
+;				rts
 
 **************************************
 
 FADEAMOUNT:		dc.w	0
 FADEVAL:		dc.w	0
 
-FADEUPTITLE:
+;FADEUPTITLE:
+;				moveq	#0,d0
+;				moveq	#0,d1
+;				move.w	FADEVAL,d0
+;				move.w	FADEAMOUNT,d1
+;fadeuploop:
 
-				moveq	#0,d0
-				moveq	#0,d1
-				move.w	FADEVAL,d0
-				move.w	FADEAMOUNT,d1
-fadeuploop:
-
-;				move.l	#TITLEPAL,a0
-;				move.l	#TITLEPALCOP,a1
+;;				move.l	#TITLEPAL,a0
+;;				move.l	#TITLEPALCOP,a1
+;;
+;;wvb:
+;;				btst	#5,_custom+intreqrl
+;;				beq.s	wvb
+;;				move.w	#$20,_custom+intreq
+;;
+;;				bsr		PUTIN32
+;;				add.w	#4,a1
+;;				bsr		PUTIN32
+;;				add.w	#4,a1
+;;				bsr		PUTIN32
+;;				add.w	#4,a1
+;;				bsr		PUTIN32
+;;
+;;				addq.w	#8,d0
+;;				dbra	d1,fadeuploop
+;;
+;;				subq	#8,d0
+;;				move.w	d0,FADEVAL
 ;
-;wvb:
-;				btst	#5,_custom+intreqrl
-;				beq.s	wvb
-;				move.w	#$20,_custom+intreq
-;
-;				bsr		PUTIN32
-;				add.w	#4,a1
-;				bsr		PUTIN32
-;				add.w	#4,a1
-;				bsr		PUTIN32
-;				add.w	#4,a1
-;				bsr		PUTIN32
-;
-;				addq.w	#8,d0
-;				dbra	d1,fadeuploop
-;
-;				subq	#8,d0
-;				move.w	d0,FADEVAL
+;				rts
 
-				rts
+;CLEARTITLEPAL:
+;				rts
 
-CLEARTITLEPAL:
-
-				rts
-
-FADEDOWNTITLE:
-
-				move.w	FADEVAL,d0
-				move.w	FADEAMOUNT,d1
-fadedownloop:
-
-;				move.l	#TITLEPAL,a0
+;FADEDOWNTITLE:
+;				move.w	FADEVAL,d0
+;				move.w	FADEAMOUNT,d1
+;fadedownloop:
 ;
-;.wvb:
-;				btst	#5,_custom+intreqrl
-;				beq.s	.wvb
-;				move.w	#$20,_custom+intreq
+;;				move.l	#TITLEPAL,a0
+;;
+;;.wvb:
+;;				btst	#5,_custom+intreqrl
+;;				beq.s	.wvb
+;;				move.w	#$20,_custom+intreq
+;;
+;;				bsr		PUTIN32
+;;				add.w	#4,a1
+;;				bsr		PUTIN32
+;;				add.w	#4,a1
+;;				bsr		PUTIN32
+;;				add.w	#4,a1
+;;				bsr		PUTIN32
+;;
+;;				subq.w	#8,d0
+;;				dbra	d1,fadedownloop
+;;
+;;				addq	#8,d0
+;;				move.w	d0,FADEVAL
 ;
-;				bsr		PUTIN32
-;				add.w	#4,a1
-;				bsr		PUTIN32
-;				add.w	#4,a1
-;				bsr		PUTIN32
-;				add.w	#4,a1
-;				bsr		PUTIN32
-;
-;				subq.w	#8,d0
-;				dbra	d1,fadedownloop
-;
-;				addq	#8,d0
-;				move.w	d0,FADEVAL
-
-				rts
+;				rts
 
 
 LEVELTEXTNAME:	dc.b	'ab3:includes/TEXT_FILE'
 
 				even
 
-LEVELTEXT:
+Lvl_IntroTextPtr_l:
 				dc.l	0
 
 font:

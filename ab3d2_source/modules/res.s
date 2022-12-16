@@ -12,7 +12,6 @@
 
 				CNOP	0,4
 
-walltiles:		ds.l	40
 
 ; *****************************************************************************
 ; *
@@ -26,7 +25,7 @@ Res_LoadObjects:
 				move.l	GLF_DatabasePtr_l,a0
 				lea		GLFT_ObjGfxNames_l(a0),a0
 				move.l	#MEMF_ANY,IO_MemType_l
-				move.l	#Objects,a1
+				move.l	#Draw_ObjectPtrs_vl,a1
 
 .load_object_loop:
 				move.l	a0,a4
@@ -196,12 +195,12 @@ Res_FreeSoundFx:
 Res_LoadFloorTextures:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_FloorFilename_l,a0
-				move.l	#floortile,d0
+				move.l	#Draw_FloorTexturesPtr_l,d0
 				move.l	#0,d1
 				move.l	#MEMF_ANY,IO_MemType_l
 				jsr		IO_QueueFile
 
-; move.l d0,floortile
+; move.l d0,Draw_FloorTexturesPtr_l
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_TextureFilename_l,a0
 				move.l	#io_Buffer_vb,a1
@@ -215,25 +214,25 @@ Res_LoadFloorTextures:
 				subq	#1,a1
 				move.l	a1,io_FileExtPointer_l
 				move.l	#io_Buffer_vb,a0
-				move.l	#TextureMaps,d0
+				move.l	#Draw_TextureMapsPtr_l,d0
 				move.l	#0,d1
 				jsr		IO_QueueFile
 
-; move.l d0,TextureMaps
+; move.l d0,Draw_TextureMapsPtr_l
 				move.l	io_FileExtPointer_l,a1
 				move.l	#".pal",(a1)
 				move.l	#io_Buffer_vb,a0
-				move.l	#TexturePal,d0
+				move.l	#Draw_TexturePalettePtr_l,d0
 				move.l	#0,d1
 				jsr		IO_QueueFile
 
-; move.l d0,TexturePal
+; move.l d0,Draw_TexturePalettePtr_l
 				rts
 
 Res_FreeFloorTextures:
-				move.l	floortile,d1
+				move.l	Draw_FloorTexturesPtr_l,d1
 				CALLEXEC FreeVec
-				clr.l	floortile
+				clr.l	Draw_FloorTexturesPtr_l
 				rts
 
 ; *****************************************************************************
@@ -249,14 +248,14 @@ Res_LoadWallTextures:
 				;* then call FLUSHQUEUE, which actually loads
 				;* the files in...
 
-				move.l	#walltiles,a0
+				move.l	#Draw_WallTexturePtrs_vl,a0
 				moveq	#39,d7
 
 .empty_walls:
 				move.l	#0,(a0)+
 				dbra	d7,.empty_walls
 
-				move.l	#walltiles,a4
+				move.l	#Draw_WallTexturePtrs_vl,a4
 				move.l	GLF_DatabasePtr_l,a3
 				add.l	#GLFT_WallGFXNames_l,a3
 				move.l	#MEMF_ANY,IO_MemType_l
@@ -279,7 +278,7 @@ Res_LoadWallTextures:
 				rts
 
 Res_FreeWallTextures:
-				move.l	#walltiles,a0
+				move.l	#Draw_WallTexturePtrs_vl,a0
 .free_mem:
 				move.l	4(a5),d0
 				beq.s	.free_all
@@ -308,25 +307,25 @@ Res_FreeWallTextures:
 ; *****************************************************************************
 
 Res_FreeLevelData:
-				move.l	LINKS,a1
+				move.l	Lvl_WalkLinksPtr_l,a1
 				CALLEXEC FreeVec
-				clr.l	LINKS
+				clr.l	Lvl_WalkLinksPtr_l
 
-				move.l	FLYLINKS,a1
+				move.l	Lvl_FlyLinksPtr_l,a1
 				CALLEXEC FreeVec
-				clr.l	FLYLINKS
+				clr.l	Lvl_FlyLinksPtr_l
 
-				move.l	LEVELGRAPHICS,a1
+				move.l	Lvl_GraphicsPtr_l,a1
 				CALLEXEC FreeVec
-				clr.l	LEVELGRAPHICS
+				clr.l	Lvl_GraphicsPtr_l
 
-				move.l	LEVELCLIPS,a1
+				move.l	Lvl_ClipsPtr_l,a1
 				CALLEXEC FreeVec
-				clr.l	LEVELCLIPS
+				clr.l	Lvl_ClipsPtr_l
 
-				move.l	LEVELMUSIC,a1
+				move.l	Lvl_MusicPtr_l,a1
 				CALLEXEC FreeVec
-				clr.l	LEVELMUSIC
+				clr.l	Lvl_MusicPtr_l
 				rts
 
 ; *****************************************************************************
@@ -337,5 +336,3 @@ Res_FreeLevelData:
 
 Res_ReleaseScreenMemory:
 				rts
-
-
