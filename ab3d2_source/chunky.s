@@ -257,7 +257,13 @@ Vid_ConvertC2P:
 				move.w	#(FS_WIDTH/8)-1,WTC		; width in chipmem?
 
 				move.w	Vid_LetterBoxMarginHeight_w,d7
-				move.l	#FS_HEIGHT-1,d1			; height of area to convert
+
+				; 0xABADCAFE - Changing FS_HEIGHT to 240 from 232 impacted the teleportation
+				; shimmer in fullscreen which seems coupled to the original size.
+
+FS_TELFX_HEIGHT equ FS_HEIGHT-8
+
+				move.l	#FS_TELFX_HEIGHT-1,d1	; height of area to convert
 				sub.w	d7,d1					; top letterbox
 				sub.w	d7,d1					; bottom letterbox: d1: number of lines
 				move.w	d1,HTC
