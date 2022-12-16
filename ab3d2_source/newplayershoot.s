@@ -97,13 +97,14 @@ Plr1_Shot:
 				neg.l	d2
 
 .not_negative:
-				;divs	#44,d2 ; Hitscanning doesnt work without this. Why 44?
+				divs	#44,d2 ; Hitscanning doesnt work without this. Why 44?
 
 				;0xABADCAFE division pogrom
 				; Approximate 1/44 as 93/4096
-				muls	#93,d2 ; todo - maybe needs to be muls.l
-				asr.l	#8,d2
-				asr.l	#4,d2
+            ; TODO - Enable next PR
+				;muls	#93,d2 ; todo - maybe needs to be muls.l
+				;asr.l	#8,d2
+				;asr.l	#4,d2
 
 				cmp.w	d6,d2
 				bgt.s	.not_lined_up
@@ -421,13 +422,14 @@ Plr2_Shot:
 
 				neg.l	d2
 .not_negative:
-				;divs	#44,d2 ; Hitscanning doesnt work without this. Why 44?
+				divs	#44,d2 ; Hitscanning doesnt work without this. Why 44?
 
 				; 0xABADCAFE division pogrom
 				; Approximate 1/44 as 93/4096
-				muls	#93,d2 ; todo - maybe needs to be muls.l
-				asr.l	#8,d2
-				asr.l	#4,d2
+            ; TODO - Enable Next PR
+				;muls	#93,d2 ; todo - maybe needs to be muls.l
+				;asr.l	#8,d2
+				;asr.l	#4,d2
 
 				cmp.w	d6,d2
 				bgt.s	.not_lined_up

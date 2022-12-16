@@ -3817,9 +3817,10 @@ putinbackdrop:
 				move.w	tmpangpos,d5
 				and.w	#4095,d5
 				muls	#648,d5
-				;divs	#4096,d5
-				asr.l	#8,d5
-				asr.l	#4,d5
+				divs	#4096,d5
+            ; TODO - Next PR - Use this instead of divs
+				;asr.l	#8,d5
+				;asr.l	#4,d5
 				muls	#240,d5
 
 ; CACHE_ON d1
