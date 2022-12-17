@@ -237,14 +237,7 @@ screendividethru:
 ***************************
 * old version
 				asr.w	#7,d6
-***************************
-; asr.w #3,d6
-; sub.w #4,d6
-; cmp.w #6,d6
-; blt.s tstbrbr
-; move.w #6,d6
-;tstbrbr:
-***************************
+
 				add.w	angbright(pc),d6
 				bge.s	.brnotneg
 				moveq	#0,d6
@@ -258,13 +251,6 @@ screendividethru:
 				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	.ffscrpickhowbright(pc,d6*2),a2
-; and.b #$fe,d6
-; add.w .ffscrpickhowbright(pc,d6*2),a4
-
-; btst #0,d0
-; beq .nobrightswap
-; exg a2,a4
-;.nobrightswap:
 
 				move.w	d7,-(a7)
 				bsr		ScreenWallstripdrawthru
@@ -390,14 +376,6 @@ scrdrawlop:
 ***************************
 * old version
 				asr.w	#7,d6
-***************************
-; asr.w #3,d6
-; sub.w #4,d6
-; cmp.w #6,d6
-; blt.s tstbrbr
-; move.w #6,d6
-;tstbrbr:
-***************************
 
 				move.l	(a0)+,d5
 				swap	d5
@@ -480,14 +458,6 @@ scrdrawlopDOUB:
 ***************************
 * old version
 				asr.w	#7,d6
-***************************
-; asr.w #3,d6
-; sub.w #4,d6
-; cmp.w #6,d6
-; blt.s tstbrbr
-; move.w #6,d6
-;tstbrbr:
-***************************
 
 				move.l	(a0)+,d5
 				swap	d5
@@ -545,11 +515,6 @@ scrdrawlopFULL:
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 
-; bra pastscrinto
-;
-;
-;pastscrinto
-
 				swap	d1
 
 				move.w	d1,d6
@@ -579,14 +544,6 @@ scrdrawlopFULL:
 ***************************
 * old version
 				asr.w	#7,d6
-***************************
-; asr.w #3,d6
-; sub.w #4,d6
-; cmp.w #6,d6
-; blt.s tstbrbr
-; move.w #6,d6
-;tstbrbr:
-***************************
 
 				move.l	(a0)+,d5
 				swap	d5
@@ -635,11 +592,6 @@ scrdrawlopFULLDOUB:
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 
-; bra pastscrinto
-;
-;
-;pastscrinto
-
 				swap	d1
 
 				move.w	d1,d6
@@ -669,14 +621,6 @@ scrdrawlopFULLDOUB:
 ***************************
 * old version
 				asr.w	#7,d6
-***************************
-; asr.w #3,d6
-; sub.w #4,d6
-; cmp.w #6,d6
-; blt.s tstbrbr
-; move.w #6,d6
-;tstbrbr:
-***************************
 
 				move.l	(a0)+,d5
 				swap	d5
@@ -1683,24 +1627,6 @@ simplewallPACK2:
 				dbra	d6,simplewallPACK2
 				rts
 
-;gotoendnomult:
-; movem.l d0/d1/d2/d3/d4/d7,-(a7)
-; add.l timeslarge(pc,d5.w*4),a3
-; move.w d5,d4
-; move.l 4(a1,d2.w*8),d0
-; move.l (a1,d2.w*8),d2
-; moveq #0,d3
-; move.w d2,d3
-; swap d2
-; tst.w d2
-; move.w wallyoff(pc),d4
-; add.w #44,d4
-; bne.s .notsimple
-; cmp.l #$b000,d3
-; ble cliptopusesimple
-;.notsimple:
-; bra cliptop
-
 ; ATTENION: for some reason the order of these variables is important
 ; There's code that expects	these in the right order to allow for movem
 				align	4
@@ -1728,14 +1654,6 @@ gotoend:
 				move.w	d5,d4
 
 				move.l	(a1,d2.w*4),d2			; fetch (a1) at d2*8
-; moveq #0,d3
-; move.w d2,d3
-; swap d2
-; tst.w d2
-; bne.s .notsimple
-; cmp.l #$b000,d3
-; ble usesimple
-;.notsimple:
 
 				ext.l	d5
 				move.l	d2,d4
@@ -1743,11 +1661,6 @@ gotoend:
 				add.l	d0,d4
 				swap	d4
 
-; mulu d3,d4
-; muls d2,d5
-; add.l d0,d4
-; swap d4
-; add.w d5,d4
 				add.w	totalyoff(pc),d4		; start texel offset in strip
 				move.w	VALAND,d7
 				and.w	d7,d4					; vertical texture coordinate clamp/wrap
@@ -1796,14 +1709,6 @@ doubwall
 				move.w	d5,d4
 
 				move.l	(a1,d2.w*4),d2
-; moveq #0,d3
-; move.w d2,d3
-; swap d2
-; tst.w d2
-; bne.s .notsimple
-; cmp.l #$b000,d3
-; ble usesimple
-;.notsimple:
 
 				ext.l	d5
 				move.l	d2,d4
@@ -1811,11 +1716,6 @@ doubwall
 				add.l	d0,d4
 				swap	d4
 
-; mulu d3,d4
-; muls d2,d5
-; add.l d0,d4
-; swap d4
-; add.w d5,d4
 				add.w	totalyoff(pc),d4
 				move.w	VALAND,d7
 				and.w	d7,d4
@@ -1885,14 +1785,6 @@ gotoendBIG
 				move.w	d5,d4
 
 				move.l	(a1,d2.w*4),d2
-; moveq #0,d3
-; move.w d2,d3
-; swap d2
-; tst.w d2
-; bne.s .notsimple
-; cmp.l #$b000,d3
-; ble usesimple
-;.notsimple:
 
 				ext.l	d5
 				move.l	d2,d4
@@ -1900,11 +1792,6 @@ gotoendBIG
 				add.l	d0,d4
 				swap	d4
 
-; mulu d3,d4
-; muls d2,d5
-; add.l d0,d4
-; swap d4
-; add.w d5,d4
 				add.w	totalyoff(pc),d4
 				move.w	VALAND,d7
 				and.w	d7,d4
@@ -1947,14 +1834,6 @@ doubwallBIG:
 				move.w	d5,d4
 
 				move.l	(a1,d2.w*4),d2
-; moveq #0,d3
-; move.w d2,d3
-; swap d2
-; tst.w d2
-; bne.s .notsimple
-; cmp.l #$b000,d3
-; ble usesimple
-;.notsimple:
 
 				ext.l	d5
 				move.l	d2,d4
@@ -1962,11 +1841,6 @@ doubwallBIG:
 				add.l	d0,d4
 				swap	d4
 
-; mulu d3,d4
-; muls d2,d5
-; add.l d0,d4
-; swap d4
-; add.w d5,d4
 				add.w	totalyoff(pc),d4
 				move.w	VALAND,d7
 				and.w	d7,d4
@@ -1992,8 +1866,6 @@ val				SET		val+SCREENWIDTH
 
 nostripqthru:
 				rts
-
-
 
 ScreenWallstripdrawthru:
 				move.w	d4,d6
@@ -2486,31 +2358,6 @@ pastclip:
 				blt		wallfacingaway
 
 cant_tell:
-
-; move.l a1,a4
-; move.w #31,d6
-; move.l #0,d3
-;.emptylop:
-; move.l d3,(a4)+
-; dbra d6,.emptylop
-
-; move.w rightclip(pc),d6
-; st (a1,d6)
-; move.w leftclip(pc),d6
-; st -1(a1,d6)
-
-; muls sinval(pc),d1
-; muls cosval(pc),d4
-; add.l d1,d4
-; add.l d4,d4
-; swap d4
-; neg.w d4
-; move.w d4,d6
-; asr.w #1,d4
-; sub.w d4,angbright
-; and.b #$fe,d4
-; asl.w #2,d4
-; asl.w #2,d6
 
 				movem.l	d7/a0/a5/a6,-(a7)
 				move.l	(a5,d0*8),a0

@@ -1,5 +1,4 @@
 
-;gotgun:			dc.w	0
 				align 4
 AlienAnimPtr_l:	dc.l	0
 
@@ -13,17 +12,11 @@ ItsAnAlien:
 				move.l	#32*256,StepUpVal
 				move.l	#32*256,StepDownVal
 
-; move.l #4,deadframe
-; move.w #0,screamsound
-; move.w #160,nasheight
-
 				move.w	12(a0),EntT_GraphicRoom_w(a0)
 				move.w	12(a0),d2
 				bge.s	.okalive
 
-
 				rts
-
 
 .NONASIES:
 				move.w	#-1,12(a0)
@@ -418,11 +411,6 @@ Destructable:
 				muls	#160,d0
 				add.l	Lvl_DataPtr_l,d0
 				jsr		SENDMESSAGE
-; move.w #0,SCROLLXPOS
-; move.l d0,SCROLLPOINTER
-; add.l #160,d0
-; move.l d0,ENDSCROLL
-; move.w #40,SCROLLTIMER
 
 .notext:
 
@@ -562,11 +550,6 @@ Plr1_CollectItem:
 				muls	#160,d0
 				add.l	Lvl_DataPtr_l,d0
 				jsr		SENDMESSAGE
-; move.w #0,SCROLLXPOS
-; move.l d0,SCROLLPOINTER
-; add.l #160,d0
-; move.l d0,ENDSCROLL
-; move.w #40,SCROLLTIMER
 
 				bra		.nodeftext
 
@@ -972,45 +955,14 @@ THISPLRxoff:	dc.w	0
 THISPLRzoff:	dc.w	0
 
 ViewpointToDraw:
-; Calculate which side to display:
-
-; move.l Lvl_ObjectPointsPtr_l,a1
-; move.w (a0),d1
-; lea (a1,d1.w*8),a1	; ptr to points
-
-; move.w (a1),oldx
-; move.w 4(a1),oldz
-; move.w THISPLRxoff,newx
-; move.w THISPLRzoff,newz
-; move.w #64,speed
-; move.w #-60,Range
-; movem.l a0/a1,-(a7)
-; jsr HeadTowards
-; movem.l (a7)+,a0/a1
-;
-; move.w newx,d0
-; sub.w oldx,d0
-; move.w newz,d1
-; sub.w oldz,d1
-
 				move.w	EntT_CurrentAngle_w(a0),d3
 				sub.w	angpos,d3
 
-; add.w #2048,d3
 				and.w	#8190,d3
 				move.l	#SinCosTable_vw,a2
 				move.w	(a2,d3.w),d2
 				adda.w	#2048,a2
 				move.w	(a2,d3.w),d3
-
-; move.w d0,d4
-; move.w d1,d5
-; muls d3,d4
-; muls d2,d5
-; sub.l d5,d4
-; muls d3,d1
-; muls d2,d0
-; add.l d1,d0
 
 				ext.l	d2
 				ext.l	d3
@@ -1067,7 +1019,6 @@ tempx:			dc.w	0
 tempz:			dc.w	0
 
 RunAround:
-
 				movem.l	d0/d1/d2/d3/a0/a1,-(a7)
 
 				move.w	oldx,d0
@@ -1365,7 +1316,6 @@ FireAtPlayer1:
 
 
 SHOOTPLAYER2
-
 				move.w	oldx,tsx
 				move.w	oldz,tsz
 				move.w	newx,fsx

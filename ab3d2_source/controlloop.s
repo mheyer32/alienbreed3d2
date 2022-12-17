@@ -31,92 +31,9 @@
 ;12. Reload title screen
 ;13. goto 6
 
-;INTROTUNEADDR:	dc.l	0
-;INTROTUNENAME:	dc.b	'sounds/abreed3d.med',0
-;				even
-;TITLESCRNADDR:	dc.l	0
-;TITLESCRNNAME:	dc.b	'ab3:includes/titlescrnraw1',0
-;				even
-;TITLESCRNNAME2:	dc.b	'ab3:includes/titlescrnraw1',0
-;				even
 
 				align 4
 OPTSPRADDR:		dc.l	0
-;TITLESCRNPTR:	dc.l	0
-
-;Plr_Health_w:
-;				dc.w	0
-;				dc.w	0
-;Plr_AmmoCounts_vw:
-;				ds.w	20
-
-;Plr_Shield_w:
-;				dc.w	0
-;				dc.w	0
-;Plr_Weapons_vw:
-;				dcb.w	10,0
-
-;MASTERPLAYERTWOHEALTH:
-;				dc.w	0
-;				dc.w	0
-;MASTERPLAYERTWOAMMO:
-;				ds.w	20
-
-;MASTERPLAYERTWOSHIELD:
-;				dc.w	0
-;				dc.w	0
-;MASTERPLAYERTWOGUNS:
-;				dcb.w	10,0
-
-;KVALTOASC:
-;				dc.b	" `  "," 1  "," 2  "," 3  "
-;				dc.b	" 4  "," 5  "," 6  "," 7  "
-;				dc.b	" 8  "," 9  "
-; 10
-;				dc.b	" 0  "," -  "," +  "," \  "
-;				dc.b	'    ','    '," Q  "," W  "
-;				dc.b	" E  "," R  "
-; 20
-;				dc.b	" T  "," Y  "," U  "," I  "
-;				dc.b	" O  "," P  "," [  "," ]  "
-;				dc.b	'    ','KP1 '
-; 30
-;				dc.b	'KP2 ','KP3 '," A  "," S  "
-;				dc.b	" D  "," F  "," G  "," H  "
-;				dc.b	" J  "," K  "
-;40
-;				dc.b	" L  "," ;  "," #  ",'    '
-;				dc.b	'    ','KP4 ','KP5 ','KP6 '
-;				dc.b	'    '," Z  "
-;50
-;				dc.b	" X  "," C  "," V  "," B  "
-;				dc.b	" N  "," M  "," ,  "," .  "
-;				dc.b	" /  ",'    '
-;60
-;				dc.b	'    ','KP7 ','KP8 ','KP9 '
-;				dc.b	'SPC ','<-- ','TAB ','ENT '
-;				dc.b	'RTN ','ESC '
-;70
-;				dc.b	'DEL ','    ','    ','    '
-;				dc.b	'KP- ','    ','UCK ','DCK '
-;				dc.b	'RCK ','LCK '
-;80
-;				dc.b	'FK1 ','FK2 ','FK3 ','FK4 '
-;				dc.b	'FK5 ','FK6 ','FK7 ','FK8 '
-;				dc.b	'FK9 ','FK0 '
-;90
-;				dc.b	'KP( ','KP) ','KP/ ','KP* '
-;				dc.b	'KP+ ','HLP ','LSH ','RSH '
-;				dc.b	'CPL ','CTL '
-;100
-;				dc.b	'LAL ','RAL ','LAM ','RAM '
-;				dc.b	'    ','    ','    ','    '
-;				dc.b	'    ','    '
-;				dc.b	'    ','    ','    ','    '
-;				dc.b	'    ','    ','    ','    '
-;				dc.b	'    ','    '
-
-				even
 
 FINISHEDLEVEL:	dc.w	0
 
@@ -496,37 +413,12 @@ READMAINMENU:
 
 ; Stay here until 'play game' is selected.
 
-; move.w #0,OptScrn
-; bsr DRAWOPTSCRN
-; move.w #0,OPTNUM
-
 				lea		mnu_MYMAINMENU,a0
 				bsr		MYOPENMENU
 
 .rdlop:
 				lea		mnu_MYMAINMENU,a0
 				bsr		CHECKMENU
-
-; tst.w d0
-; blt.s .rdlop
-
-; tst.w d0
-; bne.s .nonextlev
-; move.w LEVELSELECTED,d0
-; add.w #1,d0
-; cmp.w MAXLEVEL,d0
-; blt .nowrap
-; moveq #0,d0
-;.nowrap:
-; and.w #$f,d0
-; move.w d0,LEVELSELECTED
-; move.l #CURRENTLEVELLINE,a1
-; muls #40,d0
-; move.l #LEVEL_OPTS,a0
-; add.l d0,a0
-; bsr PUTINLINE
-; bsr JUSTDRAWIT
-; bra .rdlop
 
 .nonextlev:
 
@@ -537,12 +429,6 @@ READMAINMENU:
 
 .noopt:
 
-; cmp.w #5,d0
-; bne.s .noqui
-; st SHOULDQUIT
-; bra playgame
-;.noqui
-
 				cmp.w	#2,d0
 				beq		playgame
 
@@ -550,10 +436,6 @@ READMAINMENU:
 				bne		.nocontrol
 
 				bsr		CHANGECONTROLS
-
-; move.w #0,OptScrn
-; bsr DRAWOPTSCRN
-; move.w #0,OPTNUM
 
 				lea		mnu_MYMAINMENU,a0
 				bsr		MYOPENMENU
@@ -567,15 +449,6 @@ READMAINMENU:
 
 				cmp.w	#4,d0
 				bne		.nocred
-; bsr SHOWCREDITS
-; move.w #0,OptScrn
-; bsr DRAWOPTSCRN
-; move.w #1,OPTNUM
-;
-; bsr HIGHLIGHT
-;
-; bsr WAITREL
-; bra .rdlop
 
 				;jsr		mnu_viewcredz
 				lea		mnu_MYMAINMENU,a0
@@ -592,10 +465,6 @@ READMAINMENU:
 
 				jsr		LOADPOSITION
 
-; move.w #0,OptScrn
-; bsr DRAWOPTSCRN
-; move.w #1,OPTNUM
-
 				lea		mnu_MYMAINMENU,a0
 				bsr		MYOPENMENU
 
@@ -609,12 +478,6 @@ READMAINMENU:
 
 				jsr		SAVEPOSITION
 
-; move.w #0,OptScrn
-; bsr DRAWOPTSCRN
-; move.w #1,OPTNUM
-;
-; bsr HIGHLIGHT
-
 				lea		mnu_MYMAINMENU,a0
 				bsr		MYOPENMENU
 
@@ -622,92 +485,6 @@ READMAINMENU:
 				bra		.rdlop
 
 
-;
-; move.l #PASSWORDLINE+12,a0
-; moveq #15,d2
-;.clrline:
-; move.b #32,(a0)+
-; dbra d2,.clrline
-; move.w #0,OptScrn
-; bsr DRAWOPTSCRN
-;
-; IFEQ CD32VER
-; clr.b lastpressed
-; move.l #PASSWORDLINE+12,a0
-; move.w #0,d1
-;.ENTERPASS:
-; tst.b lastpressed
-; beq .ENTERPASS
-; move.b lastpressed,d2
-; move.b #0,lastpressed
-; move.l #KVALTOASC,a1
-;
-; cmp.l #'<-- ',(a1,d2.w*4)
-; bne .nodel
-;
-; tst.b d1
-; beq .nodel
-;
-; subq #1,d1
-; move.b #32,-(a0)
-; movem.l d0-d7/a0-a6,-(a7)
-; bsr JUSTDRAWIT
-; movem.l (a7)+,d0-d7/a0-a6
-; bra .ENTERPASS
-;
-;.nodel:
-;
-; cmp.l #'RTN ',(a1,d2.w*4)
-; beq .FORGETIT
-; cmp.l #'ESC ',(a1,d2.w*4)
-; beq .FORGETIT
-; move.b 1(a1,d2.w*4),d2
-; cmp.b #65,d2
-; blt .ENTERPASS
-; cmp.b #'Z',d2
-; bgt .ENTERPASS
-; move.b d2,(a0)+
-; move.w #0,OptScrn
-; movem.l d0-d7/a0-a6,-(a7)
-; bsr JUSTDRAWIT
-; movem.l (a7)+,d0-d7/a0-a6
-; add.w #1,d1
-; cmp.w #16,d1
-; blt .ENTERPASS
-;
-; ENDC
-; IFNE CD32VER
-; move.l #PASSWORDLINE+12,a0
-; move.w #15,d0
-;.ENTERPASS:
-; bsr GETACHAR
-; dbra d0,.ENTERPASS
-; ENDC
-;
-; bsr PASSLINETOGAME
-; tst.w d0
-; bne .FORGETIT
-;
-; bsr GETSTATS
-; move.w MAXLEVEL,d0
-; move.l #CURRENTLEVELLINE,a1
-; muls #40,d0
-; move.l #LEVEL_OPTS,a0
-; add.l d0,a0
-; bsr PUTINLINE
-;
-;.FORGETIT:
-; bsr WAITREL
-; bsr CALCPASSWORD
-;
-; move.w #0,OptScrn
-; bsr DRAWOPTSCRN
-;
-; move.w #1,OPTNUM
-;
-; bsr HIGHLIGHT
-;
-; bra .rdlop
 
 playgame:
 				move.w	MAXLEVEL,PLOPT
@@ -815,24 +592,12 @@ MASTERMENU:
 
 ; Stay here until 'play game' is selected.
 
-; move.w #4,OptScrn
-; bsr DRAWOPTSCRN
-; move.w #1,OPTNUM
-
-; bsr HIGHLIGHT
-; bsr WAITREL
-
 				lea		mnu_MYMASTERMENU,a0
 				bsr		MYOPENMENU
 
 .rdlop:
 				lea		mnu_MYMASTERMENU,a0
 				bsr		CHECKMENU
-; tst.w d0
-; blt.s .rdlop
-; bsr WAITREL
-
-
 
 				cmp.w	#1,d0
 				bne.s	.nonextlev
@@ -874,14 +639,6 @@ MASTERMENU:
 
 				bsr		CHANGECONTROLS
 
-; move.w #4,OptScrn
-; bsr DRAWOPTSCRN
-; move.w #0,OPTNUM
-;
-; bsr HIGHLIGHT
-;
-; bsr WAITREL
-
 				lea		mnu_MYMASTERMENU,a0
 				bsr		MYOPENMENU
 
@@ -903,13 +660,6 @@ SLAVEMENU:
 				lea		mnu_MYSLAVEMENU,a0
 				bsr		MYOPENMENU
 
-; move.w #5,OptScrn
-; bsr DRAWOPTSCRN
-; move.w #1,OPTNUM
-;
-; bsr HIGHLIGHT
-;
-; bsr WAITREL
 .rdlop:
 				lea		mnu_MYSLAVEMENU,a0
 				bsr		CHECKMENU
@@ -931,14 +681,6 @@ SLAVEMENU:
 				bne		.nocontrol
 
 				bsr		CHANGECONTROLS
-
-; move.w #5,OptScrn
-; bsr DRAWOPTSCRN
-; move.w #0,OPTNUM
-;
-; bsr HIGHLIGHT
-;
-; bsr WAITREL
 
 				lea		mnu_MYSLAVEMENU,a0
 				bsr		MYOPENMENU
@@ -1105,12 +847,6 @@ PASS:
 
 CHANGECONTROLS:
 
-; move.w #6,OptScrn
-; bsr DRAWOPTSCRN
-; move.w #0,OPTNUM
-; bsr HIGHLIGHT
-; bsr WAITREL
-
 ; copy current setting over to menu
 				move.l	#CONTROLBUFFER,a0
 				move.l	#KEY_LINES+17,a1
@@ -1171,12 +907,8 @@ CHANGECONTROLS:
 				movem.l	(a7)+,d0/a0
 
 				move.b	d1,(a1,d0.w)
-; move.l #KVALTOASC,a1
 				add.w	#132,d1
 				move.b	d1,1(a0)
-; move.l (a1,d1.w*4),(a0)
-; bsr JUSTDRAWIT
-; bsr WAITREL
 				lea		mnu_MYCONTROLSONE,a0
 				jsr		mnu_redraw
 				bra		.rdlop
@@ -1192,9 +924,6 @@ CHANGECONTROLS2:
 .rdlop:
 				lea		mnu_MYCONTROLSTWO,a0
 				bsr		CHECKMENU
-
-; tst.w d0
-; blt.s .rdlop
 
 				cmp.w	#6,d0
 				beq		.backtomain
@@ -1224,12 +953,8 @@ CHANGECONTROLS2:
 				movem.l	(a7)+,d0/a0
 
 				move.b	d1,(a1,d0.w)
-; move.l #KVALTOASC,a1
 				add.w	#132,d1
 				move.b	d1,1(a0)
-; move.l (a1,d1.w*4),(a0)
-; bsr JUSTDRAWIT
-; bsr WAITREL
 				lea		mnu_MYCONTROLSTWO,a0
 				jsr		mnu_redraw
 				bra		.rdlop
@@ -1534,13 +1259,6 @@ LOADPOSITION:
 
 				dbra	d7,.findlevs
 
-; move.w #8,OptScrn
-; move.w #0,OPTNUM
-
-; bsr DRAWOPTSCRN
-; bsr HIGHLIGHT
-; bsr WAITREL
-
 				lea		mnu_MYLOADMENU,a0
 				bsr		MYOPENMENU
 
@@ -1609,13 +1327,6 @@ SAVEPOSITION:
 				add.w	#2+(22*2)+(12*2),a3
 
 				dbra	d7,.findlevs
-
-; move.w #9,OptScrn
-; move.w #0,OPTNUM
-
-; bsr DRAWOPTSCRN
-; bsr HIGHLIGHT
-; bsr WAITREL
 
 				lea		mnu_MYSAVEMENU,a0
 				bsr		MYOPENMENU
@@ -1904,29 +1615,6 @@ ONEPLAYERMENU_TXT:
 				dc.b	'                                        ' ;8
 				dc.b	'                                        ' ;9
 				dc.b	'                                        ' ;0
-;CURRENTLEVELLINE:
-;				dc.b	'         *** A.F DEMO LEVEL ***         ' ;1
-;				dc.b	'                                        ' ;2
-;				dc.b	'                1 PLAYER                ' ;3
-;				dc.b	'                                        ' ;4
-;				dc.b	'               PLAY  GAME               ' ;5
-;				dc.b	'                                        ' ;6
-;				dc.b	'            CONTROL  OPTIONS            ' ;7
-;				dc.b	'                                        ' ;8
-;				dc.b	'              GAME CREDITS              ' ;9
-;				dc.b	'                                        ' ;0
-;				dc.b	'             LOAD  POSITION             ' ;1
-;				dc.b	'                                        ' ;2
-;PASSWORDLINE:
-;				dc.b	'             SAVE  POSITION             ' ;1
-;				dc.b	'                                        ' ;4
-;				dc.b	'                                        ' ;6
-;				dc.b	'                                        ' ;6
-;				dc.b	'                                        ' ;7
-;				dc.b	'                                        ' ;8
-;				dc.b	'                                        ' ;9
-;				dc.b	'                                        ' ;0
-;				dc.b	'                                        ' ;1
 
 ONEPLAYERMENU_OPTS:
 				dc.w	0,11,40,1
@@ -1955,25 +1643,6 @@ MASTERPLAYERMENU_TXT:
 				dc.b	'                                        ' ;1
 				dc.b	'            2 PLAYER  MASTER            ' ;2
 				dc.b	'                                        ' ;3
-;CURRENTLEVELLINEM:
-;				dc.b	'           LEVEL 1 : THE GATE           ' ;4
-;				dc.b	'                                        ' ;5
-;				dc.b	'               PLAY  GAME               ' ;6
-;				dc.b	'                                        ' ;7
-;				dc.b	'            CONTROL  OPTIONS            ' ;8
-;				dc.b	'                                        ' ;9
-;				dc.b	'                                        ' ;0
-;				dc.b	'                                        ' ;1
-;				dc.b	'                                        ' ;2
-;				dc.b	'                                        ' ;3
-;				dc.b	'                                        ' ;4
-;				dc.b	'                                        ' ;5
-;				dc.b	'                                        ' ;6
-;				dc.b	'                                        ' ;7
-;				dc.b	'                                        ' ;8
-;				dc.b	'                                        ' ;9
-;				dc.b	'                                        ' ;0
-;				dc.b	'                                        ' ;1
 
 MASTERPLAYERMENU_OPTS:
 				dc.w	12,12,16,1
@@ -2068,24 +1737,6 @@ PLAYER_OPTS:
 				dc.b	'             2  PLAYER MASTER           '
 				dc.b	'              2 PLAYER SLAVE            '
 
-;LEVEL_OPTS:
-;      0123456789012345678901234567890123456789
-;				dc.b	'       CU AMIGA *EXCLUSIVE* DEMO        '
-;				dc.b	'      LEVEL  2 :       STORAGE BAY      '
-;				dc.b	'      LEVEL  3 :     SEWER NETWORK      '
-;				dc.b	'      LEVEL  4 :     THE COURTYARD      '
-;				dc.b	'      LEVEL  5 :      SYSTEM PURGE      '
-;				dc.b	'      LEVEL  6 :         THE MINES      '
-;				dc.b	'      LEVEL  7 :       THE FURNACE      '
-;				dc.b	'      LEVEL  8 :  TEST ARENA GAMMA      '
-;				dc.b	'      LEVEL  9 :      SURFACE ZONE      '
-;				dc.b	'      LEVEL 10 :     TRAINING AREA      '
-;				dc.b	'      LEVEL 11 :       ADMIN BLOCK      '
-;				dc.b	'      LEVEL 12 :           THE PIT      '
-;				dc.b	'      LEVEL 13 :            STRATA      '
-;				dc.b	'      LEVEL 14 :      REACTOR CORE      '
-;				dc.b	'      LEVEL 15 :     COOLING TOWER      '
-;				dc.b	'      LEVEL 16 :    COMMAND CENTRE      '
 
 CONTROL_TXT:
 ;      0123456789012345678901234567890123456789
@@ -2290,127 +1941,11 @@ CREDITMENU_OPTS:
 
 ********************************************************
 
-;PUTIN32:
-;				moveq	#0,d2
-;				moveq	#0,d3
-;				moveq	#0,d4
-;				moveq	#0,d5
-;				moveq	#0,d6
-;				moveq	#0,d7
-;				move.w	#31,d2
-;p32loop:
-;				moveq	#0,d5
-;				move.l	(a0)+,d3
-;				move.w	d3,d4
-;				swap	d3
-;				move.b	d4,d5
-;				lsr.w	#8,d4
-;
-;				muls	d0,d3
-;				muls	d0,d4
-;				muls	d0,d5
-;				lsr.l	#8,d3
-;				lsr.l	#8,d4
-;				lsr.l	#8,d5
-;				move.w	d3,d6
-;				swap	d3
-;				move.w	d6,d3
-;				move.w	d4,d6
-;				swap	d4
-;				move.w	d6,d4
-;				move.w	d5,d6
-;				swap	d5
-;				move.w	d6,d5
-;				and.w	#%11110000,d3
-;				and.w	#%11110000,d4
-;				and.w	#%11110000,d5
-;				lsl.w	#4,d3
-;				add.w	d4,d3
-;				lsr.w	#4,d5
-;				add.w	d5,d3
-;				move.w	d3,2(a1)
-;				swap	d3
-;				swap	d4
-;				swap	d5
-;				and.w	#%1111,d3
-;				and.w	#%1111,d4
-;				and.w	#%1111,d5
-;				lsl.w	#8,d3
-;				lsl.w	#4,d4
-;				add.w	d4,d3
-;				add.w	d5,d3
-;				move.w	d3,2+(132*4)(a1)
-;				addq	#4,a1
-;				dbra	d2,p32loop
-;				rts
 
 **************************************
 
 FADEAMOUNT:		dc.w	0
 FADEVAL:		dc.w	0
-
-;FADEUPTITLE:
-;				moveq	#0,d0
-;				moveq	#0,d1
-;				move.w	FADEVAL,d0
-;				move.w	FADEAMOUNT,d1
-;fadeuploop:
-
-;;				move.l	#TITLEPAL,a0
-;;				move.l	#TITLEPALCOP,a1
-;;
-;;wvb:
-;;				btst	#5,_custom+intreqrl
-;;				beq.s	wvb
-;;				move.w	#$20,_custom+intreq
-;;
-;;				bsr		PUTIN32
-;;				add.w	#4,a1
-;;				bsr		PUTIN32
-;;				add.w	#4,a1
-;;				bsr		PUTIN32
-;;				add.w	#4,a1
-;;				bsr		PUTIN32
-;;
-;;				addq.w	#8,d0
-;;				dbra	d1,fadeuploop
-;;
-;;				subq	#8,d0
-;;				move.w	d0,FADEVAL
-;
-;				rts
-
-;CLEARTITLEPAL:
-;				rts
-
-;FADEDOWNTITLE:
-;				move.w	FADEVAL,d0
-;				move.w	FADEAMOUNT,d1
-;fadedownloop:
-;
-;;				move.l	#TITLEPAL,a0
-;;
-;;.wvb:
-;;				btst	#5,_custom+intreqrl
-;;				beq.s	.wvb
-;;				move.w	#$20,_custom+intreq
-;;
-;;				bsr		PUTIN32
-;;				add.w	#4,a1
-;;				bsr		PUTIN32
-;;				add.w	#4,a1
-;;				bsr		PUTIN32
-;;				add.w	#4,a1
-;;				bsr		PUTIN32
-;;
-;;				subq.w	#8,d0
-;;				dbra	d1,fadedownloop
-;;
-;;				addq	#8,d0
-;;				move.w	d0,FADEVAL
-;
-;				rts
-
 
 LEVELTEXTNAME:	dc.b	'ab3:includes/TEXT_FILE'
 

@@ -37,15 +37,6 @@ Plr1_MouseControl:
 				move.w	ymouse,d3
 				sub.w	oldymouse,d3
 				add.w	d3,oldymouse
-; asr.w #1,d3
-; cmp.w #50,d3
-; ble.s nofastfor
-; move.w #50,d3
-;nofastfor:
-; cmp.w #-50,d3
-; bge.s nofastback
-; move.w #-50,d3
-;nofastback:
 
 				move.w	STOPOFFSET,d0
 				move.w	d3,d2
@@ -314,12 +305,6 @@ pickweap
 				move.b	d2,Plr1_GunSelected_b
 				move.w	#0,EntT_Timer1_w+128(a3)
 
-
-; SCROLLPOINTER
-; move.w #0,SCROLLXPOS
-; move.l #TEMPSCROLL+160,ENDSCROLL
-; move.w #40,SCROLLTIMER
-
 ; d2=number of gun.
 
 				bsr		SHOWPLR1GUNNAME
@@ -374,29 +359,6 @@ Draw_ResetGameDisplay:
 				jsr		unLHA
 
 				rts
-
-; The original Draw_ResetGameDisplay seems to selectivel only clean the
-;				move.l	#231,d0
-;				moveq	#0,d1
-;				move.w	#7,d2
-;planel:
-;				move.l	#231,d0
-;wipe:
-;				move.l	d1,2(a0) ; skips left border
-;				move.l	d1,6(a0)
-;				move.l	d1,10(a0)
-;				move.l	d1,14(a0)
-;				move.l	d1,18(a0)
-;				move.l	d1,22(a0)
-;				move.l	d1,26(a0)
-;				move.l	d1,30(a0)
-;				move.l	d1,34(a0) ; skips right 16 border pixels
-;				add.w	#40,a0
-;				dbra	d0,wipe
-;				add.w	#40*24,a0
-;				dbra	d2,planel
-
-;				rts
 
 SHOWPLR1GUNNAME:
 				moveq	#0,d2

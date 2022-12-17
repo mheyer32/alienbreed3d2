@@ -35,10 +35,6 @@ Draw_Object:
 				move.b	#0,draw_WhichDoing_b
 
 .done_top_bot:
-
-; move.l (a0)+,draw_BottomY_3D_l
-; move.l (a0)+,draw_TopY_3D_l
-
 				movem.l	d0-d7/a1-a6,-(a7)
 				move.w	rightclip,d0
 				sub.w	leftclip,d0
@@ -126,39 +122,6 @@ draw_Object:
 				move.w	(a0),d0
 				move.w	2(a1,d0.w*8),d1			; z pos
 
-; Go through clip pts to see which
-; apply.
-
-; move.w #0,d2	; leftclip
-; move.w #96,d3  ; rightclip
-
-; move.l EndOfClipPtr_l,a6
-;checkclips:
-; subq #8,a6
-; cmp.l #ClipsTable_vl,a6
-; blt outofcheckclips
-
-; cmp.w 2(a6),d1
-; bgt.s cantleft
-; move.w (a6),d4
-; cmp.w d4,d2
-; bgt.s cantleft
-; move.w d4,d2
-;cantleft:
-
-; cmp.w 6(a6),d1
-; bgt.s cantright
-; move.w 4(a6),d4
-; cmp.w d4,d3
-; blt.s cantright
-; move.w d4,d3
-;cantright:
-
-;outofcheckclips:
-
-; move.w d2,draw_LeftClipB_w
-; move.w d3,draw_RightClipB_w
-
 				move.w	leftclip,draw_LeftClipB_w
 				move.w	rightclip,draw_RightClipB_w
 
@@ -170,333 +133,6 @@ draw_Object:
 				movem.l	(a7)+,d0-d7/a0-a6
 				rts
 
-********************************************************************************
-;* Glass objects are not suported and likely broken
-;				IFNE	0
-;glassobj:
-;				move.w	(a0)+,d0				;pt num
-;				move.w	2(a1,d0.w*8),d1
-;				cmp.w	#DRAW_BITMAP_NEAR_PLANE,d1
-;				ble		object_behind
-;
-;				move.w	draw_TopClip_w,d2
-;				move.w	draw_BottomClip_w,d3
-;
-;				move.l	draw_TopY_3D_l,d6
-;				sub.l	yoff,d6
-;				divs	d1,d6
-;				add.w	Vid_CentreY_w,d6
-;				cmp.w	d3,d6
-;				bge		object_behind
-;				cmp.w	d2,d6
-;				bge.s	.okobtc
-;				move.w	d2,d6
-;.okobtc:
-;				move.w	d6,draw_ObjClipT_w
-;
-;				move.l	draw_BottomY_3D_l,d6
-;				sub.l	yoff,d6
-;				divs	d1,d6
-;				add.w	Vid_CentreY_w,d6
-;				cmp.w	d2,d6
-;				ble		object_behind
-;				cmp.w	d3,d6
-;				ble.s	.okobbc
-;				move.w	d3,d6
-;.okobbc:
-;				move.w	d6,draw_ObjClipB_w
-;
-;				move.l	4(a1,d0.w*8),d0
-;				move.l	(a0)+,d2				; height
-;				ext.l	d2
-;				asl.l	#7,d2
-;				sub.l	yoff,d2
-;				divs	d1,d2
-;				add.w	Vid_CentreY_w,d2
-;
-;				divs	d1,d0
-;				asr.w	d0						; Vid_DoubleWidth_b test
-;
-;				add.w	Vid_CentreX_w,d0				;x pos of middle
-;
-;; Need to calculate:
-;; Width of object in pixels
-;; height of object in pixels
-;; horizontal constants
-;; vertical constants.
-;
-;				move.l	#ConstantTable_vl,a3
-;
-;				moveq	#0,d3
-;				moveq	#0,d4
-;				move.b	(a0)+,d3
-;				move.b	(a0)+,d4
-;				asl.w	#7,d3
-;				asl.w	#7,d4
-;				divs	d1,d3					;width in pixels
-;				divs	d1,d4					;height in pixels
-;				sub.w	d4,d2
-;				sub.w	d3,d0
-;				cmp.w	draw_RightClipB_w,d0
-;				bge		object_behind
-;				add.w	d3,d3
-;				cmp.w	draw_ObjClipB_w,d2
-;				bge		object_behind
-;
-;				add.w	d4,d4
-;
-;				move.w	d3,draw_RealWidth_w
-;				move.w	d4,draw_RealHeight_w
-;
-;* OBTAIN POINTERS TO HORIZ AND VERT
-;* CONSTANTS FOR MOVING ACROSS AND
-;* DOWN THE OBJECT GRAPHIC.
-;
-;				move.w	d1,d7
-;				moveq	#0,d6
-;				move.b	6(a0),d6
-;				add.w	d6,d6
-;				mulu	d6,d7
-;				move.b	-2(a0),d6
-;				divu	d6,d7
-;				swap	d7
-;				clr.w	d7
-;				swap	d7
-;
-;				lea		(a3,d7.l*8),a2			; pointer to
-;; horiz const
-;				move.w	d1,d7
-;				move.b	7(a0),d6
-;				add.w	d6,d6
-;				mulu	d6,d7
-;				move.b	-1(a0),d6
-;				divu	d6,d7
-;				swap	d7
-;				clr.w	d7
-;				swap	d7
-;				lea		(a3,d7.l*8),a3			; pointer to
-;; vertical c.
-;
-;* CLIP OBJECT TO TOP AND BOTTOM
-;* OF THE VISIBLE DISPLAY
-;
-;				moveq	#0,d7
-;				cmp.w	draw_ObjClipT_w,d2
-;				bge.s	.object_fits_on_top
-;
-;				sub.w	draw_ObjClipT_w,d2
-;				add.w	d2,d4					;new height in
-;;pixels
-;				ble		object_behind				; nothing to draw
-;
-;				move.w	d2,d7
-;				neg.w	d7						; factor to mult.
-;; constants by
-;; at top of obj.
-;				move.w	draw_ObjClipT_w,d2
-;
-;.object_fits_on_top:
-;
-;				move.w	draw_ObjClipB_w,d6
-;				sub.w	d2,d6
-;				cmp.w	d6,d4
-;				ble.s	.object_fits_on_bottom
-;
-;				move.w	d6,d4
-;
-;.object_fits_on_bottom:
-;
-;				subq	#1,d4
-;				blt		object_behind
-;
-;				move.l	#ontoscr,a6
-;				move.l	(a6,d2.w*4),d2
-;
-;				add.l	Vid_FastBufferPtr_l,d2
-;				move.l	d2,toppt
-;
-;				move.l	#Sys_Workspace_vl,a5
-;				move.l	#glassball,a4
-;				cmp.w	draw_LeftClipB_w,d0
-;				bge.s	.ok_on_left
-;
-;				sub.w	draw_LeftClipB_w,d0
-;				add.w	d0,d3
-;				ble		object_behind
-;
-;				move.w	(a2),d1
-;				move.w	2(a2),d2
-;				neg.w	d0
-;				muls	d0,d1
-;				mulu	d0,d2
-;				swap	d2
-;				add.w	d2,d1
-;				asl.w	#7,d1
-;				lea		(a5,d1.w),a5
-;				lea		(a4,d1.w),a4
-;
-;				move.w	draw_LeftClipB_w,d0
-;
-;.ok_on_left:
-;
-;				move.w	d0,d6
-;				add.w	d3,d6
-;				sub.w	draw_RightClipB_w,d6
-;				blt.s	.ok_right_side
-;
-;				sub.w	#1,d3
-;				sub.w	d6,d3
-;
-;.ok_right_side:
-;				move.w	d0,a1
-;				add.w	a1,a1
-;
-;				move.w	(a3),d5
-;				move.w	2(a3),d6
-;				muls	d7,d5
-;				mulu	d7,d6
-;				swap	d6
-;				add.w	d6,d5
-;; add.w 2(a0),d5	;d5 contains
-;;top offset into
-;;each strip.
-;				add.l	#$80000000,d5
-;
-;				move.l	(a2),d6
-;				moveq.l	#0,d7
-;				move.l	a5,midobj
-;				move.l	a4,midglass
-;				move.l	(a3),d2
-;				swap	d2
-;				move.l	#times128,a0
-;
-;				movem.l	d0-d7/a0-a6,-(a7)
-;
-;				move.w	d3,d1
-;				ext.l	d1
-;				swap	d1
-;				move.w	d4,d2
-;				ext.l	d2
-;				swap	d2
-;				asr.l	#6,d1
-;				asr.l	#6,d2
-;				move.w	d1,d5
-;				move.w	d2,d6
-;				swap	d1
-;				swap	d2
-;
-;				muls	#SCREENWIDTH,d2
-;
-;				move.l	#Sys_Workspace_vl,a0
-;
-;				move.w	#63,d0
-;.readinto:
-;				swap	d0
-;				move.w	#63,d0
-;				move.l	toppt(pc),a6
-;				adda.w	a1,a6
-;				add.w	d1,a1
-;				add.w	d5,d7
-;				bcc.s	.noadmoreh
-;				addq	#1,a1
-;.noadmoreh:
-;				swap	d7
-;				move.w	#0,d7
-;.readintodown:
-;				move.w	(a6),d3
-;				move.w	d3,(a0)+
-;				add.w	d2,a6
-;				add.w	d6,d7
-;				bcc.s	.noadmore
-;				adda.w	#SCREENWIDTH,a6
-;.noadmore:
-;				dbra	d0,.readintodown
-;				swap	d0
-;				swap	d7
-;				dbra	d0,.readinto
-;
-;
-;; Want to zoom an area d3*d4
-;; in size up to 64*64 in size.
-;; move.l #Sys_Workspace_vl,a0
-;; move.l frompt,a2
-;; move.w #104*4,d3
-;; move.w #1,d6
-;;.ribl
-;; move.w #31,d0
-;;.readinto
-;; move.w #15,d1
-;; move.l a2,a1
-;;.readintodown
-;; move.w (a1),(a0)+
-;; adda.w d3,a1
-;; move.w (a1),(a0)+
-;; adda.w d3,a1
-;; move.w (a1),(a0)+
-;; adda.w d3,a1
-;; move.w (a1),(a0)+
-;; adda.w d3,a1
-;; dbra d1,.readintodown
-;;; add.w #256-128,a0
-;; addq #4,a2
-;; dbra d0,.readinto
-;; addq #4,a2
-;; dbra d6,.ribl
-;
-;				movem.l	(a7)+,d0-d7/a0-a6
-;
-;				move.l	#darkentab,a2
-;				move.l	toppt,d1
-;				add.l	a1,d1
-;				move.l	d1,toppt
-;				move.l	d6,a1
-;				moveq	#0,d6
-;
-;.draw_right_side:
-;				swap	d7
-;				move.l	midglass(pc),a4
-;				adda.w	(a0,d7.w*2),a4
-;				swap	d7
-;				add.l	a1,d7
-;				move.l	toppt(pc),a6
-;				addq.l	#1,toppt
-;
-;				move.l	d5,d1
-;				move.w	d4,-(a7)
-;				swap	d3
-;.draw_vertical_strip
-;				move.w	(a4,d1.w*2),d3
-;				blt.s	.itsbackground
-;				move.b	(a5,d3.w*2),d6
-;				move.b	(a2,d6.w),(a6)
-;.itsbackground
-;				adda.w	#SCREENWIDTH,a6
-;				addx.l	d2,d1
-;				dbra	d4,.draw_vertical_strip
-;				swap	d3
-;				move.w	(a7)+,d4
-;
-;				dbra	d3,.draw_right_side
-;				movem.l	(a7)+,d0-d7/a0-a6
-;
-;				rts
-;
-;				ENDC
-
-********************************************************************************
-
-;draw_RealWidth_w:		dc.w	0 ; write once ?
-;draw_RealHeight_w:		dc.w	0 ; write once ?
-
-;midglass:
-;dc.l	0
-
-;times128:
-;val				SET		0
-;				REPT	100
-;				dc.w	val*128
-;val				SET		val+1
-;				ENDR
 
 draw_bitmap_glare:
 				move.w	(a0)+,d0				; Point number
@@ -1360,57 +996,6 @@ draw_bitmap_lighted:
 
 				move.l	#draw_AngleBrights_vl+32,a2
 
-; Now do the brightnesses of surrounding
-; zones:
-
-; move.l Lvl_FloorLinesPtr_l,a1
-; move.w Draw_CurrentZone_w,d0
-; move.l Lvl_ZoneAddsPtr_l,a4
-; move.l (a4,d0.w*4),a4
-; add.l Lvl_DataPtr_l,a4
-; move.l a4,a5
-;
-; adda.w ZoneT_ExitList_w(a4),a5
-;
-;.do_all_walls
-; move.w (a5)+,d0
-; blt .no_more_walls
-;
-; asl.w #4,d0
-; lea (a1,d0.w),a3
-;
-; move.w 8(a3),d0
-; blt.s .solid_wall ; a wall not an exit.
-;
-; movem.l a1/a4/a5,-(a7)
-; bsr draw_CalcBrightsInZone
-; movem.l (a7)+,a1/a4/a5
-; bra .do_all_walls
-;
-;.solid_wall:
-; move.w 4(a3),d1
-; move.w 6(a3),d2
-;
-; move.w oldx,newx
-; move.w oldz,newz
-; sub.w d2,newx
-; add.w d1,newz
-;
-; movem.l d0-d7/a0-a6,-(a7)
-; jsr HeadTowardsAng
-; movem.l (a7)+,d0-d7/a0-a6
-; move.w AngRet,d1
-; neg.w d1
-; and.w #8191,d1
-; asr.w #8,d1
-; asr.w #1,d1
-
-; move.b #48,(a2,d1.w)
-; move.b #48,16(a2,d1.w)
-; bra .do_all_walls
-;
-;.no_more_walls:
-
 				move.l	#draw_XZAngs_vw,a0
 				move.l	#draw_AngleBrights_vl,a1
 				move.w	#15,d7
@@ -1508,12 +1093,6 @@ INMIDDLE:
 				move.l	#guff,a1
 				add.l	draw_TempPtr_l,a1
 
-; add.l #16*7,draw_TempPtr_l
-; cmp.l #16*7*15,draw_TempPtr_l
-; ble.s .noreguff
-; move.l #0,draw_TempPtr_l
-;.noreguff:
-
 				muls	#7*16,d2
 				add.l	d2,a1
 				move.w	Plr1_TmpAngPos_w,d0
@@ -1542,67 +1121,6 @@ INMIDDLE:
 
 				add.w	#16,a1
 				dbra	d1,.across_loop
-
-; jsr draw_CalcBrightRings
-
-; Need to scan around zone points putting in
-; brightnesses.
-
-
-; move.w Plr1_XOff_l,newx
-; move.w Plr1_ZOff_l,newz
-; move.w draw_Obj_XPos_w,oldx
-; move.w draw_Obj_ZPos_w,oldz
-; movem.l d0-d7/a0-a6,-(a7)
-; jsr HeadTowardsAng
-; movem.l (a7)+,d0-d7/a0-a6
-
-
-; move.w #0,d0
-; move.w AngRet,d0
-; move.w Plr1_TmpAngPos_w,d0
-; neg.w d0
-; add.w #4096,d0
-; and.w #8191,d0
-; asr.w #8,d0
-; asr.w #1,d0
-;
-; sub.b #6,d0
-; and.b #15,d0
-; move.l #draw_AngleBrights_vl,a1
-;
-; move.l #willy,a0
-; moveq #6,d1
-;.across:
-; moveq #0,d3
-; moveq #0,d4
-; move.b (a1,d0.w),d4
-; bge.s .okp1
-; moveq #0,d4
-;.okp1
-;
-; move.b 16(a1,d0.w),d3
-; bge.s .okp2
-; moveq #0,d3
-;.okp2
-; sub.w d3,d4
-; swap d3
-; swap d4
-; divs.l #7,d4
-; moveq #6,d2
-; moveq #0,d5
-;.down:
-; swap d3
-; move.w d3,(a0,d5.w*2)
-; swap d3
-; addq #7,d5
-; add.l d4,d3
-; dbra d2,.down
-; addq #2,d0
-; and.w #15,d0
-; addq #2,a0
-; dbra d1,.across
-
 
 				move.w	draw_BrightToAdd_w,d0
 				move.l	#willy,a0
@@ -2092,26 +1610,6 @@ polybehind:
 ; a1 : view?
 ; struct Lvl_ObjectPointsPtr_l {short x,y,z}
 draw_PolygonModel:
-
-************************
-
-; move.w 4(a0),d0	; ypos
-; move.w 2(a0),d1
-; add.w #2,d1
-; add.w d1,d0
-; cmp.w #-48,d0
-; blt nobounce
-; neg.w d1
-; add.w d1,d0
-;nobounce:
-; move.w d1,2(a0)
-; move.w d0,4(a0)
-
-; add.w #80*2,boxang
-; and.w #8191,boxang
-
-************************
-
 				move.w	EntT_CurrentAngle_w(a0),draw_ObjectAng_w
 				move.w	Vid_CentreY_w,draw_PolygonCentreY_w
 				move.w	(a0)+,d0				; object Id?
@@ -2324,26 +1822,6 @@ rotate_object:
 				move.w	2(a3),d3				; ypt
 				move.w	4(a3),d4				; zpt
 
-; add.w d2,d2
-; add.w d3,d3
-; add.w d4,d4
-
-; first rotate around z axis.
-
-; move.w d2,d6
-; move.w d3,d7
-; muls 2048(a2),d3
-; muls (a2),d2
-; sub.l d3,d2	; newx
-; muls (a2),d7
-; muls 2048(a2),d6
-; add.l d7,d6	; newy
-; add.l d6,d6
-; swap d6
-; add.l d2,d2
-; swap d2
-; move.w d6,d3	; newy
-
 				muls	d7,d4					; z * cos
 				muls	d6,d2					; x * (sin << 16)
 				sub.l	d4,d2
@@ -2473,8 +1951,6 @@ smallscreen_conv:
 				dbra	d7,.convert_to_screen
 
 done_conv:
-
-**************************
 				move.w	draw_NumPoints_w,d7
 				move.l	#boxbrights,a6
 				subq	#1,d7
@@ -2857,18 +2333,6 @@ nocr:
 				sub.l	d5,d3
 				sub.l	d6,d4
 
-; asl.w #8,d3
-; asl.w #8,d4
-; ext.l d3
-; ext.l d4
-
-; and.b #63,d5
-; and.b #63,d6
-; lsl.w #8,d6
-; move.b d5,d6	; starting pos
-; moveq.l #0,d5
-; move.w d6,d5
-
 				sub.w	d1,d2
 				ble		nodl
 
@@ -2914,21 +2378,6 @@ drawpol:
 				move.b	(a1,d3.w),(a3)
 				adda.w	#SCREENWIDTH,a3
 				dbra	d2,drawpol
-
-; add.w a5,d3
-; addx.l d6,d5
-; dbcs d2,drawpol2
-; dbcc d2,drawpol
-; bra.s pastit
-;drawpol2:
-; and.w d1,d5
-; move.b (a0,d5.w*4),d0
-; move.w (a1,d0.w*2),(a3)
-; adda.w #SCREENWIDTH,a3
-; add.w a5,d3
-; addx.l d4,d5
-; dbcs d2,drawpol2
-; dbcc d2,drawpol
 
 pastit:
 nodl:
@@ -2985,18 +2434,6 @@ nocrGL:
 				move.l	6(a4),d6
 				sub.l	d5,d3
 				sub.l	d6,d4
-
-; asl.w #8,d3
-; asl.w #8,d4
-; ext.l d3
-; ext.l d4
-
-; and.b #63,d5
-; and.b #63,d6
-; lsl.w #8,d6
-; move.b d5,d6	; starting pos
-; moveq.l #0,d5
-; move.w d6,d5
 
 				sub.w	d1,d2
 				ble		nodlGL
@@ -3085,17 +2522,6 @@ gotlurvelyshading:
 				add.l	#256*32,a1
 				tst.b	draw_PreGouraud_b
 
-; beq.s .noshiny
-; add.l #256*32,a1
-;.noshiny:
-; neg.w d1
-; add.w #14,d1
-; bge.s toobrightg
-; move.w #0,d1
-;toobrightg:
-; asl.w #8,d1
-; lea (a1,d1.w*2),a1
-
 dopolyg:
 				move.l	d7,-(a7)
 				move.w	#0,offtopby
@@ -3134,17 +2560,6 @@ nocrg:
 				sub.l	d5,d3
 				sub.l	d6,d4
 
-; asl.w #8,d3
-; asl.w #8,d4
-; ext.l d3
-; ext.l d4
-
-; and.b #63,d5
-; and.b #63,d6
-; lsl.w #8,d6
-; move.b d5,d6	; starting pos
-; moveq.l #0,d5
-; move.w d6,d5
 				sub.w	d1,d2
 				ble		nodlg
 
@@ -3313,19 +2728,6 @@ nocrh:
 				move.l	6(a4),d6
 				sub.l	d5,d3
 				sub.l	d6,d4
-
-; asl.w #8,d3
-; asl.w #8,d4
-; ext.l d3
-; ext.l d4
-
-; and.b #63,d5
-; and.b #63,d6
-; lsl.w #8,d6
-; move.b d5,d6	; starting pos
-; moveq #-1,d5
-; lsr.l #1,d5
-; move.w d6,d5
 
 				sub.w	d1,d2
 				ble		nodlh
