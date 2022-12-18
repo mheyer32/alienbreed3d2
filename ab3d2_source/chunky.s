@@ -9,7 +9,8 @@
 
 				; HACK - This is a temporary fix until the root cause of the wall texture
 				; perspective issues are properly understood.
-FS_C2P_HEIGHT equ FS_HEIGHT-8
+
+FS_C2P_HEIGHT equ FS_HEIGHT-FS_HEIGHT_C2P_DIFF
 
 Vid_ConvertC2P:
 				tst.b	d5
@@ -69,7 +70,7 @@ Vid_ConvertC2P:
 
 				move.w	#FS_WIDTH/2,d0
 				move.w	Vid_LetterBoxMarginHeight_w,d3				; height of black border top/bottom
-				move.w	#FS_HEIGHT,d1
+				move.w	#FS_C2P_HEIGHT,d1
 				sub.w	d3,d1					; top letterbox
 				sub.w	d3,d1					; bottom letterbox: d1: number of lines
 				moveq.l	#0,d2
@@ -257,8 +258,6 @@ Vid_ConvertC2P:
 				move.w	#(FS_WIDTH/8)-1,WTC		; width in chipmem?
 				move.w	Vid_LetterBoxMarginHeight_w,d7
 
-				; 0xABADCAFE - Changing FS_HEIGHT to 240 from 232 impacted the teleportation
-				; shimmer in fullscreen which seems coupled to the original size.
 				move.l	#FS_C2P_HEIGHT-1,d1	; height of area to convert
 				sub.w	d7,d1				; top letterbox
 				sub.w	d7,d1				; bottom letterbox: d1: number of lines
