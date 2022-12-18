@@ -557,22 +557,22 @@ noclips:
 				clr.b	Plr1_StoodInTop_b
 				move.l	#PLR_STAND_HEIGHT,Plr1_SnapHeight_l
 
-				move.l	#empty,pos1LEFT
-				move.l	#empty,pos2LEFT
-				move.l	#empty,pos1RIGHT
-				move.l	#empty,pos2RIGHT
-				move.l	#empty,pos0LEFT
-				move.l	#empty,pos3LEFT
-				move.l	#empty,pos0RIGHT
-				move.l	#empty,pos3RIGHT
-				move.l	#emptyend,Samp0endLEFT
-				move.l	#emptyend,Samp1endLEFT
-				move.l	#emptyend,Samp0endRIGHT
-				move.l	#emptyend,Samp1endRIGHT
-				move.l	#emptyend,Samp2endLEFT
-				move.l	#emptyend,Samp3endLEFT
-				move.l	#emptyend,Samp2endRIGHT
-				move.l	#emptyend,Samp3endRIGHT
+				move.l	#Aud_EmptyBuffer_vl,pos1LEFT
+				move.l	#Aud_EmptyBuffer_vl,pos2LEFT
+				move.l	#Aud_EmptyBuffer_vl,pos1RIGHT
+				move.l	#Aud_EmptyBuffer_vl,pos2RIGHT
+				move.l	#Aud_EmptyBuffer_vl,pos0LEFT
+				move.l	#Aud_EmptyBuffer_vl,pos3LEFT
+				move.l	#Aud_EmptyBuffer_vl,pos0RIGHT
+				move.l	#Aud_EmptyBuffer_vl,pos3RIGHT
+				move.l	#Aud_EmptyBufferEnd,Samp0endLEFT
+				move.l	#Aud_EmptyBufferEnd,Samp1endLEFT
+				move.l	#Aud_EmptyBufferEnd,Samp0endRIGHT
+				move.l	#Aud_EmptyBufferEnd,Samp1endRIGHT
+				move.l	#Aud_EmptyBufferEnd,Samp2endLEFT
+				move.l	#Aud_EmptyBufferEnd,Samp3endLEFT
+				move.l	#Aud_EmptyBufferEnd,Samp2endRIGHT
+				move.l	#Aud_EmptyBufferEnd,Samp3endRIGHT
 
 				bset.b	#1,$bfe001
 
@@ -671,8 +671,8 @@ scaledownlop:
 				st		CHANNELDATA
 				st		CHANNELDATA+8
 
-				move.l	SampleList+6*8,pos0LEFT
-				move.l	SampleList+6*8+4,Samp0endLEFT
+				move.l	Aud_SampleList_vl+6*8,pos0LEFT
+				move.l	Aud_SampleList_vl+6*8+4,Samp0endLEFT
 				move.l	#PLR_STAND_HEIGHT,Plr1_SnapTargHeight_l
 				move.l	#PLR_STAND_HEIGHT,Plr1_SnapHeight_l
 				move.l	#PLR_STAND_HEIGHT,Plr2_SnapTargHeight_l
@@ -5946,8 +5946,6 @@ checkforwater:
 
 				rts
 
-;NewCornerBuff:
-; ds.l 100
 CLRNOFLOOR:		dc.w	0
 
 itsafloordraw:
@@ -9052,22 +9050,22 @@ pastster:
 				move.w	#443,$dff0d6
 				move.w	#63,$dff0d8
 
-				move.l	#empty,pos0LEFT
-				move.l	#empty,pos1LEFT
-				move.l	#empty,pos2LEFT
-				move.l	#empty,pos3LEFT
-				move.l	#empty,pos0RIGHT
-				move.l	#empty,pos1RIGHT
-				move.l	#empty,pos2RIGHT
-				move.l	#empty,pos3RIGHT
-				move.l	#emptyend,Samp0endLEFT
-				move.l	#emptyend,Samp1endLEFT
-				move.l	#emptyend,Samp2endLEFT
-				move.l	#emptyend,Samp3endLEFT
-				move.l	#emptyend,Samp0endRIGHT
-				move.l	#emptyend,Samp1endRIGHT
-				move.l	#emptyend,Samp2endRIGHT
-				move.l	#emptyend,Samp3endRIGHT
+				move.l	#Aud_EmptyBuffer_vl,pos0LEFT
+				move.l	#Aud_EmptyBuffer_vl,pos1LEFT
+				move.l	#Aud_EmptyBuffer_vl,pos2LEFT
+				move.l	#Aud_EmptyBuffer_vl,pos3LEFT
+				move.l	#Aud_EmptyBuffer_vl,pos0RIGHT
+				move.l	#Aud_EmptyBuffer_vl,pos1RIGHT
+				move.l	#Aud_EmptyBuffer_vl,pos2RIGHT
+				move.l	#Aud_EmptyBuffer_vl,pos3RIGHT
+				move.l	#Aud_EmptyBufferEnd,Samp0endLEFT
+				move.l	#Aud_EmptyBufferEnd,Samp1endLEFT
+				move.l	#Aud_EmptyBufferEnd,Samp2endLEFT
+				move.l	#Aud_EmptyBufferEnd,Samp3endLEFT
+				move.l	#Aud_EmptyBufferEnd,Samp0endRIGHT
+				move.l	#Aud_EmptyBufferEnd,Samp1endRIGHT
+				move.l	#Aud_EmptyBufferEnd,Samp2endRIGHT
+				move.l	#Aud_EmptyBufferEnd,Samp3endRIGHT
 
 				move.w	#10,d3
 				; See if byt got transmitted overserial
@@ -9661,8 +9659,8 @@ loop:
 
 				cmp.l	Samp0endLEFT,a0
 				blt.s	.notoffendsamp1
-				move.l	#empty,a0
-				move.l	#emptyend,Samp0endLEFT
+				move.l	#Aud_EmptyBuffer_vl,a0
+				move.l	#Aud_EmptyBufferEnd,Samp0endLEFT
 				move.b	#0,vol0left
 				clr.w	LEFTCHANDATA+32
 				move.w	#0,LEFTCHANDATA+2
@@ -9670,8 +9668,8 @@ loop:
 
 				cmp.l	Samp2endLEFT,a1
 				blt.s	.notoffendsamp2
-				move.l	#empty,a1
-				move.l	#emptyend,Samp2endLEFT
+				move.l	#Aud_EmptyBuffer_vl,a1
+				move.l	#Aud_EmptyBufferEnd,Samp2endLEFT
 				move.b	#0,vol2left
 				clr.w	LEFTCHANDATA+32+8
 				move.w	#0,LEFTCHANDATA+2+8
@@ -9756,8 +9754,8 @@ ok01:
 
 				cmp.l	Samp0endRIGHT,a0
 				blt.s	.notoffendsamp1
-				move.l	#empty,a0
-				move.l	#emptyend,Samp0endRIGHT
+				move.l	#Aud_EmptyBuffer_vl,a0
+				move.l	#Aud_EmptyBufferEnd,Samp0endRIGHT
 				move.b	#0,vol0right
 				clr.w	RIGHTCHANDATA+32
 				move.w	#0,RIGHTCHANDATA+2
@@ -9765,8 +9763,8 @@ ok01:
 
 				cmp.l	Samp2endRIGHT,a1
 				blt.s	.notoffendsamp2
-				move.l	#empty,a1
-				move.l	#emptyend,Samp2endRIGHT
+				move.l	#Aud_EmptyBuffer_vl,a1
+				move.l	#Aud_EmptyBufferEnd,Samp2endRIGHT
 				move.b	#0,vol2right
 				clr.w	RIGHTCHANDATA+32+8
 				move.w	#0,RIGHTCHANDATA+2+8
@@ -9850,8 +9848,8 @@ loop3:											; mixing two channels, 50 * 4
 
 				cmp.l	Samp1endLEFT,a0
 				blt.s	.notoffendsamp3
-				move.l	#empty,a0
-				move.l	#emptyend,Samp1endLEFT
+				move.l	#Aud_EmptyBuffer_vl,a0
+				move.l	#Aud_EmptyBufferEnd,Samp1endLEFT
 				move.b	#0,vol1left
 				clr.w	LEFTCHANDATA+32+4
 				move.w	#0,LEFTCHANDATA+2+4
@@ -9859,8 +9857,8 @@ loop3:											; mixing two channels, 50 * 4
 
 				cmp.l	Samp3endLEFT,a1
 				blt.s	.notoffendsamp4
-				move.l	#empty,a1
-				move.l	#emptyend,Samp3endLEFT
+				move.l	#Aud_EmptyBuffer_vl,a1
+				move.l	#Aud_EmptyBufferEnd,Samp3endLEFT
 				move.b	#0,vol3left
 				clr.w	LEFTCHANDATA+32+12
 				move.w	#0,LEFTCHANDATA+2+12
@@ -9936,8 +9934,8 @@ loop4:
 
 				cmp.l	Samp1endRIGHT,a0
 				blt.s	notoffendsamp3
-				move.l	#empty,a0
-				move.l	#emptyend,Samp1endRIGHT
+				move.l	#Aud_EmptyBuffer_vl,a0
+				move.l	#Aud_EmptyBufferEnd,Samp1endRIGHT
 				move.b	#0,vol1right
 				clr.w	RIGHTCHANDATA+32+4
 				move.w	#0,RIGHTCHANDATA+2+4
@@ -9945,8 +9943,8 @@ notoffendsamp3:
 
 				cmp.l	Samp3endRIGHT,a1
 				blt.s	notoffendsamp4
-				move.l	#empty,a1
-				move.l	#emptyend,Samp3endRIGHT
+				move.l	#Aud_EmptyBuffer_vl,a1
+				move.l	#Aud_EmptyBufferEnd,Samp3endRIGHT
 				move.b	#0,vol3right
 				clr.w	RIGHTCHANDATA+32+12
 				move.w	#0,RIGHTCHANDATA+2+12
@@ -10155,14 +10153,14 @@ playnull1:		dc.w	0
 playnull2:		dc.w	0
 playnull3:		dc.w	0
 
-Samp0endRIGHT:	dc.l	emptyend
-Samp1endRIGHT:	dc.l	emptyend
-Samp2endRIGHT:	dc.l	emptyend
-Samp3endRIGHT:	dc.l	emptyend
-Samp0endLEFT:	dc.l	emptyend
-Samp1endLEFT:	dc.l	emptyend
-Samp2endLEFT:	dc.l	emptyend
-Samp3endLEFT:	dc.l	emptyend
+Samp0endRIGHT:	dc.l	Aud_EmptyBufferEnd
+Samp1endRIGHT:	dc.l	Aud_EmptyBufferEnd
+Samp2endRIGHT:	dc.l	Aud_EmptyBufferEnd
+Samp3endRIGHT:	dc.l	Aud_EmptyBufferEnd
+Samp0endLEFT:	dc.l	Aud_EmptyBufferEnd
+Samp1endLEFT:	dc.l	Aud_EmptyBufferEnd
+Samp2endLEFT:	dc.l	Aud_EmptyBufferEnd
+Samp3endLEFT:	dc.l	Aud_EmptyBufferEnd
 
 Aupt0:			dc.l	null
 Auback0:		dc.l	null+500
@@ -10190,8 +10188,6 @@ NoiseMade1pRIGHT: dc.b	0
 NoiseMade2pRIGHT: dc.b	0
 NoiseMade3pRIGHT: dc.b	0
 
-empty:			ds.l	100
-emptyend:
 
 **************************************
 * I want a routine to calculate all the
@@ -10460,7 +10456,7 @@ FOUNDALEFT:
 
 				move.w	Samplenum,d5
 
-				move.l	#SampleList,a3
+				move.l	#Aud_SampleList_vl,a3
 				move.l	(a3,d5.w*8),a1
 				add.l	LEFTOFFSET,a1
 				move.l	4(a3,d5.w*8),a2
@@ -10560,7 +10556,7 @@ FOUNDARIGHT:
 				move.w	noiseloud,2(a3)
 
 				move.w	Samplenum,d5
-				move.l	#SampleList,a3
+				move.l	#Aud_SampleList_vl,a3
 				move.l	(a3,d5.w*8),a1
 				move.l	4(a3,d5.w*8),a2
 				add.l	RIGHTOFFSET,a1
@@ -10672,7 +10668,7 @@ FOUNDACHAN:
 
 				move.w	Samplenum,d5
 
-				move.l	#SampleList,a3
+				move.l	#Aud_SampleList_vl,a3
 				move.l	(a3,d5.w*8),a1
 				move.l	4(a3,d5.w*8),a2
 
@@ -10775,14 +10771,6 @@ FOUNDACHAN:
 ; move.w #$8010,$dff000+intena
 				rts
 
-				section bss,bss
-SampleList:
-				ds.l	133
-
-storeval:		ds.w	1
-
-				section code,code
-
 				include	"modules/res.s"
 				include	"modules/file_io.s"
 				include	"controlloop.s"
@@ -10816,14 +10804,14 @@ vol3right:		dc.w	0
 
 pos:			dc.l	0
 
-pos0LEFT:		dc.l	empty
-pos1LEFT:		dc.l	empty
-pos2LEFT:		dc.l	empty
-pos3LEFT:		dc.l	empty
-pos0RIGHT:		dc.l	empty
-pos1RIGHT:		dc.l	empty
-pos2RIGHT:		dc.l	empty
-pos3RIGHT:		dc.l	empty
+pos0LEFT:		dc.l	Aud_EmptyBuffer_vl
+pos1LEFT:		dc.l	Aud_EmptyBuffer_vl
+pos2LEFT:		dc.l	Aud_EmptyBuffer_vl
+pos3LEFT:		dc.l	Aud_EmptyBuffer_vl
+pos0RIGHT:		dc.l	Aud_EmptyBuffer_vl
+pos1RIGHT:		dc.l	Aud_EmptyBuffer_vl
+pos2RIGHT:		dc.l	Aud_EmptyBuffer_vl
+pos3RIGHT:		dc.l	Aud_EmptyBuffer_vl
 
 numtodo			dc.w	0
 
@@ -10974,7 +10962,7 @@ Vid_TextScreenPtr_l:		dc.l	0
 
 
 				SECTION	bss_c,bss_c
-				cnop	0,8
+				align 8
 
 PanelKeys:		;		I'm pretty sure these are not needed anymore, but there's code referencing it
 
@@ -10985,7 +10973,7 @@ null3:			ds.w	500
 null4:			ds.w	500
 
 
-				CNOP	0,64
+				align 64
 SCROLLSCRN:		ds.l	20*16
 
 ********************************************
@@ -11125,15 +11113,6 @@ STOPTIMER:
 
 digits:			incbin	"numbers.inc"
 
-				section bss,bss
-COMPACTMAP:		ds.l	257
-
-BIGMAP:			ds.l	256*10
-				section code,code
-
-;CHEATFRAME:
-;				dc.b	26,20,33,27,17,12
-;ENDCHEAT:
 
 UseAllChannels:	dc.w	0
 

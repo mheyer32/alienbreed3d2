@@ -680,7 +680,7 @@ nh4G:
 				subq	#1,d7
 				move.w	d7,multcount
 
-				move.l	#databuffer,a3
+				move.l	#DataBuffer1_vl,a3
 				move.l	a0,d0
 				move.l	a2,d2
 
@@ -726,8 +726,8 @@ nh4G:
 * Decide how often to subdivide by how far away the wall is, and
 * how perp. it is to the player.
 
-				move.l	#databuffer,a0
-				move.l	#databuffer2,a1
+				move.l	#DataBuffer1_vl,a0
+				move.l	#DataBuffer2_vl,a1
 
 				swap	d7
 				move.w	iters,d7
@@ -836,7 +836,7 @@ CalcAndDrawG:
 				rts
 
 .infront:
-				move.l	#storage,a0
+				move.l	#Storage_vl,a0
 				move.l	(a1),d3
 				ext.l	d2
 				divs.l	d2,d3
@@ -919,7 +919,7 @@ computeloop2G:
 
 .infront:
 				ext.l	d2
-				move.l	#storage,a0
+				move.l	#Storage_vl,a0
 				move.l	(a1),d3
 				divs.l	d2,d3					; this could be divs.w, no?
 				moveq	#0,d5

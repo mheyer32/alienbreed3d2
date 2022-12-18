@@ -683,7 +683,6 @@ StripData:		dc.w	0
 * d4=sl d5=el
 * a1 = strip buffer
 
-storage:		ds.l	500
 ********************************************************************************
 
 ;******************************************************************
@@ -771,7 +770,7 @@ storage:		ds.l	500
 ;				sub.l	d6,topofwall
 ;				sub.l	d6,botofwall
 ;
-;				move.l	#databuffer,a1
+;				move.l	#DataBuffer1_vl,a1
 ;				move.l	#SinCosTable_vw,a3
 ;				lea		2048(a3),a4
 ;				moveq	#0,d0
@@ -833,7 +832,7 @@ storage:		ds.l	500
 ;;prot3:			dc.w	0
 ;
 ;curvecalc:
-;				move.l	#databuffer,a1
+;				move.l	#DataBuffer1_vl,a1
 ;				move.w	count(a2),d7
 ;				subq	#1,d7
 ;.findfirstinfront:
@@ -879,7 +878,7 @@ storage:		ds.l	500
 ;				rts
 ;
 ;.infront:
-;				move.l	#storage,a0
+;				move.l	#Storage_vl,a0
 ;				move.l	(a1),d3
 ;				move.w	6(a1),d5
 ;				add.w	8(a1),d6
@@ -1113,7 +1112,7 @@ nh4:
 				subq	#1,d7
 				move.w	d7,multcount
 
-				move.l	#databuffer,a3
+				move.l	#DataBuffer1_vl,a3
 				move.l	a0,d0
 				move.l	a2,d2
 
@@ -1150,8 +1149,8 @@ nh4:
 * Decide how often to subdivide by how far away the wall is, and
 * how perp. it is to the player.
 
-				move.l	#databuffer,a0
-				move.l	#databuffer2,a1
+				move.l	#DataBuffer1_vl,a0
+				move.l	#DataBuffer2_vl,a1
 
 				move.w	iters,d6
 				blt		noiters
@@ -1260,7 +1259,7 @@ CalcAndDraw:
 
 .infront:
 				ext.l	d2
-				move.l	#storage,a0
+				move.l	#Storage_vl,a0
 				move.l	(a1),d3
 				divs.l	d2,d3
 				moveq	#0,d5
@@ -1337,7 +1336,7 @@ computeloop2:
 
 .infront:
 				ext.l	d2
-				move.l	#storage,a0
+				move.l	#Storage_vl,a0
 				move.l	(a1),d3
 				divs.l	d2,d3
 				moveq	#0,d5
@@ -1406,11 +1405,6 @@ leftwallTOPbright: dc.w	0
 rightwallTOPbright: dc.w 0
 strtop:			dc.w	0
 strbot:			dc.w	0
-
-databuffer:
-				ds.l	1600
-databuffer2:
-				ds.l	1600
 
 ***********************************
 
