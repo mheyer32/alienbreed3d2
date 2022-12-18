@@ -27,8 +27,18 @@
 
 CD32VER					equ		0
 
+FS_HEIGHT_HACK			equ		1 ; 0xABADCAFE - Fullscreen height hack, set non-zero to enable
+
+
+	IFNE	FS_HEIGHT_HACK
+FS_HEIGHT				equ		240
+FS_HEIGHT_C2P_DIFF		equ		8
+	ELSE
+FS_HEIGHT				equ		232
+FS_HEIGHT_C2P_DIFF		equ		0
+	ENDC
+
 FS_WIDTH				equ		320
-FS_HEIGHT				equ		240;232
 SMALL_WIDTH				equ		192
 SMALL_HEIGHT			equ		160
 SCREENWIDTH				equ		320
