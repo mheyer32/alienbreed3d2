@@ -351,35 +351,6 @@ chkhttt:
 
 
 othercheck:
-
-; sub.w (a2),d6
-; sub.w 2(a2),d7
-; sub.w a4,d6
-; sub.w a6,d7
-;
-; muls d6,d6
-; muls d7,d7
-; add.w #5,d3
-; muls d3,d3
-;
-; add.l d6,d7
-; cmp.l d3,d7
-; bgt oknothitwall
-;
-; move.w d1,d7
-; move.w d0,d6
-; sub.w (a2),d6
-; sub.w 2(a2),d7
-; sub.w d2,d6
-; sub.w d5,d7
-; muls d6,d6
-; muls d7,d7
-; add.l d6,d7
-; cmp.l d3,d7
-; bgt oknothitwall
-;
-;************8
-
 				sub.w	(a2),d6
 				sub.w	2(a2),d7
 
@@ -745,51 +716,6 @@ nomoreotherwalls:
 NOOTHERWALLSNEEDED
 
 
-; move.w xdiff,d2
-; muls d2,d2
-; move.w zdiff,d3
-; muls d3,d3
-; move.w #0,movespd
-; move.l #0,largespd
-; add.l d3,d2
-;
-; move.w #31,d0
-;.findhigh
-; btst d0,d2
-; bne .foundhigh
-; dbra d0,.findhigh
-;.foundhigh
-; asr.w #1,d0
-; clr.l d3
-; bset d0,d3
-; move.l d3,d0
-;
-; move.w d0,d3
-; muls d3,d3	; x*x
-; sub.l d2,d3	; x*x-a
-; asr.l #1,d3	; (x*x-a)/2
-; divs d0,d3	; (x*x-a)/2x
-; sub.w d3,d0	; second approx
-; bgt .stillnot0
-; move.w #1,d0
-;.stillnot0
-;
-; move.w d0,d3
-; muls d3,d3
-; sub.l d2,d3
-; asr.l #1,d3
-; divs d0,d3
-; sub.w d3,d0	; second approx
-; bgt .stillnot02
-; move.w #1,d0
-;.stillnot02
-;
-; move.w d0,movespd
-;.moving
-; ext.l d0
-; asl.l #5,d0
-; move.l d0,largespd
-
 *****************************************************
 * FIND ROOM WE'RE STANDING IN ***********************
 *****************************************************
@@ -817,46 +743,6 @@ CheckMoreFloorLines
 
 				move.l	ZoneT_Roof_l(a4),LowerRoofHeight
 
-; move.l newy,d0
-; move.l d0,d1
-; add.l thingheight,d1
-;
-; sub.l ZoneT_Roof_l(a4),d0
-; blt.s NOTINLOWER
-;
-; sub.l ZoneT_Floor_l(a4),d1
-; blt.s okthebottom
-;
-; cmp.l StepUpVal,d1
-; bgt.s NOTINLOWER
-;
-; move.l ZoneT_Floor_l(a4),d1
-; sub.l thingheight,d1
-; move.l d1,newy
-; bra okthebottom
-;
-;NOTINLOWER:
-;
-; move.l ZoneT_Roof_l(a4),billy
-; move.l ZoneT_Roof_l(a4),billy+4
-; add.l d0,billy+4
-;
-; st CrossIntoTop
-; move.l newy,d0
-; move.l d0,d1
-; add.l thingheight,d1
-; sub.l ZoneT_UpperRoof_l(a4),d0
-; blt CheckMoreFloorLines
-;
-; sub.l ZoneT_UpperFloor_l(a4),d1
-; blt.s okthebottom
-;
-; cmp.l StepUpVal,d1
-; bgt CheckMoreFloorLines
-
-; move.l ZoneT_UpperFloor_l(a4),d1
-; sub.l thingheight,d1
-; move.l d1,newy
 
 okthebottom
 
@@ -877,36 +763,9 @@ okthebottom
 * Player is now on the left side of this line.
 * Where was he before?
 
-; cmp.l a4,a5
-; bne StillSameSide
-
-; move.w oldx,d0
-; move.w oldz,d1
-; sub.w (a2),d0	;a
-; sub.w 2(a2),d1	;b
-; muls 4(a2),d1
-; muls 6(a2),d0
-; sub.l d1,d0
-; blt StillSameSide
-; bra checkifcrossed
-
 OnRightsideofline:
 * Player is now on the right side of the line.
 * Where was he last time?
-
-; exg a3,a4
-
-; cmp.l a3,a5
-; bne StillSameSide
-
-; move.w oldx,d0
-; move.w oldz,d1
-; sub.w (a2),d0	;a
-; sub.w 2(a2),d1	;b
-; muls 4(a2),d1
-; muls 6(a2),d0
-; sub.l d1,d0
-; bgt StillSameSide
 
 checkifcrossed:
 

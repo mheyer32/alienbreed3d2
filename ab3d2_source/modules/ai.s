@@ -23,11 +23,6 @@
 AI_MainRoutine:
 				move.w	#-20,2(a0)
 
-; bsr ai_CheckDamage
-; tst.b EntT_NumLives_b(a0)
-; bgt.s .not_dead_yet
-; rts
-;.not_dead_yet:
 
 				cmp.b	#1,EntT_CurrentMode_b(a0)
 				blt		ai_DoDefault
@@ -153,11 +148,6 @@ ai_TakeDamage:
 				rts
 
 .dodododo:
-
-; asr.w #2,d2
-; cmp.w d0,d2
-; bgt.s .no_stop
-
 				move.b	#4,EntT_CurrentMode_b(a0)		; do take damage.
 				move.b	#2,EntT_WhichAnim_b(a0)		; get hit anim.
 				move.l	WorkspacePtr_l,a5
@@ -176,12 +166,6 @@ ai_JustDied:
 				muls	#160,d0
 				add.l	Lvl_DataPtr_l,d0
 				jsr		SENDMESSAGE
-
-; move.w #0,SCROLLXPOS
-; move.l d0,SCROLLPOINTER
-; add.l #160,d0
-; move.l d0,ENDSCROLL
-; move.w #40,SCROLLTIMER
 
 .no_text:
 				move.l	Lvl_ObjectPointsPtr_l,a2
@@ -577,9 +561,6 @@ ai_Widget:
 				jsr		HeadTowardsAng
 				move.w	AngRet,EntT_CurrentAngle_w(a0)
 
-; add.w #100,EntT_CurrentAngle_w(a0)
-; and.w #8190,EntT_CurrentAngle_w(a0)
-
 				tst.b	GotThere
 				beq.s	.not_next_cpt
 
@@ -714,14 +695,6 @@ ai_ChargeCommon:
 
 .no_damage:
 				jsr		ai_DoAttackAnim
-
-; tst.b ai_FinishedAnim_b
-; beq.s .not_finished_attacking
-; move.b #2,EntT_CurrentMode_b(a0)
-; move.w AI_FollowupTimer_w,EntT_Timer1_w(a0)
-; move.w #0,EntT_Timer2_w(a0)
-; rts
-;.not_finished_attacking:
 
 				move.w	12(a0),FromZone
 				jsr		CheckTeleport
@@ -964,16 +937,6 @@ ai_AttackWithHitScan:
 				move.w	(a0),d1
 				lea		(a6,d1.w*8),a6
 
-; move.l (a6),Noisex
-; move.w #200,Noisevol
-; move.w #3,Samplenum
-; move.b #1,chanpick
-; clr.b notifplaying
-; movem.l d0-d7/a0-a6,-(a7)
-; move.b 1(a0),IDNUM
-; jsr MakeSomeNoise
-; movem.l (a7)+,d0-d7/a0-a6
-
 				and.w	#$7fff,d0
 				move.w	(a6),d1
 				muls	d1,d1
@@ -1157,13 +1120,6 @@ ai_ChargeFlyingCommon:
 
 .no_damage:
 				jsr		ai_DoAttackAnim
-; tst.b ai_FinishedAnim_b
-; beq.s .not_finished_attacking
-; move.b #2,EntT_CurrentMode_b(a0)
-; move.w AI_FollowupTimer_w,EntT_Timer1_w(a0)
-; move.w #0,EntT_Timer2_w(a0)
-; rts
-;.not_finished_attacking:
 
 				move.w	12(a0),FromZone
 				jsr		CheckTeleport
@@ -1474,18 +1430,6 @@ ai_ApproachCommon:
 				move.w	EntT_GraphicRoom_w(a0),EntT_GraphicRoom_w-64(a0)
 .no_copy_in:
 
-; tst.b GotThere
-; beq.s .no_munch
-; tst.w EntT_Timer4_w(a0)
-; ble.s .OKtomunch
-; move.w TempFrames,d0
-; sub.w d0,EntT_Timer4_w(a0)
-; bra.s .no_munch
-;.OKtomunch:
-; move.w #40,EntT_Timer4_w(a0)
-; move.l Plr1_ObjectPtr_l,a5
-; add.b #2,EntT_DamageTaken_b(a5)
-;
 .no_munch:
 
 				bsr		ai_StorePlayerPosition
@@ -1670,15 +1614,6 @@ ai_GetRoomStats:
 ai_GetRoomStatsStill:
 				move.l	objroom,a2
 				move.w	(a2),12(a0)
-
-; move.w (a2),d0
-; move.l #ZoneBrightTable_vl,a5
-; move.l (a5,d0.w*4),d0
-; tst.b ShotT_InUpperZone_b(a0)
-; bne.s .okbit
-; swap d0
-;.okbit:
-; move.w d0,2(a0)
 
 				move.l	ZoneT_Floor_l(a2),d0
 				tst.b	ShotT_InUpperZone_b(a0)
@@ -2000,15 +1935,6 @@ ai_DoAttackAnim:
 				move.b	1(a4,d0.w),11-64(a0)
 				move.w	2(a4,d0.w),6-64(a0)
 
-; move.b 4(a3,d0.w),d1
-; ext.w d1
-; add.w d1,d1
-; add.w d1,4(a0)
-
-; moveq #0,d1
-; move.b 5(a3,d0.w),d1
-; move.w d1,EntT_Timer1_w(a0)
-
 				bra		.noaux
 
 .vector:
@@ -2016,14 +1942,6 @@ ai_DoAttackAnim:
 				move.b	(a4,d0.w),9-64(a0)
 				move.b	1(a4,d0.w),11-64(a0)
 				move.w	#$ffff,6-64(a0)
-; move.b 4(a3,d0.w),d1
-; ext.w d1
-; add.w d1,d1
-; add.w d1,4(a0)
-
-; moveq #0,d1
-; move.b 5(a3,d0.w),d1
-; move.w d1,EntT_Timer1_w(a0)
 
 				bra		.noaux
 
@@ -2032,14 +1950,6 @@ ai_DoAttackAnim:
 				move.b	(a4,d0.w),9-64(a0)
 				move.b	1(a4,d0.w),11-64(a0)
 				move.w	2(a4,d0.w),6-64(a0)
-; move.b 4(a4,d0.w),d1
-; ext.w d1
-; add.w d1,d1
-; add.w d1,4(a0)
-
-; moveq #0,d1
-; move.b 5(a3,d0.w),d1
-; move.w d1,EntT_Timer1_w(a0)
 
 .noaux:
 				move.w	#-1,6(a0)

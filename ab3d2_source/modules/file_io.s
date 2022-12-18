@@ -91,13 +91,6 @@ IO_FlushQueue:
 
 				movem.l	d0-d7/a0-a6,-(a7)
 
-; move.w #23,FADEAMOUNT
-; jsr FADEDOWNTITLE
-
-; move.w #3,OptScrn
-; move.w #0,OPTNUM
-; jsr DRAWOPTSCRN
-
 				jsr		mnu_setscreen
 
 				lea		mnu_askfordisk,a0
@@ -105,19 +98,6 @@ IO_FlushQueue:
 
 				jsr		mnu_clearscreen
 
-
-;.wtrel:
-; btst #7,$bfe001
-; beq.s .wtrel
-;
-;.wtclick:
-; btst #6,$bfe001
-; bne.s .wtclick
-
-; jsr CLROPTSCRN
-
-; move.w #23,FADEAMOUNT
-; jsr FADEUPTITLE
 
 				movem.l	(a7)+,d0-d7/a0-a6
 				bsr		io_FlushPass

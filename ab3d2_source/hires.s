@@ -554,25 +554,6 @@ noclips:
 
 ************************************
 
-; cmp.b #'k',Prefsfile
-; bne.s nkb
-
-;nkb:
-; cmp.b #PLR_MASTER,Prefsfile
-; bne.s nmc
-; clr.b Plr1_Keys_b
-; clr.b Plr1_Path_b
-; st Plr1_Mouse_b
-; clr.b Plr1_Joystick_b
-;nmc:
-; cmp.b #'j',Prefsfile
-; bne.s njc
-; clr.b Plr1_Keys_b
-; clr.b Plr1_Path_b
-; clr.b Plr1_Mouse_b
-; st Plr1_Joystick_b
-;njc:
-
 				clr.b	Plr1_StoodInTop_b
 				move.l	#PLR_STAND_HEIGHT,Plr1_SnapHeight_l
 
@@ -595,8 +576,6 @@ noclips:
 
 				bset.b	#1,$bfe001
 
-; jmp stuff
-;endstuff:
 				; clear audio modulation settings
 				move.w	#$00ff,_custom+adkcon
 
@@ -689,26 +668,8 @@ scaledownlop:
 *********************************
 
 
-;.noback:
-
-
-;
-; clr.b CHANNELDATA
-; clr.b CHANNELDATA+8
-; clr.b CHANNELDATA+16
-; clr.b CHANNELDATA+24
-;
-; cmp.b #'b',Prefsfile+3
-; bne.s noreserve
-;
 				st		CHANNELDATA
 				st		CHANNELDATA+8
-; st CHANNELDATA+16
-; st CHANNELDATA+24
-;noreserve:
-
-; st CHANNELDATA
-; st CHANNELDATA+8
 
 				move.l	SampleList+6*8,pos0LEFT
 				move.l	SampleList+6*8+4,Samp0endLEFT
@@ -717,76 +678,19 @@ scaledownlop:
 				move.l	#PLR_STAND_HEIGHT,Plr2_SnapTargHeight_l
 				move.l	#PLR_STAND_HEIGHT,Plr2_SnapHeight_l
 
-; cmp.b #PLR_SINGLE,Plr_MultiplayerType_b
-; beq.s nohandshake
-;
-; move.b #%11011000,$bfd200
-; move.b #%00010000,$bfd000
-;waitloop:
-; btst.b #4,$bfd000
-; bne.s waitloop
-; move.b #%11000000,$bfd200
-
-;wtmouse:
-; btst #6,$bfe001
-; bne.s wtmouse
-
-;nohandshake:
-
-; jmp end
-
 				jsr		CLEARKEYBOARD
-; jsr MAKEBACKROUT
 
 				clr.b	Game_MasterQuit_b
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				seq		Game_SlaveQuit_b
 
-; move.w #200,Plr2_Health_w
-; move.w #200,Plr1_Health_w
-
 				DataCacheOn
 
 				move.l	#0,hitcol
 
-;				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b 	; 0xABADCAFE - commented out as dependent branch commented out
-;				bne.s	NOCLTXT		; 0xABADCAFE - commented out to avoid "branch converted to nop"
-
-
-; Wait for mouse button, then fade out level text
-;				move.b	#0,lastpressed
-;.wtpress
-;				btst	#6,$bfe001
-;				beq.s	CLOSETXT
-;				btst	#7,$bfe001
-;				beq.s	CLOSETXT
-;				tst.b	lastpressed
-;				beq.s	.wtpress
-;
-;CLOSETXT:
-;
-;
-;				move.w	#$8f8,d0
-;				move.w	#7,d1
-;
-;.fdup
-;				move.w	d0,TXTCOLL
-;				move.w	d0,MIXCOLL
-;				sub.w	#$121,d0
-;.wtframe:
-;				btst	#5,$dff000+intreqrl
-;				beq.s	.wtframe
-;				move.w	#$0020,$dff000+intreq
-;				dbra	d1,.fdup
-;
-;				move.w	#0,TXTCOLL
-;				move.w	#0,MIXCOLL
-
 NOCLTXT:
-
 				;FIXME: need to load the game palette here?
-
 				clr.b	Plr1_Ducked_b
 				clr.b	Plr2_Ducked_b
 				clr.b	plr1_TmpDucked_b
@@ -797,7 +701,6 @@ NOCLTXT:
 ;	jmp docredits
 
 ********************************************
-
 
 				st		doanything
 				st		dosounds
@@ -828,8 +731,6 @@ DOALLWALLS:
 				add.l	Lvl_GraphicsPtr_l,a3
 				addq	#2,a3
 				move.l	a1,a4
-
-; DOLOWERROOM
 
 innerwalls:
 				move.b	(a3),d1
@@ -1029,50 +930,11 @@ lop:
 				move.w	#7,d2
 				jsr		ExplodeIntoBits
 				move.w	#-1,12(a0)
-.notmess2:
 
+.notmess2:
 				;FIXME: should use _LVOWritePotgo here!
 				move.w	#%110000000000,_custom+potgo ; POTGO -start Potentiometer reading
-														; FIXME: shouldn't this be in a regular interrupt, like VBL?
-
-; move.w COUNTER,d0
-; ext.l d0
-; divs #10,d0
-; swap d0
-; add.b #'0',d0
-; move.b d0,COUNTSPACE+2
-; swap d0
-; ext.l d0
-; divs #10,d0
-; swap d0
-; add.b #'0',d0
-; move.b d0,COUNTSPACE+1
-; swap d0
-; add.b #'0',d0
-; move.b d0,COUNTSPACE
-;
-; move.w COUNTER2,d0
-; ext.l d0
-; divs #10,d0
-; swap d0
-; add.b #'0',d0
-; move.b d0,COUNTSPACE+5
-; swap d0
-; ext.l d0
-; divs #10,d0
-; swap d0
-; add.b #'0',d0
-; move.b d0,COUNTSPACE+4
-; swap d0
-; add.b #'0',d0
-; move.b d0,COUNTSPACE+3
-
-;
-; move.l #COUNTSPACE,d0
-; jsr SENDMESSAGE
-;
-; move.w #0,COUNTER
-; move.w #0,COUNTER2
+													; FIXME: shouldn't this be in a regular interrupt, like VBL?
 
 				move.b	MAPON,REALMAPON
 
@@ -1085,8 +947,7 @@ lop:
 
 				bsr		SetupRenderbufferSize
 
-.noFullscreenSwitch
-
+.noFullscreenSwitch:
 				move.l	#KeyMap_vb,a5
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
@@ -1096,12 +957,11 @@ lop:
 				clr.b	doanything
 
 .waitrel:
-
 				tst.b	Plr1_Joystick_b
 				beq.s	.NOJOY
 				jsr		_ReadJoy1
-.NOJOY
 
+.NOJOY:
 				tst.b	$19(a5)
 				bne.s	.waitrel
 
@@ -1135,7 +995,6 @@ nofadedownhc:
 
 				move.l	#KeyMap_vb,a5
 .waitrel:
-
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.RE2
 				tst.b	Plr1_Joystick_b
@@ -1628,13 +1487,12 @@ doallz
 justbright:
 				; 0xABADCAFE division pogrom
 				; Following code basically multiplies by 1.6
-				muls	#32,d2
-				divs	#20,d2
+				;muls	#32,d2
+				;divs	#20,d2
 
-				; TODO - Enable next PR
-            ; Approximation (8-bit prec)
-				;muls	#410,d2
-				;asr.l	#8,d2
+				; Approximation (8-bit prec)
+				muls	#410,d2
+				asr.l	#8,d2
 
 				move.w	d2,(a1,d0.w*4)
 				move.w	ZoneT_UpperBrightness_w(a3),d2
@@ -1651,13 +1509,12 @@ justbright:
 justbright2:
 				; 0xABADCAFE division pogrom
 				; Following code basically multiplies by 1.6
-				muls	#32,d2
-				divs	#20,d2
+				;muls	#32,d2
+				;divs	#20,d2
 
-				; TODO - Enable next PR
-            ; Approximation (8-bit prec)
-				;muls	#410,d2
-				;asr.l	#8,d2
+				; Approximation (8-bit prec)
+				muls	#410,d2
+				asr.l	#8,d2
 
 				move.w	d2,2(a1,d0.w*4)
 				bra		doallz
@@ -1670,9 +1527,7 @@ justtheone:
 				move.w	(a5),d0
 				blt		whythehell
 				addq	#8,a5
-
 				muls	#40,d0
-
 				move.w	#39,d7
 
 allinzone:
@@ -1702,13 +1557,12 @@ allinzone:
 				; 0xABADCAFE division pogrom
 				; Following code basically multiplies by 1.55
 				; TODO - was it meant to be 1.6 ?
-				muls	#31,d2
-				divs	#20,d2
+				;muls	#31,d2
+				;divs	#20,d2
 
-            ; TODO - Enable next PR
 				; Approximation (8-bit)
-				;muls	#397,d2
-				;asr.l	#8,d2
+				muls	#397,d2
+				asr.l	#8,d2
 
 				bge.s	.itspos
 				sub.w	#600,d2
@@ -1810,36 +1664,13 @@ oklength2:
 				sub.w	d0,plr2_TmpHoldDown_w
 				bge.s	okstillheld2
 				move.w	#0,plr2_TmpHoldDown_w
+
 okstillheld2:
-
-***** CHECKING LIGHT *********
-
-; move.w #-20,d0
-; move.w Plr1_XOff_l,d1
-; move.w Plr1_ZOff_l,d2
-; move.l Plr1_RoomPtr_l,a0
-; move.w (a0),d3
-; move.w Plr1_AngPos_w,d4
-;
-; jsr BRIGHTENPOINTSANGLE
-
-******************************
-
-; move.l #PLR1_GunData,a1
-; move.w plr1_TmpHoldDown_w,d0
-; move.w #50,10+32*3(a1)
-; move.l #PLR2_GunData,a1
-; move.w plr2_TmpHoldDown_w,d0
-; move.w #50,10+32*3(a1)
-
-******************************************
-******************************************
-
 				move.w	TempFrames,d1
 				bgt.s	noze
 				moveq	#1,d1
-noze:
 
+noze:
 				move.w	Plr1_XOff_l,d0
 				sub.w	plr1_OldX_l,d0
 				asl.w	#4,d0
@@ -2069,17 +1900,8 @@ nodrawp2:
 				ble.s	.nobigscr
 
 				sub.w	#2,Vid_LetterBoxMarginHeight_w
-.nobigscr
 
-
-; tst.b (a5)
-; beq.s .nosavescrn
-;
-; not.b USEDOUG
-;
-; jsr SAVETHESCREEN
-;
-;.nosavescrn:
+.nobigscr:
 
 				tst.b	$5b(a5)
 				beq		notdoubheight
@@ -2181,25 +2003,8 @@ plr1only:
 .worryobj:
 				or.b	#127,ShotT_Worry_b(a0)
 				bra.s	.doallobs
+
 .allobsdone:
-
-
-
-; move.l #brightentab,a0
-; move.l frompt,a3
-; adda.w #(4*33)+(104*4*20),a3
-; move.w #20,d7
-; move.w #20,d6
-;horl:
-; move.w d6,d5
-; move.l a3,a1
-;vertl
-; move.w (a1),d0
-; move.w (a0,d0.w*2),(a1)
-; addq #4,a1
-; dbra d5,vertl
-; adda.w #104*4,a3
-; dbra d7,horl
 
 				move.l	#KeyMap_vb,a5
 				tst.b	$45(a5)
@@ -3084,8 +2889,6 @@ SAVELETTER:		dc.b	'd',0
 				include "screensetup.s"
 				include	"chunky.s"
 
-				align 4
-PAUSEOPTS:
 				include	"pauseopts.s"
 
 ENDZONE:		dc.w	0
@@ -3529,18 +3332,6 @@ Plr2_Use:
 				move.w	Plr1_AngPos_w,d0
 				and.w	#8190,d0
 				move.w	d0,EntT_CurrentAngle_w(a0)
-;
-; jsr ViewpointToDraw
-; asl.w #2,d0
-; moveq #0,d1
-; move.b plr2_TmpBobble_w,d1
-; not.b d1
-; lsr.b #3,d1
-; and.b #$3,d1
-; add.w d1,d0
-; move.w d0,10(a0)
-; move.w #10,8(a0)
-;
 
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.l	#ObjRotated_vl,a2
@@ -4020,8 +3811,8 @@ Plr2_Control:
 				asr.w	#7,d2
 				neg.w	d2
 				move.w	d2,xwobzoff
-.otherwob
 
+.otherwob:
 				move.l	d0,Plr2_YOff_l
 				move.l	d0,newy
 				move.l	d0,oldy
@@ -4120,7 +3911,7 @@ Plr2_Control:
 				move.l	Plr2_XOff_l,Plr2_SnapXOff_l
 				move.l	Plr2_ZOff_l,Plr2_SnapZOff_l
 
-.cantmove
+.cantmove:
 
 				move.l	Plr2_RoomPtr_l,a0
 
@@ -4165,13 +3956,8 @@ fillscrnwater:
 DONTDOGUN:
 				dc.w	0
 
-;temptemp: ds.l 200
-;temptempptr: dc.l 0
 
 DrawDisplay:
-
-; move.l #temptemp,temptempptr
-
 				clr.b	fillscrnwater
 
 				; bignsine is 16kb = 8192 words for 4pi (720deg)
@@ -4237,10 +4023,6 @@ subroomloop:
 				move.w	-(a0),d7
 				blt		jumpoutofrooms
 
-; bsr setlrclip
-; move.w leftclip,d0
-; cmp.w rightclip,d0
-; bge subroomloop
 				move.l	a0,-(a7)
 
 				move.l	Lvl_ZoneAddsPtr_l,a0
@@ -4269,10 +4051,7 @@ finditit:
 				bra		finditit
 
 outoffind:
-
 				move.l	a1,-(a7)
-
-
 				move.w	#0,leftclip
 				move.w	Vid_RightX_w,rightclip
 				moveq	#0,d7
@@ -4428,8 +4207,6 @@ nomoretodoatall:
 				bra		subroomloop
 
 jumpoutofrooms:
-
-
 				tst.b	DONTDOGUN
 				bne		NOGUNLOOK
 
@@ -4440,7 +4217,6 @@ jumpoutofrooms:
 				move.b	Plr1_GunSelected_b,d0
 				moveq	#0,d1
 				move.b	PLR1_GunFrame,d1
-; bsr DRAWINGUN
 				bra		drawngun
 
 drawslavegun
@@ -4448,12 +4224,9 @@ drawslavegun
 				move.b	Plr2_GunSelected_b,d0
 				moveq	#0,d1
 				move.b	PLR2_GunFrame,d1
-; bsr DRAWINGUN
 
 drawngun:
-
 NOGUNLOOK:
-
 				moveq	#0,d1
 				move.b	PLR1_GunFrame,d1
 				sub.w	TempFrames,d1
@@ -4523,66 +4296,11 @@ fwa:
 				add.w	#(SCREENWIDTH-FS_WIDTH),a0
 				dbra	d0,fw
 
-; move.l frompt,a0
-; add.l #104*4*60,a0
-;
-; move.w #31,d0
-;fw:
-; move.w d5,d1
-; move.l a0,a1
-;fwd:
-;val SET 104*4*19
-; REPT 20
-; and.w #$ff,val(a1)
-;val SET val-104*4
-; ENDR
-; sub.l #104*4*20,a1
-; dbra d1,fwd
-; addq #4,a0
-; dbra d0,fw
-;
-; addq #4,a0
-;
-; move.w #31,d0
-;sw:
-; move.w d5,d1
-; move.l a0,a1
-;swd:
-;val SET 104*4*19
-; REPT 20
-; and.w #$ff,val(a1)
-;val SET val-104*4
-; ENDR
-; sub.l #104*4*20,a1
-; dbra d1,swd
-; addq #4,a0
-; dbra d0,sw
-;
-; addq #4,a0
-;
-; move.w #31,d0
-;tw:
-; move.w d5,d1
-; move.l a0,a1
-;twd:
-;val SET 104*4*19
-; REPT 20
-; and.w #$ff,val(a1)
-;val SET val-104*4
-; ENDR
-; sub.l #104*4*20,a1
-; dbra d1,twd
-; addq #4,a0
-; dbra d0,tw
-;
 				rts
 
 nowaterfull:
 				bset.b	#1,$bfe001
 				rts
-
-;ClipsTable_vl:		ds.l	30
-;EndOfClipPtr_l:	dc.l	0
 
 
 dothisroom:
@@ -5183,12 +4901,6 @@ BIGLONELY:
 
 				rts
 
-
-;Plr1_ObjectDistances_vw
-;				ds.w	250
-;Plr2_ObjectDistances_vw
-;				ds.w	250
-
 CalcPLR1InLine:
 				move.w	Plr1_SinVal_w,d5
 				move.w	Plr1_CosVal_w,d6
@@ -5467,98 +5179,39 @@ BIGOBJPTS:
 				dbra	d7,.objpointrotlop
 				rts
 
-				; Is this actually still used?
-				; it introduces a dependcy to "objintocop" which I believe
-				; is not/should not be used anymore ("object to copper"?)
-;LightDraw:
-;
-;				move.w	(a0)+,d0
-;				move.w	(a0)+,d1
-;				move.l	#Rotated_vl,a1
-;				move.w	6(a1,d0.w*8),d2
-;				ble.s	oneendbehind
-;				move.w	6(a1,d1.w*8),d3
-;				bgt.s	bothendsinfront
-;
-;oneendbehind:
-;				rts
-;bothendsinfront:
-;
-;				move.l	#OnScreen_vl,a2
-;				move.w	(a2,d0.w*2),d0
-;				bge.s	okleftend
-;				moveq	#0,d0
-;okleftend:
-;				move.w	(a2,d1.w*2),d1
-;				bgt.s	somevis
-;				rts
-;somevis:
-;				cmp.w	Vid_RightX_w,d0
-;				blt.s	somevis2
-;				rts
-;somevis2:
-;				cmp.w	Vid_RightX_w,d1
-;				blt.s	okrightend
-;				move.w	Vid_RightX_w,d1
-;				subq	#1,d1
-;okrightend:
-;
-;				sub.w	d0,d1
-;				blt.s	wrongbloodywayround
-;				move.l	Draw_TexturePalettePtr_l,a4
-;				move.l	#objintocop,a1
-;				lea		(a1,d0.w*2),a1
-;
-;				move.l	frompt,a3
-;				move.w	#104*4,d6
-;				move.w	#79,d2
-;lacross:
-;				move.w	d2,d3
-;				move.l	a3,a2
-;				adda.w	(a1)+,a2
-;ldown:
-;				add.w	d6,a2
-;				move.w	(a2),d7
-;				move.w	(a4,d7.w*2),(a2)
-;				dbra	d3,ldown
-;				dbra	d1,lacross
-;
-;wrongbloodywayround:
-;
-;				rts
 
-FaceToPlace:	dc.w	0
+;FaceToPlace:	dc.w	0
 
-Cheese:
-				dc.w	4,15
+;Cheese:
+;				dc.w	4,15
 
-FacesList:
-				dc.w	0,4*4
-				dc.w	1,2*4
-				dc.w	0,2*4
-				dc.w	2,2*4
-				dc.w	0,2*4
-				dc.w	1,3*4
-				dc.w	0,2*4
-				dc.w	2,3*4
-				dc.w	0,5*4
-				dc.w	1,2*4
-				dc.w	0,2*4
-				dc.w	2,2*4
-				dc.w	0,2*4
-				dc.w	1,2*4
-				dc.w	0,2*4
-				dc.w	2,3*4
-				dc.w	0,1*4
-				dc.w	1,3*4
-				dc.w	0,1*4
-				dc.w	2,3*4
-				dc.w	0,1*4
+;FacesList:
+;				dc.w	0,4*4
+;				dc.w	1,2*4
+;				dc.w	0,2*4
+;				dc.w	2,2*4
+;				dc.w	0,2*4
+;				dc.w	1,3*4
+;				dc.w	0,2*4
+;				dc.w	2,3*4
+;				dc.w	0,5*4
+;				dc.w	1,2*4
+;				dc.w	0,2*4
+;				dc.w	2,2*4
+;				dc.w	0,2*4
+;				dc.w	1,2*4
+;				dc.w	0,2*4
+;				dc.w	2,3*4
+;				dc.w	0,1*4
+;				dc.w	1,3*4
+;				dc.w	0,1*4
+;				dc.w	2,3*4
+;				dc.w	0,1*4
 
-EndOfFacesList:
+;EndOfFacesList:
 
-FacesPtr:
-				dc.l	FacesList
+;FacesPtr:
+;				dc.l	FacesList
 FacesCounter:
 				dc.w	0
 Expression:
@@ -5916,23 +5569,9 @@ wevelost:
 
 				jmp		closeeverything
 
-endnomusic
+endnomusic:
 				clr.b	doanything
 
-
-; cmp.b #'b',Prefsfile+3
-; bne.s .noback
-; jsr mt_end
-;.noback
-*******************************
-; cmp.b #PLR_SINGLE,Plr_MultiplayerType_b
-; bne.s .nonextlev
-; cmp.w #15,MAXLEVEL
-; bge.s .nonextlev
-; add.w #1,MAXLEVEL
-; st FINISHEDLEVEL
-;.nonextlev:
-******************************
 
 				jmp		closeeverything
 
@@ -5962,82 +5601,9 @@ ENDGAMESCROLL:
 
 				move.l	#ENDGAMETEXTy,a0
 
-
-SCROLLUP16LINES:
-
-;				move.w	#15,d0
-;
-;do16
-;				move.l	#$dff000,a6
-;
-;				move.w	#0,d6
-;				move.w	#7,d7
-;
-;				move.l	#SCROLLSHADES,a5
-;
-;fadeupp:
-;
-;				move.w	(a5,d6.w*2),TOPCOLL
-;				move.w	(a5,d7.w*2),TXTCOLL
-;
-;
-;.wtup
-;				btst	#5,intreqrl(a6)
-;				beq.s	.wtup
-;				move.w	#$20,intreq(a6)
-;
-;				jsr		mt_music
-;
-;				add.w	#1,d6
-;				sub.w	#1,d7
-;				bne		fadeupp
-;
-;.wtup2
-;				btst	#5,intreqrl(a6)
-;				beq.s	.wtup2
-;				move.w	#$20,intreq(a6)
-;
-;				move.w	#0,TOPCOLL
-;				move.w	#$fff,TXTCOLL
-;
-;				WB
-;
-;				move.l	Vid_TextScreenPtr_l,d1
-;				move.l	d1,bltdpt(a6)
-;				add.l	#80,d1
-;				move.l	d1,bltapt(a6)
-;				move.w	#$09f0,bltcon0(a6)
-;				move.w	#$0,bltcon1(a6)
-;				move.w	#0,bltdmod(a6)
-;				move.w	#0,bltamod(a6)
-;				move.l	#-1,bltafwm(a6)
-;
-;				move.w	#255*64+40,bltsize(a6)
-;
-;				WB
-;
-;				dbra	d0,do16
-;
-;				move.l	Vid_TextScreenPtr_l,a1
-;				move.w	#15,d0
-;				jsr		Draw_LineOfText
-;
-;				add.l	#82,a0
-;				cmp.l	#ENDENDGAMETEXT,a0
-;				blt		SCROLLUP16LINES
-;
-;				move.l	#ENDGAMETEXTy,a0
-				bra		SCROLLUP16LINES
-
-SCROLLSHADES:
-				dc.w	0
-				dc.w	$333
-				dc.w	$666
-				dc.w	$888
-				dc.w	$aaa
-				dc.w	$ccc
-				dc.w	$ddd
-				dc.w	$eee
+				; 0xABADCAFE
+				; TODO - this looks like a prime crash waiting to happen
+				; shouldn't we branch somewhere before we blunder into this?
 
 ENDGAMETEXTy:
 				  ;          12345678901234567890123456789012345678901234567890123456789012345678901234567890
@@ -6239,33 +5805,6 @@ NEWsetlclip:
 				cmp.w	d1,d2
 				bgt.s	.leftnotoktoclip
 
-
-*************************************
-
-; move.w 2(a3,d0.w*4),d6
-;
-; move.w (a4,d0.w*4),d2
-; move.w 2(a4,d0.w*4),d3
-; move.w (a4,d6.w*4),d4
-; move.w 2(a4,d6.w*4),d5
-;
-; sub.w d2,d4	;dx
-; sub.w d3,d5	;dz
-; move.w xoff,d0
-; move.w zoff,d6
-;
-; sub.w d2,d0
-; sub.w d3,d6
-;
-; muls d0,d4
-; muls d6,d5
-; add.l d4,d5
-; bge.s .leftnotoktoclip
-
-*************************************
-
-
-
 ; move.w d1,(a6)
 ; move.w d3,2(a6)
 				cmp.w	leftclip,d1
@@ -6303,32 +5842,6 @@ NEWsetrclip
 				blt.s	.rightnotoktoclip
 ; move.w d1,4(a6)
 ; move.w d4,6(a6)
-
-
-*************************************
-
-; move.w (a3,d0.w*4),d6
-;
-; move.w (a4,d0.w*4),d2
-; move.w 2(a4,d0.w*4),d3
-; move.w (a4,d6.w*4),d4
-; move.w 2(a4,d6.w*4),d5
-;
-; sub.w d2,d4	;dx
-; sub.w d3,d5	;dz
-; move.w xoff,d0
-; move.w zoff,d6
-;
-; sub.w d2,d0
-; sub.w d3,d6
-;
-; muls d0,d4
-; muls d6,d5
-; add.l d4,d5
-; ble.s .rightnotoktoclip
-
-*************************************
-
 
 
 				cmp.w	rightclip,d1
@@ -6385,14 +5898,6 @@ FIRSTsetlrclip:
 				move.w	d1,rightclip
 .rightnotoktoclip:
 
-; move.w leftclip,d0
-; move.w rightclip,d1
-; cmp.w d0,d1
-; bge.s .noswap
-; move.w #SMALL_WIDTH,rightclip
-; move.w #0,leftclip
-;.noswap:
-
 				rts
 
 
@@ -6406,29 +5911,15 @@ npolys:			dc.w	0
 
 *****************************************************
 
-***********************************
-* This routine animates brightnesses.
-
-
-;liftpt:			dc.l	liftanimtab
-
-;brightpt:
-;				dc.l	brightanimtab
-
-******************************
 				include	"objectmove.s"
 				include	"newanims.s"
 				include	"modules/ai.s"
-******************************
 
 ********** WALL STUFF *******************************
 
 				include	"hireswall.s"
 				include	"hiresgourwall.s"
 
-*****************************************************
-
-******************************************
 * floor polygon
 
 numsidestd:		dc.w	0
@@ -6770,16 +6261,6 @@ lineclipped:
 				move.w	d2,d6					; dx/dy
 				swap	d2						; dx mod dy
 
-; moveq #0,d6
-; sub.w d3,d2
-; blt.s .noco
-;.makeco
-; addq #1,d6
-; sub.w d3,d2
-; bge.s .makeco
-;.noco
-; add.w d3,d2
-
 				move.w	d3,d4					; dy
 				move.w	d3,d5
 				subq	#1,d5					; dy - 1   loop counter
@@ -6811,17 +6292,6 @@ lineclipped:
 				divs	d3,d2					; dx/dy
 				move.w	d2,d6
 				swap	d2						; dx mod dy
-
-
-; moveq #0,d6
-; sub.w d3,d2
-; blt.s .nocol
-;.makecol
-; addq #1,d6
-; sub.w d3,d2
-; bge.s .makecol
-;.nocol
-; add.w d3,d2
 
 				move.w	d3,d4
 				move.w	d3,d5
@@ -6868,16 +6338,6 @@ lineonright:
 				move.w	d2,d6
 				swap	d2
 
-; moveq #0,d6
-; sub.w d3,d2
-; blt.s .noco
-;.makeco
-; addq #1,d6
-; sub.w d3,d2
-; bge.s .makeco
-;.noco
-; add.w d3,d2
-
 				move.w	d3,d4
 				move.w	d3,d5
 				subq	#1,d5
@@ -6907,17 +6367,6 @@ lineonright:
 				divs	d3,d2
 				move.w	d2,d6
 				swap	d2
-
-
-; moveq #0,d6
-; sub.w d3,d2
-; blt.s .nocol
-;.makecol
-; addq #1,d6
-; sub.w d3,d2
-; bge.s .makecol
-;.nocol
-; add.w d3,d2
 
 				move.w	d3,d4
 				move.w	d3,d5
@@ -7077,17 +6526,6 @@ lineclippedGOUR:
 				cmp.w	d1,d3
 				bne		linenotflatGOUR
 
-; move.w fbr,d4
-; move.w sbr,d5
-; cmp.w d0,d2
-; bgt.s .nsw
-; exg d4,d5
-;.nsw:
-
-; move.l #LeftBrightTable_vw,a3
-; move.w d4,(a3,d3.w)
-; move.l #RightBrightTable_vw,a3
-; move.w d5,(a3,d3.w)
 				bra		lineflatGOUR
 
 linenotflatGOUR
@@ -7119,16 +6557,6 @@ linenotflatGOUR
 				move.w	d2,d6					; dx/dy
 				swap	d2						; dx mod dy?
 				move.w	d2,a5
-
-; moveq #0,d6
-; sub.w d3,d2
-; blt.s .noco
-;.makeco
-; addq #1,d6
-; sub.w d3,d2
-; bge.s .makeco
-;.noco
-; add.w d3,d2
 
 				move.w	d3,d4					; dy
 				move.w	d3,d5					; dy
@@ -7178,17 +6606,6 @@ linenotflatGOUR
 				divs	d3,d2
 				move.w	d2,d6
 				swap	d2
-
-
-; moveq #0,d6
-; sub.w d3,d2
-; blt.s .nocol
-;.makecol
-; addq #1,d6
-; sub.w d3,d2
-; bge.s .makecol
-;.nocol
-; add.w d3,d2
 
 				move.w	d3,d4
 				move.w	d3,d5
@@ -7256,16 +6673,6 @@ lineonrightGOUR:
 				move.w	d2,d6
 				swap	d2
 
-; moveq #0,d6
-; sub.w d3,d2
-; blt.s .noco
-;.makeco
-; addq #1,d6
-; sub.w d3,d2
-; bge.s .makeco
-;.noco
-; add.w d3,d2
-
 				move.w	d3,d4
 				move.w	d3,d5
 				subq	#1,d5
@@ -7316,17 +6723,6 @@ lineonrightGOUR:
 				divs	d3,d2
 				move.w	d2,d6
 				swap	d2
-
-
-; moveq #0,d6
-; sub.w d3,d2
-; blt.s .nocol
-;.makecol
-; addq #1,d6
-; sub.w d3,d2
-; bge.s .makecol
-;.nocol
-; add.w d3,d2
 
 				move.w	d3,d4
 				move.w	d3,d5
@@ -7472,14 +6868,6 @@ linedir:		dc.w	0
 View2FloorDist:	dc.w	0
 
 minz:			dc.l	0
-
-;LeftSideTable_vw:	ds.w	512*2
-;RightSideTable_vw:	ds.w	512*2
-;LeftBrightTable_vw:	ds.w	512*2
-;RightBrightTable_vw:	ds.w	512*2
-
-;PointBrightsPtr_l: dc.l	0
-;CurrentPointBrights_vl:	ds.l	2*256*10
 
 movespd:		dc.w	0
 largespd:		dc.l	0
@@ -7744,37 +7132,6 @@ noclipleft:
 
 				move.w	d1,leftedge
 				move.w	d2,rightedge
-
-; moveq #0,d1
-; moveq #0,d3
-; move.w LeftBrightTable_vw-LeftSideTable_vw(a4),d1
-; bge.s .okbl
-; moveq #0,d1
-;.okbl:
-
-; move.w RightBrightTable_vw-LeftSideTable_vw(a4),d3
-; bge.s .okbr
-; moveq #0,d3
-;.okbr:
-
-; sub.w d1,d3
-; asl.w #8,d1
-; move.l d1,leftbright
-; swap d3
-; asr.l #5,d3
-; divs d5,d3
-; move.w d3,d5
-; muls.w d6,d5
-; asr.l #3,d5
-; clr.b d5
-; add.w d5,leftbright+2
-
-; ext.l d3
-; asl.l #5,d3
-; swap d3
-; asl.w #8,d3
-; move.l d3,brightspd
-
 				move.l	a6,a3
 
 				movem.l	d0/d7/a2/a4/a5/a6,-(a7)
@@ -7831,31 +7188,6 @@ dofloornoclip:
 				move.w	d1,leftedge
 				move.w	d2,rightedge
 
-; sub.w d1,d2
-
-; moveq #0,d1
-; moveq #0,d3
-; move.w LeftBrightTable_vw-LeftSideTable_vw(a4),d1
-; bge.s .okbl
-; moveq #0,d1
-;.okbl:
-
-; move.w RightBrightTable_vw-LeftSideTable_vw(a4),d3
-; bge.s .okbr
-; moveq #0,d3
-;.okbr:
-
-; sub.w d1,d3
-; asl.w #8,d1
-; move.l d1,leftbright
-; swap d3
-; asr.l #5,d3
-; divs d2,d3
-; ext.l d3
-; asl.l #5,d3
-; swap d3
-; asl.w #8,d3
-; move.l d3,brightspd
 
 				move.l	a6,a3
 				movem.l	d0/d7/a2/a4/a5/a6,-(a7)
@@ -8089,18 +7421,6 @@ dofloornoclipGOUR:
 				move.w	#30,d3
 .okdr:
 
-; sub.w d1,d3
-; asl.w #8,d1
-; move.l d1,leftbright
-; swap d3
-; asr.l #5,d3
-; divs d2,d3
-; ext.l d3
-; asl.l #5,d3
-; swap d3
-; asl.w #8,d3
-; move.l d3,brightspd
-
 				sub.w	d1,d3
 				asl.w	#8,d1
 				move.w	d1,leftbright
@@ -8154,57 +7474,6 @@ LineToUse:		dc.l	0
 * and sinval+cosval must be set up.
 ***************************
 
-;BLACKFLOOR:
-;				moveq	#0,d0
-;				bra.s	DOBLACK
-
-;SimpleFloorLine:
-;
-;				CACHE_OFF d2
-;
-;				move.l	#doacrossline,a1
-;				move.w	leftedge(pc),d1
-;				move.w	rightedge(pc),d3
-;				sub.w	d1,d3
-;				lea		(a1,d1.w*4),a1
-;				move.w	(a1,d3.w*4),d4
-;				move.w	#$4e75,(a1,d3.w*4)
-;
-;				tst.b	CLRNOFLOOR
-;				bne.s	BLACKFLOOR
-;
-;				move.l	#PLAINSCALE,a2
-;
-;				move.w	d0,d2
-;				move.w	lighttype,d1
-;				asr.w	#8,d2
-;				add.w	#5,d1
-;				add.w	d2,d1
-;				bge.s	.fixedbright
-;				moveq	#0,d1
-;.fixedbright:
-;				cmp.w	#28,d1
-;				ble.s	.smallbright
-;				move.w	#28,d1
-;.smallbright:
-;				lea		(a2,d1.w*2),a2
-;
-;				move.w	whichtile,d0
-;				move.w	d0,d1
-;				and.w	#$3,d1
-;				and.w	#$300,d0
-;				lsl.b	#6,d1
-;				move.b	d1,d0
-;				move.w	d0,tstwhich
-;				move.w	(a2,d0.w),d0
-;
-;DOBLACK:
-;				jsr		(a1)
-;				move.w	d4,(a1,d3.w*4)
-;
-;				;CACHE_ON d2
-;
-;				rts
 
 tstwhich:		dc.w	0
 whichtile:		dc.w	0
@@ -8256,14 +7525,7 @@ FloorLine:
 				asr.l	#8,d2					; View2FloorDist / 1024
 
 				add.w	#5,d1					; add 5 to lighttype?!
-*********************
-; asr.w #3,d2
-; sub.w #4,d2
-; cmp.w #6,d2
-; blt.s flbrbr
-; move.w #6,d2
-;flbrbr:
-*********************
+
 				add.w	d2,d1					; clamp lighting on the line
 				bge.s	.fixedbright
 				moveq	#0,d1					; low clamp
@@ -8311,14 +7573,7 @@ pastast:
 				asr.l	#2,d2
 				asr.l	#8,d2
 				add.w	#5,d1
-*********************
-; asr.w #3,d2
-; sub.w #4,d2
-; cmp.w #6,d2
-; blt.s flbrbr
-; move.w #6,d2
-;flbrbr:
-*********************
+
 				add.w	d2,d1
 				bge.s	.fixedbright
 				moveq	#0,d1
@@ -8472,10 +7727,6 @@ scaleprog:
 
 				asr.l	#8,d4
 				asl.l	#8,d5
-; add.w szoff,d5
-; add.w sxoff,d4
-; and.w #63,d4
-; and.w #63*256,d5
 
 				move.w	d4,d5
 
@@ -8521,11 +7772,6 @@ nomultleft:		;		final					start coordinate in floor texture space
 				asr.l	#8,d4					;  s / 256
 				asl.l	#8,d5					;  t * 256
 
-; add.w szoff,d5
-; add.w sxoff,d4
-; and.w #63,d4
-; and.w #63*256,d5
-
 				move.w	d4,d5					; move s into lower half of t
 
 				asr.l	#7,d1					; ds/dx / 128 = ds/dx << 8
@@ -8545,15 +7791,6 @@ doneallmult:
 
 				move.l	#$3fff3fff,d1
 				and.l	d1,d5
-; swap d5
-; move.w startsmoothz,d5
-; swap d5
-; swap d2
-; move.w a5,d2
-; swap d2
-
-***********************************
-
 
 				;tst.b	Vid_DoubleWidth_b
 				;beq.s	.nodoub
@@ -8895,37 +8132,6 @@ acrossscrngourD:
 				move.w	(a1,d3.w),(a3)+
 				dbra	d7,acrossscrngourD
 				rts
-
-
-;backbeforegour:
-; and.w #63*256+63,d5
-; move.b (a0,d5.w*4),d0
-; add.l d1,d0
-; bcc.s .nomoreb
-; add.w #256,d0
-;.nomoreb:
-; add.w a4,d3
-; move.w (a1,d0.w*2),(a3)+
-; addx.l d6,d5
-; dbcs d7,acrossscrngour
-; dbcc d7,backbeforegour
-; rts
-; bra.s past1gour
-
-;acrossscrngour:
-; and.l #$3f3f,d5
-; move.b (a0,d5.w*4),d0
-; add.l d1,d0
-; bcc.s .nomoreb
-; add.w #256,d0
-;.nomoreb:
-; add.w a4,d3
-; move.w (a1,d0.w*2),(a3)+
-; addx.l d2,d5
-; dbcs d7,acrossscrngour
-; dbcc d7,backbeforegour
-;past1gour:
-; rts
 
 				move.w	d4,d7
 				bne.s	.notdoneyet
@@ -9571,18 +8777,6 @@ AUXOBJ:			dc.w	0
 
 ALWALK:
 
-; jsr ViewpointToDraw
-; add.l d0,d0
-;
-; move.l GLF_DatabasePtr_l,a6
-; add.l #GLFT_AlienDefs_l,a6
-; moveq #0,d1
-; move.b EntT_Type_b(a0),d1
-; muls #AlienT_SizeOf_l,d1
-; add.l d1,a6
-; cmp.w #1,AlienT_GFXType_w(a6)
-; bne.s NOSIDES2
-
 				moveq	#0,d0
 intowalk:
 
@@ -9877,14 +9071,6 @@ pastster:
 
 				move.w	#10,d3
 				; See if byt got transmitted overserial
-;.willy
-;				btst	#0,$dff000+intreqrl
-;				beq.s	.willy
-;				move.w	#1,$dff000+intreq
-;
-;				dbra	d3,.willy
-;
-;				move.w	#$820f,$dff000+dmacon
 
 				bra		notogglesound2
 
@@ -9938,12 +9124,6 @@ BADRENDERTXT:
 pastlighttext:
 
 				jsr		SENDMESSAGE
-
-; move.l d0,SCROLLPOINTER
-; move.w #0,SCROLLXPOS
-; add.l #160,d0
-; move.l d0,ENDSCROLL
-; move.w #40,SCROLLTIMER
 
 				bra		nolighttoggle2
 
@@ -10059,45 +9239,8 @@ noret2:
 
 .nomapcentre
 
-; move.w STOPOFFSET,d0
-; tst.b 27(a5)
-; beq.s .nolookup
-; sub.w #5,d0
-; cmp.w #-80,d0
-; bgt.s .nolookup
-; move.w #-80,d0
-;.nolookup:
-; tst.b 42(a5)
-; beq.s .nolookdown
-; add.w #5,d0
-; cmp.w #80,d0
-; blt.s .nolookdown
-; move.w #80,d0
-;.nolookdown:
-;
-; move.w d0,STOPOFFSET
-; neg.w d0
-; add.w #120,d0
-; move.w d0,SMIDDLEY
-; muls #SCREENWIDTH*2,d0
-; move.l d0,SBIGMIDDLEY
-
-
-; jsr INITREC
-; jsr RECEIVE
-
-; tst.l BUFFER
-; beq.s justshake
-; st GOTTOSEND
-; move.l #OtherInter,$6c
-
 justshake:
-
-; cmp.b #'b',Prefsfile+3
-; bne.s .noback
 				jsr		mt_music
-
-;.noback:
 
 				bra		dontshowtime
 
@@ -10177,8 +9320,6 @@ digitlop3
 				dbra	d2,digitlop3
 
 dontshowtime:
-
-
 				move.l	alanptr,a0
 				move.l	(a0)+,alframe
 				cmp.l	#endalan,a0
@@ -10404,32 +9545,12 @@ noturnoff3:
 
 nomuckabout:
 
-
-; tst.b Plr2_Fire_b
-; beq.s firenotpressed2
-; fire was pressed last time.
-; btst #7,$bfe001
-; bne.s firenownotpressed2
-; fire is still pressed this time.
-; st Plr2_Fire_b
-; bra dointer
-
 firenownotpressed2:
 ; fire has been released.
-; clr.b Plr2_Fire_b
-; bra dointer
 
 firenotpressed2
-
 ; fire was not pressed last frame...
 
-; btst #7,$bfe001
-; if it has still not been pressed, go back above
-; bne.s firenownotpressed2
-; fire was not pressed last time, and was this time, so has
-; been clicked.
-; st Plr2_Clicked_b
-; st Plr2_Fire_b
 
 dointer
 
@@ -10835,10 +9956,6 @@ notoffendsamp4:
 				move.l	a1,pos3RIGHT
 
 				movem.l	(a7)+,d0-d7/a0-a6
-; tst.b counting
-; beq .nostartcounter
-; JSR STARTCOUNT
-;.nostartcounter:
 
 				move.w	#$820f,$dff000+dmacon
 
@@ -10979,14 +10096,6 @@ nomorechannels:
 				move.l	#0,NoiseMade0LEFT
 				move.l	NoiseMade0RIGHT,NoiseMade0pRIGHT
 				move.l	#0,NoiseMade0RIGHT
-
-; tst.b playnull0
-; beq.s .nnul
-; sub.b #1,playnull0
-; bra.s chan0still
-;.nnul:
-;
-;chan0still:
 
 				tst.b	NoiseMade0pLEFT
 				bne.s	chan0still
@@ -11351,19 +10460,6 @@ FOUNDALEFT:
 
 				move.w	Samplenum,d5
 
-; tst.b PlayEcho
-; bne.s YESECHO
-; tst.b SourceEcho
-; beq.s NOECHO
-;
-;YESECHO:
-;
-; move.l GLF_DatabasePtr_l,a3
-; add.l #GLFT_EchoTable_l,a3
-; move.b (a3,d5.w),d5
-;
-;NOECHO:
-
 				move.l	#SampleList,a3
 				move.l	(a3,d5.w*8),a1
 				add.l	LEFTOFFSET,a1
@@ -11575,19 +10671,6 @@ FOUNDACHAN:
 				move.w	noiseloud,2(a3)
 
 				move.w	Samplenum,d5
-
-; tst.b PlayEcho
-; bne.s YESECHO2
-; tst.b SourceEcho
-; beq.s NOECHO2
-;
-;YESECHO2:
-;
-; move.l GLF_DatabasePtr_l,a3
-; add.l #GLFT_EchoTable_l,a3
-; move.b (a3,d5.w),d5
-;
-;NOECHO2:
 
 				move.l	#SampleList,a3
 				move.l	(a3,d5.w*8),a1
@@ -11818,31 +10901,6 @@ PLR1:			dc.b	$ff
 PLR2:			dc.b	$ff
 
 
-;liftanimtab:
-
-;endliftanimtab:
-
-;glassball:
-; incbin "glassball.inc"
-
-;endglass
-;glassballpt:	dc.l	glassball
-
-;rndtab:			;		incbin					"randfile"
-;endrnd:
-
-;brightanimtab:
-; dcb.w 200,20
-; dc.w 5
-; dc.w 10,20
-; dc.w 5
-; dcb.w 30,20
-; dc.w 7,10,10,5,10,0,5,6,5,6,5,6,5,6,0
-; dcb.w 40,0
-; dc.w 1,2,3,2,3,2,3,2,3,2,3,2,3,0
-; dcb.w 300,0
-; dc.w 1,0,1,0,2,2,2,5,5,5,5,5,5,5,5,5,6,10
-; dc.w -1
 
 Roompt:			dc.l	0
 OldRoompt:		dc.l	0
@@ -11857,30 +10915,13 @@ OldRoompt:		dc.l	0
 wallpt:			dc.l	0
 floorpt:		dc.l	0
 
-;Rotated_vl:		ds.l	2*800					; store rotated X and Z coordinates with Z scaling applied
-;ObjRotated_vl:		ds.l	2*500
-;OnScreen_vl:		ds.l	2*800					; store screen projected X coordinates for rotated points
 
 startwait:		dc.w	0
 endwait:		dc.w	0
 
-;Faces:
-; incbin "faces2raw"
-
 Lvl_WalkLinksPtr_l:		dc.l	0
 Lvl_FlyLinksPtr_l:		dc.l	0
 
-; include "loadmod.a"
-; include "proplayer.a"
-
-; only used by glassobj: which in turn isn't used.
-;darkentab:
-;val SET 0
-; REPT 256
-; dc.b val
-;val SET val+1
-; ENDR
-; incbin "darkenfile"
 				dc.l	0
 Vid_CentreX_w:		dc.w	SMALL_WIDTH/2
 Vid_RightX_w:		dc.w	SMALL_WIDTH
@@ -11936,10 +10977,6 @@ Vid_TextScreenPtr_l:		dc.l	0
 				cnop	0,8
 
 PanelKeys:		;		I'm pretty sure these are not needed anymore, but there's code referencing it
-;incbin "greenkey"
-; incbin "redkey"
-; incbin "yellowkey"
-; incbin "bluekey"
 
 ; Audio NULL data
 null:			ds.w	500
@@ -11952,7 +10989,7 @@ null4:			ds.w	500
 SCROLLSCRN:		ds.l	20*16
 
 ********************************************
-* Stuff you don't have to ShotT_Worry_b about yet. *
+* Stuff you don't have to worry about yet. *
 ********************************************
 
 				section	code,code
@@ -12027,10 +11064,6 @@ Panel:			dc.l	0
 				cnop	0,64
 TimerScr:		;		Not						needed(?), but still referenced but (inactive?) code
 ;ds.b 40*64
-;Vid_Screen1Ptr_l:			dc.l	0
-;Vid_Screen2Ptr_l:			dc.l	0
-;Vid_DrawScreenPtr_l:		dc.l	0
-;Vid_DisplayScreen_Ptr_l:		dc.l	0
 
 NumTimes:		dc.l	0
 TimeCount:		dc.l	0
@@ -12601,9 +11634,6 @@ mt_voice3:		ds.w	10
 mt_voice4:		ds.w	10
 				dc.w	8
 				ds.w	3
-
-;plr1_Dead_b:		dc.w	0
-;plr2_Dead_b:		dc.w	0
 
 CHEATPTR:		dc.l	0
 CHEATNUM:		dc.l	0
