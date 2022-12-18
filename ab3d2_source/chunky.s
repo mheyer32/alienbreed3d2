@@ -7,6 +7,10 @@
 				; d4 !=0 use doublewidth
 				; d5 !=0 use teleport effect
 
+				; HACK - This is a temporary fix until the root cause of the wall texture
+				; perspective issues are properly understood.
+FS_C2P_HEIGHT equ FS_HEIGHT-8
+
 Vid_ConvertC2P:
 				tst.b	d5
 				beq.s	.noteleffect
@@ -36,7 +40,7 @@ Vid_ConvertC2P:
 
 				move.w	#SCREENWIDTH,d0
 				move.w	Vid_LetterBoxMarginHeight_w,d3				; height of black border top/bottom
-				move.w	#232,d1
+				move.w	#FS_C2P_HEIGHT,d1
 				sub.w	d3,d1					; top letterbox
 				sub.w	d3,d1					; bottom letterbox: d1: number of lines
 				move.l	#(SCREENWIDTH/8)*256,d5
@@ -257,9 +261,15 @@ Vid_ConvertC2P:
 				move.w	#(FS_WIDTH/8)-1,WTC		; width in chipmem?
 
 				move.w	Vid_LetterBoxMarginHeight_w,d7
-				move.l	#FS_HEIGHT-1,d1			; height of area to convert
-				sub.w	d7,d1					; top letterbox
-				sub.w	d7,d1					; bottom letterbox: d1: number of lines
+
+				; 0xABADCAFE - Changing FS_HEIGHT to 240 from 232 impacted the teleportation
+				; shimmer in fullscreen which seems coupled to the original size.
+
+
+
+				move.l	#FS_C2P_HEIGHT-1,d1	; height of area to convert
+				sub.w	d7,d1				; top letterbox
+				sub.w	d7,d1				; bottom letterbox: d1: number of lines
 				move.w	d1,HTC
 
 				move.w	#(SCREENWIDTH-FS_WIDTH),MODUL ; modulo chunky
