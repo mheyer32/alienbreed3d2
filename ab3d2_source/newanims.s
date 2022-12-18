@@ -269,16 +269,6 @@ ROOMPTLOPA
 
 				move.w	(a6),d0
 				move.w	2048(a6),d1
-; ext.l d0
-; ext.l d1
-; asl.l #6,d1
-; asl.l #6,d0
-; swap d0
-; swap d1
-; neg.w d0
-; neg.w d1
-; add.w d6,d0
-; add.w d7,d1
 
 				muls	d0,d7
 				muls	d1,d6
@@ -543,20 +533,8 @@ ExplodeIntoBits:
 				move.l	Lvl_ObjectPointsPtr_l,a2
 				move.w	(a5),d3
 				lea		(a2,d3.w*8),a2
-; jsr GetRand
-; lsr.w #4,d0
-; move.w radius,d1
-; and.w d1,d0
-; asr.w #1,d1
-; sub.w d1,d0
 				move.w	newx,d0
 				move.w	d0,(a2)
-; jsr GetRand
-; lsr.w #4,d0
-; move.w radius,d1
-; and.w d1,d0
-; asr.w #1,d1
-; sub.w d1,d0
 				move.w	newz,d0
 				move.w	d0,4(a2)
 
@@ -592,13 +570,6 @@ ExplodeIntoBits:
 				move.w	d0,ShotT_VelocityY_w(a5)
 				move.l	#0,EntT_EnemyFlags_l(a5)
 				move.w	12(a0),12(a5)
-
-; jsr GetRand
-; lsr.w #4,d0
-; move.w radius,d1
-; and.w d1,d0
-; asr.w #1,d1
-; sub.w d1,d0
 				move.w	4(a0),d0
 				move.w	d0,4(a5)
 				add.w	#6,d0
@@ -606,9 +577,6 @@ ExplodeIntoBits:
 				asl.l	#7,d0
 
 				move.l	d0,ShotT_AccYPos_w(a5)
-; move.w d2,d0
-; and.w #3,d0
-; add.w #50,d0
 				move.b	TypeOfSplat,ShotT_Size_b(a5)
 ; move.w #40,ShotT_Gravity_w(a5)
 				move.w	#0,ShotT_Flags_w(a5)
@@ -714,18 +682,6 @@ FireFlickerANIM:
 				dc.w	-5,-5,-5,-5,-6,-7,-8,-9,-5,-10,-9,-10,-6,-5,-5,-5,-5,-5
 				dc.w	-5,-5
 				dc.w	999
-
-;realtab:
-; dc.l prot1-78935450
-; dc.l prot2-78935450
-; dc.l prot3-78935450
-; dc.l prot4-78935450
-; dc.l prot5-78935450
-; dc.l prot6-78935450
-; dc.l prot7-78935450
-; dc.l prot8-78935450
-; dc.l prot9-78935450
-; dc.l protA-78935450
 
 objvels:		ds.l	8
 
@@ -1927,8 +1883,6 @@ notdoneflame:
 				st		ShotT_Worry_b(a5)
 
 				rts
-
-; include "ai.s"
 
 ItsABarrel:
 				clr.b	ShotT_Worry_b(a0)
@@ -3772,15 +3726,6 @@ backrout:		ds.b	800
 NUMTOCHECK:		dc.w	0
 
 MAKEBACKROUT:
-; move.l #backrout+256,d0
-; clr.b d0
-; move.l d0,allbars
-; move.l d0,a1
-; move.l #fromback,a0
-; move.w #400,d0
-;putinback:
-; move.b (a0)+,(a1)+
-; dbra d0,putinback
 				rts
 
 ****************************************

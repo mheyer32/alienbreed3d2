@@ -278,14 +278,7 @@ scrdrawlopG:
 ***************************
 * old version
 				asr.w	#7,d6
-***************************
-; asr.w #3,d6
-; sub.w #4,d6
-; cmp.w #6,d6
-; blt.s tstbrbr
-; move.w #6,d6
-;tstbrbr:
-***************************
+
 				move.l	(a0)+,d5
 				swap	d5
 				move.w	d7,-(a7)
@@ -317,15 +310,6 @@ scrdrawlopG:
 				sub.w	d6,d7
 
 				move.l	Draw_PalettePtr_l,a4
-; move.l a2,a4
-; add.w ffscrpickhowbright(pc,d6*2),a2
-; and.b #$fe,d6
-; add.w ffscrpickhowbright(pc,d6*2),a4
-
-; btst #0,d0
-; beq .nobrightswap
-; exg a2,a4
-;.nobrightswap:
 
 				bsr		ScreenWallstripdrawGOUR
 				move.w	(a7)+,d7
@@ -355,11 +339,6 @@ scrdrawlopGDOUB:
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 
-; bra pastscrinto
-;
-;
-;pastscrinto
-
 				swap	d1
 
 				move.w	d1,d6
@@ -388,14 +367,7 @@ scrdrawlopGDOUB:
 ***************************
 * old version
 				asr.w	#7,d6
-***************************
-; asr.w #3,d6
-; sub.w #4,d6
-; cmp.w #6,d6
-; blt.s tstbrbr
-; move.w #6,d6
-;tstbrbr:
-***************************
+
 				move.l	(a0)+,d5
 				swap	d5
 				move.w	d7,-(a7)				; save
@@ -427,15 +399,6 @@ scrdrawlopGDOUB:
 				sub.w	d6,d7
 
 				move.l	Draw_PalettePtr_l,a4
-; move.l a2,a4
-; add.w ffscrpickhowbright(pc,d6*2),a2
-; and.b #$fe,d6
-; add.w ffscrpickhowbright(pc,d6*2),a4
-
-; btst #0,d0
-; beq .nobrightswap
-; exg a2,a4
-;.nobrightswap:
 
 				bsr		ScreenWallstripdrawGOUR
 				move.w	(a7)+,d7				; restore
@@ -451,11 +414,6 @@ scrdrawlopGB:
 				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
-
-; bra pastscrinto
-;
-;
-;pastscrinto
 
 				swap	d1
 
@@ -485,14 +443,7 @@ scrdrawlopGB:
 ***************************
 * old version
 				asr.w	#7,d6
-***************************
-; asr.w #3,d6
-; sub.w #4,d6
-; cmp.w #6,d6
-; blt.s tstbrbr
-; move.w #6,d6
-;tstbrbr:
-***************************
+
 				move.l	(a0)+,d5
 				swap	d5
 				move.w	d7,-(a7)
@@ -524,15 +475,6 @@ scrdrawlopGB:
 				sub.w	d6,d7
 
 				move.l	Draw_PalettePtr_l,a4
-; move.l a2,a4
-; add.w ffscrpickhowbright(pc,d6*2),a2
-; and.b #$fe,d6
-; add.w ffscrpickhowbright(pc,d6*2),a4
-
-; btst #0,d0
-; beq .nobrightswap
-; exg a2,a4
-;.nobrightswap:
 
 				bsr		ScreenWallstripdrawGOURB
 				move.w	(a7)+,d7
@@ -541,7 +483,7 @@ scrdrawlopGB:
 
 				rts
 
-itsbilloddy:
+itsbilloddy: ; lol!
 				add.w	#4+4+4+4+4+4,a0
 				dbra	d7,scrdrawlopGDOUB
 				rts
@@ -554,11 +496,6 @@ scrdrawlopGBDOUB:
 				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
-
-; bra pastscrinto
-;
-;
-;pastscrinto
 
 				swap	d1
 
@@ -588,14 +525,7 @@ scrdrawlopGBDOUB:
 ***************************
 * old version
 				asr.w	#7,d6
-***************************
-; asr.w #3,d6
-; sub.w #4,d6
-; cmp.w #6,d6
-; blt.s tstbrbr
-; move.w #6,d6
-;tstbrbr:
-***************************
+
 				move.l	(a0)+,d5
 				swap	d5
 				move.w	d7,-(a7)
@@ -627,15 +557,6 @@ scrdrawlopGBDOUB:
 				sub.w	d6,d7
 
 				move.l	Draw_PalettePtr_l,a4
-; move.l a2,a4
-; add.w ffscrpickhowbright(pc,d6*2),a2
-; and.b #$fe,d6
-; add.w ffscrpickhowbright(pc,d6*2),a4
-
-; btst #0,d0
-; beq .nobrightswap
-; exg a2,a4
-;.nobrightswap:
 
 				bsr		ScreenWallstripdrawGOURB
 				move.w	(a7)+,d7
@@ -693,11 +614,6 @@ oneinfrontG
 				bge.s	notnegzdiffG
 				neg.w	d0
 notnegzdiffG
-; cmp.w #1024,d0
-; blt.s nd01G
-; add.w d7,d7
-; add.w #1,d6
-;nd01G:
 				cmp.w	#512,d0
 				blt.s	nd0G
 				tst.b	GOODRENDER
@@ -1303,24 +1219,6 @@ simplewallPACK2G:
 				dbra	d6,simplewallPACK2G
 				rts
 
-;gotoendnomult:
-; movem.l d0/d1/d2/d3/d4/d7,-(a7)
-; add.l timeslarge(pc,d5.w*4),a3
-; move.w d5,d4
-; move.l 4(a1,d2.w*8),d0
-; move.l (a1,d2.w*8),d2
-; moveq #0,d3
-; move.w d2,d3
-; swap d2
-; tst.w d2
-; move.w wallyoff(pc),d4
-; add.w #44,d4
-; bne.s .notsimple
-; cmp.l #$b000,d3
-; ble cliptopusesimple
-;.notsimple:
-; bra cliptop
-
 GOURSPEED:		dc.l	0
 
 gotoendG:
@@ -1343,23 +1241,14 @@ gotoendG:
 
 				move.l	(a1,d2.w*4),d2
 				moveq	#0,d3
-; move.w d2,d3
-; swap d2
-; tst.w d2
-; bne.s .notsimple
-; cmp.l #$b000,d3
-; ble usesimple
-;.notsimple:
 
 				ext.l	d5
 				move.l	d2,d4
 				muls.l	d5,d4
 
-; mulu d3,d4
-; muls d2,d5
 				add.l	d0,d4
 				swap	d4
-; add.w d5,d4
+
 				add.w	totalyoff(pc),d4
 cliptopG
 				move.w	VALAND,d7
@@ -1411,23 +1300,14 @@ doubwallGOUR:
 
 				move.l	(a1,d2.w*4),d2
 				moveq	#0,d3
-; move.w d2,d3
-; swap d2
-; tst.w d2
-; bne.s .notsimple
-; cmp.l #$b000,d3
-; ble usesimple
-;.notsimple:
 
 				ext.l	d5
 				move.l	d2,d4
 				muls.l	d5,d4
 
-; mulu d3,d4
-; muls d2,d5
 				add.l	d0,d4
 				swap	d4
-; add.w d5,d4
+
 				add.w	totalyoff(pc),d4
 				move.w	VALAND,d7
 				and.w	d7,d4
@@ -1523,23 +1403,14 @@ gotoendGB:
 
 				move.l	(a1,d2.w*4),d2
 				moveq	#0,d3
-; move.w d2,d3
-; swap d2
-; tst.w d2
-; bne.s .notsimple
-; cmp.l #$b000,d3
-; ble usesimple
-;.notsimple:
 
 				ext.l	d5
 				move.l	d2,d4
 				muls.l	d5,d4
 
-; mulu d3,d4
-; muls d2,d5
 				add.l	d0,d4
 				swap	d4
-; add.w d5,d4
+
 				add.w	totalyoff(pc),d4
 				move.w	VALAND,d7
 				and.w	d7,d4
@@ -1590,23 +1461,14 @@ doubwallGOURBIG:
 
 				move.l	(a1,d2.w*4),d2
 				moveq	#0,d3
-; move.w d2,d3
-; swap d2
-; tst.w d2
-; bne.s .notsimple
-; cmp.l #$b000,d3
-; ble usesimple
-;.notsimple:
 
 				ext.l	d5
 				move.l	d2,d4
 				muls.l	d5,d4
 
-; mulu d3,d4
-; muls d2,d5
 				add.l	d0,d4
 				swap	d4
-; add.w d5,d4
+
 				add.w	totalyoff(pc),d4
 				move.w	VALAND,d7
 				and.w	d7,d4

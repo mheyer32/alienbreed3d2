@@ -35,15 +35,6 @@ Plr2_MouseControl
 				move.w	ymouse,d3
 				sub.w	oldymouse,d3
 				add.w	d3,oldymouse
-; asr.w #1,d3
-; cmp.w #50,d3
-; ble.s .nofastfor
-; move.w #50,d3
-;.nofastfor:
-; cmp.w #-50,d3
-; bge.s .nofastback
-; move.w #-50,d3
-;.nofastback:
 
 				move.w	STOPOFFSET,d0
 				move.w	d3,d2
@@ -285,11 +276,6 @@ pickweap2
 				beq.s	notgotweap2
 				move.b	d2,Plr2_GunSelected_b
 				move.w	#0,EntT_Timer1_w+64(a3)
-
-; move.l #TEMPSCROLL,SCROLLPOINTER
-; move.w #0,SCROLLXPOS
-; move.l #TEMPSCROLL+160,ENDSCROLL
-; move.w #40,SCROLLTIMER
 
 ; d2=number of gun.
 
