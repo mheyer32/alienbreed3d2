@@ -10899,17 +10899,6 @@ GLF_DatabasePtr_l:		dc.l	0
 
 ******************************************
 
-
-;brightentab:
-; incbin "brightenfile"
-;				section	data,data
-;draw_WaterFrames_vb:
-;				incbin	"draw_WaterFrames_vb"
-;
-;draw_Palette_vw			incbin	"256pal"
-;
-;				section code,code
-
 hitcol:			dc.l	0
 
 SCROLLOFFSET:	dc.w	0

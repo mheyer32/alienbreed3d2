@@ -3,6 +3,9 @@
 ; Statically initialised (non-zero) data
 
 			align 4
+draw_TeleportShimmerFXData_vb:		incbin	"includes/shimmerfile"
+
+			align 4
 draw_WaterFrames_vb:	incbin	"waterfile"
 
 			align 4

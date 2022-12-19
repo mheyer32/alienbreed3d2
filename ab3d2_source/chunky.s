@@ -296,7 +296,7 @@ Vid_ConvertC2P:
 
 .startchunkytel:
 				movem.l	d2-d7/a2-a6,-(a7)
-				move.l	#SHIMMER,a6
+				move.l	#draw_TeleportShimmerFXData_vb,a6
 				asl.w	#8,d5
 				asl.w	#2,d5
 				add.w	d5,a6
@@ -600,4 +600,4 @@ Game_TeleportFrame_w:			dc.w	0
 SCREENPTRFLIG:	dc.l	0
 
 STARTSHIM:		dc.l	0
-SHIMMER:		incbin	"includes/shimmerfile"
+;draw_TeleportShimmerFXData_vb:		incbin	"includes/shimmerfile"

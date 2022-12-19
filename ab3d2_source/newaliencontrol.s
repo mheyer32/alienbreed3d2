@@ -698,22 +698,6 @@ Plr2_CollectItem:
 .no_collect:
 				rts
 
-Plr1_Health_w:			dc.w	0
-Plr1_JetpackFuel_w:		dc.w	0
-Plr1_AmmoCounts_vw:		ds.w	20
-Plr1_Shield_w:			dc.w	0
-Plr1_Jetpack_w:			dc.w	0
-Plr1_Weapons_vb:		dcb.w	10,0 ; todo - convert to bytes or bitfield
-
-Plr2_Health_w:			dc.w	0
-Plr2_JetpackFuel_w:		dc.w	0
-Plr2_AmmoCounts_vw:		ds.w	20
-
-Plr2_Shield_w:			dc.w	0
-Plr2_Jetpack_w:			dc.w	0
-Plr2_Weapons_vb:		dcb.w	10,0 ; todo - convert to bytes or bitfield
-
-
 CHECKPLAYERGOT:
 				move.b	#1,d0
 				rts
