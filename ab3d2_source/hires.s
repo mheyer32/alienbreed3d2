@@ -55,24 +55,32 @@ PLR_MASTER				equ 'm' ; two player master
 PLR_SLAVE				equ 's' ; two player slave
 PLR_SINGLE				equ 'n' ; Single player
 
-; BSS DATA
+; ZERO-INITIALISED DATA
 				include "bss/system_bss.s"
 				include "bss/io_bss.s"
 				include "bss/vid_bss.s"
 				include "bss/ai_bss.s"
 				include "bss/player_bss.s"
 				include "bss/draw_bss.s"
+				include "bss/zone_bss.s"
 				include "bss/tables_bss.s"
+
+; INITIALISED (DATA) DATA
+				include "data/system_data.s"
+				include "data/draw_data.s"
+				include "data/level_data.s"
+				include "data/tables_data.s"
 
 				section code,code
 ; Startup Code
 _start:
 				; since these moved to bss, they need explicit initialisation
+				; todo - module initialisation calls
 				not.b Plr1_Mouse_b
 				not.b Plr2_Mouse_b
 				move.w #191,Plr1_Energy_w
 				move.w #191,Plr2_Energy_w
-
+				not.w Zone_OrderTable_Barrier_w
 				movem.l	d1-a6,-(sp)
 **************************************************************************************
 ;ich bin hack  -----  invert Vid_FullScreenTemp_b to start game in fullsreen if cpu is 68040 AL
@@ -221,20 +229,9 @@ Game_SlaveQuit_b:			dc.b	0
 Game_MasterPaused_b:		dc.b	0
 Game_SlavePaused_b:			dc.b	0
 
-; Level data filenames. These are null terminated strings that are split on the character for the
-; name. This is poked in during loading.
-Lvl_BinFilename_vb:			dc.b	'ab3:levels/level_'
-Lvl_BinFilenameX_vb:		dc.b	'a/twolev.bin',0
-Lvl_GfxFilename_vb:			dc.b	'ab3:levels/level_'
-Lvl_GfxFilenameX_vb:		dc.b	'a/twolev.graph.bin',0
-Lvl_ClipsFilename_vb:		dc.b	'ab3:levels/level_'
-Lvl_ClipsFilenameX_vb:		dc.b	'a/twolev.clips',0
-Lvl_MapFilename_vb:			dc.b	'ab3:levels/level_'
-Lvl_MapFilenameX_vb:		dc.b	'a/twolev.map',0
-Lvl_FlyMapFilename_vb:		dc.b	'ab3:levels/level_'
-Lvl_FlyMapFilenameX_vb:		dc.b	'a/twolev.flymap',0
+; These can't be put into the data section due to the relocation type
+				align 4
 AppName:					dc.b	'TheKillingGrounds',0
-
 doslibname:					DOSNAME
 MiscResourceName:			MISCNAME
 PotgoResourceName:			POTGONAME
@@ -275,22 +272,6 @@ Game_ShowIntroText:
 				add.w	#82,a0
 				dbra	d7,.next_line_loop
 				rts
-
-				align 4
-draw_FontPtrs_vl:
-				dc.l	draw_EndFont0_vb,draw_CharWidths0_vb
-				dc.l	ENDFONT1,CHARWIDTHS1
-				dc.l	ENDFONT2,CHARWIDTHS2
-
-draw_EndFont0_vb:
-				incbin	"endfont0"
-draw_CharWidths0_vb:
-				incbin	"charwidths0"
-ENDFONT1:
-CHARWIDTHS1:
-ENDFONT2:
-CHARWIDTHS2:
-				even
 
 Draw_LineOfText:
 				movem.l	d0/a0/d7,-(a7)
@@ -1466,7 +1447,7 @@ ASlaveShouldWaitOnHisMaster:
 				move.l	ZoneT_Roof_l(a0),SplitHeight
 
 donetalking:
-				move.l	#ZoneBrightTable_vl,a1
+				move.l	#Zone_BrightTable_vl,a1
 				move.l	Lvl_ZoneAddsPtr_l,a2
 				move.l	plr2_ListOfGraphRoomsPtr_l,a0
 ; move.l plr2_PointsToRotatePtr_l,a5
@@ -2125,12 +2106,12 @@ LoadMainPalette:
 				sub.l	#256*4*3+2+2+4+4,a7		; reserve stack for 256 color entries + numColors + firstColor
 				move.l	a7,a1
 				move.l	a7,a0
-				lea		Palette,a2
+				lea		draw_Palette_vw,a2
 				move.w	#256,(a0)+				; number of entries
 				move.w	#0,(a0)+				; start index
 				move.w	#256*3-1,d0				; 768 entries
 
-				; Palette stores each entry as word
+				; draw_Palette_vw stores each entry as word
 .setCol			clr.l	d1
 				move.w	(a2)+,d1
 				ror.l	#8,d1
@@ -3037,7 +3018,7 @@ Plr1_Use:
 				move.b	Plr1_StoodInTop_b,ShotT_InUpperZone_b(a0)
 				move.w	(a1),12(a0)
 				move.w	(a1),d2
-				move.l	#ZoneBrightTable_vl,a1
+				move.l	#Zone_BrightTable_vl,a1
 				move.l	(a1,d2.w*4),d2
 				tst.b	Plr1_StoodInTop_b
 				bne.s	.okinbott
@@ -3104,7 +3085,7 @@ Plr1_Use:
 				move.b	Plr2_StoodInTop_b,ShotT_InUpperZone_b(a0)
 				move.w	(a1),12(a0)
 				move.w	(a1),d2
-				move.l	#ZoneBrightTable_vl,a1
+				move.l	#Zone_BrightTable_vl,a1
 				move.l	(a1,d2.w*4),d2
 				tst.b	Plr2_StoodInTop_b
 				bne.s	.okinbott2
@@ -3284,15 +3265,13 @@ Plr2_Use:
 				add.w	d3,Plr2_SnapZSpdVal_l
 
 				jsr		GetRand
+
 				muls	d4,d0
 				asr.l	#8,d0
 				asr.l	#4,d0
 				add.w	d0,Plr2_SnapAngSpd_w
-
 				move.l	#7*2116,hitcol
 				sub.w	d2,Plr2_Health_w
-
-
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.w	#19,Samplenum
 				clr.b	notifplaying
@@ -3304,22 +3283,20 @@ Plr2_Use:
 
 				movem.l	(a7)+,d0-d7/a0-a6
 
-.notbeenshot
+.notbeenshot:
 				move.b	#0,EntT_DamageTaken_b(a0)
 				move.b	#10,EntT_NumLives_b(a0)
-
 				move.w	plr2_TmpAngPos_w,EntT_CurrentAngle_w(a0)
 				move.b	Plr2_StoodInTop_b,ShotT_InUpperZone_b(a0)
-
 				move.w	(a1),12(a0)
 				move.w	(a1),d2
-				move.l	#ZoneBrightTable_vl,a1
+				move.l	#Zone_BrightTable_vl,a1
 				move.l	(a1,d2.w*4),d2
 				tst.b	Plr2_StoodInTop_b
 				bne.s	.okinbott
+
 				swap	d2
 .okinbott:
-
 				move.w	d2,2(a0)
 
 				move.l	Plr2_YOff_l,d0
@@ -3370,7 +3347,7 @@ Plr2_Use:
 
 				move.w	(a1),12(a0)
 				move.w	(a1),d2
-				move.l	#ZoneBrightTable_vl,a1
+				move.l	#Zone_BrightTable_vl,a1
 				move.l	(a1,d2.w*4),d2
 				tst.b	Plr1_StoodInTop_b
 				bne.s	.okinbott2
@@ -3549,16 +3526,13 @@ Plr1_Control:
 				move.l	Plr1_TmpZOff_l,d1
 				move.l	d1,newz
 				move.l	d1,Plr1_ZOff_l
-
 				move.l	plr1_TmpHeight_l,Plr1_Height_l
-
 				sub.l	d2,d0
 				sub.l	d3,d1
 				move.l	d0,xdiff
 				move.l	d1,zdiff
 				move.w	Plr1_TmpAngPos_w,d0
 				move.w	d0,Plr1_AngPos_w
-
 				move.l	#SinCosTable_vw,a1
 				move.w	(a1,d0.w),Plr1_SinVal_w
 				add.w	#2048,d0
@@ -4022,10 +3996,10 @@ doplr2too:
 				bsr		CalcPLR2InLine
 noplr2either:
 
-				move.l	endoflist,a0
+				move.l	Zone_EndOfListPtr_l,a0
 ; move.w #-1,(a0)
 
-; move.l #FinalOrder,a0
+; move.l #Zone_FinalOrderTable_vw,a0
 
 
 subroomloop:
@@ -4331,7 +4305,7 @@ dothisroom:
 				move.l	d1,LastZonePtr_l
 .nochange:
 
-				move.l	#ZoneBrightTable_vl,a1
+				move.l	#Zone_BrightTable_vl,a1
 				move.l	(a1,d0.w*4),d1
 				tst.b	Draw_DoUpper_b
 				bne.s	.ok_bottom
@@ -5247,7 +5221,7 @@ AmmoBar:
 
 * Do guns first.
 
-				move.l	#borderchars,a4
+				move.l	#draw_BorderChars_vb,a4
 				move.b	Plr1_TmpGunSelected_b,d0
 				move.l	#Plr1_Weapons_vb,a5
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
@@ -5299,7 +5273,7 @@ putingunnums:
 				swap	d0
 				move.b	d0,secdigit
 
-				move.l	#borderchars+15*8*10,a0
+				move.l	#draw_BorderChars_vb+15*8*10,a0
 				cmp.w	#10,Ammo
 				blt.s	.notsmallamo
 				add.l	#7*8*10,a0
@@ -5348,7 +5322,7 @@ EnergyBar:
 				swap	d0
 				move.b	d0,secdigit
 
-				move.l	#borderchars+15*8*10,a0
+				move.l	#draw_BorderChars_vb+15*8*10,a0
 				cmp.w	#10,Energy
 				blt.s	.notsmallamo
 				add.l	#7*8*10,a0
@@ -5414,8 +5388,6 @@ charlines:
 
 				rts
 
-borderchars:	incbin	"includes/bordercharsraw"
-
 NARRATOR:
 
 ; sub.w #1,NARRTIME
@@ -5458,7 +5430,7 @@ NARRATOR:
 .notrestartscroll
 				move.l	a1,SCROLLPOINTER
 
-				move.l	#SCROLLCHARS,a1
+				move.l	#draw_ScrollChars_vb,a1
 				asl.w	#3,d1
 				add.w	d1,a1
 
@@ -5486,9 +5458,6 @@ NARRATOR:
 
 
 NARRTIME:		dc.w	5
-
-SCROLLCHARS:	incbin	"includes/scrollfont"
-
 
 doanything:		dc.w	0						; does main game run?
 
@@ -8180,23 +8149,23 @@ gotoacrossgour:
 waterpt:		dc.l	waterlist
 
 waterlist:
-				dc.l	waterfile
-				dc.l	waterfile+2
-				dc.l	waterfile+256
-				dc.l	waterfile+256+2
-				dc.l	waterfile+512
-				dc.l	waterfile+512+2
-				dc.l	waterfile+768
-				dc.l	waterfile+768+2
-; dc.l waterfile+768
-; dc.l waterfile+512+2
-; dc.l waterfile+512
-; dc.l waterfile+256+2
-; dc.l waterfile+256
-; dc.l waterfile+2
+				dc.l	draw_WaterFrames_vb
+				dc.l	draw_WaterFrames_vb+2
+				dc.l	draw_WaterFrames_vb+256
+				dc.l	draw_WaterFrames_vb+256+2
+				dc.l	draw_WaterFrames_vb+512
+				dc.l	draw_WaterFrames_vb+512+2
+				dc.l	draw_WaterFrames_vb+768
+				dc.l	draw_WaterFrames_vb+768+2
+; dc.l draw_WaterFrames_vb+768
+; dc.l draw_WaterFrames_vb+512+2
+; dc.l draw_WaterFrames_vb+512
+; dc.l draw_WaterFrames_vb+256+2
+; dc.l draw_WaterFrames_vb+256
+; dc.l draw_WaterFrames_vb+2
 endwaterlist:
 
-watertouse:		dc.l	waterfile
+watertouse:		dc.l	draw_WaterFrames_vb
 
 wtan:			dc.w	0
 wateroff:		dc.l	0
@@ -9265,7 +9234,7 @@ justshake:
 				move.l	#1111*256,d0
 timenotneg:
 				asr.l	#8,d0
-				move.l	#digits,a1
+				move.l	#draw_Digits_vb,a1
 				move.w	#7,d2
 digitlop
 				divs	#10,d0
@@ -9286,7 +9255,7 @@ digitlop
 
 				move.l	#TimerScr+10+24*10,a0
 				move.l	NumTimes,d0
-				move.l	#digits,a1
+				move.l	#draw_Digits_vb,a1
 				move.w	#3,d2
 digitlop2
 				divs	#10,d0
@@ -9308,7 +9277,7 @@ digitlop2
 				move.l	#TimerScr+10+24*20,a0
 				moveq	#0,d0
 				move.w	FramesToDraw,d0
-				move.l	#digits,a1
+				move.l	#draw_Digits_vb,a1
 				move.w	#2,d2
 digitlop3
 				divs	#10,d0
@@ -10871,20 +10840,14 @@ scalecols:		;incbin	"bytepixpalscaled"
 ; incbin "floor256pal"
 ; ds.w 256*4
 
-				align 4
-SinCosTable_vw:
-				incbin	"bigsine"				; sine/cosine << 15
+
 
 ;angspd:			dc.w	0
 flooryoff:		dc.w	0						; viewer y pos << 6
 xoff:			dc.l	0
 zoff:			dc.l	0
 yoff:			dc.l	0
-;yvel:			dc.l	0
-;tyoff:			dc.l	0
-;xspdval:		dc.l	0
-;zspdval:		dc.l	0
-;Zone:			dc.w	0
+
 
 ; // READY PLAYER ONE /////////////////////////////////////////////////////////////////////
 
@@ -10912,8 +10875,6 @@ OldRoompt:		dc.l	0
 
 wallpt:			dc.l	0
 floorpt:		dc.l	0
-
-
 startwait:		dc.w	0
 endwait:		dc.w	0
 
@@ -10933,7 +10894,7 @@ Vid_RightX_w:		dc.w	SMALL_WIDTH
 
 GLF_DatabaseName_vb:		dc.b	"ab3:includes/test.lnk",0
 
-				CNOP 0,4
+				align 4
 GLF_DatabasePtr_l:		dc.l	0
 
 ******************************************
@@ -10941,13 +10902,13 @@ GLF_DatabasePtr_l:		dc.l	0
 
 ;brightentab:
 ; incbin "brightenfile"
-				section	data,data
-waterfile:
-				incbin	"waterfile"
-
-Palette			incbin	"256pal"
-
-				section code,code
+;				section	data,data
+;draw_WaterFrames_vb:
+;				incbin	"draw_WaterFrames_vb"
+;
+;draw_Palette_vw			incbin	"256pal"
+;
+;				section code,code
 
 hitcol:			dc.l	0
 
@@ -11120,9 +11081,6 @@ tstneg:			dc.l	0
 STOPTIMER:
 				st		oktodisplay
 				rts
-
-digits:			incbin	"numbers.inc"
-
 
 UseAllChannels:	dc.w	0
 

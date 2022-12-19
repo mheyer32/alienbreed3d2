@@ -127,9 +127,9 @@ Doleftend:
 				rts
 
 sometodraw:
-				move.w	itertab(pc,d1.w*4),d7
+				move.w	draw_IterationTable_vw(pc,d1.w*4),d7
 				swap	d0
-				move.w	itertab+2(pc,d1.w*4),d6
+				move.w	draw_IterationTable_vw+2(pc,d1.w*4),d6
 				clr.w	d0
 				swap	d1
 				clr.w	d1
@@ -138,8 +138,8 @@ sometodraw:
 
 				bra		pstit
 
-itertab:
-				incbin	"includes/iterfile"
+draw_IterationTable_vw:
+				incbin	"includes/iterfile" ; todo - move to data, change access via a3?
 
 pstit:
 				moveq	#0,d1

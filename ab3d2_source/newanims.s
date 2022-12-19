@@ -484,7 +484,7 @@ flashpts:
 flashedall:
 				move.l	(a7)+,a0
 
-				move.l	#ZoneBrightTable_vl,a1
+				move.l	#Zone_BrightTable_vl,a1
 				add.w	d1,(a1,d0.w*4)
 				add.w	d1,2(a1,d0.w*4)
 

@@ -18,7 +18,7 @@ Rotated_vl:				ds.l	2*800	; store rotated X and Z coordinates with Z scaling app
 ObjRotated_vl:			ds.l	2*500
 OnScreen_vl:			ds.l	2*800	; store screen projected X coordinates for rotated points
 
-ZoneBrightTable_vl:		ds.l	300
+
 
 WorkspacePtr_l:			ds.l	1	; hires.s - may depend on position relative to ObjectWorkspace_vl
 ObjectWorkspace_vl:		ds.l	600 ; hires.s
@@ -32,8 +32,6 @@ Storage_vl:				ds.l	500  ; drawing
 Aud_EmptyBuffer_vl:		ds.l	100 ; hires.s - audio
 Aud_EmptyBufferEnd:
 Aud_SampleList_vl:		ds.l	133
-;storeval:				ds.w	1
-
 
 LeftSideTable_vw:		ds.w	512*2
 RightSideTable_vw:		ds.w	512*2
@@ -42,5 +40,7 @@ RightBrightTable_vw:	ds.w	512*2
 
 anim_LiftHeightTable_vw:	ds.w	40 ; newanims.s
 anim_DoorHeightTable_vw:	ds.w	40 ; newanims.s
+
+
 
 KeyMap_vb:				ds.b	256

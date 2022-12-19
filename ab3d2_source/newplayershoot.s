@@ -1,6 +1,4 @@
 
-;popping:		ds.l	5*4
-
 				align 4
 targetydiff:	dc.l	0
 targdist:		dc.w	0

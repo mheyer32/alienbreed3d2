@@ -172,7 +172,7 @@ ballsLAST:
 
 INITREC:
 				move.l	#$bfd000,a0
-				move.l	#BUFFER,a1
+				move.l	#Sys_SerialBuffer_vl,a1
 				move.w	#15,d7
 				move.l	#$bfe001,a3
 				rts
@@ -221,8 +221,6 @@ noadd2:
 				bclr	#6,(a0)
 				move.l	d0,(a1)+
 				rts
-
-BUFFER:			ds.l	2000
 
 ;Before calling either of the transmission routines, the
 ;appropriate initialisation routine must be called

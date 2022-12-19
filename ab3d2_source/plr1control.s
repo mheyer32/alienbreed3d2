@@ -653,17 +653,12 @@ nobackward:
 
 				rts
 
-TEMPSCROLL
+TEMPSCROLL:
 				dcb.b	160,32
-
-;passspace:
-;				ds.l	400
 
 Plr1_JoystickControl:
 				jsr		_ReadJoy1
 				bra		Plr1_KeyboardControl
-
-
 
 Plr1_FootstepFX:
 				movem.l	d0-d7/a0-a6,-(a7)

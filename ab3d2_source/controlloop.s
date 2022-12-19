@@ -100,7 +100,7 @@ Game_Start:
 				jsr		Res_LoadFloorTextures
 				jsr		Res_LoadObjects
 
-				move.l	#backpicname,a0
+				move.l	#draw_BackdropImageName_vb,a0
 				move.l	#Draw_BackdropImagePtr_l,d0
 				move.l	#0,d1
 				jsr		IO_QueueFile
@@ -267,13 +267,13 @@ QUITTT:
 
 ;SSTACK:			dc.l	0
 
-backpicname:	dc.b	"ab3:includes/rawbackpacked"
-				dc.b	0
+;draw_BackdropImageName_vb:	dc.b	"ab3:includes/rawbackpacked"
+;				dc.b	0
 
-bordername:		dc.b	"ab3:includes/newborderRAW",0
-				even
-borderpacked:	incbin	"includes/newborderpacked"
-				ds.b	8	; safety for unLha overrun
+;bordername:		dc.b	"ab3:includes/newborderRAW",0
+;				even
+;borderpacked:	incbin	"includes/newborderpacked"
+;				ds.b	8	; safety for unLha overrun
 
 ; KEY OPTIONS:
 CONTROLBUFFER:

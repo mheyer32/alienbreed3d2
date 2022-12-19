@@ -2019,7 +2019,7 @@ putinmore2:
 
 				move.w	12(a0),d7
 
-				move.l	endoflist,a3
+				move.l	Zone_EndOfListPtr_l,a3
 FINDCLOSELOOP:
 				move.l	#possclose,a2
 				move.w	-(a3),d0

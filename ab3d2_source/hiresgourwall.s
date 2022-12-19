@@ -38,7 +38,7 @@ DoleftendGOUR:
 				bge.s	sometodrawG
 				rts
 
-				;  struct{short 2^n-1,n;} itertab[]
+				;  struct{short 2^n-1,n;} draw_IterationTable_vw[]
 sometodrawG:
 				; I think, this determines how oblique a wall is to the viewer.
 				; The thinner a wall, the less precise the iterations need to be.
