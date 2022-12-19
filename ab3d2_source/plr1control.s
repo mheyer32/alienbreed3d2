@@ -1,4 +1,5 @@
 
+
 Plr1_MouseControl:
 				jsr		Sys_ReadMouse
 
@@ -352,7 +353,7 @@ gogog:
 
 				; a0 points to destination memory
 Draw_ResetGameDisplay:
-				move.l	#borderpacked,d0
+				move.l	#draw_BorderPacked_vb,d0
 				moveq	#0,d1
 				lea		Sys_Workspace_vl,a1
 				lea		$0,a2

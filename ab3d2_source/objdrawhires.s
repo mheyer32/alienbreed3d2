@@ -238,11 +238,11 @@ draw_bitmap_glare:
 ; * CONSTANTS FOR MOVING ACROSS AND
 ; * DOWN THE OBJECT GRAPHIC.
 
-				move.l	(a5)+,WAD_PTR
-				move.l	(a5)+,PTR_PTR
+				move.l	(a5)+,draw_WADPtr_l
+				move.l	(a5)+,draw_PtrPtr_l
 				move.l	(a6),d7
-				move.w	d7,DOWN_STRIP
-				move.l	PTR_PTR,a5
+				move.w	d7,draw_DownStrip_w
+				move.l	draw_PtrPtr_l,a5
 				swap	d7
 				asl.w	#2,d7
 				adda.w	d7,a5
@@ -306,7 +306,7 @@ draw_bitmap_glare:
 				move.l	#ontoscr,a6
 				move.l	(a6,d2.w*4),d2
 				add.l	Vid_FastBufferPtr_l,d2
-				move.l	d2,toppt
+				move.l	d2,toppt_l
 				cmp.w	draw_LeftClipB_w,d0
 				bge.s	.ok_on_left
 
@@ -336,32 +336,32 @@ draw_bitmap_glare:
 
 .ok_right_side:
 				ext.l	d0
-				add.l	d0,toppt
+				add.l	d0,toppt_l
 				move.w	(a3),d5
 				move.w	2(a3),d6
 				muls	d7,d5
 				mulu	d7,d6
 				swap	d6
 				add.w	d6,d5
-				add.w	DOWN_STRIP(PC),d5		;d5 contains
+				add.w	draw_DownStrip_w,d5		;d5 contains
 												;top offset into
 												;each strip.
 				add.l	#$80000000,d5
 				move.l	(a2),a2
 				moveq.l	#0,d7
-				move.l	a5,midobj
+				move.l	a5,midobj_l
 				move.l	(a3),d2
 				swap	d2
 				move.l	#0,a1
 
 draw_right_side_glare:
 				swap	d7
-				move.l	midobj(pc),a5
+				move.l	midobj_l,a5
 				lea		(a5,d7.w*4),a5
 				swap	d7
 				add.l	a2,d7					; step fractional column
-				move.l	WAD_PTR(PC),a0
-				move.l	toppt(pc),a6
+				move.l	draw_WADPtr_l,a0
+				move.l	toppt_l,a6
 				adda.w	a1,a6
 				addq	#1,a1
 				move.l	(a5),d1
@@ -641,13 +641,13 @@ pastobjscale:
 ; * CONSTANTS FOR MOVING ACROSS AND
 ; * DOWN THE OBJECT GRAPHIC.
 
-				move.l	(a5)+,WAD_PTR
-				move.l	(a5)+,PTR_PTR
+				move.l	(a5)+,draw_WADPtr_l
+				move.l	(a5)+,draw_PtrPtr_l
 				add.l	4(a5),a4				; a5: #Draw_ObjectPtrs_vl
 				move.l	4(a5),draw_BasePalPtr_l
 				move.l	(a6),d7					; pointer to current frame
-				move.w	d7,DOWN_STRIP			; leftmost strip?
-				move.l	PTR_PTR,a5
+				move.w	d7,draw_DownStrip_w			; leftmost strip?
+				move.l	draw_PtrPtr_l,a5
 				tst.b	draw_FlipIt_b
 				beq.s	.no_flip
 
@@ -723,7 +723,7 @@ pastobjscale:
 				move.l	#ontoscr,a6
 				move.l	(a6,d2.w*4),d2
 				add.l	Vid_FastBufferPtr_l,d2
-				move.l	d2,toppt
+				move.l	d2,toppt_l
 				cmp.w	draw_LeftClipB_w,d0
 				bge.s	.ok_on_left
 
@@ -760,14 +760,14 @@ pastobjscale:
 
 .ok_right_side:
 				ext.l	d0
-				add.l	d0,toppt
+				add.l	d0,toppt_l
 				move.w	(a3),d5
 				move.w	2(a3),d6
 				muls	d7,d5
 				mulu	d7,d6
 				swap	d6
 				add.w	d6,d5
-				add.w	DOWN_STRIP(PC),d5		;d5 contains
+				add.w	draw_DownStrip_w,d5		;d5 contains
 												;top offset into
 												;strip?
 				add.l	#$80000000,d5
@@ -780,7 +780,7 @@ pastobjscale:
 .no_flip_3:
 				move.l	d7,a2					; store fractional column offset
 				moveq.l	#0,d7
-				move.l	a5,midobj
+				move.l	a5,midobj_l
 				move.l	(a3),d2
 				swap	d2
 				move.l	#0,a1
@@ -792,12 +792,12 @@ pastobjscale:
 
 draw_right_side:
 				swap	d7
-				move.l	midobj(pc),a5
+				move.l	midobj_l,a5
 				lea		(a5,d7.w*4),a5
 				swap	d7
 				add.l	a2,d7					; fractional column advance?
-				move.l	WAD_PTR(PC),a0
-				move.l	toppt(pc),a6
+				move.l	draw_WADPtr_l,a0
+				move.l	toppt_l,a6
 				adda.w	a1,a6
 				addq	#1,a1
 				move.l	(a5),d1
@@ -885,13 +885,13 @@ draw_bitmap_additive:
 
 draw_right_side_additive:
 				swap	d7
-				move.l	midobj(pc),a5
+				move.l	midobj_l,a5
 				lea		(a5,d7.w*4),a5
 				swap	d7
 				add.l	a2,d7
-				move.l	WAD_PTR(PC),a0
+				move.l	draw_WADPtr_l,a0
 
-				move.l	toppt(pc),a6
+				move.l	toppt_l,a6
 				adda.w	a1,a6
 				addq	#1,a1
 				move.l	(a5),d1
@@ -1179,13 +1179,13 @@ INMIDDLE:
 
 .draw_light_loop:
 				swap	d7
-				move.l	midobj(pc),a5
+				move.l	midobj_l,a5
 				lea		(a5,d7.w*4),a5
 				swap	d7
 				add.l	a2,d7
-				move.l	WAD_PTR(PC),a0			; is this not always right? Seems to be connected to
+				move.l	draw_WADPtr_l,a0			; is this not always right? Seems to be connected to
 												; dead body of the blue priests, first seen in level C
-				move.l	toppt(pc),a6
+				move.l	toppt_l,a6
 				adda.w	a1,a6
 				addq	#1,a1
 				move.l	(a5),d1
@@ -1521,88 +1521,8 @@ draw_CalcBrightsInZone:
 .done_point_bright:
 				rts
 
-				CNOP 0,4
-draw_AngleBrights_vl:	ds.l	8*2
-
-draw_Brights_vw:
-				dc.w	3
-				dc.w	8,9,10,11,12
-				dc.w	15,16,17,18,19
-				dc.w	21,22,23,24,25,26,27
-				dc.w	29,30,31,32,33
-				dc.w	36,37,38,39,40
-				dc.w	45
-
-draw_Brights2_vw:
-				dc.w	3
-				dc.w	12,11,10,9,8
-				dc.w	19,18,17,16,15
-				dc.w	27,26,25,24,23,22,21
-				dc.w	33,32,31,30,29
-				dc.w	40,39,38,37,36
-				dc.w	45
-
-draw_Pals_vl:
-				ds.l	2*49
-
-willy:
-				dc.w	0,0,0,0,0,0,0
-				dc.w	5,5,5,5,5,5,5
-				dc.w	10,10,10,10,10,10,10
-				dc.w	15,15,15,15,15,15,15
-				dc.w	20,20,20,20,20,20,20
-				dc.w	25,25,25,25,25,25,25
-				dc.w	30,30,30,30,30,30,30
-
-willybright:
-				dc.w	30,30,30,30,30,30,30
-				dc.w	30,20,20,20,20,20,30
-				dc.w	30,20,6,3,6,20,30
-				dc.w	30,20,6,0,6,20,30
-				dc.w	30,20,6,6,6,20,30
-				dc.w	30,20,20,20,20,20,30
-				dc.w	30,30,30,30,30,30,30
-
-draw_XZAngs_vw:
-				dc.w	0,23,10,20,16,16,20,10
-				dc.w	23,0,20,-10,16,-16,10,-20
-				dc.w	0,-23,-10,-20,-16,-16,-20,-10
-				dc.w	-23,0,-20,10,-16,16,-10,20
-
-guff:
-				incbin	"includes/guff"
-
-
-
-midx:			dc.w	0
-objpixwidth:	dc.w	0
-tmptst:			dc.l	0
-toppt:			dc.l	0
-doneit:			dc.w	0
-replaceend:		dc.w	0
-saveend:		dc.w	0
-midobj:			dc.l	0
-obadd:			dc.l	0
-DOWN_STRIP:		dc.w	0
-WAD_PTR:		dc.l	0
-PTR_PTR:		dc.l	0
-
-PolyAngPtr:		dc.l	0
-PointAngPtr:	dc.l	0
-
-				ds.w	100
-
-*********************************
-***************************************
-*********************************
-tstddd:			dc.l	0
-
 polybehind:
 				rts
-
-
-
-
 
 
 ;  Polygonal Object rendering
@@ -1793,11 +1713,11 @@ BOTPART:
 				move.l	d2,PtsPtr
 				move.w	2(a4,d5.w*4),d5
 				add.l	draw_StartOfObjPtr_l,d5
-				move.l	d5,PolyAngPtr
+				move.l	d5,draw_PolyAngPtr_l
 				move.l	d2,a3
 				move.w	draw_NumPoints_w,d5
 				move.l	(a3)+,draw_ObjectOnOff_l
-				move.l	a3,PointAngPtr
+				move.l	a3,draw_PointAngPtr_l
 				move.w	d5,d2
 				moveq	#0,d3
 				lsr.w	#1,d2
@@ -1954,7 +1874,7 @@ done_conv:
 				move.w	draw_NumPoints_w,d7
 				move.l	#boxbrights,a6
 				subq	#1,d7
-				move.l	PointAngPtr,a0
+				move.l	draw_PointAngPtr_l,a0
 				move.l	#draw_PointAndPolyBrights_vl,a2
 				move.w	draw_ObjectAng_w,d2
 				asr.w	#8,d2
@@ -2260,7 +2180,7 @@ dontusegour:
 				moveq	#0,d2
 				moveq	#0,d3
 				move.b	(a1)+,d2
-				move.l	PolyAngPtr,a1
+				move.l	draw_PolyAngPtr_l,a1
 				move.b	(a1,d2.w),d2
 				move.b	d2,d3
 				add.w	d4,d3
@@ -2641,7 +2561,7 @@ gotholesin:
 				moveq	#0,d2
 				moveq	#0,d3
 				move.b	(a1)+,d2
-				move.l	PolyAngPtr,a1
+				move.l	draw_PolyAngPtr_l,a1
 				move.b	(a1,d2.w),d2
 				move.b	d2,d3
 				lsr.b	#4,d3					;d3=vertical pos

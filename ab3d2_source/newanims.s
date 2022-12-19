@@ -3010,8 +3010,8 @@ infinite:
 
 noworrylife:
 
-				move.w	#0,extlen
-				move.b	#$ff,awayfromwall
+				move.w	#0,Obj_ExtLen_w
+				move.b	#$ff,Obj_AwayFromWall_b
 
 
 				tst.b	ShotT_Status_b(a0)
@@ -3353,7 +3353,7 @@ nograv:
 				asr.l	#7,d4
 				move.w	d4,4(a0)
 				tst.l	BulT_BounceHoriz_l(a6)
-				sne		wallbounce
+				sne		Obj_WallBounce_b
 				seq		exitfirst
 
 				clr.b	MOVING
@@ -3370,7 +3370,7 @@ nograv:
 				move.w	oldz,d0
 				cmp.w	newz,d0
 				beq.s	nomovebul
-				move.w	#1,walllength
+				move.w	#1,WallLength_w
 
 lalal:
 				st		MOVING
@@ -3394,7 +3394,7 @@ lalal:
 nomovebul:
 				move.b	StoodInTop,ShotT_InUpperZone_b(a0)
 
-				tst.b	wallbounce
+				tst.b	Obj_WallBounce_b
 				beq.s	.notabouncything
 
 				tst.b	hitwall
@@ -3403,25 +3403,25 @@ nomovebul:
 ; we have hit a wall....
 
 				move.w	ShotT_VelocityZ_w(a0),d0
-				muls	wallxsize,d0
+				muls	WallXSize_w,d0
 				move.w	ShotT_VelocityX_w(a0),d1
-				muls	wallzsize,d1
+				muls	WallZSize_w,d1
 				sub.l	d1,d0
-				divs	walllength,d0
+				divs	WallLength_w,d0
 
 				move.w	ShotT_VelocityX_w(a0),d1
-				move.w	wallzsize,d2
+				move.w	WallZSize_w,d2
 				add.w	d2,d2
 				muls	d0,d2
-				divs	walllength,d2
+				divs	WallLength_w,d2
 				add.w	d2,d1
 				move.w	d1,ShotT_VelocityX_w(a0)
 
 				move.w	ShotT_VelocityZ_w(a0),d1
-				move.w	wallxsize,d2
+				move.w	WallXSize_w,d2
 				add.w	d2,d2
 				muls	d0,d2
-				divs	walllength,d2
+				divs	WallLength_w,d2
 				sub.w	d2,d1
 				move.w	d1,ShotT_VelocityZ_w(a0)
 
@@ -4080,7 +4080,7 @@ CheckedEmAll:
 				move.w	#9,d7
 
 				clr.b	exitfirst
-				st.b	wallbounce
+				st.b	Obj_WallBounce_b
 				move.w	12(a0),d0
 				move.l	Lvl_ZoneAddsPtr_l,a3
 				move.l	(a3,d0.w*4),a3
@@ -4150,8 +4150,8 @@ DOFLAMES:
 				move.l	MiddleRoom,objroom
 
 				movem.l	d5/d6/a0/a1/a3/d7/a6,-(a7)
-				move.w	#80,extlen
-				move.b	#1,awayfromwall
+				move.w	#80,Obj_ExtLen_w
+				move.b	#1,Obj_AwayFromWall_b
 				jsr		MoveObject
 				movem.l	(a7)+,d5/d6/a0/a1/a3/d7/a6
 

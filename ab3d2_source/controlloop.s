@@ -35,12 +35,12 @@
 				align 4
 OPTSPRADDR:		dc.l	0
 
-FINISHEDLEVEL:	dc.w	0
+Game_FinishedLevel_b:	dc.w	0
 
 				align	4
 
 
-INTUITION_REV	equ		31						v1.1
+INTUITION_REV	equ		31	;					v1.1
 int_name		INTNAME
 				even
 
@@ -155,7 +155,7 @@ DONEMENU:
 				tst.b	SHOULDQUIT
 				bne		QUITTT
 
-				clr.b	FINISHEDLEVEL
+				clr.b	Game_FinishedLevel_b
 
 				move.w	#0,Plr1_SnapAngPos_w
 				move.w	#0,Plr2_SnapAngPos_w
@@ -188,14 +188,14 @@ DONEMENU:
 *************************************
 				jsr		IO_InitQueue
 
-				move.l	#borderpacked,d0
+				move.l	#draw_BorderPacked_vb,d0
 				moveq	#0,d1
 				move.l	Vid_Screen1Ptr_l,a0
 				lea		Sys_Workspace_vl,a1
 				lea		$0,a2
 				jsr		unLHA
 
-				move.l	#borderpacked,d0
+				move.l	#draw_BorderPacked_vb,d0
 				moveq	#0,d1
 				move.l	Vid_Screen2Ptr_l,a0
 				lea		Sys_Workspace_vl,a1
@@ -208,7 +208,7 @@ DONEMENU:
 
 *************************************
 
-				tst.b	FINISHEDLEVEL
+				tst.b	Game_FinishedLevel_b
 				beq		dontusestats
 
 				move.l	#Plr_Health_w,a0
@@ -264,16 +264,6 @@ QUITTT:
 				move.l	#0,d0
 
 				rts
-
-;SSTACK:			dc.l	0
-
-;draw_BackdropImageName_vb:	dc.b	"ab3:includes/rawbackpacked"
-;				dc.b	0
-
-;bordername:		dc.b	"ab3:includes/newborderRAW",0
-;				even
-;borderpacked:	incbin	"includes/newborderpacked"
-;				ds.b	8	; safety for unLha overrun
 
 ; KEY OPTIONS:
 CONTROLBUFFER:

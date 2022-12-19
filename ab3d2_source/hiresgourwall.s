@@ -261,7 +261,7 @@ scrdrawlopG:
 				move.w	d6,a5					; "Word-size source operands are signextended to 32-bit quantities."
 				move.l	(a0)+,d3
 				swap	d3
-				add.l	#divthreetab,a5
+				add.l	#DivThreeTable_vb,a5
 				move.w	(a5),StripData			; d6*2/3
 
 				move.l	Draw_ChunkPtr_l,a5
@@ -350,7 +350,7 @@ scrdrawlopGDOUB:
 				move.w	d6,a5
 				move.l	(a0)+,d3
 				swap	d3
-				add.l	#divthreetab,a5
+				add.l	#DivThreeTable_vb,a5
 				move.w	(a5),StripData
 
 				move.l	Draw_ChunkPtr_l,a5
@@ -426,7 +426,7 @@ scrdrawlopGB:
 				move.w	d6,a5
 				move.l	(a0)+,d3
 				swap	d3
-				add.l	#divthreetab,a5
+				add.l	#DivThreeTable_vb,a5
 				move.w	(a5),StripData
 
 				move.l	Draw_ChunkPtr_l,a5
@@ -508,7 +508,7 @@ scrdrawlopGBDOUB:
 				move.w	d6,a5
 				move.l	(a0)+,d3
 				swap	d3
-				add.l	#divthreetab,a5
+				add.l	#DivThreeTable_vb,a5
 				move.w	(a5),StripData
 
 				move.l	Draw_ChunkPtr_l,a5
@@ -668,14 +668,12 @@ nh3G:
 				asr.w	#1,d7
 				subq	#1,d6
 nh4G:
-
 				cmp.w	#128,d7
 				ble.s	.okokok
 				move.w	#128,d7
 				move.w	#5,d6
+
 .okokok:
-
-
 				move.w	d6,iters
 				subq	#1,d7
 				move.w	d7,multcount
@@ -843,8 +841,6 @@ CalcAndDrawG:
 				moveq	#0,d5
 				move.w	Vid_CentreX_w,d5
 				add.l	d5,d3
-
-
 				move.w	8(a1),d5
 				move.w	strtop(pc),12(a0)
 				move.l	topofwall(pc),d6
@@ -866,7 +862,6 @@ CalcAndDrawG:
 				bge		.alloffright
 
 				movem.l	d0/d1/d2/d3/a0,-(a7)
-
 				moveq	#0,d0
 				move.b	WALLIDENT,d0
 				blt.s	.noputinmap
@@ -883,29 +878,24 @@ CalcAndDrawG:
 				beq.s	.no_door
 				addq	#2,d0
 				bset	d0,d1
-.no_door:
 
+.no_door:
 				or.l	d1,(a0)
 				move.l	BIGPTR,a0
-
 				move.w	wallleftpt,(a0,d2.w*4)
 				move.w	wallrightpt,2(a0,d2.w*4)
 
-.noputinmap
-
+.noputinmap:
 				movem.l	(a7)+,d0/d1/d2/d3/a0
 
 				bra		OTHERHALFG
 
-
 .alloffleft:
-
 				move.l	(a1)+,d1
 				move.w	(a1)+,d0
 				move.w	(a1)+,tlbr
 				move.w	(a1)+,d4
 				move.w	(a1)+,lbr
-
 				dbra	d7,.computeloop
 				rts
 
@@ -947,7 +937,6 @@ computeloop2G:
 				bge		alloffright2G
 
 OTHERHALFG:
-
 				move.w	d1,(a0)
 				move.w	d3,2(a0)
 				move.w	d4,4(a0)

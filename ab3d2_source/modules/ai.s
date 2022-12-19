@@ -194,7 +194,7 @@ ai_JustDied:
 
 				; * Spawn some smaller aliens...
 				move.w	#2,d7					; number to do.
-				move.l	OtherNastyDataPtr_vl,a2
+				move.l	AI_OtherAlienDataPtrs_vl,a2
 				add.l	#64,a2
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d1
@@ -592,7 +592,7 @@ ai_Widget:
 				bra		.hit_something
 
 .can_move:
-				clr.b	wallbounce
+				clr.b	Obj_WallBounce_b
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
 				move.b	StoodInTop,ShotT_InUpperZone_b(a0)
@@ -767,7 +767,7 @@ ai_ChargeCommon:
 				bra		.hit_something
 
 .can_move:
-				clr.b	wallbounce
+				clr.b	Obj_WallBounce_b
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
 				move.b	StoodInTop,ShotT_InUpperZone_b(a0)
@@ -1192,7 +1192,7 @@ ai_ChargeFlyingCommon:
 				bra		.hit_something
 
 .can_move:
-				clr.b	wallbounce
+				clr.b	Obj_WallBounce_b
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
 				move.b	StoodInTop,ShotT_InUpperZone_b(a0)
@@ -1417,7 +1417,7 @@ ai_ApproachCommon:
 				bra		.hit_something
 
 .can_move:
-				clr.b	wallbounce
+				clr.b	Obj_WallBounce_b
 				jsr		MoveObject
 				movem.l	(a7)+,d0/a0/a1/a3/a4/d7
 				move.b	StoodInTop,ShotT_InUpperZone_b(a0)

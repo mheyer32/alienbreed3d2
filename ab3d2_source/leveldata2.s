@@ -44,48 +44,7 @@ Plr_Initialise:
 				move.w	8(a1),Plr2_ZOff_l
 				rts
 
-;*************************************************
-;* Floor lines:                                  *
-;* A floor line is a line seperating two rooms.  *
-;* The data for the line is therefore:           *
-;* x,y,dx,dy,Room1,Room2                         *
-;* For ease of editing the lines are initially   *
-;* stored in the form startpt,endpt,Room1,Room2  *
-;* and the program calculates x,y,dx and dy from *
-;* this information and stores it in a buffer.   *
-;*************************************************
 
-				align 4
-; long aligned data
-PointsToRotatePtr_l:			dc.l	0
-Lvl_DataPtr_l:					dc.l	0
-
-;*************************************************************
-;* ROOM GRAPHICAL DESCRIPTIONS : WALLS AND FLOORS ************
-;*************************************************************
-
-Lvl_ZoneBorderPointsPtr_l:		dc.l	0
-Lvl_ConnectTablePtr_l:			dc.l	0
-Lvl_ListOfGraphRoomsPtr_l:		dc.l	0
-NastyShotDataPtr_l:				dc.l	0
-Lvl_ObjectPointsPtr_l:			dc.l	0
-Lvl_ObjectDataPtr_l:			dc.l	0
-Lvl_FloorLinesPtr_l:			dc.l	0
-Lvl_PointsPtr_l:				dc.l	0	; Pointer to array of all 2D points in the world
-Lvl_ZoneGraphAddsPtr_l:			dc.l	0
-Lvl_ZoneAddsPtr_l:				dc.l	0
-Lvl_LiftDataPtr_l:				dc.l	0
-Lvl_DoorDataPtr_l:				dc.l	0
-Lvl_SwitchDataPtr_l:			dc.l	0
-Lvl_ControlPointCoordsPtr_l:	dc.l	0
-Lvl_GraphicsPtr_l:				dc.l	0
-Lvl_ClipsPtr_l:					dc.l	0
-OtherNastyDataPtr_vl:			ds.l	20
-
-; Word aligned data
-Lvl_NumControlPoints_w:			dc.w	0
-Lvl_NumPoints_w:				dc.w	0
-Lvl_NumObjectPoints_w:			dc.w	0
 
 
 

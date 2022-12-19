@@ -1,20 +1,18 @@
-extlen:			dc.w	0
-awayfromwall:	dc.w	0
-wallbounce:		dc.w	0
-wallxsize:		dc.w	0
-wallzsize:		dc.w	0
-walllength:		dc.w	0
-
-RoomPath:		ds.w	100
-RoomPathPtr:	dc.l	0
-QUITOUT:		dc.w	0
+			align 4
+obj_RoomPathPtr_l:	dc.l	0
+Obj_ExtLen_w:		dc.w	0
+WallXSize_w:		dc.w	0
+WallZSize_w:		dc.w	0
+WallLength_w:		dc.w	0
+obj_QuitLimit_w:	dc.w	0
+Obj_AwayFromWall_b:	dc.b	0 ; accessed as byte
+Obj_WallBounce_b:	dc.b	0 ; accessed as byte
 
 MoveObject:
-
 				move.l	objroom,objroomback
-				move.w	#50,QUITOUT
+				move.w	#50,obj_QuitLimit_w
 
-				move.l	#RoomPath,RoomPathPtr
+				move.l	#Obj_RoomPath_vw,obj_RoomPathPtr_l
 
 				clr.b	hitwall
 
@@ -25,22 +23,21 @@ MoveObject:
 				sub.w	oldz,d0
 				move.w	d0,zdiff
 				tst.w	xdiff
-				bne.s	.moveing
+				bne.s	.moving
 				tst.w	zdiff
-				bne.s	.moveing
+				bne.s	.moving
 				rts
 
-.moveing:
-
+.moving:
 				move.l	newy,wallhitheight
 				move.l	objroom,a0
 
 gobackanddoitallagain:
-
 				move.l	a0,a5
 				adda.w	ZoneT_ExitList_w(a5),a0
 				move.l	a0,test
 				move.l	Lvl_FloorLinesPtr_l,a1
+
 checkwalls:
 				move.w	(a0)+,d0
 				blt		no_more_walls
@@ -145,7 +142,7 @@ thisisawall2
 
 				move.l	#0,a4
 				move.l	#0,a6
-				move.b	awayfromwall,d3
+				move.b	Obj_AwayFromWall_b,d3
 				blt.s	.notomatoes
 
 				move.b	12(a2),d2
@@ -187,7 +184,7 @@ thisisawall2
 				ble		chkhttt
 
 				move.w	10(a2),d3
-				add.w	extlen,d3
+				add.w	Obj_ExtLen_w,d3
 				divs	d3,d0
 				cmp.w	#32,d0
 				bge		oknothitwall
@@ -205,7 +202,7 @@ chkhttt:
 				move.l	d0,d7
 
 				move.w	10(a2),d3
-				add.w	extlen,d3
+				add.w	Obj_ExtLen_w,d3
 				divs	d3,d7					;  d
 
 				move.l	newy,d4
@@ -256,7 +253,7 @@ chkhttt:
 
 				move.l	d1,wallhitheight
 
-				tst.b	wallbounce
+				tst.b	Obj_WallBounce_b
 				bne.s	.calcbounce
 
 				tst.b	exitfirst(pc)
@@ -272,9 +269,9 @@ chkhttt:
 ; Supply wall data to reflect the
 ; movement direction of the object
 
-				move.w	d2,wallxsize
-				move.w	d5,wallzsize
-				move.w	d3,walllength
+				move.w	d2,WallXSize_w
+				move.w	d5,WallZSize_w
+				move.w	d3,WallLength_w
 
 .calcwherehit:
 
@@ -429,7 +426,7 @@ oknothitwall:
 				bra		checkwalls
 no_more_walls:
 
-				tst.w	extlen
+				tst.w	Obj_ExtLen_w
 				beq		NOOTHERWALLSNEEDED
 
 				tst.w	xdiff
@@ -538,7 +535,7 @@ anotherwalls:
 
 				move.l	#0,a4
 				move.l	#0,a6
-				move.b	awayfromwall,d3
+				move.b	Obj_AwayFromWall_b,d3
 				blt.s	.notomatoes
 
 				move.b	12(a2),d2
@@ -617,7 +614,7 @@ anotherwalls:
 .mighthit:
 
 				move.w	10(a2),d0
-				add.w	extlen,d0
+				add.w	Obj_ExtLen_w,d0
 				divs	d0,d7					;  d
 				sub.w	#3,d7
 				move.w	d7,d6
@@ -836,16 +833,16 @@ checkifcrossed:
 				slt		StoodInTop
 
 				move.l	a3,a5
-				move.l	RoomPathPtr,a0
+				move.l	obj_RoomPathPtr_l,a0
 				move.w	(a3),(a0)+
-				move.l	a0,RoomPathPtr
+				move.l	a0,obj_RoomPathPtr_l
 				move.l	a3,a0
 				move.l	a5,objroom
 
-				move.w	QUITOUT,d0
+				move.w	obj_QuitLimit_w,d0
 				sub.w	#1,d0
 				beq.s	ERRORINMOVEMENT
-				move.w	d0,QUITOUT
+				move.w	d0,obj_QuitLimit_w
 				bra		gobackanddoitallagain
 ; bra.s donefloorline
 
@@ -862,7 +859,7 @@ mustbeinsameroom:
 
 stopandleave:
 
-				move.l	RoomPathPtr,a0
+				move.l	obj_RoomPathPtr_l,a0
 				move.w	#-1,(a0)+
 
 				rts
@@ -1980,11 +1977,11 @@ FindCloseRoom:
 				move.w	d1,newx
 				move.w	d0,newz
 				movem.l	d0-d7/a0-a6,-(a7)
-				clr.b	wallbounce
+				clr.b	Obj_WallBounce_b
 				jsr		MoveObject
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				move.l	#RoomPath,a2
+				move.l	#Obj_RoomPath_vw,a2
 				move.l	#possclose,a3
 				move.w	12(a0),(a3)+
 
@@ -2001,11 +1998,11 @@ putinmore:
 				move.w	d1,newz
 
 				movem.l	d0-d7/a0-a6,-(a7)
-				clr.b	wallbounce
+				clr.b	Obj_WallBounce_b
 				jsr		MoveObject
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				move.l	#RoomPath,a2
+				move.l	#Obj_RoomPath_vw,a2
 
 putinmore2:
 				move.w	(a2)+,d0

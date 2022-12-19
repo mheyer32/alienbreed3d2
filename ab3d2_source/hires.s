@@ -59,6 +59,7 @@ PLR_SINGLE				equ 'n' ; Single player
 				include "bss/system_bss.s"
 				include "bss/io_bss.s"
 				include "bss/vid_bss.s"
+				include "bss/level_bss.s"
 				include "bss/ai_bss.s"
 				include "bss/player_bss.s"
 				include "bss/draw_bss.s"
@@ -70,6 +71,7 @@ PLR_SINGLE				equ 'n' ; Single player
 				include "data/draw_data.s"
 				include "data/level_data.s"
 				include "data/tables_data.s"
+				include "data/text_data.s"
 
 				section code,code
 ; Startup Code
@@ -489,7 +491,7 @@ noload:
 				move.l	a2,NastyShotDataPtr_l
 
 				add.l	#64*20,a2
-				move.l	a2,OtherNastyDataPtr_vl
+				move.l	a2,AI_OtherAlienDataPtrs_vl
 
 				move.l	36+6(a1),a2
 				add.l	a4,a2
@@ -591,22 +593,22 @@ noclips:
 				; setup audio channels
 				move.l	#$dff000,a6
 
-				move.l	#null,$dff0a0
+				move.l	#Aud_Null1_vw,$dff0a0
 				move.w	#100,$dff0a4
 				move.w	#443,$dff0a6
 				move.w	#63,$dff0a8
 
-				move.l	#null2,$dff0b0
+				move.l	#Aud_Null2_vw,$dff0b0
 				move.w	#100,$dff0b4
 				move.w	#443,$dff0b6
 				move.w	#63,$dff0b8
 
-				move.l	#null4,$dff0c0
+				move.l	#Aud_Null4_vw,$dff0c0
 				move.w	#100,$dff0c4
 				move.w	#443,$dff0c6
 				move.w	#63,$dff0c8
 
-				move.l	#null3,$dff0d0
+				move.l	#Aud_Null3_vw,$dff0d0
 				move.w	#100,$dff0d4
 				move.w	#443,$dff0d6
 				move.w	#63,$dff0d8
@@ -856,7 +858,7 @@ lop:
 				divs	#9,d0
 				swap	d0
 				muls	#160,d0
-				add.l	#IVEWONTEXT,d0
+				add.l	#Game_TwoPlayerVictoryMessages_vb,d0
 				jsr		SENDMESSAGE
 
 				move.l	Plr2_ObjectPtr_l,a0
@@ -897,7 +899,7 @@ lop:
 				divs	#9,d0
 				swap	d0
 				muls	#160,d0
-				add.l	#IVEWONTEXT,d0
+				add.l	#Game_TwoPlayerVictoryMessages_vb,d0
 				jsr		SENDMESSAGE
 
 				move.l	Plr1_ObjectPtr_l,a0
@@ -2920,45 +2922,6 @@ GUNYOFFS:
 				dc.w	0
 				dc.w	20
 
-
-IVEWONTEXT:
-;      12345678901234567890123456789012345678901234567890123456789012345678901234567890
-				dc.b	'Enemy Player Vanquished!                '
-				dc.b	'                                        '
-				dc.b	'Enemy Player Vanquished!                '
-				dc.b	'                                        '
-
-				dc.b	'Oooh, that one must have hurt!          '
-				dc.b	'                                        '
-				dc.b	'Oooh, that one must have hurt!          '
-				dc.b	'                                        '
-
-				dc.b	'Opponent IS toast!                      '
-				dc.b	'                                        '
-				dc.b	'Opponent IS toast!                      '
-				dc.b	'                                        '
-
-				dc.b	'Does it hurt? DOES it? DOES IT?!?       '
-				dc.b	'                                        '
-				dc.b	'Does it hurt? DOES it? DOES IT?!?       '
-				dc.b	'                                        '
-
-				dc.b	"Gosh, I",39,"m dreadfully sorry, old chap; didn't see you there!                     "
-				dc.b	"Gosh, I",39,"m dreadfully sorry, old chap; didn't see you there!                     "
-
-				dc.b	'Now go away before I taunt you a second time.                                   '
-				dc.b	'Now go away before I taunt you a second time.                                   '
-
-				dc.b	'Eh, sorry about that there mate, didn',39,'t know it was loaded, know worra mean?    '
-				dc.b	'Eh, sorry about that there mate, didn',39,'t know it was loaded, know worra mean?    '
-
-				dc.b	'Stand and deliver, your money or...  oh. Never mind.                            '
-				dc.b	'Stand and deliver, your money or...  oh. Never mind.                            '
-
-				dc.b	'Thank you for your kind interest, I look forward to your custom in future lives.'
-				dc.b	'Thank you for your kind interest, I look forward to your custom in future lives.'
-
-
 Plr1_Use:
 				move.l	Plr1_ObjectPtr_l,a0
 				move.b	#4,16(a0)
@@ -3668,11 +3631,11 @@ Plr1_Control:
 				bra		.cantmove
 .nothitanything:
 
-				move.w	#40,extlen
-				move.b	#0,awayfromwall
+				move.w	#40,Obj_ExtLen_w
+				move.b	#0,Obj_AwayFromWall_b
 
 				clr.b	exitfirst
-				clr.b	wallbounce
+				clr.b	Obj_WallBounce_b
 				bsr		MoveObject
 				move.b	StoodInTop,Plr1_StoodInTop_b
 				move.l	objroom,Plr1_RoomPtr_l
@@ -3882,11 +3845,11 @@ Plr2_Control:
 				bra		.cantmove
 .nothitanything:
 
-				move.w	#40,extlen
-				move.b	#0,awayfromwall
+				move.w	#40,Obj_ExtLen_w
+				move.b	#0,Obj_AwayFromWall_b
 
 				clr.b	exitfirst
-				clr.b	wallbounce
+				clr.b	Obj_WallBounce_b
 				bsr		MoveObject
 				move.b	StoodInTop,Plr2_StoodInTop_b
 				move.l	objroom,Plr2_RoomPtr_l
@@ -5518,7 +5481,7 @@ wevewon:
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.nonextlev
 				add.w	#1,MAXLEVEL
-				st		FINISHEDLEVEL
+				st		Game_FinishedLevel_b
 
 .nonextlev:
 
@@ -5578,154 +5541,14 @@ ENDGAMESCROLL:
 
 ;				move.l	#TEXTCOP,$dff080
 
-				move.l	#ENDGAMETEXTy,a0
+				move.l	#Game_SinglePlayerVictoryText_vb,a0
 
 				; 0xABADCAFE
 				; TODO - this looks like a prime crash waiting to happen
 				; shouldn't we branch somewhere before we blunder into this?
 
-ENDGAMETEXTy:
-				  ;          12345678901234567890123456789012345678901234567890123456789012345678901234567890
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"As the beast and its four servants die, a breathless silence falls, broken      "
-				dc.b	0,1,"only by the hammering of my own heart in my chest.                              "
-				dc.b	0,1,"I run to the now open exit, and out into the maze of corridors through which I  "
-				dc.b	0,1,"came. I encounter many, many aliens, lying twitching on the ground, or utterly  "
-				dc.b	0,1,"still with glazed eyes and green froth drying on their lips. Many seem to have  "
-				dc.b	0,1,"turned their weapons on themselves, unable to bear either the pain or the       "
-				dc.b	0,1,"sudden silence in their minds.                                                  "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"It takes me several hours to locate a working teleport to take me back aboard   "
-				dc.b	0,1,"the orbiting alien ship. The scene there is the same; hordes of aliens, either  "
-				dc.b	0,1,"dead or catatonic, I cannot tell.                                               "
-				dc.b	0,1,"I walk slowly, exhausted, back to the INDOMITABLE, averting my eyes from the    "
-				dc.b	0,1,"pitiful scenes around me. I know that my work is not finished yet.              "
-				dc.b	0,1,"Once aboard, I make my way to the bridge. I manage to restart the main power    "
-				dc.b	0,1,"generators and get basic navigation back on-line. Working from the memories     "
-				dc.b	0,1,"implanted by the dying marine, I painstakingly program the computer to deal     "
-				dc.b	0,1,"the killing blow to the enemy. At last the task is finished. The ship hums into "
-				dc.b	0,1,"life, accellerating slowly out of orbit, towing the massive alien craft and     "
-				dc.b	0,1,"its mindless cargo behind it.                                                   "
-				dc.b	0,1,"As the image of the alien sun grows in the viewscreen, I think about what I     "
-				dc.b	0,1,"have seen. Fragments of technology, stolen from civilisations - how long ago?   "
-				dc.b	0,1,"How long since they were exterminated by these parasites? And how many more     "
-				dc.b	0,1,"if they are allowed to continue?                                                "
-				dc.b	0,1,"The sun looms hideously large before me, seeming at the last moment to slip to  "
-				dc.b	0,1,"one side as the cruiser slingshots itself through the immense gravity well,     "
-				dc.b	0,1,"its speed doubling and doubling again. The ship shudders and groans as the      "
-				dc.b	0,1,"ponderous mass of the alien ship tries to tear itself free. I feel a distant    "
-				dc.b	0,1,"twinge of curiosity as to whether it will succeed.                              "
-				dc.b	0,1,"The navigation computer chatters quietly to itself as it makes tiny             "
-				dc.b	0,1,"course corrections, bringing the payload to bear on its target. I only sit,     "
-				dc.b	0,1,"watching blankly as we hurtle back towards the planet. The navicom beeps        "
-				dc.b	0,1,"quietly to signal the blowing of the explosive bolts holding the docking ring.  "
-				dc.b	0,1,"So great is our speed that the alien ship does not receed, but simply vanishes  "
-				dc.b	0,1,"from sight, tracked only on the readouts of the computers in front of me.       "
-				dc.b	0,1,"One readout in particular occupies my attention. Red numbers spin towards zero  "
-				dc.b	0,1,"as my invisible agent of destruction spins towards oblivion. Three digits, now  "
-				dc.b	0,1,"two, and now only one. I shift my attention to the image of the alien world,    "
-				dc.b	0,1,"receeding behind my ship.                                                       "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Three...                                                                        "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Two...                                                                          "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"One...                                                                          "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Zero.                                                                           "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Travelling at nearly a quarter of the speed of light, the alien ship smashed    "
-				dc.b	0,1,"into the planet, flashing past the useless orbital defences which should have   "
-				dc.b	0,1,"neutralized it millions of miles earlier. It passed through the twenty miles    "
-				dc.b	0,1,"of atmosphere in a little more than one ten-thousandth of a second. The air     "
-				dc.b	0,1,"directly beneath had no time to be pushed out of the way, and in another        "
-				dc.b	0,1,"tenth of a second it was a molecule-thick layer a thousand miles below the      "
-				dc.b	0,1,"planet's surface.                                                               "
-				dc.b	0,1,"Such was the heat and pressure caused by the impact, that part of the molten    "
-				dc.b	0,1,"core of the planet underwent nuclear fusion, vapourising thousands of billions  "
-				dc.b	0,1,"of tonnes of surrounding material. This expanding superhot plasma cloud forced  "
-				dc.b	0,1,"its way up through the mantle and crust, fracturing the surface of the planet,  "
-				dc.b	0,1,"blowing continent-sized chunks into space and heating the tortured atmosphere   "
-				dc.b	0,1,"to ignition point. Within two minutes of impact, the doomed planet was a        "
-				dc.b	0,1,"misshapen, incandescent ball, with burning fragments spinning deceptively       "
-				dc.b	0,1,"slowly in their brief orbits before re-impacting with fantastic, majestic       "
-				dc.b	0,1,"force.                                                                          "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"In a matter of weeks, the small amount of matter which had undergone fusion     "
-				dc.b	0,1,"burned itself out, but the planet still glowed sullenly from a million cracks   "
-				dc.b	0,1,"and holes in the crust, as it would continue to do for millions of years to     "
-				dc.b	0,1,"come. The world was barren and dead, and the creatures who once roamed its      "
-				dc.b	0,1,"surface no more than a memory in the mind of one man, sleeping dreamlessly      "
-				dc.b	0,1,"as the invisible speck of his ship sped silently on, towards home.              "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"ALIEN BREED 3D II                                                               "
-				dc.b	0,1,"THE KILLING GROUNDS                                                             "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"A Team 17 Game                                                                  "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Produced in association with OCEAN Software                                     "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Game Design, Game Code, Editor Code and In-Game Text                            "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Andrew Clitheroe                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Graphics                                                                        "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Michael Green                                                                   "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"3D Object Designs, 3D Editors, Serial and OS code                               "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Charles Blessing                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Music                                                                           "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Ben Chanter                                                                     "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Project Manager                                                                 "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Phil Quirke-Webster                                                             "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Playtesting                                                                     "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Phil and the Wolves                                                             "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Additional Graphics                                                             "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,1,"Pete Lyons                                                                      "
-				dc.b	0,0,"                                                                                "
-				dc.b	0,0,"                                                                                "
-ENDENDGAMETEXT:
-
-
+				; text was here
+				rts ; better than blundering
 ;
 ;	move.l	4.w,a6
 ;	move.l	#string,d1
@@ -9009,22 +8832,22 @@ pastster:
 *******************************
 
 				move.w	#$f,$dff000+dmacon
-				move.l	#null,$dff0a0
+				move.l	#Aud_Null1_vw,$dff0a0
 				move.w	#100,$dff0a4
 				move.w	#443,$dff0a6
 				move.w	#63,$dff0a8
 
-				move.l	#null2,$dff0b0
+				move.l	#Aud_Null2_vw,$dff0b0
 				move.w	#100,$dff0b4
 				move.w	#443,$dff0b6
 				move.w	#63,$dff0b8
 
-				move.l	#null4,$dff0c0
+				move.l	#Aud_Null4_vw,$dff0c0
 				move.w	#100,$dff0c4
 				move.w	#443,$dff0c6
 				move.w	#63,$dff0c8
 
-				move.l	#null3,$dff0d0
+				move.l	#Aud_Null3_vw,$dff0d0
 				move.w	#100,$dff0d4
 				move.w	#443,$dff0d6
 				move.w	#63,$dff0d8
@@ -9953,7 +9776,7 @@ fourchannel:
 				beq.s	nofinish0
 ; move.w #0,LEFTCHANDATA+2
 ; st LEFTCHANDATA+1
-				move.l	#null,$a0(a6)
+				move.l	#Aud_Null1_vw,$a0(a6)
 				move.w	#100,$a4(a6)
 				move.w	#$0080,intreq(a6)
 
@@ -9984,7 +9807,7 @@ NoChan0sound:
 
 				btst	#0,intreqr(a6)
 				beq.s	nofinish1
-				move.l	#null,$b0(a6)
+				move.l	#Aud_Null1_vw,$b0(a6)
 				move.w	#100,$b4(a6)
 				move.w	#$0100,intreq(a6)
 
@@ -10013,7 +9836,7 @@ NoChan1sound:
 
 				btst	#1,intreqr(a6)
 				beq.s	nofinish2
-				move.l	#null,$c0(a6)
+				move.l	#Aud_Null1_vw,$c0(a6)
 				move.w	#100,$c4(a6)
 				move.w	#$0200,intreq(a6)
 nofinish2:
@@ -10043,7 +9866,7 @@ NoChan2sound:
 
 				btst	#2,intreqr(a6)
 				beq.s	nofinish3
-				move.l	#null,$d0(a6)
+				move.l	#Aud_Null1_vw,$d0(a6)
 				move.w	#100,$d4(a6)
 				move.w	#$0400,intreq(a6)
 nofinish3:
@@ -10141,14 +9964,14 @@ Samp1endLEFT:	dc.l	Aud_EmptyBufferEnd
 Samp2endLEFT:	dc.l	Aud_EmptyBufferEnd
 Samp3endLEFT:	dc.l	Aud_EmptyBufferEnd
 
-Aupt0:			dc.l	null
-Auback0:		dc.l	null+500
-Aupt2:			dc.l	null3
-Auback2:		dc.l	null3+500
-Aupt3:			dc.l	null4
-Auback3:		dc.l	null4+500
-Aupt1:			dc.l	null2
-Auback1:		dc.l	null2+500
+Aupt0:			dc.l	Aud_Null1_vw
+Auback0:		dc.l	Aud_Null1_vw+500
+Aupt2:			dc.l	Aud_Null3_vw
+Auback2:		dc.l	Aud_Null3_vw+500
+Aupt3:			dc.l	Aud_Null4_vw
+Auback3:		dc.l	Aud_Null4_vw+500
+Aupt1:			dc.l	Aud_Null2_vw
+Auback1:		dc.l	Aud_Null2_vw+500
 
 NoiseMade0LEFT:	dc.b	0
 NoiseMade1LEFT:	dc.b	0
@@ -10926,12 +10749,11 @@ Vid_TextScreenPtr_l:		dc.l	0
 
 PanelKeys:		;		I'm pretty sure these are not needed anymore, but there's code referencing it
 
-; Audio NULL data
-null:			ds.w	500
-null2:			ds.w	500
-null3:			ds.w	500
-null4:			ds.w	500
-
+; Audio
+Aud_Null1_vw:				ds.w	500
+Aud_Null2_vw:				ds.w	500
+Aud_Null3_vw:				ds.w	500
+Aud_Null4_vw:				ds.w	500
 
 				align 64
 SCROLLSCRN:		ds.l	20*16
@@ -11071,514 +10893,12 @@ STOPTIMER:
 				st		oktodisplay
 				rts
 
-UseAllChannels:	dc.w	0
+				include "modules/music.s"
 
-mt_init:
-				move.l	mt_data,a0
-				move.l	a0,a1
-				add.l	#$3b8,a1
-				moveq	#$7f,d0
-				moveq	#0,d1
-mt_loop:		move.l	d1,d2
-				subq.w	#1,d0
-mt_lop2:		move.b	(a1)+,d1
-				cmp.b	d2,d1
-				bgt.s	mt_loop
-				dbf		d0,mt_lop2
-				addq.b	#1,d2
-
-				lea		mt_samplestarts(pc),a1
-				asl.l	#8,d2
-				asl.l	#2,d2
-				add.l	#$43c,d2
-				add.l	a0,d2
-				move.l	d2,a2
-				moveq	#$1e,d0
-mt_lop3:
-				clr.l	(a2)
-				move.l	a2,(a1)+
-				moveq	#0,d1
-				move.w	42(a0),d1
-				asl.l	#1,d1
-				add.l	d1,a2
-				add.l	#$1e,a0
-				dbf		d0,mt_lop3
-
-				or.b	#$2,$bfe001
-				move.b	#$6,mt_speed
-				clr.w	$dff0a8
-				clr.w	$dff0b8
-				clr.w	$dff0c8
-				clr.w	$dff0d8
-				clr.b	mt_songpos
-				clr.b	mt_counter
-				clr.w	mt_pattpos
-				rts
-
-mt_end:			clr.w	$dff0a8
-				clr.w	$dff0b8
-				clr.w	$dff0c8
-				clr.w	$dff0d8
-				move.w	#$f,$dff096
-				rts
-
-mt_music:
-				movem.l	d0-d4/a0-a3/a5-a6,-(a7)
-				move.l	mt_data,a0
-				addq.b	#$1,mt_counter
-				move.b	mt_counter,D0
-				cmp.b	mt_speed,D0
-				blt.s	mt_nonew
-				clr.b	mt_counter
-				bra		mt_getnew
-
-mt_nonew:
-				lea		mt_voice1(pc),a6
-				lea		$dff0a0,a5
-				bsr		mt_checkcom
-				tst.b	UseAllChannels
-				beq		mt_endr
-				lea		mt_voice2(pc),a6
-				lea		$dff0b0,a5
-				bsr		mt_checkcom
-				lea		mt_voice3(pc),a6
-				lea		$dff0c0,a5
-				bsr		mt_checkcom
-				lea		mt_voice4(pc),a6
-				lea		$dff0d0,a5
-				bsr		mt_checkcom
-				bra		mt_endr
-
-mt_arpeggio:
-				moveq	#0,d0
-				move.b	mt_counter,d0
-				divs	#$3,d0
-				swap	d0
-				cmp.w	#$0,d0
-				beq.s	mt_arp2
-				cmp.w	#$2,d0
-				beq.s	mt_arp1
-
-				moveq	#0,d0
-				move.b	$3(a6),d0
-				lsr.b	#4,d0
-				bra.s	mt_arp3
-mt_arp1:		moveq	#0,d0
-				move.b	$3(a6),d0
-				and.b	#$f,d0
-				bra.s	mt_arp3
-mt_arp2:		move.w	$10(a6),d2
-				bra.s	mt_arp4
-mt_arp3:		asl.w	#1,d0
-				moveq	#0,d1
-				move.w	$10(a6),d1
-				lea		mt_periods(pc),a0
-				moveq	#$24,d7
-mt_arploop:
-				move.w	(a0,d0.w),d2
-				cmp.w	(a0),d1
-				bge.s	mt_arp4
-				addq.l	#2,a0
-				dbf		d7,mt_arploop
-				rts
-mt_arp4:		move.w	d2,$6(a5)
-				rts
-
-mt_getnew:
-				move.l	mt_data,a0
-				move.l	a0,a3
-				move.l	a0,a2
-				add.l	#$c,a3
-				add.l	#$3b8,a2
-				add.l	#$43c,a0
-
-				moveq	#0,d0
-				move.l	d0,d1
-				move.b	mt_songpos,d0
-				move.b	(a2,d0.w),d1
-				asl.l	#8,d1
-				asl.l	#2,d1
-				add.w	mt_pattpos,d1
-				clr.w	mt_dmacon
-
-				lea		$dff0a0,a5
-				lea		mt_voice1(pc),a6
-				bsr		mt_playvoice
-				tst.b	UseAllChannels
-				beq		mt_setdma
-				lea		$dff0b0,a5
-				lea		mt_voice2(pc),a6
-				bsr		mt_playvoice
-				lea		$dff0c0,a5
-				lea		mt_voice3(pc),a6
-				bsr		mt_playvoice
-				lea		$dff0d0,a5
-				lea		mt_voice4(pc),a6
-				bsr		mt_playvoice
-				bra		mt_setdma
-
-mt_playvoice:
-				move.l	(a0,d1.l),(a6)
-				addq.l	#4,d1
-				moveq	#0,d2
-				move.b	$2(a6),d2
-				and.b	#$f0,d2
-				lsr.b	#4,d2
-				move.b	(a6),d0
-				and.b	#$f0,d0
-				or.b	d0,d2
-				tst.b	d2
-				beq.s	mt_setregs
-				moveq	#0,d3
-				lea		mt_samplestarts(pc),a1
-				move.l	d2,d4
-				subq.l	#$1,d2
-				asl.l	#2,d2
-				mulu	#$1e,d4
-				move.l	(a1,d2.l),$4(a6)
-				move.w	(a3,d4.l),$8(a6)
-				move.w	$2(a3,d4.l),$12(a6)
-				move.w	$4(a3,d4.l),d3
-				tst.w	d3
-				beq.s	mt_noloop
-				move.l	$4(a6),d2
-				asl.w	#1,d3
-				add.l	d3,d2
-				move.l	d2,$a(a6)
-				move.w	$4(a3,d4.l),d0
-				add.w	$6(a3,d4.l),d0
-				move.w	d0,8(a6)
-				move.w	$6(a3,d4.l),$e(a6)
-				move.w	$12(a6),d0
-				move.w	d0,$8(a5)
-				bra.s	mt_setregs
-mt_noloop:
-				move.l	$4(a6),d2
-				add.l	d3,d2
-				move.l	d2,$a(a6)
-				move.w	$6(a3,d4.l),$e(a6)
-				move.w	$12(a6),d0
-				move.w	d0,$8(a5)
-mt_setregs:
-				move.w	(a6),d0
-				and.w	#$fff,d0
-				beq		mt_checkcom2
-				move.b	$2(a6),d0
-				and.b	#$F,d0
-				cmp.b	#$3,d0
-				bne.s	mt_setperiod
-				bsr		mt_setmyport
-				bra		mt_checkcom2
-mt_setperiod:
-				move.w	(a6),$10(a6)
-				and.w	#$fff,$10(a6)
-				move.w	$14(a6),d0
-				move.w	d0,$dff096
-				clr.b	$1b(a6)
-
-				move.l	$4(a6),(a5)
-				move.w	$8(a6),$4(a5)
-				move.w	$10(a6),d0
-				and.w	#$fff,d0
-				move.w	d0,$6(a5)
-				move.w	$14(a6),d0
-				or.w	d0,mt_dmacon
-				bra		mt_checkcom2
-
-mt_setdma:
-				move.w	#250,d0
-mt_wait:
-				add.w	#1,testchip
-				dbra	d0,mt_wait
-				move.w	mt_dmacon,d0
-				or.w	#$8000,d0
-				tst.b	UseAllChannels
-				bne.s	.splib
-				and.w	#%1111111111110001,d0
-.splib
-				move.w	d0,$dff096
-				move.w	#250,d0
-mt_wait2:
-				add.w	#1,testchip
-				dbra	d0,mt_wait2
-				lea		$dff000,a5
-				tst.b	UseAllChannels
-				beq.s	noall
-				lea		mt_voice4(pc),a6
-				move.l	$a(a6),$d0(a5)
-				move.w	$e(a6),$d4(a5)
-				lea		mt_voice3(pc),a6
-				move.l	$a(a6),$c0(a5)
-				move.w	$e(a6),$c4(a5)
-				lea		mt_voice2(pc),a6
-				move.l	$a(a6),$b0(a5)
-				move.w	$e(a6),$b4(a5)
-noall:
-				lea		mt_voice1(pc),a6
-				move.l	$a(a6),$a0(a5)
-				move.w	$e(a6),$a4(a5)
-
-				add.w	#$10,mt_pattpos
-				cmp.w	#$400,mt_pattpos
-				bne.s	mt_endr
-mt_nex:			clr.w	mt_pattpos
-				clr.b	mt_break
-				addq.b	#1,mt_songpos
-				and.b	#$7f,mt_songpos
-				move.b	mt_songpos,d1
-;	cmp.b	mt_data+$3b6,d1
-;	bne.s	mt_endr
-;	move.b	mt_data+$3b7,mt_songpos
-mt_endr:		tst.b	mt_break
-				bne.s	mt_nex
-				movem.l	(a7)+,d0-d4/a0-a3/a5-a6
-				rts
-
-mt_setmyport:
-				move.w	(a6),d2
-				and.w	#$fff,d2
-				move.w	d2,$18(a6)
-				move.w	$10(a6),d0
-				clr.b	$16(a6)
-				cmp.w	d0,d2
-				beq.s	mt_clrport
-				bge.s	mt_rt
-				move.b	#$1,$16(a6)
-				rts
-mt_clrport:
-				clr.w	$18(a6)
-mt_rt:			rts
-
-;CODESTORE:		dc.l	0
-
-mt_myport:
-				move.b	$3(a6),d0
-				beq.s	mt_myslide
-				move.b	d0,$17(a6)
-				clr.b	$3(a6)
-mt_myslide:
-				tst.w	$18(a6)
-				beq.s	mt_rt
-				moveq	#0,d0
-				move.b	$17(a6),d0
-				tst.b	$16(a6)
-				bne.s	mt_mysub
-				add.w	d0,$10(a6)
-				move.w	$18(a6),d0
-				cmp.w	$10(a6),d0
-				bgt.s	mt_myok
-				move.w	$18(a6),$10(a6)
-				clr.w	$18(a6)
-mt_myok:		move.w	$10(a6),$6(a5)
-				rts
-mt_mysub:
-				sub.w	d0,$10(a6)
-				move.w	$18(a6),d0
-				cmp.w	$10(a6),d0
-				blt.s	mt_myok
-				move.w	$18(a6),$10(a6)
-				clr.w	$18(a6)
-				move.w	$10(a6),$6(a5)
-				rts
-
-mt_vib:			move.b	$3(a6),d0
-				beq.s	mt_vi
-				move.b	d0,$1a(a6)
-
-mt_vi:			move.b	$1b(a6),d0
-				lea		mt_sin(pc),a4
-				lsr.w	#$2,d0
-				and.w	#$1f,d0
-				moveq	#0,d2
-				move.b	(a4,d0.w),d2
-				move.b	$1a(a6),d0
-				and.w	#$f,d0
-				mulu	d0,d2
-				lsr.w	#$6,d2
-				move.w	$10(a6),d0
-				tst.b	$1b(a6)
-				bmi.s	mt_vibmin
-				add.w	d2,d0
-				bra.s	mt_vib2
-mt_vibmin:
-				sub.w	d2,d0
-mt_vib2:		move.w	d0,$6(a5)
-				move.b	$1a(a6),d0
-				lsr.w	#$2,d0
-				and.w	#$3c,d0
-				add.b	d0,$1b(a6)
-				rts
-
-mt_nop:			move.w	$10(a6),$6(a5)
-				rts
-
-
-mt_checkcom:
-				move.w	$2(a6),d0
-				and.w	#$fff,d0
-				beq.s	mt_nop
-				move.b	$2(a6),d0
-				and.b	#$f,d0
-				tst.b	d0
-				beq		mt_arpeggio
-				cmp.b	#$1,d0
-				beq.s	mt_portup
-				cmp.b	#$2,d0
-				beq		mt_portdown
-				cmp.b	#$3,d0
-				beq		mt_myport
-				cmp.b	#$4,d0
-				beq		mt_vib
-				move.w	$10(a6),$6(a5)
-				cmp.b	#$a,d0
-				beq.s	mt_volslide
-				rts
-
-mt_volslide:
-				moveq	#0,d0
-				move.b	$3(a6),d0
-				lsr.b	#4,d0
-				tst.b	d0
-				beq.s	mt_voldown
-				add.w	d0,$12(a6)
-				cmp.w	#$40,$12(a6)
-				bmi.s	mt_vol2
-				move.w	#$40,$12(a6)
-mt_vol2:		move.w	$12(a6),d0
-				move.w	d0,$8(a5)
-				rts
-
-mt_voldown:
-				moveq	#0,d0
-				move.b	$3(a6),d0
-				and.b	#$f,d0
-				sub.w	d0,$12(a6)
-				bpl.s	mt_vol3
-				clr.w	$12(a6)
-mt_vol3:		move.w	$12(a6),d0
-				move.w	d0,$8(a5)
-				rts
-
-mt_portup:
-				moveq	#0,d0
-				move.b	$3(a6),d0
-				sub.w	d0,$10(a6)
-				move.w	$10(a6),d0
-				and.w	#$fff,d0
-				cmp.w	#$71,d0
-				bpl.s	mt_por2
-				and.w	#$f000,$10(a6)
-				or.w	#$71,$10(a6)
-mt_por2:		move.w	$10(a6),d0
-				and.w	#$fff,d0
-				move.w	d0,$6(a5)
-				rts
-
-mt_portdown:
-				clr.w	d0
-				move.b	$3(a6),d0
-				add.w	d0,$10(a6)
-				move.w	$10(a6),d0
-				and.w	#$fff,d0
-				cmp.w	#$358,d0
-				bmi.s	mt_por3
-				and.w	#$f000,$10(a6)
-				or.w	#$358,$10(a6)
-mt_por3:		move.w	$10(a6),d0
-				and.w	#$fff,d0
-				move.w	d0,$6(a5)
-				rts
-
-mt_checkcom2:
-				move.b	$2(a6),d0
-				and.b	#$f,d0
-				cmp.b	#$e,d0
-				beq.s	mt_setfilt
-				cmp.b	#$d,d0
-				beq.s	mt_pattbreak
-				cmp.b	#$b,d0
-				beq.s	mt_posjmp
-				cmp.b	#$c,d0
-				beq.s	mt_setvol
-				cmp.b	#$f,d0
-				beq.s	mt_setspeed
-				rts
-
-mt_setfilt:
-				move.b	$3(a6),d0
-				and.b	#$1,d0
-				asl.b	#$1,d0
-				and.b	#$fd,$bfe001
-				or.b	d0,$bfe001
-				rts
-mt_pattbreak:
-				not.b	mt_break
-				rts
-mt_posjmp:
-				st		reachedend
-				move.b	$3(a6),d0
-				subq.b	#$1,d0
-				move.b	d0,mt_songpos
-				not.b	mt_break
-				rts
-mt_setvol:
-				cmp.b	#$40,$3(a6)
-				ble.s	mt_vol4
-				move.b	#$40,$3(a6)
-mt_vol4:		move.b	$3(a6),d0
-				move.w	d0,$8(a5)
-				rts
-mt_setspeed:
-				cmp.b	#$1f,$3(a6)
-				ble.s	mt_sets
-				move.b	#$1f,$3(a6)
-mt_sets:		move.b	$3(a6),d0
-				beq.s	mt_rts2
-				move.b	d0,mt_speed
-				clr.b	mt_counter
-mt_rts2:		rts
-
-mt_sin:
-				dc.b	$00,$18,$31,$4a,$61,$78,$8d,$a1,$b4,$c5,$d4,$e0,$eb,$f4,$fa,$fd
-				dc.b	$ff,$fd,$fa,$f4,$eb,$e0,$d4,$c5,$b4,$a1,$8d,$78,$61,$4a,$31,$18
-
-mt_periods:
-				dc.w	$0358,$0328,$02fa,$02d0,$02a6,$0280,$025c,$023a,$021a,$01fc,$01e0
-				dc.w	$01c5,$01ac,$0194,$017d,$0168,$0153,$0140,$012e,$011d,$010d,$00fe
-				dc.w	$00f0,$00e2,$00d6,$00ca,$00be,$00b4,$00aa,$00a0,$0097,$008f,$0087
-				dc.w	$007f,$0078,$0071,$0000,$0000
-
-reachedend:		dc.b	0
-mt_speed:		dc.b	6
-mt_songpos:		dc.b	0
-				align 2
-mt_pattpos:		dc.w	0
-mt_counter:		dc.b	0
-
-mt_break:		dc.b	0
-mt_dmacon:		dc.w	0
-mt_samplestarts:ds.l $1f
-mt_voice1:		ds.w	10
-				dc.w	1
-				ds.w	3
-mt_voice2:		ds.w	10
-				dc.w	2
-				ds.w	3
-mt_voice3:		ds.w	10
-				dc.w	4
-				ds.w	3
-mt_voice4:		ds.w	10
-				dc.w	8
-				ds.w	3
-
-CHEATPTR:		dc.l	0
-CHEATNUM:		dc.l	0
-
-
+UseAllChannels:		dc.w	0
+;CHEATPTR:			dc.l	0
+;CHEATNUM:			dc.l	0
 Lvl_MusicPtr_l:		dc.l	0
-
-;/* End of File */
-mt_data:		dc.l	0
 
 				section	data_c,data_c
 ; not sure what this is; it seems to be used as timing

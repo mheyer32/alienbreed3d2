@@ -273,9 +273,9 @@ Plr1_Shot:
 				add.l	d0,d1
 				move.l	d1,newy
 				st		exitfirst
-				clr.b	wallbounce
-				move.w	#0,extlen
-				move.b	#$ff,awayfromwall
+				clr.b	Obj_WallBounce_b
+				move.w	#0,Obj_ExtLen_w
+				move.b	#$ff,Obj_AwayFromWall_b
 				move.w	#%0000010000000000,wallflags
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
@@ -598,9 +598,9 @@ Plr2_Shot:
 				add.l	d0,d1
 				move.l	d1,newy
 				st		exitfirst
-				clr.b	wallbounce
-				move.w	#0,extlen
-				move.b	#$ff,awayfromwall
+				clr.b	Obj_WallBounce_b
+				move.w	#0,Obj_ExtLen_w
+				move.b	#$ff,Obj_AwayFromWall_b
 				move.w	#%0000010000000000,wallflags
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
@@ -848,9 +848,9 @@ plr1_HitscanFailed:
 				move.l	d2,newy
 
 				st		exitfirst
-				clr.b	wallbounce
-				move.w	#0,extlen
-				move.b	#$ff,awayfromwall
+				clr.b	Obj_WallBounce_b
+				move.w	#0,Obj_ExtLen_w
+				move.b	#$ff,Obj_AwayFromWall_b
 				move.w	#%0000010000000000,wallflags
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
@@ -988,9 +988,9 @@ plr2_HitscanFailed:
 				move.l	d2,newy
 
 				st		exitfirst
-				clr.b	wallbounce
-				move.w	#0,extlen
-				move.b	#$ff,awayfromwall
+				clr.b	Obj_WallBounce_b
+				move.w	#0,Obj_ExtLen_w
+				move.b	#$ff,Obj_AwayFromWall_b
 				move.w	#%0000010000000000,wallflags
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal

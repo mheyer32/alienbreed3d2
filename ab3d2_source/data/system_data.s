@@ -3,5 +3,3 @@
 ; Statically initialised (non-zero) data
 
 			align 4
-
-

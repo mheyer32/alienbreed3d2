@@ -220,7 +220,7 @@ screendividethru:
 				move.w	d6,a5
 				move.l	(a0)+,d3
 				swap	d3
-				add.l	#divthreetab,a5
+				add.l	#DivThreeTable_vb,a5
 				move.w	(a5),StripData
 
 				move.l	Draw_ChunkPtr_l,a5
@@ -358,7 +358,7 @@ scrdrawlop:
 				move.w	d6,a5
 				move.l	(a0)+,d3
 				swap	d3
-				add.l	#divthreetab,a5
+				add.l	#DivThreeTable_vb,a5
 				move.w	(a5),StripData
 
 				move.l	Draw_ChunkPtr_l,a5
@@ -440,7 +440,7 @@ scrdrawlopDOUB:
 				move.w	d6,a5
 				move.l	(a0)+,d3
 				swap	d3
-				add.l	#divthreetab,a5
+				add.l	#DivThreeTable_vb,a5
 				move.w	(a5),StripData
 
 				move.l	Draw_ChunkPtr_l,a5
@@ -526,7 +526,7 @@ scrdrawlopFULL:
 				move.w	d6,a5
 				move.l	(a0)+,d3
 				swap	d3
-				add.l	#divthreetab,a5
+				add.l	#DivThreeTable_vb,a5
 				move.w	(a5),StripData
 
 				move.l	Draw_ChunkPtr_l,a5
@@ -603,7 +603,7 @@ scrdrawlopFULLDOUB:
 				move.w	d6,a5
 				move.l	(a0)+,d3
 				swap	d3
-				add.l	#divthreetab,a5
+				add.l	#DivThreeTable_vb,a5
 				move.w	(a5),StripData			;
 
 				move.l	Draw_ChunkPtr_l,a5
@@ -655,14 +655,14 @@ scrdrawlopFULLDOUB:
 ffscrpickhowbrightFULLDOUB:
 				SCALE
 
-divthreetab:	;		stores					x/3 and x mod 3 for x=0...660
-val				SET		0
-				REPT	220
-				dc.b	val,0
-				dc.b	val,1
-				dc.b	val,2
-val				SET		val+1
-				ENDR
+;DivThreeTable_vb:	;		stores					x/3 and x mod 3 for x=0...660
+;val				SET		0
+;				REPT	220
+;				dc.b	val,0
+;				dc.b	val,1
+;				dc.b	val,2
+;val				SET		val+1
+;				ENDR
 
 StripData:		dc.w	0
 
