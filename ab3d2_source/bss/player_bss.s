@@ -198,3 +198,17 @@ Plr_AmmoCounts_vw:			ds.w	20
 Plr_Shield_w:				ds.w	2
 Plr_Weapons_vw:				ds.w	10
 
+			align 4
+Plr1_Health_w:			ds.w	1
+Plr1_JetpackFuel_w:		ds.w	1
+Plr1_AmmoCounts_vw:		ds.w	20
+Plr1_Shield_w:			ds.w	1
+Plr1_Jetpack_w:			ds.w	1
+Plr1_Weapons_vb:		ds.w	10 ; todo - convert to bytes or bitfield
+
+Plr2_Health_w:			ds.w	1
+Plr2_JetpackFuel_w:		ds.w	1
+Plr2_AmmoCounts_vw:		ds.w	20
+Plr2_Shield_w:			ds.w	1
+Plr2_Jetpack_w:			ds.w	1
+Plr2_Weapons_vb:		ds.w	10 ; todo - convert to bytes or bitfield

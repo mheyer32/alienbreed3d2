@@ -38,6 +38,15 @@ Draw_FloorTexturesPtr_l:		ds.l	1
 Draw_PalettePtr_l:				ds.l	1
 Draw_ChunkPtr_l:				ds.l	1
 
+draw_AngleBrights_vl:			ds.l	8*2
+draw_Pals_vl:					ds.l	2*49
+draw_WADPtr_l:					ds.l	1
+draw_PtrPtr_l:					ds.l	1 ; todo - find what this actually points to
+draw_PolyAngPtr_l:				ds.l	1
+draw_PointAngPtr_l:				ds.l	1
+
+toppt_l:						ds.l	1
+midobj_l:						ds.l	1
 boxbrights:						ds.w	250
 boxang:							ds.w	1
 
@@ -68,7 +77,8 @@ draw_NumPoints_w:				ds.w	1
 draw_OffLeftBy_w:				ds.w	1
 draw_Left_w:					ds.w	1
 draw_Right_w:					ds.w	1
+draw_DownStrip_w:				ds.w	1
 
-draw_WhichDoing_b:		ds.b	1 ; BOOL
-draw_InUpperZone_b:		ds.b	1 ; BOOL
-Draw_DoUpper_b:			ds.b	1
+draw_WhichDoing_b:				ds.b	1
+draw_InUpperZone_b:				ds.b	1
+Draw_DoUpper_b:					ds.b	1

@@ -81,8 +81,8 @@ ItsAnAlien:
 				move.w	AlienT_FollowupSpeed_w(a1),AI_FollowupSpeed_w
 				move.w	AlienT_FollowupTimeout_w(a1),AI_FollowupTimer_w
 				move.w	AlienT_Girth_w(a1),d0
-				move.b	diststowall+1(pc,d0.w*4),awayfromwall
-				move.w	diststowall+2(pc,d0.w*4),extlen
+				move.b	diststowall+1(pc,d0.w*4),Obj_AwayFromWall_b
+				move.w	diststowall+2(pc,d0.w*4),Obj_ExtLen_w
 				jsr		AI_MainRoutine
 
 				rts
@@ -95,7 +95,6 @@ diststowall:
 				dc.w	2,160
 
 ItsAnObject:
-
 				move.l	GLF_DatabasePtr_l,a1
 				lea		GLFT_ObjectDefs(a1),a1
 				moveq	#0,d0
@@ -698,22 +697,6 @@ Plr2_CollectItem:
 .no_collect:
 				rts
 
-Plr1_Health_w:			dc.w	0
-Plr1_JetpackFuel_w:		dc.w	0
-Plr1_AmmoCounts_vw:		ds.w	20
-Plr1_Shield_w:			dc.w	0
-Plr1_Jetpack_w:			dc.w	0
-Plr1_Weapons_vb:		dcb.w	10,0 ; todo - convert to bytes or bitfield
-
-Plr2_Health_w:			dc.w	0
-Plr2_JetpackFuel_w:		dc.w	0
-Plr2_AmmoCounts_vw:		ds.w	20
-
-Plr2_Shield_w:			dc.w	0
-Plr2_Jetpack_w:			dc.w	0
-Plr2_Weapons_vb:		dcb.w	10,0 ; todo - convert to bytes or bitfield
-
-
 CHECKPLAYERGOT:
 				move.b	#1,d0
 				rts
@@ -1098,8 +1081,8 @@ SHOOTPLAYER1:
 				move.b	ShotT_InUpperZone_b(a0),StoodInTop
 
 				st		exitfirst
-				move.w	#0,extlen
-				move.b	#$ff,awayfromwall
+				move.w	#0,Obj_ExtLen_w
+				move.b	#$ff,Obj_AwayFromWall_b
 				move.w	#%0000010000000000,wallflags
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
@@ -1356,8 +1339,8 @@ SHOOTPLAYER2
 				move.b	ShotT_InUpperZone_b(a0),StoodInTop
 
 				st		exitfirst
-				move.w	#0,extlen
-				move.b	#$ff,awayfromwall
+				move.w	#0,Obj_ExtLen_w
+				move.b	#$ff,Obj_AwayFromWall_b
 				move.w	#%0000010000000000,wallflags
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal

@@ -1,4 +1,5 @@
 
+
 Plr1_MouseControl:
 				jsr		Sys_ReadMouse
 
@@ -352,7 +353,7 @@ gogog:
 
 				; a0 points to destination memory
 Draw_ResetGameDisplay:
-				move.l	#borderpacked,d0
+				move.l	#draw_BorderPacked_vb,d0
 				moveq	#0,d1
 				lea		Sys_Workspace_vl,a1
 				lea		$0,a2
@@ -653,17 +654,12 @@ nobackward:
 
 				rts
 
-TEMPSCROLL
+TEMPSCROLL:
 				dcb.b	160,32
-
-;passspace:
-;				ds.l	400
 
 Plr1_JoystickControl:
 				jsr		_ReadJoy1
 				bra		Plr1_KeyboardControl
-
-
 
 Plr1_FootstepFX:
 				movem.l	d0-d7/a0-a6,-(a7)

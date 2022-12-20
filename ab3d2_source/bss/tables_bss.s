@@ -6,6 +6,9 @@
 
 ; Ad hoc tables that we don't know where else to put yet.
 
+COMPACTMAP:		ds.l	257
+BIGMAP:			ds.l	256*10
+
 PointBrightsPtr_l:		ds.l	1
 CurrentPointBrights_vl:	ds.l	2*256*10
 ClipsTable_vl:			ds.l	30
@@ -15,12 +18,18 @@ Rotated_vl:				ds.l	2*800	; store rotated X and Z coordinates with Z scaling app
 ObjRotated_vl:			ds.l	2*500
 OnScreen_vl:			ds.l	2*800	; store screen projected X coordinates for rotated points
 
-ZoneBrightTable_vl:		ds.l	300
-
 WorkspacePtr_l:			ds.l	1	; hires.s - may depend on position relative to ObjectWorkspace_vl
 ObjectWorkspace_vl:		ds.l	600 ; hires.s
 
 ConstantTable_vl:		ds.l	8192*2 ; 8192 pairs of long
+
+DataBuffer1_vl:			ds.l	1600 ; wall drawing
+DataBuffer2_vl:			ds.l	1600 ; wall drawing
+Storage_vl:				ds.l	500  ; drawing
+
+Aud_EmptyBuffer_vl:		ds.l	100 ; hires.s - audio
+Aud_EmptyBufferEnd:
+Aud_SampleList_vl:		ds.l	133
 
 LeftSideTable_vw:		ds.w	512*2
 RightSideTable_vw:		ds.w	512*2
@@ -29,5 +38,7 @@ RightBrightTable_vw:	ds.w	512*2
 
 anim_LiftHeightTable_vw:	ds.w	40 ; newanims.s
 anim_DoorHeightTable_vw:	ds.w	40 ; newanims.s
+
+Obj_RoomPath_vw:			ds.w	100 ; objmove.s
 
 KeyMap_vb:				ds.b	256

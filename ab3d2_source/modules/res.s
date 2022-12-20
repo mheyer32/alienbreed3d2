@@ -131,7 +131,7 @@ Res_FreeObjects:
 Res_LoadSoundFx:
 				move.l	GLF_DatabasePtr_l,a0
 				lea		GLFT_SFXFilenames_l(a0),a0
-				move.l	#SampleList,a1
+				move.l	#Aud_SampleList_vl,a1
 				move.w	#58,d7
 
 .load_sound_loop:
@@ -162,7 +162,7 @@ Res_LoadSoundFx:
 
 Res_PatchSoundFx:								; transform the list of {{startaddress, length},...}
 				move.w	#58,d7					; into {{startaddress, endaddress},...}
-				move.l	#SampleList,a1
+				move.l	#Aud_SampleList_vl,a1
 
 .patch_loop:
 				move.l	(a1)+,d0
@@ -172,7 +172,7 @@ Res_PatchSoundFx:								; transform the list of {{startaddress, length},...}
 				rts
 
 Res_FreeSoundFx:
-				move.l	#SampleList,a0
+				move.l	#Aud_SampleList_vl,a0
 .relmem:
 				move.l	(a0)+,d1
 				bge.s	.okrel
