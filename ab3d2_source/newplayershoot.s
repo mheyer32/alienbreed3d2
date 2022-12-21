@@ -421,7 +421,7 @@ Plr2_Shot:
 
 .not_negative:
 				; 0xABADCAFE division pogrom
-				divs	#44,d2 ; Hitscanning doesnt work without this. Why 44?
+				;divs	#44,d2 ; Hitscanning doesnt work without this. Why 44?
 
 				; Approximate 1/44 as 93/4096
 				muls	#93,d2 ; todo - maybe needs to be muls.l
