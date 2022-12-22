@@ -45,22 +45,25 @@ sometodrawG:
 				; The iterations are bound by the next power-of-two number covering the whole width
 				; FIXME: this is another place where the maximum resolution is hardcoded into the
 				; size of itertabG
-				move.w	itertabG(pc,d1.w*4),d7	; how many iterations for this width; or is it a mask?
+
+				;move.w	itertabG(pc,d1.w*4),d7	; how many iterations for this width; or is it a mask?
+				;swap	d0
+				;move.w	itertabG+2(pc,d1.w*4),d6 ; shift for this width
+
+				; read both words from the iteration table in one go. Do a small bit of juggling
+				; of instruction order, may help on 060 (TBC)
+				move.l	draw_IterationTable_vw(pc,d1.w*4),d7
 				swap	d0
-				move.w	itertabG+2(pc,d1.w*4),d6 ; shift for this width
+				move.w	d7,d6
 				clr.w	d0						; leftx in high word
 				swap	d1
+				swap	d7
 				clr.w	d1						; width in high word
 				asr.l	d6,d1					; divide down by shift
 				move.l	d1,(a0)					; save
 
-				bra		pstitG
-
-itertabG:
-				incbin	"includes/iterfile"
-
 				; Reading input walls from a0 and writing calculated deltas back into a0
-pstitG:
+
 				moveq	#0,d1
 				move.w	4(a0),d1				; leftbm
 				moveq	#0,d2
