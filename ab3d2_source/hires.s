@@ -28,6 +28,8 @@
 CD32VER					equ		0
 
 FS_HEIGHT_HACK			equ		1 ; 0xABADCAFE - Fullscreen height hack, set non-zero to enable
+DISPLAYMSGPORT_HACK		equ		1 ; AL - Level restart freeze hack, set non-zero to enable
+SCREEN_TITLEBAR_HACK		equ		1 ; AL - Stop title bar interactions hack, set non-zero to enable
 
 
 	IFNE	FS_HEIGHT_HACK
@@ -574,6 +576,15 @@ noclips:
 
 				; FIXME: reimplement level blurb
 ; move.l #Blurbfield,$dff080
+
+	IFNE	DISPLAYMSGPORT_HACK
+				;empty DisplayMsgPort and set ScreenBufferIndex to 0
+				;so the starting point is the same every time
+.clrMsgPort			move.l	DisplayMsgPort,a0
+				CALLEXEC GetMsg
+				tst.l	d0
+				bne.s	.clrMsgPort
+	ENDC
 
 				clr.w	ScreenBufferIndex
 

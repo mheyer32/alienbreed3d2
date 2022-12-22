@@ -286,6 +286,11 @@ MainScreenTags	dc.l	SA_Width,320
 				dc.l	SA_BitMap,MainBitmap0
 				dc.l	SA_Type,CUSTOMSCREEN
 				dc.l	SA_Quiet,1
+				IFNE	SCREEN_TITLEBAR_HACK
+				dc.l	SA_ShowTitle,0
+				ELSE
+				dc.l	SA_ShowTitle,1
+				ENDC
 				dc.l	SA_AutoScroll,0
 				dc.l	SA_FullPalette,1
 				dc.l	SA_DisplayID,PAL_MONITOR_ID
