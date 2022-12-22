@@ -187,7 +187,7 @@ sometodraw:
 				asr.l	d6,d5
 				move.l	d5,16(a0)
 
-*** Gouraud shading ***
+;*** Gouraud shading ***
 				moveq	#0,d5
 				move.w	26(a0),d5
 				sub.w	24(a0),d5
@@ -211,9 +211,9 @@ screendividethru:
 				move.l	Vid_FastBufferPtr_l,a3
 				move.l	(a0)+,d1
 
-				bra		.pastscrinto
+				;bra		.pastscrinto
 
-.pastscrinto
+;.pastscrinto
 				swap	d1
 
 				move.w	d1,d6
@@ -239,20 +239,20 @@ screendividethru:
 				swap	d4
 				move.w	d2,d6
 
-***************************
-* old version
+;***************************
+;* old version
 				asr.w	#7,d6
 
 				add.w	angbright(pc),d6
 				bge.s	.brnotneg
 				moveq	#0,d6
 
-.brnotneg
+.brnotneg:
 				cmp.w	#32,d6
 				blt.s	.brnotpos
 				move.w	#32,d6
 
-.brnotpos
+.brnotpos:
 				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	.ffscrpickhowbright(pc,d6*2),a2
@@ -378,8 +378,8 @@ scrdrawlop:
 				addq	#1,d4
 				move.w	d2,d6
 
-***************************
-* old version
+;***************************
+;* old version
 				asr.w	#7,d6
 
 				move.l	(a0)+,d5
@@ -389,12 +389,12 @@ scrdrawlop:
 				bge.s	.brnotneg
 				moveq	#0,d6
 
-.brnotneg
+.brnotneg:
 				cmp.w	#64,d6
 				blt.s	.brnotpos
 				move.w	#64,d6
 
-.brnotpos
+.brnotpos:
 				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	ffscrpickhowbright(pc,d6*2),a2
@@ -460,8 +460,8 @@ scrdrawlopDOUB:
 				addq	#1,d4
 				move.w	d2,d6
 
-***************************
-* old version
+;***************************
+;* old version
 				asr.w	#7,d6
 
 				move.l	(a0)+,d5
@@ -471,12 +471,12 @@ scrdrawlopDOUB:
 				bge.s	.brnotneg
 				moveq	#0,d6
 
-.brnotneg
+.brnotneg:
 				cmp.w	#64,d6
 				blt.s	.brnotpos
 				move.w	#64,d6
 
-.brnotpos
+.brnotpos:
 				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	ffscrpickhowbrightD(pc,d6*2),a2
@@ -546,8 +546,8 @@ scrdrawlopFULL:
 				addq	#1,d4
 				move.w	d2,d6
 
-***************************
-* old version
+;***************************
+;* old version
 				asr.w	#7,d6
 
 				move.l	(a0)+,d5
@@ -557,12 +557,12 @@ scrdrawlopFULL:
 				bge.s	.brnotneg
 				moveq	#0,d6
 
-.brnotneg
+.brnotneg:
 				cmp.w	#64,d6
 				blt.s	.brnotpos
 				move.w	#64,d6
 
-.brnotpos
+.brnotpos:
 				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	ffscrpickhowbrightFULL(pc,d6*2),a2
@@ -623,8 +623,8 @@ scrdrawlopFULLDOUB:
 				addq	#1,d4
 				move.w	d2,d6
 
-***************************
-* old version
+;***************************
+;* old version
 				asr.w	#7,d6
 
 				move.l	(a0)+,d5
@@ -634,12 +634,12 @@ scrdrawlopFULLDOUB:
 				bge.s	.brnotneg
 				moveq	#0,d6
 
-.brnotneg
+.brnotneg:
 				cmp.w	#64,d6
 				blt.s	.brnotpos
 				move.w	#64,d6
 
-.brnotpos
+.brnotpos:
 				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	ffscrpickhowbrightFULLDOUB(pc,d6*2),a2
@@ -1244,6 +1244,7 @@ CalcAndDraw:
 ; d1=left x, d4=left end, d0=left dist
 
 				divs.l	d0,d1
+
 				moveq	#0,d5
 				move.w	Vid_CentreX_w,d5
 				add.l	d5,d1
