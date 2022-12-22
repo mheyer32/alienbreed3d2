@@ -421,7 +421,7 @@ READMAINMENU:
 
 .noopt:
 ***************************************************************
-				cmp.w	#2,d0;tst.w	d0;maybe make a level select menu here rather than cycle the level?
+				cmp.w	#2,d0
 				bne.s	.nonextlev
 
 				bsr	levelMenu;cycleLevel
