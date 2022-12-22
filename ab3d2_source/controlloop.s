@@ -410,18 +410,30 @@ READMAINMENU:
 				lea		mnu_MYMAINMENU,a0
 				bsr		CHECKMENU
 
-.nonextlev:
-
+***************************************************************
+				tst.w	d0
+				beq		playgame
+***************************************************************
 				cmp.w	#1,d0
 				bne		.noopt
 
 				bra		MASTERMENU
 
 .noopt:
+***************************************************************
+				cmp.w	#2,d0;tst.w	d0;maybe make a level select menu here rather than cycle the level?
+				bne.s	.nonextlev
 
-				cmp.w	#2,d0
-				beq		playgame
+				bsr	levelMenu;cycleLevel
 
+				lea		mnu_MYMAINMENU,a0
+				bsr		MYOPENMENU
+
+				bsr		WAITREL
+				bra		READMAINMENU;.rdlop
+
+.nonextlev:
+***************************************************************
 				cmp.w	#3,d0
 				bne		.nocontrol
 
@@ -434,9 +446,7 @@ READMAINMENU:
 				bra		.rdlop
 
 .nocontrol:
-
-********************************
-
+***************************************************************
 				cmp.w	#4,d0
 				bne		.nocred
 
@@ -446,10 +456,8 @@ READMAINMENU:
 
 				bra		.rdlop
 
-********************************
-
 .nocred:
-
+***************************************************************
 				cmp.w	#5,d0
 				bne		.noload
 
@@ -462,8 +470,9 @@ READMAINMENU:
 				bra		.rdlop
 
 .noload:
+***************************************************************
 				cmp.w	#6,d0
-				bne		playgame
+				bne		.nosave
 				bsr		WAITREL
 
 				jsr		SAVEPOSITION
@@ -473,6 +482,138 @@ READMAINMENU:
 
 				bsr		WAITREL
 				bra		.rdlop
+.nosave:
+***************************************************************
+;				cmp.w	#7,d0
+;				bne		playgame
+;				bsr		WAITREL
+
+;				bsr		customOptions
+
+;				lea		mnu_MYMAINMENU,a0
+;				bsr		MYOPENMENU
+
+				bsr		WAITREL
+				bra		.rdlop
+***************************************************************
+
+;fixme: there are better ways to do this, but it works.AL
+levelMenu:
+				lea		mnu_MYLEVELMENU,a0
+				bsr		MYOPENMENU
+
+				lea		mnu_MYLEVELMENU,a0
+				bsr		CHECKMENU
+
+				cmp.w	#8,d0
+				beq	levelMenu2
+				
+				cmp.w	#0,d0
+				bne.s	.sl2
+				move.w	#0,MAXLEVEL
+				bra	.levelSelectDone
+.sl2
+				cmp.w	#1,d0
+				bne.s	.sl3
+				move.w	#0,MAXLEVEL
+				add.w	#1,MAXLEVEL
+				bra	.levelSelectDone
+.sl3
+				cmp.w	#2,d0
+				bne.s	.sl4
+				move.w	#0,MAXLEVEL
+				add.w	#2,MAXLEVEL
+				bra	.levelSelectDone
+.sl4				
+				cmp.w	#3,d0
+				bne.s	.sl5
+				move.w	#0,MAXLEVEL
+				add.w	#3,MAXLEVEL
+				bra	.levelSelectDone
+.sl5				
+				cmp.w	#4,d0
+				bne.s	.sl6
+				move.w	#0,MAXLEVEL
+				add.w	#4,MAXLEVEL
+				bra	.levelSelectDone
+.sl6				
+				cmp.w	#5,d0
+				bne.s	.sl7
+				move.w	#0,MAXLEVEL
+				add.w	#5,MAXLEVEL
+				bra	.levelSelectDone
+.sl7				
+				cmp.w	#6,d0
+				bne.s	.sl8
+				move.w	#0,MAXLEVEL
+				add.w	#6,MAXLEVEL
+				bra	.levelSelectDone
+.sl8				
+				cmp.w	#7,d0
+				bne.s	.levelSelectDone
+				move.w	#0,MAXLEVEL
+				add.w	#7,MAXLEVEL
+.levelSelectDone
+				rts
+
+levelMenu2:
+				lea		mnu_MYLEVELMENU2,a0
+				bsr		MYOPENMENU
+
+				lea		mnu_MYLEVELMENU2,a0
+				bsr		CHECKMENU
+
+				cmp.w	#8,d0
+				beq	.levelSelectDone
+				
+				cmp.w	#0,d0
+				bne.s	.sl2
+				move.w	#8,MAXLEVEL
+				bra	.levelSelectDone
+.sl2
+				cmp.w	#1,d0
+				bne.s	.sl3
+				move.w	#0,MAXLEVEL
+				add.w	#9,MAXLEVEL
+				bra	.levelSelectDone
+.sl3
+				cmp.w	#2,d0
+				bne.s	.sl4
+				move.w	#0,MAXLEVEL
+				add.w	#10,MAXLEVEL
+				bra	.levelSelectDone
+.sl4				
+				cmp.w	#3,d0
+				bne.s	.sl5
+				move.w	#0,MAXLEVEL
+				add.w	#11,MAXLEVEL
+				bra	.levelSelectDone
+.sl5				
+				cmp.w	#4,d0
+				bne.s	.sl6
+				move.w	#0,MAXLEVEL
+				add.w	#12,MAXLEVEL
+				bra	.levelSelectDone
+.sl6				
+				cmp.w	#5,d0
+				bne.s	.sl7
+				move.w	#0,MAXLEVEL
+				add.w	#13,MAXLEVEL
+				bra	.levelSelectDone
+.sl7				
+				cmp.w	#6,d0
+				bne.s	.sl8
+				move.w	#0,MAXLEVEL
+				add.w	#14,MAXLEVEL
+				bra	.levelSelectDone
+.sl8				
+				cmp.w	#7,d0
+				bne.s	.levelSelectDone
+				move.w	#0,MAXLEVEL
+				add.w	#15,MAXLEVEL
+.levelSelectDone
+				rts
+***************************************************************
 
 
 
