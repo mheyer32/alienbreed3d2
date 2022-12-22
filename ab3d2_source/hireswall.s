@@ -115,6 +115,10 @@ SCALE			MACRO
 * 16(a0)=leftbot
 * 18(a0)=rightbot
 
+; Just one copy of the iteration table. Should improve cache locality if nothing else.
+				align 4
+draw_IterationTable_vw:
+				incbin	"includes/iterfile" ; todo - move to data, change access via a3?
 
 Doleftend:
 				move.w	leftclip,d0
@@ -127,21 +131,22 @@ Doleftend:
 				rts
 
 sometodraw:
-				move.w	draw_IterationTable_vw(pc,d1.w*4),d7
+				;move.w	draw_IterationTable_vw(pc,d1.w*4),d7
+				;swap	d0
+				;move.w	draw_IterationTable_vw+2(pc,d1.w*4),d6
+
+				; read both words from the iteration table in one go. Do a small bit of juggling
+				; of instruction order, may help on 060 (TBC)
+				move.l	draw_IterationTable_vw(pc,d1.w*4),d7
 				swap	d0
-				move.w	draw_IterationTable_vw+2(pc,d1.w*4),d6
+				move.w	d7,d6
 				clr.w	d0
 				swap	d1
+				swap	d7
 				clr.w	d1
 				asr.l	d6,d1
 				move.l	d1,(a0)
 
-				bra		pstit
-
-draw_IterationTable_vw:
-				incbin	"includes/iterfile" ; todo - move to data, change access via a3?
-
-pstit:
 				moveq	#0,d1
 				move.w	4(a0),d1
 				moveq	#0,d2
