@@ -508,52 +508,8 @@ levelMenu:
 				cmp.w	#8,d0
 				beq	levelMenu2
 				
-				cmp.w	#0,d0
-				bne.s	.sl2
-				move.w	#0,MAXLEVEL
-				bra	.levelSelectDone
-.sl2
-				cmp.w	#1,d0
-				bne.s	.sl3
-				move.w	#0,MAXLEVEL
-				add.w	#1,MAXLEVEL
-				bra	.levelSelectDone
-.sl3
-				cmp.w	#2,d0
-				bne.s	.sl4
-				move.w	#0,MAXLEVEL
-				add.w	#2,MAXLEVEL
-				bra	.levelSelectDone
-.sl4				
-				cmp.w	#3,d0
-				bne.s	.sl5
-				move.w	#0,MAXLEVEL
-				add.w	#3,MAXLEVEL
-				bra	.levelSelectDone
-.sl5				
-				cmp.w	#4,d0
-				bne.s	.sl6
-				move.w	#0,MAXLEVEL
-				add.w	#4,MAXLEVEL
-				bra	.levelSelectDone
-.sl6				
-				cmp.w	#5,d0
-				bne.s	.sl7
-				move.w	#0,MAXLEVEL
-				add.w	#5,MAXLEVEL
-				bra	.levelSelectDone
-.sl7				
-				cmp.w	#6,d0
-				bne.s	.sl8
-				move.w	#0,MAXLEVEL
-				add.w	#6,MAXLEVEL
-				bra	.levelSelectDone
-.sl8				
-				cmp.w	#7,d0
-				bne.s	.levelSelectDone
-				move.w	#0,MAXLEVEL
-				add.w	#7,MAXLEVEL
-.levelSelectDone
+				move	d0,MAXLEVEL
+
 				rts
 
 levelMenu2:
@@ -566,51 +522,9 @@ levelMenu2:
 				cmp.w	#8,d0
 				beq	.levelSelectDone
 				
-				cmp.w	#0,d0
-				bne.s	.sl2
-				move.w	#8,MAXLEVEL
-				bra	.levelSelectDone
-.sl2
-				cmp.w	#1,d0
-				bne.s	.sl3
-				move.w	#0,MAXLEVEL
-				add.w	#9,MAXLEVEL
-				bra	.levelSelectDone
-.sl3
-				cmp.w	#2,d0
-				bne.s	.sl4
-				move.w	#0,MAXLEVEL
-				add.w	#10,MAXLEVEL
-				bra	.levelSelectDone
-.sl4				
-				cmp.w	#3,d0
-				bne.s	.sl5
-				move.w	#0,MAXLEVEL
-				add.w	#11,MAXLEVEL
-				bra	.levelSelectDone
-.sl5				
-				cmp.w	#4,d0
-				bne.s	.sl6
-				move.w	#0,MAXLEVEL
-				add.w	#12,MAXLEVEL
-				bra	.levelSelectDone
-.sl6				
-				cmp.w	#5,d0
-				bne.s	.sl7
-				move.w	#0,MAXLEVEL
-				add.w	#13,MAXLEVEL
-				bra	.levelSelectDone
-.sl7				
-				cmp.w	#6,d0
-				bne.s	.sl8
-				move.w	#0,MAXLEVEL
-				add.w	#14,MAXLEVEL
-				bra	.levelSelectDone
-.sl8				
-				cmp.w	#7,d0
-				bne.s	.levelSelectDone
-				move.w	#0,MAXLEVEL
-				add.w	#15,MAXLEVEL
+				move	d0,MAXLEVEL
+				add	#8,MAXLEVEL
+
 .levelSelectDone
 				rts
 ***************************************************************
