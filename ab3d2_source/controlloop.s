@@ -507,7 +507,7 @@ levelMenu:
 
 				cmp.w	#8,d0
 				beq	levelMenu2
-				
+				bsr	DEFAULTGAME
 				move	d0,MAXLEVEL
 
 				rts
@@ -521,7 +521,7 @@ levelMenu2:
 
 				cmp.w	#8,d0
 				beq	.levelSelectDone
-				
+				bsr	DEFAULTGAME
 				move	d0,MAXLEVEL
 				add	#8,MAXLEVEL
 
