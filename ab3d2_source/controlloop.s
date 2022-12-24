@@ -507,7 +507,9 @@ levelMenu:
 
 				cmp.w	#8,d0
 				beq	levelMenu2
+				SAVEREGS
 				bsr	DEFAULTGAME
+				GETREGS
 				move	d0,MAXLEVEL
 
 				rts
@@ -521,7 +523,9 @@ levelMenu2:
 
 				cmp.w	#8,d0
 				beq	.levelSelectDone
+				SAVEREGS
 				bsr	DEFAULTGAME
+				GETREGS
 				move	d0,MAXLEVEL
 				add	#8,MAXLEVEL
 
