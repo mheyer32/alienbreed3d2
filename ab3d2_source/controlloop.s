@@ -508,7 +508,8 @@ levelMenu:
 				cmp.w	#8,d0
 				beq	levelMenu2
 				SAVEREGS
-				bsr	DEFAULTGAME
+				;bsr	DEFAULTGAME
+				bsr	DEFGAME
 				GETREGS
 				move	d0,MAXLEVEL
 
@@ -524,7 +525,8 @@ levelMenu2:
 				cmp.w	#8,d0
 				beq	.levelSelectDone
 				SAVEREGS
-				bsr	DEFAULTGAME
+				;bsr	DEFAULTGAME
+				bsr	DEFGAME
 				GETREGS
 				move	d0,MAXLEVEL
 				add	#8,MAXLEVEL
@@ -532,9 +534,41 @@ levelMenu2:
 .levelSelectDone
 				rts
 ***************************************************************
+Lvl_DefFilename_vb:		dc.b	'ab3:levels/level_'
+Lvl_DefFilenameX_vb:		dc.b	'a/deflev.dat',0
+				even
+DEFGAMEPOS:	dc.l	0
+***************************************************************
+DEFGAME:
+				add.b	#'a',d0
+				move.b	d0,Lvl_DefFilenameX_vb
 
+				move.l	#MEMF_ANY,IO_MemType_l
+				move.l	#Lvl_DefFilename_vb,a0
+				jsr		IO_LoadFile
 
+				move.l	d0,DEFGAMEPOS
+				
+				move.l	DEFGAMEPOS,a1
+				muls	#2+(22*2)+(12*2),d0
+				add.l	d0,a1
 
+				move.l	#Plr_Health_w,a2
+				move.l	#Plr_Shield_w,a3
+				move.w	(a1)+,MAXLEVEL
+
+				REPT	11
+				move.l	(a1)+,(a2)+
+				ENDR
+				REPT	6
+				move.l	(a1)+,(a3)+
+				ENDR
+
+				; move.l	DEFGAMEPOS,a1
+				; CALLEXEC FreeVec
+
+				rts
+***************************************************************
 playgame:
 				move.w	MAXLEVEL,PLOPT
 				rts
