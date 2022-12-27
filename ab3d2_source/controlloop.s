@@ -538,6 +538,7 @@ Lvl_DefFilename_vb:		dc.b	'ab3:levels/level_'
 Lvl_DefFilenameX_vb:		dc.b	'a/deflev.dat',0
 				even
 DEFGAMEPOS:	dc.l	0
+DEFGAMELEN:	dc.l	0
 ***************************************************************
 DEFGAME:
 				add.b	#'a',d0
@@ -545,27 +546,33 @@ DEFGAME:
 
 				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	#Lvl_DefFilename_vb,a0
-				jsr		IO_LoadFile
+				;jsr		IO_LoadFile
+				move.l	#DEFGAMEPOS,d0
+				move.l	#DEFGAMELEN,d1
+				jsr		IO_InitQueue
+				jsr		IO_QueueFile
+				jsr		IO_FlushQueue
 
-				move.l	d0,DEFGAMEPOS
+				move.l	DEFGAMEPOS,a0			; address of first saved game.
+				; move.l	d0,DEFGAMEPOS
 				
-				move.l	DEFGAMEPOS,a1
-				muls	#2+(22*2)+(12*2),d0
-				add.l	d0,a1
+				; move.l	DEFGAMEPOS,a0
+				; muls	#2+(22*2)+(12*2),d0
+				; add.l	#0,a0
 
-				move.l	#Plr_Health_w,a2
-				move.l	#Plr_Shield_w,a3
-				move.w	(a1)+,MAXLEVEL
+				move.l	#Plr_Health_w,a1
+				move.l	#Plr_Shield_w,a2
+				move.w	(a0)+,MAXLEVEL
 
 				REPT	11
-				move.l	(a1)+,(a2)+
+				move.l	(a0)+,(a1)+
 				ENDR
 				REPT	6
-				move.l	(a1)+,(a3)+
+				move.l	(a0)+,(a2)+
 				ENDR
 
-				; move.l	DEFGAMEPOS,a1
-				; CALLEXEC FreeVec
+				move.l	DEFGAMEPOS,a1
+				CALLEXEC FreeVec
 
 				rts
 ***************************************************************
