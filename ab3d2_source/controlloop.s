@@ -544,9 +544,7 @@ DEFGAME:
 				add.b	#'a',d0
 				move.b	d0,Lvl_DefFilenameX_vb
 
-				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	#Lvl_DefFilename_vb,a0
-				;jsr		IO_LoadFile
 				move.l	#DEFGAMEPOS,d0
 				move.l	#DEFGAMELEN,d1
 				jsr		IO_InitQueue
@@ -554,11 +552,6 @@ DEFGAME:
 				jsr		IO_FlushQueue
 
 				move.l	DEFGAMEPOS,a0			; address of first saved game.
-				; move.l	d0,DEFGAMEPOS
-				
-				; move.l	DEFGAMEPOS,a0
-				; muls	#2+(22*2)+(12*2),d0
-				; add.l	#0,a0
 
 				move.l	#Plr_Health_w,a1
 				move.l	#Plr_Shield_w,a2
@@ -571,8 +564,8 @@ DEFGAME:
 				move.l	(a0)+,(a2)+
 				ENDR
 
-				move.l	DEFGAMEPOS,a1
-				CALLEXEC FreeVec
+				move.l	DEFGAMEPOS,a1;		req?
+				CALLEXEC FreeVec;		req?
 
 				rts
 ***************************************************************
