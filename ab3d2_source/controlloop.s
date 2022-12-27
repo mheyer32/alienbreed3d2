@@ -543,7 +543,7 @@ DEFGAMELEN:	dc.l	0
 DEFGAME:
 				add.b	#'a',d0
 				move.b	d0,Lvl_DefFilenameX_vb
-
+				;move.l	#MEMF_ANY,IO_MemType_l;		 should I have left this in?
 				move.l	#Lvl_DefFilename_vb,a0
 				move.l	#DEFGAMEPOS,d0
 				move.l	#DEFGAMELEN,d1
@@ -551,6 +551,9 @@ DEFGAME:
 				jsr		IO_QueueFile
 				jsr		IO_FlushQueue
 
+				; tst.b	d6;				 can't use this
+				; bne	.error_nodef;			 can't use this
+				
 				move.l	DEFGAMEPOS,a0			; address of first saved game.
 
 				move.l	#Plr_Health_w,a1
@@ -566,7 +569,10 @@ DEFGAME:
 
 				move.l	DEFGAMEPOS,a1;		req?
 				CALLEXEC FreeVec;		req?
-
+				; bra	.defloaded;			 can't use this
+; .error_nodef;								 can't use this
+				; bsr	DEFAULTGAME;			 can't use this
+; .defloaded;								 can't use this
 				rts
 ***************************************************************
 playgame:
