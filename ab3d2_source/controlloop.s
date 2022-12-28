@@ -527,6 +527,7 @@ levelMenu2:
 				beq	.levelSelectDone
 				SAVEREGS
 				;bsr	DEFAULTGAME
+				not.b	LOADEXT
 				bsr	DEFGAME
 				GETREGS
 				move	d0,MAXLEVEL
