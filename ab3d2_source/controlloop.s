@@ -509,6 +509,7 @@ levelMenu:
 				beq	levelMenu2
 				SAVEREGS
 				;bsr	DEFAULTGAME
+				not.b	LOADEXT
 				bsr	DEFGAME
 				GETREGS
 				move	d0,MAXLEVEL
@@ -536,6 +537,7 @@ levelMenu2:
 ***************************************************************
 Lvl_DefFilename_vb:		dc.b	'ab3:levels/level_'
 Lvl_DefFilenameX_vb:		dc.b	'a/deflev.dat',0
+LOADEXT:			dc.b	0
 				even
 DEFGAMEPOS:	dc.l	0
 DEFGAMELEN:	dc.l	0
@@ -551,8 +553,8 @@ DEFGAME:
 				jsr		IO_QueueFile
 				jsr		IO_FlushQueue
 
-				; tst.b	d6;				 can't use this
-				; bne	.error_nodef;			 can't use this
+				tst.b	d6;				 can use this now
+				bne	.error_nodef;			 can use this now
 				
 				move.l	DEFGAMEPOS,a0			; address of first saved game.
 
@@ -569,10 +571,11 @@ DEFGAME:
 
 				move.l	DEFGAMEPOS,a1;		req?
 				CALLEXEC FreeVec;		req?
-				; bra	.defloaded;			 can't use this
-; .error_nodef;								 can't use this
-				; bsr	DEFAULTGAME;			 can't use this
-; .defloaded;								 can't use this
+				bra	.defloaded;			 can use this now
+.error_nodef;								 can use this now
+				not.b	LOADEXT
+				bsr	DEFAULTGAME;			 can use this now
+.defloaded;								 can use this now
 				rts
 ***************************************************************
 playgame:

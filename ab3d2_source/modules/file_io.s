@@ -45,6 +45,8 @@ IO_FlushQueue:
 				bsr		io_FlushPass
 
 .retry:
+				tst.b	LOADEXT
+				bne		.loaded_all
 				tst.b	d6
 				beq		.loaded_all
 
