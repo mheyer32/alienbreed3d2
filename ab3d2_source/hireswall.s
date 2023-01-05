@@ -1,10 +1,14 @@
-				dc.w	0
-leftclip:		dc.w	0
-				dc.w	0
-rightclip:		dc.w	0
-deftopclip:		dc.w	0
-defbotclip:		dc.w	0
-leftclipandlast: dc.w	0
+; todo - these can probably be BSS'd
+				align 4
+Draw_LeftClip_l:		dc.w	0 ; long
+Draw_LeftClip_w:		dc.w	0 ; lsw
+Draw_RightClip_l:		dc.w	0 ; long
+Draw_RightClip_w:		dc.w	0 ; lsw
+Draw_DefTopClip_w:		dc.w	0
+Draw_DefBottomClip_w:	dc.w	0
+Draw_LeftClipAndLast_w: dc.w	0
+draw_StripData_w:		dc.b	0 ; word
+draw_StripData_b:		dc.b    0 ; lsb
 
 SCALE			MACRO
 				dc.w	64*0
@@ -125,9 +129,9 @@ draw_BrightnessScaleTable_vw:
 				SCALE
 
 Doleftend:
-				move.w	leftclip,d0
+				move.w	Draw_LeftClip_w,d0
 				sub.w	#1,d0
-				move.w	d0,leftclipandlast
+				move.w	d0,Draw_LeftClipAndLast_w
 				move.w	(a0),d0
 				move.w	2(a0),d1
 				sub.w	d0,d1
@@ -228,11 +232,11 @@ screendividethru:
 				move.l	(a0)+,d3
 				swap	d3
 				add.l	#DivThreeTable_vb,a5
-				move.w	(a5),StripData
+				move.w	(a5),draw_StripData_w
 
 				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
-				move.b	StripData,d6
+				move.b	draw_StripData_w,d6
 				add.w	d6,d6
 				move.w	VALSHIFT,d4
 				asl.l	d4,d6
@@ -245,7 +249,7 @@ screendividethru:
 ;* old version
 				asr.w	#7,d6
 
-				add.w	angbright(pc),d6
+				add.w	ang_bright_w(pc),d6
 				bge.s	.brnotneg
 				moveq	#0,d6
 
@@ -270,7 +274,7 @@ screendividethru:
 
 screendivide:
 				or.l	#$ffff0000,d7
-				move.w	leftclipandlast(pc),d6
+				move.w	Draw_LeftClipAndLast_w(pc),d6
 				move.l	#Sys_Workspace_vl,a2
 
 				move.l	(a0),a3
@@ -296,7 +300,7 @@ scrdivlop:
 
 scrnotoffleft:
 				move.w	d0,d6
-				cmp.w	rightclip(pc),d0
+				cmp.w	Draw_RightClip_w(pc),d0
 				bge.s	outofcalc
 
 scrnotoffright:
@@ -363,11 +367,11 @@ scrdrawlop:
 				move.l	(a0)+,d3
 				swap	d3
 				add.l	#DivThreeTable_vb,a5
-				move.w	(a5),StripData
+				move.w	(a5),draw_StripData_w
 
 				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
-				move.b	StripData,d6
+				move.b	draw_StripData_w,d6
 				add.w	d6,d6
 				move.w	VALSHIFT,d4
 				asl.l	d4,d6
@@ -443,11 +447,11 @@ scrdrawlopDOUB:
 				move.l	(a0)+,d3
 				swap	d3
 				add.l	#DivThreeTable_vb,a5
-				move.w	(a5),StripData
+				move.w	(a5),draw_StripData_w
 
 				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
-				move.b	StripData,d6
+				move.b	draw_StripData_w,d6
 				add.w	d6,d6
 				move.w	VALSHIFT,d4
 				asl.l	d4,d6
@@ -499,7 +503,7 @@ LASTSTIRRUP:	dc.w	0
 fromtile:		dc.l	0
 fromquartertile: dc.l	0
 swapbrights:	dc.w	0
-angbright:		dc.w	0
+ang_bright_w:		dc.w	0
 
 leftside:		dc.b	0
 rightside:		dc.b	0
@@ -527,11 +531,11 @@ scrdrawlopFULL:
 				move.l	(a0)+,d3
 				swap	d3
 				add.l	#DivThreeTable_vb,a5
-				move.w	(a5),StripData
+				move.w	(a5),draw_StripData_w
 
 				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
-				move.b	StripData,d6
+				move.b	draw_StripData_w,d6
 				add.w	d6,d6
 				move.w	VALSHIFT,d4
 				asl.l	d4,d6
@@ -602,11 +606,11 @@ scrdrawlopFULLDOUB:
 				move.l	(a0)+,d3
 				swap	d3
 				add.l	#DivThreeTable_vb,a5
-				move.w	(a5),StripData			;
+				move.w	(a5),draw_StripData_w			;
 
 				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
-				move.b	StripData,d6
+				move.b	draw_StripData_w,d6
 				add.w	d6,d6
 				move.w	VALSHIFT,d4
 				asl.l	d4,d6
@@ -650,7 +654,7 @@ scrdrawlopFULLDOUB:
 				dbra	d7,scrdrawlopFULLDOUB
 				rts
 
-StripData:		dc.w	0
+
 
 * using a0=left pixel
 * a2= right pixel
@@ -834,7 +838,7 @@ StripData:		dc.w	0
 ;				move.w	(a1)+,d4
 ;				move.w	(a1)+,d6
 ;; d1=left x, d4=left end, d0=left dist
-;; d6=left angbright
+;; d6=left ang_bright_w
 ;				divs	d0,d1
 ;
 ;				asr.w	d1					; Vid_DoubleWidth_b test
@@ -868,7 +872,7 @@ StripData:		dc.w	0
 ;				move.w	6(a1),d5
 ;				add.w	8(a1),d6
 ;				asr.w	#1,d6
-;				move.w	d6,angbright
+;				move.w	d6,ang_bright_w
 ;				divs	d2,d3
 ;
 ;				asr.w	d3					; Vid_DoubleWidth_b test
@@ -1262,9 +1266,9 @@ CalcAndDraw:
 				move.w	d6,strbot
 				move.w	d6,18(a0)
 				move.l	d3,(a1)
-				cmp.l	leftclip-2(pc),d3
+				cmp.l	Draw_LeftClip_l(pc),d3
 				blt		.alloffleft
-				cmp.l	rightclip-2(pc),d1
+				cmp.l	Draw_RightClip_l(pc),d1
 ; cmp.w #95,d1
 				bge		.alloffright
 
@@ -1339,9 +1343,9 @@ computeloop2:
 				move.w	d6,strbot
 				move.w	d6,18(a0)
 				move.l	d3,(a1)
-				cmp.l	leftclip-2(pc),d3
+				cmp.l	Draw_LeftClip_l(pc),d3
 				blt.s	alloffleft2
-				cmp.l	rightclip-2(pc),d1
+				cmp.l	Draw_RightClip_l(pc),d1
 ; cmp.w #95,d1
 				bge.s	alloffright2
 
@@ -1533,7 +1537,7 @@ usea2:
 				and.w	d7,d4
 				move.l	d2,d5
 				clr.w	d5
-				cmp.b	#1,StripData+1
+				cmp.b	#1,draw_StripData_b
 				dbge	d6,simplewalliPACK0
 				dbne	d6,simplewalliPACK1
 				dble	d6,simplewalliPACK2
@@ -1647,7 +1651,7 @@ gotoend:
 				move.l	d2,d3
 				clr.w	d3
 
-				cmp.b	#1,StripData+1			; depending on 0th, 1st or second column,
+				cmp.b	#1,draw_StripData_b			; depending on 0th, 1st or second column,
 											; start at different routine, unpacking the correct
 											; column from packed strip data
 				dbge	d6,drawwallPACK0
@@ -1703,7 +1707,7 @@ doubwall
 				move.l	d2,d3
 				clr.w	d3
 
-				cmp.b	#1,StripData+1
+				cmp.b	#1,draw_StripData_b
 				dbge	d6,drawwallPACK0
 				dbne	d6,drawwallPACK1
 				dble	d6,drawwallPACK2
@@ -1777,7 +1781,7 @@ gotoendBIG
 				swap	d2
 				move.l	d2,d3
 				clr.w	d3
-				cmp.b	#1,StripData+1
+				cmp.b	#1,draw_StripData_b
 				dbge	d6,drawwallPACK0
 				dbne	d6,drawwallPACK1
 				dble	d6,drawwallPACK2
@@ -1827,7 +1831,7 @@ doubwallBIG:
 				swap	d2
 				move.l	d2,d3
 				clr.w	d3
-				cmp.b	#1,StripData+1
+				cmp.b	#1,draw_StripData_b
 				dbge	d6,drawwallPACK0
 				dbne	d6,drawwallPACK1
 				dble	d6,drawwallPACK2
@@ -1984,7 +1988,7 @@ usea2thru:
 				move.l	d2,d5
 				clr.w	d5
 
-				cmp.b	#1,StripData+1
+				cmp.b	#1,draw_StripData_b
 				dbge	d6,simplewallthruiPACK0
 				dbne	d6,simplewallthruiPACK1
 				dble	d6,simplewallthruiPACK2
@@ -2140,7 +2144,7 @@ cliptopthru
 				moveq	#0,d1
 				move.l	d2,d3
 				clr.w	d3
-				cmp.b	#1,StripData+1
+				cmp.b	#1,draw_StripData_b
 				dbge	d6,drawwallthruPACK0
 				dbne	d6,drawwallthruPACK1
 				dble	d6,drawwallthruPACK2
@@ -2201,8 +2205,8 @@ itsawalldraw:
 				move.l	a3,Draw_ChunkPtr_l
 
 ;move.w (a0)+,d1
-;add.w ZoneBright,d1
-				move.w	ZoneBright,angbright
+;add.w Zone_Bright_w,d1
+				move.w	Zone_Bright_w,ang_bright_w
 ;move.w (a0)+,d1
 ;move.w (a0)+,d4
 				move.l	yoff,d6
@@ -2441,10 +2445,10 @@ nottagour:
 wallfacingaway:
 				rts
 
-PointBrightsPtr: dc.l	0
-midpt:			dc.l	0
-dist1:			dc.l	0
-dist2:			dc.l	0
+Draw_PointBrightsPtr_l: dc.l	0
+;midpt:			dc.l	0
+;dist1:			dc.l	0
+;dist2:			dc.l	0
 VALAND:			dc.w	0
 VALSHIFT:		dc.w	0
 HORAND:			dc.w	0
@@ -2453,8 +2457,8 @@ HORAND:			dc.w	0
 sinval:			dc.w	0
 cosval:			dc.w	0
 
-oldxoff:		dc.w	0
-oldzoff:		dc.w	0
+;oldxoff:		dc.w	0
+;oldzoff:		dc.w	0
 
 draw_TopClip_w:		dc.w	0
 draw_BottomClip_w:	dc.w	0

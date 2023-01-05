@@ -1771,10 +1771,10 @@ IWasPlayer1:
 ; add.l d0,yoff
 ;
 ; move.l FASTBUFFER2,Vid_FastBufferPtr_l
-; move.w #0,leftclip
-; move.w Vid_RightX_w,rightclip
-; move.w #0,deftopclip
-; move.w #Vid_BottomY_w/2,defbotclip
+; move.w #0,Draw_LeftClip_w
+; move.w Vid_RightX_w,Draw_RightClip_w
+; move.w #0,Draw_DefTopClip_w
+; move.w #Vid_BottomY_w/2,Draw_DefBottomClip_w
 ; move.w #0,draw_TopClip_w
 ; move.w #Vid_BottomY_w/2,draw_BottomClip_w
 ;
@@ -1791,14 +1791,14 @@ IWasPlayer1:
 
 				move.l	Plr1_YOff_l,yoff
 
-				move.w	#0,leftclip
-				move.w	Vid_RightX_w,rightclip
+				move.w	#0,Draw_LeftClip_w
+				move.w	Vid_RightX_w,Draw_RightClip_w
 
 				move.w	Vid_LetterBoxMarginHeight_w,d0
-				move.w	#0,deftopclip
-				add.w	d0,deftopclip
-				move.w	Vid_BottomY_w,defbotclip
-				sub.w	d0,defbotclip
+				move.w	#0,Draw_DefTopClip_w
+				add.w	d0,Draw_DefTopClip_w
+				move.w	Vid_BottomY_w,Draw_DefBottomClip_w
+				sub.w	d0,Draw_DefBottomClip_w
 
 				move.w	#0,draw_TopClip_w
 				add.w	d0,draw_TopClip_w
@@ -1844,12 +1844,12 @@ drawplayer2:
 				jsr		AmmoBar
 
 				move.w	Vid_LetterBoxMarginHeight_w,d0
-				move.w	#0,leftclip
-				move.w	Vid_RightX_w,rightclip
-				move.w	#0,deftopclip
-				add.w	d0,deftopclip
-				move.w	Vid_BottomY_w,defbotclip
-				sub.w	d0,defbotclip
+				move.w	#0,Draw_LeftClip_w
+				move.w	Vid_RightX_w,Draw_RightClip_w
+				move.w	#0,Draw_DefTopClip_w
+				add.w	d0,Draw_DefTopClip_w
+				move.w	Vid_BottomY_w,Draw_DefBottomClip_w
+				sub.w	d0,Draw_DefBottomClip_w
 				move.w	#0,draw_TopClip_w
 				add.w	d0,draw_TopClip_w
 				move.w	Vid_BottomY_w,draw_BottomClip_w
@@ -4010,8 +4010,8 @@ finditit:
 
 outoffind:
 				move.l	a1,-(a7)
-				move.w	#0,leftclip
-				move.w	Vid_RightX_w,rightclip
+				move.w	#0,Draw_LeftClip_w
+				move.w	Vid_RightX_w,Draw_RightClip_w
 				moveq	#0,d7
 				move.w	2(a1),d7
 				blt.s	outofrcliplop
@@ -4049,15 +4049,15 @@ intorcliplop:	;		clips
 outofrcliplop:
 
 
-				move.w	leftclip,d0
+				move.w	Draw_LeftClip_w,d0
 				ext.l	d0
-				move.l	d0,leftclip-2
+				move.l	d0,Draw_LeftClip_l
 
 				cmp.w	Vid_RightX_w,d0
 				bge		dontbothercantseeit
-				move.w	rightclip,d1
+				move.w	Draw_RightClip_w,d1
 				ext.l	d1
-				move.l	d1,rightclip-2
+				move.l	d1,Draw_RightClip_l
 				blt		dontbothercantseeit
 				cmp.w	d1,d0
 				bge		dontbothercantseeit
@@ -4075,12 +4075,12 @@ outofrcliplop:
 				move.l	ZoneT_UpperRoof_l(a1),Draw_TopOfRoom_l
 				move.l	ZoneT_UpperFloor_l(a1),Draw_BottomOfRoom_l
 
-				move.l	#CurrentPointBrights_vl+4,PointBrightsPtr
+				move.l	#CurrentPointBrights_vl+4,Draw_PointBrightsPtr_l
 				bsr		dothisroom
 noupperroom:
 				move.l	ThisRoomToDraw,a0
 				clr.b	Draw_DoUpper_b
-				move.l	#CurrentPointBrights_vl,PointBrightsPtr
+				move.l	#CurrentPointBrights_vl,Draw_PointBrightsPtr_l
 
 				move.l	draw_BackupRoomPtr_l,a1
 				move.l	ZoneT_Roof_l(a1),d0
@@ -4110,7 +4110,7 @@ botfirst:
 
 				move.l	ThisRoomToDraw,a0
 				clr.b	Draw_DoUpper_b
-				move.l	#CurrentPointBrights_vl,PointBrightsPtr
+				move.l	#CurrentPointBrights_vl,Draw_PointBrightsPtr_l
 
 				move.l	draw_BackupRoomPtr_l,a1
 				move.l	ZoneT_Roof_l(a1),d0
@@ -4138,7 +4138,7 @@ botfirst:
 				move.l	ThisRoomToDraw+4,a0
 				cmp.l	Lvl_GraphicsPtr_l,a0
 				beq.s	noupperroom2
-				move.l	#CurrentPointBrights_vl+4,PointBrightsPtr
+				move.l	#CurrentPointBrights_vl+4,Draw_PointBrightsPtr_l
 
 				move.l	draw_BackupRoomPtr_l,a1
 				move.l	ZoneT_UpperRoof_l(a1),Draw_TopOfRoom_l
@@ -4285,7 +4285,7 @@ dothisroom:
 				bne.s	.ok_bottom
 				swap	d1
 .ok_bottom:
-				move.w	d1,ZoneBright
+				move.w	d1,Zone_Bright_w
 
 polyloop:
 				move.w	(a0)+,d0
@@ -4376,7 +4376,7 @@ itsachunkyfloor:
 
 itsafloor:
 
-				move.l	PointBrightsPtr,FloorPtBrights
+				move.l	Draw_PointBrightsPtr_l,FloorPtBrights
 
 				move.w	Draw_CurrentZone_w,d1
 				muls	#80,d1
@@ -5604,8 +5604,8 @@ NEWsetlclip:
 .ignoreboth:
 ; move.l #0,(a6)
 ; move.l #96*65536,4(a6)
-				move.w	#0,leftclip
-				move.w	Vid_RightX_w,rightclip
+				move.w	#0,Draw_LeftClip_w
+				move.w	Vid_RightX_w,Draw_RightClip_w
 				addq	#8,a6
 				addq	#2,a0
 				rts
@@ -5620,9 +5620,9 @@ NEWsetlclip:
 
 ; move.w d1,(a6)
 ; move.w d3,2(a6)
-				cmp.w	leftclip,d1
+				cmp.w	Draw_LeftClip_w,d1
 				ble.s	.leftnotoktoclip
-				move.w	d1,leftclip
+				move.w	d1,Draw_LeftClip_w
 .leftnotoktoclip:
 
 				addq	#2,a0
@@ -5657,10 +5657,10 @@ NEWsetrclip
 ; move.w d4,6(a6)
 
 
-				cmp.w	rightclip,d1
+				cmp.w	Draw_RightClip_w,d1
 				bge.s	.rightnotoktoclip
 				addq	#1,d1
-				move.w	d1,rightclip
+				move.w	d1,Draw_RightClip_w
 .rightnotoktoclip:
 				addq	#8,a6
 				addq	#2,a0
@@ -5683,16 +5683,16 @@ FIRSTsetlrclip:
 				tst.w	6(a2,d0*8)
 				bgt.s	.leftnotoktoclip
 .ignoreboth
-				move.w	Vid_RightX_w,rightclip
-				move.w	#0,leftclip
+				move.w	Vid_RightX_w,Draw_RightClip_w
+				move.w	#0,Draw_LeftClip_w
 				addq	#2,a0
 				rts
 
 .leftclipinfront:
 				move.w	(a1,d0*2),d1			; left x on screen
-				cmp.w	leftclip,d1
+				cmp.w	Draw_LeftClip_w,d1
 				ble.s	.leftnotoktoclip
-				move.w	d1,leftclip
+				move.w	d1,Draw_LeftClip_w
 .leftnotoktoclip:
 
 				move.w	(a0)+,d0
@@ -5706,19 +5706,19 @@ FIRSTsetlrclip:
 .rightclipinfront:
 				move.w	(a1,d0*2),d1			; right x on screen
 				addq	#1,d1
-				cmp.w	rightclip,d1
+				cmp.w	Draw_RightClip_w,d1
 				bge.s	.rightnotoktoclip
-				move.w	d1,rightclip
+				move.w	d1,Draw_RightClip_w
 .rightnotoktoclip:
 
 				rts
 
 
-leftclip2:		dc.w	0
-rightclip2:		dc.w	0
-ZoneBright:		dc.w	0
+;leftclip2:		dc.w	0
+;rightclip2:		dc.w	0
+Zone_Bright_w:		dc.w	0; 0xABADCAFE - Is this an ambient term for the whole zone?
 
-npolys:			dc.w	0
+;npolys:			dc.w	0
 
 
 
@@ -5784,9 +5784,9 @@ itsafloordraw:
 				cmp.l	Draw_BottomOfRoom_l,d7
 				bgt.s	dontdrawreturn
 
-				move.w	leftclip,d7
-				cmp.w	rightclip,d7
-				bge.s	dontdrawreturn			; don't draw if there's no room betwen left and rightclip
+				move.w	Draw_LeftClip_w,d7
+				cmp.w	Draw_RightClip_w,d7
+				bge.s	dontdrawreturn			; don't draw if there's no room betwen left and Draw_RightClip_w
 
 				sub.w	flooryoff,d6			; (floorY - viewerY)
 
@@ -5910,13 +5910,13 @@ cornerprocessloop: ;	figure					out if any left/right clipping is necessary
 				ble		.canttell
 
 				move.w	(a2,d0.w*2),d3			; fetch projected X coordinate
-				cmp.w	leftclip,d3
+				cmp.w	Draw_LeftClip_w,d3
 				bgt.s	.nol					; right of left clip
 				st		d4
 				st		anyclipping
 				bra.s	.nos
 .nol:
-				cmp.w	rightclip,d3
+				cmp.w	Draw_RightClip_w,d3
 				blt.s	.nor					; left of right clip
 				st		d6
 				st		anyclipping
@@ -6605,7 +6605,7 @@ pastsides:
 				move.w	(a0)+,d6
 				move.w	d6,whichtile
 				move.w	(a0)+,d6
-				add.w	ZoneBright,d6
+				add.w	Zone_Bright_w,d6
 				move.w	d6,lighttype
 				move.w	above(pc),d6			; is floor above player (i.e. ceiling)
 				beq		groundfloor
@@ -6919,24 +6919,24 @@ pix2h:
 
 dofloor:
 ; move.w (a2)+,d0
-				move.w	leftclip,d3
-				move.w	rightclip,d4
+				move.w	Draw_LeftClip_w,d3
+				move.w	Draw_RightClip_w,d4
 				move.w	RightSideTable_vw-LeftSideTable_vw(a4),d2 ; get rightside of line
 
 				addq	#1,d2					; why? Is the right side X not inclusive?
 				cmp.w	d3,d2					; does this make sense?
-				ble.s	nodrawline				; rightside <= leftclip?
+				ble.s	nodrawline				; rightside <= Draw_LeftClip_w?
 
 				cmp.w	d4,d2
-				ble.s	noclipright				; rightclip <= rightside?
-				move.w	d4,d2					; clip rightside to rightclip
+				ble.s	noclipright				; Draw_RightClip_w <= rightside?
+				move.w	d4,d2					; clip rightside to Draw_RightClip_w
 noclipright:
 				move.w	(a4),d1					; leftside x
 				cmp.w	d4,d1
-				bge.s	nodrawline				; leftside >= rightclip?
+				bge.s	nodrawline				; leftside >= Draw_RightClip_w?
 				cmp.w	d3,d1
-				bge.s	noclipleft				; leftside >= leftclip
-				move.w	d3,d1					; leftside = leftclip
+				bge.s	noclipleft				; leftside >= Draw_LeftClip_w
+				move.w	d3,d1					; leftside = Draw_LeftClip_w
 noclipleft:
 				cmp.w	d1,d2
 				ble.s	nodrawline				; rightside <= leftside?
@@ -7038,8 +7038,8 @@ dogourfloor:
 
 dofloorGOUR:
 ; move.w (a2)+,d0
-				move.w	leftclip,d3
-				move.w	rightclip,d4
+				move.w	Draw_LeftClip_w,d3
+				move.w	Draw_RightClip_w,d4
 				move.w	RightSideTable_vw-LeftSideTable_vw(a4),d2
 
 				move.w	d2,d5

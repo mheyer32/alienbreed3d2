@@ -26,16 +26,14 @@
 
 
 DoleftendGOUR:
-
-				move.w	leftclip,d0
+				move.w	Draw_LeftClip_w,d0
 				sub.w	#1,d0
-				move.w	d0,leftclipandlast
-
-
+				move.w	d0,Draw_LeftClipAndLast_w
 				move.w	(a0),d0					; leftx
 				move.w	2(a0),d1				; rightx
 				sub.w	d0,d1					; width
 				bge.s	sometodrawG
+
 				rts
 
 				;  struct{short 2^n-1,n;} draw_IterationTable_vw[]
@@ -63,7 +61,6 @@ sometodrawG:
 				move.l	d1,(a0)					; save
 
 				; Reading input walls from a0 and writing calculated deltas back into a0
-
 				moveq	#0,d1
 				move.w	4(a0),d1				; leftbm
 				moveq	#0,d2
@@ -104,8 +101,7 @@ sometodrawG:
 				asr.l	d6,d5					; (dBot << 16) >> widthShift
 				move.l	d5,16(a0)
 
-
-*** Gouraud shading ***
+; *** Gouraud shading ***
 				moveq	#0,d5
 				move.w	26(a0),d5
 				sub.w	24(a0),d5
@@ -120,7 +116,7 @@ sometodrawG:
 				swap	d5
 				move.l	d5,24(a0)				; 24(a0) << 17
 
-*** Extra Gouraud Shading ***
+; *** Extra Gouraud Shading ***
 
 				moveq	#0,d5
 				move.w	34(a0),d5
@@ -136,17 +132,18 @@ sometodrawG:
 				swap	d5
 				move.l	d5,32(a0)				; 32(a0) << 17
 
-				bra		screendivideGOUR
+;				bra		screendivideGOUR
 
-TOPBRCOUNT:		dc.l	0
-BOTBRCOUNT:		dc.l	0
+;				align 4
+;TOPBRCOUNT:		dc.l	0
+;BOTBRCOUNT:		dc.l	0
 
 
 				; Is this preparing the strips to draw?
-screendivideGOUR:
+;screendivideGOUR:
 
 				or.l	#$ffff0000,d7			; high word for number of iterations/iterations mask
-				move.w	leftclipandlast(pc),d6	; left clip minus 1
+				move.w	Draw_LeftClipAndLast_w(pc),d6	; left clip minus 1
 				move.l	#Sys_Workspace_vl,a2
 
 				move.l	(a0),a3					; (Width<<16)>>widthShift
@@ -156,10 +153,11 @@ screendivideGOUR:
 				move.l	16(a0),a1				; dBottom
 
 
-				;iterate through strips until we get past leftclip
-				; I think, leftclip is a continuously updated x coordinate that
+				;iterate through strips until we get past Draw_LeftClip_w
+				; I think, Draw_LeftClip_w is a continuously updated x coordinate that
 				; denotes "undrawn" space on screen to prevent partially covered walls
 				; from overwriting walls in front
+
 scrdivlopG:
 				swap	d0
 				cmp.w	d6,d0
@@ -181,10 +179,10 @@ scrdivlopG:
 				rts
 
 scrnotoffleftG:
-				move.w	d0,d6					; This continuuously moves the 'leftclip' out by one pixel
+				move.w	d0,d6		; This continuuously moves the 'Draw_LeftClip_w' out by one pixel
 									; So we always only produce new strips at integer x coordinates
 
-				cmp.w	rightclip(pc),d0
+				cmp.w	Draw_RightClip_w(pc),d0
 				bge.s	outofcalcG
 
 scrnotoffrightG:
@@ -215,8 +213,8 @@ outofcalcG:
 				tst.w	d7
 				bge.s	.somethingtodraw
 				rts
-.somethingtodraw:
 
+.somethingtodraw:
 				move.l	#ConstantTable_vl,a1
 				move.l	#Sys_Workspace_vl,a0
 
@@ -237,13 +235,11 @@ thislinedoneG:
 				rts
 
 scrdrawlopG:
-
 				move.w	(a0)+,d0				; start fetching the next strip, x-coord
-
 				cmp.w	LASTSTIRRUP,d0
 				beq.s	thislinedoneG
-				move.w	d0,LASTSTIRRUP
 
+				move.w	d0,LASTSTIRRUP
 				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3			; point to start address of screen column
 				move.l	(a0)+,d1
@@ -254,7 +250,6 @@ scrdrawlopG:
 ;pastscrinto
 
 				swap	d1
-
 				move.w	d1,d6
 				and.w	HORAND,d6				; wrap texture coordinate
 				move.l	(a0)+,d2
@@ -265,12 +260,11 @@ scrdrawlopG:
 				move.l	(a0)+,d3
 				swap	d3
 				add.l	#DivThreeTable_vb,a5
-				move.w	(a5),StripData			; d6*2/3
-
+				move.w	(a5),draw_StripData_w			; d6*2/3
 				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
-				move.b	StripData,d6			; (d6*2/3)
-				add.w	d6,d6					; d6 *4/3
+				move.b	draw_StripData_w,d6			; (d6*2/3)
+				add.w	d6,d6					; d6 * 4/3
 				move.w	VALSHIFT,d4				;
 				asl.l	d4,d6					; * wall texture height(?)
 				add.l	d6,a5					; start of wall strip
@@ -278,8 +272,8 @@ scrdrawlopG:
 				swap	d4
 				addq	#1,d4
 				move.w	d2,d6
-***************************
-* old version
+;***************************
+;* old version
 				asr.w	#7,d6
 
 				move.l	(a0)+,d5
@@ -289,36 +283,40 @@ scrdrawlopG:
 				move.w	d6,d7
 				add.w	d5,d7
 				bge.s	.brnotneg
+
 				moveq	#0,d7
-.brnotneg
+
+.brnotneg:
 				cmp.w	#62,d7
 				blt.s	.brnotpos
-				move.w	#62,d7
-.brnotpos
 
+				move.w	#62,d7
+
+.brnotpos:
 				move.l	(a0)+,d5
 				swap	d5
 				ext.w	d5
 				add.w	d5,d6
 				bge.s	.brnotneg2
+
 				moveq	#0,d6
-.brnotneg2
+
+.brnotneg2:
 				cmp.w	#62,d6
 				blt.s	.brnotpos2
-				move.w	#62,d6
-.brnotpos2
 
+				move.w	#62,d6
+
+.brnotpos2:
 				asr.w	#1,d6
 				asr.w	#1,d7
 				sub.w	d6,d7
-
 				move.l	Draw_PalettePtr_l,a4
-
 				bsr		ScreenWallstripdrawGOUR
+
 				move.w	(a7)+,d7
 
 toosmallG:
-
 				dbra	d7,scrdrawlopG
 
 				rts
@@ -329,21 +327,18 @@ itsoddy:
 				rts
 
 scrdrawlopGDOUB:
-
 				move.w	(a0)+,d0
 				btst	#0,d0
 				bne.s	itsoddy
 
 				cmp.w	LASTSTIRRUP,d0
 				beq.s	itsoddy
-				move.w	d0,LASTSTIRRUP
 
+				move.w	d0,LASTSTIRRUP
 				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
-
 				swap	d1
-
 				move.w	d1,d6
 				and.w	HORAND,d6
 				move.l	(a0)+,d2
@@ -354,11 +349,10 @@ scrdrawlopGDOUB:
 				move.l	(a0)+,d3
 				swap	d3
 				add.l	#DivThreeTable_vb,a5
-				move.w	(a5),StripData
-
+				move.w	(a5),draw_StripData_w
 				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
-				move.b	StripData,d6
+				move.b	draw_StripData_w,d6
 				add.w	d6,d6
 				move.w	VALSHIFT,d4
 				asl.l	d4,d6
@@ -367,8 +361,8 @@ scrdrawlopGDOUB:
 				swap	d4
 				addq	#1,d4
 				move.w	d2,d6
-***************************
-* old version
+;***************************
+;* old version
 				asr.w	#7,d6
 
 				move.l	(a0)+,d5
@@ -378,48 +372,48 @@ scrdrawlopGDOUB:
 				move.w	d6,d7
 				add.w	d5,d7
 				bge.s	.brnotneg
+
 				moveq	#0,d7
-.brnotneg
+
+.brnotneg:
 				cmp.w	#62,d7
 				blt.s	.brnotpos
-				move.w	#62,d7
-.brnotpos
 
+				move.w	#62,d7
+
+.brnotpos:
 				move.l	(a0)+,d5
 				swap	d5
 				ext.w	d5
 				add.w	d5,d6
 				bge.s	.brnotneg2
+
 				moveq	#0,d6
-.brnotneg2
+
+.brnotneg2:
 				cmp.w	#62,d6
 				blt.s	.brnotpos2
 				move.w	#62,d6
-.brnotpos2
 
+.brnotpos2:
 				asr.w	#1,d6
 				asr.w	#1,d7
 				sub.w	d6,d7
-
 				move.l	Draw_PalettePtr_l,a4
-
 				bsr		ScreenWallstripdrawGOUR
+
 				move.w	(a7)+,d7				; restore
 
 				dbra	d7,scrdrawlopGDOUB
 
 				rts
 
-
 scrdrawlopGB:
-
 				move.w	(a0)+,d0
 				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
-
 				swap	d1
-
 				move.w	d1,d6
 				and.w	HORAND,d6
 				move.l	(a0)+,d2
@@ -430,11 +424,11 @@ scrdrawlopGB:
 				move.l	(a0)+,d3
 				swap	d3
 				add.l	#DivThreeTable_vb,a5
-				move.w	(a5),StripData
+				move.w	(a5),draw_StripData_w
 
 				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
-				move.b	StripData,d6
+				move.b	draw_StripData_w,d6
 				add.w	d6,d6
 				move.w	VALSHIFT,d4
 				asl.l	d4,d6
@@ -512,11 +506,11 @@ scrdrawlopGBDOUB:
 				move.l	(a0)+,d3
 				swap	d3
 				add.l	#DivThreeTable_vb,a5
-				move.w	(a5),StripData
+				move.w	(a5),draw_StripData_w
 
 				move.l	Draw_ChunkPtr_l,a5
 				moveq	#0,d6
-				move.b	StripData,d6
+				move.b	draw_StripData_w,d6
 				add.w	d6,d6
 				move.w	VALSHIFT,d4
 				asl.l	d4,d6
@@ -858,9 +852,9 @@ CalcAndDrawG:
 				move.w	d6,strbot
 				move.w	d6,18(a0)
 				move.l	d3,(a1)
-				cmp.l	leftclip-2(pc),d3
+				cmp.l	Draw_LeftClip_l(pc),d3
 				blt		.alloffleft
-				cmp.l	rightclip-2(pc),d1
+				cmp.l	Draw_RightClip_l(pc),d1
 ; cmp.w #95,d1
 				bge		.alloffright
 
@@ -933,9 +927,9 @@ computeloop2G:
 				move.w	d6,strbot
 				move.w	d6,18(a0)
 				move.l	d3,(a1)
-				cmp.w	leftclip(pc),d3
+				cmp.w	Draw_LeftClip_w(pc),d3
 				blt.s	alloffleft2G
-				cmp.w	rightclip(pc),d1
+				cmp.w	Draw_RightClip_w(pc),d1
 ; cmp.w #95,d1
 				bge		alloffright2G
 
@@ -1000,13 +994,13 @@ alloffright2G:
 nostripqG:
 				rts
 
-STARTGOUR:		dc.l	0
+draw_GouraudStart_l:		dc.l	0
 
 ScreenWallstripdrawGOUR:
 
 				swap	d6
 				clr.w	d6
-				move.l	d6,STARTGOUR
+				move.l	d6,draw_GouraudStart_l
 
 				swap	d7
 				clr.w	d7
@@ -1038,7 +1032,7 @@ noclipbotG:
 				ext.l	d5
 				move.l	d7,d0
 				muls.l	d5,d0
-				add.l	d0,STARTGOUR
+				add.l	d0,draw_GouraudStart_l
 
 				move.w	draw_TopClip_w(pc),d5
 
@@ -1129,12 +1123,12 @@ cliptopusesimpleG
 				move.l	d2,a2
 				swap	d4
 
-				move.l	GOURSPEED,d5
+				move.l	draw_GouraudStep_l,d5
 				asl.l	#5,d5
-				move.l	STARTGOUR,d3
+				move.l	draw_GouraudStart_l,d3
 				asl.l	#5,d3
 
-				cmp.b	#1,StripData+1
+				cmp.b	#1,draw_StripData_b
 				dbge	d6,simplewalliPACK0G
 				dbne	d6,simplewalliPACK1G
 				dble	d6,simplewalliPACK2G
@@ -1211,7 +1205,7 @@ simplewallPACK2G:
 				dbra	d6,simplewallPACK2G
 				rts
 
-GOURSPEED:		dc.l	0
+draw_GouraudStep_l:		dc.l	0
 
 gotoendG:
 				tst.b	Vid_DoubleHeight_b
@@ -1220,7 +1214,7 @@ gotoendG:
 				sub.w	d5,d6					; height to draw.
 				ble		nostripqG
 
-				move.l	d7,GOURSPEED
+				move.l	d7,draw_GouraudStep_l
 
 				; start/endline in renderbuffer?
 				add.l	timeslargeG(pc,d5.w*4),a3 ; timeslarge contains renderbuffer offsets for each line
@@ -1251,12 +1245,12 @@ cliptopG
 				move.l	d2,a2
 				swap	d4
 
-				move.l	GOURSPEED,d5
+				move.l	draw_GouraudStep_l,d5
 				asl.l	#5,d5
-				move.l	STARTGOUR,d3
+				move.l	draw_GouraudStart_l,d3
 				asl.l	#5,d3
 
-				cmp.b	#1,StripData+1
+				cmp.b	#1,draw_StripData_b
 				dbge	d6,drawwallPACK0G
 				dbne	d6,drawwallPACK1G
 				dble	d6,drawwallPACK2G
@@ -1280,7 +1274,7 @@ doubwallGOUR:
 				asr.w	#1,d6
 				ble		nostripqG
 
-				move.l	d7,GOURSPEED
+				move.l	d7,draw_GouraudStep_l
 
 				add.l	timeslargeGDOUB(pc,d5.w*4),a3
 
@@ -1310,12 +1304,12 @@ doubwallGOUR:
 				move.l	d2,a2
 				swap	d4
 
-				move.l	GOURSPEED,d5
+				move.l	draw_GouraudStep_l,d5
 				asl.l	#6,d5
-				move.l	STARTGOUR,d3
+				move.l	draw_GouraudStart_l,d3
 				asl.l	#5,d3
 
-				cmp.b	#1,StripData+1
+				cmp.b	#1,draw_StripData_b
 				dbge	d6,drawwallPACK0G
 				dbne	d6,drawwallPACK1G
 				dble	d6,drawwallPACK2G
@@ -1334,7 +1328,7 @@ ScreenWallstripdrawGOURB:
 
 				swap	d6
 				clr.w	d6
-				move.l	d6,STARTGOUR
+				move.l	d6,draw_GouraudStart_l
 
 				swap	d7
 				clr.w	d7
@@ -1366,7 +1360,7 @@ noclipbotGb:
 				ext.l	d5
 				move.l	d7,d0
 				muls.l	d5,d0
-				add.l	d0,STARTGOUR
+				add.l	d0,draw_GouraudStart_l
 
 				move.w	draw_TopClip_w(pc),d5
 
@@ -1381,7 +1375,7 @@ gotoendGB:
 
 				sub.w	d5,d6					; height to draw.
 				ble		nostripqG
-				move.l	d7,GOURSPEED
+				move.l	d7,draw_GouraudStep_l
 
 				add.l	timeslargeGB(pc,d5.w*4),a3 ; start of line in renderbuffer
 
@@ -1410,12 +1404,12 @@ gotoendGB:
 				moveq	#0,d1
 				move.l	d2,a2
 				swap	d4
-				move.l	GOURSPEED,d5
+				move.l	draw_GouraudStep_l,d5
 				asl.l	#5,d5
-				move.l	STARTGOUR,d3
+				move.l	draw_GouraudStart_l,d3
 				asl.l	#5,d3
 
-				cmp.b	#1,StripData+1
+				cmp.b	#1,draw_StripData_b
 				dbge	d6,drawwallPACK0G
 				dbne	d6,drawwallPACK1G
 				dble	d6,drawwallPACK2G
@@ -1439,7 +1433,7 @@ doubwallGOURBIG:
 				sub.w	d5,d6					; height to draw.
 				asr.w	#1,d6
 				ble		nostripqG
-				move.l	d7,GOURSPEED
+				move.l	d7,draw_GouraudStep_l
 
 				add.l	timeslargeGBDOUB(pc,d5.w*4),a3
 
@@ -1469,12 +1463,12 @@ doubwallGOURBIG:
 				add.l	d2,d2
 				move.l	d2,a2
 				swap	d4
-				move.l	GOURSPEED,d5
+				move.l	draw_GouraudStep_l,d5
 				asl.l	#6,d5
-				move.l	STARTGOUR,d3
+				move.l	draw_GouraudStart_l,d3
 				asl.l	#5,d3
 
-				cmp.b	#1,StripData+1
+				cmp.b	#1,draw_StripData_b
 				dbge	d6,drawwallPACK0G
 				dbne	d6,drawwallPACK1G
 				dble	d6,drawwallPACK2G

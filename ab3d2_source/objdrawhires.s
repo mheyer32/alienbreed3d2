@@ -36,8 +36,8 @@ Draw_Object:
 
 .done_top_bot:
 				movem.l	d0-d7/a1-a6,-(a7)
-				move.w	rightclip,d0
-				sub.w	leftclip,d0
+				move.w	Draw_RightClip_w,d0
+				sub.w	Draw_LeftClip_w,d0
 				subq	#1,d0
 				ble		.done_all_in_front
 
@@ -122,8 +122,8 @@ draw_Object:
 				move.w	(a0),d0
 				move.w	2(a1,d0.w*8),d1			; z pos
 
-				move.w	leftclip,draw_LeftClipB_w
-				move.w	rightclip,draw_RightClipB_w
+				move.w	Draw_LeftClip_w,draw_LeftClipB_w
+				move.w	Draw_RightClip_w,draw_RightClipB_w
 
 				cmp.b	#$ff,6(a0)
 				bne		draw_Bitmap
