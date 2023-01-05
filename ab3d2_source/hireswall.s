@@ -120,6 +120,10 @@ SCALE			MACRO
 draw_IterationTable_vw:
 				incbin	"includes/iterfile" ; todo - move to data, change access via a3?
 
+				align 4
+draw_BrightnessScaleTable_vw:
+				SCALE
+
 Doleftend:
 				move.w	leftclip,d0
 				sub.w	#1,d0
@@ -187,7 +191,7 @@ sometodraw:
 				asr.l	d6,d5
 				move.l	d5,16(a0)
 
-*** Gouraud shading ***
+; *** Gouraud shading ***
 				moveq	#0,d5
 				move.w	26(a0),d5
 				sub.w	24(a0),d5
@@ -211,9 +215,7 @@ screendividethru:
 				move.l	Vid_FastBufferPtr_l,a3
 				move.l	(a0)+,d1
 
-				bra		.pastscrinto
-
-.pastscrinto
+.pastscrinto:
 				swap	d1
 
 				move.w	d1,d6
@@ -239,23 +241,23 @@ screendividethru:
 				swap	d4
 				move.w	d2,d6
 
-***************************
-* old version
+;***************************
+;* old version
 				asr.w	#7,d6
 
 				add.w	angbright(pc),d6
 				bge.s	.brnotneg
 				moveq	#0,d6
 
-.brnotneg
+.brnotneg:
 				cmp.w	#32,d6
 				blt.s	.brnotpos
 				move.w	#32,d6
 
-.brnotpos
+.brnotpos:
 				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
-				add.w	.ffscrpickhowbright(pc,d6*2),a2
+				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a2
 
 				move.w	d7,-(a7)
 				bsr		ScreenWallstripdrawthru
@@ -264,10 +266,7 @@ screendividethru:
 				dbra	d7,.scrdrawlop
 				rts
 
-.ffscrpickhowbright:
-				SCALE
-
-***************************
+;***************************
 
 screendivide:
 				or.l	#$ffff0000,d7
@@ -378,8 +377,8 @@ scrdrawlop:
 				addq	#1,d4
 				move.w	d2,d6
 
-***************************
-* old version
+;***************************
+;* old version
 				asr.w	#7,d6
 
 				move.l	(a0)+,d5
@@ -389,17 +388,18 @@ scrdrawlop:
 				bge.s	.brnotneg
 				moveq	#0,d6
 
-.brnotneg
+.brnotneg:
 				cmp.w	#64,d6
 				blt.s	.brnotpos
 				move.w	#64,d6
 
-.brnotpos
+.brnotpos:
 				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
-				add.w	ffscrpickhowbright(pc,d6*2),a2
+				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a2
+
 				and.b	#$fe,d6
-				add.w	ffscrpickhowbright(pc,d6*2),a4
+				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a4
 
 				btst	#0,d0
 				beq		.nobrightswap
@@ -413,9 +413,6 @@ scrdrawlop:
 toosmall:
 				dbra	d7,scrdrawlop
 				rts
-
-ffscrpickhowbright:
-				SCALE
 
 thislineodd:
 				add.w	#4+4+4+4+4,a0
@@ -460,8 +457,8 @@ scrdrawlopDOUB:
 				addq	#1,d4
 				move.w	d2,d6
 
-***************************
-* old version
+;***************************
+;* old version
 				asr.w	#7,d6
 
 				move.l	(a0)+,d5
@@ -471,17 +468,18 @@ scrdrawlopDOUB:
 				bge.s	.brnotneg
 				moveq	#0,d6
 
-.brnotneg
+.brnotneg:
 				cmp.w	#64,d6
 				blt.s	.brnotpos
 				move.w	#64,d6
 
-.brnotpos
+.brnotpos:
 				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
-				add.w	ffscrpickhowbrightD(pc,d6*2),a2
+				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a2
+
 				and.b	#$fe,d6
-				add.w	ffscrpickhowbrightD(pc,d6*2),a4
+				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a4
 
 				btst	#0,d0
 				beq		.nobrightswap
@@ -506,9 +504,6 @@ angbright:		dc.w	0
 leftside:		dc.b	0
 rightside:		dc.b	0
 firstleft:		dc.w	0
-
-ffscrpickhowbrightD:
-				SCALE
 
 screendivideFULL:
 				tst.b	Vid_DoubleWidth_b
@@ -557,17 +552,18 @@ scrdrawlopFULL:
 				bge.s	.brnotneg
 				moveq	#0,d6
 
-.brnotneg
+.brnotneg:
 				cmp.w	#64,d6
 				blt.s	.brnotpos
 				move.w	#64,d6
 
-.brnotpos
+.brnotpos:
 				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
-				add.w	ffscrpickhowbrightFULL(pc,d6*2),a2
+				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a2
+
 				and.b	#$fe,d6
-				add.w	ffscrpickhowbrightFULL(pc,d6*2),a4
+				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a4
 
 				btst	#0,d0
 				beq		.nobrightswap
@@ -580,9 +576,6 @@ scrdrawlopFULL:
 
 				dbra	d7,scrdrawlopFULL
 				rts
-
-ffscrpickhowbrightFULL:
-				SCALE
 
 itsanoddone:
 				add.w	#4+4+4+4+4,a0
@@ -623,8 +616,8 @@ scrdrawlopFULLDOUB:
 				addq	#1,d4
 				move.w	d2,d6
 
-***************************
-* old version
+;***************************
+;* old version
 				asr.w	#7,d6
 
 				move.l	(a0)+,d5
@@ -634,17 +627,17 @@ scrdrawlopFULLDOUB:
 				bge.s	.brnotneg
 				moveq	#0,d6
 
-.brnotneg
+.brnotneg:
 				cmp.w	#64,d6
 				blt.s	.brnotpos
 				move.w	#64,d6
 
-.brnotpos
+.brnotpos:
 				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
-				add.w	ffscrpickhowbrightFULLDOUB(pc,d6*2),a2
+				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a2
 				and.b	#$fe,d6
-				add.w	ffscrpickhowbrightFULLDOUB(pc,d6*2),a4
+				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a4
 
 				btst	#0,d0
 				beq		.nobrightswap
@@ -657,18 +650,6 @@ scrdrawlopFULLDOUB:
 				dbra	d7,scrdrawlopFULLDOUB
 				rts
 
-ffscrpickhowbrightFULLDOUB:
-				SCALE
-
-;DivThreeTable_vb:	;		stores					x/3 and x mod 3 for x=0...660
-;val				SET		0
-;				REPT	220
-;				dc.b	val,0
-;				dc.b	val,1
-;				dc.b	val,2
-;val				SET		val+1
-;				ENDR
-
 StripData:		dc.w	0
 
 * using a0=left pixel
@@ -677,7 +658,6 @@ StripData:		dc.w	0
 * d2= right height
 * d4 = left strip
 * d5 = right strip
-
 
 * Routine to draw a wall;
 * pass it X and Z coords of the endpoints
@@ -1215,8 +1195,6 @@ middleloop:
 				add.w	a2,a2
 
 				dbra	d6,iterloop
-
-				bra		someiters
 
 noiters:
 someiters:
