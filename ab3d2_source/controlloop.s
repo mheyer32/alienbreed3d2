@@ -410,18 +410,30 @@ READMAINMENU:
 				lea		mnu_MYMAINMENU,a0
 				bsr		CHECKMENU
 
-.nonextlev:
-
+***************************************************************
+				tst.w	d0
+				beq		playgame
+***************************************************************
 				cmp.w	#1,d0
 				bne		.noopt
 
 				bra		MASTERMENU
 
 .noopt:
-
+***************************************************************
 				cmp.w	#2,d0
-				beq		playgame
+				bne.s	.nonextlev
 
+				bsr	levelMenu;cycleLevel
+
+				lea		mnu_MYMAINMENU,a0
+				bsr		MYOPENMENU
+
+				bsr		WAITREL
+				bra		READMAINMENU;.rdlop
+
+.nonextlev:
+***************************************************************
 				cmp.w	#3,d0
 				bne		.nocontrol
 
@@ -434,9 +446,7 @@ READMAINMENU:
 				bra		.rdlop
 
 .nocontrol:
-
-********************************
-
+***************************************************************
 				cmp.w	#4,d0
 				bne		.nocred
 
@@ -446,10 +456,8 @@ READMAINMENU:
 
 				bra		.rdlop
 
-********************************
-
 .nocred:
-
+***************************************************************
 				cmp.w	#5,d0
 				bne		.noload
 
@@ -462,8 +470,9 @@ READMAINMENU:
 				bra		.rdlop
 
 .noload:
+***************************************************************
 				cmp.w	#6,d0
-				bne		playgame
+				bne		.nosave
 				bsr		WAITREL
 
 				jsr		SAVEPOSITION
@@ -473,9 +482,103 @@ READMAINMENU:
 
 				bsr		WAITREL
 				bra		.rdlop
+.nosave:
+***************************************************************
+;				cmp.w	#7,d0
+;				bne		playgame
+;				bsr		WAITREL
 
+;				bsr		customOptions
 
+;				lea		mnu_MYMAINMENU,a0
+;				bsr		MYOPENMENU
 
+				bsr		WAITREL
+				bra		.rdlop
+***************************************************************
+
+;fixme: there are better ways to do this, but it works.AL
+levelMenu:
+				lea		mnu_MYLEVELMENU,a0
+				bsr		MYOPENMENU
+
+				lea		mnu_MYLEVELMENU,a0
+				bsr		CHECKMENU
+
+				cmp.w	#8,d0
+				beq	levelMenu2
+				SAVEREGS
+				;bsr	DEFAULTGAME
+				not.b	LOADEXT
+				bsr	DEFGAME
+				GETREGS
+				move	d0,MAXLEVEL
+
+				rts
+
+levelMenu2:
+				lea		mnu_MYLEVELMENU2,a0
+				bsr		MYOPENMENU
+
+				lea		mnu_MYLEVELMENU2,a0
+				bsr		CHECKMENU
+
+				cmp.w	#8,d0
+				beq	.levelSelectDone
+				SAVEREGS
+				;bsr	DEFAULTGAME
+				not.b	LOADEXT
+				bsr	DEFGAME
+				GETREGS
+				move	d0,MAXLEVEL
+				add	#8,MAXLEVEL
+
+.levelSelectDone
+				rts
+***************************************************************
+Lvl_DefFilename_vb:		dc.b	'ab3:levels/level_'
+Lvl_DefFilenameX_vb:		dc.b	'a/deflev.dat',0
+LOADEXT:			dc.b	0
+				even
+DEFGAMEPOS:	dc.l	0
+DEFGAMELEN:	dc.l	0
+***************************************************************
+DEFGAME:
+				add.b	#'a',d0
+				move.b	d0,Lvl_DefFilenameX_vb
+				;move.l	#MEMF_ANY,IO_MemType_l;		 should I have left this in?
+				move.l	#Lvl_DefFilename_vb,a0
+				move.l	#DEFGAMEPOS,d0
+				move.l	#DEFGAMELEN,d1
+				jsr		IO_InitQueue
+				jsr		IO_QueueFile
+				jsr		IO_FlushQueue
+
+				tst.b	d6;				 can use this now
+				bne	.error_nodef;			 can use this now
+				
+				move.l	DEFGAMEPOS,a0			; address of first saved game.
+
+				move.l	#Plr_Health_w,a1
+				move.l	#Plr_Shield_w,a2
+				move.w	(a0)+,MAXLEVEL
+
+				REPT	11
+				move.l	(a0)+,(a1)+
+				ENDR
+				REPT	6
+				move.l	(a0)+,(a2)+
+				ENDR
+
+				move.l	DEFGAMEPOS,a1;		req?
+				CALLEXEC FreeVec;		req?
+				bra	.defloaded;			 can use this now
+.error_nodef;								 can use this now
+				not.b	LOADEXT
+				bsr	DEFAULTGAME;			 can use this now
+.defloaded;								 can use this now
+				rts
+***************************************************************
 playgame:
 				move.w	MAXLEVEL,PLOPT
 				rts
