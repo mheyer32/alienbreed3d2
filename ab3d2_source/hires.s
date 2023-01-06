@@ -3935,7 +3935,7 @@ DrawDisplay:
 				move.w	d0,d1
 				add.w	#256-32,d1				; 224
 				and.w	#255,d1
-				move.w	d1,wallyoff
+				move.w	d1,wall_y_off_w
 
 				move.l	yoff,d0					; is yoff the viewer's y position << 16?
 				asr.l	#6,d0					; yoff << 10
@@ -8964,7 +8964,7 @@ noret2:
 				st		OLDGOOD
 
 				move.l	#GOODRENDERTXT,d0
-				not.b	GOODRENDER
+				not.b	Draw_GoodRender_b
 				bne.s	.okgood
 				move.l	#BADRENDERTXT,d0
 .okgood:

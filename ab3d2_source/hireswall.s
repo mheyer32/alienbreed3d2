@@ -250,15 +250,15 @@ screendividethru:
 				asr.w	#7,d6
 
 				add.w	ang_bright_w(pc),d6
-				bge.s	.brnotneg
+				bge.s	.br_not_negative
 				moveq	#0,d6
 
-.brnotneg:
+.br_not_negative:
 				cmp.w	#32,d6
-				blt.s	.brnotpos
+				blt.s	.br_not_positive
 				move.w	#32,d6
 
-.brnotpos:
+.br_not_positive:
 				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a2
@@ -323,10 +323,10 @@ scrnotoffright:
 outofcalc:
 				swap	d7
 				tst.w	d7
-				bge.s	.somethingtodraw
+				bge.s	.something_to_draw
 				rts
 
-.somethingtodraw:
+.something_to_draw:
 				move.l	#ConstantTable_vl,a1
 				move.l	#Sys_Workspace_vl,a0
 				tst.b	Vid_FullScreen_b
@@ -389,15 +389,15 @@ scrdrawlop:
 				swap	d5
 				ext.w	d5
 				add.w	d5,d6
-				bge.s	.brnotneg
+				bge.s	.br_not_negative
 				moveq	#0,d6
 
-.brnotneg:
+.br_not_negative:
 				cmp.w	#64,d6
-				blt.s	.brnotpos
+				blt.s	.br_not_positive
 				move.w	#64,d6
 
-.brnotpos:
+.br_not_positive:
 				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a2
@@ -469,15 +469,15 @@ scrdrawlopDOUB:
 				swap	d5
 				ext.w	d5
 				add.w	d5,d6
-				bge.s	.brnotneg
+				bge.s	.br_not_negative
 				moveq	#0,d6
 
-.brnotneg:
+.br_not_negative:
 				cmp.w	#64,d6
-				blt.s	.brnotpos
+				blt.s	.br_not_positive
 				move.w	#64,d6
 
-.brnotpos:
+.br_not_positive:
 				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a2
@@ -553,15 +553,15 @@ scrdrawlopFULL:
 				swap	d5
 				ext.w	d5
 				add.w	d5,d6
-				bge.s	.brnotneg
+				bge.s	.br_not_negative
 				moveq	#0,d6
 
-.brnotneg:
+.br_not_negative:
 				cmp.w	#64,d6
-				blt.s	.brnotpos
+				blt.s	.br_not_positive
 				move.w	#64,d6
 
-.brnotpos:
+.br_not_positive:
 				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a2
@@ -628,15 +628,15 @@ scrdrawlopFULLDOUB:
 				swap	d5
 				ext.w	d5
 				add.w	d5,d6
-				bge.s	.brnotneg
+				bge.s	.br_not_negative
 				moveq	#0,d6
 
-.brnotneg:
+.br_not_negative:
 				cmp.w	#64,d6
-				blt.s	.brnotpos
+				blt.s	.br_not_positive
 				move.w	#64,d6
 
-.brnotpos:
+.br_not_positive:
 				move.l	Draw_PalettePtr_l,a2
 				move.l	a2,a4
 				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a2
@@ -749,15 +749,15 @@ scrdrawlopFULLDOUB:
 ;
 ;				move.l	#Draw_WallTexturePtrs_vl,a3
 ;				add.l	(a0)+,a3
-;				adda.w	wallyoff,a3
+;				adda.w	wall_y_off_w,a3
 ;				move.l	a3,fromtile
 ;				move.w	(a0)+,basebright(a2)
 ;				move.w	(a0)+,brightmult(a2)
-;				move.l	(a0)+,topofwall
-;				move.l	(a0)+,botofwall
+;				move.l	(a0)+,draw_TopOfWall_l
+;				move.l	(a0)+,draw_BottomOfWall_l
 ;				move.l	yoff,d6
-;				sub.l	d6,topofwall
-;				sub.l	d6,botofwall
+;				sub.l	d6,draw_TopOfWall_l
+;				sub.l	d6,draw_BottomOfWall_l
 ;
 ;				move.l	#DataBuffer1_vl,a1
 ;				move.l	#SinCosTable_vw,a3
@@ -824,17 +824,17 @@ scrdrawlopFULLDOUB:
 ;				move.l	#DataBuffer1_vl,a1
 ;				move.w	count(a2),d7
 ;				subq	#1,d7
-;.findfirstinfront:
+;.find_first_in_front:
 ;				move.l	(a1)+,d1
 ;				move.w	(a1)+,d0
-;				bgt.s	.foundinfront
+;				bgt.s	.found_in_front
 ;				move.w	(a1)+,d4
 ;				move.w	(a1)+,d6
-;				dbra d7,.findfirstinfront
+;				dbra d7,.find_first_in_front
 ;; CACHE_ON d2
 ;				rts		;						no two points were in front
 ;
-;.foundinfront:
+;.found_in_front:
 ;				move.w	(a1)+,d4
 ;				move.w	(a1)+,d6
 ;; d1=left x, d4=left end, d0=left dist
@@ -845,28 +845,28 @@ scrdrawlopFULLDOUB:
 ;
 ;				add.w	Vid_CentreX_w,d1
 ;
-;				move.l	topofwall(pc),d5
+;				move.l	draw_TopOfWall_l(pc),d5
 ;				divs	d0,d5
 ;				add.w	Vid_CentreY_w,d5
-;				move.w	d5,strtop
-;				move.l	botofwall(pc),d5
+;				move.w	d5,draw_StripTop_w
+;				move.l	draw_BottomOfWall_l(pc),d5
 ;				divs	d0,d5
 ;				add.w	Vid_CentreY_w,d5
-;				move.w	d5,strbot
+;				move.w	d5,draw_StripBottom_w
 ;
 ;; CACHE_OFF d2
 ;
-;.computeloop:
+;.compute_loop:
 ;				move.w	4(a1),d2
-;				bgt.s	.infront
+;				bgt.s	.in_front
 ;
 ;; addq #8,a1
-;; dbra d7,.findfirstinfront
+;; dbra d7,.find_first_in_front
 ;
 ;; CACHE_ON d2
 ;				rts
 ;
-;.infront:
+;.in_front:
 ;				move.l	#Storage_vl,a0
 ;				move.l	(a1),d3
 ;				move.w	6(a1),d5
@@ -878,25 +878,25 @@ scrdrawlopFULLDOUB:
 ;				asr.w	d3					; Vid_DoubleWidth_b test
 ;
 ;				add.w	Vid_CentreX_w,d3
-;				move.w	strtop(pc),12(a0)
-;				move.w	strbot(pc),16(a0)
-;				move.l	topofwall(pc),d6
+;				move.w	draw_StripTop_w(pc),12(a0)
+;				move.w	draw_StripBottom_w(pc),16(a0)
+;				move.l	draw_TopOfWall_l(pc),d6
 ;				divs	d2,d6
 ;				add.w	Vid_CentreY_w,d6
-;				move.w	d6,strtop
+;				move.w	d6,draw_StripTop_w
 ;				move.w	d6,14(a0)
-;				move.l	botofwall(pc),d6
+;				move.l	draw_BottomOfWall_l(pc),d6
 ;				divs	d2,d6
 ;				add.w	Vid_CentreY_w,d6
-;				move.w	d6,strbot
+;				move.w	d6,draw_StripBottom_w
 ;				move.w	d6,18(a0)
 ;				move.w	d3,2(a1)
-;				blt.s	.alloffleft
+;				blt.s	.all_off_left
 ;				cmp.w	Vid_RightX_w,d1
-;				bgt.s	.alloffleft
+;				bgt.s	.all_off_left
 ;
 ;				cmp.w	d1,d3
-;				blt.s	.alloffleft
+;				blt.s	.all_off_left
 ;
 ;				move.w	d1,(a0)
 ;				move.w	d3,2(a0)
@@ -909,16 +909,16 @@ scrdrawlopFULLDOUB:
 ;				bsr		Doleftend
 ;				move.w	(a7)+,d7
 ;
-;.alloffleft:
+;.all_off_left:
 ;
 ;				move.l	(a1)+,d1
 ;				move.w	(a1)+,d0
 ;				move.w	(a1)+,d4
 ;				move.w	(a1)+,d6
 ;
-;				dbra	d7,.computeloop
+;				dbra	d7,.compute_loop
 ;
-;.alloffright:
+;.all_off_right:
 ;; CACHE_ON d2
 ;				rts
 ;
@@ -977,7 +977,7 @@ scrdrawlopFULLDOUB:
 
 endprot:
 
-GOODRENDER:		dc.w	$ff00
+Draw_GoodRender_b:		dc.w	$ff00 ; accessed as byte all over the code
 
 ******************************************************************
 
@@ -992,25 +992,25 @@ walldraw:
 				bgt.s	oneinfront
 				rts
 
-oneinfront1
+oneinfront1:
 				tst.w	d3
 				ble.s	oneinfront
 ; Bothinfront!
 
 				nop
 
-oneinfront
+oneinfront:
 				move.w	#16,d7
 				move.w	#2,d6
 
-				tst.b	GOODRENDER
-				beq.s	.notgood
+				tst.b	Draw_GoodRender_b
+				beq.s	.not_good
 
 				move.w	#64,d7
 				move.w	#4,d6
-				bra		.ISGOOD
+				bra		.is_good
 
-.notgood:
+.not_good:
 				move.l	a2,d0
 				sub.l	a0,d0
 				bge.s	.okpos
@@ -1018,20 +1018,20 @@ oneinfront
 
 .okpos:
 				cmp.l	#256*128,d0
-				blt.s	.ISGOOD
+				blt.s	.is_good
 				add.w	d7,d7
 				addq	#1,d6
 				cmp.l	#512*128,d0
-				blt.s	.ISGOOD
+				blt.s	.is_good
 				add.w	d7,d7
 				addq	#1,d6
-.ISGOOD
+.is_good:
 
 				move.w	d3,d0
 				sub.w	d1,d0
 				bge.s	notnegzdiff
 				neg.w	d0
-notnegzdiff
+notnegzdiff:
 ; cmp.w #1024,d0
 ; blt.s nd01
 ; add.w d7,d7
@@ -1039,7 +1039,7 @@ notnegzdiff
 ;nd01:
 				cmp.w	#512,d0
 				blt.s	nd0
-				tst.b	GOODRENDER
+				tst.b	Draw_GoodRender_b
 				beq.s	nd0
 				add.w	d7,d7
 				add.w	#1,d6
@@ -1111,7 +1111,7 @@ nh4:
 				asr.l	#1,d0
 				move.w	d4,(a3)+
 
-				move.w	leftwallbright,d6
+				move.w	draw_LeftWallBright_w,d6
 				move.w	d6,(a3)+
 
 				add.w	d5,d4
@@ -1122,14 +1122,14 @@ nh4:
 				asr.w	#1,d4
 				move.w	d4,(a3)+
 
-				add.w	rightwallbright,d6
+				add.w	draw_RightWallBright_w,d6
 				asr.w	#1,d6
 				move.w	d6,(a3)+
 
 				move.l	d2,(a3)+
 				move.w	d3,(a3)+
 				move.w	d5,(a3)+
-				move.w	rightwallbright,(a3)+
+				move.w	draw_RightWallBright_w,(a3)+
 
 ; We now have the two endpoints and the midpoint
 ; so we need to perform 1 iteration of the inner
@@ -1210,15 +1210,15 @@ CalcAndDraw:
 				move.l	a0,a1
 				move.w	multcount,d7
 
-.findfirstinfront:
+.find_first_in_front:
 				move.l	(a1)+,d1
 				move.w	(a1)+,d0
-				bgt.s	.foundinfront
+				bgt.s	.found_in_front
 				move.l	(a1)+,d4
-				dbra	d7,.findfirstinfront
+				dbra	d7,.find_first_in_front
 				rts		;						no two points were in front
 
-.foundinfront:
+.found_in_front:
 				ext.l	d0
 
 				move.w	(a1)+,d4
@@ -1230,21 +1230,21 @@ CalcAndDraw:
 				move.w	Vid_CentreX_w,d5
 				add.l	d5,d1
 
-				move.l	topofwall(pc),d5
+				move.l	draw_TopOfWall_l(pc),d5
 				divs	d0,d5
 				add.w	Vid_CentreY_w,d5
-				move.w	d5,strtop
-				move.l	botofwall(pc),d5
+				move.w	d5,draw_StripTop_w
+				move.l	draw_BottomOfWall_l(pc),d5
 				divs	d0,d5
 				add.w	Vid_CentreY_w,d5
-				move.w	d5,strbot
+				move.w	d5,draw_StripBottom_w
 
-.computeloop:
+.compute_loop:
 				move.w	4(a1),d2
-				bgt.s	.infront
-				bra		.alloffleft
+				bgt.s	.in_front
+				bra		.all_off_left
 
-.infront:
+.in_front:
 				ext.l	d2
 				move.l	#Storage_vl,a0
 				move.l	(a1),d3
@@ -1253,30 +1253,30 @@ CalcAndDraw:
 				move.w	Vid_CentreX_w,d5
 				add.l	d5,d3
 				move.w	6(a1),d5
-				move.w	strtop(pc),12(a0)
-				move.l	topofwall(pc),d6
+				move.w	draw_StripTop_w(pc),12(a0)
+				move.l	draw_TopOfWall_l(pc),d6
 				divs	d2,d6
-				move.w	strbot(pc),16(a0)
+				move.w	draw_StripBottom_w(pc),16(a0)
 				add.w	Vid_CentreY_w,d6
-				move.w	d6,strtop
+				move.w	d6,draw_StripTop_w
 				move.w	d6,14(a0)
-				move.l	botofwall(pc),d6
+				move.l	draw_BottomOfWall_l(pc),d6
 				divs	d2,d6
 				add.w	Vid_CentreY_w,d6
-				move.w	d6,strbot
+				move.w	d6,draw_StripBottom_w
 				move.w	d6,18(a0)
 				move.l	d3,(a1)
 				cmp.l	Draw_LeftClip_l(pc),d3
-				blt		.alloffleft
+				blt		.all_off_left
 				cmp.l	Draw_RightClip_l(pc),d1
 ; cmp.w #95,d1
-				bge		.alloffright
+				bge		.all_off_right
 
 				movem.l	d0/d1/d2/d3/a0,-(a7)
 
 				moveq	#0,d0
 				move.b	WALLIDENT,d0
-				blt.s	.noputinmap
+				blt.s	.no_put_in_map
 
 				move.b	d0,d3
 				and.b	#15,d0
@@ -1298,30 +1298,30 @@ CalcAndDraw:
 				move.w	wallleftpt,(a0,d2.w*4)
 				move.w	wallrightpt,2(a0,d2.w*4)
 
-.noputinmap
+.no_put_in_map:
 				movem.l	(a7)+,d0/d1/d2/d3/a0
 
 				bra		OTHERHALF
 
 
-.alloffleft:
+.all_off_left:
 				move.l	(a1)+,d1
 				move.w	(a1)+,d0
 				move.w	(a1)+,d4
 				move.w	(a1)+,lbr
 
-				dbra	d7,.computeloop
+				dbra	d7,.compute_loop
 				rts
 
-.alloffright:
+.all_off_right:
 				rts
 
 computeloop2:
 				move.w	4(a1),d2
-				bgt.s	.infront
+				bgt.s	.in_front
 				bra		alloffleft2
 
-.infront:
+.in_front:
 				ext.l	d2
 				move.l	#Storage_vl,a0
 				move.l	(a1),d3
@@ -1330,17 +1330,17 @@ computeloop2:
 				move.w	Vid_CentreX_w,d5
 				add.l	d5,d3
 				move.w	6(a1),d5
-				move.w	strtop(pc),12(a0)
-				move.l	topofwall(pc),d6
+				move.w	draw_StripTop_w(pc),12(a0)
+				move.l	draw_TopOfWall_l(pc),d6
 				divs	d2,d6
-				move.w	strbot(pc),16(a0)
+				move.w	draw_StripBottom_w(pc),16(a0)
 				add.w	Vid_CentreY_w,d6
-				move.w	d6,strtop
+				move.w	d6,draw_StripTop_w
 				move.w	d6,14(a0)
-				move.l	botofwall(pc),d6
+				move.l	draw_BottomOfWall_l(pc),d6
 				divs	d2,d6
 				add.w	Vid_CentreY_w,d6
-				move.w	d6,strbot
+				move.w	d6,draw_StripBottom_w
 				move.w	d6,18(a0)
 				move.l	d3,(a1)
 				cmp.l	Draw_LeftClip_l(pc),d3
@@ -1384,28 +1384,27 @@ alloffleft2:
 alloffright2:
 				rts
 
-lbr:			dc.w	0
-tlbr:			dc.w	0
-leftwallbright:	dc.w	0
-rightwallbright: dc.w	0
-leftwallTOPbright: dc.w	0
-rightwallTOPbright: dc.w 0
-strtop:			dc.w	0
-strbot:			dc.w	0
+lbr:					dc.w	0
+tlbr:					dc.w	0
+draw_LeftWallBright_w:		dc.w	0
+draw_RightWallBright_w:		dc.w	0
+draw_LeftWallTopBright_w:	dc.w	0
+draw_RightWallTopBright_w:	dc.w	0
+draw_StripTop_w:			dc.w	0
+draw_StripBottom_w:			dc.w	0
 
 ***********************************
 
 * Need a routine which takes...?
 * Top Y (3d)
 * Bottom Y (3d)
-* distance
+* distancedraw_TopOfWall_l
 * height of each tile (number and routine addr)
 * And produces the appropriate strip on the
 * screen.
 
-topofwall:		dc.l	0
-botofwall:		dc.l	0
-
+draw_TopOfWall_l:		dc.l	0
+draw_BottomOfWall_l:	dc.l	0
 
 nostripq:
 				rts
@@ -1524,7 +1523,7 @@ usesimple:
 				mulu	d3,d4
 				add.l	d0,d4
 				swap	d4
-				add.w	totalyoff(pc),d4
+				add.w	total_y_off_w(pc),d4
 
 cliptopusesimple
 				move.w	VALAND,d7
@@ -1642,7 +1641,7 @@ gotoend:
 				add.l	d0,d4
 				swap	d4
 
-				add.w	totalyoff(pc),d4		; start texel offset in strip
+				add.w	total_y_off_w(pc),d4		; start texel offset in strip
 				move.w	VALAND,d7
 				and.w	d7,d4					; vertical texture coordinate clamp/wrap
 				move.w	#SCREENWIDTH,d0			; line offset to next line
@@ -1697,7 +1696,7 @@ doubwall
 				add.l	d0,d4
 				swap	d4
 
-				add.w	totalyoff(pc),d4
+				add.w	total_y_off_w(pc),d4
 				move.w	VALAND,d7
 				and.w	d7,d4
 				move.w	#640,d0
@@ -1773,7 +1772,7 @@ gotoendBIG
 				add.l	d0,d4
 				swap	d4
 
-				add.w	totalyoff(pc),d4
+				add.w	total_y_off_w(pc),d4
 				move.w	VALAND,d7
 				and.w	d7,d4
 				move.w	#SCREENWIDTH,d0
@@ -1822,7 +1821,7 @@ doubwallBIG:
 				add.l	d0,d4
 				swap	d4
 
-				add.w	totalyoff(pc),d4
+				add.w	total_y_off_w(pc),d4
 				move.w	VALAND,d7
 				and.w	d7,d4
 				move.w	#640,d0
@@ -1974,7 +1973,7 @@ usesimplethru:
 				mulu	d3,d4
 				add.l	d0,d4
 				swap	d4
-				add.w	totalyoff(pc),d4
+				add.w	total_y_off_w(pc),d4
 
 cliptopusesimplethru
 				moveq	#63,d7
@@ -2136,7 +2135,7 @@ gotoendthru:
 				add.l	d0,d4
 				swap	d4
 				add.w	d5,d4
-				add.w	wallyoff(pc),d4
+				add.w	wall_y_off_w(pc),d4
 
 cliptopthru
 				moveq	#63,d7
@@ -2158,8 +2157,8 @@ val				SET		104*4
 val				SET		val+104*4
 				ENDR
 
-totalyoff:		dc.w	0
-wallyoff:		dc.w	0
+total_y_off_w:		dc.w	0
+wall_y_off_w:		dc.w	0
 
 ******************************************
 * Wall polygon
@@ -2195,7 +2194,7 @@ itsawalldraw:
 				move.w	d1,fromtile
 
 				move.w	(a0)+,d1
-				move.w	d1,totalyoff
+				move.w	d1,total_y_off_w
 
 				move.w	(a0)+,d1
 				move.l	#Draw_WallTexturePtrs_vl,a3
@@ -2221,22 +2220,22 @@ itsawalldraw:
 				move.b	(a0)+,d1				; texture width
 				move.w	d1,HORAND				; horizontal texture width mask?
 				move.b	(a0)+,WHICHPBR
-				move.w	totalyoff,d1
-				add.w	wallyoff,d1
+				move.w	total_y_off_w,d1
+				add.w	wall_y_off_w,d1
 				and.w	VALAND,d1
-				move.w	d1,totalyoff
-				move.l	(a0)+,topofwall
-				sub.l	d6,topofwall
-				move.l	(a0)+,botofwall
-				sub.l	d6,botofwall
+				move.w	d1,total_y_off_w
+				move.l	(a0)+,draw_TopOfWall_l
+				sub.l	d6,draw_TopOfWall_l
+				move.l	(a0)+,draw_BottomOfWall_l
+				sub.l	d6,draw_BottomOfWall_l
 
 				move.b	(a0)+,d3
 				ext.w	d3
 				move.w	d3,wallbrightoff
 				move.b	(a0)+,OTHERZONE+1
 
-				move.l	topofwall,d3
-				cmp.l	botofwall,d3
+				move.l	draw_TopOfWall_l,d3
+				cmp.l	draw_BottomOfWall_l,d3
 				bge		wallfacingaway
 
 				tst.w	6(a5,d0*8)
@@ -2375,7 +2374,7 @@ cant_tell:
 .okpos1:
 
 				add.w	wallbrightoff,d0
-				move.w	d0,leftwallbright
+				move.w	d0,draw_LeftWallBright_w
 
 				move.w	WHICHRIGHTPT,d0
 				asl.w	#2,d0
@@ -2386,7 +2385,7 @@ cant_tell:
 .okpos2:
 
 				add.w	wallbrightoff,d0
-				move.w	d0,rightwallbright
+				move.w	d0,draw_RightWallBright_w
 
 				move.w	Draw_CurrentZone_w,d0
 				move.b	WHICHPBR,d4
@@ -2409,7 +2408,7 @@ cant_tell:
 				neg.w	d0
 .okpos3:
 				add.w	wallbrightoff,d0
-				move.w	d0,leftwallTOPbright
+				move.w	d0,draw_LeftWallTopBright_w
 
 				move.w	WHICHRIGHTPT,d0
 				asl.w	#2,d0
@@ -2419,18 +2418,18 @@ cant_tell:
 				neg.w	d0
 .okpos4:
 				add.w	wallbrightoff,d0
-				move.w	d0,rightwallTOPbright
+				move.w	d0,draw_RightWallTopBright_w
 
 				move.w	leftend(pc),d4
 				move.l	#max3ddiv,d7
 
 				move.w	#-1,LASTSTIRRUP
 
-				move.w	rightwallTOPbright,d0
-				cmp.w	rightwallbright,d0
+				move.w	draw_RightWallTopBright_w,d0
+				cmp.w	draw_RightWallBright_w,d0
 				bne.s	gottagour
-				move.w	leftwallTOPbright,d0
-				cmp.w	leftwallbright,d0
+				move.w	draw_LeftWallTopBright_w,d0
+				cmp.w	draw_LeftWallBright_w,d0
 				bne.s	gottagour
 
 				bsr		walldraw
