@@ -913,9 +913,9 @@ ACTANIMOBJ:
 				moveq	#0,d1
 				move.b	5(a3,d0.w),d1
 
-				cmp	#0,animtimer		;animtimer decriment moved to VBlankInterrupt:
+				cmp	#0,vecttimer		;animtimer decriment moved to VBlankInterrupt:
 				bgt.s	.notzero
-
+				move.w	#3,vecttimer
 				move.w	d1,EntT_Timer1_w(a0)
 .notzero:
 				rts
@@ -937,6 +937,7 @@ ACTANIMOBJ:
 
 				rts
 
+vecttimer:	dc.w	0
 
 THISPLRxoff:	dc.w	0
 THISPLRzoff:	dc.w	0
