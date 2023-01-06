@@ -572,6 +572,7 @@ DEFGAME:
 
 				move.l	DEFGAMEPOS,a1;		req?
 				CALLEXEC FreeVec;		req?
+				not.b	LOADEXT;			 reset for next load
 				bra	.defloaded;			 can use this now
 .error_nodef;								 can use this now
 				not.b	LOADEXT
