@@ -874,7 +874,7 @@ ACTANIMOBJ:
 				add.w	d1,d0					;*6
 
 				cmp.w	#1,ObjT_GFXType_w(a2)
-				blt.s	.bitmap
+				blt	.bitmap;					was blt.s	.bitmap before adding timers to .vector: & .glare:
 				beq.s	.vector
 
 .glare:
@@ -893,8 +893,13 @@ ACTANIMOBJ:
 
 				moveq	#0,d1
 				move.b	5(a3,d0.w),d1
-				move.w	d1,EntT_Timer1_w(a0)
 
+				cmp	#0,vecttimer
+				bgt.s	.nozero
+
+				move.w	#3,vecttimer
+				move.w	d1,EntT_Timer1_w(a0)
+.nozero:
 				rts
 
 .vector:
@@ -915,7 +920,7 @@ ACTANIMOBJ:
 
 				cmp	#0,vecttimer		;animtimer decriment moved to VBlankInterrupt:
 				bgt.s	.notzero
-				move.w	#3,vecttimer
+
 				move.w	d1,EntT_Timer1_w(a0)
 .notzero:
 				rts
