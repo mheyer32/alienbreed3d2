@@ -893,13 +893,8 @@ ACTANIMOBJ:
 
 				moveq	#0,d1
 				move.b	5(a3,d0.w),d1
-
-				cmp	#0,vecttimer
-				bgt.s	.nozero
-
-				move.w	#3,vecttimer
 				move.w	d1,EntT_Timer1_w(a0)
-.nozero:
+
 				rts
 
 .vector:
@@ -918,9 +913,12 @@ ACTANIMOBJ:
 				moveq	#0,d1
 				move.b	5(a3,d0.w),d1
 
-				cmp	#0,vecttimer		;animtimer decriment moved to VBlankInterrupt:
+				cmp	#0,vecttimer
+				ble.s	.zero
+				cmp	#0,vecttimer
 				bgt.s	.notzero
-
+.zero
+				move.w	#3,vecttimer
 				move.w	d1,EntT_Timer1_w(a0)
 .notzero:
 				rts
