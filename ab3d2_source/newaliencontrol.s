@@ -912,8 +912,12 @@ ACTANIMOBJ:
 
 				moveq	#0,d1
 				move.b	5(a3,d0.w),d1
-				move.w	d1,EntT_Timer1_w(a0)
 
+				cmp	#0,animtimer		;animtimer decriment moved to VBlankInterrupt:
+				bgt.s	.notzero
+
+				move.w	d1,EntT_Timer1_w(a0)
+.notzero:
 				rts
 
 .bitmap:

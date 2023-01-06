@@ -771,7 +771,7 @@ objmoveanim:
 				cmp	#0,animtimer		;animtimer decriment moved to VBlankInterrupt:
 				bgt.s	.notzero
 				bsr		brightanim
-				move.w	#5,animtimer	;was 2 AL
+				move.w	#3,animtimer	;was 2 AL
 				move.l	otherrip,d0		;what are these for?
 				move.l	RipTear,otherrip	;""
 				move.l	d0,RipTear		;""
