@@ -874,7 +874,7 @@ ACTANIMOBJ:
 				add.w	d1,d0					;*6
 
 				cmp.w	#1,ObjT_GFXType_w(a2)
-				blt	.bitmap;					was blt.s	.bitmap before adding timers to .vector: & .glare:
+				blt.s	.bitmap
 				beq.s	.vector
 
 .glare:
@@ -911,16 +911,15 @@ ACTANIMOBJ:
 				add.w	d1,EntT_CurrentAngle_w(a0)
 
 				moveq	#0,d1
-				move.b	5(a3,d0.w),d1
 
-				cmp	#0,vecttimer
-				ble.s	.zero
-				cmp	#0,vecttimer
-				bgt.s	.notzero
-.zero
-				move.w	#3,vecttimer
+				cmp	#0,Anim_VecTimer_w
+				bgt.s	.not_zero
+				
+				move.b	5(a3,d0.w),d1
+				move.w	#3,Anim_VecTimer_w
+
 				move.w	d1,EntT_Timer1_w(a0)
-.notzero:
+.not_zero
 				rts
 
 .bitmap:
@@ -940,7 +939,7 @@ ACTANIMOBJ:
 
 				rts
 
-vecttimer:	dc.w	0
+Anim_VecTimer_w:	dc.w	0
 
 THISPLRxoff:	dc.w	0
 THISPLRzoff:	dc.w	0
