@@ -1,5 +1,8 @@
 
+				align 4
 draw_GouraudStep_l:		dc.l	0
+draw_GouraudStart_l:	dc.l	0
+
 
 ***********************************
 
@@ -214,7 +217,7 @@ DoleftendGOUR:
 				move.l	#ConstantTable_vl,a1
 				move.l	#Sys_Workspace_vl,a0
 
-; tst.b seethru
+; tst.b wall_SeeThrough_b
 ; bne screendividethru
 
 				tst.b	Vid_FullScreen_b
@@ -241,10 +244,10 @@ DoleftendGOUR:
 				move.l	(a0)+,d1
 				swap	d1
 				move.w	d1,d6
-				and.w	HORAND,d6				; wrap texture coordinate
+				and.w	wall_TextureWidthMask_w,d6				; wrap texture coordinate
 				move.l	(a0)+,d2
 				swap	d2
-				add.w	fromtile(pc),d6			;
+				add.w	draw_FromTile_w(pc),d6			;
 				add.w	d6,d6
 				move.w	d6,a5					; "Word-size source operands are signextended to 32-bit quantities."
 				move.l	(a0)+,d3
@@ -255,7 +258,7 @@ DoleftendGOUR:
 				moveq	#0,d6
 				move.b	draw_StripData_w,d6			; (d6*2/3)
 				add.w	d6,d6					; d6 * 4/3
-				move.w	VALSHIFT,d4				;
+				move.w	wall_TextureHeightShift_w,d4				;
 				asl.l	d4,d6					; * wall texture height(?)
 				add.l	d6,a5					; start of wall strip
 				move.l	(a0)+,d4
@@ -331,10 +334,10 @@ scrdrawlopGDOUB:
 				move.l	(a0)+,d1
 				swap	d1
 				move.w	d1,d6
-				and.w	HORAND,d6
+				and.w	wall_TextureWidthMask_w,d6
 				move.l	(a0)+,d2
 				swap	d2
-				add.w	fromtile(pc),d6
+				add.w	draw_FromTile_w(pc),d6
 				add.w	d6,d6
 				move.w	d6,a5
 				move.l	(a0)+,d3
@@ -345,7 +348,7 @@ scrdrawlopGDOUB:
 				moveq	#0,d6
 				move.b	draw_StripData_w,d6
 				add.w	d6,d6
-				move.w	VALSHIFT,d4
+				move.w	wall_TextureHeightShift_w,d4
 				asl.l	d4,d6
 				add.l	d6,a5
 				move.l	(a0)+,d4
@@ -406,10 +409,10 @@ scrdrawlopGB:
 				move.l	(a0)+,d1
 				swap	d1
 				move.w	d1,d6
-				and.w	HORAND,d6
+				and.w	wall_TextureWidthMask_w,d6
 				move.l	(a0)+,d2
 				swap	d2
-				add.w	fromtile(pc),d6
+				add.w	draw_FromTile_w(pc),d6
 				add.w	d6,d6
 				move.w	d6,a5
 				move.l	(a0)+,d3
@@ -421,7 +424,7 @@ scrdrawlopGB:
 				moveq	#0,d6
 				move.b	draw_StripData_w,d6
 				add.w	d6,d6
-				move.w	VALSHIFT,d4
+				move.w	wall_TextureHeightShift_w,d4
 				asl.l	d4,d6
 				add.l	d6,a5
 				move.l	(a0)+,d4
@@ -490,10 +493,10 @@ scrdrawlopGBDOUB:
 				move.l	(a0)+,d1
 				swap	d1
 				move.w	d1,d6
-				and.w	HORAND,d6
+				and.w	wall_TextureWidthMask_w,d6
 				move.l	(a0)+,d2
 				swap	d2
-				add.w	fromtile(pc),d6			; ptr to floor tile
+				add.w	draw_FromTile_w(pc),d6			; ptr to floor tile
 				add.w	d6,d6
 				move.w	d6,a5
 				move.l	(a0)+,d3
@@ -504,7 +507,7 @@ scrdrawlopGBDOUB:
 				moveq	#0,d6
 				move.b	draw_StripData_w,d6
 				add.w	d6,d6
-				move.w	VALSHIFT,d4
+				move.w	wall_TextureHeightShift_w,d4
 				asl.l	d4,d6
 				add.l	d6,a5
 				move.l	(a0)+,d4
@@ -883,8 +886,8 @@ CalcAndDrawG:
 .no_door:
 				or.l	d1,(a0)
 				move.l	BIGPTR,a0
-				move.w	wallleftpt,(a0,d2.w*4)
-				move.w	wallrightpt,2(a0,d2.w*4)
+				move.w	wall_left_point_w,(a0,d2.w*4)
+				move.w	wall_right_point_w,2(a0,d2.w*4)
 
 .no_put_in_map:
 				movem.l	(a7)+,d0/d1/d2/d3/a0
@@ -997,7 +1000,6 @@ alloffright2G:
 nostripqG:
 				rts
 
-draw_GouraudStart_l:		dc.l	0
 
 ScreenWallstripdrawGOUR:
 				swap	d6
@@ -1040,7 +1042,7 @@ noclipbotG:
 nocliptopG:
 				bra		gotoendG
 
-				CNOP	0,128
+				;CNOP	0,128
 
 drawwallPACK0G:
 				swap	d4
@@ -1111,7 +1113,7 @@ usesimpleG:
 				add.w	total_y_off_w(pc),d4
 
 cliptopusesimpleG:
-				move.w	VALAND,d7
+				move.w	wall_TextureHeightMask_w,d7
 				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
 				swap	d2
@@ -1213,8 +1215,6 @@ simplewallPACK2G:
 
 				rts
 
-
-
 gotoendG:
 				tst.b	Vid_DoubleHeight_b
 				bne		doubwallGOUR
@@ -1225,7 +1225,7 @@ gotoendG:
 				move.l	d7,draw_GouraudStep_l
 
 				; start/endline in renderbuffer?
-				add.l	timeslargeG(pc,d5.w*4),a3 ; timeslarge contains renderbuffer offsets for each line
+				add.l	draw_LineOffsetBuffer_vl(pc,d5.w*4),a3 ; contains renderbuffer offsets for each line
 
 				add.w	d2,d2
 
@@ -1246,7 +1246,7 @@ gotoendG:
 				add.w	total_y_off_w(pc),d4
 
 cliptopG:
-				move.w	VALAND,d7
+				move.w	wall_TextureHeightMask_w,d7
 				and.w	d7,d4
 				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
@@ -1265,12 +1265,6 @@ cliptopG:
 
 				rts
 
-timeslargeG:
-val				SET		0
-				REPT	256
-				dc.l	val
-val				SET		val+SCREENWIDTH
-				ENDR
 
 doubwallGOUR:
 				moveq	#0,d0
@@ -1282,7 +1276,7 @@ doubwallGOUR:
 				ble		nostripqG
 
 				move.l	d7,draw_GouraudStep_l
-				add.l	timeslargeGDOUB(pc,d5.w*4),a3
+				add.l	draw_LineOffsetBuffer_vl(pc,d5.w*4),a3
 				add.w	d2,d2
 				move.l	4(a1,d2.w*8),d0
 				add.w	TOPOFFSET(pc),d5
@@ -1295,7 +1289,7 @@ doubwallGOUR:
 				add.l	d0,d4
 				swap	d4
 				add.w	total_y_off_w(pc),d4
-				move.w	VALAND,d7
+				move.w	wall_TextureHeightMask_w,d7
 				and.w	d7,d4
 				move.w	#640,d0
 				moveq	#0,d1
@@ -1314,13 +1308,6 @@ doubwallGOUR:
 				dble	d6,drawwallPACK2G
 
 				rts
-
-timeslargeGDOUB:
-val				SET		0
-				REPT	256
-				dc.l	val
-val				SET		val+SCREENWIDTH
-				ENDR
 
 ScreenWallstripdrawGOURB:
 				swap	d6
@@ -1368,7 +1355,7 @@ gotoendGB:
 				ble		nostripqG
 
 				move.l	d7,draw_GouraudStep_l
-				add.l	timeslargeGB(pc,d5.w*4),a3 ; start of line in renderbuffer
+				add.l	draw_LineOffsetBuffer_vl(pc,d5.w*4),a3 ; start of line in renderbuffer
 				move.w	d2,d4
 				add.w	d2,d2
 				add.w	d2,d4
@@ -1385,7 +1372,7 @@ gotoendGB:
 				add.l	d0,d4
 				swap	d4
 				add.w	total_y_off_w(pc),d4
-				move.w	VALAND,d7
+				move.w	wall_TextureHeightMask_w,d7
 				and.w	d7,d4
 				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
@@ -1403,13 +1390,6 @@ gotoendGB:
 				dble	d6,drawwallPACK2G
 				rts
 
-timeslargeGB:
-val				SET		0
-				REPT	256
-				dc.l	val
-val				SET		val+SCREENWIDTH
-				ENDR
-
 doubwallGOURBIG:
 				moveq	#0,d0
 				asr.w	#1,d5
@@ -1420,7 +1400,7 @@ doubwallGOURBIG:
 				ble		nostripqG
 
 				move.l	d7,draw_GouraudStep_l
-				add.l	timeslargeGBDOUB(pc,d5.w*4),a3
+				add.l	draw_LineOffsetBuffer_vl(pc,d5.w*4),a3
 				move.w	d2,d4
 				add.w	d2,d2
 				add.w	d2,d4
@@ -1435,7 +1415,7 @@ doubwallGOURBIG:
 				add.l	d0,d4
 				swap	d4
 				add.w	total_y_off_w(pc),d4
-				move.w	VALAND,d7
+				move.w	wall_TextureHeightMask_w,d7
 				and.w	d7,d4
 				move.w	#640,d0
 				moveq	#0,d1
@@ -1455,9 +1435,3 @@ doubwallGOURBIG:
 
 				rts
 
-timeslargeGBDOUB:
-val				SET		0
-				REPT	256
-				dc.l	val
-val				SET		val+SCREENWIDTH
-				ENDR

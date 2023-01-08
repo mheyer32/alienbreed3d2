@@ -1716,8 +1716,8 @@ IWasPlayer1:
 				move.l	Plr1_YOff_l,yoff
 				move.l	Plr1_ZOff_l,zoff
 				move.w	Plr1_AngPos_w,angpos
-				move.w	Plr1_CosVal_w,cosval
-				move.w	Plr1_SinVal_w,sinval
+				move.w	Plr1_CosVal_w,Temp_CosVal_w
+				move.w	Plr1_SinVal_w,Temp_SinVal_w
 				move.l	plr1_ListOfGraphRoomsPtr_l,Lvl_ListOfGraphRoomsPtr_l
 				move.l	plr1_PointsToRotatePtr_l,PointsToRotatePtr_l
 				move.b	Plr1_Echo_b,PLREcho
@@ -1733,8 +1733,8 @@ IWasPlayer1:
 				move.w	#-1,12+128(a0)
 
 				eor.w	#4096,angpos
-				neg.w	cosval					; view direction 180deg
-				neg.w	sinval
+				neg.w	Temp_CosVal_w					; view direction 180deg
+				neg.w	Temp_SinVal_w
 .nolookback:
 
 				jsr		OrderZones
@@ -1819,8 +1819,8 @@ drawplayer2:
 				move.l	Plr2_YOff_l,yoff
 				move.l	Plr2_ZOff_l,zoff
 				move.w	Plr2_AngPos_w,angpos
-				move.w	Plr2_CosVal_w,cosval
-				move.w	Plr2_SinVal_w,sinval
+				move.w	Plr2_CosVal_w,Temp_CosVal_w
+				move.w	Plr2_SinVal_w,Temp_SinVal_w
 				move.l	plr2_ListOfGraphRoomsPtr_l,Lvl_ListOfGraphRoomsPtr_l
 				move.l	plr2_PointsToRotatePtr_l,PointsToRotatePtr_l
 				move.b	Plr2_Echo_b,PLREcho
@@ -1834,8 +1834,8 @@ drawplayer2:
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	#-1,12+128(a0)
 				eor.w	#4096,angpos
-				neg.w	cosval
-				neg.w	sinval
+				neg.w	Temp_CosVal_w
+				neg.w	Temp_SinVal_w
 
 .nolookback:
 				jsr		OrderZones
@@ -3927,8 +3927,8 @@ DrawDisplay:
 				move.w	(a0,d0.w),d6
 				adda.w	#2048,a0				; +90 deg?
 				move.w	(a0,d0.w),d7
-				move.w	d6,sinval
-				move.w	d7,cosval
+				move.w	d6,Temp_SinVal_w
+				move.w	d7,Temp_CosVal_w
 
 				move.l	yoff,d0
 				asr.l	#8,d0					; yoff >> 8
@@ -4319,8 +4319,8 @@ polyloop:
 				bra		polyloop
 
 itsaseewall:
-				st		seethru
-				jsr		itsawalldraw
+;				st		wall_SeeThrough_b
+				jsr		Draw_Wall
 				bra		polyloop
 
 itsbackdrop:
@@ -4424,9 +4424,9 @@ itsafloor:
 itsasetclip:
 				bra		polyloop
 itsawall:
-				clr.b	seethru
+;				clr.b	wall_SeeThrough_b
 ; move.l #stripbuffer,a1
-				jsr		itsawalldraw
+				jsr		Draw_Wall
 				bra		polyloop
 
 jumpoutofloop:
@@ -4554,9 +4554,9 @@ RotateLevelPts:	;		Does					this rotate ALL points in the level EVERY frame?
 										; otherwise only the visible subset
 
 				; Rotate all level points
-				move.w	sinval,d6
+				move.w	Temp_SinVal_w,d6
 				swap	d6
-				move.w	cosval,d6
+				move.w	Temp_CosVal_w,d6
 
 				move.l	Lvl_PointsPtr_l,a3
 				move.l	#Rotated_vl,a1				; stores only 2x800 points
@@ -4702,9 +4702,9 @@ putinB:
 
 				; This only rotates a subset of the points, with indices pointed to at PointsToRotatePtr_l
 ONLYTHELONELY:
-				move.w	sinval,d6
+				move.w	Temp_SinVal_w,d6
 				swap	d6
-				move.w	cosval,d6
+				move.w	Temp_CosVal_w,d6
 
 				move.l	PointsToRotatePtr_l,a0	; -1 terminated array of point indices to rotate
 				move.l	Lvl_PointsPtr_l,a3
@@ -5010,8 +5010,8 @@ CalcPLR2InLine:
 
 
 RotateObjectPts:
-				move.w	sinval,d5				; fetch sine of rotation
-				move.w	cosval,d6				; consine
+				move.w	Temp_SinVal_w,d5				; fetch sine of rotation
+				move.w	Temp_CosVal_w,d6				; consine
 
 				move.l	Lvl_ObjectDataPtr_l,a4
 				move.l	Lvl_ObjectPointsPtr_l,a0
@@ -7282,7 +7282,7 @@ LineToUse:		dc.l	0
 * For test purposes, give it
 * a3 = point to screen
 * d0= z distance away
-* and sinval+cosval must be set up.
+* and Temp_SinVal_w+Temp_CosVal_w must be set up.
 ***************************
 
 
@@ -7453,9 +7453,9 @@ pastfloorbright:
 				; as function of the player view direction
 				; d0 = distance of line to viewer along Z axis
 				move.l	d0,d1					; distance of line to viewer along Z axis
-				muls	cosval,d1				; cos * dist
+				muls	Temp_CosVal_w,d1				; cos * dist
 				move.l	d0,d2
-				muls	sinval,d2				;
+				muls	Temp_SinVal_w,d2				;
 				neg.l	d2						; -sin * width
 				asr.l	#2,d2
 				asr.l	#2,d1
