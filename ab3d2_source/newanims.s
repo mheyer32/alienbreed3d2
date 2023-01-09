@@ -768,14 +768,14 @@ objmoveanim:
 				move.w	#0,plr2_FloorSpd_w
 
 				bsr		LiftRoutine
-				cmp	#0,animtimer		;animtimer decriment moved to VBlankInterrupt:
-				bgt.s	.notzero
+				tst.w	Anim_Delay_w
+				beq.s	.not_zero
 				bsr		brightanim
-				move.w	#3,animtimer	;was 2 AL
+
 				move.l	otherrip,d0		;what are these for?
 				move.l	RipTear,otherrip	;""
 				move.l	d0,RipTear		;""
-.notzero:
+.not_zero:
 
 				rts
 
@@ -1196,9 +1196,6 @@ rlift2:
 rlift3:
 				move.w	#$0,d1
 				bra		backfromlift
-
-
-animtimer:		dc.w	0
 
 
 doordir:		dc.w	-1

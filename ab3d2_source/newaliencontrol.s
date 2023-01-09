@@ -912,12 +912,10 @@ ACTANIMOBJ:
 
 				moveq	#0,d1
 
-				cmp	#0,Anim_VecTimer_w
-				bgt.s	.not_zero
+				tst.w	Anim_Delay_w
+				beq.s	.not_zero
 				
 				move.b	5(a3,d0.w),d1
-				move.w	#3,Anim_VecTimer_w
-
 				move.w	d1,EntT_Timer1_w(a0)
 .not_zero
 				rts

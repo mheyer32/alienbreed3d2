@@ -851,6 +851,15 @@ clrmessbuff:
 lop:
 				move.w	#%110000000000,_custom+potgo
 
+				cmp	#0,Anim_Timer_w
+				bgt.s	.not_zero
+				move.w	#3,Anim_Timer_w
+				st	Anim_Delay_w
+				bra	.is_zero
+.not_zero
+				clr.w	Anim_Delay_w
+.is_zero
+
 				cmp.b	#PLR_MASTER,Plr_MultiplayerType_b
 				bne		.notmess
 				tst.b	plr2_Dead_b
@@ -8473,6 +8482,9 @@ VBLCOUNT:		dc.l	0
 VBLCOUNTLAST:		dc.l	0
 FPSLIMITER		dc.l	0
 
+Anim_Timer_w		dc.w	0
+Anim_Delay_w		dc.w	0
+
 OtherInter:
 				move.w	#$0010,$dff000+intreq
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -8485,8 +8497,7 @@ VBlankInterrupt:
 				add.l	#1,counter
 				add.l	#1,main_counter
 				add.l	#1,VBLCOUNT
-				subq.w	#1,animtimer
-				subq.w	#1,Anim_VecTimer_w
+				subq.w	#1,Anim_Timer_w
 
 				tst.l	timer					; used by menu system as delay
 				beq.s	.nodec
