@@ -1795,10 +1795,10 @@ IWasPlayer1:
 				move.w	Vid_RightX_w,Draw_RightClip_w
 
 				move.w	Vid_LetterBoxMarginHeight_w,d0
-				move.w	#0,Draw_DefTopClip_w
-				add.w	d0,Draw_DefTopClip_w
-				move.w	Vid_BottomY_w,Draw_DefBottomClip_w
-				sub.w	d0,Draw_DefBottomClip_w
+				;move.w	#0,Draw_DefTopClip_w
+				;add.w	d0,Draw_DefTopClip_w
+				;move.w	Vid_BottomY_w,Draw_DefBottomClip_w
+				;sub.w	d0,Draw_DefBottomClip_w
 
 				move.w	#0,draw_TopClip_w
 				add.w	d0,draw_TopClip_w
@@ -1846,10 +1846,10 @@ drawplayer2:
 				move.w	Vid_LetterBoxMarginHeight_w,d0
 				move.w	#0,Draw_LeftClip_w
 				move.w	Vid_RightX_w,Draw_RightClip_w
-				move.w	#0,Draw_DefTopClip_w
-				add.w	d0,Draw_DefTopClip_w
-				move.w	Vid_BottomY_w,Draw_DefBottomClip_w
-				sub.w	d0,Draw_DefBottomClip_w
+				;move.w	#0,Draw_DefTopClip_w
+				;add.w	d0,Draw_DefTopClip_w
+				;move.w	Vid_BottomY_w,Draw_DefBottomClip_w
+				;sub.w	d0,Draw_DefBottomClip_w
 				move.w	#0,draw_TopClip_w
 				add.w	d0,draw_TopClip_w
 				move.w	Vid_BottomY_w,draw_BottomClip_w
@@ -3935,7 +3935,7 @@ DrawDisplay:
 				move.w	d0,d1
 				add.w	#256-32,d1				; 224
 				and.w	#255,d1
-				move.w	d1,wall_y_off_w
+				move.w	d1,draw_WallYOffset_w
 
 				move.l	yoff,d0					; is yoff the viewer's y position << 16?
 				asr.l	#6,d0					; yoff << 10

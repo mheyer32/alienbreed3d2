@@ -1,15 +1,19 @@
 ; todo - these can probably be BSS'd
 				align 4
+
+; Beware - these are unions of word|long. Do not separate!
 Draw_LeftClip_l:		dc.w	0 ; long
 Draw_LeftClip_w:		dc.w	0 ; lsw
 
+; Beware - these are unions of word|long. Do not separate!
 Draw_RightClip_l:		dc.w	0 ; long
 Draw_RightClip_w:		dc.w	0 ; lsw
 
-Draw_DefTopClip_w:		dc.w	0
-Draw_DefBottomClip_w:	dc.w	0
+;Draw_DefTopClip_w:		dc.w	0 ; written, never read
+;Draw_DefBottomClip_w:	dc.w	0 ; written, never read
 Draw_LeftClipAndLast_w: dc.w	0
 
+; Beware - these are unions of word|byte. Do not separate!
 draw_StripData_w:		dc.b	0 ; word
 draw_StripData_b:		dc.b    0 ; lsb
 
@@ -23,22 +27,22 @@ val				SET		val+SCREENWIDTH
 				ENDR
 
 				align 4
-Draw_PointBrightsPtr_l: 	dc.l	0
-wall_TextureHeightMask_w:	dc.w	0
-wall_TextureHeightShift_w:	dc.w	0
-wall_TextureWidthMask_w:	dc.w	0
-Temp_SinVal_w:				dc.w	0 ; somewhat universal
-Temp_CosVal_w:				dc.w	0 ; somewhat universal
-draw_TopClip_w:				dc.w	0
-draw_BottomClip_w:			dc.w	0
-;wall_SeeThrough_b:			dc.w	0 ; bool - not really used?
+Draw_PointBrightsPtr_l: 		dc.l	0
+draw_WallTextureHeightMask_w:	dc.w	0
+draw_WallTextureHeightShift_w:	dc.w	0
+draw_WallTextureWidthMask_w:	dc.w	0
+Temp_SinVal_w:					dc.w	0 ; somewhat universal
+Temp_CosVal_w:					dc.w	0 ; somewhat universal
+draw_TopClip_w:					dc.w	0
+draw_BottomClip_w:				dc.w	0
+;wall_SeeThrough_b:				dc.w	0 ; bool - not used
 
 				align 4
 draw_TopOfWall_l:			dc.l	0
 draw_BottomOfWall_l:		dc.l	0
 
-lbr:						dc.w	0
-tlbr:						dc.w	0
+draw_LBR_w:					dc.w	0 ; todo - define
+draw_TLBR_w:				dc.w	0 ; todo - define
 draw_LeftWallBright_w:		dc.w	0
 draw_RightWallBright_w:		dc.w	0
 draw_LeftWallTopBright_w:	dc.w	0
@@ -46,14 +50,14 @@ draw_RightWallTopBright_w:	dc.w	0
 draw_StripTop_w:			dc.w	0
 draw_StripBottom_w:			dc.w	0
 
-middleline:					dc.w	0
-LASTSTIRRUP:				dc.w	0
+;middleline:					dc.w	0 ; unused
+draw_WallLastStripX_w:				dc.w	0
 
 draw_FromTile_w:			dc.l	0 ; declared long, all but one accesses as word
-ang_bright_w:				dc.w	0
+draw_AngleBright_w:			dc.w	0
 
-iters:						dc.w	0
-multcount:					dc.w	0
+draw_WallIterations_w:		dc.w	0
+draw_MultCount_w:			dc.w	0
 
 Draw_GoodRender_b:			dc.w	$ff00 ; accessed as byte all over the code
 
@@ -268,7 +272,7 @@ screendividethru:
 				swap	d1
 
 				move.w	d1,d6
-				and.w	wall_TextureWidthMask_w,d6
+				and.w	draw_WallTextureWidthMask_w,d6
 				move.l	(a0)+,d2
 				swap	d2
 				add.w	draw_FromTile_w(pc),d6
@@ -283,7 +287,7 @@ screendividethru:
 				moveq	#0,d6
 				move.b	draw_StripData_w,d6
 				add.w	d6,d6
-				move.w	wall_TextureHeightShift_w,d4
+				move.w	draw_WallTextureHeightShift_w,d4
 				asl.l	d4,d6
 				add.l	d6,a5
 				move.l	(a0)+,d4
@@ -294,7 +298,7 @@ screendividethru:
 ;* old version
 				asr.w	#7,d6
 
-				add.w	ang_bright_w(pc),d6
+				add.w	draw_AngleBright_w(pc),d6
 				bge.s	.br_not_negative
 				moveq	#0,d6
 
@@ -392,9 +396,9 @@ thislinedone:
 scrdrawlop:
 				move.w	(a0)+,d0
 
-				cmp.w	LASTSTIRRUP,d0
+				cmp.w	draw_WallLastStripX_w,d0
 				beq.s	thislinedone
-				move.w	d0,LASTSTIRRUP
+				move.w	d0,draw_WallLastStripX_w
 
 				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
@@ -403,7 +407,7 @@ scrdrawlop:
 				swap	d1
 
 				move.w	d1,d6
-				and.w	wall_TextureWidthMask_w,d6
+				and.w	draw_WallTextureWidthMask_w,d6
 				move.l	(a0)+,d2
 				swap	d2
 				add.w	draw_FromTile_w(pc),d6
@@ -418,7 +422,7 @@ scrdrawlop:
 				moveq	#0,d6
 				move.b	draw_StripData_w,d6
 				add.w	d6,d6
-				move.w	wall_TextureHeightShift_w,d4
+				move.w	draw_WallTextureHeightShift_w,d4
 				asl.l	d4,d6
 				add.l	d6,a5
 				move.l	(a0)+,d4
@@ -473,9 +477,9 @@ scrdrawlopDOUB:
 				btst	#0,d0
 				bne.s	thislineodd
 
-				cmp.w	LASTSTIRRUP,d0
+				cmp.w	draw_WallLastStripX_w,d0
 				beq.s	thislineodd
-				move.w	d0,LASTSTIRRUP
+				move.w	d0,draw_WallLastStripX_w
 
 				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
@@ -483,7 +487,7 @@ scrdrawlopDOUB:
 
 				swap	d1
 				move.w	d1,d6
-				and.w	wall_TextureWidthMask_w,d6
+				and.w	draw_WallTextureWidthMask_w,d6
 				move.l	(a0)+,d2
 				swap	d2
 				add.w	draw_FromTile_w(pc),d6
@@ -498,7 +502,7 @@ scrdrawlopDOUB:
 				moveq	#0,d6
 				move.b	draw_StripData_w,d6
 				add.w	d6,d6
-				move.w	wall_TextureHeightShift_w,d4
+				move.w	draw_WallTextureHeightShift_w,d4
 				asl.l	d4,d6
 				add.l	d6,a5
 				move.l	(a0)+,d4
@@ -555,7 +559,7 @@ scrdrawlopFULL:
 				swap	d1
 
 				move.w	d1,d6
-				and.w	wall_TextureWidthMask_w,d6
+				and.w	draw_WallTextureWidthMask_w,d6
 				move.l	(a0)+,d2
 				swap	d2
 				add.w	draw_FromTile_w(pc),d6
@@ -570,7 +574,7 @@ scrdrawlopFULL:
 				moveq	#0,d6
 				move.b	draw_StripData_w,d6
 				add.w	d6,d6
-				move.w	wall_TextureHeightShift_w,d4
+				move.w	draw_WallTextureHeightShift_w,d4
 				asl.l	d4,d6
 				add.l	d6,a5
 				move.l	(a0)+,d4
@@ -630,7 +634,7 @@ scrdrawlopFULLDOUB:
 				swap	d1
 
 				move.w	d1,d6
-				and.w	wall_TextureWidthMask_w,d6
+				and.w	draw_WallTextureWidthMask_w,d6
 				move.l	(a0)+,d2
 				swap	d2
 				add.w	draw_FromTile_w(pc),d6
@@ -645,7 +649,7 @@ scrdrawlopFULLDOUB:
 				moveq	#0,d6
 				move.b	draw_StripData_w,d6
 				add.w	d6,d6
-				move.w	wall_TextureHeightShift_w,d4
+				move.w	draw_WallTextureHeightShift_w,d4
 				asl.l	d4,d6
 				add.l	d6,a5
 				move.l	(a0)+,d4
@@ -782,7 +786,7 @@ scrdrawlopFULLDOUB:
 ;
 ;				move.l	#Draw_WallTexturePtrs_vl,a3
 ;				add.l	(a0)+,a3
-;				adda.w	wall_y_off_w,a3
+;				adda.w	draw_WallYOffset_w,a3
 ;				move.l	a3,draw_FromTile_w
 ;				move.w	(a0)+,basebright(a2)
 ;				move.w	(a0)+,brightmult(a2)
@@ -871,7 +875,7 @@ scrdrawlopFULLDOUB:
 ;				move.w	(a1)+,d4
 ;				move.w	(a1)+,d6
 ;; d1=left x, d4=left end, d0=left dist
-;; d6=left ang_bright_w
+;; d6=left draw_AngleBright_w
 ;				divs	d0,d1
 ;
 ;				asr.w	d1					; Vid_DoubleWidth_b test
@@ -905,7 +909,7 @@ scrdrawlopFULLDOUB:
 ;				move.w	6(a1),d5
 ;				add.w	8(a1),d6
 ;				asr.w	#1,d6
-;				move.w	d6,ang_bright_w
+;				move.w	d6,draw_AngleBright_w
 ;				divs	d2,d3
 ;
 ;				asr.w	d3					; Vid_DoubleWidth_b test
@@ -1128,9 +1132,9 @@ nh4:
 				move.w	#5,d6
 
 .okokok:
-				move.w	d6,iters
+				move.w	d6,draw_WallIterations_w
 				subq	#1,d7
-				move.w	d7,multcount
+				move.w	d7,draw_MultCount_w
 
 				move.l	#DataBuffer1_vl,a3
 				move.l	a0,d0
@@ -1172,7 +1176,7 @@ nh4:
 				move.l	#DataBuffer1_vl,a0
 				move.l	#DataBuffer2_vl,a1
 
-				move.w	iters,d6
+				move.w	draw_WallIterations_w,d6
 				blt		noiters
 				move.l	#1,a2
 
@@ -1239,7 +1243,7 @@ CalcAndDraw:
 ; CACHE_ON d2
 
 				move.l	a0,a1
-				move.w	multcount,d7
+				move.w	draw_MultCount_w,d7
 
 .find_first_in_front:
 				move.l	(a1)+,d1
@@ -1253,7 +1257,7 @@ CalcAndDraw:
 				ext.l	d0
 
 				move.w	(a1)+,d4
-				move.w	(a1)+,lbr
+				move.w	(a1)+,draw_LBR_w
 ; d1=left x, d4=left end, d0=left dist
 
 				divs.l	d0,d1
@@ -1326,8 +1330,8 @@ CalcAndDraw:
 				or.l	d1,(a0)
 				move.l	BIGPTR,a0
 
-				move.w	wall_left_point_w,(a0,d2.w*4)
-				move.w	wall_right_point_w,2(a0,d2.w*4)
+				move.w	draw_WallLeftPoint_w,(a0,d2.w*4)
+				move.w	draw_WallRightPoint_w,2(a0,d2.w*4)
 
 .no_put_in_map:
 				movem.l	(a7)+,d0/d1/d2/d3/a0
@@ -1339,7 +1343,7 @@ CalcAndDraw:
 				move.l	(a1)+,d1
 				move.w	(a1)+,d0
 				move.w	(a1)+,d4
-				move.w	(a1)+,lbr
+				move.w	(a1)+,draw_LBR_w
 
 				dbra	d7,.compute_loop
 				rts
@@ -1388,7 +1392,7 @@ OTHERHALF:
 				move.w	d0,8(a0)
 				move.w	d2,10(a0)
 
-				move.w	lbr,d5
+				move.w	draw_LBR_w,d5
 				sub.w	#300,d5
 				ext.w	d5
 				move.w	d5,24(a0)
@@ -1406,7 +1410,7 @@ alloffleft2:
 				move.l	(a1)+,d1
 				move.w	(a1)+,d0
 				move.w	(a1)+,d4
-				move.w	(a1)+,lbr
+				move.w	(a1)+,draw_LBR_w
 
 				dbra	d7,computeloop2
 
@@ -1544,10 +1548,10 @@ usesimple:
 				mulu	d3,d4
 				add.l	d0,d4
 				swap	d4
-				add.w	total_y_off_w(pc),d4
+				add.w	draw_TotalYOffset_w(pc),d4
 
 cliptopusesimple:
-				move.w	wall_TextureHeightMask_w,d7
+				move.w	draw_WallTextureHeightMask_w,d7
 				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
 				cmp.l	a4,a2
@@ -1662,8 +1666,8 @@ gotoend:
 				add.l	d0,d4
 				swap	d4
 
-				add.w	total_y_off_w(pc),d4		; start texel offset in strip
-				move.w	wall_TextureHeightMask_w,d7
+				add.w	draw_TotalYOffset_w(pc),d4		; start texel offset in strip
+				move.w	draw_WallTextureHeightMask_w,d7
 				and.w	d7,d4					; vertical texture coordinate clamp/wrap
 				move.w	#SCREENWIDTH,d0			; line offset to next line
 				moveq	#0,d1
@@ -1705,8 +1709,8 @@ doubwall:
 				add.l	d0,d4
 				swap	d4
 
-				add.w	total_y_off_w(pc),d4
-				move.w	wall_TextureHeightMask_w,d7
+				add.w	draw_TotalYOffset_w(pc),d4
+				move.w	draw_WallTextureHeightMask_w,d7
 				and.w	d7,d4
 				move.w	#640,d0
 				moveq	#0,d1
@@ -1781,8 +1785,8 @@ gotoendBIG:
 				add.l	d0,d4
 				swap	d4
 
-				add.w	total_y_off_w(pc),d4
-				move.w	wall_TextureHeightMask_w,d7
+				add.w	draw_TotalYOffset_w(pc),d4
+				move.w	draw_WallTextureHeightMask_w,d7
 				and.w	d7,d4
 				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
@@ -1830,8 +1834,8 @@ doubwallBIG:
 				add.l	d0,d4
 				swap	d4
 
-				add.w	total_y_off_w(pc),d4
-				move.w	wall_TextureHeightMask_w,d7
+				add.w	draw_TotalYOffset_w(pc),d4
+				move.w	draw_WallTextureHeightMask_w,d7
 				and.w	d7,d4
 				move.w	#640,d0
 				moveq	#0,d1
@@ -1982,7 +1986,7 @@ usesimplethru:
 				mulu	d3,d4
 				add.l	d0,d4
 				swap	d4
-				add.w	total_y_off_w(pc),d4
+				add.w	draw_TotalYOffset_w(pc),d4
 
 cliptopusesimplethru:
 				moveq	#63,d7
@@ -2144,7 +2148,7 @@ gotoendthru:
 				add.l	d0,d4
 				swap	d4
 				add.w	d5,d4
-				add.w	wall_y_off_w(pc),d4
+				add.w	draw_WallYOffset_w(pc),d4
 
 cliptopthru
 				moveq	#63,d7
@@ -2167,19 +2171,19 @@ val				SET		104*4
 val				SET		val+104*4
 				ENDR
 
-total_y_off_w:		dc.w	0
-wall_y_off_w:		dc.w	0
+draw_TotalYOffset_w:		dc.w	0
+draw_WallYOffset_w:		dc.w	0
 
 ******************************************
 * Wall polygon
-wall_left_end_w:		dc.w	0
-wall_bright_offset_w:	dc.w	0
-wall_left_point_w:		dc.w	0
-wall_right_point_w:		dc.w	0
-which_pbr_b:			dc.w	0 ; accessed as byte
-which_left_point_w:		dc.w	0 ; could be byte?
-which_right_point_w:	dc.w	0 ; could be byte ?
-other_zone_w:			dc.w	0 ; could be byte ?
+;draw_WallLeftEnd_w:		dc.w	0 ; always set to zero
+draw_WallBrightOffset_w:	dc.w	0
+draw_WallLeftPoint_w:		dc.w	0
+draw_WallRightPoint_w:		dc.w	0
+draw_WhichPBR_w:			dc.w	0 ; accessed as byte (PBR = point brightness?)
+draw_WhichLeftPoint_w:		dc.w	0 ; written as byte. Can be changed?
+draw_WhichRightPoint_w:		dc.w	0 ; written as byte. Can be changed?
+draw_OtherZone_w:			dc.w	0 ; written as byte. Can be changed?
 
 				; Is this THE wall draw entrypoint?
 				; a0 pointing to wall description?
@@ -2190,13 +2194,13 @@ Draw_Wall:
 				move.w	(a0)+,d0				; left point index
 				move.w	(a0)+,d2				; right point index
 
-				move.w	d0,wall_left_point_w
-				move.w	d2,wall_right_point_w
+				move.w	d0,draw_WallLeftPoint_w
+				move.w	d2,draw_WallRightPoint_w
 
-				move.b	(a0)+,which_left_point_w+1		; mhhm?!
-				move.b	(a0)+,which_right_point_w+1	; mhhm??
+				move.b	(a0)+,draw_WhichLeftPoint_w+1		; mhhm?!
+				move.b	(a0)+,draw_WhichRightPoint_w+1	; mhhm??
 
-				move.w	#0,wall_left_end_w
+				;move.w	#0,draw_WallLeftEnd_w
 				moveq	#0,d5
 				move.w	(a0)+,d5
 				move.w	(a0)+,d1
@@ -2204,7 +2208,7 @@ Draw_Wall:
 				move.w	d1,draw_FromTile_w
 
 				move.w	(a0)+,d1
-				move.w	d1,total_y_off_w
+				move.w	d1,draw_TotalYOffset_w
 
 				move.w	(a0)+,d1
 				move.l	#Draw_WallTexturePtrs_vl,a3
@@ -2215,25 +2219,25 @@ Draw_Wall:
 
 ;move.w (a0)+,d1
 ;add.w Zone_Bright_w,d1
-				move.w	Zone_Bright_w,ang_bright_w
+				move.w	Zone_Bright_w,draw_AngleBright_w
 ;move.w (a0)+,d1
 ;move.w (a0)+,d4
 				move.l	yoff,d6
 
 				moveq	#0,d1
 				move.b	(a0)+,d1
-				move.w	d1,wall_TextureHeightMask_w				; (vertical) wall texture height mask
+				move.w	d1,draw_WallTextureHeightMask_w		; (vertical) wall texture height mask
 				moveq	#0,d1
 				move.b	(a0)+,d1
-				move.w	d1,wall_TextureHeightShift_w				;	; (vertical) wall texture height shift
+				move.w	d1,draw_WallTextureHeightShift_w	; (vertical) wall texture height shift
 				moveq	#0,d1
-				move.b	(a0)+,d1				; texture width
-				move.w	d1,wall_TextureWidthMask_w				; horizontal texture width mask?
-				move.b	(a0)+,which_pbr_b
-				move.w	total_y_off_w,d1
-				add.w	wall_y_off_w,d1
-				and.w	wall_TextureHeightMask_w,d1
-				move.w	d1,total_y_off_w
+				move.b	(a0)+,d1							; texture width
+				move.w	d1,draw_WallTextureWidthMask_w		; horizontal texture width mask?
+				move.b	(a0)+,draw_WhichPBR_w
+				move.w	draw_TotalYOffset_w,d1
+				add.w	draw_WallYOffset_w,d1
+				and.w	draw_WallTextureHeightMask_w,d1
+				move.w	d1,draw_TotalYOffset_w
 				move.l	(a0)+,draw_TopOfWall_l
 				sub.l	d6,draw_TopOfWall_l
 				move.l	(a0)+,draw_BottomOfWall_l
@@ -2241,8 +2245,8 @@ Draw_Wall:
 
 				move.b	(a0)+,d3
 				ext.w	d3
-				move.w	d3,wall_bright_offset_w
-				move.b	(a0)+,other_zone_w+1
+				move.w	d3,draw_WallBrightOffset_w
+				move.b	(a0)+,draw_OtherZone_w+1
 
 				move.l	draw_TopOfWall_l,d3
 				cmp.l	draw_BottomOfWall_l,d3
@@ -2364,17 +2368,17 @@ cant_tell:
 
 .notupper:
 				move.w	Draw_CurrentZone_w,d0
-				move.b	which_pbr_b,d4
+				move.b	draw_WhichPBR_w,d4
 				btst	#3,d4
 				beq.s	.nototherzone
-				move.w	other_zone_w,d0
+				move.w	draw_OtherZone_w,d0
 
 .nototherzone:
 				and.w	#7,d4
 				muls	#40,d0
 				add.w	d0,d4
 
-				move.w	which_left_point_w,d0
+				move.w	draw_WhichLeftPoint_w,d0
 				asl.w	#2,d0
 				add.w	d4,d0
 
@@ -2383,10 +2387,10 @@ cant_tell:
 				neg.w	d0
 
 .okpos1:
-				add.w	wall_bright_offset_w,d0
+				add.w	draw_WallBrightOffset_w,d0
 				move.w	d0,draw_LeftWallBright_w
 
-				move.w	which_right_point_w,d0
+				move.w	draw_WhichRightPoint_w,d0
 				asl.w	#2,d0
 				add.w	d4,d0
 				move.w	(a5,d0.w*2),d0
@@ -2394,22 +2398,22 @@ cant_tell:
 				neg.w	d0
 
 .okpos2:
-				add.w	wall_bright_offset_w,d0
+				add.w	draw_WallBrightOffset_w,d0
 				move.w	d0,draw_RightWallBright_w
 
 				move.w	Draw_CurrentZone_w,d0
-				move.b	which_pbr_b,d4
+				move.b	draw_WhichPBR_w,d4
 				lsr.w	#4,d4
 				btst	#3,d4
 				beq.s	.nototherzone2
-				move.w	other_zone_w,d0
+				move.w	draw_OtherZone_w,d0
 
 .nototherzone2:
 				and.w	#7,d4
 				muls	#40,d0
 				add.w	d0,d4
 
-				move.w	which_left_point_w,d0
+				move.w	draw_WhichLeftPoint_w,d0
 				asl.w	#2,d0
 				add.w	d4,d0
 
@@ -2418,10 +2422,10 @@ cant_tell:
 				neg.w	d0
 
 .okpos3:
-				add.w	wall_bright_offset_w,d0
+				add.w	draw_WallBrightOffset_w,d0
 				move.w	d0,draw_LeftWallTopBright_w
 
-				move.w	which_right_point_w,d0
+				move.w	draw_WhichRightPoint_w,d0
 				asl.w	#2,d0
 				add.w	d4,d0
 				move.w	(a5,d0.w*2),d0
@@ -2429,13 +2433,14 @@ cant_tell:
 				neg.w	d0
 
 .okpos4:
-				add.w	wall_bright_offset_w,d0
+				add.w	draw_WallBrightOffset_w,d0
 				move.w	d0,draw_RightWallTopBright_w
 
-				move.w	wall_left_end_w(pc),d4
+				;move.w	draw_WallLeftEnd_w(pc),d4
+				move.w	#0,d4
 				move.l	#max3ddiv,d7
 
-				move.w	#-1,LASTSTIRRUP
+				move.w	#-1,draw_WallLastStripX_w
 
 				move.w	draw_RightWallTopBright_w,d0
 				cmp.w	draw_RightWallBright_w,d0

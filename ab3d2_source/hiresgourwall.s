@@ -235,16 +235,16 @@ DoleftendGOUR:
 
 .scr_draw_loop:
 				move.w	(a0)+,d0				; start fetching the next strip, x-coord
-				cmp.w	LASTSTIRRUP,d0
+				cmp.w	draw_WallLastStripX_w,d0
 				beq.s	.this_line_done
 
-				move.w	d0,LASTSTIRRUP
+				move.w	d0,draw_WallLastStripX_w
 				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3			; point to start address of screen column
 				move.l	(a0)+,d1
 				swap	d1
 				move.w	d1,d6
-				and.w	wall_TextureWidthMask_w,d6				; wrap texture coordinate
+				and.w	draw_WallTextureWidthMask_w,d6				; wrap texture coordinate
 				move.l	(a0)+,d2
 				swap	d2
 				add.w	draw_FromTile_w(pc),d6			;
@@ -258,7 +258,7 @@ DoleftendGOUR:
 				moveq	#0,d6
 				move.b	draw_StripData_w,d6			; (d6*2/3)
 				add.w	d6,d6					; d6 * 4/3
-				move.w	wall_TextureHeightShift_w,d4				;
+				move.w	draw_WallTextureHeightShift_w,d4				;
 				asl.l	d4,d6					; * wall texture height(?)
 				add.l	d6,a5					; start of wall strip
 				move.l	(a0)+,d4
@@ -325,16 +325,16 @@ scrdrawlopGDOUB:
 				btst	#0,d0
 				bne.s	itsoddy
 
-				cmp.w	LASTSTIRRUP,d0
+				cmp.w	draw_WallLastStripX_w,d0
 				beq.s	itsoddy
 
-				move.w	d0,LASTSTIRRUP
+				move.w	d0,draw_WallLastStripX_w
 				move.l	Vid_FastBufferPtr_l,a3
 				lea		(a3,d0.w),a3
 				move.l	(a0)+,d1
 				swap	d1
 				move.w	d1,d6
-				and.w	wall_TextureWidthMask_w,d6
+				and.w	draw_WallTextureWidthMask_w,d6
 				move.l	(a0)+,d2
 				swap	d2
 				add.w	draw_FromTile_w(pc),d6
@@ -348,7 +348,7 @@ scrdrawlopGDOUB:
 				moveq	#0,d6
 				move.b	draw_StripData_w,d6
 				add.w	d6,d6
-				move.w	wall_TextureHeightShift_w,d4
+				move.w	draw_WallTextureHeightShift_w,d4
 				asl.l	d4,d6
 				add.l	d6,a5
 				move.l	(a0)+,d4
@@ -409,7 +409,7 @@ scrdrawlopGB:
 				move.l	(a0)+,d1
 				swap	d1
 				move.w	d1,d6
-				and.w	wall_TextureWidthMask_w,d6
+				and.w	draw_WallTextureWidthMask_w,d6
 				move.l	(a0)+,d2
 				swap	d2
 				add.w	draw_FromTile_w(pc),d6
@@ -424,7 +424,7 @@ scrdrawlopGB:
 				moveq	#0,d6
 				move.b	draw_StripData_w,d6
 				add.w	d6,d6
-				move.w	wall_TextureHeightShift_w,d4
+				move.w	draw_WallTextureHeightShift_w,d4
 				asl.l	d4,d6
 				add.l	d6,a5
 				move.l	(a0)+,d4
@@ -493,7 +493,7 @@ scrdrawlopGBDOUB:
 				move.l	(a0)+,d1
 				swap	d1
 				move.w	d1,d6
-				and.w	wall_TextureWidthMask_w,d6
+				and.w	draw_WallTextureWidthMask_w,d6
 				move.l	(a0)+,d2
 				swap	d2
 				add.w	draw_FromTile_w(pc),d6			; ptr to floor tile
@@ -507,7 +507,7 @@ scrdrawlopGBDOUB:
 				moveq	#0,d6
 				move.b	draw_StripData_w,d6
 				add.w	d6,d6
-				move.w	wall_TextureHeightShift_w,d4
+				move.w	draw_WallTextureHeightShift_w,d4
 				asl.l	d4,d6
 				add.l	d6,a5
 				move.l	(a0)+,d4
@@ -688,9 +688,9 @@ nh4G:
 				move.w	#5,d6
 
 .okokok:
-				move.w	d6,iters
+				move.w	d6,draw_WallIterations_w
 				subq	#1,d7
-				move.w	d7,multcount
+				move.w	d7,draw_MultCount_w
 				move.l	#DataBuffer1_vl,a3
 				move.l	a0,d0
 				move.l	a2,d2
@@ -732,7 +732,7 @@ nh4G:
 				move.l	#DataBuffer1_vl,a0
 				move.l	#DataBuffer2_vl,a1
 				swap	d7
-				move.w	iters,d7
+				move.w	draw_WallIterations_w,d7
 				blt		noitersG
 
 				move.l	#1,a2
@@ -796,7 +796,7 @@ CalcAndDrawG:
 ; CACHE_ON d2
 
 				move.l	a0,a1
-				move.w	multcount,d7
+				move.w	draw_MultCount_w,d7
 
 .find_first_in_front:
 				move.l	(a1)+,d1
@@ -807,12 +807,12 @@ CalcAndDrawG:
 				move.w	(a1)+,d4
 				dbra	d7,.find_first_in_front
 
-				rts		;						no two points were in front
+				rts		;	no two points were in front
 
 .found_in_front:
-				move.w	(a1)+,tlbr
+				move.w	(a1)+,draw_TLBR_w
 				move.w	(a1)+,d4
-				move.w	(a1)+,lbr
+				move.w	(a1)+,draw_LBR_w
 
 ; d1=left x, d4=left end, d0=left dist
 
@@ -886,8 +886,8 @@ CalcAndDrawG:
 .no_door:
 				or.l	d1,(a0)
 				move.l	BIGPTR,a0
-				move.w	wall_left_point_w,(a0,d2.w*4)
-				move.w	wall_right_point_w,2(a0,d2.w*4)
+				move.w	draw_WallLeftPoint_w,(a0,d2.w*4)
+				move.w	draw_WallRightPoint_w,2(a0,d2.w*4)
 
 .no_put_in_map:
 				movem.l	(a7)+,d0/d1/d2/d3/a0
@@ -897,9 +897,9 @@ CalcAndDrawG:
 .all_off_left:
 				move.l	(a1)+,d1
 				move.w	(a1)+,d0
-				move.w	(a1)+,tlbr
+				move.w	(a1)+,draw_TLBR_w
 				move.w	(a1)+,d4
-				move.w	(a1)+,lbr
+				move.w	(a1)+,draw_LBR_w
 				dbra	d7,.compute_loop
 
 				rts
@@ -949,7 +949,7 @@ OTHERHALFG:
 				move.w	d5,6(a0)
 				move.w	d0,8(a0)
 				move.w	d2,10(a0)
-				move.w	lbr,d5
+				move.w	draw_LBR_w,d5
 				sub.w	#300,d5
 				ext.w	d5
 				move.w	d5,24(a0)
@@ -958,7 +958,7 @@ OTHERHALFG:
 				ext.w	d5
 				move.w	d5,26(a0)
 
-				move.w	tlbr,d5
+				move.w	draw_TLBR_w,d5
 				sub.w	#300,d5
 				ext.w	d5
 				move.w	d5,32(a0)
@@ -975,9 +975,9 @@ OTHERHALFG:
 alloffleft2G:
 				move.l	(a1)+,d1
 				move.w	(a1)+,d0
-				move.w	(a1)+,tlbr
+				move.w	(a1)+,draw_TLBR_w
 				move.w	(a1)+,d4
-				move.w	(a1)+,lbr
+				move.w	(a1)+,draw_LBR_w
 
 				dbra	d7,computeloop2G
 
@@ -1110,10 +1110,10 @@ usesimpleG:
 				mulu	d3,d4
 				add.l	d0,d4
 				swap	d4
-				add.w	total_y_off_w(pc),d4
+				add.w	draw_TotalYOffset_w(pc),d4
 
 cliptopusesimpleG:
-				move.w	wall_TextureHeightMask_w,d7
+				move.w	draw_WallTextureHeightMask_w,d7
 				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
 				swap	d2
@@ -1243,10 +1243,10 @@ gotoendG:
 				add.l	d0,d4
 				swap	d4
 
-				add.w	total_y_off_w(pc),d4
+				add.w	draw_TotalYOffset_w(pc),d4
 
 cliptopG:
-				move.w	wall_TextureHeightMask_w,d7
+				move.w	draw_WallTextureHeightMask_w,d7
 				and.w	d7,d4
 				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
@@ -1288,8 +1288,8 @@ doubwallGOUR:
 				muls.l	d5,d4
 				add.l	d0,d4
 				swap	d4
-				add.w	total_y_off_w(pc),d4
-				move.w	wall_TextureHeightMask_w,d7
+				add.w	draw_TotalYOffset_w(pc),d4
+				move.w	draw_WallTextureHeightMask_w,d7
 				and.w	d7,d4
 				move.w	#640,d0
 				moveq	#0,d1
@@ -1371,8 +1371,8 @@ gotoendGB:
 				muls.l	d5,d4
 				add.l	d0,d4
 				swap	d4
-				add.w	total_y_off_w(pc),d4
-				move.w	wall_TextureHeightMask_w,d7
+				add.w	draw_TotalYOffset_w(pc),d4
+				move.w	draw_WallTextureHeightMask_w,d7
 				and.w	d7,d4
 				move.w	#SCREENWIDTH,d0
 				moveq	#0,d1
@@ -1414,8 +1414,8 @@ doubwallGOURBIG:
 				muls.l	d5,d4
 				add.l	d0,d4
 				swap	d4
-				add.w	total_y_off_w(pc),d4
-				move.w	wall_TextureHeightMask_w,d7
+				add.w	draw_TotalYOffset_w(pc),d4
+				move.w	draw_WallTextureHeightMask_w,d7
 				and.w	d7,d4
 				move.w	#640,d0
 				moveq	#0,d1
