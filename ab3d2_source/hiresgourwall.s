@@ -562,23 +562,25 @@ scrdrawlopGBDOUB:
 
 				rts
 
-walldrawGOUR:
+; This routine draws the wall when any of the corner brightnesses differ
+draw_WallGouraudShaded:
 				tst.w	d1
-				bgt.s	oneinfront1G
+				bgt.s	.oneinfront
 
 				tst.w	d3
-				bgt.s	oneinfrontG
+				bgt.s	.oneinfront
 
 				rts
 
-oneinfront1G:
-				tst.w	d3
-				ble.s	oneinfrontG
+;.oneinfront1:
+;				tst.w	d3
+;				ble.s	.oneinfront
 ; Bothinfront!
+;
+;				nop
 
-				nop
-
-oneinfrontG:
+; TODO this code is really branchy
+.oneinfront:
 				move.w	#16,d7
 				move.w	#2,d6
 				tst.b	Draw_GoodRender_b
@@ -610,77 +612,78 @@ oneinfrontG:
 .is_good:
 				move.w	d3,d0
 				sub.w	d1,d0
-				bge.s	notnegzdiffG
+				bge.s	.not_negative_z_difference
 
 				neg.w	d0
-notnegzdiffG:
+
+.not_negative_z_difference:
 				cmp.w	#512,d0
-				blt.s	nd0G
+				blt.s	.nd0G
 
 				tst.b	Draw_GoodRender_b
-				beq.s	nd0G
+				beq.s	.nd0G
 
 				add.w	d7,d7
 				add.w	#1,d6
-				bra		nhaG
+				bra		.nhaG
 
-nd0G:
+.nd0G:
 				cmp.w	#256,d0
-				bgt.s	nh1G
+				bgt.s	.nh1G
 				asr.w	#1,d7
 				subq	#1,d6
 
-nh1G:
+.nh1G:
 				cmp.w	#128,d0
-				bgt.s	nh2G
+				bgt.s	.nh2G
 				asr.w	#1,d7
 				subq	#1,d6
 
-nh2G:
-nhaG:
+.nh2G:
+.nhaG:
 				move.w	d3,d0
 				cmp.w	d1,d3
-				blt.s	rightnearestG
+				blt.s	.right_nearest
 
 				move.w	d1,d0
 
-rightnearestG:
+.right_nearest:
 				cmp.w	#32,d0
-				bgt.s	ndd0G
+				bgt.s	.ndd0G
 
 				addq	#1,d6
 				add.w	d7,d7
 
-ndd0G:
+.ndd0G:
 				cmp.w	#64,d0
-				bgt.s	nd1G
+				bgt.s	.nd1G
 
 				addq	#1,d6
 				add.w	d7,d7
 
-nd1G:
+.nd1G:
 				cmp.w	#128,d0
-				blt.s	nh3G
+				blt.s	.nh3G
 
 				asr.w	#1,d7
 				subq	#1,d6
-				blt.s	nh4G
+				blt.s	.nh4G
 
 				cmp.w	#256,d0
-				blt.s	nh3G
+				blt.s	.nh3G
 
 				asr.w	#1,d7
 				subq	#1,d6
-				blt.s	nh4G
+				blt.s	.nh4G
 
-nh3G:
+.nh3G:
 				cmp.w	#512,d0
-				blt.s	nh4G
+				blt.s	.nh4G
 
 				asr.w	#1,d7
 				subq	#1,d6
 
-nh4G:
+.nh4G:
 				cmp.w	#128,d7
 				ble.s	.okokok
 
@@ -733,11 +736,11 @@ nh4G:
 				move.l	#DataBuffer2_vl,a1
 				swap	d7
 				move.w	draw_WallIterations_w,d7
-				blt		noitersG
+				blt		.no_iterations
 
 				move.l	#1,a2
 
-iterloopG:
+.iteration_loop:
 				move.l	a0,a3
 				move.l	a1,a4
 				swap	d7
@@ -747,7 +750,7 @@ iterloopG:
 				move.l	(a3)+,d1
 				move.l	(a3)+,d2
 
-middleloopG:
+.middle_loop:
 				move.l	d0,(a4)+
 				move.l	(a3)+,d3
 				add.l	d3,d0
@@ -781,17 +784,17 @@ middleloopG:
 				move.l	d4,(a4)+
 				move.l	d5,(a4)+
 				subq	#1,d7
-				bgt.s	middleloopG
+				bgt.s	.middle_loop
 
 				move.l	d0,(a4)+
 				move.l	d1,(a4)+
 				move.l	d2,(a4)+
 				add.w	a2,a2
 				swap	d7
-				dbra	d7,iterloopG
+				dbra	d7,.iteration_loop
 
-noitersG:
-CalcAndDrawG:
+.no_iterations:
+;CalcAndDrawG:
 
 ; CACHE_ON d2
 
@@ -818,6 +821,7 @@ CalcAndDrawG:
 
 				ext.l	d0
 				divs.l	d0,d1
+
 				moveq	#0,d5
 				move.w	Vid_CentreX_w,d5
 				add.l	d5,d1
@@ -867,7 +871,7 @@ CalcAndDrawG:
 
 				movem.l	d0/d1/d2/d3/a0,-(a7)
 				moveq	#0,d0
-				move.b	WALLIDENT,d0
+				move.b	draw_WallID_w,d0
 				blt.s	.no_put_in_map
 
 				move.b	d0,d3

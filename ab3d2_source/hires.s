@@ -4289,8 +4289,20 @@ dothisroom:
 
 polyloop:
 				move.w	(a0)+,d0
-				move.w	d0,WALLIDENT
+				move.w	d0,draw_WallID_w
 				and.w	#$ff,d0
+
+				; TODO - 0xABADCAFE - this can be a regular jump table.
+				; 0,1,2 => itsawall
+				; 3     => itsasetclip
+				; 4     => itsanobject
+				; 5,6   => do nothing (no arcs/light beams yet. Intriguing idea)
+				; 7     => itswater
+				; 8,9   => itsachunkyfloor
+				; 10,11 => itsabumpyfloor
+				; 12    => itsbackdrop
+				; 13    => itsaseewall
+
 				tst.b	d0
 				blt		jumpoutofloop
 				beq		itsawall
@@ -4434,7 +4446,7 @@ jumpoutofloop:
 
 COMPACTPTR:		dc.l	0
 BIGPTR:			dc.l	0
-WALLIDENT:		dc.w	0
+draw_WallID_w:		dc.w	0
 SMALLIT:		dc.w	0
 GOURSEL:		dc.w	0
 ThisRoomToDraw:	dc.l	0,0

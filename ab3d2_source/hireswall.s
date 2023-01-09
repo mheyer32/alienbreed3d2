@@ -51,7 +51,7 @@ draw_StripTop_w:			dc.w	0
 draw_StripBottom_w:			dc.w	0
 
 ;middleline:					dc.w	0 ; unused
-draw_WallLastStripX_w:				dc.w	0
+draw_WallLastStripX_w:		dc.w	0
 
 draw_FromTile_w:			dc.l	0 ; declared long, all but one accesses as word
 draw_AngleBright_w:			dc.w	0
@@ -1017,23 +1017,22 @@ endprot:
 
 ******************************************************************
 
-
-walldraw:
-
+; This routine renders a wall that has it's four corner brightnesses the same
+draw_WallFlatShaded:
 				tst.w	d1
-				bgt.s	oneinfront1
+				bgt.s	.oneinfront
 				tst.w	d3
-				bgt.s	oneinfront
+				bgt.s	.oneinfront
 				rts
 
-oneinfront1:
-				tst.w	d3
-				ble.s	oneinfront
+; this path doesn't do anything except the nop if d3 is <= 0
+;.oneinfront1:
+;				tst.w	d3
+;				ble.s	.oneinfront
 ; Bothinfront!
+;				nop
 
-				nop
-
-oneinfront:
+.oneinfront:
 				move.w	#16,d7
 				move.w	#2,d6
 
@@ -1061,71 +1060,70 @@ oneinfront:
 				addq	#1,d6
 
 .is_good:
-
 				move.w	d3,d0
 				sub.w	d1,d0
-				bge.s	notnegzdiff
+				bge.s	.not_negative_z_difference
 				neg.w	d0
-notnegzdiff:
+.not_negative_z_difference:
 ; cmp.w #1024,d0
 ; blt.s nd01
 ; add.w d7,d7
 ; add.w #1,d6
 ;nd01:
 				cmp.w	#512,d0
-				blt.s	nd0
+				blt.s	.nd0
 				tst.b	Draw_GoodRender_b
-				beq.s	nd0
+				beq.s	.nd0
 				add.w	d7,d7
 				add.w	#1,d6
-				bra		nha
-nd0:
+				bra		.nha
+.nd0:
 				cmp.w	#256,d0
-				bgt.s	nh1
+				bgt.s	.nh1
 				asr.w	#1,d7
 				subq	#1,d6
-nh1:
+.nh1:
 				cmp.w	#128,d0
-				bgt.s	nh2
+				bgt.s	.nh2
 				asr.w	#1,d7
 				subq	#1,d6
-nh2:
+.nh2:
 
-nha:
+.nha:
 				move.w	d3,d0
 				cmp.w	d1,d3
-				blt.s	rightnearest
+				blt.s	.right_nearest
 				move.w	d1,d0
 
-rightnearest:
+.right_nearest:
 				cmp.w	#32,d0
-				bgt.s	ndd0
+				bgt.s	.ndd0
 				addq	#1,d6
 				add.w	d7,d7
-ndd0:
+.ndd0:
 				cmp.w	#64,d0
-				bgt.s	nd1
+				bgt.s	.nd1
 				addq	#1,d6
 				add.w	d7,d7
 
-nd1:
+.nd1:
 				cmp.w	#128,d0
-				blt.s	nh3
+				blt.s	.nh3
 				asr.w	#1,d7
 				subq	#1,d6
-				blt.s	nh4
+				blt.s	.nh4
 				cmp.w	#256,d0
-				blt.s	nh3
+				blt.s	.nh3
 				asr.w	#1,d7
 				subq	#1,d6
-				blt.s	nh4
+				blt.s	.nh4
 
-nh3:
+.nh3:
 				cmp.w	#512,d0
-				blt.s	nh4
+				blt.s	.nh4
 				asr.w	#1,d7
 				subq	#1,d6
-nh4:
+.nh4:
 				cmp.w	#128,d7
 				ble.s	.okokok
 				move.w	#128,d7
@@ -1177,10 +1175,10 @@ nh4:
 				move.l	#DataBuffer2_vl,a1
 
 				move.w	draw_WallIterations_w,d6
-				blt		noiters
+				blt		.no_iterations
 				move.l	#1,a2
 
-iterloop:
+.iteration_loop:
 				move.l	a0,a3
 				move.l	a1,a4
 				move.w	a2,d7
@@ -1190,7 +1188,7 @@ iterloop:
 				move.w	(a3)+,d1
 				move.l	(a3)+,d2
 
-middleloop:
+.middle_loop:
 				move.l	d0,(a4)+
 				move.l	(a3)+,d3
 				add.l	d3,d0
@@ -1226,19 +1224,19 @@ middleloop:
 
 
 				subq	#1,d7
-				bgt.s	middleloop
+				bgt.s	.middle_loop
 				move.l	d0,(a4)+
 				move.w	d1,(a4)+
 				move.l	d2,(a4)+
 
 				add.w	a2,a2
 
-				dbra	d6,iterloop
+				dbra	d6,.iteration_loop
 
-noiters:
-someiters:
+.no_iterations:
+;someiters:
 
-CalcAndDraw:
+;CalcAndDraw:
 
 ; CACHE_ON d2
 
@@ -1251,7 +1249,7 @@ CalcAndDraw:
 				bgt.s	.found_in_front
 				move.l	(a1)+,d4
 				dbra	d7,.find_first_in_front
-				rts		;						no two points were in front
+				rts		;	no two points were in front
 
 .found_in_front:
 				ext.l	d0
@@ -1310,7 +1308,7 @@ CalcAndDraw:
 				movem.l	d0/d1/d2/d3/a0,-(a7)
 
 				moveq	#0,d0
-				move.b	WALLIDENT,d0
+				move.b	draw_WallID_w,d0
 				blt.s	.no_put_in_map
 
 				move.b	d0,d3
@@ -1465,9 +1463,9 @@ nocliptop:
 .nsbd:
 				bra		gotoend
 
-wlcnt:			dc.w	0
+;wlcnt:			dc.w	0 ; unused
 
-				CNOP	0,4
+				align 4
 drawwalldimPACK0:
 				and.w	d7,d4
 				move.b	1(a5,d4.w*2),d1			; fetch texel
@@ -1479,7 +1477,8 @@ drawwalldimPACK0:
 				dbra	d6,drawwallPACK0
 				rts
 
-				CNOP	0,128
+				;CNOP	0,128
+				align 4
 drawwallPACK0:
 				and.w	d7,d4
 				move.b	1(a5,d4.w*2),d1
@@ -1493,7 +1492,7 @@ drawwallPACK0:
 nostrip:
 				rts
 
-				CNOP	0,4
+				align 4
 drawwalldimPACK1:
 				and.w	d7,d4
 				move.w	(a5,d4.w*2),d1
@@ -1506,7 +1505,7 @@ drawwalldimPACK1:
 				dbra	d6,drawwallPACK1
 				rts
 
-				CNOP	0,4
+				align 4
 drawwallPACK1:
 				and.w	d7,d4
 				move.w	(a5,d4.w*2),d1
@@ -1520,7 +1519,7 @@ drawwallPACK1:
 
 				rts
 
-				CNOP	0,4
+				align 4
 drawwalldimPACK2:
 				and.w	d7,d4
 				move.b	(a5,d4.w*2),d1
@@ -1532,7 +1531,7 @@ drawwalldimPACK2:
 				dbra	d6,drawwallPACK2
 				rts
 
-				CNOP	0,4
+				align 4
 drawwallPACK2:
 				and.w	d7,d4
 				move.b	(a5,d4.w*2),d1
@@ -1557,6 +1556,7 @@ cliptopusesimple:
 				cmp.l	a4,a2
 				blt.s	usea2
 				move.l	a4,a2
+
 usea2:
 				and.w	d7,d4
 				move.l	d2,d5
@@ -1567,11 +1567,12 @@ usea2:
 				dble	d6,simplewalliPACK2
 				rts
 
-				CNOP	0,4
+				align 4
 simplewalliPACK0:
 				move.b	1(a5,d4.w*2),d1
 				and.b	#31,d1
 				move.b	(a2,d1.w*2),d3
+
 simplewallPACK0:
 				move.b	d3,(a3)
 				adda.w	d0,a3
@@ -1587,8 +1588,7 @@ simplewallPACK0:
 				dbra	d6,simplewallPACK0
 				rts
 
-				CNOP	0,4
-
+				align 4
 simplewalliPACK1:
 				move.w	(a5,d4.w*2),d1
 				lsr.w	#5,d1
@@ -1610,7 +1610,7 @@ simplewallPACK1:
 				dbra	d6,simplewallPACK1
 				rts
 
-				CNOP	0,4
+				align 4
 simplewalliPACK2:
 				move.b	(a5,d4.w*2),d1
 				lsr.b	#2,d1
@@ -1683,7 +1683,6 @@ gotoend:
 				dble	d6,drawwallPACK2
 				rts
 
-
 doubwall:
 				moveq	#0,d0
 				asr.w	#1,d5					; d5*2
@@ -1693,7 +1692,7 @@ doubwall:
 				asr.w	#1,d6
 				ble		nostripq				; (d5*3-d6)/2
 
-				add.l	timeslargeDOUB(pc,d5.w*4),a3
+				add.l	draw_LineOffsetBuffer_vl(pc,d5.w*4),a3
 
 				add.w	d2,d2
 
@@ -1724,13 +1723,6 @@ doubwall:
 				dbne	d6,drawwallPACK1
 				dble	d6,drawwallPACK2
 				rts
-
-timeslargeDOUB:
-val				SET		0
-				REPT	256
-				dc.l	val
-val				SET		val+SCREENWIDTH
-				ENDR
 
 ScreenWallstripdrawBIG:
 				move.w	d4,d6
@@ -1767,7 +1759,7 @@ gotoendBIG:
 				sub.w	d5,d6					; d6 = height to draw.
 				ble		nostripq
 
-				add.l	timeslargeBIG(pc,d5.w*4),a3 ;offset to start line in renderbuffer
+				add.l	draw_LineOffsetBuffer_vl(pc,d5.w*4),a3 ;offset to start line in renderbuffer
 
 				move.w	d2,d4
 				add.w	d2,d2
@@ -1799,14 +1791,6 @@ gotoendBIG:
 				dble	d6,drawwallPACK2
 				rts
 
-timeslargeBIG:
-
-val				SET		0
-				REPT	256
-				dc.l	val
-val				SET		val+SCREENWIDTH
-				ENDR
-
 doubwallBIG:
 				moveq	#0,d0
 				asr.w	#1,d5
@@ -1816,7 +1800,7 @@ doubwallBIG:
 				sub.w	d5,d6					; height to draw.
 				asr.w	#1,d6
 				ble		nostripq
-				add.l	timeslargeBIGDOUB(pc,d5.w*4),a3
+				add.l	draw_LineOffsetBuffer_vl(pc,d5.w*4),a3
 
 				move.w	d2,d4
 				add.w	d2,d2
@@ -1848,14 +1832,6 @@ doubwallBIG:
 				dbne	d6,drawwallPACK1
 				dble	d6,drawwallPACK2
 				rts
-
-timeslargeBIGDOUB:
-
-val				SET		0
-				REPT	256
-				dc.l	val
-val				SET		val+SCREENWIDTH
-				ENDR
 
 nostripqthru:
 				rts
@@ -1894,7 +1870,7 @@ ScreenWallstripdrawthru:
 				ble.s	nostripqthru
 				bra		gotoendthru
 
-				CNOP	0,4
+				align 4
 drawwalldimthruPACK0:
 				and.w	d7,d4
 				move.b	1(a5,d4.w*2),d1
@@ -1909,7 +1885,7 @@ drawwalldimthruPACK0:
 				dbra	d6,drawwallthruPACK0
 				rts
 
-				CNOP	0,4
+				align 4
 drawwallthruPACK0:
 				and.w	d7,d4
 				move.b	1(a5,d4.w*2),d1
@@ -1924,7 +1900,7 @@ drawwallthruPACK0:
 nostripthru:
 				rts
 
-				CNOP	0,4
+				align 4
 drawwalldimthruPACK1:
 				and.w	d7,d4
 				move.w	(a5,d4.w*2),d1
@@ -1938,7 +1914,8 @@ drawwalldimthruPACK1:
 				addx.w	d2,d4
 				dbra	d6,drawwallthruPACK1
 				rts
-				CNOP	0,4
+
+				align 4
 drawwallthruPACK1:
 				and.w	d7,d4
 				move.w	(a5,d4.w*2),d1
@@ -1953,7 +1930,7 @@ drawwallthruPACK1:
 				dbra	d6,drawwalldimthruPACK1
 				rts
 
-				CNOP	0,4
+				align 4
 drawwalldimthruPACK2:
 				and.w	d7,d4
 				move.b	(a5,d4.w*2),d1
@@ -1967,7 +1944,8 @@ drawwalldimthruPACK2:
 				addx.w	d2,d4
 				dbra	d6,drawwallthruPACK2
 				rts
-				CNOP	0,4
+
+				align 4
 drawwallthruPACK2:
 				and.w	d7,d4
 				move.b	(a5,d4.w*2),d1
@@ -2006,7 +1984,7 @@ usea2thru:
 				dble	d6,simplewallthruiPACK2
 				rts
 
-				CNOP	0,4
+				align 4
 simplewallthruiPACK0:
 				move.b	1(a5,d4.w*2),d1
 				and.b	#31,d1
@@ -2033,7 +2011,7 @@ noreadthruPACK0:
 				dbra	d6,simplewallthruPACK0
 				rts
 
-				CNOP	0,4
+				align 4
 simplewallholePACK0:
 				adda.w	d0,a3
 				add.l	d5,d4
@@ -2045,7 +2023,7 @@ holeysimplePACK0:
 				dbra	d6,simplewallholePACK0
 				rts
 
-				CNOP	0,4
+				align 4
 simplewallthruiPACK1:
 				move.w	(a5,d4.w*2),d1
 				lsr.w	#5,d1
@@ -2074,7 +2052,7 @@ noreadthruPACK1:
 				dbra	d6,simplewallthruPACK1
 				rts
 
-				CNOP	0,4
+				align 4
 simplewallholePACK1:
 				adda.w	d0,a3
 				add.l	d5,d4
@@ -2086,8 +2064,7 @@ holeysimplePACK1:
 				dbra	d6,simplewallholePACK1
 				rts
 
-
-				CNOP	0,4
+				align 4
 simplewallthruiPACK2:
 				move.b	(a5,d4.w*2),d1
 				lsr.b	#2,d1
@@ -2116,7 +2093,7 @@ noreadthruPACK2:
 				dbra	d6,simplewallthruPACK2
 				rts
 
-				CNOP	0,4
+				align 4
 simplewallholePACK2:
 				adda.w	d0,a3
 				add.l	d5,d4
@@ -2449,11 +2426,11 @@ cant_tell:
 				cmp.w	draw_LeftWallBright_w,d0
 				bne.s	gottagour
 
-				bsr		walldraw
+				bsr		draw_WallFlatShaded
 				bra.s	nottagour
 
 gottagour:
-				bsr		walldrawGOUR
+				bsr		draw_WallGouraudShaded
 nottagour:
 				movem.l	(a7)+,d7/a0/a5/a6
 				rts
