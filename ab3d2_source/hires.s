@@ -851,15 +851,6 @@ clrmessbuff:
 lop:
 				move.w	#%110000000000,_custom+potgo
 
-				cmp	#0,Anim_Timer_w
-				bgt.s	.not_zero
-				move.w	#3,Anim_Timer_w
-				st	Anim_Delay_w
-				bra	.is_zero
-.not_zero
-				clr.w	Anim_Delay_w
-.is_zero
-
 				cmp.b	#PLR_MASTER,Plr_MultiplayerType_b
 				bne		.notmess
 				tst.b	plr2_Dead_b
@@ -1048,6 +1039,15 @@ nofadedownhc:
 				bra.s	.waitvbl
 .skipWaitTOF
 				move.l	d3,VBLCOUNTLAST
+
+				cmp	#0,Anim_Timer_w
+				bgt.s	.not_zero
+				move.w	#4,Anim_Timer_w
+				st	Anim_Delay_w
+				bra	.is_zero
+.not_zero
+				clr.w	Anim_Delay_w
+.is_zero
 
 ; Swap screen bitmaps
 				move.l	Vid_DrawScreenPtr_l,d0

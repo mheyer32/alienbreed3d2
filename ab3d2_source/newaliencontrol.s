@@ -836,9 +836,12 @@ DEFANIMOBJ:
 				add.w	d1,EntT_CurrentAngle_w(a0)
 
 				moveq	#0,d1
+				tst.w	Anim_Delay_w
+				beq.s	.not_zero
+
 				move.b	5(a3,d0.w),d1
 				move.w	d1,EntT_Timer1_w(a0)
-
+.not_zero
 				rts
 
 .bitmap:
@@ -936,8 +939,6 @@ ACTANIMOBJ:
 				move.w	d1,EntT_Timer1_w(a0)
 
 				rts
-
-Anim_VecTimer_w:	dc.w	0
 
 THISPLRxoff:	dc.w	0
 THISPLRzoff:	dc.w	0
