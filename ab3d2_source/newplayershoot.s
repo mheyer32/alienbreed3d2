@@ -160,7 +160,7 @@ Plr1_Shot:
 				move.l	Plr1_ObjectPtr_l,a2
 				move.w	#1,EntT_Timer1_w+128(a2)
 				st	Anim_Delay_w
-				move.w	#4,Anim_Timer_w
+				move.w	#3,Anim_Timer_w
 .notplr1:
 				move.w	ShootT_Delay_w(a6),Plr1_TimeToShoot_w
 				move.b	MaxFrame,PLR1_GunFrame

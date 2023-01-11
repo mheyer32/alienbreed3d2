@@ -8497,10 +8497,10 @@ VBlankInterrupt:
 				add.l	#1,counter
 				add.l	#1,main_counter
 				add.l	#1,VBLCOUNT
-				tst.w	Anim_Delay_w			; not sure this is needed or does anything
-				bne.s	.not_set
+;				tst.w	Anim_Delay_w			; not sure this is needed or does anything
+;				bne.s	.not_set
 				subq.w	#1,Anim_Timer_w
-.not_set
+;.not_set
 				tst.l	timer					; used by menu system as delay
 				beq.s	.nodec
 				subq.l	#1,timer
