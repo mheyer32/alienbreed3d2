@@ -1042,7 +1042,7 @@ nofadedownhc:
 
 				cmp	#0,Anim_Timer_w
 				bgt.s	.not_zero
-				move.w	#4,Anim_Timer_w
+				move.w	#3,Anim_Timer_w
 				st	Anim_Delay_w
 				bra	.is_zero
 .not_zero
@@ -8497,8 +8497,10 @@ VBlankInterrupt:
 				add.l	#1,counter
 				add.l	#1,main_counter
 				add.l	#1,VBLCOUNT
+				tst.w	Anim_Delay_w
+				bne.s	.not_set
 				subq.w	#1,Anim_Timer_w
-
+.not_set
 				tst.l	timer					; used by menu system as delay
 				beq.s	.nodec
 				subq.l	#1,timer
