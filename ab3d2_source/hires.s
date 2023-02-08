@@ -848,6 +848,8 @@ clrmessbuff:
 				move.l	#0,Plr2_SnapYVel_l
 
 				jsr	FPS_time1
+				jsr	my_timer3
+
 lop:
 				move.w	#%110000000000,_custom+potgo
 
@@ -1105,6 +1107,10 @@ waitmaster:
 				jsr	FPS_time2				;fps counter c/o Grond
 *****************************************************************
 				jsr	FPS_time1				;fps counter c/o Grond
+				jsr	Frame_time
+				jsr	my_timer2_print
+				jsr	my_timer_print	
+*****************************************************************
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
@@ -1871,8 +1877,11 @@ nodrawp2:
 				clr.b	plr2_Teleported_b
 
 .notplr2:
+				jsr	my_timer4
+				jsr	my_timer1
 				jsr		Vid_ConvertC2P
-
+				jsr	my_timer2
+				jsr	my_timer3
 
 				move.l	#KeyMap_vb,a5
 				tst.b	$4a(a5)
