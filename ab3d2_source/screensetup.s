@@ -242,13 +242,13 @@ FPS_time2:
 		add.b	#"0",d2			; convert to ASCII
 		move.b	d2,(a0)+
 
-		sub.w	d0,d0
-		swap	d0
-		divu.w	#10,d1
-		divu.w	d1,d0
-		move.b	d0,d2
-		add.b	#"0",d2			; convert to ASCII
-		move.b	d2,(a0)+
+		; sub.w	d0,d0
+		; swap	d0
+		; divu.w	#10,d1
+		; divu.w	d1,d0
+		; move.b	d0,d2
+		; add.b	#"0",d2			; convert to ASCII
+		; move.b	d2,(a0)+
 
 		move.l	#" fps",(a0)+
 ;		move.b	#" ",(a0)
@@ -267,7 +267,7 @@ FPS_time2:
 
 		lea	FPS_outputstring,a0
 		move.l	a2,a1
-		moveq	#2,d0;9
+		moveq	#8,d0;9
 		jsr	_LVOText(a6)
 		movem.l	(sp)+,d2/a2/a6
 		rts
@@ -318,7 +318,7 @@ my_timer_print:
 
 		lea	MY_timer_outputstring,a0
 		move.l	a2,a1
-		moveq	#4,d0;#8
+		moveq	#8,d0;#8
 		jsr	_LVOText(a6)
 		
 		movem.l	(sp)+,d2/a2/a6
@@ -394,7 +394,7 @@ my_timer2_print:
 
 		lea	MY_timer_outputstring2,a0
 		move.l	a2,a1
-		moveq	#4,d0;#8
+		moveq	#8,d0;#8
 		jsr	_LVOText(a6)
 		
 		movem.l	(sp)+,d2/a2/a6
@@ -419,7 +419,7 @@ Frame_time:
 
 		lea	Frame_outputstring,a0
 		move.l	a2,a1
-		moveq	#4,d0;#8
+		moveq	#8,d0;#8
 		jsr	_LVOText(a6)
 
 		movem.l	(sp)+,d2/a2/a6
@@ -506,9 +506,12 @@ VidControlTags	dc.l	VTAG_USERCLIP_SET,1
 timerrequest:	ds.b	IOTV_SIZE
 timername:	dc.b	"timer.device",0
 FPS_outputstring:	dcb.b	10
-Frame_outputstring:	dcb.b	10
-MY_timer_outputstring:	dcb.b	10
-MY_timer_outputstring2:	dcb.b	10
+Frame_outputstring:		dc.b	'    '
+Frame_outputstringX:		dc.b	' tot'
+MY_timer_outputstring:		dc.b	'    '
+MY_timer_outputstringX:		dc.b	' c2p',0
+MY_timer_outputstring2:		dc.b	'    '
+MY_timer_outputstring2X:	dc.b	' lop'
 				align	4
 timerbase:	dc.l	0
 timerflag:	dc.l	-1
