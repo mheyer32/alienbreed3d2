@@ -29,7 +29,7 @@ CD32VER					equ		0
 
 FS_HEIGHT_HACK			equ		1 ; 0xABADCAFE - Fullscreen height hack, set non-zero to enable
 DISPLAYMSGPORT_HACK		equ		1 ; AL - Level restart freeze hack, set non-zero to enable
-SCREEN_TITLEBAR_HACK		equ		1 ; AL - Stop title bar interactions hack, set non-zero to enable
+SCREEN_TITLEBAR_HACK	equ		1 ; AL - Stop title bar interactions hack, set non-zero to enable
 
 
 	IFNE	FS_HEIGHT_HACK
@@ -138,14 +138,9 @@ _start:
 				moveq	#INTB_VERTB,d0
 				CALLEXEC AddIntServer
 
-				lea	timername,a0
-				lea	timerrequest,a1
-				moveq	#0,d0
-				moveq	#0,d1
-				jsr	_LVOOpenDevice(a6)
-				move.l	timerrequest+IO_DEVICE,timerbase
-				move.l	d0,timerflag
-				;bne	error_exit
+				IFD DEV
+				jsr		Dev_Init
+				ENDC
 
 				IFEQ	CD32VER
 				lea		KEYInt(pc),a1
@@ -847,9 +842,10 @@ clrmessbuff:
 				move.l	#0,Plr2_SnapZSpdVal_l
 				move.l	#0,Plr2_SnapYVel_l
 
-				jsr	FPS_time1
-				jsr	my_timer3
-
+				IFD	DEV
+				jsr	Dev_FPSMark
+				jsr	Dev_RenderMark
+				ENDC
 lop:
 				move.w	#%110000000000,_custom+potgo
 
@@ -1103,14 +1099,19 @@ waitmaster:
 
 .failed			clr.b	WaitForDisplayMsg		; last attempt failed, so don't wait for next message
 
-.screenSwapDone
-				jsr	FPS_time2				;fps counter c/o Grond
-*****************************************************************
-				jsr	FPS_time1				;fps counter c/o Grond
-				jsr	Frame_time
-				jsr	my_timer2_print
-				jsr	my_timer_print	
-*****************************************************************
+.screenSwapDone:
+
+; DEVMODE INSTRUMENTATION
+
+				IFD	DEV
+				jsr	Dev_FPSReport			; fps counter c/o Grond
+				jsr	Dev_FPSMark				; fps counter c/o Grond
+				jsr	Dev_FrameReport			; Display frame time
+				jsr	Dev_RenderReport		; Display render time
+				jsr	Dev_C2PReport			; Display c2p time
+				ENDC
+
+; END DEVMODE INSTRUMENTATION
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
@@ -1877,11 +1878,20 @@ nodrawp2:
 				clr.b	plr2_Teleported_b
 
 .notplr2:
-				jsr	my_timer4
-				jsr	my_timer1
+
+; DEVMODE INSTRUMENTATION
+				IFD DEV
+				jsr	Dev_RenderElapsed	; record drawing complete (and c2p started)
+				ENDC
+; END DEVMODE INSTRUMENTATION
+
 				jsr		Vid_ConvertC2P
-				jsr	my_timer2
-				jsr	my_timer3
+
+; DEVMODE INSTRUMENTATION
+				IFD DEV
+				jsr	Dev_C2PElapsed		; record c2p complete (and render started)
+				ENDC
+; END DEVMODE INSTRUMENTATION
 
 				move.l	#KeyMap_vb,a5
 				tst.b	$4a(a5)
@@ -2903,6 +2913,9 @@ SAVELETTER:		dc.b	'd',0
 				include	"chunky.s"
 
 				include	"pauseopts.s"
+
+				include "modules/dev_inst.s"
+
 
 ENDZONE:		dc.w	0
 

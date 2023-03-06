@@ -6,8 +6,6 @@ STRIP=m68k-amigaos-strip
 #find the toolchain's directory
 PREFIX = $(shell ./getprefix.sh "$(CC)")
 
-CHEESEY ?= 0
-
 #-DCD32VER
 
 AFLAGS = -Fhunk -m68060 -linedebug -chklabels -align -L listing.txt -Dmnu_nocode=1
