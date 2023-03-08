@@ -10794,8 +10794,6 @@ Vid_TextScreenPtr_l:		dc.l	0
 				SECTION	bss_c,bss_c
 				align 8
 
-PanelKeys:		;		I'm pretty sure these are not needed anymore, but there's code referencing it
-
 ; Audio
 Aud_Null1_vw:				ds.w	500
 Aud_Null2_vw:				ds.w	500
