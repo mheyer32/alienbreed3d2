@@ -3786,14 +3786,14 @@ vertline:
 				move.w	(a4)+,d0
 				move.b	d0,(a2)
 				move.b	(a4)+,d0
-				move.b	d0,SCREENWIDTH(a2)
+				move.b	d0,SCREEN_WIDTH(a2)
 				addq	#1,a4
 				move.b	(a4)+,d0
-				move.b	d0,SCREENWIDTH*2(a2)
+				move.b	d0,SCREEN_WIDTH*2(a2)
 				move.b	(a4)+,d0
-				move.b	d0,SCREENWIDTH*3(a2)
+				move.b	d0,SCREEN_WIDTH*3(a2)
 
-				adda.w	#SCREENWIDTH*4,a2
+				adda.w	#SCREEN_WIDTH*4,a2
 				dbra	d3,vertline
 
 				add.w	d1,a1
@@ -3839,15 +3839,15 @@ BIGBACK:
 
 .vertline:
 				move.l	(a4)+,d0
-				move.b	d0,SCREENWIDTH*3(a2)
+				move.b	d0,SCREEN_WIDTH*3(a2)
 				swap	d0
-				move.b	d0,SCREENWIDTH(a2)
+				move.b	d0,SCREEN_WIDTH(a2)
 				lsr.l	#8,d0
 				move.b	d0,(a2)
 				swap	d0
-				move.b	d0,SCREENWIDTH*2(a2)
+				move.b	d0,SCREEN_WIDTH*2(a2)
 
-				adda.w	#SCREENWIDTH*4,a2
+				adda.w	#SCREEN_WIDTH*4,a2
 				dbra	d3,.vertline
 
 				add.w	#240,a1

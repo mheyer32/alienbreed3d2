@@ -22,6 +22,12 @@ Dev_Init:
 				move.l	d0,timerflag
 				rts
 
+; Generic text output, buffer in a0
+Dev_Print:
+
+
+				rts
+
 ;fps counter c/o Grond
 Dev_FPSMark:
 				move.l	a6,-(sp)
@@ -86,7 +92,7 @@ Dev_FPSReport:
 				add.b	#"0",d2			; convert to ASCII
 				move.b	d2,(a0)+
 				move.l	#" fps",(a0)+
-				move.l	MainScreen,a0
+				move.l	Vid_MainScreen_l,a0
 				lea		sc_RastPort(a0),a1
 				lea		sc_ViewPort(a0),a0
 				move.l	vp_RasInfo(a0),a0
@@ -130,7 +136,7 @@ Dev_C2PElapsed:
 
 Dev_C2PReport:
 				movem.l	d2/a2/a6,-(sp)
-				move.l	MainScreen,a0
+				move.l	Vid_MainScreen_l,a0
 				lea		sc_RastPort(a0),a1
 				lea		sc_ViewPort(a0),a0
 				move.l	vp_RasInfo(a0),a0
@@ -204,7 +210,7 @@ Dev_RenderElapsed:
 
 Dev_RenderReport:
 				movem.l	d2/a2/a6,-(sp)
-				move.l	MainScreen,a0
+				move.l	Vid_MainScreen_l,a0
 				lea		sc_RastPort(a0),a1
 				lea		sc_ViewPort(a0),a0
 				move.l	vp_RasInfo(a0),a0
@@ -229,7 +235,7 @@ Dev_FrameReport:
 				move.l	dev_frametime_l,d1			;data to convert
 				bsr		deci_4
 
-				move.l	MainScreen,a0
+				move.l	Vid_MainScreen_l,a0
 				lea		sc_RastPort(a0),a1
 				lea		sc_ViewPort(a0),a0
 				move.l	vp_RasInfo(a0),a0

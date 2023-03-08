@@ -61,7 +61,7 @@ Plr1_MouseControl:
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
-				muls	#SCREENWIDTH,d0
+				muls	#SCREEN_WIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
@@ -439,7 +439,7 @@ Plr1_KeyboardControl:
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
-				muls	#SCREENWIDTH,d0
+				muls	#SCREEN_WIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 
 				move.w	Plr1_SnapAngPos_w,d0

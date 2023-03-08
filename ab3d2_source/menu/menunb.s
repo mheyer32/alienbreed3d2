@@ -277,12 +277,12 @@ mnu_viewcredz:	clr.l	counter
 .exit:			rts
 
 mnu_copycredz:	lea		mnu_frame,a0
-				lea		mnu_morescreen+3*40*256+32*40,a1
+				lea		mnu_morescreen+3*40*SCREEN_HEIGHT+32*40,a1
 
 				move.w	#10*192-1,d0
 .loop:			move.l	(a0)+,(a1)+
-				move.l	40*192-4(a0),40*256-4(a1)
-				move.l	2*40*192-4(a0),2*40*256-4(a1)
+				move.l	40*192-4(a0),40*SCREEN_HEIGHT-4(a1)
+				move.l	2*40*192-4(a0),2*40*SCREEN_HEIGHT-4(a1)
 				dbra	d0,.loop
 				rts
 
@@ -307,8 +307,8 @@ mnu_clearscreen:
 mnu_setscreen:
 				lea		Bitmap,a0
 				moveq.l	#8,d0
-				move.l	#320,d1
-				move.l	#256,d2
+				move.l	#SCREEN_WIDTH,d1
+				move.l	#SCREEN_HEIGHT,d2
 				CALLGRAF InitBitMap
 
 				lea		Bitmap+bm_Planes,a0		; provide "fake" bitplane pointers such that
@@ -343,8 +343,8 @@ mnu_setscreen:
 				;move.l	MenuWindow,a0
 				;clr.l	d0
 				;move.l	d0,d1
-				;move.l	#320,d2
-				;move.l	#256,d3
+				;move.l	#SCREEN_WIDTH,d2
+				;move.l	#SCREEN_HEIGHT,d3
 				;CALLINT ChangeWindowBox
 
 				bsr.w	mnu_init
@@ -367,13 +367,13 @@ mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				; copy menu background (2bitplanes) a second time underneath (for scrolling meny background)
 				; At the same time, this "moves" the second plane one screen downwards
 				lea		mnu_background,a0
-				lea		mnu_background+40*256,a1
+				lea		mnu_background+40*SCREEN_HEIGHT,a1
 
 				lea		mnu_screen,a2
-				lea		40*256*1(a2),a3
-				lea		40*256*2(a2),a4
-				lea		40*256*3(a2),a5
-				move.w	#40*256/4-1,d1			; one screen worth in longwords
+				lea		40*SCREEN_HEIGHT*1(a2),a3
+				lea		40*SCREEN_HEIGHT*2(a2),a4
+				lea		40*SCREEN_HEIGHT*3(a2),a5
+				move.w	#40*SCREEN_HEIGHT/4-1,d1			; one screen worth in longwords
 .fsloop:		move.l	(a0)+,d0
 				move.l	d0,(a2)+
 				move.l	d0,(a3)+
@@ -383,7 +383,7 @@ mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				dbra	d1,.fsloop
 ;-------------------------------------------------------------- Clear screen --
 				lea		mnu_morescreen,a0
-				move.l	#40*256*3/16-1,d0
+				move.l	#40*SCREEN_HEIGHT*3/16-1,d0
 				moveq.l	#0,d1
 .clrloop:
 				REPT	4
@@ -403,7 +403,7 @@ mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				move.l	#mnu_screen,d0
 				moveq.l	#0,d1
 				bsr.w	.setbplptrs
-				move.l	#mnu_screen+40*256*2,d0
+				move.l	#mnu_screen+40*SCREEN_HEIGHT*2,d0
 				moveq.l	#0,d1
 				bsr.w	.setbplptrs
 				move.l	#mnu_morescreen,d0
@@ -417,7 +417,7 @@ mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				rts
 
 .setbplptrs:	move.l	d0,(a1)+
-				add.l	#40*256,d0
+				add.l	#40*SCREEN_HEIGHT,d0
 				dbra	d1,.setbplptrs
 				rts
 
@@ -2240,14 +2240,14 @@ BltNode			dc.l	0						; bn_n
 				dc.l	0						; bn_cleanup
 
 
-Bitmap			dc.w	320/8					; bm_BytesPerRow
+Bitmap			dc.w	SCREEN_WIDTH/8					; bm_BytesPerRow
 				dc.w	256						; bm_Rows
 				dc.b	BMF_DISPLAYABLE			; bm_Flags
 				dc.b	8						; bm_Depth
 				dc.w	0						; bm_Pad
 				ds.l	8						; bm_Planes
 
-ScreenTags		dc.l	SA_Width,320
+ScreenTags		dc.l	SA_Width,SCREEN_WIDTH
 				dc.l	SA_Height,256
 				dc.l	SA_Depth,8
 				dc.l	SA_BitMap,Bitmap
@@ -2261,8 +2261,8 @@ MenuScreen		dc.l	0
 
 WindowTags		dc.l	WA_Left,0
 				dc.l	WA_Top,0
-				dc.l	WA_Width,320
-				dc.l	WA_Height,256
+				dc.l	WA_Width,SCREEN_WIDTH
+				dc.l	WA_Height,SCREEN_HEIGHT
 				dc.l	WA_CustomScreen
 WTagScreenPtr	dc.l	0						; will fill in screen pointer later
 				dc.l	WA_Activate,1
@@ -2282,7 +2282,7 @@ mnu_background	incbin	"menu/back2.raw"		; 2x320x256 bitplanes
 				section	bss_c,bss_c
 
 mnu_screen:		ds.b	2*40*512				; 4 color background,. 320x512 pixels
-mnu_morescreen:	ds.b	8*40*256				; 8 bitplanes 320x256 pixels
+mnu_morescreen:	ds.b	8*40*SCREEN_HEIGHT				; 8 bitplanes 320x256 pixels
 
 				align	8				; align for fetch mode 3
 

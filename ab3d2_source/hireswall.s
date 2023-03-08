@@ -17,13 +17,13 @@ Draw_LeftClipAndLast_w: dc.w	0
 draw_StripData_w:		dc.b	0 ; word
 draw_StripData_b:		dc.b    0 ; lsb
 
-; TODO - this buffer is just a lookup table of y * SCREENWIDTH. It's probably faster to use mul #SCREENWIDTH on 060
+; TODO - this buffer is just a lookup table of y * SCREEN_WIDTH. It's probably faster to use mul #SCREEN_WIDTH on 060
 				align 4
 draw_LineOffsetBuffer_vl:
 val				SET		0
 				REPT	256
 				dc.l	val
-val				SET		val+SCREENWIDTH
+val				SET		val+SCREEN_WIDTH
 				ENDR
 
 				align 4
@@ -1551,7 +1551,7 @@ usesimple:
 
 cliptopusesimple:
 				move.w	draw_WallTextureHeightMask_w,d7
-				move.w	#SCREENWIDTH,d0
+				move.w	#SCREEN_WIDTH,d0
 				moveq	#0,d1
 				cmp.l	a4,a2
 				blt.s	usea2
@@ -1639,10 +1639,10 @@ TOTHEMIDDLE:	dc.w	0
 Vid_BottomY_w:		dc.w	0
 Vid_CentreY_w:		dc.w	FS_HEIGHT/2
 TOPOFFSET:		dc.w	0
-BIGMIDDLEY:		dc.l	SCREENWIDTH*FS_HEIGHT/2
+BIGMIDDLEY:		dc.l	SCREEN_WIDTH*FS_HEIGHT/2
 SMIDDLEY:		dc.w	FS_HEIGHT/2
 STOPOFFSET:		dc.w	0
-SBIGMIDDLEY:	dc.l	SCREENWIDTH*FS_HEIGHT/2		; renderbuffer offset to middle line
+SBIGMIDDLEY:	dc.l	SCREEN_WIDTH*FS_HEIGHT/2		; renderbuffer offset to middle line
 
 gotoend:
 				tst.b	Vid_DoubleHeight_b
@@ -1669,7 +1669,7 @@ gotoend:
 				add.w	draw_TotalYOffset_w(pc),d4		; start texel offset in strip
 				move.w	draw_WallTextureHeightMask_w,d7
 				and.w	d7,d4					; vertical texture coordinate clamp/wrap
-				move.w	#SCREENWIDTH,d0			; line offset to next line
+				move.w	#SCREEN_WIDTH,d0			; line offset to next line
 				moveq	#0,d1
 				swap	d2						; fractional dt in upper word
 				move.l	d2,d3
@@ -1780,7 +1780,7 @@ gotoendBIG:
 				add.w	draw_TotalYOffset_w(pc),d4
 				move.w	draw_WallTextureHeightMask_w,d7
 				and.w	d7,d4
-				move.w	#SCREENWIDTH,d0
+				move.w	#SCREEN_WIDTH,d0
 				moveq	#0,d1
 				swap	d2
 				move.l	d2,d3

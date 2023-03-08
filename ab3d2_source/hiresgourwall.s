@@ -1118,7 +1118,7 @@ usesimpleG:
 
 cliptopusesimpleG:
 				move.w	draw_WallTextureHeightMask_w,d7
-				move.w	#SCREENWIDTH,d0
+				move.w	#SCREEN_WIDTH,d0
 				moveq	#0,d1
 				swap	d2
 				move.l	d2,a2
@@ -1252,7 +1252,7 @@ gotoendG:
 cliptopG:
 				move.w	draw_WallTextureHeightMask_w,d7
 				and.w	d7,d4
-				move.w	#SCREENWIDTH,d0
+				move.w	#SCREEN_WIDTH,d0
 				moveq	#0,d1
 				move.l	d2,a2
 				swap	d4
@@ -1378,7 +1378,7 @@ gotoendGB:
 				add.w	draw_TotalYOffset_w(pc),d4
 				move.w	draw_WallTextureHeightMask_w,d7
 				and.w	d7,d4
-				move.w	#SCREENWIDTH,d0
+				move.w	#SCREEN_WIDTH,d0
 				moveq	#0,d1
 				move.l	d2,a2
 				swap	d4

@@ -63,7 +63,7 @@ Game_Start:
 				; Open Graphics.library, store old coppper list etc.
 				jsr		OpenGraphics
 
-				jsr		OpenMainScreen
+				jsr		Vid_OpenMainScreen
 
 				move.l	#GLF_DatabaseName_vb,a0
 				jsr		IO_LoadFile
@@ -237,16 +237,15 @@ QUITTT:
 				move.l	Vid_FastBufferAllocPtr_l,a1
 				CALLEXEC FreeVec
 
-				move.l	MyRaster0,a0
-				move.w	#320,d0
-				move.w	#256*8+1,d1
+				move.l	Vid_MyRaster0_l,a0
+				move.w	#SCREEN_WIDTH,d0
+				move.w	#SCREEN_HEIGHT*8+1,d1
 				CALLGRAF FreeRaster
 
-				move.l	MyRaster1,a0
-				move.w	#320,d0
-				move.w	#256*8+1,d1
+				move.l	Vid_MyRaster1_l,a0
+				move.w	#SCREEN_WIDTH,d0
+				move.w	#SCREEN_HEIGHT*8+1,d1
 				CALLGRAF FreeRaster
-
 
 ; jsr Res_FreeWallTextures
 				jsr		Res_FreeSoundFx
@@ -556,7 +555,7 @@ DEFGAME:
 
 				tst.b	d6;				 can use this now
 				bne	.error_nodef;			 can use this now
-				
+
 				move.l	DEFGAMEPOS,a0			; address of first saved game.
 
 				move.l	#Plr_Health_w,a1

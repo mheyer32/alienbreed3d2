@@ -31,20 +31,22 @@ FS_HEIGHT_HACK			equ		1 ; 0xABADCAFE - Fullscreen height hack, set non-zero to e
 DISPLAYMSGPORT_HACK		equ		1 ; AL - Level restart freeze hack, set non-zero to enable
 SCREEN_TITLEBAR_HACK	equ		1 ; AL - Stop title bar interactions hack, set non-zero to enable
 
+SCREEN_WIDTH			equ		320
+SCREEN_HEIGHT			equ		256
 
 	IFNE	FS_HEIGHT_HACK
-FS_HEIGHT				equ		240
+FS_HEIGHT				equ		SCREEN_HEIGHT-16
 FS_HEIGHT_C2P_DIFF		equ		8
 	ELSE
-FS_HEIGHT				equ		232
+FS_HEIGHT				equ		SCREEN_HEIGHT-24
 FS_HEIGHT_C2P_DIFF		equ		0
 	ENDC
 
-FS_WIDTH				equ		320
+FS_WIDTH				equ		SCREEN_WIDTH
 SMALL_WIDTH				equ		192
 SMALL_HEIGHT			equ		160
-SCREENWIDTH				equ		320
-VID_FAST_BUFFER_SIZE	equ		SCREENWIDTH*256+15		; screen size plus alignment
+
+VID_FAST_BUFFER_SIZE	equ		SCREEN_WIDTH*SCREEN_HEIGHT+15		; screen size plus alignment
 
 maxscrdiv				equ		8
 max3ddiv				equ		5
@@ -308,7 +310,7 @@ Draw_LineOfText:
 				dbra	d0,.addup
 				asr.w	#1,d1
 				neg.w	d1
-				add.w	#SCREENWIDTH,d1			; horiz pos of start x
+				add.w	#SCREEN_WIDTH,d1			; horiz pos of start x
 
 .not_centred:
 				move.w	d6,d7
@@ -573,23 +575,23 @@ noclips:
 ; move.l #Blurbfield,$dff080
 
 	IFNE	DISPLAYMSGPORT_HACK
-				;empty DisplayMsgPort and set ScreenBufferIndex to 0
+				;empty Vid_DisplayMsgPort_l and set Vid_ScreenBufferIndex_w to 0
 				;so the starting point is the same every time
-.clrMsgPort			move.l	DisplayMsgPort,a0
+.clrMsgPort			move.l	Vid_DisplayMsgPort_l,a0
 				CALLEXEC GetMsg
 				tst.l	d0
 				bne.s	.clrMsgPort
 	ENDC
 
-				clr.w	ScreenBufferIndex
+				clr.w	Vid_ScreenBufferIndex_w
 
-.tryAgain		move.l	ScreenBuffers,a1
-				move.l	MainScreen,a0
+.tryAgain		move.l	Vid_ScreenBuffers_vl,a1
+				move.l	Vid_MainScreen_l,a0
 				CALLINT	ChangeScreenBuffer
 				tst.l	d0
 				beq.s	.tryAgain
 
-				clr.b	WaitForDisplayMsg
+				clr.b	Vid_WaitForDisplayMsg_b
 
 ****************************
 				jsr		Plr_Initialise
@@ -799,7 +801,7 @@ CLRDAM:
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
-				muls	#SCREENWIDTH,d0
+				muls	#SCREEN_WIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 
 				move.w	#0,Plr1_AimSpeed_l
@@ -1071,10 +1073,10 @@ waitmaster:
 				; to fully produce the next frame before the last frame has been scanned out.
 				; We could move the screen flipping into its own thread that flips asynchronously.
 				; It does not seem very practical, though as this scenario
-				tst.b	WaitForDisplayMsg
+				tst.b	Vid_WaitForDisplayMsg_b
 				beq.s	.noWait
 
-				move.l	DisplayMsgPort,a0
+				move.l	Vid_DisplayMsgPort_l,a0
 				move.l	a0,a3
 				CALLEXEC WaitPort				; wait for when the old image has been displayed
 .clrMsgPort		move.l	a3,a0
@@ -1082,22 +1084,22 @@ waitmaster:
 				tst.l	d0
 				bne.s	.clrMsgPort
 
-.noWait			move.w	ScreenBufferIndex,d2
-				lea		ScreenBuffers,a1
+.noWait			move.w	Vid_ScreenBufferIndex_w,d2
+				lea		Vid_ScreenBuffers_vl,a1
 				eor.w	#1,d2					; flip  screen index
 				move.l	(a1,d2.w*4),a1			; grab ScreenBuffer pointer
 
-				move.l	MainScreen,a0
-				CALLINT	ChangeScreenBuffer		; DisplayMsgPort will be notified if this image had been fully scanned out
+				move.l	Vid_MainScreen_l,a0
+				CALLINT	ChangeScreenBuffer		; Vid_DisplayMsgPort_l will be notified if this image had been fully scanned out
 
 				tst.l	d0
 				beq.s	.failed
 
-				move.w	d2,ScreenBufferIndex
-				st.b	WaitForDisplayMsg
+				move.w	d2,Vid_ScreenBufferIndex_w
+				st.b	Vid_WaitForDisplayMsg_b
 				bra.s	.screenSwapDone
 
-.failed			clr.b	WaitForDisplayMsg		; last attempt failed, so don't wait for next message
+.failed			clr.b	Vid_WaitForDisplayMsg_b		; last attempt failed, so don't wait for next message
 
 .screenSwapDone:
 
@@ -1938,7 +1940,7 @@ nodrawp2:
 
 				; Check renderbuffer setup variables and clear screen
 				bsr		SetupRenderbufferSize
-				jsr		SetupDoubleheightCopperlist
+				jsr		vid_SetupDoubleheightCopperlist
 
 				bra		notdoubheight2
 
@@ -2151,7 +2153,7 @@ LoadMainPalette:
 				dbra	d0,.setCol
 				clr.l	(a0)					; terminate list
 
-				move.l	MainScreen,a0
+				move.l	Vid_MainScreen_l,a0
 				lea		sc_ViewPort(a0),a0
 				CALLGRAF LoadRGB32				; a1 still points to start of palette
 
@@ -2564,7 +2566,7 @@ DRAWAtransLINE:
 				tst.b	Vid_FullScreen_b
 				beq.s	.nooffset
 
-				add.l	#(SCREENWIDTH*40)+(48*2),a0
+				add.l	#(SCREEN_WIDTH*40)+(48*2),a0
 
 .nooffset:
 
@@ -2579,7 +2581,7 @@ DRAWAtransLINE:
 .okdown
 
 				move.w	d1,d5
-				muls	#SCREENWIDTH,d5
+				muls	#SCREEN_WIDTH,d5
 				add.l	d5,a0
 				lea		(a0,d0.w*2),a0
 
@@ -2594,7 +2596,7 @@ downlefttrans:
 				bgt.s	downmorelefttrans
 
 downleftmoretrans:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 
@@ -2611,7 +2613,7 @@ downleftmoretrans:
 				rts
 
 downmorelefttrans:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
@@ -2634,7 +2636,7 @@ downrighttrans:
 				bgt.s	downmorerighttrans
 
 downrightmoretrans:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 
@@ -2651,7 +2653,7 @@ downrightmoretrans:
 				rts
 
 downmorerighttrans:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
@@ -2689,7 +2691,7 @@ DRAWAMAPLINE:
 .okdown
 
 				move.w	d1,d5
-				muls	#SCREENWIDTH,d5
+				muls	#SCREEN_WIDTH,d5
 				add.l	d5,a0
 				lea		(a0,d0.w),a0
 
@@ -2704,7 +2706,7 @@ downleft:
 				bgt.s	downmoreleft
 
 downleftmore:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 				addq	#1,a0
@@ -2720,7 +2722,7 @@ downleftmore:
 				rts
 
 downmoreleft:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
@@ -2742,7 +2744,7 @@ downright:
 				bgt.s	downmoreright
 
 downrightmore:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 
@@ -2758,7 +2760,7 @@ downrightmore:
 				rts
 
 downmoreright:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
@@ -2788,7 +2790,7 @@ DOITFAT:
 .okdown
 
 				move.w	d1,d5
-				muls	#SCREENWIDTH,d5
+				muls	#SCREEN_WIDTH,d5
 				add.l	d5,a0
 				lea		(a0,d0.w),a0
 
@@ -2803,7 +2805,7 @@ downleftFAT:
 				bgt.s	downmoreleftFAT
 
 downleftmoreFAT:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 				addq	#1,a0
@@ -2821,12 +2823,12 @@ downleftmoreFAT:
 				rts
 
 downmoreleftFAT:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
 .linelop:
-				move.b	d4,SCREENWIDTH(a0)
+				move.b	d4,SCREEN_WIDTH(a0)
 				move.b	d4,1(a0)
 				move.b	d4,(a0)
 				add.w	d6,a0
@@ -2845,12 +2847,12 @@ downrightFAT:
 				bgt.s	downmorerightFAT
 
 downrightmoreFAT:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 
 .linelop:
-				move.b	d4,SCREENWIDTH(a0)
+				move.b	d4,SCREEN_WIDTH(a0)
 				move.b	d4,(a0)+
 				move.b	d4,(a0)
 				sub.w	d3,d0
@@ -2863,12 +2865,12 @@ downrightmoreFAT:
 				rts
 
 downmorerightFAT:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
 .linelop:
-				move.b	d4,SCREENWIDTH(a0)
+				move.b	d4,SCREEN_WIDTH(a0)
 				move.b	d4,1(a0)
 				move.b	d4,(a0)
 				add.w	d6,a0
@@ -4240,7 +4242,7 @@ NOGUNLOOK:
 				beq		nowaterfull
 				bgt		oknothalf
 				moveq	#FS_HEIGHT/2-1,d0
-				add.l	#SCREENWIDTH*FS_HEIGHT/2,a0
+				add.l	#SCREEN_WIDTH*FS_HEIGHT/2,a0
 oknothalf:
 
 				bclr.b	#1,$bfe001
@@ -4261,7 +4263,7 @@ DOSOMESCREEN:
 				move.b	(a0),d2
 				move.b	(a2,d2.w),(a0)+
 				dbra	d1,.fwa
-				add.w	#(SCREENWIDTH-SMALL_WIDTH),a0
+				add.w	#(SCREEN_WIDTH-SMALL_WIDTH),a0
 				dbra	d0,.fw
 				rts
 
@@ -4273,7 +4275,7 @@ fwa:
 				move.b	(a0),d2
 				move.b	(a2,d2.w),(a0)+
 				dbra	d1,fwa
-				add.w	#(SCREENWIDTH-FS_WIDTH),a0
+				add.w	#(SCREEN_WIDTH-FS_WIDTH),a0
 				dbra	d0,fw
 
 				rts
@@ -6624,7 +6626,7 @@ pastsides:
 
 				addq	#2,a0
 
-				move.w	#SCREENWIDTH,linedir	; moving from one horizontal line to the next
+				move.w	#SCREEN_WIDTH,linedir	; moving from one horizontal line to the next
 												; floors walk downwards
 
 ; move.l FASTBUFFER2,a6
@@ -6644,8 +6646,8 @@ pastsides:
 				move.w	above(pc),d6			; is floor above player (i.e. ceiling)
 				beq		groundfloor
 * on ceiling:
-				move.w	#-SCREENWIDTH,linedir	; ceilings are walked bottom to top
-				suba.w	#SCREENWIDTH,a6
+				move.w	#-SCREEN_WIDTH,linedir	; ceilings are walked bottom to top
+				suba.w	#SCREEN_WIDTH,a6
 groundfloor:
 
 				move.w	xoff,d6
@@ -6757,7 +6759,7 @@ pastscale:
 				move.w	Vid_CentreY_w,d7
 				btst	#0,d7
 				bne.s	.evenMiddleRoof
-				sub.w	#SCREENWIDTH,a6			; with regular nx1 rendering, we usually start at an odd line for ceiling rendering
+				sub.w	#SCREEN_WIDTH,a6			; with regular nx1 rendering, we usually start at an odd line for ceiling rendering
 
 .evenMiddleRoof	subq	#1,d7
 				sub.w	d1,d7
@@ -6790,7 +6792,7 @@ pastscale:
 				move.w	Vid_CentreY_w,d4
 				btst	#0,d4
 				beq.s	.evenMiddleFloor
-				add.w	#SCREENWIDTH,a6
+				add.w	#SCREEN_WIDTH,a6
 
 .evenMiddleFloor sub.w	d4,d7
 				subq	#1,d7
@@ -8083,7 +8085,7 @@ oknotoffbotototr
 ; asr.w #7,d3
 ; add.w d3,d0
 
-				muls	#SCREENWIDTH,d0
+				muls	#SCREEN_WIDTH,d0
 				tst.w	above
 				beq.s	nonnnnnegr
 				neg.l	d0
@@ -8180,7 +8182,7 @@ oknotoffbototot
 				and.b	#$fe,d0
 .nodoub:
 
-				muls	#SCREENWIDTH,d0
+				muls	#SCREEN_WIDTH,d0
 				tst.w	above
 				beq.s	nonnnnneg
 				neg.l	d0
@@ -8273,7 +8275,7 @@ texturedwaterDOUB:
 				and.b	#$fe,d0
 .nodoub:
 
-				muls	#SCREENWIDTH,d0
+				muls	#SCREEN_WIDTH,d0
 				tst.w	above
 				beq.s	.nonnnnneg
 				neg.l	d0
@@ -9196,7 +9198,7 @@ nostartalan:
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
-				muls	#SCREENWIDTH,d0
+				muls	#SCREEN_WIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 				jsr		Plr1_Fall
 
@@ -9284,7 +9286,7 @@ control2:
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
-				muls	#SCREENWIDTH,d0
+				muls	#SCREEN_WIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 
 				jsr		Plr2_Fall

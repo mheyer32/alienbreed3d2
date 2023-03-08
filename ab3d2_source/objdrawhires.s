@@ -390,7 +390,7 @@ draw_right_side_glare:
 				move.b	(a4,d0.w),(a6)
 
 .skip_black_1:
-				adda.w	#SCREENWIDTH,a6
+				adda.w	#SCREEN_WIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
 				dbra	d4,.draw_vertical_strip_1
@@ -417,7 +417,7 @@ draw_right_side_glare:
 				move.b	(a4,d0.w),(a6)
 
 .skip_black_2:
-				adda.w	#SCREENWIDTH,a6
+				adda.w	#SCREEN_WIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
 				dbra	d4,.draw_vertical_strip_2
@@ -441,7 +441,7 @@ draw_right_side_glare:
 				move.b	(a4,d0.w),(a6)
 
 .skip_black_3:
-				adda.w	#SCREENWIDTH,a6
+				adda.w	#SCREEN_WIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
 				dbra	d4,.draw_vertical_strip_3
@@ -825,7 +825,7 @@ draw_right_side:
 				move.b	(a4,d0.w*2),(a6)
 
 .skip_black_1:
-				adda.w	#SCREENWIDTH,a6
+				adda.w	#SCREEN_WIDTH,a6
 				add.l	d2,d6					; is d2 the vertical step, fraction|integer?
 				addx.w	d2,d1
 				dbra	d4,.draw_vertical_strip_1
@@ -848,7 +848,7 @@ draw_right_side:
 				move.b	(a4,d0.w*2),(a6)
 
 .skip_black_2:
-				adda.w	#SCREENWIDTH,a6			; next line on screen
+				adda.w	#SCREEN_WIDTH,a6			; next line on screen
 				add.l	d2,d6
 				addx.w	d2,d1					; is d2 the vertical step, fraction|integer?
 				dbra	d4,.draw_vertical_strip_2
@@ -869,7 +869,7 @@ draw_right_side:
 				move.b	(a4,d0.w*2),(a6)
 
 .skip_black:
-				adda.w	#SCREENWIDTH,a6
+				adda.w	#SCREEN_WIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1					; is d2 the vertical dy/dt step, fraction|integer?
 				dbra	d4,.draw_vertical_strip_3
@@ -914,7 +914,7 @@ draw_right_side_additive:
 				lsl.w	#8,d0
 				move.b	(a6),d0
 				move.b	(a4,d0.w),(a6)
-				adda.w	#SCREENWIDTH,a6
+				adda.w	#SCREEN_WIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
 				dbra	d4,.draw_vertical_strip_1
@@ -936,7 +936,7 @@ draw_right_side_additive:
 				lsl.w	#8,d0
 				move.b	(a6),d0
 				move.b	(a4,d0.w),(a6)
-				adda.w	#SCREENWIDTH,a6
+				adda.w	#SCREEN_WIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
 				dbra	d4,.draw_vertical_strip_2
@@ -958,7 +958,7 @@ draw_right_side_additive:
 				move.b	(a4,d0.w),(a6)
 
 .skip_black:
-				adda.w	#SCREENWIDTH,a6
+				adda.w	#SCREEN_WIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
 				dbra	d4,.draw_vertical_strip_3
@@ -1203,7 +1203,7 @@ INMIDDLE:
 				move.b	(a4,d0.w),(a6)				; FIXME: causing enforcer hits in Level C, illegal reads
 
 .skip_black:
-				adda.w	#SCREENWIDTH,a6
+				adda.w	#SCREEN_WIDTH,a6
 				add.l	d2,d6
 				addx.w	d2,d1
 				dbra	d4,.draw_vertical_strip
@@ -2108,7 +2108,7 @@ usegour:
 				bsr		draw_PutInLinesGouraud
 
 dontusegour:
-				move.w	#SCREENWIDTH,linedir
+				move.w	#SCREEN_WIDTH,linedir
 				move.l	Vid_FastBufferPtr_l,a6
 				tst.b	drawit(pc)
 				beq		polybehind
@@ -2295,7 +2295,7 @@ drawpol:
 				add.l	a5,d5
 				add.l	d4,d6
 				move.b	(a1,d3.w),(a3)
-				adda.w	#SCREENWIDTH,a3
+				adda.w	#SCREEN_WIDTH,a3
 				dbra	d2,drawpol
 
 pastit:
@@ -2309,7 +2309,7 @@ ontoscr:
 val				SET		0
 				REPT	256
 				dc.l	val
-val				SET		val+SCREENWIDTH
+val				SET		val+SCREEN_WIDTH
 				ENDR
 
 predoglare:
@@ -2402,7 +2402,7 @@ drawpolGL:
 				add.l	a5,d5
 				add.l	d4,d6
 				move.b	(a1,d3.w),(a3)
-				adda.w	#SCREENWIDTH,a3
+				adda.w	#SCREEN_WIDTH,a3
 				dbra	d2,drawpolGL
 
 nodlGL:
@@ -2415,7 +2415,7 @@ itsblack:
 				swap	d5
 				add.l	a5,d5
 				add.l	d4,d6
-				adda.w	#SCREENWIDTH,a3
+				adda.w	#SCREEN_WIDTH,a3
 				dbra	d2,drawpolGL
 
 				adda.w	#16,a4
@@ -2427,7 +2427,7 @@ ontoscrGL:
 val				SET		0
 				REPT	256
 				dc.l	val
-val				SET		val+SCREENWIDTH
+val				SET		val+SCREEN_WIDTH
 				ENDR
 
 tstdca:			dc.l	0
@@ -2537,7 +2537,7 @@ drawpolg:
 				add.w	d2,d7
 				swap	d2
 				move.b	(a1,d3.w),(a3)
-				adda.w	#SCREENWIDTH,a3
+				adda.w	#SCREEN_WIDTH,a3
 				dbra	d2,drawpolg
 
 nodlg:
@@ -2551,7 +2551,7 @@ ontoscrg:
 val				SET		0
 				REPT	256
 				dc.l	val
-val				SET		val+SCREENWIDTH
+val				SET		val+SCREEN_WIDTH
 				ENDR
 
 gotholesin:
@@ -2694,7 +2694,7 @@ drawpolh:
 				move.b	(a1,d3.w),(a3)
 
 .dontplot:
-				adda.w	#SCREENWIDTH,a3
+				adda.w	#SCREEN_WIDTH,a3
 				dbra	d2,drawpolh
 
 pastith:
@@ -2708,7 +2708,7 @@ ontoscrh:
 val				SET		0
 				REPT	256
 				dc.l	val
-val				SET		val+SCREENWIDTH
+val				SET		val+SCREEN_WIDTH
 				ENDR
 
 				EVEN
