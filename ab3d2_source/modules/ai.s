@@ -179,11 +179,11 @@ ai_JustDied:
 				lea		GLFT_AlienDefs_l(a2),a2
 				add.l	d0,a2
 				move.b	AlienT_SplatType_w+1(a2),d0
-				move.b	d0,TypeOfSplat
+				move.b	d0,Anim_SplatType_w
 				cmp.b	#20,d0
 				blt		.go_splutch
 
-				sub.b	#20,TypeOfSplat
+				sub.b	#20,Anim_SplatType_w
 				sub.b	#20,d0
 				ext.w	d0
 				move.l	GLF_DatabasePtr_l,a2
@@ -215,7 +215,7 @@ ai_JustDied:
 
 .found_one_free:
 				move.b	AlienT_HitPoints_w+1(a4),EntT_NumLives_b(a2)
-				move.b	TypeOfSplat,EntT_Type_b(a2)
+				move.b	Anim_SplatType_w,EntT_Type_b(a2)
 				move.b	#-1,EntT_DisplayText_w(a2)
 				move.b	#0,16(a2)
 				move.w	(a2),d4
@@ -1831,7 +1831,7 @@ ai_DoTorch:
 				move.w	4(a0),d3
 				ext.l	d3
 				asl.l	#7,d3
-				move.l	d3,BRIGHTY
+				move.l	d3,Anim_BrightY_l
 				move.w	EntT_CurrentAngle_w(a0),d4
 
 				move.w	12(a0),d3

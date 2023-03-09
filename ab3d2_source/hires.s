@@ -882,7 +882,7 @@ lop:
 				muls	#AlienT_SizeOf_l,d1
 				add.l	d1,a6
 				move.b	AlienT_SplatType_w+1(a6),d0
-				move.b	d0,TypeOfSplat
+				move.b	d0,Anim_SplatType_w
 				move.l	Plr2_RoomPtr_l,a1
 				move.w	(a1),12(a0)
 				move.w	Plr2_TmpXOff_l,newx
@@ -925,7 +925,7 @@ lop:
 				add.l	d1,a6
 
 				move.b	AlienT_SplatType_w+1(a6),d0
-				move.b	d0,TypeOfSplat
+				move.b	d0,Anim_SplatType_w
 
 				move.l	Plr1_RoomPtr_l,a1
 				move.w	(a1),12(a0)
