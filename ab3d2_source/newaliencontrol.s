@@ -138,7 +138,7 @@ Collectable:
 				tst.b	AI_NoEnemies_b
 				beq.s	.nolocks
 				move.l	EntT_DoorsHeld_w(a0),d1
-				or.l	d1,DoorLocks
+				or.l	d1,Anim_DoorAndLiftLocks_l
 .nolocks:
 				tst.b	ShotT_Worry_b(a0)
 				bne.s	.worryaboot
@@ -214,7 +214,7 @@ Activatable:
 				tst.b	AI_NoEnemies_b
 				beq.s	.nolocks
 				move.l	EntT_DoorsHeld_w(a0),d1
-				or.l	d1,DoorLocks
+				or.l	d1,Anim_DoorAndLiftLocks_l
 .nolocks
 				tst.b	ShotT_Worry_b(a0)
 				bne.s	.worryaboot
@@ -299,7 +299,7 @@ ACTIVATED:
 
 				move.w	d0,EntT_GraphicRoom_w(a0)
 ; move.l EntT_DoorsHeld_w(a0),d1
-; or.l d1,DoorLocks
+; or.l d1,Anim_DoorAndLiftLocks_l
 				tst.b	ShotT_Worry_b(a0)
 				bne.s	.worryaboot
 				rts
@@ -335,7 +335,7 @@ ACTIVATED:
 
 				bsr		ACTANIMOBJ
 
-				move.w	TempFrames,d0
+				move.w	Anim_TempFrames_w,d0
 				add.w	d0,EntT_Timer2_w(a0)
 				move.w	ObjT_ActiveTimeout_w(a2),d0
 				blt.s	.nottimeout
@@ -470,7 +470,7 @@ StillHere:
 				tst.b	AI_NoEnemies_b
 				beq.s	.nolocks
 				move.l	EntT_DoorsHeld_w(a0),d1
-				or.l	d1,DoorLocks
+				or.l	d1,Anim_DoorAndLiftLocks_l
 .nolocks
 
 				tst.b	ShotT_Worry_b(a0)

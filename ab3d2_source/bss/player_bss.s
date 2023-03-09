@@ -212,3 +212,10 @@ Plr2_AmmoCounts_vw:		ds.w	20
 Plr2_Shield_w:			ds.w	1
 Plr2_Jetpack_w:			ds.w	1
 Plr2_Weapons_vb:		ds.w	10 ; todo - convert to bytes or bitfield
+
+Plr1_GunFrame_w:		ds.w	1
+Plr2_GunFrame_w:		ds.w	1
+
+Plr1_ObsInLine_vb:		ds.b	400
+Plr2_ObsInLine_vb:		ds.b	400
+

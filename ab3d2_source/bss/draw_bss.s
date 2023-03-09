@@ -50,11 +50,11 @@ midobj_l:						ds.l	1
 boxbrights:						ds.w	250
 boxang:							ds.w	1
 
-								ds.w	SCREENWIDTH*4; draw_PolyBotTab_vw has negative offsets
-draw_PolyBotTab_vw:				ds.w	SCREENWIDTH*8
-								ds.w	SCREENWIDTH*4
-draw_PolyTopTab_vw:				ds.w	SCREENWIDTH*8
-								ds.w	SCREENWIDTH*4
+								ds.w	SCREEN_WIDTH*4; draw_PolyBotTab_vw has negative offsets
+draw_PolyBotTab_vw:				ds.w	SCREEN_WIDTH*8
+								ds.w	SCREEN_WIDTH*4
+draw_PolyTopTab_vw:				ds.w	SCREEN_WIDTH*8
+								ds.w	SCREEN_WIDTH*4
 
 draw_PartBuffer_vw: 			ds.w	4*32
 draw_PartBufferEnd:

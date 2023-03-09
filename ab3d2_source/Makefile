@@ -6,11 +6,9 @@ STRIP=m68k-amigaos-strip
 #find the toolchain's directory
 PREFIX = $(shell ./getprefix.sh "$(CC)")
 
-CHEESEY ?= 0
-
 #-DCD32VER
 
-AFLAGS = -Fhunk -m68060 -linedebug -chklabels -align -L listing.txt -DCHEESEY=${CHEESEY} -Dmnu_nocode=1
+AFLAGS = -Fhunk -m68060 -linedebug -chklabels -align -L listing.txt -Dmnu_nocode=1
 
 AFLAGS += -I../ \
 		  -I$(PREFIX)/m68k-amigaos/ndk-include \
@@ -19,7 +17,9 @@ AFLAGS += -I../ \
 
 LFLAGS = -b amigahunk -sc -l amiga -L $(PREFIX)m68k-amigaos/ndk/lib/libs
 
-all:	 hires
+all:	hires
+dev:	AFLAGS += -DDEV=1
+dev:	hires
 
 clean:
 	rm *.o
@@ -32,7 +32,7 @@ clean:
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %_stripped:	%
-	$(STRIP) --strip-debug --strip-unneeded -o $@ $< 
+	$(STRIP) --strip-debug --strip-unneeded -o $@ $<
 
 #############################################################
 #

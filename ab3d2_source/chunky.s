@@ -38,17 +38,17 @@ Vid_ConvertC2P:
 				tst.b	Vid_DoubleHeight_b
 				bne		.doubleheightFullscreen
 
-				move.w	#SCREENWIDTH,d0
+				move.w	#SCREEN_WIDTH,d0
 				move.w	Vid_LetterBoxMarginHeight_w,d3				; height of black border top/bottom
 				move.w	#FS_C2P_HEIGHT,d1
 				sub.w	d3,d1					; top letterbox
 				sub.w	d3,d1					; bottom letterbox: d1: number of lines
-				move.l	#(SCREENWIDTH/8)*256,d5
+				move.l	#(SCREEN_WIDTH/8)*256,d5
 				jsr		c2p1x1_8_c5_040_init
 
 				; scroffsy only accounts for the Y offset in the destination buffer
 				move.l	Vid_FastBufferPtr_l,a0
-				mulu.w	#SCREENWIDTH,d3
+				mulu.w	#SCREEN_WIDTH,d3
 				lea		(a0,d3.w),a0
 				move.l	Vid_DrawScreenPtr_l,a1
 				jsr		c2p1x1_8_c5_040
@@ -74,9 +74,9 @@ Vid_ConvertC2P:
 				sub.w	d3,d1					; top letterbox
 				sub.w	d3,d1					; bottom letterbox: d1: number of lines
 				moveq.l	#0,d2
-				move.l	#SCREENWIDTH/8,d4
-				move.l	#(SCREENWIDTH/8)*256,d5
-				move.l	#SCREENWIDTH,d6
+				move.l	#SCREEN_WIDTH/8,d4
+				move.l	#(SCREEN_WIDTH/8)*256,d5
+				move.l	#SCREEN_WIDTH,d6
 				jsr		c2p2x1_8_c5_gen_init
 
 				; scroffsy only accounts for the Y offset in the destination buffer
@@ -97,9 +97,9 @@ Vid_ConvertC2P:
 				ble		.nothingLeft
 
 				moveq.l	#0,d2
-				move.l	#(SCREENWIDTH/8)*2,d4
-				move.l	#(SCREENWIDTH/8)*256,d5
-				move.l	#SCREENWIDTH*2,d6
+				move.l	#(SCREEN_WIDTH/8)*2,d4
+				move.l	#(SCREEN_WIDTH/8)*256,d5
+				move.l	#SCREEN_WIDTH*2,d6
 				jsr		c2p2x1_8_c5_gen_init
 
 				; scroffsy only accounts for the Y offset in the destination buffer
@@ -122,9 +122,9 @@ Vid_ConvertC2P:
 				sub.w	d1,d3					; bottom letterbox: d3: number of lines
 				ble		.nothingLeft
 
-				move.l	#SCREENWIDTH*2,d4		; chunkymod
-				move.l	#(SCREENWIDTH/8)*2,d5	; bpl rowmod
-				move.l	#(SCREENWIDTH/8)*256,d6	; bplsize
+				move.l	#SCREEN_WIDTH*2,d4		; chunkymod
+				move.l	#(SCREEN_WIDTH/8)*2,d5	; bpl rowmod
+				move.l	#(SCREEN_WIDTH/8)*256,d6	; bplsize
 				move.l	Vid_FastBufferPtr_l,a0
 				move.l	Vid_DrawScreenPtr_l,a1
 				jsr		c2p_rect
@@ -143,12 +143,12 @@ Vid_ConvertC2P:
 				move.l	#SMALL_HEIGHT,d3		; height
 				sub.w	d1,d3					; top letterbox
 				sub.w	d1,d3					; bottom letterbox: d3: number of lines
-				move.l	#SCREENWIDTH,d4			; chunkymod
-				move.l	#SCREENWIDTH/8,d5		; bpl rowmod
-				move.l	#(SCREENWIDTH/8)*256,d6	; bplsize
+				move.l	#SCREEN_WIDTH,d4			; chunkymod
+				move.l	#SCREEN_WIDTH/8,d5		; bpl rowmod
+				move.l	#(SCREEN_WIDTH/8)*256,d6	; bplsize
 				move.l	Vid_FastBufferPtr_l,a0
 				move.l	Vid_DrawScreenPtr_l,a1
-				add.l	#(SCREENWIDTH/8)*20+(64/8),a1 ; top of regular small screen
+				add.l	#(SCREEN_WIDTH/8)*20+(64/8),a1 ; top of regular small screen
 														; c2p_rect will apply d1 offset ontop
 				jsr		c2p_rect
 
@@ -164,9 +164,9 @@ Vid_ConvertC2P:
 				sub.w	d3,d1					; top letterbox
 				sub.w	d3,d1					; bottom letterbox: d1: number of lines
 				moveq.l	#0,d2
-				move.l	#SCREENWIDTH/8,d4
-				move.l	#(SCREENWIDTH/8)*256,d5
-				move.l	#SCREENWIDTH,d6
+				move.l	#SCREEN_WIDTH/8,d4
+				move.l	#(SCREEN_WIDTH/8)*256,d5
+				move.l	#SCREEN_WIDTH,d6
 				jsr		c2p2x1_8_c5_gen_init
 
 				; scroffsy only accounts for the Y offset in the destination buffer
@@ -175,7 +175,7 @@ Vid_ConvertC2P:
 				lea		(a0,d3.w),a0
 				move.l	Vid_DrawScreenPtr_l,a1
 				; top left of small render window in chipmem
-				add.l	#(SCREENWIDTH/8)*20+(64/8),a1
+				add.l	#(SCREEN_WIDTH/8)*20+(64/8),a1
 
 				jsr		c2p2x1_8_c5_gen
 
@@ -191,9 +191,9 @@ Vid_ConvertC2P:
 				ble		.nothingLeft
 
 				moveq.l	#0,d2
-				move.l	#(SCREENWIDTH/8)*2,d4
-				move.l	#(SCREENWIDTH/8)*256,d5
-				move.l	#SCREENWIDTH*2,d6
+				move.l	#(SCREEN_WIDTH/8)*2,d4
+				move.l	#(SCREEN_WIDTH/8)*256,d5
+				move.l	#SCREEN_WIDTH*2,d6
 				jsr		c2p2x1_8_c5_gen_init
 
 				; scroffsy only accounts for the Y offset in the destination buffer
@@ -202,7 +202,7 @@ Vid_ConvertC2P:
 				lea		(a0,d3.w),a0
 				move.l	Vid_DrawScreenPtr_l,a1
 				; top left of small render window in chipmem
-				add.l	#(SCREENWIDTH/8)*20+(64/8),a1
+				add.l	#(SCREEN_WIDTH/8)*20+(64/8),a1
 
 				jsr		c2p2x1_8_c5_gen
 
@@ -218,12 +218,12 @@ Vid_ConvertC2P:
 				sub.w	d1,d3					; bottom letterbox: d3: number of lines
 				ble		.nothingLeft
 
-				move.l	#(SCREENWIDTH)*2,d4		; chunkymod
-				move.l	#(SCREENWIDTH/8)*2,d5	; bpl rowmod
-				move.l	#(SCREENWIDTH/8)*256,d6	; bplsize
+				move.l	#(SCREEN_WIDTH)*2,d4		; chunkymod
+				move.l	#(SCREEN_WIDTH/8)*2,d5	; bpl rowmod
+				move.l	#(SCREEN_WIDTH/8)*256,d6	; bplsize
 				move.l	Vid_FastBufferPtr_l,a0
 				move.l	Vid_DrawScreenPtr_l,a1
-				add.l	#(SCREENWIDTH/8)*20+(64/8),a1 ; top of regular small screen
+				add.l	#(SCREEN_WIDTH/8)*20+(64/8),a1 ; top of regular small screen
 														; c2p_rect will apply d1 offset ontop
 				jsr		c2p_rect
 
@@ -262,14 +262,14 @@ Vid_ConvertC2P:
 				sub.w	d7,d1				; top letterbox
 				sub.w	d7,d1				; bottom letterbox: d1: number of lines
 				move.w	d1,HTC
-				move.w	#(SCREENWIDTH-FS_WIDTH),MODUL ; modulo chunky
-				move.w	#(SCREENWIDTH-FS_WIDTH)/8,SCRMOD ; modulo chipmem
+				move.w	#(SCREEN_WIDTH-FS_WIDTH),MODUL ; modulo chunky
+				move.w	#(SCREEN_WIDTH-FS_WIDTH)/8,SCRMOD ; modulo chipmem
 				move.l	Vid_FastBufferPtr_l,a0
-				move.w	#SCREENWIDTH,d3
+				move.w	#SCREEN_WIDTH,d3
 				mulu.w	d7,d3
 				lea		(a0,d3.w),a0			; offset for top letterbox in renderbuffer
 				move.l	Vid_DrawScreenPtr_l,a1
-				move.w	#(SCREENWIDTH/8),d3
+				move.w	#(SCREEN_WIDTH/8),d3
 				mulu.w	d7,d3					; offset for top letterbox in screenbuffer
 				lea		(a1,d3.w),a1
 
@@ -282,17 +282,17 @@ Vid_ConvertC2P:
 				sub.w	d7,d1					; top letterbox
 				sub.w	d7,d1					; bottom letterbox: d1: number of lines
 				move.w	d1,HTC
-				move.w	#(SCREENWIDTH-SMALL_WIDTH),MODUL ; modulo chunky
-				move.w	#(SCREENWIDTH-SMALL_WIDTH)/8,SCRMOD ; modulo chipmem
+				move.w	#(SCREEN_WIDTH-SMALL_WIDTH),MODUL ; modulo chunky
+				move.w	#(SCREEN_WIDTH-SMALL_WIDTH)/8,SCRMOD ; modulo chipmem
 				move.l	Vid_FastBufferPtr_l,a0
-				move.w	#SCREENWIDTH,d3
+				move.w	#SCREEN_WIDTH,d3
 				mulu.w	d7,d3
 				lea		(a0,d3.w),a0			; offset for top letterbox in renderbuffer
 				move.l	Vid_DrawScreenPtr_l,a1
-				move.w	#(SCREENWIDTH/8),d3
+				move.w	#(SCREEN_WIDTH/8),d3
 				mulu.w	d7,d3					; offset for top letterbox in screenbuffer
 				lea		(a1,d3.w),a1
-				add.l	#(SCREENWIDTH/8)*20+(64/8),a1; top left corner of small render window in chipmem
+				add.l	#(SCREEN_WIDTH/8)*20+(64/8),a1; top left corner of small render window in chipmem
 
 .startchunkytel:
 				movem.l	d2-d7/a2-a6,-(a7)

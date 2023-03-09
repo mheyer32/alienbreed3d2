@@ -29,22 +29,24 @@ CD32VER					equ		0
 
 FS_HEIGHT_HACK			equ		1 ; 0xABADCAFE - Fullscreen height hack, set non-zero to enable
 DISPLAYMSGPORT_HACK		equ		1 ; AL - Level restart freeze hack, set non-zero to enable
-SCREEN_TITLEBAR_HACK		equ		1 ; AL - Stop title bar interactions hack, set non-zero to enable
+SCREEN_TITLEBAR_HACK	equ		1 ; AL - Stop title bar interactions hack, set non-zero to enable
 
+SCREEN_WIDTH			equ		320
+SCREEN_HEIGHT			equ		256
 
 	IFNE	FS_HEIGHT_HACK
-FS_HEIGHT				equ		240
+FS_HEIGHT				equ		SCREEN_HEIGHT-16
 FS_HEIGHT_C2P_DIFF		equ		8
 	ELSE
-FS_HEIGHT				equ		232
+FS_HEIGHT				equ		SCREEN_HEIGHT-24
 FS_HEIGHT_C2P_DIFF		equ		0
 	ENDC
 
-FS_WIDTH				equ		320
+FS_WIDTH				equ		SCREEN_WIDTH
 SMALL_WIDTH				equ		192
 SMALL_HEIGHT			equ		160
-SCREENWIDTH				equ		320
-VID_FAST_BUFFER_SIZE	equ		SCREENWIDTH*256+15		; screen size plus alignment
+
+VID_FAST_BUFFER_SIZE	equ		SCREEN_WIDTH*SCREEN_HEIGHT+15		; screen size plus alignment
 
 maxscrdiv				equ		8
 max3ddiv				equ		5
@@ -63,6 +65,7 @@ PLR_SINGLE				equ 'n' ; Single player
 				include "bss/vid_bss.s"
 				include "bss/level_bss.s"
 				include "bss/ai_bss.s"
+				include "bss/anim_bss.s"
 				include "bss/player_bss.s"
 				include "bss/draw_bss.s"
 				include "bss/zone_bss.s"
@@ -138,14 +141,9 @@ _start:
 				moveq	#INTB_VERTB,d0
 				CALLEXEC AddIntServer
 
-				lea	timername,a0
-				lea	timerrequest,a1
-				moveq	#0,d0
-				moveq	#0,d1
-				jsr	_LVOOpenDevice(a6)
-				move.l	timerrequest+IO_DEVICE,timerbase
-				move.l	d0,timerflag
-				;bne	error_exit
+				IFD DEV
+				jsr		Dev_Init
+				ENDC
 
 				IFEQ	CD32VER
 				lea		KEYInt(pc),a1
@@ -313,7 +311,7 @@ Draw_LineOfText:
 				dbra	d0,.addup
 				asr.w	#1,d1
 				neg.w	d1
-				add.w	#SCREENWIDTH,d1			; horiz pos of start x
+				add.w	#SCREEN_WIDTH,d1			; horiz pos of start x
 
 .not_centred:
 				move.w	d6,d7
@@ -578,23 +576,23 @@ noclips:
 ; move.l #Blurbfield,$dff080
 
 	IFNE	DISPLAYMSGPORT_HACK
-				;empty DisplayMsgPort and set ScreenBufferIndex to 0
+				;empty Vid_DisplayMsgPort_l and set Vid_ScreenBufferIndex_w to 0
 				;so the starting point is the same every time
-.clrMsgPort			move.l	DisplayMsgPort,a0
+.clrMsgPort			move.l	Vid_DisplayMsgPort_l,a0
 				CALLEXEC GetMsg
 				tst.l	d0
 				bne.s	.clrMsgPort
 	ENDC
 
-				clr.w	ScreenBufferIndex
+				clr.w	Vid_ScreenBufferIndex_w
 
-.tryAgain		move.l	ScreenBuffers,a1
-				move.l	MainScreen,a0
+.tryAgain		move.l	Vid_ScreenBuffers_vl,a1
+				move.l	Vid_MainScreen_l,a0
 				CALLINT	ChangeScreenBuffer
 				tst.l	d0
 				beq.s	.tryAgain
 
-				clr.b	WaitForDisplayMsg
+				clr.b	Vid_WaitForDisplayMsg_b
 
 ****************************
 				jsr		Plr_Initialise
@@ -804,7 +802,7 @@ CLRDAM:
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
-				muls	#SCREENWIDTH,d0
+				muls	#SCREEN_WIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 
 				move.w	#0,Plr1_AimSpeed_l
@@ -847,9 +845,10 @@ clrmessbuff:
 				move.l	#0,Plr2_SnapZSpdVal_l
 				move.l	#0,Plr2_SnapYVel_l
 
-				jsr	FPS_time1
-				jsr	my_timer3
-
+				IFD	DEV
+				jsr	Dev_FPSMark
+				jsr	Dev_RenderMark
+				ENDC
 lop:
 				move.w	#%110000000000,_custom+potgo
 
@@ -884,13 +883,13 @@ lop:
 				muls	#AlienT_SizeOf_l,d1
 				add.l	d1,a6
 				move.b	AlienT_SplatType_w+1(a6),d0
-				move.b	d0,TypeOfSplat
+				move.b	d0,Anim_SplatType_w
 				move.l	Plr2_RoomPtr_l,a1
 				move.w	(a1),12(a0)
 				move.w	Plr2_TmpXOff_l,newx
 				move.w	Plr2_TmpZOff_l,newz
 				move.w	#7,d2
-				jsr		ExplodeIntoBits
+				jsr		Anim_ExplodeIntoBits
 
 				move.w	#-1,12(a0)
 
@@ -927,14 +926,14 @@ lop:
 				add.l	d1,a6
 
 				move.b	AlienT_SplatType_w+1(a6),d0
-				move.b	d0,TypeOfSplat
+				move.b	d0,Anim_SplatType_w
 
 				move.l	Plr1_RoomPtr_l,a1
 				move.w	(a1),12(a0)
 				move.w	Plr1_TmpXOff_l,newx
 				move.w	Plr1_TmpZOff_l,newz
 				move.w	#7,d2
-				jsr		ExplodeIntoBits
+				jsr		Anim_ExplodeIntoBits
 				move.w	#-1,12(a0)
 
 .notmess2:
@@ -1075,10 +1074,10 @@ waitmaster:
 				; to fully produce the next frame before the last frame has been scanned out.
 				; We could move the screen flipping into its own thread that flips asynchronously.
 				; It does not seem very practical, though as this scenario
-				tst.b	WaitForDisplayMsg
+				tst.b	Vid_WaitForDisplayMsg_b
 				beq.s	.noWait
 
-				move.l	DisplayMsgPort,a0
+				move.l	Vid_DisplayMsgPort_l,a0
 				move.l	a0,a3
 				CALLEXEC WaitPort				; wait for when the old image has been displayed
 .clrMsgPort		move.l	a3,a0
@@ -1086,31 +1085,36 @@ waitmaster:
 				tst.l	d0
 				bne.s	.clrMsgPort
 
-.noWait			move.w	ScreenBufferIndex,d2
-				lea		ScreenBuffers,a1
+.noWait			move.w	Vid_ScreenBufferIndex_w,d2
+				lea		Vid_ScreenBuffers_vl,a1
 				eor.w	#1,d2					; flip  screen index
 				move.l	(a1,d2.w*4),a1			; grab ScreenBuffer pointer
 
-				move.l	MainScreen,a0
-				CALLINT	ChangeScreenBuffer		; DisplayMsgPort will be notified if this image had been fully scanned out
+				move.l	Vid_MainScreen_l,a0
+				CALLINT	ChangeScreenBuffer		; Vid_DisplayMsgPort_l will be notified if this image had been fully scanned out
 
 				tst.l	d0
 				beq.s	.failed
 
-				move.w	d2,ScreenBufferIndex
-				st.b	WaitForDisplayMsg
+				move.w	d2,Vid_ScreenBufferIndex_w
+				st.b	Vid_WaitForDisplayMsg_b
 				bra.s	.screenSwapDone
 
-.failed			clr.b	WaitForDisplayMsg		; last attempt failed, so don't wait for next message
+.failed			clr.b	Vid_WaitForDisplayMsg_b		; last attempt failed, so don't wait for next message
 
-.screenSwapDone
-				jsr	FPS_time2				;fps counter c/o Grond
-*****************************************************************
-				jsr	FPS_time1				;fps counter c/o Grond
-				jsr	Frame_time
-				jsr	my_timer2_print
-				jsr	my_timer_print	
-*****************************************************************
+.screenSwapDone:
+
+; DEVMODE INSTRUMENTATION
+
+				IFD	DEV
+				jsr	Dev_FPSReport			; fps counter c/o Grond
+				jsr	Dev_FPSMark				; fps counter c/o Grond
+				jsr	Dev_FrameReport			; Display frame time
+				jsr	Dev_RenderReport		; Display render time
+				jsr	Dev_C2PReport			; Display c2p time
+				ENDC
+
+; END DEVMODE INSTRUMENTATION
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
@@ -1158,12 +1162,12 @@ okwat:
 
 				move.w	Plr1_Health_w,Energy
 
-				move.w	FramesToDraw,TempFrames
-				cmp.w	#15,TempFrames
+				move.w	Anim_FramesToDraw_w,Anim_TempFrames_w
+				cmp.w	#15,Anim_TempFrames_w
 				blt.s	.okframe
-				move.w	#15,TempFrames
+				move.w	#15,Anim_TempFrames_w
 .okframe:
-				move.w	#0,FramesToDraw
+				move.w	#0,Anim_FramesToDraw_w
 
 *********************************************
 *********** TAKE THIS OUT *******************
@@ -1251,12 +1255,12 @@ NotOnePlayer:
 
 				jsr		SENDFIRST
 
-				move.w	FramesToDraw,TempFrames
-				cmp.w	#15,TempFrames
+				move.w	Anim_FramesToDraw_w,Anim_TempFrames_w
+				cmp.w	#15,Anim_TempFrames_w
 				blt.s	.okframe
-				move.w	#15,TempFrames
+				move.w	#15,Anim_TempFrames_w
 .okframe:
-				move.w	#0,FramesToDraw
+				move.w	#0,Anim_FramesToDraw_w
 
 				move.l	Plr1_SnapXOff_l,Plr1_TmpXOff_l
 				move.l	Plr1_SnapZOff_l,Plr1_TmpZOff_l
@@ -1301,7 +1305,7 @@ NotOnePlayer:
 				move.w	d0,plr2_TmpAngPos_w
 
 
-				move.w	TempFrames,d0
+				move.w	Anim_TempFrames_w,d0
 				swap	d0
 				move.b	Plr1_TmpSpcTap_b,d0
 				lsl.w	#8,d0
@@ -1425,7 +1429,7 @@ ASlaveShouldWaitOnHisMaster:
 				lsr.w	#8,d0
 				move.b	d0,Plr1_TmpSpcTap_b
 				swap	d0
-				move.w	d0,TempFrames
+				move.w	d0,Anim_TempFrames_w
 
 				move.b	plr2_TmpDucked_b,d0
 				or.b	Plr2_Squished_b,d0
@@ -1491,7 +1495,7 @@ doallz
 				tst.b	d3
 				beq.s	justbright
 
-				move.l	#BrightAnimTable,a4
+				move.l	#Anim_BrightTable_vw,a4
 				move.w	-2(a4,d3.w*2),d2
 
 justbright:
@@ -1513,7 +1517,7 @@ justbright:
 				tst.b	d3
 				beq.s	justbright2
 
-				move.l	#BrightAnimTable,a4
+				move.l	#Anim_BrightTable_vw,a4
 				move.w	-2(a4,d3.w*2),d2
 
 justbright2:
@@ -1554,7 +1558,7 @@ allinzone:
 				and.w	#$f,d3
 				lsr.w	#4,d4
 				add.w	#1,d4
-				move.l	#BrightAnimTable,a0
+				move.l	#Anim_BrightTable_vw,a0
 				move.w	-2(a0,d3.w*2),d3
 				ext.w	d2
 				sub.w	d2,d3
@@ -1645,7 +1649,7 @@ findaverage:
 				move.b	d0,17(a0)
 
 nosee:
-				move.w	TempFrames,d0
+				move.w	Anim_TempFrames_w,d0
 				add.w	d0,plr1_TmpHoldDown_w
 				cmp.w	#30,plr1_TmpHoldDown_w
 				blt.s	oklength
@@ -1660,7 +1664,7 @@ oklength:
 
 okstillheld:
 
-				move.w	TempFrames,d0
+				move.w	Anim_TempFrames_w,d0
 				add.w	d0,plr2_TmpHoldDown_w
 
 				cmp.w	#30,plr2_TmpHoldDown_w
@@ -1676,7 +1680,7 @@ oklength2:
 				move.w	#0,plr2_TmpHoldDown_w
 
 okstillheld2:
-				move.w	TempFrames,d1
+				move.w	Anim_TempFrames_w,d1
 				bgt.s	noze
 				moveq	#1,d1
 
@@ -1877,11 +1881,20 @@ nodrawp2:
 				clr.b	plr2_Teleported_b
 
 .notplr2:
-				jsr	my_timer4
-				jsr	my_timer1
+
+; DEVMODE INSTRUMENTATION
+				IFD DEV
+				jsr	Dev_RenderElapsed	; record drawing complete (and c2p started)
+				ENDC
+; END DEVMODE INSTRUMENTATION
+
 				jsr		Vid_ConvertC2P
-				jsr	my_timer2
-				jsr	my_timer3
+
+; DEVMODE INSTRUMENTATION
+				IFD DEV
+				jsr	Dev_C2PElapsed		; record c2p complete (and render started)
+				ENDC
+; END DEVMODE INSTRUMENTATION
 
 				move.l	#KeyMap_vb,a5
 				tst.b	$4a(a5)
@@ -1928,7 +1941,7 @@ nodrawp2:
 
 				; Check renderbuffer setup variables and clear screen
 				bsr		SetupRenderbufferSize
-				jsr		SetupDoubleheightCopperlist
+				jsr		vid_SetupDoubleheightCopperlist
 
 				bra		notdoubheight2
 
@@ -2141,7 +2154,7 @@ LoadMainPalette:
 				dbra	d0,.setCol
 				clr.l	(a0)					; terminate list
 
-				move.l	MainScreen,a0
+				move.l	Vid_MainScreen_l,a0
 				lea		sc_ViewPort(a0),a0
 				CALLGRAF LoadRGB32				; a1 still points to start of palette
 
@@ -2554,7 +2567,7 @@ DRAWAtransLINE:
 				tst.b	Vid_FullScreen_b
 				beq.s	.nooffset
 
-				add.l	#(SCREENWIDTH*40)+(48*2),a0
+				add.l	#(SCREEN_WIDTH*40)+(48*2),a0
 
 .nooffset:
 
@@ -2569,7 +2582,7 @@ DRAWAtransLINE:
 .okdown
 
 				move.w	d1,d5
-				muls	#SCREENWIDTH,d5
+				muls	#SCREEN_WIDTH,d5
 				add.l	d5,a0
 				lea		(a0,d0.w*2),a0
 
@@ -2584,7 +2597,7 @@ downlefttrans:
 				bgt.s	downmorelefttrans
 
 downleftmoretrans:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 
@@ -2601,7 +2614,7 @@ downleftmoretrans:
 				rts
 
 downmorelefttrans:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
@@ -2624,7 +2637,7 @@ downrighttrans:
 				bgt.s	downmorerighttrans
 
 downrightmoretrans:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 
@@ -2641,7 +2654,7 @@ downrightmoretrans:
 				rts
 
 downmorerighttrans:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
@@ -2679,7 +2692,7 @@ DRAWAMAPLINE:
 .okdown
 
 				move.w	d1,d5
-				muls	#SCREENWIDTH,d5
+				muls	#SCREEN_WIDTH,d5
 				add.l	d5,a0
 				lea		(a0,d0.w),a0
 
@@ -2694,7 +2707,7 @@ downleft:
 				bgt.s	downmoreleft
 
 downleftmore:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 				addq	#1,a0
@@ -2710,7 +2723,7 @@ downleftmore:
 				rts
 
 downmoreleft:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
@@ -2732,7 +2745,7 @@ downright:
 				bgt.s	downmoreright
 
 downrightmore:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 
@@ -2748,7 +2761,7 @@ downrightmore:
 				rts
 
 downmoreright:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
@@ -2778,7 +2791,7 @@ DOITFAT:
 .okdown
 
 				move.w	d1,d5
-				muls	#SCREENWIDTH,d5
+				muls	#SCREEN_WIDTH,d5
 				add.l	d5,a0
 				lea		(a0,d0.w),a0
 
@@ -2793,7 +2806,7 @@ downleftFAT:
 				bgt.s	downmoreleftFAT
 
 downleftmoreFAT:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 				addq	#1,a0
@@ -2811,12 +2824,12 @@ downleftmoreFAT:
 				rts
 
 downmoreleftFAT:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
 .linelop:
-				move.b	d4,SCREENWIDTH(a0)
+				move.b	d4,SCREEN_WIDTH(a0)
 				move.b	d4,1(a0)
 				move.b	d4,(a0)
 				add.w	d6,a0
@@ -2835,12 +2848,12 @@ downrightFAT:
 				bgt.s	downmorerightFAT
 
 downrightmoreFAT:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d2,d0
 				move.w	d2,d7
 
 .linelop:
-				move.b	d4,SCREENWIDTH(a0)
+				move.b	d4,SCREEN_WIDTH(a0)
 				move.b	d4,(a0)+
 				move.b	d4,(a0)
 				sub.w	d3,d0
@@ -2853,12 +2866,12 @@ downrightmoreFAT:
 				rts
 
 downmorerightFAT:
-				move.w	#SCREENWIDTH,d6
+				move.w	#SCREEN_WIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
 .linelop:
-				move.b	d4,SCREENWIDTH(a0)
+				move.b	d4,SCREEN_WIDTH(a0)
 				move.b	d4,1(a0)
 				move.b	d4,(a0)
 				add.w	d6,a0
@@ -2903,6 +2916,9 @@ SAVELETTER:		dc.b	'd',0
 				include	"chunky.s"
 
 				include	"pauseopts.s"
+
+				include "modules/dev_inst.s"
+
 
 ENDZONE:		dc.w	0
 
@@ -4183,39 +4199,39 @@ jumpoutofrooms:
 				moveq	#0,d0
 				move.b	Plr1_GunSelected_b,d0
 				moveq	#0,d1
-				move.b	PLR1_GunFrame,d1
+				move.b	Plr1_GunFrame_w,d1
 				bra		drawngun
 
 drawslavegun
 				moveq	#0,d0
 				move.b	Plr2_GunSelected_b,d0
 				moveq	#0,d1
-				move.b	PLR2_GunFrame,d1
+				move.b	Plr2_GunFrame_w,d1
 
 drawngun:
 NOGUNLOOK:
 				moveq	#0,d1
-				move.b	PLR1_GunFrame,d1
-				sub.w	TempFrames,d1
+				move.b	Plr1_GunFrame_w,d1
+				sub.w	Anim_TempFrames_w,d1
 				bgt.s	.nn
 				moveq	#0,d1
 .nn
-				move.b	d1,PLR1_GunFrame
+				move.b	d1,Plr1_GunFrame_w
 
 				ble.s	.donefire
-				sub.b	#1,PLR1_GunFrame
+				sub.b	#1,Plr1_GunFrame_w
 .donefire:
 
 				moveq	#0,d1
-				move.b	PLR2_GunFrame,d1
-				sub.w	TempFrames,d1
+				move.b	Plr2_GunFrame_w,d1
+				sub.w	Anim_TempFrames_w,d1
 				bgt.s	.nn2
 				moveq	#0,d1
 .nn2
-				move.b	d2,PLR2_GunFrame
+				move.b	d2,Plr2_GunFrame_w
 
 				ble.s	.donefire2
-				sub.b	#1,PLR2_GunFrame
+				sub.b	#1,Plr2_GunFrame_w
 .donefire2:
 
 				tst.b	DOANYWATER
@@ -4227,7 +4243,7 @@ NOGUNLOOK:
 				beq		nowaterfull
 				bgt		oknothalf
 				moveq	#FS_HEIGHT/2-1,d0
-				add.l	#SCREENWIDTH*FS_HEIGHT/2,a0
+				add.l	#SCREEN_WIDTH*FS_HEIGHT/2,a0
 oknothalf:
 
 				bclr.b	#1,$bfe001
@@ -4248,7 +4264,7 @@ DOSOMESCREEN:
 				move.b	(a0),d2
 				move.b	(a2,d2.w),(a0)+
 				dbra	d1,.fwa
-				add.w	#(SCREENWIDTH-SMALL_WIDTH),a0
+				add.w	#(SCREEN_WIDTH-SMALL_WIDTH),a0
 				dbra	d0,.fw
 				rts
 
@@ -4260,7 +4276,7 @@ fwa:
 				move.b	(a0),d2
 				move.b	(a2,d2.w),(a0)+
 				dbra	d1,fwa
-				add.w	#(SCREENWIDTH-FS_WIDTH),a0
+				add.w	#(SCREEN_WIDTH-FS_WIDTH),a0
 				dbra	d0,fw
 
 				rts
@@ -4886,7 +4902,7 @@ CalcPLR1InLine:
 				move.l	Lvl_ObjectDataPtr_l,a4
 				move.l	Lvl_ObjectPointsPtr_l,a0
 				move.w	Lvl_NumObjectPoints_w,d7
-				move.l	#PLR1_ObsInLine,a2
+				move.l	#Plr1_ObsInLine_vb,a2
 				move.l	#Plr1_ObjectDistances_vw,a3
 
 .objpointrotlop:
@@ -4961,7 +4977,7 @@ CalcPLR2InLine:
 				move.l	Lvl_ObjectDataPtr_l,a4
 				move.l	Lvl_ObjectPointsPtr_l,a0
 				move.w	Lvl_NumObjectPoints_w,d7
-				move.l	#PLR2_ObsInLine,a2
+				move.l	#Plr2_ObsInLine_vb,a2
 				move.l	#Plr2_ObjectDistances_vw,a3
 
 .objpointrotlop:
@@ -6611,7 +6627,7 @@ pastsides:
 
 				addq	#2,a0
 
-				move.w	#SCREENWIDTH,linedir	; moving from one horizontal line to the next
+				move.w	#SCREEN_WIDTH,linedir	; moving from one horizontal line to the next
 												; floors walk downwards
 
 ; move.l FASTBUFFER2,a6
@@ -6631,8 +6647,8 @@ pastsides:
 				move.w	above(pc),d6			; is floor above player (i.e. ceiling)
 				beq		groundfloor
 * on ceiling:
-				move.w	#-SCREENWIDTH,linedir	; ceilings are walked bottom to top
-				suba.w	#SCREENWIDTH,a6
+				move.w	#-SCREEN_WIDTH,linedir	; ceilings are walked bottom to top
+				suba.w	#SCREEN_WIDTH,a6
 groundfloor:
 
 				move.w	xoff,d6
@@ -6744,7 +6760,7 @@ pastscale:
 				move.w	Vid_CentreY_w,d7
 				btst	#0,d7
 				bne.s	.evenMiddleRoof
-				sub.w	#SCREENWIDTH,a6			; with regular nx1 rendering, we usually start at an odd line for ceiling rendering
+				sub.w	#SCREEN_WIDTH,a6			; with regular nx1 rendering, we usually start at an odd line for ceiling rendering
 
 .evenMiddleRoof	subq	#1,d7
 				sub.w	d1,d7
@@ -6777,7 +6793,7 @@ pastscale:
 				move.w	Vid_CentreY_w,d4
 				btst	#0,d4
 				beq.s	.evenMiddleFloor
-				add.w	#SCREENWIDTH,a6
+				add.w	#SCREEN_WIDTH,a6
 
 .evenMiddleFloor sub.w	d4,d7
 				subq	#1,d7
@@ -8070,7 +8086,7 @@ oknotoffbotototr
 ; asr.w #7,d3
 ; add.w d3,d0
 
-				muls	#SCREENWIDTH,d0
+				muls	#SCREEN_WIDTH,d0
 				tst.w	above
 				beq.s	nonnnnnegr
 				neg.l	d0
@@ -8167,7 +8183,7 @@ oknotoffbototot
 				and.b	#$fe,d0
 .nodoub:
 
-				muls	#SCREENWIDTH,d0
+				muls	#SCREEN_WIDTH,d0
 				tst.w	above
 				beq.s	nonnnnneg
 				neg.l	d0
@@ -8260,7 +8276,7 @@ texturedwaterDOUB:
 				and.b	#$fe,d0
 .nodoub:
 
-				muls	#SCREENWIDTH,d0
+				muls	#SCREEN_WIDTH,d0
 				tst.w	above
 				beq.s	.nonnnnneg
 				neg.l	d0
@@ -8506,7 +8522,7 @@ VBlankInterrupt:
 				add.l	#1,counter
 				add.l	#1,main_counter
 				add.l	#1,VBLCOUNT
-				subq.w	#1,animtimer
+				subq.w	#1,Anim_Timer_w
 
 				tst.l	timer					; used by menu system as delay
 				beq.s	.nodec
@@ -8727,7 +8743,7 @@ timetodamage:	dc.w	0
 SAVESAVE:		dc.w	0
 
 dosomething:
-				addq.w	#1,FramesToDraw
+				addq.w	#1,Anim_FramesToDraw_w
 				movem.l	d0-d7/a0-a6,-(a7)
 
 				jsr		NARRATOR
@@ -8847,7 +8863,6 @@ SOUNDOPTSTEXT:
 				dc.b	"                                        "
 				dc.b	"                                        "
 
-LIGHTING:		dc.w	$FFff
 OLDLTOG:		dc.w	0
 
 pastster:
@@ -8865,24 +8880,24 @@ pastster:
 
 				move.w	#$f,$dff000+dmacon
 				move.l	#Aud_Null1_vw,$dff0a0
-				move.w	#100,$dff0a4
-				move.w	#443,$dff0a6
-				move.w	#63,$dff0a8
+				move.w	#100,$dff0a4 ; size
+				move.w	#443,$dff0a6 ; period
+				move.w	#63,$dff0a8  ; volume
 
 				move.l	#Aud_Null2_vw,$dff0b0
-				move.w	#100,$dff0b4
-				move.w	#443,$dff0b6
-				move.w	#63,$dff0b8
+				move.w	#100,$dff0b4 ; size
+				move.w	#443,$dff0b6 ; period
+				move.w	#63,$dff0b8  ; volume
 
 				move.l	#Aud_Null4_vw,$dff0c0
-				move.w	#100,$dff0c4
-				move.w	#443,$dff0c6
-				move.w	#63,$dff0c8
+				move.w	#100,$dff0c4 ; size
+				move.w	#443,$dff0c6 ; period
+				move.w	#63,$dff0c8  ; volume
 
 				move.l	#Aud_Null3_vw,$dff0d0
-				move.w	#100,$dff0d4
-				move.w	#443,$dff0d6
-				move.w	#63,$dff0d8
+				move.w	#100,$dff0d4 ; size
+				move.w	#443,$dff0d6 ; period
+				move.w	#63,$dff0d8  ; volume
 
 				move.l	#Aud_EmptyBuffer_vl,pos0LEFT
 				move.l	#Aud_EmptyBuffer_vl,pos1LEFT
@@ -8921,7 +8936,7 @@ notogglesound2:
 				st		OLDLTOG
 
 				move.l	#LIGHTINGTEXT,d0
-				not.b	LIGHTING
+				not.b	Anim_LightingEnabled_b
 				beq.s	.noon
 				add.l	#160,d0
 .noon:
@@ -8961,6 +8976,7 @@ pastlighttext:
 
 nolighttoggle:
 				clr.b	OLDLTOG
+
 nolighttoggle2:
 
 
@@ -9131,7 +9147,7 @@ digitlop2
 
 				move.l	#TimerScr+10+24*20,a0
 				moveq	#0,d0
-				move.w	FramesToDraw,d0
+				move.w	Anim_FramesToDraw_w,d0
 				move.l	#draw_Digits_vb,a1
 				move.w	#2,d2
 digitlop3
@@ -9183,7 +9199,7 @@ nostartalan:
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
-				muls	#SCREENWIDTH,d0
+				muls	#SCREEN_WIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 				jsr		Plr1_Fall
 
@@ -9271,7 +9287,7 @@ control2:
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
-				muls	#SCREENWIDTH,d0
+				muls	#SCREEN_WIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 
 				jsr		Plr2_Fall
@@ -10778,8 +10794,6 @@ Vid_TextScreenPtr_l:		dc.l	0
 
 				SECTION	bss_c,bss_c
 				align 8
-
-PanelKeys:		;		I'm pretty sure these are not needed anymore, but there's code referencing it
 
 ; Audio
 Aud_Null1_vw:				ds.w	500

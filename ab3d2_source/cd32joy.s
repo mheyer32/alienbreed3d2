@@ -154,7 +154,7 @@ _ReadJoy1
 				and.l	#JPF_BUTTON_PLAY,d0
 				beq.s	.nonextweappre
 
-				tst.b	PLR1_GunFrame
+				tst.b	Plr1_GunFrame_w
 				bne.s	.nonextweappre
 
 				tst.b	.heldlast
@@ -340,7 +340,7 @@ _ReadJoy2
 				and.l	#JPF_BUTTON_PLAY,d0
 				beq.s	.nonextweappre
 
-				tst.b	PLR2_GunFrame
+				tst.b	Plr2_GunFrame_w
 				bne.s	.nonextweappre
 
 				tst.b	.heldlast

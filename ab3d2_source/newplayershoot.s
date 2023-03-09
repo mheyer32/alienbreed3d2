@@ -11,7 +11,7 @@ Plr1_Shot:
 				tst.w	Plr1_TimeToShoot_w
 				beq.s	.can_fire
 
-				move.w	TempFrames,d0
+				move.w	Anim_TempFrames_w,d0
 				sub.w	d0,Plr1_TimeToShoot_w
 				bge		.no_fire
 
@@ -56,7 +56,7 @@ Plr1_Shot:
 				move.l	#0,targetydiff
 				move.l	#$7fff,d1
 				move.l	Lvl_ZoneAddsPtr_l,a3
-				move.l	#PLR1_ObsInLine,a1
+				move.l	#Plr1_ObsInLine_vb,a1
 				move.l	Lvl_ObjectDataPtr_l,a0
 				move.l	#Plr1_ObjectDistances_vw,a2
 
@@ -162,7 +162,7 @@ Plr1_Shot:
 
 .notplr1:
 				move.w	ShootT_Delay_w(a6),Plr1_TimeToShoot_w
-				move.b	MaxFrame,PLR1_GunFrame
+				move.b	MaxFrame,Plr1_GunFrame_w
 				sub.w	d1,d2
 				move.l	#Plr1_AmmoCounts_vw,a2
 				add.w	BULTYPE,a2
@@ -337,7 +337,7 @@ Plr2_Shot:
 				tst.w	Plr2_TimeToShoot_w
 				beq.s	.can_fire
 
-				move.w	TempFrames,d0
+				move.w	Anim_TempFrames_w,d0
 				sub.w	d0,Plr2_TimeToShoot_w
 				bge		.no_fire
 
@@ -381,7 +381,7 @@ Plr2_Shot:
 				move.l	#0,targetydiff
 				move.l	#$7fff,d1
 				move.l	Lvl_ZoneAddsPtr_l,a3
-				move.l	#PLR2_ObsInLine,a1
+				move.l	#Plr2_ObsInLine_vb,a1
 				move.l	Lvl_ObjectDataPtr_l,a0
 				move.l	#Plr2_ObjectDistances_vw,a2
 
@@ -486,7 +486,7 @@ Plr2_Shot:
 
 .notplr2:
 				move.w	ShootT_Delay_w(a6),Plr2_TimeToShoot_w
-				move.b	MaxFrame,PLR2_GunFrame
+				move.b	MaxFrame,Plr2_GunFrame_w
 				sub.w	d1,d2
 				move.l	#Plr2_AmmoCounts_vw,a2
 				add.w	BULTYPE,a2
@@ -670,7 +670,7 @@ tstfire:		dc.w	0
 
 plr1_FireProjectile:
 				move.l	#%100011,d7
-				move.b	MaxFrame,PLR1_GunFrame
+				move.b	MaxFrame,Plr1_GunFrame_w
 				move.l	Plr1_ObjectPtr_l,a2
 				move.w	ShootT_BulCount_w(a6),d5
 				move.w	d5,d6
@@ -683,7 +683,7 @@ plr1_FireProjectile:
 
 plr2_FireProjectile:
 				move.l	#%10011,d7
-				move.b	MaxFrame,PLR2_GunFrame
+				move.b	MaxFrame,Plr2_GunFrame_w
 				move.l	Plr2_ObjectPtr_l,a2
 				move.w	ShootT_BulCount_w(a6),d5
 				move.w	d5,d6
