@@ -156,7 +156,7 @@ Plr2_AlwaysKeys
 				tst.b	(a5,d7.w)
 				beq.s	.nonextweappre
 
-; tst.b PLR2_GunFrame
+; tst.b Plr2_GunFrame_w
 ; bne.s .nonextweappre
 
 				tst.b	gunheldlast

@@ -1,31 +1,10 @@
-				align 4
-; todo BSS ?
-Anim_BrightY_l:		dc.l	0
-anim_MiddleRoom_l:	dc.l	0
-
-; Union
-Anim_DoorAndLiftLocks_l:	dc.w	0 ; MSW accessed as long
-anim_LiftOnlyLocks_w:		dc.w	0 ; LSW accessed independently as word
-
-; Word data
-Anim_SplatType_w:		dc.w	0
-anim_MiddleX_w:			dc.w	0
-anim_MiddleZ_w:			dc.w	0
-anim_DoneFlames_w:		dc.w	0
-
-Anim_FramesToDraw_w:	dc.w	0
-Anim_TempFrames_w:		dc.w	0
-anim_TimeToNoise_w:		dc.w	0
-anim_OddEven_w:			dc.w	0
-
-anim_FloorMoveSpeed_w:	dc.w	0
-
-Anim_BrightTable_vw: ds.w	20
-
+				align 2
 ; Byte data
 Anim_LightingEnabled_b:	dc.b	$ff
 anim_LiftAtTop_b:		dc.b	0
 anim_LiftAtBottom_b:	dc.b	0
+anim_DoorOpen_b:		dc.b	0
+anim_DoorClosed_b:		dc.b	0
 
 				align 4
 ; TODO - the editors define up to 16 animation types, this looks like a buffer overflow in the making
@@ -130,7 +109,6 @@ bright_points:
 				lea		(a2,d4.w*4),a2
 
 ; Do a room.
-
 room_point_loop:
 				move.w	(a5)+,d4
 				blt		bright_points
@@ -785,12 +763,12 @@ objmoveanim:
 				move.w	#0,plr2_FloorSpd_w
 				bsr		LiftRoutine
 
-				cmp	#0,animtimer		;animtimer decriment moved to VBlankInterrupt:
+				cmp	#0,Anim_Timer_w		;Anim_Timer_w decriment moved to VBlankInterrupt:
 				bgt.s	.notzero
 
 				bsr		brightanim
 
-				move.w	#5,animtimer	;was 2 AL
+				move.w	#5,Anim_Timer_w	;was 2 AL
 				move.l	otherrip,d0		;what are these for?
 				move.l	RipTear,otherrip	;""
 				move.l	d0,RipTear		;""
@@ -852,12 +830,12 @@ okzone:
 				rts
 
 LiftRoutine:
-				move.w	#-1,ThisDoor
+				move.w	#-1,anim_ThisDoor_w
 				move.l	Lvl_LiftDataPtr_l,a0
 				move.l	#anim_LiftHeightTable_vw,a6
 
 doalift:
-				add.w	#1,ThisDoor
+				add.w	#1,anim_ThisDoor_w
 				move.w	(a0)+,d0				; bottom of lift movement
 				cmp.w	#999,d0
 				bne		notallliftsdone
@@ -870,18 +848,18 @@ doalift:
 
 notallliftsdone:
 				move.w	(a0)+,d1				; top of lift movement.
-				move.w	(a0)+,OPENINGSPEED
-				neg.w	OPENINGSPEED
-				move.w	(a0)+,CLOSINGSPEED
-				move.w	(a0)+,STAYOPENFOR
-				move.w	(a0)+,OPENINGSFX
-				move.w	(a0)+,CLOSINGSFX
-				move.w	(a0)+,OPENSFX
-				move.w	(a0)+,CLOSEDSFX
-				subq.w	#1,OPENINGSFX
-				subq.w	#1,CLOSINGSFX
-				subq.w	#1,OPENSFX
-				subq.w	#1,CLOSEDSFX
+				move.w	(a0)+,anim_OpeningSpeed_w
+				neg.w	anim_OpeningSpeed_w
+				move.w	(a0)+,anim_ClosingSpeed_w
+				move.w	(a0)+,anim_OpenDuration_w
+				move.w	(a0)+,anim_OpeningSoundFX_w
+				move.w	(a0)+,anim_ClosingSoundFX_w
+				move.w	(a0)+,anim_OpenedSoundFX_w
+				move.w	(a0)+,anim_ClosedSoundFX_w
+				subq.w	#1,anim_OpeningSoundFX_w
+				subq.w	#1,anim_ClosingSoundFX_w
+				subq.w	#1,anim_OpenedSoundFX_w
+				subq.w	#1,anim_ClosedSoundFX_w
 				move.w	(a0)+,d2
 				move.w	(a0)+,d3
 				sub.w	Plr1_TmpXOff_l,d2
@@ -923,7 +901,7 @@ notallliftsdone:
 				beq.s	.nonoise3
 
 				move.w	#50,Noisevol
-				move.w	CLOSEDSFX,Samplenum
+				move.w	anim_ClosedSoundFX_w,Samplenum
 				blt.s	.nonoise3
 
 				move.b	#1,chanpick
@@ -949,7 +927,7 @@ notallliftsdone:
 
 				move.w	#0,(a6)
 				move.w	#50,Noisevol
-				move.w	OPENSFX,Samplenum
+				move.w	anim_OpenedSoundFX_w,Samplenum
 				blt.s	.nonoise
 
 				move.b	#1,chanpick
@@ -1009,7 +987,7 @@ notallliftsdone:
 				move.w	(a0)+,d2				; conditions
 ; and.w Conditions,d2
 ; cmp.w -2(a0),d2
-				move.w	ThisDoor,d2
+				move.w	anim_ThisDoor_w,d2
 				move.w	anim_LiftOnlyLocks_w,d5
 				btst	d2,d5
 				beq.s	.satisfied
@@ -1066,7 +1044,7 @@ liftwalls:
 
 				move.w	d7,(a5)
 				move.w	#50,Noisevol
-				move.w	ACTIONNOISE,Samplenum
+				move.w	anim_ActionSoundFX_w,Samplenum
 				blt.s	.nothinghit
 
 				move.b	#1,chanpick
@@ -1093,7 +1071,7 @@ nomoreliftwalls:
 				rts
 
 tstliftlower:
-				move.w	CLOSINGSFX,ACTIONNOISE
+				move.w	anim_ClosingSoundFX_w,anim_ActionSoundFX_w
 				cmp.b	#1,d5
 				blt.s	lift0
 
@@ -1111,7 +1089,7 @@ lift0:
 				beq.s	.noplr1
 
 				move.w	#%100000000,d1
-				move.w	CLOSINGSPEED,d7
+				move.w	anim_ClosingSpeed_w,d7
 				tst.b	plr1_StoodOnLift_b
 				beq.s	.noplr1
 
@@ -1123,7 +1101,7 @@ lift0:
 				beq.s	.noplr2
 
 				or.w	#%100000000000,d1
-				move.w	CLOSINGSPEED,d7
+				move.w	anim_ClosingSpeed_w,d7
 				tst.b	plr2_StoodOnLift_b
 				beq.s	.noplr2
 
@@ -1134,7 +1112,7 @@ lift0:
 				bra		backfromlift
 
 lift1:
-				move.w	CLOSINGSPEED,d7
+				move.w	anim_ClosingSpeed_w,d7
 				tst.b	plr1_StoodOnLift_b
 				bne.s	lift1b
 
@@ -1150,7 +1128,7 @@ lift1b:
 
 lift2:
 				move.w	#$8000,d1
-				move.w	CLOSINGSPEED,d7
+				move.w	anim_ClosingSpeed_w,d7
 				bra		backfromlift
 
 lift3:
@@ -1158,7 +1136,7 @@ lift3:
 				bra		backfromlift
 
 tstliftraise:
-				move.w	OPENINGSFX,ACTIONNOISE
+				move.w	anim_OpeningSoundFX_w,anim_ActionSoundFX_w
 				cmp.b	#1,d4
 				blt.s	rlift0
 
@@ -1175,7 +1153,7 @@ rlift0:
 				beq.s	.noplr1
 
 				move.w	#%100000000,d1
-				move.w	OPENINGSPEED,d7
+				move.w	anim_OpeningSpeed_w,d7
 				tst.b	plr1_StoodOnLift_b
 				beq.s	.noplr1
 
@@ -1187,7 +1165,7 @@ rlift0:
 				beq.s	.noplr2
 
 				or.w	#%100000000000,d1
-				move.w	OPENINGSPEED,d7
+				move.w	anim_OpeningSpeed_w,d7
 				tst.b	plr2_StoodOnLift_b
 				beq.s	.noplr2
 
@@ -1198,7 +1176,7 @@ rlift0:
 				bra		backfromlift
 
 rlift1:
-				move.w	OPENINGSPEED,d7
+				move.w	anim_OpeningSpeed_w,d7
 				tst.b	plr1_StoodOnLift_b
 				bne.s	rlift1b
 
@@ -1214,35 +1192,23 @@ rlift1b:
 
 rlift2:
 				move.w	#$8000,d1
-				move.w	OPENINGSPEED,d7
+				move.w	anim_OpeningSpeed_w,d7
 				bra		backfromlift
 
 rlift3:
 				move.w	#$0,d1
 				bra		backfromlift
 
-animtimer:		dc.w	0
-doordir:		dc.w	-1
-doorpos:		dc.w	-9
-dooropen:		dc.b	0
-doorclosed:		dc.b	0
-ThisDoor:		dc.w	0
-OPENINGSPEED:	dc.w	0
-CLOSINGSPEED:	dc.w	0
-STAYOPENFOR:	dc.w	0
-OPENINGSFX:		dc.w	0
-CLOSINGSFX:		dc.w	0
-OPENSFX:		dc.w	0
-CLOSEDSFX:		dc.w	0
+
 
 				even
 DoorRoutine:
 				move.l	#anim_DoorHeightTable_vw,a6
 				move.l	Lvl_DoorDataPtr_l,a0
-				move.w	#-1,ThisDoor
+				move.w	#-1,anim_ThisDoor_w
 
 doadoor:
-				add.w	#1,ThisDoor
+				add.w	#1,anim_ThisDoor_w
 				move.w	(a0)+,d0				; bottom of door movement
 				cmp.w	#999,d0
 				bne		notalldoorsdone
@@ -1253,18 +1219,18 @@ doadoor:
 
 notalldoorsdone:
 				move.w	(a0)+,d1				; top of door movement.
-				move.w	(a0)+,OPENINGSPEED
-				neg.w	OPENINGSPEED
-				move.w	(a0)+,CLOSINGSPEED
-				move.w	(a0)+,STAYOPENFOR
-				move.w	(a0)+,OPENINGSFX
-				move.w	(a0)+,CLOSINGSFX
-				move.w	(a0)+,OPENSFX
-				move.w	(a0)+,CLOSEDSFX
-				subq.w	#1,OPENINGSFX
-				subq.w	#1,CLOSINGSFX
-				subq.w	#1,OPENSFX
-				subq.w	#1,CLOSEDSFX
+				move.w	(a0)+,anim_OpeningSpeed_w
+				neg.w	anim_OpeningSpeed_w
+				move.w	(a0)+,anim_ClosingSpeed_w
+				move.w	(a0)+,anim_OpenDuration_w
+				move.w	(a0)+,anim_OpeningSoundFX_w
+				move.w	(a0)+,anim_ClosingSoundFX_w
+				move.w	(a0)+,anim_OpenedSoundFX_w
+				move.w	(a0)+,anim_ClosedSoundFX_w
+				subq.w	#1,anim_OpeningSoundFX_w
+				subq.w	#1,anim_ClosingSoundFX_w
+				subq.w	#1,anim_OpenedSoundFX_w
+				subq.w	#1,anim_ClosedSoundFX_w
 				move.w	(a0)+,d2
 				move.w	(a0)+,d3
 				sub.w	Plr1_TmpXOff_l,d2
@@ -1296,13 +1262,13 @@ notalldoorsdone:
 				add.w	d2,d3
 				move.w	2(a0),d2
 				cmp.w	d3,d0
-				sle		doorclosed
+				sle		anim_DoorClosed_b
 				bgt.s	nolower
 
 				tst.w	d2
 				beq.s	.nonoise
 				move.w	#50,Noisevol
-				move.w	CLOSEDSFX,Samplenum
+				move.w	anim_ClosedSoundFX_w,Samplenum
 				blt.s	.nonoise
 
 				move.b	#1,chanpick
@@ -1318,7 +1284,7 @@ notalldoorsdone:
 
 nolower:
 				cmp.w	d3,d1
-				sge		dooropen
+				sge		anim_DoorOpen_b
 				blt.s	noraise
 
 				tst.w	d2
@@ -1326,7 +1292,7 @@ nolower:
 
 				move.w	#0,(a6)
 				move.w	#50,Noisevol
-				move.w	OPENSFX,Samplenum
+				move.w	anim_OpenedSoundFX_w,Samplenum
 				blt.s	.nonoise
 
 				move.b	#1,chanpick
@@ -1377,7 +1343,7 @@ NOTMOVING:
 				bne.s	NotGoBackUp
 
 .gobackup:
-				tst.b	dooropen
+				tst.b	anim_DoorOpen_b
 				bne.s	NotGoBackUp
 
 				tst.w	d2
@@ -1392,7 +1358,7 @@ NOTMOVING:
 NotGoBackUp:
 				move.w	(a0)+,d2				; conditions
 ; and.w Conditions,d2
-				move.w	ThisDoor,d2
+				move.w	anim_ThisDoor_w,d2
 				move.w	Anim_DoorAndLiftLocks_l,d5
 				btst	d2,d5
 				beq.s	satisfied
@@ -1424,10 +1390,10 @@ satisfied:
 				moveq	#0,d5
 				move.b	(a0)+,d5
 				move.b	(a0)+,d4
-				tst.b	dooropen
+				tst.b	anim_DoorOpen_b
 				bne		tstdoortoclose
 
-				tst.b	doorclosed
+				tst.b	anim_DoorClosed_b
 				bne		tstdoortoopen
 
 				move.w	#$0,d1
@@ -1448,7 +1414,7 @@ doorwalls:
 
 				move.w	d7,(a5)
 				move.w	#50,Noisevol
-				move.w	ACTIONNOISE,Samplenum
+				move.w	anim_ActionSoundFX_w,Samplenum
 				blt.s	nothinghit
 
 				move.b	#1,chanpick
@@ -1474,10 +1440,8 @@ nomoredoorwalls:
 
 				rts
 
-ACTIONNOISE:	dc.w	0
-
 tstdoortoopen:
-				move.w	OPENINGSFX,ACTIONNOISE
+				move.w	anim_OpeningSoundFX_w,anim_ActionSoundFX_w
 				cmp.w	#1,d5
 				blt.s	door0
 
@@ -1507,27 +1471,27 @@ door0:
 				or.w	#%100000000000,d1
 
 .noplr2:
-				move.w	OPENINGSPEED,d7
+				move.w	anim_OpeningSpeed_w,d7
 				bra		backfromtst
 
 door1:
 				move.w	#%100100000000,d1
-				move.w	OPENINGSPEED,d7
+				move.w	anim_OpeningSpeed_w,d7
 				bra		backfromtst
 
 door2:
 				move.w	#%10000000000,d1
-				move.w	OPENINGSPEED,d7
+				move.w	anim_OpeningSpeed_w,d7
 				bra		backfromtst
 
 door3:
 				move.w	#%1000000000,d1
-				move.w	OPENINGSPEED,d7
+				move.w	anim_OpeningSpeed_w,d7
 				bra		backfromtst
 
 door4:
 				move.w	#$8000,d1
-				move.w	OPENINGSPEED,d7
+				move.w	anim_OpeningSpeed_w,d7
 				bra		backfromtst
 
 door5:
@@ -1538,20 +1502,20 @@ tstdoortoclose:
 				move.w	Anim_TempFrames_w,d1
 				add.w	(a6),d1
 				move.w	d1,(a6)
-				cmp.w	STAYOPENFOR,d1
+				cmp.w	anim_OpenDuration_w,d1
 				bge.s	.oktoclose
 
 				move.w	#1,d4
 
 .oktoclose:
-				move.w	CLOSINGSFX,ACTIONNOISE
+				move.w	anim_ClosingSoundFX_w,anim_ActionSoundFX_w
 				tst.w	d4
 				beq.s	dclose0
 
 				bra.s	dclose1
 
 dclose0:
-				move.w	CLOSINGSPEED,d7
+				move.w	anim_ClosingSpeed_w,d7
 				move.w	#$8000,d1
 				bra		backfromtst
 
@@ -1732,42 +1696,18 @@ p2_SpaceIsPressed:
 .NotCloseEnough:
 				bra		backtoend
 
-prot1:			dc.w	0
-tempGotBigGun:	dc.w	0
-tempGunDamage:	dc.w	0
-tempGunNoise:	dc.w	1
+				align 4
 tempxoff:		dc.w	0
 tempzoff:		dc.w	0
 tempRoompt:		dc.l	0
 
-PLR1_GotBigGun:	dc.w	0
-PLR1_GunDamage:	dc.w	0
-PLR1_GunNoise:	dc.w	0
-PLR2_GotBigGun:	dc.w	0
-PLR2_GunDamage:	dc.w	0
-PLR2_GunNoise:	dc.w	0
 bulyspd:		dc.w	0
 closedist:		dc.w	0
 
-PLR1_ObsInLine:
-				ds.b	400
-PLR2_ObsInLine:
-				ds.b	400
-
-rotcount:
-				dc.w	0
-
-shotvels:		ds.l	20
-
 				include	"newplayershoot.s"
 
-PLR1_GunFrame:	dc.w	0
-PLR2_GunFrame:	dc.w	0
-NUMZONES:		dc.w	0
 
-duh:			dc.w	0
-double:			dc.w	0
-ivescreamed:	dc.w	0
+NUMZONES:		dc.w	0
 
 ObjectHandler:
 				move.l	#ObjectWorkspace_vl,WorkspacePtr_l
@@ -1837,16 +1777,16 @@ JUMPBULLET:
 				jsr		ItsABullet
 				bra		doneobj
 
-ItsAGasPipe:
-				clr.b	ShotT_Worry_b(a0)
-				move.w	Anim_TempFrames_w,d0
-				tst.w	EntT_Timer3_w(a0)
-				ble.s	maybeflame
+;ItsAGasPipe:
+;				clr.b	ShotT_Worry_b(a0)
+;				move.w	Anim_TempFrames_w,d0
+;				tst.w	EntT_Timer3_w(a0)
+;				ble.s	maybeflame
 
-				sub.w	d0,EntT_Timer3_w(a0)
-				move.w	#5,EntT_Timer2_w(a0)
-				move.w	#10,EntT_Timer4_w(a0)
-				rts
+;				sub.w	d0,EntT_Timer3_w(a0)
+;				move.w	#5,EntT_Timer2_w(a0)
+;				move.w	#10,EntT_Timer4_w(a0)
+;				rts
 
 maybeflame:
 				sub.w	d0,EntT_Timer4_w(a0)
@@ -1936,7 +1876,7 @@ notdoneflame:
 
 				include	"newaliencontrol.s"
 
-nextCPt:		dc.w	0
+;nextCPt:		dc.w	0
 
 RipTear:		dc.l	256*17*65536
 otherrip:		dc.l	256*18*65536
@@ -1948,9 +1888,9 @@ Conditions:		dc.l	0
 ; Address of Frame. (l)
 ; height offset (w)
 
-tsta:			dc.l	0
+;tsta:			dc.l	0
 timeout:		dc.w	0
-BRIGHTNESS:		dc.w	0
+anim_Brightness_w:		dc.w	0
 
 ItsABullet:
 				move.b	#0,timeout
@@ -2009,14 +1949,14 @@ noworrylife:
 				move.b	1(a1,d1.w),11(a0)
 				move.b	#6,10(a0)
 				move.w	2(a1,d1.w),6(a0)
-				move.b	5(a1,d1.w),BRIGHTNESS
+				move.b	5(a1,d1.w),anim_Brightness_w
 				bra.s	.donegraph
 
 .bitmapgraph:
 				move.b	(a1,d1.w),9(a0)
 				move.b	1(a1,d1.w),11(a0)
 				move.w	2(a1,d1.w),6(a0)
-				move.b	5(a1,d1.w),BRIGHTNESS
+				move.b	5(a1,d1.w),anim_Brightness_w
 				bra.s	.donegraph
 
 .glaregraph:
@@ -2026,7 +1966,7 @@ noworrylife:
 				move.w	d0,8(a0)
 				move.b	1(a1,d1.w),11(a0)
 				move.w	2(a1,d1.w),6(a0)
-				move.b	5(a1,d1.w),BRIGHTNESS
+				move.b	5(a1,d1.w),anim_Brightness_w
 
 .donegraph:
 				addq	#1,d2
@@ -2042,7 +1982,7 @@ noworrylife:
 notdonepopping:
 				move.b	d2,ShotT_Anim_b(a0)
 				moveq	#0,d0
-				move.b	BRIGHTNESS,d0
+				move.b	anim_Brightness_w,d0
 				beq.s	.nobright
 
 				neg.w	d0
@@ -2082,14 +2022,14 @@ notpopping:
 				move.b	1(a1,d1.w),11(a0)
 				move.b	#6,10(a0)
 				move.w	2(a1,d1.w),6(a0)
-				move.b	5(a1,d1.w),BRIGHTNESS
+				move.b	5(a1,d1.w),anim_Brightness_w
 				bra.s	.donegraph
 
 .bitmapgraph:
 				move.b	(a1,d1.w),9(a0)
 				move.b	1(a1,d1.w),11(a0)
 				move.w	2(a1,d1.w),6(a0)
-				move.b	5(a1,d1.w),BRIGHTNESS
+				move.b	5(a1,d1.w),anim_Brightness_w
 				bra.s	.donegraph
 
 .glaregraph:
@@ -2099,7 +2039,7 @@ notpopping:
 				move.w	d0,8(a0)
 				move.b	1(a1,d1.w),11(a0)
 				move.w	2(a1,d1.w),6(a0)
-				move.b	5(a1,d1.w),BRIGHTNESS
+				move.b	5(a1,d1.w),anim_Brightness_w
 
 .donegraph:
 				addq	#1,d2
@@ -2335,7 +2275,7 @@ lalal:
 				jsr		MoveObject
 
 				moveq	#0,d0
-				move.b	BRIGHTNESS,d0
+				move.b	anim_Brightness_w,d0
 				beq.s	.nobright
 
 				neg.w	d0
@@ -2802,12 +2742,12 @@ BIGBACK:
 				rts
 
 
-MaxDamage:		dc.w	0
+
 
 ComputeBlast:
 				clr.w	anim_DoneFlames_w
 				move.w	d0,d6
-				move.w	d0,MaxDamage
+				move.w	d0,anim_MaxDamage_w
 				move.w	d0,d1
 				ext.l	d6
 				neg.w	d1
@@ -2955,10 +2895,10 @@ OkItsnotzero:
 				move.w	d6,d5
 				muls	d3,d5
 				asr.l	#5,d5
-				cmp.w	MaxDamage,d5
+				cmp.w	anim_MaxDamage_w,d5
 				blt.s	okdamage
 
-				move.w	MaxDamage,d5
+				move.w	anim_MaxDamage_w,d5
 
 okdamage:
 				add.b	d5,EntT_DamageTaken_b(a2)
@@ -3149,5 +3089,3 @@ DOFLAMES:
 
 .nomore:
 				rts
-
-

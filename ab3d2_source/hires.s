@@ -65,6 +65,7 @@ PLR_SINGLE				equ 'n' ; Single player
 				include "bss/vid_bss.s"
 				include "bss/level_bss.s"
 				include "bss/ai_bss.s"
+				include "bss/anim_bss.s"
 				include "bss/player_bss.s"
 				include "bss/draw_bss.s"
 				include "bss/zone_bss.s"
@@ -4198,39 +4199,39 @@ jumpoutofrooms:
 				moveq	#0,d0
 				move.b	Plr1_GunSelected_b,d0
 				moveq	#0,d1
-				move.b	PLR1_GunFrame,d1
+				move.b	Plr1_GunFrame_w,d1
 				bra		drawngun
 
 drawslavegun
 				moveq	#0,d0
 				move.b	Plr2_GunSelected_b,d0
 				moveq	#0,d1
-				move.b	PLR2_GunFrame,d1
+				move.b	Plr2_GunFrame_w,d1
 
 drawngun:
 NOGUNLOOK:
 				moveq	#0,d1
-				move.b	PLR1_GunFrame,d1
+				move.b	Plr1_GunFrame_w,d1
 				sub.w	Anim_TempFrames_w,d1
 				bgt.s	.nn
 				moveq	#0,d1
 .nn
-				move.b	d1,PLR1_GunFrame
+				move.b	d1,Plr1_GunFrame_w
 
 				ble.s	.donefire
-				sub.b	#1,PLR1_GunFrame
+				sub.b	#1,Plr1_GunFrame_w
 .donefire:
 
 				moveq	#0,d1
-				move.b	PLR2_GunFrame,d1
+				move.b	Plr2_GunFrame_w,d1
 				sub.w	Anim_TempFrames_w,d1
 				bgt.s	.nn2
 				moveq	#0,d1
 .nn2
-				move.b	d2,PLR2_GunFrame
+				move.b	d2,Plr2_GunFrame_w
 
 				ble.s	.donefire2
-				sub.b	#1,PLR2_GunFrame
+				sub.b	#1,Plr2_GunFrame_w
 .donefire2:
 
 				tst.b	DOANYWATER
@@ -4901,7 +4902,7 @@ CalcPLR1InLine:
 				move.l	Lvl_ObjectDataPtr_l,a4
 				move.l	Lvl_ObjectPointsPtr_l,a0
 				move.w	Lvl_NumObjectPoints_w,d7
-				move.l	#PLR1_ObsInLine,a2
+				move.l	#Plr1_ObsInLine_vb,a2
 				move.l	#Plr1_ObjectDistances_vw,a3
 
 .objpointrotlop:
@@ -4976,7 +4977,7 @@ CalcPLR2InLine:
 				move.l	Lvl_ObjectDataPtr_l,a4
 				move.l	Lvl_ObjectPointsPtr_l,a0
 				move.w	Lvl_NumObjectPoints_w,d7
-				move.l	#PLR2_ObsInLine,a2
+				move.l	#Plr2_ObsInLine_vb,a2
 				move.l	#Plr2_ObjectDistances_vw,a3
 
 .objpointrotlop:
@@ -8521,7 +8522,7 @@ VBlankInterrupt:
 				add.l	#1,counter
 				add.l	#1,main_counter
 				add.l	#1,VBLCOUNT
-				subq.w	#1,animtimer
+				subq.w	#1,Anim_Timer_w
 
 				tst.l	timer					; used by menu system as delay
 				beq.s	.nodec
