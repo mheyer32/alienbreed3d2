@@ -595,8 +595,8 @@ ExplodeIntoBits:
 
 brightanim:
 				move.l	#BrightAnimTable,a1
-				move.l	#BrightAnimPtrs,a3
-				move.l	#BrightAnimStarts,a4
+				move.l	#anim_BrightessAnimPtrs_vl,a3
+				move.l	#anim_BrightnessAnimStartPtrs_vl,a4
 
 dobrightanims:
 				move.l	(a3),d0
@@ -620,55 +620,56 @@ nomoreanims:
 				rts
 
 BrightAnimTable: ds.w	20
-BrightAnimPtrs:
-				dc.l	PulseANIM1
-				dc.l	PulseANIM2
-				dc.l	PulseANIM3
-				dc.l	PulseANIM4
-				dc.l	PulseANIM5
-				dc.l	FlickerANIM
-				dc.l	FireFlickerANIM
+
+; TODO - the editors define up to 16 animation types, this looks like a buffer overflow in the making
+anim_BrightessAnimPtrs_vl:
+				dc.l	anim_BrightPulse1_vw
+				dc.l	anim_BrightPulse2_vw
+				dc.l	anim_BrightPulse3_vw
+				dc.l	anim_BrightPulse4_vw
+				dc.l	anim_BrightPulse5_vw
+				dc.l	anim_BrightFlicker1_vw
+				dc.l	anim_BrightFlicker2_vw
 				dc.l	-1
 
-BrightAnimStarts:
-				dc.l	PulseANIM1
-				dc.l	PulseANIM2
-				dc.l	PulseANIM3
-				dc.l	PulseANIM4
-				dc.l	PulseANIM5
-				dc.l	FlickerANIM
-				dc.l	FireFlickerANIM
+anim_BrightnessAnimStartPtrs_vl:
+				dc.l	anim_BrightPulse1_vw
+				dc.l	anim_BrightPulse2_vw
+				dc.l	anim_BrightPulse3_vw
+				dc.l	anim_BrightPulse4_vw
+				dc.l	anim_BrightPulse5_vw
+				dc.l	anim_BrightFlicker1_vw
+				dc.l	anim_BrightFlicker2_vw
 
 
-PulseANIM1:
+anim_BrightPulse1_vw:
 				dc.w	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
 				dc.w	20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
 				dc.w	999
 
-PulseANIM2:
+anim_BrightPulse2_vw:
 				dc.w	9,10,11,12,13,14,15,16,17,18,19,20
 				dc.w	20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
 				dc.w	1,2,3,4,5,6,7,8
 				dc.w	999
 
-PulseANIM3:
+anim_BrightPulse3_vw:
 				dc.w	17,18,19,20
 				dc.w	20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
 				dc.w	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
 				dc.w	999
 
-
-PulseANIM4:
+anim_BrightPulse4_vw:
 				dc.w	16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
 				dc.w	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,20,19,18,17
 				dc.w	999
 
-PulseANIM5:
+anim_BrightPulse5_vw:
 				dc.w	8,7,6,5,4,3,2,1
 				dc.w	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,20,19,18,17,16,15,14,13,12,11,10,9
 				dc.w	999
 
-FlickerANIM:
+anim_BrightFlicker1_vw: ; hard transition, lamp flicker
 				dcb.w	20,20
 				dc.w	1
 				dcb.w	30,20
@@ -677,7 +678,7 @@ FlickerANIM:
 				dc.w	1
 				dc.w	999
 
-FireFlickerANIM:
+anim_BrightFlicker2_vw: ; soft flicker, like flame
 				dc.w	-10,-9,-6,-10,-6,-5,-5,-7,-5,-10,-9,-8,-7,-5,-5,-5,-5
 				dc.w	-5,-5,-5,-5,-6,-7,-8,-9,-5,-10,-9,-10,-6,-5,-5,-5,-5,-5
 				dc.w	-5,-5
@@ -782,11 +783,13 @@ objmoveanim:
 
 ******************************
 
-tstdir:			dc.w	0
-liftattop:		dc.b	0
-liftatbot:		dc.b	0
-DoorLocks:		dc.w	0
-LiftLocks:		dc.w	0
+;tstdir:			dc.w	0
+anim_LiftAtTop_b:		dc.b	0
+anim_LiftAtBottom_b:	dc.b	0
+
+; Union
+Anim_DoorAndLiftLocks_l:	dc.w	0 ; MSW accessed as long
+anim_LiftOnlyLocks_w:		dc.w	0 ; LSW accessed independently as word
 
 DoWaterAnims:
 				move.w	#20,d0
@@ -857,7 +860,7 @@ doalift:
 				bne		notallliftsdone
 
 				move.w	#999,(a6)
-				move.w	#0,LiftLocks
+				move.w	#0,anim_LiftOnlyLocks_w
 				bsr		DoWaterAnims
 
 				rts
@@ -910,7 +913,7 @@ notallliftsdone:
 				add.w	d2,d3
 				move.w	d7,d2
 				cmp.w	d3,d0
-				sle		liftatbot
+				sle		anim_LiftAtBottom_b
 				bgt.s	.nolower
 
 				tst.w	d2
@@ -935,7 +938,7 @@ notallliftsdone:
 
 .nolower:
 				cmp.w	d3,d1
-				sge		liftattop
+				sge		anim_LiftAtTop_b
 				blt.s	.noraise
 
 				tst.w	d2
@@ -1004,7 +1007,7 @@ notallliftsdone:
 ; and.w Conditions,d2
 ; cmp.w -2(a0),d2
 				move.w	ThisDoor,d2
-				move.w	LiftLocks,d5
+				move.w	anim_LiftOnlyLocks_w,d5
 				btst	d2,d5
 				beq.s	.satisfied
 
@@ -1036,10 +1039,10 @@ notallliftsdone:
 				moveq	#0,d5
 				move.b	(a0)+,d4
 				move.b	(a0)+,d5
-				tst.b	liftattop
+				tst.b	anim_LiftAtTop_b
 				bne		tstliftlower
 
-				tst.b	liftatbot
+				tst.b	anim_LiftAtBottom_b
 				bne		tstliftraise
 
 				move.w	#0,d1
@@ -1242,7 +1245,7 @@ doadoor:
 				bne		notalldoorsdone
 
 				move.w	#999,(a6)
-				move.w	#0,DoorLocks
+				move.w	#0,Anim_DoorAndLiftLocks_l
 				rts
 
 notalldoorsdone:
@@ -1387,7 +1390,7 @@ NotGoBackUp:
 				move.w	(a0)+,d2				; conditions
 ; and.w Conditions,d2
 				move.w	ThisDoor,d2
-				move.w	DoorLocks,d5
+				move.w	Anim_DoorAndLiftLocks_l,d5
 				btst	d2,d5
 				beq.s	satisfied
 
@@ -1802,7 +1805,7 @@ JUMPALIEN:
 				beq.s	.nolock
 
 				move.l	EntT_DoorsHeld_w(a0),d0
-				or.l	d0,DoorLocks
+				or.l	d0,Anim_DoorAndLiftLocks_l
 
 .nolock:
 				tst.b	ShotT_Worry_b(a0)
