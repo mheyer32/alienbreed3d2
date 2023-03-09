@@ -888,7 +888,7 @@ lop:
 				move.w	Plr2_TmpXOff_l,newx
 				move.w	Plr2_TmpZOff_l,newz
 				move.w	#7,d2
-				jsr		ExplodeIntoBits
+				jsr		Anim_ExplodeIntoBits
 
 				move.w	#-1,12(a0)
 
@@ -932,7 +932,7 @@ lop:
 				move.w	Plr1_TmpXOff_l,newx
 				move.w	Plr1_TmpZOff_l,newz
 				move.w	#7,d2
-				jsr		ExplodeIntoBits
+				jsr		Anim_ExplodeIntoBits
 				move.w	#-1,12(a0)
 
 .notmess2:
@@ -1161,12 +1161,12 @@ okwat:
 
 				move.w	Plr1_Health_w,Energy
 
-				move.w	FramesToDraw,TempFrames
-				cmp.w	#15,TempFrames
+				move.w	Anim_FramesToDraw_w,Anim_TempFrames_w
+				cmp.w	#15,Anim_TempFrames_w
 				blt.s	.okframe
-				move.w	#15,TempFrames
+				move.w	#15,Anim_TempFrames_w
 .okframe:
-				move.w	#0,FramesToDraw
+				move.w	#0,Anim_FramesToDraw_w
 
 *********************************************
 *********** TAKE THIS OUT *******************
@@ -1254,12 +1254,12 @@ NotOnePlayer:
 
 				jsr		SENDFIRST
 
-				move.w	FramesToDraw,TempFrames
-				cmp.w	#15,TempFrames
+				move.w	Anim_FramesToDraw_w,Anim_TempFrames_w
+				cmp.w	#15,Anim_TempFrames_w
 				blt.s	.okframe
-				move.w	#15,TempFrames
+				move.w	#15,Anim_TempFrames_w
 .okframe:
-				move.w	#0,FramesToDraw
+				move.w	#0,Anim_FramesToDraw_w
 
 				move.l	Plr1_SnapXOff_l,Plr1_TmpXOff_l
 				move.l	Plr1_SnapZOff_l,Plr1_TmpZOff_l
@@ -1304,7 +1304,7 @@ NotOnePlayer:
 				move.w	d0,plr2_TmpAngPos_w
 
 
-				move.w	TempFrames,d0
+				move.w	Anim_TempFrames_w,d0
 				swap	d0
 				move.b	Plr1_TmpSpcTap_b,d0
 				lsl.w	#8,d0
@@ -1428,7 +1428,7 @@ ASlaveShouldWaitOnHisMaster:
 				lsr.w	#8,d0
 				move.b	d0,Plr1_TmpSpcTap_b
 				swap	d0
-				move.w	d0,TempFrames
+				move.w	d0,Anim_TempFrames_w
 
 				move.b	plr2_TmpDucked_b,d0
 				or.b	Plr2_Squished_b,d0
@@ -1494,7 +1494,7 @@ doallz
 				tst.b	d3
 				beq.s	justbright
 
-				move.l	#BrightAnimTable,a4
+				move.l	#Anim_BrightTable_vw,a4
 				move.w	-2(a4,d3.w*2),d2
 
 justbright:
@@ -1516,7 +1516,7 @@ justbright:
 				tst.b	d3
 				beq.s	justbright2
 
-				move.l	#BrightAnimTable,a4
+				move.l	#Anim_BrightTable_vw,a4
 				move.w	-2(a4,d3.w*2),d2
 
 justbright2:
@@ -1557,7 +1557,7 @@ allinzone:
 				and.w	#$f,d3
 				lsr.w	#4,d4
 				add.w	#1,d4
-				move.l	#BrightAnimTable,a0
+				move.l	#Anim_BrightTable_vw,a0
 				move.w	-2(a0,d3.w*2),d3
 				ext.w	d2
 				sub.w	d2,d3
@@ -1648,7 +1648,7 @@ findaverage:
 				move.b	d0,17(a0)
 
 nosee:
-				move.w	TempFrames,d0
+				move.w	Anim_TempFrames_w,d0
 				add.w	d0,plr1_TmpHoldDown_w
 				cmp.w	#30,plr1_TmpHoldDown_w
 				blt.s	oklength
@@ -1663,7 +1663,7 @@ oklength:
 
 okstillheld:
 
-				move.w	TempFrames,d0
+				move.w	Anim_TempFrames_w,d0
 				add.w	d0,plr2_TmpHoldDown_w
 
 				cmp.w	#30,plr2_TmpHoldDown_w
@@ -1679,7 +1679,7 @@ oklength2:
 				move.w	#0,plr2_TmpHoldDown_w
 
 okstillheld2:
-				move.w	TempFrames,d1
+				move.w	Anim_TempFrames_w,d1
 				bgt.s	noze
 				moveq	#1,d1
 
@@ -4211,7 +4211,7 @@ drawngun:
 NOGUNLOOK:
 				moveq	#0,d1
 				move.b	PLR1_GunFrame,d1
-				sub.w	TempFrames,d1
+				sub.w	Anim_TempFrames_w,d1
 				bgt.s	.nn
 				moveq	#0,d1
 .nn
@@ -4223,7 +4223,7 @@ NOGUNLOOK:
 
 				moveq	#0,d1
 				move.b	PLR2_GunFrame,d1
-				sub.w	TempFrames,d1
+				sub.w	Anim_TempFrames_w,d1
 				bgt.s	.nn2
 				moveq	#0,d1
 .nn2
@@ -8742,7 +8742,7 @@ timetodamage:	dc.w	0
 SAVESAVE:		dc.w	0
 
 dosomething:
-				addq.w	#1,FramesToDraw
+				addq.w	#1,Anim_FramesToDraw_w
 				movem.l	d0-d7/a0-a6,-(a7)
 
 				jsr		NARRATOR
@@ -8862,7 +8862,6 @@ SOUNDOPTSTEXT:
 				dc.b	"                                        "
 				dc.b	"                                        "
 
-LIGHTING:		dc.w	$FFff
 OLDLTOG:		dc.w	0
 
 pastster:
@@ -8880,24 +8879,24 @@ pastster:
 
 				move.w	#$f,$dff000+dmacon
 				move.l	#Aud_Null1_vw,$dff0a0
-				move.w	#100,$dff0a4
-				move.w	#443,$dff0a6
-				move.w	#63,$dff0a8
+				move.w	#100,$dff0a4 ; size
+				move.w	#443,$dff0a6 ; period
+				move.w	#63,$dff0a8  ; volume
 
 				move.l	#Aud_Null2_vw,$dff0b0
-				move.w	#100,$dff0b4
-				move.w	#443,$dff0b6
-				move.w	#63,$dff0b8
+				move.w	#100,$dff0b4 ; size
+				move.w	#443,$dff0b6 ; period
+				move.w	#63,$dff0b8  ; volume
 
 				move.l	#Aud_Null4_vw,$dff0c0
-				move.w	#100,$dff0c4
-				move.w	#443,$dff0c6
-				move.w	#63,$dff0c8
+				move.w	#100,$dff0c4 ; size
+				move.w	#443,$dff0c6 ; period
+				move.w	#63,$dff0c8  ; volume
 
 				move.l	#Aud_Null3_vw,$dff0d0
-				move.w	#100,$dff0d4
-				move.w	#443,$dff0d6
-				move.w	#63,$dff0d8
+				move.w	#100,$dff0d4 ; size
+				move.w	#443,$dff0d6 ; period
+				move.w	#63,$dff0d8  ; volume
 
 				move.l	#Aud_EmptyBuffer_vl,pos0LEFT
 				move.l	#Aud_EmptyBuffer_vl,pos1LEFT
@@ -8936,7 +8935,7 @@ notogglesound2:
 				st		OLDLTOG
 
 				move.l	#LIGHTINGTEXT,d0
-				not.b	LIGHTING
+				not.b	Anim_LightingEnabled_b
 				beq.s	.noon
 				add.l	#160,d0
 .noon:
@@ -8976,6 +8975,7 @@ pastlighttext:
 
 nolighttoggle:
 				clr.b	OLDLTOG
+
 nolighttoggle2:
 
 
@@ -9146,7 +9146,7 @@ digitlop2
 
 				move.l	#TimerScr+10+24*20,a0
 				moveq	#0,d0
-				move.w	FramesToDraw,d0
+				move.w	Anim_FramesToDraw_w,d0
 				move.l	#draw_Digits_vb,a1
 				move.w	#2,d2
 digitlop3

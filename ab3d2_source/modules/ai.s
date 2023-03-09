@@ -249,7 +249,7 @@ ai_JustDied:
 
 .go_splutch:
 				move.w	#8,d2
-				jsr		ExplodeIntoBits
+				jsr		Anim_ExplodeIntoBits
 
 .spawned:
 				move.b	#5,EntT_CurrentMode_b(a0)
@@ -626,7 +626,7 @@ ai_Widget:
 				tst.b	d0
 				beq.s	.cant_see_player
 
-				move.w	TempFrames,d0
+				move.w	Anim_TempFrames_w,d0
 				sub.w	d0,EntT_Timer1_w(a0)
 				bgt.s	.notreacted
 				bsr		ai_CheckForDark
@@ -725,7 +725,7 @@ ai_ChargeCommon:
 				move.w	(a1),oldx
 				move.w	4(a1),oldz
 				move.w	AI_ResponseSpeed_w,d2
-				muls.w	TempFrames,d2
+				muls.w	Anim_TempFrames_w,d2
 				move.w	d2,speed
 				move.w	#160,Range
 				move.w	4(a0),d0
@@ -791,12 +791,12 @@ ai_ChargeCommon:
 				move.w	newx,d0
 				sub.w	oldx,d0
 				ext.l	d0
-				divs	TempFrames,d0
+				divs	Anim_TempFrames_w,d0
 				add.w	d0,EntT_ImpactX_w(a5)
 				move.w	newz,d0
 				sub.w	oldz,d0
 				ext.l	d0
-				divs	TempFrames,d0
+				divs	Anim_TempFrames_w,d0
 				add.w	d0,EntT_ImpactZ_w(a5)
 
 .no_munch:
@@ -1150,7 +1150,7 @@ ai_ChargeFlyingCommon:
 
 .no_side:
 				move.w	AI_ResponseSpeed_w,d2
-				muls.w	TempFrames,d2
+				muls.w	Anim_TempFrames_w,d2
 				move.w	d2,speed
 				move.w	#160,Range
 				move.w	4(a0),d0
@@ -1262,7 +1262,7 @@ ai_PauseBriefly:
 				move.w	#0,EntT_Timer2_w(a0)
 				jsr		ai_DoWalkAnim
 
-				move.w	TempFrames,d0
+				move.w	Anim_TempFrames_w,d0
 				sub.w	d0,EntT_Timer1_w(a0)
 				bgt.s	.stillwaiting
 
@@ -1466,7 +1466,7 @@ ai_ApproachCommon:
 				tst.b	d0
 				beq.s	.cant_see_player
 				move.b	#2,EntT_CurrentMode_b(a0)
-				move.w	TempFrames,d0
+				move.w	Anim_TempFrames_w,d0
 				sub.w	d0,EntT_Timer1_w(a0)
 				bgt.s	.cant_see_player
 				bsr		ai_CheckForDark
@@ -1772,7 +1772,7 @@ ai_CheckDamage:
 
 .ko:
 				move.w	#31,d3
-				jsr		ExplodeIntoBits
+				jsr		Anim_ExplodeIntoBits
 
 				movem.l	(a7)+,d0-d7/a0-a6
 				cmp.b	#40,d2
@@ -1836,7 +1836,7 @@ ai_DoTorch:
 
 				move.w	12(a0),d3
 
-				jsr		BRIGHTENPOINTSANGLE
+				jsr		Anim_BrightenPointsAngle
 
 .nobright:
 				rts

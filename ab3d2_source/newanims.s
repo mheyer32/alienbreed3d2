@@ -1,22 +1,110 @@
-            align 4
-Anim_BrightY_l:
-            dc.l	0
-Anim_SplatType_w:
-            dc.w	0
+				align 4
+; todo BSS ?
+Anim_BrightY_l:		dc.l	0
+anim_MiddleRoom_l:	dc.l	0
 
+; Union
+Anim_DoorAndLiftLocks_l:	dc.w	0 ; MSW accessed as long
+anim_LiftOnlyLocks_w:		dc.w	0 ; LSW accessed independently as word
+
+; Word data
+Anim_SplatType_w:		dc.w	0
+anim_MiddleX_w:			dc.w	0
+anim_MiddleZ_w:			dc.w	0
+anim_DoneFlames_w:		dc.w	0
+
+Anim_FramesToDraw_w:	dc.w	0
+Anim_TempFrames_w:		dc.w	0
+anim_TimeToNoise_w:		dc.w	0
+anim_OddEven_w:			dc.w	0
+
+anim_FloorMoveSpeed_w:	dc.w	0
+
+Anim_BrightTable_vw: ds.w	20
+
+; Byte data
+Anim_LightingEnabled_b:	dc.b	$ff
+anim_LiftAtTop_b:		dc.b	0
+anim_LiftAtBottom_b:	dc.b	0
+
+				align 4
+; TODO - the editors define up to 16 animation types, this looks like a buffer overflow in the making
+anim_BrightessAnimPtrs_vl:
+				dc.l	anim_BrightPulse1_vw
+				dc.l	anim_BrightPulse2_vw
+				dc.l	anim_BrightPulse3_vw
+				dc.l	anim_BrightPulse4_vw
+				dc.l	anim_BrightPulse5_vw
+				dc.l	anim_BrightFlicker1_vw
+				dc.l	anim_BrightFlicker2_vw
+				dc.l	-1
+
+anim_BrightnessAnimStartPtrs_vl:
+				dc.l	anim_BrightPulse1_vw
+				dc.l	anim_BrightPulse2_vw
+				dc.l	anim_BrightPulse3_vw
+				dc.l	anim_BrightPulse4_vw
+				dc.l	anim_BrightPulse5_vw
+				dc.l	anim_BrightFlicker1_vw
+				dc.l	anim_BrightFlicker2_vw
+
+; TODO - could these be bytes?
+anim_BrightPulse1_vw:
+				dc.w	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
+				dc.w	20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
+				dc.w	999
+
+anim_BrightPulse2_vw:
+				dc.w	9,10,11,12,13,14,15,16,17,18,19,20
+				dc.w	20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
+				dc.w	1,2,3,4,5,6,7,8
+				dc.w	999
+
+anim_BrightPulse3_vw:
+				dc.w	17,18,19,20
+				dc.w	20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
+				dc.w	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
+				dc.w	999
+
+anim_BrightPulse4_vw:
+				dc.w	16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
+				dc.w	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,20,19,18,17
+				dc.w	999
+
+anim_BrightPulse5_vw:
+				dc.w	8,7,6,5,4,3,2,1
+				dc.w	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,20,19,18,17,16,15,14,13,12,11,10,9
+				dc.w	999
+
+anim_BrightFlicker1_vw: ; hard transition, lamp flicker
+				dcb.w	20,20
+				dc.w	1
+				dcb.w	30,20
+				dc.w	1
+				dcb.w	5,20
+				dc.w	1
+				dc.w	999
+
+anim_BrightFlicker2_vw: ; soft flicker, like flame
+				dc.w	-10,-9,-6,-10,-6,-5,-5,-7,-5,-10,-9,-8,-7,-5,-5,-5,-5
+				dc.w	-5,-5,-5,-5,-6,-7,-8,-9,-5,-10,-9,-10,-6,-5,-5,-5,-5,-5
+				dc.w	-5,-5
+				dc.w	999
+
+				even
 anim_BrightenPoints:
-				tst.b	LIGHTING
+				tst.b	Anim_LightingEnabled_b
 				bne.s	.dolight
 
 				rts
 
 .dolight:
-; d0=brightness value
-; d1=XPOS
-; d2=ZPOS
-; d3=ROOMNUMBER
+				; d0=brightness value
+				; d1=XPOS
+				; d2=ZPOS
+				; d3=ROOMNUMBER
 				tst.w	d0
-				bgt		DARKENPOINTS
+				bgt		darken_points
 
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.l	Lvl_ZoneAddsPtr_l,a0
@@ -27,9 +115,9 @@ anim_BrightenPoints:
 				move.l	Lvl_ZoneBorderPointsPtr_l,a4
 				lea		ZoneT_ListOfGraph_w(a0),a1
 
-BRIGHTPTS:
+bright_points:
 				move.w	(a1),d4
-				blt		brightall
+				blt		bright_all
 
 				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d4.w*4),a0
@@ -43,9 +131,9 @@ BRIGHTPTS:
 
 ; Do a room.
 
-ROOMPTLOP:
+room_point_loop:
 				move.w	(a5)+,d4
-				blt		BRIGHTPTS
+				blt		bright_points
 
 				move.w	(a3,d4.w*4),d5
 				move.w	2(a3,d4.w*4),d6
@@ -53,6 +141,7 @@ ROOMPTLOP:
 				bgt.s	.okpos1
 
 				neg.w	d5
+
 .okpos1:
 				sub.w	d2,d6
 				bgt.s	.okpos2
@@ -181,23 +270,23 @@ ROOMPTLOP:
 
 .noBRIGHT4:
 				addq	#8,a2
-				dbra	d7,ROOMPTLOP
+				dbra	d7,room_point_loop
 
-				bra		BRIGHTPTS
+				bra		bright_points
 
-brightall:
+bright_all:
 				movem.l	(a7)+,d0-d7/a0-a6
 				rts
 
 
-BRIGHTENPOINTSANGLE:
-; d0=brightness value
-; d1=XPOS
-; d2=ZPOS
-; d3=ROOMNUMBER
-; d4=ANGLE
+Anim_BrightenPointsAngle:
+				; d0=brightness value
+				; d1=XPOS
+				; d2=ZPOS
+				; d3=ROOMNUMBER
+				; d4=ANGLE
 
-				tst.b	LIGHTING
+				tst.b	Anim_LightingEnabled_b
 				bne.s	.dolight
 
 				rts
@@ -214,9 +303,9 @@ BRIGHTENPOINTSANGLE:
 				move.l	Lvl_ZoneBorderPointsPtr_l,a4
 				lea		ZoneT_ListOfGraph_w(a0),a1
 
-BRIGHTPTSA:
+bright_points_A:
 				move.w	(a1),d4
-				blt		brightallA
+				blt		bright_all_A
 
 				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d4.w*4),a0
@@ -228,9 +317,9 @@ BRIGHTPTSA:
 				move.l	#CurrentPointBrights_vl,a2
 				lea		(a2,d4.w*4),a2
 
-ROOMPTLOPA:
+room_point_loop_A:
 				move.w	(a5)+,d4
-				blt		BRIGHTPTSA
+				blt		bright_points_A
 
 				move.w	2(a3,d4.w*4),d5
 				move.w	(a3,d4.w*4),d4
@@ -254,7 +343,7 @@ ROOMPTLOPA:
 				muls	d7,d1
 				muls	d6,d0
 				add.l	d0,d1
-				ble		BEHINDPT
+				ble		behind_point
 
 				move.l	d1,d5
 				neg.l	d5
@@ -404,22 +493,22 @@ ROOMPTLOPA:
 
 .noBRIGHT4:
 				addq	#8,a2
-				dbra	d3,ROOMPTLOPA
+				dbra	d3,room_point_loop_A
 
-				bra		BRIGHTPTS
+				bra		bright_points
 
-BEHINDPT:
+behind_point:
 				movem.l	(a7)+,d0/d1/d2/d3/d4/d5
 				addq	#8,a2
-				dbra	d7,ROOMPTLOPA
+				dbra	d7,room_point_loop_A
 
-				bra		BRIGHTPTSA
+				bra		bright_points_A
 
-brightallA:
+bright_all_A:
 				movem.l	(a7)+,d0-d7/a0-a6
 				rts
 
-DARKENPOINTS:
+darken_points:
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d3.w*4),a0
@@ -429,9 +518,9 @@ DARKENPOINTS:
 				move.l	a0,a1
 				add.w	ZoneT_Points_w(a0),a1
 
-DARKPTS:
+dark_points:
 				move.w	(a1)+,d4
-				blt.s	DARKall
+				blt.s	dark_all
 
 				move.w	(a3,d4.w*4),d5
 				move.w	2(a3,d4.w*4),d6
@@ -450,13 +539,13 @@ DARKPTS:
 				add.w	d5,d6
 				asr.w	#5,d6
 				add.w	d0,d6
-				ble.s	DARKPTS
+				ble.s	dark_points
 
 				add.w	d6,(a2,d4.w*4)
 				add.w	d6,2(a2,d4.w*4)
-				bra.s	DARKPTS
+				bra.s	dark_points
 
-DARKall:
+dark_all:
 				movem.l	(a7)+,d0-d7/a0-a6
 				rts
 
@@ -505,11 +594,11 @@ doneemall:
 				movem.l	(a7)+,d0/a0/a1
 				rts
 
-prot2:			dc.w	0
-radius:			dc.w	0
+;prot2:			dc.w	0
+anim_ExpRadius_w:	dc.w	0
 
-ExplodeIntoBits:
-				move.w	d3,radius
+Anim_ExplodeIntoBits:
+				move.w	d3,anim_ExpRadius_w
 				cmp.w	#7,d2
 				ble.s	.oksplut
 				move.w	#7,d2
@@ -594,7 +683,7 @@ ExplodeIntoBits:
 				rts
 
 brightanim:
-				move.l	#BrightAnimTable,a1
+				move.l	#Anim_BrightTable_vw,a1
 				move.l	#anim_BrightessAnimPtrs_vl,a3
 				move.l	#anim_BrightnessAnimStartPtrs_vl,a4
 
@@ -619,81 +708,9 @@ itsabright:
 nomoreanims:
 				rts
 
-BrightAnimTable: ds.w	20
-
-; TODO - the editors define up to 16 animation types, this looks like a buffer overflow in the making
-anim_BrightessAnimPtrs_vl:
-				dc.l	anim_BrightPulse1_vw
-				dc.l	anim_BrightPulse2_vw
-				dc.l	anim_BrightPulse3_vw
-				dc.l	anim_BrightPulse4_vw
-				dc.l	anim_BrightPulse5_vw
-				dc.l	anim_BrightFlicker1_vw
-				dc.l	anim_BrightFlicker2_vw
-				dc.l	-1
-
-anim_BrightnessAnimStartPtrs_vl:
-				dc.l	anim_BrightPulse1_vw
-				dc.l	anim_BrightPulse2_vw
-				dc.l	anim_BrightPulse3_vw
-				dc.l	anim_BrightPulse4_vw
-				dc.l	anim_BrightPulse5_vw
-				dc.l	anim_BrightFlicker1_vw
-				dc.l	anim_BrightFlicker2_vw
-
-
-anim_BrightPulse1_vw:
-				dc.w	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
-				dc.w	20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
-				dc.w	999
-
-anim_BrightPulse2_vw:
-				dc.w	9,10,11,12,13,14,15,16,17,18,19,20
-				dc.w	20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
-				dc.w	1,2,3,4,5,6,7,8
-				dc.w	999
-
-anim_BrightPulse3_vw:
-				dc.w	17,18,19,20
-				dc.w	20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
-				dc.w	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
-				dc.w	999
-
-anim_BrightPulse4_vw:
-				dc.w	16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
-				dc.w	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,20,19,18,17
-				dc.w	999
-
-anim_BrightPulse5_vw:
-				dc.w	8,7,6,5,4,3,2,1
-				dc.w	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,20,19,18,17,16,15,14,13,12,11,10,9
-				dc.w	999
-
-anim_BrightFlicker1_vw: ; hard transition, lamp flicker
-				dcb.w	20,20
-				dc.w	1
-				dcb.w	30,20
-				dc.w	1
-				dcb.w	5,20
-				dc.w	1
-				dc.w	999
-
-anim_BrightFlicker2_vw: ; soft flicker, like flame
-				dc.w	-10,-9,-6,-10,-6,-5,-5,-7,-5,-10,-9,-8,-7,-5,-5,-5,-5
-				dc.w	-5,-5,-5,-5,-6,-7,-8,-9,-5,-10,-9,-10,-6,-5,-5,-5,-5,-5
-				dc.w	-5,-5
-				dc.w	999
-
-objvels:		ds.l	8
-
-FramesToDraw:	dc.w	0
-TempFrames:		dc.w	0
-TimeToNoise:	dc.w	0
-ODDEVEN:		dc.w	0
-
 BACKSFX:
-				move.w	TempFrames,d0
-				sub.w	d0,TimeToNoise
+				move.w	Anim_TempFrames_w,d0
+				sub.w	d0,anim_TimeToNoise_w
 				bgt		.nosfx
 
 				jsr		GetRand
@@ -701,12 +718,12 @@ BACKSFX:
 				lsr.w	#3,d0
 				and.w	#127,d0
 				add.w	#100,d0
-				move.w	d0,TimeToNoise
+				move.w	d0,anim_TimeToNoise_w
 				move.l	Roompt,a0
-				add.w	ODDEVEN,a0
+				add.w	anim_OddEven_w,a0
 				move.w	#2,d0
-				sub.w	ODDEVEN,d0
-				move.w	d0,ODDEVEN
+				sub.w	anim_OddEven_w,d0
+				move.w	d0,anim_OddEven_w
 				move.w	ZoneT_BackSFXMask_w(a0),d1		; mask for sfx
 				beq		.nosfx
 
@@ -781,16 +798,6 @@ objmoveanim:
 .notzero:
 				rts
 
-******************************
-
-;tstdir:			dc.w	0
-anim_LiftAtTop_b:		dc.b	0
-anim_LiftAtBottom_b:	dc.b	0
-
-; Union
-Anim_DoorAndLiftLocks_l:	dc.w	0 ; MSW accessed as long
-anim_LiftOnlyLocks_w:		dc.w	0 ; LSW accessed independently as word
-
 DoWaterAnims:
 				move.w	#20,d0
 
@@ -800,7 +807,7 @@ wateranimlop:
 				move.l	(a0),d3
 				move.w	4(a0),d4
 				move.w	d4,d5
-				muls	TempFrames,d5
+				muls	Anim_TempFrames_w,d5
 				add.l	d5,d3
 				cmp.l	d1,d3
 				bgt.s	waternotattop
@@ -844,10 +851,6 @@ okzone:
 
 				rts
 
-FloorMoveSpeed_w:
-				dc.w	0
-
-				even
 LiftRoutine:
 				move.w	#-1,ThisDoor
 				move.l	Lvl_LiftDataPtr_l,a0
@@ -908,8 +911,8 @@ notallliftsdone:
 				add.l	Lvl_DataPtr_l,a1
 				move.b	ZoneT_Echo_b(a1),PlayEcho
 				move.w	d2,d7					; speed of movement.
-				move.w	d2,FloorMoveSpeed_w
-				muls	TempFrames,d2
+				move.w	d2,anim_FloorMoveSpeed_w
+				muls	Anim_TempFrames_w,d2
 				add.w	d2,d3
 				move.w	d7,d2
 				cmp.w	d3,d0
@@ -992,7 +995,7 @@ notallliftsdone:
 				seq		plr1_StoodOnLift_b
 				bne.s	.nosetfloorspd1
 
-				move.w	FloorMoveSpeed_w,Plr1_FloorSpd_w
+				move.w	anim_FloorMoveSpeed_w,Plr1_FloorSpd_w
 
 .nosetfloorspd1:
 				move.l	Plr2_RoomPtr_l,a3
@@ -1000,7 +1003,7 @@ notallliftsdone:
 				seq		plr2_StoodOnLift_b
 				bne.s	.nosetfloorspd2
 
-				move.w	FloorMoveSpeed_w,plr2_FloorSpd_w
+				move.w	anim_FloorMoveSpeed_w,plr2_FloorSpd_w
 
 .nosetfloorspd2:
 				move.w	(a0)+,d2				; conditions
@@ -1289,7 +1292,7 @@ notalldoorsdone:
 				move.l	(a1,d7.w*4),a1
 				add.l	Lvl_DataPtr_l,a1
 				move.b	ZoneT_Echo_b(a1),PlayEcho
-				muls	TempFrames,d2
+				muls	Anim_TempFrames_w,d2
 				add.w	d2,d3
 				move.w	2(a0),d2
 				cmp.w	d3,d0
@@ -1532,7 +1535,7 @@ door5:
 				bra		backfromtst
 
 tstdoortoclose:
-				move.w	TempFrames,d1
+				move.w	Anim_TempFrames_w,d1
 				add.w	(a6),d1
 				move.w	d1,(a6)
 				cmp.w	STAYOPENFOR,d1
@@ -1576,7 +1579,7 @@ backtoend:
 				tst.b	10(a0)
 				beq		nobutt
 
-				move.w	TempFrames,d1
+				move.w	Anim_TempFrames_w,d1
 				add.w	d1,d1
 				add.w	d1,d1
 				sub.b	d1,3(a0)
@@ -1836,7 +1839,7 @@ JUMPBULLET:
 
 ItsAGasPipe:
 				clr.b	ShotT_Worry_b(a0)
-				move.w	TempFrames,d0
+				move.w	Anim_TempFrames_w,d0
 				tst.w	EntT_Timer3_w(a0)
 				ble.s	maybeflame
 
@@ -1931,996 +1934,19 @@ notdoneflame:
 				st		ShotT_Worry_b(a5)
 				rts
 
-;ItsABarrel:
-;				clr.b	ShotT_Worry_b(a0)
-;				move.w	12(a0),EntT_GraphicRoom_w(a0)
-;
-;				cmp.w	#8,8(a0)
-;				bne.s	notexploding
-;
-;				add.w	#$404,6(a0)
-;
-;				move.w	10(a0),d0
-;				add.w	#1,d0
-;				cmp.w	#8,d0
-;				bne.s	.notdone
-;
-;				move.w	#-1,12(a0)
-;				move.w	#-1,EntT_GraphicRoom_w(a0)
-;				rts
-;
-;.notdone:
-;				move.w	d0,10(a0)
-;				rts
-;
-;notexploding:
-;				move.w	#$1f1f,14(a0)
-;
-;				move.w	12(a0),d0
-;				move.l	Lvl_ZoneAddsPtr_l,a1
-;				move.l	(a1,d0.w*4),a1
-;				add.l	Lvl_DataPtr_l,a1
-;				move.l	ZoneT_Floor_l(a1),d0
-;				tst.b	ShotT_InUpperZone_b(a0)
-;				beq.s	.okinbot
-;				move.l	ZoneT_UpperFloor_l(a1),d0
-;
-;.okinbot:
-;				asr.l	#7,d0
-;				sub.w	#60,d0
-;				move.w	d0,4(a0)
-;
-;				moveq	#0,d2
-;				move.b	EntT_DamageTaken_b(a0),d2
-;				beq.s	nodamage
-;				move.b	#0,EntT_DamageTaken_b(a0)
-;				sub.b	d2,EntT_NumLives_b(a0)
-;				bgt.s	nodamage
-;				move.b	#0,EntT_NumLives_b(a0)
-;
-;				movem.l	d0-d7/a0-a6,-(a7)
-;
-;				move.w	(a0),d0
-;				move.l	Lvl_ObjectPointsPtr_l,a1
-;				move.w	(a1,d0.w*8),Viewerx
-;				move.w	4(a1,d0.w*8),Viewerz
-;				move.w	#40,d0
-;				jsr		ComputeBlast
-;
-;				move.w	(a0),d0
-;				move.l	#ObjRotated_vl,a1
-;				move.l	(a1,d0.w*8),Noisex
-;				move.w	#300,Noisevol
-;				move.w	#15,Samplenum
-;				jsr		MakeSomeNoise
-;
-;				movem.l	(a7)+,d0-d7/a0-a6
-;				move.w	#8,8(a0)
-;				move.w	#0,10(a0)
-;				move.w	#$2020,14(a0)
-;				move.w	#-30,2(a0)
-;
-;				rts
-;
-;nodamage:
-;				move.w	(a0),d0
-;				move.l	Lvl_ObjectPointsPtr_l,a1
-;				move.w	(a1,d0.w*8),Viewerx
-;				move.w	4(a1,d0.w*8),Viewerz
-;				move.b	ShotT_InUpperZone_b(a0),ViewerTop
-;				move.b	Plr1_StoodInTop_b,TargetTop
-;				move.l	Plr1_RoomPtr_l,ToRoom
-;
-;				move.w	12(a0),d0
-;				move.l	Lvl_ZoneAddsPtr_l,a1
-;				move.l	(a1,d0.w*4),a1
-;				add.l	Lvl_DataPtr_l,a1
-;				move.l	a1,FromRoom
-;
-;				move.w	Plr1_XOff_l,Targetx
-;				move.w	Plr1_ZOff_l,Targetz
-;				move.l	Plr1_YOff_l,d0
-;				asr.l	#7,d0
-;				move.w	d0,Targety
-;				move.w	4(a0),Viewery
-;				jsr		CanItBeSeen
-;
-;				clr.b	17(a0)
-;				tst.b	CanSee
-;				beq		.noseeplr1
-;				move.b	#1,17(a0)
-;
-;.noseeplr1:
-;				move.b	Plr2_StoodInTop_b,TargetTop
-;				move.l	Plr2_RoomPtr_l,ToRoom
-;				move.w	Plr2_XOff_l,Targetx
-;				move.w	Plr2_ZOff_l,Targetz
-;				move.l	Plr2_YOff_l,d0
-;				asr.l	#7,d0
-;				move.w	d0,Targety
-;				move.w	4(a0),Viewery
-;				jsr		CanItBeSeen
-;
-;				tst.b	CanSee
-;				beq		.noseeplr2
-;				or.b	#2,17(a0)
-;
-;.noseeplr2:
-;				rts
-
 				include	"newaliencontrol.s"
 
 nextCPt:		dc.w	0
 
 RipTear:		dc.l	256*17*65536
 otherrip:		dc.l	256*18*65536
-
-;ItsAMediKit:
-;				clr.b	ShotT_Worry_b(a0)
-;				move.w	12(a0),EntT_GraphicRoom_w(a0)
-;
-;				move.w	12(a0),d0
-;				move.l	Lvl_ZoneAddsPtr_l,a1
-;				move.l	(a1,d0.w*4),a1
-;				add.l	Lvl_DataPtr_l,a1
-;				move.l	ZoneT_Floor_l(a1),d0
-;				tst.b	ShotT_InUpperZone_b(a0)
-;				beq.s	.okinbot
-;				move.l	ZoneT_UpperFloor_l(a1),d0
-;
-;.okinbot:
-;				asr.l	#7,d0
-;				sub.w	#32,d0
-;				move.w	d0,4(a0)
-;
-;
-;HealFactor		EQU		18
-;
-;				cmp.w	#127,Plr1_Energy_w
-;				bge		.NotSameZone
-;
-;				move.b	Plr1_StoodInTop_b,d0
-;				move.b	ShotT_InUpperZone_b(a0),d1
-;				eor.b	d1,d0
-;				bne		.NotSameZone
-;
-;				move.w	Plr1_XOff_l,oldx
-;				move.w	Plr1_ZOff_l,oldz
-;				move.w	Plr1_Zone_w,d7
-;
-;				cmp.w	12(a0),d7
-;				bne		.NotSameZone
-;				move.w	(a0),d0
-;				move.l	Lvl_ObjectPointsPtr_l,a1
-;				move.w	(a1,d0.w*8),newx
-;				move.w	4(a1,d0.w*8),newz
-;				move.l	#100*100,d2
-;				jsr		CheckHit
-;				tst.b	hitwall
-;				beq		.NotPickedUp
-;
-;				move.l	Plr1_ObjectPtr_l,a2
-;				move.w	(a2),d0
-;				move.l	#ObjRotated_vl,a2
-;				move.l	(a2,d0.w*8),Noisex
-;				move.w	#50,Noisevol
-;				move.w	#4,Samplenum
-;				move.b	#2,chanpick
-;				clr.b	notifplaying
-;				move.w	(a0),IDNUM
-;				movem.l	a0/a1/d2/d6/d7,-(a7)
-;				jsr		MakeSomeNoise
-;				movem.l	(a7)+,a0/a1/d2/d6/d7
-;
-;				move.w	#-1,12(a0)
-;				move.w	#-1,EntT_GraphicRoom_w(a0)
-;				move.w	HealFactor(a0),d0
-;				add.w	Plr1_Energy_w,d0
-;				cmp.w	#127,d0
-;				ble.s	.okokokokokok
-;				move.w	#127,d0
-;
-;.okokokokokok:
-;				move.w	d0,Plr1_Energy_w
-;
-;.NotPickedUp:
-;
-;.NotSameZone:
-;
-;MEDIPLR2:
-;				cmp.w	#127,Plr2_Energy_w
-;				bge		.NotSameZone
-;
-;				move.b	Plr2_StoodInTop_b,d0
-;				move.b	ShotT_InUpperZone_b(a0),d1
-;				eor.b	d1,d0
-;				bne		.NotSameZone
-;
-;				move.w	Plr2_XOff_l,oldx
-;				move.w	Plr2_ZOff_l,oldz
-;				move.w	Plr2_Zone_w,d7
-;				move.w	12(a0),d0
-;
-;				cmp.w	12(a0),d7
-;				bne		.NotSameZone
-;				move.w	(a0),d0
-;				move.l	Lvl_ObjectPointsPtr_l,a1
-;				move.w	(a1,d0.w*8),newx
-;				move.w	4(a1,d0.w*8),newz
-;				move.l	#100*100,d2
-;				jsr		CheckHit
-;				tst.b	hitwall
-;				beq		.NotPickedUp
-;
-;				move.l	Plr2_ObjectPtr_l,a2
-;				move.w	(a2),d0
-;				move.l	#ObjRotated_vl,a2
-;				move.l	(a2,d0.w*8),Noisex
-;				move.w	#50,Noisevol
-;				move.w	#4,Samplenum
-;				move.b	#2,chanpick
-;				clr.b	notifplaying
-;				move.w	(a0),IDNUM
-;				movem.l	a0/a1/d2/d6/d7,-(a7)
-;				jsr		MakeSomeNoise
-;				movem.l	(a7)+,a0/a1/d2/d6/d7
-;
-;				move.w	#-1,12(a0)
-;				move.w	#-1,EntT_GraphicRoom_w(a0)
-;				move.w	HealFactor(a0),d0
-;				add.w	Plr2_Energy_w,d0
-;				cmp.w	#127,d0
-;				ble.s	.okokokokokok
-;				move.w	#127,d0
-;.okokokokokok:
-;				move.w	d0,Plr2_Energy_w
-;
-;.NotPickedUp:
-;.NotSameZone:
-;				rts
-
-
-;OFFSETTOGRAPH:
-;				dc.l	(40*8)*43+10
-;				dc.l	(40*8)*11+12
-;				dc.l	(40*8)*11+22
-;				dc.l	(40*8)*43+24
-
-;AmmoInGuns:
-;				dc.w	0
-;				dc.w	5
-;				dc.w	1
-;				dc.w	0
-;				dc.w	1
-;				dc.w	0
-;				dc.w	0
-;				dc.w	5
-
 Conditions:		dc.l	0
 
+; Keep this comment, animation format is probably the same
 ; Format of animations:
 ; Size (-1 = and of anim) (w)
 ; Address of Frame. (l)
 ; height offset (w)
-
-;Bul1Anim:
-;				dc.w	20*256+15
-;				dc.w	6,8
-;				dc.w	0
-;				dc.w	17*256+17
-;				dc.w	6,9
-;				dc.w	0
-;				dc.w	15*256+20
-;				dc.w	6,10
-;				dc.w	0
-;				dc.w	17*256+17
-;				dc.w	6,11
-;				dc.w	0
-;				dc.l	-1
-
-;Bul1Pop:
-;				dc.b	25,25
-;				dc.w	1,6
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	1,7
-;				dc.w	-4
-;				dc.b	25,25
-;				dc.w	1,8
-;				dc.w	-4
-;				dc.b	25,25
-;				dc.w	1,9
-;				dc.w	-4
-;				dc.b	25,25
-;				dc.w	1,10
-;				dc.w	-4
-;				dc.b	25,25
-;				dc.w	1,11
-;				dc.w	-4
-;				dc.b	25,25
-;				dc.w	1,12
-;				dc.w	-4
-;				dc.b	25,25
-;				dc.w	1,13
-;				dc.w	-4
-;				dc.b	25,25
-;				dc.w	1,14
-;				dc.w	-4
-;				dc.b	25,25
-;				dc.w	1,15
-;				dc.w	-4
-;				dc.b	25,25
-;				dc.w	1,16
-;				dc.w	-4
-;				dc.l	-1
-
-;Bul3Anim:
-;				dc.b	25,25
-;				dc.w	0,12
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	0,13
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	0,14
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	0,15
-;				dc.w	0
-;				dc.l	-1
-
-;Bul3Pop:
-;				dc.l	-1
-
-;Bul4Anim:
-;				dc.b	25,25
-;				dc.w	6,4
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	6,5
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	6,6
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	6,7
-;				dc.w	0
-;				dc.l	-1
-
-;Bul4Pop:
-;				dc.b	20,20
-;				dc.w	6,4
-;				dc.w	0
-;				dc.b	15,15
-;				dc.w	6,5
-;				dc.w	0
-;				dc.b	10,10
-;				dc.w	6,6
-;				dc.w	0
-;				dc.b	5,5
-;				dc.w	6,7
-;				dc.w	0
-;				dc.l	-1
-
-;Bul5Anim:
-;				dc.b	10,10
-;				dc.w	6,4
-;				dc.w	0
-;				dc.b	10,10
-;				dc.w	6,5
-;				dc.w	0
-;				dc.b	10,10
-;				dc.w	6,6
-;				dc.w	0
-;				dc.b	10,10
-;				dc.w	6,7
-;				dc.w	0
-;				dc.l	-1
-
-;Bul5Pop:
-;				dc.b	8,8
-;				dc.w	6,4
-;				dc.w	0
-;				dc.b	6,6
-;				dc.w	6,5
-;				dc.w	0
-;				dc.b	4,4
-;				dc.w	6,6
-;				dc.w	0
-;				dc.l	-1
-
-;grenAnim:
-;				dc.b	25,25
-;				dc.w	1,21
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	1,22
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	1,23
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	1,24
-;				dc.w	0
-;				dc.l	-1
-
-;Bul2Anim:
-;				dc.b	25,25
-;				dc.w	-18,4
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	-18,5
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	-18,6
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	-18,7
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	-18,4
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	-18,5
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	-18,6
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	-18,7
-;				dc.w	0
-;				dc.w	-1
-
-
-;Bul2Pop:
-;				dc.b	25,25
-;				dc.w	2,8
-;				dc.w	-4
-;				dc.b	29,29
-;				dc.w	2,9
-;				dc.w	-4
-;				dc.b	33,33
-;				dc.w	2,10
-;				dc.w	-4
-;				dc.b	37,37
-;				dc.w	2,11
-;				dc.w	-4
-;				dc.b	41,41
-;				dc.w	2,12
-;				dc.w	-4
-;				dc.b	45,45
-;				dc.w	2,13
-;				dc.w	-4
-;				dc.b	49,49
-;				dc.w	2,14
-;				dc.w	-4
-;				dc.b	53,53
-;				dc.w	2,15
-;				dc.w	-4
-;				dc.b	57,57
-;				dc.w	2,16
-;				dc.w	-4
-;				dc.b	61,61
-;				dc.w	2,17
-;				dc.w	-4
-;				dc.b	65,65
-;				dc.w	2,18
-;				dc.w	-4
-;				dc.b	69,69
-;				dc.w	2,19
-;				dc.w	-4
-;				dc.w	-1
-
-;RockAnim:
-;				dc.b	16,16
-;				dc.w	6,0
-;				dc.w	0
-;				dc.b	16,16
-;				dc.w	6,1
-;				dc.w	0
-;				dc.b	16,16
-;				dc.w	6,2
-;				dc.w	0
-;				dc.b	16,16
-;				dc.w	6,3
-;				dc.w	0
-;				dc.l	-1
-
-val				SET		100
-
-;RockPop:
-;				dc.b	val,val
-;				dc.w	8,0
-;				dc.w	-4
-;val				SET		val+10
-;				dc.b	val,val
-;				dc.w	8,1
-;				dc.w	0
-;val				SET		val+10
-;				dc.b	val,val
-;				dc.w	8,2
-;				dc.w	-4
-;val				SET		val+10
-;				dc.b	val,val
-;				dc.w	8,3
-;				dc.w	-4
-;val				SET		val+10
-;				dc.b	val,val
-;				dc.w	8,4
-;				dc.w	-4
-;val				SET		val+10
-;				dc.b	val,val
-;				dc.w	8,4
-;				dc.w	-4
-;val				SET		val+10
-;				dc.b	val,val
-;				dc.w	8,5
-;				dc.w	-4
-;val				SET		val+10
-;				dc.b	val,val
-;				dc.w	8,5
-;				dc.w	-4
-;val				SET		val+10
-;				dc.b	val,val
-;				dc.w	8,6
-;				dc.w	-4
-;val				SET		val+10
-;				dc.b	val,val
-;				dc.w	8,6
-;				dc.w	-4
-;val				SET		val+10
-;				dc.b	val,val
-;				dc.w	8,7
-;				dc.w	-4
-;val				SET		val+10
-;				dc.b	val,val
-;				dc.w	8,7
-;				dc.w	-4
-;val				SET		val+10
-;				dc.b	val,val
-;				dc.w	8,8
-;				dc.w	-4
-;val				SET		val+10
-;				dc.b	val,val
-;				dc.w	8,8
-;				dc.w	-4
-;				dc.l	-1
-
-val				SET		5
-
-;FlameAnim:
-;
-;				dc.b	val,val
-;				dc.w	8,0
-;				dc.w	0
-;val				SET		val+4
-;				dc.b	val,val
-;				dc.w	8,1
-;				dc.w	0
-;val				SET		val+4
-;				dc.b	val,val
-;				dc.w	8,2
-;				dc.w	0
-;val				SET		val+4
-;				dc.b	val,val
-;				dc.w	8,3
-;				dc.w	0
-;val				SET		val+4
-;				dc.b	val,val
-;				dc.w	8,4
-;				dc.w	0
-;val				SET		val+4
-;				dc.b	val,val
-;				dc.w	8,4
-;				dc.w	0
-;val				SET		val+4
-;				dc.b	val,val
-;				dc.w	8,5
-;				dc.w	0
-;val				SET		val+4
-;				dc.b	val,val
-;				dc.w	8,5
-;				dc.w	0
-;val				SET		val+4
-;				dc.b	val,val
-;				dc.w	8,5
-;				dc.w	0
-;val				SET		val+4
-;				dc.b	val,val
-;				dc.w	8,6
-;				dc.w	0
-;val				SET		val+4
-;				dc.b	val,val
-;				dc.w	8,6
-;				dc.w	0
-;val				SET		val+4
-;				dc.b	val,val
-;				dc.w	8,6
-;				dc.w	0
-;val				SET		val+6
-;				dc.b	val,val
-;				dc.w	8,7
-;				dc.w	0
-;val				SET		val+8
-;				dc.b	val,val
-;				dc.w	8,7
-;				dc.w	0
-;val				SET		val+8
-;				dc.b	val,val
-;				dc.w	8,7
-;				dc.w	0
-;val				SET		val+8
-;				dc.b	val,val
-;				dc.w	8,7
-;				dc.w	0
-;val				SET		val+8
-;				dc.b	val,val
-;				dc.w	8,8
-;				dc.w	0
-;val				SET		val+8
-;				dc.b	val,val
-;				dc.w	8,8
-;				dc.w	0
-;val				SET		val+8
-;				dc.b	val,val
-;				dc.w	8,8
-;				dc.w	0
-
-;				dc.l	-1
-
-;FlamePop:
-;val				SET		4*35
-;				dc.b	val,val
-;				dc.w	8,7
-;				dc.w	0
-;val				SET		val+4
-;				dc.b	val,val
-;				dc.w	8,7
-;				dc.w	0
-;val				SET		val+4
-;				dc.b	val,val
-;				dc.w	8,7
-;				dc.w	0
-;val				SET		val+4
-;				dc.b	val,val
-;				dc.w	8,8
-;				dc.w	0
-;val				SET		val+4
-;				dc.b	val,val
-;				dc.w	8,8
-;				dc.w	0
-;val				SET		val+4
-;				dc.b	val,val
-;				dc.w	8,8
-;				dc.w	0
-
-;				dc.l	-1
-
-;Explode1Anim:
-;				dc.b	25,25
-;				dc.w	0,16
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	0,17
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	0,18
-;				dc.w	0
-;				dc.b	25,25
-;				dc.w	0,19
-;				dc.w	0
-;				dc.l	-1
-
-;Explode1Pop:
-;				dc.b	20,20
-;				dc.w	0,16
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,16
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,16
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,16
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,16
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,16
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,16
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,16
-;				dc.w	1
-;
-;				dc.b	17,17
-;				dc.w	0,16
-;				dc.w	1
-
-;				dc.b	13,13
-;				dc.w	0,16
-;				dc.w	1
-
-;				dc.b	9,9
-;				dc.w	0,16
-;				dc.w	1
-
-;				dc.l	-1
-
-;Explode2Anim:
-;				dc.b	20,20
-;				dc.w	0,20
-;				dc.w	0
-;				dc.b	20,20
-;				dc.w	0,21
-;				dc.w	0
-;				dc.b	20,20
-;				dc.w	0,22
-;				dc.w	0
-;				dc.b	20,20
-;				dc.w	0,23
-;				dc.w	0
-;				dc.l	-1
-
-;Explode2Pop:
-;				dc.b	20,20
-;				dc.w	0,20
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,20
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,20
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,20
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,20
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,20
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,20
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,20
-;				dc.w	1
-
-;				dc.b	17,17
-;				dc.w	0,20
-;				dc.w	1
-
-;				dc.b	13,13
-;				dc.w	0,20
-;				dc.w	1
-
-;				dc.b	9,9
-;				dc.w	0,20
-;				dc.w	1
-
-;				dc.l	-1
-
-
-;Explode3Anim:
-;				dc.b	20,20
-;				dc.w	0,24
-;				dc.w	0
-;				dc.b	20,20
-;				dc.w	0,25
-;				dc.w	0
-;				dc.b	20,20
-;				dc.w	0,26
-;				dc.w	0
-;				dc.b	20,20
-;				dc.w	0,27
-;				dc.w	0
-;				dc.l	-1
-;
-;Explode3Pop:
-;				dc.b	17,17
-;				dc.w	0,24
-;				dc.w	1
-;				dc.b	17,17
-;				dc.w	0,24
-;				dc.w	1
-;				dc.b	17,17
-;				dc.w	0,24
-;				dc.w	1
-;				dc.b	17,17
-;				dc.w	0,24
-;				dc.w	1
-;				dc.b	17,17
-;				dc.w	0,24
-;				dc.w	1
-;				dc.b	17,17
-;				dc.w	0,24
-;				dc.w	1
-;				dc.b	17,17
-;				dc.w	0,24
-;				dc.w	1
-;				dc.b	17,17
-;				dc.w	0,24
-;				dc.w	1
-;
-;				dc.b	13,13
-;				dc.w	0,24
-;				dc.w	1
-;
-;				dc.b	9,9
-;				dc.w	0,24
-;				dc.w	1
-;
-;				dc.l	-1
-;
-;Explode4Anim:
-;				dc.b	30,30
-;				dc.w	0,28
-;				dc.w	0
-;				dc.b	30,30
-;				dc.w	0,29
-;				dc.w	0
-;				dc.b	30,30
-;				dc.w	0,30
-;				dc.w	0
-;				dc.b	30,30
-;				dc.w	0,31
-;				dc.w	0
-;				dc.l	-1
-
-;Explode4Pop:
-;				dc.b	20,20
-;				dc.w	0,28
-;				dc.w	0
-;				dc.b	20,20
-;				dc.w	0,28
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,28
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,28
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,28
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,28
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,28
-;				dc.w	1
-;				dc.b	20,20
-;				dc.w	0,28
-;				dc.w	1
-;
-;				dc.b	17,17
-;				dc.w	0,28
-;				dc.w	1
-;
-;				dc.b	13,13
-;				dc.w	0,28
-;				dc.w	1
-
-;				dc.b	9,9
-;				dc.w	0,28
-;				dc.w	1
-
-;				dc.l	-1
-
-;BulletSizes:
-;				dc.w	$0f0f,$707
-;				dc.w	$0f0f,$f0f
-;				dc.w	$0f0f,$1f1f
-;				dc.w	$1f1f,$1f1f
-;				dc.w	$0707,$1f1f
-;				dc.w	$0f0f,$0f0f
-;				dc.w	$0f0f,$0f0f
-;				dc.w	$707,$707
-;				dc.w	0,0,0,0
-;10
-;				dc.w	0,0,0,0,0,0,0,0,0,0
-;				dc.w	0,0,0,0,0,0,0,0,0,0
-;20
-;				dc.w	0,0,0,0,0,0,0,0,0,0
-;				dc.w	0,0,0,0,0,0,0,0,0,0
-;30
-;				dc.w	0,0,0,0,0,0,0,0,0,0
-;				dc.w	0,0,0,0,0,0,0,0,0,0
-;40
-;				dc.w	0,0,0,0,0,0,0,0,0,0
-;				dc.w	0,0,0,0,0,0,0,0,0,0
-;50
-;				dc.w	$0707,$0707,$0707,$0707
-;				dc.w	$0707,$0707,$0707,$0707
-
-;HitNoises:
-; dc.l -1,-1
-;				dc.w	15,200
-;				dc.w	15,200
-;				dc.l	-1
-;				dc.w	15,200
-;				dc.l	-1,-1,-1,-1,-1
-;				dc.l	-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
-;				dc.l	-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
-;				dc.l	-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
-;				dc.l	-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
-
-;				dc.w	13,50,13,50,13,50,13,50
-
-;ExplosiveForce:
-;				dc.w	0,0,64,0,40,0,0,0,0,0
-;				dc.w	0,0,0,0,0,0,0,0,0,0
-;				dc.w	0,0,0,0,0,0,0,0,0,0
-;				dc.w	0,0,0,0,0,0,0,0,0,0
-;				dc.w	0,0,0,0,0,0,0,0,0,0
-;				dc.w	0,0,0,0
-
-;BulletTypes:
-;				dc.l	Bul1Anim,Bul1Pop
-;				dc.l	Bul2Anim,Bul2Pop
-;				dc.l	RockAnim,RockPop
-;				dc.l	FlameAnim,FlamePop
-;				dc.l	grenAnim,RockPop
-;				dc.l	Bul4Anim,Bul4Pop
-;				dc.l	Bul5Anim,Bul5Pop
-;				dc.l	Bul1Anim,Bul1Pop
-;				dc.l	0,0
-;				dc.l	0,0
-
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-;				dc.l	0,0
-
-;				dc.l	Explode1Anim,Explode1Pop
-;				dc.l	Explode2Anim,Explode2Pop
-;				dc.l	Explode3Anim,Explode3Pop
-;				dc.l	Explode4Anim,Explode4Pop
 
 tsta:			dc.l	0
 timeout:		dc.w	0
@@ -2955,7 +1981,7 @@ ItsABullet:
 				bra.s	infinite
 
 notdone:
-				move.w	TempFrames,d2
+				move.w	Anim_TempFrames_w,d2
 				add.w	d2,ShotT_Lifetime_w(a0)
 
 infinite:
@@ -3089,7 +2115,6 @@ notdoneanim:
 				add.l	Lvl_DataPtr_l,d0
 				move.l	d0,objroom
 
-;********************************
 				move.l	objroom,a3
 				move.b	ZoneT_Echo_b(a3),PlayEcho
 				tst.b	ShotT_InUpperZone_b(a0)
@@ -3237,7 +2262,7 @@ notdoneanim:
 				move.l	ShotT_VelocityX_w(a0),d3
 				move.w	d3,d4
 				swap	d3
-				move.w	TempFrames,d5
+				move.w	Anim_TempFrames_w,d5
 				muls	d5,d3
 				mulu	d5,d4
 				swap	d3
@@ -3259,11 +2284,11 @@ notdoneanim:
 				move.l	d2,newz
 				move.l	ShotT_AccYPos_w(a0),oldy
 				move.w	ShotT_VelocityY_w(a0),d3
-				muls	TempFrames,d3
+				muls	Anim_TempFrames_w,d3
 				move.l	BulT_Gravity_l(a6),d5
 				beq.s	nograv
 
-				muls	TempFrames,d5
+				muls	Anim_TempFrames_w,d5
 				add.l	d5,d3
 				move.w	ShotT_VelocityY_w(a0),d6
 				ext.l	d6
@@ -3780,7 +2805,7 @@ BIGBACK:
 MaxDamage:		dc.w	0
 
 ComputeBlast:
-				clr.w	doneflames
+				clr.w	anim_DoneFlames_w
 				move.w	d0,d6
 				move.w	d0,MaxDamage
 				move.w	d0,d1
@@ -3792,14 +2817,14 @@ ComputeBlast:
 				move.l	Lvl_ZoneAddsPtr_l,a2
 				move.l	(a2,d0.w*4),a2
 				add.l	Lvl_DataPtr_l,a2
-				move.l	a2,MiddleRoom
+				move.l	a2,anim_MiddleRoom_l
 				move.l	Lvl_ObjectDataPtr_l,a2
 				suba.w	#64,a2
 				ext.l	d6
 				move.l	a0,-(a7)
 
 HitObjLoop:
-				move.l	MiddleRoom,FromRoom
+				move.l	anim_MiddleRoom_l,FromRoom
 				add.w	#64,a2
 				move.w	(a2),d0
 				blt		CheckedEmAll
@@ -3994,8 +3019,8 @@ CheckedEmAll:
 				move.l	Lvl_ObjectPointsPtr_l,a2
 				move.w	(a2,d0.w*8),d1
 				move.w	4(a2,d0.w*8),d2
-				move.w	d1,middlex
-				move.w	d2,middlez
+				move.w	d1,anim_MiddleX_w
+				move.w	d2,anim_MiddleZ_w
 				move.w	#9,d7
 				clr.b	exitfirst
 				st.b	Obj_WallBounce_b
@@ -4003,7 +3028,7 @@ CheckedEmAll:
 				move.l	Lvl_ZoneAddsPtr_l,a3
 				move.l	(a3,d0.w*4),a3
 				add.l	Lvl_DataPtr_l,a3
-				move.l	a3,MiddleRoom
+				move.l	a3,anim_MiddleRoom_l
 				move.l	Plr_ShotDataPtr_l,a3
 				move.w	4(a0),d0
 				ext.l	d0
@@ -4031,9 +3056,9 @@ DOFLAMES:
 .foundonefree:
 				move.b	#2,16(a3)
 				move.w	d1,NUMTOCHECK
-				add.w	#1,doneflames
-				move.w	middlex,d1
-				move.w	middlez,d2
+				add.w	#1,anim_DoneFlames_w
+				move.w	anim_MiddleX_w,d1
+				move.w	anim_MiddleZ_w,d2
 				move.w	d1,oldx
 				move.w	d2,oldz
 				move.b	ShotT_InUpperZone_b(a0),StoodInTop
@@ -4066,7 +3091,7 @@ DOFLAMES:
 				move.l	d3,newy
 				move.w	d1,newx
 				move.w	d2,newz
-				move.l	MiddleRoom,objroom
+				move.l	anim_MiddleRoom_l,objroom
 
 				movem.l	d5/d6/a0/a1/a3/d7/a6,-(a7)
 				move.w	#80,Obj_ExtLen_w
@@ -4125,7 +3150,4 @@ DOFLAMES:
 .nomore:
 				rts
 
-MiddleRoom:		dc.l	0
-middlex:		dc.w	0
-middlez:		dc.w	0
-doneflames:		dc.w	0
+

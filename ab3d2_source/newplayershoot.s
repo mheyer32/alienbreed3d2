@@ -11,7 +11,7 @@ Plr1_Shot:
 				tst.w	Plr1_TimeToShoot_w
 				beq.s	.can_fire
 
-				move.w	TempFrames,d0
+				move.w	Anim_TempFrames_w,d0
 				sub.w	d0,Plr1_TimeToShoot_w
 				bge		.no_fire
 
@@ -337,7 +337,7 @@ Plr2_Shot:
 				tst.w	Plr2_TimeToShoot_w
 				beq.s	.can_fire
 
-				move.w	TempFrames,d0
+				move.w	Anim_TempFrames_w,d0
 				sub.w	d0,Plr2_TimeToShoot_w
 				bge		.no_fire
 

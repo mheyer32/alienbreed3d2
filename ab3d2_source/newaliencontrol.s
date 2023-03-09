@@ -335,7 +335,7 @@ ACTIVATED:
 
 				bsr		ACTANIMOBJ
 
-				move.w	TempFrames,d0
+				move.w	Anim_TempFrames_w,d0
 				add.w	d0,EntT_Timer2_w(a0)
 				move.w	ObjT_ActiveTimeout_w(a2),d0
 				blt.s	.nottimeout

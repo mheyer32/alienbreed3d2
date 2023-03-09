@@ -162,7 +162,7 @@ Plr1_FollowPath:
 				add.w	d0,d0
 				and.w	#8190,d0
 				move.w	d0,Plr1_AngPos_w
-				move.w	TempFrames,d0
+				move.w	Anim_TempFrames_w,d0
 				asl.w	#3,d0
 				adda.w	d0,a0
 				cmp.l	#endpath,a0
