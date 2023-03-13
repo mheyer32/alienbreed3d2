@@ -1108,7 +1108,8 @@ waitmaster:
 ; DEVMODE INSTRUMENTATION
 
 				IFD	DEV
-				jsr		Dev_FrameEnd
+				;jsr		Dev_FrameEnd
+				jsr		Dev_FrameBegin
 				;jsr	Dev_FPSReport			; fps counter c/o Grond
 				;jsr	Dev_FPSMark				; fps counter c/o Grond
 				;jsr	Dev_FrameReport			; Display frame time
@@ -1888,6 +1889,9 @@ nodrawp2:
 ; DEVMODE INSTRUMENTATION
 				IFD DEV
 				;jsr	Dev_RenderElapsed	; record drawing complete (and c2p started)
+				jsr		Dev_DrawDone
+				jsr		Dev_DrawGraph
+
 				ENDC
 ; END DEVMODE INSTRUMENTATION
 

@@ -11,20 +11,27 @@
 
 				IFD	DEV
 
-DEV_GRAPH_BUFFER_DIM equ 6
-DEV_GRAPH_BUFFER_SIZE equ 1 << DEV_GRAPH_BUFFER_DIM
-DEV_GRAPH_BUFFER_MASK equ DEV_GRAPH_BUFFER_SIZE - 1
+DEV_GRAPH_BUFFER_DIM 	equ 6
+DEV_GRAPH_BUFFER_SIZE 	equ 64
+DEV_GRAPH_BUFFER_MASK 	equ 63
+
+DEV_GRAPH_DRAW_COLOUR	equ 255
 
 				section bss,bss
 				align 4
 
-dev_GraphBuffer_vl:		ds.l	DEV_GRAPH_BUFFER_SIZE
+dev_GraphBuffer_vb:		ds.l	DEV_GRAPH_BUFFER_SIZE ; array of times
 
-dev_EClockRate_l:		ds.l	1
+dev_ECVToMsFactor_l:	ds.l	1   ; factor for converting EClock value differences to ms
+dev_FrameIndex_l:		ds.l	1
 
 ; EClockVal stamps
 dev_ECVFrameBegin_q:	ds.l	2	; timestamp at the start of the frame
+dev_ECVDrawDone_q:		ds.l	2	; timestamp at the end of drawing
+dev_ECVChunkyDone_q:	ds.l	2	; timestamp at the end of chunky to planar
 dev_ECVFrameEnd_q:		ds.l	2	; timestamp at the end of the frame
+
+;///////////////////////////////
 
 ; EClockVal stamps
 dev_fps_1st_q:		ds.l	2
@@ -42,10 +49,11 @@ dev_render_time_l:	ds.l	1
 
 ; Character buffer for printing
 dev_CharBuffer_vb:	dcb.b	32
-dev_FrameIndex_b:	ds.b	1
 
 				section code,code
 				align 4
+
+;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ; Initialise the developer options
 Dev_Init:
@@ -58,11 +66,17 @@ Dev_Init:
 				move.l	timerrequest+IO_DEVICE,_TimerBase
 				move.l	d0,timerflag
 
-				; Grab the EClockRate for later
+				; Grab the EClockRate
 				lea		dev_ECVFrameBegin_q,a0
 				jsr		Dev_TimeStamp
-				move.l	d0,dev_EClockRate_l
+
+				; Convert eclock rate to scale factor that we will multiply by, then divide by 65536
+				move.l	#65536000,d1
+				divu.l	d0,d1
+				move.l	d1,dev_ECVToMsFactor_l
 				rts
+
+;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ; Generic text output, buffer in a0, length in d0. Prints at the bottom of the screen, just above the
 ; Status bar
@@ -81,22 +95,36 @@ Dev_Print:
 				movem.l	(sp)+,d2/a6
 				rts
 
+;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 ; Dirty macro for truncated 32-bit precision difference between two timestamps
 DEV_ELAPSED32	MACRO
 				move.l	4(a1),\1
 				sub.l	4(a0),\1
 				ENDM
 
-; Subtract two timestamps, First pointed to by a0, second by a1. Full return in d0 (upper) : d1(lower)
+; Subtract two timestamps, First pointed to by a0, second by a1. Full return in d1 (upper) : d0(lower)
+; Generally we don't care about the upper, but it's calculated in case we want it.
 dev_Elapsed:
 				move.l	d2,-(sp)
-				move.l	(a1),d0
-				move.l	4(a1),d1
+				move.l	(a1),d1
+				move.l	4(a1),d0
 				move.l	(a0),d2
-				sub.l	4(a0),d1
-				subx.l	d2,d0
+				sub.l	4(a0),d0
+				subx.l	d2,d1
 				move.l	(sp)+,d2
 				rts
+
+;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+; Convert an EClockVal difference to milliseconds. Input in d0, return in d0.
+dev_ECVDiffToMs:
+				mulu.l	dev_ECVToMsFactor_l,d0
+				clr.w	d0
+				swap	d0
+				rts
+
+;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ; Generic timestamp, uses EClockVal in a0
 Dev_TimeStamp:
@@ -108,11 +136,16 @@ Dev_TimeStamp:
 
 ; Mark the beginning of a new frame.
 Dev_FrameBegin:
-				move.b	dev_FrameIndex_b,d0
-				add.b	#1,d0
-				and.b	#DEV_GRAPH_BUFFER_MASK,d0
-				move.b	d0,dev_FrameIndex_b
+				move.l	dev_FrameIndex_l,d0
+				addq.l	#1,d0
+				and.l	#DEV_GRAPH_BUFFER_MASK,d0
+				move.l	d0,dev_FrameIndex_l
 				lea		dev_ECVFrameBegin_q,a0
+				bra.s	Dev_TimeStamp
+
+; Mark the end of the frame
+Dev_DrawDone:
+				lea		dev_ECVDrawDone_q,a0
 				bra.s	Dev_TimeStamp
 
 ; Mark the end of the frame
@@ -120,6 +153,42 @@ Dev_FrameEnd:
 				lea		dev_ECVFrameEnd_q,a0
 				bra.s	Dev_TimeStamp
 
+; Calculate the times and store in the graph data buffer
+Dev_DrawGraph:
+				move.l	d2,-(sp)
+				lea		dev_ECVDrawDone_q,a1
+				lea		dev_ECVFrameBegin_q,a0
+				bsr.s	dev_Elapsed						; d1:d0 contains the 64-bit difference
+				bsr.s	dev_ECVDiffToMs 				; d0 now contains ms value
+				lea		dev_GraphBuffer_vb,a0			; Put the ms value into the graph buffer
+				move.l	dev_FrameIndex_l,d1
+				move.b	d0,(a0,d1)
+
+				; TODO a proper line graph, for now this is just points.
+
+				; Now draw it...
+				move.l	Vid_FastBufferPtr_l,a0
+				add.l	#SCREEN_WIDTH*(FS_HEIGHT-8),a0
+				lea		dev_GraphBuffer_vb,a1
+				move.l	#DEV_GRAPH_BUFFER_SIZE,d0
+
+.loop:
+				clr.l	d2
+				move.b	(a1,d1),d2
+				addq.l	#1,d1
+				and.l	#DEV_GRAPH_BUFFER_MASK,d1
+				muls.w	#-SCREEN_WIDTH,d2
+				move.b	#DEV_GRAPH_DRAW_COLOUR,(a0,d2)
+				addq.l	#1,a0
+				dbra	d0,.loop
+
+				move.l	(sp)+,d2
+				rts
+
+;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ;fps counter c/o Grond
 Dev_FPSMark:
