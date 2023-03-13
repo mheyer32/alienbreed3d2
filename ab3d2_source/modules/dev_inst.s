@@ -11,6 +11,43 @@
 
 				IFD	DEV
 
+DEV_GRAPH_BUFFER_DIM equ 6
+DEV_GRAPH_BUFFER_SIZE equ 1 << DEV_GRAPH_BUFFER_DIM
+DEV_GRAPH_BUFFER_MASK equ DEV_GRAPH_BUFFER_SIZE - 1
+
+				section bss,bss
+				align 4
+
+dev_GraphBuffer_vl:		ds.l	DEV_GRAPH_BUFFER_SIZE
+
+dev_EClockRate_l:		ds.l	1
+
+; EClockVal stamps
+dev_ECVFrameBegin_q:	ds.l	2	; timestamp at the start of the frame
+dev_ECVFrameEnd_q:		ds.l	2	; timestamp at the end of the frame
+
+; EClockVal stamps
+dev_fps_1st_q:		ds.l	2
+dev_fps_2nd_q:		ds.l	2
+dev_c2p_1st_q:		ds.l	2
+dev_c2p_2nd_q:		ds.l	2
+dev_render_1st_q:	ds.l	2
+dev_render_2nd_q:	ds.l	2
+
+; Time differences (assumes ev differences fit in 32-bits)
+dev_fps_prev_l:		ds.l	1
+dev_frametime_l:	ds.l	1
+dev_c2p_time_l:		ds.l	1
+dev_render_time_l:	ds.l	1
+
+; Character buffer for printing
+dev_CharBuffer_vb:	dcb.b	32
+dev_FrameIndex_b:	ds.b	1
+
+				section code,code
+				align 4
+
+; Initialise the developer options
 Dev_Init:
 				lea		timername,a0
 				lea		timerrequest,a1
@@ -20,13 +57,69 @@ Dev_Init:
 
 				move.l	timerrequest+IO_DEVICE,_TimerBase
 				move.l	d0,timerflag
+
+				; Grab the EClockRate for later
+				lea		dev_ECVFrameBegin_q,a0
+				jsr		Dev_TimeStamp
+				move.l	d0,dev_EClockRate_l
 				rts
 
-; Generic text output, buffer in a0
+; Generic text output, buffer in a0, length in d0. Prints at the bottom of the screen, just above the
+; Status bar
 Dev_Print:
+				movem.l	d2/a6,-(sp)
+				move.l	Vid_MainScreen_l,a1
+				lea		sc_RastPort(a1),a1
+				move.l	d0,d2
+				clr.l	d0
+				move.l	#SCREEN_HEIGHT-30,d1
+				CALLGRAF Move
 
+				move.l	d2,d0
+				jsr		_LVOText(a6)
 
+				movem.l	(sp)+,d2/a6
 				rts
+
+; Dirty macro for truncated 32-bit precision difference between two timestamps
+DEV_ELAPSED32	MACRO
+				move.l	4(a1),\1
+				sub.l	4(a0),\1
+				ENDM
+
+; Subtract two timestamps, First pointed to by a0, second by a1. Full return in d0 (upper) : d1(lower)
+dev_Elapsed:
+				move.l	d2,-(sp)
+				move.l	(a1),d0
+				move.l	4(a1),d1
+				move.l	(a0),d2
+				sub.l	4(a0),d1
+				subx.l	d2,d0
+				move.l	(sp)+,d2
+				rts
+
+; Generic timestamp, uses EClockVal in a0
+Dev_TimeStamp:
+				move.l	a6,-(sp)
+				move.l	_TimerBase,a6
+				jsr		_LVOReadEClock(a6)
+				move.l	(sp)+,a6
+				rts
+
+; Mark the beginning of a new frame.
+Dev_FrameBegin:
+				move.b	dev_FrameIndex_b,d0
+				add.b	#1,d0
+				and.b	#DEV_GRAPH_BUFFER_MASK,d0
+				move.b	d0,dev_FrameIndex_b
+				lea		dev_ECVFrameBegin_q,a0
+				bra.s	Dev_TimeStamp
+
+; Mark the end of the frame
+Dev_FrameEnd:
+				lea		dev_ECVFrameEnd_q,a0
+				bra.s	Dev_TimeStamp
+
 
 ;fps counter c/o Grond
 Dev_FPSMark:
@@ -271,19 +364,5 @@ MY_timer_outputstring2X:	dc.b	' lop'
 				align	4
 _TimerBase:		dc.l	0
 timerflag:		dc.l	-1
-
-; EClockVal stamps
-dev_fps_1st_q:		dc.l	0,0
-dev_fps_2nd_q:		dc.l	0,0
-dev_c2p_1st_q:		dc.l	0,0
-dev_c2p_2nd_q:		dc.l	0,0
-dev_render_1st_q:	dc.l	0,0
-dev_render_2nd_q:	dc.l	0,0
-
-; Time differences (assumes ev differences fit in 32-bits)
-dev_fps_prev_l:		dc.l	0
-dev_frametime_l:	dc.l	0
-dev_c2p_time_l:		dc.l	0
-dev_render_time_l:	dc.l	0
 
 				ENDC
