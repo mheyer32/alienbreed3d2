@@ -426,6 +426,11 @@ noload:
 				CALLDOS	Delay
 				ENDC
 
+				IFD	DEV
+				jsr		Dev_DataReset
+				ENDC
+
+
 ;****************************
 ;* Initialize level
 ;****************************
@@ -846,9 +851,7 @@ clrmessbuff:
 				move.l	#0,Plr2_SnapYVel_l
 
 				IFD	DEV
-				;jsr	Dev_FPSMark
-				;jsr	Dev_RenderMark
-				jsr		Dev_FrameBegin
+				;jsr		Dev_FrameBegin
 				ENDC
 lop:
 				move.w	#%110000000000,_custom+potgo
@@ -1108,14 +1111,9 @@ waitmaster:
 ; DEVMODE INSTRUMENTATION
 
 				IFD	DEV
-				;jsr		Dev_FrameEnd
+				jsr		Dev_FrameEnd
 				jsr		Dev_FrameBegin
-				;jsr	Dev_FPSReport			; fps counter c/o Grond
-				;jsr	Dev_FPSMark				; fps counter c/o Grond
-				;jsr	Dev_FrameReport			; Display frame time
-				;jsr	Dev_RenderReport		; Display render time
-				;jsr	Dev_C2PReport			; Display c2p time
-				;jsr Dev_Print
+				;jsr	Dev_Print ; TODO proper report
 				ENDC
 
 ; END DEVMODE INSTRUMENTATION
@@ -1888,7 +1886,6 @@ nodrawp2:
 
 ; DEVMODE INSTRUMENTATION
 				IFD DEV
-				;jsr	Dev_RenderElapsed	; record drawing complete (and c2p started)
 				jsr		Dev_DrawDone
 				jsr		Dev_DrawGraph
 
@@ -1899,7 +1896,7 @@ nodrawp2:
 
 ; DEVMODE INSTRUMENTATION
 				IFD DEV
-				;jsr	Dev_C2PElapsed		; record c2p complete (and render started)
+				jsr		Dev_ChunkyDone
 				ENDC
 ; END DEVMODE INSTRUMENTATION
 
@@ -1935,7 +1932,6 @@ nodrawp2:
 				sub.w	#2,Vid_LetterBoxMarginHeight_w
 
 .nobigscr:
-
 				tst.b	$5b(a5)
 				beq		notdoubheight
 				tst.b	LASTDH

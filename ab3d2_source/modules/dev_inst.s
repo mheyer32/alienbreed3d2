@@ -20,10 +20,8 @@ DEV_GRAPH_DRAW_COLOUR	equ 255
 				section bss,bss
 				align 4
 
-dev_GraphBuffer_vb:		ds.l	DEV_GRAPH_BUFFER_SIZE ; array of times
-
+dev_GraphBuffer_vb:		ds.b	DEV_GRAPH_BUFFER_SIZE ; array of times
 dev_ECVToMsFactor_l:	ds.l	1   ; factor for converting EClock value differences to ms
-dev_FrameIndex_l:		ds.l	1
 
 ; EClockVal stamps
 dev_ECVFrameBegin_q:	ds.l	2	; timestamp at the start of the frame
@@ -31,7 +29,11 @@ dev_ECVDrawDone_q:		ds.l	2	; timestamp at the end of drawing
 dev_ECVChunkyDone_q:	ds.l	2	; timestamp at the end of chunky to planar
 dev_ECVFrameEnd_q:		ds.l	2	; timestamp at the end of the frame
 
+dev_FrameIndex_w:		ds.w	1	; frame number % DEV_GRAPH_BUFFER_SIZE
+
+
 ;///////////////////////////////
+					align 4
 
 ; EClockVal stamps
 dev_fps_1st_q:		ds.l	2
@@ -70,16 +72,26 @@ Dev_Init:
 				lea		dev_ECVFrameBegin_q,a0
 				jsr		Dev_TimeStamp
 
-				; Convert eclock rate to scale factor that we will multiply by, then divide by 65536
+				; Convert eclock rate to scale factor that we will first multiply by, then divide by 65536
 				move.l	#65536000,d1
 				divu.l	d0,d1
 				move.l	d1,dev_ECVToMsFactor_l
 				rts
 
+Dev_DataReset:
+				lea		dev_GraphBuffer_vb,a0
+				move.l	#(DEV_GRAPH_BUFFER_SIZE/16)-1,d0
+.loop:
+				clr.l	(a0)+
+				clr.l	(a0)+
+				clr.l	(a0)+
+				clr.l	(a0)+
+				dbra	d0,.loop
+				rts
+
 ;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-; Generic text output, buffer in a0, length in d0. Prints at the bottom of the screen, just above the
-; Status bar
+; Generic text output, buffer in a0, length in d0. Prints at the bottom of the screen, just above the status bar
 Dev_Print:
 				movem.l	d2/a6,-(sp)
 				move.l	Vid_MainScreen_l,a1
@@ -136,17 +148,23 @@ Dev_TimeStamp:
 
 ; Mark the beginning of a new frame.
 Dev_FrameBegin:
-				move.l	dev_FrameIndex_l,d0
-				addq.l	#1,d0
-				and.l	#DEV_GRAPH_BUFFER_MASK,d0
-				move.l	d0,dev_FrameIndex_l
+				move.w	dev_FrameIndex_w,d0
+				addq.w	#1,d0
+				and.w	#DEV_GRAPH_BUFFER_MASK,d0
+				move.w	d0,dev_FrameIndex_w
 				lea		dev_ECVFrameBegin_q,a0
 				bra.s	Dev_TimeStamp
 
-; Mark the end of the frame
+; Mark the end of drawing
 Dev_DrawDone:
 				lea		dev_ECVDrawDone_q,a0
 				bra.s	Dev_TimeStamp
+
+; Mark the end of chunky conversion / copy
+Dev_ChunkyDone:
+				lea		dev_ECVChunkyDone_q,a0
+				bra.s	Dev_TimeStamp
+
 
 ; Mark the end of the frame
 Dev_FrameEnd:
@@ -158,23 +176,27 @@ Dev_DrawGraph:
 				move.l	d2,-(sp)
 				lea		dev_ECVDrawDone_q,a1
 				lea		dev_ECVFrameBegin_q,a0
-				bsr.s	dev_Elapsed						; d1:d0 contains the 64-bit difference
+
+				DEV_ELAPSED32 d0						; d0 contains the 32-bit difference, assumed to be small
 				bsr.s	dev_ECVDiffToMs 				; d0 now contains ms value
 				lea		dev_GraphBuffer_vb,a0			; Put the ms value into the graph buffer
-				move.l	dev_FrameIndex_l,d1
-				move.b	d0,(a0,d1)
-
-				; TODO a proper line graph, for now this is just points.
+				move.w	dev_FrameIndex_w,d1
+				move.b	d0,(a0,d1.w)
 
 				; Now draw it...
 				move.l	Vid_FastBufferPtr_l,a0
-				add.l	#SCREEN_WIDTH*(FS_HEIGHT-8),a0
+				add.l	#SCREEN_WIDTH*(FS_HEIGHT-8),a0  ; a0 points at lower left of game view
 				lea		dev_GraphBuffer_vb,a1
-				move.l	#DEV_GRAPH_BUFFER_SIZE,d0
 
+				; draw buffer position should be one ahead of the write position.
+				addq.w	#1,d1
+				and.w	#DEV_GRAPH_BUFFER_MASK,d1
+
+				; Draw loop
+				move.l	#DEV_GRAPH_BUFFER_SIZE-1,d0
 .loop:
 				clr.l	d2
-				move.b	(a1,d1),d2
+				move.b	(a1,d1.w),d2
 				addq.l	#1,d1
 				and.l	#DEV_GRAPH_BUFFER_MASK,d1
 				muls.w	#-SCREEN_WIDTH,d2
