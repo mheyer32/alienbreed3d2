@@ -779,6 +779,14 @@ pastobjscale:
 
 .no_flip_3:
 				move.l	d7,a2					; store fractional column offset
+
+				; TODO - counting drawn objects is proving... tricky
+				IFD	DEV
+				move.w	dev_VisObjCount_w,d7
+				addq.w	#1,d7
+				move.w  d7,dev_VisObjCount_w
+				ENDC
+
 				moveq.l	#0,d7
 				move.l	a5,midobj_l
 				move.l	(a3),d2

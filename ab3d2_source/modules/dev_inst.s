@@ -15,12 +15,12 @@ DEV_GRAPH_BUFFER_DIM 	equ 6
 DEV_GRAPH_BUFFER_SIZE 	equ 64
 DEV_GRAPH_BUFFER_MASK 	equ 63
 
-DEV_GRAPH_DRAW_COLOUR	equ 255
+DEV_GRAPH_DRAW_TIME_COLOUR	equ 255
 
 				section bss,bss
 				align 4
 
-dev_GraphBuffer_vb:		ds.b	DEV_GRAPH_BUFFER_SIZE ; array of times
+dev_GraphBuffer_vb:		ds.b	DEV_GRAPH_BUFFER_SIZE*2 ; array of times
 dev_ECVToMsFactor_l:	ds.l	1   ; factor for converting EClock value differences to ms
 
 ; EClockVal stamps
@@ -30,6 +30,8 @@ dev_ECVChunkyDone_q:	ds.l	2	; timestamp at the end of chunky to planar
 dev_ECVFrameEnd_q:		ds.l	2	; timestamp at the end of the frame
 
 dev_FrameIndex_w:		ds.w	1	; frame number % DEV_GRAPH_BUFFER_SIZE
+dev_DrawTimeMsAvg_w:	ds.w	1   ; two frame average of draw time
+dev_VisObjCount_w:		ds.w	1	; visible objects this frame
 
 
 ;///////////////////////////////
@@ -87,6 +89,7 @@ Dev_DataReset:
 				clr.l	(a0)+
 				clr.l	(a0)+
 				dbra	d0,.loop
+				clr.w	dev_DrawTimeMsAvg_w
 				rts
 
 ;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -152,6 +155,7 @@ Dev_FrameBegin:
 				addq.w	#1,d0
 				and.w	#DEV_GRAPH_BUFFER_MASK,d0
 				move.w	d0,dev_FrameIndex_w
+				clr.w	dev_VisObjCount_w
 				lea		dev_ECVFrameBegin_q,a0
 				bra.s	Dev_TimeStamp
 
@@ -171,6 +175,12 @@ Dev_FrameEnd:
 				lea		dev_ECVFrameEnd_q,a0
 				bra.s	Dev_TimeStamp
 
+;				IFD	DEV
+;				move.w	dev_VisObjCount_w,d0
+;				addq.w	#1,d0
+;				move.w  d0,dev_VisObjCount_w
+;				ENDC
+
 ; Calculate the times and store in the graph data buffer
 Dev_DrawGraph:
 				move.l	d2,-(sp)
@@ -181,11 +191,19 @@ Dev_DrawGraph:
 				bsr.s	dev_ECVDiffToMs 				; d0 now contains ms value
 				lea		dev_GraphBuffer_vb,a0			; Put the ms value into the graph buffer
 				move.w	dev_FrameIndex_w,d1
-				move.b	d0,(a0,d1.w)
+				add.w	dev_DrawTimeMsAvg_w,d0
+				lsr.w	#1,d0
+				move.w	d0,dev_DrawTimeMsAvg_w
+				move.b	d0,(a0,d1.w*2)
+				move.b	dev_VisObjCount_w+1,1(a0,d1.w*2)
 
 				; Now draw it...
 				move.l	Vid_FastBufferPtr_l,a0
-				add.l	#SCREEN_WIDTH*(FS_HEIGHT-8),a0  ; a0 points at lower left of game view
+
+				move.w	#FS_HEIGHT-8,d0
+				sub.w	Vid_LetterBoxMarginHeight_w,d0
+				mulu.w	#SCREEN_WIDTH,d0
+				add.l	d0,a0 							; a0 points at lower left of render area
 				lea		dev_GraphBuffer_vb,a1
 
 				; draw buffer position should be one ahead of the write position.
@@ -195,12 +213,21 @@ Dev_DrawGraph:
 				; Draw loop
 				move.l	#DEV_GRAPH_BUFFER_SIZE-1,d0
 .loop:
+				; plot draw time average
 				clr.l	d2
-				move.b	(a1,d1.w),d2
+				move.b	(a1,d1.w*2),d2
+				lsr.b	#1,d2 ; restrict the maximum deflection
+				muls.w	#-SCREEN_WIDTH,d2
+				move.b	#DEV_GRAPH_DRAW_TIME_COLOUR,(a0,d2)
+
+				; plot object count
+				clr.l	d2
+				move.b	1(a1,d1.w*2),d2
+				muls.w	#-SCREEN_WIDTH,d2
+				move.b	#31,(a0,d2)
+
 				addq.l	#1,d1
 				and.l	#DEV_GRAPH_BUFFER_MASK,d1
-				muls.w	#-SCREEN_WIDTH,d2
-				move.b	#DEV_GRAPH_DRAW_COLOUR,(a0,d2)
 				addq.l	#1,a0
 				dbra	d0,.loop
 
