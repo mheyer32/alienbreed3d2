@@ -1,7 +1,7 @@
 				include	"system.i"
 				include	"macros.i"
 				include	"defs.i"
-
+				include "modules/dev_macros.i"
 				opt		o+
 
 				xref	_custom
@@ -141,9 +141,7 @@ _start:
 				moveq	#INTB_VERTB,d0
 				CALLEXEC AddIntServer
 
-				IFD DEV
-				jsr		Dev_Init
-				ENDC
+				CALLDEV	Init
 
 				IFEQ	CD32VER
 				lea		KEYInt(pc),a1
@@ -426,10 +424,7 @@ noload:
 				CALLDOS	Delay
 				ENDC
 
-				IFD	DEV
-				jsr		Dev_DataReset
-				ENDC
-
+				CALLDEV	DataReset
 
 ;****************************
 ;* Initialize level
@@ -850,9 +845,6 @@ clrmessbuff:
 				move.l	#0,Plr2_SnapZSpdVal_l
 				move.l	#0,Plr2_SnapYVel_l
 
-				IFD	DEV
-				;jsr		Dev_FrameBegin
-				ENDC
 lop:
 				move.w	#%110000000000,_custom+potgo
 
@@ -1108,15 +1100,8 @@ waitmaster:
 
 .screenSwapDone:
 
-; DEVMODE INSTRUMENTATION
-
-				IFD	DEV
-				jsr		Dev_FrameEnd
-				jsr		Dev_FrameBegin
-				;jsr	Dev_Print ; TODO proper report
-				ENDC
-
-; END DEVMODE INSTRUMENTATION
+				CALLDEV	MarkFrameEnd
+				CALLDEV	MarkFrameBegin
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
@@ -1883,22 +1868,12 @@ nodrawp2:
 				clr.b	plr2_Teleported_b
 
 .notplr2:
-
-; DEVMODE INSTRUMENTATION
-				IFD DEV
-				jsr		Dev_DrawDone
-				jsr		Dev_DrawGraph
-
-				ENDC
-; END DEVMODE INSTRUMENTATION
+				CALLDEV	MarkDrawDone
+				CALLDEV	DrawGraph
 
 				jsr		Vid_ConvertC2P
 
-; DEVMODE INSTRUMENTATION
-				IFD DEV
-				jsr		Dev_ChunkyDone
-				ENDC
-; END DEVMODE INSTRUMENTATION
+				;CALLDEV	MarkChunkyDone
 
 				move.l	#KeyMap_vb,a5
 				tst.b	$4a(a5)

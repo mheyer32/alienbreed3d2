@@ -354,7 +354,10 @@ draw_bitmap_glare:
 				swap	d2
 				move.l	#0,a1
 
+				DEV_INCQ.w VisibleObjectCount,d1
+
 draw_right_side_glare:
+
 				swap	d7
 				move.l	midobj_l,a5
 				lea		(a5,d7.w*4),a5
@@ -780,12 +783,7 @@ pastobjscale:
 .no_flip_3:
 				move.l	d7,a2					; store fractional column offset
 
-				; TODO - counting drawn objects is proving... tricky
-				IFD	DEV
-				move.w	dev_VisObjCount_w,d7
-				addq.w	#1,d7
-				move.w  d7,dev_VisObjCount_w
-				ENDC
+				DEV_INCQ.w VisibleObjectCount,d7
 
 				moveq.l	#0,d7
 				move.l	a5,midobj_l
@@ -1568,6 +1566,8 @@ draw_PolygonModel:
 
 .okinfront:
 				movem.l	d0-d7/a0-a6,-(a7)
+
+				DEV_INCQ.w VisibleObjectCount,d3
 
 				jsr		draw_CalcBrightRings
 

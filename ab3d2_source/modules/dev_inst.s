@@ -11,12 +11,6 @@
 
 				IFD	DEV
 
-DEV_GRAPH_BUFFER_DIM 	equ 6
-DEV_GRAPH_BUFFER_SIZE 	equ 64
-DEV_GRAPH_BUFFER_MASK 	equ 63
-
-DEV_GRAPH_DRAW_TIME_COLOUR	equ 255
-
 				section bss,bss
 				align 4
 
@@ -31,10 +25,12 @@ dev_ECVFrameEnd_q:		ds.l	2	; timestamp at the end of the frame
 
 dev_FrameIndex_w:		ds.w	1	; frame number % DEV_GRAPH_BUFFER_SIZE
 dev_DrawTimeMsAvg_w:	ds.w	1   ; two frame average of draw time
-dev_VisObjCount_w:		ds.w	1	; visible objects this frame
 
+; Counters
+dev_VisibleObjectCount_w:	ds.w	1	; visible objects this frame
 
-;///////////////////////////////
+;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 					align 4
 
 ; EClockVal stamps
@@ -112,11 +108,6 @@ Dev_Print:
 
 ;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-; Dirty macro for truncated 32-bit precision difference between two timestamps
-DEV_ELAPSED32	MACRO
-				move.l	4(a1),\1
-				sub.l	4(a0),\1
-				ENDM
 
 ; Subtract two timestamps, First pointed to by a0, second by a1. Full return in d1 (upper) : d0(lower)
 ; Generally we don't care about the upper, but it's calculated in case we want it.
@@ -150,36 +141,30 @@ Dev_TimeStamp:
 				rts
 
 ; Mark the beginning of a new frame.
-Dev_FrameBegin:
+Dev_MarkFrameBegin:
 				move.w	dev_FrameIndex_w,d0
 				addq.w	#1,d0
 				and.w	#DEV_GRAPH_BUFFER_MASK,d0
 				move.w	d0,dev_FrameIndex_w
-				clr.w	dev_VisObjCount_w
+				clr.w	dev_VisibleObjectCount_w
 				lea		dev_ECVFrameBegin_q,a0
 				bra.s	Dev_TimeStamp
 
 ; Mark the end of drawing
-Dev_DrawDone:
+Dev_MarkDrawDone:
 				lea		dev_ECVDrawDone_q,a0
 				bra.s	Dev_TimeStamp
 
 ; Mark the end of chunky conversion / copy
-Dev_ChunkyDone:
+Dev_MarkChunkyDone:
 				lea		dev_ECVChunkyDone_q,a0
 				bra.s	Dev_TimeStamp
 
 
 ; Mark the end of the frame
-Dev_FrameEnd:
+Dev_MarkFrameEnd:
 				lea		dev_ECVFrameEnd_q,a0
 				bra.s	Dev_TimeStamp
-
-;				IFD	DEV
-;				move.w	dev_VisObjCount_w,d0
-;				addq.w	#1,d0
-;				move.w  d0,dev_VisObjCount_w
-;				ENDC
 
 ; Calculate the times and store in the graph data buffer
 Dev_DrawGraph:
@@ -195,7 +180,7 @@ Dev_DrawGraph:
 				lsr.w	#1,d0
 				move.w	d0,dev_DrawTimeMsAvg_w
 				move.b	d0,(a0,d1.w*2)
-				move.b	dev_VisObjCount_w+1,1(a0,d1.w*2)
+				move.b	dev_VisibleObjectCount_w+1,1(a0,d1.w*2)
 
 				; Now draw it...
 				move.l	Vid_FastBufferPtr_l,a0
