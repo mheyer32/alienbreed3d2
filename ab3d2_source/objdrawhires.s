@@ -9,6 +9,7 @@ draw_BottomY_3D_l:		dc.l	1*1024
 ********************************************************************************
 
 Draw_Object:
+				DEV_INCQ.w	DrawObjectCallCount,d0
 				move.w	(a0)+,d0
 				cmp.w	#1,d0
 				blt.s	.before_wat

@@ -1101,6 +1101,9 @@ waitmaster:
 .screenSwapDone:
 
 				CALLDEV	MarkFrameEnd
+
+				CALLDEV	PrintStats
+
 				CALLDEV	MarkFrameBegin
 
 				move.l	#SMIDDLEY,a0

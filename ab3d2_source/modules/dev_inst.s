@@ -26,8 +26,11 @@ dev_ECVFrameEnd_q:		ds.l	2	; timestamp at the end of the frame
 dev_FrameIndex_w:		ds.w	1	; frame number % DEV_GRAPH_BUFFER_SIZE
 dev_DrawTimeMsAvg_w:	ds.w	1   ; two frame average of draw time
 
+						align 4
 ; Counters
+dev_Counters_vl:
 dev_VisibleObjectCount_w:	ds.w	1	; visible objects this frame
+dev_DrawObjectCallCount_w:	ds.w	1	; Number of calls to Draw_Object
 
 ;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -48,7 +51,7 @@ dev_c2p_time_l:		ds.l	1
 dev_render_time_l:	ds.l	1
 
 ; Character buffer for printing
-dev_CharBuffer_vb:	dcb.b	32
+dev_CharBuffer_vb:	dcb.b	64
 
 				section code,code
 				align 4
@@ -90,21 +93,54 @@ Dev_DataReset:
 
 ;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-; Generic text output, buffer in a0, length in d0. Prints at the bottom of the screen, just above the status bar
-Dev_Print:
-				movem.l	d2/a6,-(sp)
-				move.l	Vid_MainScreen_l,a1
-				lea		sc_RastPort(a1),a1
-				move.l	d0,d2
-				clr.l	d0
-				move.l	#SCREEN_HEIGHT-30,d1
-				CALLGRAF Move
+; Basic printf() type functionality based on exec/RawDoFmt(). Keep the data size shorter than dev_CharBuffer_vb
+; or expect overflow.
+; d0: coordinate pair (x16:y16)
+; a0: format template
+; a1: data stream
 
-				move.l	d2,d0
-				jsr		_LVOText(a6)
+Dev_PrintF:
+				movem.l		d2/a2/a3/a6,-(sp)
+				move.l		d0,d2					; coordinate pair
+				move.w		#0,.dev_Length
+				lea			.dev_PutChar(pc),a2
+				lea			dev_CharBuffer_vb,a3
+				CALLEXEC	RawDoFmt				; Format into dev_CharBuffer_vb
 
-				movem.l	(sp)+,d2/a6
+				move.l		Vid_MainScreen_l,a1
+				lea			sc_RastPort(a1),a1
+				clr.l		d1
+				move.w		d2,d1 ; d1: y coordinate
+				clr.l		d0
+				swap		d2
+				move.w		d2,d0 ; d0: x coordinate
+				CALLGRAF 	Move
+
+				move.w		.dev_Length(pc),d0
+				subq		#1,d0
+				lea			dev_CharBuffer_vb,a0
+				jsr			_LVOText(a6)
+
+				movem.l		(sp)+,d2/a2/a3/a6
 				rts
+
+.dev_Length:
+				dc.w 0		; tracks characters written by the following stuffer
+.dev_PutChar:
+				move.b			d0,(a3)+
+				add.w			#1,.dev_Length
+				rts
+
+Dev_PrintStats:
+				lea				dev_Counters_vl,a1
+				lea				.dev_stats_template_vb,a0
+				move.l			#8,d0
+				bra.s			Dev_PrintF
+
+.dev_stats_template_vb:
+				dc.b			"O:%d/%d",0
+
+				align 4
 
 ;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -146,7 +182,8 @@ Dev_MarkFrameBegin:
 				addq.w	#1,d0
 				and.w	#DEV_GRAPH_BUFFER_MASK,d0
 				move.w	d0,dev_FrameIndex_w
-				clr.w	dev_VisibleObjectCount_w
+				clr.l	dev_Counters_vl
+
 				lea		dev_ECVFrameBegin_q,a0
 				bra.s	Dev_TimeStamp
 
@@ -159,7 +196,6 @@ Dev_MarkDrawDone:
 Dev_MarkChunkyDone:
 				lea		dev_ECVChunkyDone_q,a0
 				bra.s	Dev_TimeStamp
-
 
 ; Mark the end of the frame
 Dev_MarkFrameEnd:
