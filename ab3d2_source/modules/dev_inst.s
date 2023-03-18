@@ -14,23 +14,26 @@
 				section bss,bss
 				align 4
 
-dev_GraphBuffer_vb:		ds.b	DEV_GRAPH_BUFFER_SIZE*2 ; array of times
-dev_ECVToMsFactor_l:	ds.l	1   ; factor for converting EClock value differences to ms
+dev_GraphBuffer_vb:			ds.b	DEV_GRAPH_BUFFER_SIZE*2 ; array of times
+dev_ECVToMsFactor_l:		ds.l	1   ; factor for converting EClock value differences to ms
 
 ; EClockVal stamps
-dev_ECVFrameBegin_q:	ds.l	2	; timestamp at the start of the frame
-dev_ECVDrawDone_q:		ds.l	2	; timestamp at the end of drawing
-dev_ECVChunkyDone_q:	ds.l	2	; timestamp at the end of chunky to planar
-dev_ECVFrameEnd_q:		ds.l	2	; timestamp at the end of the frame
+dev_ECVFrameBegin_q:		ds.l	2	; timestamp at the start of the frame
+dev_ECVDrawDone_q:			ds.l	2	; timestamp at the end of drawing
+dev_ECVChunkyDone_q:		ds.l	2	; timestamp at the end of chunky to planar
+dev_ECVFrameEnd_q:			ds.l	2	; timestamp at the end of the frame
 
-dev_FrameIndex_w:		ds.w	1	; frame number % DEV_GRAPH_BUFFER_SIZE
-dev_DrawTimeMsAvg_w:	ds.w	1   ; two frame average of draw time
+; FPS Filter
+dev_FPSFilter_l:			ds.l	1
 
-						align 4
 ; Counters
 dev_Counters_vl:
 dev_VisibleObjectCount_w:	ds.w	1	; visible objects this frame
 dev_DrawObjectCallCount_w:	ds.w	1	; Number of calls to Draw_Object
+dev_DrawTimeMsAvg_w:		ds.w	1   ; two frame average of draw time
+dev_FPSIntAvg_w:			ds.w	1
+dev_FPSFracAvg_w:			ds.w	1
+dev_FrameIndex_w:			ds.w	1	; frame number % DEV_GRAPH_BUFFER_SIZE
 
 ;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -132,13 +135,26 @@ Dev_PrintF:
 				rts
 
 Dev_PrintStats:
-				lea				dev_Counters_vl,a1
-				lea				.dev_stats_template_vb,a0
-				move.l			#8,d0
-				bra.s			Dev_PrintF
+				lea				dev_ECVFrameBegin_q,a0
+				lea				dev_ECVFrameEnd_q,a1
+				DEV_ELAPSED32	d0								; d0 contains the 32-bit difference
+				bsr.s			dev_ECVDiffToMs 				; d0 now contains ms value
 
-.dev_stats_template_vb:
-				dc.b			"O:%d/%d",0
+				add.l			dev_FPSFilter_l,d0				; Average with previous ms value
+				lsr.l			#1,d0							; Todo, average over longer duration
+				move.l			d0,dev_FPSFilter_l				; Update
+				move.l			#10000,d1
+				divu.l			d0,d1							; frames per 10 seconds
+				divu.w			#10,d1							; decimate, remainder contains 1/10th seconds
+				swap			d1								;
+				move.l			d1,dev_FPSIntAvg_w				; Shove it out
+				lea				dev_Counters_vl,a1
+				lea				.dev_dev_stats_tpl_vb,a0
+				move.l			#(SCREEN_WIDTH/2)<<16|(SCREEN_HEIGHT-24),d0
+				bra				Dev_PrintF
+
+.dev_dev_stats_tpl_vb:
+				dc.b			"o:%2d/%2d d:%2dms %2d.%dfps",0
 
 				align 4
 
@@ -205,23 +221,31 @@ Dev_MarkFrameEnd:
 ; Calculate the times and store in the graph data buffer
 Dev_DrawGraph:
 				move.l	d2,-(sp)
-				lea		dev_ECVDrawDone_q,a1
 				lea		dev_ECVFrameBegin_q,a0
-
+				lea		dev_ECVDrawDone_q,a1
 				DEV_ELAPSED32 d0						; d0 contains the 32-bit difference, assumed to be small
-				bsr.s	dev_ECVDiffToMs 				; d0 now contains ms value
+				bsr		dev_ECVDiffToMs 					; d0 now contains ms value
 				lea		dev_GraphBuffer_vb,a0			; Put the ms value into the graph buffer
 				move.w	dev_FrameIndex_w,d1
 				add.w	dev_DrawTimeMsAvg_w,d0
 				lsr.w	#1,d0
 				move.w	d0,dev_DrawTimeMsAvg_w
+				lsr.b	#1,d0
 				move.b	d0,(a0,d1.w*2)
 				move.b	dev_VisibleObjectCount_w+1,1(a0,d1.w*2)
 
 				; Now draw it...
 				move.l	Vid_FastBufferPtr_l,a0
 
-				move.w	#FS_HEIGHT-8,d0
+				; In fullscreen, we need to make a small adjustment
+				IFNE	FS_HEIGHT_C2P_DIFF
+				moveq	#FS_HEIGHT_C2P_DIFF,d2
+				and.b	Vid_FullScreen_b,d2
+				ENDC
+
+				move.w	Vid_BottomY_w,d0
+				sub.w	d2,d0
+
 				sub.w	Vid_LetterBoxMarginHeight_w,d0
 				mulu.w	#SCREEN_WIDTH,d0
 				add.l	d0,a0 							; a0 points at lower left of render area
@@ -255,250 +279,16 @@ Dev_DrawGraph:
 				move.l	(sp)+,d2
 				rts
 
-;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-;fps counter c/o Grond
-Dev_FPSMark:
-				move.l	a6,-(sp)
-				move.l	_TimerBase,a6
-				lea		dev_fps_1st_q,a0
-				jsr		_LVOReadEClock(a6)
-
-				move.l	(sp)+,a6
-				rts
-
-Dev_FPSReport:
-				movem.l	d2/a2/a6,-(sp)
-				move.l	_TimerBase,a6
-				lea		dev_fps_2nd_q,a0
-				jsr		_LVOReadEClock(a6)
-
-				move.l	d0,d2
-				lea		dev_fps_2nd_q,a0
-				lea		dev_fps_1st_q,a1
-				jsr		_LVOSubTime(a6)
-
-				move.l	d1,dev_frametime_l
-
-; average:
-				move.l	dev_fps_prev_l,d1
-				bne	.skip
-
-				add.l	4(a0),d1
-.skip:
-				add.l	4(a0),d1
-				asr.l	#1,d1
-				move.l	d1,dev_fps_prev_l
-				move.l	d2,d0
-				mulu.l	#1000,d0
-				divu.l	d1,d0
-				lea		FPS_outputstring,a0
-				move.l	#10000,d1
-				divu.w	d1,d0
-				move.b	d0,d2
-				beq		.leadingzero
-
-				add.b	#"0",d2			; convert to ASCII
-				move.b	d2,(a0)+
-				bra		.next
-
-.leadingzero:
-				move.b	#" ",(a0)+
-.next:
-				sub.w	d0,d0
-				swap	d0
-				divu.w	#10,d1
-				divu.w	d1,d0
-				move.b	d0,d2
-				add.b	#"0",d2			; convert to ASCII
-				move.b	d2,(a0)+
-				move.b	#".",(a0)+
-				sub.w	d0,d0
-				swap	d0
-				divu.w	#10,d1
-				divu.w	d1,d0
-				move.b	d0,d2
-				add.b	#"0",d2			; convert to ASCII
-				move.b	d2,(a0)+
-				move.l	#" fps",(a0)+
-				move.l	Vid_MainScreen_l,a0
-				lea		sc_RastPort(a0),a1
-				lea		sc_ViewPort(a0),a0
-				move.l	vp_RasInfo(a0),a0
-				move.w	ri_RyOffset(a0),d1
-				move.l	a1,a2
-				clr.l	d0
-				add.w	#10,d1
-				ext.l	d1
-				CALLGRAF Move
-
-				lea	FPS_outputstring,a0
-				move.l	a2,a1
-				moveq	#8,d0
-				CALLGRAF Text
-
-				movem.l	(sp)+,d2/a2/a6
-				rts
-
-Dev_C2PElapsed:
-				movem.l	d2/a2/a6,-(sp)
-				move.l	_TimerBase,a6
-				lea		dev_c2p_2nd_q,a0
-				jsr		_LVOReadEClock(a6)
-
-				; c2p ends where rendering begins... Save a library call
-				lea		dev_render_1st_q,a1
-				move.l	(a0),(a1)
-				move.l	4(a0),4(a1)
-
-				move.l	d0,d2
-				lea		dev_c2p_1st_q,a1
-				jsr		_LVOSubTime(a6)
-
-				move.l	d1,dev_c2p_time_l
-				lea     dev_time_outbuffer_vb,a0	; pointer to the buffer
-				move.l  dev_c2p_time_l,d1			; data to convert
-				bsr		deci_4
-
-				movem.l	(sp)+,d2/a2/a6
-				rts
-
-Dev_C2PReport:
-				movem.l	d2/a2/a6,-(sp)
-				move.l	Vid_MainScreen_l,a0
-				lea		sc_RastPort(a0),a1
-				lea		sc_ViewPort(a0),a0
-				move.l	vp_RasInfo(a0),a0
-				move.w	ri_RyOffset(a0),d1
-				move.l	a1,a2
-				clr.l	d0
-				add.w	#40,d1
-				ext.l	d1
-				CALLGRAF Move
-
-				lea		dev_time_outbuffer_vb,a0
-				move.l	a2,a1
-				moveq	#8,d0
-				CALLGRAF Text
-
-				movem.l	(sp)+,d2/a2/a6
-				rts
-
-deci_4:			; subroutine-four digit numbers
-				mulu.l	#10000,d1
-				divu.l	#7094,d1
-				divu.l	#1000,d1	; divide by 1000
-				swap	d1
-				bsr.b	.digit		; evaluate result-move remainder
-
-				divu	#100,d1		; divide by 100
-				bsr.b	.digit		; evaluate result and move
-
-				divu	#10,d1		; divide by 10
-				bsr		.digit		; evaluate result-move remainder
-
-									; evaluate the remainder directly
-.digit:
-				add		#$30,d1		; convert result into ASCII
-				move.b	d1,(a0)+	; move it into buffer
-				clr		d1			; erase lower word
-				swap	d1			; move the remainder down
-				rts					; return
-
-Dev_RenderMark:
-				move.l	a6,-(sp)
-				move.l	_TimerBase,a6
-				lea		dev_render_1st_q,a0
-				jsr		_LVOReadEClock(a6)
-
-				move.l	(sp)+,a6
-				rts
-
-Dev_RenderElapsed:
-				movem.l	d2/a2/a6,-(sp)
-				move.l	_TimerBase,a6
-				lea		dev_render_2nd_q,a0
-				jsr		_LVOReadEClock(a6) ; a0/a1 are unchanged
-
-				; c2p begins where rendering ends... Save a library call
-				lea		dev_c2p_1st_q,a1
-				move.l	(a0),(a1)
-				move.l	4(a0),4(a1)
-
-				move.l	d0,d2
-				lea		dev_render_1st_q,a1
-				jsr		_LVOSubTime(a6)
-
-				move.l	d1,dev_render_time_l
-				lea     MY_timer_outputstring2,a0	; pointer to the buffer
-				move.l  dev_render_time_l,d1		; data to convert
-				bsr		deci_4
-
-				movem.l	(sp)+,d2/a2/a6
-				rts
-
-Dev_RenderReport:
-				movem.l	d2/a2/a6,-(sp)
-				move.l	Vid_MainScreen_l,a0
-				lea		sc_RastPort(a0),a1
-				lea		sc_ViewPort(a0),a0
-				move.l	vp_RasInfo(a0),a0
-				move.w	ri_RyOffset(a0),d1
-				move.l	a1,a2
-				clr.l	d0
-				add.w	#30,d1
-				ext.l	d1
-				CALLGRAF Move
-
-				lea		MY_timer_outputstring2,a0
-				move.l	a2,a1
-				moveq	#8,d0
-				CALLGRAF Text
-
-				movem.l	(sp)+,d2/a2/a6
-				rts
-
-Dev_FrameReport:
-				movem.l	d2/a2/a6,-(sp)
-				lea		Frame_outputstring,a0		;pointer to the buffer
-				move.l	dev_frametime_l,d1			;data to convert
-				bsr		deci_4
-
-				move.l	Vid_MainScreen_l,a0
-				lea		sc_RastPort(a0),a1
-				lea		sc_ViewPort(a0),a0
-				move.l	vp_RasInfo(a0),a0
-				move.w	ri_RyOffset(a0),d1
-				move.l	a1,a2
-				clr.l	d0
-				add.w	#20,d1
-				ext.l	d1
-				CALLGRAF Move
-
-				lea	Frame_outputstring,a0
-				move.l	a2,a1
-				moveq	#8,d0
-				CALLGRAF Text
-
-				movem.l	(sp)+,d2/a2/a6
-				rts
-
-; END DEVMODE INSTRUMENTATION
-
-				align 4
 timerrequest:				ds.b	IOTV_SIZE
 timername:					dc.b	"timer.device",0
 ; todo - probably some of these can be merged
-FPS_outputstring:			dcb.b	10
-Frame_outputstring:			dc.b	'    '
-Frame_outputstringX:		dc.b	' tot'
-dev_time_outbuffer_vb:		dc.b	'    '
-MY_timer_outputstringX:		dc.b	' c2p',0
-MY_timer_outputstring2:		dc.b	'    '
-MY_timer_outputstring2X:	dc.b	' lop'
+;FPS_outputstring:			dcb.b	10
+;Frame_outputstring:			dc.b	'    '
+;Frame_outputstringX:		dc.b	' tot'
+;dev_time_outbuffer_vb:		dc.b	'    '
+;MY_timer_outputstringX:		dc.b	' c2p',0
+;MY_timer_outputstring2:		dc.b	'    '
+;MY_timer_outputstring2X:	dc.b	' lop'
 
 				align	4
 _TimerBase:		dc.l	0

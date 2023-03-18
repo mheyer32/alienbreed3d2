@@ -9,7 +9,6 @@ draw_BottomY_3D_l:		dc.l	1*1024
 ********************************************************************************
 
 Draw_Object:
-				DEV_INCQ.w	DrawObjectCallCount,d0
 				move.w	(a0)+,d0
 				cmp.w	#1,d0
 				blt.s	.before_wat
@@ -114,6 +113,8 @@ Draw_Object:
 ;********************************************************************************
 
 draw_Object:
+				DEV_INCQ.w	DrawObjectCallCount,d1
+
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.l	Lvl_ObjectDataPtr_l,a0
 				move.l	#ObjRotated_vl,a1

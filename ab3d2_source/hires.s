@@ -1062,7 +1062,6 @@ waitmaster:
 
 *****************************************************************
 
-
 				; Flip screens
 
 				; Wait on prior frame to be displayed.
