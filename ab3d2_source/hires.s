@@ -4360,7 +4360,7 @@ itswater:
 ;				bra		polyloop
 
 itsanobject:
-				jsr		Draw_Object
+				jsr		Draw_Objects
 				bra		polyloop
 
 ;itsalightbeam:

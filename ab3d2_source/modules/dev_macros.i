@@ -22,12 +22,6 @@ CALLDEV			MACRO
 				ENDM
 
 
-; Dirty macro for truncated 32-bit precision difference between two EClocks timestamps
-DEV_ELAPSED32	MACRO
-				move.l	4(a1),\1
-				sub.l	4(a0),\1
-				ENDM
-
 ; Macro for increasing a dev counter
 ; Example use
 ;				DEV_INC.w	VisibleObjCount

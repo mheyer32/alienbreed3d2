@@ -8,7 +8,8 @@ draw_BottomY_3D_l:		dc.l	1*1024
 
 ********************************************************************************
 
-Draw_Object:
+; Main entry point for object drawing.
+Draw_Objects:
 				move.w	(a0)+,d0
 				cmp.w	#1,d0
 				blt.s	.before_wat
@@ -356,7 +357,7 @@ draw_bitmap_glare:
 				swap	d2
 				move.l	#0,a1
 
-				DEV_INCQ.w VisibleObjectCount,d1
+				DEV_INCQ.w VisibleGlareCount,d1
 
 draw_right_side_glare:
 
@@ -533,7 +534,7 @@ draw_Bitmap:
 				move.w	draw_ObjScaleCols_vw(pc,d6.w*2),a4 ; is this the table that scales vertically?
 				bra		pastobjscale
 
-				CNOP 0,4
+				align 4
 draw_ObjScaleCols_vw:
 				dcb.w	1,64*0
 				dcb.w	2,64*1
@@ -785,7 +786,6 @@ pastobjscale:
 .no_flip_3:
 				move.l	d7,a2					; store fractional column offset
 
-				DEV_INCQ.w VisibleObjectCount,d7
 
 				moveq.l	#0,d7
 				move.l	a5,midobj_l
@@ -797,6 +797,9 @@ pastobjscale:
 
 				tst.b	draw_Additive_b
 				bne		draw_bitmap_additive
+
+				DEV_INC.w VisibleBitmapCount
+
 
 draw_right_side:
 				swap	d7
@@ -889,6 +892,7 @@ object_behind:
 				rts
 
 draw_bitmap_additive:
+				DEV_INC.w VisibleAdditiveCount
 				move.l	draw_BasePalPtr_l,a4
 
 draw_right_side_additive:
@@ -976,6 +980,7 @@ draw_right_side_additive:
 				bra		object_behind
 
 draw_bitmap_lighted:
+				DEV_INC.w VisibleLightMapCount
 
 ; Make up lighting values
 
@@ -1569,7 +1574,7 @@ draw_PolygonModel:
 .okinfront:
 				movem.l	d0-d7/a0-a6,-(a7)
 
-				DEV_INCQ.w VisibleObjectCount,d3
+				DEV_INCQ.w VisibleModelCount,d3
 
 				jsr		draw_CalcBrightRings
 
