@@ -986,28 +986,7 @@ draw_bitmap_lighted:
 
 				movem.l	d0-d7/a0-a6,-(a7)
 
-				move.l	#draw_AngleBrights_vl,a2
-				move.l	#$80808080,(a2)
-				move.l	#$80808080,4(a2)
-				move.l	#$80808080,8(a2)
-				move.l	#$80808080,12(a2)
-				move.l	#$80808080,16(a2)
-				move.l	#$80808080,20(a2)
-				move.l	#$80808080,24(a2)
-				move.l	#$80808080,28(a2)
-				move.l	#$80808080,32(a2)
-				move.l	#$80808080,36(a2)
-				move.l	#$80808080,40(a2)
-				move.l	#$80808080,44(a2)
-				move.l	#$80808080,48(a2)
-				move.l	#$80808080,52(a2)
-				move.l	#$80808080,56(a2)
-				move.l	#$80808080,60(a2)
-
-				move.w	Draw_CurrentZone_w,d0
-				bsr		draw_CalcBrightsInZone
-
-				move.l	#draw_AngleBrights_vl+32,a2
+				bsr		draw_ResetAngleBrights
 
 				move.l	#draw_XZAngs_vw,a0
 				move.l	#draw_AngleBrights_vl,a1
@@ -1259,7 +1238,7 @@ draw_FindRoughAngle:
 				move.w	draw_MapToAng_vw(pc,d7.w*2),d4	; retun angle
 				rts
 
-				CNOP 0,4
+				align 4
 draw_MapToAng_vw:
 				dc.w	3,2,0,1,4,5,7,6
 				dc.w	12,13,15,14,11,10,8,9
@@ -1267,30 +1246,42 @@ draw_MapToAng_vw:
 draw_TempPtr_l:		dc.l	0
 
 *********************************************
-draw_CalcBrightRings:
+
+; Initialises the angle brightness table
+draw_ResetAngleBrights:
 				move.l	#draw_AngleBrights_vl,a2
-				move.l	#$80808080,(a2)
-				move.l	#$80808080,4(a2)
-				move.l	#$80808080,8(a2)
-				move.l	#$80808080,12(a2)
-				move.l	#$80808080,16(a2)
-				move.l	#$80808080,20(a2)
-				move.l	#$80808080,24(a2)
-				move.l	#$80808080,28(a2)
 
-				move.l	#$80808080,32(a2)
-				move.l	#$80808080,36(a2)
-				move.l	#$80808080,40(a2)
-				move.l	#$80808080,44(a2)
-				move.l	#$80808080,48(a2)
-				move.l	#$80808080,52(a2)
-				move.l	#$80808080,56(a2)
-				move.l	#$80808080,60(a2)
+				move.l	#$80808080,d0
+				move.l	d0,(a2)+
+				move.l	d0,(a2)+
+				move.l	d0,(a2)+
+				move.l	d0,(a2)+
 
+				move.l	d0,(a2)+
+				move.l	d0,(a2)+
+				move.l	d0,(a2)+
+				move.l	d0,(a2)+
+
+				move.l	d0,(a2)+
+				move.l	d0,(a2)+
+				move.l	d0,(a2)+
+				move.l	d0,(a2)+
+
+				move.l	d0,(a2)+
+				move.l	d0,(a2)+
+				move.l	d0,(a2)+
+				move.l	d0,(a2)+
+
+				sub.w	#64,a2
 				move.w	Draw_CurrentZone_w,d0
 				bsr		draw_CalcBrightsInZone
 
 				move.l	#draw_AngleBrights_vl+32,a2
+
+				rts
+
+draw_CalcBrightRings:
+				bsr.s	draw_ResetAngleBrights
 
 ; Now do the brightnesses of surrounding
 ; zones:
