@@ -1033,6 +1033,7 @@ draw_WallFlatShaded:
 ;				nop
 
 .oneinfront:
+				DEV_INCQ.w VisibleSimpleWalls,d7
 				move.w	#16,d7
 				move.w	#2,d6
 

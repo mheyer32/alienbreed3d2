@@ -581,6 +581,8 @@ draw_WallGouraudShaded:
 
 ; TODO this code is really branchy
 .oneinfront:
+				DEV_INCQ.w VisibleShadedWalls,d7
+
 				move.w	#16,d7
 				move.w	#2,d6
 				tst.b	Draw_GoodRender_b

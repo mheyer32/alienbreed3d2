@@ -28,21 +28,33 @@ dev_FPSFilter_l:			ds.l	1
 
 ; Counters
 dev_Counters_vw:
+dev_VisibleSimpleWalls_w:	ds.w	1	; simple walls drawn this frame
+dev_VisibleShadedWalls_w:	ds.w	1	; shaded walls drawn this frame
+
 dev_VisibleModelCount_w:	ds.w	1	; visible polygon models this frame
 dev_VisibleGlareCount_w:	ds.w	1	; visible glare bitmaps this frame
+
 dev_VisibleLightMapCount_w:	ds.w	1	; visible lightsource bitmaps this frame
 dev_VisibleAdditiveCount_w:	ds.w	1	; visible additive bitmaps this frame
+
 dev_VisibleBitmapCount_w:	ds.w	1	; visible bitmaps this fame
+dev_Reserved0_w:			ds.w	1
 
 dev_TotalCounters_vw:
-dev_VisibleObjectCount_w:	ds.w	1	; total visible objects this frame (total )
-dev_DrawObjectCallCount_w:	ds.w	1	; Number of calls to Draw_Object
-dev_DrawTimeMsAvg_w:		ds.w	1   ; two frame average of draw time
+dev_VisibleWalls_w:			ds.w	1	; Total visible walls this frame
+dev_VisibleFlats_w:			ds.w	1	; Total visible flats this frame
 
+dev_VisibleObjectCount_w:	ds.w	1	; Total visible objects this frame
+dev_DrawObjectCallCount_w:	ds.w	1	; Number of calls to Draw_Object
+
+dev_DrawTimeMsAvg_w:		ds.w	1   ; two frame average of draw time
 dev_FPSIntAvg_w:			ds.w	1
+
 dev_FPSFracAvg_w:			ds.w	1
+dev_Reserved1_w:			ds.w	1
+
+; Not cleared per frame
 dev_FrameIndex_w:			ds.w	1	; frame number % DEV_GRAPH_BUFFER_SIZE
-dev_Reserved_w:				ds.w	1
 
 
 ; Character buffer for printing
@@ -121,6 +133,11 @@ Dev_MarkFrameBegin:
 				clr.l	(a0)+
 				clr.l	(a0)+
 				clr.l	(a0)+
+				clr.l	(a0)+
+				clr.l	(a0)+
+				clr.l	(a0)+
+				clr.l	(a0)+
+
 				lea		dev_ECVFrameBegin_q,a0
 				bra.s	Dev_TimeStamp
 
@@ -128,12 +145,18 @@ Dev_MarkFrameBegin:
 Dev_MarkDrawDone:
 				; sum up the different rendered object types this frame
 				lea		dev_Counters_vw,a0
-				clr.l	d0
-				add.w	(a0)+,d0
-				add.w	(a0)+,d0
-				add.w	(a0)+,d0
-				add.w	(a0)+,d0
-				add.w	(a0)+,d0
+
+				; Walls
+				move.w	(a0)+,d0				; simple walls
+				add.w	(a0)+,d0				; shaded walls
+				move.w	d0,dev_VisibleWalls_w
+
+				; Objects
+				move.w	(a0)+,d0				; models
+				add.w	(a0)+,d0				; glare
+				add.w	(a0)+,d0				; lightmapped
+				add.w	(a0)+,d0				; additive
+				add.w	(a0)+,d0				; bitmaps
 				move.w	d0,dev_VisibleObjectCount_w
 				lea		dev_ECVDrawDone_q,a0
 				bra.s	Dev_TimeStamp
@@ -202,7 +225,7 @@ Dev_PrintStats:
 				move.l			d1,dev_FPSIntAvg_w				; Shove it out
 
 				tst.b			Vid_FullScreen_b
-				bne.s			.fullscreen_stats
+				bne				.fullscreen_stats
 
 				; smallscreen
 				lea				dev_TotalCounters_vw,a1
@@ -210,58 +233,76 @@ Dev_PrintStats:
 				move.l			#8,d0
 				bsr				Dev_PrintF
 
+				; Simple walls
+				lea				dev_VisibleSimpleWalls_w,a1
+				lea				.dev_ss_stats_wall_simple_vb,a0
+				move.l			#24,d0
+				bsr				Dev_PrintF
+
+				; Shaded walls
+				lea				dev_VisibleShadedWalls_w,a1
+				lea				.dev_ss_stats_wall_shaded_vb,a0
+				move.l			#40,d0
+				bsr				Dev_PrintF
+
 				; Polygon objects
 				lea				dev_VisibleModelCount_w,a1
 				lea				.dev_ss_stats_obj_poly_vb,a0
-				move.l			#24,d0
+				move.l			#56,d0
 				bsr				Dev_PrintF
 
 				; Glare objects
 				lea				dev_VisibleGlareCount_w,a1
 				lea				.dev_ss_stats_obj_glare_vb,a0
-				move.l			#40,d0
+				move.l			#72,d0
 				bsr				Dev_PrintF
 
 				; Lightmap bitmap objects
 				lea				dev_VisibleLightMapCount_w,a1
 				lea				.dev_ss_stats_obj_lightmap_vb,a0
-				move.l			#56,d0
+				move.l			#88,d0
 				bsr				Dev_PrintF
 
 				; Additive bitmap objects
 				lea				dev_VisibleAdditiveCount_w,a1
 				lea				.dev_ss_stats_obj_additive_vb,a0
-				move.l			#72,d0
+				move.l			#104,d0
 				bsr				Dev_PrintF
 
 				; Vanilla bitmap objects
 				lea				dev_VisibleBitmapCount_w,a1
 				lea				.dev_ss_stats_obj_bitmap_vb,a0
-				move.l			#88,d0
+				move.l			#120,d0
 				bsr				Dev_PrintF
 				rts
 
 .fullscreen_stats:
 				lea				dev_TotalCounters_vw,a1
 				lea				.dev_fs_stats_tpl_vb,a0
-				move.l			#(SCREEN_WIDTH/2)<<16|(SCREEN_HEIGHT-24),d0
+				move.l			#(SCREEN_WIDTH-240)<<16|(SCREEN_HEIGHT-24),d0
 				bra				Dev_PrintF
 
 .dev_fs_stats_tpl_vb:
-				dc.b			"O:%2d/%2d D:%2dms %2d.%dfps",0
+				dc.b			"w:%2d f:%2d o:%2d/%2d d:%2dms %2d.%dfps",0
 
 .dev_ss_stats_obj_vb:
-				dc.b			"Objs:%2d/%2d, Draw:%2dms, %2d.%dfps",0
+				dc.b			"Wall:%2d, Flt:%2d, Obj:%2d/%2d, Drw:%2dms, %2d.%dfps",0
+
+
+.dev_ss_stats_wall_simple_vb:
+				dc.b			"WS:%2d",0
+.dev_ss_stats_wall_shaded_vb:
+				dc.b			"WG:%2d",0
 .dev_ss_stats_obj_poly_vb:
-				dc.b			"P:%2d",0
+				dc.b			"OP:%2d",0
 .dev_ss_stats_obj_glare_vb:
-				dc.b			"G:%2d",0
+				dc.b			"OG:%2d",0
 .dev_ss_stats_obj_lightmap_vb:
-				dc.b			"L:%2d",0
+				dc.b			"OL:%2d",0
 .dev_ss_stats_obj_additive_vb:
-				dc.b			"A:%2d",0
+				dc.b			"OA:%2d",0
 .dev_ss_stats_obj_bitmap_vb:
-				dc.b			"B:%2d",0
+				dc.b			"OB:%2d",0
 
 				align 4
 
