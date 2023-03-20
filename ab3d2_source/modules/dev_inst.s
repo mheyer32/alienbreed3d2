@@ -98,6 +98,18 @@ Dev_DataReset:
 				clr.w	dev_DrawTimeMsAvg_w
 				rts
 
+Dev_ClearFastBuffer:
+				move.l	Vid_FastBufferPtr_l,a0
+				move.l	#(VID_FAST_BUFFER_SIZE/16)-1,d0
+				move.l	#$0A0A0A0A,d1
+.loop:
+				move.l	d1,(a0)+
+				move.l	d1,(a0)+
+				move.l	d1,(a0)+
+				move.l	d1,(a0)+
+				dbra	d0,.loop
+				rts
+
 ;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ; Subtract two timestamps, First pointed to by a0, second by a1. Full return in d1 (upper) : d0(lower)
@@ -137,7 +149,7 @@ Dev_MarkFrameBegin:
 				clr.l	(a0)+
 				clr.l	(a0)+
 				clr.l	(a0)+
-
+				;bsr		Dev_ClearFastBuffer
 				lea		dev_ECVFrameBegin_q,a0
 				bra.s	Dev_TimeStamp
 
@@ -205,104 +217,106 @@ Dev_PrintF:
 .dev_Length:
 				dc.w 0		; tracks characters written by the following stuffer
 .dev_PutChar:
-				move.b			d0,(a3)+
-				add.w			#1,.dev_Length
+				move.b		d0,(a3)+
+				add.w		#1,.dev_Length
 				rts
 
-;
 Dev_PrintStats:
-				lea				dev_ECVFrameBegin_q,a0
-				lea				dev_ECVFrameEnd_q,a1
-				bsr				dev_ECVDiffToMs
+				lea			dev_ECVFrameBegin_q,a0
+				lea			dev_ECVFrameEnd_q,a1
+				bsr			dev_ECVDiffToMs
 
-				add.l			dev_FPSFilter_l,d0				; Average with previous ms value
-				lsr.l			#1,d0							; Todo, average over longer duration
-				move.l			d0,dev_FPSFilter_l				; Update
-				move.l			#10000,d1
-				divu.l			d0,d1							; frames per 10 seconds
-				divu.w			#10,d1							; decimate, remainder contains 1/10th seconds
-				swap			d1								;
-				move.l			d1,dev_FPSIntAvg_w				; Shove it out
+				add.l		dev_FPSFilter_l,d0				; Average with previous ms value
+				lsr.l		#1,d0							; Todo, average over longer duration
+				move.l		d0,dev_FPSFilter_l				; Update
+				move.l		#10000,d1
+				divu.l		d0,d1							; frames per 10 seconds
+				divu.w		#10,d1							; decimate, remainder contains 1/10th seconds
+				swap		d1								;
+				move.l		d1,dev_FPSIntAvg_w				; Shove it out
 
-				tst.b			Vid_FullScreen_b
-				bne				.fullscreen_stats
+				tst.b		Vid_FullScreen_b
+				bne			.fullscreen_stats
 
 				; smallscreen
-				lea				dev_TotalCounters_vw,a1
-				lea				.dev_ss_stats_obj_vb,a0
-				move.l			#8,d0
-				bsr				Dev_PrintF
+				lea			dev_TotalCounters_vw,a1
+				lea			.dev_ss_stats_obj_vb,a0
+				move.l		#8,d0
+				bsr			Dev_PrintF
 
 				; Simple walls
-				lea				dev_VisibleSimpleWalls_w,a1
-				lea				.dev_ss_stats_wall_simple_vb,a0
-				move.l			#24,d0
-				bsr				Dev_PrintF
+				lea			dev_VisibleSimpleWalls_w,a1
+				lea			.dev_ss_stats_wall_simple_vb,a0
+				move.l		#24,d0
+				bsr			Dev_PrintF
 
 				; Shaded walls
-				lea				dev_VisibleShadedWalls_w,a1
-				lea				.dev_ss_stats_wall_shaded_vb,a0
-				move.l			#40,d0
-				bsr				Dev_PrintF
+				lea			dev_VisibleShadedWalls_w,a1
+				lea			.dev_ss_stats_wall_shaded_vb,a0
+				move.l		#40,d0
+				bsr			Dev_PrintF
 
 				; Polygon objects
-				lea				dev_VisibleModelCount_w,a1
-				lea				.dev_ss_stats_obj_poly_vb,a0
-				move.l			#56,d0
-				bsr				Dev_PrintF
+				lea			dev_VisibleModelCount_w,a1
+				lea			.dev_ss_stats_obj_poly_vb,a0
+				move.l		#56,d0
+				bsr			Dev_PrintF
 
 				; Glare objects
-				lea				dev_VisibleGlareCount_w,a1
-				lea				.dev_ss_stats_obj_glare_vb,a0
-				move.l			#72,d0
-				bsr				Dev_PrintF
+				lea			dev_VisibleGlareCount_w,a1
+				lea			.dev_ss_stats_obj_glare_vb,a0
+				move.l		#72,d0
+				bsr			Dev_PrintF
 
 				; Lightmap bitmap objects
-				lea				dev_VisibleLightMapCount_w,a1
-				lea				.dev_ss_stats_obj_lightmap_vb,a0
-				move.l			#88,d0
-				bsr				Dev_PrintF
+				lea			dev_VisibleLightMapCount_w,a1
+				lea			.dev_ss_stats_obj_lightmap_vb,a0
+				move.l		#88,d0
+				bsr			Dev_PrintF
 
 				; Additive bitmap objects
-				lea				dev_VisibleAdditiveCount_w,a1
-				lea				.dev_ss_stats_obj_additive_vb,a0
-				move.l			#104,d0
-				bsr				Dev_PrintF
+				lea			dev_VisibleAdditiveCount_w,a1
+				lea			.dev_ss_stats_obj_additive_vb,a0
+				move.l		#104,d0
+				bsr			Dev_PrintF
 
 				; Vanilla bitmap objects
-				lea				dev_VisibleBitmapCount_w,a1
-				lea				.dev_ss_stats_obj_bitmap_vb,a0
-				move.l			#120,d0
-				bsr				Dev_PrintF
+				lea			dev_VisibleBitmapCount_w,a1
+				lea			.dev_ss_stats_obj_bitmap_vb,a0
+				move.l		#120,d0
+				bsr			Dev_PrintF
+
 				rts
 
 .fullscreen_stats:
-				lea				dev_TotalCounters_vw,a1
-				lea				.dev_fs_stats_tpl_vb,a0
-				move.l			#(SCREEN_WIDTH-240)<<16|(SCREEN_HEIGHT-24),d0
-				bra				Dev_PrintF
+				lea			dev_TotalCounters_vw,a1
+				lea			.dev_fs_stats_tpl_vb,a0
+				move.l		#(SCREEN_WIDTH-240)<<16|(SCREEN_HEIGHT-24),d0
+				bsr			Dev_PrintF
+
+				rts
 
 .dev_fs_stats_tpl_vb:
-				dc.b			"w:%2d f:%2d o:%2d/%2d d:%2dms %2d.%dfps",0
+				dc.b		"w:%2d f:%2d o:%2d/%2d d:%2dms %2d.%dfps",0
 
 .dev_ss_stats_obj_vb:
-				dc.b			"Wall:%2d, Flt:%2d, Obj:%2d/%2d, Drw:%2dms, %2d.%dfps",0
+				dc.b		"Wall:%2d, Flt:%2d, Obj:%2d/%2d, Drw:%2dms, %2d.%dfps",0
 
 
 .dev_ss_stats_wall_simple_vb:
-				dc.b			"WS:%2d",0
+				dc.b		"WS:%2d",0
 .dev_ss_stats_wall_shaded_vb:
-				dc.b			"WG:%2d",0
+				dc.b		"WG:%2d",0
 .dev_ss_stats_obj_poly_vb:
-				dc.b			"OP:%2d",0
+				dc.b		"OP:%2d",0
 .dev_ss_stats_obj_glare_vb:
-				dc.b			"OG:%2d",0
+				dc.b		"OG:%2d",0
 .dev_ss_stats_obj_lightmap_vb:
-				dc.b			"OL:%2d",0
+				dc.b		"OL:%2d",0
 .dev_ss_stats_obj_additive_vb:
-				dc.b			"OA:%2d",0
+				dc.b		"OA:%2d",0
 .dev_ss_stats_obj_bitmap_vb:
-				dc.b			"OB:%2d",0
+				dc.b		"OB:%2d",0
 
 				align 4
 
@@ -323,7 +337,7 @@ dev_ECVDiffToMs:
 
 ; Calculate the times and store in the graph data buffer
 Dev_DrawGraph:
-				move.l	d2,-(sp)
+				movem.l	d0/d1/d2/a0/a1/a2,-(sp)
 				lea		dev_ECVFrameBegin_q,a0
 				lea		dev_ECVDrawDone_q,a1
 				bsr.s	dev_ECVDiffToMs
@@ -378,7 +392,7 @@ Dev_DrawGraph:
 				addq.l	#1,a0
 				dbra	d0,.loop
 
-				move.l	(sp)+,d2
+				movem.l	(sp)+,d0/d1/d2/a0/a1/a2
 				rts
 
 timerrequest:				ds.b	IOTV_SIZE

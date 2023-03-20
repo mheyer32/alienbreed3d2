@@ -840,11 +840,11 @@ TWOPLAYER:
 
 				move.w	#0,OldEnergy
 				move.w	#127,Energy
-				jsr		EnergyBar
+				jsr		Draw_BorderEnergyBar
 
 				move.w	#63,OldAmmo
 				move.w	#0,Ammo
-				jsr		AmmoBar
+				jsr		Draw_BorderAmmoBar
 				move.w	#0,OldAmmo
 
 				move.b	#0,Plr1_GunSelected_b

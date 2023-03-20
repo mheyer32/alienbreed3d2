@@ -1099,11 +1099,11 @@ waitmaster:
 
 .screenSwapDone:
 
-				CALLDEV	MarkFrameEnd
-
-				CALLDEV	PrintStats
-
-				CALLDEV	MarkFrameBegin
+				DEV_SAVE	d0/d1/a0/a1
+				CALLDEV		MarkFrameEnd
+				CALLDEV		PrintStats
+				CALLDEV		MarkFrameBegin
+				DEV_RESTORE	d0/d1/a0/a1
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
@@ -1179,7 +1179,7 @@ okwat:
 ;				sub.w	#1,CHEATNUM
 ;				move.l	#CHEATFRAME,a4
 ;				move.w	#127,Plr1_Energy_w
-;				jsr		EnergyBar
+;				jsr		Draw_BorderEnergyBar
 ;.nocheat
 ;
 ;				sub.l	#200000,a4
@@ -1720,7 +1720,7 @@ IWasPlayer1:
 				move.l	plr1_ListOfGraphRoomsPtr_l,Lvl_ListOfGraphRoomsPtr_l
 				move.l	plr1_PointsToRotatePtr_l,PointsToRotatePtr_l
 				move.b	Plr1_Echo_b,PLREcho
-				move.l	Plr1_RoomPtr_l,Roompt
+				move.l	Plr1_RoomPtr_l,RoomPtr_l
 
 				move.l	#KeyMap_vb,a5
 				moveq	#0,d5
@@ -1738,8 +1738,8 @@ IWasPlayer1:
 
 				jsr		OrderZones
 				jsr		objmoveanim
-				jsr		EnergyBar
-				jsr		AmmoBar
+				jsr		Draw_BorderEnergyBar
+				jsr		Draw_BorderAmmoBar
 
 
 ;********************************************
@@ -1823,7 +1823,7 @@ drawplayer2:
 				move.l	plr2_ListOfGraphRoomsPtr_l,Lvl_ListOfGraphRoomsPtr_l
 				move.l	plr2_PointsToRotatePtr_l,PointsToRotatePtr_l
 				move.b	Plr2_Echo_b,PLREcho
-				move.l	Plr2_RoomPtr_l,Roompt
+				move.l	Plr2_RoomPtr_l,RoomPtr_l
 				move.l	#KeyMap_vb,a5
 				moveq	#0,d5
 				move.b	look_behind_key,d5
@@ -1839,8 +1839,8 @@ drawplayer2:
 .nolookback:
 				jsr		OrderZones
 				jsr		objmoveanim
-				jsr		EnergyBar
-				jsr		AmmoBar
+				jsr		Draw_BorderEnergyBar
+				jsr		Draw_BorderAmmoBar
 
 				move.w	Vid_LetterBoxMarginHeight_w,d0
 				move.w	#0,Draw_LeftClip_w
@@ -1870,10 +1870,11 @@ nodrawp2:
 				clr.b	plr2_Teleported_b
 
 .notplr2:
-				CALLDEV	MarkDrawDone
-				CALLDEV	DrawGraph
-
-				jsr		Vid_ConvertC2P
+				DEV_SAVE	d0/d1/a0/a1
+				CALLDEV		MarkDrawDone
+				CALLDEV		DrawGraph
+				DEV_RESTORE	d0/d1/a0/a1
+				jsr			Vid_ConvertC2P
 
 				;CALLDEV	MarkChunkyDone
 
@@ -4350,7 +4351,7 @@ itswater:
 				move.w	#3,d0
 				clr.b	gourfloor
 				move.l	#FloorLine,LineToUse
-				st		usewater
+				st		draw_UseWater_b
 				clr.b	usebumps
 				jsr		itsafloordraw
 				bra		polyloop
@@ -4372,7 +4373,7 @@ itsabumpyfloor:
 				sub.w	#9,d0
 				st		usebumps
 				st		smoothbumps
-				clr.b	usewater
+				clr.b	draw_UseWater_b
 				move.l	#BumpLine,LineToUse
 				jsr		itsafloordraw
 				bra		polyloop
@@ -4384,7 +4385,7 @@ itsachunkyfloor:
 				sub.w	#12,draw_TopClip_w
 ; add.w #10,draw_BottomClip_w
 				clr.b	smoothbumps
-				clr.b	usewater
+				clr.b	draw_UseWater_b
 				move.l	#BumpLine,LineToUse
 				jsr		itsafloordraw
 				add.w	#12,draw_TopClip_w
@@ -4392,7 +4393,6 @@ itsachunkyfloor:
 				bra		polyloop
 
 itsafloor:
-
 				move.l	Draw_PointBrightsPtr_l,FloorPtBrights
 
 				move.w	Draw_CurrentZone_w,d1
@@ -4401,7 +4401,7 @@ itsafloor:
 				cmp.w	#2,d0
 				bne.s	.nfl
 				add.l	#2,d1
-.nfl
+.nfl:
 				add.l	d1,FloorPtBrights
 
 				move.w	#1,SMALLIT
@@ -4426,7 +4426,7 @@ itsafloor:
 ;				movem.l	(a7)+,a0/d0
 
 				move.l	#FloorLine,LineToUse	;* 1,2 = floor/roof
-				clr.b	usewater
+				clr.b	draw_UseWater_b
 				clr.b	usebumps
 				move.b	GOURSEL,gourfloor
 				jsr		itsafloordraw
@@ -5036,7 +5036,7 @@ RotateObjectPts:
 				move.l	#ObjRotated_vl,a1
 
 				tst.b	Vid_FullScreen_b
-				bne		BIGOBJPTS
+				bne		RotateObjectPtsFullScreen
 
 
 .objpointrotlop:
@@ -5094,7 +5094,7 @@ RotateObjectPts:
 				dbra	d7,.objpointrotlop
 				rts
 
-BIGOBJPTS:
+RotateObjectPtsFullScreen:
 
 .objpointrotlop:
 
@@ -5187,10 +5187,10 @@ BIGOBJPTS:
 
 ;FacesPtr:
 ;				dc.l	FacesList
-FacesCounter:
-				dc.w	0
-Expression:
-				dc.w	0
+;FacesCounter:
+;				dc.w	0
+;Expression:
+;				dc.w	0
 
 
 Energy:
@@ -5208,9 +5208,8 @@ thirddigit:		dc.b	0
 
 gunny:			dc.w	0
 
-AmmoBar:
-
-* Do guns first.
+Draw_BorderAmmoBar:
+; Do guns first.
 
 				move.l	#draw_BorderChars_vb,a4
 				move.b	Plr1_TmpGunSelected_b,d0
@@ -5225,7 +5224,7 @@ AmmoBar:
 
 				move.w	#9,d2
 				moveq	#0,d0
-putingunnums:
+.putingunnums:
 				move.w	#4,d1
 				move.l	a4,a0
 				cmp.b	gunny,d0
@@ -5241,18 +5240,17 @@ putingunnums:
 				move.l	Vid_DrawScreenPtr_l,a1
 				add.w	d0,a1
 				add.l	#3+(240*40),a1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 				addq	#1,d0
-				dbra	d2,putingunnums
+				dbra	d2,.putingunnums
 
 				move.w	Ammo,d0
 
 				cmp.w	#999,d0
 				blt.s	.okammo
 				move.w	#999,d0
-.okammo
 
-
+.okammo:
 				ext.l	d0
 				divs	#10,d0
 				swap	d0
@@ -5274,23 +5272,23 @@ putingunnums:
 				add.l	#20+238*40,a1
 				move.b	firstdigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				move.l	Vid_DrawScreenPtr_l,a1
 				add.l	#21+238*40,a1
 				move.b	secdigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				move.l	Vid_DrawScreenPtr_l,a1
 				add.l	#22+238*40,a1
 				move.b	thirddigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				rts
 
-EnergyBar:
+Draw_BorderEnergyBar:
 				move.w	Energy,d0
 				bge.s	.okpo
 				moveq	#0,d0
@@ -5299,9 +5297,8 @@ EnergyBar:
 				cmp.w	#999,d0
 				blt.s	.okenergy
 				move.w	#999,d0
-.okenergy
 
-
+.okenergy:
 				ext.l	d0
 				divs	#10,d0
 				swap	d0
@@ -5323,45 +5320,45 @@ EnergyBar:
 				add.l	#34+238*40,a1
 				move.b	firstdigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				move.l	Vid_DrawScreenPtr_l,a1
 				add.l	#35+238*40,a1
 				move.b	secdigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				move.l	Vid_DrawScreenPtr_l,a1
 				add.l	#36+238*40,a1
 				move.b	thirddigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				move.l	Vid_DisplayScreen_Ptr_l,a1
 				add.l	#34+238*40,a1
 				move.b	firstdigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				move.l	Vid_DisplayScreen_Ptr_l,a1
 				add.l	#35+238*40,a1
 				move.b	secdigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				move.l	Vid_DisplayScreen_Ptr_l,a1
 				add.l	#36+238*40,a1
 				move.b	thirddigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				rts
 
-DRAWDIGIT:
+draw_BorderDigit:
 				ext.w	d0
 				lea		(a0,d0.w),a2
 
-charlines:
+.charlines:
 				lea		30720(a1),a3
 				move.b	(a2),(a1)
 				move.b	10(a2),10240(a1)
@@ -5375,7 +5372,7 @@ charlines:
 
 				add.w	#10*8,a2
 				add.w	#40,a1
-				dbra	d1,charlines
+				dbra	d1,.charlines
 
 				rts
 
@@ -5483,7 +5480,7 @@ endlevel:
 				tst.w	Energy
 				bgt.s	wevewon
 				move.w	#0,Energy
-				bsr		EnergyBar
+				bsr		Draw_BorderEnergyBar
 
 				move.l	#gameover,mt_data
 				st		UseAllChannels
@@ -5504,7 +5501,7 @@ wevewon:
 				; Disable audio DMA
 				move.w	#$f,$dff000+dmacon
 
-				bsr		EnergyBar
+				bsr		Draw_BorderEnergyBar
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.nonextlev
@@ -5756,10 +5753,10 @@ numsidestd:		dc.w	0
 bottomline:		dc.w	0
 
 checkforwater:
-				tst.b	usewater
+				tst.b	draw_UseWater_b
 				beq.s	.notwater
 
-				move.l	Roompt,a1
+				move.l	RoomPtr_l,a1
 				move.w	(a1),d7
 				cmp.w	Draw_CurrentZone_w,d7
 				bne.s	.notwater
@@ -5782,16 +5779,15 @@ itsafloordraw:
 
 * If D0 =1 then its a floor otherwise (=2) it's
 * a roof.
-
 				move.w	#0,above				; reset 'above'
 				move.w	(a0)+,d6				; floorY of floor/ceiling?
 
-				tst.b	usewater
+				tst.b	draw_UseWater_b
 				beq.s	.oknon
 				tst.b	DOANYWATER
 				beq		dontdrawreturn
-.oknon
 
+.oknon:
 				move.w	d6,d7
 				ext.l	d7
 				asl.l	#6,d7					; floorY << 6?
@@ -5810,10 +5806,10 @@ itsafloordraw:
 				bgt.s	below					; floor is below
 				blt.s	aboveplayer				; floor is above
 
-				tst.b	usewater
+				tst.b	draw_UseWater_b
 				beq.s	.notwater
 
-				move.l	Roompt,a1
+				move.l	RoomPtr_l,a1
 				move.w	(a1),d7
 				cmp.w	Draw_CurrentZone_w,d7
 
@@ -5831,11 +5827,12 @@ dontdrawreturn:
 				;add.w	#4+6,a0
 				lea		10(a0,d6.w*2),a0		; skip sides
 				rts
+
 aboveplayer:
-				tst.b	usewater
+				tst.b	draw_UseWater_b
 				beq.s	.notwater
 
-				move.l	Roompt,a1
+				move.l	RoomPtr_l,a1
 				move.w	(a1),d7
 				cmp.w	Draw_CurrentZone_w,d7
 				bne.s	.notwater
@@ -5959,6 +5956,7 @@ cornerprocessloop: ;	figure					out if any left/right clipping is necessary
 				bne		dontdrawreturn
 
 somefloortodraw:
+				DEV_INC.w	VisibleFlats
 				tst.b	gourfloor
 				bne		goursides
 
@@ -6341,7 +6339,6 @@ bothinfrontGOUR:
 
 				move.w	(a2,d1*2),d0			; first x
 				move.w	(a2,d3*2),d2			; second x
-
 
 				move.l	ypos,d1
 				move.l	d1,d3
@@ -7636,7 +7633,7 @@ doneallmult:
 				asr.w	#1,d7
 				move.w	startsmoothx,d3
 
-				tst.b	usewater
+				tst.b	draw_UseWater_b
 				bne		texturedwaterDOUB
 		; tst.b gourfloor
 				bra		gouraudfloorDOUB
@@ -7656,7 +7653,7 @@ allintofirst:
 
 tstwat:
 
-				tst.b	usewater
+				tst.b	draw_UseWater_b
 				bne		texturedwater
 ; tst.b gourfloor						; FIXME: this effectively disables bumpmapped floors...
 										; opportunity to reenable and see what happens
@@ -8290,7 +8287,7 @@ acrossscrnwD:
 				rts
 
 
-usewater:		dc.w	0
+draw_UseWater_b:		dc.w	0
 				dc.w	0
 startsmoothx:	dc.w	0
 				dc.w	0
@@ -10714,7 +10711,7 @@ PLR2:			dc.b	$ff
 
 
 
-Roompt:			dc.l	0
+RoomPtr_l:			dc.l	0
 OldRoompt:		dc.l	0
 
 *****************************************************************

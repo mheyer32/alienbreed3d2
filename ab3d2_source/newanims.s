@@ -697,7 +697,7 @@ BACKSFX:
 				and.w	#127,d0
 				add.w	#100,d0
 				move.w	d0,anim_TimeToNoise_w
-				move.l	Roompt,a0
+				move.l	RoomPtr_l,a0
 				add.w	anim_OddEven_w,a0
 				move.w	#2,d0
 				sub.w	anim_OddEven_w,d0

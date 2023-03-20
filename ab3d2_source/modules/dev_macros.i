@@ -21,27 +21,28 @@ CALLDEV			MACRO
 				jsr	Dev_\1
 				ENDM
 
+; Macros for increasing/decreasing a dev counter. The ability to decrease is included to allow for simpler injection
+; points where it's easier to increment on entry to something and decrement in some common early out.
+; Example uses:
+;				DEV_INC.w	VisibleFlats - calling on an entry to floor drawing
+;				DEV_DEC.w	VisibleFlats - calling in early out of floor drawing
 
-; Macro for increasing a dev counter
-; Example use
-;				DEV_INC.w	VisibleObjCount
-;
 DEV_INC			MACRO
-				move.l	d0,-(sp)
-				moveq	#1,d0
-				add.\0	d0,dev_\1_\0
-				move.l	(sp)+,d0
+				addq.\0	#1,dev_\1_\0
 				ENDM
 
-; Macro for increasing a dev counter, quick version. Requires a scratch register parameter, register is trashed.
-; Example use
-;				DEV_INCQ.w	VisibleObjCount,d7
-;
-DEV_INCQ		MACRO
-				moveq	#1,\2
-				add.\0	\2,dev_\1_\0
+DEV_DEC			MACRO
+				subq.\0	#1,dev_\1_\0
 				ENDM
 
+; Macros for saving register state.
+DEV_SAVE		MACRO
+				movem.l	\1,-(sp)
+				ENDM
+
+DEV_RESTORE		MACRO
+				movem.l	(sp)+,\1
+				ENDM
 
 ; For the release build, all the macros are empty
 				ELSE
@@ -55,7 +56,13 @@ DEV_ELAPSED32	MACRO
 DEV_INC			MACRO
 				ENDM
 
-DEV_INCQ		MACRO
+DEV_DEC			MACRO
+				ENDM
+
+DEV_SAVE		MACRO
+				ENDM
+
+DEV_RESTORE		MACRO
 				ENDM
 
 				ENDC

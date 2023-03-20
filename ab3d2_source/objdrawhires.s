@@ -12,19 +12,19 @@ draw_BottomY_3D_l:		dc.l	1*1024
 Draw_Objects:
 				move.w	(a0)+,d0
 				cmp.w	#1,d0
-				blt.s	.before_wat
+				blt.s	.before_water
 
-				beq.s	.after_wat
+				beq.s	.after_water
 
 				bgt.s	.full_room
 
-.before_wat:
+.before_water:
 				move.l	Draw_BeforeWaterTop_l,draw_TopY_3D_l
 				move.l	Draw_BeforeWaterBottom_l,draw_BottomY_3D_l
 				move.b	#1,draw_WhichDoing_b
 				bra.s	.done_top_bot
 
-.after_wat:
+.after_water:
 				move.l	Draw_AfterWaterTop_l,draw_TopY_3D_l
 				move.l	Draw_AfterWaterBottom_l,draw_BottomY_3D_l
 				move.b	#0,draw_WhichDoing_b
@@ -114,9 +114,9 @@ Draw_Objects:
 ;********************************************************************************
 
 draw_Object:
-				DEV_INCQ.w	DrawObjectCallCount,d1
-
+				DEV_INC.w	DrawObjectCallCount
 				movem.l	d0-d7/a0-a6,-(a7)
+
 				move.l	Lvl_ObjectDataPtr_l,a0
 				move.l	#ObjRotated_vl,a1
 				asl.w	#6,d0
@@ -135,7 +135,6 @@ draw_Object:
 
 				movem.l	(a7)+,d0-d7/a0-a6
 				rts
-
 
 draw_bitmap_glare:
 				move.w	(a0)+,d0				; Point number
@@ -357,7 +356,7 @@ draw_bitmap_glare:
 				swap	d2
 				move.l	#0,a1
 
-				DEV_INCQ.w VisibleGlareCount,d1
+				DEV_INC.w VisibleGlareCount
 
 draw_right_side_glare:
 
@@ -785,8 +784,6 @@ pastobjscale:
 
 .no_flip_3:
 				move.l	d7,a2					; store fractional column offset
-
-
 				moveq.l	#0,d7
 				move.l	a5,midobj_l
 				move.l	(a3),d2
@@ -799,7 +796,6 @@ pastobjscale:
 				bne		draw_bitmap_additive
 
 				DEV_INC.w VisibleBitmapCount
-
 
 draw_right_side:
 				swap	d7
@@ -1565,7 +1561,7 @@ draw_PolygonModel:
 .okinfront:
 				movem.l	d0-d7/a0-a6,-(a7)
 
-				DEV_INCQ.w VisibleModelCount,d3
+				DEV_INC.w VisibleModelCount
 
 				jsr		draw_CalcBrightRings
 
