@@ -196,7 +196,7 @@ Plr1_AlwaysKeys:
 				move.b	Plr1_GunSelected_b,d0
 				move.l	#Plr1_Weapons_vb,a0
 
-.findnext
+.findnext:
 				addq	#1,d0
 				cmp.w	#9,d0
 				ble.s	.okgun
@@ -206,7 +206,7 @@ Plr1_AlwaysKeys:
 				beq.s	.findnext
 
 				move.b	d0,Plr1_GunSelected_b
-				bsr		SHOWPLR1GUNNAME
+				bsr		Plr1_ShowGunName
 
 				bra		.nonextweap
 
@@ -232,8 +232,8 @@ nottapped:
 				not.b	Plr1_Ducked_b
 				beq.s	notduck
 				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapTargHeight_l
-notduck:
 
+notduck:
 				move.l	Plr1_RoomPtr_l,a4
 				move.l	ZoneT_Floor_l(a4),d0
 				sub.l	ZoneT_Roof_l(a4),d0
@@ -241,8 +241,8 @@ notduck:
 				beq.s	use_bottom
 				move.l	ZoneT_UpperFloor_l(a4),d0
 				sub.l	ZoneT_UpperRoof_l(a4),d0
-use_bottom:
 
+use_bottom:
 				clr.b	Plr1_Squished_b
 				move.l	#PLR_STAND_HEIGHT,plr1_SnapSquishedHeight_l
 
@@ -250,56 +250,57 @@ use_bottom:
 				bgt.s	oktostand
 				st		Plr1_Squished_b
 				move.l	#PLR_CROUCH_HEIGHT,plr1_SnapSquishedHeight_l
-oktostand:
 
+oktostand:
 				move.l	Plr1_SnapTargHeight_l,d1
 				move.l	plr1_SnapSquishedHeight_l,d0
 				cmp.l	d0,d1
 				blt.s	.notsqu
 				move.l	d0,d1
-.notsqu:
 
+.notsqu:
 				move.l	Plr1_SnapHeight_l,d0
 				cmp.l	d1,d0
 				beq.s	noupordown
 				bgt.s	crouch
 				add.l	#1024,d0
 				bra		noupordown
+
 crouch:
 				sub.l	#1024,d0
+
 noupordown:
 				move.l	d0,Plr1_SnapHeight_l
 
-				tst.b	$27(a5)
+				tst.b	RAWKEY_K(a5)
 				beq.s	notselkey
 				st		Plr1_Keys_b
 				clr.b	Plr1_Path_b
 				clr.b	Plr1_Mouse_b
 				clr.b	Plr1_Joystick_b
 notselkey:
-
-				tst.b	$26(a5)
+				tst.b	RAWKEY_J(a5)
 				beq.s	notseljoy
 				clr.b	Plr1_Keys_b
 				clr.b	Plr1_Path_b
 				clr.b	Plr1_Mouse_b
 				st		Plr1_Joystick_b
 notseljoy:
-
-				tst.b	$37(a5)
+				tst.b	RAWKEY_M(a5)
 				beq.s	notselmouse
 				clr.b	Plr1_Keys_b
 				clr.b	Plr1_Path_b
 				st		Plr1_Mouse_b
 				clr.b	Plr1_Joystick_b
-notselmouse:
 
+notselmouse:
 				lea		1(a5),a4
 				move.l	#Plr1_Weapons_vb,a2
 				move.l	Plr1_ObjectPtr_l,a3
 				move.w	#9,d1
 				move.w	#0,d2
-pickweap
+
+pickweap:
 				move.w	(a2)+,d0
 				and.b	(a4)+,d0
 				beq.s	notgotweap
@@ -308,11 +309,11 @@ pickweap
 
 ; d2=number of gun.
 
-				bsr		SHOWPLR1GUNNAME
+				bsr		Plr1_ShowGunName
 
 				bra.s	gogog
 
-notgotweap
+notgotweap:
 				addq	#1,d2
 				dbra	d1,pickweap
 
@@ -331,20 +332,16 @@ gogog:
 				clr.b	lastscr
 
 .notswapscr2:
-
-				;tst.b	$56(a5)				;$56=F7
-				move.b	frame_limit_key,d7
-				tst.b	(a5,d7.w)
+				tst.b	RAWKEY_F7(a5)
 				beq.s	.noframelimit
-				clr.b (a5,d7.w)
-				cmp.l #5,FPSLIMITER
-				beq.s .resetfpslimit
-				move.l	FPSLIMITER,d0
-				addq.l #1,d0
-				move.l	d0,FPSLIMITER
-				bra.s .noframelimit
-.resetfpslimit
-				move.l #0,FPSLIMITER
+				clr.b	RAWKEY_F7(a5)
+				cmp.l	#5,Vid_FPSLimit_l
+				beq.s	.resetfpslimit
+				addq.l	#1,Vid_FPSLimit_l
+				bra.s	.noframelimit
+
+.resetfpslimit:
+				clr.l	Vid_FPSLimit_l
 .noframelimit:
 				rts
 
@@ -361,7 +358,7 @@ Draw_ResetGameDisplay:
 
 				rts
 
-SHOWPLR1GUNNAME:
+Plr1_ShowGunName:
 				moveq	#0,d2
 				move.b	Plr1_GunSelected_b,d2
 				move.l	GLF_DatabasePtr_l,a4
@@ -423,9 +420,9 @@ Plr1_KeyboardControl:
 				tst.b	(a5,d7.w)
 				beq.s	.nocent
 
-				tst.b	OLDCENT
+				tst.b	Plr_OldCentre_b
 				bne.s	.nocent2
-				st		OLDCENT
+				st		Plr_OldCentre_b
 
 				move.w	#0,d0
 				move.w	#0,Plr1_AimSpeed_l
@@ -433,7 +430,7 @@ Plr1_KeyboardControl:
 				bra.s	.nocent2
 
 .nocent:
-				clr.b	OLDCENT
+				clr.b	Plr_OldCentre_b
 .nocent2:
 				move.w	d0,STOPOFFSET
 				neg.w	d0
@@ -459,12 +456,11 @@ nofaster:
 				bne.s	.halve
 				tst.b	Plr1_Ducked_b
 				beq.s	.nohalve
-.halve
+.halve:
 				asr.w	#1,d2
-.nohalve
 
+.nohalve:
 				moveq	#0,d4
-
 				tst.b	Plr_Decelerate_b
 				beq.s	.nofric
 				move.w	d3,d5
@@ -494,18 +490,17 @@ nofaster:
 				tst.b	Plr_Decelerate_b
 				beq.s	noturnposs
 
-
 				move.b	templeftkey,d7
 				tst.b	(a5,d7.w)
 				beq.s	noleftturn
 				sub.w	TURNSPD,d3
-noleftturn
+noleftturn:
 				move.l	#KeyMap_vb,a5
 				move.b	temprightkey,d7
 				tst.b	(a5,d7.w)
 				beq.s	norightturn
 				add.w	TURNSPD,d3
-norightturn
+norightturn:
 
 				cmp.w	d1,d3
 				ble.s	.okrspd
@@ -518,7 +513,6 @@ norightturn
 .oklspd:
 
 noturnposs:
-
 				add.w	d3,d0
 				add.w	d3,d0
 				move.w	d3,Plr1_SnapAngSpd_w
@@ -529,7 +523,8 @@ noturnposs:
 				add.w	d2,d4
 				add.w	d2,d4
 				asr.w	#1,d4
-noleftslide
+
+noleftslide:
 				move.l	#KeyMap_vb,a5
 				move.b	tempsrkey,d7
 				tst.b	(a5,d7.w)
@@ -538,8 +533,8 @@ noleftslide
 				add.w	d2,d4
 				asr.w	#1,d4
 				neg.w	d4
-norightslide
 
+norightslide:
 noslide:
 
 				and.w	#8191,d0
@@ -560,7 +555,8 @@ noslide:
 				asr.l	#3,d6
 				add.l	#1,d6
 				bra.s	.bug1
-.nobug1
+
+.nobug1:
 				asr.l	#3,d6
 .bug1:
 
@@ -569,7 +565,7 @@ noslide:
 				asr.l	#3,d7
 				add.l	#1,d7
 				bra.s	.bug2
-.nobug2
+.nobug2:
 				asr.l	#3,d7
 .bug2:
 
@@ -616,7 +612,8 @@ nobackward:
 				beq.s	.nocontrolposs
 				add.l	d6,Plr1_SnapXSpdVal_l
 				add.l	d7,Plr1_SnapZSpdVal_l
-.nocontrolposs
+
+.nocontrolposs:
 				move.l	Plr1_SnapXSpdVal_l,d6
 				move.l	Plr1_SnapZSpdVal_l,d7
 				add.l	d6,Plr1_SnapXOff_l
@@ -637,7 +634,7 @@ nobackward:
 				clr.b	Plr1_Fire_b
 				bra		.doneplr1
 
-.firenotpressed
+.firenotpressed:
 
 ; fire was not pressed last frame...
 
@@ -684,8 +681,8 @@ THERESNOWATER:
 				tst.b	Plr1_StoodInTop_b
 				beq.s	.okinbot
 				move.w	ZoneT_UpperFloorNoise_w(a0),d0
-.okinbot:
 
+.okinbot:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_FloorData_l,a0
 				move.w	2(a0,d0.w*4),d0			; sample number.

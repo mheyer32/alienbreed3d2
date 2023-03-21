@@ -13,7 +13,6 @@
 
 				section bss,bss
 				align 4
-
 dev_GraphBuffer_vb:			ds.b	DEV_GRAPH_BUFFER_SIZE*2 ; array of times
 dev_ECVToMsFactor_l:		ds.l	1   ; factor for converting EClock value differences to ms
 
@@ -25,6 +24,8 @@ dev_ECVFrameEnd_q:			ds.l	2	; timestamp at the end of the frame
 
 ; FPS Filter
 dev_FPSFilter_l:			ds.l	1
+
+dev_SkipFlags_l:			ds.l	1	; Mask of disabled flags (i.e. set when something is skipped)
 
 ; Counters
 dev_Counters_vw:
@@ -63,6 +64,7 @@ dev_CharBuffer_vb:	dcb.b	64
 				section code,code
 				align 4
 
+
 ;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ; Initialise the developer options
@@ -84,6 +86,7 @@ Dev_Init:
 				move.l	#65536000,d1
 				divu.l	d0,d1
 				move.l	d1,dev_ECVToMsFactor_l
+
 				rts
 
 Dev_DataReset:
@@ -126,14 +129,6 @@ dev_Elapsed:
 
 ;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-; Generic timestamp, uses EClockVal in a0
-Dev_TimeStamp:
-				move.l	a6,-(sp)
-				move.l	_TimerBase,a6
-				jsr		_LVOReadEClock(a6)
-				move.l	(sp)+,a6
-				rts
-
 ; Mark the beginning of a new frame.
 Dev_MarkFrameBegin:
 				move.w	dev_FrameIndex_w,d0
@@ -149,9 +144,26 @@ Dev_MarkFrameBegin:
 				clr.l	(a0)+
 				clr.l	(a0)+
 				clr.l	(a0)+
-				;bsr		Dev_ClearFastBuffer
+
+				; Check if the current skip flags require the fast buffer to be cleared
+				move.l	dev_SkipFlags_l,d0
+				and.l	#DEV_CLEAR_FASTBUFFER_MASK,d0
+				beq.s	.no_clear
+
+				bsr		Dev_ClearFastBuffer
+
+.no_clear:
 				lea		dev_ECVFrameBegin_q,a0
-				bra.s	Dev_TimeStamp
+
+				; intentional fall through to Dev_TimeStamp
+
+; Generic timestamp, uses EClockVal in a0
+Dev_TimeStamp:
+				move.l	a6,-(sp)
+				move.l	_TimerBase,a6
+				jsr		_LVOReadEClock(a6)
+				move.l	(sp)+,a6
+				rts
 
 ; Mark the end of drawing
 Dev_MarkDrawDone:
@@ -301,7 +313,6 @@ Dev_PrintStats:
 
 .dev_ss_stats_obj_vb:
 				dc.b		"Wall:%2d, Flt:%2d, Obj:%2d/%2d, Drw:%2dms, %2d.%dfps",0
-
 
 .dev_ss_stats_wall_simple_vb:
 				dc.b		"WS:%2d",0

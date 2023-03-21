@@ -1,6 +1,7 @@
 				include	"system.i"
 				include	"macros.i"
 				include	"defs.i"
+				include "modules/rawkey_macros.i"
 				include "modules/dev_macros.i"
 				opt		o+
 
@@ -704,7 +705,7 @@ NOCLTXT:
 
 ********************************************
 
-				st		doanything
+				st		Game_Running_b
 				st		dosounds
 
 				jsr		AI_InitAlienWorkspace
@@ -955,7 +956,7 @@ lop:
 				bne		.nopause
 				tst.b	$19(a5)
 				beq.s	.nopause
-				clr.b	doanything
+				clr.b	Game_Running_b
 
 .waitrel:
 				tst.b	Plr1_Joystick_b
@@ -966,9 +967,9 @@ lop:
 				tst.b	$19(a5)
 				bne.s	.waitrel
 
-				bsr		PAUSEOPTS
+				bsr		Game_Pause
 
-				st		doanything
+				st		Game_Running_b
 .nopause:
 
 ; FIXME: "player is hit" color handling missing
@@ -992,7 +993,7 @@ nofadedownhc:
 				move.b	Game_SlavePaused_b,d0
 				or.b	Game_MasterPaused_b,d0
 				beq.s	.nopause
-				clr.b	doanything
+				clr.b	Game_Running_b
 
 				move.l	#KeyMap_vb,a5
 .waitrel:
@@ -1008,34 +1009,38 @@ nofadedownhc:
 				jsr		_ReadJoy2
 .RE1
 .NOJOY:
-				tst.b	$19(a5)
+				tst.b	RAWKEY_P(a5)
 				bne.s	.waitrel
 
-				bsr		PAUSEOPTS
+				bsr		Game_Pause
 
 				cmp.b	#PLR_MASTER,Plr_MultiplayerType_b
 				bne.s	.slavelast
-				Jsr		SENDFIRST
+
+				jsr		SENDFIRST
+
 				bra		.masfirst
-.slavelast
-				Jsr		RECFIRST
+
+.slavelast:
+				jsr		RECFIRST
+
 .masfirst:
 				clr.b	Game_SlavePaused_b
 				clr.b	Game_MasterPaused_b
-				st		doanything
+				st		Game_Running_b
 
 .nopause:
+				move.l	Vid_VBLCountLast_l,d2
+				add.l	Vid_FPSLimit_l,d2
 
-				move.l	VBLCOUNTLAST,d2
-				add.l	FPSLIMITER,d2
-.waitvbl
-				move.l	VBLCOUNT,d3
+.waitvbl:
+				move.l	Vid_VBLCount_l,d3
 				cmp.l	d2,d3
 				bhi.s	.skipWaitTOF
 				CALLGRAF	WaitTOF
 				bra.s	.waitvbl
-.skipWaitTOF
-				move.l	d3,VBLCOUNTLAST
+.skipWaitTOF:
+				move.l	d3,Vid_VBLCountLast_l
 
 ; Swap screen bitmaps
 				move.l	Vid_DrawScreenPtr_l,d0
@@ -2070,7 +2075,7 @@ nnoend2:
 
 ; Run the actual game update. FIXME: moving it to here from the VBL makes everything run
 ; like in slow motion
-;				tst.b doanything
+;				tst.b Game_Running_b
 ;				beq	.donothing
 ;				jsr dosomething
 ;.donothing
@@ -5447,12 +5452,12 @@ NARRATOR:
 
 NARRTIME:		dc.w	5
 
-doanything:		dc.w	0						; does main game run?
+Game_Running_b:		dc.w	0						; does main game run?
 
 endlevel:
 ; 	_break #0
 				clr.b	dosounds
-				clr.b	doanything
+				clr.b	Game_Running_b
 
 				; waiting for serial transmit complete?
 ;waitfortop22:
@@ -5537,7 +5542,7 @@ wevelost:
 				jmp		closeeverything
 
 endnomusic:
-				clr.b	doanything
+				clr.b	Game_Running_b
 
 
 				jmp		closeeverything
@@ -8483,22 +8488,22 @@ COUNTER:		dc.w	0
 COUNTER2:		dc.w	0
 COUNTSPACE:		ds.b	160
 
-VBLCOUNT:		dc.l	0
-VBLCOUNTLAST:		dc.l	0
-FPSLIMITER		dc.l	0
+Vid_VBLCount_l:		dc.l	0
+Vid_VBLCountLast_l:	dc.l	0
+Vid_FPSLimit_l:		dc.l	0
 
 OtherInter:
 				move.w	#$0010,$dff000+intreq
 				movem.l	d0-d7/a0-a6,-(a7)
 				bra		justshake
 
-				cnop	0,4
+				align	4
 
 ; Main VBlank interrupt
 VBlankInterrupt:
-				add.l	#1,counter
-				add.l	#1,main_counter
-				add.l	#1,VBLCOUNT
+				addq.l	#1,counter
+				addq.l	#1,main_counter
+				addq.l	#1,Vid_VBLCount_l
 				subq.w	#1,Anim_Timer_w
 
 				tst.l	timer					; used by menu system as delay
@@ -8520,7 +8525,7 @@ VBlankInterrupt:
 				rts
 .routine
 ;FIXME:  Wait, does the whole game run as part of the VBLank (formerly copper interrupt)?
-				tst.b	doanything
+				tst.b	Game_Running_b
 				bne		dosomething
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -8534,7 +8539,7 @@ tabheld:		dc.w	0
 thistime:		dc.w	0
 
 DOALLANIMS:
-				sub.b	#1,thistime
+				subq.b	#1,thistime
 				ble.s	.okdosome
 				rts
 
@@ -8586,7 +8591,7 @@ JUMPALIENANIM:
 
 				bra		doneobj2
 
-ALDIE
+ALDIE:
 				move.l	#10,d0
 				bra		intowalk
 
@@ -8931,7 +8936,7 @@ LIGHTINGTEXT:
 				dc.b	"                                        "
 
 OLDRET:			dc.w	0
-OLDCENT:		dc.w	0
+Plr_OldCentre_b:		dc.w	0
 OLDGOOD:		dc.w	0
 
 GOODRENDERTXT:

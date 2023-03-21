@@ -265,43 +265,29 @@ QUITTT:
 				rts
 
 ; KEY OPTIONS:
-CONTROLBUFFER:
-turn_left_key:
-				dc.b	$4f
-turn_right_key:
-				dc.b	$4e
-forward_key:
-				dc.b	$11
-backward_key:
-				dc.b	$21
-fire_key:
-				dc.b	$63
-operate_key:
-				dc.b	$23
-run_key:
-				dc.b	$60
-force_sidestep_key:
-				dc.b	$64
-sidestep_left_key:
-				dc.b	$20
-sidestep_right_key:
-				dc.b	$22
-duck_key:
-				dc.b	$33
-look_behind_key:
-				dc.b	$28
-jump_key:
-				dc.b	$40
-look_up_key:
-				dc.b	12
-look_down_key:
-				dc.b	10
-centre_view_key:
-				dc.b	41
-next_weapon_key:
-				dc.b	13
-frame_limit_key:
-				dc.b	$56
+AssignableKeys_vb:
+turn_left_key:		dc.b	RAWKEY_LEFT
+turn_right_key:		dc.b	RAWKEY_RIGHT
+forward_key:		dc.b	RAWKEY_W
+backward_key:		dc.b	RAWKEY_S
+fire_key:			dc.b	RAWKEY_CTRL
+operate_key:		dc.b	RAWKEY_F
+run_key:			dc.b	RAWKEY_LSHIFT
+force_sidestep_key:	dc.b	RAWKEY_LALT
+sidestep_left_key:	dc.b	RAWKEY_A
+sidestep_right_key:	dc.b	RAWKEY_D
+duck_key:			dc.b	RAWKEY_C
+look_behind_key:	dc.b	RAWKEY_L
+jump_key:			dc.b	RAWKEY_SPACEBAR
+look_up_key:		dc.b	RAWKEY_EQUAL
+look_down_key:		dc.b	RAWKEY_0
+centre_view_key:	dc.b	RAWKEY_SEMICOLON
+next_weapon_key:	dc.b	RAWKEY_BSLASH
+
+
+				IFD	DEV
+
+				ENDC
 
 templeftkey:	dc.b	0
 temprightkey:	dc.b	0
@@ -505,11 +491,11 @@ levelMenu:
 				bsr		CHECKMENU
 
 				cmp.w	#8,d0
-				beq	levelMenu2
+				beq		levelMenu2
 				SAVEREGS
 				;bsr	DEFAULTGAME
 				not.b	LOADEXT
-				bsr	DEFGAME
+				bsr		DEFGAME
 				GETREGS
 				move	d0,MAXLEVEL
 
@@ -536,8 +522,8 @@ levelMenu2:
 				rts
 ***************************************************************
 Lvl_DefFilename_vb:		dc.b	'ab3:levels/level_'
-Lvl_DefFilenameX_vb:		dc.b	'a/deflev.dat',0
-LOADEXT:			dc.b	0
+Lvl_DefFilenameX_vb:	dc.b	'a/deflev.dat',0
+LOADEXT:				dc.b	0
 				even
 DEFGAMEPOS:	dc.l	0
 DEFGAMELEN:	dc.l	0
@@ -625,8 +611,8 @@ GETACHAR:
 				movem.l	(a7)+,d0-d7/a0-a6
 				jsr		WAITFORNOPRESS
 				bra		.wtnum
-.NODELETE
 
+.NODELETE:
 				tst.b	d4
 				bne.s	.PREVNUM
 				tst.b	d3
@@ -728,7 +714,6 @@ MASTERMENU:
 				bra		SLAVEMENU
 
 .noopt:
-
 				cmp.w	#3,d0
 				bne		.nocontrol
 
@@ -860,24 +845,24 @@ DEFAULTGAME:
 
 				move.l	#Plr_Health_w,a0
 				move.l	#Plr_Shield_w,a1
-				move.l	#0,(a0)+
-				move.l	#0,(a0)+
-				move.l	#0,(a0)+
-				move.l	#0,(a0)+
-				move.l	#0,(a0)+
-				move.l	#0,(a0)+
-				move.l	#0,(a0)+
-				move.l	#0,(a0)+
-				move.l	#0,(a0)+
-				move.l	#0,(a0)+
-				move.l	#0,(a0)+
+				clr.l	(a0)+
+				clr.l	(a0)+
+				clr.l	(a0)+
+				clr.l	(a0)+
+				clr.l	(a0)+
+				clr.l	(a0)+
+				clr.l	(a0)+
+				clr.l	(a0)+
+				clr.l	(a0)+
+				clr.l	(a0)+
+				clr.l	(a0)+
 
-				move.l	#0,(a1)+
-				move.l	#0,(a1)+
-				move.l	#0,(a1)+
-				move.l	#0,(a1)+
-				move.l	#0,(a1)+
-				move.l	#0,(a1)+
+				clr.l	(a1)+
+				clr.l	(a1)+
+				clr.l	(a1)+
+				clr.l	(a1)+
+				clr.l	(a1)+
+				clr.l	(a1)+
 
 				move.w	#200,Plr_Health_w
 				move.w	#$ff,Plr_Weapons_vw
@@ -943,7 +928,7 @@ PASS:
 CHANGECONTROLS:
 
 ; copy current setting over to menu
-				move.l	#CONTROLBUFFER,a0
+				move.l	#AssignableKeys_vb,a0
 				move.l	#KEY_LINES+17,a1
 				moveq	#10,d1
 .copykeys
@@ -995,7 +980,7 @@ CHANGECONTROLS:
 				move.l	#mnu_cursanim,mnu_frameptr
 ***********************************************
 
-				move.l	#CONTROLBUFFER,a1
+				move.l	#AssignableKeys_vb,a1
 				moveq	#0,d1
 				move.b	d0,d1
 
@@ -1041,7 +1026,7 @@ CHANGECONTROLS2:
 				move.l	#mnu_cursanim,mnu_frameptr
 ***********************************************
 
-				move.l	#CONTROLBUFFER+11,a1
+				move.l	#AssignableKeys_vb+11,a1
 				moveq	#0,d1
 				move.b	d0,d1
 
@@ -1091,13 +1076,13 @@ WAITREL2:
 				beq.s	WAITREL2
 
 				IFEQ	CD32VER
-				tst.b	$40(a5)
+				tst.b	RAWKEY_SPACEBAR(a5)
 				bne.s	WAITREL2
-				tst.b	$44(a5)
+				tst.b	RAWKEY_ENTER(a5)
 				bne.s	WAITREL2
-				tst.b	$4c(a5)
+				tst.b	RAWKEY_UP(a5)
 				bne.s	WAITREL2
-				tst.b	$4d(a5)
+				tst.b	RAWKEY_DOWN(a5)
 				bne.s	WAITREL2
 				ENDC
 
@@ -1123,9 +1108,9 @@ WAITREL2:
 
 PUTINLINE:
 				moveq	#19,d0
-pill
+.pill:
 				move.b	(a0)+,(a1)+
-				dbra	d0,pill
+				dbra	d0,.pill
 				rts
 
 MYOPENMENU:

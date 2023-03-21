@@ -131,12 +131,14 @@ draw_Object:
 				cmp.b	#$ff,6(a0)
 				bne		draw_Bitmap
 
+				DEV_CHECK	POLYGON_MODELS,.done
 				bsr		draw_PolygonModel
-
+.done:
 				movem.l	(a7)+,d0-d7/a0-a6
 				rts
 
 draw_bitmap_glare:
+				DEV_CHECK	GLARE_BITMAPS,object_behind
 				move.w	(a0)+,d0				; Point number
 				move.w	2(a1,d0.w*8),d1			; depth
 				cmp.w	#DRAW_BITMAP_NEAR_PLANE,d1
@@ -356,7 +358,7 @@ draw_bitmap_glare:
 				swap	d2
 				move.l	#0,a1
 
-				DEV_INC.w VisibleGlareCount
+				DEV_INC.w	VisibleGlareCount
 
 draw_right_side_glare:
 
@@ -795,7 +797,8 @@ pastobjscale:
 				tst.b	draw_Additive_b
 				bne		draw_bitmap_additive
 
-				DEV_INC.w VisibleBitmapCount
+				DEV_CHECK	BITMAPS,object_behind
+				DEV_INC.w	VisibleBitmapCount
 
 draw_right_side:
 				swap	d7
@@ -888,7 +891,8 @@ object_behind:
 				rts
 
 draw_bitmap_additive:
-				DEV_INC.w VisibleAdditiveCount
+				DEV_CHECK	ADDITIVE_BITMAPS,object_behind
+				DEV_INC.w	VisibleAdditiveCount
 				move.l	draw_BasePalPtr_l,a4
 
 draw_right_side_additive:
@@ -976,7 +980,8 @@ draw_right_side_additive:
 				bra		object_behind
 
 draw_bitmap_lighted:
-				DEV_INC.w VisibleLightMapCount
+				DEV_CHECK	LIGHTSOURCED_BITMAPS,object_behind
+				DEV_INC.w	VisibleLightMapCount
 
 ; Make up lighting values
 
@@ -1062,8 +1067,7 @@ foundang:
 				bgt.s	.okpicked
 
 				move.w	d0,d3
-.okpicked
-
+.okpicked:
 				move.w	d0,d2
 				add.w	d1,d2					; total brightness
 
@@ -1236,10 +1240,11 @@ draw_FindRoughAngle:
 
 				align 4
 draw_MapToAng_vw:
-				dc.w	3,2,0,1,4,5,7,6
-				dc.w	12,13,15,14,11,10,8,9
+				dc.w	 3, 2, 0, 1, 4, 5, 7, 6
+				dc.w	12,13,15,14,11,10, 8, 9
 
-draw_TempPtr_l:		dc.l	0
+draw_TempPtr_l:
+				dc.l	0
 
 *********************************************
 

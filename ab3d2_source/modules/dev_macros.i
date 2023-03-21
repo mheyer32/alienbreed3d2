@@ -9,14 +9,27 @@
 
 ; DEVMODE INSTRUMENTATION MACROS
 
+DEV_SKIP_FLATS					EQU 0
+DEV_SKIP_SIMPLE_WALLS			EQU 1
+DEV_SKIP_SHADED_WALLS			EQU 2
+DEV_SKIP_BITMAPS				EQU 3
+DEV_SKIP_GLARE_BITMAPS			EQU 4
+DEV_SKIP_ADDITIVE_BITMAPS		EQU 5
+DEV_SKIP_LIGHTSOURCED_BITMAPS	EQU 6
+DEV_SKIP_POLYGON_MODELS			EQU 7
+
+; When any of the level geometry is skipped, we need to make sure the fast buffer gets cleared
+DEV_CLEAR_FASTBUFFER_MASK		EQU (1<<DEV_SKIP_FLATS)|(1<<DEV_SKIP_SIMPLE_WALLS)|(1<<DEV_SKIP_SHADED_WALLS)
+
 				IFD	DEV
 
-DEV_GRAPH_BUFFER_DIM 			equ 6
-DEV_GRAPH_BUFFER_SIZE 			equ 64
-DEV_GRAPH_BUFFER_MASK 			equ 63
-DEV_GRAPH_DRAW_TIME_COLOUR		equ 255
-DEV_GRAPH_OBJECT_COUNT_COLOUR	equ 31
+DEV_GRAPH_BUFFER_DIM 			EQU 6
+DEV_GRAPH_BUFFER_SIZE 			EQU 64
+DEV_GRAPH_BUFFER_MASK 			EQU 63
+DEV_GRAPH_DRAW_TIME_COLOUR		EQU 255
+DEV_GRAPH_OBJECT_COUNT_COLOUR	EQU 31
 
+; Macro to call a developer method.
 CALLDEV			MACRO
 				jsr	Dev_\1
 				ENDM
@@ -44,7 +57,15 @@ DEV_RESTORE		MACRO
 				movem.l	(sp)+,\1
 				ENDM
 
-; For the release build, all the macros are empty
+; Macro for conditionally skipping code based on a devmode flag. Unfortunately there's no btst.l #<im>,<ea> for
+; non data-register ea modes. So we calculate a byte offset as well as the bit position in that byte.
+DEV_CHECK		MACRO
+				btst.b	#(DEV_SKIP_\1)&7,dev_SkipFlags_l+3-(DEV_SKIP_\1>>3)
+				bne		\2
+				ENDM
+
+
+; For the release build, all the macros are empty and no code is generated.
 				ELSE
 
 CALLDEV			MACRO
@@ -63,6 +84,9 @@ DEV_SAVE		MACRO
 				ENDM
 
 DEV_RESTORE		MACRO
+				ENDM
+
+DEV_CHECK		MACRO
 				ENDM
 
 				ENDC

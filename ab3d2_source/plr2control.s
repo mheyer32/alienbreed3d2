@@ -241,7 +241,7 @@ oktostand2:
 .noupordown:
 				move.l	d0,Plr2_SnapHeight_l
 
-				tst.b	$27(a5)
+				tst.b	RAWKEY_K(a5)
 				beq.s	.notselkey
 				st		Plr2_Keys_b
 				clr.b	Plr2_Path_b
@@ -249,7 +249,7 @@ oktostand2:
 				clr.b	Plr2_Joystick_b
 .notselkey:
 
-				tst.b	$26(a5)
+				tst.b	RAWKEY_J(a5)
 				beq.s	.notseljoy
 				clr.b	Plr2_Keys_b
 				clr.b	Plr2_Path_b
@@ -257,14 +257,14 @@ oktostand2:
 				st		Plr2_Joystick_b
 .notseljoy:
 
-				tst.b	$37(a5)
+				tst.b	RAWKEY_M(a5)
 				beq.s	.notselmouse
 				clr.b	Plr2_Keys_b
 				clr.b	Plr2_Path_b
 				st		Plr2_Mouse_b
 				clr.b	Plr2_Joystick_b
-.notselmouse:
 
+.notselmouse:
 				lea		1(a5),a4
 				move.l	#Plr2_Weapons_vb,a2
 				move.l	Plr2_ObjectPtr_l,a3
@@ -283,12 +283,12 @@ pickweap2
 
 				bra.s	gogogogog
 
-notgotweap2
+notgotweap2:
 				addq	#1,d2
 				dbra	d1,pickweap2
 
 gogogogog:
-				tst.b	$43(a5)
+				tst.b	RAWKEY_NUM_ENTER(a5)
 				beq.s	.notswapscr
 				tst.b	lastscr
 				bne.s	.notswapscr2
@@ -359,15 +359,15 @@ PLR2_keyboard_control:
 				blt.s	.nolookdown
 				move.w	#512*20,Plr2_AimSpeed_l
 				move.w	#80,d0
-.nolookdown:
 
+.nolookdown:
 				move.b	centre_view_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.nocent
 
-				tst.b	OLDCENT
+				tst.b	Plr_OldCentre_b
 				bne.s	.nocent2
-				st		OLDCENT
+				st		Plr_OldCentre_b
 
 				move.w	#0,d0
 				move.w	#0,Plr2_AimSpeed_l
@@ -375,10 +375,9 @@ PLR2_keyboard_control:
 				bra.s	.nocent2
 
 .nocent:
-				clr.b	OLDCENT
+				clr.b	Plr_OldCentre_b
+
 .nocent2:
-
-
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0

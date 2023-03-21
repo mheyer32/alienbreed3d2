@@ -1,5 +1,5 @@
 				align 4
-PAUSEOPTS:
+Game_Pause:
 				move.l	#PAUSETEXT,SCROLLPOINTER
 				move.l	#ENDPAUSETEXT,ENDSCROLL
 				move.w	#0,SCROLLXPOS
@@ -27,7 +27,7 @@ PAUSEOPTS:
 				jsr		_ReadJoy2
 .thisk:
 .NOJOY:
-				tst.b	$19(a5)
+				tst.b	RAWKEY_P(a5)
 				bne.s	.unp
 				btst	#7,$bfe001
 				bne.s	.waitpress
@@ -48,7 +48,7 @@ PAUSEOPTS:
 
 .thisk2:
 .NOJOY2:
-				tst.b	$19(a5)
+				tst.b	RAWKEY_P(a5)
 				bne.s	.wr2
 
 				btst	#7,$bfe001
