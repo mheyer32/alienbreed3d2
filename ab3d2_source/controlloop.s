@@ -33,9 +33,11 @@
 
 
 				align 4
-OPTSPRADDR:		dc.l	0
+OPTSPRADDR:
+				dc.l	0
 
-Game_FinishedLevel_b:	dc.w	0
+Game_FinishedLevel_b:
+				dc.w	0
 
 				align	4
 
@@ -280,7 +282,7 @@ duck_key:			dc.b	RAWKEY_C
 look_behind_key:	dc.b	RAWKEY_L
 jump_key:			dc.b	RAWKEY_SPACEBAR
 look_up_key:		dc.b	RAWKEY_EQUAL
-look_down_key:		dc.b	RAWKEY_0
+look_down_key:		dc.b	RAWKEY_UNDERSCORE
 centre_view_key:	dc.b	RAWKEY_SEMICOLON
 next_weapon_key:	dc.b	RAWKEY_BSLASH
 
