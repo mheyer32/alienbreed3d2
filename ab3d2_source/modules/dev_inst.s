@@ -23,7 +23,7 @@ dev_ECVChunkyDone_q:		ds.l	2	; timestamp at the end of chunky to planar
 dev_ECVFrameEnd_q:			ds.l	2	; timestamp at the end of the frame
 
 ; FPS Filter
-dev_FPSFilter_l:			ds.l	1
+dev_FrameTimes_vl:			ds.l	8	; Most recent frame durations
 
 dev_SkipFlags_l:			ds.l	1	; Mask of disabled flags (i.e. set when something is skipped)
 
@@ -238,9 +238,23 @@ Dev_PrintStats:
 				lea			dev_ECVFrameEnd_q,a1
 				bsr			dev_ECVDiffToMs
 
-				add.l		dev_FPSFilter_l,d0				; Average with previous ms value
-				lsr.l		#1,d0							; Todo, average over longer duration
-				move.l		d0,dev_FPSFilter_l				; Update
+				; Keep track of the last 8 frame durations
+				move.w		dev_FrameIndex_w,d1
+				and.w		#$7,d1
+				lea			dev_FrameTimes_vl,a0
+				move.l		d0,(a0,d1.w*4)
+
+				; Sum and average
+				move.l		(a0)+,d0
+				add.l		(a0)+,d0
+				add.l		(a0)+,d0
+				add.l		(a0)+,d0
+				add.l		(a0)+,d0
+				add.l		(a0)+,d0
+				add.l		(a0)+,d0
+				add.l		(a0)+,d0
+				lsr.l		#3,d0							; Average
+
 				move.l		#10000,d1
 				divu.l		d0,d1							; frames per 10 seconds
 				divu.w		#10,d1							; decimate, remainder contains 1/10th seconds
