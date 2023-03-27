@@ -1553,7 +1553,7 @@ allinzone:
 				lsr.w	#4,d4
 				add.w	#1,d4
 				move.l	#Anim_BrightTable_vw,a0
-				move.w	-2(a0,d3.w*2),d3
+				move.w	-2(a0,d3.w*2),d3 ; 0xABADCAFE - why -2? Is this the cause of the odd zone light up?
 				ext.w	d2
 				sub.w	d2,d3
 				muls	d4,d3
