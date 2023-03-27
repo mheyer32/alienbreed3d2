@@ -46,17 +46,17 @@ Plr1_MouseControl:
 				add.w	d2,Plr1_AimSpeed_l
 				add.w	d3,d0
 				cmp.w	#-80,d0
-				bgt.s	.nolookup
+				bgt.s	.skip_look_up
 				move.w	#-512*20,Plr1_AimSpeed_l
 				move.w	#-80,d0
 
-.nolookup:
+.skip_look_up:
 				cmp.w	#80,d0
-				blt.s	.nolookdown
+				blt.s	.skip_look_down
 				move.w	#512*20,Plr1_AimSpeed_l
 				move.w	#80,d0
 
-.nolookdown:
+.skip_look_down:
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
@@ -81,15 +81,15 @@ Plr1_MouseControl:
 
 				move.w	#-20,d2
 				tst.b	Plr1_Squished_b
-				bne.s	.halve
+				bne.s	.crouch
 
 				tst.b	Plr1_Ducked_b
-				beq.s	.nohalve
+				beq.s	.skip_crouch
 
-.halve:
+.crouch:
 				asr.w	#1,d2
 
-.nohalve:
+.skip_crouch:
 				btst	#6,$bfe001
 				beq.s	.moving
 				moveq	#0,d2
@@ -212,9 +212,8 @@ Plr1_AlwaysKeys:
 
 .nonextweappre:
 				clr.b	gunheldlast
+
 .nonextweap:
-
-
 				move.b	operate_key,d7
 				move.b	(a5,d7.w),d1
 				beq.s	nottapped
@@ -318,7 +317,7 @@ notgotweap:
 				dbra	d1,pickweap
 
 gogog:
-				tst.b	$43(a5)
+				tst.b	RAWKEY_NUM_ENTER(a5)
 				beq.s	.notswapscr
 				tst.b	lastscr
 				bne.s	.notswapscr2
@@ -342,7 +341,42 @@ gogog:
 
 .resetfpslimit:
 				clr.l	Vid_FPSLimit_l
+
 .noframelimit:
+
+				IFD DEV
+				tst.b	RAWKEY_T(a5)
+				beq.s	.skip_draw_bitmaps
+				clr.b	RAWKEY_T(a5)
+				DEV_TOGGLE	BITMAPS
+
+.skip_draw_bitmaps:
+				tst.b	RAWKEY_Y(a5)
+				beq.s	.skip_draw_glare_bitmaps
+				clr.b	RAWKEY_Y(a5)
+				DEV_TOGGLE	GLARE_BITMAPS
+
+.skip_draw_glare_bitmaps:
+				tst.b	RAWKEY_U(a5)
+				beq.s	.skip_draw_additive_bitmaps
+				clr.b	RAWKEY_U(a5)
+				DEV_TOGGLE	ADDITIVE_BITMAPS
+
+.skip_draw_additive_bitmaps:
+				tst.b	RAWKEY_I(a5)
+				beq.s	.skip_draw_lightsourced_bitmaps
+				clr.b	RAWKEY_I(a5)
+				DEV_TOGGLE	LIGHTSOURCED_BITMAPS
+
+.skip_draw_lightsourced_bitmaps:
+				tst.b	RAWKEY_O(a5)
+				beq.s	.skip_draw_polygon_models
+				clr.b	RAWKEY_O(a5)
+				DEV_TOGGLE	POLYGON_MODELS
+
+.skip_draw_polygon_models:
+
+				ENDC
 				rts
 
 				; Restores the complete original screen left/right borders,
@@ -395,50 +429,54 @@ Plr1_KeyboardControl:
 				moveq	#0,d7
 				move.b	look_up_key,d7
 				tst.b	(a5,d7.w)
-				beq.s	.nolookup
+				beq.s	.skip_look_up
 
 				sub.w	#512,Plr1_AimSpeed_l
 				sub.w	#4,d0
 				cmp.w	#-80,d0
-				bgt.s	.nolookup
+				bgt.s	.skip_look_up
+
 				move.w	#-512*20,Plr1_AimSpeed_l
 				move.w	#-80,d0
 
-.nolookup:
+.skip_look_up:
 				moveq	#0,d7
 				move.b	look_down_key,d7
 				tst.b	(a5,d7.w)
-				beq.s	.nolookdown
+				beq.s	.skip_look_down
+
 				add.w	#512,Plr1_AimSpeed_l
 				add.w	#4,d0
 				cmp.w	#80,d0
-				blt.s	.nolookdown
+				blt.s	.skip_look_down
+
 				move.w	#512*20,Plr1_AimSpeed_l
 				move.w	#80,d0
-.nolookdown:
+
+.skip_look_down:
 				move.b	centre_view_key,d7
 				tst.b	(a5,d7.w)
-				beq.s	.nocent
+				beq.s	.skip_centre_look
 
 				tst.b	Plr_OldCentre_b
-				bne.s	.nocent2
-				st		Plr_OldCentre_b
+				bne.s	.skip_centre_look_2
 
+				st		Plr_OldCentre_b
 				move.w	#0,d0
 				move.w	#0,Plr1_AimSpeed_l
 
-				bra.s	.nocent2
+				bra.s	.skip_centre_look_2
 
-.nocent:
+.skip_centre_look:
 				clr.b	Plr_OldCentre_b
-.nocent2:
+
+.skip_centre_look_2:
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
 				muls	#SCREEN_WIDTH,d0
 				move.l	d0,SBIGMIDDLEY
-
 				move.w	Plr1_SnapAngPos_w,d0
 				move.w	Plr1_SnapAngSpd_w,d3
 				move.w	#35,d1
@@ -447,19 +485,20 @@ Plr1_KeyboardControl:
 				moveq	#0,d7
 				move.b	run_key,d7
 				tst.b	(a5,d7.w)
-				beq.s	nofaster
+				beq.s	.skip_run
+
 				move.w	#60,d1
 				move.w	#3,d2
 				move.w	#14,TURNSPD
-nofaster:
+.skip_run:
 				tst.b	Plr1_Squished_b
-				bne.s	.halve
+				bne.s	.crouch
 				tst.b	Plr1_Ducked_b
-				beq.s	.nohalve
-.halve:
+				beq.s	.skip_crouch
+.crouch:
 				asr.w	#1,d2
 
-.nohalve:
+.skip_crouch:
 				moveq	#0,d4
 				tst.b	Plr_Decelerate_b
 				beq.s	.nofric
@@ -475,80 +514,80 @@ nofaster:
 				move.b	turn_right_key,temprightkey
 				move.b	sidestep_left_key,tempslkey
 				move.b	sidestep_right_key,tempsrkey
-
 				move.b	force_sidestep_key,d7
 				tst.b	(a5,d7.w)
-				beq		.noalwayssidestep
+				beq		.skip_force_sidestep
 
 				move.b	templeftkey,tempslkey
 				move.b	temprightkey,tempsrkey
 				move.b	#255,templeftkey
 				move.b	#255,temprightkey
 
-.noalwayssidestep:
-
+.skip_force_sidestep:
 				tst.b	Plr_Decelerate_b
-				beq.s	noturnposs
+				beq.s	.turn_not_possible
 
 				move.b	templeftkey,d7
 				tst.b	(a5,d7.w)
-				beq.s	noleftturn
+				beq.s	.skip_turn_left
+
 				sub.w	TURNSPD,d3
-noleftturn:
+
+.skip_turn_left:
 				move.l	#KeyMap_vb,a5
 				move.b	temprightkey,d7
 				tst.b	(a5,d7.w)
-				beq.s	norightturn
-				add.w	TURNSPD,d3
-norightturn:
+				beq.s	.skip_turn_right
 
+				add.w	TURNSPD,d3
+
+.skip_turn_right:
 				cmp.w	d1,d3
-				ble.s	.okrspd
+				ble.s	.right_speed_ok
+
 				move.w	d1,d3
-.okrspd:
+
+.right_speed_ok:
 				neg.w	d1
 				cmp.w	d1,d3
-				bge.s	.oklspd
-				move.w	d1,d3
-.oklspd:
+				bge.s	.left_speed_ok
 
-noturnposs:
+				move.w	d1,d3
+
+.left_speed_ok:
+.turn_not_possible:
 				add.w	d3,d0
 				add.w	d3,d0
 				move.w	d3,Plr1_SnapAngSpd_w
-
 				move.b	tempslkey,d7
 				tst.b	(a5,d7.w)
-				beq.s	noleftslide
+				beq.s	.skip_step_left
+
 				add.w	d2,d4
 				add.w	d2,d4
 				asr.w	#1,d4
 
-noleftslide:
+.skip_step_left:
 				move.l	#KeyMap_vb,a5
 				move.b	tempsrkey,d7
 				tst.b	(a5,d7.w)
-				beq.s	norightslide
+
+				beq.s	.skip_step_right
 				add.w	d2,d4
 				add.w	d2,d4
 				asr.w	#1,d4
 				neg.w	d4
 
-norightslide:
-noslide:
-
+.skip_step_right:
 				and.w	#8191,d0
 				move.w	d0,Plr1_SnapAngPos_w
-
 				move.w	(a0,d0.w),plr1_SnapSinVal_w
 				adda.w	#2048,a0
 				move.w	(a0,d0.w),plr1_SnapCosVal_w
-
 				move.l	Plr1_SnapXSpdVal_l,d6
 				move.l	Plr1_SnapZSpdVal_l,d7
-
 				tst.b	Plr_Decelerate_b
-				beq.s	.nofriction
+				beq.s	.skip_friction
 
 				neg.l	d6
 				ble.s	.nobug1
@@ -569,7 +608,7 @@ noslide:
 				asr.l	#3,d7
 .bug2:
 
-.nofriction:
+.skip_friction:
 
 				moveq	#0,d3
 

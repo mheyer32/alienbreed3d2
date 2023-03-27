@@ -9189,7 +9189,7 @@ nostartalan:
 				move.l	Plr1_SnapZSpdVal_l,d7
 
 				tst.b	Plr_Decelerate_b
-				beq.s	.nofriction
+				beq.s	.skip_friction
 
 				neg.l	d6
 				ble.s	.nobug1
@@ -9212,7 +9212,7 @@ nostartalan:
 				add.l	d6,Plr1_SnapXSpdVal_l
 				add.l	d7,Plr1_SnapZSpdVal_l
 
-.nofriction:
+.skip_friction:
 				move.l	Plr1_SnapXSpdVal_l,d6
 				move.l	Plr1_SnapZSpdVal_l,d7
 				add.l	d6,Plr1_SnapXOff_l
@@ -9278,38 +9278,42 @@ control2:
 				move.l	Plr2_SnapZSpdVal_l,d7
 
 				tst.b	Plr_Decelerate_b
-				beq.s	.nofriction
+				beq.s	.skip_friction
 
 				neg.l	d6
 				ble.s	.nobug1
+
 				asr.l	#3,d6
 				add.l	#1,d6
 				bra.s	.bug1
-.nobug1
-				asr.l	#3,d6
-.bug1:
 
+.nobug1:
+				asr.l	#3,d6
+
+.bug1:
 				neg.l	d7
 				ble.s	.nobug2
+
 				asr.l	#3,d7
 				add.l	#1,d7
 				bra.s	.bug2
-.nobug2
-				asr.l	#3,d7
-.bug2:
 
+.nobug2:
+				asr.l	#3,d7
+
+.bug2:
 				add.l	d6,Plr2_SnapXSpdVal_l
 				add.l	d7,Plr2_SnapZSpdVal_l
 
-.nofriction:
+.skip_friction:
 				move.l	Plr2_SnapXSpdVal_l,d6
 				move.l	Plr2_SnapZSpdVal_l,d7
 				add.l	d6,Plr2_SnapXOff_l
 				add.l	d7,Plr2_SnapZOff_l
-
 				move.w	Plr2_SnapAngSpd_w,d3
 				tst.b	Plr_Decelerate_b
 				beq.s	.nofric
+
 				asr.w	#2,d3
 				bge.s	.nneg
 				addq	#1,d3
@@ -9325,11 +9329,15 @@ control2:
 .propercontrol:
 				tst.b	Plr2_Mouse_b
 				beq.s	.plr2_no_mouse
+
 				bsr		Plr2_MouseControl
+
 .plr2_no_mouse:
 				tst.b	Plr2_Keys_b
 				beq.s	.plr2_no_keyboard
+
 				bsr		PLR2_keyboard_control
+
 .plr2_no_keyboard:
 ; tst.b Plr2_Path_b
 ; beq.s .plr2_no_path
@@ -9337,7 +9345,9 @@ control2:
 ;.plr2_no_path:
 				tst.b	Plr2_Joystick_b
 				beq.s	.plr2_no_joystick
+
 				bsr		PLR2_JoyStick_control
+
 .plr2_no_joystick:
 
 nocontrols:

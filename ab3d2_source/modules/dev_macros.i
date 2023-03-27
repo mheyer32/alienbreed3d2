@@ -64,6 +64,17 @@ DEV_CHECK		MACRO
 				bne		\2
 				ENDM
 
+DEV_ENABLE		MACRO
+				bset.b	#(DEV_SKIP_\1)&7,dev_SkipFlags_l+3-(DEV_SKIP_\1>>3)
+				ENDM
+
+DEV_DISABLE		MACRO
+				bclr.b	#(DEV_SKIP_\1)&7,dev_SkipFlags_l+3-(DEV_SKIP_\1>>3)
+				ENDM
+
+DEV_TOGGLE		MACRO
+				bchg.b	#(DEV_SKIP_\1)&7,dev_SkipFlags_l+3-(DEV_SKIP_\1>>3)
+				ENDM
 
 ; For the release build, all the macros are empty and no code is generated.
 				ELSE
@@ -87,6 +98,15 @@ DEV_RESTORE		MACRO
 				ENDM
 
 DEV_CHECK		MACRO
+				ENDM
+
+DEV_ENABLE		MACRO
+				ENDM
+
+DEV_DISABLE		MACRO
+				ENDM
+
+DEV_TOGGLE		MACRO
 				ENDM
 
 				ENDC
