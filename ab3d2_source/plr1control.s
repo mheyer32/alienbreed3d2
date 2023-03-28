@@ -343,40 +343,17 @@ gogog:
 				clr.l	Vid_FPSLimit_l
 
 .noframelimit:
+				; Developer toggles
+				DEV_CHECK_KEY	RAWKEY_E,SIMPLE_WALLS
+				DEV_CHECK_KEY	RAWKEY_R,SHADED_WALLS
+				DEV_CHECK_KEY	RAWKEY_T,BITMAPS
+				DEV_CHECK_KEY	RAWKEY_Y,GLARE_BITMAPS
+				DEV_CHECK_KEY	RAWKEY_U,ADDITIVE_BITMAPS
+				DEV_CHECK_KEY	RAWKEY_I,LIGHTSOURCED_BITMAPS
+				DEV_CHECK_KEY	RAWKEY_O,POLYGON_MODELS
+				DEV_CHECK_KEY	RAWKEY_G,FLATS
+				DEV_CHECK_KEY	RAWKEY_Q,FASTBUFFER_CLEAR
 
-				IFD DEV
-				tst.b	RAWKEY_T(a5)
-				beq.s	.skip_draw_bitmaps
-				clr.b	RAWKEY_T(a5)
-				DEV_TOGGLE	BITMAPS
-
-.skip_draw_bitmaps:
-				tst.b	RAWKEY_Y(a5)
-				beq.s	.skip_draw_glare_bitmaps
-				clr.b	RAWKEY_Y(a5)
-				DEV_TOGGLE	GLARE_BITMAPS
-
-.skip_draw_glare_bitmaps:
-				tst.b	RAWKEY_U(a5)
-				beq.s	.skip_draw_additive_bitmaps
-				clr.b	RAWKEY_U(a5)
-				DEV_TOGGLE	ADDITIVE_BITMAPS
-
-.skip_draw_additive_bitmaps:
-				tst.b	RAWKEY_I(a5)
-				beq.s	.skip_draw_lightsourced_bitmaps
-				clr.b	RAWKEY_I(a5)
-				DEV_TOGGLE	LIGHTSOURCED_BITMAPS
-
-.skip_draw_lightsourced_bitmaps:
-				tst.b	RAWKEY_O(a5)
-				beq.s	.skip_draw_polygon_models
-				clr.b	RAWKEY_O(a5)
-				DEV_TOGGLE	POLYGON_MODELS
-
-.skip_draw_polygon_models:
-
-				ENDC
 				rts
 
 				; Restores the complete original screen left/right borders,

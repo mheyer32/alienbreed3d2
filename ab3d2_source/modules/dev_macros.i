@@ -17,6 +17,7 @@ DEV_SKIP_GLARE_BITMAPS			EQU 4
 DEV_SKIP_ADDITIVE_BITMAPS		EQU 5
 DEV_SKIP_LIGHTSOURCED_BITMAPS	EQU 6
 DEV_SKIP_POLYGON_MODELS			EQU 7
+DEV_SKIP_FASTBUFFER_CLEAR		EQU 8
 
 ; When any of the level geometry is skipped, we need to make sure the fast buffer gets cleared
 DEV_CLEAR_FASTBUFFER_MASK		EQU (1<<DEV_SKIP_FLATS)|(1<<DEV_SKIP_SIMPLE_WALLS)|(1<<DEV_SKIP_SHADED_WALLS)
@@ -76,6 +77,14 @@ DEV_TOGGLE		MACRO
 				bchg.b	#(DEV_SKIP_\1)&7,dev_SkipFlags_l+3-(DEV_SKIP_\1>>3)
 				ENDM
 
+; Macro for checking if a specific key should toggle a feature
+DEV_CHECK_KEY	MACRO
+				tst.b		\1(a5)
+				beq.s		.dev_skip_\2
+				clr.b		\1(a5)
+				DEV_TOGGLE	\2
+.dev_skip_\2:
+				ENDM
 ; For the release build, all the macros are empty and no code is generated.
 				ELSE
 
@@ -107,6 +116,9 @@ DEV_DISABLE		MACRO
 				ENDM
 
 DEV_TOGGLE		MACRO
+				ENDM
+
+DEV_CHECK_KEY	MACRO
 				ENDM
 
 				ENDC
