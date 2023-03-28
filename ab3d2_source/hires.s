@@ -1,7 +1,8 @@
 				include	"system.i"
 				include	"macros.i"
 				include	"defs.i"
-
+				include "modules/rawkey_macros.i"
+				include "modules/dev_macros.i"
 				opt		o+
 
 				xref	_custom
@@ -141,9 +142,7 @@ _start:
 				moveq	#INTB_VERTB,d0
 				CALLEXEC AddIntServer
 
-				IFD DEV
-				jsr		Dev_Init
-				ENDC
+				CALLDEV	Init
 
 				IFEQ	CD32VER
 				lea		KEYInt(pc),a1
@@ -426,6 +425,8 @@ noload:
 				CALLDOS	Delay
 				ENDC
 
+				CALLDEV	DataReset
+
 ;****************************
 ;* Initialize level
 ;****************************
@@ -704,7 +705,7 @@ NOCLTXT:
 
 ********************************************
 
-				st		doanything
+				st		Game_Running_b
 				st		dosounds
 
 				jsr		AI_InitAlienWorkspace
@@ -845,10 +846,6 @@ clrmessbuff:
 				move.l	#0,Plr2_SnapZSpdVal_l
 				move.l	#0,Plr2_SnapYVel_l
 
-				IFD	DEV
-				jsr	Dev_FPSMark
-				jsr	Dev_RenderMark
-				ENDC
 lop:
 				move.w	#%110000000000,_custom+potgo
 
@@ -959,7 +956,7 @@ lop:
 				bne		.nopause
 				tst.b	$19(a5)
 				beq.s	.nopause
-				clr.b	doanything
+				clr.b	Game_Running_b
 
 .waitrel:
 				tst.b	Plr1_Joystick_b
@@ -970,9 +967,9 @@ lop:
 				tst.b	$19(a5)
 				bne.s	.waitrel
 
-				bsr		PAUSEOPTS
+				bsr		Game_Pause
 
-				st		doanything
+				st		Game_Running_b
 .nopause:
 
 ; FIXME: "player is hit" color handling missing
@@ -996,7 +993,7 @@ nofadedownhc:
 				move.b	Game_SlavePaused_b,d0
 				or.b	Game_MasterPaused_b,d0
 				beq.s	.nopause
-				clr.b	doanything
+				clr.b	Game_Running_b
 
 				move.l	#KeyMap_vb,a5
 .waitrel:
@@ -1012,34 +1009,38 @@ nofadedownhc:
 				jsr		_ReadJoy2
 .RE1
 .NOJOY:
-				tst.b	$19(a5)
+				tst.b	RAWKEY_P(a5)
 				bne.s	.waitrel
 
-				bsr		PAUSEOPTS
+				bsr		Game_Pause
 
 				cmp.b	#PLR_MASTER,Plr_MultiplayerType_b
 				bne.s	.slavelast
-				Jsr		SENDFIRST
+
+				jsr		SENDFIRST
+
 				bra		.masfirst
-.slavelast
-				Jsr		RECFIRST
+
+.slavelast:
+				jsr		RECFIRST
+
 .masfirst:
 				clr.b	Game_SlavePaused_b
 				clr.b	Game_MasterPaused_b
-				st		doanything
+				st		Game_Running_b
 
 .nopause:
+				move.l	Vid_VBLCountLast_l,d2
+				add.l	Vid_FPSLimit_l,d2
 
-				move.l	VBLCOUNTLAST,d2
-				add.l	FPSLIMITER,d2
-.waitvbl
-				move.l	VBLCOUNT,d3
+.waitvbl:
+				move.l	Vid_VBLCount_l,d3
 				cmp.l	d2,d3
 				bhi.s	.skipWaitTOF
 				CALLGRAF	WaitTOF
 				bra.s	.waitvbl
-.skipWaitTOF
-				move.l	d3,VBLCOUNTLAST
+.skipWaitTOF:
+				move.l	d3,Vid_VBLCountLast_l
 
 ; Swap screen bitmaps
 				move.l	Vid_DrawScreenPtr_l,d0
@@ -1065,7 +1066,6 @@ nowaitslave:
 waitmaster:
 
 *****************************************************************
-
 
 				; Flip screens
 
@@ -1104,17 +1104,11 @@ waitmaster:
 
 .screenSwapDone:
 
-; DEVMODE INSTRUMENTATION
-
-				IFD	DEV
-				jsr	Dev_FPSReport			; fps counter c/o Grond
-				jsr	Dev_FPSMark				; fps counter c/o Grond
-				jsr	Dev_FrameReport			; Display frame time
-				jsr	Dev_RenderReport		; Display render time
-				jsr	Dev_C2PReport			; Display c2p time
-				ENDC
-
-; END DEVMODE INSTRUMENTATION
+				DEV_SAVE	d0/d1/a0/a1
+				CALLDEV		MarkFrameEnd
+				CALLDEV		PrintStats
+				CALLDEV		MarkFrameBegin
+				DEV_RESTORE	d0/d1/a0/a1
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
@@ -1190,7 +1184,7 @@ okwat:
 ;				sub.w	#1,CHEATNUM
 ;				move.l	#CHEATFRAME,a4
 ;				move.w	#127,Plr1_Energy_w
-;				jsr		EnergyBar
+;				jsr		Draw_BorderEnergyBar
 ;.nocheat
 ;
 ;				sub.l	#200000,a4
@@ -1559,7 +1553,7 @@ allinzone:
 				lsr.w	#4,d4
 				add.w	#1,d4
 				move.l	#Anim_BrightTable_vw,a0
-				move.w	-2(a0,d3.w*2),d3
+				move.w	-2(a0,d3.w*2),d3 ; 0xABADCAFE - why -2? Is this the cause of the odd zone light up?
 				ext.w	d2
 				sub.w	d2,d3
 				muls	d4,d3
@@ -1731,7 +1725,7 @@ IWasPlayer1:
 				move.l	plr1_ListOfGraphRoomsPtr_l,Lvl_ListOfGraphRoomsPtr_l
 				move.l	plr1_PointsToRotatePtr_l,PointsToRotatePtr_l
 				move.b	Plr1_Echo_b,PLREcho
-				move.l	Plr1_RoomPtr_l,Roompt
+				move.l	Plr1_RoomPtr_l,RoomPtr_l
 
 				move.l	#KeyMap_vb,a5
 				moveq	#0,d5
@@ -1749,8 +1743,8 @@ IWasPlayer1:
 
 				jsr		OrderZones
 				jsr		objmoveanim
-				jsr		EnergyBar
-				jsr		AmmoBar
+				jsr		Draw_BorderEnergyBar
+				jsr		Draw_BorderAmmoBar
 
 
 ;********************************************
@@ -1834,7 +1828,7 @@ drawplayer2:
 				move.l	plr2_ListOfGraphRoomsPtr_l,Lvl_ListOfGraphRoomsPtr_l
 				move.l	plr2_PointsToRotatePtr_l,PointsToRotatePtr_l
 				move.b	Plr2_Echo_b,PLREcho
-				move.l	Plr2_RoomPtr_l,Roompt
+				move.l	Plr2_RoomPtr_l,RoomPtr_l
 				move.l	#KeyMap_vb,a5
 				moveq	#0,d5
 				move.b	look_behind_key,d5
@@ -1850,8 +1844,8 @@ drawplayer2:
 .nolookback:
 				jsr		OrderZones
 				jsr		objmoveanim
-				jsr		EnergyBar
-				jsr		AmmoBar
+				jsr		Draw_BorderEnergyBar
+				jsr		Draw_BorderAmmoBar
 
 				move.w	Vid_LetterBoxMarginHeight_w,d0
 				move.w	#0,Draw_LeftClip_w
@@ -1881,20 +1875,13 @@ nodrawp2:
 				clr.b	plr2_Teleported_b
 
 .notplr2:
+				DEV_SAVE	d0/d1/a0/a1
+				CALLDEV		MarkDrawDone
+				CALLDEV		DrawGraph
+				DEV_RESTORE	d0/d1/a0/a1
+				jsr			Vid_ConvertC2P
 
-; DEVMODE INSTRUMENTATION
-				IFD DEV
-				jsr	Dev_RenderElapsed	; record drawing complete (and c2p started)
-				ENDC
-; END DEVMODE INSTRUMENTATION
-
-				jsr		Vid_ConvertC2P
-
-; DEVMODE INSTRUMENTATION
-				IFD DEV
-				jsr	Dev_C2PElapsed		; record c2p complete (and render started)
-				ENDC
-; END DEVMODE INSTRUMENTATION
+				;CALLDEV	MarkChunkyDone
 
 				move.l	#KeyMap_vb,a5
 				tst.b	$4a(a5)
@@ -1928,7 +1915,6 @@ nodrawp2:
 				sub.w	#2,Vid_LetterBoxMarginHeight_w
 
 .nobigscr:
-
 				tst.b	$5b(a5)
 				beq		notdoubheight
 				tst.b	LASTDH
@@ -2089,7 +2075,7 @@ nnoend2:
 
 ; Run the actual game update. FIXME: moving it to here from the VBL makes everything run
 ; like in slow motion
-;				tst.b doanything
+;				tst.b Game_Running_b
 ;				beq	.donothing
 ;				jsr dosomething
 ;.donothing
@@ -4370,7 +4356,7 @@ itswater:
 				move.w	#3,d0
 				clr.b	gourfloor
 				move.l	#FloorLine,LineToUse
-				st		usewater
+				st		draw_UseWater_b
 				clr.b	usebumps
 				jsr		itsafloordraw
 				bra		polyloop
@@ -4380,7 +4366,7 @@ itswater:
 ;				bra		polyloop
 
 itsanobject:
-				jsr		Draw_Object
+				jsr		Draw_Objects
 				bra		polyloop
 
 ;itsalightbeam:
@@ -4392,7 +4378,7 @@ itsabumpyfloor:
 				sub.w	#9,d0
 				st		usebumps
 				st		smoothbumps
-				clr.b	usewater
+				clr.b	draw_UseWater_b
 				move.l	#BumpLine,LineToUse
 				jsr		itsafloordraw
 				bra		polyloop
@@ -4404,7 +4390,7 @@ itsachunkyfloor:
 				sub.w	#12,draw_TopClip_w
 ; add.w #10,draw_BottomClip_w
 				clr.b	smoothbumps
-				clr.b	usewater
+				clr.b	draw_UseWater_b
 				move.l	#BumpLine,LineToUse
 				jsr		itsafloordraw
 				add.w	#12,draw_TopClip_w
@@ -4412,7 +4398,6 @@ itsachunkyfloor:
 				bra		polyloop
 
 itsafloor:
-
 				move.l	Draw_PointBrightsPtr_l,FloorPtBrights
 
 				move.w	Draw_CurrentZone_w,d1
@@ -4421,7 +4406,7 @@ itsafloor:
 				cmp.w	#2,d0
 				bne.s	.nfl
 				add.l	#2,d1
-.nfl
+.nfl:
 				add.l	d1,FloorPtBrights
 
 				move.w	#1,SMALLIT
@@ -4446,7 +4431,7 @@ itsafloor:
 ;				movem.l	(a7)+,a0/d0
 
 				move.l	#FloorLine,LineToUse	;* 1,2 = floor/roof
-				clr.b	usewater
+				clr.b	draw_UseWater_b
 				clr.b	usebumps
 				move.b	GOURSEL,gourfloor
 				jsr		itsafloordraw
@@ -5056,7 +5041,7 @@ RotateObjectPts:
 				move.l	#ObjRotated_vl,a1
 
 				tst.b	Vid_FullScreen_b
-				bne		BIGOBJPTS
+				bne		RotateObjectPtsFullScreen
 
 
 .objpointrotlop:
@@ -5114,7 +5099,7 @@ RotateObjectPts:
 				dbra	d7,.objpointrotlop
 				rts
 
-BIGOBJPTS:
+RotateObjectPtsFullScreen:
 
 .objpointrotlop:
 
@@ -5207,10 +5192,10 @@ BIGOBJPTS:
 
 ;FacesPtr:
 ;				dc.l	FacesList
-FacesCounter:
-				dc.w	0
-Expression:
-				dc.w	0
+;FacesCounter:
+;				dc.w	0
+;Expression:
+;				dc.w	0
 
 
 Energy:
@@ -5228,9 +5213,8 @@ thirddigit:		dc.b	0
 
 gunny:			dc.w	0
 
-AmmoBar:
-
-* Do guns first.
+Draw_BorderAmmoBar:
+; Do guns first.
 
 				move.l	#draw_BorderChars_vb,a4
 				move.b	Plr1_TmpGunSelected_b,d0
@@ -5245,7 +5229,7 @@ AmmoBar:
 
 				move.w	#9,d2
 				moveq	#0,d0
-putingunnums:
+.putingunnums:
 				move.w	#4,d1
 				move.l	a4,a0
 				cmp.b	gunny,d0
@@ -5261,18 +5245,17 @@ putingunnums:
 				move.l	Vid_DrawScreenPtr_l,a1
 				add.w	d0,a1
 				add.l	#3+(240*40),a1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 				addq	#1,d0
-				dbra	d2,putingunnums
+				dbra	d2,.putingunnums
 
 				move.w	Ammo,d0
 
 				cmp.w	#999,d0
 				blt.s	.okammo
 				move.w	#999,d0
-.okammo
 
-
+.okammo:
 				ext.l	d0
 				divs	#10,d0
 				swap	d0
@@ -5294,23 +5277,23 @@ putingunnums:
 				add.l	#20+238*40,a1
 				move.b	firstdigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				move.l	Vid_DrawScreenPtr_l,a1
 				add.l	#21+238*40,a1
 				move.b	secdigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				move.l	Vid_DrawScreenPtr_l,a1
 				add.l	#22+238*40,a1
 				move.b	thirddigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				rts
 
-EnergyBar:
+Draw_BorderEnergyBar:
 				move.w	Energy,d0
 				bge.s	.okpo
 				moveq	#0,d0
@@ -5319,9 +5302,8 @@ EnergyBar:
 				cmp.w	#999,d0
 				blt.s	.okenergy
 				move.w	#999,d0
-.okenergy
 
-
+.okenergy:
 				ext.l	d0
 				divs	#10,d0
 				swap	d0
@@ -5343,45 +5325,45 @@ EnergyBar:
 				add.l	#34+238*40,a1
 				move.b	firstdigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				move.l	Vid_DrawScreenPtr_l,a1
 				add.l	#35+238*40,a1
 				move.b	secdigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				move.l	Vid_DrawScreenPtr_l,a1
 				add.l	#36+238*40,a1
 				move.b	thirddigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				move.l	Vid_DisplayScreen_Ptr_l,a1
 				add.l	#34+238*40,a1
 				move.b	firstdigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				move.l	Vid_DisplayScreen_Ptr_l,a1
 				add.l	#35+238*40,a1
 				move.b	secdigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				move.l	Vid_DisplayScreen_Ptr_l,a1
 				add.l	#36+238*40,a1
 				move.b	thirddigit,d0
 				move.w	#6,d1
-				bsr		DRAWDIGIT
+				bsr		draw_BorderDigit
 
 				rts
 
-DRAWDIGIT:
+draw_BorderDigit:
 				ext.w	d0
 				lea		(a0,d0.w),a2
 
-charlines:
+.charlines:
 				lea		30720(a1),a3
 				move.b	(a2),(a1)
 				move.b	10(a2),10240(a1)
@@ -5395,7 +5377,7 @@ charlines:
 
 				add.w	#10*8,a2
 				add.w	#40,a1
-				dbra	d1,charlines
+				dbra	d1,.charlines
 
 				rts
 
@@ -5470,12 +5452,12 @@ NARRATOR:
 
 NARRTIME:		dc.w	5
 
-doanything:		dc.w	0						; does main game run?
+Game_Running_b:		dc.w	0						; does main game run?
 
 endlevel:
 ; 	_break #0
 				clr.b	dosounds
-				clr.b	doanything
+				clr.b	Game_Running_b
 
 				; waiting for serial transmit complete?
 ;waitfortop22:
@@ -5503,7 +5485,7 @@ endlevel:
 				tst.w	Energy
 				bgt.s	wevewon
 				move.w	#0,Energy
-				bsr		EnergyBar
+				bsr		Draw_BorderEnergyBar
 
 				move.l	#gameover,mt_data
 				st		UseAllChannels
@@ -5524,7 +5506,7 @@ wevewon:
 				; Disable audio DMA
 				move.w	#$f,$dff000+dmacon
 
-				bsr		EnergyBar
+				bsr		Draw_BorderEnergyBar
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.nonextlev
@@ -5560,7 +5542,7 @@ wevelost:
 				jmp		closeeverything
 
 endnomusic:
-				clr.b	doanything
+				clr.b	Game_Running_b
 
 
 				jmp		closeeverything
@@ -5776,10 +5758,10 @@ numsidestd:		dc.w	0
 bottomline:		dc.w	0
 
 checkforwater:
-				tst.b	usewater
+				tst.b	draw_UseWater_b
 				beq.s	.notwater
 
-				move.l	Roompt,a1
+				move.l	RoomPtr_l,a1
 				move.w	(a1),d7
 				cmp.w	Draw_CurrentZone_w,d7
 				bne.s	.notwater
@@ -5802,16 +5784,15 @@ itsafloordraw:
 
 * If D0 =1 then its a floor otherwise (=2) it's
 * a roof.
-
 				move.w	#0,above				; reset 'above'
 				move.w	(a0)+,d6				; floorY of floor/ceiling?
 
-				tst.b	usewater
+				tst.b	draw_UseWater_b
 				beq.s	.oknon
 				tst.b	DOANYWATER
 				beq		dontdrawreturn
-.oknon
 
+.oknon:
 				move.w	d6,d7
 				ext.l	d7
 				asl.l	#6,d7					; floorY << 6?
@@ -5830,10 +5811,10 @@ itsafloordraw:
 				bgt.s	below					; floor is below
 				blt.s	aboveplayer				; floor is above
 
-				tst.b	usewater
+				tst.b	draw_UseWater_b
 				beq.s	.notwater
 
-				move.l	Roompt,a1
+				move.l	RoomPtr_l,a1
 				move.w	(a1),d7
 				cmp.w	Draw_CurrentZone_w,d7
 
@@ -5851,11 +5832,12 @@ dontdrawreturn:
 				;add.w	#4+6,a0
 				lea		10(a0,d6.w*2),a0		; skip sides
 				rts
+
 aboveplayer:
-				tst.b	usewater
+				tst.b	draw_UseWater_b
 				beq.s	.notwater
 
-				move.l	Roompt,a1
+				move.l	RoomPtr_l,a1
 				move.w	(a1),d7
 				cmp.w	Draw_CurrentZone_w,d7
 				bne.s	.notwater
@@ -5979,6 +5961,7 @@ cornerprocessloop: ;	figure					out if any left/right clipping is necessary
 				bne		dontdrawreturn
 
 somefloortodraw:
+				DEV_INC.w	VisibleFlats
 				tst.b	gourfloor
 				bne		goursides
 
@@ -6361,7 +6344,6 @@ bothinfrontGOUR:
 
 				move.w	(a2,d1*2),d0			; first x
 				move.w	(a2,d3*2),d2			; second x
-
 
 				move.l	ypos,d1
 				move.l	d1,d3
@@ -7656,7 +7638,7 @@ doneallmult:
 				asr.w	#1,d7
 				move.w	startsmoothx,d3
 
-				tst.b	usewater
+				tst.b	draw_UseWater_b
 				bne		texturedwaterDOUB
 		; tst.b gourfloor
 				bra		gouraudfloorDOUB
@@ -7676,7 +7658,7 @@ allintofirst:
 
 tstwat:
 
-				tst.b	usewater
+				tst.b	draw_UseWater_b
 				bne		texturedwater
 ; tst.b gourfloor						; FIXME: this effectively disables bumpmapped floors...
 										; opportunity to reenable and see what happens
@@ -8310,7 +8292,7 @@ acrossscrnwD:
 				rts
 
 
-usewater:		dc.w	0
+draw_UseWater_b:		dc.w	0
 				dc.w	0
 startsmoothx:	dc.w	0
 				dc.w	0
@@ -8506,22 +8488,22 @@ COUNTER:		dc.w	0
 COUNTER2:		dc.w	0
 COUNTSPACE:		ds.b	160
 
-VBLCOUNT:		dc.l	0
-VBLCOUNTLAST:		dc.l	0
-FPSLIMITER		dc.l	0
+Vid_VBLCount_l:		dc.l	0
+Vid_VBLCountLast_l:	dc.l	0
+Vid_FPSLimit_l:		dc.l	0
 
 OtherInter:
 				move.w	#$0010,$dff000+intreq
 				movem.l	d0-d7/a0-a6,-(a7)
 				bra		justshake
 
-				cnop	0,4
+				align	4
 
 ; Main VBlank interrupt
 VBlankInterrupt:
-				add.l	#1,counter
-				add.l	#1,main_counter
-				add.l	#1,VBLCOUNT
+				addq.l	#1,counter
+				addq.l	#1,main_counter
+				addq.l	#1,Vid_VBLCount_l
 				subq.w	#1,Anim_Timer_w
 
 				tst.l	timer					; used by menu system as delay
@@ -8543,7 +8525,7 @@ VBlankInterrupt:
 				rts
 .routine
 ;FIXME:  Wait, does the whole game run as part of the VBLank (formerly copper interrupt)?
-				tst.b	doanything
+				tst.b	Game_Running_b
 				bne		dosomething
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -8557,7 +8539,7 @@ tabheld:		dc.w	0
 thistime:		dc.w	0
 
 DOALLANIMS:
-				sub.b	#1,thistime
+				subq.b	#1,thistime
 				ble.s	.okdosome
 				rts
 
@@ -8609,7 +8591,7 @@ JUMPALIENANIM:
 
 				bra		doneobj2
 
-ALDIE
+ALDIE:
 				move.l	#10,d0
 				bra		intowalk
 
@@ -8954,7 +8936,7 @@ LIGHTINGTEXT:
 				dc.b	"                                        "
 
 OLDRET:			dc.w	0
-OLDCENT:		dc.w	0
+Plr_OldCentre_b:		dc.w	0
 OLDGOOD:		dc.w	0
 
 GOODRENDERTXT:
@@ -9207,7 +9189,7 @@ nostartalan:
 				move.l	Plr1_SnapZSpdVal_l,d7
 
 				tst.b	Plr_Decelerate_b
-				beq.s	.nofriction
+				beq.s	.skip_friction
 
 				neg.l	d6
 				ble.s	.nobug1
@@ -9230,7 +9212,7 @@ nostartalan:
 				add.l	d6,Plr1_SnapXSpdVal_l
 				add.l	d7,Plr1_SnapZSpdVal_l
 
-.nofriction:
+.skip_friction:
 				move.l	Plr1_SnapXSpdVal_l,d6
 				move.l	Plr1_SnapZSpdVal_l,d7
 				add.l	d6,Plr1_SnapXOff_l
@@ -9296,38 +9278,42 @@ control2:
 				move.l	Plr2_SnapZSpdVal_l,d7
 
 				tst.b	Plr_Decelerate_b
-				beq.s	.nofriction
+				beq.s	.skip_friction
 
 				neg.l	d6
 				ble.s	.nobug1
+
 				asr.l	#3,d6
 				add.l	#1,d6
 				bra.s	.bug1
-.nobug1
-				asr.l	#3,d6
-.bug1:
 
+.nobug1:
+				asr.l	#3,d6
+
+.bug1:
 				neg.l	d7
 				ble.s	.nobug2
+
 				asr.l	#3,d7
 				add.l	#1,d7
 				bra.s	.bug2
-.nobug2
-				asr.l	#3,d7
-.bug2:
 
+.nobug2:
+				asr.l	#3,d7
+
+.bug2:
 				add.l	d6,Plr2_SnapXSpdVal_l
 				add.l	d7,Plr2_SnapZSpdVal_l
 
-.nofriction:
+.skip_friction:
 				move.l	Plr2_SnapXSpdVal_l,d6
 				move.l	Plr2_SnapZSpdVal_l,d7
 				add.l	d6,Plr2_SnapXOff_l
 				add.l	d7,Plr2_SnapZOff_l
-
 				move.w	Plr2_SnapAngSpd_w,d3
 				tst.b	Plr_Decelerate_b
 				beq.s	.nofric
+
 				asr.w	#2,d3
 				bge.s	.nneg
 				addq	#1,d3
@@ -9343,11 +9329,15 @@ control2:
 .propercontrol:
 				tst.b	Plr2_Mouse_b
 				beq.s	.plr2_no_mouse
+
 				bsr		Plr2_MouseControl
+
 .plr2_no_mouse:
 				tst.b	Plr2_Keys_b
 				beq.s	.plr2_no_keyboard
+
 				bsr		PLR2_keyboard_control
+
 .plr2_no_keyboard:
 ; tst.b Plr2_Path_b
 ; beq.s .plr2_no_path
@@ -9355,7 +9345,9 @@ control2:
 ;.plr2_no_path:
 				tst.b	Plr2_Joystick_b
 				beq.s	.plr2_no_joystick
+
 				bsr		PLR2_JoyStick_control
+
 .plr2_no_joystick:
 
 nocontrols:
@@ -10734,7 +10726,7 @@ PLR2:			dc.b	$ff
 
 
 
-Roompt:			dc.l	0
+RoomPtr_l:			dc.l	0
 OldRoompt:		dc.l	0
 
 *****************************************************************

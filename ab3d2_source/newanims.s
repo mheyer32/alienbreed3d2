@@ -6,54 +6,80 @@ anim_LiftAtBottom_b:	dc.b	0
 anim_DoorOpen_b:		dc.b	0
 anim_DoorClosed_b:		dc.b	0
 
-				align 4
-; TODO - the editors define up to 16 animation types, this looks like a buffer overflow in the making
-anim_BrightessAnimPtrs_vl:
-				dc.l	anim_BrightPulse1_vw
-				dc.l	anim_BrightPulse2_vw
-				dc.l	anim_BrightPulse3_vw
-				dc.l	anim_BrightPulse4_vw
-				dc.l	anim_BrightPulse5_vw
-				dc.l	anim_BrightFlicker1_vw
-				dc.l	anim_BrightFlicker2_vw
-				dc.l	-1
+BRIGHT_ANIM_LIST_END	equ	-1
+BRIGHT_ANIM_END			equ	999
 
-anim_BrightnessAnimStartPtrs_vl:
-				dc.l	anim_BrightPulse1_vw
-				dc.l	anim_BrightPulse2_vw
-				dc.l	anim_BrightPulse3_vw
-				dc.l	anim_BrightPulse4_vw
-				dc.l	anim_BrightPulse5_vw
-				dc.l	anim_BrightFlicker1_vw
-				dc.l	anim_BrightFlicker2_vw
+				align 4
+anim_BrightessAnimPtrs_vl:							; 0 - no animation
+				dc.l	anim_BrightPulse1_vw		; 1
+				dc.l	anim_BrightPulse2_vw		; 2
+				dc.l	anim_BrightPulse3_vw		; 3
+				dc.l	anim_BrightPulse4_vw		; 4
+				dc.l	anim_BrightPulse5_vw		; 5
+				dc.l	anim_BrightFlicker1_vw		; 6
+				dc.l	anim_BrightFlicker2_vw		; 7
+
+				; ABADCAFE - The list is -1 terminated and processed sequentially. I previously thought there
+				; was a potential out of bounds access because 15 animations are defined but it's not these
+				; tables that are indexed by the light point animation, it's Anim_BrightTable_vw
+
+				; We can add our own animations, up to 15
+				;dc.l	anim_BrightPulse1_vw		; 8    ; todo - find a way to define these in a mod file
+				;dc.l	anim_BrightPulse1_vw		; 9    ; so that mods can have custom lighting animations
+				;dc.l	anim_BrightPulse1_vw		; 10
+				;dc.l	anim_BrightPulse1_vw		; 11
+				;dc.l	anim_BrightPulse1_vw		; 12
+				;dc.l	anim_BrightPulse1_vw		; 13
+				;dc.l	anim_BrightPulse1_vw		; 14
+				;dc.l	anim_BrightPulse1_vw		; 15
+				dc.l	BRIGHT_ANIM_LIST_END
+
+anim_BrightnessAnimStartPtrs_vl:					; 0 - No animation
+				dc.l	anim_BrightPulse1_vw		; 1
+				dc.l	anim_BrightPulse2_vw		; 2
+				dc.l	anim_BrightPulse3_vw		; 3
+				dc.l	anim_BrightPulse4_vw		; 4
+				dc.l	anim_BrightPulse5_vw		; 5
+				dc.l	anim_BrightFlicker1_vw		; 6
+				dc.l	anim_BrightFlicker2_vw		; 7
+
+				;dc.l	anim_BrightPulse1_vw		; 8    ; todo - find a way to define these in a mod file
+				;dc.l	anim_BrightPulse1_vw		; 9    ; so that mods can have custom lighting animations
+				;dc.l	anim_BrightPulse1_vw		; 10
+				;dc.l	anim_BrightPulse1_vw		; 11
+				;dc.l	anim_BrightPulse1_vw		; 12
+				;dc.l	anim_BrightPulse1_vw		; 13
+				;dc.l	anim_BrightPulse1_vw		; 14
+				;dc.l	anim_BrightPulse1_vw		; 15
+
 
 ; TODO - could these be bytes?
 anim_BrightPulse1_vw:
 				dc.w	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
 				dc.w	20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
-				dc.w	999
+				dc.w	BRIGHT_ANIM_END
 
 anim_BrightPulse2_vw:
 				dc.w	9,10,11,12,13,14,15,16,17,18,19,20
 				dc.w	20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
 				dc.w	1,2,3,4,5,6,7,8
-				dc.w	999
+				dc.w	BRIGHT_ANIM_END
 
 anim_BrightPulse3_vw:
 				dc.w	17,18,19,20
 				dc.w	20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
 				dc.w	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
-				dc.w	999
+				dc.w	BRIGHT_ANIM_END
 
 anim_BrightPulse4_vw:
 				dc.w	16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1
 				dc.w	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,20,19,18,17
-				dc.w	999
+				dc.w	BRIGHT_ANIM_END
 
 anim_BrightPulse5_vw:
 				dc.w	8,7,6,5,4,3,2,1
 				dc.w	1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,20,19,18,17,16,15,14,13,12,11,10,9
-				dc.w	999
+				dc.w	BRIGHT_ANIM_END
 
 anim_BrightFlicker1_vw: ; hard transition, lamp flicker
 				dcb.w	20,20
@@ -62,13 +88,13 @@ anim_BrightFlicker1_vw: ; hard transition, lamp flicker
 				dc.w	1
 				dcb.w	5,20
 				dc.w	1
-				dc.w	999
+				dc.w	BRIGHT_ANIM_END
 
 anim_BrightFlicker2_vw: ; soft flicker, like flame
 				dc.w	-10,-9,-6,-10,-6,-5,-5,-7,-5,-10,-9,-8,-7,-5,-5,-5,-5
 				dc.w	-5,-5,-5,-5,-6,-7,-8,-9,-5,-10,-9,-10,-6,-5,-5,-5,-5,-5
 				dc.w	-5,-5
-				dc.w	999
+				dc.w	BRIGHT_ANIM_END
 
 				even
 anim_BrightenPoints:
@@ -665,25 +691,25 @@ brightanim:
 				move.l	#anim_BrightessAnimPtrs_vl,a3
 				move.l	#anim_BrightnessAnimStartPtrs_vl,a4
 
-dobrightanims:
+.dobrightanims:
 				move.l	(a3),d0
-				blt		nomoreanims
+				blt		.nomoreanims
 
 				move.l	d0,a2
 				move.w	(a2)+,d0
-				cmp.w	#999,d0
-				bne.s	itsabright
+				cmp.w	#BRIGHT_ANIM_END,d0
+				bne.s	.itsabright
 
 				move.l	(a4),a2
 				move.w	(a2)+,d0
 
-itsabright:
+.itsabright:
 				move.l	a2,(a3)+
 				addq	#4,a4
 				move.w	d0,(a1)+
-				bra.s	dobrightanims
+				bra.s	.dobrightanims
 
-nomoreanims:
+.nomoreanims:
 				rts
 
 BACKSFX:
@@ -697,7 +723,7 @@ BACKSFX:
 				and.w	#127,d0
 				add.w	#100,d0
 				move.w	d0,anim_TimeToNoise_w
-				move.l	Roompt,a0
+				move.l	RoomPtr_l,a0
 				add.w	anim_OddEven_w,a0
 				move.w	#2,d0
 				sub.w	anim_OddEven_w,d0

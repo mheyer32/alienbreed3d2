@@ -43,15 +43,15 @@ Plr2_MouseControl
 				add.w	d2,Plr2_AimSpeed_l
 				add.w	d3,d0
 				cmp.w	#-80,d0
-				bgt.s	.nolookup
+				bgt.s	.skip_look_up
 				move.w	#-512*20,Plr2_AimSpeed_l
 				move.w	#-80,d0
-.nolookup:
+.skip_look_up:
 				cmp.w	#80,d0
-				blt.s	.nolookdown
+				blt.s	.skip_look_down
 				move.w	#512*20,Plr2_AimSpeed_l
 				move.w	#80,d0
-.nolookdown
+.skip_look_down
 
 				move.w	d0,STOPOFFSET
 				neg.w	d0
@@ -76,12 +76,12 @@ Plr2_MouseControl
 				move.w	#-20,d2
 
 				tst.b	Plr2_Squished_b
-				bne.s	.halve
+				bne.s	.crouch
 				tst.b	Plr2_Ducked_b
-				beq.s	.nohalve
-.halve
+				beq.s	.skip_crouch
+.crouch
 				asr.w	#1,d2
-.nohalve
+.skip_crouch
 
 				btst	#6,$bfe001
 				beq.s	.moving
@@ -241,7 +241,7 @@ oktostand2:
 .noupordown:
 				move.l	d0,Plr2_SnapHeight_l
 
-				tst.b	$27(a5)
+				tst.b	RAWKEY_K(a5)
 				beq.s	.notselkey
 				st		Plr2_Keys_b
 				clr.b	Plr2_Path_b
@@ -249,7 +249,7 @@ oktostand2:
 				clr.b	Plr2_Joystick_b
 .notselkey:
 
-				tst.b	$26(a5)
+				tst.b	RAWKEY_J(a5)
 				beq.s	.notseljoy
 				clr.b	Plr2_Keys_b
 				clr.b	Plr2_Path_b
@@ -257,14 +257,14 @@ oktostand2:
 				st		Plr2_Joystick_b
 .notseljoy:
 
-				tst.b	$37(a5)
+				tst.b	RAWKEY_M(a5)
 				beq.s	.notselmouse
 				clr.b	Plr2_Keys_b
 				clr.b	Plr2_Path_b
 				st		Plr2_Mouse_b
 				clr.b	Plr2_Joystick_b
-.notselmouse:
 
+.notselmouse:
 				lea		1(a5),a4
 				move.l	#Plr2_Weapons_vb,a2
 				move.l	Plr2_ObjectPtr_l,a3
@@ -283,12 +283,12 @@ pickweap2
 
 				bra.s	gogogogog
 
-notgotweap2
+notgotweap2:
 				addq	#1,d2
 				dbra	d1,pickweap2
 
 gogogogog:
-				tst.b	$43(a5)
+				tst.b	RAWKEY_NUM_ENTER(a5)
 				beq.s	.notswapscr
 				tst.b	lastscr
 				bne.s	.notswapscr2
@@ -340,52 +340,50 @@ PLR2_keyboard_control:
 				moveq	#0,d7
 				move.b	look_up_key,d7
 				tst.b	(a5,d7.w)
-				beq.s	.nolookup
+				beq.s	.skip_look_up
 
 				sub.w	#512,Plr2_AimSpeed_l
 				sub.w	#4,d0
 				cmp.w	#-80,d0
-				bgt.s	.nolookup
+				bgt.s	.skip_look_up
 				move.w	#-512*20,Plr2_AimSpeed_l
 				move.w	#-80,d0
-.nolookup:
+.skip_look_up:
 				moveq	#0,d7
 				move.b	look_down_key,d7
 				tst.b	(a5,d7.w)
-				beq.s	.nolookdown
+				beq.s	.skip_look_down
 				add.w	#512,Plr2_AimSpeed_l
 				add.w	#4,d0
 				cmp.w	#80,d0
-				blt.s	.nolookdown
+				blt.s	.skip_look_down
 				move.w	#512*20,Plr2_AimSpeed_l
 				move.w	#80,d0
-.nolookdown:
 
+.skip_look_down:
 				move.b	centre_view_key,d7
 				tst.b	(a5,d7.w)
-				beq.s	.nocent
+				beq.s	.skip_centre_look
 
-				tst.b	OLDCENT
-				bne.s	.nocent2
-				st		OLDCENT
+				tst.b	Plr_OldCentre_b
+				bne.s	.skip_centre_look_2
+				st		Plr_OldCentre_b
 
 				move.w	#0,d0
 				move.w	#0,Plr2_AimSpeed_l
 
-				bra.s	.nocent2
+				bra.s	.skip_centre_look_2
 
-.nocent:
-				clr.b	OLDCENT
-.nocent2:
+.skip_centre_look:
+				clr.b	Plr_OldCentre_b
 
-
+.skip_centre_look_2:
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
 				muls	#SCREEN_WIDTH,d0
 				move.l	d0,SBIGMIDDLEY
-
 				move.w	Plr2_SnapAngPos_w,d0
 				move.w	Plr2_SnapAngSpd_w,d3
 				move.w	#35,d1
@@ -394,18 +392,20 @@ PLR2_keyboard_control:
 				moveq	#0,d7
 				move.b	run_key,d7
 				tst.b	(a5,d7.w)
-				beq.s	.nofaster
+				beq.s	.skip_run
+
 				move.w	#60,d1
 				move.w	#3,d2
 				move.w	#14,TURNSPD
-.nofaster:
+.skip_run:
 				tst.b	Plr2_Squished_b
-				bne.s	.halve
+				bne.s	.crouch
+
 				tst.b	Plr2_Ducked_b
-				beq.s	.nohalve
-.halve:
+				beq.s	.skip_crouch
+.crouch:
 				asr.w	#1,d2
-.nohalve
+.skip_crouch
 
 				moveq	#0,d4
 
@@ -427,14 +427,14 @@ PLR2_keyboard_control:
 
 				move.b	force_sidestep_key,d7
 				tst.b	(a5,d7.w)
-				beq		.noalwayssidestep
+				beq		.skip_force_sidestep
 
 				move.b	templeftkey,tempslkey
 				move.b	temprightkey,tempsrkey
 				move.b	#255,templeftkey
 				move.b	#255,temprightkey
 
-.noalwayssidestep:
+.skip_force_sidestep:
 
 				tst.b	Plr_Decelerate_b
 				beq.s	noturnposs2
@@ -442,25 +442,25 @@ PLR2_keyboard_control:
 
 				move.b	templeftkey,d7
 				tst.b	(a5,d7.w)
-				beq.s	.noleftturn
+				beq.s	.skip_turn_left
 				sub.w	TURNSPD,d3
-.noleftturn
+.skip_turn_left
 				move.l	#KeyMap_vb,a5
 				move.b	temprightkey,d7
 				tst.b	(a5,d7.w)
-				beq.s	.norightturn
+				beq.s	.skip_turn_right
 				add.w	TURNSPD,d3
-.norightturn
+.skip_turn_right
 
 				cmp.w	d1,d3
-				ble.s	.okrspd
+				ble.s	.right_speed_ok
 				move.w	d1,d3
-.okrspd:
+.right_speed_ok:
 				neg.w	d1
 				cmp.w	d1,d3
-				bge.s	.oklspd
+				bge.s	.left_speed_ok
 				move.w	d1,d3
-.oklspd:
+.left_speed_ok:
 
 noturnposs2:
 
@@ -470,20 +470,20 @@ noturnposs2:
 
 				move.b	tempslkey,d7
 				tst.b	(a5,d7.w)
-				beq.s	.noleftslide
+				beq.s	.skip_step_left
 				add.w	d2,d4
 				add.w	d2,d4
 				asr.w	#1,d4
-.noleftslide
+.skip_step_left
 				move.l	#KeyMap_vb,a5
 				move.b	tempsrkey,d7
 				tst.b	(a5,d7.w)
-				beq.s	.norightslide
+				beq.s	.skip_step_right
 				add.w	d2,d4
 				add.w	d2,d4
 				asr.w	#1,d4
 				neg.w	d4
-.norightslide
+.skip_step_right
 
 noslide2:
 
@@ -498,7 +498,7 @@ noslide2:
 				move.l	Plr2_SnapZSpdVal_l,d7
 
 				tst.b	Plr_Decelerate_b
-				beq.s	.nofriction
+				beq.s	.skip_friction
 
 				neg.l	d6
 				ble.s	.nobug1
@@ -518,7 +518,7 @@ noslide2:
 				asr.l	#3,d7
 .bug2:
 
-.nofriction
+.skip_friction
 
 				moveq	#0,d3
 

@@ -1025,14 +1025,8 @@ draw_WallFlatShaded:
 				bgt.s	.oneinfront
 				rts
 
-; this path doesn't do anything except the nop if d3 is <= 0
-;.oneinfront1:
-;				tst.w	d3
-;				ble.s	.oneinfront
-; Bothinfront!
-;				nop
-
 .oneinfront:
+				DEV_INC.w VisibleSimpleWalls
 				move.w	#16,d7
 				move.w	#2,d6
 
@@ -1636,8 +1630,8 @@ simplewallPACK2:
 ; There's code that expects	these in the right order to allow for movem
 				align	4
 TOTHEMIDDLE:	dc.w	0
-Vid_BottomY_w:		dc.w	0
-Vid_CentreY_w:		dc.w	FS_HEIGHT/2
+Vid_BottomY_w:	dc.w	0
+Vid_CentreY_w:	dc.w	FS_HEIGHT/2
 TOPOFFSET:		dc.w	0
 BIGMIDDLEY:		dc.l	SCREEN_WIDTH*FS_HEIGHT/2
 SMIDDLEY:		dc.w	FS_HEIGHT/2
@@ -2419,19 +2413,33 @@ cant_tell:
 
 				move.w	#-1,draw_WallLastStripX_w
 
-				move.w	draw_RightWallTopBright_w,d0
+				; Compare the corner brightnesses
+				;move.w	draw_RightWallTopBright_w,d0
+				;cmp.w	draw_RightWallBright_w,d0
+				;bne.s	.do_shaded
+				;move.w	draw_LeftWallTopBright_w,d0
+				;cmp.w	draw_LeftWallBright_w,d0
+				;bne.s	.do_shaded
+
+				; Test wall corners against the first.
+				; A xor based check would be nicer but there's no eor.w <ea>,dN
+				; At least process the words in ascending order
+				move.w	draw_LeftWallBright_w,d0
 				cmp.w	draw_RightWallBright_w,d0
-				bne.s	gottagour
-				move.w	draw_LeftWallTopBright_w,d0
-				cmp.w	draw_LeftWallBright_w,d0
-				bne.s	gottagour
+				bne.s	.do_shaded
+				cmp.w	draw_LeftWallTopBright_w,d0
+				bne.s	.do_shaded
+				cmp.w	draw_RightWallTopBright_w,d0
+				bne.s	.do_shaded
 
-				bsr		draw_WallFlatShaded
-				bra.s	nottagour
+				DEV_CHECK	SIMPLE_WALLS,.function_done
+				bsr			draw_WallFlatShaded
+				bra.s		.function_done
 
-gottagour:
-				bsr		draw_WallGouraudShaded
-nottagour:
+.do_shaded:
+				DEV_CHECK	SHADED_WALLS,.function_done
+				bsr			draw_WallGouraudShaded
+.function_done:
 				movem.l	(a7)+,d7/a0/a5/a6
 				rts
 
