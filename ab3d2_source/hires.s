@@ -5774,9 +5774,9 @@ checkforwater:
 ;				add.w	d6,a0					; a0 + (sides-1)*2
 ;				add.w	#4+6,a0					; a0 + (sides-1)*2 + 10
 				lea		10(a0,d6.w*2),a0
+nofloor:
 				rts
 
-				rts
 
 CLRNOFLOOR:		dc.w	0
 
@@ -5961,6 +5961,7 @@ cornerprocessloop: ;	figure					out if any left/right clipping is necessary
 				bne		dontdrawreturn
 
 somefloortodraw:
+				DEV_CHECK	FLATS,dontdrawreturn
 				DEV_INC.w	VisibleFlats
 				tst.b	gourfloor
 				bne		goursides

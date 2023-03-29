@@ -353,7 +353,7 @@ gogog:
 				DEV_CHECK_KEY	RAWKEY_O,POLYGON_MODELS
 				DEV_CHECK_KEY	RAWKEY_G,FLATS
 				DEV_CHECK_KEY	RAWKEY_Q,FASTBUFFER_CLEAR
-
+				DEV_CHECK_KEY	RAWKEY_N,AI_ATTACK
 				rts
 
 				; Restores the complete original screen left/right borders,
