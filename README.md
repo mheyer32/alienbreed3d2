@@ -1,4 +1,4 @@
-#Alien Breed 3D II The Killing Grounds 
+# Alien Breed 3D II The Killing Grounds 
 
 This repo contains a compileable version of the Alien Breed 3D II source.
 It produces executables that can run the original game's data.
@@ -32,14 +32,14 @@ In order to be able to cross-compile the code via vasm I had to:
 * re-enable the fire effect in the main menu
 * turn the default keymapping to AWSD+mouse. Make left mouse button shoot and right mouse button select next weapon
 
-##Building
+## Building
 The currently maintained and buildable source code is located within the `ab3d2_source/` directory. The original game sources are retained in the `ab3d2_old_source/` directory.
 
 A standard GNU make compatible Makefile is included. This can be used with Bebbo's cross compiler suite for Linux. See: https://github.com/bebbo/amiga-gcc for details on installation.
 
 There are two targets that can be built.
 
-###Release
+### Release
 
 This is the standard game engine. When build, this produces an AmigaOS executable `hires` that can be copied to your game directory. Example for cross compiling under linux:
 ```
@@ -72,7 +72,7 @@ Please note the following limitations of the present build:
 The game supports double buffered vertical sync and frame rate capping. These can be cycled through using the F7 key.
 
 
-###Developer
+### Developer
 The developer build includes various extras to assist debugging and feature development.
 ```
 $ cd alienbreed3d2/ab3d2_source
@@ -114,7 +114,7 @@ Please note that the development build may be less stable and also slower. Featu
 
 
 
-##Considerations
+## Considerations
 Note: This section is out of date as several of these improvements have been made.
 
 There are MANY ways this game can be improved:

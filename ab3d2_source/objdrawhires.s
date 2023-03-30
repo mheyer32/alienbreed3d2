@@ -1,6 +1,8 @@
 
-DRAW_BITMAP_NEAR_PLANE	EQU		25  ; Distances lower than this for bitmaps are considered behind the observer
-DRAW_VECTOR_NEAR_PLANE	EQU		130 ; Distances lower than this for vectors are considered behind the observer
+DRAW_BITMAP_NEAR_PLANE	EQU		25   ; Distances lower than this for bitmaps are considered behind the observer
+DRAW_VECTOR_NEAR_PLANE	EQU		130  ; Distances lower than this for vectors are considered behind the observer
+
+DRAW_VECTOR_MAX_Z		EQU		13000 ; Vector points further than this will be culled
 
 				align 4
 draw_TopY_3D_l:			dc.l	-100*1024
@@ -1776,7 +1778,7 @@ rotate_object:
 				move.l	#boxbrights,a6
 				move.w	2(a0),d2				; object y pos?
 				subq	#1,d7
-				asl.l	#1,d0					;
+				add.l	d0,d0					; * 2
 ; Projection for polygonal objects to screen here?
 				tst.b	Vid_FullScreen_b
 				beq.s	smallscreen_conv
@@ -1785,14 +1787,13 @@ fullscreen_conv:
 				; 0xABADCAFE - this is very weird. If I supply the correct factor of 5/3, vector models break
 				; but if I don't correct for it in billboard rendering, the bitmap depth is incorrect.
 				move.w	d1,d3
-				asl.w	#1,d1
+				add.w	d1,d1
 				add.w	d3,d1					; d1 * 3  because 288 is ~1.5times larger than 196?
 												; if I change this, 3d objects start "swimming" with regard to the world
-
 				ext.l	d2
 				asl.l	#7,d2					; (view_ypos * 128 - yoff) * 2
 				sub.l	yoff,d2
-				asl.l	#1,d2
+				add.l	d2,d2
 
 .convert_to_screen:
 				move.l	(a2),d3					;
@@ -1804,6 +1805,10 @@ fullscreen_conv:
 				move.w	(a2),d5					; z'
 				add.w	d1,d5					; z'' = z' + zpos_of_view
 				ble		.ptbehind
+
+				cmp.w	#DRAW_VECTOR_MAX_Z,d5	; skip object beyond this distance.
+				bgt		nomoreparts
+
 				move.w	d5,(a2)+
 
 				; FIXME: can we factor the 3/2 scaling into Z somewhere else?
@@ -1812,22 +1817,20 @@ fullscreen_conv:
 				; 0xABADCAFE - going to be multiplying by 5/3 here for the 320 fullscreen
 				move.l	#3413,d6
 
-				; todo lower precision, 16 bit multiply?
 				; approximate 3.333 => 3413/1024
-				muls.l	d6,d4
-				asr.l	#8,d4
-				asr.l	#2,d4		; y'' * 3.333
-				divs	d5,d4		; ys = (x*3)/(z*2)
+				asr.l	#2,d4						; Issue #60: Avoid overflow by partially pre-shifting y''
+				muls.l	d6,d4						; before the multiplication step
+				asr.l	#8,d4						; y'' * 3.333
+				divs	d5,d4						; ys = (x*3)/(z*2)
 
-				; todo lower precision, 16 bit multiply?
 				; approximate 3.333 => 3413/1024
-				muls.l	d6,d3
-				asr.l	#8,d3
-				asr.l	#2,d3		; x'' * 3.333
-				divs	d5,d3		; xs = (x*3)/(z*2)
-				add.w	Vid_CentreX_w,d3	; mid_x of screen
+				asr.l	#2,d3						; Issue #60: Avoid overflow by partially pre-shifting x''
+				muls.l	d6,d3						; before the multiplication
+				asr.l	#8,d3						; x'' * 3.333
+				divs	d5,d3						; xs = (x*3)/(z*2)
+				add.w	Vid_CentreX_w,d3			; mid_x of screen
 				add.w	draw_PolygonCentreY_w,d4	; mid_y of screen
-				move.w	d3,(a3)+	; store xs,ys in boxonscr
+				move.w	d3,(a3)+					; store xs,ys in boxonscr
 				move.w	d4,(a3)+
 				dbra	d7,.convert_to_screen
 
@@ -1843,11 +1846,11 @@ fullscreen_conv:
 
 				; Small display
 smallscreen_conv:
-				asl.w	#1,d1					; d1 * 2
+				add.w	d1,d1					; d1 * 2
 				ext.l	d2
 				asl.l	#7,d2
 				sub.l	yoff,d2
-				asl.l	#1,d2					; (d2*128 - yoff) *2
+				add.l	d2,d2					; (d2*128 - yoff) *2
 
 .convert_to_screen:
 				move.l	(a2),d3
@@ -1859,6 +1862,9 @@ smallscreen_conv:
 				move.w	(a2),d5
 				add.w	d1,d5
 				ble		.ptbehind2
+
+				cmp.w	#DRAW_VECTOR_MAX_Z,d5	; skip object beyond this distance.
+				bgt		nomoreparts
 
 				move.w	d5,(a2)+
 				divs	d5,d3
