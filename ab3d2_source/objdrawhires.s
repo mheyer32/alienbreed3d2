@@ -2,7 +2,7 @@
 DRAW_BITMAP_NEAR_PLANE	EQU		25   ; Distances lower than this for bitmaps are considered behind the observer
 DRAW_VECTOR_NEAR_PLANE	EQU		130  ; Distances lower than this for vectors are considered behind the observer
 
-DRAW_VECTOR_MAX_Z		EQU		13000 ; Vector points further than this will be culled
+DRAW_VECTOR_MAX_Z		EQU		16383 ; Vector points further than this will be culled
 
 				align 4
 draw_TopY_3D_l:			dc.l	-100*1024
