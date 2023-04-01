@@ -1915,10 +1915,36 @@ nodrawp2:
 				sub.w	#2,Vid_LetterBoxMarginHeight_w
 
 .nobigscr:
-				tst.b	RAWKEY_NUM_RBRKT(a5)
-				beq		notdoubheight
+				; TODO - Come back to the resolution cycle once the double width issues are fixed
+
+;				tst.b	RAWKEY_F9(a5)
+;				beq.s	.skip_resolution_cycle
+;				clr.b	RAWKEY_F9(a5)
+;				addq.b	#1,Vid_ResolutionOption_b
+;
+;				btst.b	#0,Vid_ResolutionOption_b
+;				sne.b	Vid_DoubleHeight_b
+;
+;				btst.b	#1,Vid_ResolutionOption_b
+;				sne.b	Vid_DoubleWidth_b
+;
+;				tst.b	Vid_DoubleHeight_b
+;				beq.s	.skip_copperlist
+;
+;				move.w	#0,d0
+;				move.w	#0,d1
+;
+;				bsr		SetupRenderbufferSize
+;				jsr		vid_SetupDoubleheightCopperlist
+;
+;.skip_copperlist:
+;.skip_resolution_cycle:
+
+				tst.b	RAWKEY_F9(a5)
+				beq		.skip_double_height
+				clr.b	RAWKEY_F9(a5)
 				tst.b	LASTDH
-				bne		notdoubheight2
+				bne		.not_double_height
 				st		LASTDH
 				move.w	#0,d0
 				move.w	#0,d1
@@ -1929,25 +1955,27 @@ nodrawp2:
 				bsr		SetupRenderbufferSize
 				jsr		vid_SetupDoubleheightCopperlist
 
-				bra		notdoubheight2
+				bra.s	.not_double_height
 
-notdoubheight:
+.skip_double_height:
 				clr.b	LASTDH
-notdoubheight2
 
-				tst.b	RAWKEY_NUM_LBRKT(a5)
-				beq.s	notdoubwidth
+.not_double_height:
+				tst.b	RAWKEY_F8(a5)
+				beq.s	.skip_double_width
+				clr.b	RAWKEY_F8(a5)
 				tst.b	LASTDW
-				bne		notdoubwidth2
+				bne		.not_double_width
 				not.b	Vid_DoubleWidth_b
 
 				bsr		SetupRenderbufferSize
 
-				bra.s	notdoubwidth2
+				bra.s	.not_double_width
 
-notdoubwidth:
+.skip_double_width:
 				clr.b	LASTDW
-notdoubwidth2:
+
+.not_double_width:
 
 *****************************************
 				move.l	Plr2_RoomPtr_l,a0
@@ -2088,7 +2116,7 @@ SetupRenderbufferSize:
 				blt.s	.wideScreenOk
 				move.w	#100,Vid_LetterBoxMarginHeight_w
 
-.wideScreenOk
+.wideScreenOk:
 				tst.b	Vid_FullScreen_b
 				beq.s	.setupSmallScreen
 
@@ -2096,7 +2124,7 @@ SetupRenderbufferSize:
 				tst.b	Vid_DoubleWidth_b
 				beq.s	.noDoubleWidth
 				lsr.w	#1,d0
-.noDoubleWidth
+.noDoubleWidth:
 				move.w	d0,Vid_RightX_w
 				lsr.w	#1,d0
 				move.w	d0,Vid_CentreX_w
@@ -2109,14 +2137,14 @@ SetupRenderbufferSize:
 				tst.b	Vid_DoubleWidth_b
 				beq.s	.noDoubleWidth2
 				lsr.w	#1,d0
-.noDoubleWidth2
+.noDoubleWidth2:
 				move.w	d0,Vid_RightX_w
 				lsr.w	#1,d0
 				move.w	d0,Vid_CentreX_w
 				move.w	#SMALL_HEIGHT,Vid_BottomY_w
 				move.w	#SMALL_HEIGHT/2,TOTHEMIDDLE
 
-.wipeScreen
+.wipeScreen:
 				move.l	Vid_DisplayScreen_Ptr_l,a0
 				jsr		Draw_ResetGameDisplay
 				move.l	Vid_DrawScreenPtr_l,a0
