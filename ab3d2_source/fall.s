@@ -191,76 +191,76 @@ Plr1_Fall:
 				move.l	d1,Plr1_SnapYOff_l
 				rts
 
-ARSE:
-				sub.l	d1,d0
-				slt		plr_CanJump_b
-				bgt.s	.above_ground
-				beq.s	.notfast
-				sub.l	#512,d2
-				blt.s	.notfast
-				move.l	#0,d2
-
-.notfast:
-				add.l	d2,d1
-				sub.l	d2,d0
-				blt.s	.pastitall
-				move.l	#0,d2
-				move.l	Plr1_SnapTYOff_l,d1
-				bra.s	.pastitall
-
-.above_ground:
-				add.l	d2,d1
-				add.l	#64,d2
-				move.l	#-1024,plr_JumpSpeed_l
-				move.l	Plr1_RoomPtr_l,a2
-				move.l	ZoneT_Water_l(a2),d0
-				cmp.l	d0,d1
-				blt.s	.pastitall
-
-				move.l	#-512,plr_JumpSpeed_l
-				cmp.l	#256*2,d2
-				blt.s	.pastitall
-				move.l	#256*2,d2
-
-.pastitall:
-				move.l	d2,Plr1_SnapYVel_l
-				move.l	d1,Plr1_SnapYOff_l
-				move.l	#KeyMap_vb,a5
-				tst.b	$1d(a5)
-				beq.s	.no_thrust_2
-
-				tst.b	plr_CanJump_b
-				beq.s	.no_thrust_2
-
-				move.l	plr_JumpSpeed_l,Plr1_SnapYVel_l
-
-.no_thrust_2:
-				move.l	Plr1_RoomPtr_l,a5
-				move.l	ZoneT_Roof_l(a5),d0
-				tst.b	Plr1_StoodInTop_b
-				beq.s	.use_bottom
-				move.l	ZoneT_UpperRoof_l(a5),d0
-
-.use_bottom:
-				move.l	Plr1_SnapYOff_l,d1
-				move.l	Plr1_SnapYVel_l,d2
-				sub.l	Plr1_SnapHeight_l,d1
-				sub.l	#10*256,d1
-				cmp.l	d1,d0
-				blt.s	.not_in_roof
-
-				move.l	d0,d1
-				tst.l	d2
-				bge.s	.not_in_roof
-
-				moveq	#0,d2
-
-.not_in_roof:
-				add.l	#10*256,d1
-				add.l	Plr1_SnapHeight_l,d1
-				move.l	d1,Plr1_SnapYOff_l
-				move.l	d2,Plr1_SnapYVel_l
-				rts
+;ARSE:
+;				sub.l	d1,d0
+;				slt		plr_CanJump_b
+;				bgt.s	.above_ground
+;				beq.s	.notfast
+;				sub.l	#512,d2
+;				blt.s	.notfast
+;				move.l	#0,d2
+;
+;.notfast:
+;				add.l	d2,d1
+;				sub.l	d2,d0
+;				blt.s	.pastitall
+;				move.l	#0,d2
+;				move.l	Plr1_SnapTYOff_l,d1
+;				bra.s	.pastitall
+;
+;.above_ground:
+;				add.l	d2,d1
+;				add.l	#64,d2
+;				move.l	#-1024,plr_JumpSpeed_l
+;				move.l	Plr1_RoomPtr_l,a2
+;				move.l	ZoneT_Water_l(a2),d0
+;				cmp.l	d0,d1
+;				blt.s	.pastitall
+;
+;				move.l	#-512,plr_JumpSpeed_l
+;				cmp.l	#256*2,d2
+;				blt.s	.pastitall
+;				move.l	#256*2,d2
+;
+;.pastitall:
+;				move.l	d2,Plr1_SnapYVel_l
+;				move.l	d1,Plr1_SnapYOff_l
+;				move.l	#KeyMap_vb,a5
+;				tst.b	RAWKEY_NUM_1(a5) ; is this a dead code path? That's a weapon button
+;				beq.s	.no_thrust_2
+;
+;				tst.b	plr_CanJump_b
+;				beq.s	.no_thrust_2
+;
+;				move.l	plr_JumpSpeed_l,Plr1_SnapYVel_l
+;
+;.no_thrust_2:
+;				move.l	Plr1_RoomPtr_l,a5
+;				move.l	ZoneT_Roof_l(a5),d0
+;				tst.b	Plr1_StoodInTop_b
+;				beq.s	.use_bottom
+;				move.l	ZoneT_UpperRoof_l(a5),d0
+;
+;.use_bottom:
+;				move.l	Plr1_SnapYOff_l,d1
+;				move.l	Plr1_SnapYVel_l,d2
+;				sub.l	Plr1_SnapHeight_l,d1
+;				sub.l	#10*256,d1
+;				cmp.l	d1,d0
+;				blt.s	.not_in_roof
+;
+;				move.l	d0,d1
+;				tst.l	d2
+;				bge.s	.not_in_roof
+;
+;				moveq	#0,d2
+;
+;.not_in_roof:
+;				add.l	#10*256,d1
+;				add.l	Plr1_SnapHeight_l,d1
+;				move.l	d1,Plr1_SnapYOff_l
+;				move.l	d2,Plr1_SnapYVel_l
+;				rts
 
 Plr2_Fall:
 				move.l	Plr2_SnapTYOff_l,d0
