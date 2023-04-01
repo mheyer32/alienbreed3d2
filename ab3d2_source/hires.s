@@ -8906,32 +8906,11 @@ notogglesound2:
 .noon:
 				bra		pastlighttext
 
-;Game_LightingOptionsText_vb:
-;				dc.b	"Lighting Effects Deactivated            "
-;				dc.b	"                                        "
-;				dc.b	"                                        "
-;				dc.b	"                                        "
-;
-;				dc.b	"Lighting Effects Activated              "
-;				dc.b	"                                        "
-;				dc.b	"                                        "
-;				dc.b	"                                        "
 
-OLDRET:			dc.w	0
-Plr_OldCentre_b:		dc.w	0
-OLDGOOD:		dc.w	0
+OLDRET:				dc.w	0
+Plr_OldCentre_b:	dc.w	0
+OLDGOOD:			dc.w	0
 
-;Game_DrawHighQualityText_vb:
-;				dc.b	"Rendering Quality : High                "
-;				dc.b	"                                        "
-;				dc.b	"                                        "
-;				dc.b	"                                        "
-;
-;Game_DrawLowQualityText_vb:
-;				dc.b	"Rendering Quality : Reduced             "
-;				dc.b	"                                        "
-;				dc.b	"                                        "
-;				dc.b	"                                        "
 
 pastlighttext:
 				jsr		SENDMESSAGE
