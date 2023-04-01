@@ -655,7 +655,7 @@ scaledownlop:
 				move.w	#%111111111111,Conditions
 .nokeys:
 				move.l	#KeyMap_vb,a5
-				clr.b	$45(a5)
+				clr.b	RAWKEY_ESC(a5)
 
 				move.l	Lvl_MusicPtr_l,mt_data
 				clr.b	UseAllChannels
@@ -954,7 +954,7 @@ lop:
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne		.nopause
-				tst.b	$19(a5)
+				tst.b	RAWKEY_P(a5)
 				beq.s	.nopause
 				clr.b	Game_Running_b
 
@@ -964,7 +964,7 @@ lop:
 				jsr		_ReadJoy1
 
 .NOJOY:
-				tst.b	$19(a5)
+				tst.b	RAWKEY_P(a5)
 				bne.s	.waitrel
 
 				bsr		Game_Pause
@@ -1227,7 +1227,7 @@ okwat:
 
 NotOnePlayer:
 				move.l	#KeyMap_vb,a5
-				tst.b	$19(a5)
+				tst.b	RAWKEY_P(a5)
 				sne		Game_MasterPaused_b
 
 *********************************
@@ -1352,7 +1352,7 @@ NotOnePlayer:
 ASlaveShouldWaitOnHisMaster:
 
 				move.l	#KeyMap_vb,a5
-				tst.b	$19(a5)
+				tst.b	RAWKEY_P(a5)
 				sne		Game_SlavePaused_b
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -1884,7 +1884,7 @@ nodrawp2:
 				;CALLDEV	MarkChunkyDone
 
 				move.l	#KeyMap_vb,a5
-				tst.b	$4a(a5)
+				tst.b	RAWKEY_NUM_MINUS(a5)	; Decrease vertical view size
 				beq		.nosmallscr
 
 				; clamp wide screen
@@ -1905,8 +1905,8 @@ nodrawp2:
 				jsr		Draw_ResetGameDisplay
 
 .clamped:
-.nosmallscr
-				tst.b	$5e(a5)
+.nosmallscr:
+				tst.b	RAWKEY_NUM_PLUS(a5)		; Increase vertical view size
 				beq.s	.nobigscr
 
 				tst.w	Vid_LetterBoxMarginHeight_w
@@ -1915,7 +1915,7 @@ nodrawp2:
 				sub.w	#2,Vid_LetterBoxMarginHeight_w
 
 .nobigscr:
-				tst.b	$5b(a5)
+				tst.b	RAWKEY_NUM_RBRKT(a5)
 				beq		notdoubheight
 				tst.b	LASTDH
 				bne		notdoubheight2
@@ -1935,7 +1935,7 @@ notdoubheight:
 				clr.b	LASTDH
 notdoubheight2
 
-				tst.b	$5a(a5)
+				tst.b	RAWKEY_NUM_LBRKT(a5)
 				beq.s	notdoubwidth
 				tst.b	LASTDW
 				bne		notdoubwidth2
@@ -2019,7 +2019,7 @@ plr1only:
 .allobsdone:
 
 				move.l	#KeyMap_vb,a5
-				tst.b	$45(a5)
+				tst.b	RAWKEY_ESC(a5)
 				beq.s	noend
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
@@ -2184,30 +2184,30 @@ TRRANS:			dc.w	0
 DOANYWATER:		dc.w	0
 
 DoTheMapWotNastyCharlesIsForcingMeToDo:
+				; 0xABADCAFE - Fixme - make these assignable and remember to clear the keys
+				; as the zoom speed is insane under emulations
 
 				move.l	Draw_TexturePalettePtr_l,a4
 				add.l	#256*32,a4
-; add.w MAPBRIGHT,a4
+				; add.w Draw_MapZoomLevel_w,a4
 
 				move.l	#KeyMap_vb,a5
-				tst.b	$50(a5)
-				beq.s	.nobrighter
-				tst.w	MAPBRIGHT
-				beq.s	.nobrighter
+				tst.b	RAWKEY_F1(a5)			; Zoom In
+				beq.s	.skip_zoom_in
+				tst.w	Draw_MapZoomLevel_w
+				beq.s	.skip_zoom_in
 
-				sub.w	#1,MAPBRIGHT
+				sub.w	#1,Draw_MapZoomLevel_w
 
-.nobrighter:
+.skip_zoom_in:
+				tst.b	RAWKEY_F2(a5)			; Zoom Out
+				beq.s	.skip_zoom_out
+				cmp.w	#7,Draw_MapZoomLevel_w
+				bge.s	.skip_zoom_out
 
-				tst.b	$51(a5)
-				beq.s	.nodimmer
-				cmp.w	#7,MAPBRIGHT
-				bge.s	.nodimmer
+				add.w	#1,Draw_MapZoomLevel_w
 
-				add.w	#1,MAPBRIGHT
-
-.nodimmer:
-
+.skip_zoom_out:
 				move.l	#Rotated_vl,a1
 				move.l	#COMPACTMAP,a2
 				move.l	#BIGMAP-40,a3
@@ -2225,8 +2225,8 @@ SHOWMAP:
 				beq.s	preshow
 
 				move.w	#9,d7
-wallsofzone
 
+wallsofzone:
 				asr.l	#1,d5
 				bcs.s	WALLSEEN
 
@@ -2242,41 +2242,41 @@ WALLMAPPED:
 				asr.l	#1,d5
 				bcc.s	.notadoor
 				move.w	#$e00,d4
-.notadoor
 
+.notadoor:
 				st		TRRANS
 
 				bra.s	DECIDEDCOLOUR
 
 WALLSEEN:
-
 				clr.b	TRRANS
 
 				move.w	#255,d4
 				asr.l	#2,d5
 				bcc.s	.notadoor
 				move.w	#254,d4
-.notadoor
+
+.notadoor:
 DECIDEDCOLOUR:
 				move.w	(a3)+,d6
 				move.l	(a1,d6.w*8),d0
 				asr.l	#7,d0
 				movem.l	d7/d5,-(a7)
-				move.w	mapxoff,d5
+				move.w	draw_MapXOffset_w,d5
 				ext.l	d5
 				add.l	d5,d0
 				move.l	4(a1,d6.w*8),d1
-				move.w	mapzoff,d5
+				move.w	draw_MapZOffset_w,d5
 				ext.l	d5
 				add.l	d5,d1
 				move.w	(a3)+,d6
 				move.l	(a1,d6.w*8),d2
-				move.w	mapxoff,d5
+				move.w	draw_MapXOffset_w,d5
 				ext.l	d5
 				asr.l	#7,d2
 				add.l	d5,d2
 				move.l	4(a1,d6.w*8),d3
-				move.w	mapzoff,d5
+				move.w	draw_MapZOffset_w,d5
 				ext.l	d5
 				add.l	d5,d3
 
@@ -2286,21 +2286,20 @@ DECIDEDCOLOUR:
 				bsr		CLIPANDDRAW
 				movem.l	(a7)+,d7/d5
 
+				; 0xABADCAFE - TODO - Knowing if a wall is a door may help PVS in future
 DECIDEDWALL:
-
 				dbra	d7,wallsofzone
 				bra		SHOWMAP
 
 
 				; FIXME: why does map rendering have an effect on wall rendering?
 shownmap:
-
-				clr.b	TRRANS					; FIXME seems like there is code for
+				clr.b	TRRANS		; FIXME seems like there is code for
 									; translucent map rendering, check it out
 
 				; Is this drawing the Arrow?
-				move.w	mapxoff,d0
-				move.w	mapzoff,d1
+				move.w	draw_MapXOffset_w,d0
+				move.w	draw_MapZOffset_w,d1
 				neg.w	d1
 				move.w	d0,d2
 				move.w	d1,d3
@@ -2309,8 +2308,8 @@ shownmap:
 				move.w	#250,d4
 				bsr		CLIPANDDRAW
 
-				move.w	mapxoff,d0
-				move.w	mapzoff,d1
+				move.w	draw_MapXOffset_w,d0
+				move.w	draw_MapZOffset_w,d1
 				neg.w	d1
 				move.w	d0,d2
 				move.w	d1,d3
@@ -2320,8 +2319,8 @@ shownmap:
 				move.w	#250,d4
 				bsr		CLIPANDDRAW
 
-				move.w	mapxoff,d0
-				move.w	mapzoff,d1
+				move.w	draw_MapXOffset_w,d0
+				move.w	draw_MapZOffset_w,d1
 				neg.w	d1
 				move.w	d0,d2
 				move.w	d1,d3
@@ -2359,7 +2358,7 @@ CLIPANDDRAW:
 				;asr.w	#1,d1					; DOUBLEHIGHT renderbuffer is still full height
 				;asr.w	#1,d3
 .noDoubleHeight
-				move.w	MAPBRIGHT,d5			; is this the map zoom?
+				move.w	Draw_MapZoomLevel_w,d5			; is this the map zoom?
 
 				asr.w	d5,d0					; I guess, this achieves X*0.5 + 0.5 for centered map rendering?
 				asr.w	d5,d1
@@ -2540,14 +2539,13 @@ OFFSCREEN:
 NOLINEtrans:
 				rts
 
-MAPBRIGHT:		dc.w	3						; "Map Brightness?" or "Map Bits Right"?
-mapxoff:		dc.w	0
-mapzoff:		dc.w	0
+Draw_MapZoomLevel_w:	dc.w	3
+draw_MapXOffset_w:		dc.w	0
+draw_MapZOffset_w:		dc.w	0
 
 
 				; FIXME: this is probably still on chunky screen
 DRAWAtransLINE:
-
 				move.l	Vid_FastBufferPtr_l,a0			; screen to render to.
 
 				tst.b	Vid_FullScreen_b
@@ -2556,24 +2554,22 @@ DRAWAtransLINE:
 				add.l	#(SCREEN_WIDTH*40)+(48*2),a0
 
 .nooffset:
-
 				cmp.w	d1,d3
 				bgt.s	.okdown
 				bne.s	.aline
 				cmp.w	d0,d2
 				beq.s	NOLINEtrans
-.aline
+
+.aline:
 				exg		d0,d2
 				exg		d1,d3
-.okdown
 
+.okdown:
 				move.w	d1,d5
 				muls	#SCREEN_WIDTH,d5
 				add.l	d5,a0
 				lea		(a0,d0.w*2),a0
-
 				sub.w	d1,d3
-
 				sub.w	d0,d2
 				bge		downrighttrans
 
@@ -2618,7 +2614,6 @@ downmorelefttrans:
 				rts
 
 downrighttrans:
-
 				cmp.w	d2,d3
 				bgt.s	downmorerighttrans
 
@@ -8650,20 +8645,21 @@ NOSIDES2:
 				lea		(a1,d0.w*8),a1
 				move.l	(a1),Noisex
 				jsr		MakeSomeNoise
-				movem.l	(a7)+,d0-d7/a0-a6
-.nosoundmake
 
+				movem.l	(a7)+,d0-d7/a0-a6
+
+.nosoundmake:
 				move.b	6(a6,d1.w),d0
 				beq.s	.noaction
 				add.b	#1,(a5)
 				move.b	d2,1(a5)
-.noaction
 
+.noaction:
 				addq	#1,d2
-
 				moveq	#0,d0
 				move.b	7(a6,d1.w),d0
 				beq		.nospecial
+
 				bra		.special
 
 .valtables:
@@ -8674,12 +8670,13 @@ val				SET		0
 val				SET		val+1
 				ENDR
 
-.special
+.special:
 				move.b	d0,d3
 				and.w	#63,d3
 				lsr.w	#6,d0
 				cmp.w	#2,d0
 				blt.s	.storeval
+
 				beq.s	.randval
 
 				sub.b	#1,4(a5)
@@ -8690,12 +8687,14 @@ val				SET		val+1
 
 .randval:
 				jsr		GetRand
+
 				divs	d3,d0
 				swap	d0
 				move.w	d0,d3
 
 .storeval:
 				move.b	d3,4(a5)
+
 .nospecial:
 
 ; move.w d2,d3
@@ -8703,9 +8702,11 @@ val				SET		val+1
 ; muls #A_FrameLen,d3
 				tst.b	(a6,d3.w)
 				bge.s	.noendanim
+
 				st		3(a5)
 				move.w	#0,d2
-.noendanim
+
+.noendanim:
 				move.w	d2,EntT_Timer2_w(a0)
 
 				bra		doneobj2
@@ -8789,9 +8790,11 @@ dosomething:
 
 .not_on_floor2:
 .skip_damage:
+				; 0xABADCAFE - this seems like a weird place to be testing the keyboard?
+
 				move.l	#KeyMap_vb,a5
 
-				tst.b	82(a5)					;f3
+				tst.b	RAWKEY_F3(a5)					;f3
 				beq		notogglesound
 
 				tst.b	lasttogsound
@@ -8808,7 +8811,7 @@ dosomething:
 
 				move.b	STEROPT+1(pc,d0.w*2),d1
 				muls	#160,d0
-				add.l	#SOUNDOPTSTEXT,d0
+				add.l	#Game_SoundOptionsText_vb,d0
 				jsr		SENDMESSAGE
 
 
@@ -8816,35 +8819,13 @@ dosomething:
 
 				bra		pastster
 
-				STEROPT:
+STEROPT:
 				dc.b	0,4
 				dc.b	$FF,4
 				dc.b	0,8
 				dc.b	$ff,8
 
 lasttogsound:	dc.w	0
-
-SOUNDOPTSTEXT:
-;      1234567890123456789012345678901234567890
-				dc.b	"Four Channel Mono Selected              "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
-
-				dc.b	"Four Channel Stereo Selected            "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
-
-				dc.b	"Eight Channel Mono Selected             "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
-
-				dc.b	"Eight Channel Stereo Selected           "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
 
 OLDLTOG:		dc.w	0
 
@@ -8856,10 +8837,10 @@ pastster:
 				seq		CHANNELDATA+24
 				seq		CHANNELDATA+28
 
-* Mt_init *********************
+				;* Mt_init *********************
 				st		CHANNELDATA+8
 				st		CHANNELDATA
-*******************************
+				;*******************************
 
 				move.w	#$f,$dff000+dmacon
 				move.l	#Aud_Null1_vw,$dff0a0
@@ -8909,50 +8890,50 @@ Prefsfile:
 
 notogglesound:
 				clr.b	lasttogsound
+
 notogglesound2:
-
-
-				tst.b	83(a5)
+				tst.b	RAWKEY_F4(a5)
 				beq		nolighttoggle
+
 				tst.b	OLDLTOG
 				bne		nolighttoggle2
-				st		OLDLTOG
 
-				move.l	#LIGHTINGTEXT,d0
+				st		OLDLTOG
+				move.l	#Game_LightingOptionsText_vb,d0
 				not.b	Anim_LightingEnabled_b
 				beq.s	.noon
 				add.l	#160,d0
 .noon:
 				bra		pastlighttext
 
-LIGHTINGTEXT:
-				dc.b	"Lighting Effects Deactivated            "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
-
-				dc.b	"Lighting Effects Activated              "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
+;Game_LightingOptionsText_vb:
+;				dc.b	"Lighting Effects Deactivated            "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
+;
+;				dc.b	"Lighting Effects Activated              "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
 
 OLDRET:			dc.w	0
 Plr_OldCentre_b:		dc.w	0
 OLDGOOD:		dc.w	0
 
-GOODRENDERTXT:
-				dc.b	"Rendering Quality : High                "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
-BADRENDERTXT:
-				dc.b	"Rendering Quality : Reduced             "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
+;Game_DrawHighQualityText_vb:
+;				dc.b	"Rendering Quality : High                "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
+;
+;Game_DrawLowQualityText_vb:
+;				dc.b	"Rendering Quality : Reduced             "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
 
 pastlighttext:
-
 				jsr		SENDMESSAGE
 
 				bra		nolighttoggle2
@@ -8961,44 +8942,42 @@ nolighttoggle:
 				clr.b	OLDLTOG
 
 nolighttoggle2:
-
-
-				tst.b	84(a5)
+				tst.b	RAWKEY_F5(a5)
 				beq.s	noret
+
 				tst.b	OLDRET
 				bne.s	noret2
-				st		OLDRET
 
+				st		OLDRET
 				jsr		RETRIEVEPREVMESSAGE
 
 				bra		noret2
 
-noret
+noret:
 				clr.b	OLDRET
-noret2:
 
-				tst.b	85(a5)
+noret2:
+				tst.b	RAWKEY_F6(a5)
 				beq.s	.nogood
 				tst.b	OLDGOOD
 				bne.s	.nogood2
 				st		OLDGOOD
 
-				move.l	#GOODRENDERTXT,d0
+				move.l	#Game_DrawHighQualityText_vb,d0
 				not.b	Draw_GoodRender_b
 				bne.s	.okgood
-				move.l	#BADRENDERTXT,d0
+				move.l	#Game_DrawLowQualityText_vb,d0
 .okgood:
 
 				jsr		SENDMESSAGE
 
 				bra		.nogood2
 
-.nogood
+.nogood:
 				clr.b	OLDGOOD
+
 .nogood2:
-
-
-				tst.b	$42(a5)
+				tst.b	RAWKEY_TAB(a5)
 				bne.s	.tabprsd
 				clr.b	tabheld
 				bra.s	.noswitch
@@ -9006,70 +8985,75 @@ noret2:
 .tabprsd:
 				tst.b	tabheld
 				bne.s	.noswitch
+
 				not.b	MAPON
 				st		tabheld
-.noswitch
 
-				tst.b	$3e(a5)
+.noswitch:
+				; Map scrolling
+				tst.b	RAWKEY_NUM_8(a5) ; Up
 				sne		d0
-				tst.b	$1e(a5)
+				tst.b	RAWKEY_NUM_2(a5) ; Down
 				sne		d1
-				tst.b	$2d(a5)
+				tst.b	RAWKEY_NUM_4(a5) ; Left
 				sne		d2
-				tst.b	$2f(a5)
+				tst.b	RAWKEY_NUM_6(a5) ; Right
 				sne		d3
 
-				tst.b	$3d(a5)
+				tst.b	RAWKEY_NUM_7(a5) ; Up Left
 				sne		d4
-				tst.b	$3f(a5)
+				tst.b	RAWKEY_NUM_9(a5) ; Up Right
 				sne		d5
-				tst.b	$1d(a5)
+				tst.b	RAWKEY_NUM_1(a5) ; Down Left
 				sne		d6
-				tst.b	$1f(a5)
+				tst.b	RAWKEY_NUM_3(a5) ; Down Right
 				sne		d7
 
 				or.b	d4,d0
-				or.b	d5,d0
+				or.b	d5,d0	; d0 is set if we need to scroll up
 				or.b	d6,d1
-				or.b	d7,d1
+				or.b	d7,d1   ; d1 is set if we need to scroll down
 				or.b	d4,d2
-				or.b	d6,d2
+				or.b	d6,d2   ; d2 is set if we need to scroll left
 				or.b	d7,d3
-				or.b	d5,d3
+				or.b	d5,d3   ; d3 is set if we need to scroll right
 
-				move.w	MAPBRIGHT,d4
+				move.w	Draw_MapZoomLevel_w,d4
 				add.w	#2,d4
 				clr.l	d5
 				bset	d4,d5
 
 				tst.b	d0
 				beq.s	.nomapup
-				sub.w	d5,mapzoff
-.nomapup
 
+				sub.w	d5,draw_MapZOffset_w
+
+.nomapup:
 				tst.b	d1
 				beq.s	.nomapdown
-				add.w	d5,mapzoff
-.nomapdown
 
+				add.w	d5,draw_MapZOffset_w
+
+.nomapdown:
 				tst.b	d2
 				beq.s	.nomapleft
-				add.w	d5,mapxoff
-.nomapleft
 
+				add.w	d5,draw_MapXOffset_w
+
+.nomapleft:
 				tst.b	d3
 				beq.s	.nomapright
-				sub.w	d5,mapxoff
-.nomapright
 
-				tst.b	$2e(a5)
+				sub.w	d5,draw_MapXOffset_w
+
+.nomapright:
+				tst.b	RAWKEY_NUM_5(a5)
 				beq.s	.nomapcentre
 
-				move.w	#0,mapxoff
-				move.w	#0,mapzoff
+				move.w	#0,draw_MapXOffset_w
+				move.w	#0,draw_MapZOffset_w
 
-.nomapcentre
-
+.nomapcentre:
 justshake:
 				jsr		mt_music
 
