@@ -2423,9 +2423,22 @@ cant_tell:
 				move.w	#5,d6
 
 .choose_renderer:
-				; Now determine which renderer to use
-				; Compare the corner brightnesses
+				; Now determine which renderer to use. First check for simplified lighting.
+				tst.b	Draw_ForceSimpleWalls_b
+				beq.s	.check_corners
 
+				move.w	draw_LeftWallBright_w,d0
+				add.w	draw_LeftWallTopBright_w,d0
+				asr.w	#1,d0
+				move.w	d0,draw_LeftWallBright_w
+				move.w	draw_RightWallBright_w,d0
+				add.w	draw_RightWallTopBright_w,d0
+				asr.w	#1,d0
+				move.w	d0,draw_RightWallBright_w
+				bra.s	.do_flat
+
+				; Compare the corner brightnesses
+.check_corners:
 				; 0xABADCAFE
 				; Today I Learned: Non-Gouraud walls are not flat shaded. The have the same
 				; horizontal-only shading that the original Alien Breed 3D had. Therefore to

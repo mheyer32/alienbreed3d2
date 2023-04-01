@@ -389,7 +389,7 @@ Plr1_ShowGunName:
 				dbra	d2,.copyname
 
 				move.l	#TEMPSCROLL,d0
-				jsr		SENDMESSAGENORET
+				jsr		Game_PushTempMessage
 				rts
 
 

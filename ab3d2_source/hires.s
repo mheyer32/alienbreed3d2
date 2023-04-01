@@ -813,14 +813,14 @@ CLRDAM:
 				move.l	Vid_Screen1Ptr_l,Vid_DisplayScreen_Ptr_l
 				move.l	Vid_Screen2Ptr_l,Vid_DrawScreenPtr_l
 
-				move.l	#MESSAGEBUFFER,a0
+				move.l	#Game_MessageBuffer_vl,a0
 				move.w	#19,d0
 clrmessbuff:
 				move.l	#0,(a0)+
 				dbra	d0,clrmessbuff
 
-				move.l	#nullmessage,d0
-				jsr		SENDMESSAGE
+				move.l	#game_NullMessage_vb,d0
+				jsr		Game_PushMessage
 
 				clr.b	Plr2_Fire_b
 				clr.b	Plr2_TmpFire_b
@@ -868,7 +868,7 @@ lop:
 				swap	d0
 				muls	#160,d0
 				add.l	#Game_TwoPlayerVictoryMessages_vb,d0
-				jsr		SENDMESSAGE
+				jsr		Game_PushMessage
 
 				move.l	Plr2_ObjectPtr_l,a0
 				move.l	GLF_DatabasePtr_l,a6
@@ -909,7 +909,7 @@ lop:
 				swap	d0
 				muls	#160,d0
 				add.l	#Game_TwoPlayerVictoryMessages_vb,d0
-				jsr		SENDMESSAGE
+				jsr		Game_PushMessage
 
 				move.l	Plr1_ObjectPtr_l,a0
 
@@ -1961,14 +1961,17 @@ nodrawp2:
 				clr.b	LASTDH
 
 .not_double_height:
+				; Hijacking this for the simple wall test
 				tst.b	RAWKEY_F8(a5)
 				beq.s	.skip_double_width
 				clr.b	RAWKEY_F8(a5)
 				tst.b	LASTDW
 				bne		.not_double_width
-				not.b	Vid_DoubleWidth_b
 
-				bsr		SetupRenderbufferSize
+				not.b	Draw_ForceSimpleWalls_b
+
+				;not.b	Vid_DoubleWidth_b
+				;bsr		SetupRenderbufferSize
 
 				bra.s	.not_double_width
 
@@ -8441,23 +8444,23 @@ PLR2_SPCTAP:	dc.b	0
 
 *******************************************8
 
-nullmessage:	dcb.b	160,' '
+;game_NullMessage_vb:	dcb.b	160,' '
 
-SENDMESSAGENORET
+Game_PushTempMessage:
 				move.l	a1,-(a7)
 				bra		intosend
 
-SENDMESSAGE:
+Game_PushMessage:
 				move.l	a1,-(a7)
-				move.l	MESSPTR,a1
+				move.l	game_MessagePtr_l,a1
 				move.l	d0,(a1)+
-				cmp.l	#ENDMESSBUFF,a1
+				cmp.l	#Game_MessageBufferEnd,a1
 				blt.s	.okinbuff
-				move.l	#MESSAGEBUFFER,a1
+				move.l	#Game_MessageBuffer_vl,a1
 
 .okinbuff:
-				move.l	a1,MESSPTR
-				move.l	a1,LASTMESSPTR
+				move.l	a1,game_MessagePtr_l
+				move.l	a1,game_LastMessagePtr_l
 
 intosend:
 				move.l	d0,SCROLLPOINTER
@@ -8468,12 +8471,12 @@ intosend:
 				move.l	(a7)+,a1
 				rts
 
-RETRIEVEPREVMESSAGE:
-				move.l	LASTMESSPTR,a1
-				cmp.l	#MESSAGEBUFFER,a1
+Game_PullLastMessage:
+				move.l	game_LastMessagePtr_l,a1
+				cmp.l	#Game_MessageBuffer_vl,a1
 				bgt.s	.okinbuff
 
-				move.l	#ENDMESSBUFF,a1
+				move.l	#Game_MessageBufferEnd,a1
 
 .okinbuff:
 
@@ -8486,19 +8489,19 @@ RETRIEVEPREVMESSAGE:
 				move.l	d0,ENDSCROLL
 				move.w	#40,SCROLLTIMER
 
-				move.l	a1,LASTMESSPTR
+				move.l	a1,game_LastMessagePtr_l
 
 .nomessage:
 
 
 				rts
 
-MESSAGEBUFFER:
+Game_MessageBuffer_vl:
 				ds.l	20
-ENDMESSBUFF:
+Game_MessageBufferEnd:
 
-MESSPTR:		dc.l	MESSAGEBUFFER
-LASTMESSPTR:	dc.l	MESSAGEBUFFER
+game_MessagePtr_l:		dc.l	Game_MessageBuffer_vl
+game_LastMessagePtr_l:	dc.l	Game_MessageBuffer_vl
 
 **********************************************
 
@@ -8840,7 +8843,7 @@ dosomething:
 				move.b	STEROPT+1(pc,d0.w*2),d1
 				muls	#160,d0
 				add.l	#Game_SoundOptionsText_vb,d0
-				jsr		SENDMESSAGE
+				jsr		Game_PushMessage
 
 
 				move.b	d1,Prefsfile+1
@@ -8941,7 +8944,7 @@ OLDGOOD:			dc.w	0
 
 
 pastlighttext:
-				jsr		SENDMESSAGE
+				jsr		Game_PushMessage
 
 				bra		nolighttoggle2
 
@@ -8956,7 +8959,7 @@ nolighttoggle2:
 				bne.s	noret2
 
 				st		OLDRET
-				jsr		RETRIEVEPREVMESSAGE
+				jsr		Game_PullLastMessage
 
 				bra		noret2
 
@@ -8976,7 +8979,7 @@ noret2:
 				move.l	#Game_DrawLowQualityText_vb,d0
 .okgood:
 
-				jsr		SENDMESSAGE
+				jsr		Game_PushMessage
 
 				bra		.nogood2
 

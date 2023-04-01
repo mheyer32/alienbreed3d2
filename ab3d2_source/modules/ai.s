@@ -165,7 +165,7 @@ ai_JustDied:
 
 				muls	#160,d0
 				add.l	Lvl_DataPtr_l,d0
-				jsr		SENDMESSAGE
+				jsr		Game_PushMessage
 
 .no_text:
 				move.l	Lvl_ObjectPointsPtr_l,a2

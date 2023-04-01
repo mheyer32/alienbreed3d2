@@ -324,7 +324,7 @@ SHOWPLR2GUNNAME:
 				dbra	d2,.copyname
 
 				move.l	#TEMPSCROLL,d0
-				jsr		SENDMESSAGENORET
+				jsr		Game_PushTempMessage
 				rts
 
 TURNSPD:		dc.w	0

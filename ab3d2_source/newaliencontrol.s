@@ -409,7 +409,7 @@ Destructable:
 
 				muls	#160,d0
 				add.l	Lvl_DataPtr_l,d0
-				jsr		SENDMESSAGE
+				jsr		Game_PushMessage
 
 .notext:
 
@@ -548,7 +548,7 @@ Plr1_CollectItem:
 
 				muls	#160,d0
 				add.l	Lvl_DataPtr_l,d0
-				jsr		SENDMESSAGE
+				jsr		Game_PushMessage
 
 				bra		.nodeftext
 
@@ -576,7 +576,7 @@ Plr1_CollectItem:
 				dbra	d2,.copyname
 
 				move.l	#TEMPSCROLL,d0
-				jsr		SENDMESSAGENORET
+				jsr		Game_PushTempMessage
 
 .nodeftext:
 
