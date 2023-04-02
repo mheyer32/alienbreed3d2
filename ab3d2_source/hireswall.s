@@ -1018,7 +1018,7 @@ endprot:
 ******************************************************************
 
 ; This routine renders a wall that has it's upper and lower brightnesses the same.
-draw_WallFlatShaded:
+draw_WallSimpleShaded:
 				DEV_INC.w VisibleSimpleWalls
 
 				move.w	d6,draw_WallIterations_w
@@ -2304,7 +2304,7 @@ cant_tell:
 
 				move.w	#-1,draw_WallLastStripX_w
 
-				; 0xABADCAFE - refactored from draw_WallFlatShaded and draw_WallGouraudShaded
+				; 0xABADCAFE - refactored from draw_WallSimpleShaded and draw_WallGouraudShaded
 .test_one_in_front:
 				tst.w	d1
 				bgt.s	.one_in_front
@@ -2435,7 +2435,7 @@ cant_tell:
 				add.w	draw_RightWallTopBright_w,d0
 				asr.w	#1,d0
 				move.w	d0,draw_RightWallBright_w
-				bra.s	.do_flat
+				bra.s	.do_simple_shaded
 
 				; Compare the corner brightnesses
 .check_corners:
@@ -2445,17 +2445,17 @@ cant_tell:
 				; the original code was correct. We just change the access order here.
 				move.w	draw_LeftWallBright_w,d0
 				cmp.w	draw_LeftWallTopBright_w,d0
-				bne.s	.do_shaded
+				bne.s	.do_gouraud_shaded
 				move.w	draw_RightWallBright_w,d0
 				cmp.w	draw_RightWallTopBright_w,d0
-				bne.s	.do_shaded
+				bne.s	.do_gouraud_shaded
 
-.do_flat:
+.do_simple_shaded:
 				DEV_CHECK	SIMPLE_WALLS,.function_done
-				bsr			draw_WallFlatShaded
+				bsr			draw_WallSimpleShaded
 				bra.s		.function_done
 
-.do_shaded:
+.do_gouraud_shaded:
 				DEV_CHECK	SHADED_WALLS,.function_done
 				bsr			draw_WallGouraudShaded
 
