@@ -813,14 +813,14 @@ CLRDAM:
 				move.l	Vid_Screen1Ptr_l,Vid_DisplayScreen_Ptr_l
 				move.l	Vid_Screen2Ptr_l,Vid_DrawScreenPtr_l
 
-				move.l	#MESSAGEBUFFER,a0
+				move.l	#Game_MessageBuffer_vl,a0
 				move.w	#19,d0
 clrmessbuff:
 				move.l	#0,(a0)+
 				dbra	d0,clrmessbuff
 
-				move.l	#nullmessage,d0
-				jsr		SENDMESSAGE
+				move.l	#game_NullMessage_vb,d0
+				jsr		Game_PushMessage
 
 				clr.b	Plr2_Fire_b
 				clr.b	Plr2_TmpFire_b
@@ -868,7 +868,7 @@ lop:
 				swap	d0
 				muls	#160,d0
 				add.l	#Game_TwoPlayerVictoryMessages_vb,d0
-				jsr		SENDMESSAGE
+				jsr		Game_PushMessage
 
 				move.l	Plr2_ObjectPtr_l,a0
 				move.l	GLF_DatabasePtr_l,a6
@@ -909,7 +909,7 @@ lop:
 				swap	d0
 				muls	#160,d0
 				add.l	#Game_TwoPlayerVictoryMessages_vb,d0
-				jsr		SENDMESSAGE
+				jsr		Game_PushMessage
 
 				move.l	Plr1_ObjectPtr_l,a0
 
@@ -1915,10 +1915,36 @@ nodrawp2:
 				sub.w	#2,Vid_LetterBoxMarginHeight_w
 
 .nobigscr:
-				tst.b	RAWKEY_NUM_RBRKT(a5)
-				beq		notdoubheight
+				; TODO - Come back to the resolution cycle once the double width issues are fixed
+
+;				tst.b	RAWKEY_F9(a5)
+;				beq.s	.skip_resolution_cycle
+;				clr.b	RAWKEY_F9(a5)
+;				addq.b	#1,Vid_ResolutionOption_b
+;
+;				btst.b	#0,Vid_ResolutionOption_b
+;				sne.b	Vid_DoubleHeight_b
+;
+;				btst.b	#1,Vid_ResolutionOption_b
+;				sne.b	Vid_DoubleWidth_b
+;
+;				tst.b	Vid_DoubleHeight_b
+;				beq.s	.skip_copperlist
+;
+;				move.w	#0,d0
+;				move.w	#0,d1
+;
+;				bsr		SetupRenderbufferSize
+;				jsr		vid_SetupDoubleheightCopperlist
+;
+;.skip_copperlist:
+;.skip_resolution_cycle:
+
+				tst.b	RAWKEY_F9(a5)
+				beq		.skip_double_height
+				clr.b	RAWKEY_F9(a5)
 				tst.b	LASTDH
-				bne		notdoubheight2
+				bne		.not_double_height
 				st		LASTDH
 				move.w	#0,d0
 				move.w	#0,d1
@@ -1929,25 +1955,30 @@ nodrawp2:
 				bsr		SetupRenderbufferSize
 				jsr		vid_SetupDoubleheightCopperlist
 
-				bra		notdoubheight2
+				bra.s	.not_double_height
 
-notdoubheight:
+.skip_double_height:
 				clr.b	LASTDH
-notdoubheight2
 
-				tst.b	RAWKEY_NUM_LBRKT(a5)
-				beq.s	notdoubwidth
+.not_double_height:
+				; Hijacking this for the simple wall test
+				tst.b	RAWKEY_F8(a5)
+				beq.s	.skip_double_width
+				clr.b	RAWKEY_F8(a5)
 				tst.b	LASTDW
-				bne		notdoubwidth2
-				not.b	Vid_DoubleWidth_b
+				bne		.not_double_width
 
-				bsr		SetupRenderbufferSize
+				not.b	Draw_ForceSimpleWalls_b
 
-				bra.s	notdoubwidth2
+				;not.b	Vid_DoubleWidth_b
+				;bsr		SetupRenderbufferSize
 
-notdoubwidth:
+				bra.s	.not_double_width
+
+.skip_double_width:
 				clr.b	LASTDW
-notdoubwidth2:
+
+.not_double_width:
 
 *****************************************
 				move.l	Plr2_RoomPtr_l,a0
@@ -2088,7 +2119,7 @@ SetupRenderbufferSize:
 				blt.s	.wideScreenOk
 				move.w	#100,Vid_LetterBoxMarginHeight_w
 
-.wideScreenOk
+.wideScreenOk:
 				tst.b	Vid_FullScreen_b
 				beq.s	.setupSmallScreen
 
@@ -2096,7 +2127,7 @@ SetupRenderbufferSize:
 				tst.b	Vid_DoubleWidth_b
 				beq.s	.noDoubleWidth
 				lsr.w	#1,d0
-.noDoubleWidth
+.noDoubleWidth:
 				move.w	d0,Vid_RightX_w
 				lsr.w	#1,d0
 				move.w	d0,Vid_CentreX_w
@@ -2109,14 +2140,14 @@ SetupRenderbufferSize:
 				tst.b	Vid_DoubleWidth_b
 				beq.s	.noDoubleWidth2
 				lsr.w	#1,d0
-.noDoubleWidth2
+.noDoubleWidth2:
 				move.w	d0,Vid_RightX_w
 				lsr.w	#1,d0
 				move.w	d0,Vid_CentreX_w
 				move.w	#SMALL_HEIGHT,Vid_BottomY_w
 				move.w	#SMALL_HEIGHT/2,TOTHEMIDDLE
 
-.wipeScreen
+.wipeScreen:
 				move.l	Vid_DisplayScreen_Ptr_l,a0
 				jsr		Draw_ResetGameDisplay
 				move.l	Vid_DrawScreenPtr_l,a0
@@ -8413,23 +8444,23 @@ PLR2_SPCTAP:	dc.b	0
 
 *******************************************8
 
-nullmessage:	dcb.b	160,' '
+;game_NullMessage_vb:	dcb.b	160,' '
 
-SENDMESSAGENORET
+Game_PushTempMessage:
 				move.l	a1,-(a7)
 				bra		intosend
 
-SENDMESSAGE:
+Game_PushMessage:
 				move.l	a1,-(a7)
-				move.l	MESSPTR,a1
+				move.l	game_MessagePtr_l,a1
 				move.l	d0,(a1)+
-				cmp.l	#ENDMESSBUFF,a1
+				cmp.l	#Game_MessageBufferEnd,a1
 				blt.s	.okinbuff
-				move.l	#MESSAGEBUFFER,a1
+				move.l	#Game_MessageBuffer_vl,a1
 
 .okinbuff:
-				move.l	a1,MESSPTR
-				move.l	a1,LASTMESSPTR
+				move.l	a1,game_MessagePtr_l
+				move.l	a1,game_LastMessagePtr_l
 
 intosend:
 				move.l	d0,SCROLLPOINTER
@@ -8440,12 +8471,12 @@ intosend:
 				move.l	(a7)+,a1
 				rts
 
-RETRIEVEPREVMESSAGE:
-				move.l	LASTMESSPTR,a1
-				cmp.l	#MESSAGEBUFFER,a1
+Game_PullLastMessage:
+				move.l	game_LastMessagePtr_l,a1
+				cmp.l	#Game_MessageBuffer_vl,a1
 				bgt.s	.okinbuff
 
-				move.l	#ENDMESSBUFF,a1
+				move.l	#Game_MessageBufferEnd,a1
 
 .okinbuff:
 
@@ -8458,19 +8489,19 @@ RETRIEVEPREVMESSAGE:
 				move.l	d0,ENDSCROLL
 				move.w	#40,SCROLLTIMER
 
-				move.l	a1,LASTMESSPTR
+				move.l	a1,game_LastMessagePtr_l
 
 .nomessage:
 
 
 				rts
 
-MESSAGEBUFFER:
+Game_MessageBuffer_vl:
 				ds.l	20
-ENDMESSBUFF:
+Game_MessageBufferEnd:
 
-MESSPTR:		dc.l	MESSAGEBUFFER
-LASTMESSPTR:	dc.l	MESSAGEBUFFER
+game_MessagePtr_l:		dc.l	Game_MessageBuffer_vl
+game_LastMessagePtr_l:	dc.l	Game_MessageBuffer_vl
 
 **********************************************
 
@@ -8812,7 +8843,7 @@ dosomething:
 				move.b	STEROPT+1(pc,d0.w*2),d1
 				muls	#160,d0
 				add.l	#Game_SoundOptionsText_vb,d0
-				jsr		SENDMESSAGE
+				jsr		Game_PushMessage
 
 
 				move.b	d1,Prefsfile+1
@@ -8913,7 +8944,7 @@ OLDGOOD:			dc.w	0
 
 
 pastlighttext:
-				jsr		SENDMESSAGE
+				jsr		Game_PushMessage
 
 				bra		nolighttoggle2
 
@@ -8928,7 +8959,7 @@ nolighttoggle2:
 				bne.s	noret2
 
 				st		OLDRET
-				jsr		RETRIEVEPREVMESSAGE
+				jsr		Game_PullLastMessage
 
 				bra		noret2
 
@@ -8948,7 +8979,7 @@ noret2:
 				move.l	#Game_DrawLowQualityText_vb,d0
 .okgood:
 
-				jsr		SENDMESSAGE
+				jsr		Game_PushMessage
 
 				bra		.nogood2
 

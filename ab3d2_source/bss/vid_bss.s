@@ -30,3 +30,4 @@ Vid_FullScreenTemp_b:			ds.b	1
 Vid_DoubleHeight_b:				ds.b	1	; Double Height Pixel Mode
 Vid_DoubleWidth_b:				ds.b	1	; Double Width Pixel Mode
 Vid_WaitForDisplayMsg_b: 		ds.b	1
+Vid_ResolutionOption_b:			ds.b	1	; cycles between pixel modes

@@ -288,7 +288,7 @@ notgotweap2:
 				dbra	d1,pickweap2
 
 gogogogog:
-				tst.b	RAWKEY_NUM_ENTER(a5)
+				tst.b	RAWKEY_F10(a5)
 				beq.s	.notswapscr
 				tst.b	lastscr
 				bne.s	.notswapscr2
@@ -324,7 +324,7 @@ SHOWPLR2GUNNAME:
 				dbra	d2,.copyname
 
 				move.l	#TEMPSCROLL,d0
-				jsr		SENDMESSAGENORET
+				jsr		Game_PushTempMessage
 				rts
 
 TURNSPD:		dc.w	0
