@@ -4,6 +4,14 @@ DRAW_VECTOR_NEAR_PLANE	EQU		130  ; Distances lower than this for vectors are con
 
 DRAW_VECTOR_MAX_Z		EQU		16383 ; Vector points further than this will be culled
 
+; 0xABADCAFE - Instead of the divs.l that was used, where possible we will use
+; the 1/N lookup table and muls/asr as a faster replacement.
+
+; The 1/N lookup table actually contains 16384/N for N up to 255, that we will
+; multiply by, before right shifting 14 places to obtain 1/N. However, to
+; avoid overflow in the interim calculation, we have to pre-shift the input
+; dividend partially before the calculation.
+
 				align 4
 draw_TopY_3D_l:			dc.l	-100*1024
 draw_BottomY_3D_l:		dc.l	1*1024
@@ -1421,8 +1429,22 @@ draw_TweenBrights:
 .okpos:
 				swap	d2
 				swap	d3
-				ext.l	d4
-				divs.l	d4,d3
+				beq		.skip_zero_dividend
+
+				; 0xABADCAFE - TODO numbers here may be suited for 16x16
+				move.w	d4,-2(sp)
+				move.w	OneOverN(pc,d4.w*2),d4
+				ext.l	d4  		; we still need a 32-bit multiplicand
+				asr.l	#7,d3
+				muls.l	d4,d3
+				asr.l	#7,d3
+				move.w	-2(sp),d4
+
+				;divs.l	d4,d3
+
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
+.skip_zero_dividend:
 				subq	#1,d4					; number of tweens
 
 .put_in_tween_loop:
@@ -2276,20 +2298,43 @@ nocr:
 				move.l	d3,-(a7)
 				move.l	d4,-(a7)
 				add.w	offtopby,d0
+
 				ext.l	d0
 				muls.l	offtopby-2,d3
 				muls.l	offtopby-2,d4
+
+				; 0xABADCAFE - seems like this rarely happens, not optimising here
 				divs.l	d0,d3
 				divs.l	d0,d4
+
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+
 				add.l	d3,d5
 				add.l	d4,d6
 				move.l	(a7)+,d4
 				move.l	(a7)+,d3
 
 .notofftop:
-				ext.l	d0
-				divs.l	d0,d3
-				divs.l	d0,d4
+				; 0xABADCAFE -  optimising here
+				;DEV_CHECK_DIVISOR d0
+
+				move.w	OneOverN(pc,d0.w*2),d0
+
+				ext.l	d0				; we still need a 32-bit multiplicand
+
+				;divs.l	d0,d3
+				;divs.l	d0,d4
+
+				; this can probably be better ordered for 68060
+				asr.l	#8,d3
+				asr.l	#8,d4
+				muls.l	d0,d3
+				muls.l	d0,d4
+				asr.l	#6,d3
+				asr.l	#6,d4
+
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+
 				add.l	ontoscr(pc,d1.w*4),a3
 				move.l	#$3fffff,d1
 				move.l	d3,a5
@@ -2378,20 +2423,68 @@ nocrGL:
 				move.l	d3,-(a7)
 				move.l	d4,-(a7)
 				add.w	offtopby,d0
-				ext.l	d0
+
+
+				; 0xABADCAFE DIVS.L
+				; Limit the divisor and lookup in 1/N
+				; Don't trash original divisor...
+				;DEV_CHECK_DIVISOR d0
+				move.w	d0,-2(sp)		; save original divisor
+				cmp.w	#255,d0
+				bls		.skip_clamp_divisor_0
+				move.w	#255,d0
+
+.skip_clamp_divisor_0:
+				move.w	OneOverN(pc,d0.w*2),d0
+				ext.l	d0				 ; we still need a 32-bit multiplicand
 				muls.l	offtopby-2,d3
 				muls.l	offtopby-2,d4
-				divs.l	d0,d3
-				divs.l	d0,d4
+
+				;divs.l	d0,d3
+				;divs.l	d0,d4
+
+				; this can probably be better ordered for 68060
+				muls.l	d0,d3
+				muls.l	d0,d4
+				asr.l	#8,d3
+				asr.l	#8,d4
+				asr.l	#6,d3
+				asr.l	#6,d4
+
+				; restore original divisor
+				move.w	-2(sp),d0		; restore original divisor
+
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+
 				add.l	d3,d5
 				add.l	d4,d6
 				move.l	(a7)+,d4
 				move.l	(a7)+,d3
 
 .notofftop:
-				ext.l	d0
-				divs.l	d0,d3
-				divs.l	d0,d4
+				; 0xABADCAFE DIVS.L
+				; Limit the divisor and lookup in 1/N
+				;DEV_CHECK_DIVISOR d0
+				cmp.w	#255,d0
+				bls		.skip_clamp_divisor_1
+				move.w	#255,d0
+
+.skip_clamp_divisor_1:
+				move.w	OneOverN(pc,d0.w*2),d0
+				ext.l	d0				 ; we still need a 32-bit multiplicand
+
+				;divs.l	d0,d3
+				;divs.l	d0,d4
+
+				asr.l	#8,d3
+				asr.l	#8,d4
+				muls.l	d0,d3
+				muls.l	d0,d4
+				asr.l	#6,d3
+				asr.l	#6,d4
+
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+
 				add.l	ontoscrGL(pc,d1.w*4),a3
 				move.l	#$3fffff,d1
 				move.l	d3,a5
@@ -2504,17 +2597,9 @@ nocrg:
 				move.l	d4,-(a7)
 				add.w	offtopby,d0
 
-				; 0xABADCAFE - Instead of the divs.l that was used, we will use the 1/N
-				; lookup table and muls/asr. The expected legal range for d0 appears to
-				; be well within 1-255, with the occastional glitch that happens when the
-				; odd polygon screen fill happens, so the input is assumed illegal.
 
-				; The 1/N lookup table actually contains 16384/N, that we will
-				; multiply by, before right shifting 14 places to obtain 1/N. However, to
-				; avoid overflow in the interim calculation, we have to pre-shift the input
-				; dividend partially before the calculation.
-
-				; Limit the divisor and lookup in 1/N
+				; 0xABADCAFE DIVS.L
+				move.w	d0,-2(sp)		; save original divisor
 				cmp.w	#255,d0
 				bls		.skip_clamp_divisor_0
 				move.w	#255,d0
@@ -2539,6 +2624,8 @@ nocrg:
 				asr.l	#6,d3
 				asr.l	#6,d4
 
+				move.w	-2(sp),d0 ; restore d0 before continuing
+
 				add.l	d3,d5
 				add.l	d4,d6
 				move.l	(a7)+,d4
@@ -2550,20 +2637,7 @@ nocrg:
 				move.w	#255,d0
 
 .skip_clamp_divisor_1:
-
-;				IFD		DEV
-;.divisor_test_min:
-;				cmp.w	dev_Reserved4_w,d0
-;				bgt.s	.divisor_test_max
-;				move.w	d0,dev_Reserved4_w
-;
-;.divisor_test_max:
-;				cmp.w	dev_Reserved5_w,d0
-;				blt.s	.divisor_test_done
-;				move.w	d0,dev_Reserved5_w
-;
-;.divisor_test_done:
-;				ENDC
+;				DEV_CHECK_DIVISOR d0
 
 				move.w	OneOverN(pc,d0.w*2),d0
 				ext.l	d0 ; we still need a 32-bit multiplicand
@@ -2742,20 +2816,9 @@ nocrh:
 				move.l	d4,-(a7)
 				add.w	offtopby,d0
 
-				; 0xABADCAFE - Instead of the divs.l that was used, we will use the 1/N
-				; lookup table and muls/asr. The expected legal range for d0 appears to
-				; be well within 1-255, with the occastional glitch that happens when the
-				; odd polygon screen fill happens, so the input is assumed illegal.
-
-				; The 1/N lookup table actually contains 16384/N, that we will
-				; multiply by, before right shifting 14 places to obtain 1/N. However, to
-				; avoid overflow in the interim calculation, we have to pre-shift the input
-				; dividend partially before the calculation.
-
+				; 0xABADCAFE DIVS.L
 				; Limit the divisor and lookup in 1/N
-
-
-				; Limit the divisor and lookup in 1/N
+				move.w	d0,-2(sp)		; save original divisor
 				cmp.w	#255,d0
 				bls		.skip_clamp_divisor_0
 				move.w	#255,d0
@@ -2780,6 +2843,8 @@ nocrh:
 				asr.l	#6,d3
 				asr.l	#6,d4
 
+				move.w	-2(sp),d0 ; Restore original divisor
+
 				add.l	d3,d5
 				add.l	d4,d6
 				move.l	(a7)+,d4
@@ -2793,20 +2858,6 @@ nocrh:
 .skip_clamp_divisor_1:
 				move.w	OneOverN(pc,d0.w*2),d0
 				ext.l	d0
-
-;				IFD		DEV
-;.divisor_test_min:
-;				cmp.w	dev_Reserved4_w,d0
-;				bgt.s	.divisor_test_max
-;				move.w	d0,dev_Reserved4_w
-;
-;.divisor_test_max:
-;				cmp.w	dev_Reserved5_w,d0
-;				blt.s	.divisor_test_done
-;				move.w	d0,dev_Reserved5_w
-;
-;.divisor_test_done:
-;				ENDC
 
 				;divs.l	d0,d3
 				;divs.l	d0,d4
@@ -2939,6 +2990,9 @@ draw_PutInLines:
 				swap	d5
 				clr.w	d5
 				divs.l	d4,d5
+
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				moveq	#0,d2
 				move.b	2(a1),d2
 				moveq	#0,d6
@@ -2950,6 +3004,9 @@ draw_PutInLines:
 				clr.w	d6						; d6=xbitpos
 				divs.l	d4,d2
 				move.l	d5,a5					; a5=dy constant
+
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+
 				move.l	d2,a6					; a6=xbitconst
 				moveq	#0,d5
 				move.b	3(a1),d5
@@ -2961,6 +3018,9 @@ draw_PutInLines:
 				clr.w	d2						; d3=ybitpos
 				clr.w	d5
 				divs.l	d4,d5
+
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	(a7)+,d4
 				sub.w	draw_OffLeftBy_w,d4
 				blt		this_line_flat
@@ -3052,6 +3112,9 @@ this_line_on_top:
 				swap	d5
 				clr.w	d5
 				divs.l	d4,d5
+
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				moveq	#0,d2
 				move.b	6(a1),d2
 				moveq	#0,d6
@@ -3063,6 +3126,9 @@ this_line_on_top:
 				clr.w	d6						; d6=xbitpos
 				divs.l	d4,d2
 				move.l	d5,a5					; a5=dy constant
+
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+
 				move.l	d2,a6					; a6=xbitconst
 				moveq	#0,d5
 				move.b	7(a1),d5
@@ -3074,6 +3140,9 @@ this_line_on_top:
 				clr.w	d2						; d3=ybitpos
 				clr.w	d5
 				divs.l	d4,d5
+
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	(a7)+,d4
 				sub.w	draw_OffLeftBy_w,d4
 				blt.s	this_line_flat
@@ -3186,6 +3255,9 @@ piglloop:
 				swap	d5
 				clr.w	d5
 				divs.l	d4,d5
+
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				moveq	#0,d2
 				move.b	2(a1),d2
 				moveq	#0,d6
@@ -3197,6 +3269,9 @@ piglloop:
 				clr.w	d6						; d6=xbitpos
 				divs.l	d4,d2
 				move.l	d5,a5					; a5=dy constant
+
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+
 				move.l	d2,a6					; a6=xbitconst
 				moveq	#0,d5
 				move.b	3(a1),d5
@@ -3208,6 +3283,9 @@ piglloop:
 				clr.w	d2						; d3=ybitpos
 				clr.w	d5
 				divs.l	d4,d5
+
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				move.w	(a2,d1.w*2),d1
 				move.w	(a2,d0.w*2),d0
 				sub.w	d1,d0
@@ -3216,6 +3294,9 @@ piglloop:
 				clr.w	d0
 				clr.w	d1
 				divs.l	d4,d0
+
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	(a7)+,d4
 				sub.w	draw_OffLeftBy_w,d4
 				blt		this_line_flat_gouraud
@@ -3311,6 +3392,9 @@ this_line_on_top_gouraud:
 				swap	d5
 				clr.w	d5
 				divs.l	d4,d5
+
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				moveq	#0,d2
 				move.b	6(a1),d2
 				moveq	#0,d6
@@ -3321,6 +3405,9 @@ this_line_on_top_gouraud:
 				clr.w	d2
 				clr.w	d6						; d6=xbitpos
 				divs.l	d4,d2
+
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				move.l	d5,a5					; a5=dy constant
 				move.l	d2,a6					; a6=xbitconst
 				moveq	#0,d5
@@ -3333,6 +3420,9 @@ this_line_on_top_gouraud:
 				clr.w	d2						; d3=ybitpos
 				clr.w	d5
 				divs.l	d4,d5
+
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				move.w	(a2,d1.w*2),d1
 				move.w	(a2,d0.w*2),d0
 				sub.w	d0,d1
@@ -3341,6 +3431,9 @@ this_line_on_top_gouraud:
 				clr.w	d0
 				clr.w	d1
 				divs.l	d4,d1
+
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	(a7)+,d4
 				sub.w	draw_OffLeftBy_w,d4
 				blt.s	this_line_flat_gouraud
