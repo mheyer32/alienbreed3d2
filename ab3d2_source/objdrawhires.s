@@ -1734,14 +1734,14 @@ BOTPART:
 				add.w	d2,d2
 				add.w	d2,a3
 				subq	#1,d5
-				move.l	#boxrot,a4				; temp storage for rotated points?
+				move.l	#draw_3DPointsRotated_vl,a4				; temp storage for rotated points?
 				move.w	draw_ObjectAng_w,d2
 				sub.w	#2048,d2				; 90deg
 				sub.w	angpos,d2				; view angle
 				and.w	#8191,d2				; wrap 360deg
 				move.l	#SinCosTable_vw,a2
 				lea		(a2,d2.w),a5			; sine of object rotation wrt view
-				move.l	#boxbrights,a6
+				move.l	#boxbrights_vw,a6
 				move.w	(a5),d6					; sine of object rotation
 				move.w	2048(a5),d7				; cosine of object rotation. WHY DOES IT NOT NEED OOB/WRAP CHECK?
 												; bigsine is 16kb, so 8192 words
@@ -1773,9 +1773,9 @@ rotate_object:
 
 				move.l	4(a1,d0.w*8),d0			; xpos of mid; is this the object position?
 				move.w	draw_NumPoints_w,d7
-				move.l	#boxrot,a2
-				move.l	#boxonscr,a3
-				move.l	#boxbrights,a6
+				move.l	#draw_3DPointsRotated_vl,a2
+				move.l	#draw_2DPointsProjected_vl,a3
+				move.l	#boxbrights_vw,a6
 				move.w	2(a0),d2				; object y pos?
 				subq	#1,d7
 				add.l	d0,d0					; * 2
@@ -1830,7 +1830,7 @@ fullscreen_conv:
 				divs	d5,d3						; xs = (x*3)/(z*2)
 				add.w	Vid_CentreX_w,d3			; mid_x of screen
 				add.w	draw_PolygonCentreY_w,d4	; mid_y of screen
-				move.w	d3,(a3)+					; store xs,ys in boxonscr
+				move.w	d3,(a3)+					; store xs,ys in draw_2DPointsProjected_vl
 				move.w	d4,(a3)+
 				dbra	d7,.convert_to_screen
 
@@ -1885,7 +1885,7 @@ smallscreen_conv:
 
 done_conv:
 				move.w	draw_NumPoints_w,d7
-				move.l	#boxbrights,a6
+				move.l	#boxbrights_vw,a6
 				subq	#1,d7
 				move.l	draw_PointAngPtr_l,a0
 				move.l	#draw_PointAndPolyBrights_vl,a2
@@ -1932,7 +1932,7 @@ clrpartbuff:
 				addq	#4,a2
 				dbra	d0,clrpartbuff
 
-				move.l	#boxrot,a2
+				move.l	#draw_3DPointsRotated_vl,a2
 				move.l	draw_ObjectOnOff_l,d5
 				tst.w	draw_SortIt_w
 				bne.s	PutinParts
@@ -2039,7 +2039,7 @@ doapoly:
 				move.w	(a1)+,d7				; lines to draw
 				move.w	(a1)+,draw_PreHoles_b
 				move.w	12(a1,d7.w*4),draw_PreGouraud_b
-				move.l	#boxonscr,a3
+				move.l	#draw_2DPointsProjected_vl,a3
 				movem.l	d0-d7/a0-a6,-(a7)
 
 ; * Check for any of these points behind...
@@ -2077,7 +2077,7 @@ checkbeh:
 				muls	d5,d0
 				sub.l	d0,d2
 				ble		polybehind
-				move.l	#boxrot,a3
+				move.l	#draw_3DPointsRotated_vl,a3
 				move.w	(a1),d0
 				move.w	d0,d1
 				asl.w	#2,d0
@@ -2108,7 +2108,7 @@ checkbeh:
 				muls	d5,d0
 				sub.l	d0,d2
 				move.l	d2,polybright
-				move.l	#boxonscr,a3
+				move.l	#draw_2DPointsProjected_vl,a3
 				clr.b	drawit
 				tst.b	draw_Gouraud_b
 				bne.s	usegour
@@ -2503,20 +2503,83 @@ nocrg:
 				move.l	d3,-(a7)
 				move.l	d4,-(a7)
 				add.w	offtopby,d0
-				ext.l	d0
+
+				; 0xABADCAFE - Instead of the divs.l that was used, we will use the 1/N
+				; lookup table and muls/asr. The expected legal range for d0 appears to
+				; be well within 1-255, with the occastional glitch that happens when the
+				; odd polygon screen fill happens, so the input is assumed illegal.
+
+				; The 1/N lookup table actually contains 16384/N, that we will
+				; multiply by, before right shifting 14 places to obtain 1/N. However, to
+				; avoid overflow in the interim calculation, we have to pre-shift the input
+				; dividend partially before the calculation.
+
+				; Limit the divisor and lookup in 1/N
+				cmp.w	#255,d0
+				bls		.skip_clamp_divisor_0
+				move.w	#255,d0
+
+.skip_clamp_divisor_0:
+				move.w	OneOverN(pc,d0.w*2),d0
+
 				muls.l	offtopby-2,d3
 				muls.l	offtopby-2,d4
-				divs.l	d0,d3
-				divs.l	d0,d4
+
+				ext.l	d0 ; we still need a 32-bit multiplicand
+
+				;divs.l	d0,d3
+				;divs.l	d0,d4
+
+				; this can probably be better ordered for 68060
+				asr.l	#8,d3
+				asr.l	#8,d4
+				muls.l	d0,d3
+				muls.l	d0,d4
+				asr.l	#6,d3
+				asr.l	#6,d4
+
+				DEV_INCN.w Reserved1,2 ; counts how many divisions skipped
+
 				add.l	d3,d5
 				add.l	d4,d6
 				move.l	(a7)+,d4
 				move.l	(a7)+,d3
 
 .notofftop:
-				ext.l	d0
-				divs.l	d0,d3
-				divs.l	d0,d4
+				cmp.w	#255,d0
+				bls		.skip_clamp_divisor_1
+				move.w	#255,d0
+
+.skip_clamp_divisor_1:
+
+				IFD		DEV
+.divisor_test_min:
+				cmp.w	dev_Reserved4_w,d0
+				bgt.s	.divisor_test_max
+				move.w	d0,dev_Reserved4_w
+
+.divisor_test_max:
+				cmp.w	dev_Reserved5_w,d0
+				blt.s	.divisor_test_done
+				move.w	d0,dev_Reserved5_w
+
+.divisor_test_done:
+				ENDC
+
+				move.w	OneOverN(pc,d0.w*2),d0
+				ext.l	d0 ; we still need a 32-bit multiplicand
+
+				;divs.l	d0,d3
+				;divs.l	d0,d4
+
+				; this can probably be better ordered for 68060
+				asr.l	#8,d3
+				asr.l	#8,d4
+				muls.l	d0,d3
+				muls.l	d0,d4
+				asr.l	#6,d3
+				asr.l	#6,d4
+
 				add.l	ontoscrg(pc,d1.w*4),a3
 				move.w	10+draw_PolyBotTab_vw-draw_PolyTopTab_vw(a4),d1
 				move.w	10(a4),d7
@@ -2524,7 +2587,16 @@ nocrg:
 				asl.w	#8,d7
 				swap	d1
 				clr.w	d1
-				divs.l	d0,d1
+
+
+				;divs.l	d0,d1
+				asr.l	#8,d1
+				muls.l	d0,d1
+				asr.l	#6,d1
+
+				DEV_INCN.w Reserved1,3 ; counts how many divisions skipped
+
+
 				asr.l	#8,d1
 				move.l	d3,a5
 				moveq	#0,d3
@@ -2982,7 +3054,7 @@ this_line_flat:
 				rts
 
 draw_PutInLinesGouraud:
-				move.l	#boxbrights,a2
+				move.l	#boxbrights_vw,a2
 
 piglloop:
 				move.w	(a1),d0
