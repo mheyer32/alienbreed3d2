@@ -2529,6 +2529,7 @@ nocrg:
 
 				;divs.l	d0,d3
 				;divs.l	d0,d4
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
 
 				; this can probably be better ordered for 68060
 				asr.l	#8,d3
@@ -2537,8 +2538,6 @@ nocrg:
 				muls.l	d0,d4
 				asr.l	#6,d3
 				asr.l	#6,d4
-
-				DEV_INCN.w Reserved1,2 ; counts how many divisions skipped
 
 				add.l	d3,d5
 				add.l	d4,d6
@@ -2552,19 +2551,19 @@ nocrg:
 
 .skip_clamp_divisor_1:
 
-				IFD		DEV
-.divisor_test_min:
-				cmp.w	dev_Reserved4_w,d0
-				bgt.s	.divisor_test_max
-				move.w	d0,dev_Reserved4_w
-
-.divisor_test_max:
-				cmp.w	dev_Reserved5_w,d0
-				blt.s	.divisor_test_done
-				move.w	d0,dev_Reserved5_w
-
-.divisor_test_done:
-				ENDC
+;				IFD		DEV
+;.divisor_test_min:
+;				cmp.w	dev_Reserved4_w,d0
+;				bgt.s	.divisor_test_max
+;				move.w	d0,dev_Reserved4_w
+;
+;.divisor_test_max:
+;				cmp.w	dev_Reserved5_w,d0
+;				blt.s	.divisor_test_done
+;				move.w	d0,dev_Reserved5_w
+;
+;.divisor_test_done:
+;				ENDC
 
 				move.w	OneOverN(pc,d0.w*2),d0
 				ext.l	d0 ; we still need a 32-bit multiplicand
@@ -2588,14 +2587,12 @@ nocrg:
 				swap	d1
 				clr.w	d1
 
-
 				;divs.l	d0,d1
+				;DEV_INCN.w Reserved1,3 ; counts how many divisions skipped
+
 				asr.l	#8,d1
 				muls.l	d0,d1
 				asr.l	#6,d1
-
-				DEV_INCN.w Reserved1,3 ; counts how many divisions skipped
-
 
 				asr.l	#8,d1
 				move.l	d3,a5
@@ -2744,20 +2741,86 @@ nocrh:
 				move.l	d3,-(a7)
 				move.l	d4,-(a7)
 				add.w	offtopby,d0
-				ext.l	d0
+
+				; 0xABADCAFE - Instead of the divs.l that was used, we will use the 1/N
+				; lookup table and muls/asr. The expected legal range for d0 appears to
+				; be well within 1-255, with the occastional glitch that happens when the
+				; odd polygon screen fill happens, so the input is assumed illegal.
+
+				; The 1/N lookup table actually contains 16384/N, that we will
+				; multiply by, before right shifting 14 places to obtain 1/N. However, to
+				; avoid overflow in the interim calculation, we have to pre-shift the input
+				; dividend partially before the calculation.
+
+				; Limit the divisor and lookup in 1/N
+
+
+				; Limit the divisor and lookup in 1/N
+				cmp.w	#255,d0
+				bls		.skip_clamp_divisor_0
+				move.w	#255,d0
+
+.skip_clamp_divisor_0:
+				move.w	OneOverN(pc,d0.w*2),d0
+
 				muls.l	offtopby-2,d3
 				muls.l	offtopby-2,d4
-				divs.l	d0,d3
-				divs.l	d0,d4
+
+				ext.l	d0 ; we still need a 32-bit multiplicand
+
+				;divs.l	d0,d3
+				;divs.l	d0,d4
+				;DEV_INCN.w Reserved1,2
+
+				; this can probably be better ordered for 68060
+				asr.l	#8,d3
+				asr.l	#8,d4
+				muls.l	d0,d3
+				muls.l	d0,d4
+				asr.l	#6,d3
+				asr.l	#6,d4
+
 				add.l	d3,d5
 				add.l	d4,d6
 				move.l	(a7)+,d4
 				move.l	(a7)+,d3
 
 .notofftop:
+				cmp.w	#255,d0
+				bls		.skip_clamp_divisor_1
+				move.w	#255,d0
+
+.skip_clamp_divisor_1:
+				move.w	OneOverN(pc,d0.w*2),d0
 				ext.l	d0
-				divs.l	d0,d3
-				divs.l	d0,d4
+
+;				IFD		DEV
+;.divisor_test_min:
+;				cmp.w	dev_Reserved4_w,d0
+;				bgt.s	.divisor_test_max
+;				move.w	d0,dev_Reserved4_w
+;
+;.divisor_test_max:
+;				cmp.w	dev_Reserved5_w,d0
+;				blt.s	.divisor_test_done
+;				move.w	d0,dev_Reserved5_w
+;
+;.divisor_test_done:
+;				ENDC
+
+				;divs.l	d0,d3
+				;divs.l	d0,d4
+
+				;DEV_INCN.w Reserved1,2
+
+				; this can probably be better ordered for 68060
+				asr.l	#8,d3
+				asr.l	#8,d4
+				muls.l	d0,d3
+				muls.l	d0,d4
+				asr.l	#6,d3
+				asr.l	#6,d4
+
 				add.l	ontoscrh(pc,d1.w*4),a3
 				move.l	#$3fffff,d1
 				move.l	d3,a5
