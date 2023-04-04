@@ -50,6 +50,11 @@ DEV_DEC			MACRO
 				subq.\0	#1,dev_\1_\0
 				ENDM
 
+DEV_INCN		MACRO
+				addq.\0	#\2,dev_\1_\0
+				ENDM
+
+
 ; Macros for saving register state.
 DEV_SAVE		MACRO
 				movem.l	\1,-(sp)
@@ -96,6 +101,9 @@ DEV_ELAPSED32	MACRO
 				ENDM
 
 DEV_INC			MACRO
+				ENDM
+
+DEV_INCN		MACRO
 				ENDM
 
 DEV_DEC			MACRO

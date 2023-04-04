@@ -26,8 +26,8 @@ draw_StartOfObjPtr_l:			ds.l	1
 Draw_PolyObjects_vl:			ds.l	40
 
 ; FIMXE: screenconv stores word sized points, why are they using ds.l here?
-boxonscr:						ds.l	250*2	; projected 2D points in screenspace
-boxrot:							ds.l	250*3	; rotated 3D points in X/Z plane (y pointing up)
+draw_2DPointsProjected_vl:		ds.l	250*2	; projected 2D points in screenspace
+draw_3DPointsRotated_vl:		ds.l	250*3	; rotated 3D points in X/Z plane (y pointing up)
 
 Draw_WallTexturePtrs_vl:		ds.l	40
 Draw_ObjectPtrs_vl:				ds.l	38*4
@@ -47,8 +47,8 @@ draw_PointAngPtr_l:				ds.l	1
 
 toppt_l:						ds.l	1
 midobj_l:						ds.l	1
-boxbrights:						ds.w	250
-boxang:							ds.w	1
+boxbrights_vw:					ds.w	250
+;boxang:							ds.w	1
 
 								ds.w	SCREEN_WIDTH*4; draw_PolyBotTab_vw has negative offsets
 draw_PolyBotTab_vw:				ds.w	SCREEN_WIDTH*8
