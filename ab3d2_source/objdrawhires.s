@@ -1433,7 +1433,7 @@ draw_TweenBrights:
 
 				; 0xABADCAFE - TODO numbers here may be suited for 16x16
 				move.w	d4,-2(sp)
-				move.w	OneOverN(pc,d4.w*2),d4
+				move.w	OneOverN_vw(pc,d4.w*2),d4
 				ext.l	d4  		; we still need a 32-bit multiplicand
 				asr.l	#7,d3
 				muls.l	d4,d3
@@ -1442,7 +1442,7 @@ draw_TweenBrights:
 
 				;divs.l	d4,d3
 
-				;DEV_INC.w Reserved1 ; counts how many divisions
+				DEV_INC.w Reserved1 ; counts how many divisions
 
 .skip_zero_dividend:
 				subq	#1,d4					; number of tweens
@@ -2318,7 +2318,12 @@ nocr:
 				; 0xABADCAFE -  optimising here
 				;DEV_CHECK_DIVISOR d0
 
-				move.w	OneOverN(pc,d0.w*2),d0
+				cmp.w	#MAX_ONE_OVER_N,d0
+				bls		.skip_clamp_divisor_0
+				move.w	#MAX_ONE_OVER_N,d0
+
+.skip_clamp_divisor_0:
+				move.w	OneOverN_vw(pc,d0.w*2),d0
 
 				ext.l	d0				; we still need a 32-bit multiplicand
 
@@ -2333,7 +2338,7 @@ nocr:
 				asr.l	#6,d3
 				asr.l	#6,d4
 
-				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+				DEV_INCN.w Reserved1,2 ; counts how many divisions
 
 				add.l	ontoscr(pc,d1.w*4),a3
 				move.l	#$3fffff,d1
@@ -2430,12 +2435,12 @@ nocrGL:
 				; Don't trash original divisor...
 				;DEV_CHECK_DIVISOR d0
 				move.w	d0,-2(sp)		; save original divisor
-				cmp.w	#255,d0
+				cmp.w	#MAX_ONE_OVER_N,d0
 				bls		.skip_clamp_divisor_0
-				move.w	#255,d0
+				move.w	#MAX_ONE_OVER_N,d0
 
 .skip_clamp_divisor_0:
-				move.w	OneOverN(pc,d0.w*2),d0
+				move.w	OneOverN_vw(pc,d0.w*2),d0
 				ext.l	d0				 ; we still need a 32-bit multiplicand
 				muls.l	offtopby-2,d3
 				muls.l	offtopby-2,d4
@@ -2454,7 +2459,7 @@ nocrGL:
 				; restore original divisor
 				move.w	-2(sp),d0		; restore original divisor
 
-				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+				DEV_INCN.w Reserved1,2 ; counts how many divisions
 
 				add.l	d3,d5
 				add.l	d4,d6
@@ -2465,12 +2470,12 @@ nocrGL:
 				; 0xABADCAFE DIVS.L
 				; Limit the divisor and lookup in 1/N
 				;DEV_CHECK_DIVISOR d0
-				cmp.w	#255,d0
+				cmp.w	#MAX_ONE_OVER_N,d0
 				bls		.skip_clamp_divisor_1
-				move.w	#255,d0
+				move.w	#MAX_ONE_OVER_N,d0
 
 .skip_clamp_divisor_1:
-				move.w	OneOverN(pc,d0.w*2),d0
+				move.w	OneOverN_vw(pc,d0.w*2),d0
 				ext.l	d0				 ; we still need a 32-bit multiplicand
 
 				;divs.l	d0,d3
@@ -2483,7 +2488,7 @@ nocrGL:
 				asr.l	#6,d3
 				asr.l	#6,d4
 
-				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+				DEV_INCN.w Reserved1,2 ; counts how many divisions
 
 				add.l	ontoscrGL(pc,d1.w*4),a3
 				move.l	#$3fffff,d1
@@ -2599,13 +2604,15 @@ nocrg:
 
 
 				; 0xABADCAFE DIVS.L
+				;DEV_CHECK_DIVISOR d0
+
 				move.w	d0,-2(sp)		; save original divisor
-				cmp.w	#255,d0
+				cmp.w	#MAX_ONE_OVER_N,d0
 				bls		.skip_clamp_divisor_0
-				move.w	#255,d0
+				move.w	#MAX_ONE_OVER_N,d0
 
 .skip_clamp_divisor_0:
-				move.w	OneOverN(pc,d0.w*2),d0
+				move.w	OneOverN_vw(pc,d0.w*2),d0
 
 				muls.l	offtopby-2,d3
 				muls.l	offtopby-2,d4
@@ -2614,7 +2621,7 @@ nocrg:
 
 				;divs.l	d0,d3
 				;divs.l	d0,d4
-				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+				DEV_INCN.w Reserved1,2 ; counts how many divisions
 
 				; this can probably be better ordered for 68060
 				asr.l	#8,d3
@@ -2632,14 +2639,14 @@ nocrg:
 				move.l	(a7)+,d3
 
 .notofftop:
-				cmp.w	#255,d0
+				;DEV_CHECK_DIVISOR d0
+
+				cmp.w	#MAX_ONE_OVER_N,d0
 				bls		.skip_clamp_divisor_1
-				move.w	#255,d0
+				move.w	#MAX_ONE_OVER_N,d0
 
 .skip_clamp_divisor_1:
-;				DEV_CHECK_DIVISOR d0
-
-				move.w	OneOverN(pc,d0.w*2),d0
+				move.w	OneOverN_vw(pc,d0.w*2),d0
 				ext.l	d0 ; we still need a 32-bit multiplicand
 
 				;divs.l	d0,d3
@@ -2662,7 +2669,7 @@ nocrg:
 				clr.w	d1
 
 				;divs.l	d0,d1
-				;DEV_INCN.w Reserved1,3 ; counts how many divisions skipped
+				DEV_INCN.w Reserved1,3 ; counts how many divisions skipped
 
 				asr.l	#8,d1
 				muls.l	d0,d1
@@ -2819,12 +2826,12 @@ nocrh:
 				; 0xABADCAFE DIVS.L
 				; Limit the divisor and lookup in 1/N
 				move.w	d0,-2(sp)		; save original divisor
-				cmp.w	#255,d0
+				cmp.w	#MAX_ONE_OVER_N,d0
 				bls		.skip_clamp_divisor_0
-				move.w	#255,d0
+				move.w	#MAX_ONE_OVER_N,d0
 
 .skip_clamp_divisor_0:
-				move.w	OneOverN(pc,d0.w*2),d0
+				move.w	OneOverN_vw(pc,d0.w*2),d0
 
 				muls.l	offtopby-2,d3
 				muls.l	offtopby-2,d4
@@ -2833,7 +2840,7 @@ nocrh:
 
 				;divs.l	d0,d3
 				;divs.l	d0,d4
-				;DEV_INCN.w Reserved1,2
+				DEV_INCN.w Reserved1,2
 
 				; this can probably be better ordered for 68060
 				asr.l	#8,d3
@@ -2851,18 +2858,18 @@ nocrh:
 				move.l	(a7)+,d3
 
 .notofftop:
-				cmp.w	#255,d0
+				cmp.w	#MAX_ONE_OVER_N,d0
 				bls		.skip_clamp_divisor_1
-				move.w	#255,d0
+				move.w	#MAX_ONE_OVER_N,d0
 
 .skip_clamp_divisor_1:
-				move.w	OneOverN(pc,d0.w*2),d0
+				move.w	OneOverN_vw(pc,d0.w*2),d0
 				ext.l	d0
 
 				;divs.l	d0,d3
 				;divs.l	d0,d4
 
-				;DEV_INCN.w Reserved1,2
+				DEV_INCN.w Reserved1,2
 
 				; this can probably be better ordered for 68060
 				asr.l	#8,d3
