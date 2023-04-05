@@ -2353,15 +2353,32 @@ nocr:
 				move.l	d4,-(a7)
 				add.w	offtopby,d0
 
-				ext.l	d0
+
 				muls.l	offtopby-2,d3
 				muls.l	offtopby-2,d4
 
-				; 0xABADCAFE - seems like this rarely happens, not optimising here
-				divs.l	d0,d3
-				divs.l	d0,d4
+				;DEV_CHECK_DIVISOR d0
 
+				; save the original divisor
+				move.w	d0,-2(sp)
+
+				cmp.w	#MAX_ONE_OVER_N,d0
+				bls		.skip_clamp_divisor_0
+				move.w	#MAX_ONE_OVER_N,d0
+
+.skip_clamp_divisor_0:
+
+				; 0xABADCAFE - seems like this rarely happens
+				;ext.l	d0
+				;divs.l	d0,d3
+				;divs.l	d0,d4
 				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+
+				move.w	OneOverN_vw(pc,d0.w*2),d0
+				MUL_INV_PAIR	d0,d3,d4
+
+				; restore the original divisor
+				move.w	-2(sp),d0
 
 				add.l	d3,d5
 				add.l	d4,d6
@@ -2369,14 +2386,13 @@ nocr:
 				move.l	(a7)+,d3
 
 .notofftop:
-				; 0xABADCAFE -  optimising here
 				;DEV_CHECK_DIVISOR d0
 
 				cmp.w	#MAX_ONE_OVER_N,d0
-				bls		.skip_clamp_divisor_0
+				bls		.skip_clamp_divisor_1
 				move.w	#MAX_ONE_OVER_N,d0
 
-.skip_clamp_divisor_0:
+.skip_clamp_divisor_1:
 				;ext.l	d0
 				;divs.l	d0,d3
 				;divs.l	d0,d4
@@ -3116,16 +3132,24 @@ this_line_on_top:
 				move.w	d6,draw_Left_w
 
 .no_new_top:
+				; 0xABADCAFE - these operations are infrequent (typically < 50 per frame) but use larger divisors
+				; that use the full 16-bit range. 
 				sub.w	d3,d5					; dy
 				swap	d3
 				clr.w	d3						; d2=xpos
 				sub.w	d2,d4					; dx > 0
+
+				;DEV_CHECK_DIVISOR d4
+
 				ext.l	d4
 				swap	d5
 				clr.w	d5
-				divs.l	d4,d5
 
-				;DEV_INC.w Reserved1 ; counts how many divisions
+				;divs.l	d4,d5
+
+				; 0xABADCAFE try 32/16 => 16r:16q ...
+				divs.w	d4,d5
+				ext.l	d5
 
 				moveq	#0,d2
 				move.b	6(a1),d2
@@ -3136,10 +3160,16 @@ this_line_on_top:
 				swap	d6
 				clr.w	d2
 				clr.w	d6						; d6=xbitpos
-				divs.l	d4,d2
+
+				;divs.l	d4,d2
+
+				; 0xABADCAFE try 32/16 => 16r:16q
+				divs.w	d4,d2
+				ext.l	d2
+
 				move.l	d5,a5					; a5=dy constant
 
-				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+				;DEV_INC.w Reserved1 ; counts how many divisions
 
 				move.l	d2,a6					; a6=xbitconst
 				moveq	#0,d5
@@ -3151,7 +3181,12 @@ this_line_on_top:
 				swap	d5
 				clr.w	d2						; d3=ybitpos
 				clr.w	d5
-				divs.l	d4,d5
+
+				;divs.l	d4,d5
+
+				; 0xABADCAFE try 32/15 => 16r:16q
+				divs.w	d4,d5
+				ext.l	d5
 
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
@@ -3282,7 +3317,7 @@ piglloop:
 				divs.l	d4,d2
 				move.l	d5,a5					; a5=dy constant
 
-				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+				;DEV_INC.w Reserved1 ; counts how many divisions
 
 				move.l	d2,a6					; a6=xbitconst
 				moveq	#0,d5
