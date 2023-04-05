@@ -6,11 +6,64 @@ DRAW_VECTOR_MAX_Z		EQU		16383 ; Vector points further than this will be culled
 
 ; 0xABADCAFE - Instead of the divs.l that was used, where possible we will use
 ; the 1/N lookup table and muls/asr as a faster replacement.
-
-; The 1/N lookup table actually contains 16384/N for N up to 255, that we will
+;
+; Execute times (does not include EA)
+;
+; 68030 divs.l => 90 cycles, muls.l => 44 cycles, muls.w => 28 cycles
+; 68040 divs.l => 44 cycles, muls.l => 20 cycles, muls.w => 16 cycles
+; 68060 divs.l => 38 cycles, muls.l => 2 cycles,  muls.w =>  2 cycles
+;
+; The 1/N lookup table actually contains 16384/N for N up to MAX_ONE_OVER_N, that we will
 ; multiply by, before right shifting 14 places to obtain 1/N. However, to
 ; avoid overflow in the interim calculation, we have to pre-shift the input
 ; dividend partially before the calculation.
+
+				IFD	USE_16X16_TEXEL_MULS
+
+; This macro performs multiplication by the 1/N value using cheaper 16x16 multiplication,
+; at the potential cost of some precision.
+;
+; 				MUL_INV_PAIR reciprocal,val1,val2
+MUL_INV_PAIR	MACRO
+				swap	\2
+				swap	\3
+				muls.w	\1,\2
+				muls.w	\1,\3
+				lsl.l	#2,\2
+				lsl.l	#2,\3
+				ENDM
+
+; 				MUL_INV reciprocal,val
+MUL_INV			MACRO
+				swap	\2
+				muls.w	\1,\2
+				lsl.l	#2,\2
+				ENDM
+
+				ELSE
+
+; This macro performs multiplication by the 1/N value using 32-bit multiplication, uses a
+; shift/multiply/shift approach to avoid overflow
+;
+; 				MUL_INV_PAIR reciprocal,val1,val2
+MUL_INV_PAIR	MACRO
+				ext.l	\1
+				asr.l	#8,\2
+				asr.l	#8,\3
+				muls.l	\1,\2
+				muls.l	\1,\3
+				asr.l	#6,\2
+				asr.l	#6,\3
+				ENDM
+
+; 				MUL_INV reciprocal,val
+MUL_INV			MACRO
+				asr.l	#8,\2
+				muls.l	\1,\2
+				asr.l	#6,\2
+				ENDM
+
+				ENDC
 
 				align 4
 draw_TopY_3D_l:			dc.l	-100*1024
@@ -1434,6 +1487,7 @@ draw_TweenBrights:
 				; 0xABADCAFE - TODO numbers here may be suited for 16x16
 				move.w	d4,-2(sp)
 				move.w	OneOverN_vw(pc,d4.w*2),d4
+
 				ext.l	d4  		; we still need a 32-bit multiplicand
 				asr.l	#7,d3
 				muls.l	d4,d3
@@ -1442,7 +1496,7 @@ draw_TweenBrights:
 
 				;divs.l	d4,d3
 
-				DEV_INC.w Reserved1 ; counts how many divisions
+				;DEV_INC.w Reserved1 ; counts how many divisions
 
 .skip_zero_dividend:
 				subq	#1,d4					; number of tweens
@@ -2323,22 +2377,13 @@ nocr:
 				move.w	#MAX_ONE_OVER_N,d0
 
 .skip_clamp_divisor_0:
-				move.w	OneOverN_vw(pc,d0.w*2),d0
-
-				ext.l	d0				; we still need a 32-bit multiplicand
-
+				;ext.l	d0
 				;divs.l	d0,d3
 				;divs.l	d0,d4
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
 
-				; this can probably be better ordered for 68060
-				asr.l	#8,d3
-				asr.l	#8,d4
-				muls.l	d0,d3
-				muls.l	d0,d4
-				asr.l	#6,d3
-				asr.l	#6,d4
-
-				DEV_INCN.w Reserved1,2 ; counts how many divisions
+				move.w	OneOverN_vw(pc,d0.w*2),d0
+				MUL_INV_PAIR	d0,d3,d4
 
 				add.l	ontoscr(pc,d1.w*4),a3
 				move.l	#$3fffff,d1
@@ -2440,26 +2485,21 @@ nocrGL:
 				move.w	#MAX_ONE_OVER_N,d0
 
 .skip_clamp_divisor_0:
-				move.w	OneOverN_vw(pc,d0.w*2),d0
-				ext.l	d0				 ; we still need a 32-bit multiplicand
 				muls.l	offtopby-2,d3
 				muls.l	offtopby-2,d4
 
+				;original
+				;ext.l	d0
 				;divs.l	d0,d3
 				;divs.l	d0,d4
 
-				; this can probably be better ordered for 68060
-				asr.l	#8,d3
-				asr.l	#8,d4
-				muls.l	d0,d3
-				muls.l	d0,d4
-				asr.l	#6,d3
-				asr.l	#6,d4
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+
+				move.w	OneOverN_vw(pc,d0.w*2),d0
+				MUL_INV_PAIR	d0,d3,d4
 
 				; restore original divisor
 				move.w	-2(sp),d0		; restore original divisor
-
-				DEV_INCN.w Reserved1,2 ; counts how many divisions
 
 				add.l	d3,d5
 				add.l	d4,d6
@@ -2475,20 +2515,15 @@ nocrGL:
 				move.w	#MAX_ONE_OVER_N,d0
 
 .skip_clamp_divisor_1:
-				move.w	OneOverN_vw(pc,d0.w*2),d0
-				ext.l	d0				 ; we still need a 32-bit multiplicand
-
+				;original
+				;ext.l	d0
 				;divs.l	d0,d3
 				;divs.l	d0,d4
 
-				asr.l	#8,d3
-				asr.l	#8,d4
-				muls.l	d0,d3
-				muls.l	d0,d4
-				asr.l	#6,d3
-				asr.l	#6,d4
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
 
-				DEV_INCN.w Reserved1,2 ; counts how many divisions
+				move.w	OneOverN_vw(pc,d0.w*2),d0
+				MUL_INV_PAIR	d0,d3,d4
 
 				add.l	ontoscrGL(pc,d1.w*4),a3
 				move.l	#$3fffff,d1
@@ -2612,24 +2647,17 @@ nocrg:
 				move.w	#MAX_ONE_OVER_N,d0
 
 .skip_clamp_divisor_0:
-				move.w	OneOverN_vw(pc,d0.w*2),d0
+				;ext.l	d0
+				;divs.l	d0,d3
+				;divs.l	d0,d4
+
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
 
 				muls.l	offtopby-2,d3
 				muls.l	offtopby-2,d4
 
-				ext.l	d0 ; we still need a 32-bit multiplicand
-
-				;divs.l	d0,d3
-				;divs.l	d0,d4
-				DEV_INCN.w Reserved1,2 ; counts how many divisions
-
-				; this can probably be better ordered for 68060
-				asr.l	#8,d3
-				asr.l	#8,d4
-				muls.l	d0,d3
-				muls.l	d0,d4
-				asr.l	#6,d3
-				asr.l	#6,d4
+				move.w	OneOverN_vw(pc,d0.w*2),d0
+				MUL_INV_PAIR	d0,d3,d4
 
 				move.w	-2(sp),d0 ; restore d0 before continuing
 
@@ -2646,19 +2674,12 @@ nocrg:
 				move.w	#MAX_ONE_OVER_N,d0
 
 .skip_clamp_divisor_1:
-				move.w	OneOverN_vw(pc,d0.w*2),d0
-				ext.l	d0 ; we still need a 32-bit multiplicand
-
+				;ext.l	d0
 				;divs.l	d0,d3
 				;divs.l	d0,d4
 
-				; this can probably be better ordered for 68060
-				asr.l	#8,d3
-				asr.l	#8,d4
-				muls.l	d0,d3
-				muls.l	d0,d4
-				asr.l	#6,d3
-				asr.l	#6,d4
+				move.w	OneOverN_vw(pc,d0.w*2),d0
+				MUL_INV_PAIR	d0,d3,d4
 
 				add.l	ontoscrg(pc,d1.w*4),a3
 				move.w	10+draw_PolyBotTab_vw-draw_PolyTopTab_vw(a4),d1
@@ -2669,13 +2690,13 @@ nocrg:
 				clr.w	d1
 
 				;divs.l	d0,d1
-				DEV_INCN.w Reserved1,3 ; counts how many divisions skipped
 
-				asr.l	#8,d1
-				muls.l	d0,d1
-				asr.l	#6,d1
+				MUL_INV	d0,d1
 
-				asr.l	#8,d1
+				;DEV_INCN.w Reserved1,3 ; counts how many divisions skipped
+
+				asr.l	#8,d1 ; worth a custom one-off macro to save this step
+
 				move.l	d3,a5
 				moveq	#0,d3
 				swap	d2
@@ -2831,24 +2852,16 @@ nocrh:
 				move.w	#MAX_ONE_OVER_N,d0
 
 .skip_clamp_divisor_0:
-				move.w	OneOverN_vw(pc,d0.w*2),d0
+				;ext.l	d0
+				;divs.l	d0,d3
+				;divs.l	d0,d4
+				;DEV_INCN.w Reserved1,2
 
 				muls.l	offtopby-2,d3
 				muls.l	offtopby-2,d4
 
-				ext.l	d0 ; we still need a 32-bit multiplicand
-
-				;divs.l	d0,d3
-				;divs.l	d0,d4
-				DEV_INCN.w Reserved1,2
-
-				; this can probably be better ordered for 68060
-				asr.l	#8,d3
-				asr.l	#8,d4
-				muls.l	d0,d3
-				muls.l	d0,d4
-				asr.l	#6,d3
-				asr.l	#6,d4
+				move.w	OneOverN_vw(pc,d0.w*2),d0
+				MUL_INV_PAIR	d0,d3,d4
 
 				move.w	-2(sp),d0 ; Restore original divisor
 
@@ -2863,21 +2876,13 @@ nocrh:
 				move.w	#MAX_ONE_OVER_N,d0
 
 .skip_clamp_divisor_1:
-				move.w	OneOverN_vw(pc,d0.w*2),d0
-				ext.l	d0
-
+				;ext.l	d0
 				;divs.l	d0,d3
 				;divs.l	d0,d4
+				;DEV_INCN.w Reserved1,2
 
-				DEV_INCN.w Reserved1,2
-
-				; this can probably be better ordered for 68060
-				asr.l	#8,d3
-				asr.l	#8,d4
-				muls.l	d0,d3
-				muls.l	d0,d4
-				asr.l	#6,d3
-				asr.l	#6,d4
+				move.w	OneOverN_vw(pc,d0.w*2),d0
+				MUL_INV_PAIR	d0,d3,d4
 
 				add.l	ontoscrh(pc,d1.w*4),a3
 				move.l	#$3fffff,d1
