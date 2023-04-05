@@ -2449,10 +2449,10 @@ nocrGL:
 				;divs.l	d0,d4
 
 				; this can probably be better ordered for 68060
-				muls.l	d0,d3
-				muls.l	d0,d4
 				asr.l	#8,d3
 				asr.l	#8,d4
+				muls.l	d0,d3
+				muls.l	d0,d4
 				asr.l	#6,d3
 				asr.l	#6,d4
 
