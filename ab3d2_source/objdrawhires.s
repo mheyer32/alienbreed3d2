@@ -3018,7 +3018,6 @@ draw_PutInLines:
 				swap	d5
 				clr.w	d5
 				divs.l	d4,d5
-
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
 				moveq	#0,d2
@@ -3032,7 +3031,6 @@ draw_PutInLines:
 				clr.w	d6						; d6=xbitpos
 				divs.l	d4,d2
 				move.l	d5,a5					; a5=dy constant
-
 				;DEV_INCN.w Reserved1,2 ; counts how many divisions
 
 				move.l	d2,a6					; a6=xbitconst
@@ -3046,7 +3044,6 @@ draw_PutInLines:
 				clr.w	d2						; d3=ybitpos
 				clr.w	d5
 				divs.l	d4,d5
-
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
 				add.w	(a7)+,d4
@@ -3132,8 +3129,6 @@ this_line_on_top:
 				move.w	d6,draw_Left_w
 
 .no_new_top:
-				; 0xABADCAFE - these operations are infrequent (typically < 50 per frame) but use larger divisors
-				; that use the full 16-bit range. 
 				sub.w	d3,d5					; dy
 				swap	d3
 				clr.w	d3						; d2=xpos
@@ -3144,12 +3139,7 @@ this_line_on_top:
 				ext.l	d4
 				swap	d5
 				clr.w	d5
-
-				;divs.l	d4,d5
-
-				; 0xABADCAFE try 32/16 => 16r:16q ...
-				divs.w	d4,d5
-				ext.l	d5
+				divs.l	d4,d5
 
 				moveq	#0,d2
 				move.b	6(a1),d2
@@ -3160,17 +3150,10 @@ this_line_on_top:
 				swap	d6
 				clr.w	d2
 				clr.w	d6						; d6=xbitpos
-
-				;divs.l	d4,d2
-
-				; 0xABADCAFE try 32/16 => 16r:16q
-				divs.w	d4,d2
-				ext.l	d2
-
-				move.l	d5,a5					; a5=dy constant
-
+				divs.l	d4,d2
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
+				move.l	d5,a5					; a5=dy constant
 				move.l	d2,a6					; a6=xbitconst
 				moveq	#0,d5
 				move.b	7(a1),d5
@@ -3181,13 +3164,7 @@ this_line_on_top:
 				swap	d5
 				clr.w	d2						; d3=ybitpos
 				clr.w	d5
-
-				;divs.l	d4,d5
-
-				; 0xABADCAFE try 32/15 => 16r:16q
-				divs.w	d4,d5
-				ext.l	d5
-
+				divs.l	d4,d5
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
 				add.w	(a7)+,d4
