@@ -19,7 +19,7 @@ Plr1_ObjectPtr_l:			ds.l	1
 Plr1_XOff_l:				ds.l	1 ; sometimes accessed as w - todo understand real size
 Plr1_YOff_l:				ds.l	1
 Plr1_ZOff_l:				ds.l	1 ; sometimes accessed as w - todo understand real size
-Plr1_RoomPtr_l:				ds.l	1
+Plr1_ZonePtr_l:				ds.l	1
 Plr1_Height_l:				ds.l	1
 Plr1_AimSpeed_l:			ds.l	1
 Plr1_SnapXOff_l:			ds.l	1
@@ -42,7 +42,7 @@ plr1_BobbleY_l:				ds.l	1 ; hires.s
 plr1_TmpHeight_l:			ds.l	1 ; hires.s
 plr1_OldX_l:				ds.l	1 ; hires.s
 plr1_OldZ_l:				ds.l	1 ; hires.s
-plr1_OldRoomPtr_l:			ds.l	1 ; leveldata2.s
+plr1_OldRoomPtr_l:			ds.l	1 ; leveldata2.s - write once?
 plr1_SnapSquishedHeight_l:	ds.l	1 ; plr1control.s
 
 
@@ -98,7 +98,7 @@ Plr2_ObjectPtr_l:			ds.l	1
 Plr2_XOff_l:				ds.l	1
 Plr2_YOff_l:				ds.l	1
 Plr2_ZOff_l:				ds.l	1
-Plr2_RoomPtr_l:				ds.l	1
+Plr2_ZonePtr_l:				ds.l	1
 Plr2_Height_l:				ds.l	1
 Plr2_AimSpeed_l:			ds.l	1
 Plr2_SnapXOff_l:			ds.l	1
