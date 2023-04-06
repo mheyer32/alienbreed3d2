@@ -6,8 +6,8 @@
 
 ; Ad hoc tables that we don't know where else to put yet.
 
-COMPACTMAP:		ds.l	257
-BIGMAP:			ds.l	256*10
+Lvl_CompactMap_vl:		ds.l	257
+Lvl_BigMap_vl:			ds.l	256*10
 
 PointBrightsPtr_l:		ds.l	1
 CurrentPointBrights_vl:	ds.l	2*256*10
