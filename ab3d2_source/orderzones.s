@@ -2,10 +2,10 @@
 tmplistgraph:
 				dc.l	0
 
-Zone_ListOrdered_b:
-				dc.w	0
+;Zone_ListOrdered_b:
+;				dc.w	0
 
-zone_LastPosition_vw:
+zone_LastPosition_vw: ; basically a short coordinate pair
 				dc.l	-1
 OrderZones:
 				move.w	xoff,d0
