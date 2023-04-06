@@ -8,10 +8,12 @@ tmplistgraph:
 zone_LastPosition_vw: ; basically a short coordinate pair
 				dc.l	-1
 OrderZones:
+				; TODO this needs to be triggered when the player changes zone.
+				; I've tried this by using the ZonePtr but it works only partially.
 				move.w	xoff,d0
 				swap	d0
 				move.w	zoff,d0		  ; d0 is the short coordinate location of the player
-				and.l	#$FFF0FFF0,d0 ; reduce the change sensitivity a bit
+				and.l	#$FFF0FFF0,d0 ; reduce the change sensitivity a bit by discarding the low x/z bits
 				cmp.l	zone_LastPosition_vw,d0
 				bne		.continue
 				rts
