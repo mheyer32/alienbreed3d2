@@ -54,6 +54,10 @@ dev_FPSIntAvg_w:			ds.w	1
 dev_FPSFracAvg_w:			ds.w	1
 dev_Reserved1_w:			ds.w	1
 
+dev_Reserved2_w:			ds.w	1
+dev_Reserved3_w:			ds.w	1
+dev_Reserved4_w:			ds.w	1
+dev_Reserved5_w:			ds.w	1
 ; Not cleared per frame
 dev_FrameIndex_w:			ds.w	1	; frame number % DEV_GRAPH_BUFFER_SIZE
 
@@ -63,6 +67,7 @@ dev_CharBuffer_vb:	dcb.b	64
 
 				section code,code
 				align 4
+
 
 
 ;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -135,7 +140,15 @@ Dev_MarkFrameBegin:
 				addq.w	#1,d0
 				and.w	#DEV_GRAPH_BUFFER_MASK,d0
 				move.w	d0,dev_FrameIndex_w
+
+				; Reset the divisor extrema
+				bne.s	.skip_reset_divisor
+				move.w	#32767,dev_Reserved4_w
+				move.w	#-32768,dev_Reserved5_w
+
+.skip_reset_divisor:
 				lea		dev_Counters_vw,a0
+				clr.l	(a0)+
 				clr.l	(a0)+
 				clr.l	(a0)+
 				clr.l	(a0)+
@@ -314,6 +327,24 @@ Dev_PrintStats:
 				move.l		#120,d0
 				bsr			Dev_PrintF
 
+				; Long Divisions
+				lea			dev_Reserved1_w,a1
+				lea			.dev_ss_stats_long_divide_vb,a0
+				move.l		#136,d0
+				bsr			Dev_PrintF
+
+				; Min Divisor
+				lea			dev_Reserved4_w,a1
+				lea			.dev_ss_stats_min_divisor_vb,a0
+				move.l		#152,d0
+				bsr			Dev_PrintF
+
+				; Max Divisor
+				lea			dev_Reserved5_w,a1
+				lea			.dev_ss_stats_max_divisor_vb,a0
+				move.l		#168,d0
+				bsr			Dev_PrintF
+
 				rts
 
 .fullscreen_stats:
@@ -344,6 +375,14 @@ Dev_PrintStats:
 				dc.b		"OA:%2d",0
 .dev_ss_stats_obj_bitmap_vb:
 				dc.b		"OB:%2d",0
+
+; Stats for the division pogrom 2.0
+.dev_ss_stats_long_divide_vb:
+				dc.b		"LD:%4d ",0
+.dev_ss_stats_min_divisor_vb:
+				dc.b		"mD:%4d ",0
+.dev_ss_stats_max_divisor_vb:
+				dc.b		"MD:%4d ",0
 
 				align 4
 

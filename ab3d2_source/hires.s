@@ -5918,7 +5918,7 @@ notbelow:
 												; projects the Y-clip screen coordinate to Z in the world
 												; it thus
 
-				mulu.w	OneOverN(pc,d7.w*2),d6
+				mulu.w	OneOverN_vw(pc,d7.w*2),d6
 				lsr.l	#8,d6
 
 ; visible line
@@ -6730,10 +6730,10 @@ movespd:		dc.w	0
 largespd:		dc.l	0
 disttobot:		dc.w	0
 
-OneOverN:		; 1/N	* 16384
+OneOverN_vw:		; 1/N	* 16384
 				dc.w	0						;16384/0 not defined
 val				SET		1
-				REPT	255
+				REPT	MAX_ONE_OVER_N
 				dc.w	16384/val
 val				SET		val+1
 				ENDR
@@ -7004,7 +7004,7 @@ noclipleft:
 				;ext.l	d7
 
 				lsr.l	#4,d7
-				mulu.w	OneOverN(pc,d0.w*2),d7	;  View2FloorDist * 64 * 16384 / currentline
+				mulu.w	OneOverN_vw(pc,d0.w*2),d7	;  View2FloorDist * 64 * 16384 / currentline
 				lsr.l	#8,d7
 
 				; for some reason important to write.l here
@@ -7056,7 +7056,7 @@ dofloornoclip:
 
 				move.l	 a2,d7
 				lsr.l	#4,d7
-				mulu.w	OneOverN(pc,d0.w*2),d7	;
+				mulu.w	OneOverN_vw(pc,d0.w*2),d7	;
 				lsr.l	#8,d7
 
 				move.l	d7,d0
@@ -7126,7 +7126,7 @@ noclipleftGOUR:
 				;asr.l	#2,d2
 
 				lsr.l	#4,d2
-				mulu.w	OneOverN(pc,d0.w*2),d2	;
+				mulu.w	OneOverN_vw(pc,d0.w*2),d2	;
 				lsr.l	#8,d2
 
 				move.l	d2,dst
@@ -7245,7 +7245,7 @@ dofloornoclipGOUR:
 ;				divs.l	d0,d6
 
 				asr.l	#4,d6
-				mulu.w	OneOverN(pc,d0.w*2),d6
+				mulu.w	OneOverN_vw(pc,d0.w*2),d6
 				asr.l	#8,d6	; from n << 20 down to n << 8
 
 				move.l	d6,d5

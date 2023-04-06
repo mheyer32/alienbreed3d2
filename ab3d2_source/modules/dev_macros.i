@@ -50,6 +50,11 @@ DEV_DEC			MACRO
 				subq.\0	#1,dev_\1_\0
 				ENDM
 
+DEV_INCN		MACRO
+				addq.\0	#\2,dev_\1_\0
+				ENDM
+
+
 ; Macros for saving register state.
 DEV_SAVE		MACRO
 				movem.l	\1,-(sp)
@@ -86,6 +91,20 @@ DEV_CHECK_KEY	MACRO
 				DEV_TOGGLE	\2
 .dev_skip_\2:
 				ENDM
+
+DEV_CHECK_DIVISOR	MACRO
+					cmp.w	dev_Reserved4_w,\1
+					bgt.s	.divisor_test_max
+					move.w	\1,dev_Reserved4_w
+
+.divisor_test_max:
+				cmp.w	dev_Reserved5_w,\1
+				blt.s	.divisor_test_done
+				move.w	\1,dev_Reserved5_w
+
+.divisor_test_done:
+				ENDM
+
 ; For the release build, all the macros are empty and no code is generated.
 				ELSE
 
@@ -96,6 +115,9 @@ DEV_ELAPSED32	MACRO
 				ENDM
 
 DEV_INC			MACRO
+				ENDM
+
+DEV_INCN		MACRO
 				ENDM
 
 DEV_DEC			MACRO
@@ -122,4 +144,6 @@ DEV_TOGGLE		MACRO
 DEV_CHECK_KEY	MACRO
 				ENDM
 
+DEV_CHECK_DIVISOR MACRO
+				ENDM
 				ENDC

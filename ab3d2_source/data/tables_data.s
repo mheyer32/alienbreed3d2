@@ -3,6 +3,8 @@
 ; Statically initialised (non-zero) data
 			align 4
 
+MAX_ONE_OVER_N	EQU	511
+
 ; sine/cosine << 15
 SinCosTable_vw:		incbin	"bigsine"
 
