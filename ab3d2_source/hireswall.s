@@ -1198,7 +1198,7 @@ draw_WallSimpleShaded:
 
 				move.b	d0,d3
 				and.b	#15,d0
-				move.l	COMPACTPTR,a0
+				move.l	Lvl_CompactMapPtr_l,a0
 				moveq	#0,d1
 				move.w	d0,d2
 				add.w	d0,d0
@@ -1211,7 +1211,7 @@ draw_WallSimpleShaded:
 
 .no_door:
 				or.l	d1,(a0)
-				move.l	BIGPTR,a0
+				move.l	Lvl_BigMapPtr_l,a0
 
 				move.w	draw_WallLeftPoint_w,(a0,d2.w*4)
 				move.w	draw_WallRightPoint_w,2(a0,d2.w*4)

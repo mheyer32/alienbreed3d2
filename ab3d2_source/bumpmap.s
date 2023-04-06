@@ -1,6 +1,6 @@
 BumpMap:
 
-				tst.b	smoothbumps
+				tst.b	draw_SmoothBumpMaps_b
 				bne		SmoothMap
 
 				move.w	ConstCol,d0
