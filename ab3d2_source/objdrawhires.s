@@ -17,6 +17,11 @@ DRAW_VECTOR_MAX_Z		EQU		16383 ; Vector points further than this will be culled
 ; multiply by, before right shifting 14 places to obtain 1/N. However, to
 ; avoid overflow in the interim calculation, we have to pre-shift the input
 ; dividend partially before the calculation.
+;
+; TODO - Currently where the division approximation is used, we clamp to the table length.
+;        This seems to be fine for most cases, except extreme closeup, where the clamping can
+;        result in texture coordinate issues. Rather than clamping, we shoud consider fallback
+;        onto the original division behaviour.
 
 				IFD	USE_16X16_TEXEL_MULS
 
@@ -222,7 +227,13 @@ draw_bitmap_glare:
 				move.w	draw_BottomClip_w,d3
 				move.l	draw_TopY_3D_l,d6
 				sub.l	yoff,d6
+
+				; DEV_CHECK_DIVISOR d1
+				; 0xABADCAFE - Divisor is often bigger than our table
 				divs	d1,d6
+				;DEV_INC.w Reserved1
+				; 0xABADCAFE - Not worth it < 10 typically
+
 				add.w	Vid_CentreY_w,d6
 				cmp.w	d3,d6
 				bge		object_behind
@@ -236,7 +247,12 @@ draw_bitmap_glare:
 				move.w	d6,draw_ObjClipT_w
 				move.l	draw_BottomY_3D_l,d6
 				sub.l	yoff,d6
+
+				; DEV_CHECK_DIVISOR d1
+				; 0xABADCAFE - Checked: Couldn't trigger
 				divs	d1,d6
+				;DEV_INC.w Reserved1
+
 				add.w	Vid_CentreY_w,d6
 				cmp.w	d2,d6
 				ble		object_behind
@@ -261,10 +277,19 @@ draw_bitmap_glare:
 				ext.l	d2
 				asl.l	#7,d2
 				sub.l	yoff,d2
+
 				divs	d1,d2
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	Vid_CentreY_w,d2
+
 				divs	d1,d0
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	Vid_CentreX_w,d0				;x pos of middle
+
+				;DEV_INCN.w Reserved1,2
+
 
 ; Need to calculate:
 ; Width of object in pixels
@@ -289,8 +314,14 @@ draw_bitmap_glare:
 				move.b	(a0)+,d4
 				lsl.l	#7,d3
 				lsl.l	#7,d4
+
+				;DEV_CHECK_DIVISOR d1
+				; 0xABADCAFE Checked, often out of range
 				divs	d1,d3					;width in pixels
 				divs	d1,d4					;height in pixels
+				;DEV_INCN.w Reserved1,2
+				; 0xABADCAFE Checked, few calls
+
 				sub.w	d4,d2
 				sub.w	d3,d0
 				cmp.w	draw_RightClipB_w,d0
@@ -324,6 +355,8 @@ draw_bitmap_glare:
 				beq		object_behind
 
 				divu	d6,d7
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				swap	d7
 				clr.w	d7
 				swap	d7
@@ -336,7 +369,10 @@ draw_bitmap_glare:
 				moveq	#0,d6
 				move.b	-1(a0),d6
 				beq		object_behind
+
 				divu	d6,d7
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				swap	d7
 				clr.w	d7
 				swap	d7
@@ -556,7 +592,10 @@ draw_Bitmap:
 				move.w	draw_BottomClip_w,d3
 				move.l	draw_TopY_3D_l,d6
 				sub.l	yoff,d6
+
 				divs	d1,d6
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	Vid_CentreY_w,d6
 				cmp.w	d3,d6
 				bge		object_behind
@@ -569,7 +608,10 @@ draw_Bitmap:
 				move.w	d6,draw_ObjClipT_w				; top object clip
 				move.l	draw_BottomY_3D_l,d6
 				sub.l	yoff,d6
+
 				divs	d1,d6
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	Vid_CentreY_w,d6
 				cmp.w	d2,d6					; bottom of object over top of screen?
 				ble		object_behind
@@ -645,9 +687,15 @@ pastobjscale:
 				ext.l	d2
 				asl.l	#7,d2
 				sub.l	yoff,d2
+
 				divs	d1,d2
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	Vid_CentreY_w,d2
+
 				divs	d1,d0
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	Vid_CentreX_w,d0				;x pos of middle
 
 ; Need to calculate:
@@ -694,8 +742,11 @@ pastobjscale:
 				move.b	(a0)+,d4
 				lsl.l	#7,d3
 				lsl.l	#7,d4
+
 				divs	d1,d3					;width in pixels
 				divs	d1,d4					;height in pixels
+				;DEV_INCN.w Reserved2 ; counts how many divisions
+
 				sub.w	d4,d2
 				sub.w	d3,d0
 				cmp.w	draw_RightClipB_w,d0
@@ -741,6 +792,8 @@ pastobjscale:
 				beq		object_behind
 
 				divu	d6,d7
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				swap	d7
 				clr.w	d7
 				swap	d7
@@ -755,6 +808,8 @@ pastobjscale:
 				beq		object_behind
 
 				divu	d6,d7
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				swap	d7
 				clr.w	d7
 				swap	d7
@@ -1136,7 +1191,10 @@ foundang:
 
 				muls	#16,d1
 				subq	#1,d1
+
 				divs	d2,d1
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				move.w	d1,d2
 
 INMIDDLE:
@@ -1495,7 +1553,6 @@ draw_TweenBrights:
 				move.w	-2(sp),d4
 
 				;divs.l	d4,d3
-
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
 .skip_zero_dividend:
@@ -1897,13 +1954,18 @@ fullscreen_conv:
 				asr.l	#2,d4						; Issue #60: Avoid overflow by partially pre-shifting y''
 				muls.l	d6,d4						; before the multiplication step
 				asr.l	#8,d4						; y'' * 3.333
+
 				divs	d5,d4						; ys = (x*3)/(z*2)
+				;DEV_INC.w Reserved1 ; counts how many divisions
 
 				; approximate 3.333 => 3413/1024
 				asr.l	#2,d3						; Issue #60: Avoid overflow by partially pre-shifting x''
 				muls.l	d6,d3						; before the multiplication
 				asr.l	#8,d3						; x'' * 3.333
+
 				divs	d5,d3						; xs = (x*3)/(z*2)
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	Vid_CentreX_w,d3			; mid_x of screen
 				add.w	draw_PolygonCentreY_w,d4	; mid_y of screen
 				move.w	d3,(a3)+					; store xs,ys in draw_2DPointsProjected_vl
@@ -1943,8 +2005,11 @@ smallscreen_conv:
 				bgt		nomoreparts
 
 				move.w	d5,(a2)+
+
 				divs	d5,d3
 				divs	d5,d4
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+
 				add.w	Vid_CentreX_w,d3
 				add.w	draw_PolygonCentreY_w,d4
 				move.w	d3,(a3)+
@@ -3017,6 +3082,7 @@ draw_PutInLines:
 				ext.l	d4
 				swap	d5
 				clr.w	d5
+
 				divs.l	d4,d5
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
@@ -3029,9 +3095,11 @@ draw_PutInLines:
 				swap	d6
 				clr.w	d2
 				clr.w	d6						; d6=xbitpos
+
 				divs.l	d4,d2
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				move.l	d5,a5					; a5=dy constant
-				;DEV_INCN.w Reserved1,2 ; counts how many divisions
 
 				move.l	d2,a6					; a6=xbitconst
 				moveq	#0,d5
@@ -3043,6 +3111,7 @@ draw_PutInLines:
 				swap	d5
 				clr.w	d2						; d3=ybitpos
 				clr.w	d5
+
 				divs.l	d4,d5
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
@@ -3139,7 +3208,9 @@ this_line_on_top:
 				ext.l	d4
 				swap	d5
 				clr.w	d5
+
 				divs.l	d4,d5
+				;DEV_INC.w Reserved1 ; counts how many divisions
 
 				moveq	#0,d2
 				move.b	6(a1),d2
@@ -3150,6 +3221,7 @@ this_line_on_top:
 				swap	d6
 				clr.w	d2
 				clr.w	d6						; d6=xbitpos
+
 				divs.l	d4,d2
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
@@ -3164,6 +3236,7 @@ this_line_on_top:
 				swap	d5
 				clr.w	d2						; d3=ybitpos
 				clr.w	d5
+
 				divs.l	d4,d5
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
@@ -3278,8 +3351,8 @@ piglloop:
 				ext.l	d4
 				swap	d5
 				clr.w	d5
-				divs.l	d4,d5
 
+				divs.l	d4,d5
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
 				moveq	#0,d2
@@ -3291,7 +3364,10 @@ piglloop:
 				swap	d6
 				clr.w	d2
 				clr.w	d6						; d6=xbitpos
+
 				divs.l	d4,d2
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				move.l	d5,a5					; a5=dy constant
 
 				;DEV_INC.w Reserved1 ; counts how many divisions
@@ -3306,8 +3382,8 @@ piglloop:
 				swap	d5
 				clr.w	d2						; d3=ybitpos
 				clr.w	d5
-				divs.l	d4,d5
 
+				divs.l	d4,d5
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
 				move.w	(a2,d1.w*2),d1
@@ -3317,8 +3393,8 @@ piglloop:
 				swap	d1
 				clr.w	d0
 				clr.w	d1
-				divs.l	d4,d0
 
+				divs.l	d4,d0
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
 				add.w	(a7)+,d4
@@ -3415,8 +3491,8 @@ this_line_on_top_gouraud:
 				ext.l	d4
 				swap	d5
 				clr.w	d5
-				divs.l	d4,d5
 
+				divs.l	d4,d5
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
 				moveq	#0,d2
@@ -3428,8 +3504,8 @@ this_line_on_top_gouraud:
 				swap	d6
 				clr.w	d2
 				clr.w	d6						; d6=xbitpos
-				divs.l	d4,d2
 
+				divs.l	d4,d2
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
 				move.l	d5,a5					; a5=dy constant
@@ -3443,8 +3519,8 @@ this_line_on_top_gouraud:
 				swap	d5
 				clr.w	d2						; d3=ybitpos
 				clr.w	d5
-				divs.l	d4,d5
 
+				divs.l	d4,d5
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
 				move.w	(a2,d1.w*2),d1
@@ -3454,8 +3530,8 @@ this_line_on_top_gouraud:
 				swap	d1
 				clr.w	d0
 				clr.w	d1
-				divs.l	d4,d1
 
+				divs.l	d4,d1
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
 				add.w	(a7)+,d4
