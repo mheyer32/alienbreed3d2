@@ -41,22 +41,16 @@ Game_FinishedLevel_b:
 
 				align	4
 
-
-INTUITION_REV	equ		31	;					v1.1
-int_name		INTNAME
-				even
-
-
 Game_Start:
 				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
 
-				move.l	#doslibname,a1
+				lea.l	DosName,a1
 				moveq	#0,d0
 				CALLEXEC OpenLibrary
 				move.l	d0,_DOSBase
 
 				moveq	#INTUITION_REV,d0		version
-				lea		int_name(pc),a1
+				lea.l	IntuitionName,a1
 				CALLEXEC OpenLibrary
 				tst.l	d0
 ;	beq	exit_false		if failed then quit

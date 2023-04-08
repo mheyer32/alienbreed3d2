@@ -82,6 +82,11 @@ PLR_SINGLE				equ 'n' ; Single player
 				section code,code
 ; Startup Code
 _start:
+				; entry point
+				movem.l	d1-a6,-(sp)
+
+				jsr		Sys_Init
+
 				; since these moved to bss, they need explicit initialisation
 				; todo - module initialisation calls
 				not.b Plr1_Mouse_b
@@ -89,8 +94,7 @@ _start:
 				move.w #191,Plr1_Energy_w
 				move.w #191,Plr2_Energy_w
 				not.w Zone_OrderTable_Barrier_w
-				movem.l	d1-a6,-(sp)
-**************************************************************************************
+
 ;ich bin hack  -----  invert Vid_FullScreenTemp_b to start game in fullsreen if cpu is 68040 AL
 				;movem.l	d0-d1/a0,-(a7)
 				move.l	4.w,a0
@@ -101,8 +105,6 @@ _start:
 				not.b	Sys_Move16_b ; We can use move16
 				not.b	Vid_FullScreenTemp_b
 .not040:
-**************************************************************************************
-
 				lea.l	MiscResourceName,a1
 				CALLEXEC OpenResource			;Open "misc.resource"
 				tst.l	d0
@@ -207,6 +209,20 @@ _start:
 
 				jsr		Game_Start
 
+				jsr		Sys_Done
+
+				movem.l	(sp)+,d1-a6
+				rts
+
+				include		"modules/system.s"
+
+OpenGraphics:
+				lea.l		GraphicsName,a1
+
+				moveq.l	#0,d0
+				CALLEXEC OpenLibrary
+
+				move.l	d0,_GfxBase
 				rts
 
 ;*******************************************************************************
@@ -230,9 +246,6 @@ Game_SlavePaused_b:			dc.b	0
 ; These can't be put into the data section due to the relocation type
 				align 4
 AppName:					dc.b	'TheKillingGrounds',0
-doslibname:					DOSNAME
-MiscResourceName:			MISCNAME
-PotgoResourceName:			POTGONAME
 
 ; OS structures
 				align 4
@@ -2960,15 +2973,7 @@ BollocksRoom:
 				dc.w	-1
 				ds.l	50
 
-;GUNYOFFS:
-;				dc.w	20
-;				dc.w	20
-;				dc.w	0
-;				dc.w	20
-;				dc.w	20
-;				dc.w	0
-;				dc.w	0
-;				dc.w	20
+				ds.l	4 ; pad - overrun?
 
 Plr1_Use:
 				move.l	Plr1_ObjectPtr_l,a0
@@ -3243,13 +3248,8 @@ Plr1_Use:
 				move.b	ShotT_InUpperZone_b(a0),ShotT_InUpperZone_b+128(a0)
 				rts
 
-***************************************************
-**************************************************
 
 Plr2_Use:
-
-***********************************
-
 				move.l	Plr2_ObjectPtr_l,a0
 				move.b	#5,16(a0)
 				move.l	Lvl_ObjectPointsPtr_l,a1
@@ -10809,22 +10809,13 @@ closeeverything:
 				rts
 
 
-OpenGraphics:
-				lea		gfxname(pc),a1
 
-				moveq.l	#0,d0
-				CALLEXEC OpenLibrary
-
-				move.l	d0,_GfxBase
-				rts
-
-gfxname			GRAFNAME
 
 				align 4
 Panel:			dc.l	0
 
 				cnop	0,64
-TimerScr:		;		Not						needed(?), but still referenced but (inactive?) code
+TimerScr:		;		Not needed(?), but still referenced but (inactive?) code
 ;ds.b 40*64
 
 NumTimes:		dc.l	0
