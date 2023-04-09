@@ -44,17 +44,17 @@ Game_FinishedLevel_b:
 Game_Start:
 				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
 
-				lea.l	DosName,a1
-				moveq	#0,d0
-				CALLEXEC OpenLibrary
-				move.l	d0,_DOSBase
+				;lea.l	DosName,a1
+				;moveq	#0,d0
+				;CALLEXEC OpenLibrary
+				;move.l	d0,_DOSBase
 
-				moveq	#INTUITION_REV,d0		version
-				lea.l	IntuitionName,a1
-				CALLEXEC OpenLibrary
-				tst.l	d0
+				;moveq	#INTUITION_REV,d0		version
+				;lea.l	IntuitionName,a1
+				;CALLEXEC OpenLibrary
+				;tst.l	d0
 ;	beq	exit_false		if failed then quit
-				move.l	d0,_IntuitionBase		else save the pointer
+				;move.l	d0,_IntuitionBase		else save the pointer
 
 				; Open Graphics.library, store old coppper list etc.
 				jsr		OpenGraphics

@@ -86,58 +86,16 @@ _start:
 				movem.l	d1-a6,-(sp)
 
 				jsr		Sys_Init
+				tst.l	d0
+				beq		.startup_fail
 
 				; since these moved to bss, they need explicit initialisation
 				; todo - module initialisation calls
-				not.b Plr1_Mouse_b
-				not.b Plr2_Mouse_b
-				move.w #191,Plr1_Energy_w
-				move.w #191,Plr2_Energy_w
-				not.w Zone_OrderTable_Barrier_w
-
-;ich bin hack  -----  invert Vid_FullScreenTemp_b to start game in fullsreen if cpu is 68040 AL
-				;movem.l	d0-d1/a0,-(a7)
-				move.l	4.w,a0
-				move.b	$129(a0),d0
-				move.l	#68040,d1	;68040
-				btst	#$03,d0
-				beq.b	.not040
-				not.b	Sys_Move16_b ; We can use move16
-				not.b	Vid_FullScreenTemp_b
-.not040:
-				lea.l	MiscResourceName,a1
-				CALLEXEC OpenResource			;Open "misc.resource"
-				tst.l	d0
-                ;beq.s   fail
-				move.l	d0,MiscResourceBase
-				move.l	d0,a6
-
-				move.l	#MR_SERIALPORT,d0		;We want these bits
-				lea.l	AppName(pc),a1
-				jsr		_LVOAllocMiscResource(a6)
-				tst.l	d0
-                ;beq.s   fail
-				move.l	#MR_SERIALBITS,d0
-				lea.l	AppName(pc),a1
-				jsr		_LVOAllocMiscResource(a6)
-				tst.l	d0
-                ;beq.s   fail
-
-				; now we have the resource, may poke the hardware bits
-				move.w	#31,_custom+serper			;19200 baud, 8 bits, no parity
-
-				lea.l	PotgoResourceName,a1
-				CALLEXEC OpenResource			;Open "potgo.resource"
-				tst.l	d0
-				;beq.s   fail
-				move.l	d0,PotgoResourceBase
-				move.l	d0,a6
-
-				move.l	#%110000000000,d0		;We want these bits
-				jsr		_LVOAllocPotBits(a6)
-				tst.l	d0
-				;beq.s   fail
-
+				not.b	Plr1_Mouse_b
+				not.b	Plr2_Mouse_b
+				move.w	#191,Plr1_Energy_w
+				move.w	#191,Plr2_Energy_w
+				not.w	Zone_OrderTable_Barrier_w
 				st		GOURSEL
 
 				lea		VBLANKInt(pc),a1
@@ -209,6 +167,7 @@ _start:
 
 				jsr		Game_Start
 
+.startup_fail:
 				jsr		Sys_Done
 
 				movem.l	(sp)+,d1-a6
@@ -217,12 +176,12 @@ _start:
 				include		"modules/system.s"
 
 OpenGraphics:
-				lea.l		GraphicsName,a1
-
-				moveq.l	#0,d0
-				CALLEXEC OpenLibrary
-
-				move.l	d0,_GfxBase
+;				lea.l		GraphicsName,a1
+;
+;				moveq.l	#0,d0
+;				CALLEXEC OpenLibrary
+;
+;				move.l	d0,_GfxBase
 				rts
 
 ;*******************************************************************************
@@ -10782,7 +10741,7 @@ closeeverything:
 				jsr		Res_FreeLevelData
 				jsr		Res_ReleaseScreenMemory
 ;
-;				move.l	MiscResourceBase,d0
+;				move.l	_MiscResourceBase,d0
 ;				beq.s	.noMiscResourceBase
 ;				move.l	d0,a6
 ;				; FIXME: would need to check if we actually allocated them successfully
@@ -10791,7 +10750,7 @@ closeeverything:
 ;				move.l	#MR_SERIALBITS,d0
 ;				jsr		_LVOFreeMiscResource(a6)
 ;
-;				clr.l	MiscResourceBase		; Resource library doesn't have a 'close'?
+;				clr.l	_MiscResourceBase		; Resource library doesn't have a 'close'?
 ;
 ;.noMiscResourceBase
 ;

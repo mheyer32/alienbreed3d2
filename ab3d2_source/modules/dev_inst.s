@@ -14,7 +14,6 @@
 				section bss,bss
 				align 4
 dev_GraphBuffer_vb:			ds.b	DEV_GRAPH_BUFFER_SIZE*2 ; array of times
-dev_ECVToMsFactor_l:		ds.l	1   ; factor for converting EClock value differences to ms
 
 ; EClockVal stamps
 dev_ECVFrameBegin_q:		ds.l	2	; timestamp at the start of the frame
@@ -74,24 +73,24 @@ dev_CharBuffer_vb:	dcb.b	64
 
 ; Initialise the developer options
 Dev_Init:
-				lea		timername,a0
-				lea		timerrequest,a1
-				moveq	#0,d0
-				moveq	#0,d1
-				CALLEXEC OpenDevice
-
-				move.l	timerrequest+IO_DEVICE,_TimerBase
-				move.l	d0,timerflag
-
-				; Grab the EClockRate
-				lea		dev_ECVFrameBegin_q,a0
-				jsr		Dev_TimeStamp
-
-				; Convert eclock rate to scale factor that we will first multiply by, then divide by 65536
-				move.l	#65536000,d1
-				divu.l	d0,d1
-				move.l	d1,dev_ECVToMsFactor_l
-
+;				lea		TimerName,a0
+;				lea		sys_TimerRequest,a1
+;				moveq	#0,d0
+;				moveq	#0,d1
+;				CALLEXEC OpenDevice
+;
+;				move.l	sys_TimerRequest+IO_DEVICE,_TimerBase
+;				move.l	d0,sys_TimerFlag_l
+;
+;				; Grab the EClockRate
+;				lea		dev_ECVFrameBegin_q,a0
+;				jsr		Dev_TimeStamp
+;
+;				; Convert eclock rate to scale factor that we will first multiply by, then divide by 65536
+;				move.l	#65536000,d1
+;				divu.l	d0,d1
+;				move.l	d1,sys_ECVToMsFactor_l
+;
 				rts
 
 Dev_DataReset:
@@ -395,7 +394,7 @@ Dev_PrintStats:
 dev_ECVDiffToMs:
 				move.l	4(a1),d0
 				sub.l	4(a0),d0
-				mulu.l	dev_ECVToMsFactor_l,d0
+				mulu.l	sys_ECVToMsFactor_l,d0
 				clr.w	d0
 				swap	d0
 				rts
@@ -461,11 +460,5 @@ Dev_DrawGraph:
 				movem.l	(sp)+,d0/d1/d2/a0/a1/a2
 				rts
 
-timerrequest:				ds.b	IOTV_SIZE
-timername:					dc.b	"timer.device",0
-
-				align	4
-_TimerBase:		dc.l	0
-timerflag:		dc.l	-1
 
 				ENDC

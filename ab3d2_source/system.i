@@ -81,3 +81,13 @@ CALLDOS			MACRO
 				move.l	_DOSBase,a6
 				jsr		_LVO\1(a6)
 				ENDM
+
+CALLMISC		MACRO
+				move.l	_MiscResourceBase,a6
+				jsr		_LVO\1(a6)
+				ENDM
+
+CALLPOTGO		MACRO
+				move.l	_PotgoResourceBase,a6
+				jsr		_LVO\1(a6)
+				ENDM
