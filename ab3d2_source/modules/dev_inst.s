@@ -73,24 +73,6 @@ dev_CharBuffer_vb:	dcb.b	64
 
 ; Initialise the developer options
 Dev_Init:
-;				lea		TimerName,a0
-;				lea		sys_TimerRequest,a1
-;				moveq	#0,d0
-;				moveq	#0,d1
-;				CALLEXEC OpenDevice
-;
-;				move.l	sys_TimerRequest+IO_DEVICE,_TimerBase
-;				move.l	d0,sys_TimerFlag_l
-;
-;				; Grab the EClockRate
-;				lea		dev_ECVFrameBegin_q,a0
-;				jsr		Dev_TimeStamp
-;
-;				; Convert eclock rate to scale factor that we will first multiply by, then divide by 65536
-;				move.l	#65536000,d1
-;				divu.l	d0,d1
-;				move.l	d1,sys_ECVToMsFactor_l
-;
 				rts
 
 Dev_DataReset:

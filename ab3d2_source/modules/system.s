@@ -15,6 +15,8 @@
 ;*
 ;* Initialise system dependencies
 ;*
+;* return bool[d0]
+;*
 ;**************************************************************************************************
 Sys_Init:
 				bsr			sys_OpenLibs
@@ -60,6 +62,24 @@ Sys_Time:
 				move.l	_TimerBase,a6
 				jsr		_LVOReadEClock(a6)
 				move.l	(sp)+,a6
+				rts
+;**************************************************************************************************
+;*
+;* Subtract two full timestamps, First pointed to by a0, second by a1.
+;* Generally we don't care about the upper, but it's calculated in case we want it.
+;*
+;* return uint64[d1:d0]
+;*
+;**************************************************************************************************
+
+Sys_TimeDiff:
+				move.l	d2,-(sp)
+				move.l	(a1),d1
+				move.l	4(a1),d0
+				move.l	(a0),d2
+				sub.l	4(a0),d0
+				subx.l	d2,d1
+				move.l	(sp)+,d2
 				rts
 
 ;**************************************************************************************************
@@ -173,6 +193,8 @@ Sys_ReadMouse:
 ;*
 ;* Set up hardware and related options
 ;*
+;* return bool[d0]
+;*
 ;**************************************************************************************************
 sys_InitHardware:
 				; Processor
@@ -229,7 +251,7 @@ sys_InitHardware:
 ;*
 ;* Open Libraries and Devices
 ;*
-;* @return d0:bool
+;* return bool[d0]
 ;*
 ;**************************************************************************************************
 sys_OpenLibs:
@@ -293,7 +315,6 @@ sys_OpenLibs:
 ;* Close Libraries and Devices
 ;*
 ;**************************************************************************************************
-
 sys_CloseLibs:
 				; There's no CloseResource...
 
@@ -317,20 +338,11 @@ sys_CloseLibs:
 .skip_close_dos:
 				rts
 
-
-
-
-; Subtract two full timestamps, First pointed to by a0, second by a1. Full return in d1 (upper) : d0(lower)
-; Generally we don't care about the upper, but it's calculated in case we want it.
-;Time_Diff:
-;				move.l	d2,-(sp)
-;				move.l	(a1),d1
-;				move.l	4(a1),d0
-;				move.l	(a0),d2
-;				sub.l	4(a0),d0
-;				subx.l	d2,d1
-;				move.l	(sp)+,d2
-;				rts
+;**************************************************************************************************
+;*
+;* Structures
+;*
+;**************************************************************************************************
 
 ; These can't be put into the data section due to the relocation type
 				align 4
