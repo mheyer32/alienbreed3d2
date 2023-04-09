@@ -6439,7 +6439,15 @@ pastsides:
 				move.l	Vid_FastBufferPtr_l,a6
 				add.l	BIGMIDDLEY,a6			; pointer to middle line of screen
 				move.w	(a0)+,d6				; floor scale?
-				add.w	SMALLIT,d6
+***************************************************************
+				move.w	SMALLIT,d0
+				tst.b	Vid_FullScreen_b
+				beq	.smallscreen
+				add.w	#1,d0
+.smallscreen
+				add.w	d0,d6
+***************************************************************
+				;add.w	SMALLIT,d6
 				move.w	d6,scaleval
 				move.w	(a0)+,d6
 				move.w	d6,whichtile
