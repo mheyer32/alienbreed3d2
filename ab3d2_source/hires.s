@@ -98,17 +98,17 @@ _start:
 				not.w	Zone_OrderTable_Barrier_w
 				st		GOURSEL
 
-				lea		VBLANKInt(pc),a1
-				moveq	#INTB_VERTB,d0
-				CALLEXEC AddIntServer
+				;lea		VBLANKInt(pc),a1
+				;moveq	#INTB_VERTB,d0
+				;CALLEXEC AddIntServer
 
 				CALLDEV	Init
 
-				IFEQ	CD32VER
-				lea		KEYInt(pc),a1
-				moveq	#INTB_PORTS,d0
-				CALLEXEC AddIntServer
-				ENDC
+				;IFEQ	CD32VER
+				;lea		KEYInt(pc),a1
+				;moveq	#INTB_PORTS,d0
+				;CALLEXEC AddIntServer
+				;ENDC
 
 				; init default control method
 				IFNE	CD32VER
@@ -175,15 +175,6 @@ _start:
 
 				include		"modules/system.s"
 
-OpenGraphics:
-;				lea.l		GraphicsName,a1
-;
-;				moveq.l	#0,d0
-;				CALLEXEC OpenLibrary
-;
-;				move.l	d0,_GfxBase
-				rts
-
 ;*******************************************************************************
 ; Global data
 
@@ -202,26 +193,6 @@ Game_SlaveQuit_b:			dc.b	0
 Game_MasterPaused_b:		dc.b	0
 Game_SlavePaused_b:			dc.b	0
 
-; These can't be put into the data section due to the relocation type
-				align 4
-AppName:					dc.b	'TheKillingGrounds',0
-
-; OS structures
-				align 4
-VBLANKInt:
-				dc.l	0,0						;is_Node ln_Succ, ln_Pred
-				dc.b	NT_INTERRUPT,9			;is_Node ln_Type; ln_Pri
-				dc.l	AppName					;is_Node ln_Name
-				dc.l	0						;is_Data
-				dc.l	VBlankInterrupt			;is_Code
-
-				align 4
-KEYInt:
-				dc.l	0,0						;is_Node ln_Succ, ln_Pred
-				dc.b	NT_INTERRUPT,127		;is_Node ln_Type; ln_Pri
-				dc.l	AppName					;is_Node ln_Name
-				dc.l	0						;is_Data
-				dc.l	key_interrupt			;is_Code
 
 ;*******************************************************************************
 
@@ -653,7 +624,7 @@ scaledownlop:
 				move.l	#PLR_STAND_HEIGHT,Plr2_SnapTargHeight_l
 				move.l	#PLR_STAND_HEIGHT,Plr2_SnapHeight_l
 
-				jsr		CLEARKEYBOARD
+				jsr		Sys_ClearKeyboard
 
 				clr.b	Game_MasterQuit_b
 
@@ -2912,17 +2883,6 @@ ENDZONE:		dc.w	0
 ***************************************************************************
 ***************************************************************************
 
-CLEARKEYBOARD:
-				move.l	#KeyMap_vb,a5
-				moveq	#0,d0
-				move.w	#15,d1
-clrloo:
-				move.l	d0,(a5)+
-				move.l	d0,(a5)+
-				move.l	d0,(a5)+
-				move.l	d0,(a5)+
-				dbra	d1,clrloo
-				rts
 
 READCONTROLS:	dc.w	0
 
@@ -4445,83 +4405,6 @@ GOURSEL:		dc.w	0
 
 				include	"orderzones.s"
 
-Sys_ReadMouse:
-				move.l	#$dff000,a6
-				clr.l	d0
-				clr.l	d1
-				move.w	$a(a6),d0
-				lsr.w	#8,d0
-				ext.l	d0
-				move.w	d0,d3
-				move.w	oldmy,d2
-				sub.w	d2,d0
-
-				cmp.w	#127,d0
-				blt		nonegy
-				move.w	#255,d1
-				sub.w	d0,d1
-				move.w	d1,d0
-				neg.w	d0
-nonegy:
-
-				cmp.w	#-127,d0
-				bge		nonegy2
-				move.w	#255,d1
-				add.w	d0,d1
-				move.w	d1,d0
-nonegy2:
-
-				add.b	d0,d2
-				add.w	d0,oldy2
-				move.w	d2,oldmy
-				move.w	d2,d0
-
-				move.w	oldy2,d0
-				move.w	d0,ymouse
-
-				clr.l	d0
-				clr.l	d1
-				move.w	$a(a6),d0
-				ext.w	d0
-				ext.l	d0
-				move.w	d0,d3
-				move.w	oldmx,d2
-				sub.w	d2,d0
-
-				cmp.w	#127,d0
-				blt		nonegx
-				move.w	#255,d1
-				sub.w	d0,d1
-				move.w	d1,d0
-				neg.w	d0
-nonegx:
-
-				cmp.w	#-127,d0
-				bge		nonegx2
-				move.w	#255,d1
-				add.w	d0,d1
-				move.w	d1,d0
-nonegx2:
-
-				add.b	d0,d2
-				move.w	d0,d1
-				move.w	d2,oldmx
-
-				;FIXME: should use _LVOWritePotgo here
-				move.w	#$0,_custom+potgo
-
-				add.w	d0,oldx2
-				move.w	oldx2,d0
-				and.w	#2047,d0
-				move.w	d0,oldx2
-
-				asl.w	#2,d0
-				sub.w	prevx,d0
-				add.w	d0,prevx
-				add.w	d0,angpos
-				move.w	#0,lrs
-				rts
-
 noturn:
 
 ; got to move lr instead.
@@ -4533,17 +4416,12 @@ noturn:
 				rts
 
 lrs:			dc.w	0
-prevx:			dc.w	0
 
-angpos:			dc.w	0
+angpos:			dc.w	0 ; Yaw
 mang:			dc.w	0
-oldymouse:		dc.w	0
+Sys_OldMouseY:	dc.w	0
 xmouse:			dc.w	0
-ymouse:			dc.w	0
-oldx2:			dc.w	0
-oldmx:			dc.w	0
-oldmy:			dc.w	0
-oldy2:			dc.w	0
+Sys_MouseY:		dc.w	0 ; Pitch?
 
 MAPON:			dc.w	$0
 REALMAPON:		dc.w	0
