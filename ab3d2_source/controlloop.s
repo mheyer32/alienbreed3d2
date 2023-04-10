@@ -41,30 +41,8 @@ Game_FinishedLevel_b:
 
 				align	4
 
-
-INTUITION_REV	equ		31	;					v1.1
-int_name		INTNAME
-				even
-
-
 Game_Start:
 				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
-
-				move.l	#doslibname,a1
-				moveq	#0,d0
-				CALLEXEC OpenLibrary
-				move.l	d0,_DOSBase
-
-				moveq	#INTUITION_REV,d0		version
-				lea		int_name(pc),a1
-				CALLEXEC OpenLibrary
-				tst.l	d0
-;	beq	exit_false		if failed then quit
-				move.l	d0,_IntuitionBase		else save the pointer
-
-				; Open Graphics.library, store old coppper list etc.
-				jsr		OpenGraphics
-
 				jsr		Vid_OpenMainScreen
 
 				move.l	#GLF_DatabaseName_vb,a0
@@ -77,21 +55,15 @@ Game_Start:
 
 				jsr		_InitLowLevel
 
-******************************
-
 				;jsr		mnu_start	; For some reason this doesn't work
 										; Shows the wrong menu
 
 				jsr		mnu_copycredz
+
 				jsr		mnu_setscreen
 				move.l	a7,mnu_mainstack	; not sure if this is the right thing or even in use...
 
-******************************
-
-
-**********************************************
 				jsr		IO_InitQueue
-**********************************************
 
 				;move.w	#0,FADEVAL
 				;move.w	#31,FADEAMOUNT
@@ -130,9 +102,7 @@ Game_Start:
 				bsr		DEFAULTGAME
 
 BACKTOMENU:
-
-				jsr		CLEARKEYBOARD
-
+				jsr		Sys_ClearKeyboard
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	BACKTOSLAVE

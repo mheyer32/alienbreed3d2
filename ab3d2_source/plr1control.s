@@ -35,9 +35,9 @@ Plr1_MouseControl:
 				asr.l	#1,d7
 
 .bug2:
-				move.w	ymouse,d3
-				sub.w	oldymouse,d3
-				add.w	d3,oldymouse
+				move.w	Sys_MouseY,d3
+				sub.w	Sys_OldMouseY,d3
+				add.w	d3,Sys_OldMouseY
 
 				move.w	STOPOFFSET,d0
 				move.w	d3,d2

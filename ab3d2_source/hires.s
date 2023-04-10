@@ -82,73 +82,33 @@ PLR_SINGLE				equ 'n' ; Single player
 				section code,code
 ; Startup Code
 _start:
+				; entry point
+				movem.l	d1-a6,-(sp)
+
+				jsr		Sys_Init
+				tst.l	d0
+				beq		.startup_fail
+
 				; since these moved to bss, they need explicit initialisation
 				; todo - module initialisation calls
-				not.b Plr1_Mouse_b
-				not.b Plr2_Mouse_b
-				move.w #191,Plr1_Energy_w
-				move.w #191,Plr2_Energy_w
-				not.w Zone_OrderTable_Barrier_w
-				movem.l	d1-a6,-(sp)
-**************************************************************************************
-;ich bin hack  -----  invert Vid_FullScreenTemp_b to start game in fullsreen if cpu is 68040 AL
-				;movem.l	d0-d1/a0,-(a7)
-				move.l	4.w,a0
-				move.b	$129(a0),d0
-				move.l	#68040,d1	;68040
-				btst	#$03,d0
-				beq.b	.not040
-				not.b	Sys_Move16_b ; We can use move16
-				not.b	Vid_FullScreenTemp_b
-.not040:
-**************************************************************************************
-
-				lea.l	MiscResourceName,a1
-				CALLEXEC OpenResource			;Open "misc.resource"
-				tst.l	d0
-                ;beq.s   fail
-				move.l	d0,MiscResourceBase
-				move.l	d0,a6
-
-				move.l	#MR_SERIALPORT,d0		;We want these bits
-				lea.l	AppName(pc),a1
-				jsr		_LVOAllocMiscResource(a6)
-				tst.l	d0
-                ;beq.s   fail
-				move.l	#MR_SERIALBITS,d0
-				lea.l	AppName(pc),a1
-				jsr		_LVOAllocMiscResource(a6)
-				tst.l	d0
-                ;beq.s   fail
-
-				; now we have the resource, may poke the hardware bits
-				move.w	#31,_custom+serper			;19200 baud, 8 bits, no parity
-
-				lea.l	PotgoResourceName,a1
-				CALLEXEC OpenResource			;Open "potgo.resource"
-				tst.l	d0
-				;beq.s   fail
-				move.l	d0,PotgoResourceBase
-				move.l	d0,a6
-
-				move.l	#%110000000000,d0		;We want these bits
-				jsr		_LVOAllocPotBits(a6)
-				tst.l	d0
-				;beq.s   fail
-
+				not.b	Plr1_Mouse_b
+				not.b	Plr2_Mouse_b
+				move.w	#191,Plr1_Energy_w
+				move.w	#191,Plr2_Energy_w
+				not.w	Zone_OrderTable_Barrier_w
 				st		GOURSEL
 
-				lea		VBLANKInt(pc),a1
-				moveq	#INTB_VERTB,d0
-				CALLEXEC AddIntServer
+				;lea		VBLANKInt(pc),a1
+				;moveq	#INTB_VERTB,d0
+				;CALLEXEC AddIntServer
 
 				CALLDEV	Init
 
-				IFEQ	CD32VER
-				lea		KEYInt(pc),a1
-				moveq	#INTB_PORTS,d0
-				CALLEXEC AddIntServer
-				ENDC
+				;IFEQ	CD32VER
+				;lea		KEYInt(pc),a1
+				;moveq	#INTB_PORTS,d0
+				;CALLEXEC AddIntServer
+				;ENDC
 
 				; init default control method
 				IFNE	CD32VER
@@ -207,7 +167,13 @@ _start:
 
 				jsr		Game_Start
 
+.startup_fail:
+				jsr		Sys_Done
+
+				movem.l	(sp)+,d1-a6
 				rts
+
+				include		"modules/system.s"
 
 ;*******************************************************************************
 ; Global data
@@ -227,29 +193,6 @@ Game_SlaveQuit_b:			dc.b	0
 Game_MasterPaused_b:		dc.b	0
 Game_SlavePaused_b:			dc.b	0
 
-; These can't be put into the data section due to the relocation type
-				align 4
-AppName:					dc.b	'TheKillingGrounds',0
-doslibname:					DOSNAME
-MiscResourceName:			MISCNAME
-PotgoResourceName:			POTGONAME
-
-; OS structures
-				align 4
-VBLANKInt:
-				dc.l	0,0						;is_Node ln_Succ, ln_Pred
-				dc.b	NT_INTERRUPT,9			;is_Node ln_Type; ln_Pri
-				dc.l	AppName					;is_Node ln_Name
-				dc.l	0						;is_Data
-				dc.l	VBlankInterrupt			;is_Code
-
-				align 4
-KEYInt:
-				dc.l	0,0						;is_Node ln_Succ, ln_Pred
-				dc.b	NT_INTERRUPT,127		;is_Node ln_Type; ln_Pri
-				dc.l	AppName					;is_Node ln_Name
-				dc.l	0						;is_Data
-				dc.l	key_interrupt			;is_Code
 
 ;*******************************************************************************
 
@@ -573,7 +516,7 @@ noclips:
 				; FIXME: reimplement level blurb
 ; move.l #Blurbfield,$dff080
 
-	IFNE	DISPLAYMSGPORT_HACK
+				IFNE	DISPLAYMSGPORT_HACK
 				;empty Vid_DisplayMsgPort_l and set Vid_ScreenBufferIndex_w to 0
 				;so the starting point is the same every time
 .clrMsgPort:
@@ -581,7 +524,7 @@ noclips:
 				CALLEXEC GetMsg
 				tst.l	d0
 				bne.s	.clrMsgPort
-	ENDC
+				ENDC
 
 				clr.w	Vid_ScreenBufferIndex_w
 
@@ -681,7 +624,7 @@ scaledownlop:
 				move.l	#PLR_STAND_HEIGHT,Plr2_SnapTargHeight_l
 				move.l	#PLR_STAND_HEIGHT,Plr2_SnapHeight_l
 
-				jsr		CLEARKEYBOARD
+				jsr		Sys_ClearKeyboard
 
 				clr.b	Game_MasterQuit_b
 
@@ -769,7 +712,6 @@ noid:
 				bra		innerwalls
 
 doneinner:
-
 				add.w	#40,a1
 				addq	#4,a0
 
@@ -822,6 +764,11 @@ clrmessbuff:
 				move.l	#game_NullMessage_vb,d0
 				jsr		Game_PushMessage
 
+				; Initialise FPS
+				clr.l	Sys_FrameNumber_l
+				lea		Sys_PrevFrameTimeECV_q,a0
+				bsr 	Sys_MarkTime
+
 				clr.b	Plr2_Fire_b
 				clr.b	Plr2_TmpFire_b
 				clr.b	PLR2_SPCTAP
@@ -830,23 +777,24 @@ clrmessbuff:
 				clr.b	plr1_Dead_b
 				clr.b	plr2_Dead_b
 
+
 				move.l	Plr1_ObjectPtr_l,a0
 				move.l	Plr2_ObjectPtr_l,a1
-				move.w	#0,EntT_ImpactX_w(a0)
-				move.w	#0,EntT_ImpactY_w(a0)
-				move.w	#0,EntT_ImpactZ_w(a0)
-				move.w	#0,EntT_ImpactX_w(a1)
-				move.w	#0,EntT_ImpactY_w(a1)
-				move.w	#0,EntT_ImpactZ_w(a1)
+				clr.w	EntT_ImpactX_w(a0)
+				clr.w	EntT_ImpactY_w(a0)
+				clr.w	EntT_ImpactZ_w(a0)
+				clr.w	EntT_ImpactX_w(a1)
+				clr.w	EntT_ImpactY_w(a1)
+				clr.w	EntT_ImpactZ_w(a1)
 
-				move.l	#0,Plr1_SnapXSpdVal_l
-				move.l	#0,Plr1_SnapZSpdVal_l
-				move.l	#0,Plr1_SnapYVel_l
-				move.l	#0,Plr2_SnapXSpdVal_l
-				move.l	#0,Plr2_SnapZSpdVal_l
-				move.l	#0,Plr2_SnapYVel_l
+				clr.l	Plr1_SnapXSpdVal_l
+				clr.l	Plr1_SnapZSpdVal_l
+				clr.l	Plr1_SnapYVel_l
+				clr.l	Plr2_SnapXSpdVal_l
+				clr.l	Plr2_SnapZSpdVal_l
+				clr.l	Plr2_SnapYVel_l
 
-lop:
+game_main_loop:
 				move.w	#%110000000000,_custom+potgo
 
 				cmp.b	#PLR_MASTER,Plr_MultiplayerType_b
@@ -980,8 +928,8 @@ lop:
 ;				beq.s	nofadedownhc
 ;				sub.l	#2116,d0
 ;				move.l	d0,hitcol
-nofadedownhc:
 
+nofadedownhc:
 				;bsr		LoadMainPalette		; should only reload the palatte when hit
 
 				st		READCONTROLS
@@ -1039,6 +987,7 @@ nofadedownhc:
 				bhi.s	.skipWaitTOF
 				CALLGRAF	WaitTOF
 				bra.s	.waitvbl
+
 .skipWaitTOF:
 				move.l	d3,Vid_VBLCountLast_l
 
@@ -1106,11 +1055,13 @@ waitmaster:
 				clr.b	Vid_WaitForDisplayMsg_b		; last attempt failed, so don't wait for next message
 
 .screenSwapDone:
-				DEV_SAVE	d0/d1/a0/a1
-				CALLDEV		MarkFrameEnd
-				CALLDEV		PrintStats
-				CALLDEV		MarkFrameBegin
-				DEV_RESTORE	d0/d1/a0/a1
+				jsr		Sys_FrameLap
+				CALLDEV	PrintStats
+				CALLDEV	MarkFrameBegin
+
+				IFND	DEV
+				jsr		Sys_ShowFPS
+				ENDC
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
@@ -1875,6 +1826,8 @@ nodrawp2:
 				clr.b	plr2_Teleported_b
 
 .notplr2:
+				jsr		Sys_EvalFPS
+
 				DEV_SAVE	d0/d1/a0/a1
 				CALLDEV		MarkDrawDone
 				CALLDEV		DrawGraph
@@ -2110,7 +2063,7 @@ nnoend2:
 ;				beq	.donothing
 ;				jsr dosomething
 ;.donothing:
-				bra		lop
+				bra		game_main_loop
 
 ; Check renderbuffer setup variables and wipe screen
 SetupRenderbufferSize:
@@ -2940,17 +2893,6 @@ ENDZONE:		dc.w	0
 ***************************************************************************
 ***************************************************************************
 
-CLEARKEYBOARD:
-				move.l	#KeyMap_vb,a5
-				moveq	#0,d0
-				move.w	#15,d1
-clrloo:
-				move.l	d0,(a5)+
-				move.l	d0,(a5)+
-				move.l	d0,(a5)+
-				move.l	d0,(a5)+
-				dbra	d1,clrloo
-				rts
 
 READCONTROLS:	dc.w	0
 
@@ -2960,15 +2902,7 @@ BollocksRoom:
 				dc.w	-1
 				ds.l	50
 
-;GUNYOFFS:
-;				dc.w	20
-;				dc.w	20
-;				dc.w	0
-;				dc.w	20
-;				dc.w	20
-;				dc.w	0
-;				dc.w	0
-;				dc.w	20
+				ds.l	4 ; pad - overrun?
 
 Plr1_Use:
 				move.l	Plr1_ObjectPtr_l,a0
@@ -3243,13 +3177,8 @@ Plr1_Use:
 				move.b	ShotT_InUpperZone_b(a0),ShotT_InUpperZone_b+128(a0)
 				rts
 
-***************************************************
-**************************************************
 
 Plr2_Use:
-
-***********************************
-
 				move.l	Plr2_ObjectPtr_l,a0
 				move.b	#5,16(a0)
 				move.l	Lvl_ObjectPointsPtr_l,a1
@@ -4486,83 +4415,6 @@ GOURSEL:		dc.w	0
 
 				include	"orderzones.s"
 
-Sys_ReadMouse:
-				move.l	#$dff000,a6
-				clr.l	d0
-				clr.l	d1
-				move.w	$a(a6),d0
-				lsr.w	#8,d0
-				ext.l	d0
-				move.w	d0,d3
-				move.w	oldmy,d2
-				sub.w	d2,d0
-
-				cmp.w	#127,d0
-				blt		nonegy
-				move.w	#255,d1
-				sub.w	d0,d1
-				move.w	d1,d0
-				neg.w	d0
-nonegy:
-
-				cmp.w	#-127,d0
-				bge		nonegy2
-				move.w	#255,d1
-				add.w	d0,d1
-				move.w	d1,d0
-nonegy2:
-
-				add.b	d0,d2
-				add.w	d0,oldy2
-				move.w	d2,oldmy
-				move.w	d2,d0
-
-				move.w	oldy2,d0
-				move.w	d0,ymouse
-
-				clr.l	d0
-				clr.l	d1
-				move.w	$a(a6),d0
-				ext.w	d0
-				ext.l	d0
-				move.w	d0,d3
-				move.w	oldmx,d2
-				sub.w	d2,d0
-
-				cmp.w	#127,d0
-				blt		nonegx
-				move.w	#255,d1
-				sub.w	d0,d1
-				move.w	d1,d0
-				neg.w	d0
-nonegx:
-
-				cmp.w	#-127,d0
-				bge		nonegx2
-				move.w	#255,d1
-				add.w	d0,d1
-				move.w	d1,d0
-nonegx2:
-
-				add.b	d0,d2
-				move.w	d0,d1
-				move.w	d2,oldmx
-
-				;FIXME: should use _LVOWritePotgo here
-				move.w	#$0,_custom+potgo
-
-				add.w	d0,oldx2
-				move.w	oldx2,d0
-				and.w	#2047,d0
-				move.w	d0,oldx2
-
-				asl.w	#2,d0
-				sub.w	prevx,d0
-				add.w	d0,prevx
-				add.w	d0,angpos
-				move.w	#0,lrs
-				rts
-
 noturn:
 
 ; got to move lr instead.
@@ -4574,17 +4426,12 @@ noturn:
 				rts
 
 lrs:			dc.w	0
-prevx:			dc.w	0
 
-angpos:			dc.w	0
+angpos:			dc.w	0 ; Yaw
 mang:			dc.w	0
-oldymouse:		dc.w	0
+Sys_OldMouseY:	dc.w	0
 xmouse:			dc.w	0
-ymouse:			dc.w	0
-oldx2:			dc.w	0
-oldmx:			dc.w	0
-oldmy:			dc.w	0
-oldy2:			dc.w	0
+Sys_MouseY:		dc.w	0 ; Pitch?
 
 MAPON:			dc.w	$0
 REALMAPON:		dc.w	0
@@ -10780,7 +10627,7 @@ closeeverything:
 				jsr		Res_FreeLevelData
 				jsr		Res_ReleaseScreenMemory
 ;
-;				move.l	MiscResourceBase,d0
+;				move.l	_MiscResourceBase,d0
 ;				beq.s	.noMiscResourceBase
 ;				move.l	d0,a6
 ;				; FIXME: would need to check if we actually allocated them successfully
@@ -10789,7 +10636,7 @@ closeeverything:
 ;				move.l	#MR_SERIALBITS,d0
 ;				jsr		_LVOFreeMiscResource(a6)
 ;
-;				clr.l	MiscResourceBase		; Resource library doesn't have a 'close'?
+;				clr.l	_MiscResourceBase		; Resource library doesn't have a 'close'?
 ;
 ;.noMiscResourceBase
 ;
@@ -10807,22 +10654,13 @@ closeeverything:
 				rts
 
 
-OpenGraphics:
-				lea		gfxname(pc),a1
 
-				moveq.l	#0,d0
-				CALLEXEC OpenLibrary
-
-				move.l	d0,_GfxBase
-				rts
-
-gfxname			GRAFNAME
 
 				align 4
 Panel:			dc.l	0
 
 				cnop	0,64
-TimerScr:		;		Not						needed(?), but still referenced but (inactive?) code
+TimerScr:		;		Not needed(?), but still referenced but (inactive?) code
 ;ds.b 40*64
 
 NumTimes:		dc.l	0
