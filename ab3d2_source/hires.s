@@ -516,7 +516,7 @@ noclips:
 				; FIXME: reimplement level blurb
 ; move.l #Blurbfield,$dff080
 
-	IFNE	DISPLAYMSGPORT_HACK
+				IFNE	DISPLAYMSGPORT_HACK
 				;empty Vid_DisplayMsgPort_l and set Vid_ScreenBufferIndex_w to 0
 				;so the starting point is the same every time
 .clrMsgPort:
@@ -524,7 +524,7 @@ noclips:
 				CALLEXEC GetMsg
 				tst.l	d0
 				bne.s	.clrMsgPort
-	ENDC
+				ENDC
 
 				clr.w	Vid_ScreenBufferIndex_w
 
@@ -712,7 +712,6 @@ noid:
 				bra		innerwalls
 
 doneinner:
-
 				add.w	#40,a1
 				addq	#4,a0
 
@@ -765,6 +764,11 @@ clrmessbuff:
 				move.l	#game_NullMessage_vb,d0
 				jsr		Game_PushMessage
 
+				; Initialise FPS
+				clr.l	Sys_FrameNumber_l
+				lea		Sys_PrevFrameTimeECV_q,a0
+				bsr 	Sys_MarkTime
+
 				clr.b	Plr2_Fire_b
 				clr.b	Plr2_TmpFire_b
 				clr.b	PLR2_SPCTAP
@@ -773,23 +777,24 @@ clrmessbuff:
 				clr.b	plr1_Dead_b
 				clr.b	plr2_Dead_b
 
+
 				move.l	Plr1_ObjectPtr_l,a0
 				move.l	Plr2_ObjectPtr_l,a1
-				move.w	#0,EntT_ImpactX_w(a0)
-				move.w	#0,EntT_ImpactY_w(a0)
-				move.w	#0,EntT_ImpactZ_w(a0)
-				move.w	#0,EntT_ImpactX_w(a1)
-				move.w	#0,EntT_ImpactY_w(a1)
-				move.w	#0,EntT_ImpactZ_w(a1)
+				clr.w	EntT_ImpactX_w(a0)
+				clr.w	EntT_ImpactY_w(a0)
+				clr.w	EntT_ImpactZ_w(a0)
+				clr.w	EntT_ImpactX_w(a1)
+				clr.w	EntT_ImpactY_w(a1)
+				clr.w	EntT_ImpactZ_w(a1)
 
-				move.l	#0,Plr1_SnapXSpdVal_l
-				move.l	#0,Plr1_SnapZSpdVal_l
-				move.l	#0,Plr1_SnapYVel_l
-				move.l	#0,Plr2_SnapXSpdVal_l
-				move.l	#0,Plr2_SnapZSpdVal_l
-				move.l	#0,Plr2_SnapYVel_l
+				clr.l	Plr1_SnapXSpdVal_l
+				clr.l	Plr1_SnapZSpdVal_l
+				clr.l	Plr1_SnapYVel_l
+				clr.l	Plr2_SnapXSpdVal_l
+				clr.l	Plr2_SnapZSpdVal_l
+				clr.l	Plr2_SnapYVel_l
 
-lop:
+game_main_loop:
 				move.w	#%110000000000,_custom+potgo
 
 				cmp.b	#PLR_MASTER,Plr_MultiplayerType_b
@@ -923,8 +928,8 @@ lop:
 ;				beq.s	nofadedownhc
 ;				sub.l	#2116,d0
 ;				move.l	d0,hitcol
-nofadedownhc:
 
+nofadedownhc:
 				;bsr		LoadMainPalette		; should only reload the palatte when hit
 
 				st		READCONTROLS
@@ -982,6 +987,7 @@ nofadedownhc:
 				bhi.s	.skipWaitTOF
 				CALLGRAF	WaitTOF
 				bra.s	.waitvbl
+
 .skipWaitTOF:
 				move.l	d3,Vid_VBLCountLast_l
 
@@ -1049,11 +1055,13 @@ waitmaster:
 				clr.b	Vid_WaitForDisplayMsg_b		; last attempt failed, so don't wait for next message
 
 .screenSwapDone:
-				DEV_SAVE	d0/d1/a0/a1
-				CALLDEV		MarkFrameEnd
-				CALLDEV		PrintStats
-				CALLDEV		MarkFrameBegin
-				DEV_RESTORE	d0/d1/a0/a1
+				jsr		Sys_FrameLap
+				CALLDEV	PrintStats
+				CALLDEV	MarkFrameBegin
+
+				IFND	DEV
+				jsr		Sys_ShowFPS
+				ENDC
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
@@ -1818,6 +1826,8 @@ nodrawp2:
 				clr.b	plr2_Teleported_b
 
 .notplr2:
+				jsr		Sys_EvalFPS
+
 				DEV_SAVE	d0/d1/a0/a1
 				CALLDEV		MarkDrawDone
 				CALLDEV		DrawGraph
@@ -2053,7 +2063,7 @@ nnoend2:
 ;				beq	.donothing
 ;				jsr dosomething
 ;.donothing:
-				bra		lop
+				bra		game_main_loop
 
 ; Check renderbuffer setup variables and wipe screen
 SetupRenderbufferSize:
