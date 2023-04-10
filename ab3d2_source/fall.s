@@ -53,7 +53,7 @@ Plr1_Fall:
 .skip_footstep_fx:
 				move.l	#-1024,plr_JumpSpeed_l
 
-				move.l	Plr1_RoomPtr_l,a2
+				move.l	Plr1_ZonePtr_l,a2
 				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	.not_in_water
@@ -141,7 +141,7 @@ Plr1_Fall:
 				add.l	#64,d2
 				add.w	#1,plr_FallDamage_w
 
-				move.l	Plr1_RoomPtr_l,a2
+				move.l	Plr1_ZonePtr_l,a2
 				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	.proceed
@@ -168,7 +168,7 @@ Plr1_Fall:
 				move.l	#512,d2					; reached terminal velocity.
 
 .proceed:
-				move.l	Plr1_RoomPtr_l,a2
+				move.l	Plr1_ZonePtr_l,a2
 				move.l	ZoneT_Roof_l(a2),d3
 				tst.b	Plr1_StoodInTop_b
 				beq.s	.ok_bottom
@@ -212,7 +212,7 @@ Plr1_Fall:
 ;				add.l	d2,d1
 ;				add.l	#64,d2
 ;				move.l	#-1024,plr_JumpSpeed_l
-;				move.l	Plr1_RoomPtr_l,a2
+;				move.l	Plr1_ZonePtr_l,a2
 ;				move.l	ZoneT_Water_l(a2),d0
 ;				cmp.l	d0,d1
 ;				blt.s	.pastitall
@@ -235,7 +235,7 @@ Plr1_Fall:
 ;				move.l	plr_JumpSpeed_l,Plr1_SnapYVel_l
 ;
 ;.no_thrust_2:
-;				move.l	Plr1_RoomPtr_l,a5
+;				move.l	Plr1_ZonePtr_l,a5
 ;				move.l	ZoneT_Roof_l(a5),d0
 ;				tst.b	Plr1_StoodInTop_b
 ;				beq.s	.use_bottom
@@ -310,7 +310,7 @@ Plr2_Fall:
 
 .skip_footstep_fx:
 				move.l	#-1024,plr_JumpSpeed_l
-				move.l	Plr2_RoomPtr_l,a2
+				move.l	Plr2_ZonePtr_l,a2
 				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	.not_in_water
@@ -390,7 +390,7 @@ Plr2_Fall:
 .still_above:
 				add.l	#64,d2
 				add.w	#1,plr_FallDamage_w
-				move.l	Plr2_RoomPtr_l,a2
+				move.l	Plr2_ZonePtr_l,a2
 				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	.proceed
@@ -418,7 +418,7 @@ Plr2_Fall:
 				move.l	#512,d2
 
 .proceed:
-				move.l	Plr2_RoomPtr_l,a2
+				move.l	Plr2_ZonePtr_l,a2
 				move.l	ZoneT_Roof_l(a2),d3
 				tst.b	Plr2_StoodInTop_b
 				beq.s	.ok_bottom

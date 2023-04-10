@@ -1,7 +1,26 @@
 				align 4
-tmplistgraph:	dc.l	0
+tmplistgraph:
+				dc.l	0
 
+;Zone_ListOrdered_b:
+;				dc.w	0
+
+zone_LastPosition_vw: ; basically a short coordinate pair
+				dc.l	-1
 OrderZones:
+				; TODO this needs to be triggered when the player changes zone.
+				; I've tried this by using the ZonePtr but it works only partially.
+				move.w	xoff,d0
+				swap	d0
+				move.w	zoff,d0		  ; d0 is the short coordinate location of the player
+				and.l	#$FFF0FFF0,d0 ; reduce the change sensitivity a bit by discarding the low x/z bits
+				cmp.l	zone_LastPosition_vw,d0
+				bne		.continue
+				rts
+
+.continue:
+				move.l	d0,zone_LastPosition_vw
+
 				move.l	Lvl_ListOfGraphRoomsPtr_l,a0
 ; a0=list of rooms to draw.
 
@@ -27,7 +46,7 @@ settodraw:
 				adda.w	#8,a1
 				bra.s	settodraw
 
-dummy:			dc.w	0
+dummy:			dc.w	0 ; ???
 
 nomoreset:
 
@@ -67,6 +86,7 @@ putallin:
 ; clr.b farendfound
 
 RunThroughList:
+				DEV_INC.w	Reserved1
 				move.l	Lvl_FloorLinesPtr_l,a1
 				move.w	2(a5),d0
 				move.l	#Sys_Workspace_vl,a6
@@ -88,7 +108,7 @@ RunThroughList:
 				move.l	#zone_OrderTable_vw,a5
 				lea		(a5,d0.w*8),a5
 ; clr.b donesomething
-				bsr		InsertList
+				bsr		zone_InsertList
 
 				dbra	d7,RunThroughList
 
@@ -112,13 +132,14 @@ doneorder:
 
 ; move.w d7,TempBuffer
 
+
 				rts
 
-farendfound:	dc.b	0
-donesomething:	dc.b	0
-farendpt:		dc.l	0
+;farendfound:	dc.b	0
+;donesomething:	dc.b	0
+;farendpt:		dc.l	0
 
-InsertList:
+zone_InsertList:
 				move.l	d7,-(a7)
 				moveq	#0,d7
 
@@ -196,7 +217,7 @@ checkcloser:
 				bra		notcloser
 
 iscloser:
-				st		donesomething
+				;st		donesomething
 
 * The zone which is further away is
 * for some reason in the closer part

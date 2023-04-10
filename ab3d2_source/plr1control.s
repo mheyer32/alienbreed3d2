@@ -233,7 +233,7 @@ nottapped:
 				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapTargHeight_l
 
 notduck:
-				move.l	Plr1_RoomPtr_l,a4
+				move.l	Plr1_ZonePtr_l,a4
 				move.l	ZoneT_Floor_l(a4),d0
 				sub.l	ZoneT_Roof_l(a4),d0
 				tst.b	Plr1_StoodInTop_b
@@ -676,7 +676,7 @@ Plr1_JoystickControl:
 
 Plr1_FootstepFX:
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.l	Plr1_RoomPtr_l,a0
+				move.l	Plr1_ZonePtr_l,a0
 				move.w	ZoneT_FloorNoise_w(a0),d0
 
 				move.l	ZoneT_Water_l(a0),d1

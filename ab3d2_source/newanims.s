@@ -723,7 +723,7 @@ BACKSFX:
 				and.w	#127,d0
 				add.w	#100,d0
 				move.w	d0,anim_TimeToNoise_w
-				move.l	RoomPtr_l,a0
+				move.l	ZonePtr_l,a0
 				add.w	anim_OddEven_w,a0
 				move.w	#2,d0
 				sub.w	anim_OddEven_w,d0
@@ -760,9 +760,9 @@ BACKSFX:
 				rts
 
 objmoveanim:
-				move.l	Plr1_RoomPtr_l,a0
+				move.l	Plr1_ZonePtr_l,a0
 				move.w	(a0),Plr1_Zone_w
-				move.l	Plr2_RoomPtr_l,a0
+				move.l	Plr2_ZonePtr_l,a0
 				move.w	(a0),Plr2_Zone_w
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.okp2
@@ -992,7 +992,7 @@ notallliftsdone:
 				move.l	(a1,d5.w*4),a1
 				add.l	Lvl_DataPtr_l,a1
 				move.w	(a1),d5
-				move.l	Plr1_RoomPtr_l,a3
+				move.l	Plr1_ZonePtr_l,a3
 				move.l	d3,2(a1)
 				neg.w	d0
 				cmp.w	(a3),d5
@@ -1002,7 +1002,7 @@ notallliftsdone:
 				move.w	anim_FloorMoveSpeed_w,Plr1_FloorSpd_w
 
 .nosetfloorspd1:
-				move.l	Plr2_RoomPtr_l,a3
+				move.l	Plr2_ZonePtr_l,a3
 				cmp.w	(a3),d5
 				seq		plr2_StoodOnLift_b
 				bne.s	.nosetfloorspd2
