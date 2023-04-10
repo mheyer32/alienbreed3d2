@@ -6461,8 +6461,8 @@ pastsides:
 ; on ceiling:
 				move.w	#-SCREEN_WIDTH,linedir	; ceilings are walked bottom to top
 				suba.w	#SCREEN_WIDTH,a6
-groundfloor:
 
+groundfloor:
 				move.w	xoff,d6
 				move.w	zoff,d7
 				add.w	xwobxoff,d6				; this was adding xwobxoff to d7, was this a bug?
@@ -6486,8 +6486,12 @@ groundfloor:
 
 				; stll don't really understand why the render aspect ratio gets rolled into here
 				; as these are supposed to be the viewer/s position in the world
-				muls.w	#21845,d6				; (4/3<<16)/4
-				muls.w	#21845,d7
+				;muls.w	#21845,d6				; (4/3<<16)/4
+				;muls.w	#21845,d7
+
+				; Change suggestion by AL
+				muls.w	#19661,d6				; (5/6<<16)/4
+				muls.w	#19661,d7
 
 				bra.s	.donsht
 
@@ -6513,7 +6517,7 @@ groundfloor:
 .scaledown:
 				asl.l	d3,d6
 				asl.l	d3,d7
-.samescale
+.samescale:
 				move.l	d6,sxoff
 				move.l	d7,szoff
 				bra		pastscale
