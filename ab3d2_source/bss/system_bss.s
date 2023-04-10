@@ -30,6 +30,7 @@ Sys_ECVToMsFactor_l:		ds.l	1   		; factor for converting EClock value difference
 Sys_FPSIntAvg_w:			ds.w	1
 Sys_FPSFracAvg_w:			ds.w	1
 
+
 sys_TimerRequest:			ds.b	IOTV_SIZE	; TimeRequest structure
 
 			align 4

@@ -298,7 +298,6 @@ Sys_ReadMouse:
 .oldMouseY2:	dc.w	0
 .prevX:			dc.w	0
 
-
 ;******************************************************************************
 ;*
 ;* Set up hardware and related options
