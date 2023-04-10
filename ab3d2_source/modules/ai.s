@@ -403,7 +403,7 @@ ai_Widget:
 				tst.w	AI_Player1NoiseVol_w
 				beq.s	.no_player_noise
 
-				move.l	Plr1_RoomPtr_l,a1
+				move.l	Plr1_ZonePtr_l,a1
 				tst.b	Plr1_StoodInTop_b
 				beq.s	.player_not_in_top
 
@@ -1573,7 +1573,7 @@ ai_StorePlayerPosition:
 				add.w	d0,a2
 				move.w	Plr1_XOff_l,AI_WorkT_LastX_w(a2)
 				move.w	Plr1_ZOff_l,AI_WorkT_LastY_w(a2)
-				move.l	Plr1_RoomPtr_l,a3
+				move.l	Plr1_ZonePtr_l,a3
 				move.w	(a3),AI_WorkT_LastZone_w(a2)
 				moveq	#0,d0
 				move.b	ZoneT_ControlPoint_w(a3),d0
@@ -1590,7 +1590,7 @@ ai_StorePlayerPosition:
 				add.w	d0,a2
 				move.w	Plr1_XOff_l,AI_WorkT_LastX_w(a2)
 				move.w	Plr1_ZOff_l,AI_WorkT_LastY_w(a2)
-				move.l	Plr1_RoomPtr_l,a3
+				move.l	Plr1_ZonePtr_l,a3
 				move.w	(a3),AI_WorkT_LastZone_w(a2)
 				moveq	#0,d0
 				move.b	ZoneT_ControlPoint_w(a3),d0
@@ -1632,7 +1632,7 @@ ai_GetRoomStatsStill:
 
 ai_CheckForDark:
 				move.w	(a0),d0
-				move.l	Plr1_RoomPtr_l,a3
+				move.l	Plr1_ZonePtr_l,a3
 				move.w	(a3),d1
 				cmp.w	d1,d0
 				beq.s	.not_in_dark
@@ -1683,7 +1683,7 @@ AI_LookForPlayer1:
 				clr.b	CanSee
 				move.b	ShotT_InUpperZone_b(a0),ViewerTop
 				move.b	Plr1_StoodInTop_b,TargetTop
-				move.l	Plr1_RoomPtr_l,ToRoom
+				move.l	Plr1_ZonePtr_l,ToRoom
 				move.l	objroom,FromRoom
 				move.w	newx,Viewerx
 				move.w	newz,Viewerz
@@ -1977,7 +1977,7 @@ ai_DoAttackAnim:
 
 
 ai_CheckAttackOnGround:
-				move.l	Plr1_RoomPtr_l,a3
+				move.l	Plr1_ZonePtr_l,a3
 				moveq	#0,d1
 				move.b	ZoneT_ControlPoint_w(a3),d1
 				tst.b	Plr1_StoodInTop_b

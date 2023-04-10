@@ -87,23 +87,23 @@ DEV_TOGGLE		MACRO
 ; Macro for checking if a specific key should toggle a feature
 DEV_CHECK_KEY	MACRO
 				tst.b		\1(a5)
-				beq.s		.dev_skip_\2
+				beq.s		.dev_skip_\2\@
 				clr.b		\1(a5)
 				DEV_TOGGLE	\2
-.dev_skip_\2:
+.dev_skip_\2\@:
 				ENDM
 
 DEV_CHECK_DIVISOR	MACRO
 					cmp.w	dev_Reserved4_w,\1
-					bgt.s	.divisor_test_max
+					bgt.s	.divisor_test_max\@
 					move.w	\1,dev_Reserved4_w
 
-.divisor_test_max:
+.divisor_test_max\@:
 				cmp.w	dev_Reserved5_w,\1
-				blt.s	.divisor_test_done
+				blt.s	.divisor_test_done\@
 				move.w	\1,dev_Reserved5_w
 
-.divisor_test_done:
+.divisor_test_done\@:
 				ENDM
 
 ; For the release build, all the macros are empty and no code is generated.
