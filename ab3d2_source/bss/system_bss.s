@@ -17,7 +17,19 @@ Sys_Workspace_vl:			ds.l	8192
 
 Sys_SerialBuffer_vl:		ds.l	2000
 
-sys_ECVToMsFactor_l:		ds.l	1   		; factor for converting EClock value differences to ms
+; System FPS
+; Keep this pair together
+Sys_FrameTimeECV_q:			ds.l	2			; EClock of Lap
+Sys_PrevFrameTimeECV_q:		ds.l	2			; EClock of last Lap
+
+Sys_FrameTimes_vl:			ds.l	8			; last 8 frame times, in ms
+Sys_FrameNumber_l:			ds.l	1			; monotonically increasing frame number
+Sys_ECVToMsFactor_l:		ds.l	1   		; factor for converting EClock value differences to ms
+
+; Keep this pair together together
+Sys_FPSIntAvg_w:			ds.w	1
+Sys_FPSFracAvg_w:			ds.w	1
+
 sys_TimerRequest:			ds.b	IOTV_SIZE	; TimeRequest structure
 
 			align 4
