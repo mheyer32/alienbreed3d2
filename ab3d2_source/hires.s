@@ -6467,35 +6467,37 @@ groundfloor:
 				move.w	zoff,d7
 				add.w	xwobxoff,d6				; this was adding xwobxoff to d7, was this a bug?
 				add.w	xwobzoff,d7
+***************************************************************remove later
+				; tst.b	Vid_FullScreen_b
+				; bra.s	.shiftit
 
-				tst.b	Vid_FullScreen_b
-				bra.s	.shiftit
+				; ;ext.l	d6
+				; ;ext.l	d7
+				; ;asl.l	#2,d6		; Fullscreen : scale world by *4/3,
+				; ;asl.l	#2,d7
+				; ;divs	#3,d6
+				; ;divs	#3,d7
+				; ;swap	d6
+				; ;swap	d7
+				; ;clr.w	d6
+				; ;clr.w	d7
+				; ;asr.l	#2,d6
+				; ;asr.l	#2,d7
 
-				;ext.l	d6
-				;ext.l	d7
-				;asl.l	#2,d6		; Fullscreen : scale world by *4/3,
-				;asl.l	#2,d7
-				;divs	#3,d6
-				;divs	#3,d7
-				;swap	d6
-				;swap	d7
-				;clr.w	d6
-				;clr.w	d7
-				;asr.l	#2,d6
-				;asr.l	#2,d7
+				; ; stll don't really understand why the render aspect ratio gets rolled into here
+				; ; as these are supposed to be the viewer/s position in the world
+				; ;muls.w	#21845,d6				; (4/3<<16)/4
+				; ;muls.w	#21845,d7
 
-				; stll don't really understand why the render aspect ratio gets rolled into here
-				; as these are supposed to be the viewer/s position in the world
-				;muls.w	#21845,d6				; (4/3<<16)/4
-				;muls.w	#21845,d7
+				; ; Change suggestion by AL
+				; muls.w	#19661,d6				; (5/6<<16)/4
+				; muls.w	#19661,d7
 
-				; Change suggestion by AL
-				muls.w	#19661,d6				; (5/6<<16)/4
-				muls.w	#19661,d7
+				; bra.s	.donsht
 
-				bra.s	.donsht
+; .shiftit:
 
-.shiftit:
+***************************************************************
 ; divs #3,d6
 ; divs #3,d7
 				swap	d6
@@ -6655,8 +6657,18 @@ pastscale:
 				asr.w	#1,d1					; top line/2 for Vid_DoubleHeight_b
 
 				move.w	View2FloorDist,d0		; ydist<<6 to floor/ceiling	; distance of viewer to floor
+***************************************************************
+;could this be screen width * 0.33333 ?
+				tst.b	Vid_FullScreen_b
+				beq.s .smallscreen
+				muls	#107,d0
+				bra	.fullscreen
+.smallscreen:
+				;muls	#64,d0			; FIXME: why muls here? Is this addressing the floor tile row?
 				ext.l	d0
 				lsl.l	#6,d0
+.fullscreen:
+***************************************************************
 				move.l	d0,a2					; a2
 
 				move.w	d1,d0
@@ -6747,11 +6759,12 @@ doneclip:
 				muls	#107,d0
 				bra	.fullscreen
 .smallscreen:
-				muls	#64,d0			; FIXME: why muls here? Is this addressing the floor tile row?
+				;muls	#64,d0			; FIXME: why muls here? Is this addressing the floor tile row?
+				ext.l	d0
+				lsl.l	#6,d0
 .fullscreen:
 ***************************************************************
-				; ext.l	d0
-				; lsl.l	#6,d0
+
 				move.l	d0,a2
 ; muls #25,d0
 ; adda.w d0,a2
