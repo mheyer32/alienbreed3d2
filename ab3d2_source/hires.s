@@ -3511,9 +3511,9 @@ Plr1_Control:
 				muls	d3,d2
 				swap	d1
 				swap	d2
-				asr.w	#7,d1
+				asr.w	#6,d1					; 6 was 7 AL
 				move.w	d1,xwobxoff				; xwobble
-				asr.w	#7,d2
+				asr.w	#6,d2					; 6 was 7 AL
 				neg.w	d2
 				move.w	d2,xwobzoff
 .otherwob:
@@ -3727,9 +3727,9 @@ Plr2_Control:
 				muls	d3,d2
 				swap	d1
 				swap	d2
-				asr.w	#7,d1
+				asr.w	#6,d1					; 6 was 7 AL
 				move.w	d1,xwobxoff
-				asr.w	#7,d2
+				asr.w	#6,d2					; 6 was 7 AL
 				neg.w	d2
 				move.w	d2,xwobzoff
 
@@ -6465,8 +6465,9 @@ pastsides:
 groundfloor:
 				move.w	xoff,d6
 				move.w	zoff,d7
-				add.w	xwobxoff,d6				; this was adding xwobxoff to d7, was this a bug?
-				add.w	xwobzoff,d7
+				; add.w	xwobxoff,d6				; this was adding xwobxoff to d7, was this a bug?
+				add.w	xwobxoff,d7
+				add.w	xwobzoff,d6
 ***************************************************************remove later
 				; tst.b	Vid_FullScreen_b
 				; bra.s	.shiftit
