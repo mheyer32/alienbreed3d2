@@ -6469,7 +6469,7 @@ groundfloor:
 				add.w	xwobzoff,d7
 
 				tst.b	Vid_FullScreen_b
-				beq.s	.shiftit
+				bra.s	.shiftit
 
 				;ext.l	d6
 				;ext.l	d7
@@ -6740,9 +6740,18 @@ doneclip:
 				lea		(a4,d1*2),a4			; go to top linetab
 ; move.l #dists,a2
 				move.w	View2FloorDist,d0
-				;muls	#64,d0			; FIXME: why muls here? Is this addressing the floor tile row?
-				ext.l	d0
-				lsl.l	#6,d0
+***************************************************************
+;could this be screen width * 0.33333 ?
+				tst.b	Vid_FullScreen_b
+				beq.s .smallscreen
+				muls	#107,d0
+				bra	.fullscreen
+.smallscreen:
+				muls	#64,d0			; FIXME: why muls here? Is this addressing the floor tile row?
+.fullscreen:
+***************************************************************
+				; ext.l	d0
+				; lsl.l	#6,d0
 				move.l	d0,a2
 ; muls #25,d0
 ; adda.w d0,a2
