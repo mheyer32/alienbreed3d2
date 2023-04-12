@@ -36,7 +36,7 @@ Plr1_Fall:
 .skip_damage:
 				st		Plr_Decelerate_b
 				move.w	#0,plr_FallDamage_w
-				move.w	ADDTOBOBBLE,d3
+				move.w	Plr_AddToBobble_w,d3
 				move.w	d3,d4
 				add.w	Plr1_Bobble_w,d3
 				and.w	#8190,d3
@@ -294,19 +294,19 @@ Plr2_Fall:
 				move.w	#0,plr_FallDamage_w
 				st		Plr_Decelerate_b
 
-				move.w	ADDTOBOBBLE,d3
+				move.w	Plr_AddToBobble_w,d3
 				move.w	d3,d4
 				add.w	Plr2_Bobble_w,d3
 				and.w	#8190,d3
 				move.w	d3,Plr2_Bobble_w
-				add.w	PLR2_clumptime,d4
+				add.w	plr2_WalkSFXTime_w,d4
 				move.w	d4,d3
 				and.w	#4095,d4
-				move.w	d4,PLR2_clumptime
+				move.w	d4,plr2_WalkSFXTime_w
 				and.w	#-4096,d3
 				beq.s	.skip_footstep_fx
 
-				bsr		PLR2clump
+				bsr		Plr2_FootstepFX
 
 .skip_footstep_fx:
 				move.l	#-1024,plr_JumpSpeed_l

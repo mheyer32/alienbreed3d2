@@ -8688,7 +8688,7 @@ nostartalan:
 
 				clr.b	Plr1_Fire_b
 				clr.b	Plr1_Clicked_b
-				move.w	#0,ADDTOBOBBLE
+				move.w	#0,Plr_AddToBobble_w
 				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapHeight_l
 				move.w	#-80,d0					; Is this related to render buffer height
 				move.w	d0,STOPOFFSET
@@ -8776,7 +8776,7 @@ control2:
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	#-1,12+128(a0)
 				clr.b	Plr2_Fire_b
-				move.w	#0,ADDTOBOBBLE
+				move.w	#0,Plr_AddToBobble_w
 				move.l	#PLR_CROUCH_HEIGHT,Plr2_SnapHeight_l
 				move.w	#-80,d0
 				move.w	d0,STOPOFFSET
@@ -8850,7 +8850,7 @@ control2:
 				tst.b	Plr2_Keys_b
 				beq.s	.plr2_no_keyboard
 
-				bsr		PLR2_keyboard_control
+				bsr		Plr2_KeyboardControl
 
 .plr2_no_keyboard:
 ; tst.b Plr2_Path_b
@@ -8860,7 +8860,7 @@ control2:
 				tst.b	Plr2_Joystick_b
 				beq.s	.plr2_no_joystick
 
-				bsr		PLR2_JoyStick_control
+				bsr		Plr2_JoystickControl
 
 .plr2_no_joystick:
 
@@ -9622,7 +9622,7 @@ MakeSomeNoise:
 				beq.s	dontworry
 				move.w	#7,d1
 				lea		CHANNELDATA,a3
-findsameasme
+findsameasme:
 				tst.b	(a3)
 				bne.s	notavail
 				cmp.w	32(a3),d0

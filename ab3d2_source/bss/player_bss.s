@@ -179,6 +179,9 @@ Plr_ShotDataPtr_l:			ds.l	1
 plr_JumpSpeed_l:			ds.l	1 ; fall.s
 plr_OldHeight_l:			ds.l	1 ; fall.s
 
+Plr_AddToBobble_w:			ds.w	1
+gunheldlast:				ds.w	1
+
 ; Word fields
 ; Private
 plr_FallDamage_w:			ds.w	1 ; fall.s
@@ -201,6 +204,8 @@ Plr_AmmoCounts_vw:			ds.w	20
 Plr_Shield_w:				ds.w	2
 Plr_Weapons_vw:				ds.w	10
 
+Plr_TurnSpeed_w:			ds.w	1
+
 			align 4
 Plr1_Health_w:			ds.w	1
 Plr1_JetpackFuel_w:		ds.w	1
@@ -222,3 +227,5 @@ Plr2_GunFrame_w:		ds.w	1
 Plr1_ObsInLine_vb:		ds.b	400
 Plr2_ObsInLine_vb:		ds.b	400
 
+BIGsmall:				ds.b	1
+lastscr:				ds.b	1
