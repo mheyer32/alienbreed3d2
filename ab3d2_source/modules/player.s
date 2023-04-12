@@ -43,8 +43,3 @@ Plr_Initialise:
 				move.w	6(a1),Plr2_XOff_l
 				move.w	8(a1),Plr2_ZOff_l
 				rts
-
-
-
-
-

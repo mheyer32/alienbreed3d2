@@ -786,7 +786,7 @@ objmoveanim:
 				bsr		DoorRoutine
 
 				move.w	#0,Plr1_FloorSpd_w
-				move.w	#0,plr2_FloorSpd_w
+				move.w	#0,Plr2_FloorSpd_w
 				bsr		LiftRoutine
 
 				cmp	#0,Anim_Timer_w		;Anim_Timer_w decriment moved to VBlankInterrupt:
@@ -1007,7 +1007,7 @@ notallliftsdone:
 				seq		plr2_StoodOnLift_b
 				bne.s	.nosetfloorspd2
 
-				move.w	anim_FloorMoveSpeed_w,plr2_FloorSpd_w
+				move.w	anim_FloorMoveSpeed_w,Plr2_FloorSpd_w
 
 .nosetfloorspd2:
 				move.w	(a0)+,d2				; conditions

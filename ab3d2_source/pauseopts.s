@@ -6,7 +6,7 @@ Game_Pause:
 				move.w	#40,SCROLLTIMER
 				move.w	#40,d6
 .waitpause:
-				jsr		NARRATOR
+				jsr		Draw_NarrateText
 
 				dbra	d6,.waitpause
 
@@ -61,7 +61,7 @@ Game_Pause:
 				move.w	#40,d6
 
 .waitpause2:
-				jsr		NARRATOR
+				jsr		Draw_NarrateText
 				dbra	d6,.waitpause2
 
 				rts
