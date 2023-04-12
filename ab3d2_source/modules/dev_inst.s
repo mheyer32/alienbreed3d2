@@ -284,23 +284,35 @@ Dev_PrintStats:
 				move.l		#120,d0
 				bsr			Dev_PrintF
 
-				; Long Divisions
+				; OrderZones
 				lea			dev_Reserved1_w,a1
-				lea			.dev_ss_stats_long_divide_vb,a0
+				lea			.dev_ss_stats_order_zones_vb,a0
 				move.l		#136,d0
 				bsr			Dev_PrintF
 
-				; Min Divisor
-				lea			dev_Reserved4_w,a1
-				lea			.dev_ss_stats_min_divisor_vb,a0
-				move.l		#152,d0
+				; Zone Ptr
+				lea			Plr1_ZonePtr_l,a1
+				lea			.dev_ss_stats_zone_vb,a0
+				move.l		#152+40,d0
 				bsr			Dev_PrintF
 
-				; Max Divisor
-				lea			dev_Reserved5_w,a1
-				lea			.dev_ss_stats_max_divisor_vb,a0
-				move.l		#168,d0
-				bsr			Dev_PrintF
+;				; Long Divisions
+;				lea			dev_Reserved1_w,a1
+;				lea			.dev_ss_stats_long_divide_vb,a0
+;				move.l		#136,d0
+;				bsr			Dev_PrintF
+
+;				; Min Divisor
+;				lea			dev_Reserved4_w,a1
+;				lea			.dev_ss_stats_min_divisor_vb,a0
+;				move.l		#152,d0
+;				bsr			Dev_PrintF
+
+;				; Max Divisor
+;				lea			dev_Reserved5_w,a1
+;				lea			.dev_ss_stats_max_divisor_vb,a0
+;				move.l		#168,d0
+;				bsr			Dev_PrintF
 
 				rts
 
@@ -319,27 +331,33 @@ Dev_PrintStats:
 				dc.b		"Wall:%2d, Flt:%2d, Obj:%2d/%2d, Drw:%2dms, %2d.%dfps",0
 
 .dev_ss_stats_wall_simple_vb:
-				dc.b		"WS:%2d",0
+				dc.b		"WS:%3d",0
 .dev_ss_stats_wall_shaded_vb:
-				dc.b		"WG:%2d",0
+				dc.b		"WG:%3d",0
 .dev_ss_stats_obj_poly_vb:
-				dc.b		"OP:%2d",0
+				dc.b		"OP:%3d",0
 .dev_ss_stats_obj_glare_vb:
-				dc.b		"OG:%2d",0
+				dc.b		"OG:%3d",0
 .dev_ss_stats_obj_lightmap_vb:
-				dc.b		"OL:%2d",0
+				dc.b		"OL:%3d",0
 .dev_ss_stats_obj_additive_vb:
-				dc.b		"OA:%2d",0
+				dc.b		"OA:%3d",0
 .dev_ss_stats_obj_bitmap_vb:
-				dc.b		"OB:%2d",0
+				dc.b		"OB:%3d",0
+
+.dev_ss_stats_order_zones_vb:
+				dc.b		"OZ:%3d",0
+
+.dev_ss_stats_zone_vb:
+				dc.b		"ZP:%8lx",0
 
 ; Stats for the division pogrom 2.0
-.dev_ss_stats_long_divide_vb:
-				dc.b		"LD:%4d ",0
-.dev_ss_stats_min_divisor_vb:
-				dc.b		"mD:%4d ",0
-.dev_ss_stats_max_divisor_vb:
-				dc.b		"MD:%4d ",0
+;.dev_ss_stats_long_divide_vb:
+;				dc.b		"LD:%4d ",0
+;.dev_ss_stats_min_divisor_vb:
+;				dc.b		"mD:%4d ",0
+;.dev_ss_stats_max_divisor_vb:
+;				dc.b		"MD:%4d ",0
 
 				align 4
 

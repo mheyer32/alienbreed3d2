@@ -829,7 +829,7 @@ game_main_loop:
 				add.l	d1,a6
 				move.b	AlienT_SplatType_w+1(a6),d0
 				move.b	d0,Anim_SplatType_w
-				move.l	Plr2_RoomPtr_l,a1
+				move.l	Plr2_ZonePtr_l,a1
 				move.w	(a1),12(a0)
 				move.w	Plr2_TmpXOff_l,newx
 				move.w	Plr2_TmpZOff_l,newz
@@ -873,7 +873,7 @@ game_main_loop:
 				move.b	AlienT_SplatType_w+1(a6),d0
 				move.b	d0,Anim_SplatType_w
 
-				move.l	Plr1_RoomPtr_l,a1
+				move.l	Plr1_ZonePtr_l,a1
 				move.w	(a1),12(a0)
 				move.w	Plr1_TmpXOff_l,newx
 				move.w	Plr1_TmpZOff_l,newz
@@ -1163,7 +1163,7 @@ okwat:
 
 				bsr		Plr1_Control
 
-				move.l	Plr1_RoomPtr_l,a0
+				move.l	Plr1_ZonePtr_l,a0
 				move.l	ZoneT_Roof_l(a0),SplitHeight
 				move.w	Plr1_TmpXOff_l,THISPLRxoff
 				move.w	Plr1_TmpZOff_l,THISPLRzoff
@@ -1174,7 +1174,7 @@ okwat:
 				move.w	#-1,EntT_GraphicRoom_w(a0)
 				move.w	#-1,12(a0)
 				move.b	#0,17(a0)
-				move.l	#BollocksRoom,Plr2_RoomPtr_l
+				move.l	#BollocksRoom,Plr2_ZonePtr_l
 
 				bra		donetalking
 
@@ -1295,7 +1295,7 @@ NotOnePlayer:
 
 				bsr		Plr1_Control
 				bsr		Plr2_Control
-				move.l	Plr1_RoomPtr_l,a0
+				move.l	Plr1_ZonePtr_l,a0
 				move.l	ZoneT_Roof_l(a0),SplitHeight
 				move.w	Plr1_TmpXOff_l,THISPLRxoff
 				move.w	Plr1_TmpZOff_l,THISPLRzoff
@@ -1411,7 +1411,7 @@ ASlaveShouldWaitOnHisMaster:
 				bsr		Plr2_Control
 				move.w	Plr2_TmpXOff_l,THISPLRxoff
 				move.w	Plr2_TmpZOff_l,THISPLRzoff
-				move.l	Plr2_RoomPtr_l,a0
+				move.l	Plr2_ZonePtr_l,a0
 				move.l	ZoneT_Roof_l(a0),SplitHeight
 
 donetalking:
@@ -1535,7 +1535,7 @@ allinzone:
 				bra		justtheone
 
 whythehell:
-				move.l	Plr1_RoomPtr_l,a0
+				move.l	Plr1_ZonePtr_l,a0
 				move.l	#CurrentPointBrights_vl,a1
 				move.l	Lvl_ZoneBorderPointsPtr_l,a2
 				move.w	(a0),d0
@@ -1568,8 +1568,8 @@ findaverage:
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq		nosee
 
-				move.l	Plr1_RoomPtr_l,FromRoom
-				move.l	Plr2_RoomPtr_l,ToRoom
+				move.l	Plr1_ZonePtr_l,FromRoom
+				move.l	Plr2_ZonePtr_l,ToRoom
 				move.w	Plr1_TmpXOff_l,Viewerx
 				move.w	Plr1_TmpZOff_l,Viewerz
 				move.l	Plr1_TmpYOff_l,d0
@@ -1676,7 +1676,7 @@ IWasPlayer1:
 				move.l	plr1_ListOfGraphRoomsPtr_l,Lvl_ListOfGraphRoomsPtr_l
 				move.l	plr1_PointsToRotatePtr_l,PointsToRotatePtr_l
 				move.b	Plr1_Echo_b,PLREcho
-				move.l	Plr1_RoomPtr_l,RoomPtr_l
+				move.l	Plr1_ZonePtr_l,ZonePtr_l
 
 				move.l	#KeyMap_vb,a5
 				moveq	#0,d5
@@ -1779,7 +1779,7 @@ drawplayer2:
 				move.l	plr2_ListOfGraphRoomsPtr_l,Lvl_ListOfGraphRoomsPtr_l
 				move.l	plr2_PointsToRotatePtr_l,PointsToRotatePtr_l
 				move.b	Plr2_Echo_b,PLREcho
-				move.l	Plr2_RoomPtr_l,RoomPtr_l
+				move.l	Plr2_ZonePtr_l,ZonePtr_l
 				move.l	#KeyMap_vb,a5
 				moveq	#0,d5
 				move.b	look_behind_key,d5
@@ -1934,7 +1934,7 @@ nodrawp2:
 .not_double_width:
 
 *****************************************
-				move.l	Plr2_RoomPtr_l,a0
+				move.l	Plr2_ZonePtr_l,a0
 				move.l	#Sys_Workspace_vl,a1
 				clr.l	(a1)
 				clr.l	4(a1)
@@ -1961,7 +1961,7 @@ nodrawp2:
 
 plr1only:
 
-				move.l	Plr1_RoomPtr_l,a0
+				move.l	Plr1_ZonePtr_l,a0
 				lea		ZoneT_ListOfGraph_w(a0),a0
 .doallrooms2:
 				move.w	(a0),d0
@@ -2025,7 +2025,7 @@ noend:
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	noexit
-				move.l	Plr1_RoomPtr_l,a0
+				move.l	Plr1_ZonePtr_l,a0
 				move.w	(a0),d0
 
 				cmp.w	ENDZONE,d0
@@ -2912,7 +2912,7 @@ Plr1_Use:
 				move.w	(a0),d0
 				move.l	Plr1_XOff_l,(a1,d0.w*8)
 				move.l	Plr1_ZOff_l,4(a1,d0.w*8)
-				move.l	Plr1_RoomPtr_l,a1
+				move.l	Plr1_ZonePtr_l,a1
 				moveq	#0,d2
 				move.b	EntT_DamageTaken_b(a0),d2
 				beq		.notbeenshot
@@ -3006,7 +3006,7 @@ Plr1_Use:
 				move.w	(a0),d0
 				move.l	Plr2_XOff_l,(a1,d0.w*8)
 				move.l	Plr2_ZOff_l,4(a1,d0.w*8)
-				move.l	Plr2_RoomPtr_l,a1
+				move.l	Plr2_ZonePtr_l,a1
 				moveq	#0,d2
 				move.b	EntT_DamageTaken_b(a0),d2
 				beq		.notbeenshot2
@@ -3133,7 +3133,7 @@ Plr1_Use:
 				rts
 
 .notdead:
-				move.l	Plr1_RoomPtr_l,a1
+				move.l	Plr1_ZonePtr_l,a1
 
 				move.w	EntT_CurrentAngle_w(a0),d0
 				add.w	#4096,d0
@@ -3186,7 +3186,7 @@ Plr2_Use:
 				move.w	(a0),d0
 				move.l	Plr2_XOff_l,(a1,d0.w*8)
 				move.l	Plr2_ZOff_l,4(a1,d0.w*8)
-				move.l	Plr2_RoomPtr_l,a1
+				move.l	Plr2_ZonePtr_l,a1
 
 				moveq	#0,d2
 				move.b	EntT_DamageTaken_b(a0),d2
@@ -3265,7 +3265,7 @@ Plr2_Use:
 				move.w	(a0),d0
 				move.l	Plr1_XOff_l,(a1,d0.w*8)
 				move.l	Plr1_ZOff_l,4(a1,d0.w*8)
-				move.l	Plr1_RoomPtr_l,a1
+				move.l	Plr1_ZonePtr_l,a1
 
 				moveq	#0,d2
 				move.b	EntT_DamageTaken_b(a0),d2
@@ -3398,7 +3398,7 @@ Plr2_Use:
 				rts
 
 .notdead:
-				move.l	Plr2_RoomPtr_l,a1
+				move.l	Plr2_ZonePtr_l,a1
 				move.w	EntT_CurrentAngle_w(a0),d0
 				add.w	#4096,d0
 				and.w	#8190,d0
@@ -3511,9 +3511,9 @@ Plr1_Control:
 				muls	d3,d2
 				swap	d1
 				swap	d2
-				asr.w	#7,d1
+				asr.w	#6,d1					; 6 was 7 AL
 				move.w	d1,xwobxoff				; xwobble
-				asr.w	#7,d2
+				asr.w	#6,d2					; 6 was 7 AL
 				neg.w	d2
 				move.w	d2,xwobzoff
 .otherwob:
@@ -3534,7 +3534,7 @@ Plr1_Control:
 
 				move.l	#$1000000,StepDownVal
 
-				move.l	Plr1_RoomPtr_l,a0
+				move.l	Plr1_ZonePtr_l,a0
 				move.w	ZoneT_TelZone_w(a0),d0
 				blt		.noteleport
 
@@ -3557,7 +3557,7 @@ Plr1_Control:
 
 				st		plr1_Teleported_b
 
-				move.l	Plr1_RoomPtr_l,a0
+				move.l	Plr1_ZonePtr_l,a0
 				move.w	ZoneT_TelZone_w(a0),d0
 				move.w	ZoneT_TelX_w(a0),Plr1_XOff_l
 				move.w	ZoneT_TelZ_w(a0),Plr1_ZOff_l
@@ -3566,7 +3566,7 @@ Plr1_Control:
 				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d0.w*4),a0
 				add.l	Lvl_DataPtr_l,a0
-				move.l	a0,Plr1_RoomPtr_l
+				move.l	a0,Plr1_ZonePtr_l
 				add.l	ZoneT_Floor_l(a0),d1
 				move.l	d1,Plr1_SnapYOff_l
 				move.l	d1,Plr1_YOff_l
@@ -3587,7 +3587,7 @@ Plr1_Control:
 
 .noteleport:
 
-				move.l	Plr1_RoomPtr_l,objroom
+				move.l	Plr1_ZonePtr_l,objroom
 				move.w	#%100000000,wallflags
 				move.b	Plr1_StoodInTop_b,StoodInTop
 
@@ -3612,14 +3612,14 @@ Plr1_Control:
 				clr.b	Obj_WallBounce_b
 				bsr		MoveObject
 				move.b	StoodInTop,Plr1_StoodInTop_b
-				move.l	objroom,Plr1_RoomPtr_l
+				move.l	objroom,Plr1_ZonePtr_l
 				move.w	newx,Plr1_XOff_l
 				move.w	newz,Plr1_ZOff_l
 				move.l	Plr1_XOff_l,Plr1_SnapXOff_l
 				move.l	Plr1_ZOff_l,Plr1_SnapZOff_l
 
 .cantmove:
-				move.l	Plr1_RoomPtr_l,a0
+				move.l	Plr1_ZonePtr_l,a0
 				move.l	ZoneT_Floor_l(a0),d0
 				tst.b	Plr1_StoodInTop_b
 				beq.s	notintop
@@ -3636,7 +3636,7 @@ notintop:
 * A0 is pointing at a pointer to list of points to rotate
 				move.w	(a0)+,d1
 				ext.l	d1
-				add.l	Plr1_RoomPtr_l,d1
+				add.l	Plr1_ZonePtr_l,d1
 				move.l	d1,plr1_PointsToRotatePtr_l
 				tst.b	(a0)+
 				;sne		DRAWNGRAPHTOP
@@ -3727,9 +3727,9 @@ Plr2_Control:
 				muls	d3,d2
 				swap	d1
 				swap	d2
-				asr.w	#7,d1
+				asr.w	#6,d1					; 6 was 7 AL
 				move.w	d1,xwobxoff
-				asr.w	#7,d2
+				asr.w	#6,d2					; 6 was 7 AL
 				neg.w	d2
 				move.w	d2,xwobzoff
 
@@ -3750,7 +3750,7 @@ Plr2_Control:
 
 				move.l	#$1000000,StepDownVal
 
-				move.l	Plr2_RoomPtr_l,a0
+				move.l	Plr2_ZonePtr_l,a0
 				move.w	ZoneT_TelZone_w(a0),d0
 				blt		.noteleport
 
@@ -3771,7 +3771,7 @@ Plr2_Control:
 .teleport:
 				st		plr2_Teleported_b
 
-				move.l	Plr2_RoomPtr_l,a0
+				move.l	Plr2_ZonePtr_l,a0
 				move.w	ZoneT_TelZone_w(a0),d0
 				move.w	ZoneT_TelX_w(a0),Plr2_XOff_l
 				move.w	ZoneT_TelZ_w(a0),Plr2_ZOff_l
@@ -3780,7 +3780,7 @@ Plr2_Control:
 				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d0.w*4),a0
 				add.l	Lvl_DataPtr_l,a0
-				move.l	a0,Plr2_RoomPtr_l
+				move.l	a0,Plr2_ZonePtr_l
 				add.l	ZoneT_Floor_l(a0),d1
 				move.l	d1,Plr2_SnapYOff_l
 				move.l	d1,Plr2_YOff_l
@@ -3801,7 +3801,7 @@ Plr2_Control:
 
 .noteleport:
 
-				move.l	Plr2_RoomPtr_l,objroom
+				move.l	Plr2_ZonePtr_l,objroom
 				move.w	#%100000000000,wallflags
 				move.b	Plr2_StoodInTop_b,StoodInTop
 
@@ -3826,7 +3826,7 @@ Plr2_Control:
 				clr.b	Obj_WallBounce_b
 				bsr		MoveObject
 				move.b	StoodInTop,Plr2_StoodInTop_b
-				move.l	objroom,Plr2_RoomPtr_l
+				move.l	objroom,Plr2_ZonePtr_l
 				move.w	newx,Plr2_XOff_l
 				move.w	newz,Plr2_ZOff_l
 				move.l	Plr2_XOff_l,Plr2_SnapXOff_l
@@ -3834,7 +3834,7 @@ Plr2_Control:
 
 .cantmove:
 
-				move.l	Plr2_RoomPtr_l,a0
+				move.l	Plr2_ZonePtr_l,a0
 
 				move.l	ZoneT_Floor_l(a0),d0
 				tst.b	Plr2_StoodInTop_b
@@ -3851,7 +3851,7 @@ Plr2_Control:
 * A0 is pointing at a pointer to list of points to rotate
 				move.w	(a0)+,d1
 				ext.l	d1
-				add.l	Plr2_RoomPtr_l,d1
+				add.l	Plr2_ZonePtr_l,d1
 				move.l	d1,plr2_PointsToRotatePtr_l
 				tst.b	(a0)+
 				;sne		DRAWNGRAPHTOP
@@ -5589,7 +5589,7 @@ checkforwater:
 				tst.b	draw_UseWater_b
 				beq.s	.notwater
 
-				move.l	RoomPtr_l,a1
+				move.l	ZonePtr_l,a1
 				move.w	(a1),d7
 				cmp.w	Draw_CurrentZone_w,d7
 				bne.s	.notwater
@@ -5642,7 +5642,7 @@ Draw_Flats:
 				tst.b	draw_UseWater_b
 				beq.s	.notwater
 
-				move.l	RoomPtr_l,a1
+				move.l	ZonePtr_l,a1
 				move.w	(a1),d7
 				cmp.w	Draw_CurrentZone_w,d7
 
@@ -5665,7 +5665,7 @@ aboveplayer:
 				tst.b	draw_UseWater_b
 				beq.s	.notwater
 
-				move.l	RoomPtr_l,a1
+				move.l	ZonePtr_l,a1
 				move.w	(a1),d7
 				cmp.w	Draw_CurrentZone_w,d7
 				bne.s	.notwater
@@ -6461,37 +6461,44 @@ pastsides:
 ; on ceiling:
 				move.w	#-SCREEN_WIDTH,linedir	; ceilings are walked bottom to top
 				suba.w	#SCREEN_WIDTH,a6
-groundfloor:
 
+groundfloor:
 				move.w	xoff,d6
 				move.w	zoff,d7
-				add.w	xwobxoff,d6				; this was adding xwobxoff to d7, was this a bug?
-				add.w	xwobzoff,d7
+				; add.w	xwobxoff,d6				; this was adding xwobxoff to d7, was this a bug?
+				add.w	xwobxoff,d7
+				add.w	xwobzoff,d6
+***************************************************************remove later
+				; tst.b	Vid_FullScreen_b
+				; bra.s	.shiftit
 
-				tst.b	Vid_FullScreen_b
-				beq.s	.shiftit
+				; ;ext.l	d6
+				; ;ext.l	d7
+				; ;asl.l	#2,d6		; Fullscreen : scale world by *4/3,
+				; ;asl.l	#2,d7
+				; ;divs	#3,d6
+				; ;divs	#3,d7
+				; ;swap	d6
+				; ;swap	d7
+				; ;clr.w	d6
+				; ;clr.w	d7
+				; ;asr.l	#2,d6
+				; ;asr.l	#2,d7
 
-				;ext.l	d6
-				;ext.l	d7
-				;asl.l	#2,d6		; Fullscreen : scale world by *4/3,
-				;asl.l	#2,d7
-				;divs	#3,d6
-				;divs	#3,d7
-				;swap	d6
-				;swap	d7
-				;clr.w	d6
-				;clr.w	d7
-				;asr.l	#2,d6
-				;asr.l	#2,d7
+				; ; stll don't really understand why the render aspect ratio gets rolled into here
+				; ; as these are supposed to be the viewer/s position in the world
+				; ;muls.w	#21845,d6				; (4/3<<16)/4
+				; ;muls.w	#21845,d7
 
-				; stll don't really understand why the render aspect ratio gets rolled into here
-				; as these are supposed to be the viewer/s position in the world
-				muls.w	#21845,d6				; (4/3<<16)/4
-				muls.w	#21845,d7
+				; ; Change suggestion by AL
+				; muls.w	#19661,d6				; (5/6<<16)/4
+				; muls.w	#19661,d7
 
-				bra.s	.donsht
+				; bra.s	.donsht
 
-.shiftit:
+; .shiftit:
+
+***************************************************************
 ; divs #3,d6
 ; divs #3,d7
 				swap	d6
@@ -6513,7 +6520,7 @@ groundfloor:
 .scaledown:
 				asl.l	d3,d6
 				asl.l	d3,d7
-.samescale
+.samescale:
 				move.l	d6,sxoff
 				move.l	d7,szoff
 				bra		pastscale
@@ -6651,8 +6658,18 @@ pastscale:
 				asr.w	#1,d1					; top line/2 for Vid_DoubleHeight_b
 
 				move.w	View2FloorDist,d0		; ydist<<6 to floor/ceiling	; distance of viewer to floor
+***************************************************************
+;could this be screen width * 0.33333 ?
+				tst.b	Vid_FullScreen_b
+				beq.s .smallscreen
+				muls	#107,d0
+				bra	.fullscreen
+.smallscreen:
+				;muls	#64,d0			; FIXME: why muls here? Is this addressing the floor tile row?
 				ext.l	d0
 				lsl.l	#6,d0
+.fullscreen:
+***************************************************************
 				move.l	d0,a2					; a2
 
 				move.w	d1,d0
@@ -6736,9 +6753,19 @@ doneclip:
 				lea		(a4,d1*2),a4			; go to top linetab
 ; move.l #dists,a2
 				move.w	View2FloorDist,d0
+***************************************************************
+;could this be screen width * 0.33333 ?
+				tst.b	Vid_FullScreen_b
+				beq.s .smallscreen
+				muls	#107,d0
+				bra	.fullscreen
+.smallscreen:
 				;muls	#64,d0			; FIXME: why muls here? Is this addressing the floor tile row?
 				ext.l	d0
 				lsl.l	#6,d0
+.fullscreen:
+***************************************************************
+
 				move.l	d0,a2
 ; muls #25,d0
 ; adda.w d0,a2
@@ -8576,7 +8603,7 @@ dosomething:
 
 				move.w	#100,timetodamage
 
-				move.l	Plr1_RoomPtr_l,a0
+				move.l	Plr1_ZonePtr_l,a0
 				move.l	ZoneT_Water_l(a0),d2      ; Water depth in d2
 				move.w	ZoneT_FloorNoise_w(a0),d0
 				tst.b	Plr1_StoodInTop_b
@@ -8601,7 +8628,7 @@ dosomething:
 				add.b	d0,EntT_DamageTaken_b(a0)
 
 .not_on_floor1:
-				move.l	Plr2_RoomPtr_l,a0
+				move.l	Plr2_ZonePtr_l,a0
 				move.l	ZoneT_Water_l(a0),d2      ; Water depth in d2
 				move.w	ZoneT_FloorNoise_w(a0),d0
 				tst.b	Plr2_StoodInTop_b
@@ -10525,10 +10552,8 @@ PlayEcho:		dc.w	0 ; accessed as byte
 PLR1:			dc.b	$ff
 PLR2:			dc.b	$ff
 
-
-
-RoomPtr_l:			dc.l	0
-OldRoompt:		dc.l	0
+ZonePtr_l:		dc.l	0
+;OldRoompt:		dc.l	0
 
 *****************************************************************
 *
