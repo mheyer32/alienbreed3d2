@@ -11,6 +11,85 @@ SOFFSET		SET    SOFFSET+\1
 * Structure definitions *****
 *****************************
 
+	; Player Definition (runtime)
+	STRUCTURE PlrT,0
+		; Long fields
+		ULONG PlrT_ObjectPtr_l
+		ULONG PlrT_XOff_l				; sometimes accessed as w - todo understand real size
+		ULONG PlrT_YOff_l
+		ULONG PlrT_ZOff_l				; sometimes accessed as w - todo understand real size
+		ULONG PlrT_ZonePtr_l
+		ULONG PlrT_Height_l
+		ULONG PlrT_AimSpeed_l
+		ULONG PlrT_SnapXOff_l
+		ULONG PlrT_SnapYOff_l
+		ULONG PlrT_SnapYVel_l
+		ULONG PlrT_SnapZOff_l
+		ULONG PlrT_SnapTYOff_l
+		ULONG PlrT_SnapXSpdVal_l
+		ULONG PlrT_SnapZSpdVal_l
+		ULONG PlrT_SnapHeight_l
+		ULONG PlrT_SnapTargHeight_l
+		ULONG PlrT_TmpXOff_l				; also accessed as w, todo determine correct size
+		ULONG PlrT_TmpZOff_l
+		ULONG PlrT_TmpYOff_l
+
+		; Private
+		ULONG PlrT_ListOfGraphRoomsPtr_l
+		ULONG PlrT_PointsToRotatePtr_l
+		ULONG PlrT_BobbleY_l
+		ULONG PlrT_TmpHeight_l
+		ULONG PlrT_OldX_l
+		ULONG PlrT_OldZ_l
+		ULONG PlrT_OldRoomPtr_l
+		ULONG PlrT_SnapSquishedHeight_l
+
+		; Word fields
+		UWORD PlrT_Energy_w
+		UWORD PlrT_CosVal_w
+		UWORD PlrT_SinVal_w
+		UWORD PlrT_AngPos_w
+		UWORD PlrT_Zone_w
+		UWORD PlrT_FloorSpd_w
+		UWORD PlrT_RoomBright_w
+		UWORD PlrT_Bobble_w
+		UWORD PlrT_SnapAngPos_w
+		UWORD PlrT_SnapAngSpd_w
+		UWORD PlrT_TmpAngPos_w
+		UWORD PlrT_TimeToShoot_w
+
+		; Private
+		UWORD PlrT_TmpHoldDown_w
+		UWORD PlrT_TmpBobble_w
+		UWORD PlrT_SnapCosVal_w
+		UWORD PlrT_SnapSinVal_w
+		UWORD PlrT_WalkSFXTime_w
+
+		; Byte data
+		UBYTE PlrT_Keys_b
+		UBYTE PlrT_Path_b
+		UBYTE PlrT_Mouse_b
+		UBYTE PlrT_Joystick_b
+		UBYTE PlrT_GunSelected_b
+		UBYTE PlrT_StoodInTop_b
+		UBYTE PlrT_Ducked_b
+		UBYTE PlrT_Squished_b
+		UBYTE PlrT_Echo_b
+		UBYTE PlrT_Fire_b
+		UBYTE PlrT_Clicked_b
+		UBYTE PlrT_TmpClicked_b
+		UBYTE PlrT_TmpSpcTap_b
+		UBYTE PlrT_TmpGunSelected_b
+		UBYTE PlrT_TmpFire_b
+
+ 		; Private
+		UBYTE PlrT_Teleported_b
+		UBYTE PlrT_Dead_b
+		UBYTE PlrT_TmpDucked_b
+		UBYTE PlrT_StoodOnLift_b
+
+		LABEL PlrT_SizeOf_l
+
 	; Bullet definition
 	STRUCTURE BulT,0
 		ULONG BulT_IsHitScan_l			;   0, 4

@@ -359,15 +359,7 @@ gogog:
 				; Restores the complete original screen left/right borders,
 				; bottom panel.They are stored in a lha packed format
 
-				; a0 points to destination memory
-Draw_ResetGameDisplay:
-				move.l	#draw_BorderPacked_vb,d0
-				moveq	#0,d1
-				lea		Sys_Workspace_vl,a1
-				lea		$0,a2
-				jsr		unLHA
 
-				rts
 
 Plr1_ShowGunName:
 				moveq	#0,d2
