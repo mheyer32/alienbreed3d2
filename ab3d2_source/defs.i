@@ -58,6 +58,16 @@ SOFFSET		SET    SOFFSET+\1
 		UWORD PlrT_TmpAngPos_w
 		UWORD PlrT_TimeToShoot_w
 
+		; This section is saved/loaded in game save
+		UWORD PlrT_Health_w
+		UWORD PlrT_JetpackFuel_w
+		UWORD PlrT_AmmoCounts_vw	; UWORD[20]
+		PADDING 38
+		UWORD PlrT_Shield_w
+		UWORD PlrT_Jetpack_w
+		UWORD PlrT_Weapons_vb		; UWORD[10]
+		PADDING 18
+
 		; Private
 		UWORD PlrT_TmpHoldDown_w
 		UWORD PlrT_TmpBobble_w
@@ -77,6 +87,7 @@ SOFFSET		SET    SOFFSET+\1
 		UBYTE PlrT_Echo_b
 		UBYTE PlrT_Fire_b
 		UBYTE PlrT_Clicked_b
+		UBYTE PlrT_Used_b
 		UBYTE PlrT_TmpClicked_b
 		UBYTE PlrT_TmpSpcTap_b
 		UBYTE PlrT_TmpGunSelected_b

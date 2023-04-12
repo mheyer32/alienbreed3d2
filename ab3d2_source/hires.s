@@ -713,7 +713,7 @@ clrmessbuff:
 
 				clr.b	Plr2_Fire_b
 				clr.b	Plr2_TmpFire_b
-				clr.b	PLR2_SPCTAP
+				clr.b	Plr2_Used_b
 				clr.b	Plr2_TmpSpcTap_b
 
 				clr.b	plr1_Dead_b
@@ -1097,8 +1097,8 @@ okwat:
 				move.b	Plr1_Clicked_b,Plr1_TmpClicked_b
 				move.b	Plr1_Fire_b,Plr1_TmpFire_b
 				clr.b	Plr1_Clicked_b
-				move.b	PLR1_SPCTAP,Plr1_TmpSpcTap_b
-				clr.b	PLR1_SPCTAP
+				move.b	Plr1_Used_b,Plr1_TmpSpcTap_b
+				clr.b	Plr1_Used_b
 				move.b	Plr1_Ducked_b,plr1_TmpDucked_b
 				move.b	Plr1_GunSelected_b,Plr1_TmpGunSelected_b
 
@@ -1159,8 +1159,8 @@ NotOnePlayer:
 				move.b	Plr1_Clicked_b,Plr1_TmpClicked_b
 				clr.b	Plr1_Clicked_b
 				move.b	Plr1_Fire_b,Plr1_TmpFire_b
-				move.b	PLR1_SPCTAP,Plr1_TmpSpcTap_b
-				clr.b	PLR1_SPCTAP
+				move.b	Plr1_Used_b,Plr1_TmpSpcTap_b
+				clr.b	Plr1_Used_b
 				move.b	Plr1_Ducked_b,plr1_TmpDucked_b
 				move.b	Plr1_GunSelected_b,Plr1_TmpGunSelected_b
 
@@ -1274,8 +1274,8 @@ ASlaveShouldWaitOnHisMaster:
 				move.b	Plr2_Clicked_b,Plr2_TmpClicked_b
 				clr.b	Plr2_Clicked_b
 				move.b	Plr2_Fire_b,Plr2_TmpFire_b
-				move.b	PLR2_SPCTAP,Plr2_TmpSpcTap_b
-				clr.b	PLR2_SPCTAP
+				move.b	Plr2_Used_b,Plr2_TmpSpcTap_b
+				clr.b	Plr2_Used_b
 				move.b	Plr2_Ducked_b,plr2_TmpDucked_b
 				move.b	Plr2_GunSelected_b,Plr2_TmpGunSelected_b
 
@@ -7953,8 +7953,6 @@ KInt_OCode		ds.w	1
 
 OldSpace:		dc.b	0
 SpaceTapped:	dc.b	0
-PLR1_SPCTAP:	dc.b	0
-PLR2_SPCTAP:	dc.b	0
 				even
 
 				include	"plr1control.s"

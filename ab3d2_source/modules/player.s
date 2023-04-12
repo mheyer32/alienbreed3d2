@@ -139,6 +139,212 @@ plr_MouseControl:
 ;* Pointer to player data in a0
 ;*
 ;******************************************************************************
+plr_CheckKeys:
+				move.l	#KeyMap_vb,a5
+				moveq	#0,d7
+
+				move.b	next_weapon_key,d7
+				tst.b	(a5,d7.w)
+				beq.s	.nonextweappre
+
+				tst.b	gunheldlast
+				bne.s	.nonextweap
+
+				st		gunheldlast
+				moveq	#0,d0
+				move.b	PlrT_GunSelected_b(a0),d0
+				lea		PlrT_Weapons_vb(a0),a1
+
+.findnext:
+				addq	#1,d0
+				cmp.w	#9,d0
+				ble.s	.okgun
+
+				moveq	#0,d0
+
+.okgun:
+				tst.w	(a1,d0.w*2)
+				beq.s	.findnext
+
+				move.b	d0,PlrT_GunSelected_b(a0)
+
+				; to do - generalise
+				;bsr		Plr1_ShowGunName
+
+				bra		.nonextweap
+
+.nonextweappre:
+				clr.b	gunheldlast
+
+.nonextweap:
+				move.b	operate_key,d7
+				move.b	(a5,d7.w),d1
+				beq.s	.nottapped
+
+				tst.b	OldSpace
+				bne.s	.nottapped
+
+				st		PlrT_Used_b(a0)
+
+.nottapped:
+				move.b	d1,OldSpace
+				move.b	duck_key,d7
+				tst.b	(a5,d7.w)
+				beq.s	.notduck
+
+				clr.b	(a5,d7.w)
+				move.l	#PLR_STAND_HEIGHT,PlrT_SnapTargHeight_l(a0)
+				not.b	PlrT_Ducked_b(a0)
+				beq.s	.notduck
+
+				move.l	#PLR_CROUCH_HEIGHT,PlrT_SnapTargHeight_l(a0)
+
+.notduck:
+				move.l	PlrT_ZonePtr_l(a0),a4
+				move.l	ZoneT_Floor_l(a4),d0
+				sub.l	ZoneT_Roof_l(a4),d0
+				tst.b	PlrT_StoodInTop_b(a0)
+				beq.s	.use_bottom
+
+				move.l	ZoneT_UpperFloor_l(a4),d0
+				sub.l	ZoneT_UpperRoof_l(a4),d0
+
+.use_bottom:
+				clr.b	PlrT_Squished_b(a0)
+				move.l	#PLR_STAND_HEIGHT,PlrT_SnapSquishedHeight_l(a0)
+
+				cmp.l	#PLR_STAND_HEIGHT+3*1024,d0
+				bgt.s	.oktostand
+				st		PlrT_Squished_b(a0)
+				move.l	#PLR_CROUCH_HEIGHT,PlrT_SnapSquishedHeight_l(a0)
+
+.oktostand:
+				move.l	PlrT_SnapTargHeight_l(a0),d1
+				move.l	PlrT_SnapSquishedHeight_l(a0),d0
+				cmp.l	d0,d1
+				blt.s	.notsqu
+				move.l	d0,d1
+
+.notsqu:
+				move.l	PlrT_SnapHeight_l(a0),d0
+				cmp.l	d1,d0
+				beq.s	.noupordown
+				bgt.s	.crouch
+				add.l	#1024,d0
+				bra		.noupordown
+
+.crouch:
+				sub.l	#1024,d0
+
+.noupordown:
+				move.l	d0,PlrT_SnapHeight_l(a0)
+
+				tst.b	RAWKEY_K(a5)
+				beq.s	.notselkey
+				st		PlrT_Keys_b(a0)
+				clr.b	PlrT_Path_b(a0)
+				clr.b	PlrT_Mouse_b(a0)
+				clr.b	PlrT_Joystick_b(a0)
+
+.notselkey:
+				tst.b	RAWKEY_J(a5)
+				beq.s	.notseljoy
+				clr.b	PlrT_Keys_b(a0)
+				clr.b	PlrT_Path_b(a0)
+				clr.b	PlrT_Mouse_b(a0)
+				st		PlrT_Joystick_b(a0)
+
+.notseljoy:
+				tst.b	RAWKEY_M(a5)
+				beq.s	.notselmouse
+				clr.b	PlrT_Keys_b(a0)
+				clr.b	PlrT_Path_b(a0)
+				st		PlrT_Mouse_b(a0)
+				clr.b	PlrT_Joystick_b(a0)
+
+.notselmouse:
+				lea		1(a5),a4
+				move.l	a1,a2
+				move.l	PlrT_ObjectPtr_l(a0),a3
+				move.w	#9,d1
+				move.w	#0,d2
+
+.pickweap:
+				move.w	(a2)+,d0
+				and.b	(a4)+,d0
+				beq.s	.notgotweap
+
+				move.b	d2,PlrT_GunSelected_b(a0)
+
+; d2=number of gun.
+
+				; todo - why does this change for player 1 and 2?
+				cmp.l	Plr1_Data,a0
+				bne.s	.use_player_2_timer
+
+.use_player_1_timer:
+				move.w	#0,EntT_Timer1_w+128(a3)
+				; todo generalise
+				;bsr		Plr1_ShowGunName
+				bra.s	.go
+
+.use_player_2_timer:
+				move.w	#0,EntT_Timer1_w+64(a3)
+				; todo generalise
+				;bsr		Plr1_ShowGunName
+				bra.s	.go
+
+.notgotweap:
+				addq	#1,d2
+				dbra	d1,.pickweap
+
+.go:
+				tst.b	RAWKEY_F10(a5)
+				beq.s	.notswapscr
+				tst.b	lastscr
+				bne.s	.notswapscr2
+				st		lastscr
+
+				not.b	Vid_FullScreenTemp_b
+
+				bra.s	.notswapscr2
+
+.notswapscr:
+				clr.b	lastscr
+
+.notswapscr2:
+				tst.b	RAWKEY_F7(a5)
+				beq.s	.noframelimit
+				clr.b	RAWKEY_F7(a5)
+				cmp.l	#5,Vid_FPSLimit_l
+				beq.s	.resetfpslimit
+				addq.l	#1,Vid_FPSLimit_l
+				bra.s	.noframelimit
+
+.resetfpslimit:
+				clr.l	Vid_FPSLimit_l
+
+.noframelimit:
+				; Developer toggles
+				DEV_CHECK_KEY	RAWKEY_E,SIMPLE_WALLS
+				DEV_CHECK_KEY	RAWKEY_R,SHADED_WALLS
+				DEV_CHECK_KEY	RAWKEY_T,BITMAPS
+				DEV_CHECK_KEY	RAWKEY_Y,GLARE_BITMAPS
+				DEV_CHECK_KEY	RAWKEY_U,ADDITIVE_BITMAPS
+				DEV_CHECK_KEY	RAWKEY_I,LIGHTSOURCED_BITMAPS
+				DEV_CHECK_KEY	RAWKEY_O,POLYGON_MODELS
+				DEV_CHECK_KEY	RAWKEY_G,FLATS
+				DEV_CHECK_KEY	RAWKEY_Q,FASTBUFFER_CLEAR
+				DEV_CHECK_KEY	RAWKEY_N,AI_ATTACK
+				rts
+
+;******************************************************************************
+;*
+;* Common keyboard control
+;*
+;* Pointer to player data in a0
+;*
+;******************************************************************************
 plr_KeyboardControl:
 				move.l	#SinCosTable_vw,a1
 				move.l	#KeyMap_vb,a5
