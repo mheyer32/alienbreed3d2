@@ -647,6 +647,207 @@ plr_ShowGunName:
 				jsr		Game_PushTempMessage
 
 				rts
+
+;******************************************************************************
+;*
+;* Falling down...
+;*
+;* Pointer to player data in a0
+;*
+;******************************************************************************
+plr_Fall:
+				move.l	PlrT_SnapTYOff_l(a0),d0
+				move.l	PlrT_SnapYOff_l(a0),d1
+				move.l	PlrT_SnapYVel_l(a0),d2
+				cmp.l	d1,d0
+				bgt		.above_ground
+				beq.s	.on_ground
+
+				st		Plr_Decelerate_b
+
+				; we are under the ground.
+
+				sub.l	d1,d0
+				cmp.l	#-512,d0
+				bge.s	.not_too_big
+
+				move.l	#-512,d0
+
+.not_too_big:
+				add.l	d0,d1
+				bra		.proceed
+
+.on_ground:
+				move.w	PlrT_FloorSpd_w(a0),d2
+				ext.l	d2
+				asl.l	#6,d2
+				move.l	PlrT_ObjectPtr_l(a0),a4
+				move.w	plr_FallDamage_w,d3
+				sub.w	#100,d3 ; TODO - this should depend on the distance fallen.
+				ble.s	.skip_damage
+
+				add.b	d3,EntT_DamageTaken_b(a4)
+
+.skip_damage:
+				st		Plr_Decelerate_b
+				move.w	#0,plr_FallDamage_w
+				move.w	Plr_AddToBobble_w,d3
+				move.w	d3,d4
+				add.w	PlrT_Bobble_w(a0),d3
+				and.w	#8190,d3
+				move.w	d3,PlrT_Bobble_w(a0)
+				add.w	PlrT_WalkSFXTime_w(a0),d4
+				move.w	d4,d3
+				and.w	#4095,d4
+				move.w	d4,PlrT_WalkSFXTime_w(a0)
+				and.w	#-4096,d3
+				beq.s	.skip_footstep_fx
+
+				bsr		plr_DoFootstepFX
+
+.skip_footstep_fx:
+				move.l	#-1024,plr_JumpSpeed_l
+
+				move.l	PlrT_ZonePtr_l(a0),a2
+				move.l	ZoneT_Water_l(a2),d0
+				cmp.l	d0,d1
+				blt.s	.not_in_water
+				move.l	#-512,plr_JumpSpeed_l
+
+.not_in_water:
+				tst.w	PlrT_Health_w(a0)
+				ble.s	.no_thrust ; dead dudes don't jump
+
+				move.l	#KeyMap_vb,a5
+				moveq	#0,d7
+				move.b	jump_key,d7
+				tst.b	(a5,d7.w)
+				beq.s	.no_thrust
+				move.l	plr_JumpSpeed_l,d2
+
+.no_thrust:
+				tst.l	d2
+				ble.s	.no_down
+
+				moveq	#0,d2
+
+.no_down:
+				add.l	d2,d1
+				bra		.proceed
+
+.above_ground:
+				clr.b	Plr_Decelerate_b
+				tst.w	PlrT_Jetpack_w(a0)
+				beq.s	.not_flying
+
+				tst.w	PlrT_JetpackFuel_w(a0)
+				beq.s	.not_flying
+
+				; cap the fuel. We should make that mod configurable
+				cmp.w	#250,PlrT_JetpackFuel_w(a0)
+				ble.s	.have_jetpack_fuel
+
+				move.w	#250,PlrT_JetpackFuel_w(a0)
+
+.have_jetpack_fuel:
+				st		Plr_Decelerate_b
+				move.l	#-128,plr_JumpSpeed_l
+				move.l	#KeyMap_vb,a5
+				moveq	#0,d7
+				move.b	jump_key,d7
+				tst.b	(a5,d7.w)
+				beq.s	.not_flying
+
+				sub.w	#1,PlrT_JetpackFuel_w(a0)
+				add.l	plr_JumpSpeed_l,d2
+				move.w	#0,plr_FallDamage_w
+				move.w	#40,d3
+				add.w	PlrT_Bobble_w(a0),d3
+				and.w	#8190,d3
+				move.w	d3,PlrT_Bobble_w(a0)
+
+.not_flying:
+				move.l	d0,d3
+				sub.l	d1,d3
+				cmp.l	#16*64,d3
+				bgt.s	.nonearmove
+
+				st		Plr_Decelerate_b
+
+.nonearmove:
+; need to fall down (possibly).
+				add.l	d2,d1
+				cmp.l	d1,d0
+				bgt.s	.still_above
+
+				move.w	plr_FallDamage_w,d3
+				sub.w	#100,d3
+				ble.s	.skip_damage_2
+				move.l	PlrT_ObjectPtr_l(a0),a4
+				add.b	d3,EntT_DamageTaken_b(a4)
+
+.skip_damage_2:
+				move.w	#0,plr_FallDamage_w
+				move.w	PlrT_FloorSpd_w(a0),d2
+				ext.l	d2
+				asl.l	#6,d2
+				bra		.proceed
+
+.still_above:
+				add.l	#64,d2
+				add.w	#1,plr_FallDamage_w
+
+				move.l	PlrT_ZonePtr_l(a0),a2
+				move.l	ZoneT_Water_l(a2),d0
+				cmp.l	d0,d1
+				blt.s	.proceed
+
+				cmp.l	plr_OldHeight_l,d0
+				blt.s	.no_splash_fx
+
+				movem.l	d0-d7/a0-a6,-(a7)
+				move.w	#6,Samplenum ; todo define a constant for this
+				move.w	#0,Noisex
+				move.w	#100,Noisez
+				move.w	#80,Noisevol
+				move.w	#$fff8,IDNUM
+				clr.b	notifplaying
+				jsr		MakeSomeNoise
+
+				movem.l	(a7)+,d0-d7/a0-a6
+
+.no_splash_fx:
+				st		Plr_Decelerate_b
+				move.w	#0,plr_FallDamage_w
+				cmp.l	#512,d2
+				blt.s	.proceed
+
+				move.l	#512,d2					; reached terminal velocity.
+
+.proceed:
+				move.l	PlrT_ZonePtr_l(a0),a2
+				move.l	ZoneT_Roof_l(a2),d3
+				tst.b	PlrT_StoodInTop_b(a0)
+				beq.s	.ok_bottom
+
+				move.l	ZoneT_UpperRoof_l(a2),d3
+
+.ok_bottom:
+				add.l	#10*256,d3
+				cmp.l	d1,d3
+				blt.s	.ok_ceiling
+
+				move.l	d3,d1
+				tst.l	d2
+				bge.s	.ok_ceiling
+
+				moveq	#0,d2
+
+.ok_ceiling:
+				move.l	d2,PlrT_SnapYVel_l(a0)
+				move.l	d1,PlrT_SnapYOff_l(a0)
+				rts
+
 ;******************************************************************************
 ;*
 ;* Do footstep sounds

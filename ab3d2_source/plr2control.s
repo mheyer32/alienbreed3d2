@@ -30,3 +30,7 @@ Plr2_JoystickControl:
 Plr2_FootstepFX:
 				lea		Plr1_Data,a0
 				bra		plr_DoFootstepFX
+
+Plr2_Fall:
+				lea		Plr2_Data,a0
+				bra		plr_Fall

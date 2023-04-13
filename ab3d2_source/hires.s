@@ -7954,7 +7954,6 @@ lastpressed:	dc.b	0
 
 				include	"plr1control.s"
 				include	"plr2control.s"
-				include	"fall.s"
 
 *******************************************8
 

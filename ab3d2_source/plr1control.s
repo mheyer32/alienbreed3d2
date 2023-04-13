@@ -31,6 +31,12 @@ Plr1_FootstepFX:
 				lea		Plr1_Data,a0
 				bra		plr_DoFootstepFX
 
+Plr1_Fall:
+				lea		Plr1_Data,a0
+				bra		plr_Fall
+
+
+
 Plr1_FollowPath:
 				move.l	pathpt,a0
 				move.w	(a0),d1
