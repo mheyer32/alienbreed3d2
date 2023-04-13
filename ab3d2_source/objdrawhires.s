@@ -2,7 +2,73 @@
 DRAW_BITMAP_NEAR_PLANE	EQU		25   ; Distances lower than this for bitmaps are considered behind the observer
 DRAW_VECTOR_NEAR_PLANE	EQU		130  ; Distances lower than this for vectors are considered behind the observer
 
-DRAW_VECTOR_MAX_Z		EQU		13000 ; Vector points further than this will be culled
+DRAW_VECTOR_MAX_Z		EQU		16383 ; Vector points further than this will be culled
+
+; 0xABADCAFE - Instead of the divs.l that was used, where possible we will use
+; the 1/N lookup table and muls/asr as a faster replacement.
+;
+; Execute times (does not include EA)
+;
+; 68030 divs.l => 90 cycles, muls.l => 44 cycles, muls.w => 28 cycles
+; 68040 divs.l => 44 cycles, muls.l => 20 cycles, muls.w => 16 cycles
+; 68060 divs.l => 38 cycles, muls.l => 2 cycles,  muls.w =>  2 cycles
+;
+; The 1/N lookup table actually contains 16384/N for N up to MAX_ONE_OVER_N, that we will
+; multiply by, before right shifting 14 places to obtain 1/N. However, to
+; avoid overflow in the interim calculation, we have to pre-shift the input
+; dividend partially before the calculation.
+;
+; TODO - Currently where the division approximation is used, we clamp to the table length.
+;        This seems to be fine for most cases, except extreme closeup, where the clamping can
+;        result in texture coordinate issues. Rather than clamping, we shoud consider fallback
+;        onto the original division behaviour.
+
+				IFD	USE_16X16_TEXEL_MULS
+
+; This macro performs multiplication by the 1/N value using cheaper 16x16 multiplication,
+; at the potential cost of some precision.
+;
+; 				MUL_INV_PAIR reciprocal,val1,val2
+MUL_INV_PAIR	MACRO
+				swap	\2
+				swap	\3
+				muls.w	\1,\2
+				muls.w	\1,\3
+				lsl.l	#2,\2
+				lsl.l	#2,\3
+				ENDM
+
+; 				MUL_INV reciprocal,val
+MUL_INV			MACRO
+				swap	\2
+				muls.w	\1,\2
+				lsl.l	#2,\2
+				ENDM
+
+				ELSE
+
+; This macro performs multiplication by the 1/N value using 32-bit multiplication, uses a
+; shift/multiply/shift approach to avoid overflow
+;
+; 				MUL_INV_PAIR reciprocal,val1,val2
+MUL_INV_PAIR	MACRO
+				ext.l	\1
+				asr.l	#8,\2
+				asr.l	#8,\3
+				muls.l	\1,\2
+				muls.l	\1,\3
+				asr.l	#6,\2
+				asr.l	#6,\3
+				ENDM
+
+; 				MUL_INV reciprocal,val
+MUL_INV			MACRO
+				asr.l	#8,\2
+				muls.l	\1,\2
+				asr.l	#6,\2
+				ENDM
+
+				ENDC
 
 				align 4
 draw_TopY_3D_l:			dc.l	-100*1024
@@ -161,7 +227,13 @@ draw_bitmap_glare:
 				move.w	draw_BottomClip_w,d3
 				move.l	draw_TopY_3D_l,d6
 				sub.l	yoff,d6
+
+				; DEV_CHECK_DIVISOR d1
+				; 0xABADCAFE - Divisor is often bigger than our table
 				divs	d1,d6
+				;DEV_INC.w Reserved1
+				; 0xABADCAFE - Not worth it < 10 typically
+
 				add.w	Vid_CentreY_w,d6
 				cmp.w	d3,d6
 				bge		object_behind
@@ -175,7 +247,12 @@ draw_bitmap_glare:
 				move.w	d6,draw_ObjClipT_w
 				move.l	draw_BottomY_3D_l,d6
 				sub.l	yoff,d6
+
+				; DEV_CHECK_DIVISOR d1
+				; 0xABADCAFE - Checked: Couldn't trigger
 				divs	d1,d6
+				;DEV_INC.w Reserved1
+
 				add.w	Vid_CentreY_w,d6
 				cmp.w	d2,d6
 				ble		object_behind
@@ -200,10 +277,19 @@ draw_bitmap_glare:
 				ext.l	d2
 				asl.l	#7,d2
 				sub.l	yoff,d2
+
 				divs	d1,d2
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	Vid_CentreY_w,d2
+
 				divs	d1,d0
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	Vid_CentreX_w,d0				;x pos of middle
+
+				;DEV_INCN.w Reserved1,2
+
 
 ; Need to calculate:
 ; Width of object in pixels
@@ -228,8 +314,14 @@ draw_bitmap_glare:
 				move.b	(a0)+,d4
 				lsl.l	#7,d3
 				lsl.l	#7,d4
+
+				;DEV_CHECK_DIVISOR d1
+				; 0xABADCAFE Checked, often out of range
 				divs	d1,d3					;width in pixels
 				divs	d1,d4					;height in pixels
+				;DEV_INCN.w Reserved1,2
+				; 0xABADCAFE Checked, few calls
+
 				sub.w	d4,d2
 				sub.w	d3,d0
 				cmp.w	draw_RightClipB_w,d0
@@ -263,6 +355,8 @@ draw_bitmap_glare:
 				beq		object_behind
 
 				divu	d6,d7
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				swap	d7
 				clr.w	d7
 				swap	d7
@@ -275,7 +369,10 @@ draw_bitmap_glare:
 				moveq	#0,d6
 				move.b	-1(a0),d6
 				beq		object_behind
+
 				divu	d6,d7
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				swap	d7
 				clr.w	d7
 				swap	d7
@@ -495,7 +592,10 @@ draw_Bitmap:
 				move.w	draw_BottomClip_w,d3
 				move.l	draw_TopY_3D_l,d6
 				sub.l	yoff,d6
+
 				divs	d1,d6
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	Vid_CentreY_w,d6
 				cmp.w	d3,d6
 				bge		object_behind
@@ -508,7 +608,10 @@ draw_Bitmap:
 				move.w	d6,draw_ObjClipT_w				; top object clip
 				move.l	draw_BottomY_3D_l,d6
 				sub.l	yoff,d6
+
 				divs	d1,d6
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	Vid_CentreY_w,d6
 				cmp.w	d2,d6					; bottom of object over top of screen?
 				ble		object_behind
@@ -584,9 +687,15 @@ pastobjscale:
 				ext.l	d2
 				asl.l	#7,d2
 				sub.l	yoff,d2
+
 				divs	d1,d2
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	Vid_CentreY_w,d2
+
 				divs	d1,d0
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	Vid_CentreX_w,d0				;x pos of middle
 
 ; Need to calculate:
@@ -633,8 +742,11 @@ pastobjscale:
 				move.b	(a0)+,d4
 				lsl.l	#7,d3
 				lsl.l	#7,d4
+
 				divs	d1,d3					;width in pixels
 				divs	d1,d4					;height in pixels
+				;DEV_INCN.w Reserved2 ; counts how many divisions
+
 				sub.w	d4,d2
 				sub.w	d3,d0
 				cmp.w	draw_RightClipB_w,d0
@@ -680,6 +792,8 @@ pastobjscale:
 				beq		object_behind
 
 				divu	d6,d7
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				swap	d7
 				clr.w	d7
 				swap	d7
@@ -694,6 +808,8 @@ pastobjscale:
 				beq		object_behind
 
 				divu	d6,d7
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				swap	d7
 				clr.w	d7
 				swap	d7
@@ -1075,7 +1191,10 @@ foundang:
 
 				muls	#16,d1
 				subq	#1,d1
+
 				divs	d2,d1
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				move.w	d1,d2
 
 INMIDDLE:
@@ -1421,8 +1540,22 @@ draw_TweenBrights:
 .okpos:
 				swap	d2
 				swap	d3
-				ext.l	d4
-				divs.l	d4,d3
+				beq		.skip_zero_dividend
+
+				; 0xABADCAFE - TODO numbers here may be suited for 16x16
+				move.w	d4,-2(sp)
+				move.w	OneOverN_vw(pc,d4.w*2),d4
+
+				ext.l	d4  		; we still need a 32-bit multiplicand
+				asr.l	#7,d3
+				muls.l	d4,d3
+				asr.l	#7,d3
+				move.w	-2(sp),d4
+
+				;divs.l	d4,d3
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
+.skip_zero_dividend:
 				subq	#1,d4					; number of tweens
 
 .put_in_tween_loop:
@@ -1734,14 +1867,14 @@ BOTPART:
 				add.w	d2,d2
 				add.w	d2,a3
 				subq	#1,d5
-				move.l	#boxrot,a4				; temp storage for rotated points?
+				move.l	#draw_3DPointsRotated_vl,a4				; temp storage for rotated points?
 				move.w	draw_ObjectAng_w,d2
 				sub.w	#2048,d2				; 90deg
 				sub.w	angpos,d2				; view angle
 				and.w	#8191,d2				; wrap 360deg
 				move.l	#SinCosTable_vw,a2
 				lea		(a2,d2.w),a5			; sine of object rotation wrt view
-				move.l	#boxbrights,a6
+				move.l	#boxbrights_vw,a6
 				move.w	(a5),d6					; sine of object rotation
 				move.w	2048(a5),d7				; cosine of object rotation. WHY DOES IT NOT NEED OOB/WRAP CHECK?
 												; bigsine is 16kb, so 8192 words
@@ -1773,9 +1906,9 @@ rotate_object:
 
 				move.l	4(a1,d0.w*8),d0			; xpos of mid; is this the object position?
 				move.w	draw_NumPoints_w,d7
-				move.l	#boxrot,a2
-				move.l	#boxonscr,a3
-				move.l	#boxbrights,a6
+				move.l	#draw_3DPointsRotated_vl,a2
+				move.l	#draw_2DPointsProjected_vl,a3
+				move.l	#boxbrights_vw,a6
 				move.w	2(a0),d2				; object y pos?
 				subq	#1,d7
 				add.l	d0,d0					; * 2
@@ -1821,16 +1954,21 @@ fullscreen_conv:
 				asr.l	#2,d4						; Issue #60: Avoid overflow by partially pre-shifting y''
 				muls.l	d6,d4						; before the multiplication step
 				asr.l	#8,d4						; y'' * 3.333
+
 				divs	d5,d4						; ys = (x*3)/(z*2)
+				;DEV_INC.w Reserved1 ; counts how many divisions
 
 				; approximate 3.333 => 3413/1024
 				asr.l	#2,d3						; Issue #60: Avoid overflow by partially pre-shifting x''
 				muls.l	d6,d3						; before the multiplication
 				asr.l	#8,d3						; x'' * 3.333
+
 				divs	d5,d3						; xs = (x*3)/(z*2)
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	Vid_CentreX_w,d3			; mid_x of screen
 				add.w	draw_PolygonCentreY_w,d4	; mid_y of screen
-				move.w	d3,(a3)+					; store xs,ys in boxonscr
+				move.w	d3,(a3)+					; store xs,ys in draw_2DPointsProjected_vl
 				move.w	d4,(a3)+
 				dbra	d7,.convert_to_screen
 
@@ -1867,8 +2005,11 @@ smallscreen_conv:
 				bgt		nomoreparts
 
 				move.w	d5,(a2)+
+
 				divs	d5,d3
 				divs	d5,d4
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+
 				add.w	Vid_CentreX_w,d3
 				add.w	draw_PolygonCentreY_w,d4
 				move.w	d3,(a3)+
@@ -1885,7 +2026,7 @@ smallscreen_conv:
 
 done_conv:
 				move.w	draw_NumPoints_w,d7
-				move.l	#boxbrights,a6
+				move.l	#boxbrights_vw,a6
 				subq	#1,d7
 				move.l	draw_PointAngPtr_l,a0
 				move.l	#draw_PointAndPolyBrights_vl,a2
@@ -1932,7 +2073,7 @@ clrpartbuff:
 				addq	#4,a2
 				dbra	d0,clrpartbuff
 
-				move.l	#boxrot,a2
+				move.l	#draw_3DPointsRotated_vl,a2
 				move.l	draw_ObjectOnOff_l,d5
 				tst.w	draw_SortIt_w
 				bne.s	PutinParts
@@ -2039,7 +2180,7 @@ doapoly:
 				move.w	(a1)+,d7				; lines to draw
 				move.w	(a1)+,draw_PreHoles_b
 				move.w	12(a1,d7.w*4),draw_PreGouraud_b
-				move.l	#boxonscr,a3
+				move.l	#draw_2DPointsProjected_vl,a3
 				movem.l	d0-d7/a0-a6,-(a7)
 
 ; * Check for any of these points behind...
@@ -2077,7 +2218,7 @@ checkbeh:
 				muls	d5,d0
 				sub.l	d0,d2
 				ble		polybehind
-				move.l	#boxrot,a3
+				move.l	#draw_3DPointsRotated_vl,a3
 				move.w	(a1),d0
 				move.w	d0,d1
 				asl.w	#2,d0
@@ -2108,7 +2249,7 @@ checkbeh:
 				muls	d5,d0
 				sub.l	d0,d2
 				move.l	d2,polybright
-				move.l	#boxonscr,a3
+				move.l	#draw_2DPointsProjected_vl,a3
 				clr.b	drawit
 				tst.b	draw_Gouraud_b
 				bne.s	usegour
@@ -2276,20 +2417,55 @@ nocr:
 				move.l	d3,-(a7)
 				move.l	d4,-(a7)
 				add.w	offtopby,d0
-				ext.l	d0
+
+
 				muls.l	offtopby-2,d3
 				muls.l	offtopby-2,d4
-				divs.l	d0,d3
-				divs.l	d0,d4
+
+				;DEV_CHECK_DIVISOR d0
+
+				; save the original divisor
+				move.w	d0,-2(sp)
+
+				cmp.w	#MAX_ONE_OVER_N,d0
+				bls		.skip_clamp_divisor_0
+				move.w	#MAX_ONE_OVER_N,d0
+
+.skip_clamp_divisor_0:
+
+				; 0xABADCAFE - seems like this rarely happens
+				;ext.l	d0
+				;divs.l	d0,d3
+				;divs.l	d0,d4
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+
+				move.w	OneOverN_vw(pc,d0.w*2),d0
+				MUL_INV_PAIR	d0,d3,d4
+
+				; restore the original divisor
+				move.w	-2(sp),d0
+
 				add.l	d3,d5
 				add.l	d4,d6
 				move.l	(a7)+,d4
 				move.l	(a7)+,d3
 
 .notofftop:
-				ext.l	d0
-				divs.l	d0,d3
-				divs.l	d0,d4
+				;DEV_CHECK_DIVISOR d0
+
+				cmp.w	#MAX_ONE_OVER_N,d0
+				bls		.skip_clamp_divisor_1
+				move.w	#MAX_ONE_OVER_N,d0
+
+.skip_clamp_divisor_1:
+				;ext.l	d0
+				;divs.l	d0,d3
+				;divs.l	d0,d4
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+
+				move.w	OneOverN_vw(pc,d0.w*2),d0
+				MUL_INV_PAIR	d0,d3,d4
+
 				add.l	ontoscr(pc,d1.w*4),a3
 				move.l	#$3fffff,d1
 				move.l	d3,a5
@@ -2378,20 +2554,58 @@ nocrGL:
 				move.l	d3,-(a7)
 				move.l	d4,-(a7)
 				add.w	offtopby,d0
-				ext.l	d0
+
+
+				; 0xABADCAFE DIVS.L
+				; Limit the divisor and lookup in 1/N
+				; Don't trash original divisor...
+				;DEV_CHECK_DIVISOR d0
+				move.w	d0,-2(sp)		; save original divisor
+				cmp.w	#MAX_ONE_OVER_N,d0
+				bls		.skip_clamp_divisor_0
+				move.w	#MAX_ONE_OVER_N,d0
+
+.skip_clamp_divisor_0:
 				muls.l	offtopby-2,d3
 				muls.l	offtopby-2,d4
-				divs.l	d0,d3
-				divs.l	d0,d4
+
+				;original
+				;ext.l	d0
+				;divs.l	d0,d3
+				;divs.l	d0,d4
+
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+
+				move.w	OneOverN_vw(pc,d0.w*2),d0
+				MUL_INV_PAIR	d0,d3,d4
+
+				; restore original divisor
+				move.w	-2(sp),d0		; restore original divisor
+
 				add.l	d3,d5
 				add.l	d4,d6
 				move.l	(a7)+,d4
 				move.l	(a7)+,d3
 
 .notofftop:
-				ext.l	d0
-				divs.l	d0,d3
-				divs.l	d0,d4
+				; 0xABADCAFE DIVS.L
+				; Limit the divisor and lookup in 1/N
+				;DEV_CHECK_DIVISOR d0
+				cmp.w	#MAX_ONE_OVER_N,d0
+				bls		.skip_clamp_divisor_1
+				move.w	#MAX_ONE_OVER_N,d0
+
+.skip_clamp_divisor_1:
+				;original
+				;ext.l	d0
+				;divs.l	d0,d3
+				;divs.l	d0,d4
+
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+
+				move.w	OneOverN_vw(pc,d0.w*2),d0
+				MUL_INV_PAIR	d0,d3,d4
+
 				add.l	ontoscrGL(pc,d1.w*4),a3
 				move.l	#$3fffff,d1
 				move.l	d3,a5
@@ -2503,20 +2717,51 @@ nocrg:
 				move.l	d3,-(a7)
 				move.l	d4,-(a7)
 				add.w	offtopby,d0
-				ext.l	d0
+
+
+				; 0xABADCAFE DIVS.L
+				;DEV_CHECK_DIVISOR d0
+
+				move.w	d0,-2(sp)		; save original divisor
+				cmp.w	#MAX_ONE_OVER_N,d0
+				bls		.skip_clamp_divisor_0
+				move.w	#MAX_ONE_OVER_N,d0
+
+.skip_clamp_divisor_0:
+				;ext.l	d0
+				;divs.l	d0,d3
+				;divs.l	d0,d4
+
+				;DEV_INCN.w Reserved1,2 ; counts how many divisions
+
 				muls.l	offtopby-2,d3
 				muls.l	offtopby-2,d4
-				divs.l	d0,d3
-				divs.l	d0,d4
+
+				move.w	OneOverN_vw(pc,d0.w*2),d0
+				MUL_INV_PAIR	d0,d3,d4
+
+				move.w	-2(sp),d0 ; restore d0 before continuing
+
 				add.l	d3,d5
 				add.l	d4,d6
 				move.l	(a7)+,d4
 				move.l	(a7)+,d3
 
 .notofftop:
-				ext.l	d0
-				divs.l	d0,d3
-				divs.l	d0,d4
+				;DEV_CHECK_DIVISOR d0
+
+				cmp.w	#MAX_ONE_OVER_N,d0
+				bls		.skip_clamp_divisor_1
+				move.w	#MAX_ONE_OVER_N,d0
+
+.skip_clamp_divisor_1:
+				;ext.l	d0
+				;divs.l	d0,d3
+				;divs.l	d0,d4
+
+				move.w	OneOverN_vw(pc,d0.w*2),d0
+				MUL_INV_PAIR	d0,d3,d4
+
 				add.l	ontoscrg(pc,d1.w*4),a3
 				move.w	10+draw_PolyBotTab_vw-draw_PolyTopTab_vw(a4),d1
 				move.w	10(a4),d7
@@ -2524,8 +2769,15 @@ nocrg:
 				asl.w	#8,d7
 				swap	d1
 				clr.w	d1
-				divs.l	d0,d1
-				asr.l	#8,d1
+
+				;divs.l	d0,d1
+
+				MUL_INV	d0,d1
+
+				;DEV_INCN.w Reserved1,3 ; counts how many divisions skipped
+
+				asr.l	#8,d1 ; worth a custom one-off macro to save this step
+
 				move.l	d3,a5
 				moveq	#0,d3
 				swap	d2
@@ -2672,20 +2924,47 @@ nocrh:
 				move.l	d3,-(a7)
 				move.l	d4,-(a7)
 				add.w	offtopby,d0
-				ext.l	d0
+
+				; 0xABADCAFE DIVS.L
+				; Limit the divisor and lookup in 1/N
+				move.w	d0,-2(sp)		; save original divisor
+				cmp.w	#MAX_ONE_OVER_N,d0
+				bls		.skip_clamp_divisor_0
+				move.w	#MAX_ONE_OVER_N,d0
+
+.skip_clamp_divisor_0:
+				;ext.l	d0
+				;divs.l	d0,d3
+				;divs.l	d0,d4
+				;DEV_INCN.w Reserved1,2
+
 				muls.l	offtopby-2,d3
 				muls.l	offtopby-2,d4
-				divs.l	d0,d3
-				divs.l	d0,d4
+
+				move.w	OneOverN_vw(pc,d0.w*2),d0
+				MUL_INV_PAIR	d0,d3,d4
+
+				move.w	-2(sp),d0 ; Restore original divisor
+
 				add.l	d3,d5
 				add.l	d4,d6
 				move.l	(a7)+,d4
 				move.l	(a7)+,d3
 
 .notofftop:
-				ext.l	d0
-				divs.l	d0,d3
-				divs.l	d0,d4
+				cmp.w	#MAX_ONE_OVER_N,d0
+				bls		.skip_clamp_divisor_1
+				move.w	#MAX_ONE_OVER_N,d0
+
+.skip_clamp_divisor_1:
+				;ext.l	d0
+				;divs.l	d0,d3
+				;divs.l	d0,d4
+				;DEV_INCN.w Reserved1,2
+
+				move.w	OneOverN_vw(pc,d0.w*2),d0
+				MUL_INV_PAIR	d0,d3,d4
+
 				add.l	ontoscrh(pc,d1.w*4),a3
 				move.l	#$3fffff,d1
 				move.l	d3,a5
@@ -2803,7 +3082,10 @@ draw_PutInLines:
 				ext.l	d4
 				swap	d5
 				clr.w	d5
+
 				divs.l	d4,d5
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				moveq	#0,d2
 				move.b	2(a1),d2
 				moveq	#0,d6
@@ -2813,8 +3095,12 @@ draw_PutInLines:
 				swap	d6
 				clr.w	d2
 				clr.w	d6						; d6=xbitpos
+
 				divs.l	d4,d2
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				move.l	d5,a5					; a5=dy constant
+
 				move.l	d2,a6					; a6=xbitconst
 				moveq	#0,d5
 				move.b	3(a1),d5
@@ -2825,7 +3111,10 @@ draw_PutInLines:
 				swap	d5
 				clr.w	d2						; d3=ybitpos
 				clr.w	d5
+
 				divs.l	d4,d5
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	(a7)+,d4
 				sub.w	draw_OffLeftBy_w,d4
 				blt		this_line_flat
@@ -2913,10 +3202,16 @@ this_line_on_top:
 				swap	d3
 				clr.w	d3						; d2=xpos
 				sub.w	d2,d4					; dx > 0
+
+				;DEV_CHECK_DIVISOR d4
+
 				ext.l	d4
 				swap	d5
 				clr.w	d5
+
 				divs.l	d4,d5
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				moveq	#0,d2
 				move.b	6(a1),d2
 				moveq	#0,d6
@@ -2926,7 +3221,10 @@ this_line_on_top:
 				swap	d6
 				clr.w	d2
 				clr.w	d6						; d6=xbitpos
+
 				divs.l	d4,d2
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				move.l	d5,a5					; a5=dy constant
 				move.l	d2,a6					; a6=xbitconst
 				moveq	#0,d5
@@ -2938,7 +3236,10 @@ this_line_on_top:
 				swap	d5
 				clr.w	d2						; d3=ybitpos
 				clr.w	d5
+
 				divs.l	d4,d5
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	(a7)+,d4
 				sub.w	draw_OffLeftBy_w,d4
 				blt.s	this_line_flat
@@ -2982,7 +3283,7 @@ this_line_flat:
 				rts
 
 draw_PutInLinesGouraud:
-				move.l	#boxbrights,a2
+				move.l	#boxbrights_vw,a2
 
 piglloop:
 				move.w	(a1),d0
@@ -3050,7 +3351,10 @@ piglloop:
 				ext.l	d4
 				swap	d5
 				clr.w	d5
+
 				divs.l	d4,d5
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				moveq	#0,d2
 				move.b	2(a1),d2
 				moveq	#0,d6
@@ -3060,8 +3364,14 @@ piglloop:
 				swap	d6
 				clr.w	d2
 				clr.w	d6						; d6=xbitpos
+
 				divs.l	d4,d2
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				move.l	d5,a5					; a5=dy constant
+
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				move.l	d2,a6					; a6=xbitconst
 				moveq	#0,d5
 				move.b	3(a1),d5
@@ -3072,7 +3382,10 @@ piglloop:
 				swap	d5
 				clr.w	d2						; d3=ybitpos
 				clr.w	d5
+
 				divs.l	d4,d5
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				move.w	(a2,d1.w*2),d1
 				move.w	(a2,d0.w*2),d0
 				sub.w	d1,d0
@@ -3080,7 +3393,10 @@ piglloop:
 				swap	d1
 				clr.w	d0
 				clr.w	d1
+
 				divs.l	d4,d0
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	(a7)+,d4
 				sub.w	draw_OffLeftBy_w,d4
 				blt		this_line_flat_gouraud
@@ -3175,7 +3491,10 @@ this_line_on_top_gouraud:
 				ext.l	d4
 				swap	d5
 				clr.w	d5
+
 				divs.l	d4,d5
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				moveq	#0,d2
 				move.b	6(a1),d2
 				moveq	#0,d6
@@ -3185,7 +3504,10 @@ this_line_on_top_gouraud:
 				swap	d6
 				clr.w	d2
 				clr.w	d6						; d6=xbitpos
+
 				divs.l	d4,d2
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				move.l	d5,a5					; a5=dy constant
 				move.l	d2,a6					; a6=xbitconst
 				moveq	#0,d5
@@ -3197,7 +3519,10 @@ this_line_on_top_gouraud:
 				swap	d5
 				clr.w	d2						; d3=ybitpos
 				clr.w	d5
+
 				divs.l	d4,d5
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				move.w	(a2,d1.w*2),d1
 				move.w	(a2,d0.w*2),d0
 				sub.w	d0,d1
@@ -3205,7 +3530,10 @@ this_line_on_top_gouraud:
 				swap	d1
 				clr.w	d0
 				clr.w	d1
+
 				divs.l	d4,d1
+				;DEV_INC.w Reserved1 ; counts how many divisions
+
 				add.w	(a7)+,d4
 				sub.w	draw_OffLeftBy_w,d4
 				blt.s	this_line_flat_gouraud

@@ -35,9 +35,9 @@ Plr1_MouseControl:
 				asr.l	#1,d7
 
 .bug2:
-				move.w	ymouse,d3
-				sub.w	oldymouse,d3
-				add.w	d3,oldymouse
+				move.w	Sys_MouseY,d3
+				sub.w	Sys_OldMouseY,d3
+				add.w	d3,Sys_OldMouseY
 
 				move.w	STOPOFFSET,d0
 				move.w	d3,d2
@@ -233,7 +233,7 @@ nottapped:
 				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapTargHeight_l
 
 notduck:
-				move.l	Plr1_RoomPtr_l,a4
+				move.l	Plr1_ZonePtr_l,a4
 				move.l	ZoneT_Floor_l(a4),d0
 				sub.l	ZoneT_Roof_l(a4),d0
 				tst.b	Plr1_StoodInTop_b
@@ -317,7 +317,7 @@ notgotweap:
 				dbra	d1,pickweap
 
 gogog:
-				tst.b	RAWKEY_NUM_ENTER(a5)
+				tst.b	RAWKEY_F10(a5)
 				beq.s	.notswapscr
 				tst.b	lastscr
 				bne.s	.notswapscr2
@@ -359,15 +359,7 @@ gogog:
 				; Restores the complete original screen left/right borders,
 				; bottom panel.They are stored in a lha packed format
 
-				; a0 points to destination memory
-Draw_ResetGameDisplay:
-				move.l	#draw_BorderPacked_vb,d0
-				moveq	#0,d1
-				lea		Sys_Workspace_vl,a1
-				lea		$0,a2
-				jsr		unLHA
 
-				rts
 
 Plr1_ShowGunName:
 				moveq	#0,d2
@@ -389,7 +381,7 @@ Plr1_ShowGunName:
 				dbra	d2,.copyname
 
 				move.l	#TEMPSCROLL,d0
-				jsr		SENDMESSAGENORET
+				jsr		Game_PushTempMessage
 				rts
 
 
@@ -676,7 +668,7 @@ Plr1_JoystickControl:
 
 Plr1_FootstepFX:
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.l	Plr1_RoomPtr_l,a0
+				move.l	Plr1_ZonePtr_l,a0
 				move.w	ZoneT_FloorNoise_w(a0),d0
 
 				move.l	ZoneT_Water_l(a0),d1

@@ -4,45 +4,95 @@
 
 			align 4
 
+game_NullMessage_vb:	dcb.b	160,' '
+
+
+Game_SoundOptionsText_vb:
+				;;;;	"1234567890123456789012345678901234567890"
+				dc.b	"Four Channel Mono Selected              "
+				dc.b	"                                        "
+				dc.b	"                                        "
+				dc.b	"                                        "
+
+				dc.b	"Four Channel Stereo Selected            "
+				dc.b	"                                        "
+				dc.b	"                                        "
+				dc.b	"                                        "
+
+				dc.b	"Eight Channel Mono Selected             "
+				dc.b	"                                        "
+				dc.b	"                                        "
+				dc.b	"                                        "
+
+				dc.b	"Eight Channel Stereo Selected           "
+				dc.b	"                                        "
+				dc.b	"                                        "
+				dc.b	"                                        "
+
+Game_LightingOptionsText_vb:
+				;;;;	"1234567890123456789012345678901234567890"
+				dc.b	"Lighting Effects Deactivated            "
+				dc.b	"                                        "
+				dc.b	"                                        "
+				dc.b	"                                        "
+
+				dc.b	"Lighting Effects Activated              "
+				dc.b	"                                        "
+				dc.b	"                                        "
+				dc.b	"                                        "
+
+Game_DrawHighQualityText_vb:
+				dc.b	"Rendering Quality : High                "
+				dc.b	"                                        "
+				dc.b	"                                        "
+				dc.b	"                                        "
+
+Game_DrawLowQualityText_vb:
+				dc.b	"Rendering Quality : Reduced             "
+				dc.b	"                                        "
+				dc.b	"                                        "
+				dc.b	"                                        "
+
+
 Game_TwoPlayerVictoryMessages_vb:
-;      12345678901234567890123456789012345678901234567890123456789012345678901234567890
-				dc.b	'Enemy Player Vanquished!                '
-				dc.b	'                                        '
-				dc.b	'Enemy Player Vanquished!                '
-				dc.b	'                                        '
+				;;;;	"1234567890123456789012345678901234567890"
+				dc.b	"Enemy Player Vanquished!                "
+				dc.b	"                                        "
+				dc.b	"Enemy Player Vanquished!                "
+				dc.b	"                                        "
 
-				dc.b	'Oooh, that one must have hurt!          '
-				dc.b	'                                        '
-				dc.b	'Oooh, that one must have hurt!          '
-				dc.b	'                                        '
+				dc.b	"Oooh, that one must have hurt!          "
+				dc.b	"                                        "
+				dc.b	"Oooh, that one must have hurt!          "
+				dc.b	"                                        "
 
-				dc.b	'Opponent IS toast!                      '
-				dc.b	'                                        '
-				dc.b	'Opponent IS toast!                      '
-				dc.b	'                                        '
+				dc.b	"Opponent IS toast!                      "
+				dc.b	"                                        "
+				dc.b	"Opponent IS toast!                      "
+				dc.b	"                                        "
 
-				dc.b	'Does it hurt? DOES it? DOES IT?!?       '
-				dc.b	'                                        '
-				dc.b	'Does it hurt? DOES it? DOES IT?!?       '
-				dc.b	'                                        '
+				dc.b	"Does it hurt? DOES it? DOES IT?!?       "
+				dc.b	"                                        "
+				dc.b	"Does it hurt? DOES it? DOES IT?!?       "
+				dc.b	"                                        "
 
 				dc.b	"Gosh, I",39,"m dreadfully sorry, old chap; didn't see you there!                     "
 				dc.b	"Gosh, I",39,"m dreadfully sorry, old chap; didn't see you there!                     "
 
-				dc.b	'Now go away before I taunt you a second time.                                   '
-				dc.b	'Now go away before I taunt you a second time.                                   '
+				dc.b	"Now go away before I taunt you a second time.                                   "
+				dc.b	"Now go away before I taunt you a second time.                                   "
 
-				dc.b	'Eh, sorry about that there mate, didn',39,'t know it was loaded, know worra mean?    '
-				dc.b	'Eh, sorry about that there mate, didn',39,'t know it was loaded, know worra mean?    '
+				dc.b	"Eh, sorry about that there mate, didn",39,"t know it was loaded, know worra mean?    "
+				dc.b	"Eh, sorry about that there mate, didn",39,"t know it was loaded, know worra mean?    "
 
-				dc.b	'Stand and deliver, your money or...  oh. Never mind.                            '
-				dc.b	'Stand and deliver, your money or...  oh. Never mind.                            '
+				dc.b	"Stand and deliver, your money or...  oh. Never mind.                            "
+				dc.b	"Stand and deliver, your money or...  oh. Never mind.                            "
 
-				dc.b	'Thank you for your kind interest, I look forward to your custom in future lives.'
-				dc.b	'Thank you for your kind interest, I look forward to your custom in future lives.'
+				dc.b	"Thank you for your kind interest, I look forward to your custom in future lives."
+				dc.b	"Thank you for your kind interest, I look forward to your custom in future lives."
 
 Game_SinglePlayerVictoryText_vb:
-				  ;          12345678901234567890123456789012345678901234567890123456789012345678901234567890
+				;;;;	;;;;"12345678901234567890123456789012345678901234567890123456789012345678901234567890"
 				dc.b	0,0,"                                                                                "
 				dc.b	0,1,"As the beast and its four servants die, a breathless silence falls, broken      "
 				dc.b	0,1,"only by the hammering of my own heart in my chest.                              "

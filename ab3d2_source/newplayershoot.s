@@ -50,7 +50,7 @@ Plr1_Shot:
 				move.l	Plr1_YOff_l,tempyoff
 				add.l	#10*128,tempyoff
 				move.b	Plr1_StoodInTop_b,tempStoodInTop
-				move.l	Plr1_RoomPtr_l,tempRoompt
+				move.l	Plr1_ZonePtr_l,tempRoompt
 				move.l	#%100011,d7
 				move.w	#-1,d0
 				move.l	#0,targetydiff
@@ -280,7 +280,7 @@ Plr1_Shot:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	Plr1_RoomPtr_l,objroom
+				move.l	Plr1_ZonePtr_l,objroom
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:
@@ -375,7 +375,7 @@ Plr2_Shot:
 				move.l	Plr2_YOff_l,tempyoff
 				add.l	#10*128,tempyoff
 				move.b	Plr2_StoodInTop_b,tempStoodInTop
-				move.l	Plr2_RoomPtr_l,tempRoompt
+				move.l	Plr2_ZonePtr_l,tempRoompt
 				move.l	#%10011,d7
 				move.w	#-1,d0
 				move.l	#0,targetydiff
@@ -605,7 +605,7 @@ Plr2_Shot:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	Plr2_RoomPtr_l,objroom
+				move.l	Plr2_ZonePtr_l,objroom
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:
@@ -855,7 +855,7 @@ plr1_HitscanFailed:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	Plr1_RoomPtr_l,objroom
+				move.l	Plr1_ZonePtr_l,objroom
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:
@@ -995,7 +995,7 @@ plr2_HitscanFailed:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	Plr2_RoomPtr_l,objroom
+				move.l	Plr2_ZonePtr_l,objroom
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:

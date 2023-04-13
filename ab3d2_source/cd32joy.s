@@ -223,9 +223,6 @@ _ReadJoy1
 .Mouse
 				rts
 
-
-
-
 _ReadJoy2
 				move.l	a6,-(a7)
 				move.l	#1,d0

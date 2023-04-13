@@ -1017,130 +1017,23 @@ endprot:
 
 ******************************************************************
 
-; This routine renders a wall that has it's four corner brightnesses the same
-draw_WallFlatShaded:
-				tst.w	d1
-				bgt.s	.oneinfront
-				tst.w	d3
-				bgt.s	.oneinfront
-				rts
-
-.oneinfront:
+; This routine renders a wall that has it's upper and lower brightnesses the same.
+draw_WallSimpleShaded:
 				DEV_INC.w VisibleSimpleWalls
-				move.w	#16,d7
-				move.w	#2,d6
 
-				tst.b	Draw_GoodRender_b
-				beq.s	.not_good
-
-				move.w	#64,d7
-				move.w	#4,d6
-				bra		.is_good
-
-.not_good:
-				move.l	a2,d0
-				sub.l	a0,d0
-				bge.s	.okpos
-				neg.l	d0
-
-.okpos:
-				cmp.l	#256*128,d0
-				blt.s	.is_good
-				add.w	d7,d7
-				addq	#1,d6
-				cmp.l	#512*128,d0
-				blt.s	.is_good
-				add.w	d7,d7
-				addq	#1,d6
-
-.is_good:
-				move.w	d3,d0
-				sub.w	d1,d0
-				bge.s	.not_negative_z_difference
-				neg.w	d0
-.not_negative_z_difference:
-; cmp.w #1024,d0
-; blt.s nd01
-; add.w d7,d7
-; add.w #1,d6
-;nd01:
-				cmp.w	#512,d0
-				blt.s	.nd0
-				tst.b	Draw_GoodRender_b
-				beq.s	.nd0
-				add.w	d7,d7
-				add.w	#1,d6
-				bra		.nha
-.nd0:
-				cmp.w	#256,d0
-				bgt.s	.nh1
-				asr.w	#1,d7
-				subq	#1,d6
-.nh1:
-				cmp.w	#128,d0
-				bgt.s	.nh2
-				asr.w	#1,d7
-				subq	#1,d6
-.nh2:
-
-.nha:
-				move.w	d3,d0
-				cmp.w	d1,d3
-				blt.s	.right_nearest
-				move.w	d1,d0
-
-.right_nearest:
-				cmp.w	#32,d0
-				bgt.s	.ndd0
-				addq	#1,d6
-				add.w	d7,d7
-.ndd0:
-				cmp.w	#64,d0
-				bgt.s	.nd1
-				addq	#1,d6
-				add.w	d7,d7
-
-.nd1:
-				cmp.w	#128,d0
-				blt.s	.nh3
-				asr.w	#1,d7
-				subq	#1,d6
-				blt.s	.nh4
-				cmp.w	#256,d0
-				blt.s	.nh3
-				asr.w	#1,d7
-				subq	#1,d6
-				blt.s	.nh4
-
-.nh3:
-				cmp.w	#512,d0
-				blt.s	.nh4
-				asr.w	#1,d7
-				subq	#1,d6
-.nh4:
-				cmp.w	#128,d7
-				ble.s	.okokok
-				move.w	#128,d7
-				move.w	#5,d6
-
-.okokok:
 				move.w	d6,draw_WallIterations_w
 				subq	#1,d7
 				move.w	d7,draw_MultCount_w
-
 				move.l	#DataBuffer1_vl,a3
 				move.l	a0,d0
 				move.l	a2,d2
-
 				move.l	d0,(a3)+
 				add.l	d2,d0
 				move.w	d1,(a3)+
 				asr.l	#1,d0
 				move.w	d4,(a3)+
-
 				move.w	draw_LeftWallBright_w,d6
 				move.w	d6,(a3)+
-
 				add.w	d5,d4
 				move.l	d0,(a3)+
 				add.w	d3,d1
@@ -1148,11 +1041,9 @@ draw_WallFlatShaded:
 				move.w	d1,(a3)+
 				asr.w	#1,d4
 				move.w	d4,(a3)+
-
 				add.w	draw_RightWallBright_w,d6
 				asr.w	#1,d6
 				move.w	d6,(a3)+
-
 				move.l	d2,(a3)+
 				move.w	d3,(a3)+
 				move.w	d5,(a3)+
@@ -1307,7 +1198,7 @@ draw_WallFlatShaded:
 
 				move.b	d0,d3
 				and.b	#15,d0
-				move.l	COMPACTPTR,a0
+				move.l	Lvl_CompactMapPtr_l,a0
 				moveq	#0,d1
 				move.w	d0,d2
 				add.w	d0,d0
@@ -1320,7 +1211,7 @@ draw_WallFlatShaded:
 
 .no_door:
 				or.l	d1,(a0)
-				move.l	BIGPTR,a0
+				move.l	Lvl_BigMapPtr_l,a0
 
 				move.w	draw_WallLeftPoint_w,(a0,d2.w*4)
 				move.w	draw_WallRightPoint_w,2(a0,d2.w*4)
@@ -2413,35 +2304,163 @@ cant_tell:
 
 				move.w	#-1,draw_WallLastStripX_w
 
-				; Compare the corner brightnesses
-				;move.w	draw_RightWallTopBright_w,d0
-				;cmp.w	draw_RightWallBright_w,d0
-				;bne.s	.do_shaded
-				;move.w	draw_LeftWallTopBright_w,d0
-				;cmp.w	draw_LeftWallBright_w,d0
-				;bne.s	.do_shaded
+				; 0xABADCAFE - refactored from draw_WallSimpleShaded and draw_WallGouraudShaded
+.test_one_in_front:
+				tst.w	d1
+				bgt.s	.one_in_front
+				tst.w	d3
+				bgt.s	.one_in_front
+				bra		.function_done
 
-				; Test wall corners against the first.
-				; A xor based check would be nicer but there's no eor.w <ea>,dN
-				; At least process the words in ascending order
+.one_in_front:
+				move.w	#16,d7
+				move.w	#2,d6
+				tst.b	Draw_GoodRender_b
+				beq.s	.not_good
+
+				move.w	#64,d7
+				move.w	#4,d6
+				bra		.is_good
+
+.not_good:
+				move.l	a2,d0
+				sub.l	a0,d0
+				bge.s	.okpos
+
+				neg.l	d0
+
+.okpos:
+				cmp.l	#256*128,d0
+				blt.s	.is_good
+
+				add.w	d7,d7
+				addq	#1,d6
+				cmp.l	#512*128,d0
+				blt.s	.is_good
+
+				add.w	d7,d7
+				addq	#1,d6
+
+.is_good:
+				move.w	d3,d0
+				sub.w	d1,d0
+				bge.s	.not_negative_z_difference
+
+				neg.w	d0
+
+.not_negative_z_difference:
+				cmp.w	#512,d0
+				blt.s	.nd0
+
+				tst.b	Draw_GoodRender_b
+				beq.s	.nd0
+
+				add.w	d7,d7
+				add.w	#1,d6
+				bra		.nha
+
+.nd0:
+				cmp.w	#256,d0
+				bgt.s	.nh1
+				asr.w	#1,d7
+				subq	#1,d6
+
+.nh1:
+				cmp.w	#128,d0
+				bgt.s	.nh2
+				asr.w	#1,d7
+				subq	#1,d6
+
+.nh2:
+.nha:
+				move.w	d3,d0
+				cmp.w	d1,d3
+				blt.s	.right_nearest
+
+				move.w	d1,d0
+
+.right_nearest:
+				cmp.w	#32,d0
+				bgt.s	.ndd0
+
+				addq	#1,d6
+				add.w	d7,d7
+
+.ndd0:
+				cmp.w	#64,d0
+				bgt.s	.nd1
+
+				addq	#1,d6
+				add.w	d7,d7
+
+.nd1:
+				cmp.w	#128,d0
+				blt.s	.nh3
+
+				asr.w	#1,d7
+				subq	#1,d6
+				blt.s	.nh4
+
+				cmp.w	#256,d0
+				blt.s	.nh3
+
+				asr.w	#1,d7
+				subq	#1,d6
+				blt.s	.nh4
+
+.nh3:
+				cmp.w	#512,d0
+				blt.s	.nh4
+
+				asr.w	#1,d7
+				subq	#1,d6
+
+.nh4:
+				cmp.w	#128,d7
+				ble.s	.choose_renderer
+
+				move.w	#128,d7
+				move.w	#5,d6
+
+.choose_renderer:
+				; Now determine which renderer to use. First check for simplified lighting.
+				tst.b	Draw_ForceSimpleWalls_b
+				beq.s	.check_corners
+
 				move.w	draw_LeftWallBright_w,d0
-				cmp.w	draw_RightWallBright_w,d0
-				bne.s	.do_shaded
-				cmp.w	draw_LeftWallTopBright_w,d0
-				bne.s	.do_shaded
-				cmp.w	draw_RightWallTopBright_w,d0
-				bne.s	.do_shaded
+				add.w	draw_LeftWallTopBright_w,d0
+				asr.w	#1,d0
+				move.w	d0,draw_LeftWallBright_w
+				move.w	draw_RightWallBright_w,d0
+				add.w	draw_RightWallTopBright_w,d0
+				asr.w	#1,d0
+				move.w	d0,draw_RightWallBright_w
+				bra.s	.do_simple_shaded
 
+				; Compare the corner brightnesses
+.check_corners:
+				; 0xABADCAFE
+				; Today I Learned: Non-Gouraud walls are not flat shaded. The have the same
+				; horizontal-only shading that the original Alien Breed 3D had. Therefore to
+				; the original code was correct. We just change the access order here.
+				move.w	draw_LeftWallBright_w,d0
+				cmp.w	draw_LeftWallTopBright_w,d0
+				bne.s	.do_gouraud_shaded
+				move.w	draw_RightWallBright_w,d0
+				cmp.w	draw_RightWallTopBright_w,d0
+				bne.s	.do_gouraud_shaded
+
+.do_simple_shaded:
 				DEV_CHECK	SIMPLE_WALLS,.function_done
-				bsr			draw_WallFlatShaded
+				bsr			draw_WallSimpleShaded
 				bra.s		.function_done
 
-.do_shaded:
+.do_gouraud_shaded:
 				DEV_CHECK	SHADED_WALLS,.function_done
 				bsr			draw_WallGouraudShaded
+
 .function_done:
 				movem.l	(a7)+,d7/a0/a5/a6
-				rts
 
 wallfacingaway:
 				rts

@@ -15,11 +15,12 @@
 ; READY PLAYER ONE !
 
 ; Long data
+Plr1_Data:
 Plr1_ObjectPtr_l:			ds.l	1
 Plr1_XOff_l:				ds.l	1 ; sometimes accessed as w - todo understand real size
 Plr1_YOff_l:				ds.l	1
 Plr1_ZOff_l:				ds.l	1 ; sometimes accessed as w - todo understand real size
-Plr1_RoomPtr_l:				ds.l	1
+Plr1_ZonePtr_l:				ds.l	1
 Plr1_Height_l:				ds.l	1
 Plr1_AimSpeed_l:			ds.l	1
 Plr1_SnapXOff_l:			ds.l	1
@@ -42,7 +43,7 @@ plr1_BobbleY_l:				ds.l	1 ; hires.s
 plr1_TmpHeight_l:			ds.l	1 ; hires.s
 plr1_OldX_l:				ds.l	1 ; hires.s
 plr1_OldZ_l:				ds.l	1 ; hires.s
-plr1_OldRoomPtr_l:			ds.l	1 ; leveldata2.s
+plr1_OldRoomPtr_l:			ds.l	1 ; leveldata2.s - write once?
 plr1_SnapSquishedHeight_l:	ds.l	1 ; plr1control.s
 
 
@@ -94,11 +95,12 @@ plr1_StoodOnLift_b:			ds.b	1 ; newanims.s
 
 			align 4
 ; Long data
+Plr2_Data:
 Plr2_ObjectPtr_l:			ds.l	1
 Plr2_XOff_l:				ds.l	1
 Plr2_YOff_l:				ds.l	1
 Plr2_ZOff_l:				ds.l	1
-Plr2_RoomPtr_l:				ds.l	1
+Plr2_ZonePtr_l:				ds.l	1
 Plr2_Height_l:				ds.l	1
 Plr2_AimSpeed_l:			ds.l	1
 Plr2_SnapXOff_l:			ds.l	1
@@ -110,14 +112,13 @@ Plr2_SnapXSpdVal_l:			ds.l	1
 Plr2_SnapZSpdVal_l:			ds.l	1
 Plr2_SnapHeight_l:			ds.l	1
 Plr2_SnapTargHeight_l:		ds.l	1
-
 Plr2_TmpXOff_l:				ds.l	1
 Plr2_TmpZOff_l:				ds.l	1
 Plr2_TmpYOff_l:				ds.l	1
 
 ; Private fields
-plr2_PointsToRotatePtr_l:	ds.l 	1 ; hires.s
 plr2_ListOfGraphRoomsPtr_l: ds.l 	1 ; hires.s
+plr2_PointsToRotatePtr_l:	ds.l 	1 ; hires.s
 plr2_BobbleY_l:				ds.l	1 ; hires.s
 plr2_TmpHeight_l:			ds.l	1 ; hires.s
 plr2_OldX_l:				ds.l	1 ; hires.s
@@ -131,18 +132,20 @@ Plr2_CosVal_w:				ds.w	1
 Plr2_SinVal_w:				ds.w	1
 Plr2_AngPos_w:				ds.w	1
 Plr2_Zone_w:				ds.w	1
+Plr2_FloorSpd_w:			ds.w	1 ; newanim.s
+Plr2_RoomBright_w:			ds.w	1 ;
 Plr2_Bobble_w:				ds.w	1
 Plr2_SnapAngPos_w:			ds.w	1
 Plr2_SnapAngSpd_w:			ds.w	1
+Plr2_TmpAngPos_w:			ds.w	1 ; hires.s
 Plr2_TimeToShoot_w:			ds.w	1
 
 ; Private
-plr2_TmpAngPos_w:			ds.w	1 ; hires.s
-plr2_TmpBobble_w:			ds.w	1 ; hires.s
 plr2_TmpHoldDown_w:			ds.w	1 ; hires.s
+plr2_TmpBobble_w:			ds.w	1 ; hires.s
 plr2_SnapCosVal_w:			ds.w	1 ; plr2control.s
 plr2_SnapSinVal_w:			ds.w	1 ; plr2control.s
-plr2_FloorSpd_w:			ds.w	1 ; newanim.s
+plr2_WalkSFXTime_w:			ds.w	1 ; fall.s
 
 ; Byte Data
 Plr2_Keys_b:				ds.b	1

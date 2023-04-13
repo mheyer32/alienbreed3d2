@@ -32,9 +32,9 @@ Plr2_MouseControl
 				asr.l	#1,d7
 .bug2:
 
-				move.w	ymouse,d3
-				sub.w	oldymouse,d3
-				add.w	d3,oldymouse
+				move.w	Sys_MouseY,d3
+				sub.w	Sys_OldMouseY,d3
+				add.w	d3,Sys_OldMouseY
 
 				move.w	STOPOFFSET,d0
 				move.w	d3,d2
@@ -205,7 +205,7 @@ Plr2_AlwaysKeys
 				move.l	#PLR_CROUCH_HEIGHT,Plr2_SnapTargHeight_l
 .notduck:
 
-				move.l	Plr2_RoomPtr_l,a4
+				move.l	Plr2_ZonePtr_l,a4
 				move.l	ZoneT_Floor_l(a4),d0
 				sub.l	ZoneT_Roof_l(a4),d0
 				tst.b	Plr2_StoodInTop_b
@@ -288,7 +288,7 @@ notgotweap2:
 				dbra	d1,pickweap2
 
 gogogogog:
-				tst.b	RAWKEY_NUM_ENTER(a5)
+				tst.b	RAWKEY_F10(a5)
 				beq.s	.notswapscr
 				tst.b	lastscr
 				bne.s	.notswapscr2
@@ -324,7 +324,7 @@ SHOWPLR2GUNNAME:
 				dbra	d2,.copyname
 
 				move.l	#TEMPSCROLL,d0
-				jsr		SENDMESSAGENORET
+				jsr		Game_PushTempMessage
 				rts
 
 TURNSPD:		dc.w	0
@@ -612,7 +612,7 @@ PLR2_clumptime:	dc.w	0
 PLR2clump:
 
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.l	Plr2_RoomPtr_l,a0
+				move.l	Plr2_ZonePtr_l,a0
 				move.w	ZoneT_FloorNoise_w(a0),d0
 
 				move.l	ZoneT_Water_l(a0),d1
