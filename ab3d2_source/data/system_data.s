@@ -11,6 +11,8 @@ IntuitionName:				INTNAME
 GraphicsName:				GRAFNAME
 TimerName:					dc.b	"timer.device",0
 
+TempMessageBuffer_vb:		dcb.b	160,32
+
 			align 4
 sys_TimerFlag_l:			dc.l	-1
 

@@ -713,7 +713,7 @@ clrmessbuff:
 
 				clr.b	Plr2_Fire_b
 				clr.b	Plr2_TmpFire_b
-				clr.b	PLR2_SPCTAP
+				clr.b	Plr2_Used_b
 				clr.b	Plr2_TmpSpcTap_b
 
 				clr.b	plr1_Dead_b
@@ -1097,8 +1097,8 @@ okwat:
 				move.b	Plr1_Clicked_b,Plr1_TmpClicked_b
 				move.b	Plr1_Fire_b,Plr1_TmpFire_b
 				clr.b	Plr1_Clicked_b
-				move.b	PLR1_SPCTAP,Plr1_TmpSpcTap_b
-				clr.b	PLR1_SPCTAP
+				move.b	Plr1_Used_b,Plr1_TmpSpcTap_b
+				clr.b	Plr1_Used_b
 				move.b	Plr1_Ducked_b,plr1_TmpDucked_b
 				move.b	Plr1_GunSelected_b,Plr1_TmpGunSelected_b
 
@@ -1159,8 +1159,8 @@ NotOnePlayer:
 				move.b	Plr1_Clicked_b,Plr1_TmpClicked_b
 				clr.b	Plr1_Clicked_b
 				move.b	Plr1_Fire_b,Plr1_TmpFire_b
-				move.b	PLR1_SPCTAP,Plr1_TmpSpcTap_b
-				clr.b	PLR1_SPCTAP
+				move.b	Plr1_Used_b,Plr1_TmpSpcTap_b
+				clr.b	Plr1_Used_b
 				move.b	Plr1_Ducked_b,plr1_TmpDucked_b
 				move.b	Plr1_GunSelected_b,Plr1_TmpGunSelected_b
 
@@ -1274,8 +1274,8 @@ ASlaveShouldWaitOnHisMaster:
 				move.b	Plr2_Clicked_b,Plr2_TmpClicked_b
 				clr.b	Plr2_Clicked_b
 				move.b	Plr2_Fire_b,Plr2_TmpFire_b
-				move.b	PLR2_SPCTAP,Plr2_TmpSpcTap_b
-				clr.b	PLR2_SPCTAP
+				move.b	Plr2_Used_b,Plr2_TmpSpcTap_b
+				clr.b	Plr2_Used_b
 				move.b	Plr2_Ducked_b,plr2_TmpDucked_b
 				move.b	Plr2_GunSelected_b,Plr2_TmpGunSelected_b
 
@@ -7946,20 +7946,14 @@ key_interrupt:
 				rts
 
 lastpressed:	dc.b	0
-KInt_CCode		ds.b	1
-KInt_Askey		ds.b	1
-KInt_OCode		ds.w	1
-
-
-OldSpace:		dc.b	0
-SpaceTapped:	dc.b	0
-PLR1_SPCTAP:	dc.b	0
-PLR2_SPCTAP:	dc.b	0
+;KInt_CCode:		ds.b	1 ; unused ?
+;KInt_Askey:		ds.b	1 ; unused ?
+;KInt_OCode:		ds.w	1 ; unused ?
+;SpaceTapped:	dc.b	0 ; unused ?
 				even
 
 				include	"plr1control.s"
 				include	"plr2control.s"
-				include	"fall.s"
 
 *******************************************8
 
@@ -8688,7 +8682,7 @@ nostartalan:
 
 				clr.b	Plr1_Fire_b
 				clr.b	Plr1_Clicked_b
-				move.w	#0,ADDTOBOBBLE
+				move.w	#0,Plr_AddToBobble_w
 				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapHeight_l
 				move.w	#-80,d0					; Is this related to render buffer height
 				move.w	d0,STOPOFFSET
@@ -8776,7 +8770,7 @@ control2:
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	#-1,12+128(a0)
 				clr.b	Plr2_Fire_b
-				move.w	#0,ADDTOBOBBLE
+				move.w	#0,Plr_AddToBobble_w
 				move.l	#PLR_CROUCH_HEIGHT,Plr2_SnapHeight_l
 				move.w	#-80,d0
 				move.w	d0,STOPOFFSET
@@ -8850,7 +8844,7 @@ control2:
 				tst.b	Plr2_Keys_b
 				beq.s	.plr2_no_keyboard
 
-				bsr		PLR2_keyboard_control
+				bsr		Plr2_KeyboardControl
 
 .plr2_no_keyboard:
 ; tst.b Plr2_Path_b
@@ -8860,7 +8854,7 @@ control2:
 				tst.b	Plr2_Joystick_b
 				beq.s	.plr2_no_joystick
 
-				bsr		PLR2_JoyStick_control
+				bsr		Plr2_JoystickControl
 
 .plr2_no_joystick:
 
@@ -9622,7 +9616,7 @@ MakeSomeNoise:
 				beq.s	dontworry
 				move.w	#7,d1
 				lea		CHANNELDATA,a3
-findsameasme
+findsameasme:
 				tst.b	(a3)
 				bne.s	notavail
 				cmp.w	32(a3),d0
