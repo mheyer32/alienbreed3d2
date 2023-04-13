@@ -203,7 +203,7 @@ plr_JumpSpeed_l:			ds.l	1 ; fall.s
 plr_OldHeight_l:			ds.l	1 ; fall.s
 
 Plr_AddToBobble_w:			ds.w	1
-gunheldlast:				ds.w	1
+
 
 ; Word fields
 ; Private
@@ -214,8 +214,10 @@ Plr_Decelerate_b:			ds.b	1
 
 ; Byte fields
 ; Private
-plr_CanJump_b:				ds.b	1 ; fall.s
-plr_GunSelected_b:			ds.b	1 ; hires.s
+plr_CanJump_b:					ds.b	1
+plr_GunSelected_b:				ds.b	1
+plr_PrevNextWeaponKeyState_b:	ds.b	1
+plr_PrevUseKeyState_b:			ds.b	1
 
 ; Tables...
 			align 4
@@ -226,21 +228,9 @@ Plr_Health_w:				ds.w	2
 Plr_AmmoCounts_vw:			ds.w	20
 Plr_Shield_w:				ds.w	2
 Plr_Weapons_vw:				ds.w	10
-
 Plr_TurnSpeed_w:			ds.w	1
 
 			align 4
-;Plr1_Health_w:			ds.w	1
-;Plr1_JetpackFuel_w:		ds.w	1
-;Plr1_AmmoCounts_vw:		ds.w	20
-;Plr1_Shield_w:			ds.w	1
-;Plr1_Jetpack_w:			ds.w	1
-
-;Plr2_Health_w:			ds.w	1
-;Plr2_JetpackFuel_w:		ds.w	1
-;Plr2_AmmoCounts_vw:		ds.w	20
-;Plr2_Shield_w:			ds.w	1
-;Plr2_Jetpack_w:			ds.w	1
 
 Plr1_GunFrame_w:		ds.w	1
 Plr2_GunFrame_w:		ds.w	1

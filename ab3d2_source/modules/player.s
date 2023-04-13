@@ -1,4 +1,11 @@
 
+; *****************************************************************************
+; *
+; * modules/player.s
+; *
+; * Common code for player control.
+; *
+; *****************************************************************************
 
 ;******************************************************************************
 ;*
@@ -55,8 +62,8 @@ Plr_Initialise:
 plr_MouseControl:
 				move.l	a0,-(a7)
 				jsr		Sys_ReadMouse
-				move.l	(a7)+,a0
 
+				move.l	(a7)+,a0
 				move.l	#SinCosTable_vw,a1
 				move.w	PlrT_SnapAngSpd_w(a0),d1
 				move.w	angpos,d0
@@ -65,12 +72,11 @@ plr_MouseControl:
 				move.w	(a1,d0.w),PlrT_SnapSinVal_w(a0)
 				adda.w	#2048,a1
 				move.w	(a1,d0.w),PlrT_SnapCosVal_w(a0)
-
 				move.l	PlrT_SnapXSpdVal_l(a0),d6
 				move.l	PlrT_SnapZSpdVal_l(a0),d7
-
 				neg.l	d6
 				ble.s	.nobug1
+
 				asr.l	#1,d6
 				add.l	#1,d6
 				bra.s	.bug1
@@ -92,15 +98,14 @@ plr_MouseControl:
 				move.w	Sys_MouseY,d3
 				sub.w	Sys_OldMouseY,d3
 				add.w	d3,Sys_OldMouseY
-
 				move.w	STOPOFFSET,d0
 				move.w	d3,d2
 				asl.w	#7,d2
-
 				add.w	d2,PlrT_AimSpeed_l(a0)
 				add.w	d3,d0
 				cmp.w	#-80,d0
 				bgt.s	.skip_look_up
+
 				move.w	#-512*20,PlrT_AimSpeed_l(a0)
 				move.w	#-80,d0
 
@@ -120,12 +125,12 @@ plr_MouseControl:
 				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 
-;the right mouse button triggers the next_weapon key
+				; The right mouse button triggers the next_weapon key
 				move.b	next_weapon_key,d7
 				btst	#2,$dff000+potinp		; right button
 				seq		(a5,d7.w)
 
-; the left mouse button triggers the fire key
+				; The left mouse button triggers the fire key
 				move.b	fire_key,d7
 				btst	#CIAB_GAMEPORT0,$bfe001+ciapra ; left button
 				seq		(a5,d7.w)
@@ -139,55 +144,54 @@ plr_MouseControl:
 ;* Pointer to player data in a0
 ;*
 ;******************************************************************************
-plr_CheckKeys:
+plr_KeyboardControl:
 				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 
 				move.b	next_weapon_key,d7
 				tst.b	(a5,d7.w)
-				beq.s	.nonextweappre
+				beq.s	.no_next_weapon_pre
 
-				tst.b	gunheldlast
-				bne.s	.nonextweap
+				tst.b	plr_PrevNextWeaponKeyState_b
+				bne.s	.no_next_weapon
 
-				st		gunheldlast
+				st		plr_PrevNextWeaponKeyState_b
 				moveq	#0,d0
 				move.b	PlrT_GunSelected_b(a0),d0
 				lea		PlrT_Weapons_vb(a0),a1
 
-.findnext:
+.find_next_weapon:
 				addq	#1,d0
 				cmp.w	#9,d0
-				ble.s	.okgun
+				ble.s	.weapon_found
 
 				moveq	#0,d0
 
-.okgun:
+.weapon_found:
 				tst.w	(a1,d0.w*2)
-				beq.s	.findnext
+				beq.s	.find_next_weapon
 
 				move.b	d0,PlrT_GunSelected_b(a0)
 
-				; to do - generalise
-				;bsr		Plr1_ShowGunName
+				bsr		plr_ShowGunName
 
-				bra		.nonextweap
+				bra.s	.no_next_weapon
 
-.nonextweappre:
-				clr.b	gunheldlast
+.no_next_weapon_pre:
+				clr.b	plr_PrevNextWeaponKeyState_b
 
-.nonextweap:
+.no_next_weapon:
 				move.b	operate_key,d7
 				move.b	(a5,d7.w),d1
 				beq.s	.nottapped
 
-				tst.b	OldSpace
+				tst.b	plr_PrevUseKeyState_b
 				bne.s	.nottapped
 
 				st		PlrT_Used_b(a0)
 
 .nottapped:
-				move.b	d1,OldSpace
+				move.b	d1,plr_PrevUseKeyState_b
 				move.b	duck_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.notduck
@@ -238,9 +242,9 @@ plr_CheckKeys:
 
 .noupordown:
 				move.l	d0,PlrT_SnapHeight_l(a0)
-
 				tst.b	RAWKEY_K(a5)
 				beq.s	.notselkey
+
 				st		PlrT_Keys_b(a0)
 				clr.b	PlrT_Path_b(a0)
 				clr.b	PlrT_Mouse_b(a0)
@@ -249,6 +253,7 @@ plr_CheckKeys:
 .notselkey:
 				tst.b	RAWKEY_J(a5)
 				beq.s	.notseljoy
+
 				clr.b	PlrT_Keys_b(a0)
 				clr.b	PlrT_Path_b(a0)
 				clr.b	PlrT_Mouse_b(a0)
@@ -257,6 +262,7 @@ plr_CheckKeys:
 .notseljoy:
 				tst.b	RAWKEY_M(a5)
 				beq.s	.notselmouse
+
 				clr.b	PlrT_Keys_b(a0)
 				clr.b	PlrT_Path_b(a0)
 				st		PlrT_Mouse_b(a0)
@@ -264,7 +270,7 @@ plr_CheckKeys:
 
 .notselmouse:
 				lea		1(a5),a4
-				move.l	a1,a2
+				lea		PlrT_Weapons_vb(a0),a2
 				move.l	PlrT_ObjectPtr_l(a0),a3
 				move.w	#9,d1
 				move.w	#0,d2
@@ -276,7 +282,7 @@ plr_CheckKeys:
 
 				move.b	d2,PlrT_GunSelected_b(a0)
 
-; d2=number of gun.
+				; d2=number of gun.
 
 				; todo - why does this change for player 1 and 2?
 				cmp.l	Plr1_Data,a0
@@ -284,14 +290,14 @@ plr_CheckKeys:
 
 .use_player_1_timer:
 				move.w	#0,EntT_Timer1_w+128(a3)
-				; todo generalise
-				;bsr		Plr1_ShowGunName
+				bsr		plr_ShowGunName
+
 				bra.s	.go
 
 .use_player_2_timer:
 				move.w	#0,EntT_Timer1_w+64(a3)
-				; todo generalise
-				;bsr		Plr1_ShowGunName
+				bsr		plr_ShowGunName
+
 				bra.s	.go
 
 .notgotweap:
@@ -301,10 +307,11 @@ plr_CheckKeys:
 .go:
 				tst.b	RAWKEY_F10(a5)
 				beq.s	.notswapscr
+
 				tst.b	lastscr
 				bne.s	.notswapscr2
-				st		lastscr
 
+				st		lastscr
 				not.b	Vid_FullScreenTemp_b
 
 				bra.s	.notswapscr2
@@ -315,9 +322,11 @@ plr_CheckKeys:
 .notswapscr2:
 				tst.b	RAWKEY_F7(a5)
 				beq.s	.noframelimit
+
 				clr.b	RAWKEY_F7(a5)
 				cmp.l	#5,Vid_FPSLimit_l
 				beq.s	.resetfpslimit
+
 				addq.l	#1,Vid_FPSLimit_l
 				bra.s	.noframelimit
 
@@ -336,16 +345,7 @@ plr_CheckKeys:
 				DEV_CHECK_KEY	RAWKEY_G,FLATS
 				DEV_CHECK_KEY	RAWKEY_Q,FASTBUFFER_CLEAR
 				DEV_CHECK_KEY	RAWKEY_N,AI_ATTACK
-				rts
 
-;******************************************************************************
-;*
-;* Common keyboard control
-;*
-;* Pointer to player data in a0
-;*
-;******************************************************************************
-plr_KeyboardControl:
 				move.l	#SinCosTable_vw,a1
 				move.l	#KeyMap_vb,a5
 				move.w	STOPOFFSET,d0
@@ -398,7 +398,7 @@ plr_KeyboardControl:
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
 				move.w	d0,SMIDDLEY
-				muls	#SCREEN_WIDTH,d0
+				muls.w	#SCREEN_WIDTH,d0
 				move.l	d0,SBIGMIDDLEY
 				move.w	PlrT_SnapAngPos_w(a0),d0
 				move.w	PlrT_SnapAngSpd_w(a0),d3
@@ -413,24 +413,27 @@ plr_KeyboardControl:
 				move.w	#60,d1
 				move.w	#3,d2
 				move.w	#14,Plr_TurnSpeed_w
+
 .skip_run:
 				tst.b	PlrT_Squished_b(a0)
-				bne.s	.crouch
+				bne.s	.crouch_2
 
 				tst.b	PlrT_Ducked_b(a0)
 				beq.s	.skip_crouch
-.crouch:
+.crouch_2:
 				asr.w	#1,d2
 
 .skip_crouch:
 				moveq	#0,d4
 				tst.b	Plr_Decelerate_b
 				beq.s	.nofric
+
 				move.w	d3,d5
 				add.w	d5,d5
 				add.w	d5,d3
 				asr.w	#2,d3
 				bge.s	.nneg
+
 				addq	#1,d3
 
 .nneg:
@@ -516,6 +519,7 @@ plr_KeyboardControl:
 
 				neg.l	d6
 				ble.s	.nobug1
+
 				asr.l	#3,d6
 				add.l	#1,d6
 				bra.s	.bug1
@@ -526,19 +530,22 @@ plr_KeyboardControl:
 .bug1:
 				neg.l	d7
 				ble.s	.nobug2
+
 				asr.l	#3,d7
 				add.l	#1,d7
 				bra.s	.bug2
+
 .nobug2:
 				asr.l	#3,d7
-.bug2:
 
+.bug2:
 .skip_friction:
 				moveq	#0,d3
 				moveq	#0,d5
 				move.b	forward_key,d5
 				tst.b	(a5,d5.w)
 				beq.s	.noforward
+
 				neg.w	d2
 				move.w	d2,d3
 
@@ -546,6 +553,7 @@ plr_KeyboardControl:
 				move.b	backward_key,d5
 				tst.b	(a5,d5.w)
 				beq.s	.nobackward
+
 				move.w	d2,d3
 
 .nobackward:
@@ -555,60 +563,89 @@ plr_KeyboardControl:
 ; add.w d2,d1
 ; add.w d2,d1
 				move.w	d1,Plr_AddToBobble_w
-
-				move.w	plr1_SnapSinVal_w,d1
-				muls	d3,d1
-				move.w	plr1_SnapCosVal_w,d2
-				muls	d3,d2
-
+				move.w	PlrT_SnapSinVal_w(a0),d1
+				muls.w	d3,d1
+				move.w	PlrT_SnapCosVal_w(a0),d2
+				muls.w	d3,d2
 				sub.l	d1,d6
 				sub.l	d2,d7
-				move.w	plr1_SnapSinVal_w,d1
-				muls	d4,d1
-				move.w	plr1_SnapCosVal_w,d2
-				muls	d4,d2
+				move.w	PlrT_SnapSinVal_w(a0),d1
+				muls.w	d4,d1
+				move.w	PlrT_SnapCosVal_w(a0),d2
+				muls.w	d4,d2
 				sub.l	d2,d6
 				add.l	d1,d7
-
 				tst.b	Plr_Decelerate_b
-				beq.s	.nocontrolposs
+				beq.s	.no_control_possible
+
 				add.l	d6,PlrT_SnapXSpdVal_l(a0)
 				add.l	d7,PlrT_SnapZSpdVal_l(a0)
 
-.nocontrolposs:
+.no_control_possible:
 				move.l	PlrT_SnapXSpdVal_l(a0),d6
 				move.l	PlrT_SnapZSpdVal_l(a0),d7
 				add.l	d6,PlrT_SnapXOff_l(a0)
 				add.l	d7,PlrT_SnapZOff_l(a0)
-
 				move.b	fire_key,d5
 				tst.b	PlrT_Fire_b(a0)
 				beq.s	.firenotpressed
-; fire was pressed last time.
+
+				; fire was pressed last time.
 				tst.b	(a5,d5.w)
 				beq.s	.firenownotpressed
-; fire is still pressed this time.
+
+				; fire is still pressed this time.
 				st		PlrT_Fire_b(a0)
-				bra		.doneplr1
+				bra		.done
 
 .firenownotpressed:
-; fire has been released.
+				; fire has been released.
 				clr.b	PlrT_Fire_b(a0)
-				bra		.doneplr1
+				bra		.done
 
 .firenotpressed:
-
-; fire was not pressed last frame...
-
+				; fire was not pressed last frame...
+				; if it has still not been pressed, go back above
 				tst.b	(a5,d5.w)
-; if it has still not been pressed, go back above
 				beq.s	.firenownotpressed
-; fire was not pressed last time, and was this time, so has
-; been clicked.
+
+				; fire was not pressed last time, and was this time, so has
+				; been clicked.
 				st		PlrT_Clicked_b(a0)
 				st		PlrT_Fire_b(a0)
 
-.doneplr1:
+.done:
+				rts
+
+;******************************************************************************
+;*
+;* Show gun name
+;*
+;* Pointer to player data in a0
+;*
+;******************************************************************************
+plr_ShowGunName:
+				moveq	#0,d2
+				move.b	PlrT_GunSelected_b(a0),d2
+				move.l	GLF_DatabasePtr_l,a4
+				add.l	#GLFT_GunNames_l,a4
+				muls	#20,d2
+				add.l	d2,a4
+				move.l	#TempMessageBuffer_vb,a2
+				move.w	#19,d2
+
+.copyname:
+				move.b	(a4)+,d3
+				bne.s	.oklet
+				move.b	#32,d3
+
+.oklet:
+				move.b	d3,(a2)+
+				dbra	d2,.copyname
+
+				move.l	#TempMessageBuffer_vb,d0
+				jsr		Game_PushTempMessage
+
 				rts
 ;******************************************************************************
 ;*

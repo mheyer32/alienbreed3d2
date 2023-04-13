@@ -7946,13 +7946,10 @@ key_interrupt:
 				rts
 
 lastpressed:	dc.b	0
-KInt_CCode		ds.b	1
-KInt_Askey		ds.b	1
-KInt_OCode		ds.w	1
-
-
-OldSpace:		dc.b	0
-SpaceTapped:	dc.b	0
+;KInt_CCode:		ds.b	1 ; unused ?
+;KInt_Askey:		ds.b	1 ; unused ?
+;KInt_OCode:		ds.w	1 ; unused ?
+;SpaceTapped:	dc.b	0 ; unused ?
 				even
 
 				include	"plr1control.s"
