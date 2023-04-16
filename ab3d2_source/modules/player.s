@@ -906,3 +906,51 @@ plr_DoFootstepFX:
 ;* Pointer to player data in a0
 ;*
 ;******************************************************************************
+
+plr_HitscanSucceded:
+				; Just blow it up.
+				move.l	Plr_ShotDataPtr_l,a0
+				move.w	#19,d1
+.find_one_free:
+				move.w	12(a0),d2
+				blt.s	.found_one_free
+
+				adda.w	#64,a0
+				dbra	d1,.find_one_free
+
+				rts
+
+.found_one_free:
+				move.b	#2,16(a0)
+				move.l	Lvl_ObjectPointsPtr_l,a1
+				move.w	(a0),d2
+				move.l	(a1,d0.w*8),(a1,d2.w*8)
+				move.l	4(a1,d0.w*8),4(a1,d2.w*8)
+				move.b	#1,ShotT_Status_b(a0)
+				move.w	#0,ShotT_Gravity_w(a0)
+				move.b	BULTYPE+1,ShotT_Size_b(a0)
+				move.b	#0,ShotT_Anim_b(a0)
+
+				move.w	4(a4),d1
+				ext.l	d1
+				asl.l	#7,d1
+				move.l	d1,ShotT_AccYPos_w(a0)
+				move.w	12(a4),12(a0)
+				st		ShotT_Worry_b(a0)
+				move.w	4(a4),4(a0)
+
+				move.w	BulT_HitDamage_l+2(a5),d0
+				add.b	d0,EntT_DamageTaken_b(a4)
+
+				move.w	tempxdir,d1
+				ext.l	d1
+				asl.l	#3,d1
+				swap	d1
+				move.w	d1,EntT_ImpactX_w(a4)
+				move.w	tempzdir,d1
+				ext.l	d1
+				asl.l	#3,d1
+				swap	d1
+				move.w	d1,EntT_ImpactZ_w(a4)
+
+				rts
