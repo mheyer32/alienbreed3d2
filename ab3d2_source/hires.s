@@ -1787,6 +1787,8 @@ nodrawp2:
 				clr.b	plr2_Teleported_b
 
 .notplr2:
+				jsr		Draw_Crosshair
+
 				jsr		Sys_EvalFPS
 
 				DEV_SAVE	d0/d1/a0/a1
@@ -2037,10 +2039,10 @@ SetupRenderbufferSize:
 				
 				
 				move.w	#FS_HEIGHT/2,d0;#FS_C2P_HEIGHT/2,d0;<-should it be this instead of FS_HEIGHT?
-				sub.w	#8,d0
+				;sub.w	#8,d0
 				move.w	d0,LOOK_MIN
 				neg.w	d0
-				add.w	#16,d0
+				;add.w	#16,d0
 				move.w	d0,LOOK_MAX
 				move.w	STOPOFFSET,d0
 				move.w	d0,d1
@@ -8738,7 +8740,7 @@ nostartalan:
 				clr.b	Plr1_Clicked_b
 				move.w	#0,Plr_AddToBobble_w
 				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapHeight_l
-				move.w	LOOK_MAX,d0					; Is this related to render buffer height
+				move.w	#-80,d0;move.w	LOOK_MAX,d0					; Is this related to render buffer height
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
@@ -8826,7 +8828,7 @@ control2:
 				clr.b	Plr2_Fire_b
 				move.w	#0,Plr_AddToBobble_w
 				move.l	#PLR_CROUCH_HEIGHT,Plr2_SnapHeight_l
-				move.w	LOOK_MAX,d0
+				move.w	#-80,d0;move.w	LOOK_MAX,d0
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0

@@ -100,7 +100,6 @@ plr_MouseControl:
 				add.w	d3,Sys_OldMouseY
 				move.w	STOPOFFSET,d0
 				move.w	d3,d2
-				;move.w	d2,d1
 ***************************************************************
 ; shoehorned this in here due to the projectiles not having the same trajectory in full screen compaired to small screen
 				tst.b	Vid_FullScreen_b

@@ -353,4 +353,12 @@ Draw_NarrateText:
 				rts
 
 
+Draw_Crosshair:
+				move.l	Vid_FastBufferPtr_l,a0
+				add.w	Vid_CentreX_w,a0
+				move.w	Vid_BottomY_w,d0
+				muls.w	#SCREEN_WIDTH/2,d0
+				add.l	d0,a0
+				move.b	#255,(a0)
+				rts
 
