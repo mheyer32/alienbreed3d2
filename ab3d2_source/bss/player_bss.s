@@ -50,14 +50,19 @@ plr1_SnapSquishedHeight_l:	ds.l	1 ; plr1control.s
 ; Word data
 Plr1_Energy_w:				ds.w	1
 Plr1_CosVal_w:				ds.w	1
+
 Plr1_SinVal_w:				ds.w	1
 Plr1_AngPos_w:				ds.w	1
+
 Plr1_Zone_w:				ds.w	1
 Plr1_FloorSpd_w:			ds.w	1
+
 Plr1_RoomBright_w: 			ds.w	1
 Plr1_Bobble_w:				ds.w	1
+
 Plr1_SnapAngPos_w:			ds.w	1
 Plr1_SnapAngSpd_w:			ds.w	1
+
 Plr1_TmpAngPos_w:			ds.w	1
 Plr1_TimeToShoot_w:			ds.w	1
 
@@ -68,6 +73,7 @@ Plr1_AmmoCounts_vw:			ds.w	20
 Plr1_Shield_w:				ds.w	1
 Plr1_Jetpack_w:				ds.w	1
 Plr1_Weapons_vb:			ds.w	10 ; todo - convert to bytes or bitfield
+Plr1_GunFrame_w:			ds.w	1
 
 ; Private fields
 plr1_TmpHoldDown_w:			ds.w	1 ; hires.s
@@ -102,6 +108,11 @@ plr1_Teleported_b:			ds.b	1 ; hires.s
 plr1_Dead_b:				ds.b	1 ; hires.s
 plr1_TmpDucked_b:			ds.b	1 ; hires.s
 plr1_StoodOnLift_b:			ds.b	1 ; newanims.s
+
+; Temporary tables			- long aligned here
+Plr1_ObjectDistances_vw:	ds.w	250
+Plr1_ObsInLine_vb:			ds.b	400
+
 
 ; READY PLAYER TWO !
 
@@ -158,6 +169,7 @@ Plr2_AmmoCounts_vw:			ds.w	20
 Plr2_Shield_w:				ds.w	1
 Plr2_Jetpack_w:				ds.w	1
 Plr2_Weapons_vb:			ds.w	10 ; todo - convert to bytes or bitfield
+Plr2_GunFrame_w:			ds.w	1
 
 ; Private
 plr2_TmpHoldDown_w:			ds.w	1 ; hires.s
@@ -193,6 +205,10 @@ plr2_Dead_b:				ds.b	1 ; hires.s
 plr2_TmpDucked_b:			ds.b	1 ; hires.s
 plr2_StoodOnLift_b:			ds.b	1 ; newanims.s
 
+; Temporary tables, long aligned here
+Plr2_ObjectDistances_vw:	ds.w	250
+Plr2_ObsInLine_vb:			ds.b	400
+
 ; READY PLAYER whoever...
 			align 4
 ;Plr_GunDataPtr_l:			ds.l	1
@@ -219,24 +235,13 @@ plr_GunSelected_b:				ds.b	1
 plr_PrevNextWeaponKeyState_b:	ds.b	1
 plr_PrevUseKeyState_b:			ds.b	1
 
-; Tables...
+; Misc...
 			align 4
-Plr1_ObjectDistances_vw:	ds.w	250
-Plr2_ObjectDistances_vw:	ds.w	250
-
 Plr_Health_w:				ds.w	2
 Plr_AmmoCounts_vw:			ds.w	20
 Plr_Shield_w:				ds.w	2
 Plr_Weapons_vw:				ds.w	10
 Plr_TurnSpeed_w:			ds.w	1
-
-			align 4
-
-Plr1_GunFrame_w:		ds.w	1
-Plr2_GunFrame_w:		ds.w	1
-
-Plr1_ObsInLine_vb:		ds.b	400
-Plr2_ObsInLine_vb:		ds.b	400
 
 BIGsmall:				ds.b	1
 lastscr:				ds.b	1
