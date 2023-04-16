@@ -358,6 +358,13 @@ Draw_Crosshair:
 				add.w	Vid_CentreX_w,a0
 				move.w	Vid_BottomY_w,d0
 				muls.w	#SCREEN_WIDTH/2,d0
+				tst.b	Vid_FullScreen_b
+				beq.s	.small
+				sub.w	#2560,d0
+				bra.s	.big
+.small:
+				add.w	#1280,d0
+.big:
 				add.l	d0,a0
 				move.b	#255,(a0)
 				rts
