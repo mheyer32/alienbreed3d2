@@ -4699,7 +4699,6 @@ CalcPLR1InLine:
 				move.l	#Plr1_ObjectDistances_vw,a3
 
 .objpointrotlop:
-
 				cmp.b	#3,16(a4)
 				beq.s	.itaux
 

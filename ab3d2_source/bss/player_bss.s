@@ -265,8 +265,6 @@ Plr_TurnSpeed_w:			ds.w	1
 
 			align 4
 
-;Plr1_GunFrame_w:		ds.w	1
-;Plr2_GunFrame_w:		ds.w	1
 
 Plr1_ObsInLine_vb:		ds.b	400
 Plr2_ObsInLine_vb:		ds.b	400

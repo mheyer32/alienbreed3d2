@@ -231,7 +231,7 @@ Plr1_Shot:
 .hit:
 				movem.l	(a7)+,a0/a1/d7/d0/a5/a4
 				move.l	d0,-(a7)
-				bsr		plr1_HitscanSucceded
+				bsr		plr_HitscanSucceded
 
 				move.l	(a7)+,d0
 
@@ -556,7 +556,7 @@ Plr2_Shot:
 .hit:
 				movem.l	(a7)+,a0/a1/d7/d0/a5/a4
 				move.l	d0,-(a7)
-				bsr		plr2_HitscanSucceded
+				bsr		plr_HitscanSucceded
 
 				move.l	(a7)+,d0
 
@@ -771,55 +771,6 @@ firefive:
 
 				rts
 
-plr1_HitscanSucceded:
-
-; Just blow it up.
-
-				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
-.findonefree
-				move.w	12(a0),d2
-				blt.s	.foundonefree
-				adda.w	#64,a0
-				dbra	d1,.findonefree
-
-				rts
-
-.foundonefree:
-
-				move.b	#2,16(a0)
-				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.w	(a0),d2
-				move.l	(a1,d0.w*8),(a1,d2.w*8)
-				move.l	4(a1,d0.w*8),4(a1,d2.w*8)
-				move.b	#1,ShotT_Status_b(a0)
-				move.w	#0,ShotT_Gravity_w(a0)
-				move.b	BULTYPE+1,ShotT_Size_b(a0)
-				move.b	#0,ShotT_Anim_b(a0)
-
-				move.w	4(a4),d1
-				ext.l	d1
-				asl.l	#7,d1
-				move.l	d1,ShotT_AccYPos_w(a0)
-				move.w	12(a4),12(a0)
-				st		ShotT_Worry_b(a0)
-				move.w	4(a4),4(a0)
-
-				move.w	BulT_HitDamage_l+2(a5),d0
-				add.b	d0,EntT_DamageTaken_b(a4)
-
-				move.w	tempxdir,d1
-				ext.l	d1
-				asl.l	#3,d1
-				swap	d1
-				move.w	d1,EntT_ImpactX_w(a4)
-				move.w	tempzdir,d1
-				ext.l	d1
-				asl.l	#3,d1
-				swap	d1
-				move.w	d1,EntT_ImpactZ_w(a4)
-
-				rts
 
 plr1_HitscanFailed:
 
@@ -909,56 +860,6 @@ plr1_HitscanFailed:
 				move.l	d1,ShotT_AccYPos_w(a0)
 				asr.l	#7,d1
 				move.w	d1,4(a0)
-
-				rts
-
-
-plr2_HitscanSucceded:
-
-; Just blow it up.
-
-				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
-.findonefree
-				move.w	12(a0),d2
-				blt.s	.foundonefree
-				adda.w	#64,a0
-				dbra	d1,.findonefree
-
-				rts
-
-.foundonefree:
-				move.b	#2,16(a0)
-				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.w	(a0),d2
-				move.l	(a1,d0.w*8),(a1,d2.w*8)
-				move.l	4(a1,d0.w*8),4(a1,d2.w*8)
-				move.b	#1,ShotT_Status_b(a0)
-				move.w	#0,ShotT_Gravity_w(a0)
-				move.b	BULTYPE+1,ShotT_Size_b(a0)
-				move.b	#0,ShotT_Anim_b(a0)
-
-				move.w	4(a4),d1
-				ext.l	d1
-				asl.l	#7,d1
-				move.l	d1,ShotT_AccYPos_w(a0)
-				move.w	12(a4),12(a0)
-				st		ShotT_Worry_b(a0)
-				move.w	4(a4),4(a0)
-
-				move.w	BulT_HitDamage_l+2(a5),d0
-				add.b	d0,EntT_DamageTaken_b(a4)
-
-				move.w	tempxdir,d1
-				ext.l	d1
-				asl.l	#3,d1
-				swap	d1
-				move.w	d1,EntT_ImpactX_w(a4)
-				move.w	tempzdir,d1
-				ext.l	d1
-				asl.l	#3,d1
-				swap	d1
-				move.w	d1,EntT_ImpactZ_w(a4)
 
 				rts
 
