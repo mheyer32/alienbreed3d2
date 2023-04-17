@@ -7,6 +7,10 @@ PADDING		MACRO
 SOFFSET		SET    SOFFSET+\1
 			ENDM
 
+; Maximum number of levels defined in an object. Contrary to expectations this can be > 256.
+; Largest seen so far is 260
+MAX_LEVEL_OBJ_COUNT	EQU	288
+
 *****************************
 * Structure definitions *****
 *****************************
@@ -61,11 +65,11 @@ SOFFSET		SET    SOFFSET+\1
 		; This section is saved/loaded in game save
 		UWORD PlrT_Health_w					; 132, 2
 		UWORD PlrT_JetpackFuel_w			; 134, 2
-		UWORD PlrT_AmmoCounts_vw			; 136, 40 - UWORD[20]
+		UWORD PlrT_AmmoCounts_vw			; 136, 40 : UWORD[20]
 		PADDING 38
 		UWORD PlrT_Shield_w					; 176, 2
 		UWORD PlrT_Jetpack_w				; 178, 2
-		UWORD PlrT_Weapons_vb				; 180, 20 - UWORD[10]
+		UWORD PlrT_Weapons_vb				; 180, 20 : UWORD[10]
 		PADDING 18
 
 		UWORD PlrT_GunFrame_w				; 200, 2
@@ -102,12 +106,12 @@ SOFFSET		SET    SOFFSET+\1
 		UBYTE PlrT_StoodOnLift_b			; 231
 
 		; Tables
-		;UWORD PlrT_ObjectDistances_vw		; 232, 500  - UWORD[250]
-		;PADDING 498
+		UWORD PlrT_ObjectDistances_vw		; 232, MAX_LEVEL_OBJ_COUNT*2 : UWORD[MAX_LEVEL_OBJ_COUNT]
+		PADDING (MAX_LEVEL_OBJ_COUNT*2)-2
 
-		;UBYTE PlrT_ObsInLine_vb				; 732, 400 - UBYTE[400]
-		;PADDING 399
-		LABEL PlrT_SizeOf_l					; 1132
+		UBYTE PlrT_ObsInLine_vb				; ..., MAX_LEVEL_OBJ_COUNT : UBYTE[MAX_LEVEL_OBJ_COUNT]
+		PADDING MAX_LEVEL_OBJ_COUNT-1
+		LABEL PlrT_SizeOf_l					;
 
 	; Bullet definition
 	STRUCTURE BulT,0
