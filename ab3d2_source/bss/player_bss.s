@@ -116,8 +116,8 @@ plr1_TmpDucked_b:			ds.b	1 ; hires.s
 plr1_StoodOnLift_b:			ds.b	1 ; newanims.s
 
 ; Temporary tables			- long aligned here
-;Plr1_ObjectDistances_vw:	ds.w	250
-;Plr1_ObsInLine_vb:			ds.b	400
+Plr1_ObjectDistances_vw:	ds.w	MAX_LEVEL_OBJ_COUNT
+Plr1_ObsInLine_vb:			ds.b	MAX_LEVEL_OBJ_COUNT
 
 
 ; READY PLAYER TWO !
@@ -223,8 +223,8 @@ plr2_TmpDucked_b:			ds.b	1 ; hires.s
 plr2_StoodOnLift_b:			ds.b	1 ; newanims.s
 
 ; Temporary tables, long aligned here
-;Plr2_ObjectDistances_vw:	ds.w	250
-;Plr2_ObsInLine_vb:			ds.b	400
+Plr2_ObjectDistances_vw:	ds.w	MAX_LEVEL_OBJ_COUNT
+Plr2_ObsInLine_vb:			ds.b	MAX_LEVEL_OBJ_COUNT
 
 ; READY PLAYER whoever...
 			align 4
@@ -254,19 +254,10 @@ plr_PrevUseKeyState_b:			ds.b	1
 
 ; Misc...
 			align 4
-Plr1_ObjectDistances_vw:	ds.w	MAX_LEVEL_OBJ_COUNT
-Plr2_ObjectDistances_vw:	ds.w	MAX_LEVEL_OBJ_COUNT
-
 Plr_Health_w:				ds.w	2
 Plr_AmmoCounts_vw:			ds.w	20
 Plr_Shield_w:				ds.w	2
 Plr_Weapons_vw:				ds.w	10
 Plr_TurnSpeed_w:			ds.w	1
-
-			align 4
-
-Plr1_ObsInLine_vb:		ds.b	MAX_LEVEL_OBJ_COUNT
-Plr2_ObsInLine_vb:		ds.b	MAX_LEVEL_OBJ_COUNT
-
-BIGsmall:				ds.b	1
-lastscr:				ds.b	1
+BIGsmall:					ds.b	1
+lastscr:					ds.b	1

@@ -3861,7 +3861,11 @@ DrawDisplay:
 
 				bsr		RotateLevelPts
 				bsr		RotateObjectPts
-				bsr		CalcPLR1InLine
+
+				;bsr	CalcPLR1InLine
+
+				lea		Plr1_Data,a0
+				bsr		Plr_CalcInLine
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	doplr2too
@@ -3871,7 +3875,10 @@ DrawDisplay:
 				bra		noplr2either
 
 doplr2too:
-				bsr		CalcPLR2InLine
+				;bsr	CalcPLR2InLine
+				lea		Plr2_Data,a0
+				bsr		Plr_CalcInLine
+
 noplr2either:
 
 				move.l	Zone_EndOfListPtr_l,a0
@@ -4688,152 +4695,6 @@ BIGLONELY:
 ; move.w #$ff0,$dff180
 
 				rts
-
-CalcPLR1InLine:
-				move.w	Plr1_SinVal_w,d5
-				move.w	Plr1_CosVal_w,d6
-				move.l	Lvl_ObjectDataPtr_l,a4
-				move.l	Lvl_ObjectPointsPtr_l,a0
-				move.w	Lvl_NumObjectPoints_w,d7
-				move.l	#Plr1_ObsInLine_vb,a2
-				move.l	#Plr1_ObjectDistances_vw,a3
-
-.objpointrotlop:
-				cmp.b	#3,16(a4)
-				beq.s	.itaux
-
-				move.w	(a0),d0
-				sub.w	Plr1_XOff_l,d0
-				move.w	4(a0),d1
-				addq	#8,a0
-
-				tst.w	12(a4)
-				blt		.noworkout
-
-				moveq	#0,d2
-				move.b	16(a4),d2
-
-				sub.w	Plr1_ZOff_l,d1
-				move.w	d0,d2
-				muls	d6,d2
-				move.w	d1,d3
-				muls	d5,d3
-				sub.l	d3,d2
-				add.l	d2,d2
-
-				bgt.s	.okh
-				neg.l	d2
-.okh:
-				swap	d2
-
-				muls	d5,d0
-				muls	d6,d1
-				add.l	d0,d1
-				asl.l	#2,d1
-				swap	d1
-				moveq	#0,d3
-
-				tst.w	d1
-				ble.s	.notinline
-				asr.w	#1,d2
-				cmp.w	#80,d2 ; get this from object?
-				bgt.s	.notinline
-
-				st		d3
-.notinline:
-				move.b	d3,(a2)+
-				move.w	d1,(a3)+
-
-				add.w	#64,a4
-				dbra	d7,.objpointrotlop
-
-				rts
-
-.itaux:
-				add.w	#64,a4
-				bra		.objpointrotlop
-
-.noworkout:
-				move.b	#0,(a2)+
-				move.w	#0,(a3)+
-				add.w	#64,a4
-				dbra	d7,.objpointrotlop
-				rts
-
-CalcPLR2InLine:
-				move.w	Plr2_SinVal_w,d5
-				move.w	Plr2_CosVal_w,d6
-				move.l	Lvl_ObjectDataPtr_l,a4
-				move.l	Lvl_ObjectPointsPtr_l,a0
-				move.w	Lvl_NumObjectPoints_w,d7
-				move.l	#Plr2_ObsInLine_vb,a2
-				move.l	#Plr2_ObjectDistances_vw,a3
-
-.objpointrotlop:
-				cmp.b	#3,16(a4)
-				beq.s	.itaux
-
-				move.w	(a0),d0
-				sub.w	Plr2_XOff_l,d0
-				move.w	4(a0),d1
-				addq	#8,a0
-
-				tst.w	12(a4)
-				blt		.noworkout
-
-				moveq	#0,d2
-				move.b	16(a4),d2
-; move.l #ColBoxTable,a6
-; lea (a6,d2.w*8),a6
-
-				sub.w	Plr2_ZOff_l,d1
-				move.w	d0,d2
-				muls	d6,d2
-				move.w	d1,d3
-				muls	d5,d3
-				sub.l	d3,d2
-				add.l	d2,d2
-
-				bgt.s	.okh
-				neg.l	d2
-.okh:
-				swap	d2
-
-				muls	d5,d0
-				muls	d6,d1
-				add.l	d0,d1
-				asl.l	#2,d1
-				swap	d1
-				moveq	#0,d3
-
-				tst.w	d1
-				ble.s	.notinline
-				asr.w	#1,d2
-				cmp.w	#80,d2
-				bgt.s	.notinline
-
-				st		d3
-.notinline
-				move.b	d3,(a2)+
-
-				move.w	d1,(a3)+
-
-				add.w	#64,a4
-				dbra	d7,.objpointrotlop
-
-				rts
-
-.itaux:
-				add.w	#64,a4
-				bra		.objpointrotlop
-
-.noworkout:
-				move.w	#0,(a3)+
-				move.b	#0,(a2)+
-				add.w	#64,a4
-				dbra	d7,.objpointrotlop
-				rts
-
 
 RotateObjectPts:
 				move.w	Temp_SinVal_w,d5				; fetch sine of rotation

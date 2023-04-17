@@ -55,7 +55,7 @@ Plr1_Shot:
 				move.w	#-1,d0
 				move.l	#0,targetydiff
 				move.l	#$7fff,d1
-				move.l	Lvl_ZoneAddsPtr_l,a3
+;				move.l	Lvl_ZoneAddsPtr_l,a3
 				move.l	#Plr1_ObsInLine_vb,a1
 				move.l	Lvl_ObjectDataPtr_l,a0
 				move.l	#Plr1_ObjectDistances_vw,a2
@@ -380,7 +380,7 @@ Plr2_Shot:
 				move.w	#-1,d0
 				move.l	#0,targetydiff
 				move.l	#$7fff,d1
-				move.l	Lvl_ZoneAddsPtr_l,a3
+;				move.l	Lvl_ZoneAddsPtr_l,a3
 				move.l	#Plr2_ObsInLine_vb,a1
 				move.l	Lvl_ObjectDataPtr_l,a0
 				move.l	#Plr2_ObjectDistances_vw,a2
@@ -773,7 +773,6 @@ firefive:
 
 
 plr1_HitscanFailed:
-
 				move.w	Plr1_XOff_l,oldx
 				move.w	Plr1_ZOff_l,oldz
 				move.l	Plr1_YOff_l,d1

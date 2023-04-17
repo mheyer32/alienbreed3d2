@@ -907,6 +907,7 @@ plr_DoFootstepFX:
 ;*
 ;******************************************************************************
 
+
 plr_HitscanSucceded:
 				; Just blow it up.
 				move.l	Plr_ShotDataPtr_l,a0
@@ -954,3 +955,90 @@ plr_HitscanSucceded:
 				move.w	d1,EntT_ImpactZ_w(a4)
 
 				rts
+
+;******************************************************************************
+;*
+;* Calculate which objects are in line with the player.
+;*
+;* Looks like this processes every object in the level, which seems a bit
+;* inefficient. TODO- Process (potentially) visible objects only?
+;*
+;* Pointer to player data in a0
+;*
+;******************************************************************************
+				align 4
+Plr_CalcInLine:
+				move.w	PlrT_SinVal_w(a0),d5
+				move.w	PlrT_CosVal_w(a0),d6
+				lea		PlrT_ObjectsInLine_vb(a0),a2
+				lea		PlrT_ObjectDistances_vw(a0),a3
+				move.l	Lvl_ObjectDataPtr_l,a4
+
+				move.l	Lvl_ObjectPointsPtr_l,a1
+				move.w	Lvl_NumObjectPoints_w,d7
+
+.obj_point_rotate_loop:
+				cmp.b	#3,16(a4)
+				beq.s	.itaux
+
+				move.w	(a1),d0
+				sub.w	PlrT_XOff_l(a0),d0
+				move.w	4(a1),d1
+				addq	#8,a1
+
+				tst.w	12(a4)
+				blt		.noworkout
+
+				moveq	#0,d2
+				move.b	16(a4),d2
+
+				sub.w	PlrT_ZOff_l(a0),d1
+				move.w	d0,d2
+				muls	d6,d2
+				move.w	d1,d3
+				muls	d5,d3
+				sub.l	d3,d2
+				add.l	d2,d2
+
+				bgt.s	.okh
+				neg.l	d2
+.okh:
+				swap	d2
+
+				muls	d5,d0
+				muls	d6,d1
+				add.l	d0,d1
+				asl.l	#2,d1
+				swap	d1
+				moveq	#0,d3
+
+				tst.w	d1
+				ble.s	.not_inline
+
+				asr.w	#1,d2
+				cmp.w	#80,d2 ; get this from object?
+				bgt.s	.not_inline
+
+				st		d3
+.not_inline:
+				move.b	d3,(a2)+
+				move.w	d1,(a3)+
+
+				add.w	#64,a4
+				dbra	d7,.obj_point_rotate_loop
+
+				rts
+
+.itaux:
+				add.w	#64,a4
+				bra.s	.obj_point_rotate_loop
+
+.noworkout:
+				move.b	#0,(a2)+
+				move.w	#0,(a3)+
+				add.w	#64,a4
+				dbra	d7,.obj_point_rotate_loop
+
+				rts
+
+				;include "modules/shoot_tmp.s"
