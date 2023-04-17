@@ -102,11 +102,11 @@ SOFFSET		SET    SOFFSET+\1
 		UBYTE PlrT_StoodOnLift_b			; 231
 
 		; Tables
-		UWORD PlrT_ObjectDistances_vw		; 232, 500  - UWORD[250]
-		PADDING 498
+		;UWORD PlrT_ObjectDistances_vw		; 232, 500  - UWORD[250]
+		;PADDING 498
 
-		UBYTE PlrT_ObsInLine_vb				; 732, 400 - UBYTE[400]
-		PADDING 399
+		;UBYTE PlrT_ObsInLine_vb				; 732, 400 - UBYTE[400]
+		;PADDING 399
 		LABEL PlrT_SizeOf_l					; 1132
 
 	; Bullet definition
