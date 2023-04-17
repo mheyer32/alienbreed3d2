@@ -4712,8 +4712,6 @@ CalcPLR1InLine:
 
 				moveq	#0,d2
 				move.b	16(a4),d2
-;move.l #ColBoxTable,a6
-;lea (a6,d2.w*8),a6
 
 				sub.w	Plr1_ZOff_l,d1
 				move.w	d0,d2
@@ -4738,13 +4736,12 @@ CalcPLR1InLine:
 				tst.w	d1
 				ble.s	.notinline
 				asr.w	#1,d2
-				cmp.w	#80,d2
+				cmp.w	#80,d2 ; get this from object?
 				bgt.s	.notinline
 
 				st		d3
-.notinline
+.notinline:
 				move.b	d3,(a2)+
-
 				move.w	d1,(a3)+
 
 				add.w	#64,a4
@@ -4812,7 +4809,7 @@ CalcPLR2InLine:
 				tst.w	d1
 				ble.s	.notinline
 				asr.w	#1,d2
-				cmp.w	(a6),d2
+				cmp.w	#80,d2
 				bgt.s	.notinline
 
 				st		d3

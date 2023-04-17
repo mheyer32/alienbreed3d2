@@ -1840,6 +1840,7 @@ checkcol:
 checkedallcol:
 				rts
 
+; todo - this is irrelevant from AB3D1 and needs to go.
 ColBoxTable:
 
 ; red scurrying alien

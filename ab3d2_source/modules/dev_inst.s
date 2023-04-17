@@ -290,6 +290,12 @@ Dev_PrintStats:
 				move.l		#136,d0
 				bsr			Dev_PrintF
 
+				; NumObjPtrs
+				lea			Lvl_NumObjectPoints_w,a1
+				lea			.dev_ss_stats_lvl_obj_vb,a0
+				move.l		#152,d0
+				bsr			Dev_PrintF
+
 ;				; Zone Ptr
 ;				lea			Plr1_ZonePtr_l,a1
 ;				lea			.dev_ss_stats_zone_vb,a0
@@ -359,8 +365,13 @@ Dev_PrintStats:
 .dev_ss_stats_order_zones_vb:
 				dc.b		"OZ:%3d",0
 
+.dev_ss_stats_lvl_obj_vb:
+				dc.b		"LO:%3d",0
+
 ;.dev_ss_stats_zone_vb:
 ;				dc.b		"ZP:%8lx",0
+
+
 
 ;.dev_ss_player_size:
 ;				dc.b		"PS:%3d",0
