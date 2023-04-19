@@ -45,7 +45,7 @@ plr1_OldX_l:				ds.l	1 ; hires.s
 plr1_OldZ_l:				ds.l	1 ; hires.s
 plr1_OldRoomPtr_l:			ds.l	1 ; leveldata2.s - write once?
 plr1_SnapSquishedHeight_l:	ds.l	1 ; plr1control.s
-
+plr1_DefaultEnemyFlags_l:	ds.l	1
 
 ; Word data
 Plr1_Energy_w:				ds.w	1
@@ -120,6 +120,7 @@ Plr1_ObjectDistances_vw:	ds.w	MAX_LEVEL_OBJ_COUNT
 Plr1_ObsInLine_vb:			ds.b	MAX_LEVEL_OBJ_COUNT
 
 
+
 ; READY PLAYER TWO !
 
 			align 4
@@ -154,6 +155,7 @@ plr2_OldX_l:				ds.l	1 ; hires.s
 plr2_OldZ_l:				ds.l	1 ; hires.s
 plr2_OldRoomPtr_l:			ds.l	1 ; leveldata2.s
 plr2_SnapSquishedHeight_l:	ds.l	1 ; plr2control.s
+plr2_DefaultEnemyFlags_l:	ds.l	1
 
 ; Word Data
 Plr2_Energy_w:				ds.w	1
@@ -228,19 +230,32 @@ Plr2_ObsInLine_vb:			ds.b	MAX_LEVEL_OBJ_COUNT
 
 ; READY PLAYER whoever...
 			align 4
+
+
 ;Plr_GunDataPtr_l:			ds.l	1
 Plr_ShotDataPtr_l:			ds.l	1
 
 ; Private fields
 plr_JumpSpeed_l:			ds.l	1 ; fall.s
 plr_OldHeight_l:			ds.l	1 ; fall.s
+plr_TargetYDiff_l:			ds.l	1
+plr_TempYOffset_l:			ds.l	1
 
 Plr_AddToBobble_w:			ds.w	1
-
 
 ; Word fields
 ; Private
 plr_FallDamage_w:			ds.w	1 ; fall.s
+plr_TargetDistance_w:		ds.w	1
+plr_TempAnglePos_w:			ds.w	1
+plr_MaxGunFrame_b:			ds.w	1 ; accessed as byte
+plr_BulletType_w:			ds.w	1
+plr_AmmoInMyGun_w:			ds.w	1
+plr_BulletSpeed_w:			ds.w	1
+plr_TempStoodInTop_b:		ds.w	1 ; accessed as byte
+plr_TempXDir_w:				ds.w	1
+plr_TempZDir_w:				ds.w	1
+plr_TempGun_b:				ds.w	1 ; accessed as byte
 
 Plr_MultiplayerType_b:		ds.b	1	; CHAR enum - m(aster), s(lave), n(either)
 Plr_Decelerate_b:			ds.b	1

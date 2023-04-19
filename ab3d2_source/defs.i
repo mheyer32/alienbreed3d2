@@ -8,7 +8,7 @@ SOFFSET		SET    SOFFSET+\1
 			ENDM
 
 ; Maximum number of levels defined in an object. Contrary to expectations this can be > 256.
-; Largest seen so far is 260
+; Largest seen so far is 260.
 MAX_LEVEL_OBJ_COUNT	EQU	288
 
 *****************************
@@ -47,69 +47,70 @@ MAX_LEVEL_OBJ_COUNT	EQU	288
 		ULONG PlrT_OldZ_l					;  96, 4
 		ULONG PlrT_OldRoomPtr_l				; 100, 4
 		ULONG PlrT_SnapSquishedHeight_l		; 104, 4
+		ULONG PlrT_DefaultEnemyFlags_l		; 108, 4
 
 		; Word fields
-		UWORD PlrT_Energy_w					; 108, 2
-		UWORD PlrT_CosVal_w					; 110, 2
-		UWORD PlrT_SinVal_w					; 112, 2
-		UWORD PlrT_AngPos_w					; 114, 2
-		UWORD PlrT_Zone_w					; 116, 2
-		UWORD PlrT_FloorSpd_w				; 118, 2
-		UWORD PlrT_RoomBright_w				; 120, 2
-		UWORD PlrT_Bobble_w					; 122, 2
-		UWORD PlrT_SnapAngPos_w				; 124, 2
-		UWORD PlrT_SnapAngSpd_w				; 126, 2
-		UWORD PlrT_TmpAngPos_w				; 128, 2
-		UWORD PlrT_TimeToShoot_w			; 130, 2
+		UWORD PlrT_Energy_w					; 112, 2
+		UWORD PlrT_CosVal_w					; 114, 2
+		UWORD PlrT_SinVal_w					; 116, 2
+		UWORD PlrT_AngPos_w					; 118, 2
+		UWORD PlrT_Zone_w					; 120, 2
+		UWORD PlrT_FloorSpd_w				; 122, 2
+		UWORD PlrT_RoomBright_w				; 124, 2
+		UWORD PlrT_Bobble_w					; 126, 2
+		UWORD PlrT_SnapAngPos_w				; 128, 2
+		UWORD PlrT_SnapAngSpd_w				; 130, 2
+		UWORD PlrT_TmpAngPos_w				; 132, 2
+		UWORD PlrT_TimeToShoot_w			; 134, 2
 
 		; This section is saved/loaded in game save
-		UWORD PlrT_Health_w					; 132, 2
-		UWORD PlrT_JetpackFuel_w			; 134, 2
-		UWORD PlrT_AmmoCounts_vw			; 136, 40 : UWORD[20]
+		UWORD PlrT_Health_w					; 136, 2
+		UWORD PlrT_JetpackFuel_w			; 138, 2
+		UWORD PlrT_AmmoCounts_vw			; 140, 40 : UWORD[20]
 		PADDING 38
-		UWORD PlrT_Shield_w					; 176, 2
-		UWORD PlrT_Jetpack_w				; 178, 2
-		UWORD PlrT_Weapons_vb				; 180, 20 : UWORD[10]
+		UWORD PlrT_Shield_w					; 180, 2
+		UWORD PlrT_Jetpack_w				; 182, 2
+		UWORD PlrT_Weapons_vb				; 184, 20 : UWORD[10]
 		PADDING 18
 
-		UWORD PlrT_GunFrame_w				; 200, 2
+		UWORD PlrT_GunFrame_w				; 204, 2
 
 		; Private
-		UWORD PlrT_TmpHoldDown_w			; 202, 2
-		UWORD PlrT_TmpBobble_w				; 204, 2
-		UWORD PlrT_SnapCosVal_w				; 206, 2
-		UWORD PlrT_SnapSinVal_w				; 208, 2
-		UWORD PlrT_WalkSFXTime_w			; 210, 2
+		UWORD PlrT_TmpHoldDown_w			; 206, 2
+		UWORD PlrT_TmpBobble_w				; 208, 2
+		UWORD PlrT_SnapCosVal_w				; 210, 2
+		UWORD PlrT_SnapSinVal_w				; 212, 2
+		UWORD PlrT_WalkSFXTime_w			; 214, 2
 
 		; Byte data
-		UBYTE PlrT_Keys_b					; 212, 1
-		UBYTE PlrT_Path_b					; 213
-		UBYTE PlrT_Mouse_b					; 214
-		UBYTE PlrT_Joystick_b				; 215
-		UBYTE PlrT_GunSelected_b			; 216
-		UBYTE PlrT_StoodInTop_b				; 217
-		UBYTE PlrT_Ducked_b					; 218
-		UBYTE PlrT_Squished_b				; 219
-		UBYTE PlrT_Echo_b					; 220
-		UBYTE PlrT_Fire_b					; 221
-		UBYTE PlrT_Clicked_b				; 222
-		UBYTE PlrT_Used_b					; 223
-		UBYTE PlrT_TmpClicked_b				; 224
-		UBYTE PlrT_TmpSpcTap_b				; 225
-		UBYTE PlrT_TmpGunSelected_b			; 226
-		UBYTE PlrT_TmpFire_b				; 227
+		UBYTE PlrT_Keys_b					; 216, 1
+		UBYTE PlrT_Path_b					; 217
+		UBYTE PlrT_Mouse_b					; 218
+		UBYTE PlrT_Joystick_b				; 219
+		UBYTE PlrT_GunSelected_b			; 220
+		UBYTE PlrT_StoodInTop_b				; 221
+		UBYTE PlrT_Ducked_b					; 222
+		UBYTE PlrT_Squished_b				; 223
+		UBYTE PlrT_Echo_b					; 224
+		UBYTE PlrT_Fire_b					; 225
+		UBYTE PlrT_Clicked_b				; 226
+		UBYTE PlrT_Used_b					; 227
+		UBYTE PlrT_TmpClicked_b				; 228
+		UBYTE PlrT_TmpSpcTap_b				; 229
+		UBYTE PlrT_TmpGunSelected_b			; 230
+		UBYTE PlrT_TmpFire_b				; 231
 
  		; Private
-		UBYTE PlrT_Teleported_b				; 228
-		UBYTE PlrT_Dead_b					; 229
-		UBYTE PlrT_TmpDucked_b				; 230
-		UBYTE PlrT_StoodOnLift_b			; 231
+		UBYTE PlrT_Teleported_b				; 232
+		UBYTE PlrT_Dead_b					; 233
+		UBYTE PlrT_TmpDucked_b				; 234
+		UBYTE PlrT_StoodOnLift_b			; 235
 
 		; Tables
-		UWORD PlrT_ObjectDistances_vw		; 232, MAX_LEVEL_OBJ_COUNT*2 : UWORD[MAX_LEVEL_OBJ_COUNT]
+		UWORD PlrT_ObjectDistances_vw		; 236, MAX_LEVEL_OBJ_COUNT*2 : UWORD[MAX_LEVEL_OBJ_COUNT]
 		PADDING (MAX_LEVEL_OBJ_COUNT*2)-2
 
-		UBYTE PlrT_ObjectsInLine_vb				; ..., MAX_LEVEL_OBJ_COUNT : UBYTE[MAX_LEVEL_OBJ_COUNT]
+		UBYTE PlrT_ObjectsInLine_vb			; ..., MAX_LEVEL_OBJ_COUNT : UBYTE[MAX_LEVEL_OBJ_COUNT]
 		PADDING MAX_LEVEL_OBJ_COUNT-1
 		LABEL PlrT_SizeOf_l					;
 

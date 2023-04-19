@@ -9,7 +9,7 @@
 
 ;******************************************************************************
 ;*
-;* Initialise player positions
+;* Initialise player positions (both players)
 ;*
 ;******************************************************************************
 Plr_Initialise:
@@ -50,6 +50,11 @@ Plr_Initialise:
 				move.w	8(a1),Plr2_SnapZOff_l
 				move.w	6(a1),Plr2_XOff_l
 				move.w	8(a1),Plr2_ZOff_l
+
+				; Set up the default enemy flags for projectile logic
+				move.l	#%100011,plr1_DefaultEnemyFlags_l ; Bit 5 is player 2 ?
+				move.l	#%010011,plr2_DefaultEnemyFlags_l ; Bit 4 is player 1 ?
+
 				rts
 
 ;******************************************************************************
@@ -901,67 +906,9 @@ plr_DoFootstepFX:
 
 ;******************************************************************************
 ;*
-;* Handle player shot
-;*
-;* Pointer to player data in a0
-;*
-;******************************************************************************
-
-
-plr_HitscanSucceded:
-				; Just blow it up.
-				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
-.find_one_free:
-				move.w	12(a0),d2
-				blt.s	.found_one_free
-
-				adda.w	#64,a0
-				dbra	d1,.find_one_free
-
-				rts
-
-.found_one_free:
-				move.b	#2,16(a0)
-				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.w	(a0),d2
-				move.l	(a1,d0.w*8),(a1,d2.w*8)
-				move.l	4(a1,d0.w*8),4(a1,d2.w*8)
-				move.b	#1,ShotT_Status_b(a0)
-				move.w	#0,ShotT_Gravity_w(a0)
-				move.b	BULTYPE+1,ShotT_Size_b(a0)
-				move.b	#0,ShotT_Anim_b(a0)
-
-				move.w	4(a4),d1
-				ext.l	d1
-				asl.l	#7,d1
-				move.l	d1,ShotT_AccYPos_w(a0)
-				move.w	12(a4),12(a0)
-				st		ShotT_Worry_b(a0)
-				move.w	4(a4),4(a0)
-
-				move.w	BulT_HitDamage_l+2(a5),d0
-				add.b	d0,EntT_DamageTaken_b(a4)
-
-				move.w	tempxdir,d1
-				ext.l	d1
-				asl.l	#3,d1
-				swap	d1
-				move.w	d1,EntT_ImpactX_w(a4)
-				move.w	tempzdir,d1
-				ext.l	d1
-				asl.l	#3,d1
-				swap	d1
-				move.w	d1,EntT_ImpactZ_w(a4)
-
-				rts
-
-;******************************************************************************
-;*
-;* Calculate which objects are in line with the player.
-;*
-;* Looks like this processes every object in the level, which seems a bit
-;* inefficient. TODO- Process (potentially) visible objects only?
+;* Determine which objects are in line with the player for shot mechanics. This
+;* seems to process all objects in the level which seems inefficient. TODO See
+;* if this can be applied to a list of potentially visible objects only.
 ;*
 ;* Pointer to player data in a0
 ;*
@@ -1041,4 +988,595 @@ Plr_CalcInLine:
 
 				rts
 
-				;include "modules/shoot_tmp.s"
+;******************************************************************************
+;*
+;* Handle player shot mechanics.
+;*
+;* Pointer to player data in a0.
+;*
+;******************************************************************************
+				align 4
+
+Plr_Shot:
+				tst.w	PlrT_TimeToShoot_w(a0)
+				beq.s	.can_fire
+
+				move.w	Anim_TempFrames_w,d0
+				sub.w	d0,PlrT_TimeToShoot_w(a0)
+				bge		.no_fire
+
+				move.w	#0,PlrT_TimeToShoot_w(a0)
+
+.no_fire:		; early out
+				rts
+
+.can_fire:
+				; relocate player pointer to a3 as there's a lot of temporary register clobbering
+				move.l	a0,a3
+				moveq	#0,d0
+				move.b	PlrT_TmpGunSelected_b(a3),d0
+				move.b	d0,plr_TempGun_b
+				move.l	GLF_DatabasePtr_l,a6
+				lea		GLFT_ShootDefs_l(a6),a6
+				lea		GLFT_BulletDefs_l-GLFT_ShootDefs_l(a6),a5
+				lea		(a6,d0.w*8),a6
+				move.w	ShootT_BulType_w(a6),d0		; bullet type
+				move.w	d0,plr_BulletType_w
+				lea		PlrT_AmmoCounts_vw(a3),a0
+				move.w	(a0,d0.w*2),plr_AmmoInMyGun_w
+				muls	#BulT_SizeOf_l,d0
+				add.w	d0,a5
+				move.w	BulT_Speed_l+2(a5),plr_BulletSpeed_w
+				tst.b	PlrT_TmpFire_b(a3)
+				beq		.no_fire
+
+				move.w	PlrT_AngPos_w(a3),d0
+				move.w	d0,plr_TempAnglePos_w
+				move.l	#SinCosTable_vw,a0
+				lea		(a0,d0.w),a0
+				move.w	(a0),plr_TempXDir_w
+				move.w	2048(a0),plr_TempZDir_w
+				move.w	PlrT_XOff_l(a3),tempxoff
+				move.w	PlrT_ZOff_l(a3),tempzoff
+				move.l	PlrT_YOff_l(a3),plr_TempYOffset_l
+				add.l	#10*128,plr_TempYOffset_l
+				move.b	PlrT_StoodInTop_b(a3),plr_TempStoodInTop_b
+				move.l	PlrT_ZonePtr_l(a3),tempRoompt
+				move.l	PlrT_DefaultEnemyFlags_l(a3),d7
+				move.w	#-1,d0
+				move.l	#0,plr_TargetYDiff_l
+				move.l	#$7fff,d1
+				lea		PlrT_ObjectsInLine_vb(a3),a1
+				move.l	Lvl_ObjectDataPtr_l,a0
+				lea		PlrT_ObjectDistances_vw(a3),a2
+
+				; object pointed to by a0
+.find_closest_in_line:
+				tst.w	(a0)
+				blt		.out_of_line
+
+				cmp.b	#3,16(a0)
+				beq		.not_lined_up
+
+				tst.b	(a1)+
+				beq.s	.not_lined_up
+
+				btst	#0,17(a0)
+				beq.s	.not_lined_up
+
+				tst.w	12(a0)
+				blt.s	.not_lined_up
+
+				move.b	16(a0),d6
+				btst	d6,d7
+				beq.s	.not_lined_up
+
+				tst.b	EntT_NumLives_b(a0)
+				beq.s	.not_lined_up
+
+				move.w	(a0),d5
+				move.w	(a2,d5.w*2),d6
+				move.w	4(a0),d2
+				ext.l	d2
+				asl.l	#7,d2
+				sub.l	PlrT_YOff_l(a3),d2
+				move.l	d2,d3
+				bge.s	.not_negative
+
+				neg.l	d2
+
+.not_negative:
+				;0xABADCAFE division pogrom
+				;divs	#44,d2 ; Hitscanning doesnt work without this. But why 44?
+
+				; Approximate 1/44 as 93/4096
+				muls	#93,d2 ; todo - maybe needs to be muls.l ?
+				asr.l	#8,d2
+				asr.l	#4,d2
+
+				cmp.w	d6,d2
+				bgt.s	.not_lined_up
+
+				cmp.w	d6,d1
+				blt.s	.not_lined_up
+
+				move.w	d6,d1
+				move.l	a0,a4
+
+				; We have a closer enemy lined up.
+				move.l	d3,plr_TargetYDiff_l
+				move.w	d5,d0
+
+.not_lined_up:
+				add.w	#64,a0
+				bra		.find_closest_in_line
+
+.out_of_line:
+				move.w	d1,plr_TargetDistance_w
+				move.l	plr_TargetYDiff_l,d5
+				sub.l	PlrT_Height_l(a3),d5
+				add.l	#18*256,d5
+				move.w	d1,closedist
+				move.w	plr_BulletSpeed_w,d2
+				asr.w	d2,d1
+				tst.w	d1
+				bgt.s	.distance_ok
+
+				moveq	#1,d1
+
+.distance_ok:
+				divs	d1,d5
+				move.w	d5,bulyspd
+				move.w	plr_AmmoInMyGun_w,d2
+				move.w	ShootT_BulCount_w(a6),d1
+				cmp.w	d1,d2
+				bge.s	.okcanshoot
+
+				move.l	PlrT_ObjectPtr_l(a3),a2
+				move.w	(a2),d0
+				move.l	#ObjRotated_vl,a2
+				move.l	(a2,d0.w*8),Noisex
+				move.w	#100,Noisevol
+				move.w	#100,AI_Player1NoiseVol_w
+				move.w	#12,Samplenum
+				clr.b	notifplaying
+				move.b	#$fb,IDNUM
+				jsr		MakeSomeNoise
+
+				rts
+
+.okcanshoot:
+				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
+				beq.s	.notplr1
+				move.l	PlrT_ObjectPtr_l(a3),a2
+
+				; todo - understand why this is different for player 2 code...
+				move.w	#1,EntT_Timer1_w+128(a2)
+
+.notplr1:
+				move.w	ShootT_Delay_w(a6),PlrT_TimeToShoot_w(a3)
+				move.b	plr_MaxGunFrame_b,PlrT_GunFrame_w(a3)
+				sub.w	d1,d2
+				lea		PlrT_AmmoCounts_vw(a3),a2
+				add.w	plr_BulletType_w,a2
+				add.w	plr_BulletType_w,a2
+				move.w	d2,(a2)
+				move.l	PlrT_ObjectPtr_l(a3),a2
+				move.w	(a2),d2
+				move.l	#ObjRotated_vl,a2
+				move.l	(a2,d2.w*8),Noisex
+				move.w	#100,AI_Player1NoiseVol_w
+				move.w	#300,Noisevol
+				move.w	ShootT_SFX_w(a6),Samplenum
+				move.b	#2,chanpick
+				clr.b	notifplaying
+				movem.l	d0/a0/d5/d6/d7/a6/a4/a5/a3,-(a7)
+				move.b	#$fb,IDNUM
+				jsr		MakeSomeNoise
+
+				movem.l	(a7)+,d0/a0/d5/d6/d7/a6/a4/a5/a3
+				tst.w	d0
+				blt		.nothing_to_shoot
+
+				tst.l	BulT_Gravity_l(a5)
+				beq.s	.skip_aim
+
+				move.w	PlrT_AimSpeed_l(a3),d2
+				move.w	#8,d1
+				sub.w	plr_BulletSpeed_w,d1
+				asr.w	d1,d2
+				move.w	d2,bulyspd
+
+.skip_aim:
+				tst.w	BulT_IsHitScan_l+2(a5)
+				beq		plr_FireProjectile
+
+				move.w	ShootT_BulCount_w(a6),d7
+
+.fire_hitscanned_bullets:
+				movem.l	a0/a1/d7/d0/a4/a5/a3,-(a7)
+				jsr		GetRand
+
+				move.l	Lvl_ObjectPointsPtr_l,a1
+				move.w	(a4),d1
+				lea		(a1,d1.w*8),a1
+
+				and.w	#$7fff,d0
+				move.w	(a1),d1
+				sub.w	PlrT_XOff_l(a3),d1
+				muls	d1,d1
+				move.w	4(a1),d2
+				sub.w	PlrT_ZOff_l(a3),d2
+				muls	d2,d2
+				add.l	d2,d1
+				asr.l	#6,d1
+				ext.l	d0
+				asl.l	#1,d0
+				cmp.l	d1,d0
+				bgt.s	.hit
+
+				movem.l	(a7)+,a0/a1/d7/d0/a5/a4/a3
+				move.l	d0,-(a7)
+				bsr		plr_HitscanFailed
+
+				move.l	(a7)+,d0
+				bra.s	.missed
+
+.hit:
+				movem.l	(a7)+,a0/a1/d7/d0/a5/a4/a3
+				move.l	d0,-(a7)
+				bsr		plr_HitscanSucceded
+
+				move.l	(a7)+,d0
+
+.missed:
+				subq	#1,d7
+				bgt.s	.fire_hitscanned_bullets
+
+				rts
+
+.nothing_to_shoot:
+				move.w	PlrT_AimSpeed_l(a3),d0
+				move.w	#8,d1
+				sub.w	plr_BulletSpeed_w,d1
+				asr.w	d1,d0
+				move.w	d0,bulyspd
+				tst.w	BulT_IsHitScan_l+2(a5)
+				beq		plr_FireProjectile
+
+				move.w	#0,bulyspd
+				move.w	PlrT_XOff_l(a3),oldx
+				move.w	PlrT_ZOff_l(a3),oldz
+				move.w	PlrT_SinVal_w(a3),d0
+				asr.w	#7,d0
+				add.w	oldx,d0
+				move.w	d0,newx
+				move.w	PlrT_CosVal_w(a3),d0
+				asr.w	#7,d0
+				add.w	oldz,d0
+				move.w	d0,newz
+				move.l	PlrT_YOff_l(a3),d0
+				add.l	#10*128,d0
+				move.l	d0,oldy
+				move.l	d0,d1
+				jsr		GetRand
+
+				and.w	#$fff,d0
+				sub.w	#$800,d0
+				ext.l	d0
+				add.l	d0,d1
+				move.l	d1,newy
+				st		exitfirst
+				clr.b	Obj_WallBounce_b
+				move.w	#0,Obj_ExtLen_w
+				move.b	#$ff,Obj_AwayFromWall_b
+				move.w	#%0000010000000000,wallflags
+				move.l	#0,StepUpVal
+				move.l	#$1000000,StepDownVal
+				move.l	#0,thingheight
+				move.l	PlrT_ZonePtr_l(a3),objroom
+				movem.l	d0-d7/a0-a6,-(a7)
+
+.again:
+				jsr		MoveObject
+
+				tst.b	hitwall
+				bne.s	.nofurther
+				move.w	newx,d0
+				sub.w	oldx,d0
+				add.w	d0,oldx
+				add.w	d0,newx
+				move.w	newz,d0
+				sub.w	oldz,d0
+				add.w	d0,oldz
+				add.w	d0,newz
+				move.l	newy,d0
+				sub.l	oldy,d0
+				add.l	d0,oldy
+				add.l	d0,newy
+				bra		.again
+
+.nofurther:
+				movem.l	(a7)+,d0-d7/a0-a6
+				move.l	Plr_ShotDataPtr_l,a0
+				move.w	#19,d1
+
+.findonefree2:
+				move.w	12(a0),d2
+				blt.s	.foundonefree2
+				adda.w	#64,a0
+				dbra	d1,.findonefree2
+
+				rts
+
+.foundonefree2:
+				move.l	Lvl_ObjectPointsPtr_l,a1
+				move.w	(a0),d2
+				move.w	newx,(a1,d2.w*8)
+				move.w	newz,4(a1,d2.w*8)
+				move.b	#1,ShotT_Status_b(a0)
+				move.w	#0,ShotT_Gravity_w(a0)
+				move.b	plr_BulletType_w+1,ShotT_Size_b(a0)
+				move.b	#0,ShotT_Anim_b(a0)
+				move.l	objroom,a1
+				move.w	(a1),12(a0)
+				st		ShotT_Worry_b(a0)
+				move.l	wallhitheight,d0
+				move.l	d0,ShotT_AccYPos_w(a0)
+				asr.l	#7,d0
+				move.w	d0,4(a0)
+				rts
+
+;******************************************************************************
+;*
+;* Launch projectile
+;*
+;* player data in a3
+;*
+;******************************************************************************
+plr_FireProjectile:
+				move.l	PlrT_DefaultEnemyFlags_l(a3),d7
+				move.b	plr_MaxGunFrame_b,PlrT_GunFrame_w(a3)
+				move.l	PlrT_ObjectPtr_l(a3),a2
+				move.w	ShootT_BulCount_w(a6),d5
+				move.w	d5,d6
+				subq.w	#1,d6
+
+				;muls	#128,d6
+				asl.w	#7,d6
+
+				neg.w	d6
+				add.w	plr_TempAnglePos_w,d6
+				and.w	#8190,d6
+
+.firefive:
+				move.l	Plr_ShotDataPtr_l,a0
+				move.w	#19,d1
+
+.findonefree:
+				move.w	12(a0),d0
+				blt.s	.foundonefree
+				adda.w	#64,a0
+				dbra	d1,.findonefree
+
+				rts
+
+.foundonefree:
+				move.w	BulT_Gravity_l+2(a5),ShotT_Gravity_w(a0)
+				move.b	BulT_BounceHoriz_l+3(a5),ShotT_Flags_w(a0)
+				move.b	BulT_BounceVert_l+3(a5),ShotT_Flags_w+1(a0)
+				move.w	bulyspd,d0
+				cmp.w	#20*128,d0
+				blt.s	.okdownspd
+
+				move.w	#20*128,d0
+
+.okdownspd:
+				cmp.w	#-20*128,d0
+				bgt.s	.okupspd
+
+				move.w	#-20*128,d0
+
+.okupspd:
+
+; add.w G_InitialYVel(a6),d0
+
+				move.w	d0,bulyspd
+				move.l	#ObjRotated_vl,a2
+				move.b	plr_BulletType_w+1,ShotT_Size_b(a0)
+				move.b	BulT_HitDamage_l+3(a5),ShotT_Power_w(a0)
+
+				move.l	Lvl_ObjectPointsPtr_l,a1
+				move.w	(a0),d1
+				lea		(a1,d1.w*8),a1
+				move.w	tempxoff,(a1)
+				move.w	tempzoff,4(a1)
+
+				move.l	#SinCosTable_vw,a1
+				move.w	(a1,d6.w),d0
+				ext.l	d0
+				add.w	#2048,a1
+				move.w	(a1,d6.w),d2
+				ext.l	d2
+
+				add.w	#256,d6
+				and.w	#8190,d6
+
+				move.w	plr_BulletSpeed_w,d1
+				asl.l	d1,d0
+				move.l	d0,ShotT_VelocityX_w(a0)
+				ext.l	d2
+				asl.l	d1,d2
+				move.b	#2,16(a0)
+				move.l	d2,ShotT_VelocityZ_w(a0)
+				move.w	bulyspd,ShotT_VelocityY_w(a0)
+				move.b	plr_TempStoodInTop_b,ShotT_InUpperZone_b(a0)
+				move.w	#0,ShotT_Lifetime_w(a0)
+				move.l	d7,EntT_EnemyFlags_l(a0)
+				move.l	tempRoompt,a2
+				move.w	(a2),12(a0)
+				move.l	plr_TempYOffset_l,d0
+				add.l	#20*128,d0
+				move.l	d0,ShotT_AccYPos_w(a0)
+				st		ShotT_Worry_b(a0)
+				asr.l	#7,d0
+				move.w	d0,4(a0)
+
+				sub.w	#1,d5
+				bgt		.firefive
+
+				rts
+
+;******************************************************************************
+;*
+;* Handle failed hitscan
+;*
+;* player data in a3
+;*
+;******************************************************************************
+plr_HitscanFailed:
+				move.w	PlrT_XOff_l(a3),oldx
+				move.w	PlrT_ZOff_l(a3),oldz
+				move.l	PlrT_YOff_l(a3),d1
+				add.l	#10*128,d1
+				move.l	d1,oldy
+
+				move.w	(a4),d0
+				move.l	Lvl_ObjectPointsPtr_l,a1
+				move.w	(a1,d0.w*8),d2
+				sub.w	oldx,d2
+				asr.w	#1,d2
+				add.w	oldx,d2
+				move.w	d2,newx
+				move.w	4(a1,d0.w*8),d2
+				sub.w	oldz,d2
+				asr.w	#1,d2
+				add.w	oldz,d2
+				move.w	d2,newz
+
+				move.w	4(a0),d2
+				ext.l	d2
+				asl.l	#7,d2
+				move.l	d2,newy
+
+				st		exitfirst
+				clr.b	Obj_WallBounce_b
+				move.w	#0,Obj_ExtLen_w
+				move.b	#$ff,Obj_AwayFromWall_b
+				move.w	#%0000010000000000,wallflags
+				move.l	#0,StepUpVal
+				move.l	#$1000000,StepDownVal
+				move.l	#0,thingheight
+				move.l	PlrT_ZonePtr_l(a3),objroom
+				movem.l	d0-d7/a0-a6,-(a7)
+
+.again:
+				jsr		MoveObject
+
+				tst.b	hitwall
+				bne.s	.nofurther
+
+				move.w	newx,d1
+				sub.w	oldx,d1
+				add.w	d1,oldx
+				add.w	d1,newx
+				move.w	newz,d1
+				sub.w	oldz,d1
+				add.w	d1,oldz
+				add.w	d1,newz
+				move.l	newy,d1
+				sub.l	oldy,d1
+				add.l	d1,oldy
+				add.l	d1,newy
+				bra		.again
+
+.nofurther:
+				movem.l	(a7)+,d0-d7/a0-a6
+				move.l	Plr_ShotDataPtr_l,a0
+				move.w	#19,d1
+
+.findonefree2:
+				move.w	12(a0),d2
+				blt.s	.foundonefree2
+
+				adda.w	#64,a0
+				dbra	d1,.findonefree2
+
+				rts
+
+.foundonefree2:
+				move.b	#2,16(a0)
+				move.l	Lvl_ObjectPointsPtr_l,a1
+				move.w	(a0),d2
+				move.w	newx,(a1,d2.w*8)
+				move.w	newz,4(a1,d2.w*8)
+				move.b	#1,ShotT_Status_b(a0)
+				move.w	#0,ShotT_Gravity_w(a0)
+				move.b	plr_BulletType_w+1,ShotT_Size_b(a0)
+				move.b	#0,ShotT_Anim_b(a0)
+
+				move.l	objroom,a1
+				move.w	(a1),12(a0)
+				st		ShotT_Worry_b(a0)
+				move.l	newy,d1
+				move.l	d1,ShotT_AccYPos_w(a0)
+				asr.l	#7,d1
+				move.w	d1,4(a0)
+
+				rts
+
+
+;******************************************************************************
+;*
+;* Handle successful hitscan
+;*
+;* Pointer to player data in a0
+;*
+;******************************************************************************
+plr_HitscanSucceded:
+				; Just blow it up.
+				move.l	Plr_ShotDataPtr_l,a0
+				move.w	#19,d1
+.find_one_free:
+				move.w	12(a0),d2
+				blt.s	.found_one_free
+
+				adda.w	#64,a0
+				dbra	d1,.find_one_free
+
+				rts
+
+.found_one_free:
+				move.b	#2,16(a0)
+				move.l	Lvl_ObjectPointsPtr_l,a1
+				move.w	(a0),d2
+				move.l	(a1,d0.w*8),(a1,d2.w*8)
+				move.l	4(a1,d0.w*8),4(a1,d2.w*8)
+				move.b	#1,ShotT_Status_b(a0)
+				move.w	#0,ShotT_Gravity_w(a0)
+				move.b	plr_BulletType_w+1,ShotT_Size_b(a0)
+				move.b	#0,ShotT_Anim_b(a0)
+
+				move.w	4(a4),d1
+				ext.l	d1
+				asl.l	#7,d1
+				move.l	d1,ShotT_AccYPos_w(a0)
+				move.w	12(a4),12(a0)
+				st		ShotT_Worry_b(a0)
+				move.w	4(a4),4(a0)
+
+				move.w	BulT_HitDamage_l+2(a5),d0
+				add.b	d0,EntT_DamageTaken_b(a4)
+
+				move.w	plr_TempXDir_w,d1
+				ext.l	d1
+				asl.l	#3,d1
+				swap	d1
+				move.w	d1,EntT_ImpactX_w(a4)
+				move.w	plr_TempZDir_w,d1
+				ext.l	d1
+				asl.l	#3,d1
+				swap	d1
+				move.w	d1,EntT_ImpactZ_w(a4)
+
+				rts

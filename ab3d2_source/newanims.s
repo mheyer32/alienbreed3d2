@@ -775,9 +775,11 @@ objmoveanim:
 				move.l	#AI_BoredomSpace_vl,AI_BoredomPtr_l
 				bsr		BACKSFX
 
-				bsr		Plr1_Shot
+				lea		Plr1_Data,a0
+				bsr		Plr_Shot
 
-				bsr		Plr2_Shot
+				lea		Plr2_Data,a0
+				bsr		Plr_Shot
 
 ; bsr SwitchRoutine
 
@@ -1729,9 +1731,6 @@ tempRoompt:		dc.l	0
 
 bulyspd:		dc.w	0
 closedist:		dc.w	0
-
-				include	"newplayershoot.s"
-
 
 NUMZONES:		dc.w	0
 
