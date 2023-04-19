@@ -196,6 +196,8 @@ Game_SlavePaused_b:			dc.b	0
 
 ;*******************************************************************************
 
+				include "modules/draw.s"
+
 				align 4
 Game_ShowIntroText:
 				move.l	Lvl_IntroTextPtr_l,a0
@@ -212,66 +214,6 @@ Game_ShowIntroText:
 				addq	#1,d0
 				add.w	#82,a0
 				dbra	d7,.next_line_loop
-				rts
-
-Draw_LineOfText:
-				movem.l	d0/a0/d7,-(a7)
-				muls	#80*16,d0
-				add.l	d0,a1					; screen pointer
-				move.l	#draw_FontPtrs_vl,a3
-				moveq	#0,d0
-				move.b	(a0)+,d0
-				move.l	(a3,d0.w*8),a2
-				move.l	4(a3,d0.w*8),a3
-				moveq	#0,d4
-				moveq	#0,d1					; width counter:
-				move.w	#79,d6
-				tst.b	(a0)+
-				beq.s	.not_centred
-
-				moveq	#-1,d5
-				move.l	a0,a4
-				moveq	#0,d2
-				moveq	#0,d3
-				move.w	#79,d0					; number of chars
-
-.addup:
-				addq	#1,d5
-				move.b	(a4)+,d2
-				move.b	-32(a3,d2.w),d4
-				add.w	d4,d3
-				cmp.b	#32,d2
-				beq.s	.dont_put_in
-
-				move.w	d5,d6
-				move.w	d3,d1
-
-.dont_put_in:
-				dbra	d0,.addup
-				asr.w	#1,d1
-				neg.w	d1
-				add.w	#SCREEN_WIDTH,d1			; horiz pos of start x
-
-.not_centred:
-				move.w	d6,d7
-
-.do_char:
-				moveq	#0,d2
-				move.b	(a0)+,d2
-				sub.w	#32,d2
-				moveq	#0,d6
-				move.b	(a3,d2.w),d6
-				asl.w	#5,d2
-				lea		(a2,d2.w),a4			; char font
-val				SET		0
-				REPT	16
-				move.w	(a4)+,d0
-				bfins	d0,val(a1){d1:d6}
-val				SET		val+80
-				ENDR
-				add.w	d6,d1
-				dbra	d7,.do_char
-				movem.l	(a7)+,d0/a0/d7
 				rts
 
 Game_ClearIntroText:
@@ -771,12 +713,11 @@ clrmessbuff:
 
 				clr.b	Plr2_Fire_b
 				clr.b	Plr2_TmpFire_b
-				clr.b	PLR2_SPCTAP
+				clr.b	Plr2_Used_b
 				clr.b	Plr2_TmpSpcTap_b
 
 				clr.b	plr1_Dead_b
 				clr.b	plr2_Dead_b
-
 
 				move.l	Plr1_ObjectPtr_l,a0
 				move.l	Plr2_ObjectPtr_l,a1
@@ -1156,8 +1097,8 @@ okwat:
 				move.b	Plr1_Clicked_b,Plr1_TmpClicked_b
 				move.b	Plr1_Fire_b,Plr1_TmpFire_b
 				clr.b	Plr1_Clicked_b
-				move.b	PLR1_SPCTAP,Plr1_TmpSpcTap_b
-				clr.b	PLR1_SPCTAP
+				move.b	Plr1_Used_b,Plr1_TmpSpcTap_b
+				clr.b	Plr1_Used_b
 				move.b	Plr1_Ducked_b,plr1_TmpDucked_b
 				move.b	Plr1_GunSelected_b,Plr1_TmpGunSelected_b
 
@@ -1218,8 +1159,8 @@ NotOnePlayer:
 				move.b	Plr1_Clicked_b,Plr1_TmpClicked_b
 				clr.b	Plr1_Clicked_b
 				move.b	Plr1_Fire_b,Plr1_TmpFire_b
-				move.b	PLR1_SPCTAP,Plr1_TmpSpcTap_b
-				clr.b	PLR1_SPCTAP
+				move.b	Plr1_Used_b,Plr1_TmpSpcTap_b
+				clr.b	Plr1_Used_b
 				move.b	Plr1_Ducked_b,plr1_TmpDucked_b
 				move.b	Plr1_GunSelected_b,Plr1_TmpGunSelected_b
 
@@ -1249,7 +1190,7 @@ NotOnePlayer:
 				jsr		SENDFIRST
 				move.w	d0,plr2_TmpBobble_w
 				swap	d0
-				move.w	d0,plr2_TmpAngPos_w
+				move.w	d0,Plr2_TmpAngPos_w
 
 
 				move.w	Anim_TempFrames_w,d0
@@ -1328,13 +1269,13 @@ ASlaveShouldWaitOnHisMaster:
 				move.l	Plr2_SnapZOff_l,Plr2_TmpZOff_l
 				move.l	Plr2_SnapYOff_l,Plr2_TmpYOff_l
 				move.l	Plr2_SnapHeight_l,plr2_TmpHeight_l
-				move.w	Plr2_SnapAngPos_w,plr2_TmpAngPos_w
+				move.w	Plr2_SnapAngPos_w,Plr2_TmpAngPos_w
 				move.w	Plr2_Bobble_w,plr2_TmpBobble_w
 				move.b	Plr2_Clicked_b,Plr2_TmpClicked_b
 				clr.b	Plr2_Clicked_b
 				move.b	Plr2_Fire_b,Plr2_TmpFire_b
-				move.b	PLR2_SPCTAP,Plr2_TmpSpcTap_b
-				clr.b	PLR2_SPCTAP
+				move.b	Plr2_Used_b,Plr2_TmpSpcTap_b
+				clr.b	Plr2_Used_b
 				move.b	Plr2_Ducked_b,plr2_TmpDucked_b
 				move.b	Plr2_GunSelected_b,Plr2_TmpGunSelected_b
 
@@ -1358,7 +1299,7 @@ ASlaveShouldWaitOnHisMaster:
 				jsr		RECFIRST
 				move.l	d0,plr1_TmpHeight_l
 
-				move.w	plr2_TmpAngPos_w,d0
+				move.w	Plr2_TmpAngPos_w,d0
 				swap	d0
 				move.w	plr2_TmpBobble_w,d0
 				jsr		RECFIRST
@@ -2985,7 +2926,7 @@ Plr1_Use:
 				move.l	Plr2_ObjectPtr_l,a0
 				move.b	#5,16(a0)
 
-				move.w	plr2_TmpAngPos_w,d0
+				move.w	Plr2_TmpAngPos_w,d0
 				and.w	#8190,d0
 				move.w	d0,EntT_CurrentAngle_w(a0)
 ;
@@ -3226,7 +3167,7 @@ Plr2_Use:
 .notbeenshot:
 				move.b	#0,EntT_DamageTaken_b(a0)
 				move.b	#10,EntT_NumLives_b(a0)
-				move.w	plr2_TmpAngPos_w,EntT_CurrentAngle_w(a0)
+				move.w	Plr2_TmpAngPos_w,EntT_CurrentAngle_w(a0)
 				move.b	Plr2_StoodInTop_b,ShotT_InUpperZone_b(a0)
 				move.w	(a1),12(a0)
 				move.w	(a1),d2
@@ -3511,9 +3452,9 @@ Plr1_Control:
 				muls	d3,d2
 				swap	d1
 				swap	d2
-				asr.w	#7,d1
+				asr.w	#6,d1					; 6 was 7 AL
 				move.w	d1,xwobxoff				; xwobble
-				asr.w	#7,d2
+				asr.w	#6,d2					; 6 was 7 AL
 				neg.w	d2
 				move.w	d2,xwobzoff
 .otherwob:
@@ -3683,7 +3624,7 @@ Plr2_Control:
 				sub.l	d3,d1
 				move.l	d0,xdiff
 				move.l	d1,zdiff
-				move.w	plr2_TmpAngPos_w,d0
+				move.w	Plr2_TmpAngPos_w,d0
 				move.w	d0,Plr2_AngPos_w
 
 				move.l	#SinCosTable_vw,a1
@@ -3727,9 +3668,9 @@ Plr2_Control:
 				muls	d3,d2
 				swap	d1
 				swap	d2
-				asr.w	#7,d1
+				asr.w	#6,d1					; 6 was 7 AL
 				move.w	d1,xwobxoff
-				asr.w	#7,d2
+				asr.w	#6,d2					; 6 was 7 AL
 				neg.w	d2
 				move.w	d2,xwobzoff
 
@@ -3845,7 +3786,7 @@ Plr2_Control:
 				adda.w	#ZoneT_Points_w,a0
 				sub.l	Plr2_Height_l,d0
 				move.l	d0,Plr2_SnapTYOff_l
-				move.w	plr2_TmpAngPos_w,tmpangpos
+				move.w	Plr2_TmpAngPos_w,tmpangpos
 
 ; move.l (a0),a0		; jump to viewpoint list
 * A0 is pointing at a pointer to list of points to rotate
@@ -4969,7 +4910,6 @@ RotateObjectPts:
 RotateObjectPtsFullScreen:
 
 .objpointrotlop:
-
 				cmp.b	#3,16(a4)
 				beq.s	.itaux
 
@@ -5026,261 +4966,7 @@ RotateObjectPtsFullScreen:
 				dbra	d7,.objpointrotlop
 				rts
 
-Energy:
-				dc.w	191
-OldEnergy:
-				dc.w	191
-Ammo:			dc.w	63
-OldAmmo:		dc.w	63
-
-firstdigit:		dc.b	0
-secdigit:		dc.b	0
-thirddigit:		dc.b	0
-
-				even
-
-gunny:			dc.w	0
-
-Draw_BorderAmmoBar:
-; Do guns first.
-
-				move.l	#draw_BorderChars_vb,a4
-				move.b	Plr1_TmpGunSelected_b,d0
-				move.l	#Plr1_Weapons_vb,a5
-				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
-				bne.s	.notplr2
-				move.l	#Plr2_Weapons_vb,a5
-				move.b	Plr2_TmpGunSelected_b,d0
-.notplr2:
-
-				move.b	d0,gunny
-
-				move.w	#9,d2
-				moveq	#0,d0
-.putingunnums:
-				move.w	#4,d1
-				move.l	a4,a0
-				cmp.b	gunny,d0
-				bne.s	.notsel
-				add.l	#5*10*8*2,a0
-				addq	#2,a5
-				bra.s	.donesel
-.notsel:
-				tst.w	(a5)+
-				beq.s	.donesel
-				add.l	#5*10*8,a0
-.donesel:
-				move.l	Vid_DrawScreenPtr_l,a1
-				add.w	d0,a1
-				add.l	#3+(240*40),a1
-				bsr		draw_BorderDigit
-				addq	#1,d0
-				dbra	d2,.putingunnums
-
-				move.w	Ammo,d0
-
-				cmp.w	#999,d0
-				blt.s	.okammo
-				move.w	#999,d0
-
-.okammo:
-				ext.l	d0
-				divs	#10,d0
-				swap	d0
-				move.b	d0,thirddigit
-				swap	d0
-				ext.l	d0
-				divs	#10,d0
-				move.b	d0,firstdigit
-				swap	d0
-				move.b	d0,secdigit
-
-				move.l	#draw_BorderChars_vb+15*8*10,a0
-				cmp.w	#10,Ammo
-				blt.s	.notsmallamo
-				add.l	#7*8*10,a0
-.notsmallamo:
-
-				move.l	Vid_DrawScreenPtr_l,a1
-				add.l	#20+238*40,a1
-				move.b	firstdigit,d0
-				move.w	#6,d1
-				bsr		draw_BorderDigit
-
-				move.l	Vid_DrawScreenPtr_l,a1
-				add.l	#21+238*40,a1
-				move.b	secdigit,d0
-				move.w	#6,d1
-				bsr		draw_BorderDigit
-
-				move.l	Vid_DrawScreenPtr_l,a1
-				add.l	#22+238*40,a1
-				move.b	thirddigit,d0
-				move.w	#6,d1
-				bsr		draw_BorderDigit
-
-				rts
-
-Draw_BorderEnergyBar:
-				move.w	Energy,d0
-				bge.s	.okpo
-				moveq	#0,d0
-.okpo:
-
-				cmp.w	#999,d0
-				blt.s	.okenergy
-				move.w	#999,d0
-
-.okenergy:
-				ext.l	d0
-				divs	#10,d0
-				swap	d0
-				move.b	d0,thirddigit
-				swap	d0
-				ext.l	d0
-				divs	#10,d0
-				move.b	d0,firstdigit
-				swap	d0
-				move.b	d0,secdigit
-
-				move.l	#draw_BorderChars_vb+15*8*10,a0
-				cmp.w	#10,Energy
-				blt.s	.notsmallamo
-				add.l	#7*8*10,a0
-.notsmallamo:
-
-				move.l	Vid_DrawScreenPtr_l,a1
-				add.l	#34+238*40,a1
-				move.b	firstdigit,d0
-				move.w	#6,d1
-				bsr		draw_BorderDigit
-
-				move.l	Vid_DrawScreenPtr_l,a1
-				add.l	#35+238*40,a1
-				move.b	secdigit,d0
-				move.w	#6,d1
-				bsr		draw_BorderDigit
-
-				move.l	Vid_DrawScreenPtr_l,a1
-				add.l	#36+238*40,a1
-				move.b	thirddigit,d0
-				move.w	#6,d1
-				bsr		draw_BorderDigit
-
-				move.l	Vid_DisplayScreen_Ptr_l,a1
-				add.l	#34+238*40,a1
-				move.b	firstdigit,d0
-				move.w	#6,d1
-				bsr		draw_BorderDigit
-
-				move.l	Vid_DisplayScreen_Ptr_l,a1
-				add.l	#35+238*40,a1
-				move.b	secdigit,d0
-				move.w	#6,d1
-				bsr		draw_BorderDigit
-
-				move.l	Vid_DisplayScreen_Ptr_l,a1
-				add.l	#36+238*40,a1
-				move.b	thirddigit,d0
-				move.w	#6,d1
-				bsr		draw_BorderDigit
-
-				rts
-
-draw_BorderDigit:
-				ext.w	d0
-				lea		(a0,d0.w),a2
-
-.charlines:
-				lea		30720(a1),a3
-				move.b	(a2),(a1)
-				move.b	10(a2),10240(a1)
-				move.b	20(a2),20480(a1)
-				move.b	30(a2),(a3)
-				move.b	40(a2),10240(a3)
-				move.b	50(a2),20480(a3)
-				lea		30720(a3),a3
-				move.b	60(a2),(a3)
-				move.b	70(a2),10240(a3)
-
-				add.w	#10*8,a2
-				add.w	#40,a1
-				dbra	d1,.charlines
-
-				rts
-
-NARRATOR:
-
-; sub.w #1,NARRTIME
-; bge .NOCHARYET
-; move.w #3,NARRTIME
-
-; FIXME: pixel scrolling for status line  was achieved via actual scroll registers
-;				move.l	#SCROLLSCRN,d1
-;				move.w	d1,scroll
-;				swap	d1
-;				move.w	d1,scrolh
-
-				move.w	SCROLLTIMER,d0
-				subq	#1,d0
-				move.w	d0,SCROLLTIMER
-				cmp.w	#40,d0
-				bge		.NOCHARYET
-				tst.w	d0
-				bge.s	.okcha
-
-				move.w	#150,SCROLLTIMER
-				bra		.NOCHARYET
-
-.okcha:
-				; FIMXE: need to redirect this to teh actual screen
-				move.l	#SCROLLSCRN,a0
-				add.w	SCROLLXPOS,a0
-
-				moveq	#1,d7
-.doachar:
-
-				move.l	SCROLLPOINTER,a1
-				moveq	#0,d1
-				move.b	(a1)+,d1				; character
-				move.l	a1,d2
-				cmp.l	ENDSCROLL,d2
-				blt.s	.notrestartscroll
-				move.l	#BLANKSCROLL,a1
-				move.l	#BLANKSCROLL+80,ENDSCROLL
-.notrestartscroll
-				move.l	a1,SCROLLPOINTER
-
-				move.l	#draw_ScrollChars_vb,a1
-				asl.w	#3,d1
-				add.w	d1,a1
-
-				move.b	(a1)+,(a0)
-				move.b	(a1)+,80(a0)
-				move.b	(a1)+,80*2(a0)
-				move.b	(a1)+,80*3(a0)
-				move.b	(a1)+,80*4(a0)
-				move.b	(a1)+,80*5(a0)
-				move.b	(a1)+,80*6(a0)
-				move.b	(a1)+,80*7(a0)
-
-				addq	#1,a0
-				dbra	d7,.doachar
-
-				move.w	SCROLLXPOS,d0
-				addq	#2,d0
-				move.w	d0,SCROLLXPOS
-				cmp.w	#80,d0
-				blt		.NOCHARYET
-				move.w	#0,SCROLLXPOS
-
-.NOCHARYET:
-				rts
-
-
-NARRTIME:		dc.w	5
-
-Game_Running_b:		dc.w	0						; does main game run?
+Game_Running_b:	dc.w	0						; does main game run?
 
 endlevel:
 ; 	_break #0
@@ -6465,8 +6151,9 @@ pastsides:
 groundfloor:
 				move.w	xoff,d6
 				move.w	zoff,d7
-				add.w	xwobxoff,d6				; this was adding xwobxoff to d7, was this a bug?
-				add.w	xwobzoff,d7
+				; add.w	xwobxoff,d6				; this was adding xwobxoff to d7, was this a bug?
+				add.w	xwobxoff,d7
+				add.w	xwobzoff,d6
 ***************************************************************remove later
 				; tst.b	Vid_FullScreen_b
 				; bra.s	.shiftit
@@ -8259,20 +7946,14 @@ key_interrupt:
 				rts
 
 lastpressed:	dc.b	0
-KInt_CCode		ds.b	1
-KInt_Askey		ds.b	1
-KInt_OCode		ds.w	1
-
-
-OldSpace:		dc.b	0
-SpaceTapped:	dc.b	0
-PLR1_SPCTAP:	dc.b	0
-PLR2_SPCTAP:	dc.b	0
+;KInt_CCode:		ds.b	1 ; unused ?
+;KInt_Askey:		ds.b	1 ; unused ?
+;KInt_OCode:		ds.w	1 ; unused ?
+;SpaceTapped:	dc.b	0 ; unused ?
 				even
 
 				include	"plr1control.s"
 				include	"plr2control.s"
-				include	"fall.s"
 
 *******************************************8
 
@@ -8593,7 +8274,7 @@ dosomething:
 				addq.w	#1,Anim_FramesToDraw_w
 				movem.l	d0-d7/a0-a6,-(a7)
 
-				jsr		NARRATOR
+				jsr		Draw_NarrateText
 
 				bsr		DOALLANIMS
 
@@ -9001,7 +8682,7 @@ nostartalan:
 
 				clr.b	Plr1_Fire_b
 				clr.b	Plr1_Clicked_b
-				move.w	#0,ADDTOBOBBLE
+				move.w	#0,Plr_AddToBobble_w
 				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapHeight_l
 				move.w	#-80,d0					; Is this related to render buffer height
 				move.w	d0,STOPOFFSET
@@ -9089,7 +8770,7 @@ control2:
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	#-1,12+128(a0)
 				clr.b	Plr2_Fire_b
-				move.w	#0,ADDTOBOBBLE
+				move.w	#0,Plr_AddToBobble_w
 				move.l	#PLR_CROUCH_HEIGHT,Plr2_SnapHeight_l
 				move.w	#-80,d0
 				move.w	d0,STOPOFFSET
@@ -9163,7 +8844,7 @@ control2:
 				tst.b	Plr2_Keys_b
 				beq.s	.plr2_no_keyboard
 
-				bsr		PLR2_keyboard_control
+				bsr		Plr2_KeyboardControl
 
 .plr2_no_keyboard:
 ; tst.b Plr2_Path_b
@@ -9173,7 +8854,7 @@ control2:
 				tst.b	Plr2_Joystick_b
 				beq.s	.plr2_no_joystick
 
-				bsr		PLR2_JoyStick_control
+				bsr		Plr2_JoystickControl
 
 .plr2_no_joystick:
 
@@ -9935,7 +9616,7 @@ MakeSomeNoise:
 				beq.s	dontworry
 				move.w	#7,d1
 				lea		CHANNELDATA,a3
-findsameasme
+findsameasme:
 				tst.b	(a3)
 				bne.s	notavail
 				cmp.w	32(a3),d0
@@ -10552,11 +10233,10 @@ PLR1:			dc.b	$ff
 PLR2:			dc.b	$ff
 
 ZonePtr_l:		dc.l	0
-;OldRoompt:		dc.l	0
 
 *****************************************************************
 *
-				include	"leveldata2.s"
+				include	"modules/player.s"
 *
 *****************************************************************
 

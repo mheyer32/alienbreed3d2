@@ -563,7 +563,7 @@ Plr1_CollectItem:
 				add.l	#GLFT_ObjectNames_l,a4
 				muls	#20,d2
 				add.l	d2,a4
-				move.l	#TEMPSCROLL,a2
+				move.l	#TempMessageBuffer_vb,a2
 				move.w	#19,d2
 
 .copyname:
@@ -575,7 +575,7 @@ Plr1_CollectItem:
 
 				dbra	d2,.copyname
 
-				move.l	#TEMPSCROLL,d0
+				move.l	#TempMessageBuffer_vb,d0
 				jsr		Game_PushTempMessage
 
 .nodeftext:

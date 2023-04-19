@@ -358,7 +358,7 @@ _ReadJoy2
 				beq.s	.findnext
 
 				move.b	d0,Plr2_GunSelected_b
-				jsr		SHOWPLR2GUNNAME
+				jsr		Plr2_ShowGunName
 
 				bra		.nonextweap
 
