@@ -284,35 +284,35 @@ Dev_PrintStats:
 				move.l		#120,d0
 				bsr			Dev_PrintF
 
-				; OrderZones
-				lea			dev_Reserved1_w,a1
-				lea			.dev_ss_stats_order_zones_vb,a0
-				move.l		#136,d0
-				bsr			Dev_PrintF
-
-				; Zone Ptr
-				lea			Plr1_ZonePtr_l,a1
-				lea			.dev_ss_stats_zone_vb,a0
-				move.l		#152+40,d0
-				bsr			Dev_PrintF
-
-;				; Long Divisions
-;				lea			dev_Reserved1_w,a1
-;				lea			.dev_ss_stats_long_divide_vb,a0
+;				; OrderZones
+;				lea			dev_Reserved2_w,a1
+;				lea			.dev_ss_stats_order_zones_vb,a0
 ;				move.l		#136,d0
 ;				bsr			Dev_PrintF
 
-;				; Min Divisor
-;				lea			dev_Reserved4_w,a1
-;				lea			.dev_ss_stats_min_divisor_vb,a0
-;				move.l		#152,d0
+;				; Zone Ptr
+;				lea			Plr1_ZonePtr_l,a1
+;				lea			.dev_ss_stats_zone_vb,a0
+;				move.l		#152+40,d0
 ;				bsr			Dev_PrintF
 
-;				; Max Divisor
-;				lea			dev_Reserved5_w,a1
-;				lea			.dev_ss_stats_max_divisor_vb,a0
-;				move.l		#168,d0
-;				bsr			Dev_PrintF
+				; Long Divisions
+				lea			dev_Reserved1_w,a1
+				lea			.dev_ss_stats_long_divide_vb,a0
+				move.l		#136,d0
+				bsr			Dev_PrintF
+
+				; Min Divisor
+				lea			dev_Reserved4_w,a1
+				lea			.dev_ss_stats_min_divisor_vb,a0
+				move.l		#152,d0
+				bsr			Dev_PrintF
+
+				; Max Divisor
+				lea			dev_Reserved5_w,a1
+				lea			.dev_ss_stats_max_divisor_vb,a0
+				move.l		#168,d0
+				bsr			Dev_PrintF
 
 				rts
 
@@ -345,19 +345,19 @@ Dev_PrintStats:
 .dev_ss_stats_obj_bitmap_vb:
 				dc.b		"OB:%3d",0
 
-.dev_ss_stats_order_zones_vb:
-				dc.b		"OZ:%3d",0
+;.dev_ss_stats_order_zones_vb:
+;				dc.b		"OZ:%3d",0
 
-.dev_ss_stats_zone_vb:
-				dc.b		"ZP:%8lx",0
+;.dev_ss_stats_zone_vb:
+;				dc.b		"ZP:%8lx",0
 
 ; Stats for the division pogrom 2.0
-;.dev_ss_stats_long_divide_vb:
-;				dc.b		"LD:%4d ",0
-;.dev_ss_stats_min_divisor_vb:
-;				dc.b		"mD:%4d ",0
-;.dev_ss_stats_max_divisor_vb:
-;				dc.b		"MD:%4d ",0
+.dev_ss_stats_long_divide_vb:
+				dc.b		"LD:%4d ",0
+.dev_ss_stats_min_divisor_vb:
+				dc.b		"mD:%4d ",0
+.dev_ss_stats_max_divisor_vb:
+				dc.b		"MD:%4d ",0
 
 				align 4
 

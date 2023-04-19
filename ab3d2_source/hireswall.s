@@ -1141,19 +1141,27 @@ draw_WallSimpleShaded:
 
 				move.w	(a1)+,d4
 				move.w	(a1)+,draw_LBR_w
-; d1=left x, d4=left end, d0=left dist
 
+				; d1=left x, d4=left end, d0=left dist
+
+				DEV_CHECK_DIVISOR d0
 				divs.l	d0,d1
+				DEV_INC.w Reserved1
+
 				moveq	#0,d5
 				move.w	Vid_CentreX_w,d5
 				add.l	d5,d1
 
 				move.l	draw_TopOfWall_l(pc),d5
 				divs	d0,d5
+				DEV_INC.w Reserved1
+
 				add.w	Vid_CentreY_w,d5
 				move.w	d5,draw_StripTop_w
 				move.l	draw_BottomOfWall_l(pc),d5
 				divs	d0,d5
+				DEV_INC.w Reserved1
+
 				add.w	Vid_CentreY_w,d5
 				move.w	d5,draw_StripBottom_w
 
@@ -1166,7 +1174,10 @@ draw_WallSimpleShaded:
 				ext.l	d2
 				move.l	#Storage_vl,a0
 				move.l	(a1),d3
+
 				divs.l	d2,d3
+				;DEV_INC.w Reserved1
+
 				moveq	#0,d5
 				move.w	Vid_CentreX_w,d5
 				add.l	d5,d3
@@ -1240,10 +1251,15 @@ computeloop2:
 				bra		alloffleft2
 
 .in_front:
+				;DEV_CHECK_DIVISOR d2
+
 				ext.l	d2
 				move.l	#Storage_vl,a0
 				move.l	(a1),d3
+
 				divs.l	d2,d3
+				;DEV_INC.w Reserved1
+
 				moveq	#0,d5
 				move.w	Vid_CentreX_w,d5
 				add.l	d5,d3
@@ -2131,8 +2147,13 @@ cliptotestfirstbehind:
 				sub.l	(a5,d2*8),d3			; line dx, integer part ?
 				move.w	6(a5,d0*8),d6
 				sub.w	6(a5,d2*8),d6			; line dy, fractional part?
+
+
+				;DEV_CHECK_DIVISOR d6
 				ext.l	d6
+
 				divs.l	d6,d3					; dx/dy
+				;DEV_INC.w Reserved1
 
 				move.w	6(a5,d2.w*8),d6			; FIXME: why fetch a second time?
 				ext.l	d6
@@ -2142,8 +2163,13 @@ cliptotestfirstbehind:
 
 				move.l	(a5,d2*8),d6
 				move.w	6(a5,d2*8),d4
+
+				;DEV_CHECK_DIVISOR d4
 				ext.l	d4
+
+				; 0xABADCAFE < 10 per frame
 				divs.l	d4,d6
+				;DEV_INC.w Reserved1
 
 ; move.w Vid_CentreX_w,d4
 ; ext.l d4
@@ -2163,7 +2189,10 @@ cliptotestsecbehind:
 				move.w	6(a5,d2*8),d6
 				sub.w	6(a5,d0*8),d6
 				ext.l	d6
+
 				divs.l	d6,d3
+				;DEV_INC.w Reserved1
+
 				move.w	6(a5,d0.w*8),d6
 				ext.l	d6
 				muls.l	d6,d3
@@ -2177,7 +2206,9 @@ cliptotestsecbehind:
 				move.l	(a5,d0*8),d6
 				move.w	6(a5,d0*8),d4
 				ext.l	d4
+
 				divs.l	d4,d6
+				;DEV_INC.w Reserved1
 
 ; move.w Vid_CentreX_w,d4
 ; ext.l d4
@@ -2191,7 +2222,10 @@ pastclip:
 				move.l	(a5,d0*8),d3
 				move.w	6(a5,d0*8),d4
 				ext.l	d4
+
 				divs.l	d4,d3
+				;DEV_INC.w Reserved1
+
 				move.w	Vid_CentreX_w,d4
 				ext.l	d4
 				add.l	d4,d3
@@ -2199,7 +2233,10 @@ pastclip:
 				move.l	(a5,d2*8),d6
 				move.w	6(a5,d2*8),d4
 				ext.l	d4
+
 				divs.l	d4,d6
+				;DEV_INC.w Reserved1
+
 				move.w	Vid_CentreX_w,d4
 				ext.l	d4
 				add.l	d4,d6
