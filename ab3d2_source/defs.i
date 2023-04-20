@@ -8,8 +8,8 @@ SOFFSET		SET    SOFFSET+\1
 			ENDM
 
 ; Maximum number of levels defined in an object. Contrary to expectations this can be > 256.
-; Largest seen so far is 260.
-MAX_LEVEL_OBJ_COUNT	EQU	288
+; Largest seen so far is 260, original game reserves 400
+MAX_LEVEL_OBJ_COUNT	EQU	400
 
 *****************************
 * Structure definitions *****
@@ -106,8 +106,12 @@ MAX_LEVEL_OBJ_COUNT	EQU	288
 		UBYTE PlrT_TmpDucked_b				; 234
 		UBYTE PlrT_StoodOnLift_b			; 235
 
+		UWORD PlrT_NoiseVol_w				; 236
+		UBYTE PlrT_LineTestBit_b			; 238
+		UBYTE PlrT_Reserved1_b				; 239
+
 		; Tables
-		UWORD PlrT_ObjectDistances_vw		; 236, MAX_LEVEL_OBJ_COUNT*2 : UWORD[MAX_LEVEL_OBJ_COUNT]
+		UWORD PlrT_ObjectDistances_vw		; 240, MAX_LEVEL_OBJ_COUNT*2 : UWORD[MAX_LEVEL_OBJ_COUNT]
 		PADDING (MAX_LEVEL_OBJ_COUNT*2)-2
 
 		UBYTE PlrT_ObjectsInLine_vb			; ..., MAX_LEVEL_OBJ_COUNT : UBYTE[MAX_LEVEL_OBJ_COUNT]

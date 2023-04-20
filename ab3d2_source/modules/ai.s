@@ -400,7 +400,7 @@ ai_ProwlFly:
 
 .new_store:
 ai_Widget:
-				tst.w	AI_Player1NoiseVol_w
+				tst.w	plr1_NoiseVol_w
 				beq.s	.no_player_noise
 
 				move.l	Plr1_ZonePtr_l,a1

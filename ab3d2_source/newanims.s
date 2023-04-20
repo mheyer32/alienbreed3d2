@@ -770,8 +770,8 @@ objmoveanim:
 				move.w	#-5,Plr2_Zone_w
 
 .okp2:
-				move.w	#0,AI_Player1NoiseVol_w
-				move.w	#0,AI_Player2NoiseVol_w
+				move.w	#0,plr1_NoiseVol_w
+				move.w	#0,plr2_NoiseVol_w
 				move.l	#AI_BoredomSpace_vl,AI_BoredomPtr_l
 				bsr		BACKSFX
 
