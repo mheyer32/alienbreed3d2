@@ -55,9 +55,6 @@ Plr_Initialise:
 				move.l	#%100011,plr1_DefaultEnemyFlags_l ; Bit 5 is player 2 ?
 				move.l	#%010011,plr2_DefaultEnemyFlags_l ; Bit 4 is player 1 ?
 
-				move.b	#0,plr1_LineTestBit_b
-				move.b	#1,plr2_LineTestBit_b
-
 				rts
 
 ;******************************************************************************
@@ -1064,9 +1061,7 @@ Plr_Shot:
 				tst.b	(a1)+
 				beq.s	.not_lined_up
 
-				; Slightly different tests needed for player 1 and player 2
-				move.b	PlrT_LineTestBit_b(a3),d6
-				btst	d6,17(a0)
+				btst	#0,17(a0)
 				beq.s	.not_lined_up
 
 				tst.w	12(a0)
@@ -1141,9 +1136,8 @@ Plr_Shot:
 				move.w	(a2),d0
 				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d0.w*8),Noisex
-
 				move.w	#100,Noisevol
-				move.w	#100,PlrT_NoiseVol_w(a3)
+				move.w	#100,AI_Player1NoiseVol_w
 				move.w	#12,Samplenum
 				clr.b	notifplaying
 				move.b	#$fb,IDNUM
@@ -1152,25 +1146,14 @@ Plr_Shot:
 				rts
 
 .okcanshoot:
-				; Divergence in behaviour for players
-				cmp.l	Plr1_Data,a3
-				beq.s	.as_player_1
-
-.as_player_2:
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
-				bne.s	.not_player
-				bra.s	.done_player
+				beq.s	.notplr1
+				move.l	PlrT_ObjectPtr_l(a3),a2
 
-.as_player_1:
-				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
-				beq.s	.not_player
-
-.done_player:
-				; This part is always "player 1"
-				move.l	#Plr1_ObjectPtr_l,a2
+				; todo - understand why this is different for player 2 code...
 				move.w	#1,EntT_Timer1_w+128(a2)
 
-.not_player:
+.notplr1:
 				move.w	ShootT_Delay_w(a6),PlrT_TimeToShoot_w(a3)
 				move.b	plr_MaxGunFrame_b,PlrT_GunFrame_w(a3)
 				sub.w	d1,d2
@@ -1182,7 +1165,7 @@ Plr_Shot:
 				move.w	(a2),d2
 				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d2.w*8),Noisex
-				move.w	#100,PlrT_NoiseVol_w(a3)
+				move.w	#100,AI_Player1NoiseVol_w
 				move.w	#300,Noisevol
 				move.w	ShootT_SFX_w(a6),Samplenum
 				move.b	#2,chanpick
