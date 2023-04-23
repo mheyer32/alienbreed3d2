@@ -146,7 +146,7 @@ Plr1_Shot:
 				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d0.w*8),Noisex
 				move.w	#100,Noisevol
-				move.w	#100,AI_Player1NoiseVol_w
+				move.w	#100,Plr1_NoiseVol_w
 				move.w	#12,Samplenum
 				clr.b	notifplaying
 				move.b	#$fb,IDNUM
@@ -172,7 +172,7 @@ Plr1_Shot:
 				move.w	(a2),d2
 				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d2.w*8),Noisex
-				move.w	#100,AI_Player1NoiseVol_w
+				move.w	#100,Plr1_NoiseVol_w
 				move.w	#300,Noisevol
 				move.w	ShootT_SFX_w(a6),Samplenum
 				move.b	#2,chanpick
@@ -470,7 +470,7 @@ Plr2_Shot:
 				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d0.w*8),Noisex
 				move.w	#300,Noisevol
-				move.w	#100,AI_Player2NoiseVol_w
+				move.w	#100,Plr2_NoiseVol_w
 				move.w	#12,Samplenum
 				clr.b	notifplaying
 				move.b	#$fb,IDNUM
@@ -496,7 +496,7 @@ Plr2_Shot:
 				move.w	(a2),d2
 				move.l	#ObjRotated_vl,a2
 				move.l	(a2,d2.w*8),Noisex
-				move.w	#100,AI_Player2NoiseVol_w
+				move.w	#100,Plr2_NoiseVol_w
 				move.w	#300,Noisevol
 				move.w	ShootT_SFX_w(a6),Samplenum
 				move.b	#2,chanpick
