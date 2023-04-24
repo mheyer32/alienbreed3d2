@@ -608,7 +608,7 @@ Anim_ExplodeIntoBits:
 				move.w	#7,d2
 
 .oksplut:
-				move.l	NastyShotDataPtr_l,a5
+				move.l	AI_AlienShotDataPtr_l,a5
 				move.w	#19,d1
 
 .findeight:
@@ -1849,7 +1849,7 @@ notdoneflame:
 ; Gas pipe: facing direction is given by
 ; leved (perpendicular to wall) so
 ; just continuously spray out flame!
-				move.l	NastyShotDataPtr_l,a5
+				move.l	AI_AlienShotDataPtr_l,a5
 				move.w	#19,d1
 
 .findonefree:

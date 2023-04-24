@@ -13,6 +13,7 @@ SOFFSET		SET    SOFFSET+\1
 
 MAX_LEVEL_OBJ_DIST_COUNT	EQU	256+32		;
 MAX_OBJS_IN_LINE_COUNT		EQU 400			;
+LVL_OBJ_DEFINITION_SIZE		EQU	64			; Runtime size of level object
 
 	; Player Definition (runtime)
 	STRUCTURE PlrT,0
@@ -216,7 +217,15 @@ MAX_OBJS_IN_LINE_COUNT		EQU 400			;
 		LABEL EntT_Timer4_w					; 54, 0
 		UBYTE EntT_Type_b					; 54, 1
 		UBYTE EntT_WhichAnim_b				; 55, 1
-		LABEL EntT_SizeOf_l					; 56
+		PADDING 8
+		LABEL EntT_SizeOf_l					; 64 - This is the actual size in memory
+
+ENT_PREV_2	EQU (-EntT_SizeOf_l*2)	; entity two before current
+ENT_PREV	EQU (-EntT_SizeOf_l)	; entity before current
+ENT_NEXT	EQU	EntT_SizeOf_l		; entity after current
+ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
+
+		; There must be data belonging to the entity after this point at least as far as 162
 
 	; Shot Definition
 	STRUCTURE ShotT,18

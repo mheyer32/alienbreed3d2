@@ -25,7 +25,7 @@ Lvl_DataPtr_l:					ds.l	1
 Lvl_ZoneBorderPointsPtr_l:		ds.l	1
 Lvl_ConnectTablePtr_l:			ds.l	1
 Lvl_ListOfGraphRoomsPtr_l:		ds.l	1
-NastyShotDataPtr_l:				ds.l	1
+AI_AlienShotDataPtr_l:			ds.l	1
 Lvl_ObjectPointsPtr_l:			ds.l	1
 Lvl_ObjectDataPtr_l:			ds.l	1
 Lvl_FloorLinesPtr_l:			ds.l	1

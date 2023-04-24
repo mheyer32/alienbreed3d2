@@ -45,7 +45,7 @@ plr1_OldX_l:				ds.l	1 ; hires.s
 plr1_OldZ_l:				ds.l	1 ; hires.s
 plr1_OldRoomPtr_l:			ds.l	1 ; leveldata2.s - write once?
 plr1_SnapSquishedHeight_l:	ds.l	1 ; plr1control.s
-plr1_DefaultEnemyFlags:		ds.l	1
+plr1_DefaultEnemyFlags_l:	ds.l	1
 
 ; Word data
 Plr1_Energy_w:				ds.w	1

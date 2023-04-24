@@ -55,7 +55,9 @@ Plr1_Shot:
 				move.w	#-1,d0
 				move.l	#0,targetydiff
 				move.l	#$7fff,d1
-				move.l	Lvl_ZoneAddsPtr_l,a3
+
+				;move.l	Lvl_ZoneAddsPtr_l,a3
+
 				move.l	#Plr1_ObsInLine_vb,a1
 				move.l	Lvl_ObjectDataPtr_l,a0
 				move.l	#Plr1_ObjectDistances_vw,a2
@@ -64,16 +66,16 @@ Plr1_Shot:
 				tst.w	(a0)
 				blt		.out_of_line
 
-				cmp.b	#3,16(a0)
+				cmp.b	#3,16(a0) ; ??? ObjT_CollideHeight_w / AlienT_DamageToFollowup_w
 				beq		.not_lined_up
 
 				tst.b	(a1)+
 				beq.s	.not_lined_up
 
-				btst	#0,17(a0)
+				btst	#0,17(a0) ; ???
 				beq.s	.not_lined_up
 
-				tst.w	12(a0)
+				tst.w	12(a0) ; ??? ObjT_DefaultAnimLen_w / AlienT_ResponseTimeout_w
 				blt.s	.not_lined_up
 
 				move.b	16(a0),d6
@@ -117,7 +119,7 @@ Plr1_Shot:
 				move.w	d5,d0
 
 .not_lined_up:
-				add.w	#64,a0
+				add.w	#ENT_NEXT,a0
 				bra		.find_closest_in_line
 
 .out_of_line:
@@ -157,8 +159,10 @@ Plr1_Shot:
 .okcanshoot:
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.notplr1
+
+				; update the viewport weapon entity timer
 				move.l	Plr1_ObjectPtr_l,a2
-				move.w	#1,EntT_Timer1_w+128(a2)
+				move.w	#1,ENT_NEXT_2+EntT_Timer1_w(a2)
 
 .notplr1:
 				move.w	ShootT_Delay_w(a6),Plr1_TimeToShoot_w
@@ -380,7 +384,9 @@ Plr2_Shot:
 				move.w	#-1,d0
 				move.l	#0,targetydiff
 				move.l	#$7fff,d1
-				move.l	Lvl_ZoneAddsPtr_l,a3
+
+				;move.l	Lvl_ZoneAddsPtr_l,a3
+
 				move.l	#Plr2_ObsInLine_vb,a1
 				move.l	Lvl_ObjectDataPtr_l,a0
 				move.l	#Plr2_ObjectDistances_vw,a2
@@ -481,8 +487,10 @@ Plr2_Shot:
 .okcanshoot:
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				bne.s	.notplr2
+
+				; update the viewport weapon entity timer
 				move.l	Plr1_ObjectPtr_l,a2
-				move.w	#1,EntT_Timer1_w+128(a2)
+				move.w	#1,ENT_NEXT_2+EntT_Timer1_w(a2)
 
 .notplr2:
 				move.w	ShootT_Delay_w(a6),Plr2_TimeToShoot_w
