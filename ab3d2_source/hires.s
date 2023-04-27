@@ -371,7 +371,7 @@ noload:
 				move.l	a2,Plr_ShotDataPtr_l
 				move.l	32+6(a1),a2
 				add.l	a4,a2
-				move.l	a2,NastyShotDataPtr_l
+				move.l	a2,AI_AlienShotDataPtr_l
 
 				add.l	#64*20,a2
 				move.l	a2,AI_OtherAlienDataPtrs_vl

@@ -608,7 +608,7 @@ Anim_ExplodeIntoBits:
 				move.w	#7,d2
 
 .oksplut:
-				move.l	NastyShotDataPtr_l,a5
+				move.l	AI_AlienShotDataPtr_l,a5
 				move.w	#19,d1
 
 .findeight:
@@ -770,8 +770,8 @@ objmoveanim:
 				move.w	#-5,Plr2_Zone_w
 
 .okp2:
-				move.w	#0,AI_Player1NoiseVol_w
-				move.w	#0,AI_Player2NoiseVol_w
+				move.w	#0,Plr1_NoiseVol_w
+				move.w	#0,Plr2_NoiseVol_w
 				move.l	#AI_BoredomSpace_vl,AI_BoredomPtr_l
 				bsr		BACKSFX
 
@@ -1849,7 +1849,7 @@ notdoneflame:
 ; Gas pipe: facing direction is given by
 ; leved (perpendicular to wall) so
 ; just continuously spray out flame!
-				move.l	NastyShotDataPtr_l,a5
+				move.l	AI_AlienShotDataPtr_l,a5
 				move.w	#19,d1
 
 .findonefree:
