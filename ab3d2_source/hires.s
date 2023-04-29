@@ -96,7 +96,7 @@ _start:
 				move.w	#191,Plr1_Energy_w
 				move.w	#191,Plr2_Energy_w
 				not.w	Zone_OrderTable_Barrier_w
-				st		GOURSEL
+				st		draw_GouraudFlatsSelected_b
 
 				;lea		VBLANKInt(pc),a1
 				;moveq	#INTB_VERTB,d0
@@ -4324,7 +4324,7 @@ itsafloor:
 				move.l	#FloorLine,LineToUse	;* 1,2 = floor/roof
 				clr.b	draw_UseWater_b
 				clr.b	draw_UseBumpMappedFlats_b
-				move.b	GOURSEL,draw_UseGouraudFlats_b
+				move.b	draw_GouraudFlatsSelected_b,draw_UseGouraudFlats_b
 				jsr		Draw_Flats
 
 ;				move.l	a0,-(a7)
@@ -4346,13 +4346,13 @@ jumpoutofloop:
 				rts
 
 				align 4
-Lvl_CompactMapPtr_l:		dc.l	0
-Lvl_BigMapPtr_l:			dc.l	0
-ThisRoomToDraw:	dc.l	0,0
-SplitHeight:	dc.l	0
-draw_WallID_w:	dc.w	0
-SMALLIT:		dc.w	0
-GOURSEL:		dc.w	0
+Lvl_CompactMapPtr_l:			dc.l	0
+Lvl_BigMapPtr_l:				dc.l	0
+ThisRoomToDraw:					dc.l	0,0
+SplitHeight:					dc.l	0
+draw_WallID_w:					dc.w	0
+SMALLIT:						dc.w	0
+draw_GouraudFlatsSelected_b:	dc.w	0
 
 				include	"orderzones.s"
 

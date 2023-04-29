@@ -356,6 +356,11 @@ plr_KeyboardControl:
 				DEV_CHECK_KEY	RAWKEY_G,FLATS
 				DEV_CHECK_KEY	RAWKEY_Q,FASTBUFFER_CLEAR
 				DEV_CHECK_KEY	RAWKEY_N,AI_ATTACK
+				DEV_CHECK_KEY	RAWKEY_B,LIGHTING
+
+				; change the default floor gouraud state based on the lighting toggle
+				; todo - fix floor rendering when goraud is disabled, it's seriously glitched
+				;DEV_SEQ	LIGHTING,draw_GouraudFlatsSelected_b
 
 				move.l	#SinCosTable_vw,a1
 				move.l	#KeyMap_vb,a5
