@@ -1343,15 +1343,19 @@ NOTMOVING:
 				move.w	d2,d7
 				move.l	(a0)+,a1
 				add.l	Lvl_GraphicsPtr_l,a1
+				; asr.w	#2,d3
+				; move.w	d3,d0
+				; asl.w	#2,d0
+				; move.w	d0,2(a1)
+				; move.w	d3,d0
+				
+				move.w	d3,2(a1)
 				asr.w	#2,d3
 				move.w	d3,d0
-				asl.w	#2,d0
-				move.w	d0,2(a1)
-				move.w	d3,d0
 
-				muls	#256,d3
-				;ext.l	d3		; Safety: Sign extend before shift
-				;asl.l	#8,d3
+				; muls	#256,d3
+				ext.l	d3		; Safety: Sign extend before shift
+				asl.l	#8,d3
 
 				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.w	(a0)+,d5
