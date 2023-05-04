@@ -1034,7 +1034,7 @@ notallliftsdone:
 				add.l	Lvl_GraphicsPtr_l,a1
 				move.l	(a0)+,a2
 				adda.w	d0,a2
-				move.l	a2,10(a1)
+				move.w	a2,12(a1);was move.l	a2,10(a1)
 				move.l	d3,20(a1)
 				bra.s	.simplecheck
 
@@ -1409,7 +1409,7 @@ simplecheck:
 				add.l	Lvl_GraphicsPtr_l,a1
 				move.l	(a0)+,a2
 				adda.w	d0,a2
-				move.l	a2,10(a1)
+				move.w	a2,12(a1);was move.l	a2,10(a1)
 				move.l	d3,24(a1)
 				bra.s	simplecheck
 
