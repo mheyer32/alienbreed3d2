@@ -44,7 +44,7 @@ C2P2X1_8_C5_GEN_CHUNKYY		rs.l	1
 C2P2X1_8_C5_GEN_DATASIZE	rs.b	0
 
 
-	section	code,code
+	section	.text,code
 
 ; d0.w	chunkyx [chunky-pixels] (even multiple of 32)
 ; d1.w	chunkyy [chunky-pixels]

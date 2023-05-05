@@ -11,7 +11,7 @@
 
 				IFD	DEV
 
-				section bss,bss
+				section .bss,bss
 				align 4
 dev_GraphBuffer_vb:			ds.b	DEV_GRAPH_BUFFER_SIZE*2 ; array of times
 
@@ -61,7 +61,7 @@ dev_CharBuffer_vb:			dcb.b	64
 
 ;//////////////////////////////////////////////////////////////////////////////
 
-				section code,code
+				section .text,code
 				align 4
 
 

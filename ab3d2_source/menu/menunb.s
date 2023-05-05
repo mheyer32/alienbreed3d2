@@ -2275,11 +2275,11 @@ WTagScreenPtr	dc.l	0						; will fill in screen pointer later
 
 MenuWindow		dc.l	0
 
-				section	data,data
+				section	.data,data
 
 mnu_background	incbin	"menu/back2.raw"		; 2x320x256 bitplanes
 
-				section	bss_c,bss_c
+				section	.bsschip,bss_c
 
 mnu_screen:		ds.b	2*40*512				; 4 color background,. 320x512 pixels
 mnu_morescreen:	ds.b	8*40*SCREEN_HEIGHT				; 8 bitplanes 320x256 pixels
@@ -2288,4 +2288,4 @@ mnu_morescreen:	ds.b	8*40*SCREEN_HEIGHT				; 8 bitplanes 320x256 pixels
 
 emptySprite		ds.w	6,0
 
-				section	code,code
+				section	.text,code
