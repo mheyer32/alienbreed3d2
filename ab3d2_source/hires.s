@@ -79,9 +79,11 @@ PLR_SINGLE				equ 'n' ; Single player
 				include "data/tables_data.s"
 				include "data/text_data.s"
 
-				section code,code
+				section .text,code
+
+				xdef _startup
 ; Startup Code
-_start:
+_startup:
 				; entry point
 				movem.l	d1-a6,-(sp)
 
@@ -10289,7 +10291,7 @@ endtestscroll:
 Vid_TextScreenPtr_l:		dc.l	0
 
 
-				SECTION	bss_c,bss_c
+				SECTION	.bsschip,bss_c
 				align 8
 
 ; Audio
@@ -10305,7 +10307,7 @@ SCROLLSCRN:		ds.l	20*16
 * Stuff you don't have to worry about yet. *
 ********************************************
 
-				section	code,code
+				section	.text,code
 
 				; FIMXE: this is not what I was thinking it is.
 				; This does not exit the whole game, but just playing
@@ -10434,7 +10436,7 @@ UseAllChannels:		dc.w	0
 ;CHEATNUM:			dc.l	0
 Lvl_MusicPtr_l:		dc.l	0
 
-				section	data_c,data_c
+				section	.datachip,data_c
 ; not sure what this is; it seems to be used as timing
 ; device. I.e. by accessing chipmap, we throttle the CPU
 tstchip:		dc.l	0
@@ -10445,7 +10447,7 @@ gameover:
 welldone:
 				incbin	"includes/quietwelldone"
 
-				section code,code
+				section .text,code
 				cnop	0,4
 				include	"serial_nightmare.s"
 

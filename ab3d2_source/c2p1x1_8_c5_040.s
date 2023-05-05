@@ -29,7 +29,7 @@
 ;
 
 
-				section	code,code
+				section	.text,code
 
 
 ; d0.w	chunkyx [chunky-pixels]

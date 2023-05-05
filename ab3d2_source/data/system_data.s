@@ -1,4 +1,4 @@
-			section data,data
+			section .data,data
 
 ; Statically initialised (non-zero) data
 

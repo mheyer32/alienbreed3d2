@@ -336,10 +336,10 @@ io_HandlePacked:
 .unpacked_start_l:	dc.l	0
 .unpacked_length_l:	dc.l	0
 
-				section bss,bss
+				section .bss,bss
 .unlha_temp_buffer_vl:
 				ds.l	4096		; unLHA wants 16kb
 
-				section code,code
+				section .text,code
 
 unLHA:			incbin	"decomp4.raw"

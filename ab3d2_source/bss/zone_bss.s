@@ -1,5 +1,5 @@
 
-			section bss,bss
+			section .bss,bss
 
 ; BSS data - to be included in BSS section
 			align 4
