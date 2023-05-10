@@ -112,15 +112,18 @@ plr_MouseControl:
 				move.w	d3,d2
 ***************************************************************
 ; shoehorned this in here due to the projectiles not having the same trajectory in full screen compaired to small screen
+
 				tst.b	Vid_FullScreen_b
 				beq.s	.small
-				muls.w	#80,d2;this is probably not correct.
+
+				muls.w	#85,d2	;this is better. but there is probably a better way. multiply by 2/3 of 128
 				bra.s	.big
+
 .small:
-				asl.w	#7,d2
+				asl.w	#7,d2	;multiply by 128
+
 .big:
 ***************************************************************
-				;asl.w	#7,d2
 				add.w	d2,PlrT_AimSpeed_l(a0)
 				add.w	d3,d0
 				cmp.w	LOOK_MAX,d0
