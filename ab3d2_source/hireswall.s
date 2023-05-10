@@ -2424,6 +2424,9 @@ cant_tell:
 
 .choose_renderer:
 				; Now determine which renderer to use. First check for simplified lighting.
+
+				DEV_CHECK	LIGHTING,.dev_draw_fullbright
+
 				tst.b	Draw_ForceSimpleWalls_b
 				beq.s	.check_corners
 
@@ -2461,6 +2464,22 @@ cant_tell:
 
 .function_done:
 				movem.l	(a7)+,d7/a0/a5/a6
+
+				IFD DEV
+				rts
+
+; Force all walls to be brightly lit
+.dev_draw_fullbright:
+				move.w		#1,draw_LeftWallBright_w
+				move.w		#1,draw_LeftWallTopBright_w
+				move.w		#1,draw_RightWallBright_w
+				move.w		#1,draw_RightWallTopBright_w
+				bsr			draw_WallSimpleShaded
+
+				bra.s		.function_done
+
+				ENDC
+
 
 wallfacingaway:
 				rts

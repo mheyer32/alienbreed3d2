@@ -608,7 +608,7 @@ Anim_ExplodeIntoBits:
 				move.w	#7,d2
 
 .oksplut:
-				move.l	NastyShotDataPtr_l,a5
+				move.l	AI_AlienShotDataPtr_l,a5
 				move.w	#19,d1
 
 .findeight:
@@ -770,8 +770,8 @@ objmoveanim:
 				move.w	#-5,Plr2_Zone_w
 
 .okp2:
-				move.w	#0,AI_Player1NoiseVol_w
-				move.w	#0,AI_Player2NoiseVol_w
+				move.w	#0,Plr1_NoiseVol_w
+				move.w	#0,Plr2_NoiseVol_w
 				move.l	#AI_BoredomSpace_vl,AI_BoredomPtr_l
 				bsr		BACKSFX
 
@@ -983,10 +983,10 @@ notallliftsdone:
 				asl.w	#2,d0
 				move.w	d0,2(a1)
 				move.w	d3,d0
-				muls	#256,d3
+				;muls	#256,d3
 				; 0xABADCAFE - come back to the overflow here
-				;ext.l	d3	; Safety - sign extend before shift
-				;asl.l	#8,d3
+				ext.l	d3	; Safety - sign extend before shift
+				asl.l	#8,d3
 				move.w	(a0)+,d5
 				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d5.w*4),a1
@@ -1034,7 +1034,7 @@ notallliftsdone:
 				add.l	Lvl_GraphicsPtr_l,a1
 				move.l	(a0)+,a2
 				adda.w	d0,a2
-				move.l	a2,10(a1)
+				move.w	a2,12(a1);was move.l	a2,10(a1)
 				move.l	d3,20(a1)
 				bra.s	.simplecheck
 
@@ -1087,7 +1087,7 @@ liftwalls:
 				add.l	Lvl_GraphicsPtr_l,a1
 				move.l	(a0)+,a2
 				adda.w	d0,a2
-				move.l	a2,10(a1)
+				move.w	a2,12(a1);was move.l	a2,10(a1)
 				move.l	d3,20(a1)
 				bra		liftwalls
 
@@ -1343,15 +1343,19 @@ NOTMOVING:
 				move.w	d2,d7
 				move.l	(a0)+,a1
 				add.l	Lvl_GraphicsPtr_l,a1
+				; asr.w	#2,d3
+				; move.w	d3,d0
+				; asl.w	#2,d0
+				; move.w	d0,2(a1)
+				; move.w	d3,d0
+				
+				move.w	d3,2(a1)
 				asr.w	#2,d3
 				move.w	d3,d0
-				asl.w	#2,d0
-				move.w	d0,2(a1)
-				move.w	d3,d0
 
-				muls	#256,d3
-				;ext.l	d3		; Safety: Sign extend before shift
-				;asl.l	#8,d3
+				; muls	#256,d3
+				ext.l	d3		; Safety: Sign extend before shift
+				asl.l	#8,d3
 
 				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.w	(a0)+,d5
@@ -1405,7 +1409,7 @@ simplecheck:
 				add.l	Lvl_GraphicsPtr_l,a1
 				move.l	(a0)+,a2
 				adda.w	d0,a2
-				move.l	a2,10(a1)
+				move.w	a2,12(a1);was move.l	a2,10(a1)
 				move.l	d3,24(a1)
 				bra.s	simplecheck
 
@@ -1456,7 +1460,7 @@ nothinghit:
 				add.l	Lvl_GraphicsPtr_l,a1
 				move.l	(a0)+,a2
 				adda.w	d0,a2
-				move.l	a2,10(a1)
+				move.w	a2,12(a1);was move.l	a2,10(a1)
 				move.l	d3,24(a1)
 				bra.s	doorwalls
 
@@ -1849,7 +1853,7 @@ notdoneflame:
 ; Gas pipe: facing direction is given by
 ; leved (perpendicular to wall) so
 ; just continuously spray out flame!
-				move.l	NastyShotDataPtr_l,a5
+				move.l	AI_AlienShotDataPtr_l,a5
 				move.w	#19,d1
 
 .findonefree:

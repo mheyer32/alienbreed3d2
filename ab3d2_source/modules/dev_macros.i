@@ -20,6 +20,7 @@ DEV_SKIP_POLYGON_MODELS			EQU 7
 DEV_SKIP_FASTBUFFER_CLEAR		EQU 8
 DEV_SKIP_AI_ATTACK				EQU 9
 DEV_SKIP_TIMEGRAPH				EQU 10
+DEV_SKIP_LIGHTING				EQU 11
 
 ; When any of the level geometry is skipped, we need to make sure the fast buffer gets cleared
 DEV_CLEAR_FASTBUFFER_MASK		EQU (1<<DEV_SKIP_FLATS)|(1<<DEV_SKIP_SIMPLE_WALLS)|(1<<DEV_SKIP_SHADED_WALLS)
@@ -93,6 +94,17 @@ DEV_CHECK_KEY	MACRO
 .dev_skip_\2\@:
 				ENDM
 
+DEV_SNE			MACRO
+				btst.b	#(DEV_SKIP_\1)&7,dev_SkipFlags_l+3-(DEV_SKIP_\1>>3)
+				sne.b	\2
+				ENDM
+
+DEV_SEQ			MACRO
+				btst.b	#(DEV_SKIP_\1)&7,dev_SkipFlags_l+3-(DEV_SKIP_\1>>3)
+				seq.b	\2
+				ENDM
+
+
 DEV_CHECK_DIVISOR	MACRO
 					cmp.w	dev_Reserved4_w,\1
 					bgt.s	.divisor_test_max\@
@@ -144,6 +156,13 @@ DEV_TOGGLE		MACRO
 
 DEV_CHECK_KEY	MACRO
 				ENDM
+
+DEV_SNE			MACRO
+				ENDM
+
+DEV_SEQ			MACRO
+				ENDM
+
 
 DEV_CHECK_DIVISOR MACRO
 				ENDM
