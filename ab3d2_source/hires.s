@@ -1849,7 +1849,8 @@ nodrawp2:
 
 				; Check renderbuffer setup variables and clear screen
 				bsr		SetupRenderbufferSize
-				jsr		vid_SetupDoubleheightCopperlist
+
+				CALLC	vid_SetupDoubleheightCopperlist
 
 				bra.s	.not_double_height
 
@@ -2050,6 +2051,7 @@ SetupRenderbufferSize:
 				jsr		Draw_ResetGameDisplay
 				rts
 
+_LoadMainPalette::
 LoadMainPalette:
 				sub.l	#256*4*3+2+2+4+4,a7		; reserve stack for 256 color entries + numColors + firstColor
 				move.l	a7,a1

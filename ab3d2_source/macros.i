@@ -348,3 +348,11 @@ CEND			MACRO ; \1 UCopList*
 				CWAIT \1,#10000,#255
 				ENDM
 
+CALLC			MACRO
+				IFD BUILD_WITH_C
+				xref _\1
+				jsr _\1
+				ELSE
+				jsr \1
+				ENDC
+				ENDM

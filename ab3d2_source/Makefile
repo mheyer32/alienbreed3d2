@@ -10,8 +10,8 @@ PREFIX = $(shell ./getprefix.sh "$(CC)")
 
 #-DCD32VER
 
-CFLAGS = -m68020-60 -mtune=68030 -noixemul -g -ggdb -Og
-LFLAGS = -noixemul -g -ggdb
+CFLAGS = -v -m68020-60 -mtune=68030 -noixemul -g -ggdb -Os
+LFLAGS = -v -noixemul -g -ggdb
 
 AFLAGS = -Fhunk -m68060 -linedebug -chklabels -align -L listing.txt -Dmnu_nocode=1 -DUSE_16X16_TEXEL_MULS
 
@@ -26,14 +26,25 @@ all:	hires hiresC
 dev:	AFLAGS += -DDEV=1
 dev:	hires hiresC
 
-hiresC: hires.o main.o
-	$(LINK) $(LFLAGS) $^ -o $@
+OBJS = c/main.o \
+	   c/screen.o \
+	   c/hires.o
 
-clean:
-	rm *.o
+hiresC: AFLAGS+=-DBUILD_WITH_C
+hiresC: ${OBJS} 
+		$(LINK) $(LFLAGS) $^ -o $@
 
 hires: hires.o
 	$(VLINK) $(VFLAGS) $< -o $@
+
+
+clean:
+	rm -f *.o
+	rm -f ${OBJS}
+
+c/%.o: %.s Makefile
+	$(ASS) $(AFLAGS) $< -o $@
+
 
 %.o: %.s Makefile
 	$(ASS) $(AFLAGS) $< -o $@
