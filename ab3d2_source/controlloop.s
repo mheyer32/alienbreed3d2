@@ -41,9 +41,10 @@ Game_FinishedLevel_b:
 
 				align	4
 
+
 Game_Start:
 				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
-				jsr		Vid_OpenMainScreen
+				CALLC	Vid_OpenMainScreen
 
 				move.l	#GLF_DatabaseName_vb,a0
 				jsr		IO_LoadFile
