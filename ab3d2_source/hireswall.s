@@ -2525,7 +2525,7 @@ cant_tell:
 				neg.w	d0
 
 .left_delta_positive:
-				cmp.w	#1,d0
+				cmp.w	#2,d0
 				bgt.s	.do_gouraud_shaded
 
 				; Test right edge brightness difference
@@ -2535,7 +2535,7 @@ cant_tell:
 				neg.w	d0
 
 .right_delta_positive:
-				cmp.w	#1,d0
+				cmp.w	#2,d0
 				bgt.s	.do_gouraud_shaded
 
 .do_simple_shaded:

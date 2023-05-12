@@ -363,7 +363,7 @@ Dev_PrintStats:
 ;				dc.b		"ZI:%3d",0
 
 ;.dev_ss_stats_wb_vb:
-;				dc.b		"WB:%4x %4x %4x %4x",0
+;				dc.b		"WB:%3d %3d %3d %3d",0
 
 ; Stats for the division pogrom 2.0
 ;.dev_ss_stats_long_divide_vb:
