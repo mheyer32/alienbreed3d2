@@ -1165,7 +1165,7 @@ FireAtPlayer1:
 				move.w	(a0),d1
 				lea		(a1,d1.w*8),a1
 
-				move.l	NastyShotDataPtr_l,a5
+				move.l	AI_AlienShotDataPtr_l,a5
 				move.w	#19,d1
 .findonefree
 				move.w	12(a5),d0
@@ -1373,7 +1373,7 @@ SHOOTPLAYER2
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	(a7)+,objroom
 
-				move.l	NastyShotDataPtr_l,a0
+				move.l	AI_AlienShotDataPtr_l,a0
 				move.w	#19,d1
 .findonefree2
 				move.w	12(a0),d2
@@ -1415,7 +1415,7 @@ SHOOTPLAYER2
 				rts
 
 FireAtPlayer2:
-				move.l	NastyShotDataPtr_l,a5
+				move.l	AI_AlienShotDataPtr_l,a5
 				move.w	#19,d1
 .findonefree
 				move.w	12(a5),d0

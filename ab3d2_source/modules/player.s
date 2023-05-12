@@ -7,6 +7,13 @@
 ; *
 ; *****************************************************************************
 
+; Notes: The entity references for player 1, player 2 and the weapon view model
+;        are stored contiguously:
+;
+; Plr1_Data->ObjectPtr_l + EntT_SizeOf_l == Plr2_Data->ObjectPtr_l
+; Plr2_Data->ObjectPtr_l + EntT_SizeOf_l == player weapon entity
+;
+
 ;******************************************************************************
 ;*
 ;* Initialise player positions
@@ -50,6 +57,9 @@ Plr_Initialise:
 				move.w	8(a1),Plr2_SnapZOff_l
 				move.w	6(a1),Plr2_XOff_l
 				move.w	8(a1),Plr2_ZOff_l
+
+				move.l	#%100011,plr1_DefaultEnemyFlags_l
+				move.l	#%010011,plr2_DefaultEnemyFlags_l
 				rts
 
 ;******************************************************************************
@@ -284,18 +294,19 @@ plr_KeyboardControl:
 
 				; d2=number of gun.
 
-				; todo - why does this change for player 1 and 2?
 				cmp.l	Plr1_Data,a0
 				bne.s	.use_player_2_timer
 
 .use_player_1_timer:
-				move.w	#0,EntT_Timer1_w+128(a3)
+				; for player1, the viewport weapon entity is two along
+				move.w	#0,ENT_NEXT_2+EntT_Timer1_w(a3)
 				bsr		plr_ShowGunName
 
 				bra.s	.go
 
 .use_player_2_timer:
-				move.w	#0,EntT_Timer1_w+64(a3)
+				; for player2, the viewport weapon entity is one along
+				move.w	#0,ENT_NEXT+EntT_Timer1_w(a3)
 				bsr		plr_ShowGunName
 
 				bra.s	.go
@@ -345,6 +356,11 @@ plr_KeyboardControl:
 				DEV_CHECK_KEY	RAWKEY_G,FLATS
 				DEV_CHECK_KEY	RAWKEY_Q,FASTBUFFER_CLEAR
 				DEV_CHECK_KEY	RAWKEY_N,AI_ATTACK
+				DEV_CHECK_KEY	RAWKEY_B,LIGHTING
+
+				; change the default floor gouraud state based on the lighting toggle
+				; todo - fix floor rendering when goraud is disabled, it's seriously glitched
+				;DEV_SEQ	LIGHTING,draw_GouraudFlatsSelected_b
 
 				move.l	#SinCosTable_vw,a1
 				move.l	#KeyMap_vb,a5
