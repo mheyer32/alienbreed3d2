@@ -485,6 +485,7 @@ levelMenu2:
 				SAVEREGS
 				;bsr	DEFAULTGAME
 				not.b	LOADEXT
+				add	#8,d0
 				bsr	DEFGAME
 				GETREGS
 				move	d0,MAXLEVEL
