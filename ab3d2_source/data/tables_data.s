@@ -5,7 +5,7 @@
 
 MAX_ONE_OVER_N	EQU	511
 
-; sine/cosine << 15
+; sine/cosine << 15, contains two full cycles (720 degrees) over 8192 entries
 SinCosTable_vw:		incbin	"bigsine"
 
 ; stores x/3 and x mod 3 for x=0...660

@@ -86,7 +86,7 @@ putallin:
 ; clr.b farendfound
 
 RunThroughList:
-				DEV_INC.w	Reserved1
+				DEV_INC.w	Reserved2
 				move.l	Lvl_FloorLinesPtr_l,a1
 				move.w	2(a5),d0
 				move.l	#Sys_Workspace_vl,a6

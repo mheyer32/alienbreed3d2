@@ -1189,7 +1189,9 @@ foundang:
 				move.w	d0,d2
 				add.w	d1,d2					; total brightness
 
-				muls	#16,d1
+				;muls	#16,d1
+
+				asl.w	#4,d1
 				subq	#1,d1
 
 				divs	d2,d1
