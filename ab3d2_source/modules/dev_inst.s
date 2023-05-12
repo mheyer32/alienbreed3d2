@@ -285,16 +285,21 @@ Dev_PrintStats:
 				bsr			Dev_PrintF
 
 				; OrderZones
-				lea			dev_Reserved1_w,a1
+				lea			dev_Reserved2_w,a1
 				lea			.dev_ss_stats_order_zones_vb,a0
 				move.l		#136,d0
 				bsr			Dev_PrintF
 
 				; Zone Ptr
-				lea			Plr1_ZonePtr_l,a1
-				lea			.dev_ss_stats_zone_vb,a0
-				move.l		#152+40,d0
-				bsr			Dev_PrintF
+;				lea			Plr1_ZonePtr_l,a1
+;				lea			.dev_ss_stats_zone_vb,a0
+;				move.l		#152+40,d0
+;				bsr			Dev_PrintF
+
+;				lea			draw_LeftWallBright_w,a1
+;				lea			.dev_ss_stats_wb_vb,a0
+;				move.l		#152+40+16,d0
+;				bsr			Dev_PrintF
 
 ;				lea			Plr2_ObjectPtr_l,a1
 ;				lea			.dev_ss_stats_zone_vb,a0
@@ -354,8 +359,11 @@ Dev_PrintStats:
 .dev_ss_stats_order_zones_vb:
 				dc.b		"OZ:%3d",0
 
-.dev_ss_stats_zone_vb:
-				dc.b		"ZI:%3d",0
+;.dev_ss_stats_zone_vb:
+;				dc.b		"ZI:%3d",0
+
+;.dev_ss_stats_wb_vb:
+;				dc.b		"WB:%4x %4x %4x %4x",0
 
 ; Stats for the division pogrom 2.0
 ;.dev_ss_stats_long_divide_vb:
