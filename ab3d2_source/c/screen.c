@@ -1,5 +1,7 @@
 #include "screen.h"
 
+#include "system.h"
+
 #include <exec/ports.h>
 #include <graphics/copper.h>
 #include <graphics/gfx.h>

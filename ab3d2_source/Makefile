@@ -28,6 +28,7 @@ dev:	hires hiresC
 
 OBJS = c/main.o \
 	   c/screen.o \
+	   c/system.o \
 	   c/hires.o
 
 hiresC: AFLAGS+=-DBUILD_WITH_C

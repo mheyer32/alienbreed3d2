@@ -23,7 +23,7 @@ _GfxBase:					ds.l	1
 _IntuitionBase:				ds.l	1
 _MiscResourceBase:			ds.l	1
 _PotgoResourceBase:			ds.l	1
-_TimerBase:					ds.l	1
+_TimerBase::				ds.l	1
 
 ; Chunk of statically allocated data for various calculations
 Sys_Workspace_vl:			ds.l	8192
@@ -44,9 +44,11 @@ Sys_FPSIntAvg_w:			ds.w	1
 Sys_FPSFracAvg_w:			ds.w	1
 
 
+_sys_TimerRequest::
 sys_TimerRequest:			ds.b	IOTV_SIZE	; TimeRequest structure
 
 			align 4
+_Sys_Move16_b::
 Sys_Move16_b:				ds.b	1 			; Set if we have move16 available
 Sys_FPU_b:					ds.b	1 			; Set if we have FPU available
 

@@ -40,6 +40,7 @@ Vid_ScreenBufferIndex_w:		ds.w	1	; Index (0/1) of current screen buffer displaye
 Vid_LetterBoxMarginHeight_w:	ds.w	1	; Letter box rendering, height of black border
 
 Vid_FullScreen_b:				ds.b	1
+_Vid_FullScreenTemp_b::
 Vid_FullScreenTemp_b:			ds.b	1
 _Vid_DoubleHeight_b:
 Vid_DoubleHeight_b:				ds.b	1	; Double Height Pixel Mode
