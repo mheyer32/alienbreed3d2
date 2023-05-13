@@ -87,7 +87,7 @@ _startup:
 				; entry point
 				movem.l	d1-a6,-(sp)
 
-				jsr		Sys_Init
+				CALLC	Sys_Init
 				tst.l	d0
 				beq		.startup_fail
 
@@ -7879,6 +7879,7 @@ key_readkey:
 				move.b	#0,lastpressed
 				rts
 
+_key_interrupt::
 key_interrupt:
 ;		movem.l	d0-d7/a0-a6,-(sp)
 
@@ -8044,6 +8045,7 @@ OtherInter:
 				align	4
 
 ; Main VBlank interrupt
+_VBlankInterrupt::
 VBlankInterrupt:
 				addq.l	#1,counter
 				addq.l	#1,main_counter

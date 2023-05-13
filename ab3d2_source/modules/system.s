@@ -457,6 +457,7 @@ sys_CloseLibs:
 
 ; These can't be put into the data section due to the relocation type
 				align 4
+_AppName::
 AppName:					dc.b	'TheKillingGrounds',0
 
 ; OS structures
