@@ -38,7 +38,7 @@ BOOL Vid_OpenMainScreen(void)
     LOCAL_INTUITION();
     LOCAL_GFX();
 
-    printf("%p %p %p\n", SysBase, IntuitionBase, GfxBase);
+//    printf("%p %p %p\n", SysBase, IntuitionBase, GfxBase);
 
     for (int i = 0; i < 2; ++i) {
         if (!(rasters[i] = AllocRaster(SCREEN_WIDTH, SCREEN_HEIGHT * 8 + 1))) {

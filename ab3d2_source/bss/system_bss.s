@@ -5,7 +5,20 @@
 			align 4
 
 ; System resource pointers
+
+; There is a conundrum with DOSBase. If the linker sees that you're defining _DOSBase
+; in your own code, it will take dos.library off the auto-lib list and thus
+; not open DOSBase before it calls into ___initstdio. But ___initstdio is using DOS functions!
+; We'll never have a chance to open dos.library, though, and thus the program crashes before
+; reaching main()
+; To workaround this, make it so that C build will add dos.library to the auto-open list by
+; just referencing, but not providing _DOSBase
+
+						IFD BUILD_WITH_C
+							xref _DOSBase
+						ELSE
 _DOSBase:					ds.l	1
+						ENDIF
 _GfxBase:					ds.l	1
 _IntuitionBase:				ds.l	1
 _MiscResourceBase:			ds.l	1
