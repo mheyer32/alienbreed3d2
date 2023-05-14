@@ -24,6 +24,8 @@
 
 #define SCREEN_TITLEBAR_HACK
 
+extern UWORD draw_Palette_vw[768];
+
 static PLANEPTR rasters[2];
 struct BitMap bitmaps[2];
 
@@ -86,7 +88,7 @@ BOOL Vid_OpenMainScreen(void)
     }
 
     SetPointer(Vid_MainWindow_l, emptySprite, 1, 0, 0, 0);
-    CallAsm(&LoadMainPalette);
+    LoadMainPalette();
 
     struct ViewPort *vp = ViewPortAddress(Vid_MainWindow_l);
     VideoControlTags(vp->ColorMap, VTAG_USERCLIP_SET, 1, VTAG_END_CM, 0);
@@ -163,12 +165,26 @@ void Vid_CloseMainScreen()
 
 void vid_SetupDoubleheightCopperlist(void)
 {
-//    LOCAL_SYSBASE();
-//    LOCAL_INTUITION();
+    LOCAL_SYSBASE();
+    LOCAL_INTUITION();
 
     struct ViewPort *vp = ViewPortAddress(Vid_MainWindow_l);
     Forbid();
     vp->UCopIns = (Vid_DoubleHeight_b ? &doubleHeightCopList : NULL);
     Permit();
     RethinkDisplay();
+}
+
+void LoadMainPalette()
+{
+    ULONG palette[256*3+2];
+    palette[0] = (256 << 16) | 0; // 256 entries, starting at index 0
+    int c = 0;
+    for (; c < 768; ++c)
+    {
+        palette[c + 1] = draw_Palette_vw[c] << 24;
+    }
+    palette[c + 1] = 0;
+
+    LoadRGB32(ViewPortAddress(Vid_MainWindow_l), palette);
 }

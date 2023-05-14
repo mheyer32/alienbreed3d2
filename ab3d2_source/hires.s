@@ -2053,7 +2053,7 @@ SetupRenderbufferSize:
 				jsr		Draw_ResetGameDisplay
 				rts
 
-_LoadMainPalette::
+				IFND BUILD_WITH_C
 LoadMainPalette:
 				sub.l	#256*4*3+2+2+4+4,a7		; reserve stack for 256 color entries + numColors + firstColor
 				move.l	a7,a1
@@ -2078,6 +2078,8 @@ LoadMainPalette:
 
 				add.l	#256*4*3+2+2+4+4,a7		;restore stack
 				rts
+
+				ENDIF
 
 CLRTWOLINES:
 				move.l	d2,-(a7)

@@ -1,3 +1,4 @@
+				IFND BUILD_WITH_C
 vid_MyAllocRaster:
 				move.l	#SCREEN_WIDTH,d0		; want all planes in one chunk of memory
 				move.l	#(SCREEN_HEIGHT*8)+1,d1
@@ -262,3 +263,4 @@ vid_MyUCopList_vb:
 vid_VidControlTags_vl:
 				dc.l	VTAG_USERCLIP_SET,1
 				dc.l	VTAG_END_CM,0
+				ENDIF
