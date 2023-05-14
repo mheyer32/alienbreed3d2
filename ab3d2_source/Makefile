@@ -10,8 +10,8 @@ PREFIX = $(shell ./getprefix.sh "$(CC)")
 
 #-DCD32VER
 
-CFLAGS = -v -m68020-60 -mtune=68030 -noixemul -g -ggdb -Os
-LFLAGS = -v -noixemul -g -ggdb
+CFLAGS = -m68020-60 -mtune=68030 -noixemul -g -ggdb -O3
+LFLAGS = -noixemul -g -ggdb
 
 AFLAGS = -Fhunk -m68060 -linedebug -chklabels -align -L listing.txt -Dmnu_nocode=1 -DUSE_16X16_TEXEL_MULS
 
