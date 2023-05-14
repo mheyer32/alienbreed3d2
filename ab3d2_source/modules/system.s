@@ -11,6 +11,7 @@
 
 				align	4
 
+				IFND BUILD_WITH_C
 ;******************************************************************************
 ;*
 ;* Initialise system dependencies
@@ -49,7 +50,17 @@ Sys_Init:
 ;*
 ;******************************************************************************
 Sys_Done:
-				jsr			sys_CloseLibs
+				lea		VBLANKInt,a1
+				moveq	#INTB_VERTB,d0
+				CALLEXEC RemIntServer
+
+				IFEQ	CD32VER
+				lea		KEYInt,a1
+				moveq	#INTB_PORTS,d0
+				CALLEXEC RemIntServer
+				ENDC
+
+				jsr		sys_CloseLibs
 				rts
 
 ;******************************************************************************
@@ -209,7 +220,7 @@ Sys_ClearKeyboard:
 				dbra	d1,.loop
 				rts
 
-;******************************************************************************
+;***************************************************newMouseY***************************
 ;*
 ;* Read Mouse State
 ;*
@@ -242,11 +253,9 @@ Sys_ReadMouse:
 
 .not_negative_y2:
 				add.b	d0,d2
-				add.w	d0,.oldMouseY2
 				move.w	d2,.oldMouseY
-				move.w	d2,d0
-				move.w	.oldMouseY2,d0
-				move.w	d0,Sys_MouseY
+				add.w	d0,Sys_MouseY
+
 				clr.l	d0
 				clr.l	d1
 				move.w	$a(a6),d0
@@ -457,7 +466,6 @@ sys_CloseLibs:
 
 ; These can't be put into the data section due to the relocation type
 				align 4
-_AppName::
 AppName:					dc.b	'TheKillingGrounds',0
 
 ; OS structures
@@ -476,3 +484,5 @@ KEYInt:
 				dc.l	AppName					;is_Node ln_Name
 				dc.l	0						;is_Data
 				dc.l	key_interrupt			;is_Code
+
+				ENDIF

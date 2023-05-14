@@ -170,7 +170,8 @@ Dev_MarkDrawDone:
 				add.w	(a0)+,d0				; bitmaps
 				move.w	d0,dev_VisibleObjectCount_w
 				lea		dev_ECVDrawDone_q,a0
-				bra		Sys_MarkTime
+				CALLC	Sys_MarkTime
+				rts
 
 
 ;******************************************************************************
@@ -180,7 +181,8 @@ Dev_MarkDrawDone:
 ;******************************************************************************
 Dev_MarkChunkyDone:
 				lea		dev_ECVChunkyDone_q,a0
-				bra		Sys_MarkTime
+				CALLC	Sys_MarkTime
+				rts
 
 ;******************************************************************************
 ;*

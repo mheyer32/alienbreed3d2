@@ -19,10 +19,10 @@
 						ELSE
 _DOSBase:					ds.l	1
 						ENDIF
-_GfxBase:					ds.l	1
-_IntuitionBase:				ds.l	1
-_MiscResourceBase:			ds.l	1
-_PotgoResourceBase:			ds.l	1
+_GfxBase::					ds.l	1
+_IntuitionBase::			ds.l	1
+_MiscResourceBase::			ds.l	1
+_PotgoResourceBase::		ds.l	1
 _TimerBase::				ds.l	1
 
 ; Chunk of statically allocated data for various calculations
@@ -32,15 +32,22 @@ Sys_SerialBuffer_vl:		ds.l	2000
 
 ; System FPS
 ; Keep this pair together
+_Sys_FrameTimeECV_q::
 Sys_FrameTimeECV_q:			ds.l	2			; EClock of Lap
+_Sys_PrevFrameTimeECV_q::
 Sys_PrevFrameTimeECV_q:		ds.l	2			; EClock of last Lap
 
+_Sys_FrameTimes_vl::
 Sys_FrameTimes_vl:			ds.l	8			; last 8 frame times, in ms
+_Sys_FrameNumber_l::
 Sys_FrameNumber_l:			ds.l	1			; monotonically increasing frame number
+_Sys_ECVToMsFactor_l::
 Sys_ECVToMsFactor_l:		ds.l	1   		; factor for converting EClock value differences to ms
 
 ; Keep this pair together together
+_Sys_FPSIntAvg_w::
 Sys_FPSIntAvg_w:			ds.w	1
+_Sys_FPSFracAvg_w::
 Sys_FPSFracAvg_w:			ds.w	1
 
 

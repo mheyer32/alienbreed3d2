@@ -103,7 +103,7 @@ Game_Start:
 				bsr		DEFAULTGAME
 
 BACKTOMENU:
-				jsr		Sys_ClearKeyboard
+				CALLC	Sys_ClearKeyboard
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	BACKTOSLAVE
@@ -225,13 +225,7 @@ QUITTT:
 				jsr		Res_FreeFloorTextures
 				jsr		Res_FreeObjects
 
-				lea		VBLANKInt,a1
-				moveq	#INTB_VERTB,d0
-				CALLEXEC RemIntServer
-
-				lea		KEYInt,a1
-				moveq	#INTB_PORTS,d0
-				CALLEXEC RemIntServer
+				CALLC	Sys_Done
 
 				move.l	#0,d0
 
