@@ -11,6 +11,7 @@ draw_WaterFrames_vb:
 				incbin	"waterfile"
 
 				align 4
+_draw_Palette_vw::
 draw_Palette_vw:
 				incbin	"256pal"
 

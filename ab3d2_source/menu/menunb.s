@@ -316,7 +316,7 @@ mnu_setscreen:
 .setPlane		move.l	#mnu_morescreen,(a0)+	; the hardcoded background pattern
 				dbra	d0,.setPlane
 
-				lea		MainNewScreen,a0
+				sub.l	a0,a0
 				lea		ScreenTags,a1
 				CALLINT	OpenScreenTagList
 				move.l	d0,MenuScreen
