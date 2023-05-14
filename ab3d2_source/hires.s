@@ -170,12 +170,14 @@ _startup:
 				jsr		Game_Start
 
 .startup_fail:
-				jsr		Sys_Done
+				CALLC	Sys_Done
 
 				movem.l	(sp)+,d1-a6
 				rts
 
+				IFND BUILD_WITH_C
 				include		"modules/system.s"
+				ENDIF
 
 ;*******************************************************************************
 ; Global data
@@ -568,7 +570,7 @@ scaledownlop:
 				move.l	#PLR_STAND_HEIGHT,Plr2_SnapTargHeight_l
 				move.l	#PLR_STAND_HEIGHT,Plr2_SnapHeight_l
 
-				jsr		Sys_ClearKeyboard
+				CALLC	Sys_ClearKeyboard
 
 				clr.b	Game_MasterQuit_b
 
@@ -711,7 +713,7 @@ clrmessbuff:
 				; Initialise FPS
 				clr.l	Sys_FrameNumber_l
 				lea		Sys_PrevFrameTimeECV_q,a0
-				bsr 	Sys_MarkTime
+				CALLC 	Sys_MarkTime
 
 				clr.b	Plr2_Fire_b
 				clr.b	Plr2_TmpFire_b
@@ -998,12 +1000,12 @@ waitmaster:
 				clr.b	Vid_WaitForDisplayMsg_b		; last attempt failed, so don't wait for next message
 
 .screenSwapDone:
-				jsr		Sys_FrameLap
+				CALLC	Sys_FrameLap
 				CALLDEV	PrintStats
 				CALLDEV	MarkFrameBegin
 
 				IFND	DEV
-				jsr		Sys_ShowFPS
+				CALLC	Sys_ShowFPS
 				ENDC
 
 				move.l	#SMIDDLEY,a0
@@ -1769,7 +1771,7 @@ nodrawp2:
 				clr.b	plr2_Teleported_b
 
 .notplr2:
-				jsr		Sys_EvalFPS
+				CALLC		Sys_EvalFPS
 
 				DEV_SAVE	d0/d1/a0/a1
 				CALLDEV		MarkDrawDone
@@ -4372,10 +4374,12 @@ noturn:
 
 lrs:			dc.w	0
 
+_angpos::
 angpos:			dc.w	0 ; Yaw
 mang:			dc.w	0
 Sys_OldMouseY:	dc.w	0
 xmouse:			dc.w	0
+_Sys_MouseY::
 Sys_MouseY:		dc.w	0 ; Pitch?
 
 MAPON:			dc.w	$0

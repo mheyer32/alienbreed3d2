@@ -3,8 +3,8 @@
 
 #include <graphics/gfx.h>
 
-const int SCREEN_WIDTH = 320;
-const int SCREEN_HEIGHT = 256;
+extern const int SCREEN_WIDTH;
+extern const int SCREEN_HEIGHT;
 
 extern struct MsgPort *Vid_DisplayMsgPort_l;
 extern struct ScreenBuffer *Vid_ScreenBuffers_vl[2];

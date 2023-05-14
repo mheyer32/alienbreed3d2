@@ -71,7 +71,7 @@ Plr_Initialise:
 ;******************************************************************************
 plr_MouseControl:
 				move.l	a0,-(a7)
-				jsr		Sys_ReadMouse
+				CALLC	Sys_ReadMouse
 
 				move.l	(a7)+,a0
 				move.l	#SinCosTable_vw,a1

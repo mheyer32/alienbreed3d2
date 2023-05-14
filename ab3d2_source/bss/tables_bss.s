@@ -41,4 +41,5 @@ anim_DoorHeightTable_vw:	ds.w	40 ; newanims.s
 
 Obj_RoomPath_vw:			ds.w	100 ; objmove.s
 
+_KeyMap_vb::
 KeyMap_vb:				ds.b	256

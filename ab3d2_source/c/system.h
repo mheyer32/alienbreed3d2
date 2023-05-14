@@ -2,9 +2,18 @@
 #define SYSTEM_H
 
 #include <exec/types.h>
+#include <devices/timer.h>
+#include <SDI_compiler.h>
 
 extern BOOL Sys_Init(void);
 extern void Sys_Done(void);
+extern ULONG Sys_MarkTime(REG(a0, struct EClockVal *dest));
+extern ULONG Sys_TimeDiff(REG(a0, struct EClockVal* end), REG(a1, struct EClockVal* start));
+extern void Sys_ShowFPS();
+extern void Sys_EvalFPS();
+extern void Sys_FrameLap();
+extern void Sys_ReadMouse();
+extern void Sys_ClearKeyboard();
 
 static inline struct ExecBase *getSysBase(void)
 {
