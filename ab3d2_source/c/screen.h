@@ -17,5 +17,6 @@ extern PLANEPTR Vid_Screen2Ptr_l;
 extern void LoadMainPalette(void);
 extern BOOL Vid_OpenMainScreen(void);
 extern void vid_SetupDoubleheightCopperlist(void);
+extern void Vid_CloseMainScreen(void);
 
 #endif  // SCREEN_C

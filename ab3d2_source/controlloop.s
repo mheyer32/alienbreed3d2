@@ -210,6 +210,8 @@ QUITTT:
 				move.l	Vid_FastBufferAllocPtr_l,a1
 				CALLEXEC FreeVec
 
+				IFND BUILD_WITH_C
+
 				move.l	Vid_MyRaster0_l,a0
 				move.w	#SCREEN_WIDTH,d0
 				move.w	#SCREEN_HEIGHT*8+1,d1
@@ -219,6 +221,12 @@ QUITTT:
 				move.w	#SCREEN_WIDTH,d0
 				move.w	#SCREEN_HEIGHT*8+1,d1
 				CALLGRAF FreeRaster
+
+				ELSE
+
+				CALLC Vid_CloseMainScreen
+
+				ENDIF
 
 ; jsr Res_FreeWallTextures
 				jsr		Res_FreeSoundFx
