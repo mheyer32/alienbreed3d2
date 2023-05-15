@@ -119,7 +119,7 @@ BACKTOSLAVE:
 DONEMENU:
 
 
-				jsr		mnu_clearscreen
+				CALLC	mnu_clearscreen
 
 				;	bsr		WAITREL
 

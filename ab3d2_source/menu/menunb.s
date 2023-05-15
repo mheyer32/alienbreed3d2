@@ -52,7 +52,7 @@ mnu_loop:		lea		mnu_mainmenu,a0
 				bsr.w	mnu_domenu
 				bra.w	mnu_loop
 mnu_exit:		move.l	mnu_mainstack,a7
-				bsr.w	mnu_clearscreen
+				CALLC	mnu_clearscreen
 				rts
 
 mnu_viewcredz:	clr.l	counter
@@ -74,6 +74,7 @@ mnu_copycredz:	lea		mnu_frame,a0
 				dbra	d0,.loop
 				rts
 
+				IFND BUILD_WITH_C
 mnu_clearscreen:
 				bsr.w	mnu_fadeout
 				clr.l	main_vblint				; prevent VBL kicking off new blits
@@ -135,13 +136,14 @@ mnu_setscreen:
 				;move.l	#SCREEN_HEIGHT,d3
 				;CALLINT ChangeWindowBox
 
-				bsr.w	mnu_init
+				CALLC	mnu_init
 				clr.w	mnu_fadefactor
 				bsr.w	mnu_fade
 
 				move.l	#mnu_vblint,main_vblint
 				bsr.w	mnu_fadein
 				rts
+				ENDIF
 _mnu_vblint::
 mnu_vblint:		bsr.w	mnu_movescreen
 				bsr.w	mnu_dofire
@@ -149,7 +151,7 @@ mnu_vblint:		bsr.w	mnu_movescreen
 				bsr.w	mnu_plot
 				rts
 
-_mnu_init::
+				IFND	BUILD_WITH_C
 mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				bsr.w	mnu_createpalette
 
@@ -210,6 +212,7 @@ mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				dbra	d1,.setbplptrs
 				rts
 
+				ENDIF
 ;-------------------------------------------------------------- Init palette --
 mnu_setpalette:	lea		mnu_palette,a2
 
@@ -243,6 +246,7 @@ mnu_setpalette:	lea		mnu_palette,a2
 				rts
 
 
+_mnu_initrnd::
 mnu_initrnd:	lea		mnu_palette+256,a1
 				move.w	#255,d0
 .parityloop:	move.b	d0,d1
@@ -316,6 +320,7 @@ mnu_movescreen:	move.l	MenuScreen,a1
 				rts
 
 				; Stitch a 24bit palette together such that the background
+_mnu_createpalette::
 mnu_createpalette:
 				lea		mnu_backpal,a0
 				lea		mnu_firepal,a1
@@ -406,7 +411,7 @@ mnu_fadein:		clr.w	mnu_fadefactor
 				CALLGRAF WaitTOF
 				bsr.w	mnu_fade
 				rts
-
+_mnu_fadeout::
 mnu_fadeout:	move.w	#256,mnu_fadefactor
 				moveq.l	#256/mnu_fadespeed-1,d0
 .loop:			move.l	d0,-(a7)
@@ -550,6 +555,7 @@ getrnd:			moveq.l	#0,d0
 .rnd:			dc.w	0
 
 mnu_rnd:		dc.w	0
+_mnu_bltbusy::
 mnu_bltbusy:	dc.w	0
 
 mnu_speed		=		1
@@ -1223,7 +1229,7 @@ mnu_playgame:	cmp.w	#1,mnu_playtype			; Is it 2 player master ???
 				beq.s	.playgame
 				rts
 				ENDC
-.playgame:		bsr.w	mnu_clearscreen
+.playgame:		CALLC	mnu_clearscreen
 ;-------------------------------------- Jump to game here !! --
 				move.w	mnu_playtype,d0
 				lea		.playtypeptr,a0
@@ -2072,6 +2078,7 @@ MenuWindow		dc.l	0
 
 				section	.data,data
 
+_mnu_background::
 mnu_background	incbin	"menu/back2.raw"		; 2x320x256 bitplanes
 
 				section	.bsschip,bss_c

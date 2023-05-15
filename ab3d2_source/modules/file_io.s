@@ -93,12 +93,12 @@ IO_FlushQueue:
 
 				movem.l	d0-d7/a0-a6,-(a7)
 
-				jsr		mnu_setscreen
+				CALLC	mnu_setscreen
 
 				lea		mnu_askfordisk,a0
 				jsr		mnu_domenu
 
-				jsr		mnu_clearscreen
+				CALLC	mnu_clearscreen
 
 
 				movem.l	(a7)+,d0-d7/a0-a6
