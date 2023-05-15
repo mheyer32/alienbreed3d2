@@ -231,8 +231,8 @@ void Sys_EvalFPS()
     if (!avg) {
         return;
     }
-    Sys_FPSFracAvg_w = 1000 % (UWORD)avg;
-    Sys_FPSIntAvg_w = 1000 / (UWORD)avg;
+    Sys_FPSFracAvg_w = (UWORD)1000 % (UWORD)avg;
+    Sys_FPSIntAvg_w = (UWORD)1000 / (UWORD)avg;
 }
 
 static void SAVEDS PutChProc(REG(d0, char c), REG(a3, char** out))
