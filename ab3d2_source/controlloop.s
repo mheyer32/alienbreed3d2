@@ -61,7 +61,7 @@ Game_Start:
 
 				jsr		mnu_copycredz
 
-				jsr		mnu_setscreen
+				CALLC	mnu_setscreen
 				move.l	a7,mnu_mainstack	; not sure if this is the right thing or even in use...
 
 				jsr		IO_InitQueue
@@ -198,7 +198,7 @@ DONEMENU:
 				ENDR
 
 dontusestats:
-				jsr		mnu_setscreen
+				CALLC	mnu_setscreen
 
 
 				bra		BACKTOMENU
