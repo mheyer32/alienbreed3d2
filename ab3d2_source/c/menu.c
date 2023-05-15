@@ -18,15 +18,20 @@ extern UBYTE mnu_background[];
 extern struct Screen *MenuScreen;
 extern struct Window *MenuWindow;
 extern UWORD mnu_fadefactor;
+extern ULONG mnu_palette[256];  // 24bit colors 0x00RRGGBB
 
 extern void (*main_vblint)(void);
 extern void mnu_vblint(void);
 extern void mnu_init(void);
-extern void mnu_fade(void);
+
 extern void mnu_fadein(void);
 extern void mnu_fadeout(void);
+
 extern void mnu_initrnd(void);
 extern void mnu_createpalette(void);
+
+static void mnu_fade(UWORD fadeFactor);
+
 
 static CHIP WORD emptySprite[6];
 
@@ -58,10 +63,9 @@ BOOL mnu_setscreen()
     SetPointer(MenuWindow, emptySprite, 1, 0, 0, 0);
 
     mnu_init();
-    mnu_fadefactor = 0;
-    CallAsm(mnu_fade);
+    mnu_fade(0);
     main_vblint = &mnu_vblint;
-    CallAsm(mnu_fadein);
+    mnu_fadein();
 
     return TRUE;
 
@@ -129,7 +133,7 @@ void mnu_clearscreen(void)
     LOCAL_GFX();
     LOCAL_INTUITION();
 
-    CallAsm(&mnu_fadeout);
+    mnu_fadeout();
     main_vblint = NULL;  // don't kick off new frames/blits
     WaitBlits();         // let current blits finish
     WaitTOF();
@@ -142,3 +146,61 @@ void mnu_clearscreen(void)
         MenuScreen = NULL;
     }
 }
+
+static void mnu_fade(UWORD fadeFactor)
+{
+    ULONG outPal[768 + 2];
+    outPal[0] = 256 << 16 | 0;
+
+    for (int c = 0; c < 256; ++c) {
+        UWORD r = (mnu_palette[c] >> 16);
+        r *= fadeFactor;
+        outPal[c * 3 + 1] = r << 16;
+        ULONG g = (mnu_palette[c] >> 8) & 0xFF;
+        g *= fadeFactor;
+        outPal[c * 3 + 2] = g << 16;
+        ULONG b = mnu_palette[c] & 0xFF;
+        b *= fadeFactor;
+        outPal[c * 3 + 3] = b << 16;
+    }
+    outPal[769] = 0;
+    LoadRGB32(&MenuScreen->ViewPort, outPal);
+}
+
+static const UWORD mnu_fadespeed = 16;
+
+void mnu_fadein(void)
+{
+    LOCAL_GFX();
+    UWORD fadefactor = 0;
+    UWORD steps = 256 / mnu_fadespeed;
+    for (UWORD i = 0; i < steps; ++i) {
+        WaitTOF();
+        mnu_fade(fadefactor);
+        fadefactor += mnu_fadespeed;
+    }
+    // One pass to make sure we're hitting the RGB * 1.0 case
+    WaitTOF();
+    mnu_fade(256);
+}
+
+void mnu_fadeout(void)
+{
+    LOCAL_GFX();
+    UWORD fadefactor = 256;
+    UWORD steps = 256 / mnu_fadespeed;
+    for (UWORD i = 0; i < steps; ++i) {
+        WaitTOF();
+        mnu_fade(fadefactor);
+        fadefactor -= mnu_fadespeed;
+    }
+    // One pass to make sure we're hitting the RGB * 0.0 case
+    WaitTOF();
+    mnu_fade(0);
+}
+
+
+// void mnu_createpalette(void)
+//{
+
+//}

@@ -213,38 +213,6 @@ mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				rts
 
 				ENDIF
-;-------------------------------------------------------------- Init palette --
-mnu_setpalette:	lea		mnu_palette,a2
-
-				;LoadRGB32
-				sub.l	#256*4*3+2+2+4,a7		; reserve stack for 256 color entries + numColors + firstColor
-				move.l	a7,a1
-				move.l	a1,a0
-				move.w	#256,(a0)+				; number of entries
-				move.w	#0,(a0)+				; start index
-				move.w	#255,d0
-				; need to expand the 8 bits to 32bits per gun
-.setCol			move.l	(a2)+,d1
-				move.l	d1,d2
-				clr.w	d2
-				rol.l	#8,d2
-				move.l	d2,(a0)+
-				move.l	d1,d2
-				clr.b	d2
-				swap	d2
-				move.l	d2,(a0)+				; this has some stuff in lower word, butt hey'll be discarded
-				ror.l	#8,d1
-				move.l	d1,(a0)+				; same here
-				dbra	d0,.setCol
-				clr.l	(a0)					; terminate list
-
-				move.l	MenuScreen,a0
-				lea		sc_ViewPort(a0),a0
-				CALLGRAF LoadRGB32
-
-				add.l	#256*4*3+2+2+4,a7
-				rts
-
 
 _mnu_initrnd::
 mnu_initrnd:	lea		mnu_palette+256,a1
@@ -390,7 +358,7 @@ mnu_createpalette:
 .cont:			dbra	d0,.loop
 				rts
 
-
+				IFND BUILD_WITH_C
 mnu_fadespeed	equ		16
 
 _mnu_fadein::
@@ -433,7 +401,6 @@ mnu_fadeout:	move.w	#256,mnu_fadefactor
 _mnu_fadefactor::
 mnu_fadefactor:	dc.w	0
 
-_mnu_fade::
 mnu_fade:		lea		mnu_palette,a2
 
 				move.w	mnu_fadefactor,d3
@@ -474,6 +441,7 @@ mnu_fade:		lea		mnu_palette,a2
 
 				add.l	#256*4*3+2+2+4+4,a7		;restore stack
 				rts
+				ENDIF
 
 
 mnu_printxy:;in:a0,d0,d1=Text ptr,XPos,YPos (XPos in words YPos in pixels)
@@ -2018,6 +1986,7 @@ mnu_fontpal:	incbin	"menu/font16x16.pal2"
 mnu_firepal:	incbin	"menu/firepal.pal2"
 mnu_backpal:	incbin	"menu/back.pal"
 
+_mnu_palette::
 mnu_palette:	ds.l	256						; 4byte per pixel, 24bit used
 
 mnu_frame:		incbin	"menu/credits_only.raw"
