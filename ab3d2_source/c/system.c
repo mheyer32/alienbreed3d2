@@ -18,8 +18,6 @@
 #include <resources/misc.h>
 #include <resources/potgo.h>
 
-#include <stdint.h>
-
 #define ALIB_HARDWARE_CUSTOM
 #include <proto/alib.h>
 
@@ -208,7 +206,7 @@ ULONG Sys_MarkTime(REG(a0, struct EClockVal* dest))
     return ReadEClock(dest);
 }
 
-ULONG Sys_TimeDiff(REG(a0, struct EClockVal* end), REG(a1, struct EClockVal* start))
+uint64_t Sys_TimeDiff(REG(a0, struct EClockVal* end), REG(a1, struct EClockVal* start))
 {
     uint64_t diff = *(uint64_t*)end - *(uint64_t*)start;
     return diff;
