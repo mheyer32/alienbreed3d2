@@ -146,7 +146,7 @@ mnu_setscreen:
 				ENDIF
 _mnu_vblint::
 mnu_vblint:		bsr.w	mnu_movescreen
-				bsr.w	mnu_dofire
+				CALLC	mnu_dofire
 				bsr.w	mnu_animcursor
 				bsr.w	mnu_plot
 				rts
@@ -489,6 +489,8 @@ mnu_printxy:;in:a0,d0,d1=Text ptr,XPos,YPos (XPos in words YPos in pixels)
 				bra		.loop
 .exit:			rts
 
+				IFND BUILD_WITH_C
+
 mnu_dofire:		btst.b	#0,main_counter+3
 				beq.s	.noskip
 				rts
@@ -511,6 +513,9 @@ mnu_dofire:		btst.b	#0,main_counter+3
 				CALLGRAF QBSBlit
 				rts
 
+				ENDIF
+
+_getrnd::
 getrnd:			moveq.l	#0,d0
 				move.w	mnu_rnd,d0
 				and.l	#8190,d0
@@ -521,12 +526,16 @@ getrnd:			moveq.l	#0,d0
 
 .rnd:			dc.w	0
 
+_mnu_rnd::
 mnu_rnd:		dc.w	0
 _mnu_bltbusy::
 mnu_bltbusy:	dc.w	0
 
+
 mnu_speed		=		1
 mnu_size		=		256
+
+				IFND BUILD_WITH_C
 
 mnu_subtract:	dc.l	0
 mnu_count:		dc.w	0
@@ -596,6 +605,7 @@ mnu_pass4:		move.l	#mnu_pass1,bn_function(a1) ; restore first pass ptr
 				moveq.l	#0,d0					; this was the last pass
 				rts
 
+				ENDIF
 
 				cnop	0,4
 mnu_cls:		lea		mnu_morescreen+40*256*6,a1 ; start from 6th plane, down to plane 3
@@ -1432,6 +1442,7 @@ mnu_printdelay:	dc.l	0
 
 ;----------------------------------------------------------------- Fire data --
 
+_mnu_rndptr::
 mnu_rndptr:		dc.l	mnu_morescreen+6*40*256
 mnu_sourceptrs:	dc.l	mnu_morescreen+3*40*256+mnu_speed*40
 				dc.l	mnu_morescreen+4*40*256+mnu_speed*40
@@ -1996,11 +2007,12 @@ mnu_frame:		incbin	"menu/credits_only.raw"
 counter:		dc.l	0
 _main_vblint::
 main_vblint:	dc.l	0
+_main_counter::
 main_counter:	dc.l	0
 main_vbrbase:	dc.l	0
 timer:			dc.l	0
 
-
+				IFND BUILD_WITH_C
 BltNode			dc.l	0						; bn_n
 				dc.l	mnu_pass1				; bn_function
 				dc.b	0						; bn_stat
@@ -2008,6 +2020,7 @@ BltNode			dc.l	0						; bn_n
 				dc.w	0						; bn_blitsize
 				dc.w	0						; bn_beamsync
 				dc.l	0						; bn_cleanup
+				ENDIF
 
 
 Bitmap			dc.w	SCREEN_WIDTH/8					; bm_BytesPerRow

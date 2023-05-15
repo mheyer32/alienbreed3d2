@@ -32,9 +32,6 @@ struct BitMap bitmaps[2];
 static CHIP WORD emptySprite[6];
 static struct UCopList doubleHeightCopList;
 
-const int SCREEN_WIDTH = 320;
-const int SCREEN_HEIGHT = 256;
-
 void Vid_CloseMainScreen();
 
 BOOL Vid_OpenMainScreen(void)

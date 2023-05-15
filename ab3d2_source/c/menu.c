@@ -4,12 +4,17 @@
 #include "system.h"
 
 #include <graphics/gfx.h>
+#include <hardware/blit.h>
+#include <hardware/custom.h>
 #include <proto/graphics.h>
 #include <proto/intuition.h>
 
 #include <SDI_compiler.h>
 
 #include <stdlib.h>  //abort
+
+#define ALIB_HARDWARE_CUSTOM
+#include <proto/alib.h>
 
 extern CHIP UBYTE mnu_morescreen[];
 extern CHIP UBYTE mnu_screen[];
@@ -23,22 +28,46 @@ extern ULONG mnu_palette[256];  // 24bit colors 0x00RRGGBB
 extern ULONG mnu_backpal[4];
 extern ULONG mnu_firepal[8];
 extern ULONG mnu_fontpal[8];
+extern volatile UBYTE mnu_bltbusy;
+extern ULONG main_counter;
+
+extern UWORD mnu_rnd;
+extern APTR mnu_rndptr;
+
 
 extern void (*main_vblint)(void);
 extern void mnu_vblint(void);
 extern void mnu_init(void);
-
 extern void mnu_fadein(void);
 extern void mnu_fadeout(void);
-
 extern void mnu_initrnd(void);
 extern void mnu_createpalette(void);
+extern void mnu_dofire(void);
+extern void getrnd(void);
 
 static void mnu_fade(UWORD fadeFactor);
 
 static CHIP WORD emptySprite[6];
-
 static struct BitMap bm;
+
+static LONG mnu_subtract;
+static UWORD mnu_count;
+
+#define mnu_speed 1
+#define mnu_size 256  // Menu screen height?
+#define ROWSIZE (SCREEN_WIDTH / 8)
+#define PLANESIZE (ROWSIZE * (SCREEN_HEIGHT))
+
+//static APTR mnu_rndptr = mnu_morescreen + 6 * PLANESIZE;
+static PLANEPTR mnu_sourceptrs[] = {mnu_morescreen + 3 * PLANESIZE + mnu_speed * ROWSIZE,
+                                    mnu_morescreen + 4 * PLANESIZE + mnu_speed *ROWSIZE,
+                                    mnu_morescreen + 5 * PLANESIZE + mnu_speed *ROWSIZE};
+
+typedef int (*BltFuncPtr)();
+
+static int SAVEDS mnu_pass2(REG(a0, volatile struct Custom *custom), REG(a1, struct bltnode *node));
+static int SAVEDS mnu_pass3(REG(a0, volatile struct Custom *custom), REG(a1, struct bltnode *node));
+static int SAVEDS mnu_pass4(REG(a0, volatile struct Custom *custom), REG(a1, struct bltnode *node));
 
 BOOL mnu_setscreen()
 {
@@ -126,7 +155,6 @@ void mnu_init(void)
 
 static inline void WaitBlits()
 {
-    extern volatile UBYTE mnu_bltbusy;
     while (mnu_bltbusy) {
     };
 }
@@ -216,7 +244,7 @@ void mnu_createpalette(void)
                 if (r > 255) {
                     r = 255;
                 }
-                ULONG g = (((c1 >> 8) & 0xFF) * 3)/4 + ((c2 >> 8) & 0xFF);
+                ULONG g = (((c1 >> 8) & 0xFF) * 3) / 4 + ((c2 >> 8) & 0xFF);
                 if (g > 255) {
                     g = 255;
                 }
@@ -230,4 +258,88 @@ void mnu_createpalette(void)
             }
         }
     }
+}
+
+static int SAVEDS mnu_pass1(REG(a0, volatile struct Custom *custom), REG(a1, struct bltnode *node))
+{
+    CallAsm(&getrnd);
+    WORD cnt = mnu_count++ & 3;
+
+    mnu_subtract = 0;
+
+    switch (cnt) {
+    case 0:
+        *(ULONG *)&custom->bltcon0 = 0x1ff80000;
+        break;
+    case 1:
+        mnu_subtract = -2;
+        *(ULONG *)&custom->bltcon0 = 0xfff80000;
+        break;
+    default:
+        *(ULONG *)&custom->bltcon0 = 0x0ff80000;
+    }
+    *(ULONG *)&custom->bltafwm = 0xffffffff;
+    *(ULONG *)&custom->bltamod = 0x00000000;
+    *(ULONG *)&custom->bltcmod = 0x00000000;
+    custom->bltapt = mnu_sourceptrs[0] - mnu_subtract;
+    custom->bltbpt = mnu_rndptr;
+    custom->bltcpt = mnu_morescreen + mnu_speed * ROWSIZE;
+    custom->bltdpt = mnu_morescreen;
+    custom->bltsize = ((mnu_size - mnu_speed) << 6) | (ROWSIZE / 2);
+    node->function = (BltFuncPtr)&mnu_pass2;
+    return TRUE;
+}
+
+static int SAVEDS mnu_pass2(REG(a0, volatile struct Custom *custom), REG(a1, struct bltnode *node))
+{
+    CallAsm(&getrnd);
+    custom->bltapt = mnu_sourceptrs[1] - mnu_subtract;
+    custom->bltbpt = mnu_rndptr;
+    custom->bltcpt = mnu_morescreen + PLANESIZE + mnu_speed * ROWSIZE;
+    custom->bltdpt = mnu_morescreen + PLANESIZE;
+    custom->bltsize = ((mnu_size - mnu_speed) << 6) | (ROWSIZE / 2);
+    node->function = (BltFuncPtr)&mnu_pass3;
+    return TRUE;
+}
+
+static int SAVEDS mnu_pass3(REG(a0, volatile struct Custom *custom), REG(a1, struct bltnode *node))
+{
+    CallAsm(&getrnd);
+    custom->bltapt = mnu_sourceptrs[2] - mnu_subtract;
+    custom->bltbpt = mnu_rndptr;
+    custom->bltcpt = mnu_morescreen + PLANESIZE * 2 + mnu_speed * ROWSIZE;
+    custom->bltdpt = mnu_morescreen + PLANESIZE * 2;
+    custom->bltsize = ((mnu_size - mnu_speed) << 6) | (ROWSIZE / 2);
+    node->function = (BltFuncPtr)&mnu_pass4;
+
+    return TRUE;
+}
+
+static int SAVEDS mnu_pass4(REG(a0, volatile struct Custom *custom), REG(a1, struct bltnode *node))
+{
+    node->function = (BltFuncPtr)&mnu_pass1;
+    mnu_bltbusy = FALSE;
+    return FALSE;
+}
+
+void mnu_dofire()
+{
+    if (main_counter & 1) {
+        return;
+    }
+    mnu_rnd += vhposr;
+
+    if (mnu_bltbusy) {
+        return;
+    }
+
+    mnu_bltbusy = TRUE;
+
+    APTR x = mnu_sourceptrs[0];
+    mnu_sourceptrs[0] = mnu_sourceptrs[1];
+    mnu_sourceptrs[1] = mnu_sourceptrs[2];
+    mnu_sourceptrs[2] = x;
+
+    static struct bltnode BltNode = {0, (BltFuncPtr)&mnu_pass1};
+    QBSBlit(&BltNode);
 }
