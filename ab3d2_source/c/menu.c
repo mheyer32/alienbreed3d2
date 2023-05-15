@@ -18,7 +18,11 @@ extern UBYTE mnu_background[];
 extern struct Screen *MenuScreen;
 extern struct Window *MenuWindow;
 extern UWORD mnu_fadefactor;
+
 extern ULONG mnu_palette[256];  // 24bit colors 0x00RRGGBB
+extern ULONG mnu_backpal[4];
+extern ULONG mnu_firepal[8];
+extern ULONG mnu_fontpal[8];
 
 extern void (*main_vblint)(void);
 extern void mnu_vblint(void);
@@ -31,7 +35,6 @@ extern void mnu_initrnd(void);
 extern void mnu_createpalette(void);
 
 static void mnu_fade(UWORD fadeFactor);
-
 
 static CHIP WORD emptySprite[6];
 
@@ -84,7 +87,7 @@ static void SetBplPtrs(PLANEPTR *planePtr, PLANEPTR plane, UWORD numPlanes)
 void mnu_init(void)
 {
     CallAsm(&mnu_initrnd);
-    CallAsm(&mnu_createpalette);
+    mnu_createpalette();
 
     const int planeSize = SCREEN_WIDTH / 8 * SCREEN_HEIGHT;
     const int planeSizeL = planeSize / 4;
@@ -199,8 +202,32 @@ void mnu_fadeout(void)
     mnu_fade(0);
 }
 
+void mnu_createpalette(void)
+{
+    for (WORD c = 0; c < 256; ++c) {
+        if (c & 0xe0) {
+            mnu_palette[c] = mnu_fontpal[c >> 5];
+        } else {
+            if (c & 0x1c) {
+                ULONG c1 = mnu_firepal[(c & 0x1c) >> 2];
+                ULONG c2 = mnu_firepal[c & 3];
 
-// void mnu_createpalette(void)
-//{
-
-//}
+                ULONG r = (c1 >> 16) + (c2 >> 16);
+                if (r > 255) {
+                    r = 255;
+                }
+                ULONG g = (((c1 >> 8) & 0xFF) * 3)/4 + ((c2 >> 8) & 0xFF);
+                if (g > 255) {
+                    g = 255;
+                }
+                ULONG b = (c1 & 0xFF) + (c2 & 0xFF);
+                if (b > 255) {
+                    b = 255;
+                }
+                mnu_palette[c] = (ULONG)(r << 16) | (g << 8) | b;
+            } else {
+                mnu_palette[c] = mnu_backpal[c & 3];
+            }
+        }
+    }
+}

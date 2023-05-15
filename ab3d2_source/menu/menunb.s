@@ -40,7 +40,7 @@ mnu_start:		bsr.w	mnu_copycredz
 				move.l	a7,mnu_mainstack
 
 				;bsr.w	mnu_viewcredz
-				;bsr.w	mnu_cls
+				;bsr.w	mnu_cls        WaitTOF();
 				;IFND	mnu_nocode
 				;bsr.w	mnu_protection
 				;ENDC
@@ -287,8 +287,8 @@ mnu_movescreen:	move.l	MenuScreen,a1
 
 				rts
 
+				IFND BUILD_WITH_C
 				; Stitch a 24bit palette together such that the background
-_mnu_createpalette::
 mnu_createpalette:
 				lea		mnu_backpal,a0
 				lea		mnu_firepal,a1
@@ -358,7 +358,6 @@ mnu_createpalette:
 .cont:			dbra	d0,.loop
 				rts
 
-				IFND BUILD_WITH_C
 mnu_fadespeed	equ		16
 
 _mnu_fadein::
@@ -1982,8 +1981,11 @@ mnu_buttonanim:	dc.b	236,236,236,236
 				dc.b	24
 				even
 mnu_font:		incbin	"menu/font16x16.raw2"
+_mnu_fontpal::
 mnu_fontpal:	incbin	"menu/font16x16.pal2"
+_mnu_firepal::
 mnu_firepal:	incbin	"menu/firepal.pal2"
+_mnu_backpal::
 mnu_backpal:	incbin	"menu/back.pal"
 
 _mnu_palette::
