@@ -36,7 +36,7 @@ WAITBLIT:		MACRO
 ;		include	"demo:System/Main_V3.82.S"
 
 mnu_start:		bsr.w	mnu_copycredz
-				bsr.w	mnu_setscreen
+				CALLC	mnu_setscreen
 				move.l	a7,mnu_mainstack
 
 				;bsr.w	mnu_viewcredz
@@ -142,13 +142,14 @@ mnu_setscreen:
 				move.l	#mnu_vblint,main_vblint
 				bsr.w	mnu_fadein
 				rts
-
+_mnu_vblint::
 mnu_vblint:		bsr.w	mnu_movescreen
 				bsr.w	mnu_dofire
 				bsr.w	mnu_animcursor
 				bsr.w	mnu_plot
 				rts
 
+_mnu_init::
 mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				bsr.w	mnu_createpalette
 
@@ -387,6 +388,7 @@ mnu_createpalette:
 
 mnu_fadespeed	equ		16
 
+_mnu_fadein::
 mnu_fadein:		clr.w	mnu_fadefactor
 				moveq.l	#256/mnu_fadespeed-1,d0
 .loop:			move.l	d0,-(a7)
@@ -423,8 +425,10 @@ mnu_fadeout:	move.w	#256,mnu_fadefactor
 				bsr.w	mnu_fade
 				rts
 
+_mnu_fadefactor::
 mnu_fadefactor:	dc.w	0
 
+_mnu_fade::
 mnu_fade:		lea		mnu_palette,a2
 
 				move.w	mnu_fadefactor,d3
@@ -1225,7 +1229,7 @@ mnu_playgame:	cmp.w	#1,mnu_playtype			; Is it 2 player master ???
 				lea		.playtypeptr,a0
 				move.l	(a0,d0.w*4),a0
 				jsr		(a0)
-				bsr.w	mnu_setscreen
+				CALLC	mnu_setscreen
 				rts
 .playtypeptr:	dc.l	mnu_play1p
 				dc.l	mnu_play2pMaster
@@ -2013,6 +2017,7 @@ mnu_palette:	ds.l	256						; 4byte per pixel, 24bit used
 mnu_frame:		incbin	"menu/credits_only.raw"
 
 counter:		dc.l	0
+_main_vblint::
 main_vblint:	dc.l	0
 main_counter:	dc.l	0
 main_vbrbase:	dc.l	0
@@ -2045,6 +2050,7 @@ ScreenTags		dc.l	SA_Width,SCREEN_WIDTH
 				dc.l	SA_DisplayID,PAL_MONITOR_ID
 				dc.l	TAG_END,0
 
+_MenuScreen::
 MenuScreen		dc.l	0
 
 WindowTags		dc.l	WA_Left,0
@@ -2061,6 +2067,7 @@ WTagScreenPtr	dc.l	0						; will fill in screen pointer later
 				dc.l	WA_Backdrop,1
 				dc.l	TAG_END,0
 
+_MenuWindow::
 MenuWindow		dc.l	0
 
 				section	.data,data
@@ -2069,7 +2076,9 @@ mnu_background	incbin	"menu/back2.raw"		; 2x320x256 bitplanes
 
 				section	.bsschip,bss_c
 
+_mnu_screen::
 mnu_screen:		ds.b	2*40*512				; 4 color background,. 320x512 pixels
+_mnu_morescreen::
 mnu_morescreen:	ds.b	8*40*SCREEN_HEIGHT				; 8 bitplanes 320x256 pixels
 
 				align	8				; align for fetch mode 3
