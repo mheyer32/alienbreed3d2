@@ -7,6 +7,7 @@
 #define SCREEN_HEIGHT 256
 
 extern struct MsgPort *Vid_DisplayMsgPort_l;
+extern UBYTE Vid_WaitForDisplayMsg_b;
 extern struct ScreenBuffer *Vid_ScreenBuffers_vl[2];
 extern struct Screen *Vid_MainScreen_l;
 extern struct Window *Vid_MainWindow_l;

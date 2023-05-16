@@ -6,6 +6,7 @@
 #include <graphics/gfx.h>
 #include <hardware/blit.h>
 #include <hardware/custom.h>
+#include <proto/exec.h>
 #include <proto/graphics.h>
 #include <proto/intuition.h>
 
@@ -20,8 +21,6 @@ extern CHIP UBYTE mnu_morescreen[];
 extern CHIP UBYTE mnu_screen[];
 extern UBYTE mnu_background[];
 
-extern struct Screen *MenuScreen;
-extern struct Window *MenuWindow;
 extern UWORD mnu_fadefactor;
 
 extern ULONG mnu_palette[256];  // 24bit colors 0x00RRGGBB
@@ -33,7 +32,6 @@ extern ULONG main_counter;
 
 extern UWORD mnu_rnd;
 extern APTR mnu_rndptr;
-
 
 extern void (*main_vblint)(void);
 extern void mnu_vblint(void);
@@ -48,17 +46,18 @@ extern void getrnd(void);
 static void mnu_fade(UWORD fadeFactor);
 
 static CHIP WORD emptySprite[6];
-static struct BitMap bm;
+static struct BitMap mnu_bitmap;
 
 static LONG mnu_subtract;
 static UWORD mnu_count;
+static struct ScreenBuffer *mnu_ScreenBuffer;
 
 #define mnu_speed 1
 #define mnu_size 256  // Menu screen height?
 #define ROWSIZE (SCREEN_WIDTH / 8)
 #define PLANESIZE (ROWSIZE * (SCREEN_HEIGHT))
 
-//static APTR mnu_rndptr = mnu_morescreen + 6 * PLANESIZE;
+// static APTR mnu_rndptr = mnu_morescreen + 6 * PLANESIZE;
 static PLANEPTR mnu_sourceptrs[] = {mnu_morescreen + 3 * PLANESIZE + mnu_speed * ROWSIZE,
                                     mnu_morescreen + 4 * PLANESIZE + mnu_speed *ROWSIZE,
                                     mnu_morescreen + 5 * PLANESIZE + mnu_speed *ROWSIZE};
@@ -69,30 +68,34 @@ static int SAVEDS mnu_pass2(REG(a0, volatile struct Custom *custom), REG(a1, str
 static int SAVEDS mnu_pass3(REG(a0, volatile struct Custom *custom), REG(a1, struct bltnode *node));
 static int SAVEDS mnu_pass4(REG(a0, volatile struct Custom *custom), REG(a1, struct bltnode *node));
 
+static void SetBplPtrs(PLANEPTR *planePtr, PLANEPTR plane, UWORD numPlanes)
+{
+    for (int p = 0; p < numPlanes; ++p) {
+        *planePtr++ = plane;
+        plane += SCREEN_WIDTH / 8 * SCREEN_HEIGHT;
+    }
+}
+
 BOOL mnu_setscreen()
 {
     LOCAL_GFX();
     LOCAL_INTUITION();
 
-    InitBitMap(&bm, 8, SCREEN_WIDTH, SCREEN_HEIGHT);
-    for (int p = 0; p < 8; ++p) {
-        bm.Planes[p] = mnu_morescreen;
+    InitBitMap(&mnu_bitmap, 8, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    const int planeSize = SCREEN_WIDTH / 8 * SCREEN_HEIGHT;
+
+    SetBplPtrs(&mnu_bitmap.Planes[0], (PLANEPTR)mnu_screen, 1);
+    SetBplPtrs(&mnu_bitmap.Planes[1], (PLANEPTR)mnu_screen + planeSize * 2, 1);
+    SetBplPtrs(&mnu_bitmap.Planes[2], (PLANEPTR)mnu_morescreen, 6);
+
+    mnu_ScreenBuffer = AllocScreenBuffer(Vid_MainScreen_l, &mnu_bitmap, 0);
+    if (!mnu_ScreenBuffer) {
+        return FALSE;
     }
 
-    if (!(MenuScreen = OpenScreenTags(NULL, SA_Width, SCREEN_WIDTH, SA_Height, SCREEN_HEIGHT, SA_Depth, 8, SA_BitMap,
-                                      (Tag)&bm, SA_Type, CUSTOMSCREEN, SA_Quiet, 1, SA_ShowTitle, 0, SA_AutoScroll, 0,
-                                      SA_FullPalette, 1, SA_DisplayID, PAL_MONITOR_ID, TAG_END, 0))) {
-        goto fail;
+    while (!ChangeScreenBuffer(Vid_MainScreen_l, mnu_ScreenBuffer)) {
     };
-
-    if (!(MenuWindow = OpenWindowTags(NULL, WA_Left, 0, WA_Top, 0, WA_Width, SCREEN_WIDTH, WA_Height, SCREEN_HEIGHT,
-                                      WA_CustomScreen, (Tag)MenuScreen, WA_Activate, 1, WA_Borderless, 1, WA_RMBTrap,
-                                      1,  // prevent menu rendering
-                                      WA_NoCareRefresh, 1, WA_SimpleRefresh, 1, WA_Backdrop, 1, TAG_END, 0))) {
-        goto fail;
-    }
-
-    SetPointer(MenuWindow, emptySprite, 1, 0, 0, 0);
 
     mnu_init();
     mnu_fade(0);
@@ -103,14 +106,6 @@ BOOL mnu_setscreen()
 
 fail:
     abort();
-}
-
-static void SetBplPtrs(PLANEPTR *planePtr, PLANEPTR plane, UWORD numPlanes)
-{
-    for (int p = 0; p < numPlanes; ++p) {
-        *planePtr++ = plane;
-        plane += SCREEN_WIDTH / 8 * SCREEN_HEIGHT;
-    }
 }
 
 void mnu_init(void)
@@ -144,13 +139,6 @@ void mnu_init(void)
 
     // 'mnu_morescreen' points to the planes used for the fire effect
     memset(mnu_morescreen, 0, planeSize * 3);
-
-    struct BitMap *bm = MenuScreen->ViewPort.RasInfo->BitMap;
-    SetBplPtrs(&bm->Planes[0], (PLANEPTR)mnu_screen, 1);
-    SetBplPtrs(&bm->Planes[1], (PLANEPTR)mnu_screen + planeSize * 2, 1);
-    SetBplPtrs(&bm->Planes[2], (PLANEPTR)mnu_morescreen, 6);
-
-    ScrollVPort(&MenuScreen->ViewPort);
 }
 
 static inline void WaitBlits()
@@ -168,14 +156,33 @@ void mnu_clearscreen(void)
     main_vblint = NULL;  // don't kick off new frames/blits
     WaitBlits();         // let current blits finish
     WaitTOF();
-    if (MenuWindow) {
-        CloseWindow(MenuWindow);
-        MenuWindow = NULL;
-    }
-    if (MenuScreen) {
-        CloseScreen(MenuScreen);
-        MenuScreen = NULL;
-    }
+
+    while (!ChangeScreenBuffer(Vid_MainScreen_l, Vid_ScreenBuffers_vl[0])) {
+    };
+    WaitPort(Vid_DisplayMsgPort_l);
+    while (GetMsg(Vid_DisplayMsgPort_l)) {
+    };
+    Vid_WaitForDisplayMsg_b = FALSE;
+
+    LoadMainPalette();
+
+    FreeScreenBuffer(Vid_MainScreen_l, mnu_ScreenBuffer);
+    mnu_ScreenBuffer = NULL;
+}
+
+void mnu_movescreen(void)
+{
+    static UWORD mnu_screenpos = 0;
+
+    ULONG offset = (mnu_screenpos & 255) * ROWSIZE;
+    mnu_screenpos++;
+
+    const int planeSize = SCREEN_WIDTH / 8 * SCREEN_HEIGHT;
+
+    SetBplPtrs(&Vid_MainScreen_l->RastPort.BitMap->Planes[0], mnu_screen + offset, 1);
+    SetBplPtrs(&Vid_MainScreen_l->RastPort.BitMap->Planes[1], mnu_screen + offset + planeSize * 2, 1);
+
+    ScrollVPort(&Vid_MainScreen_l->ViewPort);
 }
 
 static void mnu_fade(UWORD fadeFactor)
@@ -195,7 +202,7 @@ static void mnu_fade(UWORD fadeFactor)
         outPal[c * 3 + 3] = b << 16;
     }
     outPal[769] = 0;
-    LoadRGB32(&MenuScreen->ViewPort, outPal);
+    LoadRGB32(&Vid_MainScreen_l->ViewPort, outPal);
 }
 
 static const UWORD mnu_fadespeed = 16;
