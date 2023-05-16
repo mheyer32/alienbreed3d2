@@ -145,7 +145,7 @@ mnu_setscreen:
 				rts
 				ENDIF
 _mnu_vblint::
-mnu_vblint:		bsr.w	mnu_movescreen
+mnu_vblint:		CALLC	mnu_movescreen
 				CALLC	mnu_dofire
 				bsr.w	mnu_animcursor
 				bsr.w	mnu_plot
@@ -261,6 +261,8 @@ mnu_initrnd:	lea		mnu_palette+256,a1
 				dbra	d0,.loop
 				rts
 
+				IFND BUILD_WITH_C
+
 				; scroll first two bitplanes
 mnu_movescreen:	move.l	MenuScreen,a1
 				lea		sc_ViewPort(a1),a1
@@ -287,7 +289,6 @@ mnu_movescreen:	move.l	MenuScreen,a1
 
 				rts
 
-				IFND BUILD_WITH_C
 				; Stitch a 24bit palette together such that the background
 mnu_createpalette:
 				lea		mnu_backpal,a0
