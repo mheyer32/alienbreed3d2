@@ -72,7 +72,7 @@ static void SetBplPtrs(PLANEPTR *planePtr, PLANEPTR plane, UWORD numPlanes)
 {
     for (int p = 0; p < numPlanes; ++p) {
         *planePtr++ = plane;
-        plane += SCREEN_WIDTH / 8 * SCREEN_HEIGHT;
+        plane += PLANESIZE;
     }
 }
 
@@ -81,7 +81,10 @@ BOOL mnu_setscreen()
     LOCAL_GFX();
     LOCAL_INTUITION();
 
+    mnu_init();
+
     InitBitMap(&mnu_bitmap, 8, SCREEN_WIDTH, SCREEN_HEIGHT);
+    mnu_bitmap.Flags = BMF_STANDARD;
 
     const int planeSize = SCREEN_WIDTH / 8 * SCREEN_HEIGHT;
 
@@ -89,15 +92,19 @@ BOOL mnu_setscreen()
     SetBplPtrs(&mnu_bitmap.Planes[1], (PLANEPTR)mnu_screen + planeSize * 2, 1);
     SetBplPtrs(&mnu_bitmap.Planes[2], (PLANEPTR)mnu_morescreen, 6);
 
-    mnu_ScreenBuffer = AllocScreenBuffer(Vid_MainScreen_l, &mnu_bitmap, 0);
-    if (!mnu_ScreenBuffer) {
-        return FALSE;
+    if (!vid_isRTG) {
+        if (!(mnu_ScreenBuffer = AllocScreenBuffer(Vid_MainScreen_l, &mnu_bitmap, 0))) {
+            goto fail;
+        }
+
+        while (!ChangeScreenBuffer(Vid_MainScreen_l, mnu_ScreenBuffer)) {
+        };
+
+    } else {
+        BltBitMapRastPort(&mnu_bitmap, 0, 0, &Vid_MainScreen_l->RastPort, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0x0C0);
+        WaitBlit();
     }
 
-    while (!ChangeScreenBuffer(Vid_MainScreen_l, mnu_ScreenBuffer)) {
-    };
-
-    mnu_init();
     mnu_fade(0);
     main_vblint = &mnu_vblint;
     mnu_fadein();
@@ -151,23 +158,26 @@ void mnu_clearscreen(void)
 {
     LOCAL_GFX();
     LOCAL_INTUITION();
+    LOCAL_SYSBASE();
 
     mnu_fadeout();
     main_vblint = NULL;  // don't kick off new frames/blits
     WaitBlits();         // let current blits finish
     WaitTOF();
 
-    while (!ChangeScreenBuffer(Vid_MainScreen_l, Vid_ScreenBuffers_vl[0])) {
-    };
-    WaitPort(Vid_DisplayMsgPort_l);
-    while (GetMsg(Vid_DisplayMsgPort_l)) {
-    };
-    Vid_WaitForDisplayMsg_b = FALSE;
+    if (!vid_isRTG) {
+        while (!ChangeScreenBuffer(Vid_MainScreen_l, Vid_ScreenBuffers_vl[0])) {
+        };
+        WaitPort(Vid_DisplayMsgPort_l);
+        while (GetMsg(Vid_DisplayMsgPort_l)) {
+        };
+        Vid_WaitForDisplayMsg_b = FALSE;
+
+        FreeScreenBuffer(Vid_MainScreen_l, mnu_ScreenBuffer);
+        mnu_ScreenBuffer = NULL;
+    }
 
     LoadMainPalette();
-
-    FreeScreenBuffer(Vid_MainScreen_l, mnu_ScreenBuffer);
-    mnu_ScreenBuffer = NULL;
 }
 
 void mnu_movescreen(void)
@@ -179,10 +189,17 @@ void mnu_movescreen(void)
 
     const int planeSize = SCREEN_WIDTH / 8 * SCREEN_HEIGHT;
 
-    SetBplPtrs(&Vid_MainScreen_l->RastPort.BitMap->Planes[0], mnu_screen + offset, 1);
-    SetBplPtrs(&Vid_MainScreen_l->RastPort.BitMap->Planes[1], mnu_screen + offset + planeSize * 2, 1);
+    if (!vid_isRTG) {
+        SetBplPtrs(&Vid_MainScreen_l->RastPort.BitMap->Planes[0], mnu_screen + offset, 1);
+        SetBplPtrs(&Vid_MainScreen_l->RastPort.BitMap->Planes[1], mnu_screen + offset + planeSize * 2, 1);
 
-    ScrollVPort(&Vid_MainScreen_l->ViewPort);
+        ScrollVPort(&Vid_MainScreen_l->ViewPort);
+    } else {
+        SetBplPtrs(&mnu_bitmap.Planes[0], mnu_screen + offset, 1);
+        SetBplPtrs(&mnu_bitmap.Planes[1], mnu_screen + offset + planeSize * 2, 1);
+
+//        BltBitMapRastPort(&mnu_bitmap, 0, 0, &Vid_MainScreen_l->RastPort, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0xC0);
+    }
 }
 
 static void mnu_fade(UWORD fadeFactor)
