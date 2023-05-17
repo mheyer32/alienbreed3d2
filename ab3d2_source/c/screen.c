@@ -9,11 +9,16 @@
 #include <graphics/videocontrol.h>
 #include <graphics/view.h>
 
+#include <exec/types.h>
 #include <intuition/screens.h>
+#include <libraries/asl.h>
+#include <proto/asl.h>
+#include <proto/cybergraphics.h>
 #include <proto/exec.h>
 #include <proto/graphics.h>
 #include <proto/intuition.h>
-#include <exec/types.h>
+
+#include <clib/debug_protos.h>
 
 #define ALIB_HARDWARE_CUSTOM
 #include <proto/alib.h>
@@ -31,6 +36,9 @@ struct BitMap bitmaps[2];
 
 static CHIP WORD emptySprite[6];
 static struct UCopList doubleHeightCopList;
+
+ULONG Vid_ScreenMode;
+BOOL vid_isRTG = FALSE;
 
 void Vid_CloseMainScreen();
 
@@ -184,4 +192,77 @@ void LoadMainPalette()
     palette[c + 1] = 0;
 
     LoadRGB32(ViewPortAddress(Vid_MainWindow_l), palette);
+}
+
+ULONG GetScreenMode()
+{
+    struct Screen *scr;
+    struct ScreenModeRequester *req;
+    ULONG rc = INVALID_ID;
+    ULONG propertymask;
+    WORD wx, wy, sx, sy;
+
+    struct List mydisplaylist;
+
+    //    struct DisplayMode mydisplaymode2;
+    //    struct DisplayMode mydisplaymode3;
+    //    struct DisplayMode mydisplaymode4;
+    //    struct DisplayMode mydisplaymode5;
+    //    mydisplaymode2 = mydisplaymode;
+    //    mydisplaymode3 = mydisplaymode;
+    //    mydisplaymode4 = mydisplaymode;
+    //    mydisplaymode5 = mydisplaymode;
+
+    //    mydisplaymode.dm_Node.ln_Name = " *** WINDOW ON WORKBENCH SCREEN ***";
+    //    mydisplaymode2.dm_Node.ln_Name = " *** WINDOW ON DEF. PUB. SCREEN ***";
+    //    mydisplaymode3.dm_Node.ln_Name = "GRAFFITI: PAL";
+    //    mydisplaymode4.dm_Node.ln_Name = "GRAFFITI: NTSC";
+    //    mydisplaymode5.dm_Node.ln_Name = "  ";
+    //    mydisplaymode5.dm_Node.ln_Name[1] = (char)160;
+
+    //    mydisplaymode2.dm_DimensionInfo.Header.DisplayID = 0xFFFFFFFD;        for (int i = 0; i < 2; ++i) {
+    //    mydisplaymode3.dm_DimensionInfo.Header.DisplayID = 0xFFFFFFFC;
+    //    mydisplaymode4.dm_DimensionInfo.Header.DisplayID = 0xFFFFFFFB;
+
+    NewList(&mydisplaylist);
+    //    AddTail(&mydisplaylist, (struct Node *)&mydisplaymode);
+    //    AddTail(&mydisplaylist, (struct Node *)&mydisplaymode2);
+    //    AddTail(&mydisplaylist, (struct Node *)&mydisplaymode3);
+    //    AddTail(&mydisplaylist, (struct Node *)&mydisplaymode4);
+    //    AddTail(&mydisplaylist, (struct Node *)&mydisplaymode5);
+
+    if (!AslBase)
+        AslBase = OpenLibrary("asl.library", 39);
+
+    if (AslBase) {
+        if ((req = AllocAslRequest(ASL_ScreenModeRequest, NULL))) {
+            if ((scr = LockPubScreen(0))) {
+                //                CalcVisibleSize(scr, &sx, &sy);
+                //                sx = sx / 2;
+                //                sy = sy * 3 / 4;
+                //                CalcCenteredWin(scr, sx, sy, &wx, &wy);
+
+                propertymask = DIPF_IS_EXTRAHALFBRITE | DIPF_IS_DUALPF | DIPF_IS_HAM;
+                rc = BestModeID(BIDTAG_NominalWidth, SCREEN_WIDTH, BIDTAG_NominalHeight, SCREEN_HEIGHT, BIDTAG_Depth, 8,
+                                BIDTAG_DIPFMustNotHave, propertymask, TAG_DONE);
+
+                //                ASLSM_InitialLeftEdge, wx,
+                //                    ASLSM_InitialTopEdge, wy, ASLSM_InitialWidth, sx, ASLSM_InitialHeight, sy,
+
+                if (AslRequestTags(req, ASLSM_TitleText, (int)"The Killing Grounds", ASLSM_Screen, (int)scr,
+                                   ASLSM_InitialDisplayID, rc, ASLSM_MinWidth, SCREEN_WIDTH, ASLSM_MaxWidth,
+                                   SCREEN_WIDTH, ASLSM_MinHeight, 240, ASLSM_MinDepth, 8, ASLSM_MaxDepth, 8,
+                                   ASLSM_PropertyFlags, 0, ASLSM_PropertyMask, propertymask, ASLSM_CustomSMList,
+                                   (int)&mydisplaylist, TAG_DONE)) {
+                    rc = req->sm_DisplayID;
+                }
+                UnlockPubScreen(0, scr);
+            }
+            FreeAslRequest(req);
+        }
+        CloseLibrary(AslBase);
+        AslBase = NULL;
+    }
+
+    return rc;
 }
