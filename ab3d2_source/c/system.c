@@ -1,12 +1,15 @@
 #include "system.h"
 #include "screen.h"
 
+#include <SDI_compiler.h>
 #include <SDI_misc.h>
+#include <cybergraphics/cybergraphics.h>
 #include <devices/timer.h>
 #include <dos/dos.h>
 #include <exec/exec.h>
 #include <graphics/gfxbase.h>
 #include <hardware/intbits.h>
+#include <proto/cybergraphics.h>
 #include <proto/dos.h>
 #include <proto/exec.h>
 #include <proto/graphics.h>
@@ -25,7 +28,7 @@
 
 extern struct TimeRequest sys_TimerRequest;
 extern struct EClockVal Sys_FrameTimeECV_q[2];
-extern  ULONG Sys_ECVToMsFactor_l;
+extern ULONG Sys_ECVToMsFactor_l;
 extern ULONG Sys_FrameTimes_vl[8];
 extern ULONG Sys_FrameNumber_l;
 extern UWORD Sys_FPSIntAvg_w;
@@ -44,6 +47,8 @@ static BOOL gotSerialPort;
 static BOOL gotSerialBits;
 static UWORD allocPotBits;
 
+struct Library *CYBERGFX_BASE_NAME = NULL;
+
 extern VOID VBlankInterrupt(void);
 extern VOID key_interrupt(void);
 
@@ -52,8 +57,6 @@ static struct Interrupt VBLANKInt = {{NULL, NULL, NT_INTERRUPT, 9, (char*)AppNam
 static struct Interrupt KBInt = {NULL, NULL, NT_INTERRUPT, 127, (char*)AppName, 0, key_interrupt};
 
 
-static BOOL sys_OpenLibs(void);
-static void sys_CloseLibs(void);
 static BOOL sys_InitHardware();
 static void sys_ReleaseHardware();
 static void sys_InstallInterrupts();
@@ -61,9 +64,6 @@ static void sys_RemoveInterrupts();
 
 BOOL Sys_Init()
 {
-    if (!sys_OpenLibs()) {
-        goto fail;
-    }
     if (!sys_InitHardware()) {
         goto fail;
     }
@@ -77,7 +77,6 @@ BOOL Sys_Init()
 
 fail:
     sys_ReleaseHardware();
-    sys_CloseLibs();
     return FALSE;
 }
 
@@ -85,20 +84,19 @@ void Sys_Done()
 {
     sys_RemoveInterrupts();
     sys_ReleaseHardware();
-    sys_CloseLibs();
 }
 
 BOOL sys_OpenLibs(void)
 {
     LOCAL_SYSBASE();
 
-    if (!(DOSBase = (struct DosLibrary*)OpenLibrary(DOSNAME, 0))) {
+    if (!(DOSBase = (struct DosLibrary *)OpenLibrary(DOSNAME, 0))) {
         goto fail;
     }
-    if (!(GfxBase = (struct GfxBase*)OpenLibrary(GRAPHICSNAME, 36))) {
+    if (!(GfxBase = (struct GfxBase *)OpenLibrary(GRAPHICSNAME, 36))) {
         goto fail;
     }
-    if (!(IntuitionBase = (struct IntuitionBase*)OpenLibrary(INTUITIONNAME, 36))) {
+    if (!(IntuitionBase = (struct IntuitionBase *)OpenLibrary(INTUITIONNAME, 36))) {
         goto fail;
     }
     if (!(MiscBase = OpenResource(MISCNAME))) {
@@ -111,6 +109,9 @@ BOOL sys_OpenLibs(void)
         goto fail;
     }
     TimerBase = sys_TimerRequest.tr_node.io_Device;
+
+    // optional
+    CyberGfxBase = OpenLibrary(CYBERGFXNAME, CYBERGFX_INCLUDE_VERSION);
 
     return TRUE;
 
@@ -140,6 +141,7 @@ void sys_CloseLibs(void)
     CLOSELIB(IntuitionBase);
     CLOSELIB(GfxBase);
     CLOSELIB(DOSBase);
+    CLOSELIB(CyberGfxBase);
 }
 
 BOOL sys_InitHardware()

@@ -14,11 +14,14 @@ extern struct Window *Vid_MainWindow_l;
 extern BYTE Vid_DoubleHeight_b;
 extern PLANEPTR Vid_Screen1Ptr_l;
 extern PLANEPTR Vid_Screen2Ptr_l;
+extern ULONG Vid_ScreenMode;
+extern BOOL vid_isRTG;
 
 extern void LoadMainPalette(void);
 extern BOOL Vid_OpenMainScreen(void);
 extern void vid_SetupDoubleheightCopperlist(void);
 extern void Vid_CloseMainScreen(void);
 extern void LoadMainPalette(void);
+extern ULONG GetScreenMode();
 
 #endif  // SCREEN_C

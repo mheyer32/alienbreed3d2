@@ -1,9 +1,38 @@
+#include "screen.h"
+#include "system.h"
+
+#include <graphics/modeid.h>
+#include <proto/cybergraphics.h>
+
+#include <stdio.h>
+
 extern void startup(void);
 
 const long __nocommandline=1;
 
 int main(int argc, char *argv[])
 {
-        startup();
-    return 0;
+    int rval = 10;
+    if (!sys_OpenLibs())
+    {
+        goto fail;
+    }
+    Vid_ScreenMode = GetScreenMode();
+    if (Vid_ScreenMode == INVALID_ID)
+    {
+        printf("Invalid Screenmode");
+        goto fail;
+    }
+    if (CyberGfxBase)
+    {
+        vid_isRTG = IsCyberModeID(Vid_ScreenMode);
+    }
+
+    rval = 0;
+
+    startup();
+
+fail:
+    sys_CloseLibs();
+    return rval;
 }

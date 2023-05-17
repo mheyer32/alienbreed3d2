@@ -4,6 +4,7 @@
 #include <exec/types.h>
 #include <devices/timer.h>
 #include <SDI_compiler.h>
+
 #include <stdint.h>
 
 extern BOOL Sys_Init(void);
@@ -15,6 +16,8 @@ extern void Sys_EvalFPS();
 extern void Sys_FrameLap();
 extern void Sys_ReadMouse();
 extern void Sys_ClearKeyboard();
+extern BOOL sys_OpenLibs(void);
+extern void sys_CloseLibs(void);
 
 static inline struct ExecBase *getSysBase(void)
 {
