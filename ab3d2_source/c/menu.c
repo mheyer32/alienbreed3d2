@@ -6,6 +6,7 @@
 #include <graphics/gfx.h>
 #include <hardware/blit.h>
 #include <hardware/custom.h>
+#include <proto/dos.h>
 #include <proto/exec.h>
 #include <proto/graphics.h>
 #include <proto/intuition.h>
@@ -52,6 +53,17 @@ static LONG mnu_subtract;
 static UWORD mnu_count;
 static struct ScreenBuffer *mnu_ScreenBuffer;
 
+struct MsgPort *blitTaskPort;
+struct MsgPort *blitReplyPort;
+struct Task *blitTask;
+struct Task *mainTask;
+
+struct BlitMessage
+{
+    struct Message msg;
+    ULONG command;
+};
+
 #define mnu_speed 1
 #define mnu_size 256  // Menu screen height?
 #define ROWSIZE (SCREEN_WIDTH / 8)
@@ -75,6 +87,9 @@ static void SetBplPtrs(PLANEPTR *planePtr, PLANEPTR plane, UWORD numPlanes)
         plane += PLANESIZE;
     }
 }
+
+static BOOL CreateBlitTask(void);
+static void DestroyBlitTask(void);
 
 BOOL mnu_setscreen()
 {
@@ -101,8 +116,9 @@ BOOL mnu_setscreen()
         };
 
     } else {
-        BltBitMapRastPort(&mnu_bitmap, 0, 0, &Vid_MainScreen_l->RastPort, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0x0C0);
-        WaitBlit();
+        if (!CreateBlitTask()) {
+            goto fail;
+        }
     }
 
     mnu_fade(0);
@@ -148,7 +164,7 @@ void mnu_init(void)
     memset(mnu_morescreen, 0, planeSize * 3);
 }
 
-static inline void WaitBlits()
+static inline void WaitFireBlits()
 {
     while (mnu_bltbusy) {
     };
@@ -162,7 +178,7 @@ void mnu_clearscreen(void)
 
     mnu_fadeout();
     main_vblint = NULL;  // don't kick off new frames/blits
-    WaitBlits();         // let current blits finish
+    WaitFireBlits();     // let current blits finish
     WaitTOF();
 
     if (!vid_isRTG) {
@@ -175,10 +191,13 @@ void mnu_clearscreen(void)
 
         FreeScreenBuffer(Vid_MainScreen_l, mnu_ScreenBuffer);
         mnu_ScreenBuffer = NULL;
+    } else {
+        DestroyBlitTask();
     }
 
     LoadMainPalette();
 }
+
 
 void mnu_movescreen(void)
 {
@@ -198,7 +217,9 @@ void mnu_movescreen(void)
         SetBplPtrs(&mnu_bitmap.Planes[0], mnu_screen + offset, 1);
         SetBplPtrs(&mnu_bitmap.Planes[1], mnu_screen + offset + planeSize * 2, 1);
 
-//        BltBitMapRastPort(&mnu_bitmap, 0, 0, &Vid_MainScreen_l->RastPort, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0xC0);
+        // Static, as the message must be kept alive until handled by the receiver
+        static struct BlitMessage msg = {{{}, NULL, sizeof(struct BlitMessage)}, 0 /*blit!*/};
+        PutMsg(blitTaskPort, &msg.msg);
     }
 }
 
@@ -366,4 +387,74 @@ void mnu_dofire()
 
     static struct bltnode BltNode = {0, (BltFuncPtr)&mnu_pass1};
     QBSBlit(&BltNode);
+}
+
+static void SAVEDS BlitTaskProc(void)
+{
+    LOCAL_SYSBASE();
+    LOCAL_GFX();
+
+    if (!(blitTaskPort = CreatePort(NULL, 0))) {
+        goto fail;
+    }
+    Signal(mainTask, SIGBREAKF_CTRL_E);
+
+    while (1) {
+        struct BlitMessage *msg = (struct BlitMessage *)WaitPort(blitTaskPort);
+        ULONG cmd = msg->command;
+        ReplyMsg(&msg->msg);
+        if (!cmd) {
+            BltBitMapRastPort(&mnu_bitmap, 0, 0, &Vid_MainScreen_l->RastPort, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0x0C0);
+        } else {
+            break;
+        }
+    }
+
+fail:
+    if (blitTaskPort) {
+        DeletePort(blitTaskPort);
+        blitTaskPort = NULL;
+    }
+    Signal(mainTask, SIGBREAKF_CTRL_C);
+    DeleteTask(FindTask(NULL));
+}
+
+static void DestroyBlitTask(void)
+{
+    LOCAL_SYSBASE();
+
+    if (blitTask) {
+        struct BlitMessage msg = {{{}, blitReplyPort, sizeof(struct BlitMessage)}, 1 /*end task*/};
+        PutMsg(blitTaskPort, &msg.msg);
+        WaitPort(blitReplyPort);
+        Wait(SIGBREAKF_CTRL_C);
+        blitTask = NULL;
+    }
+    if (blitReplyPort) {
+        DeletePort(blitReplyPort);
+        blitReplyPort = NULL;
+    }
+}
+
+static BOOL CreateBlitTask()
+{
+    LOCAL_SYSBASE();
+
+    mainTask = FindTask(NULL);
+    blitReplyPort = CreatePort(NULL, 0);
+    if (!blitReplyPort) {
+        goto fail;
+    }
+
+    if (!(blitTask = CreateTask("TKG Menu Blitter", 0, BlitTaskProc, 4096))) {
+        if (SIGBREAKF_CTRL_C == Wait(SIGBREAKF_CTRL_C | SIGBREAKF_CTRL_E)) {
+            goto fail;
+        }
+    }
+
+    return TRUE;
+
+fail:
+    DestroyBlitTask();
+    return FALSE;
 }
