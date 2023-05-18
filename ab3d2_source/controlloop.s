@@ -852,52 +852,6 @@ DEFAULTGAME:
 
 				rts
 
-CHKPROT:		dc.w	0
-
-GETPARITY:
-				move.w	#6,d3
-.calcparity:
-				btst	d3,d0
-				beq.s	.nochange
-				bchg	#7,d0
-.nochange:
-				dbra	d3,.calcparity
-				rts
-
-CHECKPARITY:
-				move.w	#6,d3
-				move.b	#$0,d2
-.calcparity:
-				btst	d3,d0
-				beq.s	.nochange
-				bchg	#7,d2
-.nochange:
-				dbra	d3,.calcparity
-				move.b	d0,d1
-				and.b	#$80,d1
-				eor.b	d1,d2
-				sne		d5
-				rts
-
-CALCPASSWORD:
-				rts
-
-PASSLINETOGAME:
-				rts
-
-illega:
-
-				move.w	#-1,d0
-
-				rts
-
-PASSBUFFER:
-				ds.b	8
-
-CHECKBUFFER:	ds.b	8
-
-PASS:
-				ds.b	16
 
 **************************************************
 
