@@ -317,7 +317,7 @@ ULONG Sys_MarkTime(REG(a0, struct EClockVal* dest))
     return ReadEClock(dest);
 }
 
-uint64_t Sys_TimeDiff(REG(a0, struct EClockVal* end), REG(a1, struct EClockVal* start))
+uint64_t Sys_TimeDiff(REG(a0, struct EClockVal* start), REG(a1, struct EClockVal* end))
 {
     uint64_t diff = *(uint64_t*)end - *(uint64_t*)start;
     return diff;
