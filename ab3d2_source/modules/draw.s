@@ -33,7 +33,7 @@ gunny_b:		dc.b	0
 ;* a0 points to destination memory
 ;*
 ;******************************************************************************
-
+				IFND BUILD_WITH_C
 Draw_ResetGameDisplay:
 				move.l	Vid_Screen1Ptr_l,a0
 				jsr		.draw_ResetGameDisplay
@@ -291,7 +291,7 @@ draw_BorderDigit:
 
 				rts
 
-
+				ENDIF
 
 Draw_NarrateText:
 

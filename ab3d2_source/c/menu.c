@@ -17,6 +17,7 @@
 
 #define ALIB_HARDWARE_CUSTOM
 #include <proto/alib.h>
+#include <clib/debug_protos.h>
 
 extern CHIP UBYTE mnu_morescreen[];
 extern CHIP UBYTE mnu_screen[];
@@ -53,8 +54,6 @@ static LONG mnu_subtract;
 static UWORD mnu_count;
 static struct ScreenBuffer *mnu_ScreenBuffer;
 
-struct MsgPort *blitTaskPort;
-struct MsgPort *blitReplyPort;
 struct Task *blitTask;
 struct Task *mainTask;
 
@@ -193,6 +192,7 @@ void mnu_clearscreen(void)
         mnu_ScreenBuffer = NULL;
     } else {
         DestroyBlitTask();
+
     }
 
     LoadMainPalette();
@@ -217,9 +217,7 @@ void mnu_movescreen(void)
         SetBplPtrs(&mnu_bitmap.Planes[0], mnu_screen + offset, 1);
         SetBplPtrs(&mnu_bitmap.Planes[1], mnu_screen + offset + planeSize * 2, 1);
 
-        // Static, as the message must be kept alive until handled by the receiver
-        static struct BlitMessage msg = {{{}, NULL, sizeof(struct BlitMessage)}, 0 /*blit!*/};
-        PutMsg(blitTaskPort, &msg.msg);
+        Signal(blitTask, SIGBREAKF_CTRL_E);
     }
 }
 
@@ -386,7 +384,11 @@ void mnu_dofire()
     mnu_sourceptrs[2] = x;
 
     static struct bltnode BltNode = {0, (BltFuncPtr)&mnu_pass1};
-    QBSBlit(&BltNode);
+    if (!vid_isRTG) {
+        QBSBlit(&BltNode);
+    } else {
+        QBlit(&BltNode);
+    }
 }
 
 static void SAVEDS BlitTaskProc(void)
@@ -394,16 +396,11 @@ static void SAVEDS BlitTaskProc(void)
     LOCAL_SYSBASE();
     LOCAL_GFX();
 
-    if (!(blitTaskPort = CreatePort(NULL, 0))) {
-        goto fail;
-    }
     Signal(mainTask, SIGBREAKF_CTRL_E);
 
     while (1) {
-        struct BlitMessage *msg = (struct BlitMessage *)WaitPort(blitTaskPort);
-        ULONG cmd = msg->command;
-        ReplyMsg(&msg->msg);
-        if (!cmd) {
+        ULONG signal = Wait(SIGBREAKF_CTRL_C|SIGBREAKF_CTRL_E);
+        if (!(signal & SIGBREAKF_CTRL_C)) {
             BltBitMapRastPort(&mnu_bitmap, 0, 0, &Vid_MainScreen_l->RastPort, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0x0C0);
         } else {
             break;
@@ -411,29 +408,23 @@ static void SAVEDS BlitTaskProc(void)
     }
 
 fail:
-    if (blitTaskPort) {
-        DeletePort(blitTaskPort);
-        blitTaskPort = NULL;
-    }
     Signal(mainTask, SIGBREAKF_CTRL_C);
-    DeleteTask(FindTask(NULL));
+    Forbid();
 }
 
 static void DestroyBlitTask(void)
 {
     LOCAL_SYSBASE();
 
+    KPrintF("DestroyBlitTask\n");
+    Delay(1);
+
     if (blitTask) {
-        struct BlitMessage msg = {{{}, blitReplyPort, sizeof(struct BlitMessage)}, 1 /*end task*/};
-        PutMsg(blitTaskPort, &msg.msg);
-        WaitPort(blitReplyPort);
+        Signal(blitTask, SIGBREAKF_CTRL_C);
         Wait(SIGBREAKF_CTRL_C);
         blitTask = NULL;
     }
-    if (blitReplyPort) {
-        DeletePort(blitReplyPort);
-        blitReplyPort = NULL;
-    }
+    KPrintF("DestroyBlitTask end\n");
 }
 
 static BOOL CreateBlitTask()
@@ -441,15 +432,12 @@ static BOOL CreateBlitTask()
     LOCAL_SYSBASE();
 
     mainTask = FindTask(NULL);
-    blitReplyPort = CreatePort(NULL, 0);
-    if (!blitReplyPort) {
-        goto fail;
-    }
 
     if (!(blitTask = CreateTask("TKG Menu Blitter", 0, BlitTaskProc, 4096))) {
-        if (SIGBREAKF_CTRL_C == Wait(SIGBREAKF_CTRL_C | SIGBREAKF_CTRL_E)) {
-            goto fail;
-        }
+        goto fail;
+    }
+    if (SIGBREAKF_CTRL_C == Wait(SIGBREAKF_CTRL_C | SIGBREAKF_CTRL_E)) {
+        goto fail;
     }
 
     return TRUE;

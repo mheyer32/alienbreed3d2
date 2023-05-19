@@ -789,11 +789,11 @@ TWOPLAYER:
 
 				move.w	#0,OldEnergy
 				move.w	#127,Energy
-				jsr		Draw_BorderEnergyBar
+				CALLC	Draw_BorderEnergyBar
 
 				move.w	#63,OldAmmo
 				move.w	#0,Ammo
-				jsr		Draw_BorderAmmoBar
+				CALLC	Draw_BorderAmmoBar
 				move.w	#0,OldAmmo
 
 				move.b	#0,Plr1_GunSelected_b

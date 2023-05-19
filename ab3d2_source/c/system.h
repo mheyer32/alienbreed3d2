@@ -40,6 +40,13 @@ static inline struct GfxBase *getGfxBase(void)
 }
 #define LOCAL_GFX() struct GfxBase *const GfxBase = getGfxBase()
 
+static inline struct Library *getCyberGfxBase(void)
+{
+    extern struct Library * CyberGfxBase;
+    return CyberGfxBase;
+}
+#define LOCAL_CYBERGFX() struct Library *const CyberGfxBase = getCyberGfxBase()
+
 static inline void CallAsm(void *func)
 {
     __asm __volatile("\t movem.l d2-d7/a2-a6,-(a7)\n"

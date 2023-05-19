@@ -30,11 +30,12 @@ OBJS = c/main.o \
 	   c/screen.o \
 	   c/system.o \
 	   c/menu.o \
+	   c/draw.o \
 	   c/hires.o
 
 hiresC: AFLAGS+=-DBUILD_WITH_C
 hiresC: ${OBJS} 
-		$(LINK) $(LFLAGS) $^ -o $@
+		$(LINK) $(LFLAGS) $^ -ldebug -o $@ 
 
 hires: hires.o
 	$(VLINK) $(VFLAGS) $< -o $@

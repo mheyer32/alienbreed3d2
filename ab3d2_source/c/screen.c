@@ -9,6 +9,7 @@
 #include <graphics/videocontrol.h>
 #include <graphics/view.h>
 
+#include <cybergraphics/cybergraphics.h>
 #include <exec/types.h>
 #include <intuition/screens.h>
 #include <libraries/asl.h>
@@ -36,10 +37,14 @@ struct BitMap bitmaps[2];
 
 static CHIP WORD emptySprite[6];
 static struct UCopList doubleHeightCopList;
+extern UBYTE Vid_FullScreen_b;
+extern UWORD Vid_LetterBoxMarginHeight_w;
 
 ULONG Vid_ScreenMode;
-BOOL vid_isRTG = FALSE;
+BOOL vid_isRTG;
 
+void Vid_Present();
+void Vid_ConvertC2P();
 void Vid_CloseMainScreen();
 
 BOOL Vid_OpenMainScreen(void)
@@ -279,4 +284,53 @@ ULONG GetScreenMode()
     }
 
     return rc;
+}
+
+void Vid_Present()
+{
+    if (vid_isRTG) {
+        LOCAL_GFX();
+
+        UBYTE *bmdata;
+        ULONG bytesPerRow;
+        ULONG bmHeight;
+        APTR bmHandle =
+            LockBitMapTags(Vid_MainScreen_l->ViewPort.RasInfo->BitMap, LBMI_BYTESPERROW, (ULONG)&bytesPerRow,
+                           LBMI_BASEADDRESS, (ULONG)&bmdata, LBMI_HEIGHT, (ULONG)&bmHeight, TAG_DONE);
+
+        if (bmHandle) {
+            if (Vid_FullScreen_b) {
+                WORD topOffsett = (WORD)SCREEN_WIDTH * Vid_LetterBoxMarginHeight_w;
+                const BYTE *src = Vid_FastBufferPtr_l + topOffsett;
+                BYTE *dst = bmdata + topOffsett;
+                WORD height = FS_C2P_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
+
+                if ((FS_WIDTH == SCREEN_WIDTH) && (bytesPerRow == SCREEN_WIDTH) && Vid_FullScreen_b) {
+                    CopyMemQuick(src, dst, SCREEN_WIDTH * height);
+                } else {
+                    for (WORD y = 0; y < height; ++y) {
+                        memcpy(dst, src, FS_WIDTH);
+                        src += SCREEN_WIDTH;
+                        dst += bytesPerRow;
+                    }
+                }
+            } else {
+                WORD topOffsett = SCREEN_WIDTH * (Vid_LetterBoxMarginHeight_w);
+                const BYTE *src = Vid_FastBufferPtr_l + topOffsett;
+                BYTE *dst = bmdata + topOffsett + SCREEN_WIDTH * 20 + 64;
+                WORD height = SMALL_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
+
+                for (WORD y = 0; y < height; ++y) {
+                    memcpy(dst, src, SMALL_WIDTH);
+                    src += SCREEN_WIDTH;
+                    dst += bytesPerRow;
+                }
+            }
+            UnLockBitMap(bmHandle);
+        } else {
+            KPrintF("Could not lock bitmap\n");
+        }
+    } else {
+        CallAsm(&Vid_ConvertC2P);
+    }
 }
