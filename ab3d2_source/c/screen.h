@@ -6,6 +6,19 @@
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 256
 
+#ifndef FS_HEIGHT_HACK
+#define FS_HEIGHT (SCREEN_HEIGHT - 16)
+#define FS_HEIGHT_C2P_DIFF 8
+#else
+#define FS_HEIGHT (SCREEN_HEIGHT - 24)
+#define FS_HEIGHT_C2P_DIFF 0
+#endif
+
+#define FS_WIDTH SCREEN_WIDTH
+#define SMALL_WIDTH 192
+#define SMALL_HEIGHT 160
+#define FS_C2P_HEIGHT (FS_HEIGHT - FS_HEIGHT_C2P_DIFF)
+
 extern struct MsgPort *Vid_DisplayMsgPort_l;
 extern UBYTE Vid_WaitForDisplayMsg_b;
 extern struct ScreenBuffer *Vid_ScreenBuffers_vl[2];
@@ -16,6 +29,7 @@ extern PLANEPTR Vid_Screen1Ptr_l;
 extern PLANEPTR Vid_Screen2Ptr_l;
 extern ULONG Vid_ScreenMode;
 extern BOOL vid_isRTG;
+extern UBYTE *Vid_FastBufferPtr_l;
 
 extern void LoadMainPalette(void);
 extern BOOL Vid_OpenMainScreen(void);
@@ -25,3 +39,4 @@ extern void LoadMainPalette(void);
 extern ULONG GetScreenMode();
 
 #endif  // SCREEN_C
+

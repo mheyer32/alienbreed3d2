@@ -7,6 +7,7 @@
 
 				xref	_custom
 				xref	_ciaa
+				xref	_Vid_Present
 
 ;*************************************************
 ;* Stuff to do to get a C2P version:
@@ -81,6 +82,7 @@ PLR_SINGLE				equ 'n' ; Single player
 
 				section .text,code
 
+				xref _vid_isRTG
 				xdef _startup
 ; Startup Code
 _startup:
@@ -213,7 +215,7 @@ Game_ShowIntroText:
 
 .next_line_loop:
 				move.l	Vid_TextScreenPtr_l,a1
-				jsr		Draw_LineOfText
+				CALLC	Draw_LineOfText
 
 				addq	#1,d0
 				add.w	#82,a0
@@ -462,6 +464,11 @@ noclips:
 				; FIXME: reimplement level blurb
 ; move.l #Blurbfield,$dff080
 
+				IFD BUILD_WITH_C
+				tst.w	_vid_isRTG
+				bne.s	.skipChangeScreen
+				ENDIF
+
 				IFNE	DISPLAYMSGPORT_HACK
 				;empty Vid_DisplayMsgPort_l and set Vid_ScreenBufferIndex_w to 0
 				;so the starting point is the same every time
@@ -483,6 +490,7 @@ noclips:
 
 				clr.b	Vid_WaitForDisplayMsg_b
 
+.skipChangeScreen:
 ****************************
 				jsr		Plr_Initialise
 ; bsr initobjpos
@@ -957,6 +965,10 @@ waitmaster:
 
 *****************************************************************
 
+				IFD BUILD_WITH_C
+				tst.w	_vid_isRTG
+				bne		.screenSwapDone
+				ENDIF
 				; Flip screens
 
 				; Wait on prior frame to be displayed.
@@ -1078,7 +1090,7 @@ okwat:
 ;				sub.w	#1,CHEATNUM
 ;				move.l	#CHEATFRAME,a4
 ;				move.w	#127,Plr1_Energy_w
-;				jsr		Draw_BorderEnergyBar
+;				CALLC	Draw_BorderEnergyBar
 ;.nocheat
 ;
 ;				sub.l	#200000,a4
@@ -1635,8 +1647,8 @@ IWasPlayer1:
 
 				jsr		OrderZones
 				jsr		objmoveanim
-				jsr		Draw_BorderEnergyBar
-				jsr		Draw_BorderAmmoBar
+				CALLC	Draw_BorderEnergyBar
+				CALLC	Draw_BorderAmmoBar
 
 
 ;********************************************
@@ -1736,8 +1748,8 @@ drawplayer2:
 .nolookback:
 				jsr		OrderZones
 				jsr		objmoveanim
-				jsr		Draw_BorderEnergyBar
-				jsr		Draw_BorderAmmoBar
+				CALLC	Draw_BorderEnergyBar
+				CALLC	Draw_BorderAmmoBar
 
 				move.w	Vid_LetterBoxMarginHeight_w,d0
 				move.w	#0,Draw_LeftClip_w
@@ -1773,7 +1785,12 @@ nodrawp2:
 				CALLDEV		MarkDrawDone
 				CALLDEV		DrawGraph
 				DEV_RESTORE	d0/d1/a0/a1
-				jsr			Vid_ConvertC2P
+
+				IFD BUILD_WITH_C
+				CALLC Vid_Present
+				ELSE
+				jsr Vid_ConvertC2P
+				ENDIF
 
 				;CALLDEV	MarkChunkyDone
 
@@ -4998,7 +5015,7 @@ endlevel:
 				tst.w	Energy
 				bgt.s	wevewon
 				move.w	#0,Energy
-				bsr		Draw_BorderEnergyBar
+				CALLC	Draw_BorderEnergyBar
 
 				move.l	#gameover,mt_data
 				st		UseAllChannels
@@ -5019,7 +5036,7 @@ wevewon:
 				; Disable audio DMA
 				move.w	#$f,$dff000+dmacon
 
-				bsr		Draw_BorderEnergyBar
+				CALLC	Draw_BorderEnergyBar
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.nonextlev

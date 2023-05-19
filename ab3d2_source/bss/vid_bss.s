@@ -12,12 +12,14 @@
 ; BSS data - to be included in BSS section
 			align 4
 
+_Vid_FastBufferPtr_l::
 Vid_FastBufferPtr_l:		ds.l	1	; aligned address
 Vid_FastBufferAllocPtr_l:	ds.l	1	; allocated address
 _Vid_Screen1Ptr_l:
 Vid_Screen1Ptr_l:			ds.l	1
 _Vid_Screen2Ptr_l:
 Vid_Screen2Ptr_l:			ds.l	1
+_Vid_DrawScreenPtr_l::
 Vid_DrawScreenPtr_l:		ds.l	1
 Vid_DisplayScreen_Ptr_l:	ds.l	1
 
@@ -37,10 +39,11 @@ vid_MainWindow_l:			ds.l	1
 Vid_ScreenBufferIndex_w:		ds.w	1	; Index (0/1) of current screen buffer displayed.
 											; FIXME: unify the buffer index handling with Vid_DrawScreenPtr_l/Vid_DisplayScreen_Ptr_l
 
+_Vid_LetterBoxMarginHeight_w::
 Vid_LetterBoxMarginHeight_w:	ds.w	1	; Letter box rendering, height of black border
 
+_Vid_FullScreen_b::
 Vid_FullScreen_b:				ds.b	1
-_Vid_FullScreenTemp_b::
 Vid_FullScreenTemp_b:			ds.b	1
 _Vid_DoubleHeight_b:
 Vid_DoubleHeight_b:				ds.b	1	; Double Height Pixel Mode
