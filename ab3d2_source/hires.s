@@ -670,11 +670,7 @@ NOALLWALLS:
 				move.w	#SMALL_HEIGHT,Vid_BottomY_w
 				move.w	#SMALL_HEIGHT/2,TOTHEMIDDLE
 				clr.b	Vid_FullScreen_b
-				move.l	Vid_Screen1Ptr_l,a0
-				jsr		Draw_ResetGameDisplay
-
-				move.l	Vid_Screen2Ptr_l,a0
-				jsr		Draw_ResetGameDisplay
+				CALLC	Draw_ResetGameDisplay
 
 				st		Plr1_Weapons_vb+1
 				st		Plr2_Weapons_vb+1
@@ -1796,11 +1792,7 @@ nodrawp2:
 				blt.s	.clamped
 
 				add.w	#2,Vid_LetterBoxMarginHeight_w
-				move.l	Vid_DrawScreenPtr_l,a0
-				jsr		Draw_ResetGameDisplay
-
-				move.l	Vid_DisplayScreen_Ptr_l,a0
-				jsr		Draw_ResetGameDisplay
+				CALLC	Draw_ResetGameDisplay
 
 .clamped:
 .nosmallscr:
@@ -2047,10 +2039,7 @@ SetupRenderbufferSize:
 				move.w	#SMALL_HEIGHT/2,TOTHEMIDDLE
 
 .wipeScreen:
-				move.l	Vid_DisplayScreen_Ptr_l,a0
-				jsr		Draw_ResetGameDisplay
-				move.l	Vid_DrawScreenPtr_l,a0
-				jsr		Draw_ResetGameDisplay
+				CALLC	Draw_ResetGameDisplay
 				rts
 
 				IFND BUILD_WITH_C

@@ -341,5 +341,5 @@ io_HandlePacked:
 				ds.l	4096		; unLHA wants 16kb
 
 				section .text,code
-
+_unLHA::
 unLHA:			incbin	"decomp4.raw"

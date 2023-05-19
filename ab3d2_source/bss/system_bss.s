@@ -26,6 +26,7 @@ _PotgoResourceBase::		ds.l	1
 _TimerBase::				ds.l	1
 
 ; Chunk of statically allocated data for various calculations
+_Sys_Workspace_vl::
 Sys_Workspace_vl:			ds.l	8192
 
 Sys_SerialBuffer_vl:		ds.l	2000

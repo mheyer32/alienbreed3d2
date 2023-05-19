@@ -48,6 +48,7 @@ draw_BackdropImageName_vb:
 				dc.b	"ab3:includes/rawbackpacked",0
 				align 4
 
+_draw_BorderPacked_vb::
 draw_BorderPacked_vb:
 				incbin	"includes/newborderpacked"
 				ds.b	16	; safety for unLha overrun
