@@ -161,19 +161,7 @@ DONEMENU:
 *************************************
 				jsr		IO_InitQueue
 
-				move.l	#draw_BorderPacked_vb,d0
-				moveq	#0,d1
-				move.l	Vid_Screen1Ptr_l,a0
-				lea		Sys_Workspace_vl,a1
-				lea		$0,a2
-				jsr		unLHA
-
-				move.l	#draw_BorderPacked_vb,d0
-				moveq	#0,d1
-				move.l	Vid_Screen2Ptr_l,a0
-				lea		Sys_Workspace_vl,a1
-				lea		$0,a2
-				jsr		unLHA
+				CALLC	Draw_ResetGameDisplay
 
 *************************************
 

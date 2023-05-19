@@ -33,7 +33,17 @@ gunny_b:		dc.b	0
 ;* a0 points to destination memory
 ;*
 ;******************************************************************************
+
 Draw_ResetGameDisplay:
+				move.l	Vid_Screen1Ptr_l,a0
+				jsr		.draw_ResetGameDisplay
+
+				move.l	Vid_Screen2Ptr_l,a0
+				jsr		.draw_ResetGameDisplay
+
+				rts
+
+.draw_ResetGameDisplay:
 				move.l	#draw_BorderPacked_vb,d0
 				moveq	#0,d1
 				lea		Sys_Workspace_vl,a1
