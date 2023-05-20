@@ -320,19 +320,6 @@ ASKFORDISK:
 				move.w	#10,OptScrn
 				bsr		DRAWOPTSCRN
 
-ProtChkNLev1:
-.wtrel:
-				btst	#7,$bfe001
-				beq.s	.wtrel
-
-wtclick:
-				add.w	#$235,-300(a0)
-				add.w	#$4533,-900(a0)
-				btst	#6,$bfe001
-				bne.s	wtclick
-
-				rts
-
 ********************************************************
 
 READMAINMENU:
