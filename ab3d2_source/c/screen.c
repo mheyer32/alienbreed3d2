@@ -286,45 +286,101 @@ ULONG GetScreenMode()
     return rc;
 }
 
+static void CopyFrameBuffer(UBYTE *dst, const UBYTE *src, WORD dstBytesPerRow, WORD width, WORD height)
+{
+    if (Vid_DoubleHeight_b) {
+        if (Vid_DoubleWidth_b) {
+            UWORD numLongWords = width / 4;
+
+            for (WORD y = 0; y < height; ++y) {
+                const ULONG *srcL = (ULONG *)src;
+                {
+                    ULONG *dstL = (ULONG *)dst;
+                    for (WORD x = 0; x < numLongWords; ++x) {
+                        ULONG c = srcL[x];
+                        c = c | (c >> 8);
+                        dstL[x] = c;
+                    }
+                }
+                dst += dstBytesPerRow;
+                {
+                    ULONG *dstL = (ULONG *)dst;
+                    for (WORD x = 0; x < numLongWords; ++x) {
+                        ULONG c = srcL[x];
+                        c = c | (c >> 8);
+                        dstL[x] = c;
+                    }
+                }
+                src += SCREEN_WIDTH * 2;
+                dst += dstBytesPerRow;
+            }
+
+        } else {
+            for (WORD y = 0; y < height / 2; ++y) {
+                memcpy(dst, src, width);
+                dst += dstBytesPerRow;
+                memcpy(dst, src, width);
+                src += SCREEN_WIDTH * 2;
+                dst += dstBytesPerRow;
+            }
+        }
+    } else {
+        if (Vid_DoubleWidth_b) {
+            UWORD numLongWords = width / 4;
+            for (WORD y = 0; y < height; ++y) {
+                const ULONG *srcL = (ULONG *)src;
+                const ULONG *dstL = (ULONG *)dst;
+                for (WORD x = 0; x < numLongWords; ++x) {
+                    ULONG c = *src++;
+                    c = c | (c >> 8);
+                    *dst++ = c;
+                }
+                dst += dstBytesPerRow;
+                src += SCREEN_WIDTH;
+            }
+
+        } else {
+            for (WORD y = 0; y < height; ++y) {
+                memcpy(dst, src, width);
+                src += SCREEN_WIDTH;
+                dst += dstBytesPerRow;
+            }
+        }
+    }
+}
+
 void Vid_Present()
 {
     if (vid_isRTG) {
-        LOCAL_GFX();
+        LOCAL_CYBERGFX();
 
         UBYTE *bmdata;
-        ULONG bytesPerRow;
+        ULONG bmBytesPerRow;
         ULONG bmHeight;
         APTR bmHandle =
-            LockBitMapTags(Vid_MainScreen_l->ViewPort.RasInfo->BitMap, LBMI_BYTESPERROW, (ULONG)&bytesPerRow,
+            LockBitMapTags(Vid_MainScreen_l->ViewPort.RasInfo->BitMap, LBMI_BYTESPERROW, (ULONG)&bmBytesPerRow,
                            LBMI_BASEADDRESS, (ULONG)&bmdata, LBMI_HEIGHT, (ULONG)&bmHeight, TAG_DONE);
 
         if (bmHandle) {
             if (Vid_FullScreen_b) {
-                WORD topOffsett = (WORD)SCREEN_WIDTH * Vid_LetterBoxMarginHeight_w;
-                const BYTE *src = Vid_FastBufferPtr_l + topOffsett;
-                BYTE *dst = bmdata + topOffsett;
                 WORD height = FS_C2P_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
+                WORD topOffsett = (WORD)SCREEN_WIDTH * Vid_LetterBoxMarginHeight_w;
+                BYTE *dst = bmdata + topOffsett;
+                const BYTE *src = Vid_FastBufferPtr_l + topOffsett;
 
-                if ((FS_WIDTH == SCREEN_WIDTH) && (bytesPerRow == SCREEN_WIDTH) && Vid_FullScreen_b) {
+                if ((FS_WIDTH == SCREEN_WIDTH) && (bmBytesPerRow == SCREEN_WIDTH) && Vid_FullScreen_b &&
+                    !Vid_DoubleHeight_b && !Vid_DoubleWidth_b) {
                     CopyMemQuick(src, dst, SCREEN_WIDTH * height);
                 } else {
-                    for (WORD y = 0; y < height; ++y) {
-                        memcpy(dst, src, FS_WIDTH);
-                        src += SCREEN_WIDTH;
-                        dst += bytesPerRow;
-                    }
+                    CopyFrameBuffer(dst, src, bmBytesPerRow, SCREEN_WIDTH, height);
                 }
             } else {
-                WORD topOffsett = SCREEN_WIDTH * (Vid_LetterBoxMarginHeight_w);
-                const BYTE *src = Vid_FastBufferPtr_l + topOffsett;
-                BYTE *dst = bmdata + topOffsett + SCREEN_WIDTH * 20 + 64;
                 WORD height = SMALL_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
+                WORD topOffsett = SCREEN_WIDTH * Vid_LetterBoxMarginHeight_w;
+                BYTE *dst = bmdata + topOffsett + SCREEN_WIDTH * 20 + 64;
+                const BYTE *src = Vid_FastBufferPtr_l + topOffsett;
 
-                for (WORD y = 0; y < height; ++y) {
-                    memcpy(dst, src, SMALL_WIDTH);
-                    src += SCREEN_WIDTH;
-                    dst += bytesPerRow;
-                }
+                CopyFrameBuffer(dst, src, bmBytesPerRow, SMALL_WIDTH, height);
             }
             UnLockBitMap(bmHandle);
         } else {
