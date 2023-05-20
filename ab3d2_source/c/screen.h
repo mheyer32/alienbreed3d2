@@ -3,20 +3,20 @@
 
 #include <graphics/gfx.h>
 
-#define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 256
+#define SCREEN_WIDTH (UWORD)320
+#define SCREEN_HEIGHT (UWORD)256
 
 #ifndef FS_HEIGHT_HACK
-#define FS_HEIGHT (SCREEN_HEIGHT - 16)
-#define FS_HEIGHT_C2P_DIFF 8
+#define FS_HEIGHT (SCREEN_HEIGHT - (UWORD)16)
+#define FS_HEIGHT_C2P_DIFF (UWORD)8
 #else
-#define FS_HEIGHT (SCREEN_HEIGHT - 24)
-#define FS_HEIGHT_C2P_DIFF 0
+#define FS_HEIGHT (SCREEN_HEIGHT - (UWORD)24)
+#define FS_HEIGHT_C2P_DIFF (UWORD)0
 #endif
 
 #define FS_WIDTH SCREEN_WIDTH
-#define SMALL_WIDTH 192
-#define SMALL_HEIGHT 160
+#define SMALL_WIDTH (UWORD)192
+#define SMALL_HEIGHT (UWORD)160
 #define FS_C2P_HEIGHT (FS_HEIGHT - FS_HEIGHT_C2P_DIFF)
 
 extern struct MsgPort *Vid_DisplayMsgPort_l;
@@ -25,6 +25,7 @@ extern struct ScreenBuffer *Vid_ScreenBuffers_vl[2];
 extern struct Screen *Vid_MainScreen_l;
 extern struct Window *Vid_MainWindow_l;
 extern BYTE Vid_DoubleHeight_b;
+extern BYTE Vid_DoubleWidth_b;
 extern PLANEPTR Vid_Screen1Ptr_l;
 extern PLANEPTR Vid_Screen2Ptr_l;
 extern ULONG Vid_ScreenMode;
