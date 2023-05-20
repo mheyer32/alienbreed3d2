@@ -433,7 +433,7 @@ static BOOL CreateBlitTask()
 
     mainTask = FindTask(NULL);
 
-    if (!(blitTask = CreateTask("TKG Menu Blitter", 0, BlitTaskProc, 4096))) {
+    if (!(blitTask = CreateTask("TKG Menu Blitter", -5, BlitTaskProc, 4096))) {
         goto fail;
     }
     if (SIGBREAKF_CTRL_C == Wait(SIGBREAKF_CTRL_C | SIGBREAKF_CTRL_E)) {
