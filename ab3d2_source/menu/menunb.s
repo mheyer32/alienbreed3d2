@@ -825,6 +825,8 @@ mnu_waitmenu:;out: d0=Selection number
 .skip:
 
 .w8key:			bsr.w	mnu_docursor
+				CALLGRAF WaitTOF				; wait a bit to give the BlitTask more time
+				CALLGRAF WaitTOF
 				jsr		key_readkey
 				tst.w	d0
 				beq.s	.w8key
@@ -844,19 +846,23 @@ mnu_waitmenu:;out: d0=Selection number
 				beq.s	.sliderl
 				move.l	#mnu_errcursanim,mnu_frameptr
 				bra.w	.loop
+
 .exit:			moveq.l	#-1,d0					; Esc key
 				moveq.l	#0,d1
 				rts
+
 .sliderr:		moveq.l	#41,d1
 				bra.s	.cpcont
 .sliderl:		moveq.l	#42,d1
 				bra.s	.cpcont
 .quit:			moveq.l	#0,d1
+
 .cpcont:		move.w	mnu_row,d0
 				divu	mnu_items,d0
 				swap.w	d0
 				and.l	#$ffff,d0
 				rts
+
 .down:			addq.w	#1,mnu_row
 				bra.w	.loop
 .up:			subq.w	#1,mnu_row
