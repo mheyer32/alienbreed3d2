@@ -82,7 +82,7 @@ PLR_SINGLE				equ 'n' ; Single player
 
 				section .text,code
 
-				xref _vid_isRTG
+				xref _Vid_isRTG
 				xdef _startup
 ; Startup Code
 _startup:
@@ -135,6 +135,7 @@ _startup:
 				clr.b	Plr2_Joystick_b
 				ENDC
 
+				IFND	BUILD_WITH_C
 				; allocate chunky render buffer in fastmem
 				move.l	#MEMF_ANY|MEMF_CLEAR,d1
 				move.l	#VID_FAST_BUFFER_SIZE,d0
@@ -146,6 +147,7 @@ _startup:
 				moveq	#-16,d1					; $F0
 				and.l	d1,d0
 				move.l	d0,Vid_FastBufferPtr_l
+				ENDIF
 
 				; Setup constant table
 				move.l	#ConstantTable_vl,a0
@@ -465,7 +467,7 @@ noclips:
 ; move.l #Blurbfield,$dff080
 
 				IFD BUILD_WITH_C
-				tst.w	_vid_isRTG
+				tst.w	_Vid_isRTG
 				bne.s	.skipChangeScreen
 				ENDIF
 
@@ -966,7 +968,7 @@ waitmaster:
 *****************************************************************
 
 				IFD BUILD_WITH_C
-				tst.w	_vid_isRTG
+				tst.w	_Vid_isRTG
 				bne		.screenSwapDone
 				ENDIF
 				; Flip screens

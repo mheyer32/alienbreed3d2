@@ -106,7 +106,7 @@ BOOL mnu_setscreen()
     SetBplPtrs(&mnu_bitmap.Planes[1], (PLANEPTR)mnu_screen + planeSize * 2, 1);
     SetBplPtrs(&mnu_bitmap.Planes[2], (PLANEPTR)mnu_morescreen, 6);
 
-    if (!vid_isRTG) {
+    if (!Vid_isRTG) {
         if (!(mnu_ScreenBuffer = AllocScreenBuffer(Vid_MainScreen_l, &mnu_bitmap, 0))) {
             goto fail;
         }
@@ -180,7 +180,7 @@ void mnu_clearscreen(void)
     WaitFireBlits();     // let current blits finish
     WaitTOF();
 
-    if (!vid_isRTG) {
+    if (!Vid_isRTG) {
         while (!ChangeScreenBuffer(Vid_MainScreen_l, Vid_ScreenBuffers_vl[0])) {
         };
         WaitPort(Vid_DisplayMsgPort_l);
@@ -208,7 +208,7 @@ void mnu_movescreen(void)
 
     const int planeSize = SCREEN_WIDTH / 8 * SCREEN_HEIGHT;
 
-    if (!vid_isRTG) {
+    if (!Vid_isRTG) {
         SetBplPtrs(&Vid_MainScreen_l->RastPort.BitMap->Planes[0], mnu_screen + offset, 1);
         SetBplPtrs(&Vid_MainScreen_l->RastPort.BitMap->Planes[1], mnu_screen + offset + planeSize * 2, 1);
 
@@ -384,7 +384,7 @@ void mnu_dofire()
     mnu_sourceptrs[2] = x;
 
     static struct bltnode BltNode = {0, (BltFuncPtr)&mnu_pass1};
-    if (!vid_isRTG) {
+    if (!Vid_isRTG) {
         QBSBlit(&BltNode);
     } else {
         QBlit(&BltNode);

@@ -1,5 +1,6 @@
 #include "screen.h"
 
+#include "draw.h"
 #include "system.h"
 
 #include <exec/ports.h>
@@ -40,8 +41,11 @@ static struct UCopList doubleHeightCopList;
 extern UBYTE Vid_FullScreen_b;
 extern UWORD Vid_LetterBoxMarginHeight_w;
 
+WORD Vid_ScreenHeight;
+WORD Vid_ScreenWidth;
+
 ULONG Vid_ScreenMode;
-BOOL vid_isRTG;
+BOOL Vid_isRTG;
 
 void Vid_Present();
 void Vid_ConvertC2P();
@@ -53,7 +57,7 @@ BOOL Vid_OpenMainScreen(void)
     LOCAL_INTUITION();
     LOCAL_GFX();
 
-    if (!vid_isRTG) {
+    if (!Vid_isRTG) {
         for (int i = 0; i < 2; ++i) {
             if (!(rasters[i] = AllocRaster(SCREEN_WIDTH, SCREEN_HEIGHT * 8 + 1))) {
                 goto fail;
@@ -81,6 +85,9 @@ BOOL Vid_OpenMainScreen(void)
                                  SA_AutoScroll, 0, SA_FullPalette, 1, SA_DisplayID, Vid_ScreenMode, TAG_END, 0))) {
             goto fail;
         };
+
+        Vid_ScreenWidth = SCREEN_WIDTH;
+        Vid_ScreenHeight = SCREEN_HEIGHT;
 
         Vid_DisplayMsgPort_l = CreateMsgPort();
 
@@ -131,6 +138,16 @@ BOOL Vid_OpenMainScreen(void)
                                  SA_AutoScroll, 0, SA_FullPalette, 1, SA_DisplayID, Vid_ScreenMode, TAG_END, 0))) {
             goto fail;
         };
+
+        DisplayInfoHandle dispInfo = FindDisplayInfo(Vid_ScreenMode);
+        struct DimensionInfo dimInfo;
+
+        Vid_ScreenWidth = SCREEN_WIDTH;
+        Vid_ScreenHeight = SCREEN_HEIGHT;
+        if (GetDisplayInfoData(dispInfo, &dimInfo, sizeof(dimInfo), DTAG_DIMS, Vid_ScreenMode)) {
+            Vid_ScreenHeight = dimInfo.MinRasterHeight;
+            //            Vid_ScreenHeight = Vid_MainScreen_l->ViewPort.DHeight;
+        }
     }
 
     if (!(Vid_MainWindow_l = OpenWindowTags(NULL, WA_Left, 0, WA_Top, 0, WA_Width, SCREEN_WIDTH, WA_Height,
@@ -167,7 +184,7 @@ void Vid_CloseMainScreen()
         Vid_MainWindow_l = NULL;
     }
 
-    if (!vid_isRTG) {
+    if (!Vid_isRTG) {
         for (int i = 0; i < 2; ++i) {
             if (Vid_ScreenBuffers_vl[i]) {
                 FreeScreenBuffer(Vid_MainScreen_l, Vid_ScreenBuffers_vl[i]);
@@ -181,7 +198,7 @@ void Vid_CloseMainScreen()
         Vid_MainScreen_l = NULL;
     }
 
-    if (!vid_isRTG) {
+    if (!Vid_isRTG) {
         for (int i = 0; i < 2; ++i) {
             FreeRaster(rasters[i], SCREEN_WIDTH, SCREEN_HEIGHT * 8 + 1);
         }
@@ -351,7 +368,7 @@ static void CopyFrameBuffer(UBYTE *dst, const UBYTE *src, WORD dstBytesPerRow, W
 
 void Vid_Present()
 {
-    if (vid_isRTG) {
+    if (Vid_isRTG) {
         LOCAL_CYBERGFX();
 
         UBYTE *bmdata;
