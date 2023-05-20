@@ -1,5 +1,5 @@
-#include "screen.h"
 #include "system.h"
+#include "screen.h"
 
 #include <graphics/modeid.h>
 #include <proto/cybergraphics.h>
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     }
     if (CyberGfxBase)
     {
-        vid_isRTG = IsCyberModeID(Vid_ScreenMode);
+        Vid_isRTG = IsCyberModeID(Vid_ScreenMode);
     }
 
     rval = 0;

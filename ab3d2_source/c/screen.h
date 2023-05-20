@@ -29,8 +29,10 @@ extern BYTE Vid_DoubleWidth_b;
 extern PLANEPTR Vid_Screen1Ptr_l;
 extern PLANEPTR Vid_Screen2Ptr_l;
 extern ULONG Vid_ScreenMode;
-extern BOOL vid_isRTG;
-extern UBYTE *Vid_FastBufferPtr_l;
+extern BOOL Vid_isRTG;
+
+extern WORD Vid_ScreenHeight;
+extern WORD Vid_ScreenWidth;
 
 extern void LoadMainPalette(void);
 extern BOOL Vid_OpenMainScreen(void);

@@ -1,5 +1,6 @@
 #include "system.h"
 #include "screen.h"
+#include "draw.h"
 
 #include <SDI_compiler.h>
 #include <SDI_misc.h>
@@ -85,6 +86,10 @@ BOOL Sys_Init()
 
     sys_InstallInterrupts();
 
+    if (!Draw_Init()) {
+        goto fail;
+    }
+
     return TRUE;
 
 fail:
@@ -94,6 +99,7 @@ fail:
 
 void Sys_Done()
 {
+    Draw_Shutdown();
     sys_RemoveInterrupts();
     sys_ReleaseHardware();
 }
@@ -293,7 +299,7 @@ void sys_InstallInterrupts()
 {
     LOCAL_SYSBASE();
     //    AddVBlankInt(VBlankInterrupt, 0); // lowlevel.library
-    if (!vid_isRTG) {
+    if (!Vid_isRTG) {
         AddIntServer(INTB_VERTB, &VBLANKInt);
     } else {
         InstallFakeVBlankInterrupt();
@@ -304,7 +310,7 @@ void sys_InstallInterrupts()
 void sys_RemoveInterrupts()
 {
     LOCAL_SYSBASE();
-    if (!vid_isRTG) {
+    if (!Vid_isRTG) {
         RemIntServer(INTB_VERTB, &VBLANKInt);
     } else {
         RemoveFakeVBlankInterrupt();

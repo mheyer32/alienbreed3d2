@@ -195,10 +195,10 @@ QUITTT:
 				move.l	Lvl_DataPtr_l,a1
 				CALLEXEC FreeVec
 
+				IFND BUILD_WITH_C
+
 				move.l	Vid_FastBufferAllocPtr_l,a1
 				CALLEXEC FreeVec
-
-				IFND BUILD_WITH_C
 
 				move.l	Vid_MyRaster0_l,a0
 				move.w	#SCREEN_WIDTH,d0
