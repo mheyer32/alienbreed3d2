@@ -139,14 +139,16 @@ BOOL Vid_OpenMainScreen(void)
             goto fail;
         };
 
-        DisplayInfoHandle dispInfo = FindDisplayInfo(Vid_ScreenMode);
-        struct DimensionInfo dimInfo;
+
+//        struct NameInfo nameInfo;
+//        GetDisplayInfoData(NULL, &nameInfo, sizeof(nameInfo), DTAG_NAME, Vid_ScreenMode);
 
         Vid_ScreenWidth = SCREEN_WIDTH;
         Vid_ScreenHeight = SCREEN_HEIGHT;
-        if (GetDisplayInfoData(dispInfo, &dimInfo, sizeof(dimInfo), DTAG_DIMS, Vid_ScreenMode)) {
-            Vid_ScreenHeight = dimInfo.MinRasterHeight;
-            //            Vid_ScreenHeight = Vid_MainScreen_l->ViewPort.DHeight;
+
+        struct DimensionInfo dimInfo;
+        if (GetDisplayInfoData(NULL, &dimInfo, sizeof(dimInfo), DTAG_DIMS, Vid_ScreenMode)) {
+            Vid_ScreenHeight = dimInfo.Nominal.MaxY + 1 - dimInfo.Nominal.MinY;
         }
     }
 
