@@ -90,20 +90,25 @@ void Draw_ResetGameDisplay()
 
         memset(Vid_FastBufferPtr_l, 0, SCREEN_WIDTH * SCREEN_HEIGHT);
 
-        ULONG bytesPerRow;
-        ULONG bmHeight;
-        APTR baseAdress;
+        ULONG bmBytesPerRow;
+        APTR bmBaseAdress;
 
         APTR bmHandle = LockBitMapTags(Vid_MainScreen_l->ViewPort.RasInfo->BitMap, LBMI_BYTESPERROW,
-                                       (ULONG)&bytesPerRow, LBMI_BASEADDRESS, (ULONG)&baseAdress, TAG_DONE);
+                                       (ULONG)&bmBytesPerRow, LBMI_BASEADDRESS, (ULONG)&bmBaseAdress, TAG_DONE);
         if (bmHandle) {
             const UBYTE *src = draw_Border;
-            int height = Vid_ScreenHeight < SCREEN_HEIGHT ? Vid_ScreenHeight : SCREEN_HEIGHT;
-//            int height = 240;
+            WORD height = Vid_ScreenHeight < SCREEN_HEIGHT ? Vid_ScreenHeight : SCREEN_HEIGHT;
             src += (SCREEN_HEIGHT - height) * 320;
 
-            // FIXME: assumes LBMI_BYTESPERROW == 320
-            memcpy(baseAdress, src, 320 * height);
+            if (bmBytesPerRow == 320) {
+                memcpy(bmBaseAdress, src, 320 * height);
+            } else {
+                for (WORD y = 0; y < height; ++y) {
+                    memcpy(bmBaseAdress, src, 320);
+                    bmBaseAdress += bmBytesPerRow;
+                    src += 320;
+                }
+            }
             UnLockBitMap(bmHandle);
         }
     }
