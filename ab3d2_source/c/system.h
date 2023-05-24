@@ -16,8 +16,8 @@ extern void Sys_EvalFPS();
 extern void Sys_FrameLap();
 extern void Sys_ReadMouse();
 extern void Sys_ClearKeyboard();
-extern BOOL sys_OpenLibs(void);
-extern void sys_CloseLibs(void);
+extern BOOL Sys_OpenLibs(void);
+extern void Sys_CloseLibs(void);
 
 static inline struct ExecBase *getSysBase(void)
 {
