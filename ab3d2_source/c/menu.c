@@ -416,7 +416,6 @@ static void DestroyBlitTask(void)
 {
     LOCAL_SYSBASE();
 
-    KPrintF("DestroyBlitTask\n");
     Delay(1);
 
     if (blitTask) {
@@ -424,7 +423,6 @@ static void DestroyBlitTask(void)
         Wait(SIGBREAKF_CTRL_C);
         blitTask = NULL;
     }
-    KPrintF("DestroyBlitTask end\n");
 }
 
 static BOOL CreateBlitTask()

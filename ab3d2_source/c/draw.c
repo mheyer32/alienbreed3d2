@@ -11,7 +11,7 @@
 #include <string.h>  //memset
 
 #define VID_FAST_BUFFER_SIZE (SCREEN_WIDTH * SCREEN_HEIGHT + 4095)
-#define PLANESIZE (320 / 8 * 256)
+#define PLANESIZE (SCREEN_WIDTH / 8 * SCREEN_HEIGHT)
 
 extern void unLHA(REG(a0, void *dst), REG(d0, const void *src), REG(d1, ULONG length), REG(a1, void *workspace),
                   REG(a2, void *X));
@@ -19,7 +19,7 @@ extern void unLHA(REG(a0, void *dst), REG(d0, const void *src), REG(d1, ULONG le
 extern const UBYTE draw_BorderPacked_vb[];
 extern ULONG Sys_Workspace_vl[];
 
-static UBYTE draw_Border[320 * 256];
+static UBYTE draw_Border[SCREEN_WIDTH * SCREEN_HEIGHT];
 static UBYTE *FastBufferAllocPtr;
 
 static void PlanarToChunky(UBYTE *chunky, const PLANEPTR *planes, ULONG numPixels);
@@ -41,7 +41,7 @@ BOOL Draw_Init()
     };
 
     // The image we have has a fixed size
-    PlanarToChunky(draw_Border, planes, 320 * 256);
+    PlanarToChunky(draw_Border, planes, SCREEN_WIDTH * SCREEN_HEIGHT);
 
     return TRUE;
 
@@ -98,15 +98,15 @@ void Draw_ResetGameDisplay()
         if (bmHandle) {
             const UBYTE *src = draw_Border;
             WORD height = Vid_ScreenHeight < SCREEN_HEIGHT ? Vid_ScreenHeight : SCREEN_HEIGHT;
-            src += (SCREEN_HEIGHT - height) * 320;
+            src += (SCREEN_HEIGHT - height) * SCREEN_WIDTH;
 
-            if (bmBytesPerRow == 320) {
-                memcpy(bmBaseAdress, src, 320 * height);
+            if (bmBytesPerRow == SCREEN_WIDTH) {
+                memcpy(bmBaseAdress, src, SCREEN_WIDTH * height);
             } else {
                 for (WORD y = 0; y < height; ++y) {
-                    memcpy(bmBaseAdress, src, 320);
+                    memcpy(bmBaseAdress, src, SCREEN_WIDTH);
                     bmBaseAdress += bmBytesPerRow;
-                    src += 320;
+                    src += SCREEN_WIDTH;
                 }
             }
             UnLockBitMap(bmHandle);

@@ -44,6 +44,7 @@ Vid_LetterBoxMarginHeight_w:	ds.w	1	; Letter box rendering, height of black bord
 
 _Vid_FullScreen_b::
 Vid_FullScreen_b:				ds.b	1
+_Vid_FullScreenTemp_b::
 Vid_FullScreenTemp_b:			ds.b	1
 _Vid_DoubleHeight_b:
 Vid_DoubleHeight_b:				ds.b	1	; Double Height Pixel Mode

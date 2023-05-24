@@ -13,7 +13,7 @@ const long __nocommandline=1;
 int main(int argc, char *argv[])
 {
     int rval = 10;
-    if (!sys_OpenLibs())
+    if (!Sys_OpenLibs())
     {
         goto fail;
     }
@@ -33,6 +33,6 @@ int main(int argc, char *argv[])
     startup();
 
 fail:
-    sys_CloseLibs();
+    Sys_CloseLibs();
     return rval;
 }

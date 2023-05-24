@@ -37,7 +37,7 @@ extern UWORD Sys_FPSIntAvg_w;
 extern UWORD Sys_FPSFracAvg_w;
 
 extern UBYTE Sys_Move16_b;
-extern UBYTE Vid_FullScreen_b;
+extern UBYTE Vid_FullScreenTemp_b;
 extern struct EClockVal _Sys_FrameTimeECV_q[2];
 
 extern UWORD angpos;
@@ -104,7 +104,7 @@ void Sys_Done()
     sys_ReleaseHardware();
 }
 
-BOOL sys_OpenLibs(void)
+BOOL Sys_OpenLibs(void)
 {
     LOCAL_SYSBASE();
 
@@ -156,7 +156,7 @@ BOOL sys_OpenLibs(void)
     return TRUE;
 
 fail:
-    sys_CloseLibs();
+    Sys_CloseLibs();
     return FALSE;
 }
 
@@ -166,7 +166,7 @@ fail:
         lib = NULL;                         \
     }
 
-void sys_CloseLibs(void)
+void Sys_CloseLibs(void)
 {
     LOCAL_SYSBASE();
 
@@ -189,7 +189,7 @@ BOOL sys_InitHardware()
     LOCAL_SYSBASE();
     if (SysBase->AttnFlags & AFF_68040) {
         Sys_Move16_b = ~Sys_Move16_b;
-        Vid_FullScreen_b = ~Vid_FullScreen_b;
+        Vid_FullScreenTemp_b = ~Vid_FullScreenTemp_b;
     }
 
     if (AllocMiscResource(MR_SERIALPORT, AppName)) {
