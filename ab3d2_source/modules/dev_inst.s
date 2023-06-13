@@ -241,7 +241,11 @@ Dev_PrintStats:
 				; smallscreen
 				lea			dev_TotalCounters_vw,a1
 				lea			.dev_ss_stats_obj_vb,a0
+				IFND		BUILD_WITH_C
 				move.l		#8,d0
+				ELSE
+				move.l		#(SCREEN_HEIGHT-24),d0
+				ENDIF
 				bsr			Dev_PrintF
 
 				; Simple walls
