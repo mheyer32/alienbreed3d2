@@ -14,7 +14,11 @@ extern uint64_t Sys_TimeDiff(REG(a0, struct EClockVal* end), REG(a1, struct EClo
 extern void Sys_ShowFPS();
 extern void Sys_EvalFPS();
 extern void Sys_FrameLap();
+
+#ifdef FIXED_C_MOUSE
 extern void Sys_ReadMouse();
+#endif
+
 extern void Sys_ClearKeyboard();
 extern BOOL Sys_OpenLibs(void);
 extern void Sys_CloseLibs(void);

@@ -369,6 +369,11 @@ void Sys_ShowFPS()
     Text(&Vid_MainScreen_l->RastPort, text, outPtr - text - 1);
 }
 
+#ifdef FIXED_C_MOUSE
+
+/**
+ * 0xABADCAFE - Disabled until there is a viable fix for the vertical mouse movement
+ */
 void Sys_ReadMouse()
 {
     static UBYTE oldCounterY = 0;
@@ -411,6 +416,7 @@ void Sys_ReadMouse()
     // potgo = 0;
 }
 
+#endif
 
 void Sys_ClearKeyboard()
 {
