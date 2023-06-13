@@ -220,7 +220,13 @@ Sys_ClearKeyboard:
 				dbra	d1,.loop
 				rts
 
-;***************************************************newMouseY***************************
+				ENDIF
+
+
+; 0xABADCAFE - Reinstated until there is a viable fix for the C version. We
+;              just include this function regardless of the build for now.
+
+;******************************************************************************
 ;*
 ;* Read Mouse State
 ;*
@@ -306,6 +312,9 @@ Sys_ReadMouse:
 .oldMouseY:		dc.w	0
 .oldMouseY2:	dc.w	0
 .prevX:			dc.w	0
+
+
+				IFND BUILD_WITH_C
 
 ;******************************************************************************
 ;*
