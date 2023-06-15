@@ -1348,7 +1348,7 @@ NOTMOVING:
 				; asl.w	#2,d0
 				; move.w	d0,2(a1)
 				; move.w	d3,d0
-				
+
 				move.w	d3,2(a1)
 				asr.w	#2,d3
 				move.w	d3,d0
@@ -2649,8 +2649,13 @@ MAKEBACKROUT:
 				rts
 
 ****************************************
-
-putinbackdrop:
+sky_early_exit:
+				rts
+;
+; Fills in the sky. Preserves a0
+;
+Draw_SkyBackdrop:
+				DEV_CHECK SKYFILL,sky_early_exit
 				move.l	a0,-(a7)
 				move.w	tmpangpos,d5
 				and.w	#4095,d5

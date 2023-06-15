@@ -3606,10 +3606,7 @@ notintop:
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	nobackgraphics
 
-				move.l	a0,-(a7)
-				jsr		putinbackdrop
-
-				move.l	(a7)+,a0
+				jsr		Draw_SkyBackdrop
 
 nobackgraphics:
 				move.b	(a0)+,Plr1_Echo_b
@@ -3819,9 +3816,9 @@ Plr2_Control:
 				beq.s	.nobackgraphics
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				bne.s	.nobackgraphics
-				move.l	a0,-(a7)
-				jsr		putinbackdrop
-				move.l	(a7)+,a0
+
+				jsr		Draw_SkyBackdrop
+
 .nobackgraphics:
 
 				move.b	(a0)+,Plr2_Echo_b
@@ -4260,7 +4257,7 @@ itsaseewall:
 				bra		polyloop
 
 itsbackdrop:
-				jsr		putinbackdrop
+				jsr		Draw_SkyBackdrop
 				bra		polyloop
 
 itswater:

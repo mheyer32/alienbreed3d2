@@ -296,21 +296,11 @@ Dev_PrintStats:
 				move.l		#136,d0
 				bsr			Dev_PrintF
 
-				; Zone Ptr
-;				lea			Plr1_ZonePtr_l,a1
-;				lea			.dev_ss_stats_zone_vb,a0
-;				move.l		#152+40,d0
-;				bsr			Dev_PrintF
-
-;				lea			draw_LeftWallBright_w,a1
-;				lea			.dev_ss_stats_wb_vb,a0
-;				move.l		#152+40+16,d0
-;				bsr			Dev_PrintF
-
-;				lea			Plr2_ObjectPtr_l,a1
-;				lea			.dev_ss_stats_zone_vb,a0
-;				move.l		#152+56,d0
-;				bsr			Dev_PrintF
+				; Player1 Zone ID
+				lea			Plr1_Zone_w,a1
+				lea			.dev_ss_stats_zone_vb,a0
+				move.l		#136+16,d0
+				bsr			Dev_PrintF
 
 
 ;				; Long Divisions
@@ -345,7 +335,7 @@ Dev_PrintStats:
 				dc.b		"w:%2d f:%2d o:%2d/%2d d:%2dms %2d.%dfps",0
 
 .dev_ss_stats_obj_vb:
-				dc.b		"Wall:%2d, Flt:%2d, Obj:%2d/%2d, Drw:%2dms, %2d.%dfps",0
+				dc.b		"Wall:%2d, Flt:%2d, Obj:%2d/%2d, Drw:%2dms, %2d.%dfps ",0
 
 .dev_ss_stats_wall_simple_vb:
 				dc.b		"WS:%3d",0
@@ -365,11 +355,8 @@ Dev_PrintStats:
 .dev_ss_stats_order_zones_vb:
 				dc.b		"OZ:%3d",0
 
-;.dev_ss_stats_zone_vb:
-;				dc.b		"ZI:%3d",0
-
-;.dev_ss_stats_wb_vb:
-;				dc.b		"WB:%3d %3d %3d %3d",0
+.dev_ss_stats_zone_vb:
+				dc.b		"ZI:%3d",0
 
 ; Stats for the division pogrom 2.0
 ;.dev_ss_stats_long_divide_vb:
