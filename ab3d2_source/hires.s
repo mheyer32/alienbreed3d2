@@ -404,7 +404,7 @@ noload:
 				move.l	Lvl_ClipsPtr_l,a2
 				moveq	#0,d0
 				move.w	10+6(a1),d7				;numzones
-				move.w	d7,NUMZONES
+				move.w	d7,Zone_Count_w
 
 assignclips:
 				move.l	(a0)+,a3
