@@ -331,7 +331,7 @@ uint64_t Sys_TimeDiff(REG(a0, struct EClockVal* start), REG(a1, struct EClockVal
 
 void Sys_FrameLap()
 {
-    (void)Sys_MarkTime(&Sys_FrameTimeECV_q[0]);
+    ReadEClock(&Sys_FrameTimeECV_q[0]);
     ULONG frameTime = Sys_FrameTimeECV_q[0].ev_lo - Sys_FrameTimeECV_q[1].ev_lo;
     Sys_FrameTimeECV_q[1] = Sys_FrameTimeECV_q[0];
     Sys_FrameTimes_vl[Sys_FrameNumber_l & 7] = frameTime;
