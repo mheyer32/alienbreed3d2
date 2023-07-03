@@ -921,6 +921,75 @@ noclipbotG:
 nocliptopG:
 				bra		gotoendG
 
+
+				ifd OPT060
+
+drawwallg		macro
+
+				movem.l a0/a1,-(sp) ; XXX can maybe be removed (a0 used for sure in outer loop)
+
+				move.l  d0,a0
+				move.l  d5,a1
+				moveq   #16,d5
+
+				; prepare d0/d2 for first iteration
+				move.l  d4,d0
+				move.l  d3,d2
+				lsr.l   d5,d0
+				lsr.l   d5,d2
+				and.w   d7,d0
+				and.w   #-32,d2
+
+.loop:
+				; extract packed texel (mod 1/2 could probably benefit from rescheduling)
+				; 0aaaaabb bbbccccc
+				ifeq \1-0
+				moveq   #%00011111,d1
+				and.b   1(a5,d0.l*2),d1    ; d1=texture[V]&31
+				endc
+				ifeq \1-1
+				move.w  (a5,d0.l*2),d1
+				lsr.w   #5,d1
+				and.w   #31,d1
+				endc
+				ifeq \1-2
+				moveq   #%01111100,d1
+				and.b   (a5,d0.l*2),d1
+				lsr.b   #2,d1
+				endc
+
+				add.w   d2,d1                   ; d1=(d2&~31)|(texture[V]&31)
+				add.l   a2,d4                   ; v += dvdx
+
+				add.l   a1,d3                   ; c += dcdx
+				move.l  d4,d0                   ; d0=V<<16
+
+				move.l  d3,d2                   ; d2=C<<16
+				lsr.l   d5,d0                   ; d0=V
+
+				and.w   d7,d0                   ; d0=V & draw_WallTextureHeightMask_w
+				lsr.l   d5,d2                   ; d2=C
+
+				move.b  (a4,d1.w*2),d1
+				and.w   #-32,d2                 ; d2=C&~31
+
+				move.b  d1,(a3)                 ; store pix
+				add.w   a0,a3                   ; update dest
+
+				subq.w  #1,d6                   ; loop
+				bpl.b   .loop
+
+				movem.l (sp)+,a0/a1 ; XXX can maybe be removed
+				rts
+
+				endm
+
+drawwallPACK0G:	drawwallg 0
+drawwallPACK1G:	drawwallg 1
+drawwallPACK2G:	drawwallg 2
+
+				else ; OPT060
+
 				;CNOP	0,128
 
 drawwallPACK0G:
@@ -983,6 +1052,8 @@ drawwallPACK2G:
 				dbra	d6,drawwallPACK2G
 
 				rts
+
+				endc ; OPT060
 
 
 usesimpleG:
