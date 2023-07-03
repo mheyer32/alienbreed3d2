@@ -404,7 +404,7 @@ noload:
 				move.l	Lvl_ClipsPtr_l,a2
 				moveq	#0,d0
 				move.w	10+6(a1),d7				;numzones
-				move.w	d7,NUMZONES
+				move.w	d7,Zone_Count_w
 
 assignclips:
 				move.l	(a0)+,a3
@@ -3606,10 +3606,7 @@ notintop:
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	nobackgraphics
 
-				move.l	a0,-(a7)
-				jsr		putinbackdrop
-
-				move.l	(a7)+,a0
+				jsr		Draw_SkyBackdrop
 
 nobackgraphics:
 				move.b	(a0)+,Plr1_Echo_b
@@ -3819,9 +3816,9 @@ Plr2_Control:
 				beq.s	.nobackgraphics
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				bne.s	.nobackgraphics
-				move.l	a0,-(a7)
-				jsr		putinbackdrop
-				move.l	(a7)+,a0
+
+				jsr		Draw_SkyBackdrop
+
 .nobackgraphics:
 
 				move.b	(a0)+,Plr2_Echo_b
@@ -4260,7 +4257,7 @@ itsaseewall:
 				bra		polyloop
 
 itsbackdrop:
-				jsr		putinbackdrop
+				jsr		Draw_SkyBackdrop
 				bra		polyloop
 
 itswater:

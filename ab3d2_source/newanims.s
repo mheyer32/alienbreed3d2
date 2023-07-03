@@ -1348,7 +1348,7 @@ NOTMOVING:
 				; asl.w	#2,d0
 				; move.w	d0,2(a1)
 				; move.w	d3,d0
-				
+
 				move.w	d3,2(a1)
 				asr.w	#2,d3
 				move.w	d3,d0
@@ -1737,7 +1737,7 @@ closedist:		dc.w	0
 				include	"newplayershoot.s"
 
 
-NUMZONES:		dc.w	0
+Zone_Count_w:		dc.w	0
 
 ObjectHandler:
 				move.l	#ObjectWorkspace_vl,WorkspacePtr_l
@@ -2649,8 +2649,21 @@ MAKEBACKROUT:
 				rts
 
 ****************************************
+sky_early_exit:
+				rts
+;
+; Fills in the sky. Preserves a0
+;
+Draw_SkyBackdrop:
+				DEV_CHECK SKYFILL,sky_early_exit
 
-putinbackdrop:
+				; bail if the zone is tagged as having no sky
+				lea		Zone_BackdropDisable_vb,a5
+				move.w	Plr1_Zone_w,d5
+				tst.b	(a5,d5.w)
+				bne.b	sky_early_exit
+
+
 				move.l	a0,-(a7)
 				move.w	tmpangpos,d5
 				and.w	#4095,d5
@@ -2665,7 +2678,7 @@ putinbackdrop:
 
 ; CACHE_ON d1
 				tst.b	Vid_FullScreen_b
-				bne		BIGBACK
+				bne		draw_SkyBackDropFullscreen
 
 				move.l	Vid_FastBufferPtr_l,a0
 				move.l	Draw_BackdropImagePtr_l,a5
@@ -2691,12 +2704,12 @@ putinbackdrop:
 				move.w	#480,d5
 				move.w	#191,d4
 
-horline:
+.horline:
 				move.w	d7,d3
 				move.l	a0,a2
 				move.l	a1,a4
 
-vertline:
+.vertline:
 				move.w	(a4)+,d0
 				move.b	d0,(a2)
 				move.b	(a4)+,d0
@@ -2707,7 +2720,7 @@ vertline:
 				move.b	(a4)+,d0
 				move.b	d0,SCREEN_WIDTH*3(a2)
 				adda.w	#SCREEN_WIDTH*4,a2
-				dbra	d3,vertline
+				dbra	d3,.vertline
 
 				add.w	d1,a1
 				cmp.l	a1,a3
@@ -2719,12 +2732,12 @@ vertline:
 				exg		d1,d2
 				exg		d2,d5
 				addq.w	#1,a0
-				dbra	d4,horline
+				dbra	d4,.horline
 
 				move.l	(a7)+,a0
 				rts
 
-BIGBACK:
+draw_SkyBackDropFullscreen:
 				move.l	Vid_FastBufferPtr_l,a0
 				move.l	Draw_BackdropImagePtr_l,a5
 				move.l	a5,a3

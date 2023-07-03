@@ -352,6 +352,34 @@ plr_KeyboardControl:
 				clr.l	Vid_FPSLimit_l
 
 .noframelimit:
+
+.toggle_skip_sky_for_zone:
+				; X toggles the sky background visibility for this zone
+				tst.b			RAWKEY_X(a5)
+				beq.s			.clear_zone_data
+
+				clr.b			RAWKEY_X(a5)
+				lea				Zone_BackdropDisable_vb,a1
+				move.w			PlrT_Zone_w(a0),d0
+				not.b			(a1,d0.w)
+
+.clear_zone_data:
+				tst.b			RAWKEY_Z(a5)
+				beq.s			.dev_toggles
+
+				clr.b			RAWKEY_Z(a5)
+
+				move.w			#16-1,d0
+				lea				Zone_BackdropDisable_vb,a1
+
+.clear_loop:
+				clr.l			(a1)+
+				clr.l			(a1)+
+				clr.l			(a1)+
+				clr.l			(a1)+
+				dbra			d0,.clear_loop
+
+.dev_toggles:
 				; Developer toggles
 				DEV_CHECK_KEY	RAWKEY_E,SIMPLE_WALLS
 				DEV_CHECK_KEY	RAWKEY_R,SHADED_WALLS
@@ -364,6 +392,7 @@ plr_KeyboardControl:
 				DEV_CHECK_KEY	RAWKEY_Q,FASTBUFFER_CLEAR
 				DEV_CHECK_KEY	RAWKEY_N,AI_ATTACK
 				DEV_CHECK_KEY	RAWKEY_B,LIGHTING
+				DEV_CHECK_KEY	RAWKEY_V,SKYFILL
 
 				; change the default floor gouraud state based on the lighting toggle
 				; todo - fix floor rendering when goraud is disabled, it's seriously glitched
