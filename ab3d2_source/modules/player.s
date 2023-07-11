@@ -74,8 +74,6 @@ plr_MouseControl:
 
 				IFND BUILD_WITH_C
 				bsr		Sys_ReadMouse
-				ELSE IFND FIXED_C_MOUSE
-				bsr		Sys_ReadMouse
 				ELSE
 				CALLC	Sys_ReadMouse
 				ENDIF

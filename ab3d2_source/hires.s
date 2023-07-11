@@ -182,9 +182,6 @@ _startup:
 
 				IFND BUILD_WITH_C
 				include		"modules/system.s"
-				ELSE IFND FIXED_C_MOUSE
-				; Only the Sys_ReadMouse will be incorporated here
-				include		"modules/system.s"
 				ENDIF
 
 ;*******************************************************************************
