@@ -240,7 +240,7 @@ Dev_PrintStats:
 
 				; smallscreen
 				lea			dev_TotalCounters_vw,a1
-				lea			.dev_ss_stats_obj_vb,a0
+				lea			.dev_fs_stats_tpl_vb,a0
 				IFND		BUILD_WITH_C
 				move.l		#8,d0
 				ELSE
@@ -342,10 +342,7 @@ Dev_PrintStats:
 				rts
 
 .dev_fs_stats_tpl_vb:
-				dc.b		"w:%2d f:%2d o:%2d/%2d d:%2dms %2d.%dfps",0
-
-.dev_ss_stats_obj_vb:
-				dc.b		"Wall:%2d, Flt:%2d, Obj:%2d/%2d, Drw:%2dms, %2d.%dfps ",0
+				dc.b		"W:%2d F:%2d O:%2d/%2d D:%2dms %2d.%-2dfps ",0
 
 .dev_ss_stats_wall_simple_vb:
 				dc.b		"WS:%3d",0

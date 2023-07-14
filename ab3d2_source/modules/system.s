@@ -363,7 +363,7 @@ sys_InitHardware:
 				seq			Sys_CPU_68060_b
 				seq			Sys_Move16_b
 				seq			Vid_FullScreenTemp_b
-				beq.s		.done_cpu:
+				beq.s		.done_cpu
 
 				; Now check for 040
 				btst.b		#AFB_68040,AttnFlags(a0) ; state of bit -> Z

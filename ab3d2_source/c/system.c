@@ -351,7 +351,8 @@ void Sys_EvalFPS()
     if (!avg) {
         return;
     }
-    Sys_FPSFracAvg_w = (UWORD)1000 % (UWORD)avg;
+
+    Sys_FPSFracAvg_w = ((UWORD)1000 % (UWORD)avg)/10;
     Sys_FPSIntAvg_w = (UWORD)1000 / (UWORD)avg;
 }
 
