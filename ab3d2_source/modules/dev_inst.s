@@ -240,7 +240,7 @@ Dev_PrintStats:
 
 				; smallscreen
 				lea			dev_TotalCounters_vw,a1
-				lea			.dev_ss_stats_obj_vb,a0
+				lea			.dev_fs_stats_tpl_vb,a0
 				IFND		BUILD_WITH_C
 				move.l		#8,d0
 				ELSE
@@ -302,6 +302,16 @@ Dev_PrintStats:
 				move.l		#136+16,d0
 				bsr			Dev_PrintF
 
+				; 68060 optimisations
+				lea			.dev_ss_stats_060_vb,a0
+				lea			.dev_strptr_bool_off,a1
+				tst.b		Sys_CPU_68060_b
+				beq.b		.print
+				addq		#4,a1
+
+.print:
+				move.l		#136+32,d0
+				bsr			Dev_PrintF
 
 ;				; Long Divisions
 ;				lea			dev_Reserved1_w,a1
@@ -332,10 +342,7 @@ Dev_PrintStats:
 				rts
 
 .dev_fs_stats_tpl_vb:
-				dc.b		"w:%2d f:%2d o:%2d/%2d d:%2dms %2d.%dfps",0
-
-.dev_ss_stats_obj_vb:
-				dc.b		"Wall:%2d, Flt:%2d, Obj:%2d/%2d, Drw:%2dms, %2d.%dfps ",0
+				dc.b		"W:%2d F:%2d O:%2d/%2d D:%2dms %2d.%-2dfps ",0
 
 .dev_ss_stats_wall_simple_vb:
 				dc.b		"WS:%3d",0
@@ -351,12 +358,12 @@ Dev_PrintStats:
 				dc.b		"OA:%3d",0
 .dev_ss_stats_obj_bitmap_vb:
 				dc.b		"OB:%3d",0
-
 .dev_ss_stats_order_zones_vb:
 				dc.b		"OZ:%3d",0
-
 .dev_ss_stats_zone_vb:
 				dc.b		"ZI:%3d",0
+.dev_ss_stats_060_vb:
+				dc.b		"060:%3s",0
 
 ; Stats for the division pogrom 2.0
 ;.dev_ss_stats_long_divide_vb:
@@ -365,6 +372,19 @@ Dev_PrintStats:
 ;				dc.b		"mD:%4d ",0
 ;.dev_ss_stats_max_divisor_vb:
 ;				dc.b		"MD:%4d ",0
+
+.dev_bool_off_vb:
+ 				dc.b		"off",0
+.dev_bool_on_vb:
+				dc.b		"on",0
+
+				align 4
+
+.dev_strptr_bool_off:
+				dc.l		.dev_bool_off_vb
+
+.dev_strptr_bool_on:
+				dc.l		.dev_bool_on_vb
 
 				align 4
 

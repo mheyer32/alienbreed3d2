@@ -13,7 +13,7 @@ PREFIX = $(shell ./getprefix.sh "$(CC)")
 CFLAGS = -m68020-60 -mtune=68030 -noixemul -g -ggdb -O3
 LFLAGS = -noixemul -g -ggdb
 
-AFLAGS = -Fhunk -m68060 -linedebug -chklabels -align -L listing.txt -Dmnu_nocode=1 -DUSE_16X16_TEXEL_MULS
+AFLAGS = -Fhunk -m68060 -linedebug -chklabels -align -L listing.txt -Dmnu_nocode=1 -DUSE_16X16_TEXEL_MULS -DOPT060
 
 AFLAGS += -I../ \
 		  -I$(PREFIX)/m68k-amigaos/ndk-include \
@@ -34,8 +34,8 @@ OBJS = c/main.o \
 	   c/hires.o
 
 hiresC: AFLAGS+=-DBUILD_WITH_C
-hiresC: ${OBJS} 
-		$(LINK) $(LFLAGS) $^ -ldebug -o $@ 
+hiresC: ${OBJS}
+		$(LINK) $(LFLAGS) $^ -ldebug -o $@
 
 hires: hires.o
 	$(VLINK) $(VFLAGS) $< -o $@

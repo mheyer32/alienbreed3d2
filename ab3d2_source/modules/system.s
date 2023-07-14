@@ -357,18 +357,20 @@ Sys_ReadMouse:
 ;******************************************************************************
 sys_InitHardware:
 				; Processor
+				; Check for 060 first
 				move.l		4.w,a0
-				move.b		$129(a0),d0
-				move.l		#68040,d1	;68040
-				btst		#$03,d0
-				beq.s		.not040
+				btst.b		#AFB_68060,AttnFlags(a0) ; state of bit -> Z
+				seq			Sys_CPU_68060_b
+				seq			Sys_Move16_b
+				seq			Vid_FullScreenTemp_b
+				beq.s		.done_cpu
 
-				; invert Vid_FullScreenTemp_b to start game in fullsreen if
-				; cpu is 68040 AL
-				not.b		Sys_Move16_b ; We can use move16
-				not.b		Vid_FullScreenTemp_b
+				; Now check for 040
+				btst.b		#AFB_68040,AttnFlags(a0) ; state of bit -> Z
+				seq			Sys_Move16_b
+				seq			Vid_FullScreenTemp_b
 
-.not040:
+.done_cpu:
 				; Serial Port
 				move.l		#MR_SERIALPORT,d0		; We want these bits
 				lea.l		AppName(pc),a1
