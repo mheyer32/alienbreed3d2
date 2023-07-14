@@ -1,4 +1,4 @@
-; 68060 optimised Gouraud Floor routine
+; 68060 optimised Gouraud Floor routine by @paraj / @saimo
 
 draw_GoraudFloor060:
 				moveq   #0,d0
