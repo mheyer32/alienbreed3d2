@@ -372,28 +372,18 @@ void Sys_ShowFPS()
     Text(&Vid_MainScreen_l->RastPort, text, outPtr - text - 1);
 }
 
-#ifdef FIXED_C_MOUSE
-
-/**
- * 0xABADCAFE - Disabled until there is a viable fix for the vertical mouse movement
- */
 void Sys_ReadMouse()
 {
-    static UBYTE oldCounterY = 0;
-    static UWORD oldMouseY2 = 0;
-
-    UWORD counterY = joy0dat >> 8;
-    WORD diffY = counterY - oldCounterY;
-    if (diffY >= 127) {
+    static WORD oldMouseY;
+    WORD diffY = joy0dat >> 8;
+    diffY -= oldMouseY;
+    if (diffY >= 127)
         diffY -= 255;
-    }else if (diffY < -127) {
+    else if (diffY < -127)
         diffY += 255;
-    }
-
-    WORD newMouseY = diffY + oldCounterY;
-    oldCounterY = newMouseY;
-
-    Sys_MouseY = newMouseY ; // oldCounterY;
+    // Emulate weird add.b stuff in original code
+    oldMouseY = (oldMouseY & 0xff00) | ((diffY+oldMouseY) & 0xff);
+    Sys_MouseY += diffY;
 
     static UBYTE oldCounterX = 0;
     static UWORD oldMouseX2 = 0;
@@ -418,8 +408,6 @@ void Sys_ReadMouse()
     // FIXME: should use WritePotgo here... what does this even reset?
     // potgo = 0;
 }
-
-#endif
 
 void Sys_ClearKeyboard()
 {
