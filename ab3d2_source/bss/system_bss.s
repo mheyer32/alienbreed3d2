@@ -57,6 +57,7 @@ sys_TimerRequest:			ds.b	IOTV_SIZE	; TimeRequest structure
 
 			align 4
 _Sys_Move16_b::
-Sys_Move16_b:				ds.b	1 			; Set if we have move16 available
+Sys_Move16_b:				ds.b	1 			; Set if we have move16 available (060. 040)
 Sys_FPU_b:					ds.b	1 			; Set if we have FPU available
-
+_Sys_CPU_68060_b::
+Sys_CPU_68060_b:			ds.b	1			; set if we have a 68060 specifically
