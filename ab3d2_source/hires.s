@@ -7222,10 +7222,13 @@ tstwat:
 
 				tst.b	draw_UseWater_b
 				bne		texturedwater
-; tst.b draw_UseGouraudFlats_b						; FIXME: this effectively disables bumpmapped floors...
-										; opportunity to reenable and see what happens
-				bra		gouraudfloor
+; tst.b draw_UseGouraudFlats_b					; FIXME: this effectively disables bumpmapped floors...
+												; opportunity to reenable and see what happens
+				;bra		gouraudfloor
 
+				tst.b	Sys_CPU_68060_b
+				bne		draw_GoraudFloor060
+				bra		draw_GoraudFloor
 
 
 ******************************
@@ -7287,7 +7290,6 @@ past1:
 
 
 gotoacross:
-
 				move.w	d4,d7
 				bne.s	.notdoneyet
 				rts
@@ -7303,153 +7305,17 @@ gotoacross:
 				dbra	d7,acrossscrn
 				rts
 
-leftbright:		dc.l	0
-brightspd:		dc.l	0
+				align 4
+leftbright:		dc.l  0
+brightspd:		dc.l  0
 
-gouraudfloor:
-				ifd OPT060
+				include "modules/draw/draw_floor_060.s"
 
-				moveq   #0,d0
-				move.w	leftbright,d0
-				move.w  brightspd,d4
-				move.l  d2,a2
+				align 4
 
-				and.l   d1,d5
-				move.l  d5,d6
-				lsr.l   #8,d6
-				move.l  d6,d2
-				lsr.l   #8,d6
-				move.b  d2,d6   ; d6 ready for first iteration
-.loop:
-				move.l  d0,d3           ; d3=00Cc
-				move.b  (a0,d6.l*4),d3  ; d3=00CT
-				add.w   d4,d0           ; c += dcdx
-				add.l   a2,d5           ; uv += duvdx
-				and.l   d1,d5           ; uv &= uvmask
-				move.l  d5,d6           ; d6=VvUu
-				lsr.l   #8,d6           ; d6=0VvU
-				move.l  d6,d2           ; d2=0VvU
-				lsr.l   #8,d6           ; d6=00Vv
-				move.b  d2,d6           ; d6=00VU
-				move.b  (a1,d3.l),(a3)+
-				subq.w  #1,d7
-				bne.b   .loop
-				rts
+				include "modules/draw/draw_floor.s"
 
-				else ; OPT060
-
-				move.w	leftbright,d0
-				move.l	d1,d4
-				move.w	brightspd,d1
-
-				move.w	d7,d3
-				asr.w	#1,d7
-				btst	#0,d3
-				beq.s	.nosingle1
-
-				move.w	d5,d3					; d3 = S
-				move.l	d5,d6
-				lsr.w	#8,d3
-				swap	d6						; d6 = T
-				move.b	d3,d6					; T * 256 + S
-
-				move.w	d0,d3					; line X
-
-				move.b	(a0,d6.w*4),d3			; fetch floor texel; but why d6*4?
-
-				add.w	d1,d0					;
-				add.l	d2,d5
-				and.l	d4,d5
-				move.b	(a1,d3.w),(a3)+			; map through palette and write to renderbuffer
-
-.nosingle1
-				move.w	d7,d3
-				asr.w	#1,d7
-				btst	#0,d3
-				beq.s	.nosingle2
-				move.w	d5,d3
-				move.l	d5,d6
-				lsr.w	#8,d3
-				swap	d6
-				move.b	d3,d6
-				move.w	d0,d3
-				move.b	(a0,d6.w*4),d3
-				add.w	d1,d0
-				add.l	d2,d5
-				and.l	d4,d5
-				move.l	d5,d6
-				swap	d6
-				move.b	(a1,d3.w),(a3)+
-				move.w	d5,d3
-				lsr.w	#8,d3
-				move.b	d3,d6
-				move.w	d0,d3
-				move.b	(a0,d6.w*4),d3
-				add.w	d1,d0
-				add.l	d2,d5
-				and.l	d4,d5
-				move.b	(a1,d3.w),(a3)+
-
-.nosingle2
-
-				move.l	d5,d6
-				swap	d6
-
-				dbra	d7,acrossscrngour
-				rts
-
-				CNOP	0,4
-
-acrossscrngour:
-				move.w	d5,d3
-				lsr.w	#8,d3
-				move.b	d3,d6
-				move.w	d0,d3
-				move.b	(a0,d6.w*4),d3
-				add.w	d1,d0
-				add.l	d2,d5
-				and.l	d4,d5
-				move.l	d5,d6
-				swap	d6
-				move.b	(a1,d3.w),(a3)+
-				move.w	d5,d3
-				lsr.w	#8,d3
-				move.b	d3,d6
-				move.w	d0,d3
-				move.b	(a0,d6.w*4),d3
-				add.w	d1,d0
-				add.l	d2,d5
-				and.l	d4,d5
-				move.l	d5,d6
-				swap	d6
-				move.b	(a1,d3.w),(a3)+
-				move.w	d5,d3
-				lsr.w	#8,d3
-				move.b	d3,d6
-				move.w	d0,d3
-				move.b	(a0,d6.w*4),d3
-				add.w	d1,d0
-				add.l	d2,d5
-				and.l	d4,d5
-				move.l	d5,d6
-				swap	d6
-				move.b	(a1,d3.w),(a3)+
-				move.w	d5,d3
-				lsr.w	#8,d3
-				move.b	d3,d6
-				move.w	d0,d3
-				move.b	(a0,d6.w*4),d3
-				add.w	d1,d0
-				add.l	d2,d5
-				and.l	d4,d5
-				move.l	d5,d6
-				swap	d6
-				move.b	(a1,d3.w),(a3)+
-				dbra	d7,acrossscrngour
-
-				rts
-
-				endc ; OPT060
+				align 4
 
 gouraudfloorDOUB:
 				move.w	leftbright,d0
@@ -7474,7 +7340,7 @@ gouraudfloorDOUB:
 				and.l	d4,d5
 				move.w	(a1,d3.w),(a3)+
 
-.nosingle1
+.nosingle1:
 				move.w	d7,d3
 				asr.w	#1,d7
 				btst	#0,d3
@@ -7502,13 +7368,13 @@ gouraudfloorDOUB:
 				and.l	d4,d5
 				move.w	(a1,d3.w),(a3)+
 
-.nosingle2
+.nosingle2:
 				move.l	d5,d6
 				swap	d6
 				dbra	d7,acrossscrngourD
 				rts
 
-				CNOP	0,4
+				align 4
 acrossscrngourD:
 				move.w	d5,d3
 				lsr.w	#8,d3
@@ -7562,8 +7428,8 @@ acrossscrngourD:
 				move.l	d0,leftbright
 
 				rts
-.notdoneyet:
 
+.notdoneyet:
 				cmp.w	#32,d7
 				ble.s	.notoowide
 				move.w	#32,d7
@@ -7574,7 +7440,7 @@ acrossscrngourD:
 ; dbra d7,backbeforegour
 				rts
 
-
+				align 4
 waterpt:		dc.l	waterlist
 
 waterlist:

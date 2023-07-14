@@ -302,6 +302,16 @@ Dev_PrintStats:
 				move.l		#136+16,d0
 				bsr			Dev_PrintF
 
+				; 68060 optimisations
+				lea			.dev_ss_stats_060_vb,a0
+				lea			.dev_strptr_bool_off,a1
+				tst.b		Sys_CPU_68060_b
+				beq.b		.print
+				addq		#4,a1
+
+.print:
+				move.l		#136+32,d0
+				bsr			Dev_PrintF
 
 ;				; Long Divisions
 ;				lea			dev_Reserved1_w,a1
@@ -351,12 +361,12 @@ Dev_PrintStats:
 				dc.b		"OA:%3d",0
 .dev_ss_stats_obj_bitmap_vb:
 				dc.b		"OB:%3d",0
-
 .dev_ss_stats_order_zones_vb:
 				dc.b		"OZ:%3d",0
-
 .dev_ss_stats_zone_vb:
 				dc.b		"ZI:%3d",0
+.dev_ss_stats_060_vb:
+				dc.b		"060:%3s",0
 
 ; Stats for the division pogrom 2.0
 ;.dev_ss_stats_long_divide_vb:
@@ -365,6 +375,19 @@ Dev_PrintStats:
 ;				dc.b		"mD:%4d ",0
 ;.dev_ss_stats_max_divisor_vb:
 ;				dc.b		"MD:%4d ",0
+
+.dev_bool_off_vb:
+ 				dc.b		"off",0
+.dev_bool_on_vb:
+				dc.b		"on",0
+
+				align 4
+
+.dev_strptr_bool_off:
+				dc.l		.dev_bool_off_vb
+
+.dev_strptr_bool_on:
+				dc.l		.dev_bool_on_vb
 
 				align 4
 
