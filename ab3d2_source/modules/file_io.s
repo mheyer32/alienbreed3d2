@@ -156,6 +156,9 @@ io_FlushPass:
 
 io_TryToOpen:
 				movem.l	d1-d7/a0-a6,-(a7)
+				IFD MEMTRACK
+				SERPRINTF <"io_TryToOpen %s",13,10>,a0
+				ENDC
 				move.l	a0,d1
 				move.l	#MODE_OLDFILE,d2
 				CALLDOS	Open
@@ -180,6 +183,10 @@ IO_LoadFile:
 				; Load a file in and unpack it if necessary.
 				; Pointer to name in a0
 				; Returns address in d0 and length in d1
+
+				IFD MEMTRACK
+				SERPRINTF <"IO_LoadFile %s",13,10>,a0
+				ENDC
 
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.l	a0,d1
@@ -221,6 +228,10 @@ io_LoadCommon:
 				move.l	d0,a0
 				cmp.l	#'CSFX',(a0)
 				beq		io_LoadSample
+
+				IFD MEMTRACK
+				SERPRINTF <"LOAD-DONE",13,10>
+				ENDC
 
 ; Not a packed file so just return now.
 				movem.l	(a7)+,d0-d7/a0-a6
@@ -291,6 +302,10 @@ io_LoadSample:
 				move.b	d1,(a0)+
 				dbra	d0,.clip_loop
 
+				IFD MEMTRACK
+				SERPRINTF <"LOAD-DONE",13,10>
+				ENDC
+
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	.sample_position_l,d0
 				move.l	.sample_size_l,d1
@@ -326,6 +341,10 @@ io_HandlePacked:
 				move.l	d0,a0
 				cmp.l	#'CSFX',(a0)
 				beq		io_LoadSample
+
+				IFD MEMTRACK
+				SERPRINTF <"LOAD-DONE",13,10>
+				ENDC
 
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	.unpacked_start_l,d0

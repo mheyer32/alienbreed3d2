@@ -3,6 +3,7 @@
 
 #include <graphics/modeid.h>
 #include <proto/cybergraphics.h>
+#include <proto/dos.h>
 
 #include <stdio.h>
 
@@ -17,7 +18,21 @@ int main(int argc, char *argv[])
     {
         goto fail;
     }
-    Vid_ScreenMode = GetScreenMode();
+
+    enum {
+        OPT_SCREENMODE,
+        OPT_COUNT
+    };
+    LONG options[OPT_COUNT] = { 0 };
+    struct RDArgs* args;
+    if ((args = ReadArgs("SCREENMODE/N", options, NULL)) != NULL)
+        FreeArgs(args);
+
+    if (options[OPT_SCREENMODE])
+        Vid_ScreenMode = *(int *)options[OPT_SCREENMODE];
+    else
+        Vid_ScreenMode = GetScreenMode();
+
     if (Vid_ScreenMode == INVALID_ID)
     {
         printf("Invalid Screenmode");

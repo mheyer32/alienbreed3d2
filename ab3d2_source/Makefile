@@ -20,6 +20,8 @@ AFLAGS += -I../ \
 		  -I../media \
 		  -I../media/includes
 
+#AFLAGS += -DMEMTRACK=1
+
 VFLAGS = -b amigahunk -sc -l amiga -L $(PREFIX)m68k-amigaos/ndk/lib/libs
 
 all:	hires hiresC

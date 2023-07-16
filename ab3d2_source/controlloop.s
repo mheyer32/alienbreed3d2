@@ -216,10 +216,12 @@ QUITTT:
 
 				ENDIF
 
-; jsr Res_FreeWallTextures
+				jsr		Res_FreeWallTextures
 				jsr		Res_FreeSoundFx
 				jsr		Res_FreeFloorTextures
 				jsr		Res_FreeObjects
+
+				jsr		_CloseLowLevel
 
 				CALLC	Sys_Done
 

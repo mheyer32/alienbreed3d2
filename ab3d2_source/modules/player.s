@@ -163,6 +163,13 @@ plr_KeyboardControl:
 				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 
+				; Check for quit
+				tst.b	QUIT_KEY(a5)
+				beq.s	.no_quit
+				st		SHOULDQUIT
+				st		Game_MasterQuit_b
+.no_quit:
+
 				move.b	next_weapon_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.no_next_weapon_pre
