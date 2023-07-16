@@ -195,26 +195,7 @@ QUITTT:
 				move.l	Lvl_DataPtr_l,a1
 				CALLEXEC FreeVec
 
-				IFND BUILD_WITH_C
-
-				move.l	Vid_FastBufferAllocPtr_l,a1
-				CALLEXEC FreeVec
-
-				move.l	Vid_MyRaster0_l,a0
-				move.w	#SCREEN_WIDTH,d0
-				move.w	#SCREEN_HEIGHT*8+1,d1
-				CALLGRAF FreeRaster
-
-				move.l	Vid_MyRaster1_l,a0
-				move.w	#SCREEN_WIDTH,d0
-				move.w	#SCREEN_HEIGHT*8+1,d1
-				CALLGRAF FreeRaster
-
-				ELSE
-
-				CALLC Vid_CloseMainScreen
-
-				ENDIF
+				CALLC	Vid_CloseMainScreen
 
 				jsr		Res_FreeWallTextures
 				jsr		Res_FreeSoundFx
@@ -222,8 +203,6 @@ QUITTT:
 				jsr		Res_FreeObjects
 
 				jsr		_CloseLowLevel
-
-				CALLC	Sys_Done
 
 				move.l	#0,d0
 

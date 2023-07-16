@@ -61,11 +61,7 @@ PLR_MASTER				equ 'm' ; two player master
 PLR_SLAVE				equ 's' ; two player slave
 PLR_SINGLE				equ 'n' ; Single player
 
-	IFD BUILD_WITH_C
 QUIT_KEY				equ RAWKEY_NUM_ASTERISK
-	ELSE
-QUIT_KEY				equ $ff ; Not supported yet
-	ENDC
 
 ; ZERO-INITIALISED DATA
 				include "bss/system_bss.s"

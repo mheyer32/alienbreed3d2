@@ -92,8 +92,17 @@ Sys_Done:
 				CALLEXEC RemIntServer
 				ENDC
 
-				jsr		sys_CloseLibs
-				rts
+				move.l	#MR_SERIALBITS,d0
+				CALLMISC FreeMiscResource
+
+				move.l	#MR_SERIALPORT,d0
+				CALLMISC FreeMiscResource
+
+
+				move.l	#sys_POTBITS,d0
+				CALLPOTGO	FreePotBits
+
+				bra		sys_CloseLibs
 
 ;******************************************************************************
 ;*
@@ -348,6 +357,8 @@ Sys_ReadMouse:
 
 				IFND BUILD_WITH_C
 
+sys_POTBITS		equ		%110000000000
+
 ;******************************************************************************
 ;*
 ;* Set up hardware and related options
@@ -390,7 +401,7 @@ sys_InitHardware:
 				move.w		#31,_custom+serper	; 19200 baud, 8 bits, no parity
 
 				; Joystick
-				move.l		#%110000000000,d0	; We want these bits
+				move.l		#sys_POTBITS,d0	; We want these bits
 				CALLPOTGO	AllocPotBits
 
 				; Grab the EClockRate
@@ -478,27 +489,26 @@ sys_OpenLibs:
 ;* Close Libraries and Devices
 ;*
 ;******************************************************************************
+
+CLOSELIB		macro
+				move.l		\1,a1
+				tst.l		a1
+				beq.b		.skip\@
+				CALLEXEC	CloseLibrary
+				clr.l		\1
+.skip\@:
+				endm
+
 sys_CloseLibs:
 				; There's no CloseResource...
 
 				lea			sys_TimerRequest,a1
 				CALLEXEC	CloseDevice
 
-				move.l		_IntuitionBase,a1
-				beq.s		.skip_close_intuition
-				CALLEXEC	CloseLibrary
+				CLOSELIB	_IntuitionBase
+				CLOSELIB	_GfxBase
+				CLOSELIB	_DOSBase
 
-.skip_close_intuition:
-				move.l		_GfxBase,a1
-				beq.s		.skip_close_gfx
-				CALLEXEC	CloseLibrary
-
-.skip_close_gfx:
-				move.l		_DOSBase,a1
-				beq.s		.skip_close_dos
-				CALLEXEC	CloseLibrary
-
-.skip_close_dos:
 				rts
 
 ;******************************************************************************
