@@ -168,17 +168,15 @@ YYY:
 				rts
 
 Vid_CloseMainScreen:
-				; FreeVPortCopLists
+				; Use CloseScreen to get rid of UCpoList (see see C source for details)
 				move.l	vid_MainWindow_l,a0
 				CALLINT ViewPortAddress
 				move.l	d0,a0
 				move.l	vid_MyUCopList_l,vp_UCopIns(a0)
-				CALLGRAF FreeVPortCopLists
 
 				; CloseWindow
 				move.l	vid_MainWindow_l,a0
 				CALLINT	CloseWindow
-				CALLINT RemakeDisplay
 
 				; FreeScreenBuffer
 				move.l	Vid_MainScreen_l,a0

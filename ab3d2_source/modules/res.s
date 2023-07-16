@@ -115,7 +115,7 @@ Res_FreeObjects:
 				move.w	#Draw_MAX_OBJECTS*4-1,d2
 				lea		Draw_ObjectPtrs_vl,a2
 				bsr		res_FreeList
-				moveq	#Draw_MAX_OBJECTS-1,d2
+				moveq	#Draw_MAX_POLY_OBJECTS-1,d2
 				lea		Draw_PolyObjects_vl,a2
 				; fall through
 

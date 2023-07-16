@@ -107,7 +107,8 @@ BOOL Vid_OpenMainScreen(void)
 // "error: initialization discards 'volatile' qualifier from pointer target type "
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
-        // FreeVPortCopLists assumes UCopList's are allocated with AllocMem
+        // FreeVPortCopLists/CloseScreen assumes UCopList's are allocated with AllocMem
+        // See note in Vid_CloseMainScreen
         doubleHeightCopList = AllocMem(sizeof(*doubleHeightCopList), MEMF_PUBLIC|MEMF_CLEAR);
         if (!doubleHeightCopList)
             goto fail;
@@ -179,16 +180,17 @@ void Vid_CloseMainScreen()
     LOCAL_GFX();
     if (Vid_MainWindow_l) {
         struct ViewPort *viewPort = ViewPortAddress(Vid_MainWindow_l);
-        /*  Cludge: Only way to get rid of UCopList is with FreeVPortCopLists */
+        // Ugly stuff.
+        // http://amigadev.elowar.com/read/ADCD_2.1/Libraries_Manual_guide/node036A.html
+        // http://amigadev.elowar.com/read/ADCD_2.1/Libraries_Manual_guide/node036B.html
+        //
+        // To get rid of a CINIT'ed pointer (which has to be AllocMem'ed ) we have to use
+        // either FreeVPortCopLists or CloseScreen.
         viewPort->UCopIns = doubleHeightCopList;
-        /*  Free the memory allocated for the Copper.  */
-        FreeVPortCopLists(viewPort);
         doubleHeightCopList = NULL;
 
         CloseWindow(Vid_MainWindow_l);
         Vid_MainWindow_l = NULL;
-
-        RemakeDisplay();
     }
 
     if (!Vid_isRTG) {

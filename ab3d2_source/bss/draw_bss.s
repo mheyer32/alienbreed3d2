@@ -9,6 +9,7 @@
 			align 4
 
 Draw_MAX_WALL_TEXTURES=40
+Draw_MAX_POLY_OBJECTS=40
 Draw_MAX_OBJECTS=38
 
 draw_DepthTable_vl:			ds.l	80
@@ -26,7 +27,7 @@ draw_ObjectOnOff_l:			ds.l	1
 draw_PointAndPolyBrights_vl:	ds.l	4*16
 draw_PointerTablePtr_l: 		ds.l	1
 draw_StartOfObjPtr_l:			ds.l	1
-Draw_PolyObjects_vl:			ds.l	Draw_MAX_OBJECTS
+Draw_PolyObjects_vl:			ds.l	Draw_MAX_POLY_OBJECTS
 
 ; FIMXE: screenconv stores word sized points, why are they using ds.l here?
 draw_2DPointsProjected_vl:		ds.l	250*2	; projected 2D points in screenspace
