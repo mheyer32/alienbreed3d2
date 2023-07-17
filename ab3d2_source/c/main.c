@@ -19,6 +19,8 @@ int main(int argc, char *argv[])
         goto fail;
     }
 
+    Vid_ScreenMode = INVALID_ID;
+
     enum {
         OPT_SCREENMODE,
         OPT_COUNT
@@ -26,12 +28,18 @@ int main(int argc, char *argv[])
     LONG options[OPT_COUNT] = { 0 };
     struct RDArgs* args;
     if ((args = ReadArgs("SCREENMODE/N", options, NULL)) != NULL)
+    {
+        if (options[OPT_SCREENMODE])
+        {
+            Vid_ScreenMode = *(int *)options[OPT_SCREENMODE];
+        }
         FreeArgs(args);
+    }
 
-    if (options[OPT_SCREENMODE])
-        Vid_ScreenMode = *(int *)options[OPT_SCREENMODE];
-    else
+    if (Vid_ScreenMode == INVALID_ID)
+    {
         Vid_ScreenMode = GetScreenMode();
+    }
 
     if (Vid_ScreenMode == INVALID_ID)
     {

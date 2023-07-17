@@ -200,9 +200,10 @@ void Vid_CloseMainScreen()
                 Vid_ScreenBuffers_vl[i] = 0;
             }
         }
-        if (Vid_DisplayMsgPort_l)
+        if (Vid_DisplayMsgPort_l) {
             DeleteMsgPort(Vid_DisplayMsgPort_l);
-        Vid_DisplayMsgPort_l = NULL;
+            Vid_DisplayMsgPort_l = NULL;
+        }
     }
 
     if (Vid_MainScreen_l) {

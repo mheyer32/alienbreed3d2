@@ -102,20 +102,20 @@ Res_LoadObjects:
 				rts
 
 
-res_FREEPTR		macro
+RES_FREEPTR		macro
 				move.l	\1,a1
 				clr.l	\1
 				CALLEXEC FreeVec
 				endm
 
 Res_FreeObjects:
-				res_FREEPTR GLF_DatabasePtr_l
-				res_FREEPTR Lvl_IntroTextPtr_l
-				res_FREEPTR Draw_BackdropImagePtr_l
-				move.w	#Draw_MAX_OBJECTS*4-1,d2
+				RES_FREEPTR GLF_DatabasePtr_l
+				RES_FREEPTR Lvl_IntroTextPtr_l
+				RES_FREEPTR Draw_BackdropImagePtr_l
+				move.w	#DRAW_MAX_OBJECTS*4-1,d2
 				lea		Draw_ObjectPtrs_vl,a2
 				bsr		res_FreeList
-				moveq	#Draw_MAX_POLY_OBJECTS-1,d2
+				moveq	#DRAW_MAX_POLY_OBJECTS-1,d2
 				lea		Draw_PolyObjects_vl,a2
 				; fall through
 
@@ -234,9 +234,9 @@ Res_LoadFloorTextures:
 				rts
 
 Res_FreeFloorTextures:
-				res_FREEPTR Draw_FloorTexturesPtr_l
-				res_FREEPTR Draw_TextureMapsPtr_l
-				res_FREEPTR Draw_TexturePalettePtr_l
+				RES_FREEPTR Draw_FloorTexturesPtr_l
+				RES_FREEPTR Draw_TextureMapsPtr_l
+				RES_FREEPTR Draw_TexturePalettePtr_l
 				rts
 
 ; *****************************************************************************
@@ -253,7 +253,7 @@ Res_LoadWallTextures:
 				;* the files in...
 
 				move.l	#Draw_WallTexturePtrs_vl,a0
-				moveq	#Draw_MAX_WALL_TEXTURES-1,d7
+				moveq	#DRAW_MAX_WALL_TEXTURES-1,d7
 
 .empty_walls:
 				move.l	#0,(a0)+
@@ -283,7 +283,7 @@ Res_LoadWallTextures:
 
 Res_FreeWallTextures:
 				lea		Draw_WallTexturePtrs_vl,a2
-				moveq	#Draw_MAX_WALL_TEXTURES-1,d2
+				moveq	#DRAW_MAX_WALL_TEXTURES-1,d2
 				bra		res_FreeList
 
 ; *****************************************************************************
@@ -293,11 +293,11 @@ Res_FreeWallTextures:
 ; *****************************************************************************
 
 Res_FreeLevelData:
-				res_FREEPTR Lvl_WalkLinksPtr_l
-				res_FREEPTR Lvl_FlyLinksPtr_l
-				res_FREEPTR Lvl_GraphicsPtr_l
-				res_FREEPTR Lvl_ClipsPtr_l
-				res_FREEPTR Lvl_MusicPtr_l
+				RES_FREEPTR Lvl_WalkLinksPtr_l
+				RES_FREEPTR Lvl_FlyLinksPtr_l
+				RES_FREEPTR Lvl_GraphicsPtr_l
+				RES_FREEPTR Lvl_ClipsPtr_l
+				RES_FREEPTR Lvl_MusicPtr_l
 				rts
 
 ; *****************************************************************************
