@@ -61,6 +61,8 @@ PLR_MASTER				equ 'm' ; two player master
 PLR_SLAVE				equ 's' ; two player slave
 PLR_SINGLE				equ 'n' ; Single player
 
+QUIT_KEY				equ RAWKEY_NUM_ASTERISK
+
 ; ZERO-INITIALISED DATA
 				include "bss/system_bss.s"
 				include "bss/io_bss.s"
@@ -88,6 +90,10 @@ PLR_SINGLE				equ 'n' ; Single player
 _startup:
 				; entry point
 				movem.l	d1-a6,-(sp)
+
+				IFD MEMTRACK
+				bsr	 Mem_TrackInit
+				ENDC
 
 				CALLC	Sys_Init
 				tst.l	d0
@@ -176,6 +182,10 @@ _startup:
 .startup_fail:
 				CALLC	Sys_Done
 
+				IFD MEMTRACK
+				bsr	 Mem_TrackDone
+				ENDC
+
 				movem.l	(sp)+,d1-a6
 				rts
 
@@ -183,6 +193,10 @@ _startup:
 				IFND BUILD_WITH_C
 				include		"modules/system.s"
 				ENDIF
+
+				IFD MEMTRACK
+				include "modules/dev_memtrack.s"
+				ENDC
 
 ;*******************************************************************************
 ; Global data

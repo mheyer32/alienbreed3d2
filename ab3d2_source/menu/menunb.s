@@ -824,7 +824,9 @@ mnu_waitmenu:;out: d0=Selection number
 				bsr.w	mnu_printxy
 .skip:
 
-.w8key:			bsr.w	mnu_docursor
+.w8key:			tst.b	SHOULDQUIT
+				bne.b	.exit_game
+				bsr.w	mnu_docursor
 				CALLGRAF WaitTOF				; wait a bit to give the BlitTask more time
 				CALLGRAF WaitTOF
 				jsr		key_readkey
@@ -844,9 +846,13 @@ mnu_waitmenu:;out: d0=Selection number
 				beq.s	.sliderr
 				cmp.b	#79,d0
 				beq.s	.sliderl
+				cmp.b	#QUIT_KEY,d0
+				beq.s	.exit_game
 				move.l	#mnu_errcursanim,mnu_frameptr
 				bra.w	.loop
 
+.exit_game:		st		SHOULDQUIT
+				; fall through
 .exit:			moveq.l	#-1,d0					; Esc key
 				moveq.l	#0,d1
 				rts

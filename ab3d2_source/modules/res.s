@@ -20,7 +20,7 @@
 
 Res_LoadObjects:
 ; PRSDG
-				move.l	#io_ObjectPointers_vl,a2
+				move.l	#io_ObjectPointers_vl,a2 ; XXX: Not used?
 				move.l	GLF_DatabasePtr_l,a0
 				lea		GLFT_ObjGfxNames_l(a0),a0
 				move.l	#MEMF_ANY,IO_MemType_l
@@ -101,24 +101,29 @@ Res_LoadObjects:
 .end_load_vectors:
 				rts
 
-Res_FreeObjects:
-				move.l	#io_ObjectPointers_vl,a2
 
-.release_obj_loop:
-				move.l	(a2)+,io_BlockStart_l
-				move.l	(a2)+,io_BlockLength_l
-				tst.l	io_BlockStart_l
-				ble.s	.end_release_obj
-
-				move.l	a2,-(a7) ; is this necessary? Does a2 get clobbered by FreeVec?
-				move.l	io_BlockStart_l,d1
-				move.l	d1,a1
+RES_FREEPTR		macro
+				move.l	\1,a1
+				clr.l	\1
 				CALLEXEC FreeVec
+				endm
 
-				move.l	(a7)+,a2
-				bra.s	.release_obj_loop
+Res_FreeObjects:
+				RES_FREEPTR GLF_DatabasePtr_l
+				RES_FREEPTR Lvl_IntroTextPtr_l
+				RES_FREEPTR Draw_BackdropImagePtr_l
+				move.w	#DRAW_MAX_OBJECTS*4-1,d2
+				lea		Draw_ObjectPtrs_vl,a2
+				bsr		res_FreeList
+				moveq	#DRAW_MAX_POLY_OBJECTS-1,d2
+				lea		Draw_PolyObjects_vl,a2
+				; fall through
 
-.end_release_obj:
+; d2 = number of pointers-1, a2=list
+res_FreeList:
+				move.l	(a2)+,a1
+				CALLEXEC FreeVec
+				dbf		d2,res_FreeList
 				rts
 
 ; *****************************************************************************
@@ -229,9 +234,9 @@ Res_LoadFloorTextures:
 				rts
 
 Res_FreeFloorTextures:
-				move.l	Draw_FloorTexturesPtr_l,d1
-				CALLEXEC FreeVec
-				clr.l	Draw_FloorTexturesPtr_l
+				RES_FREEPTR Draw_FloorTexturesPtr_l
+				RES_FREEPTR Draw_TextureMapsPtr_l
+				RES_FREEPTR Draw_TexturePalettePtr_l
 				rts
 
 ; *****************************************************************************
@@ -248,7 +253,7 @@ Res_LoadWallTextures:
 				;* the files in...
 
 				move.l	#Draw_WallTexturePtrs_vl,a0
-				moveq	#39,d7
+				moveq	#DRAW_MAX_WALL_TEXTURES-1,d7
 
 .empty_walls:
 				move.l	#0,(a0)+
@@ -277,27 +282,9 @@ Res_LoadWallTextures:
 				rts
 
 Res_FreeWallTextures:
-				move.l	#Draw_WallTexturePtrs_vl,a0
-.free_mem:
-				move.l	4(a5),d0
-				beq.s	.free_all
-
-				move.l	(a0),d1
-				beq.s	.not_this_mem
-
-				move.l	d1,a1
-				movem.l	a0/a5,-(a7)
-				CALLEXEC FreeVec
-
-				movem.l	(a7)+,a0/a5
-
-.not_this_mem:
-				addq	#8,a5
-				addq	#4,a0
-				bra.s	.free_mem
-
-.free_all:
-				rts
+				lea		Draw_WallTexturePtrs_vl,a2
+				moveq	#DRAW_MAX_WALL_TEXTURES-1,d2
+				bra		res_FreeList
 
 ; *****************************************************************************
 ; *
@@ -306,25 +293,11 @@ Res_FreeWallTextures:
 ; *****************************************************************************
 
 Res_FreeLevelData:
-				move.l	Lvl_WalkLinksPtr_l,a1
-				CALLEXEC FreeVec
-				clr.l	Lvl_WalkLinksPtr_l
-
-				move.l	Lvl_FlyLinksPtr_l,a1
-				CALLEXEC FreeVec
-				clr.l	Lvl_FlyLinksPtr_l
-
-				move.l	Lvl_GraphicsPtr_l,a1
-				CALLEXEC FreeVec
-				clr.l	Lvl_GraphicsPtr_l
-
-				move.l	Lvl_ClipsPtr_l,a1
-				CALLEXEC FreeVec
-				clr.l	Lvl_ClipsPtr_l
-
-				move.l	Lvl_MusicPtr_l,a1
-				CALLEXEC FreeVec
-				clr.l	Lvl_MusicPtr_l
+				RES_FREEPTR Lvl_WalkLinksPtr_l
+				RES_FREEPTR Lvl_FlyLinksPtr_l
+				RES_FREEPTR Lvl_GraphicsPtr_l
+				RES_FREEPTR Lvl_ClipsPtr_l
+				RES_FREEPTR Lvl_MusicPtr_l
 				rts
 
 ; *****************************************************************************

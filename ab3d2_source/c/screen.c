@@ -37,7 +37,7 @@ static PLANEPTR rasters[2];
 struct BitMap bitmaps[2];
 
 static CHIP WORD emptySprite[6];
-static struct UCopList doubleHeightCopList;
+static struct UCopList* doubleHeightCopList;
 extern UBYTE Vid_FullScreen_b;
 extern UWORD Vid_LetterBoxMarginHeight_w;
 
@@ -107,25 +107,29 @@ BOOL Vid_OpenMainScreen(void)
 // "error: initialization discards 'volatile' qualifier from pointer target type "
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
-        CINIT(&doubleHeightCopList, 116 * 6 + 4);  // 232 modulos
+        // FreeVPortCopLists/CloseScreen assumes UCopList's are allocated with AllocMem
+        // See note in Vid_CloseMainScreen
+        doubleHeightCopList = AllocMem(sizeof(*doubleHeightCopList), MEMF_PUBLIC|MEMF_CLEAR);
+        if (!doubleHeightCopList)
+            goto fail;
+        CINIT(doubleHeightCopList, 116 * 6 + 4);  // 232 modulos
 
         int line;
         for (line = 0; line < 232;) {
-            CWAIT(&doubleHeightCopList, line, 0);
-            CMOVE(&doubleHeightCopList, bpl1mod, RepeatLineModulo);
-            CMOVE(&doubleHeightCopList, bpl2mod, RepeatLineModulo);
+            CWAIT(doubleHeightCopList, line, 0);
+            CMOVE(doubleHeightCopList, bpl1mod, RepeatLineModulo);
+            CMOVE(doubleHeightCopList, bpl2mod, RepeatLineModulo);
             ++line;
-            CWAIT(&doubleHeightCopList, line, 0);
-            CMOVE(&doubleHeightCopList, bpl1mod, SkipLineModulo);
-            CMOVE(&doubleHeightCopList, bpl2mod, SkipLineModulo);
+            CWAIT(doubleHeightCopList, line, 0);
+            CMOVE(doubleHeightCopList, bpl1mod, SkipLineModulo);
+            CMOVE(doubleHeightCopList, bpl2mod, SkipLineModulo);
             ++line;
         }
-        CWAIT(&doubleHeightCopList, line, 0);
-        CMOVE(&doubleHeightCopList, bpl1mod, -8);
-        CMOVE(&doubleHeightCopList, bpl2mod, -8);
-        CEND(&doubleHeightCopList);
+        CWAIT(doubleHeightCopList, line, 0);
+        CMOVE(doubleHeightCopList, bpl1mod, -8);
+        CMOVE(doubleHeightCopList, bpl2mod, -8);
+        CEND(doubleHeightCopList);
 #pragma GCC diagnostic pop
-
     } else {
         if (!(Vid_MainScreen_l =
                   OpenScreenTags(NULL, SA_Width, SCREEN_WIDTH, SA_Height, SCREEN_HEIGHT, SA_Depth, 8, SA_Type,
@@ -176,11 +180,14 @@ void Vid_CloseMainScreen()
     LOCAL_GFX();
     if (Vid_MainWindow_l) {
         struct ViewPort *viewPort = ViewPortAddress(Vid_MainWindow_l);
-        if (NULL != viewPort->UCopIns) {
-            /*  Free the memory allocated for the Copper.  */
-            FreeVPortCopLists(viewPort);
-            RemakeDisplay();
-        }
+        // Ugly stuff.
+        // http://amigadev.elowar.com/read/ADCD_2.1/Libraries_Manual_guide/node036A.html
+        // http://amigadev.elowar.com/read/ADCD_2.1/Libraries_Manual_guide/node036B.html
+        //
+        // To get rid of a CINIT'ed pointer (which has to be AllocMem'ed ) we have to use
+        // either FreeVPortCopLists or CloseScreen.
+        viewPort->UCopIns = doubleHeightCopList;
+        doubleHeightCopList = NULL;
 
         CloseWindow(Vid_MainWindow_l);
         Vid_MainWindow_l = NULL;
@@ -192,6 +199,10 @@ void Vid_CloseMainScreen()
                 FreeScreenBuffer(Vid_MainScreen_l, Vid_ScreenBuffers_vl[i]);
                 Vid_ScreenBuffers_vl[i] = 0;
             }
+        }
+        if (Vid_DisplayMsgPort_l) {
+            DeleteMsgPort(Vid_DisplayMsgPort_l);
+            Vid_DisplayMsgPort_l = NULL;
         }
     }
 
@@ -214,7 +225,7 @@ void vid_SetupDoubleheightCopperlist(void)
 
     struct ViewPort *vp = ViewPortAddress(Vid_MainWindow_l);
     Forbid();
-    vp->UCopIns = (Vid_DoubleHeight_b ? &doubleHeightCopList : NULL);
+    vp->UCopIns = (Vid_DoubleHeight_b ? doubleHeightCopList : NULL);
     Permit();
     RethinkDisplay();
 }

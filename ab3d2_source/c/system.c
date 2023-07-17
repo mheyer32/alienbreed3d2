@@ -110,9 +110,6 @@ BOOL Sys_OpenLibs(void)
 {
     LOCAL_SYSBASE();
 
-    if (!(DOSBase = (struct DosLibrary *)OpenLibrary(DOSNAME, 0))) {
-        goto fail;
-    }
     if (!(GfxBase = (struct GfxBase *)OpenLibrary(GRAPHICSNAME, 36))) {
         goto fail;
     }
@@ -182,7 +179,6 @@ void Sys_CloseLibs(void)
 
     CLOSELIB(IntuitionBase);
     CLOSELIB(GfxBase);
-    CLOSELIB(DOSBase);
     CLOSELIB(CyberGfxBase);
 }
 
