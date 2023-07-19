@@ -13,10 +13,13 @@
 draw_NarrateTextTime_w:
 				dc.w	5
 
-; move me
-Energy:			dc.w	191
+; move me#
+_draw_DisplayEnergyCount_w::
+draw_DisplayEnergyCount_w: dc.w	191
 OldEnergy:		dc.w	191
-Ammo:			dc.w	63
+
+_draw_DisplayAmmoCount_w::
+draw_DisplayAmmoCount_w:	dc.w	63
 OldAmmo:		dc.w	63
 
 firstdigit_b:	dc.b	0
@@ -156,7 +159,7 @@ Draw_BorderAmmoBar:
 				addq	#1,d0
 				dbra	d2,.putingunnums
 
-				move.w	Ammo,d0
+				move.w	draw_DisplayAmmoCount_w,d0
 
 				cmp.w	#999,d0
 				blt.s	.okammo
@@ -175,7 +178,7 @@ Draw_BorderAmmoBar:
 				move.b	d0,secdigit_b
 
 				move.l	#draw_BorderChars_vb+15*8*10,a0
-				cmp.w	#10,Ammo
+				cmp.w	#10,draw_DisplayAmmoCount_w
 				blt.s	.notsmallamo
 				add.l	#7*8*10,a0
 .notsmallamo:
@@ -203,7 +206,7 @@ Draw_BorderAmmoBar:
 
 ;
 Draw_BorderEnergyBar:
-				move.w	Energy,d0
+				move.w	draw_DisplayEnergyCount_w,d0
 				bge.s	.okpo
 				moveq	#0,d0
 .okpo:
@@ -225,7 +228,7 @@ Draw_BorderEnergyBar:
 				move.b	d0,secdigit_b
 
 				move.l	#draw_BorderChars_vb+15*8*10,a0
-				cmp.w	#10,Energy
+				cmp.w	#10,draw_DisplayEnergyCount_w
 				blt.s	.notsmallamo
 				add.l	#7*8*10,a0
 .notsmallamo:
@@ -268,7 +271,14 @@ Draw_BorderEnergyBar:
 
 				rts
 
-
+; Draws an 8x7 (?) digit for the draw_DisplayAmmoCount_w / Health counters
+; a1 points to first plane offset (coordinates are aligned to byte locations)
+; a2 points to source digit defintion on the first plane
+; d0 contains the digit
+; d1 contains the pixel height of the glyph
+;
+; Destination planes are separated by 320 * 256 / 8 = 10240 bytes
+; Source planes are separated by 80 bytes
 draw_BorderDigit:
 				ext.w	d0
 				lea		(a0,d0.w),a2
@@ -285,8 +295,8 @@ draw_BorderDigit:
 				move.b	60(a2),(a3)
 				move.b	70(a2),10240(a3)
 
-				add.w	#10*8,a2
-				add.w	#40,a1
+				add.w	#10*8,a2 ; next source scanline
+				add.w	#40,a1   ; next destination scanline
 				dbra	d1,.charlines
 
 				rts

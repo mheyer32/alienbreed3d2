@@ -756,11 +756,11 @@ TWOPLAYER:
 				rts
 
 				move.w	#0,OldEnergy
-				move.w	#127,Energy
+				move.w	#127,draw_DisplayEnergyCount_w
 				CALLC	Draw_BorderEnergyBar
 
 				move.w	#63,OldAmmo
-				move.w	#0,Ammo
+				move.w	#0,draw_DisplayAmmoCount_w
 				CALLC	Draw_BorderAmmoBar
 				move.w	#0,OldAmmo
 

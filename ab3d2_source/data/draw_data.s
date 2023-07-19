@@ -32,6 +32,7 @@ draw_FontPtrs_vl:
 				dc.l	ENDFONT2,CHARWIDTHS2
 
 				align 4
+_draw_BorderChars_vb::
 draw_BorderChars_vb:
 				incbin	"includes/bordercharsraw"
 

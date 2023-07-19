@@ -74,15 +74,16 @@ BOOL Vid_OpenMainScreen(void)
         Vid_Screen1Ptr_l = bitmaps[0].Planes[0];
         Vid_Screen2Ptr_l = bitmaps[1].Planes[0];
 
-        if (!(Vid_MainScreen_l =
-                  OpenScreenTags(NULL, SA_Width, SCREEN_WIDTH, SA_Height, SCREEN_HEIGHT, SA_Depth, 8, SA_BitMap,
-                                 (Tag)&bitmaps[0], SA_Type, CUSTOMSCREEN, SA_Quiet, 1,
+        if (!(Vid_MainScreen_l = OpenScreenTags(
+			NULL, SA_Width, SCREEN_WIDTH, SA_Height, SCREEN_HEIGHT, SA_Depth, 8, SA_BitMap,
+			(Tag)&bitmaps[0], SA_Type, CUSTOMSCREEN, SA_Quiet, 1,
 #ifdef SCREEN_TITLEBAR_HACK
-                                 SA_ShowTitle, 0,
+			SA_ShowTitle, 0,
 #else
-                                 SA_ShowTitle, 1,
+			SA_ShowTitle, 1,
 #endif
-                                 SA_AutoScroll, 0, SA_FullPalette, 1, SA_DisplayID, Vid_ScreenMode, TAG_END, 0))) {
+			SA_AutoScroll, 0, SA_FullPalette, 1, SA_DisplayID, Vid_ScreenMode, TAG_END, 0))
+		) {
             goto fail;
         };
 
@@ -156,10 +157,12 @@ BOOL Vid_OpenMainScreen(void)
         }
     }
 
-    if (!(Vid_MainWindow_l = OpenWindowTags(NULL, WA_Left, 0, WA_Top, 0, WA_Width, SCREEN_WIDTH, WA_Height,
-                                            SCREEN_HEIGHT, WA_CustomScreen, (Tag)Vid_MainScreen_l, WA_Activate, 1,
-                                            WA_Borderless, 1, WA_RMBTrap, 1,  // prevent menu rendering
-                                            WA_NoCareRefresh, 1, WA_SimpleRefresh, 1, WA_Backdrop, 1, TAG_END, 0))) {
+    if (!(Vid_MainWindow_l = OpenWindowTags(
+		NULL, WA_Left, 0, WA_Top, 0, WA_Width, SCREEN_WIDTH, WA_Height,
+		SCREEN_HEIGHT, WA_CustomScreen, (Tag)Vid_MainScreen_l, WA_Activate, 1,
+		WA_Borderless, 1, WA_RMBTrap, 1,  // prevent menu rendering
+		WA_NoCareRefresh, 1, WA_SimpleRefresh, 1, WA_Backdrop, 1, TAG_END, 0))
+	) {
         goto fail;
     }
 
@@ -378,6 +381,8 @@ static void CopyFrameBuffer(UBYTE *dst, const UBYTE *src, WORD dstBytesPerRow, W
         }
     }
 }
+
+extern void Draw_BorderAmmoBar(void);
 
 void Vid_Present()
 {
