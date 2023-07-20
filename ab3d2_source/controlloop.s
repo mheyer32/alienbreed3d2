@@ -745,7 +745,7 @@ TWOPLAYER:
 				move.l	#Plr1_AmmoCounts_vw,a0
 				move.l	#Plr2_AmmoCounts_vw,a1
 				move.w	#19,d1
-.putinvals
+.putinvals:
 				jsr		GetRand
 				and.w	#63,d0
 				add.w	#5,d0
@@ -755,17 +755,13 @@ TWOPLAYER:
 
 				rts
 
-				move.w	#0,OldEnergy
 				move.w	#127,draw_DisplayEnergyCount_w
 				CALLC	Draw_BorderEnergyBar
 
-				move.w	#63,OldAmmo
 				move.w	#0,draw_DisplayAmmoCount_w
 				CALLC	Draw_BorderAmmoBar
-				move.w	#0,OldAmmo
 
 				move.b	#0,Plr1_GunSelected_b
-
 				move.b	#0,Plr2_GunSelected_b
 				rts
 

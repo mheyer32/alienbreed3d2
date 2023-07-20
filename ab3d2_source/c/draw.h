@@ -6,6 +6,8 @@
 extern void Draw_ResetGameDisplay(void);
 extern BOOL Draw_Init(void);
 extern void Draw_Shutdown(void);
+extern void Draw_UpdateBorder_RTG(APTR bmHandle, ULONG bmBytesPerRow);
+extern void Draw_UpdateBorder_Planar(void);
 
 extern UBYTE *Vid_FastBufferPtr_l;
 

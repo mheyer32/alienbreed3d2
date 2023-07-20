@@ -382,7 +382,7 @@ static void CopyFrameBuffer(UBYTE *dst, const UBYTE *src, WORD dstBytesPerRow, W
     }
 }
 
-extern void Draw_BorderAmmoBar(void);
+extern void Draw_UpdateBorder_RTG(APTR bmBaseAdress, ULONG bmBytesPerRow);
 
 void Vid_Present()
 {
@@ -392,9 +392,16 @@ void Vid_Present()
         UBYTE *bmdata;
         ULONG bmBytesPerRow;
         ULONG bmHeight;
-        APTR bmHandle =
-            LockBitMapTags(Vid_MainScreen_l->ViewPort.RasInfo->BitMap, LBMI_BYTESPERROW, (ULONG)&bmBytesPerRow,
-                           LBMI_BASEADDRESS, (ULONG)&bmdata, LBMI_HEIGHT, (ULONG)&bmHeight, TAG_DONE);
+        APTR bmHandle = LockBitMapTags(
+            Vid_MainScreen_l->ViewPort.RasInfo->BitMap,
+            LBMI_BYTESPERROW,
+            (ULONG)&bmBytesPerRow,
+            LBMI_BASEADDRESS,
+            (ULONG)&bmdata,
+            LBMI_HEIGHT,
+            (ULONG)&bmHeight,
+            TAG_DONE
+        );
 
         if (bmHandle) {
             if (Vid_FullScreen_b) {
@@ -403,8 +410,13 @@ void Vid_Present()
                 BYTE *dst = bmdata + topOffsett;
                 const BYTE *src = Vid_FastBufferPtr_l + topOffsett;
 
-                if ((FS_WIDTH == SCREEN_WIDTH) && (bmBytesPerRow == SCREEN_WIDTH) && Vid_FullScreen_b &&
-                    !Vid_DoubleHeight_b && !Vid_DoubleWidth_b) {
+                if (
+                    (FS_WIDTH == SCREEN_WIDTH) &&
+                    (bmBytesPerRow == SCREEN_WIDTH) &&
+                    Vid_FullScreen_b &&
+                    !Vid_DoubleHeight_b &&
+                    !Vid_DoubleWidth_b
+                ) {
                     CopyMemQuick(src, dst, SCREEN_WIDTH * height);
                 } else {
                     CopyFrameBuffer(dst, src, bmBytesPerRow, SCREEN_WIDTH, height);
@@ -417,6 +429,9 @@ void Vid_Present()
 
                 CopyFrameBuffer(dst, src, bmBytesPerRow, SMALL_WIDTH, height);
             }
+
+            Draw_UpdateBorder_RTG(bmdata, bmBytesPerRow);
+
             UnLockBitMap(bmHandle);
         } else {
             KPrintF("Could not lock bitmap\n");
