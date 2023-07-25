@@ -200,14 +200,10 @@ void Draw_ResetGameDisplay()
         ULONG bmBytesPerRow;
         APTR bmBaseAddress;
 
-        APTR bmHandle = LockBitMapTags(
-            Vid_MainScreen_l->ViewPort.RasInfo->BitMap,
-            LBMI_BYTESPERROW,
-            (ULONG)&bmBytesPerRow,
-            LBMI_BASEADDRESS,
-            (ULONG)&bmBaseAddress,
-            TAG_DONE
-        );
+        APTR bmHandle = LockBitMapTags(Vid_MainScreen_l->ViewPort.RasInfo->BitMap,
+                                       LBMI_BYTESPERROW, (ULONG)&bmBytesPerRow,
+                                       LBMI_BASEADDRESS, (ULONG)&bmBaseAddress,
+                                       TAG_DONE);
         if (bmHandle) {
             const UBYTE *src = draw_Border;
             WORD height = Vid_ScreenHeight < SCREEN_HEIGHT ? Vid_ScreenHeight : SCREEN_HEIGHT;
@@ -343,7 +339,7 @@ void Draw_UpdateBorder_RTG(APTR bmBaseAddress, ULONG bmBytesPerRow)
 static void draw_PlanarToChunky(UBYTE *chunkyPtr, const PLANEPTR *planePtrs, ULONG numPixels)
 {
     BitPlanes pptr;
-    for (BYTE p = 0; p < 8; ++p) {
+    for (UWORD p = 0; p < 8; ++p) {
         pptr[p] = planePtrs[p];
     }
 
@@ -358,7 +354,7 @@ static void draw_PlanarToChunky(UBYTE *chunkyPtr, const PLANEPTR *planePtrs, ULO
             }
         }
         chunkyPtr += 8;
-        for (BYTE p = 0; p < 8; ++p) {
+        for (UWORD p = 0; p < 8; ++p) {
             pptr[p]++;
         }
     }
@@ -371,15 +367,15 @@ static void draw_ConvertPlanarDigits(UBYTE* chunkyPtr, const UBYTE *planarBasePt
     BitPlanes planes;
     const UBYTE *base_digit = planarBasePtr;
     UBYTE *out_digit  = chunkyPtr;
-    for (int d = 0; d < 10; ++d) {
+    for (UWORD d = 0; d < 10; ++d) {
         const UBYTE *digit = base_digit + d;
-        for (int p = 0; p < 8; ++p) {
+        for (UWORD p = 0; p < 8; ++p) {
             planes[p] = (PLANEPTR)(digit + p * 10);
         }
 
         for (UWORD y = 0; y <  height; ++y) {
             draw_PlanarToChunky(out_digit, planes, width);
-            for (int p = 0; p < 8; ++p) {
+            for (UWORD p = 0; p < 8; ++p) {
                 planes[p] += width * 10;
             }
             out_digit += width;
@@ -401,15 +397,15 @@ static void draw_UpdateCounter_RTG(APTR bmBaseAddress, ULONG bmBytesPerRow, UWOR
 
     /* Render the digits into the mini buffer */
     UBYTE* bufferPtr = draw_BorderDigitsBuffer;
-    for (int i = 0; i < 3; ++i, bufferPtr += DRAW_HUD_CHAR_W) {
-        draw_RenderCounterDigit_RTG(bufferPtr, glyphPtr, digits[i], DRAW_COUNT_W);
+    for (UWORD d = 0; d < 3; ++d, bufferPtr += DRAW_HUD_CHAR_W) {
+        draw_RenderCounterDigit_RTG(bufferPtr, glyphPtr, digits[d], DRAW_COUNT_W);
     }
 
     /* Copy the mini buffer to the bitmap */
     UBYTE* drawPtr = ((UBYTE*)bmBaseAddress) + xPos + yPos * bmBytesPerRow;
 
     bufferPtr = draw_BorderDigitsBuffer;
-    for (int i = 0; i < DRAW_HUD_CHAR_H; ++i, drawPtr += bmBytesPerRow, bufferPtr += DRAW_COUNT_W) {
+    for (UWORD y = 0; y < DRAW_HUD_CHAR_H; ++y, drawPtr += bmBytesPerRow, bufferPtr += DRAW_COUNT_W) {
 
 #ifdef RTG_LONG_ALIGNED
         CopyMemQuick(bufferPtr, drawPtr, DRAW_COUNT_W);
@@ -424,23 +420,24 @@ static void draw_UpdateItems_RTG(APTR bmBaseAddress, ULONG bmBytesPerRow, const 
 
     /* Render into the minibuffer */
     UBYTE *bufferPtr = draw_BorderDigitsBuffer;
-    for (UBYTE i=0; i < DRAW_NUM_WEAPON_SLOTS; ++i, bufferPtr += DRAW_HUD_CHAR_SMALL_W) {
+    for (UWORD i = 0; i < DRAW_NUM_WEAPON_SLOTS; ++i, bufferPtr += DRAW_HUD_CHAR_SMALL_W) {
         const UBYTE *glyphPtr = itemSelected == i ?
             draw_BorderDigitsItemSelected :
             itemSlots[i] ?
                 draw_BorderDigitsItemFound :
                 draw_BorderDigitsItem;
+
         draw_RenderItemDigit_RTG(bufferPtr, glyphPtr, i, DRAW_HUD_CHAR_SMALL_W * 10);
     }
 
     /* Copy the mini buffer to the bitmap */
     bufferPtr = draw_BorderDigitsBuffer;
-    for (int i = 0; i < DRAW_HUD_CHAR_SMALL_H; ++i, drawPtr += bmBytesPerRow, bufferPtr += DRAW_HUD_CHAR_SMALL_W*10) {
+    for (UWORD i = 0; i < DRAW_HUD_CHAR_SMALL_H; ++i, drawPtr += bmBytesPerRow, bufferPtr += DRAW_HUD_CHAR_SMALL_W * 10) {
 
 #ifdef RTG_LONG_ALIGNED
-        CopyMemQuick(bufferPtr, drawPtr, DRAW_HUD_CHAR_SMALL_W*10);
+        CopyMemQuick(bufferPtr, drawPtr, DRAW_HUD_CHAR_SMALL_W * 10);
 #else
-        memcpy(drawPtr, bufferPtr, DRAW_HUD_CHAR_SMALL_W*10);
+        memcpy(drawPtr, bufferPtr, DRAW_HUD_CHAR_SMALL_W * 10);
 #endif
     }
 
@@ -455,16 +452,16 @@ static void draw_RenderCounterDigit_RTG(UBYTE *drawPtr, const UBYTE *glyphPtr, U
     const ULONG *digitPtr = (ULONG*)&glyphPtr[digit * DRAW_HUD_CHAR_W * DRAW_HUD_CHAR_H];
     ULONG *drawPtr32 = (ULONG*)drawPtr;
     span >>= 2;
-    for (int y = 0; y < DRAW_HUD_CHAR_H; ++y) {
-        for (int x = 0; x < DRAW_HUD_CHAR_W/sizeof(ULONG); ++x) {
+    for (UWORD y = 0; y < DRAW_HUD_CHAR_H; ++y) {
+        for (UWORD x = 0; x < DRAW_HUD_CHAR_W / sizeof(ULONG); ++x) {
             drawPtr32[x] = *digitPtr++;
         }
         drawPtr32 += span;
     }
 #else
     const UBYTE *digitPtr = &glyphPtr[digit * DRAW_HUD_CHAR_W * DRAW_HUD_CHAR_H];
-    for (int y = 0; y < DRAW_HUD_CHAR_H; ++y) {
-        for (int x = 0; x < DRAW_HUD_CHAR_W; ++x) {
+    for (UWORD y = 0; y < DRAW_HUD_CHAR_H; ++y) {
+        for (UWORD x = 0; x < DRAW_HUD_CHAR_W; ++x) {
             drawPtr[x] = *digitPtr++;
         }
         drawPtr += span;
@@ -481,16 +478,16 @@ static void draw_RenderItemDigit_RTG(UBYTE *drawPtr, const UBYTE *glyphPtr, UWOR
     const ULONG *digitPtr = (ULONG*)&glyphPtr[digit * DRAW_HUD_CHAR_SMALL_W * DRAW_HUD_CHAR_SMALL_H];
     ULONG *drawPtr32 = (ULONG*)drawPtr;
     span >>= 2;
-    for (int y = 0; y < DRAW_HUD_CHAR_SMALL_H; ++y) {
-        for (int x = 0; x < DRAW_HUD_CHAR_SMALL_W/sizeof(ULONG); ++x) {
+    for (UWORD y = 0; y < DRAW_HUD_CHAR_SMALL_H; ++y) {
+        for (UWORD x = 0; x < DRAW_HUD_CHAR_SMALL_W / sizeof(ULONG); ++x) {
             drawPtr32[x] = *digitPtr++;
         }
         drawPtr32 += span;
     }
 #else
     const UBYTE *digitPtr = &glyphPtr[digit * DRAW_HUD_CHAR_SMALL_W * DRAW_HUD_CHAR_SMALL_H];
-    for (int y = 0; y < DRAW_HUD_CHAR_SMALL_H; ++y) {
-        for (int x = 0; x < DRAW_HUD_CHAR_SMALL_W; ++x) {
+    for (UWORD y = 0; y < DRAW_HUD_CHAR_SMALL_H; ++y) {
+        for (UWORD x = 0; x < DRAW_HUD_CHAR_SMALL_W; ++x) {
             drawPtr[x] = *digitPtr++;
         }
         drawPtr += span;
