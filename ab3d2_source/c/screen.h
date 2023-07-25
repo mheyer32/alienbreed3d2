@@ -6,6 +6,11 @@
 #define SCREEN_WIDTH (UWORD)320
 #define SCREEN_HEIGHT (UWORD)256
 
+/**
+ * Define RTG_LONG_ALIGNED if you expect to perform 32-bit access to VRAM only
+ */
+#define RTG_LONG_ALIGNED
+
 #ifndef FS_HEIGHT_HACK
 #define FS_HEIGHT (SCREEN_HEIGHT - (UWORD)16)
 #define FS_HEIGHT_C2P_DIFF (UWORD)8

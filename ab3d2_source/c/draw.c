@@ -10,24 +10,14 @@
 #include <string.h>  //memset
 
 /**
- * TODO We do a lot of things here on the assumption that we are going to be using an RTG display, but that is a runtime
- * determined fact. We should only allocate and convert chunky representations of planar assets if, and only if, we are
- * on an RTG screen.
+ * TODO - dynamically allocate chunky buffers for RTG along with the main display.
  */
-
-#define RTG_LONG_ALIGNED
 
 #define MULTIPLAYER_SLAVE  ((BYTE)'s')
 #define MULTIPLAYER_MASTER ((BYTE)'m')
 
-
 #define VID_FAST_BUFFER_SIZE (SCREEN_WIDTH * SCREEN_HEIGHT + 4095)
 #define PLANESIZE (SCREEN_WIDTH / 8 * SCREEN_HEIGHT)
-
-/* These define limits for when the displayed count*/
-#define LOW_AMMO_COUNT_WARN_LIMIT 9
-#define LOW_ENERGY_COUNT_WARN_LIMIT 9
-#define DISPLAY_COUNT_LIMIT 999
 
 extern void unLHA(REG(a0, void *dst), REG(d0, const void *src), REG(d1, ULONG length), REG(a1, void *workspace),
                   REG(a2, void *X));
@@ -66,6 +56,8 @@ static UBYTE draw_BorderDigitsItemFound[DRAW_HUD_CHAR_SMALL_W * DRAW_HUD_CHAR_SM
 /** Border digits for item selected */
 static UBYTE draw_BorderDigitsItemSelected[DRAW_HUD_CHAR_SMALL_W * DRAW_HUD_CHAR_SMALL_H * 10];
 
+static UWORD draw_LastItemList      = 0xFFFF;
+static UWORD draw_LastItemSelected  = 0xFFFF;
 
 /* Small buffer for rendering digit displays into */
 static UBYTE draw_BorderDigitsBuffer[DRAW_HUD_CHAR_SMALL_H * DRAW_HUD_CHAR_SMALL_W * 10];
@@ -74,7 +66,7 @@ static UBYTE *FastBufferAllocPtr;
 
 static void draw_PlanarToChunky(UBYTE *chunky, const PLANEPTR *planes, ULONG numPixels);
 static void draw_ValueToDigits(UWORD value, UWORD digits[3]);
-static void draw_GenerateCounterDigits_RTG(UBYTE* chunky, const UBYTE *planar, UWORD height);
+static void draw_ConvertPlanarDigits(UBYTE* chunky, const UBYTE *planar, UWORD width, UWORD height);
 static void draw_RenderCounterDigit_RTG(UBYTE *drawPtr, const UBYTE *glyphs, UWORD digit, UWORD span);
 static void draw_RenderItemDigit_RTG(UBYTE *drawPtr, const UBYTE *glyphs, UWORD digit, UWORD span);
 
@@ -96,8 +88,22 @@ static void draw_UpdateItems_RTG(
     UWORD yPos
 );
 
+/**
+ * Reset the counters used to determine if the HUD has changed.
+ */
+static __inline void draw_ResetHUDCounters(void)
+{
+    draw_LastItemList =
+    draw_LastItemSelected =
+    draw_LastDisplayAmmoCount_w =
+    draw_LastDisplayEnergyCount_w = 0xFFFF;
+}
+
 /**********************************************************************************************************************/
 
+/**
+ * Main initialisation. Get buffers, do any preconversion needed, etc.
+ */
 BOOL Draw_Init()
 {
     if (!(FastBufferAllocPtr = AllocVec(VID_FAST_BUFFER_SIZE, MEMF_FAST))) {
@@ -106,50 +112,60 @@ BOOL Draw_Init()
 
     Vid_FastBufferPtr_l = (UBYTE *)(((ULONG)FastBufferAllocPtr + 15) & ~15);
 
-    unLHA(Vid_FastBufferPtr_l, draw_BorderPacked_vb, 0, Sys_Workspace_vl, NULL);
+    if (Vid_isRTG) {
+        BitPlanes planes;
+        unLHA(Vid_FastBufferPtr_l, draw_BorderPacked_vb, 0, Sys_Workspace_vl, NULL);
 
-    BitPlanes planes;
+        for (int p = 0; p < 8; ++p) {
+            planes[p] = Vid_FastBufferPtr_l + PLANESIZE * p;
+        };
 
-    for (int p = 0; p < 8; ++p) {
-        planes[p] = Vid_FastBufferPtr_l + PLANESIZE * p;
-    };
+        /* The image we have has a fixed size */
+        draw_PlanarToChunky(draw_Border, planes, SCREEN_WIDTH * SCREEN_HEIGHT);
 
-    // The image we have has a fixed size
-    draw_PlanarToChunky(draw_Border, planes, SCREEN_WIDTH * SCREEN_HEIGHT);
+        /* Convert the "low ammo/health" counter digits */
+        draw_ConvertPlanarDigits(
+            draw_BorderDigitsWarn,
+            draw_BorderChars_vb + 15 * DRAW_HUD_CHAR_W * 10,
+            DRAW_HUD_CHAR_W,
+            DRAW_HUD_CHAR_H
+        );
 
-    draw_GenerateCounterDigits_RTG(
-        draw_BorderDigitsWarn,
-        draw_BorderChars_vb + 15 * DRAW_HUD_CHAR_W * 10,
-        DRAW_HUD_CHAR_H
-    );
+        /* Convert the normal counter digits */
+        draw_ConvertPlanarDigits(
+            draw_BorderDigitsGood,
+            draw_BorderChars_vb + 15 * DRAW_HUD_CHAR_W * 10 + DRAW_HUD_CHAR_H * DRAW_HUD_CHAR_W * 10,
+            DRAW_HUD_CHAR_W,
+            DRAW_HUD_CHAR_H
+        );
 
-    draw_GenerateCounterDigits_RTG(
-        draw_BorderDigitsGood,
-        draw_BorderChars_vb + 15 * DRAW_HUD_CHAR_W * 10 + DRAW_HUD_CHAR_H*DRAW_HUD_CHAR_W * 10,
-        DRAW_HUD_CHAR_H
-    );
+        /* Convert the unavailable item digits */
+        draw_ConvertPlanarDigits(
+            draw_BorderDigitsItem,
+            draw_BorderChars_vb,
+            DRAW_HUD_CHAR_SMALL_W,
+            DRAW_HUD_CHAR_SMALL_H
+        );
 
-    draw_GenerateCounterDigits_RTG(
-        draw_BorderDigitsItem,
-        draw_BorderChars_vb,
-        DRAW_HUD_CHAR_SMALL_H
-    );
+        /* Convert the available item digits */
+        draw_ConvertPlanarDigits(
+            draw_BorderDigitsItemFound,
+            draw_BorderChars_vb + DRAW_HUD_CHAR_SMALL_H * 10 * DRAW_HUD_CHAR_SMALL_W,
+            DRAW_HUD_CHAR_SMALL_W,
+            DRAW_HUD_CHAR_SMALL_H
+        );
 
-    draw_GenerateCounterDigits_RTG(
-        draw_BorderDigitsItemFound,
-        draw_BorderChars_vb + DRAW_HUD_CHAR_SMALL_H * 10 * DRAW_HUD_CHAR_SMALL_W,
-        DRAW_HUD_CHAR_SMALL_H
-    );
+        /* Convert the selected item digits */
+        draw_ConvertPlanarDigits(
+            draw_BorderDigitsItemSelected,
+            draw_BorderChars_vb + DRAW_HUD_CHAR_SMALL_H * 10 * DRAW_HUD_CHAR_SMALL_W * 2,
+            DRAW_HUD_CHAR_SMALL_W,
+            DRAW_HUD_CHAR_SMALL_H
+        );
 
-    draw_GenerateCounterDigits_RTG(
-        draw_BorderDigitsItemSelected,
-        draw_BorderChars_vb + DRAW_HUD_CHAR_SMALL_H * 10 * DRAW_HUD_CHAR_SMALL_W * 2,
-        DRAW_HUD_CHAR_SMALL_H
-    );
+    }
 
-    draw_LastDisplayAmmoCount_w =
-    draw_LastDisplayEnergyCount_w = 0xFFFF;
-
+    draw_ResetHUDCounters();
     return TRUE;
 
 fail:
@@ -157,6 +173,9 @@ fail:
     return FALSE;
 }
 
+/**
+ * All done.
+ */
 void Draw_Shutdown()
 {
     if (FastBufferAllocPtr) {
@@ -165,6 +184,9 @@ void Draw_Shutdown()
     }
 }
 
+/**
+ * Re initialise the game display, clear out the previous view, reset HUD, etc.
+ */
 void Draw_ResetGameDisplay()
 {
     if (!Vid_isRTG) {
@@ -202,8 +224,7 @@ void Draw_ResetGameDisplay()
             }
 
             /* Retrigger the counters */
-            draw_LastDisplayAmmoCount_w   =
-            draw_LastDisplayEnergyCount_w = 0xFFFF;
+            draw_ResetHUDCounters();
             Draw_UpdateBorder_RTG(bmBaseAddress, bmBytesPerRow);
 
             UnLockBitMap(bmHandle);
@@ -211,24 +232,39 @@ void Draw_ResetGameDisplay()
     }
 }
 
-
+/**
+ * Todo
+ */
 void Draw_LineOfText(REG(a0, const char *ptr), REG(a1, APTR screenPointer), REG(d0,  ULONG xxxx))
 {
 
 }
 
+/**
+ * Todo - implement AGA planar version of the HUD update
+ */
 void Draw_BorderAmmoBar()
 {
 
 }
 
-
+/**
+ * Todo - implement AGA planar version of the HUD update
+ */
 void Draw_BorderEnergyBar()
 {
 
 }
 
 /**********************************************************************************************************************/
+
+static __inline WORD draw_ScreenXPos(WORD xPos) {
+    return xPos >= 0 ? xPos : Vid_ScreenWidth + xPos;
+}
+
+static __inline WORD draw_ScreenYPos(WORD yPos) {
+    return yPos >= 0 ? yPos : Vid_ScreenHeight + yPos;
+}
 
 /**
  * Called during Vid_Present on the RTG codepath to update the border within the main bitmap lock. Also called when
@@ -238,6 +274,7 @@ void Draw_UpdateBorder_RTG(APTR bmBaseAddress, ULONG bmBytesPerRow)
 {
     const UWORD* itemSlots;
     UWORD itemSelected;
+    UWORD itemList = 0;
 
     if (Plr_MultiplayerType_b == MULTIPLAYER_SLAVE) {
         itemSlots    = Plr2_Weapons_vb;
@@ -248,15 +285,31 @@ void Draw_UpdateBorder_RTG(APTR bmBaseAddress, ULONG bmBytesPerRow)
         itemSelected = Plr1_TmpGunSelected_b;
     }
 
-    draw_UpdateItems_RTG(
-        bmBaseAddress,
-        bmBytesPerRow,
-        itemSlots,
-        itemSelected,
-        DRAW_HUD_ITEM_SLOTS_X,
-        DRAW_HUD_ITEM_SLOTS_Y
-    );
+    /**
+     * Convert the item list to a simple bitfield for comparison.
+     *
+     * TODO We should come back and do the same thing to the original data in the assembler code, having a word per gun
+     * is silly since ammo counts are tracked separately anyway. We can just use a bitfield as there are only 10 types
+     * (provided we don't intend to extend that beyond say 32).
+     */
+    for (UWORD i = 0; i < DRAW_NUM_WEAPON_SLOTS; ++i) {
+        itemList |= (itemSlots[i]) ? (1 << i) : 0;
+    }
 
+    if (itemSelected != draw_LastItemSelected || itemList != draw_LastItemList) {
+        draw_LastItemSelected = itemSelected;
+        draw_LastItemList     = itemList;
+
+        /* Inventory */
+        draw_UpdateItems_RTG(
+            bmBaseAddress,
+            bmBytesPerRow,
+            itemSlots,
+            itemSelected,
+            draw_ScreenXPos(DRAW_HUD_ITEM_SLOTS_X),
+            draw_ScreenYPos(DRAW_HUD_ITEM_SLOTS_Y)
+        );
+    }
     /* Ammunition */
     if (draw_LastDisplayAmmoCount_w != draw_DisplayAmmoCount_w) {
         draw_LastDisplayAmmoCount_w = draw_DisplayAmmoCount_w;
@@ -265,8 +318,8 @@ void Draw_UpdateBorder_RTG(APTR bmBaseAddress, ULONG bmBytesPerRow)
             bmBytesPerRow,
             draw_DisplayAmmoCount_w,
             LOW_AMMO_COUNT_WARN_LIMIT,
-            DRAW_HUD_AMMO_COUNT_X,
-            DRAW_HUD_AMMO_COUNT_Y
+            draw_ScreenXPos(DRAW_HUD_AMMO_COUNT_X),
+            draw_ScreenYPos(DRAW_HUD_AMMO_COUNT_Y)
         );
     }
 
@@ -278,16 +331,16 @@ void Draw_UpdateBorder_RTG(APTR bmBaseAddress, ULONG bmBytesPerRow)
             bmBytesPerRow,
             draw_DisplayEnergyCount_w,
             LOW_ENERGY_COUNT_WARN_LIMIT,
-            DRAW_HUD_ENERGY_COUNT_X,
-            DRAW_HUD_ENERGY_COUNT_Y
+            draw_ScreenXPos(DRAW_HUD_ENERGY_COUNT_X),
+            draw_ScreenYPos(DRAW_HUD_ENERGY_COUNT_Y)
         );
     }
 }
 
 /**
- * Convert planar assets to chunky
+ * Convert planar graphics to chunky
  */
-static void draw_PlanarToChunky(UBYTE *chunkyPtr, PLANEPTR const *planePtrs, ULONG numPixels)
+static void draw_PlanarToChunky(UBYTE *chunkyPtr, const PLANEPTR *planePtrs, ULONG numPixels)
 {
     BitPlanes pptr;
     for (BYTE p = 0; p < 8; ++p) {
@@ -314,7 +367,7 @@ static void draw_PlanarToChunky(UBYTE *chunkyPtr, PLANEPTR const *planePtrs, ULO
 /**
  * Converts the border digits used for ammo/health from their initial planar representation to a chunky one
  */
-static void draw_GenerateCounterDigits_RTG(UBYTE* chunkyPtr, const UBYTE *planarBasePtr, UWORD height) {
+static void draw_ConvertPlanarDigits(UBYTE* chunkyPtr, const UBYTE *planarBasePtr, UWORD width, UWORD height) {
     BitPlanes planes;
     const UBYTE *base_digit = planarBasePtr;
     UBYTE *out_digit  = chunkyPtr;
@@ -325,11 +378,11 @@ static void draw_GenerateCounterDigits_RTG(UBYTE* chunkyPtr, const UBYTE *planar
         }
 
         for (UWORD y = 0; y <  height; ++y) {
-            draw_PlanarToChunky(out_digit, planes, DRAW_HUD_CHAR_W);
+            draw_PlanarToChunky(out_digit, planes, width);
             for (int p = 0; p < 8; ++p) {
-                planes[p] += DRAW_HUD_CHAR_W * 10;
+                planes[p] += width * 10;
             }
-            out_digit += DRAW_HUD_CHAR_W;
+            out_digit += width;
         }
     }
 }
@@ -377,7 +430,7 @@ static void draw_UpdateItems_RTG(APTR bmBaseAddress, ULONG bmBytesPerRow, const 
             itemSlots[i] ?
                 draw_BorderDigitsItemFound :
                 draw_BorderDigitsItem;
-        draw_RenderItemDigit_RTG(bufferPtr, glyphPtr, i, DRAW_HUD_CHAR_SMALL_W*10);
+        draw_RenderItemDigit_RTG(bufferPtr, glyphPtr, i, DRAW_HUD_CHAR_SMALL_W * 10);
     }
 
     /* Copy the mini buffer to the bitmap */
