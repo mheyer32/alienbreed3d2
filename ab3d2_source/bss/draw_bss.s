@@ -83,6 +83,20 @@ draw_Left_w:					ds.w	1
 draw_Right_w:					ds.w	1
 draw_DownStrip_w:				ds.w	1
 
+
+; Border Ammo/Energy
+_draw_DisplayEnergyCount_w::
+draw_DisplayEnergyCount_w:      ds.w	1
+
+_draw_DisplayAmmoCount_w::
+draw_DisplayAmmoCount_w:	    ds.w	1
+
+_draw_LastDisplayEnergyCount_w::
+draw_LastDisplayEnergyCount_w:	ds.w	1
+
+_draw_LastDisplayAmmoCount_w::
+draw_LastDisplayAmmoCount_w:	ds.w	1
+
 draw_WhichDoing_b:				ds.b	1
 draw_InUpperZone_b:				ds.b	1
 Draw_DoUpper_b:					ds.b	1

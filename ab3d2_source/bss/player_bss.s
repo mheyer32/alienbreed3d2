@@ -67,6 +67,8 @@ Plr1_JetpackFuel_w:			ds.w	1
 Plr1_AmmoCounts_vw:			ds.w	20
 Plr1_Shield_w:				ds.w	1
 Plr1_Jetpack_w:				ds.w	1
+
+_Plr1_Weapons_vb::
 Plr1_Weapons_vb:			ds.w	10 ; todo - convert to bytes or bitfield
 
 Plr1_GunFrame_w:			ds.w	1
@@ -100,6 +102,7 @@ Plr1_Used_b:				ds.b	1
 Plr1_TmpClicked_b:			ds.b	1
 Plr1_TmpSpcTap_b:			ds.b	1
 
+_Plr1_TmpGunSelected_b::
 Plr1_TmpGunSelected_b:		ds.b	1
 Plr1_TmpFire_b:				ds.b	1
 
@@ -172,6 +175,8 @@ Plr2_JetpackFuel_w:			ds.w	1
 Plr2_AmmoCounts_vw:			ds.w	20
 Plr2_Shield_w:				ds.w	1
 Plr2_Jetpack_w:				ds.w	1
+
+_Plr2_Weapons_vb::
 Plr2_Weapons_vb:			ds.w	10 ; todo - convert to bytes or bitfield
 
 Plr2_GunFrame_w:			ds.w	1
@@ -205,6 +210,7 @@ Plr2_Used_b:				ds.b	1
 Plr2_TmpClicked_b:			ds.b	1
 Plr2_TmpSpcTap_b:			ds.b	1
 
+_Plr2_TmpGunSelected_b::
 Plr2_TmpGunSelected_b:		ds.b	1
 Plr2_TmpFire_b:				ds.b	1
 
@@ -238,6 +244,7 @@ Plr_AddToBobble_w:				ds.w	1
 ; Private
 plr_FallDamage_w:				ds.w	1 ; fall.s
 
+_Plr_MultiplayerType_b::
 Plr_MultiplayerType_b:			ds.b	1	; CHAR enum - m(aster), s(lave), n(either)
 Plr_Decelerate_b:				ds.b	1
 

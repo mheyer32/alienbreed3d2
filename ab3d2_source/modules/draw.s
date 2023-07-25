@@ -14,13 +14,6 @@ draw_NarrateTextTime_w:
 				dc.w	5
 
 ; move me
-_draw_DisplayEnergyCount_w::
-draw_DisplayEnergyCount_w: dc.w	191
-
-
-_draw_DisplayAmmoCount_w::
-draw_DisplayAmmoCount_w:	dc.w	63
-
 firstdigit_b:	dc.b	0
 secdigit_b:		dc.b	0
 thirddigit_b:	dc.b	0
