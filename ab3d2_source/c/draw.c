@@ -106,7 +106,7 @@ static __inline void draw_ResetHUDCounters(void)
  */
 BOOL Draw_Init()
 {
-    if (!(FastBufferAllocPtr = AllocVec(VID_FAST_BUFFER_SIZE, MEMF_FAST))) {
+    if (!(FastBufferAllocPtr = AllocVec(VID_FAST_BUFFER_SIZE, MEMF_ANY))) {
         goto fail;
     }
 
