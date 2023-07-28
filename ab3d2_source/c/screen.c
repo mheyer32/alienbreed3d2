@@ -74,15 +74,14 @@ BOOL Vid_OpenMainScreen(void)
         Vid_Screen1Ptr_l = bitmaps[0].Planes[0];
         Vid_Screen2Ptr_l = bitmaps[1].Planes[0];
 
-        if (!(Vid_MainScreen_l =
-                  OpenScreenTags(NULL, SA_Width, SCREEN_WIDTH, SA_Height, SCREEN_HEIGHT, SA_Depth, 8, SA_BitMap,
-                                 (Tag)&bitmaps[0], SA_Type, CUSTOMSCREEN, SA_Quiet, 1,
+        if (!(Vid_MainScreen_l = OpenScreenTags(NULL, SA_Width, SCREEN_WIDTH, SA_Height, SCREEN_HEIGHT, SA_Depth, 8, SA_BitMap,
+                                                (Tag)&bitmaps[0], SA_Type, CUSTOMSCREEN, SA_Quiet, 1,
 #ifdef SCREEN_TITLEBAR_HACK
-                                 SA_ShowTitle, 0,
+                                                SA_ShowTitle, 0,
 #else
-                                 SA_ShowTitle, 1,
+			                                    SA_ShowTitle, 1,
 #endif
-                                 SA_AutoScroll, 0, SA_FullPalette, 1, SA_DisplayID, Vid_ScreenMode, TAG_END, 0))) {
+			                                    SA_AutoScroll, 0, SA_FullPalette, 1, SA_DisplayID, Vid_ScreenMode, TAG_END, 0))) {
             goto fail;
         };
 
@@ -110,8 +109,10 @@ BOOL Vid_OpenMainScreen(void)
         // FreeVPortCopLists/CloseScreen assumes UCopList's are allocated with AllocMem
         // See note in Vid_CloseMainScreen
         doubleHeightCopList = AllocMem(sizeof(*doubleHeightCopList), MEMF_PUBLIC|MEMF_CLEAR);
-        if (!doubleHeightCopList)
+        if (!doubleHeightCopList) {
             goto fail;
+        }
+
         CINIT(doubleHeightCopList, 116 * 6 + 4);  // 232 modulos
 
         int line;
@@ -379,6 +380,8 @@ static void CopyFrameBuffer(UBYTE *dst, const UBYTE *src, WORD dstBytesPerRow, W
     }
 }
 
+extern void Draw_UpdateBorder_RTG(APTR bmBaseAdress, ULONG bmBytesPerRow);
+
 void Vid_Present()
 {
     if (Vid_isRTG) {
@@ -387,10 +390,11 @@ void Vid_Present()
         UBYTE *bmdata;
         ULONG bmBytesPerRow;
         ULONG bmHeight;
-        APTR bmHandle =
-            LockBitMapTags(Vid_MainScreen_l->ViewPort.RasInfo->BitMap, LBMI_BYTESPERROW, (ULONG)&bmBytesPerRow,
-                           LBMI_BASEADDRESS, (ULONG)&bmdata, LBMI_HEIGHT, (ULONG)&bmHeight, TAG_DONE);
-
+        APTR bmHandle = LockBitMapTags(Vid_MainScreen_l->ViewPort.RasInfo->BitMap,
+                                       LBMI_BYTESPERROW, (ULONG)&bmBytesPerRow,
+                                       LBMI_BASEADDRESS, (ULONG)&bmdata,
+                                       LBMI_HEIGHT, (ULONG)&bmHeight,
+                                       TAG_DONE);
         if (bmHandle) {
             if (Vid_FullScreen_b) {
                 WORD height = FS_C2P_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
@@ -398,8 +402,13 @@ void Vid_Present()
                 BYTE *dst = bmdata + topOffsett;
                 const BYTE *src = Vid_FastBufferPtr_l + topOffsett;
 
-                if ((FS_WIDTH == SCREEN_WIDTH) && (bmBytesPerRow == SCREEN_WIDTH) && Vid_FullScreen_b &&
-                    !Vid_DoubleHeight_b && !Vid_DoubleWidth_b) {
+                if (
+                    (FS_WIDTH == SCREEN_WIDTH) &&
+                    (bmBytesPerRow == SCREEN_WIDTH) &&
+                    Vid_FullScreen_b &&
+                    !Vid_DoubleHeight_b &&
+                    !Vid_DoubleWidth_b
+                ) {
                     CopyMemQuick(src, dst, SCREEN_WIDTH * height);
                 } else {
                     CopyFrameBuffer(dst, src, bmBytesPerRow, SCREEN_WIDTH, height);
@@ -412,6 +421,9 @@ void Vid_Present()
 
                 CopyFrameBuffer(dst, src, bmBytesPerRow, SMALL_WIDTH, height);
             }
+
+            Draw_UpdateBorder_RTG(bmdata, bmBytesPerRow);
+
             UnLockBitMap(bmHandle);
         } else {
             KPrintF("Could not lock bitmap\n");

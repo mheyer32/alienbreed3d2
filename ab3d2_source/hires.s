@@ -1074,10 +1074,10 @@ okwat:
 
 				move.l	#Plr1_AmmoCounts_vw,a6
 				move.w	(a6,d0.w*2),d0
-				move.w	d0,Ammo
+				move.w	d0,draw_DisplayAmmoCount_w
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				move.w	Plr1_Health_w,Energy
+				move.w	Plr1_Health_w,draw_DisplayEnergyCount_w
 
 				move.w	Anim_FramesToDraw_w,Anim_TempFrames_w
 				cmp.w	#15,Anim_TempFrames_w
@@ -1154,7 +1154,7 @@ NotOnePlayer:
 				sne		Game_MasterPaused_b
 
 *********************************
-				move.w	Plr1_Health_w,Energy
+				move.w	Plr1_Health_w,draw_DisplayEnergyCount_w
 ; change this back
 *********************************
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -1167,7 +1167,7 @@ NotOnePlayer:
 
 				move.l	#Plr1_AmmoCounts_vw,a6
 				move.w	(a6,d0.w*2),d0
-				move.w	d0,Ammo
+				move.w	d0,draw_DisplayAmmoCount_w
 				movem.l	(a7)+,d0-d7/a0-a6
 
 				jsr		SENDFIRST
@@ -1287,10 +1287,10 @@ ASlaveShouldWaitOnHisMaster:
 
 				move.l	#Plr2_AmmoCounts_vw,a6
 				move.w	(a6,d0.w*2),d0
-				move.w	d0,Ammo
+				move.w	d0,draw_DisplayAmmoCount_w
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				move.w	Plr2_Health_w,Energy
+				move.w	Plr2_Health_w,draw_DisplayEnergyCount_w
 
 				jsr		RECFIRST
 
@@ -5015,10 +5015,10 @@ endlevel:
 ;				move.w	#$f,$dff000+dmacon
 
 
-				move.w	Plr1_Health_w,Energy
+				move.w	Plr1_Health_w,draw_DisplayEnergyCount_w
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				bne.s	.notsl
-				move.w	Plr2_Health_w,Energy
+				move.w	Plr2_Health_w,draw_DisplayEnergyCount_w
 .notsl:
 
 ; cmp.b #'b',Prefsfile+3
@@ -5026,9 +5026,9 @@ endlevel:
 ; jsr mt_end
 ;.noback
 
-				tst.w	Energy
+				tst.w	draw_DisplayEnergyCount_w
 				bgt.s	wevewon
-				move.w	#0,Energy
+				move.w	#0,draw_DisplayEnergyCount_w
 				CALLC	Draw_BorderEnergyBar
 
 				move.l	#gameover,mt_data
