@@ -20,7 +20,9 @@
 #include <proto/graphics.h>
 #include <proto/intuition.h>
 
+#ifdef USE_DEBUG_LIG
 #include <clib/debug_protos.h>
+#endif
 
 #define ALIB_HARDWARE_CUSTOM
 #include <proto/alib.h>
@@ -425,9 +427,12 @@ void Vid_Present()
             Draw_UpdateBorder_RTG(bmdata, bmBytesPerRow);
 
             UnLockBitMap(bmHandle);
-        } else {
+        }
+#ifdef USE_DEBUG_LIG
+        else {
             KPrintF("Could not lock bitmap\n");
         }
+#endif
     } else {
         CallAsm(&Vid_ConvertC2P);
     }
