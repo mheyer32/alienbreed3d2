@@ -58,7 +58,7 @@ extern VOID key_interrupt(void);
 
 static const char AppName[] = "TheKillingGrounds";
 static struct Interrupt VBLANKInt = {{NULL, NULL, NT_INTERRUPT, 9, (char *)AppName}, 0, VBlankInterrupt};
-static struct Interrupt KBInt = {NULL, NULL, NT_INTERRUPT, 127, (char *)AppName, 0, key_interrupt};
+static struct Interrupt KBInt = {{NULL, NULL, NT_INTERRUPT, 127, (char *)AppName}, 0, key_interrupt};
 
 static struct MsgPort vblPort;
 static struct VBLData
@@ -67,10 +67,11 @@ static struct VBLData
     struct MsgPort *tsi_Port;
 } vblData = {0, &vblPort};
 
-static BOOL SAVEDS FakeVBlankInterrupt(REG(a1, struct VBLData *data));
+static VOID SAVEDS FakeVBlankInterrupt(REG(a1, struct VBLData *data));
 
 static struct Interrupt PseudoVBLANKInt = {
-    NULL, NULL, NT_INTERRUPT, 0, (char *)AppName, &vblData, &FakeVBlankInterrupt};
+    {NULL, NULL, NT_INTERRUPT, 0, (char *)AppName}, &vblData, &FakeVBlankInterrupt
+};
 
 static BOOL sys_InitHardware();
 static void sys_ReleaseHardware();
@@ -190,7 +191,6 @@ BOOL sys_InitHardware()
     Sys_Move16_b    = (SysBase->AttnFlags & (AFF_68040|AFF_68060)) ? 0xFF : 0;
     Sys_CPU_68060_b = (SysBase->AttnFlags & AFF_68060) ? 0xFF : 0;
 
-
     if (AllocMiscResource(MR_SERIALPORT, AppName)) {
         goto fail;
     }
@@ -254,7 +254,7 @@ static void RemoveFakeVBlankInterrupt(void)
     }
 }
 
-static BOOL SAVEDS FakeVBlankInterrupt(REG(a1, struct VBLData *data))
+static void SAVEDS FakeVBlankInterrupt(REG(a1, struct VBLData *data))
 {
     LOCAL_SYSBASE();
 
@@ -277,7 +277,7 @@ static BOOL SAVEDS FakeVBlankInterrupt(REG(a1, struct VBLData *data))
         data->tsi_Flag = STOPPED;
     }
 
-    return TRUE;
+//    return TRUE;
 }
 
 void sys_ReleaseHardware()
