@@ -28,6 +28,9 @@ extern const UBYTE draw_BorderPacked_vb[];
 extern UBYTE draw_BorderChars_vb[];
 static UBYTE draw_Border[SCREEN_WIDTH * SCREEN_HEIGHT];
 
+/* These are the fixed with planar glyphs used for in-game messages */
+extern UBYTE draw_ScrollChars_vb[];
+
 /* Values used to track changes to the counters */
 extern UWORD draw_DisplayEnergyCount_w;
 extern UWORD draw_DisplayAmmoCount_w;

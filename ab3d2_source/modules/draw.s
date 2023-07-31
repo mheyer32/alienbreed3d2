@@ -319,7 +319,7 @@ Draw_NarrateText:
 				bra		.NOCHARYET
 
 .okcha:
-				; FIMXE: need to redirect this to teh actual screen
+				; FIMXE: need to redirect this to the actual screen
 				move.l	#SCROLLSCRN,a0
 				add.w	SCROLLXPOS,a0
 
@@ -339,9 +339,10 @@ Draw_NarrateText:
 				move.l	a1,SCROLLPOINTER
 
 				move.l	#draw_ScrollChars_vb,a1
-				asl.w	#3,d1
-				add.w	d1,a1
+				asl.w	#3,d1  ; each character glyph is 8 bytes
+				add.w	d1,a1  ; address of character glyph
 
+				; render into planes
 				move.b	(a1)+,(a0)
 				move.b	(a1)+,80(a0)
 				move.b	(a1)+,80*2(a0)
@@ -351,7 +352,7 @@ Draw_NarrateText:
 				move.b	(a1)+,80*6(a0)
 				move.b	(a1)+,80*7(a0)
 
-				addq	#1,a0
+				addq	#1,a0 ; advance a character position
 				dbra	d7,.doachar
 
 				move.w	SCROLLXPOS,d0

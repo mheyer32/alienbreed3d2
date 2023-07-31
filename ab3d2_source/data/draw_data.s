@@ -26,6 +26,7 @@ CHARWIDTHS1:
 ENDFONT2:
 CHARWIDTHS2:
 
+_draw_FontPtrs_vl::
 draw_FontPtrs_vl:
 				dc.l	draw_EndFont0_vb,draw_CharWidths0_vb
 				dc.l	ENDFONT1,CHARWIDTHS1
@@ -37,6 +38,7 @@ draw_BorderChars_vb:
 				incbin	"includes/bordercharsraw"
 
 				align 4
+_draw_ScrollChars_vb::
 draw_ScrollChars_vb:
 				incbin	"includes/scrollfont"
 
