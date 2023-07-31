@@ -8,7 +8,6 @@
 
 			align 4
 
-DRAW_MAX_WALL_TEXTURES=40
 DRAW_MAX_POLY_OBJECTS=40
 DRAW_MAX_OBJECTS=38
 
@@ -33,7 +32,7 @@ Draw_PolyObjects_vl:			ds.l	DRAW_MAX_POLY_OBJECTS
 draw_2DPointsProjected_vl:		ds.l	250*2	; projected 2D points in screenspace
 draw_3DPointsRotated_vl:		ds.l	250*3	; rotated 3D points in X/Z plane (y pointing up)
 
-Draw_WallTexturePtrs_vl:		ds.l	DRAW_MAX_WALL_TEXTURES
+Draw_WallTexturePtrs_vl:		ds.l	NUM_WALL_TEXTURES
 Draw_ObjectPtrs_vl:				ds.l	DRAW_MAX_OBJECTS*4
 Draw_TextureMapsPtr_l:			ds.l	1
 Draw_TexturePalettePtr_l:		ds.l	1
