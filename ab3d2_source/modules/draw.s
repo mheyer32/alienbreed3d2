@@ -307,37 +307,35 @@ Draw_NarrateText:
 ;				swap	d1
 ;				move.w	d1,scrolh
 
-				move.w	SCROLLTIMER,d0
+				move.w	draw_GameMessageTimer_w,d0
 				subq	#1,d0
-				move.w	d0,SCROLLTIMER
+				move.w	d0,draw_GameMessageTimer_w
 				cmp.w	#40,d0
 				bge		.NOCHARYET
 				tst.w	d0
 				bge.s	.okcha
 
-				move.w	#150,SCROLLTIMER
+				move.w	#150,draw_GameMessageTimer_w
 				bra		.NOCHARYET
 
 .okcha:
 				; FIMXE: need to redirect this to the actual screen
 				move.l	#SCROLLSCRN,a0
-				add.w	SCROLLXPOS,a0
-
+				add.w	draw_GameMessageXPos_w,a0
 				moveq	#1,d7
-.doachar:
 
-				move.l	SCROLLPOINTER,a1
+.doachar:
+				move.l	draw_GameMessagePtr_l,a1
 				moveq	#0,d1
 				move.b	(a1)+,d1				; character
 				move.l	a1,d2
-				cmp.l	ENDSCROLL,d2
+				cmp.l	draw_GameMessageEnd_l,d2
 				blt.s	.notrestartscroll
-				move.l	#BLANKSCROLL,a1
-				move.l	#BLANKSCROLL+80,ENDSCROLL
+				move.l	#draw_BlankMessage_vb,a1
+				move.l	#draw_BlankMessage_vb+80,draw_GameMessageEnd_l
 
 .notrestartscroll:
-				move.l	a1,SCROLLPOINTER
-
+				move.l	a1,draw_GameMessagePtr_l
 				move.l	#draw_ScrollChars_vb,a1
 				asl.w	#3,d1  ; each character glyph is 8 bytes
 				add.w	d1,a1  ; address of character glyph
@@ -355,12 +353,13 @@ Draw_NarrateText:
 				addq	#1,a0 ; advance a character position
 				dbra	d7,.doachar
 
-				move.w	SCROLLXPOS,d0
+				move.w	draw_GameMessageXPos_w,d0
 				addq	#2,d0
-				move.w	d0,SCROLLXPOS
+				move.w	d0,draw_GameMessageXPos_w
 				cmp.w	#80,d0
 				blt		.NOCHARYET
-				move.w	#0,SCROLLXPOS
+
+				move.w	#0,draw_GameMessageXPos_w
 
 .NOCHARYET:
 				rts

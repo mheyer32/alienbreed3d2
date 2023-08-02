@@ -1,9 +1,9 @@
 				align 4
 Game_Pause:
-				move.l	#PAUSETEXT,SCROLLPOINTER
-				move.l	#ENDPAUSETEXT,ENDSCROLL
-				move.w	#0,SCROLLXPOS
-				move.w	#40,SCROLLTIMER
+				move.l	#PAUSETEXT,draw_GameMessagePtr_l
+				move.l	#ENDPAUSETEXT,draw_GameMessageEnd_l
+				move.w	#0,draw_GameMessageXPos_w
+				move.w	#40,draw_GameMessageTimer_w
 				move.w	#40,d6
 .waitpause:
 				jsr		Draw_NarrateText
@@ -54,10 +54,10 @@ Game_Pause:
 				btst	#7,$bfe001
 				beq.s	.wr2
 
-				move.l	#BLANKSCROLL,SCROLLPOINTER
-				move.l	#BLANKSCROLL+80,ENDSCROLL
-				move.w	#0,SCROLLXPOS
-				move.w	#40,SCROLLTIMER
+				move.l	#draw_BlankMessage_vb,draw_GameMessagePtr_l
+				move.l	#draw_BlankMessage_vb+80,draw_GameMessageEnd_l
+				move.w	#0,draw_GameMessageXPos_w
+				move.w	#40,draw_GameMessageTimer_w
 				move.w	#40,d6
 
 .waitpause2:

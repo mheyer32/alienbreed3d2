@@ -16,6 +16,10 @@
 #define DRAW_HUD_ITEM_SLOTS_X 24
 #define DRAW_HUD_ITEM_SLOTS_Y -16
 
+/* These define the size of characters used in in game message display */
+#define DRAW_MSG_CHAR_W 8
+#define DRAW_MSG_CHAR_H 8
+
 
 /* These define the size of the digits used in the ammo/energy display */
 #define DRAW_HUD_CHAR_W 8
@@ -38,6 +42,10 @@ extern BOOL Draw_Init(void);
 extern void Draw_Shutdown(void);
 extern void Draw_UpdateBorder_RTG(APTR bmHandle, ULONG bmBytesPerRow);
 extern void Draw_UpdateBorder_Planar(void);
+
+/* These functions allow plotting the fixed text characters to a chunky buffer */
+extern void Draw_ChunkyTextFGOnly(UBYTE *drawPtr, UWORD drawSpan, const char *text, UWORD xPos, UWORD yPos, UBYTE fgPen);
+extern void Draw_ChunkyText(UBYTE *drawPtr, UWORD drawSpan, const char *text, UWORD xPos, UWORD yPos, UBYTE fgPen, UBYTE bgPen);
 
 extern UBYTE *Vid_FastBufferPtr_l;
 

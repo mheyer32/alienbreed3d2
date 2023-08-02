@@ -73,6 +73,9 @@ static void draw_ConvertPlanarDigits(UBYTE* chunky, const UBYTE *planar, UWORD w
 static void draw_RenderCounterDigit_RTG(UBYTE *drawPtr, const UBYTE *glyphs, UWORD digit, UWORD span);
 static void draw_RenderItemDigit_RTG(UBYTE *drawPtr, const UBYTE *glyphs, UWORD digit, UWORD span);
 
+static void draw_ChunkyGlyphFgOnly(UBYTE *drawPtr, UWORD drawSpan, UBYTE glyph, UBYTE fgPen);
+static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE glyph, UBYTE fgPen, UBYTE bgPen);
+
 static void draw_UpdateCounter_RTG(
     APTR bmBaseAddress,
     ULONG bmBytesPerRow,
@@ -226,13 +229,100 @@ void Draw_ResetGameDisplay()
             draw_ResetHUDCounters();
             Draw_UpdateBorder_RTG(bmBaseAddress, bmBytesPerRow);
 
+
+
             UnLockBitMap(bmHandle);
         }
     }
 }
 
+/**********************************************************************************************************************/
+
 /**
- * Todo
+ * Draw a glyph into the target buffer, filling only the set pixels with the desired pen
+ */
+void draw_ChunkyGlyphFGOnly(UBYTE *drawPtr, UWORD drawSpan, UBYTE glyph, UBYTE fgPen)
+{
+    UBYTE *planarPtr = &draw_ScrollChars_vb[(UWORD)glyph << 3];
+    for (UWORD row = 0; row < DRAW_MSG_CHAR_H; ++row) {
+        UBYTE plane = *planarPtr++;
+
+        if (plane & 128) {
+            drawPtr[0] = fgPen;
+        }
+        if (plane & 64) {
+            drawPtr[1] = fgPen;
+        }
+        if (plane & 32) {
+            drawPtr[2] = fgPen;
+        }
+        if (plane & 16) {
+            drawPtr[3] = fgPen;
+        }
+        if (plane & 8) {
+            drawPtr[4] = fgPen;
+        }
+        if (plane & 4) {
+            drawPtr[5] = fgPen;
+        }
+        if (plane & 2) {
+            drawPtr[6] = fgPen;
+        }
+        if (plane & 1) {
+            drawPtr[7] = fgPen;
+        }
+        drawPtr += drawSpan;
+    }
+}
+
+/**
+ * Draw a glyph into the target buffer, filling all pixels with either the foreground or background pen as required.
+ */
+void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE glyph, UBYTE fgPen, UBYTE bgPen)
+{
+    UBYTE *planarPtr = &draw_ScrollChars_vb[(UWORD)glyph << 3];
+    for (UWORD row = 0; row < DRAW_MSG_CHAR_H; ++row) {
+        UBYTE plane = *planarPtr++;
+
+        drawPtr[0] = plane & 128 ? fgPen : bgPen;
+        drawPtr[1] = plane &  64 ? fgPen : bgPen;
+        drawPtr[2] = plane &  32 ? fgPen : bgPen;
+        drawPtr[3] = plane &  16 ? fgPen : bgPen;
+        drawPtr[4] = plane &   8 ? fgPen : bgPen;
+        drawPtr[5] = plane &   4 ? fgPen : bgPen;
+        drawPtr[6] = plane &   2 ? fgPen : bgPen;
+        drawPtr[7] = plane &   1 ? fgPen : bgPen;
+
+        drawPtr += drawSpan;
+    }
+}
+
+/**
+ * Draw a null terminated string of fixed glyphs at a given coordinate, foreground only
+ */
+void Draw_ChunkyTextFGOnly(UBYTE *drawPtr, UWORD drawSpan, const char *text, UWORD xPos, UWORD yPos, UBYTE fgPen) {
+    drawPtr += drawSpan * yPos + xPos;
+    UBYTE glyph;
+    while ( (glyph = *text++) ) {
+        draw_ChunkyGlyphFGOnly(drawPtr, drawSpan, glyph, fgPen);
+        drawPtr += DRAW_MSG_CHAR_H;
+    }
+}
+
+/**
+ * Draw a null terminated string of fixed glyphs at a given coordinate, foreground/background
+ */
+void Draw_ChunkyText(UBYTE *drawPtr, UWORD drawSpan, const char *text, UWORD xPos, UWORD yPos, UBYTE fgPen, UBYTE bgPen) {
+    drawPtr += drawSpan * yPos + xPos;
+    UBYTE glyph;
+    while ( (glyph = *text++) ) {
+        draw_ChunkyGlyph(drawPtr, drawSpan, glyph, fgPen, bgPen);
+        drawPtr += DRAW_MSG_CHAR_H;
+    }
+}
+
+/**
+ * Draw a line of proportional text on the level intro screen
  */
 void Draw_LineOfText(REG(a0, const char *ptr), REG(a1, APTR screenPointer), REG(d0,  ULONG xxxx))
 {
@@ -333,56 +423,6 @@ void Draw_UpdateBorder_RTG(APTR bmBaseAddress, ULONG bmBytesPerRow)
             draw_ScreenXPos(DRAW_HUD_ENERGY_COUNT_X),
             draw_ScreenYPos(DRAW_HUD_ENERGY_COUNT_Y)
         );
-    }
-}
-
-/**
- * Convert planar graphics to chunky
- */
-static void draw_PlanarToChunky(UBYTE *chunkyPtr, const PLANEPTR *planePtrs, ULONG numPixels)
-{
-    BitPlanes pptr;
-    for (UWORD p = 0; p < 8; ++p) {
-        pptr[p] = planePtrs[p];
-    }
-
-    for (ULONG x = 0; x < numPixels / 8; ++x) {
-        for (BYTE p = 0; p < 8; ++p) {
-            chunkyPtr[p] = 0;
-            UBYTE bit = 1 << (7 - p);
-            for (BYTE b = 0; b < 8; ++b) {
-                if (*pptr[b] & bit) {
-                    chunkyPtr[p] |= 1 << b;
-                }
-            }
-        }
-        chunkyPtr += 8;
-        for (UWORD p = 0; p < 8; ++p) {
-            pptr[p]++;
-        }
-    }
-}
-
-/**
- * Converts the border digits used for ammo/health from their initial planar representation to a chunky one
- */
-static void draw_ConvertPlanarDigits(UBYTE* chunkyPtr, const UBYTE *planarBasePtr, UWORD width, UWORD height) {
-    BitPlanes planes;
-    const UBYTE *base_digit = planarBasePtr;
-    UBYTE *out_digit  = chunkyPtr;
-    for (UWORD d = 0; d < 10; ++d) {
-        const UBYTE *digit = base_digit + d;
-        for (UWORD p = 0; p < 8; ++p) {
-            planes[p] = (PLANEPTR)(digit + p * 10);
-        }
-
-        for (UWORD y = 0; y <  height; ++y) {
-            draw_PlanarToChunky(out_digit, planes, width);
-            for (UWORD p = 0; p < 8; ++p) {
-                planes[p] += width * 10;
-            }
-            out_digit += width;
-        }
     }
 }
 
@@ -498,7 +538,13 @@ static void draw_RenderItemDigit_RTG(UBYTE *drawPtr, const UBYTE *glyphPtr, UWOR
 #endif
 }
 
+/**********************************************************************************************************************/
 
+/* Lower level utility functions */
+
+/**
+ * Decimate a display value into 3 digits for the display counter.
+ */
 static void draw_ValueToDigits(UWORD value, UWORD digits[3]) {
     if (value > DISPLAY_COUNT_LIMIT) {
         value = DISPLAY_COUNT_LIMIT;
@@ -507,4 +553,54 @@ static void draw_ValueToDigits(UWORD value, UWORD digits[3]) {
     digits[2] = value % 10; value /= 10;
     digits[1] = value % 10; value /= 10;
     digits[0] = value;
+}
+
+/**
+ * Converts the border digits used for ammo/health from their initial planar representation to a chunky one
+ */
+static void draw_ConvertPlanarDigits(UBYTE* chunkyPtr, const UBYTE *planarBasePtr, UWORD width, UWORD height) {
+    BitPlanes planes;
+    const UBYTE *base_digit = planarBasePtr;
+    UBYTE *out_digit  = chunkyPtr;
+    for (UWORD d = 0; d < 10; ++d) {
+        const UBYTE *digit = base_digit + d;
+        for (UWORD p = 0; p < 8; ++p) {
+            planes[p] = (PLANEPTR)(digit + p * 10);
+        }
+
+        for (UWORD y = 0; y <  height; ++y) {
+            draw_PlanarToChunky(out_digit, planes, width);
+            for (UWORD p = 0; p < 8; ++p) {
+                planes[p] += width * 10;
+            }
+            out_digit += width;
+        }
+    }
+}
+
+/**
+ * Convert planar graphics to chunky
+ */
+static void draw_PlanarToChunky(UBYTE *chunkyPtr, const PLANEPTR *planePtrs, ULONG numPixels)
+{
+    BitPlanes pptr;
+    for (UWORD p = 0; p < 8; ++p) {
+        pptr[p] = planePtrs[p];
+    }
+
+    for (ULONG x = 0; x < numPixels / 8; ++x) {
+        for (BYTE p = 0; p < 8; ++p) {
+            chunkyPtr[p] = 0;
+            UBYTE bit = 1 << (7 - p);
+            for (BYTE b = 0; b < 8; ++b) {
+                if (*pptr[b] & bit) {
+                    chunkyPtr[p] |= 1 << b;
+                }
+            }
+        }
+        chunkyPtr += 8;
+        for (UWORD p = 0; p < 8; ++p) {
+            pptr[p]++;
+        }
+    }
 }

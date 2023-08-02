@@ -386,6 +386,10 @@ extern void Draw_UpdateBorder_RTG(APTR bmBaseAdress, ULONG bmBytesPerRow);
 
 void Vid_Present()
 {
+    Draw_ChunkyTextFGOnly(Vid_FastBufferPtr_l, SCREEN_WIDTH, "Draw_ChunkyTextFGOnly()", 10, 8, 255);
+    Draw_ChunkyText(Vid_FastBufferPtr_l, SCREEN_WIDTH, "Draw_ChunkyText()", 10, 16, 255, 0);
+
+
     if (Vid_isRTG) {
         LOCAL_CYBERGFX();
 

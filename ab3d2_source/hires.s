@@ -7887,11 +7887,11 @@ Game_PushMessage:
 				move.l	a1,game_LastMessagePtr_l
 
 intosend:
-				move.l	d0,SCROLLPOINTER
-				move.w	#0,SCROLLXPOS
+				move.l	d0,draw_GameMessagePtr_l
+				move.w	#0,draw_GameMessageXPos_w
 				add.l	#160,d0
-				move.l	d0,ENDSCROLL
-				move.w	#40,SCROLLTIMER
+				move.l	d0,draw_GameMessageEnd_l
+				move.w	#40,draw_GameMessageTimer_w
 				move.l	(a7)+,a1
 				rts
 
@@ -7907,11 +7907,11 @@ Game_PullLastMessage:
 				move.l	-(a1),d0
 				beq.s	.nomessage
 
-				move.l	d0,SCROLLPOINTER
-				move.w	#0,SCROLLXPOS
+				move.l	d0,draw_GameMessagePtr_l
+				move.w	#0,draw_GameMessageXPos_w
 				add.l	#160,d0
-				move.l	d0,ENDSCROLL
-				move.w	#40,SCROLLTIMER
+				move.l	d0,draw_GameMessageEnd_l
+				move.w	#40,draw_GameMessageTimer_w
 
 				move.l	a1,game_LastMessagePtr_l
 
@@ -7920,10 +7920,8 @@ Game_PullLastMessage:
 
 				rts
 
-Game_MessageBuffer_vl:
-				ds.l	20
+Game_MessageBuffer_vl:	ds.l	20
 Game_MessageBufferEnd:
-
 game_MessagePtr_l:		dc.l	Game_MessageBuffer_vl
 game_LastMessagePtr_l:	dc.l	Game_MessageBuffer_vl
 
@@ -10181,24 +10179,20 @@ GLF_DatabasePtr_l:		dc.l	0
 
 hitcol:			dc.l	0
 
-SCROLLOFFSET:	dc.w	0
-SCROLLTIMER:	dc.w	100
-SCROLLDIRECTION: dc.w	1
-SCROLLXPOS:		dc.w	0
-SCROLLPOINTER:	dc.l	testscroll
-ENDSCROLL:		dc.l	endtestscroll
+draw_GameMessageTimer_w:	dc.w	100
+draw_GameMessageXPos_w:		dc.w	0
+draw_GameMessagePtr_l:		dc.l	draw_BlankMessage_vb
+draw_GameMessageEnd_l:		dc.l	draw_EndBlankMessage
 
-testscroll:
-;      12345678901234567890123456789012345678901234567890123456789012345678901234567890
-; dc.b "The Quick Brown Fox Jumped Over The Lazy Dog!                                   "
-; dc.b "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ                            "
-; dc.b "The Quick Brown Fox Jumped Over The Lazy Dog!                                   "
-
-BLANKSCROLL:
+draw_BlankMessage_vb:
+				;      12345678901234567890123456789012345678901234567890123456789012345678901234567890
+				; dc.b "The Quick Brown Fox Jumped Over The Lazy Dog!                                   "
+				; dc.b "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ                            "
+				; dc.b "The Quick Brown Fox Jumped Over The Lazy Dog!                                   "
 				dc.b	"                                                                                "
-endtestscroll:
+draw_EndBlankMessage:
 
-Vid_TextScreenPtr_l:		dc.l	0
+Vid_TextScreenPtr_l:	dc.l	0
 
 
 				SECTION	.bsschip,bss_c
