@@ -29,7 +29,7 @@ Storage_vl:				ds.l	500  ; drawing
 
 Aud_EmptyBuffer_vl:		ds.l	100 ; hires.s - audio
 Aud_EmptyBufferEnd:
-Aud_SampleList_vl:		ds.l	133
+Aud_SampleList_vl:		ds.l	NUM_SFX*2 ; {start,end}
 
 LeftSideTable_vw:		ds.w	512*2
 RightSideTable_vw:		ds.w	512*2
