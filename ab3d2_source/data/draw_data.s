@@ -28,7 +28,8 @@ CHARWIDTHS2:
 
 _draw_FontPtrs_vl::
 draw_FontPtrs_vl:
-				dc.l	draw_EndFont0_vb,draw_CharWidths0_vb
+				dc.l	draw_EndFont0_vb
+				dc.l	draw_CharWidths0_vb
 				dc.l	ENDFONT1,CHARWIDTHS1
 				dc.l	ENDFONT2,CHARWIDTHS2
 

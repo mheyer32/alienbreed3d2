@@ -43,6 +43,8 @@ static struct UCopList* doubleHeightCopList;
 extern UBYTE Vid_FullScreen_b;
 extern UWORD Vid_LetterBoxMarginHeight_w;
 
+extern void Draw_UpdateBorder_RTG(APTR bmBaseAdress, ULONG bmBytesPerRow);
+
 WORD Vid_ScreenHeight;
 WORD Vid_ScreenWidth;
 
@@ -382,13 +384,12 @@ static void CopyFrameBuffer(UBYTE *dst, const UBYTE *src, WORD dstBytesPerRow, W
     }
 }
 
-extern void Draw_UpdateBorder_RTG(APTR bmBaseAdress, ULONG bmBytesPerRow);
+
 
 void Vid_Present()
 {
-    Draw_ChunkyTextFGOnly(Vid_FastBufferPtr_l, SCREEN_WIDTH, "Draw_ChunkyTextFGOnly()", 10, 8, 255);
-    Draw_ChunkyText(Vid_FastBufferPtr_l, SCREEN_WIDTH, "Draw_ChunkyText()", 10, 16, 255, 0);
 
+    /* Draw_ChunkyTextFGOnly(Vid_FastBufferPtr_l, SCREEN_WIDTH, 39, "Test text render...", 4, 4, 255); */
 
     if (Vid_isRTG) {
         LOCAL_CYBERGFX();

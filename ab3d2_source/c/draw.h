@@ -20,7 +20,6 @@
 #define DRAW_MSG_CHAR_W 8
 #define DRAW_MSG_CHAR_H 8
 
-
 /* These define the size of the digits used in the ammo/energy display */
 #define DRAW_HUD_CHAR_W 8
 #define DRAW_HUD_CHAR_H 7
@@ -43,9 +42,40 @@ extern void Draw_Shutdown(void);
 extern void Draw_UpdateBorder_RTG(APTR bmHandle, ULONG bmBytesPerRow);
 extern void Draw_UpdateBorder_Planar(void);
 
-/* These functions allow plotting the fixed text characters to a chunky buffer */
-extern void Draw_ChunkyTextFGOnly(UBYTE *drawPtr, UWORD drawSpan, const char *text, UWORD xPos, UWORD yPos, UBYTE fgPen);
-extern void Draw_ChunkyText(UBYTE *drawPtr, UWORD drawSpan, const char *text, UWORD xPos, UWORD yPos, UBYTE fgPen, UBYTE bgPen);
+/**
+ * These functions allow plotting the fixed text characters to a chunky buffer
+ *
+ * drawPtr  points to destination chunky buffer.
+ * drawSpan defines the distance, in pixels, from one row of the chunky buffer to the next.
+ * maxLen   defines the maximum number of characters to draw.
+ * textPtr  ppoints to the string of text to draw. Will render up to maxLen characters or the first NULL byte.
+ * xPos     defines the starting x coordinate in the chunky buffer
+ * yPos     defines the starting y coordinate in the chunky buffer
+ * fgPen    defines the palette index of the text rendering colour.
+ * bgPen    defines the palette index of the background rendering colour (when using background).
+ *
+ * Returns a pointer to the next character to render, or null, if the end of the string was reached.
+ */
+extern const char* Draw_ChunkyTextFGOnly(
+    UBYTE *drawPtr,
+    UWORD drawSpan,
+    UWORD maxLen,
+    const char *textPtr,
+    UWORD xPos,
+    UWORD yPos,
+    UBYTE fgPen
+);
+
+extern const char* Draw_ChunkyText(
+    UBYTE *drawPtr,
+    UWORD drawSpan,
+    UWORD maxLen,
+    const char *textPtr,
+    UWORD xPos,
+    UWORD yPos,
+    UBYTE fgPen,
+    UBYTE bgPen
+);
 
 extern UBYTE *Vid_FastBufferPtr_l;
 

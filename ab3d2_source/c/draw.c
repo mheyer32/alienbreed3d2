@@ -42,7 +42,7 @@ extern UBYTE Plr2_TmpGunSelected_b;
 extern UWORD Plr1_Weapons_vb[DRAW_NUM_WEAPON_SLOTS];
 extern UWORD Plr2_Weapons_vb[DRAW_NUM_WEAPON_SLOTS];
 
-typedef PLANEPTR BitPlanes[8];
+typedef PLANEPTR BitPlanes[SCREEN_DEPTH];
 
 /* Border digits when not low on ammo/health */
 static UBYTE draw_BorderDigitsGood[DRAW_HUD_CHAR_W * DRAW_HUD_CHAR_H * 10];
@@ -72,9 +72,6 @@ static void draw_ValueToDigits(UWORD value, UWORD digits[3]);
 static void draw_ConvertPlanarDigits(UBYTE* chunky, const UBYTE *planar, UWORD width, UWORD height);
 static void draw_RenderCounterDigit_RTG(UBYTE *drawPtr, const UBYTE *glyphs, UWORD digit, UWORD span);
 static void draw_RenderItemDigit_RTG(UBYTE *drawPtr, const UBYTE *glyphs, UWORD digit, UWORD span);
-
-static void draw_ChunkyGlyphFgOnly(UBYTE *drawPtr, UWORD drawSpan, UBYTE glyph, UBYTE fgPen);
-static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE glyph, UBYTE fgPen, UBYTE bgPen);
 
 static void draw_UpdateCounter_RTG(
     APTR bmBaseAddress,
@@ -122,7 +119,7 @@ BOOL Draw_Init()
         BitPlanes planes;
         unLHA(Vid_FastBufferPtr_l, draw_BorderPacked_vb, 0, Sys_Workspace_vl, NULL);
 
-        for (int p = 0; p < 8; ++p) {
+        for (int p = 0; p < SCREEN_DEPTH; ++p) {
             planes[p] = Vid_FastBufferPtr_l + PLANESIZE * p;
         };
 
@@ -229,8 +226,6 @@ void Draw_ResetGameDisplay()
             draw_ResetHUDCounters();
             Draw_UpdateBorder_RTG(bmBaseAddress, bmBytesPerRow);
 
-
-
             UnLockBitMap(bmHandle);
         }
     }
@@ -239,14 +234,14 @@ void Draw_ResetGameDisplay()
 /**********************************************************************************************************************/
 
 /**
- * Draw a glyph into the target buffer, filling only the set pixels with the desired pen
+ * Draw a glyph into the target buffer, filling only the set pixels with the desired pen. There are probably lots
+ * of ways this can be optimised.
  */
-void draw_ChunkyGlyphFGOnly(UBYTE *drawPtr, UWORD drawSpan, UBYTE glyph, UBYTE fgPen)
+static void draw_ChunkyGlyphFGOnly(UBYTE *drawPtr, UWORD drawSpan, UBYTE charGlyph, UBYTE fgPen)
 {
-    UBYTE *planarPtr = &draw_ScrollChars_vb[(UWORD)glyph << 3];
+    UBYTE *planarPtr = &draw_ScrollChars_vb[(UWORD)charGlyph << 3];
     for (UWORD row = 0; row < DRAW_MSG_CHAR_H; ++row) {
         UBYTE plane = *planarPtr++;
-
         if (plane & 128) {
             drawPtr[0] = fgPen;
         }
@@ -277,13 +272,13 @@ void draw_ChunkyGlyphFGOnly(UBYTE *drawPtr, UWORD drawSpan, UBYTE glyph, UBYTE f
 
 /**
  * Draw a glyph into the target buffer, filling all pixels with either the foreground or background pen as required.
+ * There are probably lots of ways this can be optimised.
  */
-void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE glyph, UBYTE fgPen, UBYTE bgPen)
+static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charGlyph, UBYTE fgPen, UBYTE bgPen)
 {
-    UBYTE *planarPtr = &draw_ScrollChars_vb[(UWORD)glyph << 3];
+    UBYTE *planarPtr = &draw_ScrollChars_vb[(UWORD)charGlyph << 3];
     for (UWORD row = 0; row < DRAW_MSG_CHAR_H; ++row) {
         UBYTE plane = *planarPtr++;
-
         drawPtr[0] = plane & 128 ? fgPen : bgPen;
         drawPtr[1] = plane &  64 ? fgPen : bgPen;
         drawPtr[2] = plane &  32 ? fgPen : bgPen;
@@ -292,33 +287,57 @@ void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE glyph, UBYTE fgPen, 
         drawPtr[5] = plane &   4 ? fgPen : bgPen;
         drawPtr[6] = plane &   2 ? fgPen : bgPen;
         drawPtr[7] = plane &   1 ? fgPen : bgPen;
-
         drawPtr += drawSpan;
     }
 }
 
 /**
- * Draw a null terminated string of fixed glyphs at a given coordinate, foreground only
+ * Draw a length limited, null terminated string of fixed glyphs at a given coordinate, foreground only.
  */
-void Draw_ChunkyTextFGOnly(UBYTE *drawPtr, UWORD drawSpan, const char *text, UWORD xPos, UWORD yPos, UBYTE fgPen) {
+const char* Draw_ChunkyTextFGOnly(
+    UBYTE *drawPtr,
+    UWORD drawSpan,
+    UWORD maxLen,
+    const char *textPtr,
+    UWORD xPos,
+    UWORD yPos,
+    UBYTE fgPen
+) {
     drawPtr += drawSpan * yPos + xPos;
-    UBYTE glyph;
-    while ( (glyph = *text++) ) {
-        draw_ChunkyGlyphFGOnly(drawPtr, drawSpan, glyph, fgPen);
+    UBYTE charGlyph;
+    while ( (charGlyph = (UBYTE)*textPtr++) && maxLen-- > 0 ) {
+        /* Skip over all non-printing or blank. Assume ECMA-94 Latin 1 8-bit for Amiga 3.x */
+        if ( (charGlyph > 0x20 && charGlyph < 0x7F) || charGlyph > 0xA0) {
+            draw_ChunkyGlyphFGOnly(drawPtr, drawSpan, charGlyph, fgPen);
+        }
         drawPtr += DRAW_MSG_CHAR_H;
     }
+    return charGlyph ? textPtr : (const char*)NULL;
 }
 
 /**
  * Draw a null terminated string of fixed glyphs at a given coordinate, foreground/background
  */
-void Draw_ChunkyText(UBYTE *drawPtr, UWORD drawSpan, const char *text, UWORD xPos, UWORD yPos, UBYTE fgPen, UBYTE bgPen) {
+const char* Draw_ChunkyText(
+    UBYTE *drawPtr,
+    UWORD drawSpan,
+    UWORD maxLen,
+    const char *textPtr,
+    UWORD xPos,
+    UWORD yPos,
+    UBYTE fgPen,
+    UBYTE bgPen
+) {
     drawPtr += drawSpan * yPos + xPos;
-    UBYTE glyph;
-    while ( (glyph = *text++) ) {
-        draw_ChunkyGlyph(drawPtr, drawSpan, glyph, fgPen, bgPen);
+    UBYTE charGlyph;
+    while ( (charGlyph = (UBYTE)*textPtr++) && maxLen-- > 0) {
+        /* Skip over non-printing only.  Assume ECMA-94 Latin 1 8-bit for Amiga 3.x */
+        if ( (charGlyph >= 0x20 && charGlyph < 0x7F) || charGlyph >= 0xA0) {
+            draw_ChunkyGlyph(drawPtr, drawSpan, charGlyph, fgPen, bgPen);
+        }
         drawPtr += DRAW_MSG_CHAR_H;
     }
+    return charGlyph ? textPtr : (const char*)NULL;
 }
 
 /**

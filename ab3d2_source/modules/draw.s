@@ -315,7 +315,7 @@ Draw_NarrateText:
 				tst.w	d0
 				bge.s	.okcha
 
-				move.w	#150,draw_GameMessageTimer_w
+				move.w	#500,draw_GameMessageTimer_w
 				bra		.NOCHARYET
 
 .okcha:

@@ -7922,6 +7922,7 @@ Game_PullLastMessage:
 
 Game_MessageBuffer_vl:	ds.l	20
 Game_MessageBufferEnd:
+_game_MessagePtr_l::
 game_MessagePtr_l:		dc.l	Game_MessageBuffer_vl
 game_LastMessagePtr_l:	dc.l	Game_MessageBuffer_vl
 
@@ -10179,18 +10180,22 @@ GLF_DatabasePtr_l:		dc.l	0
 
 hitcol:			dc.l	0
 
-draw_GameMessageTimer_w:	dc.w	100
+;draw_GameMessageTimer_w:	dc.w	100
+draw_GameMessageTimer_w:	dc.w	400
+
 draw_GameMessageXPos_w:		dc.w	0
+_draw_GameMessagePtr_l::
 draw_GameMessagePtr_l:		dc.l	draw_BlankMessage_vb
 draw_GameMessageEnd_l:		dc.l	draw_EndBlankMessage
 
+_draw_MessageBuffer_vb::
 draw_BlankMessage_vb:
-				;      12345678901234567890123456789012345678901234567890123456789012345678901234567890
+				;       12345678901234567890123456789012345678901234567890123456789012345678901234567890
 				; dc.b "The Quick Brown Fox Jumped Over The Lazy Dog!                                   "
 				; dc.b "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ                            "
 				; dc.b "The Quick Brown Fox Jumped Over The Lazy Dog!                                   "
 				dc.b	"                                                                                "
-draw_EndBlankMessage:
+draw_EndBlankMessage: dc.l    0
 
 Vid_TextScreenPtr_l:	dc.l	0
 
