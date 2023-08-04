@@ -239,14 +239,26 @@ void Draw_ResetGameDisplay()
 
 extern UBYTE draw_GlyphSpacing_vb[256];
 
+/**
+ * Very simple algorithm to scan the fixed with 8x8 font and determine some offset/width properties based on the glyph
+ * bit patterns. We scan and populate draw_GlyphSpacing_vb with that data so that we can render the glyphs fixed or
+ * proportionally.
+ *
+ * The algorithm isn't particularly optimised but we only do it once.
+ */
 static void draw_CalculateGlyphSpacing() {
     UBYTE *glyphPtr = draw_ScrollChars_vb;
     for (UWORD i = 0; i < 256; ++i, glyphPtr += 8) {
         UBYTE left  = 0;
         UBYTE width = 4;
+
+        /* OR together the 8 planes to get a single value that has the largest width set */
         UBYTE mask  = glyphPtr[0] | glyphPtr[1] | glyphPtr[2] | glyphPtr[3] |
                       glyphPtr[4] | glyphPtr[5] | glyphPtr[6] | glyphPtr[7];
+
+        /* If the mask is zero, it means the glyph is empty. Assume the same space as the space glyph */
         if (mask) {
+            // Identify the left offset.
             UBYTE position = 0;
             BYTE bit      = 7;
             while (bit-- >= 0) {
@@ -256,6 +268,8 @@ static void draw_CalculateGlyphSpacing() {
                 ++position;
             }
             left = position;
+
+            // Determine the width.
             position = 8;
             bit      = 0;
             while (bit++ < 8) {
@@ -268,6 +282,10 @@ static void draw_CalculateGlyphSpacing() {
         }
         draw_GlyphSpacing_vb[i] = width << 4 | left;
     }
+
+    /* Kludges */
+    draw_GlyphSpacing_vb[(UBYTE)'r'] = 0x51;
+    draw_GlyphSpacing_vb[(UBYTE)'t'] = 0x41;
 }
 
 /**
