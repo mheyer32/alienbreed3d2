@@ -258,34 +258,20 @@ static void draw_CalculateGlyphSpacing() {
 
         /* If the mask is zero, it means the glyph is empty. Assume the same space as the space glyph */
         if (mask) {
-            // Identify the left offset.
-            UBYTE position = 0;
-            BYTE bit      = 7;
-            while (bit-- >= 0) {
-                if (mask & (1 << bit)) {
-                    break;
-                }
-                ++position;
+            UBYTE tmp = mask;
+            while (!(tmp & 0x80)) {
+                ++left;
+                tmp <<= 1;
             }
-            left = position;
-
-            // Determine the width.
-            position = 8;
-            bit      = 0;
-            while (bit++ < 8) {
-                if (mask & (1 << bit)) {
-                    break;
-                }
-                --position;
+            tmp = 0;
+            while (!(mask & 0x01)) {
+                ++tmp;
+                mask >>= 1;
             }
-            width = position - left;
+            width = 9 - left - tmp;
         }
         draw_GlyphSpacing_vb[i] = width << 4 | left;
     }
-
-    /* Kludges */
-    draw_GlyphSpacing_vb[(UBYTE)'r'] = 0x51;
-    draw_GlyphSpacing_vb[(UBYTE)'t'] = 0x41;
 }
 
 /**
@@ -297,15 +283,16 @@ static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charGlyph, UB
     UBYTE *planarPtr = &draw_ScrollChars_vb[(UWORD)charGlyph << 3];
     for (UWORD row = 0; row < DRAW_MSG_CHAR_H; ++row) {
         UBYTE plane = *planarPtr++;
-        if (!plane)      continue;
-        if (plane & 128) drawPtr[0] = pen;
-        if (plane & 64)  drawPtr[1] = pen;
-        if (plane & 32)  drawPtr[2] = pen;
-        if (plane & 16)  drawPtr[3] = pen;
-        if (plane & 8)   drawPtr[4] = pen;
-        if (plane & 4)   drawPtr[5] = pen;
-        if (plane & 2)   drawPtr[6] = pen;
-        if (plane & 1)   drawPtr[7] = pen;
+            if (plane) {
+            if (plane & 128) drawPtr[0] = pen;
+            if (plane & 64)  drawPtr[1] = pen;
+            if (plane & 32)  drawPtr[2] = pen;
+            if (plane & 16)  drawPtr[3] = pen;
+            if (plane & 8)   drawPtr[4] = pen;
+            if (plane & 4)   drawPtr[5] = pen;
+            if (plane & 2)   drawPtr[6] = pen;
+            if (plane & 1)   drawPtr[7] = pen;
+        }
         drawPtr += drawSpan;
     }
 }
