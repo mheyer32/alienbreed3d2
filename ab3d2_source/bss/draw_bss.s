@@ -100,3 +100,6 @@ draw_WhichDoing_b:				ds.b	1
 draw_InUpperZone_b:				ds.b	1
 Draw_DoUpper_b:					ds.b	1
 Draw_ForceSimpleWalls_b:		ds.b	1
+
+_draw_GlyphSpacing_vb::
+draw_GlyphSpacing_vb:			ds.b    256

@@ -223,19 +223,19 @@ Game_SlavePaused_b:			dc.b	0
 
 				align 4
 Game_ShowIntroText:
-				move.l	Lvl_IntroTextPtr_l,a0
-				move.w	PLOPT,d0
-				muls	#82*16,d0
-				add.l	d0,a0
-				move.w	#15,d7
-				move.w	#0,d0
+				move.l	Lvl_IntroTextPtr_l,a0     ; Pointer to main narrative text
+				move.w	PLOPT,d0                  ; Level number
+				muls	#82*16,d0                 ; Fixed size of 82 chars per line, 16 lines ?
+				add.l	d0,a0                     ; offset into narrative
+				move.w	#15,d7                    ; line counter
+				move.w	#0,d0                     ; line number
 
 .next_line_loop:
-				move.l	Vid_TextScreenPtr_l,a1
-				CALLC	Draw_LineOfText
+				move.l	Vid_TextScreenPtr_l,a1    ; Planar slice ptr
+				CALLC	Draw_LineOfText           ;
 
-				addq	#1,d0
-				add.w	#82,a0
+				addq	#1,d0                     ; increment line number
+				add.w	#82,a0                    ; next line of text
 				dbra	d7,.next_line_loop
 				rts
 
@@ -7887,11 +7887,11 @@ Game_PushMessage:
 				move.l	a1,game_LastMessagePtr_l
 
 intosend:
-				move.l	d0,SCROLLPOINTER
-				move.w	#0,SCROLLXPOS
+				move.l	d0,draw_GameMessagePtr_l
+				move.w	#0,draw_GameMessageXPos_w
 				add.l	#160,d0
-				move.l	d0,ENDSCROLL
-				move.w	#40,SCROLLTIMER
+				move.l	d0,draw_GameMessageEnd_l
+				move.w	#40,draw_GameMessageTimer_w
 				move.l	(a7)+,a1
 				rts
 
@@ -7907,11 +7907,11 @@ Game_PullLastMessage:
 				move.l	-(a1),d0
 				beq.s	.nomessage
 
-				move.l	d0,SCROLLPOINTER
-				move.w	#0,SCROLLXPOS
+				move.l	d0,draw_GameMessagePtr_l
+				move.w	#0,draw_GameMessageXPos_w
 				add.l	#160,d0
-				move.l	d0,ENDSCROLL
-				move.w	#40,SCROLLTIMER
+				move.l	d0,draw_GameMessageEnd_l
+				move.w	#40,draw_GameMessageTimer_w
 
 				move.l	a1,game_LastMessagePtr_l
 
@@ -7920,10 +7920,9 @@ Game_PullLastMessage:
 
 				rts
 
-Game_MessageBuffer_vl:
-				ds.l	20
+Game_MessageBuffer_vl:	ds.l	20
 Game_MessageBufferEnd:
-
+_game_MessagePtr_l::
 game_MessagePtr_l:		dc.l	Game_MessageBuffer_vl
 game_LastMessagePtr_l:	dc.l	Game_MessageBuffer_vl
 
@@ -10181,24 +10180,24 @@ GLF_DatabasePtr_l:		dc.l	0
 
 hitcol:			dc.l	0
 
-SCROLLOFFSET:	dc.w	0
-SCROLLTIMER:	dc.w	100
-SCROLLDIRECTION: dc.w	1
-SCROLLXPOS:		dc.w	0
-SCROLLPOINTER:	dc.l	testscroll
-ENDSCROLL:		dc.l	endtestscroll
+;draw_GameMessageTimer_w:	dc.w	100
+draw_GameMessageTimer_w:	dc.w	400
 
-testscroll:
-;      12345678901234567890123456789012345678901234567890123456789012345678901234567890
-; dc.b "The Quick Brown Fox Jumped Over The Lazy Dog!                                   "
-; dc.b "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ                            "
-; dc.b "The Quick Brown Fox Jumped Over The Lazy Dog!                                   "
+draw_GameMessageXPos_w:		dc.w	0
+_draw_GameMessagePtr_l::
+draw_GameMessagePtr_l:		dc.l	draw_BlankMessage_vb
+draw_GameMessageEnd_l:		dc.l	draw_EndBlankMessage
 
-BLANKSCROLL:
+_draw_MessageBuffer_vb::
+draw_BlankMessage_vb:
+				;       12345678901234567890123456789012345678901234567890123456789012345678901234567890
+				; dc.b "The Quick Brown Fox Jumped Over The Lazy Dog!                                   "
+				; dc.b "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ                            "
+				; dc.b "The Quick Brown Fox Jumped Over The Lazy Dog!                                   "
 				dc.b	"                                                                                "
-endtestscroll:
+draw_EndBlankMessage: dc.l    0
 
-Vid_TextScreenPtr_l:		dc.l	0
+Vid_TextScreenPtr_l:	dc.l	0
 
 
 				SECTION	.bsschip,bss_c
