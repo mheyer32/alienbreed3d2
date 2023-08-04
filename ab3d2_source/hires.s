@@ -223,19 +223,19 @@ Game_SlavePaused_b:			dc.b	0
 
 				align 4
 Game_ShowIntroText:
-				move.l	Lvl_IntroTextPtr_l,a0
-				move.w	PLOPT,d0
-				muls	#82*16,d0
-				add.l	d0,a0
-				move.w	#15,d7
-				move.w	#0,d0
+				move.l	Lvl_IntroTextPtr_l,a0     ; Pointer to main narrative text
+				move.w	PLOPT,d0                  ; Level number
+				muls	#82*16,d0                 ; Fixed size of 82 chars per line, 16 lines ?
+				add.l	d0,a0                     ; offset into narrative
+				move.w	#15,d7                    ; line counter
+				move.w	#0,d0                     ; line number
 
 .next_line_loop:
-				move.l	Vid_TextScreenPtr_l,a1
-				CALLC	Draw_LineOfText
+				move.l	Vid_TextScreenPtr_l,a1    ; Planar slice ptr
+				CALLC	Draw_LineOfText           ;
 
-				addq	#1,d0
-				add.w	#82,a0
+				addq	#1,d0                     ; increment line number
+				add.w	#82,a0                    ; next line of text
 				dbra	d7,.next_line_loop
 				rts
 

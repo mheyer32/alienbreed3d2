@@ -51,7 +51,14 @@ Draw_ResetGameDisplay:
 ;*
 ;* This renders a line of text to the planar screen.
 ;*
-;* Deprecated for RTG
+;* Deprecated for RTG. Called only from the level intro text loop
+;*
+;* Deduced parameters
+;*   a0 text address (80 chars), with 2 byte header:
+;*      - Byte 0 is the font selection from #draw_FontPtrs_vl (only 0 used)
+;*      - Byte 1 indicates justification (0 none, 1 centred)
+;*   a1 planar screen ptr
+;*   d0 is line number (0-15)
 ;*
 ;******************************************************************************
 Draw_LineOfText:
@@ -60,27 +67,27 @@ Draw_LineOfText:
 				add.l	d0,a1					; screen pointer
 				move.l	#draw_FontPtrs_vl,a3
 				moveq	#0,d0
-				move.b	(a0)+,d0
-				move.l	(a3,d0.w*8),a2
-				move.l	4(a3,d0.w*8),a3
+				move.b	(a0)+,d0                ; first text byte in d0 is...
+				move.l	(a3,d0.w*8),a2          ; Font Glyph poined to by a2
+				move.l	4(a3,d0.w*8),a3         ; Char width pointed to in a3
 				moveq	#0,d4
-				moveq	#0,d1					; width counter:
-				move.w	#79,d6
-				tst.b	(a0)+
+				moveq	#0,d1                   ; width counter:
+				move.w	#79,d6                  ; number of characters
+				tst.b	(a0)+                   ; second text byte is justification
 				beq.s	.not_centred
 
 				moveq	#-1,d5
-				move.l	a0,a4
+				move.l	a0,a4                   ; actual string in a4 now
 				moveq	#0,d2
-				moveq	#0,d3
-				move.w	#79,d0					; number of chars
+				moveq	#0,d3                   ; total width in pixels
+				move.w	#79,d0                  ; number of chars
 
 .addup:
 				addq	#1,d5
-				move.b	(a4)+,d2
-				move.b	-32(a3,d2.w),d4
-				add.w	d4,d3
-				cmp.b	#32,d2
+				move.b	(a4)+,d2                ; next char in d2
+				move.b	-32(a3,d2.w),d4         ; width of char in d4 (no widths for non-printing 0-31)
+				add.w	d4,d3                   ; sum width
+				cmp.b	#32,d2                  ; don't include space character in width calculation
 				beq.s	.dont_put_in
 
 				move.w	d5,d6
@@ -88,29 +95,29 @@ Draw_LineOfText:
 
 .dont_put_in:
 				dbra	d0,.addup
-				asr.w	#1,d1
+				asr.w	#1,d1                   ; Calculate x coordinate for centred string
 				neg.w	d1
-				add.w	#SCREEN_WIDTH,d1			; horiz pos of start x
+				add.w	#SCREEN_WIDTH,d1        ; horiz pos of start x
 
 .not_centred:
 				move.w	d6,d7
 
 .do_char:
 				moveq	#0,d2
-				move.b	(a0)+,d2
-				sub.w	#32,d2
+				move.b	(a0)+,d2                 ; char code in d2
+				sub.w	#32,d2                   ; -32 for glyph index
 				moveq	#0,d6
-				move.b	(a3,d2.w),d6
-				asl.w	#5,d2
-				lea		(a2,d2.w),a4			; char font
+				move.b	(a3,d2.w),d6             ; glyph width in d6
+				asl.w	#5,d2                    ;
+				lea		(a2,d2.w),a4			 ; glyph data ptr is a4 + 32*glyph index
 val				SET		0
-				REPT	16
-				move.w	(a4)+,d0
-				bfins	d0,val(a1){d1:d6}
-val				SET		val+80
+				REPT	16                       ; glyph bitmap is 16 pixels tall (?)
+				move.w	(a4)+,d0                 ; glyph bitmap is 16 pixels wide
+				bfins	d0,val(a1){d1:d6}        ; use bitfield insertion, d1 contains x position, d6 with
+val				SET		val+80                   ; next span
 				ENDR
-				add.w	d6,d1
-				dbra	d7,.do_char
+				add.w	d6,d1                    ; increment x offset by width
+				dbra	d7,.do_char              ; rinse and repeat.
 				movem.l	(a7)+,d0/a0/d7
 				rts
 
