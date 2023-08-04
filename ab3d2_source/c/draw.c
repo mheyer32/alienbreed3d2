@@ -297,30 +297,15 @@ static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charGlyph, UB
     UBYTE *planarPtr = &draw_ScrollChars_vb[(UWORD)charGlyph << 3];
     for (UWORD row = 0; row < DRAW_MSG_CHAR_H; ++row) {
         UBYTE plane = *planarPtr++;
-        if (plane & 128) {
-            drawPtr[0] = pen;
-        }
-        if (plane & 64) {
-            drawPtr[1] = pen;
-        }
-        if (plane & 32) {
-            drawPtr[2] = pen;
-        }
-        if (plane & 16) {
-            drawPtr[3] = pen;
-        }
-        if (plane & 8) {
-            drawPtr[4] = pen;
-        }
-        if (plane & 4) {
-            drawPtr[5] = pen;
-        }
-        if (plane & 2) {
-            drawPtr[6] = pen;
-        }
-        if (plane & 1) {
-            drawPtr[7] = pen;
-        }
+        if (!plane)      continue;
+        if (plane & 128) drawPtr[0] = pen;
+        if (plane & 64)  drawPtr[1] = pen;
+        if (plane & 32)  drawPtr[2] = pen;
+        if (plane & 16)  drawPtr[3] = pen;
+        if (plane & 8)   drawPtr[4] = pen;
+        if (plane & 4)   drawPtr[5] = pen;
+        if (plane & 2)   drawPtr[6] = pen;
+        if (plane & 1)   drawPtr[7] = pen;
         drawPtr += drawSpan;
     }
 }
