@@ -56,16 +56,6 @@ extern void Draw_UpdateBorder_Planar(void);
  *
  * Returns a pointer to the next character to render, or null, if the end of the string was reached.
  */
-extern const char* Draw_ChunkyTextFGOnly(
-    UBYTE *drawPtr,
-    UWORD drawSpan,
-    UWORD maxLen,
-    const char *textPtr,
-    UWORD xPos,
-    UWORD yPos,
-    UBYTE fgPen
-);
-
 extern const char* Draw_ChunkyText(
     UBYTE *drawPtr,
     UWORD drawSpan,
@@ -73,8 +63,17 @@ extern const char* Draw_ChunkyText(
     const char *textPtr,
     UWORD xPos,
     UWORD yPos,
-    UBYTE fgPen,
-    UBYTE bgPen
+    UBYTE pen
+);
+
+extern const char* Draw_ChunkyTextProp(
+    UBYTE *drawPtr,
+    UWORD drawSpan,
+    UWORD maxLen,
+    const char *textPtr,
+    UWORD xPos,
+    UWORD yPos,
+    UBYTE pen
 );
 
 extern UBYTE *Vid_FastBufferPtr_l;

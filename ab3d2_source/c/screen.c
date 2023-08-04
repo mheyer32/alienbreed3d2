@@ -388,8 +388,8 @@ static void CopyFrameBuffer(UBYTE *dst, const UBYTE *src, WORD dstBytesPerRow, W
 
 void Vid_Present()
 {
-
-    /* Draw_ChunkyTextFGOnly(Vid_FastBufferPtr_l, SCREEN_WIDTH, 39, "Test text render...", 4, 4, 255); */
+    //Draw_ChunkyTextProp(Vid_FastBufferPtr_l, SCREEN_WIDTH, 80, "This is an example of proportional rendering!", 4, 4, 255);
+    //Draw_ChunkyTextProp(Vid_FastBufferPtr_l, SCREEN_WIDTH, 80, "0123456789!\"$%^&*(){}[]|_+.,:;#@", 4, 12, 255);
 
     if (Vid_isRTG) {
         LOCAL_CYBERGFX();
