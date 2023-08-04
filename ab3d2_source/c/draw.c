@@ -298,7 +298,7 @@ static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charGlyph, UB
 }
 
 /**
- * Draw a length limited, null terminated string of fixed glyphs at a given coordinate, foreground only.
+ * Draw a length limited, null terminated string of fixed glyphs at a given coordinate.
  */
 const char* Draw_ChunkyText(
     UBYTE *drawPtr,
@@ -322,7 +322,7 @@ const char* Draw_ChunkyText(
 }
 
 /**
- * Draw a length limited, null terminated string of fixed glyphs at a given coordinate, foreground only.
+ * Draw a length limited, null terminated string of proportional glyphs at a given coordinate.
  */
 const char* Draw_ChunkyTextProp(
     UBYTE *drawPtr,
@@ -341,10 +341,22 @@ const char* Draw_ChunkyTextProp(
         if ( (charGlyph > 0x20 && charGlyph < 0x7F) || charGlyph > 0xA0) {
             draw_ChunkyGlyph(drawPtr - (glyphSpacing & 0xF), drawSpan, charGlyph, pen);
         }
-        //drawPtr += DRAW_MSG_CHAR_W;
         drawPtr += glyphSpacing >> 4;
     }
     return charGlyph ? textPtr : (const char*)NULL;
+}
+
+/**
+ * Calculate the pixel width of a string (up to maxLen or null, whichever comes first) when using proportional
+ * rendering.
+ */
+ULONG Draw_CalcPropWidth(const char *textPtr, UWORD maxLen) {
+    ULONG width = 0;
+    UBYTE charGlyph;
+    while ( (charGlyph = (UBYTE)*textPtr++) && maxLen-- > 0 ) {
+        width += draw_GlyphSpacing_vb[charGlyph] >> 4;
+    }
+    return width;
 }
 
 /**
