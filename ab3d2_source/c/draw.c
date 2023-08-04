@@ -310,7 +310,7 @@ const char* Draw_ChunkyTextFGOnly(
         if ( (charGlyph > 0x20 && charGlyph < 0x7F) || charGlyph > 0xA0) {
             draw_ChunkyGlyphFGOnly(drawPtr, drawSpan, charGlyph, fgPen);
         }
-        drawPtr += DRAW_MSG_CHAR_H;
+        drawPtr += DRAW_MSG_CHAR_W;
     }
     return charGlyph ? textPtr : (const char*)NULL;
 }
@@ -335,7 +335,7 @@ const char* Draw_ChunkyText(
         if ( (charGlyph >= 0x20 && charGlyph < 0x7F) || charGlyph >= 0xA0) {
             draw_ChunkyGlyph(drawPtr, drawSpan, charGlyph, fgPen, bgPen);
         }
-        drawPtr += DRAW_MSG_CHAR_H;
+        drawPtr += DRAW_MSG_CHAR_W;
     }
     return charGlyph ? textPtr : (const char*)NULL;
 }
