@@ -1083,40 +1083,9 @@ okwat:
 				cmp.w	#15,Anim_TempFrames_w
 				blt.s	.okframe
 				move.w	#15,Anim_TempFrames_w
+
 .okframe:
 				move.w	#0,Anim_FramesToDraw_w
-
-*********************************************
-*********** TAKE THIS OUT *******************
-*********************************************
-
-;				move.l	CHEATPTR,a4
-;				add.l	#200000,a4
-;				moveq	#0,d0
-;				move.b	(a4),d0
-;
-;				move.l	#KeyMap_vb,a5
-;				tst.b	(a5,d0.w)
-;				beq.s	.nocheat
-;
-;				addq	#1,a4
-;				cmp.l	#ENDCHEAT,a4
-;				blt.s	.nocheat
-;				cmp.w	#0,CHEATNUM
-;				beq.s	.nocheat
-;				sub.w	#1,CHEATNUM
-;				move.l	#CHEATFRAME,a4
-;				move.w	#127,Plr1_Energy_w
-;				CALLC	Draw_BorderEnergyBar
-;.nocheat
-;
-;				sub.l	#200000,a4
-;				move.l	a4,CHEATPTR
-
-**********************************************
-**********************************************
-**********************************************
-
 				move.l	Plr1_SnapXOff_l,Plr1_TmpXOff_l
 				move.l	Plr1_SnapZOff_l,Plr1_TmpZOff_l
 				move.l	Plr1_SnapYOff_l,Plr1_TmpYOff_l
@@ -1664,9 +1633,12 @@ IWasPlayer1:
 
 				jsr		OrderZones
 				jsr		objmoveanim
-				CALLC	Draw_BorderEnergyBar
-				CALLC	Draw_BorderAmmoBar
 
+				; ASM build only
+				IFND BUILD_WITH_C
+				jsr		Draw_BorderEnergyBar
+				jsr		Draw_BorderAmmoBar
+				ENDIF
 
 ;********************************************
 ;************* Do reflection ****************
@@ -1765,8 +1737,12 @@ drawplayer2:
 .nolookback:
 				jsr		OrderZones
 				jsr		objmoveanim
-				CALLC	Draw_BorderEnergyBar
-				CALLC	Draw_BorderAmmoBar
+
+				; ASM build only
+				IFND BUILD_WITH_C
+				jsr		Draw_BorderEnergyBar
+				jsr		Draw_BorderAmmoBar
+				ENDIF
 
 				move.w	Vid_LetterBoxMarginHeight_w,d0
 				move.w	#0,Draw_LeftClip_w
@@ -5029,7 +5005,11 @@ endlevel:
 				tst.w	draw_DisplayEnergyCount_w
 				bgt.s	wevewon
 				move.w	#0,draw_DisplayEnergyCount_w
-				CALLC	Draw_BorderEnergyBar
+
+				; ASM build only
+				IFND BUILD_WITH_C
+				jsr		Draw_BorderEnergyBar
+				ENDIF
 
 				move.l	#gameover,mt_data
 				st		UseAllChannels
@@ -5050,7 +5030,9 @@ wevewon:
 				; Disable audio DMA
 				move.w	#$f,$dff000+dmacon
 
-				CALLC	Draw_BorderEnergyBar
+				IFND BUILD_WITH_C
+				jsr		Draw_BorderEnergyBar
+                ENDIF
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.nonextlev
@@ -5058,7 +5040,6 @@ wevewon:
 				st		Game_FinishedLevel_b
 
 .nonextlev:
-
 				move.l	#welldone,mt_data
 				st		UseAllChannels
 				clr.b	reachedend

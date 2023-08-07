@@ -755,11 +755,15 @@ TWOPLAYER:
 
 				rts
 
+				; this entire bit seems unreachable?
+				; ASM build only
 				move.w	#127,draw_DisplayEnergyCount_w
-				CALLC	Draw_BorderEnergyBar
-
 				move.w	#0,draw_DisplayAmmoCount_w
-				CALLC	Draw_BorderAmmoBar
+
+				IFND BUILD_WITH_C
+				jsr		Draw_BorderEnergyBar
+				jsr		Draw_BorderAmmoBar
+				ENDIF
 
 				move.b	#0,Plr1_GunSelected_b
 				move.b	#0,Plr2_GunSelected_b
@@ -784,7 +788,6 @@ DEFAULTGAME:
 				clr.l	(a0)+
 				clr.l	(a0)+
 				clr.l	(a0)+
-
 				clr.l	(a1)+
 				clr.l	(a1)+
 				clr.l	(a1)+

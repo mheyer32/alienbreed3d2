@@ -367,22 +367,6 @@ void Draw_LineOfText(REG(a0, const char *ptr), REG(a1, APTR screenPointer), REG(
 
 }
 
-/**
- * Todo - implement AGA planar version of the HUD update
- */
-void Draw_BorderAmmoBar()
-{
-
-}
-
-/**
- * Todo - implement AGA planar version of the HUD update
- */
-void Draw_BorderEnergyBar()
-{
-
-}
-
 /**********************************************************************************************************************/
 
 static __inline WORD draw_ScreenXPos(WORD xPos) {
