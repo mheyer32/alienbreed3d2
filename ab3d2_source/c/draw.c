@@ -459,6 +459,8 @@ static void draw_RenderCounterDigit_RTG(UBYTE *drawPtr, const UBYTE *glyphPtr, U
 #endif
 }
 
+/**********************************************************************************************************************/
+
 /**
  * Render a counter (3-digit) into
  */
@@ -553,6 +555,8 @@ static void draw_UpdateItems_Planar(APTR planes, ULONG planeDistance, const UWOR
     /* TODO */
 }
 
+/**********************************************************************************************************************/
+
 static void draw_UpdateCounter_Planar(APTR planes, ULONG planeDistance, UWORD count, UWORD limit, UWORD xPos, UWORD yPos)
 {
     /* TODO */
@@ -642,6 +646,8 @@ static void draw_CalculateGlyphSpacing() {
         draw_GlyphSpacing_vb[i] = width << 4 | left;
     }
 }
+
+/**********************************************************************************************************************/
 
 /**
  * Converts the border digits used for ammo/health from their initial planar representation to a chunky one
