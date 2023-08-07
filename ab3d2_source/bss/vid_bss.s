@@ -21,6 +21,8 @@ _Vid_Screen2Ptr_l:
 Vid_Screen2Ptr_l:			ds.l	1
 _Vid_DrawScreenPtr_l::
 Vid_DrawScreenPtr_l:		ds.l	1
+
+_Vid_DisplayScreen_Ptr_l::
 Vid_DisplayScreen_Ptr_l:	ds.l	1
 
 _Vid_ScreenBuffers_vl:

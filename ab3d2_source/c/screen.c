@@ -440,5 +440,6 @@ void Vid_Present()
 #endif
     } else {
         CallAsm(&Vid_ConvertC2P);
+        Draw_UpdateBorder_Planar();
     }
 }
