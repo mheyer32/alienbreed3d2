@@ -5,6 +5,7 @@
 
 #define SCREEN_WIDTH (UWORD)320
 #define SCREEN_HEIGHT (UWORD)256
+#define SCREEN_DEPTH 8
 
 /**
  * Define RTG_LONG_ALIGNED if you expect to perform 32-bit access to VRAM only

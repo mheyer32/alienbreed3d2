@@ -132,40 +132,32 @@ res_FreeList:
 ; *
 ; *****************************************************************************
 
+RES_NUM_SFX=59 ; XXX: Shouldn't this be NUM_SFX? But doesn't work with karlos-tkg
+
 Res_LoadSoundFx:
 				move.l	GLF_DatabasePtr_l,a0
 				lea		GLFT_SFXFilenames_l(a0),a0
 				move.l	#Aud_SampleList_vl,a1
-				move.w	#58,d7
+				move.w	#RES_NUM_SFX-1,d7
+				move.l	#MEMF_ANY,IO_MemType_l
 
 .load_sound_loop:
 				tst.b	(a0)
-				bne.s	.ok_to_load
+				beq.s	.skip
 
-				add.w	#64,a0
-				addq	#8,a1
-				dbra	d7,.load_sound_loop
-				move.l	#-1,(a1)+				; terminate list?
-				rts
-
-.ok_to_load:
-				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	a1,d0
 				move.l	d0,d1
 				add.l	#4,d1
 				jsr		IO_QueueFile
 
+.skip:
 				addq	#8,a1
-; move.l d0,(a1)+
-; add.l d1,d0
-; move.l d0,(a1)+
 				adda.w	#64,a0
 				dbra	d7,.load_sound_loop
-				move.l	#MEMF_ANY,IO_MemType_l
 				rts
 
 Res_PatchSoundFx:								; transform the list of {{startaddress, length},...}
-				move.w	#58,d7					; into {{startaddress, endaddress},...}
+				move.w	#RES_NUM_SFX-1,d7		; into {{startaddress, endaddress},...}
 				move.l	#Aud_SampleList_vl,a1
 
 .patch_loop:
@@ -176,19 +168,15 @@ Res_PatchSoundFx:								; transform the list of {{startaddress, length},...}
 				rts
 
 Res_FreeSoundFx:
-				move.l	#Aud_SampleList_vl,a0
+				move.l	#Aud_SampleList_vl,a2
+				move.w	#RES_NUM_SFX-1,d2
 .relmem:
-				move.l	(a0)+,d1
-				bge.s	.okrel
-				rts
-.okrel:
-				move.l	(a0)+,d0
-				sub.l	d1,d0
-				move.l	d1,a1
-				move.l	a0,-(a7)
+				move.l	(a2),a1
+				clr.l	(a2)
 				CALLEXEC FreeVec
-				move.l	(a7)+,a0
-				bra		.relmem
+				addq.w	#8,a2
+				dbf		d2,.relmem
+				rts
 
 ; *****************************************************************************
 ; *
@@ -253,7 +241,7 @@ Res_LoadWallTextures:
 				;* the files in...
 
 				move.l	#Draw_WallTexturePtrs_vl,a0
-				moveq	#DRAW_MAX_WALL_TEXTURES-1,d7
+				moveq	#NUM_WALL_TEXTURES-1,d7
 
 .empty_walls:
 				move.l	#0,(a0)+
@@ -263,10 +251,11 @@ Res_LoadWallTextures:
 				move.l	GLF_DatabasePtr_l,a3
 				add.l	#GLFT_WallGFXNames_l,a3
 				move.l	#MEMF_ANY,IO_MemType_l
+				move.w	#NUM_WALL_TEXTURES-1,d7
 
 .load_loop:
 				move.l	(a3),d0
-				beq		.loaded_all
+				beq		.done					; XXX maybe just skip this entry?
 
 				move.l	a3,a0
 				move.l	a4,d0					; address to put start pos
@@ -274,16 +263,15 @@ Res_LoadWallTextures:
 				jsr		IO_QueueFile
 
 				addq	#4,a4
-
 				adda.w	#64,a3
-				bra		.load_loop
+				dbf		d7,.load_loop
 
-.loaded_all:
+.done:
 				rts
 
 Res_FreeWallTextures:
 				lea		Draw_WallTexturePtrs_vl,a2
-				moveq	#DRAW_MAX_WALL_TEXTURES-1,d2
+				moveq	#NUM_WALL_TEXTURES-1,d2
 				bra		res_FreeList
 
 ; *****************************************************************************
