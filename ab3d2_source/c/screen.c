@@ -44,6 +44,7 @@ extern UBYTE Vid_FullScreen_b;
 extern UWORD Vid_LetterBoxMarginHeight_w;
 
 extern void Draw_UpdateBorder_RTG(APTR bmBaseAdress, ULONG bmBytesPerRow);
+extern void Draw_UpdateBorder_Planar(void);
 
 WORD Vid_ScreenHeight;
 WORD Vid_ScreenWidth;

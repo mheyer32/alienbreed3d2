@@ -44,24 +44,46 @@ extern UWORD Plr2_Weapons_vb[DRAW_NUM_WEAPON_SLOTS];
 extern UBYTE draw_GlyphSpacing_vb[256];
 
 /* Pointer to planar display */
-extern APTR Vid_DrawScreenPtr_l;
-extern APTR Vid_DisplayScreen_Ptr_l;
+extern APTR Vid_DisplayScreenPtr_l;
 
-typedef PLANEPTR BitPlanes[SCREEN_DEPTH];
-
-/* Border digits when not low on ammo/health */
+/**
+ * Border digits when not low on ammo/health
+ *
+ * In RTG modes, this contains chunky data. In native modes, this contains planar data reorganised so that all data for
+ * each digit is sequentially arranged.
+ */
 static UBYTE draw_BorderDigitsGood[DRAW_HUD_CHAR_W * DRAW_HUD_CHAR_H * 10];
 
-/* Border digits when low on ammo/health */
+/**
+ * Border digits when low on ammo/health
+ *
+ * In RTG modes, this contains chunky data. In native modes, this contains planar data reorganised so that all data for
+ * each digit is sequentially arranged.
+ */
 static UBYTE draw_BorderDigitsWarn[DRAW_HUD_CHAR_W * DRAW_HUD_CHAR_H * 10];
 
-/** Border digits for items not yet located */
+/**
+ * Border digits for items not yet located
+ *
+ * In RTG modes, this contains chunky data. In native modes, this contains planar data reorganised so that all data for
+ * each digit is sequentially arranged.
+ */
 static UBYTE draw_BorderDigitsItem[DRAW_HUD_CHAR_SMALL_W * DRAW_HUD_CHAR_SMALL_H * 10];
 
-/** Border digits for items located */
+/**
+ * Border digits for items located
+ *
+ * In RTG modes, this contains chunky data. In native modes, this contains planar data reorganised so that all data for
+ * each digit is sequentially arranged.
+ */
 static UBYTE draw_BorderDigitsItemFound[DRAW_HUD_CHAR_SMALL_W * DRAW_HUD_CHAR_SMALL_H * 10];
 
-/** Border digits for item selected */
+/**
+ * Border digits for item selected
+ *
+ * In RTG modes, this contains chunky data. In native modes, this contains planar data reorganised so that all data for
+ * each digit is sequentially arranged.
+ */
 static UBYTE draw_BorderDigitsItemSelected[DRAW_HUD_CHAR_SMALL_W * DRAW_HUD_CHAR_SMALL_H * 10];
 
 static UWORD draw_LastItemList      = 0xFFFF;
@@ -74,9 +96,11 @@ static UBYTE *FastBufferAllocPtr;
 
 /**********************************************************************************************************************/
 
-static void draw_PlanarToChunky(UBYTE *chunky, const PLANEPTR *planes, ULONG numPixels);
+static void draw_PlanarToChunky(UBYTE *chunkyPtr, const PLANEPTR *planePtrs, ULONG numPixels);
 static void draw_ValueToDigits(UWORD value, UWORD digits[3]);
-static void draw_ConvertPlanarDigits(UBYTE* chunky, const UBYTE *planar, UWORD width, UWORD height);
+static void draw_ConvertBorderDigitsToChunky(UBYTE* chunkyPtr, const UBYTE *planarBasePtr, UWORD width, UWORD height);
+static void draw_ReorderBorderDigits(UBYTE* toPlanarPtr, const UBYTE *planarBasePtr, UWORD width, UWORD height);
+
 static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charGlyph, UBYTE pen);
 static void draw_CalculateGlyphSpacing(void);
 
@@ -91,7 +115,7 @@ static void draw_UpdateCounter_RTG(
 
 static void draw_UpdateCounter_Planar(
     APTR  planes,
-    ULONG planeDistance,
+    ULONG bytesPerRow,
     UWORD count,
     UWORD limit,
     UWORD xPos,
@@ -109,7 +133,7 @@ static void draw_UpdateItems_RTG(
 
 static void draw_UpdateItems_Planar(
     APTR  planes,
-    ULONG planeDistance,
+    ULONG bytesPerRow,
     const UWORD* itemSlots,
     UWORD itemSelected,
     UWORD xPos,
@@ -131,6 +155,8 @@ BOOL Draw_Init()
 
     Vid_FastBufferPtr_l = (UBYTE *)(((ULONG)FastBufferAllocPtr + 15) & ~15);
 
+    void (*border_convert)(UBYTE* to, const UBYTE *from, UWORD width, UWORD height);
+
     if (Vid_isRTG) {
         BitPlanes planes;
         unLHA(Vid_FastBufferPtr_l, draw_BorderPacked_vb, 0, Sys_Workspace_vl, NULL);
@@ -142,47 +168,50 @@ BOOL Draw_Init()
         /* The image we have has a fixed size */
         draw_PlanarToChunky(draw_Border, planes, SCREEN_WIDTH * SCREEN_HEIGHT);
 
-        /* Convert the "low ammo/health" counter digits */
-        draw_ConvertPlanarDigits(
-            draw_BorderDigitsWarn,
-            draw_BorderChars_vb + 15 * DRAW_HUD_CHAR_W * 10,
-            DRAW_HUD_CHAR_W,
-            DRAW_HUD_CHAR_H
-        );
-
-        /* Convert the normal counter digits */
-        draw_ConvertPlanarDigits(
-            draw_BorderDigitsGood,
-            draw_BorderChars_vb + 15 * DRAW_HUD_CHAR_W * 10 + DRAW_HUD_CHAR_H * DRAW_HUD_CHAR_W * 10,
-            DRAW_HUD_CHAR_W,
-            DRAW_HUD_CHAR_H
-        );
-
-        /* Convert the unavailable item digits */
-        draw_ConvertPlanarDigits(
-            draw_BorderDigitsItem,
-            draw_BorderChars_vb,
-            DRAW_HUD_CHAR_SMALL_W,
-            DRAW_HUD_CHAR_SMALL_H
-        );
-
-        /* Convert the available item digits */
-        draw_ConvertPlanarDigits(
-            draw_BorderDigitsItemFound,
-            draw_BorderChars_vb + DRAW_HUD_CHAR_SMALL_H * 10 * DRAW_HUD_CHAR_SMALL_W,
-            DRAW_HUD_CHAR_SMALL_W,
-            DRAW_HUD_CHAR_SMALL_H
-        );
-
-        /* Convert the selected item digits */
-        draw_ConvertPlanarDigits(
-            draw_BorderDigitsItemSelected,
-            draw_BorderChars_vb + DRAW_HUD_CHAR_SMALL_H * 10 * DRAW_HUD_CHAR_SMALL_W * 2,
-            DRAW_HUD_CHAR_SMALL_W,
-            DRAW_HUD_CHAR_SMALL_H
-        );
-
+        border_convert = draw_ConvertBorderDigitsToChunky;
+    } else {
+        border_convert = draw_ReorderBorderDigits;
     }
+
+    /* Convert the "low ammo/health" counter digits */
+    border_convert(
+        draw_BorderDigitsWarn,
+        draw_BorderChars_vb + 15 * DRAW_HUD_CHAR_W * 10,
+        DRAW_HUD_CHAR_W,
+        DRAW_HUD_CHAR_H
+    );
+
+    /* Convert the normal counter digits */
+    border_convert(
+        draw_BorderDigitsGood,
+        draw_BorderChars_vb + 15 * DRAW_HUD_CHAR_W * 10 + DRAW_HUD_CHAR_H * DRAW_HUD_CHAR_W * 10,
+        DRAW_HUD_CHAR_W,
+        DRAW_HUD_CHAR_H
+    );
+
+    /* Convert the unavailable item digits */
+    border_convert(
+        draw_BorderDigitsItem,
+        draw_BorderChars_vb,
+        DRAW_HUD_CHAR_SMALL_W,
+        DRAW_HUD_CHAR_SMALL_H
+    );
+
+    /* Convert the available item digits */
+    border_convert(
+        draw_BorderDigitsItemFound,
+        draw_BorderChars_vb + DRAW_HUD_CHAR_SMALL_H * 10 * DRAW_HUD_CHAR_SMALL_W,
+        DRAW_HUD_CHAR_SMALL_W,
+        DRAW_HUD_CHAR_SMALL_H
+    );
+
+    /* Convert the selected item digits */
+    border_convert(
+        draw_BorderDigitsItemSelected,
+        draw_BorderChars_vb + DRAW_HUD_CHAR_SMALL_H * 10 * DRAW_HUD_CHAR_SMALL_W * 2,
+        DRAW_HUD_CHAR_SMALL_W,
+        DRAW_HUD_CHAR_SMALL_H
+    );
 
     draw_CalculateGlyphSpacing();
 
@@ -214,9 +243,12 @@ void Draw_Shutdown()
  */
 void Draw_ResetGameDisplay()
 {
+    /* Retrigger the counters */
+    draw_ResetHUDCounters();
     if (!Vid_isRTG) {
         unLHA(Vid_Screen1Ptr_l, draw_BorderPacked_vb, 0, Sys_Workspace_vl, NULL);
         unLHA(Vid_Screen2Ptr_l, draw_BorderPacked_vb, 0, Sys_Workspace_vl, NULL);
+        Draw_UpdateBorder_Planar();
     } else {
         LOCAL_CYBERGFX();
 
@@ -243,11 +275,7 @@ void Draw_ResetGameDisplay()
                     src += SCREEN_WIDTH;
                 }
             }
-
-            /* Retrigger the counters */
-            draw_ResetHUDCounters();
             Draw_UpdateBorder_RTG(bmBaseAddress, bmBytesPerRow);
-
             UnLockBitMap(bmHandle);
         }
     }
@@ -386,9 +414,13 @@ void Draw_UpdateBorder_RTG(APTR bmBaseAddress, ULONG bmBytesPerRow)
 
 /**********************************************************************************************************************/
 
+extern UWORD Vid_ScreenBufferIndex_w;
+
 void Draw_UpdateBorder_Planar(void)
 {
     INIT_ITEMS();
+
+    /* TODO - Determine the correct render target and rely on the pointer. For now, we ignore it and render to both */
 
     if (itemSelected != draw_LastItemSelected || itemList != draw_LastItemList) {
         draw_LastItemSelected = itemSelected;
@@ -396,8 +428,8 @@ void Draw_UpdateBorder_Planar(void)
 
         /* Inventory */
         draw_UpdateItems_Planar(
-            Vid_DisplayScreen_Ptr_l,
-            SCREEN_WIDTH * SCREEN_HEIGHT / SCREEN_DEPTH,
+            Vid_DisplayScreenPtr_l,
+            SCREEN_WIDTH / SCREEN_DEPTH,
             itemSlots,
             itemSelected,
             draw_ScreenXPos(DRAW_HUD_ITEM_SLOTS_X),
@@ -408,8 +440,8 @@ void Draw_UpdateBorder_Planar(void)
     if (draw_LastDisplayAmmoCount_w != draw_DisplayAmmoCount_w) {
         draw_LastDisplayAmmoCount_w = draw_DisplayAmmoCount_w;
         draw_UpdateCounter_Planar(
-            Vid_DisplayScreen_Ptr_l,
-            SCREEN_WIDTH * SCREEN_HEIGHT / SCREEN_DEPTH,
+            Vid_DisplayScreenPtr_l,
+            SCREEN_WIDTH / SCREEN_DEPTH,
             draw_DisplayAmmoCount_w,
             LOW_AMMO_COUNT_WARN_LIMIT,
             draw_ScreenXPos(DRAW_HUD_AMMO_COUNT_X),
@@ -421,8 +453,8 @@ void Draw_UpdateBorder_Planar(void)
     if (draw_LastDisplayEnergyCount_w != draw_DisplayEnergyCount_w) {
         draw_LastDisplayEnergyCount_w = draw_DisplayEnergyCount_w;
         draw_UpdateCounter_Planar(
-            Vid_DisplayScreen_Ptr_l,
-            SCREEN_WIDTH * SCREEN_HEIGHT / SCREEN_DEPTH,
+            Vid_DisplayScreenPtr_l,
+            SCREEN_WIDTH / SCREEN_DEPTH,
             draw_DisplayEnergyCount_w,
             LOW_ENERGY_COUNT_WARN_LIMIT,
             draw_ScreenXPos(DRAW_HUD_ENERGY_COUNT_X),
@@ -550,22 +582,98 @@ static void draw_UpdateItems_RTG(APTR bmBaseAddress, ULONG bmBytesPerRow, const 
 
 /**********************************************************************************************************************/
 
-static void draw_UpdateItems_Planar(APTR planes, ULONG planeDistance, const UWORD* itemSlots, UWORD itemSelected, UWORD xPos, UWORD yPos)
-{
-    /* TODO */
+#define PLANE_OFFSET(n) ((n) * SCREEN_WIDTH * SCREEN_HEIGHT / SCREEN_DEPTH)
+
+/**
+ * Render a single item digit
+ */
+static void draw_RenderItemDigit_Planar(ULONG offset, const UBYTE *glyphPtr, UWORD digit, ULONG bytesPerRow) {
+    const UBYTE *digitPtrBase = &glyphPtr[digit * DRAW_HUD_CHAR_SMALL_W * DRAW_HUD_CHAR_SMALL_H];
+    PLANEPTR planes[2] = {
+        Vid_Screen1Ptr_l,
+        Vid_Screen2Ptr_l
+    };
+
+    for (UWORD p = 0; p < 2; ++p) {
+        PLANEPTR drawPtr = planes[p] + offset;
+        const UBYTE *digitPtr = digitPtrBase;
+        for (UWORD y = 0; y < DRAW_HUD_CHAR_SMALL_H; ++y) {
+            drawPtr[PLANE_OFFSET(0)] = *digitPtr++;
+            drawPtr[PLANE_OFFSET(1)] = *digitPtr++;
+            drawPtr[PLANE_OFFSET(2)] = *digitPtr++;
+            drawPtr[PLANE_OFFSET(3)] = *digitPtr++;
+            drawPtr[PLANE_OFFSET(4)] = *digitPtr++;
+            drawPtr[PLANE_OFFSET(5)] = *digitPtr++;
+            drawPtr[PLANE_OFFSET(6)] = *digitPtr++;
+            drawPtr[PLANE_OFFSET(7)] = *digitPtr++;
+            drawPtr += bytesPerRow;
+        }
+    }
 }
 
 /**********************************************************************************************************************/
 
-static void draw_UpdateCounter_Planar(APTR planes, ULONG planeDistance, UWORD count, UWORD limit, UWORD xPos, UWORD yPos)
+static void draw_UpdateItems_Planar(APTR planes, ULONG bytesPerRow, const UWORD* itemSlots, UWORD itemSelected, UWORD xPos, UWORD yPos)
 {
-    /* TODO */
+    /* TODO - fix up the buffer selection so that input planes is the required render target */
+
+    ULONG offset = ((xPos + yPos * SCREEN_WIDTH) >> SCREEN_DEPTH_EXP);
+
+    for (UWORD i = 0; i < DRAW_NUM_WEAPON_SLOTS; ++i, offset += (DRAW_HUD_CHAR_SMALL_W >> SCREEN_DEPTH_EXP)) {
+        const UBYTE *glyphPtr = itemSelected == i ?
+            draw_BorderDigitsItemSelected :
+            itemSlots[i] ?
+                draw_BorderDigitsItemFound :
+                draw_BorderDigitsItem;
+
+        draw_RenderItemDigit_Planar(offset, glyphPtr, i, bytesPerRow);
+   }
+}
+
+/**********************************************************************************************************************/
+
+/**
+ * Render a single counter digit
+ */
+static void draw_RenderCounterDigit_Planar(ULONG offset, const UBYTE *glyphPtr, UWORD digit, ULONG bytesPerRow) {
+
+    const UBYTE *digitPtrBase = &glyphPtr[digit * DRAW_HUD_CHAR_W * DRAW_HUD_CHAR_H];
+    PLANEPTR planes[2] = {
+        Vid_Screen1Ptr_l,
+        Vid_Screen2Ptr_l
+    };
+
+    for (UWORD p = 0; p < 2; ++p) {
+        PLANEPTR drawPtr = planes[p] + offset;
+        const UBYTE *digitPtr = digitPtrBase;
+        for (UWORD y = 0; y < DRAW_HUD_CHAR_H; ++y) {
+            drawPtr[PLANE_OFFSET(0)] = *digitPtr++;
+            drawPtr[PLANE_OFFSET(1)] = *digitPtr++;
+            drawPtr[PLANE_OFFSET(2)] = *digitPtr++;
+            drawPtr[PLANE_OFFSET(3)] = *digitPtr++;
+            drawPtr[PLANE_OFFSET(4)] = *digitPtr++;
+            drawPtr[PLANE_OFFSET(5)] = *digitPtr++;
+            drawPtr[PLANE_OFFSET(6)] = *digitPtr++;
+            drawPtr[PLANE_OFFSET(7)] = *digitPtr++;
+            drawPtr += bytesPerRow;
+        }
+    }
+}
+
+static void draw_UpdateCounter_Planar(APTR planes, ULONG bytesPerRow, UWORD count, UWORD limit, UWORD xPos, UWORD yPos)
+{
     UWORD digits[3];
     draw_ValueToDigits(count, digits);
 
     const UBYTE *glyphPtr = count > limit ?
         draw_BorderDigitsGood :
         draw_BorderDigitsWarn;
+
+    ULONG offset = ((xPos + yPos * SCREEN_WIDTH) >> SCREEN_DEPTH_EXP);
+
+    for (UWORD d = 0; d < 3; ++d, offset += DRAW_HUD_CHAR_W >> SCREEN_DEPTH_EXP) {
+        draw_RenderCounterDigit_Planar(offset, glyphPtr, digits[d], bytesPerRow);
+    }
 }
 
 /**********************************************************************************************************************/
@@ -586,7 +694,6 @@ static void draw_ValueToDigits(UWORD value, UWORD digits[3]) {
 }
 
 /**********************************************************************************************************************/
-
 
 /**
  * Draw a glyph into the target buffer, filling only the set pixels with the desired pen. There are probably lots
@@ -652,7 +759,7 @@ static void draw_CalculateGlyphSpacing() {
 /**
  * Converts the border digits used for ammo/health from their initial planar representation to a chunky one
  */
-static void draw_ConvertPlanarDigits(UBYTE* chunkyPtr, const UBYTE *planarBasePtr, UWORD width, UWORD height) {
+static void draw_ConvertBorderDigitsToChunky(UBYTE* chunkyPtr, const UBYTE *planarBasePtr, UWORD width, UWORD height) {
     BitPlanes planes;
     const UBYTE *base_digit = planarBasePtr;
     UBYTE *out_digit  = chunkyPtr;
@@ -668,6 +775,28 @@ static void draw_ConvertPlanarDigits(UBYTE* chunkyPtr, const UBYTE *planarBasePt
                 planes[p] += width * 10;
             }
             out_digit += width;
+        }
+    }
+}
+
+/**
+ * Reorganises the planar data so that the data for all digits are stored consecutively. Each digit is stored as
+ * 8 bytes per row, each byte representing a single bitplane.
+ */
+static void draw_ReorderBorderDigits(UBYTE* toPlanarPtr, const UBYTE *planarBasePtr, UWORD width, UWORD height) {
+    BitPlanes planes;
+    const UBYTE *base_digit = planarBasePtr;
+    for (UWORD d = 0; d < 10; ++d) {
+        const UBYTE *digit = base_digit + d;
+        for (UWORD p = 0; p < 8; ++p) {
+            planes[p] = (PLANEPTR)(digit + p * 10);
+        }
+
+        for (UWORD y = 0; y <  height; ++y) {
+            for (UWORD p = 0; p < 8; ++p) {
+                *toPlanarPtr++ = *planes[p];
+                planes[p] += width * 10;
+            }
         }
     }
 }

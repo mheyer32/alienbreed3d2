@@ -22,8 +22,8 @@ Vid_Screen2Ptr_l:			ds.l	1
 _Vid_DrawScreenPtr_l::
 Vid_DrawScreenPtr_l:		ds.l	1
 
-_Vid_DisplayScreen_Ptr_l::
-Vid_DisplayScreen_Ptr_l:	ds.l	1
+_Vid_DisplayScreenPtr_l::
+Vid_DisplayScreenPtr_l:	ds.l	1
 
 _Vid_ScreenBuffers_vl:
 Vid_ScreenBuffers_vl:		ds.l	2
@@ -37,9 +37,9 @@ _Vid_MainWindow_l:
 vid_MainWindow_l:			ds.l	1
 ;vid_SafeMsgPort_l		ds.l	1			; this message port reveives messages when the old screen bitmap can be safely written to
 											; i.e. when the screen flip actually happened
-
+_Vid_ScreenBufferIndex_w::
 Vid_ScreenBufferIndex_w:		ds.w	1	; Index (0/1) of current screen buffer displayed.
-											; FIXME: unify the buffer index handling with Vid_DrawScreenPtr_l/Vid_DisplayScreen_Ptr_l
+											; FIXME: unify the buffer index handling with Vid_DrawScreenPtr_l/Vid_DisplayScreenPtr_l
 
 _Vid_LetterBoxMarginHeight_w::
 Vid_LetterBoxMarginHeight_w:	ds.w	1	; Letter box rendering, height of black border

@@ -719,7 +719,7 @@ CLRDAM:
 				move.w	#0,Plr2_AimSpeed_l
 
 ; init pointer to chipmem render buffers
-				move.l	Vid_Screen1Ptr_l,Vid_DisplayScreen_Ptr_l
+				move.l	Vid_Screen1Ptr_l,Vid_DisplayScreenPtr_l
 				move.l	Vid_Screen2Ptr_l,Vid_DrawScreenPtr_l
 
 				move.l	#Game_MessageBuffer_vl,a0
@@ -959,8 +959,8 @@ nofadedownhc:
 
 ; Swap screen bitmaps
 				move.l	Vid_DrawScreenPtr_l,d0
-				move.l	Vid_DisplayScreen_Ptr_l,Vid_DrawScreenPtr_l
-				move.l	d0,Vid_DisplayScreen_Ptr_l
+				move.l	Vid_DisplayScreenPtr_l,Vid_DrawScreenPtr_l
+				move.l	d0,Vid_DisplayScreenPtr_l
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	nowaitslave
