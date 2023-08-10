@@ -36,6 +36,8 @@
 #define LOW_ENERGY_COUNT_WARN_LIMIT 9
 #define DISPLAY_COUNT_LIMIT 999
 
+typedef PLANEPTR BitPlanes[SCREEN_DEPTH];
+
 extern void Draw_ResetGameDisplay(void);
 extern BOOL Draw_Init(void);
 extern void Draw_Shutdown(void);

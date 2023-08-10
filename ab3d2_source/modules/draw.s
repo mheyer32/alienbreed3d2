@@ -250,19 +250,19 @@ Draw_BorderEnergyBar:
 				move.w	#6,d1
 				bsr		draw_BorderDigit
 
-				move.l	Vid_DisplayScreen_Ptr_l,a1
+				move.l	Vid_DisplayScreenPtr_l,a1
 				add.l	#34+238*40,a1
 				move.b	firstdigit_b,d0
 				move.w	#6,d1
 				bsr		draw_BorderDigit
 
-				move.l	Vid_DisplayScreen_Ptr_l,a1
+				move.l	Vid_DisplayScreenPtr_l,a1
 				add.l	#35+238*40,a1
 				move.b	secdigit_b,d0
 				move.w	#6,d1
 				bsr		draw_BorderDigit
 
-				move.l	Vid_DisplayScreen_Ptr_l,a1
+				move.l	Vid_DisplayScreenPtr_l,a1
 				add.l	#36+238*40,a1
 				move.b	thirddigit_b,d0
 				move.w	#6,d1
