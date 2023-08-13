@@ -118,16 +118,15 @@ BACKTOMASTER:
 BACKTOSLAVE:
 				bsr		SLAVEMENU
 DONEMENU:
+				tst.b	SHOULDQUIT
+				bne		QUITTT
 
-
+				moveq	#1,d0 ; Fade out
 				CALLC	mnu_clearscreen
 
 				;	bsr		WAITREL
 
 				FILTER
-
-				tst.b	SHOULDQUIT
-				bne		QUITTT
 
 				clr.b	Game_FinishedLevel_b
 
@@ -193,6 +192,9 @@ dontusestats:
 				bra		BACKTOMENU
 
 QUITTT:
+				moveq	#0,d0 ; No fading
+				CALLC	mnu_clearscreen ; Maybe No-op
+
 				move.l	Lvl_DataPtr_l,a1
 				CALLEXEC FreeVec
 

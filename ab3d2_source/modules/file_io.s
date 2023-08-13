@@ -98,6 +98,7 @@ IO_FlushQueue:
 				lea		mnu_askfordisk,a0
 				jsr		mnu_domenu
 
+				moveq	#1,d0 ; Fade out
 				CALLC	mnu_clearscreen
 
 				movem.l	(a7)+,d0-d7/a0-a6

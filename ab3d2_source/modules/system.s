@@ -47,7 +47,6 @@ SYS_ALERT_Y_SPACE=12
 
 ; Display alert, restore valid stack pointer and abort program.
 ; Input: a0 = format, a1 = arguments (for RawDoFmt).
-; WARNING: Do not call on menu screen without a prior call to mnu_clearscreen
 Sys_FatalError:
 				; Prepare error message, but don't display it
 				; until system has been almost completely shut down.
