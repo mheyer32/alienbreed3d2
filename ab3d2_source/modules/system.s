@@ -45,8 +45,9 @@ Sys_CopyMemMove16:
 
 SYS_ALERT_Y_SPACE=12
 
-; Display alert, restore valid stack pointer and abort program.
+; Prepare alert for later display, restore stack pointer and abort program.
 ; Input: a0 = format, a1 = arguments (for RawDoFmt).
+; Warning: Can only be called from the main game loop (Game_Start and later)
 Sys_FatalError:
 				; Prepare error message, but don't display it
 				; until system has been almost completely shut down.
@@ -77,6 +78,7 @@ Sys_FatalError:
 				add.b	#SYS_ALERT_Y_SPACE,sys_ErrorHeight_b
 				rts
 
+; Show alert (if any) prepared by Sys_FatalError
 _Sys_DisplayError::
 Sys_DisplayError:
 				moveq	#0,d1
@@ -88,6 +90,21 @@ Sys_DisplayError:
 				CALLINT DisplayAlert
 .out:
 				rts
+
+; Like exec/AllocVec, but calls Sys_FatalError on allocation failure
+Sys_AllocVec:
+				movem.l	d0-d1,-(sp) ; Save arguments
+				CALLEXEC AllocVec
+				tst.l	d0
+				beq		.fail
+				addq.l	#8,sp
+				rts
+.fail:
+				lea		.errorfmt(pc),a0
+				move.l	sp,a1
+				bra		Sys_FatalError
+.errorfmt:		dc.b	'Allocation failed. %ld bytes requested, flags=$%lx',0
+				even
 
 				IFND BUILD_WITH_C
 ;******************************************************************************

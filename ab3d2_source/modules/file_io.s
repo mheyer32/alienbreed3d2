@@ -8,6 +8,9 @@
 ; * Mostly refactored from newloadfromdisk.s and wallchunk.s
 ; *
 ; *****************************************************************************
+; TODO: It's possible that some resources are leaked if a fatal error occurs
+;       during the loading process (due to calling Sys_FatalError), but for now
+;       that seems better than crashing.
 
 IO_MAX_FILENAME_LEN	EQU 79
 
@@ -213,7 +216,7 @@ io_LoadCommon:
 				move.l	d0,io_BlockLength_l
 				add.l	#8,d0			; over-allocate by 8 bytes
 				move.l	IO_MemType_l,d1
-				CALLEXEC AllocVec
+				jsr		Sys_AllocVec
 
 				move.l	d0,io_BlockStart_l
 				move.l	IO_DOSFileHandle_l,d1
@@ -264,7 +267,7 @@ io_LoadSample:
 				move.l	d0,.sample_size_l
 				move.l	a0,.compressed_sample_position_l
 				move.l	#MEMF_ANY,d1
-				CALLEXEC AllocVec
+				jsr		Sys_AllocVec
 				move.l	d0,.sample_position_l
 				move.l	.compressed_sample_position_l,a0
 				move.l	d0,a1
@@ -339,7 +342,7 @@ io_HandlePacked:
 				move.l	4(a0),d0				; length of unpacked file.
 				move.l	d0,.unpacked_length_l
 				move.l	IO_MemType_l,d1
-				CALLEXEC AllocVec
+				jsr		Sys_AllocVec
 
 				move.l	d0,.unpacked_start_l
 				move.l	io_BlockStart_l,d0

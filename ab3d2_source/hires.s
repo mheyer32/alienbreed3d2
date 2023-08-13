@@ -145,7 +145,7 @@ _startup:
 				; allocate chunky render buffer in fastmem
 				move.l	#MEMF_ANY|MEMF_CLEAR,d1
 				move.l	#VID_FAST_BUFFER_SIZE,d0
-				CALLEXEC AllocVec
+				CALLEXEC AllocVec ; Note: Can't use Sys_AllocVec yet
 				move.l	d0,Vid_FastBufferAllocPtr_l
 				;align to 16byte for best C2P perf
 				moveq.l	#15,d1

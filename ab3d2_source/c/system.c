@@ -82,10 +82,10 @@ extern void Sys_DisplayError(void);
 
 BOOL Sys_Init()
 {
-	// Avoid requesters
-	struct Process* ThisProc = (struct Process*)SysBase->ThisTask;
-	sys_OldWindowPtr = ThisProc->pr_WindowPtr;
-	ThisProc->pr_WindowPtr = (APTR)-1;
+    // Avoid requesters
+    struct Process* ThisProc = (struct Process*)SysBase->ThisTask;
+    sys_OldWindowPtr = ThisProc->pr_WindowPtr;
+    ThisProc->pr_WindowPtr = (APTR)-1;
 
     if (!sys_InitHardware()) {
         goto fail;
@@ -112,10 +112,10 @@ void Sys_Done()
     Draw_Shutdown();
     sys_RemoveInterrupts();
     sys_ReleaseHardware();
-	((struct Process*)SysBase->ThisTask)->pr_WindowPtr = sys_OldWindowPtr;
-	// Display any buffered error message after cleanup
-	// but before closing libraries
-	Sys_DisplayError();
+    ((struct Process*)SysBase->ThisTask)->pr_WindowPtr = sys_OldWindowPtr;
+    // Display any buffered error message after cleanup
+    // but before closing libraries
+    Sys_DisplayError();
 }
 
 BOOL Sys_OpenLibs(void)
