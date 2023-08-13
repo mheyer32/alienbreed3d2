@@ -321,7 +321,7 @@ WTNOT			MACRO
 
 CINIT			MACRO	; \1 UCopList* \2 number of instructions to hold
 				move.l	\1,a0
-				move.w	#\2,d0
+				move.l	#\2,d0 ; NOTE: Must be long despite waht documentation says
 				jsr		_LVOUCopperListInit(a6)
 				ENDM
 

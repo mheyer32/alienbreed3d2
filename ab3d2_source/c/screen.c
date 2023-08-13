@@ -100,42 +100,6 @@ BOOL Vid_OpenMainScreen(void)
             Vid_ScreenBuffers_vl[s]->sb_DBufInfo->dbi_DispMessage.mn_ReplyPort = Vid_DisplayMsgPort_l;
         }
 
-        struct ViewPort *vp = ViewPortAddress(Vid_MainWindow_l);
-        VideoControlTags(vp->ColorMap, VTAG_USERCLIP_SET, 1, VTAG_END_CM, 0);
-
-        const LONG RepeatLineModulo = -SCREEN_WIDTH / 8 - 8;
-        const LONG SkipLineModulo = SCREEN_WIDTH / 8 - 8;
-
-// There is a problem with the NDK. custom.h defines all custom chip registers
-// as volatile, but CMove takes a non-volatile pointer, resulting in
-// "error: initialization discards 'volatile' qualifier from pointer target type "
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
-        // FreeVPortCopLists/CloseScreen assumes UCopList's are allocated with AllocMem
-        // See note in Vid_CloseMainScreen
-        doubleHeightCopList = AllocMem(sizeof(*doubleHeightCopList), MEMF_PUBLIC|MEMF_CLEAR);
-        if (!doubleHeightCopList) {
-            goto fail;
-        }
-
-        CINIT(doubleHeightCopList, 116 * 6 + 4);  // 232 modulos
-
-        int line;
-        for (line = 0; line < 232;) {
-            CWAIT(doubleHeightCopList, line, 0);
-            CMOVE(doubleHeightCopList, bpl1mod, RepeatLineModulo);
-            CMOVE(doubleHeightCopList, bpl2mod, RepeatLineModulo);
-            ++line;
-            CWAIT(doubleHeightCopList, line, 0);
-            CMOVE(doubleHeightCopList, bpl1mod, SkipLineModulo);
-            CMOVE(doubleHeightCopList, bpl2mod, SkipLineModulo);
-            ++line;
-        }
-        CWAIT(doubleHeightCopList, line, 0);
-        CMOVE(doubleHeightCopList, bpl1mod, -8);
-        CMOVE(doubleHeightCopList, bpl2mod, -8);
-        CEND(doubleHeightCopList);
-#pragma GCC diagnostic pop
     } else {
         if (!(Vid_MainScreen_l =
                   OpenScreenTags(NULL, SA_Width, SCREEN_WIDTH, SA_Height, SCREEN_HEIGHT, SA_Depth, 8, SA_Type,
@@ -168,6 +132,48 @@ BOOL Vid_OpenMainScreen(void)
                                             WA_NoCareRefresh, 1, WA_SimpleRefresh, 1, WA_Backdrop, 1, TAG_END, 0))) {
         goto fail;
     }
+
+	if (!Vid_isRTG) {
+        struct ViewPort *vp = ViewPortAddress(Vid_MainWindow_l);
+        VideoControlTags(vp->ColorMap, VTAG_USERCLIP_SET, 1, VTAG_END_CM, 0);
+
+        const LONG RepeatLineModulo = -SCREEN_WIDTH / 8 - 8;
+        const LONG SkipLineModulo = SCREEN_WIDTH / 8 - 8;
+
+// There is a problem with the NDK. custom.h defines all custom chip registers
+// as volatile, but CMove takes a non-volatile pointer, resulting in
+// "error: initialization discards 'volatile' qualifier from pointer target type "
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
+        // FreeVPortCopLists/CloseScreen assumes UCopList's are allocated with AllocMem
+        // See note in Vid_CloseMainScreen
+        doubleHeightCopList = AllocMem(sizeof(*doubleHeightCopList), MEMF_PUBLIC|MEMF_CLEAR);
+        if (!doubleHeightCopList) {
+            goto fail;
+        }
+
+        // HACK: The prototype for CINIT (UCopperListInit) says it accepts the number
+        // of copper instructions as an UWORD, but KS3.1 actually expects an ULONG!
+        volatile ULONG CopperListLength = 116 * 6 + 4;
+        CINIT(doubleHeightCopList, CopperListLength);  // 232 modulos
+
+        int line;
+        for (line = 0; line < 232;) {
+            CWAIT(doubleHeightCopList, line, 0);
+            CMOVE(doubleHeightCopList, bpl1mod, RepeatLineModulo);
+            CMOVE(doubleHeightCopList, bpl2mod, RepeatLineModulo);
+            ++line;
+            CWAIT(doubleHeightCopList, line, 0);
+            CMOVE(doubleHeightCopList, bpl1mod, SkipLineModulo);
+            CMOVE(doubleHeightCopList, bpl2mod, SkipLineModulo);
+            ++line;
+        }
+        CWAIT(doubleHeightCopList, line, 0);
+        CMOVE(doubleHeightCopList, bpl1mod, -8);
+        CMOVE(doubleHeightCopList, bpl2mod, -8);
+        CEND(doubleHeightCopList);
+#pragma GCC diagnostic pop
+	}
 
     SetPointer(Vid_MainWindow_l, emptySprite, 1, 0, 0, 0);
     LoadMainPalette();
