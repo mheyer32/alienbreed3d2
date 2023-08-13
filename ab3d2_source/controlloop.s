@@ -41,8 +41,9 @@ Game_FinishedLevel_b:
 
 				align	4
 
-
 Game_Start:
+				move.l	a7,sys_RecoveryStack	; Save stack pointer for Sys_FatalError
+
 				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				CALLC	Vid_OpenMainScreen
 

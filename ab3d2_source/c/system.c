@@ -39,6 +39,7 @@ extern UWORD Sys_FPSFracAvg_w;
 extern UBYTE Sys_Move16_b;
 extern UBYTE Vid_FullScreenTemp_b;
 extern UBYTE Sys_CPU_68060_b;
+extern APTR sys_OldWindowPtr;
 
 extern struct EClockVal _Sys_FrameTimeECV_q[2];
 
@@ -77,9 +78,15 @@ static BOOL sys_InitHardware();
 static void sys_ReleaseHardware();
 static void sys_InstallInterrupts();
 static void sys_RemoveInterrupts();
+extern void Sys_DisplayError(void);
 
 BOOL Sys_Init()
 {
+	// Avoid requesters
+	struct Process* ThisProc = (struct Process*)SysBase->ThisTask;
+	sys_OldWindowPtr = ThisProc->pr_WindowPtr;
+	ThisProc->pr_WindowPtr = (APTR)-1;
+
     if (!sys_InitHardware()) {
         goto fail;
     }
@@ -105,6 +112,10 @@ void Sys_Done()
     Draw_Shutdown();
     sys_RemoveInterrupts();
     sys_ReleaseHardware();
+	((struct Process*)SysBase->ThisTask)->pr_WindowPtr = sys_OldWindowPtr;
+	// Display any buffered error message after cleanup
+	// but before closing libraries
+	Sys_DisplayError();
 }
 
 BOOL Sys_OpenLibs(void)

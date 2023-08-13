@@ -189,10 +189,8 @@ _startup:
 				movem.l	(sp)+,d1-a6
 				rts
 
-
-				IFND BUILD_WITH_C
+				; Include even in C version for assembly helpers
 				include		"modules/system.s"
-				ENDIF
 
 				IFD MEMTRACK
 				include "modules/dev_memtrack.s"

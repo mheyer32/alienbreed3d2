@@ -100,8 +100,13 @@ IO_FlushQueue:
 
 				CALLC	mnu_clearscreen
 
-
 				movem.l	(a7)+,d0-d7/a0-a6
+
+				tst.b	SHOULDQUIT
+				beq		.no_quit
+				lea		12(a2),a5
+				bra		io_LoadFailure
+.no_quit:
 				bsr		io_FlushPass
 				bra		.retry
 
@@ -190,10 +195,12 @@ IO_LoadFile:
 
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.l	a0,d1
+				move.l	a0,a5			; Save filename in a5 for error reporting
 				move.l	#MODE_OLDFILE,d2
 				CALLDOS	Open
 
 				move.l	d0,IO_DOSFileHandle_l
+				beq		io_LoadFailure
 
 io_LoadCommon:
 				lea		io_FileInfoBlock_vb,a5
@@ -238,6 +245,15 @@ io_LoadCommon:
 				move.l	io_BlockStart_l,d0
 				move.l	io_BlockLength_l,d1
 				rts
+
+io_LoadFailure:	; a5 = filename
+				move.l	a5,-(a7)
+				move.l	a7,a1
+				lea		.errfmt(pc),a0
+				move.l	#1,d0 ; Error code 1
+				bra		Sys_FatalError
+.errfmt:		dc.b 'Error loading file:',10,'%s',0
+				even
 
 io_LoadSample:
 				add.l	#4,d0					;Skip "CSFX"
