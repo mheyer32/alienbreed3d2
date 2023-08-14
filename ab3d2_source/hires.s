@@ -10330,6 +10330,8 @@ Lvl_MusicPtr_l:		dc.l	0
 tstchip:		dc.l	0
 testchip:		dc.w	0
 
+nullsample:		dc.l	0
+
 gameover:
 				incbin	"includes/gameover"
 welldone:
