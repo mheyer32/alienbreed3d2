@@ -101,6 +101,7 @@ _startup:
 
 				; since these moved to bss, they need explicit initialisation
 				; todo - module initialisation calls
+				; XXX following two statements are NOPs
 				not.b	Plr1_Mouse_b
 				not.b	Plr2_Mouse_b
 				move.w	#191,Plr1_Energy_w

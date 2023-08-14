@@ -48,6 +48,9 @@ SYS_ALERT_Y_SPACE=12
 ; Prepare alert for later display, restore stack pointer and abort program.
 ; Input: a0 = format, a1 = arguments (for RawDoFmt).
 ; Warning: Can only be called from the main game loop (Game_Start and later)
+_Sys_FatalError:: ; C callable version
+				lea		4(sp),a1	; var args
+				; Fall through
 Sys_FatalError:
 				; Prepare error message, but don't display it
 				; until system has been almost completely shut down.
