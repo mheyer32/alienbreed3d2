@@ -31,6 +31,14 @@ Sys_Workspace_vl:			ds.l	8192
 
 Sys_SerialBuffer_vl:		ds.l	2000
 
+_sys_OldWindowPtr::
+sys_OldWindowPtr:			ds.l	1
+
+sys_RecoveryStack:			ds.l	1
+sys_ErrorBuffer_vb:			ds.b	255
+sys_ErrorHeight_b:			ds.w	1			; Also signals that an error occured
+							align 4
+
 ; System FPS
 ; Keep this pair together
 _Sys_FrameTimeECV_q::

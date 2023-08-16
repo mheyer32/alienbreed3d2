@@ -21,10 +21,17 @@ mt_lop2:		move.b	(a1)+,d1
 				move.l	d2,a2
 				moveq	#$1e,d0
 mt_lop3:
-				clr.l	(a2)
-				move.l	a2,(a1)+
 				moveq	#0,d1
 				move.w	42(a0),d1
+				; Avoid writing past end of allocated buffer
+				; for empty (last) samples
+				beq		.empty
+				clr.l	(a2)
+				move.l	a2,(a1)+
+				bra		.next
+.empty:
+				move.l	#nullsample,(a1)+
+.next:
 				asl.l	#1,d1
 				add.l	d1,a2
 				add.l	#$1e,a0

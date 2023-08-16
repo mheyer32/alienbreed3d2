@@ -43,6 +43,72 @@ Sys_CopyMemMove16:
 				dbra		d0,.copy_loop ; assume have less than 4MB
 				rts
 
+SYS_ALERT_Y_SPACE=12
+
+; Prepare alert for later display, restore stack pointer and abort program.
+; Input: a0 = format, a1 = arguments (for RawDoFmt).
+; Warning: Can only be called from the main game loop (Game_Start and later)
+_Sys_FatalError:: ; C callable version
+				lea		4(sp),a1	; var args
+				; Fall through
+Sys_FatalError:
+				; Prepare error message, but don't display it
+				; until system has been almost completely shut down.
+				lea		.putch(pc),a2
+				lea		sys_ErrorBuffer_vb,a3
+				move.b	#SYS_ALERT_Y_SPACE+2,sys_ErrorHeight_b
+				bsr		.startline
+				CALLEXEC RawDoFmt
+				move.l	sys_RecoveryStack,a7
+				bra		QUITTT
+.putch:
+				tst.b	d0
+				beq		.end
+				cmp.b	#10,d0
+				beq		.nl
+				move.b	d0,(a3)+
+				rts
+.end:
+				clr.w	(a3)		; NUL terminator and indicate last line
+				rts
+.nl:
+				clr.b	(a3)+		; Terminate line
+				move.b	#1,(a3)+	; Continue on next
+				; And start a new one
+.startline:
+				move.w	#10,(a3)+	; X
+				move.b	sys_ErrorHeight_b,(a3)+
+				add.b	#SYS_ALERT_Y_SPACE,sys_ErrorHeight_b
+				rts
+
+; Show alert (if any) prepared by Sys_FatalError
+_Sys_DisplayError::
+Sys_DisplayError:
+				moveq	#0,d1
+				move.b	sys_ErrorHeight_b,d1
+				beq		.out
+.has_error:
+				moveq	#RECOVERY_ALERT,d0
+				lea		sys_ErrorBuffer_vb,a0
+				CALLINT DisplayAlert
+.out:
+				rts
+
+; Like exec/AllocVec, but calls Sys_FatalError on allocation failure
+Sys_AllocVec:
+				movem.l	d0-d1,-(sp) ; Save arguments
+				CALLEXEC AllocVec
+				tst.l	d0
+				beq		.fail
+				addq.l	#8,sp
+				rts
+.fail:
+				lea		.errorfmt(pc),a0
+				move.l	sp,a1
+				bra		Sys_FatalError
+.errorfmt:		dc.b	'Allocation failed. %ld bytes requested, flags=$%lx',0
+				even
+
 				IFND BUILD_WITH_C
 ;******************************************************************************
 ;*
@@ -52,6 +118,13 @@ Sys_CopyMemMove16:
 ;*
 ;******************************************************************************
 Sys_Init:
+				; Avoid requesters
+				move.l		$4.w,a0
+				move.l		ThisTask(a0),a0
+				lea			pr_WindowPtr(a0),a0
+				move.l		(a0),sys_OldWindowPtr
+				move.l		#-1,(a0)
+
 				bsr			sys_OpenLibs
 				tst.l		d0
 				beq.s		.fail
@@ -101,6 +174,13 @@ Sys_Done:
 
 				move.l	#sys_POTBITS,d0
 				CALLPOTGO	FreePotBits
+
+				move.l	$4.w,a0
+				move.l	ThisTask(a0),a0
+				move.l	sys_OldWindowPtr,pr_WindowPtr(a0)
+
+				; Display buffered error message (if any)
+				bsr		Sys_DisplayError
 
 				bra		sys_CloseLibs
 
@@ -261,12 +341,6 @@ Sys_ClearKeyboard:
 				dbra	d1,.loop
 				rts
 
-				ENDIF
-
-
-; 0xABADCAFE - Reinstated until there is a viable fix for the C version. We
-;              just include this function regardless of the build for now.
-
 ;******************************************************************************
 ;*
 ;* Read Mouse State
@@ -353,9 +427,6 @@ Sys_ReadMouse:
 .oldMouseY:		dc.w	0
 .oldMouseY2:	dc.w	0
 .prevX:			dc.w	0
-
-
-				IFND BUILD_WITH_C
 
 sys_POTBITS		equ		%110000000000
 
@@ -538,4 +609,4 @@ KEYInt:
 				dc.l	0						;is_Data
 				dc.l	key_interrupt			;is_Code
 
-				ENDIF
+				ENDIF	; BUILD_WITH_C

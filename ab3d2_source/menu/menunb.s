@@ -52,6 +52,7 @@ mnu_loop:		lea		mnu_mainmenu,a0
 				bsr.w	mnu_domenu
 				bra.w	mnu_loop
 mnu_exit:		move.l	mnu_mainstack,a7
+				moveq	#1,d0 ; Fade out
 				CALLC	mnu_clearscreen
 				rts
 
@@ -75,8 +76,16 @@ mnu_copycredz:	lea		mnu_frame,a0
 				rts
 
 				IFND BUILD_WITH_C
+; Input: d0 = fade?
 mnu_clearscreen:
+				; Note: mnu_clearscreen is called on exit even if the menu isn't active
+				; So exit out early if that's the case.
+				tst.l	MenuScreen
+				beq		.noScreen
+				tst.b	d0
+				beq		.fade_done
 				bsr.w	mnu_fadeout
+.fade_done:
 				clr.l	main_vblint				; prevent VBL kicking off new blits
 				WAITBLIT
 				CALLGRAF WaitTOF
@@ -1219,7 +1228,9 @@ mnu_playgame:	cmp.w	#1,mnu_playtype			; Is it 2 player master ???
 				beq.s	.playgame
 				rts
 				ENDC
-.playgame:		CALLC	mnu_clearscreen
+.playgame:
+				moveq	#1,d0 ; Fade out
+				CALLC	mnu_clearscreen
 ;-------------------------------------- Jump to game here !! --
 				move.w	mnu_playtype,d0
 				lea		.playtypeptr,a0

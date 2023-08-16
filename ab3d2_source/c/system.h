@@ -14,6 +14,8 @@ extern uint64_t Sys_TimeDiff(REG(a0, struct EClockVal* end), REG(a1, struct EClo
 extern void Sys_ShowFPS();
 extern void Sys_EvalFPS();
 extern void Sys_FrameLap();
+// Warning: Sys_FatalError can only be called startup()
+extern void Sys_FatalError(REG(a0, const char* format), ...);
 
 #ifdef FIXED_C_MOUSE
 extern void Sys_ReadMouse();
