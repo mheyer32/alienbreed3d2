@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 
     if (Vid_ScreenMode == INVALID_ID)
     {
-        printf("Invalid Screenmode");
+        puts("Invalid Screenmode");
         goto fail;
     }
     if (CyberGfxBase)

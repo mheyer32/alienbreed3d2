@@ -8,6 +8,9 @@
 ; * Mostly refactored from newloadfromdisk.s and wallchunk.s
 ; *
 ; *****************************************************************************
+; TODO: It's possible that some resources are leaked if a fatal error occurs
+;       during the loading process (due to calling Sys_FatalError), but for now
+;       that seems better than crashing.
 
 IO_MAX_FILENAME_LEN	EQU 79
 
@@ -98,10 +101,16 @@ IO_FlushQueue:
 				lea		mnu_askfordisk,a0
 				jsr		mnu_domenu
 
+				moveq	#1,d0 ; Fade out
 				CALLC	mnu_clearscreen
 
-
 				movem.l	(a7)+,d0-d7/a0-a6
+
+				tst.b	SHOULDQUIT
+				beq		.no_quit
+				lea		12(a2),a5
+				bra		io_LoadFailure
+.no_quit:
 				bsr		io_FlushPass
 				bra		.retry
 
@@ -190,10 +199,12 @@ IO_LoadFile:
 
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.l	a0,d1
+				move.l	a0,a5			; Save filename in a5 for error reporting
 				move.l	#MODE_OLDFILE,d2
 				CALLDOS	Open
 
 				move.l	d0,IO_DOSFileHandle_l
+				beq		io_LoadFailure
 
 io_LoadCommon:
 				lea		io_FileInfoBlock_vb,a5
@@ -205,7 +216,7 @@ io_LoadCommon:
 				move.l	d0,io_BlockLength_l
 				add.l	#8,d0			; over-allocate by 8 bytes
 				move.l	IO_MemType_l,d1
-				CALLEXEC AllocVec
+				jsr		Sys_AllocVec
 
 				move.l	d0,io_BlockStart_l
 				move.l	IO_DOSFileHandle_l,d1
@@ -239,6 +250,15 @@ io_LoadCommon:
 				move.l	io_BlockLength_l,d1
 				rts
 
+io_LoadFailure:	; a5 = filename
+				move.l	a5,-(a7)
+				move.l	a7,a1
+				lea		.errfmt(pc),a0
+				move.l	#1,d0 ; Error code 1
+				bra		Sys_FatalError
+.errfmt:		dc.b 'Error loading file:',10,'%s',0
+				even
+
 io_LoadSample:
 				add.l	#4,d0					;Skip "CSFX"
 				move.l	d1,.compressed_sample_size_l
@@ -247,7 +267,7 @@ io_LoadSample:
 				move.l	d0,.sample_size_l
 				move.l	a0,.compressed_sample_position_l
 				move.l	#MEMF_ANY,d1
-				CALLEXEC AllocVec
+				jsr		Sys_AllocVec
 				move.l	d0,.sample_position_l
 				move.l	.compressed_sample_position_l,a0
 				move.l	d0,a1
@@ -322,7 +342,7 @@ io_HandlePacked:
 				move.l	4(a0),d0				; length of unpacked file.
 				move.l	d0,.unpacked_length_l
 				move.l	IO_MemType_l,d1
-				CALLEXEC AllocVec
+				jsr		Sys_AllocVec
 
 				move.l	d0,.unpacked_start_l
 				move.l	io_BlockStart_l,d0

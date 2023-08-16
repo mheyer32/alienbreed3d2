@@ -41,8 +41,9 @@ Game_FinishedLevel_b:
 
 				align	4
 
-
 Game_Start:
+				move.l	a7,sys_RecoveryStack	; Save stack pointer for Sys_FatalError
+
 				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				CALLC	Vid_OpenMainScreen
 
@@ -117,16 +118,15 @@ BACKTOMASTER:
 BACKTOSLAVE:
 				bsr		SLAVEMENU
 DONEMENU:
+				tst.b	SHOULDQUIT
+				bne		QUITTT
 
-
+				moveq	#1,d0 ; Fade out
 				CALLC	mnu_clearscreen
 
 				;	bsr		WAITREL
 
 				FILTER
-
-				tst.b	SHOULDQUIT
-				bne		QUITTT
 
 				clr.b	Game_FinishedLevel_b
 
@@ -192,6 +192,9 @@ dontusestats:
 				bra		BACKTOMENU
 
 QUITTT:
+				moveq	#0,d0 ; No fading
+				CALLC	mnu_clearscreen ; Maybe No-op
+
 				move.l	Lvl_DataPtr_l,a1
 				CALLEXEC FreeVec
 

@@ -57,6 +57,8 @@ static struct ScreenBuffer *mnu_ScreenBuffer;
 struct Task *blitTask;
 struct Task *mainTask;
 
+static BOOL mnu_Active;
+
 struct BlitMessage
 {
     struct Message msg;
@@ -94,6 +96,13 @@ BOOL mnu_setscreen()
 {
     LOCAL_GFX();
     LOCAL_INTUITION();
+
+    if (mnu_Active) {
+        // Programming error if it happens, but allow
+        return TRUE;
+    }
+
+    mnu_Active = TRUE;
 
     mnu_init();
 
@@ -169,13 +178,22 @@ static inline void WaitFireBlits()
     };
 }
 
-void mnu_clearscreen(void)
+void mnu_clearscreen(REG(d0, BOOL fade))
 {
     LOCAL_GFX();
     LOCAL_INTUITION();
     LOCAL_SYSBASE();
 
-    mnu_fadeout();
+    if (!mnu_Active) {
+        // This should only happen during shutdown (with fade=FALSE)
+        return;
+    }
+
+    mnu_Active = FALSE;
+
+    if (fade) {
+        mnu_fadeout();
+    }
     main_vblint = NULL;  // don't kick off new frames/blits
     WaitFireBlits();     // let current blits finish
     WaitTOF();

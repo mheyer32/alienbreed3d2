@@ -101,6 +101,7 @@ _startup:
 
 				; since these moved to bss, they need explicit initialisation
 				; todo - module initialisation calls
+				; XXX following two statements are NOPs
 				not.b	Plr1_Mouse_b
 				not.b	Plr2_Mouse_b
 				move.w	#191,Plr1_Energy_w
@@ -145,7 +146,7 @@ _startup:
 				; allocate chunky render buffer in fastmem
 				move.l	#MEMF_ANY|MEMF_CLEAR,d1
 				move.l	#VID_FAST_BUFFER_SIZE,d0
-				CALLEXEC AllocVec
+				CALLEXEC AllocVec ; Note: Can't use Sys_AllocVec yet
 				move.l	d0,Vid_FastBufferAllocPtr_l
 				;align to 16byte for best C2P perf
 				moveq.l	#15,d1
@@ -189,10 +190,8 @@ _startup:
 				movem.l	(sp)+,d1-a6
 				rts
 
-
-				IFND BUILD_WITH_C
+				; Include even in C version for assembly helpers
 				include		"modules/system.s"
-				ENDIF
 
 				IFD MEMTRACK
 				include "modules/dev_memtrack.s"
@@ -10331,6 +10330,8 @@ Lvl_MusicPtr_l:		dc.l	0
 ; device. I.e. by accessing chipmap, we throttle the CPU
 tstchip:		dc.l	0
 testchip:		dc.w	0
+
+nullsample:		dc.l	0
 
 gameover:
 				incbin	"includes/gameover"
