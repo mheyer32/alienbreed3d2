@@ -165,7 +165,17 @@ ai_JustDied:
 
 				muls	#160,d0
 				add.l	Lvl_DataPtr_l,d0
+
+				IFD BUILD_WITH_C
+				move.l	a0,-(sp)
+				move.l	d0,a0
+				move.w	#40,d0
+				CALLC	Msg_PushLine
+				move.l	(sp)+,a0
+				ELSE
 				jsr		Game_PushMessage
+				ENDIF
+
 
 .no_text:
 				move.l	Lvl_ObjectPointsPtr_l,a2

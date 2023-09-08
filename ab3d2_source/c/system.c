@@ -1,6 +1,7 @@
 #include "system.h"
 #include "screen.h"
 #include "draw.h"
+#include "message.h"
 
 #include <SDI_compiler.h>
 #include <SDI_misc.h>
@@ -99,6 +100,8 @@ BOOL Sys_Init()
     if (!Draw_Init()) {
         goto fail;
     }
+
+    Msg_Init();
 
     return TRUE;
 

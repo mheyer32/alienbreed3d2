@@ -721,6 +721,12 @@ CLRDAM:
 				move.l	Vid_Screen1Ptr_l,Vid_DisplayScreenPtr_l
 				move.l	Vid_Screen2Ptr_l,Vid_DrawScreenPtr_l
 
+				IFD BUILD_WITH_C
+
+				CALLC	Msg_Init
+
+				ELSE
+
 				move.l	#Game_MessageBuffer_vl,a0
 				move.w	#19,d0
 clrmessbuff:
@@ -728,7 +734,9 @@ clrmessbuff:
 				dbra	d0,clrmessbuff
 
 				move.l	#game_NullMessage_vb,d0
-				jsr		Game_PushMessage
+				jsr		Game_PushMessage ; ignore for now
+
+				ENDIF
 
 				; Initialise FPS
 				clr.l	Sys_FrameNumber_l
@@ -781,7 +789,7 @@ game_main_loop:
 				swap	d0
 				muls	#160,d0
 				add.l	#Game_TwoPlayerVictoryMessages_vb,d0
-				jsr		Game_PushMessage
+				jsr		Game_PushMessage ; ignore for now
 
 				move.l	Plr2_ObjectPtr_l,a0
 				move.l	GLF_DatabasePtr_l,a6
@@ -822,7 +830,7 @@ game_main_loop:
 				swap	d0
 				muls	#160,d0
 				add.l	#Game_TwoPlayerVictoryMessages_vb,d0
-				jsr		Game_PushMessage
+				jsr		Game_PushMessage ; ignore for now
 
 				move.l	Plr1_ObjectPtr_l,a0
 
@@ -7918,6 +7926,7 @@ COUNTER:		dc.w	0
 COUNTER2:		dc.w	0
 COUNTSPACE:		ds.b	160
 
+_Vid_VBLCount_l::
 Vid_VBLCount_l:		dc.l	0
 Vid_VBLCountLast_l:	dc.l	0
 Vid_FPSLimit_l:		dc.l	0
@@ -8247,8 +8256,14 @@ dosomething:
 				move.b	STEROPT+1(pc,d0.w*2),d1
 				muls	#160,d0
 				add.l	#Game_SoundOptionsText_vb,d0
-				jsr		Game_PushMessage
 
+				IFD BUILD_WITH_C
+				move.l	d0,a0
+				move.w	#40,d0
+				CALLC	Msg_PushLine
+				ELSE
+				jsr		Game_PushMessage
+				ENDIF
 
 				move.b	d1,Prefsfile+1
 
@@ -8348,7 +8363,13 @@ OLDGOOD:			dc.w	0
 
 
 pastlighttext:
+				IFD BUILD_WITH_C
+				move.l	d0,a0
+				move.w	#40,d0
+				CALLC	Msg_PushLine
+				ELSE
 				jsr		Game_PushMessage
+				ENDIF
 
 				bra		nolighttoggle2
 
@@ -8382,8 +8403,13 @@ noret2:
 				bne.s	.okgood
 				move.l	#Game_DrawLowQualityText_vb,d0
 .okgood:
-
+				IFD BUILD_WITH_C
+				move.l	d0,a0
+				move.w	#40,d0
+				CALLC	Msg_PushLine
+				ELSE
 				jsr		Game_PushMessage
+				ENDIF
 
 				bra		.nogood2
 

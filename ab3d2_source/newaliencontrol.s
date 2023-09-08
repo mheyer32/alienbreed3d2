@@ -409,7 +409,17 @@ Destructable:
 
 				muls	#160,d0
 				add.l	Lvl_DataPtr_l,d0
+
+				IFD BUILD_WITH_C
+				move.l	a0,-(sp)
+				move.l	d0,a0
+				move.w	#40,d0
+				CALLC	Msg_PushLine
+				move.l	(sp)+,a0
+				ELSE
 				jsr		Game_PushMessage
+				ENDIF
+
 
 .notext:
 
@@ -548,7 +558,16 @@ Plr1_CollectItem:
 
 				muls	#160,d0
 				add.l	Lvl_DataPtr_l,d0
+
+				IFD BUILD_WITH_C
+				move.l	a0,-(sp)
+				move.l	d0,a0
+				move.w	#80,d0
+				CALLC	Msg_PushLine
+				move.l	(sp)+,a0
+				ELSE
 				jsr		Game_PushMessage
+				ENDIF
 
 				bra		.nodeftext
 
@@ -556,6 +575,23 @@ Plr1_CollectItem:
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.nodeftext
+
+
+
+				IFD BUILD_WITH_C
+				moveq	#0,d0
+				move.b	EntT_Type_b(a0),d0
+				move.l	a0,-(sp)
+				muls	#20,d0
+				move.l	GLF_DatabasePtr_l,a0
+				add.l	#GLFT_ObjectNames_l,d0
+				add.l	d0,a0
+				move.w	#20,d0
+				CALLC	Msg_PushLine
+
+				move.l	(sp)+,a0
+
+				ELSE
 
 				moveq	#0,d2
 				move.b	EntT_Type_b(a0),d2
@@ -578,6 +614,7 @@ Plr1_CollectItem:
 				move.l	#TempMessageBuffer_vb,d0
 				jsr		Game_PushTempMessage
 
+				ENDIF
 .nodeftext:
 
 				move.l	GLF_DatabasePtr_l,a2

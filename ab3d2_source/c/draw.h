@@ -44,6 +44,8 @@ extern void Draw_Shutdown(void);
 extern void Draw_UpdateBorder_RTG(APTR bmHandle, ULONG bmBytesPerRow);
 extern void Draw_UpdateBorder_Planar(void);
 
+
+
 /**
  * These functions allow plotting the fixed text characters to a chunky buffer
  *
