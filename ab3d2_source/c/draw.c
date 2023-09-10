@@ -392,8 +392,8 @@ UWORD Draw_CalcPropTextSplit(const char** nextTextPtr, UWORD txtLength, UWORD fi
     }
 
     /** Avoid splitting words */
-    if (lastNonPrintingPtr && draw_IsPrintable(charCode)) {
-        textPtr = lastNonPrintingPtr;
+    if (lastNonPrintingPtr && charsLeft > 1 && draw_IsPrintable(charCode)) {
+        textPtr = lastNonPrintingPtr + 1;
     }
 
     /** Determine the width (in chars) of the text that fits */
