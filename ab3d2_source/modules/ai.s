@@ -163,13 +163,13 @@ ai_JustDied:
 				move.w	EntT_DisplayText_w(a0),d0
 				blt.s	.no_text
 
-				muls	#160,d0
+				muls	#LVLT_MESSAGE_LENGTH,d0
 				add.l	Lvl_DataPtr_l,d0
 
 				IFD BUILD_WITH_C
 				move.l	a0,-(sp)
 				move.l	d0,a0
-				move.w	#40,d0
+				move.w	#LVLT_MESSAGE_LENGTH,d0
 				CALLC	Msg_PushLine
 				move.l	(sp)+,a0
 				ELSE

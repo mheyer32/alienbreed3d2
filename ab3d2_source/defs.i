@@ -350,3 +350,7 @@ DR_Never		EQU		5
 DL_Timeout		EQU		0
 DL_Never		EQU		1
 
+; TODO - Level Structure
+
+LVLT_MESSAGE_LENGTH EQU 160
+

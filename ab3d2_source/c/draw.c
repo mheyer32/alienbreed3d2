@@ -94,6 +94,8 @@ static UBYTE draw_BorderDigitsBuffer[DRAW_HUD_CHAR_SMALL_H * DRAW_HUD_CHAR_SMALL
 
 static UBYTE *FastBufferAllocPtr;
 
+UWORD Draw_GuaranteeMessageFitLength = 0;
+
 /**********************************************************************************************************************/
 
 static void draw_PlanarToChunky(UBYTE *chunkyPtr, const PLANEPTR *planePtrs, ULONG numPixels);
@@ -101,7 +103,7 @@ static void draw_ValueToDigits(UWORD value, UWORD digits[3]);
 static void draw_ConvertBorderDigitsToChunky(UBYTE* chunkyPtr, const UBYTE *planarBasePtr, UWORD width, UWORD height);
 static void draw_ReorderBorderDigits(UBYTE* toPlanarPtr, const UBYTE *planarBasePtr, UWORD width, UWORD height);
 
-static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charGlyph, UBYTE pen);
+static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charCode, UBYTE pen);
 static void draw_CalculateGlyphSpacing(void);
 
 static void draw_UpdateCounter_RTG(
@@ -216,6 +218,7 @@ BOOL Draw_Init()
     draw_CalculateGlyphSpacing();
 
     draw_ResetHUDCounters();
+
     return TRUE;
 
 fail:
@@ -283,7 +286,11 @@ void Draw_ResetGameDisplay()
 
 /**********************************************************************************************************************/
 
-static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charGlyph, UBYTE pen);
+static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charCode, UBYTE pen);
+
+static __inline BOOL draw_IsPrintable(UBYTE charCode) {
+    return (charCode > 0x20 && charCode < 0x7F) || (charCode > 0xA0);
+}
 
 /**
  * Draw a length limited, null terminated string of fixed glyphs at a given coordinate.
@@ -298,15 +305,15 @@ const char* Draw_ChunkyText(
     UBYTE pen
 ) {
     drawPtr += drawSpan * yPos + xPos;
-    UBYTE charGlyph;
-    while ( (charGlyph = (UBYTE)*textPtr++) && maxLen-- > 0 ) {
+    UBYTE charCode;
+    while ( (charCode = (UBYTE)*textPtr++) && maxLen-- > 0 ) {
         /* Skip over all non-printing or blank. Assume ECMA-94 Latin 1 8-bit for Amiga 3.x */
-        if ( (charGlyph > 0x20 && charGlyph < 0x7F) || charGlyph > 0xA0) {
-            draw_ChunkyGlyph(drawPtr, drawSpan, charGlyph, pen);
+        if (draw_IsPrintable(charCode)) {
+            draw_ChunkyGlyph(drawPtr, drawSpan, charCode, pen);
         }
         drawPtr += DRAW_MSG_CHAR_W;
     }
-    return charGlyph ? textPtr : (const char*)NULL;
+    return charCode ? textPtr : (const char*)NULL;
 }
 
 /**********************************************************************************************************************/
@@ -324,16 +331,16 @@ const char* Draw_ChunkyTextProp(
     UBYTE pen
 ) {
     drawPtr += drawSpan * yPos + xPos;
-    UBYTE charGlyph;
-    while ( (charGlyph = (UBYTE)*textPtr++) && maxLen-- > 0 ) {
-        UBYTE glyphSpacing = draw_GlyphSpacing_vb[charGlyph];
+    UBYTE charCode;
+    while ( (charCode = (UBYTE)*textPtr++) && maxLen-- > 0 ) {
+        UBYTE glyphSpacing = draw_GlyphSpacing_vb[charCode];
         /* Skip over all non-printing or blank. Assume ECMA-94 Latin 1 8-bit for Amiga 3.x */
-        if ( (charGlyph > 0x20 && charGlyph < 0x7F) || charGlyph > 0xA0) {
-            draw_ChunkyGlyph(drawPtr - (glyphSpacing & 0xF), drawSpan, charGlyph, pen);
+        if (draw_IsPrintable(charCode)) {
+            draw_ChunkyGlyph(drawPtr - (glyphSpacing & 0xF), drawSpan, charCode, pen);
         }
         drawPtr += glyphSpacing >> 4;
     }
-    return charGlyph ? textPtr : (const char*)NULL;
+    return charCode ? textPtr : (const char*)NULL;
 }
 
 /**********************************************************************************************************************/
@@ -344,10 +351,61 @@ const char* Draw_ChunkyTextProp(
  */
 ULONG Draw_CalcPropWidth(const char *textPtr, UWORD maxLen) {
     ULONG width = 0;
-    UBYTE charGlyph;
-    while ( (charGlyph = (UBYTE)*textPtr++) && maxLen-- > 0 ) {
-        width += draw_GlyphSpacing_vb[charGlyph] >> 4;
+    UBYTE charCode;
+    while ( (charCode = (UBYTE)*textPtr++) && maxLen-- > 0 ) {
+        width += draw_GlyphSpacing_vb[charCode] >> 4;
     }
+    return width;
+}
+
+UWORD Draw_CalcPropTextSplit(const char** nextTextPtr, UWORD txtLength, UWORD fitWidth) {
+
+    /** Early out if the text length using the widest character possible is less than the fit width */
+    if ((txtLength * DRAW_MSG_CHAR_W) <= fitWidth) {
+        *nextTextPtr = NULL;
+        return txtLength;
+    }
+
+    const char* textPtr            = *nextTextPtr;
+    const char* lastNonPrintingPtr = NULL;
+    UWORD width     = 0;
+    UWORD charsLeft = txtLength;
+    UBYTE charCode;
+
+    /** Add up the width of the characters until we've used them all or overshot the width. Halt on null. */
+    while ( charsLeft && width < fitWidth && (charCode = (UBYTE)*textPtr)) {
+        if (!draw_IsPrintable(charCode)) {
+            lastNonPrintingPtr = textPtr;
+        }
+        width += draw_GlyphSpacing_vb[charCode] >> 4;
+        --charsLeft;
+        ++textPtr;
+    }
+
+    /**
+     * Deal with width overshoot on the processed character. This is a bit dirty, but allows the main loop to be
+     * simpler. If the loop exceeded the fitWidth, back up one char.
+     */
+    if (width > fitWidth) {
+        charCode = *(--textPtr);
+        ++charsLeft;
+    }
+
+    /** Avoid splitting words */
+    if (lastNonPrintingPtr && draw_IsPrintable(charCode)) {
+        textPtr = lastNonPrintingPtr;
+    }
+
+    /** Determine the width (in chars) of the text that fits */
+    width = (UWORD)(textPtr - *nextTextPtr);
+
+    /** If we hit a null or all characters were consumed, there is no text left to process */
+    if (!charCode || !charsLeft) {
+        textPtr = NULL;
+    }
+
+    /** Update the source text pointer and return the width */
+    *nextTextPtr = textPtr;
     return width;
 }
 
@@ -699,9 +757,9 @@ static void draw_ValueToDigits(UWORD value, UWORD digits[3]) {
  * Draw a glyph into the target buffer, filling only the set pixels with the desired pen. There are probably lots
  * of ways this can be optimised.
  */
-static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charGlyph, UBYTE pen)
+static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charCode, UBYTE pen)
 {
-    UBYTE *planarPtr = &draw_ScrollChars_vb[(UWORD)charGlyph << 3];
+    UBYTE *planarPtr = &draw_ScrollChars_vb[(UWORD)charCode << 3];
     for (UWORD row = 0; row < DRAW_MSG_CHAR_H; ++row) {
         UBYTE plane = *planarPtr++;
             if (plane) {

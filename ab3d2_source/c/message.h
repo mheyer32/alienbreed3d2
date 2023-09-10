@@ -17,7 +17,7 @@ extern void Msg_Init(void);
  * This call debounces repeated calls to display the same message if they happen within MSG_DEBOUNCE_LIMIT
  * ticks.
  */
-extern void Msg_PushLine(REG(a0, CONST_STRPTR text), REG(d0, UWORD length));
+extern void Msg_PushLine(REG(a0, const char* textPtr), REG(d0, UWORD length));
 
 /**
  * Render the messages. Depends on Draw_ChunkyTextProp() to render the lines. This should be called immediately
