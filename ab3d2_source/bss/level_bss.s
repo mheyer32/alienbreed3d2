@@ -16,6 +16,7 @@
 				align 4
 ; long aligned data
 PointsToRotatePtr_l:			ds.l	1
+_Lvl_DataPtr_l::
 Lvl_DataPtr_l:					ds.l	1
 
 ;*************************************************************

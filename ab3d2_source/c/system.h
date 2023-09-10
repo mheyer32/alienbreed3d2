@@ -25,6 +25,8 @@ extern void Sys_ClearKeyboard();
 extern BOOL Sys_OpenLibs(void);
 extern void Sys_CloseLibs(void);
 
+extern ULONG Sys_EClockRate;
+
 static inline struct ExecBase *getSysBase(void)
 {
     extern struct ExecBase * SysBase;

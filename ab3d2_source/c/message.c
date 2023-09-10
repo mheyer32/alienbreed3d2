@@ -12,6 +12,8 @@ extern UWORD Vid_LetterBoxMarginHeight_w;
 
 extern volatile LONG Vid_VBLCount_l;
 
+extern void* Lvl_DataPtr_l;
+
 static struct {
     /** Ring buffer of text line pointers */
     const char* lineTextPtrs[MSG_LINE_BUFFER_SIZE];
@@ -30,6 +32,7 @@ static struct {
 
     /** Length below which a text string is guaranteed to fit */
     UWORD       guranteedTextFitLimit;
+
 } msg_Buffer;
 
 /**
@@ -59,8 +62,16 @@ void Msg_Init(void)
     msg_Buffer.lineNumber = -1;
     msg_Buffer.guranteedTextFitLimit = (SCREEN_WIDTH / DRAW_MSG_CHAR_W) - 2;
 
-    /** TODO - preprocess level messages */
-    msg_PushLineRaw("Msg_Init() completed", 20);
+    /** If the level text pointer is set, make sure to preprocess the text. */
+    char* levelTextPtr = (char*)Lvl_DataPtr_l;
+    if (levelTextPtr) {
+        for (int i = 0; i < MSG_MAX_CUSTOM; ++i, levelTextPtr += MSG_MAX_LENGTH) {
+            msg_CompactString(levelTextPtr, MSG_MAX_LENGTH);
+        }
+        /* msg_PushLineRaw("Msg_Init() processed level texts", 40); */
+    }
+
+    /* msg_PushLineRaw("Msg_Init() completed", 20); */
 }
 
 void Msg_PushLine(REG(a0, const char* textPtr), REG(d0, UWORD length))
@@ -96,9 +107,8 @@ void Msg_Render(void) {
         return;
     }
 
-    WORD lastLine = msg_NextLineNumber(msg_Buffer.lineNumber);
-    WORD nextLine = lastLine;
-
+    WORD  lastLine = msg_NextLineNumber(msg_Buffer.lineNumber);
+    WORD  nextLine = lastLine;
     UWORD yPos = Vid_LetterBoxMarginHeight_w + 4;
 
     do {
@@ -112,13 +122,13 @@ void Msg_Render(void) {
                 yPos,
                 255
             );
-            yPos += DRAW_MSG_CHAR_H;
+            yPos += DRAW_MSG_CHAR_H + 2;
         }
         nextLine = msg_NextLineNumber(nextLine);
     } while (nextLine != lastLine);
 
     /* TODO - base this on actual elapsed time */
-    if (!(Vid_VBLCount_l & 15)) {
+    if (!(Vid_VBLCount_l & 31)) {
         msg_PushLineRaw(NULL, 0);
     }
 }

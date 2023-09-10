@@ -58,6 +58,8 @@ struct Library *CYBERGFX_BASE_NAME = NULL;
 extern VOID VBlankInterrupt(void);
 extern VOID key_interrupt(void);
 
+ULONG Sys_EClockRate = 0;
+
 static const char AppName[] = "TheKillingGrounds";
 static struct Interrupt VBLANKInt = {{NULL, NULL, NT_INTERRUPT, 9, (char *)AppName}, 0, VBlankInterrupt};
 static struct Interrupt KBInt = {{NULL, NULL, NT_INTERRUPT, 127, (char *)AppName}, 0, key_interrupt};
@@ -92,8 +94,8 @@ BOOL Sys_Init()
         goto fail;
     }
 
-    ULONG freq = Sys_MarkTime(&Sys_FrameTimeECV_q[1]);
-    Sys_ECVToMsFactor_l = (1000 << 16) / freq;
+    Sys_EClockRate = Sys_MarkTime(&Sys_FrameTimeECV_q[1]);
+    Sys_ECVToMsFactor_l = (1000 << 16) / Sys_EClockRate;
 
     sys_InstallInterrupts();
 
