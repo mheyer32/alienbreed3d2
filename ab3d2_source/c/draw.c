@@ -104,6 +104,7 @@ static void draw_ConvertBorderDigitsToChunky(UBYTE* chunkyPtr, const UBYTE *plan
 static void draw_ReorderBorderDigits(UBYTE* toPlanarPtr, const UBYTE *planarBasePtr, UWORD width, UWORD height);
 
 static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charCode, UBYTE pen);
+
 static void draw_CalculateGlyphSpacing(void);
 
 static void draw_UpdateCounter_RTG(
@@ -404,7 +405,15 @@ UWORD Draw_CalcPropTextSplit(const char** nextTextPtr, UWORD txtLength, UWORD fi
         textPtr = NULL;
     }
 
-    /** Update the source text pointer and return the width */
+    /** Avoid space at the start of the next split */
+    if (textPtr) {
+        while (charsLeft > 0 && !draw_IsPrintable(*textPtr)) {
+            ++textPtr;
+            --charsLeft;
+        }
+    }
+
+    /** Update the source text pointer and return the width of the current segment */
     *nextTextPtr = textPtr;
     return width;
 }
@@ -760,22 +769,27 @@ static void draw_ValueToDigits(UWORD value, UWORD digits[3]) {
 static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charCode, UBYTE pen)
 {
     UBYTE *planarPtr = &draw_ScrollChars_vb[(UWORD)charCode << 3];
+    UBYTE  glyphSpacing = draw_GlyphSpacing_vb[charCode] & 0x7;
+    UBYTE  glyphWidth   = (draw_GlyphSpacing_vb[charCode] >> 4) - 1;
     for (UWORD row = 0; row < DRAW_MSG_CHAR_H; ++row) {
         UBYTE plane = *planarPtr++;
-            if (plane) {
-            if (plane & 128) drawPtr[0] = pen;
-            if (plane & 64)  drawPtr[1] = pen;
-            if (plane & 32)  drawPtr[2] = pen;
-            if (plane & 16)  drawPtr[3] = pen;
-            if (plane & 8)   drawPtr[4] = pen;
-            if (plane & 4)   drawPtr[5] = pen;
-            if (plane & 2)   drawPtr[6] = pen;
-            if (plane & 1)   drawPtr[7] = pen;
+        UBYTE width = glyphWidth;
+        if (plane) {
+            switch (glyphSpacing) {
+                case 0: if (plane & 128) drawPtr[0] = pen; if (!--width) break;
+                case 1: if (plane & 64)  drawPtr[1] = pen; if (!--width) break;
+                case 2: if (plane & 32)  drawPtr[2] = pen; if (!--width) break;
+                case 3: if (plane & 16)  drawPtr[3] = pen; if (!--width) break;
+                case 4: if (plane & 8)   drawPtr[4] = pen; if (!--width) break;
+                case 5: if (plane & 4)   drawPtr[5] = pen; if (!--width) break;
+                case 6: if (plane & 2)   drawPtr[6] = pen; if (!--width) break;
+                case 7: if (plane & 1)   drawPtr[7] = pen; if (!--width) break;
+            }
         }
         drawPtr += drawSpan;
     }
-}
 
+}
 
 /**
  * Very simple algorithm to scan the fixed with 8x8 font and determine some offset/width properties based on the glyph
