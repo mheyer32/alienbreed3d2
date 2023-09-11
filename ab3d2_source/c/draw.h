@@ -44,6 +44,10 @@ extern void Draw_Shutdown(void);
 extern void Draw_UpdateBorder_RTG(APTR bmHandle, ULONG bmBytesPerRow);
 extern void Draw_UpdateBorder_Planar(void);
 
+static __inline BOOL Draw_IsPrintable(UBYTE charCode) {
+    return (charCode > 0x20 && charCode < 0x7F) || (charCode > 0xA0);
+}
+
 /**
  * These functions allow plotting the fixed text characters to a chunky buffer
  *

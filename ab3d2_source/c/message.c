@@ -9,20 +9,25 @@
 
 extern UBYTE Vid_FullScreen_b;
 extern UWORD Vid_LetterBoxMarginHeight_w;
-
-extern volatile LONG Vid_VBLCount_l;
-
 extern void* Lvl_DataPtr_l;
+extern struct EClockVal Sys_FrameTimeECV_q[2];
 
 static struct {
+
+    /** EClock Timestamp for the next tick */
+    struct EClockVal nextTickECV;
+
+    /** Eclock Timestamp for the deduplication */
+    struct EClockVal nextDuplicateTickECV;
+
+    ULONG  tickPeriod;
+    ULONG  deduplicationPeriod;
+
     /** Ring buffer of text line pointers */
     const char* lineTextPtrs[MSG_LINE_BUFFER_SIZE];
 
     /** Ring buffer of text line char lengths */
     UWORD       lineLengths[MSG_LINE_BUFFER_SIZE];
-
-    /** The earliest tick value to allow a sequential duplicate message to be added to the buffer */
-    LONG        nextDuplicateTick;
 
     /** Pointer to the most recently pushed message */
     const char* lastMessagePtr;
@@ -44,10 +49,16 @@ static struct {
  */
 static UWORD msg_CompactString(char* bufferPtr, UWORD bufferLen);
 
+/**
+ * Get the line number after the given one, cyclically.
+ */
 static __inline WORD msg_NextLineNumber(WORD lineNumber) {
     return (lineNumber + 1) & MSG_LINE_BUFFER_MASK;
 }
 
+/**
+ * Push a message line into the buffer.
+ */
 static __inline void msg_PushLineRaw(const char* textPtr, UWORD length)
 {
     WORD lineNumber = msg_NextLineNumber(msg_Buffer.lineNumber);
@@ -56,11 +67,17 @@ static __inline void msg_PushLineRaw(const char* textPtr, UWORD length)
     msg_Buffer.lineNumber = lineNumber;
 }
 
+/**
+ * Initialise the message display system. This should be called after starting every level.
+ */
 void Msg_Init(void)
 {
     memset(&msg_Buffer, 0, sizeof(msg_Buffer));
-    msg_Buffer.lineNumber = -1;
+    msg_Buffer.lineNumber = MSG_LINE_BUFFER_SIZE - 1;
     msg_Buffer.guranteedTextFitLimit = (SCREEN_WIDTH / DRAW_MSG_CHAR_W) - 2;
+
+    msg_Buffer.tickPeriod          = (Sys_EClockRate * MSG_SCROLL_PERIOD_MS) / 1000;
+    msg_Buffer.deduplicationPeriod = (Sys_EClockRate * MSG_DEDUPLICATION_PERIOD_MS) / 1000;
 
     /** If the level text pointer is set, make sure to preprocess the text. */
     char* levelTextPtr = (char*)Lvl_DataPtr_l;
@@ -74,12 +91,18 @@ void Msg_Init(void)
     /* msg_PushLineRaw("Msg_Init() completed", 20); */
 }
 
+/**
+ * Pushes a message line to the buffer, segmenting longer ones
+ */
 void Msg_PushLine(REG(a0, const char* textPtr), REG(d0, UWORD length))
 {
     if (
         textPtr != msg_Buffer.lastMessagePtr ||
-        Vid_VBLCount_l > msg_Buffer.nextDuplicateTick
+        Sys_CheckTimeGE(&Sys_FrameTimeECV_q[0], &msg_Buffer.nextDuplicateTickECV)
     ) {
+        msg_Buffer.nextDuplicateTickECV = Sys_FrameTimeECV_q[0];
+        Sys_AddTime(&msg_Buffer.nextDuplicateTickECV, msg_Buffer.deduplicationPeriod);
+
         if (length <= msg_Buffer.guranteedTextFitLimit) {
             msg_PushLineRaw(textPtr, length);
         } else {
@@ -96,11 +119,13 @@ void Msg_PushLine(REG(a0, const char* textPtr), REG(d0, UWORD length))
                 length -= fitLength;
             } while (nextTextPtr && lines--);
         }
-        msg_Buffer.lastMessagePtr    = textPtr;
-        msg_Buffer.nextDuplicateTick = Vid_VBLCount_l + MSG_DEBOUNCE_LIMIT;
+        msg_Buffer.lastMessagePtr = textPtr;
     }
 }
 
+/**
+ * Render the message buffer
+ */
 void Msg_Render(void) {
     if (!Vid_FullScreen_b) {
         /* TODO - handle various display */
@@ -127,12 +152,12 @@ void Msg_Render(void) {
         nextLine = msg_NextLineNumber(nextLine);
     } while (nextLine != lastLine);
 
-    /* TODO - base this on actual elapsed time */
-    if (!(Vid_VBLCount_l & 31)) {
+    if (Sys_CheckTimeGE(&Sys_FrameTimeECV_q[0], &msg_Buffer.nextTickECV)) {
+        msg_Buffer.nextTickECV = Sys_FrameTimeECV_q[0];
+        Sys_AddTime(&msg_Buffer.nextTickECV, msg_Buffer.tickPeriod);
         msg_PushLineRaw(NULL, 0);
     }
 }
-
 
 
 UWORD msg_CompactString(char* bufferPtr, UWORD bufferLen)
@@ -144,8 +169,8 @@ UWORD msg_CompactString(char* bufferPtr, UWORD bufferLen)
 
     while (bufferLen--) {
         UBYTE charCode = (UBYTE)*readPtr++;
-        /* Skip over all non-printing or blank. Assume ECMA-94 Latin 1 8-bit for Amiga 3.x */
-        if ( (charCode > 0x20 && charCode < 0x7F) || charCode > 0xA0 ) {
+        /* Skip over all non-printing or blank. */
+        if (Draw_IsPrintable(charCode)) {
             skip = FALSE;
         } else if (!skip) {
             skip = TRUE;

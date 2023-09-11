@@ -103,8 +103,6 @@ BOOL Sys_Init()
         goto fail;
     }
 
-    Msg_Init();
-
     return TRUE;
 
 fail:

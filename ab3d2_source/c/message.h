@@ -1,10 +1,12 @@
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
-#define MSG_MAX_LENGTH 160
+#define MSG_SINGLE_LINE_LENGTH 80
+#define MSG_MAX_LENGTH (MSG_SINGLE_LINE_LENGTH * 2)
 #define MSG_MAX_CUSTOM 10
 
-#define MSG_DEBOUNCE_LIMIT 150
+#define MSG_SCROLL_PERIOD_MS 1000
+#define MSG_DEDUPLICATION_PERIOD_MS 1500
 
 /**
  * Initialise the in-game message system. This should be called at the start of each level.

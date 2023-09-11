@@ -289,10 +289,6 @@ void Draw_ResetGameDisplay()
 
 static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charCode, UBYTE pen);
 
-static __inline BOOL draw_IsPrintable(UBYTE charCode) {
-    return (charCode > 0x20 && charCode < 0x7F) || (charCode > 0xA0);
-}
-
 /**
  * Draw a length limited, null terminated string of fixed glyphs at a given coordinate.
  */
@@ -309,7 +305,7 @@ const char* Draw_ChunkyText(
     UBYTE charCode;
     while ( (charCode = (UBYTE)*textPtr++) && maxLen-- > 0 ) {
         /* Skip over all non-printing or blank. Assume ECMA-94 Latin 1 8-bit for Amiga 3.x */
-        if (draw_IsPrintable(charCode)) {
+        if (Draw_IsPrintable(charCode)) {
             draw_ChunkyGlyph(drawPtr, drawSpan, charCode, pen);
         }
         drawPtr += DRAW_MSG_CHAR_W;
@@ -336,7 +332,7 @@ const char* Draw_ChunkyTextProp(
     while ( (charCode = (UBYTE)*textPtr++) && maxLen-- > 0 ) {
         UBYTE glyphSpacing = draw_GlyphSpacing_vb[charCode];
         /* Skip over all non-printing or blank. Assume ECMA-94 Latin 1 8-bit for Amiga 3.x */
-        if (draw_IsPrintable(charCode)) {
+        if (Draw_IsPrintable(charCode)) {
             draw_ChunkyGlyph(drawPtr - (glyphSpacing & 0xF), drawSpan, charCode, pen);
         }
         drawPtr += glyphSpacing >> 4;
@@ -375,7 +371,7 @@ UWORD Draw_CalcPropTextSplit(const char** nextTextPtr, UWORD txtLength, UWORD fi
 
     /** Add up the width of the characters until we've used them all or overshot the width. Halt on null. */
     while ( charsLeft && width < fitWidth && (charCode = (UBYTE)*textPtr)) {
-        if (!draw_IsPrintable(charCode)) {
+        if (!Draw_IsPrintable(charCode)) {
             lastNonPrintingPtr = textPtr;
         }
         width += draw_GlyphSpacing_vb[charCode] >> 4;
@@ -393,7 +389,7 @@ UWORD Draw_CalcPropTextSplit(const char** nextTextPtr, UWORD txtLength, UWORD fi
     }
 
     /** Avoid splitting words */
-    if (lastNonPrintingPtr && charsLeft > 1 && draw_IsPrintable(charCode)) {
+    if (lastNonPrintingPtr && charsLeft > 1 && Draw_IsPrintable(charCode)) {
         textPtr = lastNonPrintingPtr + 1;
     }
 
@@ -407,7 +403,7 @@ UWORD Draw_CalcPropTextSplit(const char** nextTextPtr, UWORD txtLength, UWORD fi
 
     /** Avoid space at the start of the next split */
     if (textPtr) {
-        while (charsLeft > 0 && !draw_IsPrintable(*textPtr)) {
+        while (charsLeft > 0 && !Draw_IsPrintable(*textPtr)) {
             ++textPtr;
             --charsLeft;
         }
@@ -788,7 +784,6 @@ static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charCode, UBY
         }
         drawPtr += drawSpan;
     }
-
 }
 
 /**
