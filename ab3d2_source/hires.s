@@ -8254,12 +8254,12 @@ dosomething:
 
 
 				move.b	STEROPT+1(pc,d0.w*2),d1
-				muls	#160,d0
+				muls	#OPTS_MESSAGE_LENGTH,d0
 				add.l	#Game_SoundOptionsText_vb,d0
 
 				IFD BUILD_WITH_C
 				move.l	d0,a0
-				move.w	#40,d0
+				move.w	#OPTS_MESSAGE_LENGTH,d0
 				CALLC	Msg_PushLine
 				ELSE
 				jsr		Game_PushMessage
@@ -8352,7 +8352,7 @@ notogglesound2:
 				move.l	#Game_LightingOptionsText_vb,d0
 				not.b	Anim_LightingEnabled_b
 				beq.s	.noon
-				add.l	#160,d0
+				add.l	#OPTS_MESSAGE_LENGTH,d0
 .noon:
 				bra		pastlighttext
 
@@ -8365,7 +8365,7 @@ OLDGOOD:			dc.w	0
 pastlighttext:
 				IFD BUILD_WITH_C
 				move.l	d0,a0
-				move.w	#40,d0
+				move.w	#OPTS_MESSAGE_LENGTH,d0
 				CALLC	Msg_PushLine
 				ELSE
 				jsr		Game_PushMessage
@@ -8405,7 +8405,7 @@ noret2:
 .okgood:
 				IFD BUILD_WITH_C
 				move.l	d0,a0
-				move.w	#40,d0
+				move.w	#OPTS_MESSAGE_LENGTH,d0
 				CALLC	Msg_PushLine
 				ELSE
 				jsr		Game_PushMessage

@@ -83,7 +83,9 @@ void Msg_Init(void)
 {
     memset(&msg_Buffer, 0, sizeof(msg_Buffer));
     msg_Buffer.lineNumber = MSG_LINE_BUFFER_SIZE - 1;
-    msg_Buffer.guranteedTextFitLimit = (SCREEN_WIDTH / DRAW_MSG_CHAR_W) - 2;
+
+    /* Since we use proportional text rendering, base the guaranteed fit on the widest char */
+    msg_Buffer.guranteedTextFitLimit = (SCREEN_WIDTH / Draw_MaxPropCharWidth) - 2;
 
     msg_Buffer.tickPeriod          = (Sys_EClockRate * MSG_SCROLL_PERIOD_MS) / 1000;
     msg_Buffer.deduplicationPeriod = (Sys_EClockRate * MSG_DEDUPLICATION_PERIOD_MS) / 1000;
@@ -92,20 +94,15 @@ void Msg_Init(void)
     char* levelTextPtr = (char*)Lvl_DataPtr_l;
     if (levelTextPtr) {
         for (int i = 0; i < MSG_MAX_CUSTOM; ++i, levelTextPtr += MSG_MAX_LENGTH) {
-
             if (
                 Draw_IsPrintable(levelTextPtr[MSG_SINGLE_LINE_LENGTH - 1]) &&
                 Draw_IsPrintable(levelTextPtr[MSG_SINGLE_LINE_LENGTH])
             ) {
                 msg_NudgeString(levelTextPtr + MSG_SINGLE_LINE_LENGTH, MSG_SINGLE_LINE_LENGTH-1);
             }
-
             msg_CompactString(levelTextPtr, MSG_MAX_LENGTH);
         }
-        /* msg_PushLineRaw("Msg_Init() processed level texts", 40); */
     }
-
-    /* msg_PushLineRaw("Msg_Init() completed", 20); */
 }
 
 /**

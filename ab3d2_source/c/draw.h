@@ -82,6 +82,8 @@ extern const char* Draw_ChunkyTextProp(
     UBYTE pen
 );
 
+extern UWORD Draw_MaxPropCharWidth;
+
 /**
  * Calculate the expected pixel width of the provided string (up to the maximum length provided) based on proportional
  * size information.

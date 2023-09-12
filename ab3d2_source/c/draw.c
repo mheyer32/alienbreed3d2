@@ -94,7 +94,7 @@ static UBYTE draw_BorderDigitsBuffer[DRAW_HUD_CHAR_SMALL_H * DRAW_HUD_CHAR_SMALL
 
 static UBYTE *FastBufferAllocPtr;
 
-UWORD Draw_GuaranteeMessageFitLength = 0;
+UWORD Draw_MaxPropCharWidth = 0;
 
 /**********************************************************************************************************************/
 
@@ -817,6 +817,10 @@ static void draw_CalculateGlyphSpacing() {
             }
             width = 9 - left - tmp;
         }
+        if (width > Draw_MaxPropCharWidth) {
+            Draw_MaxPropCharWidth = width;
+        }
+
         draw_GlyphSpacing_vb[i] = width << 4 | left;
     }
 }

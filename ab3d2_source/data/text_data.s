@@ -9,49 +9,49 @@ game_NullMessage_vb:	dcb.b	160,' '
 
 Game_SoundOptionsText_vb:
 				;;;;	"1234567890123456789012345678901234567890"
-				dc.b	"Four Channel Mono Selected              "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
+				dc.b	"Audio: Four Channel Mono                "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
 
-				dc.b	"Four Channel Stereo Selected            "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
+				dc.b	"Audio: Four Channel Stereo              "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
 
-				dc.b	"Eight Channel Mono Selected             "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
+				dc.b	"Audio: Eight Channel Mono               "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
 
-				dc.b	"Eight Channel Stereo Selected           "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
+				dc.b	"Audio: Eight Channel Stereo             "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
 
 Game_LightingOptionsText_vb:
 				;;;;	"1234567890123456789012345678901234567890"
-				dc.b	"Lighting Effects Deactivated            "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
+				dc.b	"Lighting: Moving Lightsources Disabled  "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
 
-				dc.b	"Lighting Effects Activated              "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
+				dc.b	"Lighting: Moving Lightsources Enabled   "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
 
 Game_DrawHighQualityText_vb:
-				dc.b	"Rendering Quality : High                "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
+				dc.b	"Renderer: High Quality                  "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
 
 Game_DrawLowQualityText_vb:
-				dc.b	"Rendering Quality : Reduced             "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
+				dc.b	"Renderer: Reduced Quality               "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
+;				dc.b	"                                        "
 
 
 Game_TwoPlayerVictoryMessages_vb:

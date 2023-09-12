@@ -354,3 +354,5 @@ DL_Never		EQU		1
 
 LVLT_MESSAGE_LENGTH EQU 160
 
+; For in game option messages
+OPTS_MESSAGE_LENGTH EQU 40
