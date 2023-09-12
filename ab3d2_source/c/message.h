@@ -23,6 +23,7 @@ extern void Msg_Init(void);
  * ticks.
  */
 extern void Msg_PushLine(REG(a0, const char* textPtr), REG(d0, UWORD length));
+extern void Msg_PushLineDedupLast(REG(a0, const char* textPtr), REG(d0, UWORD length));
 
 /**
  * Render the messages. Depends on Draw_ChunkyTextProp() to render the lines. This should be called immediately

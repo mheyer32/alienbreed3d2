@@ -113,32 +113,43 @@ void Msg_Init(void)
  */
 void Msg_PushLine(REG(a0, const char* textPtr), REG(d0, UWORD length))
 {
+    if (length <= msg_Buffer.guranteedTextFitLimit) {
+        msg_PushLineRaw(textPtr, length);
+    } else {
+        const char* nextTextPtr = textPtr;
+        int lines = 4;
+        do {
+            UWORD fitLength = Draw_CalcPropTextSplit(
+                &nextTextPtr,
+                length,
+                SCREEN_WIDTH - (2 * DRAW_MSG_CHAR_W)
+            );
+            msg_PushLineRaw(textPtr, fitLength);
+            textPtr = nextTextPtr;
+            length -= fitLength;
+        } while (nextTextPtr && lines--);
+    }
+    msg_Buffer.lastMessagePtr = NULL;
+}
+
+
+/**
+ * Pushes a message, provided it's not the same as the last, unless enough time has elapsed.
+ */
+void Msg_PushLineDedupLast(REG(a0, const char* textPtr), REG(d0, UWORD length))
+{
     if (
         textPtr != msg_Buffer.lastMessagePtr ||
         Sys_CheckTimeGE(&Sys_FrameTimeECV_q[0], &msg_Buffer.nextDuplicateTickECV)
     ) {
         msg_Buffer.nextDuplicateTickECV = Sys_FrameTimeECV_q[0];
         Sys_AddTime(&msg_Buffer.nextDuplicateTickECV, msg_Buffer.deduplicationPeriod);
-
-        if (length <= msg_Buffer.guranteedTextFitLimit) {
-            msg_PushLineRaw(textPtr, length);
-        } else {
-            const char* nextTextPtr = textPtr;
-            int lines = 4;
-            do {
-                UWORD fitLength = Draw_CalcPropTextSplit(
-                    &nextTextPtr,
-                    length,
-                    SCREEN_WIDTH - (2 * DRAW_MSG_CHAR_W)
-                );
-                msg_PushLineRaw(textPtr, fitLength);
-                textPtr = nextTextPtr;
-                length -= fitLength;
-            } while (nextTextPtr && lines--);
-        }
+        Msg_PushLine(textPtr, length);
         msg_Buffer.lastMessagePtr = textPtr;
     }
 }
+
+
 
 /**
  * Render the message buffer

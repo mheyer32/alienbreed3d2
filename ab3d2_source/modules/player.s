@@ -701,7 +701,7 @@ plr_ShowGunName:
 				add.l   d0,a4
 				exg     a0,a4
 				move.w  #20,d0
-				CALLC   Msg_PushLine
+				CALLC   Msg_PushLineDedupLast
 				move.l  a4,a0
 				ELSE
 
