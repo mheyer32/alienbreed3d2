@@ -192,6 +192,7 @@ _startup:
 
 				; Include even in C version for assembly helpers
 				include		"modules/system.s"
+				include		"modules/message.s"
 
 				IFD MEMTRACK
 				include "modules/dev_memtrack.s"
@@ -721,22 +722,8 @@ CLRDAM:
 				move.l	Vid_Screen1Ptr_l,Vid_DisplayScreenPtr_l
 				move.l	Vid_Screen2Ptr_l,Vid_DrawScreenPtr_l
 
-				IFD BUILD_WITH_C
-
+; Clear message buffers
 				CALLC	Msg_Init
-
-				ELSE
-
-				move.l	#Game_MessageBuffer_vl,a0
-				move.w	#19,d0
-clrmessbuff:
-				move.l	#0,(a0)+
-				dbra	d0,clrmessbuff
-
-				move.l	#game_NullMessage_vb,d0
-				jsr		Game_PushMessage ; ignore for now
-
-				ENDIF
 
 				; Initialise FPS
 				clr.l	Sys_FrameNumber_l
@@ -787,9 +774,11 @@ game_main_loop:
 				swap	d0
 				divs	#9,d0
 				swap	d0
-				muls	#160,d0
+				muls	#GAME_DM_VICTORY_MESSAGE_LENGTH,d0
 				add.l	#Game_TwoPlayerVictoryMessages_vb,d0
-				jsr		Game_PushMessage ; ignore for now
+				move.l  d0,a0
+				move.w  #GAME_DM_VICTORY_MESSAGE_LENGTH,d0
+				CALLC   Msg_PushLine
 
 				move.l	Plr2_ObjectPtr_l,a0
 				move.l	GLF_DatabasePtr_l,a6
@@ -828,12 +817,13 @@ game_main_loop:
 				swap	d0
 				divs	#9,d0
 				swap	d0
-				muls	#160,d0
+				muls	#GAME_DM_VICTORY_MESSAGE_LENGTH,d0
 				add.l	#Game_TwoPlayerVictoryMessages_vb,d0
-				jsr		Game_PushMessage ; ignore for now
+				move.l	d0,a0
+				move.w  #GAME_DM_VICTORY_MESSAGE_LENGTH,d0
+				CALLC   Msg_PushLine
 
 				move.l	Plr1_ObjectPtr_l,a0
-
 				move.l	GLF_DatabasePtr_l,a6
 				add.l	#GLFT_Player1Graphic_w,a6
 				move.w	(a6),d7
@@ -7854,70 +7844,6 @@ lastpressed:	dc.b	0
 				include	"plr1control.s"
 				include	"plr2control.s"
 
-*******************************************8
-
-;game_NullMessage_vb:	dcb.b	160,' '
-
-Game_PushTempMessage:
-				move.l	a1,-(a7)
-				bra		intosend
-
-Game_PushMessage:
-				move.l	a1,-(a7)
-				move.l	game_MessagePtr_l,a1
-				move.l	d0,(a1)+
-				cmp.l	#Game_MessageBufferEnd,a1
-				blt.s	.okinbuff
-				move.l	#Game_MessageBuffer_vl,a1
-
-.okinbuff:
-				move.l	a1,game_MessagePtr_l
-				move.l	a1,game_LastMessagePtr_l
-
-intosend:
-				move.l	d0,draw_GameMessagePtr_l
-				move.w	#0,draw_GameMessageXPos_w
-				add.l	#160,d0
-				move.l	d0,draw_GameMessageEnd_l
-				move.w	#40,draw_GameMessageTimer_w
-				move.l	(a7)+,a1
-				rts
-
-Game_PullLastMessage:
-				move.l	game_LastMessagePtr_l,a1
-				cmp.l	#Game_MessageBuffer_vl,a1
-				bgt.s	.okinbuff
-
-				move.l	#Game_MessageBufferEnd,a1
-
-.okinbuff:
-
-				move.l	-(a1),d0
-				beq.s	.nomessage
-
-				move.l	d0,draw_GameMessagePtr_l
-				move.w	#0,draw_GameMessageXPos_w
-				add.l	#160,d0
-				move.l	d0,draw_GameMessageEnd_l
-				move.w	#40,draw_GameMessageTimer_w
-
-				move.l	a1,game_LastMessagePtr_l
-
-.nomessage:
-
-
-				rts
-
-Game_MessageBuffer_vl:	ds.l	20
-Game_MessageBufferEnd:
-_game_MessagePtr_l::
-game_MessagePtr_l:		dc.l	Game_MessageBuffer_vl
-game_LastMessagePtr_l:	dc.l	Game_MessageBuffer_vl
-
-**********************************************
-
-
-
 ;prot7: dc.w 0
 
 GOTTOSEND:		dc.w	0
@@ -8256,14 +8182,9 @@ dosomething:
 				move.b	STEROPT+1(pc,d0.w*2),d1
 				muls	#OPTS_MESSAGE_LENGTH,d0
 				add.l	#Game_SoundOptionsText_vb,d0
-
-				IFD BUILD_WITH_C
 				move.l	d0,a0
 				move.w	#OPTS_MESSAGE_LENGTH,d0
 				CALLC	Msg_PushLine
-				ELSE
-				jsr		Game_PushMessage
-				ENDIF
 
 				move.b	d1,Prefsfile+1
 
@@ -8363,13 +8284,9 @@ OLDGOOD:			dc.w	0
 
 
 pastlighttext:
-				IFD BUILD_WITH_C
 				move.l	d0,a0
 				move.w	#OPTS_MESSAGE_LENGTH,d0
 				CALLC	Msg_PushLine
-				ELSE
-				jsr		Game_PushMessage
-				ENDIF
 
 				bra		nolighttoggle2
 
@@ -8384,7 +8301,7 @@ nolighttoggle2:
 				bne.s	noret2
 
 				st		OLDRET
-				jsr		Game_PullLastMessage
+				CALLC	Msg_PullLast
 
 				bra		noret2
 
@@ -8403,13 +8320,9 @@ noret2:
 				bne.s	.okgood
 				move.l	#Game_DrawLowQualityText_vb,d0
 .okgood:
-				IFD BUILD_WITH_C
 				move.l	d0,a0
 				move.w	#OPTS_MESSAGE_LENGTH,d0
 				CALLC	Msg_PushLine
-				ELSE
-				jsr		Game_PushMessage
-				ENDIF
 
 				bra		.nogood2
 

@@ -10,8 +10,15 @@
 extern UBYTE Vid_FullScreen_b;
 extern UWORD Vid_LetterBoxMarginHeight_w;
 extern void* Lvl_DataPtr_l;
+
+/**
+ * Sys_FrameTimeECV_q[0] is the current EClock time, updated per frame.
+ */
 extern struct EClockVal Sys_FrameTimeECV_q[2];
 
+/**
+ * Data for our messaging system
+ */
 static struct {
 
     /** EClock Timestamp for the next tick */
@@ -77,7 +84,7 @@ static __inline void msg_PushLineRaw(const char* textPtr, UWORD length)
 }
 
 /**
- * Initialise the message display system. This should be called after starting every level.
+ * Initialise the message display system. Called at the start of each level.
  */
 void Msg_Init(void)
 {
@@ -106,7 +113,7 @@ void Msg_Init(void)
 }
 
 /**
- * Pushes a message line to the buffer, segmenting longer ones
+ * Pushes a message line to the buffer, segmenting longer messages into multiple lines.
  */
 void Msg_PushLine(REG(a0, const char* textPtr), REG(d0, UWORD length))
 {
@@ -146,7 +153,13 @@ void Msg_PushLineDedupLast(REG(a0, const char* textPtr), REG(d0, UWORD length))
     }
 }
 
+/**
+ * TODO
+ */
+void Msg_PullLast(void)
+{
 
+}
 
 /**
  * Render the message buffer
