@@ -50,9 +50,18 @@ static struct {
 static UWORD msg_CompactString(char* bufferPtr, UWORD bufferLen);
 
 /**
+ * The original message system used a fixed width buffer of 80 chars to display a single line.
+ * Consequently it is not uncommon for there to be no space between the end of the first 80 char
+ * line and the start of the next. As we are going to reflow the text for display, we need to
+ * care about that.
+ */
+static void msg_NudgeString(char* bufferPtr, UWORD bufferLen);
+
+/**
  * Get the line number after the given one, cyclically.
  */
-static __inline WORD msg_NextLineNumber(WORD lineNumber) {
+static __inline WORD msg_NextLineNumber(WORD lineNumber)
+{
     return (lineNumber + 1) & MSG_LINE_BUFFER_MASK;
 }
 
@@ -83,6 +92,14 @@ void Msg_Init(void)
     char* levelTextPtr = (char*)Lvl_DataPtr_l;
     if (levelTextPtr) {
         for (int i = 0; i < MSG_MAX_CUSTOM; ++i, levelTextPtr += MSG_MAX_LENGTH) {
+
+            if (
+                Draw_IsPrintable(levelTextPtr[MSG_SINGLE_LINE_LENGTH - 1]) &&
+                Draw_IsPrintable(levelTextPtr[MSG_SINGLE_LINE_LENGTH])
+            ) {
+                msg_NudgeString(levelTextPtr + MSG_SINGLE_LINE_LENGTH, MSG_SINGLE_LINE_LENGTH-1);
+            }
+
             msg_CompactString(levelTextPtr, MSG_MAX_LENGTH);
         }
         /* msg_PushLineRaw("Msg_Init() processed level texts", 40); */
@@ -126,7 +143,8 @@ void Msg_PushLine(REG(a0, const char* textPtr), REG(d0, UWORD length))
 /**
  * Render the message buffer
  */
-void Msg_Render(void) {
+void Msg_Render(void)
+{
     if (!Vid_FullScreen_b) {
         /* TODO - handle various display */
         return;
@@ -159,13 +177,22 @@ void Msg_Render(void) {
     }
 }
 
+void msg_NudgeString(char* bufferPtr, UWORD bufferLen)
+{
+    char* toPtr   = bufferPtr + bufferLen;
+    char* fromPtr = toPtr - 1;
+    while (fromPtr > bufferPtr) {
+        *--toPtr = *--fromPtr;
+    }
+    *bufferPtr = (char)' ';
+}
 
 UWORD msg_CompactString(char* bufferPtr, UWORD bufferLen)
 {
     char* readPtr  = bufferPtr;
     char* writePtr = bufferPtr;
     char* lastPtr  = bufferPtr + bufferLen;
-    BOOL   skip     = TRUE;
+    BOOL  skip     = TRUE;
 
     while (bufferLen--) {
         UBYTE charCode = (UBYTE)*readPtr++;
