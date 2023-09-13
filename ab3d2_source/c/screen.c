@@ -2,6 +2,7 @@
 
 #include "draw.h"
 #include "system.h"
+#include "message.h"
 
 #include <exec/ports.h>
 #include <graphics/copper.h>
@@ -392,6 +393,8 @@ void Vid_Present()
 {
     //Draw_ChunkyTextProp(Vid_FastBufferPtr_l, SCREEN_WIDTH, 80, "This is an example of proportional rendering!", 4, 4, 255);
     //Draw_ChunkyTextProp(Vid_FastBufferPtr_l, SCREEN_WIDTH, 80, "0123456789!\"$%^&*(){}[]|_+.,:;#@", 4, 12, 255);
+
+    Msg_Render();
 
     if (Vid_isRTG) {
         LOCAL_CYBERGFX();

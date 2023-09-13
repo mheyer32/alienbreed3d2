@@ -33,6 +33,7 @@ OBJS = c/main.o \
 	   c/system.o \
 	   c/menu.o \
 	   c/draw.o \
+	   c/message.o \
 	   c/hires.o
 
 hiresC: AFLAGS+=-DBUILD_WITH_C

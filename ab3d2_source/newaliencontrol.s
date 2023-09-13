@@ -381,11 +381,9 @@ ACTIVATED:
 				rts
 
 .NotDeactivated2:
-
 				rts
 
 Destructable:
-
 				move.l	GLF_DatabasePtr_l,a3
 				add.l	#GLFT_ObjectDefs,a3
 				moveq	#0,d0
@@ -407,42 +405,42 @@ Destructable:
 				move.w	EntT_DisplayText_w(a0),d0
 				blt.s	.notext
 
-				muls	#160,d0
+				muls	#LVLT_MESSAGE_LENGTH,d0
 				add.l	Lvl_DataPtr_l,d0
-				jsr		Game_PushMessage
+
+				move.l	a0,-(sp)
+				move.l	d0,a0
+				move.w	#LVLT_MESSAGE_LENGTH|MSG_TAG_NARRATIVE,d0
+				CALLC	Msg_PushLine
+
+				move.l	(sp)+,a0
 
 .notext:
 
 				move.w	#0,EntT_Timer1_w(a0)
 
-.alreadydead
-
+.alreadydead:
 				move.b	#0,EntT_NumLives_b(a0)
-
 				move.w	12(a0),d0
 				bge.s	.okinroom
 				rts
-.okinroom
-
+.okinroom:
 				tst.b	ShotT_Worry_b(a0)
 				bne.s	.worryaboot
 				rts
 .worryaboot:
-
 				move.l	a1,a2
-
 				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
 				add.l	Lvl_DataPtr_l,a1
-
 				tst.w	ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
 				move.l	ZoneT_Roof_l(a1),d0
 				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.okinbotc
 				move.l	ZoneT_UpperRoof_l(a1),d0
-.okinbotc:
 
+.okinbotc:
 				bra.s	.onceiling
 
 .onfloor
@@ -546,40 +544,33 @@ Plr1_CollectItem:
 				move.w	EntT_DisplayText_w(a0),d0
 				blt.s	.notext
 
-				muls	#160,d0
+				muls	#LVLT_MESSAGE_LENGTH,d0
 				add.l	Lvl_DataPtr_l,d0
-				jsr		Game_PushMessage
+				move.l	a0,-(sp)
+				move.l	d0,a0
+				move.w	#LVLT_MESSAGE_LENGTH|MSG_TAG_NARRATIVE,d0
+				CALLC	Msg_PushLine
+				move.l	(sp)+,a0
 
 				bra		.nodeftext
 
 .notext:
-
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.nodeftext
 
-				moveq	#0,d2
-				move.b	EntT_Type_b(a0),d2
-				move.l	GLF_DatabasePtr_l,a4
-				add.l	#GLFT_ObjectNames_l,a4
-				muls	#20,d2
-				add.l	d2,a4
-				move.l	#TempMessageBuffer_vb,a2
-				move.w	#19,d2
+				moveq	#0,d0
+				move.b	EntT_Type_b(a0),d0
+				move.l	a0,-(sp)
+				muls	#GLFT_OBJ_NAME_LENGTH,d0
+				move.l	GLF_DatabasePtr_l,a0
+				add.l	#GLFT_ObjectNames_l,d0
+				add.l	d0,a0
+				move.w	#GLFT_OBJ_NAME_LENGTH|MSG_TAG_DEFAULT,d0
+				CALLC	Msg_PushLine
 
-.copyname:
-				move.b	(a4)+,d3
-				bne.s	.oklet
-				move.b	#32,d3
-.oklet:
-				move.b	d3,(a2)+
-
-				dbra	d2,.copyname
-
-				move.l	#TempMessageBuffer_vb,d0
-				jsr		Game_PushTempMessage
+				move.l	(sp)+,a0
 
 .nodeftext:
-
 				move.l	GLF_DatabasePtr_l,a2
 				lea		GLFT_AmmoGive_l(a2),a3
 				add.l	#GLFT_GunGive_l,a2

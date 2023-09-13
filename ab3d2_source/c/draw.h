@@ -44,6 +44,10 @@ extern void Draw_Shutdown(void);
 extern void Draw_UpdateBorder_RTG(APTR bmHandle, ULONG bmBytesPerRow);
 extern void Draw_UpdateBorder_Planar(void);
 
+static __inline BOOL Draw_IsPrintable(UBYTE charCode) {
+    return (charCode > 0x20 && charCode < 0x7F) || (charCode > 0xA0);
+}
+
 /**
  * These functions allow plotting the fixed text characters to a chunky buffer
  *
@@ -78,11 +82,23 @@ extern const char* Draw_ChunkyTextProp(
     UBYTE pen
 );
 
+extern UWORD Draw_MaxPropCharWidth;
+
 /**
- * Calculate the expected pixel width of the provided string (up to the maximum lenght provided) based on proportional
+ * Calculate the expected pixel width of the provided string (up to the maximum length provided) based on proportional
  * size information.
  */
 extern ULONG Draw_CalcPropWidth(const char *textPtr, UWORD maxLen);
+
+/**
+ * Evaluate the maximum number of characters from an input string that can be rendered proportionally in a given
+ * width.
+ *
+ * Returns the number of characters that will fit and updates nextTextPtr to the position witin the input that
+ * was reached.
+ *
+ */
+extern UWORD Draw_CalcPropTextSplit(const char** nextTextPtr, UWORD txtLength, UWORD width);
 
 extern UBYTE *Vid_FastBufferPtr_l;
 

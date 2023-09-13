@@ -689,27 +689,21 @@ plr_KeyboardControl:
 ;*
 ;******************************************************************************
 plr_ShowGunName:
-				moveq	#0,d2
-				move.b	PlrT_GunSelected_b(a0),d2
-				move.l	GLF_DatabasePtr_l,a4
-				add.l	#GLFT_GunNames_l,a4
-				muls	#20,d2
-				add.l	d2,a4
-				move.l	#TempMessageBuffer_vb,a2
-				move.w	#19,d2
+				moveq   #0,d2
+				move.b  PlrT_GunSelected_b(a0),d0
+;				cmp.b   PlrT_TmpGunSelected_b(a0),d0
+;				beq     .done
 
-.copyname:
-				move.b	(a4)+,d3
-				bne.s	.oklet
-				move.b	#32,d3
+				move.l  GLF_DatabasePtr_l,a4
+				add.l   #GLFT_GunNames_l,a4
+				muls    #GLFT_GUN_NAME_LENGTH,d0
+				add.l   d0,a4
+				exg     a0,a4
+				move.w  #GLFT_GUN_NAME_LENGTH|MSG_TAG_OTHER,d0
+				CALLC   Msg_PushLineDedupLast
+				move.l  a4,a0
 
-.oklet:
-				move.b	d3,(a2)+
-				dbra	d2,.copyname
-
-				move.l	#TempMessageBuffer_vb,d0
-				jsr		Game_PushTempMessage
-
+.done:
 				rts
 
 ;******************************************************************************

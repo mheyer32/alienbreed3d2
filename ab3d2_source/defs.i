@@ -299,6 +299,10 @@ NUM_OBJECT_DEFS		EQU 30
 NUM_SFX				EQU 64
 NUM_WALL_TEXTURES	EQU 16
 
+GLFT_OBJ_NAME_LENGTH EQU 20
+GLFT_GUN_NAME_LENGTH EQU 20
+GLFT_BUL_NAME_LENGTH EQU 20
+
 	; Game Link File Offsets
 	; Where possible, these are defined in terms the NUM limits above.
 	STRUCTURE GLFT,64
@@ -310,13 +314,13 @@ NUM_WALL_TEXTURES	EQU 16
 		STRUCT GLFT_GunGFXFilename_l,64
 		STRUCT GLFT_StoryFilename_l,64
 		STRUCT GLFT_BulletDefs_l,(NUM_BULLET_DEFS*BulT_SizeOf_l)
-		STRUCT GLFT_BulletNames_l,(NUM_BULLET_DEFS*20)
-		STRUCT GLFT_GunNames_l,(NUM_GUN_DEFS*20)
+		STRUCT GLFT_BulletNames_l,(NUM_BULLET_DEFS*GLFT_BUL_NAME_LENGTH)
+		STRUCT GLFT_GunNames_l,(NUM_GUN_DEFS*GLFT_GUN_NAME_LENGTH)
 		STRUCT GLFT_ShootDefs_l,(NUM_GUN_DEFS*ShootT_SizeOf_l)
 		STRUCT GLFT_AlienNames_l,(NUM_ALIEN_DEFS*20)
 		STRUCT GLFT_AlienDefs_l,(NUM_ALIEN_DEFS*AlienT_SizeOf_l)
 		STRUCT GLFT_FrameData_l,7680 								; todo - figure out how this is derived
-		STRUCT GLFT_ObjectNames_l,(NUM_OBJECT_DEFS*20)
+		STRUCT GLFT_ObjectNames_l,(NUM_OBJECT_DEFS*GLFT_OBJ_NAME_LENGTH)
 		STRUCT GLFT_ObjectDefs,(NUM_OBJECT_DEFS*ObjT_SizeOf_l)
 		STRUCT GLFT_ObjectDefAnims_l,(NUM_OBJECT_DEFS*O_AnimSize)
 		STRUCT GLFT_ObjectActAnims_l,(NUM_OBJECT_DEFS*O_AnimSize)
@@ -337,6 +341,8 @@ NUM_WALL_TEXTURES	EQU 16
 		STRUCT GLFT_EchoTable_l,(60)
 		LABEL  GLFT_SizeOf_l
 
+
+
 *****************************
 * Door Definitions **********
 *****************************
@@ -350,3 +356,17 @@ DR_Never		EQU		5
 DL_Timeout		EQU		0
 DL_Never		EQU		1
 
+; TODO - Level Structure
+
+LVLT_MESSAGE_LENGTH EQU 160
+
+; For two player victory messages
+GAME_DM_VICTORY_MESSAGE_LENGTH EQU 80
+
+; For in game option messages
+OPTS_MESSAGE_LENGTH EQU 40
+
+MSG_TAG_NARRATIVE EQU 0
+MSG_TAG_DEFAULT   EQU (1<<14)
+MSG_TAG_OPTIONS   EQU (2<<14)
+MSG_TAG_OTHER     EQU (3<<14)
