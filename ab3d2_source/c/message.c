@@ -44,7 +44,7 @@ static struct {
     /** Ring buffer of text line pointers */
     const char* lineTextPtrs[MSG_LINE_BUFFER_SIZE];
 
-    /** Ring buffer of text line char lengths */
+    /** Ring buffer of text line char lengths (including tags) */
     UWORD       lineLengths[MSG_LINE_BUFFER_SIZE];
 
     /** Pointer to the most recently pushed message */
@@ -86,11 +86,11 @@ static __inline WORD msg_NextLineNumber(WORD lineNumber)
 /**
  * Push a message line into the buffer.
  */
-static __inline void msg_PushLineRaw(const char* textPtr, UWORD length)
+static __inline void msg_PushLineRaw(const char* textPtr, UWORD lengthAndTag)
 {
     WORD lineNumber = msg_NextLineNumber(msg_Buffer.lineNumber);
     msg_Buffer.lineTextPtrs[lineNumber] = textPtr;
-    msg_Buffer.lineLengths[lineNumber]  = length;
+    msg_Buffer.lineLengths[lineNumber]  = lengthAndTag;
     msg_Buffer.lineNumber = lineNumber;
 }
 
@@ -105,6 +105,7 @@ void Msg_Init(void)
     /* Since we use proportional text rendering, base the guaranteed fit on the widest char */
     msg_Buffer.guranteedTextFitLimit = (SCREEN_WIDTH / Draw_MaxPropCharWidth) - 2;
 
+	/** Calculate the tick periods in EClocks from the ms values, based on the reported EClock rate */
     msg_Buffer.tickPeriod          = (Sys_EClockRate * MSG_SCROLL_PERIOD_MS) / 1000;
     msg_Buffer.deduplicationPeriod = (Sys_EClockRate * MSG_DEDUPLICATION_PERIOD_MS) / 1000;
 
@@ -116,7 +117,7 @@ void Msg_Init(void)
                 Draw_IsPrintable(levelTextPtr[MSG_SINGLE_LINE_LENGTH - 1]) &&
                 Draw_IsPrintable(levelTextPtr[MSG_SINGLE_LINE_LENGTH])
             ) {
-                msg_NudgeString(levelTextPtr + MSG_SINGLE_LINE_LENGTH, MSG_SINGLE_LINE_LENGTH-1);
+                msg_NudgeString(levelTextPtr + MSG_SINGLE_LINE_LENGTH, MSG_SINGLE_LINE_LENGTH - 1);
             }
             msg_CompactString(levelTextPtr, MSG_MAX_LENGTH);
         }
@@ -128,13 +129,13 @@ void Msg_Init(void)
  */
 void Msg_PushLine(REG(a0, const char* textPtr), REG(d0, UWORD lengthAndTag))
 {
-	UWORD textLength = lengthAndTag & MSG_LENGTH_MASK;
+    UWORD textLength = lengthAndTag & MSG_LENGTH_MASK;
     if (textLength <= msg_Buffer.guranteedTextFitLimit) {
         msg_PushLineRaw(textPtr, lengthAndTag);
     } else {
         const char* nextTextPtr = textPtr;
         int lines     = 4;
-		UWORD textTag = lengthAndTag & ~MSG_LENGTH_MASK;
+        UWORD textTag = lengthAndTag & ~MSG_LENGTH_MASK;
         do {
             UWORD fitLength = Draw_CalcPropTextSplit(
                 &nextTextPtr,
