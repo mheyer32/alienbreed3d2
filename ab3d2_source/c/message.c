@@ -7,9 +7,19 @@
 #define MSG_LINE_BUFFER_SIZE (1 << MSG_LINE_BUFFER_EXP)
 #define MSG_LINE_BUFFER_MASK (MSG_LINE_BUFFER_SIZE - 1)
 
+#define MSG_LENGTH_MASK 0x3FFF
+#define MSG_TAG_SHIFT 14
+
 extern UBYTE Vid_FullScreen_b;
 extern UWORD Vid_LetterBoxMarginHeight_w;
 extern void* Lvl_DataPtr_l;
+
+static UBYTE msg_TagPens[4] = {
+	255, /* MSG_TAG_NARRATIVE - intense green */
+	254, /* MSG_TAG_DEFAULT - half green */
+	125, /* MSG_TAG_OPTIONS - grey-blue */
+	252  /* MSG_TAG_OTHER - half grey */
+};
 
 /**
  * Sys_FrameTimeECV_q[0] is the current EClock time, updated per frame.
@@ -26,6 +36,7 @@ static struct {
 
     /** Eclock Timestamp for the deduplication */
     struct EClockVal nextDuplicateTickECV;
+
 
     ULONG  tickPeriod;
     ULONG  deduplicationPeriod;
@@ -115,22 +126,24 @@ void Msg_Init(void)
 /**
  * Pushes a message line to the buffer, segmenting longer messages into multiple lines.
  */
-void Msg_PushLine(REG(a0, const char* textPtr), REG(d0, UWORD length))
+void Msg_PushLine(REG(a0, const char* textPtr), REG(d0, UWORD lengthAndTag))
 {
-    if (length <= msg_Buffer.guranteedTextFitLimit) {
-        msg_PushLineRaw(textPtr, length);
+	UWORD textLength = lengthAndTag & MSG_LENGTH_MASK;
+    if (textLength <= msg_Buffer.guranteedTextFitLimit) {
+        msg_PushLineRaw(textPtr, lengthAndTag);
     } else {
         const char* nextTextPtr = textPtr;
-        int lines = 4;
+        int lines     = 4;
+		UWORD textTag = lengthAndTag & ~MSG_LENGTH_MASK;
         do {
             UWORD fitLength = Draw_CalcPropTextSplit(
                 &nextTextPtr,
-                length,
+                textLength,
                 SCREEN_WIDTH - (2 * DRAW_MSG_CHAR_W)
             );
-            msg_PushLineRaw(textPtr, fitLength);
+            msg_PushLineRaw(textPtr, fitLength|textTag);
             textPtr = nextTextPtr;
-            length -= fitLength;
+            textLength -= fitLength;
         } while (nextTextPtr && lines--);
     }
     msg_Buffer.lastMessagePtr = NULL;
@@ -140,7 +153,7 @@ void Msg_PushLine(REG(a0, const char* textPtr), REG(d0, UWORD length))
 /**
  * Pushes a message, provided it's not the same as the last, unless enough time has elapsed.
  */
-void Msg_PushLineDedupLast(REG(a0, const char* textPtr), REG(d0, UWORD length))
+void Msg_PushLineDedupLast(REG(a0, const char* textPtr), REG(d0, UWORD lengthAndTag))
 {
     if (
         textPtr != msg_Buffer.lastMessagePtr ||
@@ -148,7 +161,7 @@ void Msg_PushLineDedupLast(REG(a0, const char* textPtr), REG(d0, UWORD length))
     ) {
         msg_Buffer.nextDuplicateTickECV = Sys_FrameTimeECV_q[0];
         Sys_AddTime(&msg_Buffer.nextDuplicateTickECV, msg_Buffer.deduplicationPeriod);
-        Msg_PushLine(textPtr, length);
+        Msg_PushLine(textPtr, lengthAndTag);
         msg_Buffer.lastMessagePtr = textPtr;
     }
 }
@@ -180,11 +193,11 @@ void Msg_Render(void)
             Draw_ChunkyTextProp(
                 Vid_FastBufferPtr_l,
                 SCREEN_WIDTH,
-                msg_Buffer.lineLengths[nextLine],
+                msg_Buffer.lineLengths[nextLine] & MSG_LENGTH_MASK,
                 msg_Buffer.lineTextPtrs[nextLine],
                 4,
                 yPos,
-                255
+                msg_TagPens[msg_Buffer.lineLengths[nextLine] >> MSG_TAG_SHIFT]
             );
             yPos += DRAW_MSG_CHAR_H + 2;
         }

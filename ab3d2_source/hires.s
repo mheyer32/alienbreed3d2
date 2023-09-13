@@ -8183,7 +8183,7 @@ dosomething:
 				muls	#OPTS_MESSAGE_LENGTH,d0
 				add.l	#Game_SoundOptionsText_vb,d0
 				move.l	d0,a0
-				move.w	#OPTS_MESSAGE_LENGTH,d0
+				move.w	#OPTS_MESSAGE_LENGTH|MSG_TAG_OPTIONS,d0
 				CALLC	Msg_PushLine
 
 				move.b	d1,Prefsfile+1
@@ -8285,7 +8285,7 @@ OLDGOOD:			dc.w	0
 
 pastlighttext:
 				move.l	d0,a0
-				move.w	#OPTS_MESSAGE_LENGTH,d0
+				move.w	#OPTS_MESSAGE_LENGTH|MSG_TAG_OPTIONS,d0
 				CALLC	Msg_PushLine
 
 				bra		nolighttoggle2
@@ -8321,7 +8321,7 @@ noret2:
 				move.l	#Game_DrawLowQualityText_vb,d0
 .okgood:
 				move.l	d0,a0
-				move.w	#OPTS_MESSAGE_LENGTH,d0
+				move.w	#OPTS_MESSAGE_LENGTH|MSG_TAG_OPTIONS,d0
 				CALLC	Msg_PushLine
 
 				bra		.nogood2

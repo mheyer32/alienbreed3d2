@@ -167,7 +167,7 @@ ai_JustDied:
 				add.l	Lvl_DataPtr_l,d0
 				move.l	a0,-(sp)
 				move.l	d0,a0
-				move.w	#LVLT_MESSAGE_LENGTH,d0
+				move.w	#LVLT_MESSAGE_LENGTH|MSG_TAG_NARRATIVE,d0
 				CALLC	Msg_PushLine
 
 				move.l	(sp)+,a0

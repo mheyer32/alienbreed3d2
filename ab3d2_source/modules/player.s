@@ -699,7 +699,7 @@ plr_ShowGunName:
 				muls    #GLFT_GUN_NAME_LENGTH,d0
 				add.l   d0,a4
 				exg     a0,a4
-				move.w  #GLFT_GUN_NAME_LENGTH,d0
+				move.w  #GLFT_GUN_NAME_LENGTH|MSG_TAG_OTHER,d0
 				CALLC   Msg_PushLineDedupLast
 				move.l  a4,a0
 

@@ -410,7 +410,7 @@ Destructable:
 
 				move.l	a0,-(sp)
 				move.l	d0,a0
-				move.w	#LVLT_MESSAGE_LENGTH,d0
+				move.w	#LVLT_MESSAGE_LENGTH|MSG_TAG_NARRATIVE,d0
 				CALLC	Msg_PushLine
 
 				move.l	(sp)+,a0
@@ -548,7 +548,7 @@ Plr1_CollectItem:
 				add.l	Lvl_DataPtr_l,d0
 				move.l	a0,-(sp)
 				move.l	d0,a0
-				move.w	#LVLT_MESSAGE_LENGTH,d0
+				move.w	#LVLT_MESSAGE_LENGTH|MSG_TAG_NARRATIVE,d0
 				CALLC	Msg_PushLine
 				move.l	(sp)+,a0
 
@@ -565,7 +565,7 @@ Plr1_CollectItem:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_ObjectNames_l,d0
 				add.l	d0,a0
-				move.w	#GLFT_OBJ_NAME_LENGTH,d0
+				move.w	#GLFT_OBJ_NAME_LENGTH|MSG_TAG_DEFAULT,d0
 				CALLC	Msg_PushLine
 
 				move.l	(sp)+,a0
