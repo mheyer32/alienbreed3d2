@@ -15,10 +15,10 @@ extern UWORD Vid_LetterBoxMarginHeight_w;
 extern void* Lvl_DataPtr_l;
 
 static UBYTE msg_TagPens[4] = {
-	255, /* MSG_TAG_NARRATIVE - intense green */
-	254, /* MSG_TAG_DEFAULT - half green */
-	125, /* MSG_TAG_OPTIONS - grey-blue */
-	252  /* MSG_TAG_OTHER - half grey */
+    255, /* MSG_TAG_NARRATIVE - intense green */
+    254, /* MSG_TAG_DEFAULT - half green */
+    125, /* MSG_TAG_OPTIONS - grey-blue */
+    252  /* MSG_TAG_OTHER - half grey */
 };
 
 /**

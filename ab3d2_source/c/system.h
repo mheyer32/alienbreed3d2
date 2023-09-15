@@ -17,16 +17,24 @@ extern void Sys_FrameLap();
 // Warning: Sys_FatalError can only be called startup()
 extern void Sys_FatalError(REG(a0, const char* format), ...);
 
+static inline void* Sys_GetTemporaryWorkspace()
+{
+    extern ULONG Sys_Workspace_vl[];
+    return Sys_Workspace_vl;
+}
+
 /**
  * Check to see if a given time is greater than or equal to another
  */
-static inline BOOL Sys_CheckTimeGE(const struct EClockVal* now, const struct EClockVal* mark) {
+static inline BOOL Sys_CheckTimeGE(const struct EClockVal* now, const struct EClockVal* mark)
+{
     return now->ev_hi > mark->ev_hi || (
         now->ev_hi == mark->ev_hi && now->ev_lo >= mark->ev_lo
     );
 }
 
-static inline void Sys_AddTime(struct EClockVal* mark, ULONG ticks) {
+static inline void Sys_AddTime(struct EClockVal* mark, ULONG ticks)
+{
     *((uint64_t*)mark) += (uint64_t) ticks;
 }
 

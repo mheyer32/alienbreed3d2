@@ -7,7 +7,7 @@
 ; Memory class to use for next loaded entity
 IO_MemType_l:			ds.l	1
 
-; dos.llibrary file handle
+; dos.library file handle
 IO_DOSFileHandle_l:		ds.l	1
 
 ; Private stuff

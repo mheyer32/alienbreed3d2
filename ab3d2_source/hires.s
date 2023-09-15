@@ -178,6 +178,8 @@ _startup:
 				addq	#1,d0
 				dbra	d1,.fill_const
 
+				CALLC	Game_InitDefaults
+
 				jsr		Game_Start
 
 .startup_fail:
@@ -193,6 +195,7 @@ _startup:
 				; Include even in C version for assembly helpers
 				include		"modules/system.s"
 				include		"modules/message.s"
+				include		"modules/game_properties.s"
 
 				IFD MEMTRACK
 				include "modules/dev_memtrack.s"

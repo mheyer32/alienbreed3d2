@@ -23,7 +23,6 @@ extern void unLHA(REG(a0, void *dst), REG(d0, const void *src), REG(d1, ULONG le
                   REG(a2, void *X));
 
 /* Externally declared buffers */
-extern ULONG Sys_Workspace_vl[];
 extern const UBYTE draw_BorderPacked_vb[];
 extern UBYTE draw_BorderChars_vb[];
 static UBYTE draw_Border[SCREEN_WIDTH * SCREEN_HEIGHT];
@@ -162,7 +161,7 @@ BOOL Draw_Init()
 
     if (Vid_isRTG) {
         BitPlanes planes;
-        unLHA(Vid_FastBufferPtr_l, draw_BorderPacked_vb, 0, Sys_Workspace_vl, NULL);
+        unLHA(Vid_FastBufferPtr_l, draw_BorderPacked_vb, 0, Sys_GetTemporaryWorkspace(), NULL);
 
         for (int p = 0; p < SCREEN_DEPTH; ++p) {
             planes[p] = Vid_FastBufferPtr_l + PLANESIZE * p;
@@ -250,8 +249,8 @@ void Draw_ResetGameDisplay()
     /* Retrigger the counters */
     draw_ResetHUDCounters();
     if (!Vid_isRTG) {
-        unLHA(Vid_Screen1Ptr_l, draw_BorderPacked_vb, 0, Sys_Workspace_vl, NULL);
-        unLHA(Vid_Screen2Ptr_l, draw_BorderPacked_vb, 0, Sys_Workspace_vl, NULL);
+        unLHA(Vid_Screen1Ptr_l, draw_BorderPacked_vb, 0, Sys_GetTemporaryWorkspace(), NULL);
+        unLHA(Vid_Screen2Ptr_l, draw_BorderPacked_vb, 0, Sys_GetTemporaryWorkspace(), NULL);
         Draw_UpdateBorder_Planar();
     } else {
         LOCAL_CYBERGFX();

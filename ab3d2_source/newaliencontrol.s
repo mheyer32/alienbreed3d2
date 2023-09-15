@@ -5,7 +5,6 @@ AlienAnimPtr_l:	dc.l	0
 ALIENBRIGHT:	dc.w	0
 
 ItsAnAlien:
-
 				tst.b	AI_NoEnemies_b
 				beq.s	.NONASIES
 
@@ -23,15 +22,12 @@ ItsAnAlien:
 				rts
 
 .okalive:
-
 				move.l	Lvl_ZoneAddsPtr_l,a5
 				move.l	(a5,d2.w*4),d0
 				add.l	Lvl_DataPtr_l,d0
 				move.l	d0,objroom
-
 				move.l	d0,a6
 				move.b	ZoneT_Echo_b(a6),ALIENECHO
-
 				moveq	#0,d0
 				move.l	GLF_DatabasePtr_l,a6
 				move.l	a6,a5
@@ -43,17 +39,13 @@ ItsAnAlien:
 				muls	#A_AnimLen,d0
 				add.l	#GLFT_AlienAnims_l,a6
 				add.l	d0,a6
-
 				move.l	a6,AlienAnimPtr_l
-
 				move.l	GLF_DatabasePtr_l,a1
 				move.l	a1,a2
 				add.l	#GLFT_AlienShootDefs_l,a2
-
 				lea		GLFT_AlienDefs_l(a1),a1
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
-
 				move.l	(a2,d0.w*8),d1
 				asl.l	#7,d1
 				move.l	d1,SHOTYOFF
@@ -101,13 +93,12 @@ ItsAnObject:
 				move.b	EntT_Type_b(a0),d0
 				muls	#ObjT_SizeOf_l,d0
 				add.w	d0,a1					; pointer to obj stats.
-
 				move.l	a1,StatPointer
-
 				move.w	(a1),d0
 				cmp.w	#1,d0
 				blt		Collectable
 				beq		Activatable
+
 				cmp.w	#3,d0
 				blt		Destructable
 				beq		Decoration
@@ -117,14 +108,12 @@ ItsAnObject:
 GUNHELD:
 
 ; This is a player gun in his hand.
-
 				move.l	a1,a2
 				jsr		ACTANIMOBJ
 
 				rts
 
 Collectable:
-
 				move.w	12(a0),d0
 				bge.s	.okinroom
 				rts
@@ -201,7 +190,6 @@ Collectable:
 				rts
 
 Activatable:
-
 				move.w	12(a0),d0
 				bge.s	.okinroom
 				rts
@@ -328,8 +316,7 @@ ACTIVATED:
 				beq.s	.okinbot
 				move.l	ZoneT_UpperFloor_l(a1),d0
 .okinbot:
-.onceiling
-
+.onceiling:
 				asr.l	#7,d0
 				move.w	d0,4(a0)
 

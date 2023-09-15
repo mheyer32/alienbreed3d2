@@ -41,5 +41,9 @@ anim_DoorHeightTable_vw:	ds.w	40 ; newanims.s
 
 Obj_RoomPath_vw:			ds.w	100 ; objmove.s
 
+_game_ModProperties::
+game_ModProperties:
+                        ds.w    GModT_SizeOf_l
+
 _KeyMap_vb::
 KeyMap_vb:				ds.b	256
