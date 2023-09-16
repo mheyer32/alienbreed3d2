@@ -132,36 +132,35 @@ Collectable:
 				tst.b	ShotT_Worry_b(a0)
 				bne.s	.worryaboot
 				rts
-.worryaboot:
 
+.worryaboot:
 				and.b	#$80,ShotT_Worry_b(a0)
 				move.l	a1,a2
-
 				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
 				add.l	Lvl_DataPtr_l,a1
-
 				tst.w	ObjT_FloorCeiling_w(a2)
 				beq.s	.onfloor
+
 				move.l	ZoneT_Roof_l(a1),d0
 				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.okinbotc
+
 				move.l	ZoneT_UpperRoof_l(a1),d0
 .okinbotc:
-
 				bra.s	.onceiling
 
-.onfloor
+.onfloor:
 				move.l	ZoneT_Floor_l(a1),d0
 				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.okinbot
-				move.l	ZoneT_UpperFloor_l(a1),d0
-.okinbot:
-.onceiling
 
+				move.l	ZoneT_UpperFloor_l(a1),d0
+
+.okinbot:
+.onceiling:
 				asr.l	#7,d0
 				move.w	d0,4(a0)
-
 				bsr		DEFANIMOBJ
 
 				bsr		Plr1_CheckObjectCollide
@@ -172,8 +171,7 @@ Collectable:
 				move.w	#-1,12(a0)
 				clr.b	ShotT_Worry_b(a0)
 
-.NotCollected1
-
+.NotCollected1:
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq.s	.NotCollected2
 				bsr		Plr2_CheckObjectCollide
@@ -184,9 +182,7 @@ Collectable:
 				move.w	#-1,12(a0)
 				clr.b	ShotT_Worry_b(a0)
 
-.NotCollected2
-
-
+.NotCollected2:
 				rts
 
 Activatable:
@@ -524,7 +520,10 @@ intodeco:
 
 				rts
 
+; TODO - Generalise and factor into player.s
 Plr1_CollectItem:
+                ; TODO - Check Game_CheckItemCollect() and bail on false
+
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.nodeftext
 
@@ -569,6 +568,8 @@ Plr1_CollectItem:
 				add.w	d1,a2
 				add.w	d0,a3
 
+; TODO - factor this out into Game_AddToPlayerInventory()
+
 ; Check if player has max of all ammo types:
 
 ;				bsr		CHECKPLAYERGOT
@@ -588,6 +589,7 @@ Plr1_CollectItem:
 				move.w	(a2)+,d1
 				or.w	d1,(a1)+
 				dbra	d0,.add_weapons
+
 
 				move.l	GLF_DatabasePtr_l,a3
 				add.l	#GLFT_ObjectDefs,a3

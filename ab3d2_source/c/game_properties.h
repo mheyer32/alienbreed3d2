@@ -27,4 +27,12 @@ typedef struct {
 
 extern void Game_InitDefaults(void);
 
+/**
+ * Checks if an item can be collected.
+ */
+extern BOOL Game_CheckItemCollect(
+    REG(a0, const Game_InventoryLimits* playerInventory),
+    REG(a1, const Game_InventoryLimits* itemInventory)
+);
+
 #endif // MESSAGE_H
