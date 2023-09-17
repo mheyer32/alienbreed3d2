@@ -12,7 +12,7 @@
 #define GAME_UNCAPPED_LIMIT 32767
 
 typedef struct {
-    CollectableCounts gmp_MaxCollectableCounts;
+    InventoryConsumables gmp_MaxInventoryConsumables;
     /** TODO other things here ... */
 } Game_ModProperties;
 
@@ -25,20 +25,27 @@ extern void Game_InitDefaults(void);
  *
  * 1. itemInventory contains an item (weapon, shield, jetpack) that the playerInventory does not have.
  * 2. itemInventory provides ammunition that the playerInventory has less than the limits defined
- *    by the game mod properties in gmp_MaxCollectableCounts
+ *    by the game mod properties in gmp_MaxInventoryConsumables
  *
+ * Note that the consumables and items provided by an entiity are stored in separate arrays in the GLF data, so
+ * this function requires pointers to each.
  */
-extern BOOL Game_CheckItemCollect(
-    REG(a0, const Inventory* playerInventory),
-    REG(a1, const Inventory* itemInventory)
+extern BOOL Game_CheckCanCollect(
+    REG(a0, const Inventory*            inventory),
+    REG(a1, const InventoryConsumables* consumables),
+    REG(a2, const InventoryItems*       items)
 );
 
 /**
- * Add to the player Inventory, respecting the limits set in Game_ModProperties.gmp_MaxCollectableCounts
+ * Add to the player Inventory, respecting the limits set in Game_ModProperties.gmp_MaxInventoryConsumables.
+ *
+ * Note that the consumables and items provided by an entiity are stored in separate arrays in the GLF data, so
+ * this function requires pointers to each.
  */
-extern void Game_AddToPlayerInventory(
-    REG(a0, Inventory* playerInventory),
-    REG(a1, const Inventory* itemInventory)
+extern void Game_AddToInventory(
+    REG(a0, Inventory*                  inventory),
+    REG(a1, const InventoryConsumables* consumables),
+    REG(a2, const InventoryItems*       items)
 );
 
-#endif // MESSAGE_H
+#endif // GAME_PROPERTIES_H

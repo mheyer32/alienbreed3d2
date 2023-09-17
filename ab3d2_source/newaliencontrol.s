@@ -522,8 +522,19 @@ intodeco:
 
 ; TODO - Generalise and factor into player.s
 Plr1_CollectItem:
-                ; TODO - Check Game_CheckItemCollect() and bail on false
+; TODO - Check Game_CheckItemCollect() and bail on false
 
+;				IFD BUILD_WITH_C
+;
+;				movem.l	a0/a1/a2,-(sp)
+;				CALLC	Game_CheckCanCollect
+;				movem.l	(sp)+,a0/a1/a2
+;
+;				tst.w	d0
+;				bne.s	.can_collect
+;               ENDIF
+
+.can_collect:
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.nodeftext
 

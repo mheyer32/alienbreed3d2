@@ -21,28 +21,21 @@
 #define NUM_SFX             64
 #define NUM_WALL_TEXTURES   16
 
-/**
- * Collectable Counts
- *
- * This structure is used in many larger aggregates
- */
 typedef struct {
-    UWORD cc_Health;
-    UWORD cc_JetpackFuel;
-    UWORD cc_AmmoCounts[NUM_BULLET_DEFS];
-}  __attribute__((packed)) CollectableCounts;
+    UWORD ic_Health;
+    UWORD ic_JetpackFuel;
+    UWORD ic_AmmoCounts[NUM_BULLET_DEFS];
+}  __attribute__((packed)) InventoryConsumables;
 
-/**
- * Inventory
- *
- * Used by player and collectable items
- */
 typedef struct {
-    /* For compatibility with the assembler code, there must be no alignment gaps */
-    CollectableCounts inv_Counts;
-    UWORD inv_Shield;
-    UWORD inv_Jetpack;
-    UWORD inv_Weapons[NUM_GUN_DEFS];
+    UWORD ii_Shield;
+    UWORD ii_Jetpack;
+    UWORD ii_Weapons[NUM_GUN_DEFS];
+} __attribute__((packed)) InventoryItems;
+
+typedef struct {
+    InventoryConsumables inv_Consumables;
+	InventoryItems       inv_Items;
 } __attribute__((packed)) Inventory;
 
 
