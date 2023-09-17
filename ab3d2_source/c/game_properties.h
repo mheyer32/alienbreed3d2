@@ -11,28 +11,34 @@
 #define GAME_DEFAULT_FUEL_LIMIT 250
 #define GAME_UNCAPPED_LIMIT 32767
 
-/**
- * @see defs.i / STRUCTURE PlrT
- */
 typedef struct {
-    UWORD maxHealth;
-    UWORD maxJetpackFuel;
-    UWORD maxAmmoCounts[NUM_BULLET_DEFS];
-} Game_InventoryLimits;
-
-typedef struct {
-    Game_InventoryLimits invLimits;
+    CollectableCounts gmp_MaxCollectableCounts;
     /** TODO other things here ... */
 } Game_ModProperties;
 
 extern void Game_InitDefaults(void);
 
 /**
- * Checks if an item can be collected.
+ * Checks if an item can be collected based on the players inventory state and the items Inventory.
+ *
+ * Returns true when:
+ *
+ * 1. itemInventory contains an item (weapon, shield, jetpack) that the playerInventory does not have.
+ * 2. itemInventory provides ammunition that the playerInventory has less than the limits defined
+ *    by the game mod properties in gmp_MaxCollectableCounts
+ *
  */
 extern BOOL Game_CheckItemCollect(
-    REG(a0, const Game_InventoryLimits* playerInventory),
-    REG(a1, const Game_InventoryLimits* itemInventory)
+    REG(a0, const Inventory* playerInventory),
+    REG(a1, const Inventory* itemInventory)
+);
+
+/**
+ * Add to the player Inventory, respecting the limits set in Game_ModProperties.gmp_MaxCollectableCounts
+ */
+extern void Game_AddToPlayerInventory(
+    REG(a0, Inventory* playerInventory),
+    REG(a1, const Inventory* itemInventory)
 );
 
 #endif // MESSAGE_H
