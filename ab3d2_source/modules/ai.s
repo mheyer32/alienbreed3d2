@@ -1924,11 +1924,11 @@ ai_DoAttackAnim:
 				add.l	#GLFT_ObjectDefs,a2
 				move.w	d3,d4
 				muls	#O_AnimSize,d3
-				muls	#ObjT_SizeOf_l,d4
+				muls	#ODefT_SizeOf_l,d4
 				add.l	d4,a2
 				add.l	d3,a4
 				muls	#O_FrameStoreSize,d0
-				cmp.w	#1,ObjT_GFXType_w(a2)
+				cmp.w	#1,ODefT_GFXType_w(a2)
 				blt.s	.bitmap
 				beq.s	.vector
 

@@ -3086,10 +3086,10 @@ Plr1_Use:
 				move.w	EntT_CurrentAngle_w(a0),d0
 				add.w	#4096,d0
 				and.w	#8190,d0
-				move.w	d0,EntT_CurrentAngle_w+128(a0)
+				move.w	d0,EntT_CurrentAngle_w+ENT_NEXT_2(a0)
 
-				move.w	(a1),12+128(a0)
-				move.w	(a1),EntT_GraphicRoom_w+128(a0)
+				move.w	(a1),ObjT_ZoneID_w+ENT_NEXT_2(a0)
+				move.w	(a1),EntT_GraphicRoom_w+ENT_NEXT_2(a0)
 
 				moveq	#0,d0
 				move.b	Plr1_TmpGunSelected_b,d0
@@ -3098,16 +3098,16 @@ Plr1_Use:
 				add.l	#GLFT_GunObjects_l,a1
 				move.w	(a1,d0.w*2),d0
 
-				move.b	d0,EntT_Type_b+128(a0)
+				move.b	d0,EntT_Type_b+ENT_NEXT_2(a0)
 				move.b	#1,128+16(a0)
 
 				move.w	(a0),d0
-				move.w	128(a0),d1
+				move.w	ENT_NEXT_2(a0),d1
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.l	(a1,d0.w*8),(a1,d1.w*8)
 				move.l	4(a1,d0.w*8),4(a1,d1.w*8)
 
-				st		EntT_WhichAnim_b+128(a0)
+				st		EntT_WhichAnim_b+ENT_NEXT_2(a0)
 
 				move.l	Plr1_TmpYOff_l,d0
 				move.l	plr1_TmpHeight_l,d1
@@ -3115,14 +3115,14 @@ Plr1_Use:
 				add.l	#10*128,d1
 				add.l	d1,d0
 				asr.l	#7,d0
-				move.w	d0,4+128(a0)
+				move.w	d0,4+ENT_NEXT_2(a0)
 				move.l	plr1_BobbleY_l,d1
 				asr.l	#8,d1
 				move.l	d1,d0
 				asr.l	#1,d0
 				add.l	d0,d1
-				add.w	d1,4+128(a0)
-				move.b	ShotT_InUpperZone_b(a0),ShotT_InUpperZone_b+128(a0)
+				add.w	d1,4+ENT_NEXT_2(a0)
+				move.b	ShotT_InUpperZone_b(a0),ShotT_InUpperZone_b+ENT_NEXT_2(a0)
 				rts
 
 
@@ -3176,7 +3176,7 @@ Plr2_Use:
 				move.b	#10,EntT_NumLives_b(a0)
 				move.w	Plr2_TmpAngPos_w,EntT_CurrentAngle_w(a0)
 				move.b	Plr2_StoodInTop_b,ShotT_InUpperZone_b(a0)
-				move.w	(a1),12(a0)
+				move.w	(a1),ObjT_ZoneID_w(a0)
 				move.w	(a1),d2
 				move.l	#Zone_BrightTable_vl,a1
 				move.l	(a1,d2.w*4),d2
@@ -3233,7 +3233,7 @@ Plr2_Use:
 
 				move.b	Plr1_StoodInTop_b,ShotT_InUpperZone_b(a0)
 
-				move.w	(a1),12(a0)
+				move.w	(a1),ObjT_ZoneID_w(a0)
 				move.w	(a1),d2
 				move.l	#Zone_BrightTable_vl,a1
 				move.l	(a1,d2.w*4),d2
@@ -3350,10 +3350,10 @@ Plr2_Use:
 				move.w	EntT_CurrentAngle_w(a0),d0
 				add.w	#4096,d0
 				and.w	#8190,d0
-				move.w	d0,EntT_CurrentAngle_w+64(a0)
+				move.w	d0,EntT_CurrentAngle_w+ENT_NEXT(a0)
 
-				move.w	(a1),12+64(a0)
-				move.w	(a1),EntT_GraphicRoom_w+64(a0)
+				move.w	(a1),ObjT_ZoneID_w+ENT_NEXT(a0)
+				move.w	(a1),EntT_GraphicRoom_w+ENT_NEXT(a0)
 
 				moveq	#0,d0
 				move.b	Plr2_TmpGunSelected_b,d0
@@ -3362,16 +3362,16 @@ Plr2_Use:
 				add.l	#GLFT_GunObjects_l,a1
 				move.w	(a1,d0.w*2),d0
 
-				move.b	d0,EntT_Type_b+64(a0)
+				move.b	d0,EntT_Type_b+ENT_NEXT(a0)
 				move.b	#1,64+16(a0)
 
 				move.w	(a0),d0
-				move.w	64(a0),d1
+				move.w	ENT_NEXT(a0),d1
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.l	(a1,d0.w*8),(a1,d1.w*8)
 				move.l	4(a1,d0.w*8),4(a1,d1.w*8)
 
-				st		EntT_WhichAnim_b+64(a0)
+				st		EntT_WhichAnim_b+ENT_NEXT(a0)
 
 				move.l	Plr2_TmpYOff_l,d0
 				move.l	plr2_TmpHeight_l,d1
@@ -3379,15 +3379,15 @@ Plr2_Use:
 				add.l	#10*128,d1
 				add.l	d1,d0
 				asr.l	#7,d0
-				move.w	d0,4+64(a0)
+				move.w	d0,4+ENT_NEXT(a0)
 				move.l	plr2_BobbleY_l,d1
 				asr.l	#8,d1
 				move.l	d1,d0
 				asr.l	#1,d0
 				add.l	d0,d1
-				add.w	d1,4+64(a0)
+				add.w	d1,4+ENT_NEXT(a0)
 
-				move.b	ShotT_InUpperZone_b(a0),ShotT_InUpperZone_b+64(a0)
+				move.b	ShotT_InUpperZone_b(a0),ShotT_InUpperZone_b+ENT_NEXT(a0)
 
 				rts
 

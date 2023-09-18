@@ -1772,8 +1772,8 @@ checkcol:
 				add.l	#GLFT_ObjectDefs,a4
 				moveq	#0,d1
 				move.b	EntT_Type_b(a0),d1
-				muls	#ObjT_SizeOf_l,d1
-				cmp.w	#2,ObjT_Behaviour_w(a4,d1.w)
+				muls	#ODefT_SizeOf_l,d1
+				cmp.w	#2,ODefT_Behaviour_w(a4,d1.w)
 				blt		checkcol
 				bgt		.ycol
 

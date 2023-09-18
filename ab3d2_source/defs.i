@@ -165,7 +165,7 @@ NUM_WALL_TEXTURES	EQU 16
 		UWORD ShootT_SFX_w				; 6, 2
 		LABEL ShootT_SizeOf_l			; 8
 
-	; Alien Defs
+	; Alien Data Definition
 	STRUCTURE AlienT,0
 		UWORD AlienT_GFXType_w				;  0, 2
 		UWORD AlienT_DefaultBehaviour_w		;  2, 2
@@ -190,32 +190,50 @@ NUM_WALL_TEXTURES	EQU 16
 		UWORD AlienT_Auxilliary_w			; 40, 2
 		LABEL AlienT_SizeOf_l				; 42
 
-	; Object Definition
-	STRUCTURE ObjT,0
-		UWORD ObjT_Behaviour_w		;  0, 2
-		UWORD ObjT_GFXType_w		;  2, 2
-		UWORD ObjT_ActiveTimeout_w	;  4, 2
-		UWORD ObjT_HitPoints_w		;  6, 2
-		UWORD ObjT_ExplosiveForce_w	;  8, 2 unused
-		UWORD ObjT_Impassible_w		; 10, 2 unused
-		UWORD ObjT_DefaultAnimLen_w	; 12, 2 unused
-		UWORD ObjT_CollideRadius_w	; 14, 2
-		UWORD ObjT_CollideHeight_w	; 16, 2
-		UWORD ObjT_FloorCeiling_w	; 18, 2
-		UWORD ObjT_LockToWall_w		; 20, 2 unused
-		UWORD ObjT_ActiveAnimLen_w	; 22, 2 unused
-		UWORD ObjT_SFX_w			; 24, 2
+	; Object Data Definition
+	STRUCTURE ODefT,0
+		UWORD ODefT_Behaviour_w		;  0, 2
+		UWORD ODefT_GFXType_w		;  2, 2
+		UWORD ODefT_ActiveTimeout_w	;  4, 2
+		UWORD ODefT_HitPoints_w		;  6, 2
+		UWORD ODefT_ExplosiveForce_w	;  8, 2 unused
+		UWORD ODefT_Impassible_w		; 10, 2 unused
+		UWORD ODefT_DefaultAnimLen_w	; 12, 2 unused
+		UWORD ODefT_CollideRadius_w	; 14, 2
+		UWORD ODefT_CollideHeight_w	; 16, 2
+		UWORD ODefT_FloorCeiling_w	; 18, 2
+		UWORD ODefT_LockToWall_w		; 20, 2 unused
+		UWORD ODefT_ActiveAnimLen_w	; 22, 2 unused
+		UWORD ODefT_SFX_w			; 24, 2
 		PADDING 14					; 26, 14
-		LABEL ObjT_SizeOf_l			; 40
+		LABEL ODefT_SizeOf_l			; 40
 
 	; Runtime objects are 64 byte structures. The first 18 bytes are common, but the remainder depend on what the type
 	; of the object is, e.g. decoration, bullet, alien, collectable etc.
 
-	; Extended data for AI entities
-	; TODO - move this to a .i definition file for the AI module
-	;      - Can this be reorganised ?
-	STRUCTURE EntT,18
-		; TODO - what are offsets 0-17 ?
+OBJ_TYPE_ALIEN EQU 0
+OBJ_TYPE_OBJECT EQU 1
+OBJ_TYPE_PROJECTILE EQU 2
+
+	STRUCTURE ObjT,0
+		; TODO work out what the hidden data are.
+		ULONG ObjT_XPos_l			; 0, 4 - To be confirmed
+		ULONG ObjT_ZPos_l 			; 4, 4 - To be confirmed
+		ULONG ObjT_YPos_l 			; 8, 4 - To be confirmed
+
+		UWORD ObjT_ZoneID_w			; 12, 2 - Zone where the object is located, or -1 if it's been removed
+		PADDING 2					; 2     - Unknown
+		UBYTE ObjT_TypeID_b			; 16    - Defines the type (alien, bullet, object etc.)
+		PADDING 1					; 17    - Unknown
+		LABEL ObjT_Header_SizeOf_l	; 18    - After here, the remaining structure depends on ObjT_TypeID_b
+		PADDING 46
+		LABEL ObjT_SizeOf_l			; 64
+
+OBJ_PREV	EQU (-ObjT_SizeOf_l)	; object before current
+OBJ_NEXT	EQU	ObjT_SizeOf_l		; object after current
+
+	; Runtime entity extension for ObjT
+	STRUCTURE EntT,ObjT_Header_SizeOf_l
 		UBYTE EntT_NumLives_b				; 18, 1
 		UBYTE EntT_DamageTaken_b			; 19, 1
 		UBYTE EntT_CurrentMode_b			; 20, 1
@@ -249,9 +267,8 @@ ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
 
 		; There must be data belonging to the entity after this point at least as far as 162
 
-	; Shot Definition
-	STRUCTURE ShotT,18
-		; TODO - what are offsets 0-17 ?
+	; Runtime projectile extension for ObjT
+	STRUCTURE ShotT,ObjT_Header_SizeOf_l
 		UWORD ShotT_VelocityX_w		; 18, 2
 		PADDING 2           		; 20, 2
 		UWORD ShotT_VelocityZ_w		; 22, 2
@@ -335,7 +352,7 @@ GLFT_BUL_NAME_LENGTH EQU 20
 		STRUCT GLFT_AlienDefs_l,(NUM_ALIEN_DEFS*AlienT_SizeOf_l)
 		STRUCT GLFT_FrameData_l,7680 								; todo - figure out how this is derived
 		STRUCT GLFT_ObjectNames_l,(NUM_OBJECT_DEFS*GLFT_OBJ_NAME_LENGTH)
-		STRUCT GLFT_ObjectDefs,(NUM_OBJECT_DEFS*ObjT_SizeOf_l)
+		STRUCT GLFT_ObjectDefs,(NUM_OBJECT_DEFS*ODefT_SizeOf_l)
 		STRUCT GLFT_ObjectDefAnims_l,(NUM_OBJECT_DEFS*O_AnimSize)
 		STRUCT GLFT_ObjectActAnims_l,(NUM_OBJECT_DEFS*O_AnimSize)
 		STRUCT GLFT_AmmoGive_l,(NUM_OBJECT_DEFS*AmmoGiveLen)		; ammo given per (collectable) object

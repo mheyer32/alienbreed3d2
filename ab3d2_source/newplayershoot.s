@@ -66,7 +66,7 @@ Plr1_Shot:
 				tst.w	(a0)
 				blt		.out_of_line
 
-				cmp.b	#3,16(a0) ; ??? ObjT_CollideHeight_w / AlienT_DamageToFollowup_w
+				cmp.b	#3,16(a0) ; ??? ODefT_CollideHeight_w / AlienT_DamageToFollowup_w
 				beq		.not_lined_up
 
 				tst.b	(a1)+
@@ -75,7 +75,7 @@ Plr1_Shot:
 				btst	#0,17(a0) ; ???
 				beq.s	.not_lined_up
 
-				tst.w	12(a0) ; ??? ObjT_DefaultAnimLen_w / AlienT_ResponseTimeout_w
+				tst.w	12(a0) ; ??? ODefT_DefaultAnimLen_w / AlienT_ResponseTimeout_w
 				blt.s	.not_lined_up
 
 				move.b	16(a0),d6

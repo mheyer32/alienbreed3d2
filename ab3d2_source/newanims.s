@@ -612,10 +612,10 @@ Anim_ExplodeIntoBits:
 				move.w	#19,d1
 
 .findeight:
-				move.w	12(a5),d0
+				move.w	ObjT_ZoneID_w(a5),d0
 				blt.s	.gotonehere
 
-				adda.w	#64,a5
+				adda.w	#ObjT_SizeOf_l,a5
 				dbra	d1,.findeight
 
 				rts
@@ -662,8 +662,8 @@ Anim_ExplodeIntoBits:
 				neg.w	d0
 				move.w	d0,ShotT_VelocityY_w(a5)
 				move.l	#0,EntT_EnemyFlags_l(a5)
-				move.w	12(a0),12(a5)
-				move.w	4(a0),d0
+				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w(a5)
+				move.w	4(a0),d0 ; what is this ?
 				move.w	d0,4(a5)
 				add.w	#6,d0
 				ext.l	d0
@@ -1745,12 +1745,18 @@ ObjectHandler:
 				move.l	Lvl_ObjectDataPtr_l,a0
 
 Objectloop:
-				; object list is null terminated
+				; object list is -1 terminated
 				tst.w	(a0)
 				blt		doneallobj
 
-				move.w	12(a0),EntT_GraphicRoom_w(a0)
-				move.b	16(a0),d0
+				move.w	ObjT_ZoneID_w(a0),EntT_GraphicRoom_w(a0)
+
+				; All the object classes test if ObjT_ZoneID_w is negative and skip, so we can just do that here to
+				; have a bit less branching
+				blt		doneobj
+
+				; Jump to the appropriate handler
+				move.b	ObjT_TypeID_b(a0),d0
 				cmp.b	#1,d0
 
 				blt		JUMPALIEN
@@ -1762,7 +1768,7 @@ Objectloop:
 
 doneobj:
 dontworryyourprettyhead:
-				adda.w	#EntT_SizeOf_l,a0
+				adda.w	#ObjT_SizeOf_l,a0
 				add.l	#8,WorkspacePtr_l
 				add.l	#2,AI_DamagePtr_l
 				add.l	#8,AI_BoredomPtr_l
@@ -1772,7 +1778,7 @@ doneallobj:
 				rts
 
 JUMPALIEN:
-				tst.w	12(a0)
+				tst.w	ObjT_ZoneID_w(a0)
 				blt.s	.dontworry
 
 				tst.b	EntT_NumLives_b(a0)
@@ -1786,17 +1792,18 @@ JUMPALIEN:
 				beq		.dontworry
 				jsr		ItsAnAlien
 
-				tst.w	12-64(a0)
-				blt.s	.notanaux
-				move.w	12(a0),12-64(a0)
-				move.w	12(a0),EntT_GraphicRoom_w-64(a0)
+				tst.w	ObjT_ZoneID_w-ObjT_SizeOf_l(a0)
+				blt.s	.not_auxilliary_object
 
-.notanaux:
+				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w-ObjT_SizeOf_l(a0)
+				move.w	ObjT_ZoneID_w(a0),EntT_GraphicRoom_w-ObjT_SizeOf_l(a0)
+
+.not_auxilliary_object:
 .dontworry:
 				bra		doneobj
 
 JUMPOBJECT:
-				tst.w	12(a0)
+				tst.w	ObjT_ZoneID_w(a0)
 				blt.s	.dontworry
 
 				jsr		ItsAnObject
@@ -1857,19 +1864,20 @@ notdoneflame:
 				move.l	AI_AlienShotDataPtr_l,a5
 				move.w	#19,d1
 
+				; Walk the list of objects looking for one that's free (is not assigned to a zone)
 .findonefree:
-				move.w	12(a5),d0
+				move.w	ObjT_ZoneID_w(a5),d0
 				blt.s	.foundonefree
 
-				adda.w	#64,a5
+				adda.w	#ObjT_SizeOf_l,a5
 				dbra	d1,.findonefree
 
 				rts
 
 .foundonefree:
-				move.b	#2,16(a5)
-				move.w	12(a0),12(a5)
-				move.w	4(a0),d0
+				move.b	#2,ObjT_TypeID_b(a5) ; setting the type here
+				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w(a5)
+				move.w	4(a0),d0 ; positional data?
 				sub.w	#80,d0
 				move.w	d0,4(a5)
 				ext.l	d0
@@ -1925,7 +1933,7 @@ anim_Brightness_w:		dc.w	0
 
 ItsABullet:
 				move.b	#0,timeout
-				move.w	12(a0),d0
+				move.w	ObjT_ZoneID_w(a0),d0
 				move.w	d0,EntT_GraphicRoom_w(a0)
 				blt		doneshot
 
@@ -2004,7 +2012,7 @@ noworrylife:
 				cmp.w	BulT_PopFrames_l+2(a6),d2
 				ble.s	notdonepopping
 
-				move.w	#-1,12(a0)
+				move.w	#-1,ObjT_ZoneID_w(a0)
 				move.w	#-1,EntT_GraphicRoom_w(a0)
 				clr.b	ShotT_Status_b(a0)
 				move.b	#0,ShotT_Anim_b(a0)
@@ -2025,7 +2033,7 @@ notdonepopping:
 				ext.l	d3
 				asl.l	#7,d3
 				move.l	d3,Anim_BrightY_l
-				move.w	12(a0),d3
+				move.w	ObjT_ZoneID_w(a0),d3
 				jsr		anim_BrightenPoints
 
 .nobright:
@@ -2415,7 +2423,7 @@ nomovebul:
 
 lab:
 				move.l	objroom,a3
-				move.w	(a3),12(a0)
+				move.w	(a3),ObjT_ZoneID_w(a0)
 				move.w	(a3),EntT_GraphicRoom_w(a0)
 				move.l	newx,(a1)
 				move.l	newz,4(a1)
@@ -2500,7 +2508,7 @@ notasplut:
 				tst.w	(a3)
 				blt		.checkedall
 
-				tst.w	12(a3)
+				tst.w	ObjT_ZoneID_w(a3)
 				blt		.notanasty
 
 				move.b	ShotT_InUpperZone_b(a0),d1
@@ -2520,8 +2528,8 @@ notasplut:
 				move.l	GLF_DatabasePtr_l,a4
 				add.l	#GLFT_ObjectDefs,a4
 				move.b	EntT_Type_b(a3),d1
-				muls	#ObjT_SizeOf_l,d1
-				cmp.w	#2,ObjT_Behaviour_w(a4,d1.w)
+				muls	#ODefT_SizeOf_l,d1
+				cmp.w	#2,ODefT_Behaviour_w(a4,d1.w)
 				bne		.notanasty
 
 .notanobj:
@@ -2803,21 +2811,21 @@ ComputeBlast:
 				add.l	Lvl_DataPtr_l,a2
 				move.l	a2,anim_MiddleRoom_l
 				move.l	Lvl_ObjectDataPtr_l,a2
-				suba.w	#64,a2
+				suba.w	#ObjT_SizeOf_l,a2
 				ext.l	d6
 				move.l	a0,-(a7)
 
 HitObjLoop:
 				move.l	anim_MiddleRoom_l,FromRoom
-				add.w	#64,a2
+				add.w	#ObjT_SizeOf_l,a2
 				move.w	(a2),d0
 				blt		CheckedEmAll
 
-				tst.w	12(a2)
+				tst.w	ObjT_ZoneID_w(a2)
 				blt.s	HitObjLoop
 
 				moveq	#0,d1
-				move.b	16(a2),d1
+				move.b	ObjT_TypeID_b(a2),d1
 				cmp.b	#1,d1
 				beq.s	HitObjLoop
 
@@ -2844,7 +2852,7 @@ HitObjLoop:
 				beq.s	HitObjLoop
 
 .okblast:
-				move.w	12(a2),d1
+				move.w	ObjT_ZoneID_w(a2),d1
 				move.l	Lvl_ZoneAddsPtr_l,a3
 				move.l	(a3,d1.w*4),a3
 				add.l	Lvl_DataPtr_l,a3
@@ -2954,7 +2962,7 @@ okdamage:
 ; asl.l #2,d1
 				divs	d7,d0
 				divs	d7,d1
-				move.b	16(a2),d2
+				move.b	ObjT_TypeID_b(a2),d2
 				cmp.b	#2,d2
 				bne.s	.impactalien
 
@@ -3029,10 +3037,10 @@ DOFLAMES:
 				move.w	NUMTOCHECK,d1
 
 .findonefree:
-				move.w	12(a3),d2
+				move.w	ObjT_ZoneID_w(a3),d2
 				blt.s	.foundonefree
 
-				adda.w	#64,a3
+				adda.w	#ObjT_SizeOf_l,a3
 				dbra	d1,.findonefree
 
 				rts

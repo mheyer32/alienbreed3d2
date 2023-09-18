@@ -90,7 +90,7 @@ ItsAnObject:
 				lea		GLFT_ObjectDefs(a1),a1
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
-				muls	#ObjT_SizeOf_l,d0
+				muls	#ODefT_SizeOf_l,d0
 				add.w	d0,a1					; pointer to obj stats.
 				move.l	a1,StatPointer
 				move.w	(a1),d0
@@ -140,7 +140,7 @@ Collectable:
 				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
 				add.l	Lvl_DataPtr_l,a1
-				tst.w	ObjT_FloorCeiling_w(a2)
+				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
 				move.l	ZoneT_Roof_l(a1),d0
@@ -219,7 +219,7 @@ Activatable:
 				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
 				add.l	Lvl_DataPtr_l,a1
-				tst.w	ObjT_FloorCeiling_w(a2)
+				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
 				move.l	ZoneT_Roof_l(a1),d0
@@ -298,7 +298,7 @@ ACTIVATED:
 				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
 				add.l	Lvl_DataPtr_l,a1
-				tst.w	ObjT_FloorCeiling_w(a2)
+				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
 				move.l	ZoneT_Roof_l(a1),d0
@@ -324,7 +324,7 @@ ACTIVATED:
 
 				move.w	Anim_TempFrames_w,d0
 				add.w	d0,EntT_Timer2_w(a0)
-				move.w	ObjT_ActiveTimeout_w(a2),d0
+				move.w	ODefT_ActiveTimeout_w(a2),d0
 				blt.s	.nottimeout
 
 				cmp.w	EntT_Timer2_w(a0),d0
@@ -372,11 +372,11 @@ Destructable:
 				add.l	#GLFT_ObjectDefs,a3
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
-				muls	#ObjT_SizeOf_l,d0
+				muls	#ODefT_SizeOf_l,d0
 				add.l	d0,a3
 				moveq	#0,d0
 				move.b	EntT_DamageTaken_b(a0),d0
-				cmp.w	ObjT_HitPoints_w(a3),d0
+				cmp.w	ODefT_HitPoints_w(a3),d0
 				blt		StillHere
 
 				tst.b	EntT_NumLives_b(a0)
@@ -417,7 +417,7 @@ Destructable:
 				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
 				add.l	Lvl_DataPtr_l,a1
-				tst.w	ObjT_FloorCeiling_w(a2)
+				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
 				move.l	ZoneT_Roof_l(a1),d0
@@ -495,7 +495,7 @@ intodeco:
 				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
 				add.l	Lvl_DataPtr_l,a1
-				tst.w	ObjT_FloorCeiling_w(a2)
+				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
 				move.l	ZoneT_Roof_l(a1),d0
@@ -610,9 +610,9 @@ Plr1_CollectItem:
 				add.l	#GLFT_ObjectDefs,a3
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
-				muls	#ObjT_SizeOf_l,d0
+				muls	#ODefT_SizeOf_l,d0
 				add.l	d0,a3
-				move.w	ObjT_SFX_w(a3),d0
+				move.w	ODefT_SFX_w(a3),d0
 				blt.s	.nosoundmake
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -668,10 +668,10 @@ Plr2_CollectItem:
 				add.l	#GLFT_ObjectDefs,a3
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
-				muls	#ObjT_SizeOf_l,d0
+				muls	#ODefT_SizeOf_l,d0
 				add.l	d0,a3
 
-				move.w	ObjT_SFX_w(a3),d0
+				move.w	ODefT_SFX_w(a3),d0
 				blt.s	.nosoundmake
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -721,14 +721,14 @@ Plr1_CheckObjectCollide:
 				neg.w	d7
 
 .okpos:
-				cmp.w	ObjT_CollideHeight_w(a2),d7
+				cmp.w	ODefT_CollideHeight_w(a2),d7
 				bgt		.NotSameZone
 
 				move.w	(a0),d0
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),newx
 				move.w	4(a1,d0.w*8),newz
-				move.w	ObjT_CollideRadius_w(a2),d2
+				move.w	ODefT_CollideRadius_w(a2),d2
 				muls	d2,d2
 				jsr		CheckHit
 				move.b	hitwall,d0
@@ -763,14 +763,14 @@ Plr2_CheckObjectCollide:
 				neg.w	d7
 
 .okpos:
-				cmp.w	ObjT_CollideHeight_w(a2),d7
+				cmp.w	ODefT_CollideHeight_w(a2),d7
 				bgt		.NotSameZone
 
 				move.w	(a0),d0
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),newx
 				move.w	4(a1,d0.w*8),newz
-				move.w	ObjT_CollideRadius_w(a2),d2
+				move.w	ODefT_CollideRadius_w(a2),d2
 				muls	d2,d2
 				jsr		CheckHit
 				move.b	hitwall,d0
@@ -794,7 +794,7 @@ DEFANIMOBJ:
 				add.w	d0,d0
 				asl.w	#2,d1
 				add.w	d1,d0					;*6
-				cmp.w	#1,ObjT_GFXType_w(a2)
+				cmp.w	#1,ODefT_GFXType_w(a2)
 				blt.s	.bitmap
 
 				beq.s	.vector
@@ -858,7 +858,7 @@ ACTANIMOBJ:
 				add.w	d0,d0
 				asl.w	#2,d1
 				add.w	d1,d0					;*6
-				cmp.w	#1,ObjT_GFXType_w(a2)
+				cmp.w	#1,ODefT_GFXType_w(a2)
 				blt.s	.bitmap
 				beq.s	.vector
 
