@@ -92,14 +92,14 @@ ItsAnObject:
 				move.b	EntT_Type_b(a0),d0
 				muls	#ODefT_SizeOf_l,d0
 				add.w	d0,a1					; pointer to obj stats.
-				move.l	a1,StatPointer
+				move.l	a1,obj_StatPtr_l
 				move.w	(a1),d0
-				cmp.w	#1,d0
-				blt		Collectable
+				cmp.w	#ENT_TYPE_ACTIVATABLE,d0
+				blt		Collectable ; #ENT_TYPE_COLLECTABLE
 				beq		Activatable
 
-				cmp.w	#3,d0
-				blt		Destructable
+				cmp.w	#ENT_TYPE_DECORATION,d0
+				blt		Destructable ;# ENT_TYPE_DESTRUCTABLE
 				beq		Decoration
 
 				rts
@@ -699,7 +699,7 @@ CHECKPLAYERGOT:
 				rts
 
 Plr1_CheckObjectCollide:
-				move.l	StatPointer,a2
+				move.l	obj_StatPtr_l,a2
 				move.b	Plr1_StoodInTop_b,d0
 				move.b	ShotT_InUpperZone_b(a0),d1
 				eor.b	d0,d1
@@ -739,7 +739,7 @@ Plr1_CheckObjectCollide:
 				rts
 
 Plr2_CheckObjectCollide:
-				move.l	StatPointer,a2
+				move.l	obj_StatPtr_l,a2
 				move.b	Plr2_StoodInTop_b,d0
 				move.b	ShotT_InUpperZone_b(a0),d1
 				eor.b	d0,d1
@@ -780,7 +780,7 @@ Plr2_CheckObjectCollide:
 				moveq	#0,d0
 				rts
 
-StatPointer:	dc.l	0
+obj_StatPtr_l:	dc.l	0
 
 DEFANIMOBJ:
 				move.l	GLF_DatabasePtr_l,a3

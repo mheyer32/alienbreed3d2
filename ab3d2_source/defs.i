@@ -262,6 +262,11 @@ OBJ_NEXT	EQU	ObjT_SizeOf_l		; object after current
 		PADDING 8
 		LABEL EntT_SizeOf_l					; 64 - This is the actual size in memory
 
+ENT_TYPE_COLLECTABLE	EQU 0
+ENT_TYPE_ACTIVATABLE	EQU 1
+ENT_TYPE_DESTRUCTABLE	EQU 2
+ENT_TYPE_DECORATION		EQU 3
+
 ENT_PREV_2	EQU (-EntT_SizeOf_l*2)	; entity two before current
 ENT_PREV	EQU (-EntT_SizeOf_l)	; entity before current
 ENT_NEXT	EQU	EntT_SizeOf_l		; entity after current

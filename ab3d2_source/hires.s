@@ -1112,7 +1112,7 @@ okwat:
 				move.l	Plr2_ObjectPtr_l,a0
 				move.w	#-1,EntT_ZoneID_w(a0)
 				move.w	#-1,ObjT_ZoneID_w(a0)
-				move.b	#0,17(a0)
+				move.b	#0,ObjT_SeePlayer_b(a0)
 				move.l	#BollocksRoom,Plr2_ZonePtr_l
 
 				bra		donetalking
@@ -1526,11 +1526,11 @@ findaverage:
 				move.l	Plr1_ObjectPtr_l,a0
 				move.b	CanSee,d0
 				and.b	#2,d0
-				move.b	d0,17(a0)
+				move.b	d0,ObjT_SeePlayer_b(a0)
 				move.l	Plr2_ObjectPtr_l,a0
 				move.b	CanSee,d0
 				and.b	#1,d0
-				move.b	d0,17(a0)
+				move.b	d0,ObjT_SeePlayer_b(a0)
 
 nosee:
 				move.w	Anim_TempFrames_w,d0
