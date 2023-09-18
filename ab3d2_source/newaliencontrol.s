@@ -170,6 +170,8 @@ Collectable:
 				beq.s	.NotCollected1
 
 				bsr		Plr1_CollectItem
+
+				; todo - is this what is removing the item?
 				move.w	#-1,12(a0)
 				clr.b	ShotT_Worry_b(a0)
 
@@ -182,6 +184,8 @@ Collectable:
 				beq.s	.NotCollected2
 
 				bsr		Plr2_CollectItem
+
+				; todo - is this what is removing the item?
 				move.w	#-1,12(a0)
 				clr.b	ShotT_Worry_b(a0)
 

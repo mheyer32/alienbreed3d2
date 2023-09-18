@@ -1745,6 +1745,7 @@ ObjectHandler:
 				move.l	Lvl_ObjectDataPtr_l,a0
 
 Objectloop:
+				; object list is null terminated
 				tst.w	(a0)
 				blt		doneallobj
 
@@ -1761,7 +1762,7 @@ Objectloop:
 
 doneobj:
 dontworryyourprettyhead:
-				adda.w	#64,a0
+				adda.w	#EntT_SizeOf_l,a0
 				add.l	#8,WorkspacePtr_l
 				add.l	#2,AI_DamagePtr_l
 				add.l	#8,AI_BoredomPtr_l

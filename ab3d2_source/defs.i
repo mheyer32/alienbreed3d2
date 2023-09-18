@@ -208,10 +208,14 @@ NUM_WALL_TEXTURES	EQU 16
 		PADDING 14					; 26, 14
 		LABEL ObjT_SizeOf_l			; 40
 
+	; Runtime objects are 64 byte structures. The first 18 bytes are common, but the remainder depend on what the type
+	; of the object is, e.g. decoration, bullet, alien, collectable etc.
+
 	; Extended data for AI entities
 	; TODO - move this to a .i definition file for the AI module
 	;      - Can this be reorganised ?
 	STRUCTURE EntT,18
+		; TODO - what are offsets 0-17 ?
 		UBYTE EntT_NumLives_b				; 18, 1
 		UBYTE EntT_DamageTaken_b			; 19, 1
 		UBYTE EntT_CurrentMode_b			; 20, 1
@@ -247,6 +251,7 @@ ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
 
 	; Shot Definition
 	STRUCTURE ShotT,18
+		; TODO - what are offsets 0-17 ?
 		UWORD ShotT_VelocityX_w		; 18, 2
 		PADDING 2           		; 20, 2
 		UWORD ShotT_VelocityZ_w		; 22, 2

@@ -7,12 +7,15 @@ extern Game_ModProperties game_ModProps;
 
 static void game_LoadModProperties(void);
 
+/**
+ * Install the game default values. This is basically uncapped ammo, health.
+ */
 void Game_InitDefaults(void)
 {
-    game_ModProps.gmp_MaxInventoryConsumables.ic_Health      = GAME_DEFAULT_HEALTH_LIMIT;
-    game_ModProps.gmp_MaxInventoryConsumables.ic_JetpackFuel = GAME_DEFAULT_FUEL_LIMIT;
+    game_ModProps.gmp_MaxInventory.ic_Health      = GAME_DEFAULT_HEALTH_LIMIT;
+    game_ModProps.gmp_MaxInventory.ic_JetpackFuel = GAME_DEFAULT_FUEL_LIMIT;
     for (int i = 0; i < NUM_BULLET_DEFS; ++i) {
-        game_ModProps.gmp_MaxInventoryConsumables.ic_AmmoCounts[i] = GAME_DEFAULT_AMMO_LIMIT;
+        game_ModProps.gmp_MaxInventory.ic_AmmoCounts[i] = GAME_DEFAULT_AMMO_LIMIT;
     }
     game_LoadModProperties();
 }
@@ -44,7 +47,7 @@ BOOL Game_CheckCanCollect(
     /** If the item gives us a quantity of something we aren't maxed out on, we can collect it */
     if (
         consumables->ic_Health > 0 &&
-        inventory->inv_Consumables.ic_Health < game_ModProps.gmp_MaxInventoryConsumables.ic_Health
+        inventory->inv_Consumables.ic_Health < game_ModProps.gmp_MaxInventory.ic_Health
     ) {
         return TRUE;
     }
@@ -52,7 +55,7 @@ BOOL Game_CheckCanCollect(
     /** If the item gives us fuel and we aren't maxed. we can collect */
     if (
         consumables->ic_JetpackFuel > 0 &&
-        inventory->inv_Consumables.ic_JetpackFuel < game_ModProps.gmp_MaxInventoryConsumables.ic_JetpackFuel
+        inventory->inv_Consumables.ic_JetpackFuel < game_ModProps.gmp_MaxInventory.ic_JetpackFuel
     ) {
         return TRUE;
     }
@@ -60,7 +63,7 @@ BOOL Game_CheckCanCollect(
     for (UWORD n = 0; n < NUM_BULLET_DEFS; ++n) {
         if (
             consumables->ic_AmmoCounts[n] > 0 &&
-            inventory->inv_Consumables.ic_AmmoCounts[n] < game_ModProps.gmp_MaxInventoryConsumables.ic_AmmoCounts[n]
+            inventory->inv_Consumables.ic_AmmoCounts[n] < game_ModProps.gmp_MaxInventory.ic_AmmoCounts[n]
         ) {
             return TRUE;
         }
@@ -96,20 +99,20 @@ void Game_AddToInventory(
     inventory->inv_Consumables.ic_Health = addSaturated(
         inventory->inv_Consumables.ic_Health,
         consumables->ic_Health,
-        game_ModProps.gmp_MaxInventoryConsumables.ic_Health
+        game_ModProps.gmp_MaxInventory.ic_Health
     );
 
     inventory->inv_Consumables.ic_JetpackFuel = addSaturated(
         inventory->inv_Consumables.ic_JetpackFuel,
         consumables->ic_JetpackFuel,
-        game_ModProps.gmp_MaxInventoryConsumables.ic_JetpackFuel
+        game_ModProps.gmp_MaxInventory.ic_JetpackFuel
     );
 
     for (UWORD n = 0; n < NUM_BULLET_DEFS; ++n) {
         inventory->inv_Consumables.ic_AmmoCounts[n] = addSaturated(
             inventory->inv_Consumables.ic_AmmoCounts[n],
             consumables->ic_AmmoCounts[n],
-            game_ModProps.gmp_MaxInventoryConsumables.ic_AmmoCounts[n]
+            game_ModProps.gmp_MaxInventory.ic_AmmoCounts[n]
         );
     }
 }
@@ -130,20 +133,20 @@ void game_LoadModProperties()
         return;
     }
 
-    Game_ModProperties* tp = (Game_ModProperties*)Sys_GetTemporaryWorkspace();
+    Game_ModProperties* props = (Game_ModProperties*)Sys_GetTemporaryWorkspace();
 
-    LONG bytesRead = Read(modPropsFH, tp, sizeof(Game_ModProperties));
+    LONG bytesRead = Read(modPropsFH, props, sizeof(Game_ModProperties));
     if (bytesRead == (LONG)sizeof(Game_ModProperties)) {
-        if (tp->gmp_MaxInventoryConsumables.ic_Health < GAME_UNCAPPED_LIMIT) {
-            game_ModProps.gmp_MaxInventoryConsumables.ic_Health = tp->gmp_MaxInventoryConsumables.ic_Health;
+        if (props->gmp_MaxInventory.ic_Health < GAME_UNCAPPED_LIMIT) {
+            game_ModProps.gmp_MaxInventory.ic_Health = props->gmp_MaxInventory.ic_Health;
         }
-        if (tp->gmp_MaxInventoryConsumables.ic_JetpackFuel < GAME_UNCAPPED_LIMIT) {
-            game_ModProps.gmp_MaxInventoryConsumables.ic_JetpackFuel = tp->gmp_MaxInventoryConsumables.ic_JetpackFuel;
+        if (props->gmp_MaxInventory.ic_JetpackFuel < GAME_UNCAPPED_LIMIT) {
+            game_ModProps.gmp_MaxInventory.ic_JetpackFuel = props->gmp_MaxInventory.ic_JetpackFuel;
         }
 
         for (int i = 0; i < NUM_BULLET_DEFS; ++i) {
-            if (tp->gmp_MaxInventoryConsumables.ic_AmmoCounts[i] < GAME_UNCAPPED_LIMIT) {
-                game_ModProps.gmp_MaxInventoryConsumables.ic_AmmoCounts[i] = tp->gmp_MaxInventoryConsumables.ic_AmmoCounts[i];
+            if (props->gmp_MaxInventory.ic_AmmoCounts[i] < GAME_UNCAPPED_LIMIT) {
+                game_ModProps.gmp_MaxInventory.ic_AmmoCounts[i] = props->gmp_MaxInventory.ic_AmmoCounts[i];
             }
         }
     }

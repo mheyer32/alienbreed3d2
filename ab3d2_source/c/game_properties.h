@@ -12,7 +12,7 @@
 #define GAME_UNCAPPED_LIMIT 32767
 
 typedef struct {
-    InventoryConsumables gmp_MaxInventoryConsumables;
+    InventoryConsumables gmp_MaxInventory;
     /** TODO other things here ... */
 } Game_ModProperties;
 
@@ -25,7 +25,7 @@ extern void Game_InitDefaults(void);
  *
  * 1. itemInventory contains an item (weapon, shield, jetpack) that the playerInventory does not have.
  * 2. itemInventory provides ammunition that the playerInventory has less than the limits defined
- *    by the game mod properties in gmp_MaxInventoryConsumables
+ *    by the game mod properties in gmp_MaxInventory
  *
  * Note that the consumables and items provided by an entiity are stored in separate arrays in the GLF data, so
  * this function requires pointers to each.
@@ -37,7 +37,7 @@ extern BOOL Game_CheckCanCollect(
 );
 
 /**
- * Add to the player Inventory, respecting the limits set in Game_ModProperties.gmp_MaxInventoryConsumables.
+ * Add to the player Inventory, respecting the limits set in Game_ModProperties.gmp_MaxInventory.
  *
  * Note that the consumables and items provided by an entiity are stored in separate arrays in the GLF data, so
  * this function requires pointers to each.
