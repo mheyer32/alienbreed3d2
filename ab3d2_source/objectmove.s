@@ -822,7 +822,6 @@ checkifcrossed:
 				moveq	#1,d0
 .ohbugger:
 
-
 				move.l	newy,d4
 				sub.l	oldy,d4
 				divs	d0,d4
@@ -1772,8 +1771,8 @@ checkcol:
 				add.l	#GLFT_ObjectDefs,a4
 				moveq	#0,d1
 				move.b	EntT_Type_b(a0),d1
-				muls	#ObjT_SizeOf_l,d1
-				cmp.w	#2,ObjT_Behaviour_w(a4,d1.w)
+				muls	#ODefT_SizeOf_l,d1
+				cmp.w	#2,ODefT_Behaviour_w(a4,d1.w)
 				blt		checkcol
 				bgt		.ycol
 
@@ -2034,7 +2033,7 @@ outin:
 
 foundclose:
 
-				move.w	d7,EntT_GraphicRoom_w(a0)
+				move.w	d7,EntT_ZoneID_w(a0)
 
 				rts
 
