@@ -1749,7 +1749,7 @@ Objectloop:
 				tst.w	(a0)
 				blt		doneallobj
 
-				move.w	ObjT_ZoneID_w(a0),EntT_GraphicRoom_w(a0)
+				move.w	ObjT_ZoneID_w(a0),EntT_ZoneID_w(a0)
 
 				; All the object classes test if ObjT_ZoneID_w is negative and skip, so we can just do that here to
 				; have a bit less branching
@@ -1796,7 +1796,7 @@ JUMPALIEN:
 				blt.s	.not_auxilliary_object
 
 				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w-ObjT_SizeOf_l(a0)
-				move.w	ObjT_ZoneID_w(a0),EntT_GraphicRoom_w-ObjT_SizeOf_l(a0)
+				move.w	ObjT_ZoneID_w(a0),EntT_ZoneID_w-ObjT_SizeOf_l(a0)
 
 .not_auxilliary_object:
 .dontworry:
@@ -1875,7 +1875,7 @@ notdoneflame:
 				rts
 
 .foundonefree:
-				move.b	#2,ObjT_TypeID_b(a5) ; setting the type here
+				move.b	#OBJ_TYPE_PROJECTILE,ObjT_TypeID_b(a5) ; setting the type here
 				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w(a5)
 				move.w	4(a0),d0 ; positional data?
 				sub.w	#80,d0
@@ -1934,7 +1934,7 @@ anim_Brightness_w:		dc.w	0
 ItsABullet:
 				move.b	#0,timeout
 				move.w	ObjT_ZoneID_w(a0),d0
-				move.w	d0,EntT_GraphicRoom_w(a0)
+				move.w	d0,EntT_ZoneID_w(a0)
 				blt		doneshot
 
 				moveq	#0,d1
@@ -2013,7 +2013,7 @@ noworrylife:
 				ble.s	notdonepopping
 
 				move.w	#-1,ObjT_ZoneID_w(a0)
-				move.w	#-1,EntT_GraphicRoom_w(a0)
+				move.w	#-1,EntT_ZoneID_w(a0)
 				clr.b	ShotT_Status_b(a0)
 				move.b	#0,ShotT_Anim_b(a0)
 				rts
@@ -2424,7 +2424,7 @@ nomovebul:
 lab:
 				move.l	objroom,a3
 				move.w	(a3),ObjT_ZoneID_w(a0)
-				move.w	(a3),EntT_GraphicRoom_w(a0)
+				move.w	(a3),EntT_ZoneID_w(a0)
 				move.l	newx,(a1)
 				move.l	newz,4(a1)
 ;************

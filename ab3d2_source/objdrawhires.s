@@ -127,7 +127,7 @@ Draw_Objects:
 				move.w	(a1),d1
 				blt		.sorted_all
 
-				move.w	EntT_GraphicRoom_w(a1),d2
+				move.w	EntT_ZoneID_w(a1),d2
 				cmp.w	Draw_CurrentZone_w,d2
 				beq.s	.in_this_zone
 

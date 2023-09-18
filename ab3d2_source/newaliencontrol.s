@@ -10,8 +10,8 @@ ItsAnAlien:
 
 				move.l	#32*256,StepUpVal
 				move.l	#32*256,StepDownVal
-				move.w	12(a0),EntT_GraphicRoom_w(a0)
-				move.w	12(a0),d2
+				move.w	ObjT_ZoneID_w(a0),EntT_ZoneID_w(a0)
+				move.w	ObjT_ZoneID_w(a0),d2
 				bge.s	.ok_alive
 
 				rts
@@ -121,7 +121,7 @@ Collectable:
 				tst.b	EntT_WhichAnim_b(a0)
 				bne.s	GUNHELD
 
-				move.w	d0,EntT_GraphicRoom_w(a0)
+				move.w	d0,EntT_ZoneID_w(a0)
 				tst.b	AI_NoEnemies_b
 				beq.s	.no_locks
 
@@ -201,7 +201,7 @@ Activatable:
 				tst.b	EntT_WhichAnim_b(a0)
 				bne		ACTIVATED
 
-				move.w	d0,EntT_GraphicRoom_w(a0)
+				move.w	d0,EntT_ZoneID_w(a0)
 				tst.b	AI_NoEnemies_b
 				beq.s	.no_locks
 
@@ -285,7 +285,7 @@ Activatable:
 				rts
 
 ACTIVATED:
-				move.w	d0,EntT_GraphicRoom_w(a0)
+				move.w	d0,EntT_ZoneID_w(a0)
 ; move.l EntT_DoorsHeld_w(a0),d1
 ; or.l d1,Anim_DoorAndLiftLocks_l
 				tst.b	ShotT_Worry_b(a0)

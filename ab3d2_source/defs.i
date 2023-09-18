@@ -208,13 +208,15 @@ NUM_WALL_TEXTURES	EQU 16
 		PADDING 14					; 26, 14
 		LABEL ODefT_SizeOf_l			; 40
 
-	; Runtime objects are 64 byte structures. The first 18 bytes are common, but the remainder depend on what the type
-	; of the object is, e.g. decoration, bullet, alien, collectable etc.
-
 OBJ_TYPE_ALIEN EQU 0
 OBJ_TYPE_OBJECT EQU 1
 OBJ_TYPE_PROJECTILE EQU 2
+OBJ_TYPE_AUX EQU 3
+OBJ_TYPE_PLAYER1 EQU 4
+OBJ_TYPE_PLAYER2 EQU 5
 
+	; Runtime objects are 64 byte structures. The first 18 bytes are common, but the remainder depend on what the type
+	; of the object is, e.g. decoration, bullet, alien, collectable etc.
 	STRUCTURE ObjT,0
 		; TODO work out what the hidden data are.
 		ULONG ObjT_XPos_l			; 0, 4 - To be confirmed
@@ -224,7 +226,7 @@ OBJ_TYPE_PROJECTILE EQU 2
 		UWORD ObjT_ZoneID_w			; 12, 2 - Zone where the object is located, or -1 if it's been removed
 		PADDING 2					; 2     - Unknown
 		UBYTE ObjT_TypeID_b			; 16    - Defines the type (alien, bullet, object etc.)
-		PADDING 1					; 17    - Unknown
+		UBYTE ObjT_SeePlayer_b      ; 17    - Line of sight to player
 		LABEL ObjT_Header_SizeOf_l	; 18    - After here, the remaining structure depends on ObjT_TypeID_b
 		PADDING 46
 		LABEL ObjT_SizeOf_l			; 64
@@ -240,7 +242,7 @@ OBJ_NEXT	EQU	ObjT_SizeOf_l		; object after current
 		UBYTE EntT_TeamNumber_b				; 21, 1
 		UWORD EntT_CurrentSpeed_w 			; 22, 2 unused
 		UWORD EntT_DisplayText_w			; 24, 2
-		UWORD EntT_GraphicRoom_w			; 26, 2
+		UWORD EntT_ZoneID_w					; 26, 2
 		UWORD EntT_CurrentControlPoint_w	; 28, 2
 		UWORD EntT_CurrentAngle_w			; 30, 2
 		UWORD EntT_TargetControlPoint_w		; 32, 2

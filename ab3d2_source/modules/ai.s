@@ -57,10 +57,11 @@ ai_DoTakeDamage:
 .still_hurting:
 				bsr		ai_DoTorch
 
-				tst.w	12-64(a0)
+				tst.w	ObjT_ZoneID_w+ENT_PREV(a0)
 				blt.s	.no_copy_in
-				move.w	12(a0),12-64(a0)
-				move.w	EntT_GraphicRoom_w(a0),EntT_GraphicRoom_w-64(a0)
+
+				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w+ENT_PREV(a0)
+				move.w	EntT_ZoneID_w(a0),EntT_ZoneID_w+ENT_PREV(a0)
 
 .no_copy_in:
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -89,19 +90,19 @@ ai_DoDie:
 				tst.b	ai_FinishedAnim_b
 				beq.s	.still_dying
 
-				move.w	#-1,12(a0)
-				move.w	#-1,EntT_GraphicRoom_w(a0)
+				move.w	#-1,ObjT_ZoneID_w(a0)
+				move.w	#-1,EntT_ZoneID_w(a0)
 				move.b	#0,16(a0)
 				clr.b	ShotT_Worry_b(a0)
 				st		ai_GetOut_w
 
 .still_dying:
 				move.b	#0,EntT_NumLives_b(a0)
-				tst.w	12-64(a0)
+				tst.w	ObjT_ZoneID_w+ENT_PREV(a0)
 				blt.s	.no_copy_in
 
-				move.w	12(a0),12-64(a0)
-				move.w	EntT_GraphicRoom_w(a0),EntT_GraphicRoom_w-64(a0)
+				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w+ENT_PREV(a0)
+				move.w	EntT_ZoneID_w(a0),EntT_ZoneID_w+ENT_PREV(a0)
 
 .no_copy_in:
 				rts
@@ -209,12 +210,13 @@ ai_JustDied:
 
 .spawn_loop:
 .find_one_free:
-				move.w	12(a2),d2
+				move.w	ObjT_ZoneID_w(a2),d2
 				blt.s	.found_one_free
+
 				tst.b	EntT_NumLives_b(a2)
 				beq.s	.found_one_free
 
-				adda.w	#128,a2
+				adda.w	#ENT_NEXT_2,a2 ; todo - why two slots here?
 				dbra	d3,.find_one_free
 				bra		.cant_shoot
 
@@ -227,8 +229,8 @@ ai_JustDied:
 				move.l	d0,(a1,d4.w*8)
 				move.l	d1,4(a1,d4.w*8)
 				move.w	4(a0),4(a2)
-				move.w	12(a0),12(a2)
-				move.w	12(a0),EntT_GraphicRoom_w(a2)
+				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w(a2)
+				move.w	ObjT_ZoneID_w(a0),EntT_ZoneID_w(a2)
 				move.w	#-1,12-64(a2)
 				move.w	EntT_CurrentControlPoint_w(a0),EntT_CurrentControlPoint_w(a2)
 				move.w	EntT_CurrentControlPoint_w(a0),EntT_TargetControlPoint_w(a2)
@@ -605,10 +607,11 @@ ai_Widget:
 
 
 .hit_something:
-				tst.w	12-64(a0)
+				tst.w	ObjT_ZoneID_w+ENT_PREV(a0)
 				blt.s	.no_copy_in
-				move.w	12(a0),12-64(a0)
-				move.w	EntT_GraphicRoom_w(a0),EntT_GraphicRoom_w-64(a0)
+
+				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w+ENT_PREV(a0)
+				move.w	EntT_ZoneID_w(a0),EntT_ZoneID_w+ENT_PREV(a0)
 
 .no_copy_in:
 				move.w	4(a0),-(a7)
@@ -626,8 +629,9 @@ ai_Widget:
 				move.b	#0,EntT_CurrentMode_b(a0)
 				bsr		AI_LookForPlayer1
 				move.b	#0,EntT_WhichAnim_b(a0)
-				tst.b	17(a0)
+				tst.b	ObjT_SeePlayer_b(a0)
 				beq.s	.cant_see_player
+
 				bsr		ai_CheckInFront
 				tst.b	d0
 				beq.s	.cant_see_player
@@ -702,7 +706,7 @@ ai_ChargeCommon:
 .no_damage:
 				jsr		ai_DoAttackAnim
 
-				move.w	12(a0),FromZone
+				move.w	ObjT_ZoneID_w(a0),FromZone
 				jsr		CheckTeleport
 				tst.b	OKTEL
 				beq.s	.no_teleport
@@ -782,8 +786,9 @@ ai_ChargeCommon:
 .hit_something:
 				tst.w	12-64(a0)
 				blt.s	.no_copy_in
-				move.w	12(a0),12-64(a0)
-				move.w	EntT_GraphicRoom_w(a0),EntT_GraphicRoom_w-64(a0)
+
+				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w+ENT_PREV(a0)
+				move.w	EntT_ZoneID_w(a0),EntT_ZoneID_w+ENT_PREV(a0)
 
 .no_copy_in:
 				tst.b	GotThere
@@ -812,8 +817,9 @@ ai_ChargeCommon:
 				bsr		ai_DoTorch
 				bsr		AI_LookForPlayer1
 				move.b	#0,EntT_CurrentMode_b(a0)
-				tst.b	17(a0)
+				tst.b	ObjT_SeePlayer_b(a0)
 				beq.s	.cant_see_player
+
 				bsr		ai_CheckInFront
 				tst.b	d0
 				beq.s	.cant_see_player
@@ -905,8 +911,9 @@ ai_AttackWithHitScan:
 				bsr		AI_LookForPlayer1
 
 				move.b	#0,EntT_CurrentMode_b(a0)
-				tst.b	17(a0)
+				tst.b	ObjT_SeePlayer_b(a0)
 				beq.s	.cant_see_player
+
 				bsr		ai_CheckInFront
 				tst.b	d0
 				beq.s	.cant_see_player
@@ -1082,11 +1089,13 @@ ai_AttackWithProjectile:
 .not_finished_attacking:
 				bsr		AI_LookForPlayer1
 				move.b	#0,EntT_CurrentMode_b(a0)
-				tst.b	17(a0)
+				tst.b	ObjT_SeePlayer_b(a0)
 				beq.s	.cant_see_player
+
 				bsr		ai_CheckInFront
 				tst.b	d0
 				beq.s	.cant_see_player
+
 				move.b	#1,EntT_WhichAnim_b(a0)
 				move.b	#1,EntT_CurrentMode_b(a0)
 				move.w	ai_AnimFacing_w,d0
@@ -1127,10 +1136,12 @@ ai_ChargeFlyingCommon:
 .no_damage:
 				jsr		ai_DoAttackAnim
 
-				move.w	12(a0),FromZone
+				move.w	ObjT_ZoneID_w(a0),FromZone
 				jsr		CheckTeleport
+
 				tst.b	OKTEL
 				beq.s	.no_teleport
+
 				move.l	floortemp,d0
 				asr.l	#7,d0
 				add.w	d0,4(a0)
@@ -1226,8 +1237,9 @@ ai_ChargeFlyingCommon:
 				bsr		ai_DoTorch
 				bsr		AI_LookForPlayer1
 				move.b	#0,EntT_CurrentMode_b(a0)
-				tst.b	17(a0)
+				tst.b	ObjT_SeePlayer_b(a0)
 				beq.s	.cant_see_player
+
 				bsr		ai_CheckInFront
 				tst.b	d0
 				beq.s	.cant_see_player
@@ -1283,8 +1295,9 @@ ai_PauseBriefly:
 				bsr		AI_LookForPlayer1
 
 				move.b	#0,EntT_CurrentMode_b(a0)
-				tst.b	17(a0)
+				tst.b	ObjT_SeePlayer_b(a0)
 				beq.s	.cant_see_player
+
 				bsr		ai_CheckInFront
 				tst.b	d0
 				beq.s	.cant_see_player
@@ -1344,10 +1357,12 @@ ai_ApproachCommon:
 .no_damage:
 				jsr		ai_DoWalkAnim
 
-				move.w	12(a0),FromZone
+				move.w	ObjT_ZoneID_w(a0),FromZone
 				jsr		CheckTeleport
+
 				tst.b	OKTEL
 				beq.s	.no_teleport
+
 				move.l	floortemp,d0
 				asr.l	#7,d0
 				add.w	d0,4(a0)
@@ -1430,14 +1445,14 @@ ai_ApproachCommon:
 				move.w	AngRet,EntT_CurrentAngle_w(a0)
 
 .hit_something:
-				tst.w	12-64(a0)
+				tst.w	ObjT_ZoneID_w+ENT_PREV(a0)
 				blt.s	.no_copy_in
-				move.w	12(a0),12-64(a0)
-				move.w	EntT_GraphicRoom_w(a0),EntT_GraphicRoom_w-64(a0)
+
+				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w+ENT_PREV(a0)
+				move.w	EntT_ZoneID_w(a0),EntT_ZoneID_w+ENT_PREV(a0)
+
 .no_copy_in:
-
 .no_munch:
-
 				bsr		ai_StorePlayerPosition
 
 				tst.b	AI_FlyABit_w
@@ -1466,8 +1481,9 @@ ai_ApproachCommon:
 
 .is_flying:
 				bsr		AI_LookForPlayer1
-				tst.b	17(a0)
+				tst.b	ObjT_SeePlayer_b(a0)
 				beq.s	.cant_see_player
+
 				bsr		ai_CheckInFront
 				tst.b	d0
 				beq.s	.cant_see_player
@@ -1632,7 +1648,7 @@ ai_GetRoomStatsStill:
 				sub.l	d2,d0
 				asr.l	#7,d0
 				move.w	d0,4(a0)
-				move.w	12(a0),EntT_GraphicRoom_w(a0)
+				move.w	ObjT_ZoneID_w(a0),EntT_ZoneID_w(a0)
 				rts
 
 ai_CheckForDark:
@@ -1657,7 +1673,7 @@ ai_CheckForDark:
 
 ai_CheckInFront:
 
-; clr.b 17(a0)
+; clr.b ObjT_SeePlayer_b(a0)
 ; rts
 
 				move.w	(a0),d0
@@ -1684,7 +1700,7 @@ ai_CheckInFront:
 				rts
 
 AI_LookForPlayer1:
-				clr.b	17(a0)
+				clr.b	ObjT_SeePlayer_b(a0)
 				clr.b	CanSee
 				move.b	ShotT_InUpperZone_b(a0),ViewerTop
 				move.b	Plr1_StoodInTop_b,TargetTop
@@ -1703,7 +1719,7 @@ AI_LookForPlayer1:
 				tst.b	CanSee
 				beq		.carryonprowling
 
-				move.b	#1,17(a0)
+				move.b	#1,ObjT_SeePlayer_b(a0)
 
 .carryonprowling:
 				rts
@@ -1784,8 +1800,8 @@ ai_CheckDamage:
 				cmp.b	#40,d2
 				blt		.noexplode
 
-				move.w	#-1,12(a0)
-				move.w	12(a0),EntT_GraphicRoom_w(a0)
+				move.w	#-1,ObjT_ZoneID_w(a0)
+				move.w	ObjT_ZoneID_w(a0),EntT_ZoneID_w(a0)
 				rts
 
 .noexplode:
@@ -1804,7 +1820,7 @@ ai_CheckDamage:
 				movem.l	(a7)+,d0-d7/a0-a6
 
 				move.w	#25,EntT_Timer3_w(a0)
-				move.w	12(a0),EntT_GraphicRoom_w(a0)
+				move.w	ObjT_ZoneID_w(a0),EntT_ZoneID_w(a0)
 				rts
 
 .not_dead_yet:
@@ -1839,8 +1855,7 @@ ai_DoTorch:
 				asl.l	#7,d3
 				move.l	d3,Anim_BrightY_l
 				move.w	EntT_CurrentAngle_w(a0),d4
-
-				move.w	12(a0),d3
+				move.w	ObjT_ZoneID_w(a0),d3
 
 				jsr		Anim_BrightenPointsAngle
 
@@ -1898,26 +1913,26 @@ ai_DoAttackAnim:
 				move.w	2(a6,d1.w),ai_AnimFacing_w
 
 .noanimface:
-				move.w	#-1,EntT_GraphicRoom_w-64(a0)
-				move.w	#-1,12-64(a0)
+				move.w	#-1,EntT_ZoneID_w+ENT_PREV(a0)
+				move.w	#-1,ObjT_ZoneID_w+ENT_PREV(a0)
 				move.w	AUXOBJ,d3
 				blt		.noaux
 
 				move.b	8(a6,d1.w),d0
 				blt		.noaux
 
-				move.w	12(a0),12-64(a0)
-				move.w	12(a0),EntT_GraphicRoom_w-64(a0)
-				move.w	4(a0),4-64(a0)
-				move.b	ShotT_InUpperZone_b(a0),ShotT_InUpperZone_b-64(a0)
+				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w+ENT_PREV(a0)
+				move.w	ObjT_ZoneID_w(a0),EntT_ZoneID_w+ENT_PREV(a0)
+				move.w	4(a0),4+ENT_PREV(a0)
+				move.b	ShotT_InUpperZone_b(a0),ShotT_InUpperZone_b+ENT_PREV(a0)
 				move.b	9(a6,d1.w),d4
 				move.b	10(a6,d1.w),d5
 				ext.w	d4
 				ext.w	d5
 				add.w	d4,d4
 				add.w	d5,d5
-				move.w	d4,ShotT_AuxOffsetX_w-64(a0)
-				move.w	d5,ShotT_AuxOffsetY_w-64(a0)
+				move.w	d4,ShotT_AuxOffsetX_w+ENT_PREV(a0)
+				move.w	d5,ShotT_AuxOffsetY_w+ENT_PREV(a0)
 				move.l	GLF_DatabasePtr_l,a4
 				move.l	a4,a2
 				add.l	#GLFT_ObjectDefAnims_l,a4

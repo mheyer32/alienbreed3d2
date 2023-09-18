@@ -795,13 +795,13 @@ game_main_loop:
 				move.b	AlienT_SplatType_w+1(a6),d0
 				move.b	d0,Anim_SplatType_w
 				move.l	Plr2_ZonePtr_l,a1
-				move.w	(a1),12(a0)
+				move.w	(a1),ObjT_ZoneID_w(a0)
 				move.w	Plr2_TmpXOff_l,newx
 				move.w	Plr2_TmpZOff_l,newz
 				move.w	#7,d2
 				jsr		Anim_ExplodeIntoBits
 
-				move.w	#-1,12(a0)
+				move.w	#-1,ObjT_ZoneID_w(a0)
 
 .notmess:
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
@@ -840,12 +840,12 @@ game_main_loop:
 				move.b	d0,Anim_SplatType_w
 
 				move.l	Plr1_ZonePtr_l,a1
-				move.w	(a1),12(a0)
+				move.w	(a1),ObjT_ZoneID_w(a0)
 				move.w	Plr1_TmpXOff_l,newx
 				move.w	Plr1_TmpZOff_l,newz
 				move.w	#7,d2
 				jsr		Anim_ExplodeIntoBits
-				move.w	#-1,12(a0)
+				move.w	#-1,ObjT_ZoneID_w(a0)
 
 .notmess2:
 				;FIXME: should use _LVOWritePotgo here!
@@ -1110,8 +1110,8 @@ okwat:
 
 				move.l	#$60000,Plr2_TmpYOff_l
 				move.l	Plr2_ObjectPtr_l,a0
-				move.w	#-1,EntT_GraphicRoom_w(a0)
-				move.w	#-1,12(a0)
+				move.w	#-1,EntT_ZoneID_w(a0)
+				move.w	#-1,ObjT_ZoneID_w(a0)
 				move.b	#0,17(a0)
 				move.l	#BollocksRoom,Plr2_ZonePtr_l
 
@@ -1924,20 +1924,23 @@ plr1only:
 				move.l	#%000001,d7
 				lea		AI_AlienTeamWorkspace_vl,a2
 				move.l	Lvl_ObjectDataPtr_l,a0
-				sub.w	#64,a0
+				sub.w	#ObjT_SizeOf_l,a0
 .doallobs:
-				add.w	#64,a0
+				add.w	#OBJ_NEXT,a0
 				move.w	(a0),d0
 				blt.s	.allobsdone
-				move.w	12(a0),d0
+
+				move.w	ObjT_ZoneID_w(a0),d0
 				blt.s	.doallobs
+
 				move.w	d0,d1
 				asr.w	#3,d0
 				btst	d1,(a1,d0.w)
 				bne.s	.worryobj
-				move.b	16(a0),d0
+				move.b	ObjT_TypeID_b(a0),d0
 				btst	d0,d7
 				beq.s	.doallobs
+
 				moveq	#0,d0
 				move.b	EntT_TeamNumber_b(a0),d0
 				blt.s	.doallobs
@@ -2854,7 +2857,7 @@ BollocksRoom:
 
 Plr1_Use:
 				move.l	Plr1_ObjectPtr_l,a0
-				move.b	#4,16(a0)
+				move.b	#OBJ_TYPE_PLAYER1,ObjT_TypeID_b(a0)
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.l	#ObjRotated_vl,a2
 				move.w	(a0),d0
@@ -2909,7 +2912,7 @@ Plr1_Use:
 				move.b	#10,EntT_NumLives_b(a0)
 				move.w	Plr1_TmpAngPos_w,EntT_CurrentAngle_w(a0)
 				move.b	Plr1_StoodInTop_b,ShotT_InUpperZone_b(a0)
-				move.w	(a1),12(a0)
+				move.w	(a1),ObjT_ZoneID_w(a0)
 				move.w	(a1),d2
 				move.l	#Zone_BrightTable_vl,a1
 				move.l	(a1,d2.w*4),d2
@@ -2928,10 +2931,10 @@ Plr1_Use:
 				tst.w	Plr1_Health_w
 				bgt.s	.okh1
 
-				move.w	#-1,12(a0)
+				move.w	#-1,ObjT_ZoneID_w(a0)
 .okh1:
 				move.l	Plr2_ObjectPtr_l,a0
-				move.b	#5,16(a0)
+				move.b	#OBJ_TYPE_PLAYER2,ObjT_TypeID_b(a0)
 
 				move.w	Plr2_TmpAngPos_w,d0
 				and.w	#8190,d0
@@ -2976,7 +2979,7 @@ Plr1_Use:
 				move.b	#0,EntT_DamageTaken_b(a0)
 				move.b	#10,EntT_NumLives_b(a0)
 				move.b	Plr2_StoodInTop_b,ShotT_InUpperZone_b(a0)
-				move.w	(a1),12(a0)
+				move.w	(a1),ObjT_ZoneID_w(a0)
 				move.w	(a1),d2
 				move.l	#Zone_BrightTable_vl,a1
 				move.l	(a1,d2.w*4),d2
@@ -3070,7 +3073,7 @@ Plr1_Use:
 				tst.w	Plr2_Health_w
 				bgt.s	.okh
 
-				move.w	#-1,12(a0)
+				move.w	#-1,ObjT_ZoneID_w(a0)
 .okh:
 				move.l	Plr1_ObjectPtr_l,a0
 				tst.w	Plr1_Health_w
@@ -3089,7 +3092,7 @@ Plr1_Use:
 				move.w	d0,EntT_CurrentAngle_w+ENT_NEXT_2(a0)
 
 				move.w	(a1),ObjT_ZoneID_w+ENT_NEXT_2(a0)
-				move.w	(a1),EntT_GraphicRoom_w+ENT_NEXT_2(a0)
+				move.w	(a1),EntT_ZoneID_w+ENT_NEXT_2(a0)
 
 				moveq	#0,d0
 				move.b	Plr1_TmpGunSelected_b,d0
@@ -3099,7 +3102,7 @@ Plr1_Use:
 				move.w	(a1,d0.w*2),d0
 
 				move.b	d0,EntT_Type_b+ENT_NEXT_2(a0)
-				move.b	#1,128+16(a0)
+				move.b	#OBJ_TYPE_OBJECT,ObjT_TypeID_b+ENT_NEXT_2(a0)
 
 				move.w	(a0),d0
 				move.w	ENT_NEXT_2(a0),d1
@@ -3128,7 +3131,7 @@ Plr1_Use:
 
 Plr2_Use:
 				move.l	Plr2_ObjectPtr_l,a0
-				move.b	#5,16(a0)
+				move.b	#OBJ_TYPE_PLAYER2,ObjT_TypeID_b(a0)
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.l	#ObjRotated_vl,a2
 				move.w	(a0),d0
@@ -3196,13 +3199,13 @@ Plr2_Use:
 
 				tst.w	Plr2_Health_w
 				bgt.s	.okh55
-				move.w	#-1,12(a0)
+				move.w	#-1,ObjT_ZoneID_w(a0)
 .okh55:
 
 ***********************************
 
 				move.l	Plr1_ObjectPtr_l,a0
-				move.b	#4,16(a0)
+				move.b	#OBJ_TYPE_PLAYER1,ObjT_TypeID_b(a0)
 
 				move.w	Plr1_AngPos_w,d0
 				and.w	#8190,d0
@@ -3334,7 +3337,7 @@ Plr2_Use:
 .ddone:
 				tst.w	Plr1_Health_w
 				bgt.s	.okh
-				move.w	#-1,12(a0)
+				move.w	#-1,ObjT_ZoneID_w(a0)
 .okh:
 
 **********************************
@@ -3342,7 +3345,7 @@ Plr2_Use:
 				move.l	Plr2_ObjectPtr_l,a0
 				tst.w	Plr2_Health_w
 				bgt.s	.notdead
-				move.w	#-1,12+64(a0)
+				move.w	#-1,ObjT_ZoneID_w+ENT_NEXT(a0)
 				rts
 
 .notdead:
@@ -3353,7 +3356,7 @@ Plr2_Use:
 				move.w	d0,EntT_CurrentAngle_w+ENT_NEXT(a0)
 
 				move.w	(a1),ObjT_ZoneID_w+ENT_NEXT(a0)
-				move.w	(a1),EntT_GraphicRoom_w+ENT_NEXT(a0)
+				move.w	(a1),EntT_ZoneID_w+ENT_NEXT(a0)
 
 				moveq	#0,d0
 				move.b	Plr2_TmpGunSelected_b,d0
@@ -3363,7 +3366,7 @@ Plr2_Use:
 				move.w	(a1,d0.w*2),d0
 
 				move.b	d0,EntT_Type_b+ENT_NEXT(a0)
-				move.b	#1,64+16(a0)
+				move.b	#OBJ_TYPE_OBJECT,ObjT_TypeID_b+ENT_NEXT(a0)
 
 				move.w	(a0),d0
 				move.w	ENT_NEXT(a0),d1
@@ -3869,9 +3872,10 @@ DrawDisplay:
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	doplr2too
+
 				move.l	Plr2_ObjectPtr_l,a0
-				move.w	#-1,12(a0)
-				move.w	#-1,EntT_GraphicRoom_w(a0)
+				move.w	#-1,ObjT_ZoneID_w(a0)
+				move.w	#-1,EntT_ZoneID_w(a0)
 				bra		noplr2either
 
 doplr2too:
@@ -4706,7 +4710,7 @@ CalcPLR1InLine:
 
 .objpointrotlop:
 
-				cmp.b	#3,16(a4)
+				cmp.b	#OBJ_TYPE_AUX,ObjT_TypeID_b(a4)
 				beq.s	.itaux
 
 				move.w	(a0),d0
@@ -4714,11 +4718,11 @@ CalcPLR1InLine:
 				move.w	4(a0),d1
 				addq	#8,a0
 
-				tst.w	12(a4)
+				tst.w	ObjT_ZoneID_w(a4)
 				blt		.noworkout
 
 				moveq	#0,d2
-				move.b	16(a4),d2
+				move.b	ObjT_TypeID_b(a4),d2
 ;move.l #ColBoxTable,a6
 ;lea (a6,d2.w*8),a6
 
@@ -4780,7 +4784,7 @@ CalcPLR2InLine:
 				move.l	#Plr2_ObjectDistances_vw,a3
 
 .objpointrotlop:
-				cmp.b	#3,16(a4)
+				cmp.b	#OBJ_TYPE_AUX,ObjT_TypeID_b(a4)
 				beq.s	.itaux
 
 				move.w	(a0),d0
@@ -4788,11 +4792,11 @@ CalcPLR2InLine:
 				move.w	4(a0),d1
 				addq	#8,a0
 
-				tst.w	12(a4)
+				tst.w	ObjT_ZoneID_w(a4)
 				blt		.noworkout
 
 				moveq	#0,d2
-				move.b	16(a4),d2
+				move.b	ObjT_TypeID_b(a4),d2
 ; move.l #ColBoxTable,a6
 ; lea (a6,d2.w*8),a6
 
@@ -4859,7 +4863,7 @@ RotateObjectPts:
 
 
 .objpointrotlop:
-				cmp.b	#3,16(a4)
+				cmp.b	#OBJ_TYPE_AUX,ObjT_TypeID_b(a4)
 				beq.s	.itaux
 
 				move.w	(a0),d0					; x of object point
@@ -4867,7 +4871,7 @@ RotateObjectPts:
 				move.w	4(a0),d1				; z of object point
 				addq	#8,a0					; next point? or next object?
 
-				tst.w	12(a4)					; Lvl_ObjectDataPtr_l
+				tst.w	ObjT_ZoneID_w(a4)		; Lvl_ObjectDataPtr_l
 				blt		.noworkout
 
 				sub.w	zoff,d1					; viewZ = Z - cam Z
@@ -4903,20 +4907,20 @@ RotateObjectPts:
 				rts
 
 .itaux:
-				add.w	#64,a4
+				add.w	#OBJ_NEXT,a4
 				bra		.objpointrotlop
 
 .noworkout:
 				move.l	#0,(a1)+
 				move.l	#0,(a1)+
-				add.w	#64,a4
+				add.w	#OBJ_NEXT,a4
 				dbra	d7,.objpointrotlop
 				rts
 
 RotateObjectPtsFullScreen:
 
 .objpointrotlop:
-				cmp.b	#3,16(a4)
+				cmp.b	#OBJ_TYPE_AUX,ObjT_TypeID_b(a4)
 				beq.s	.itaux
 
 				move.w	(a0),d0
@@ -4924,7 +4928,7 @@ RotateObjectPtsFullScreen:
 				move.w	4(a0),d1
 				addq	#8,a0
 
-				tst.w	12(a4)
+				tst.w	ObjT_ZoneID_w(a4)
 				blt		.noworkout
 
 				sub.w	zoff,d1
@@ -7920,13 +7924,14 @@ DOALLANIMS:
 Objectloop2:
 				tst.w	(a0)
 				blt		doneallobj2
-				move.w	12(a0),d0
+				move.w	ObjT_ZoneID_w(a0),d0
 				blt		doneobj2
-				move.w	d0,EntT_GraphicRoom_w(a0)
+
+				move.w	d0,EntT_ZoneID_w(a0)
 				tst.b	ShotT_Worry_b(a0)
 				beq.s	doneobj2
 
-				move.b	16(a0),d0
+				move.b	ObjT_TypeID_b(a0),d0
 				cmp.b	#1,d0
 				blt		JUMPALIENANIM
 ; beq JUMPOBJECTANIM

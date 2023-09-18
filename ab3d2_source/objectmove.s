@@ -2034,7 +2034,7 @@ outin:
 
 foundclose:
 
-				move.w	d7,EntT_GraphicRoom_w(a0)
+				move.w	d7,EntT_ZoneID_w(a0)
 
 				rts
 
