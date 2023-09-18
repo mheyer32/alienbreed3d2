@@ -822,7 +822,6 @@ checkifcrossed:
 				moveq	#1,d0
 .ohbugger:
 
-
 				move.l	newy,d4
 				sub.l	oldy,d4
 				divs	d0,d4

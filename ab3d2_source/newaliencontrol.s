@@ -17,7 +17,7 @@ ItsAnAlien:
 				rts
 
 .no_enemies:
-				move.w	#-1,12(a0)
+				move.w	#-1,ObjT_ZoneID_w(a0)
 				rts
 
 .ok_alive:
@@ -113,7 +113,7 @@ GUNHELD:
 				rts
 
 Collectable:
-				move.w	12(a0),d0
+				move.w	ObjT_ZoneID_w(a0),d0
 				bge.s	.ok_in_room
 				rts
 
@@ -172,7 +172,7 @@ Collectable:
 				bsr		Plr1_CollectItem
 
 				; todo - is this what is removing the item?
-				move.w	#-1,12(a0)
+				move.w	#-1,ObjT_ZoneID_w(a0)
 				clr.b	ShotT_Worry_b(a0)
 
 .NotCollected1:
@@ -186,14 +186,14 @@ Collectable:
 				bsr		Plr2_CollectItem
 
 				; todo - is this what is removing the item?
-				move.w	#-1,12(a0)
+				move.w	#-1,ObjT_ZoneID_w(a0)
 				clr.b	ShotT_Worry_b(a0)
 
 .NotCollected2:
 				rts
 
 Activatable:
-				move.w	12(a0),d0
+				move.w	ObjT_ZoneID_w(a0),d0
 				bge.s	.ok_in_room
 				rts
 
@@ -402,7 +402,7 @@ Destructable:
 
 .alreadydead:
 				move.b	#0,EntT_NumLives_b(a0)
-				move.w	12(a0),d0
+				move.w	ObjT_ZoneID_w(a0),d0
 				bge.s	.ok_in_room
 
 				rts
@@ -446,7 +446,7 @@ Destructable:
 				rts
 
 StillHere:
-				move.w	12(a0),d0
+				move.w	ObjT_ZoneID_w(a0),d0
 				bge.s	.ok_in_room
 				rts
 
@@ -465,7 +465,7 @@ StillHere:
 
 .worry_about:
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.w	12(a0),d2
+				move.w	12(a0),d2 ; think this is ObjT_ZoneID_w - TBC
 				move.l	Lvl_ZoneAddsPtr_l,a5
 				move.l	(a5,d2.w*4),d0
 				add.l	Lvl_DataPtr_l,d0
@@ -479,7 +479,7 @@ StillHere:
 				movem.l	(a7)+,d0-d7/a0-a6
 
 Decoration:
-				move.w	12(a0),d0
+				move.w	ObjT_ZoneID_w(a0),d0
 				bge.s	.ok_in_room
 				rts
 
@@ -688,7 +688,7 @@ Plr2_CollectItem:
 				movem.l	(a7)+,d0-d7/a0-a6
 
 .nosoundmake:
-				move.w	#-1,12(a0)
+				move.w	#-1,ObjT_ZoneID_w(a0)
 				clr.b	ShotT_Worry_b(a0)
 
 .no_collect:
@@ -708,7 +708,7 @@ Plr1_CheckObjectCollide:
 				move.w	Plr1_XOff_l,oldx
 				move.w	Plr1_ZOff_l,oldz
 				move.w	Plr1_Zone_w,d7
-				cmp.w	12(a0),d7
+				cmp.w	ObjT_ZoneID_w(a0),d7
 				bne		.NotSameZone
 
 				move.l	Plr1_YOff_l,d7
@@ -749,7 +749,7 @@ Plr2_CheckObjectCollide:
 				move.w	Plr2_ZOff_l,oldz
 				move.w	Plr2_Zone_w,d7
 
-				cmp.w	12(a0),d7
+				cmp.w	ObjT_ZoneID_w(a0),d7
 				bne		.NotSameZone
 
 				move.l	Plr2_YOff_l,d7
@@ -1088,9 +1088,10 @@ SHOOTPLAYER1:
 				move.w	#19,d1
 
 .findonefree2:
-				move.w	12(a0),d2
+				move.w	ObjT_ZoneID_w(a0),d2
 				blt.s	.foundonefree2
-				adda.w	#64,a0
+
+				adda.w	#OBJ_NEXT,a0
 				dbra	d1,.findonefree2
 
 				move.w	tsx,oldx
@@ -1109,7 +1110,7 @@ SHOOTPLAYER1:
 				move.b	#0,ShotT_Size_b(a0)
 				move.b	#0,ShotT_Anim_b(a0)
 				move.l	backroom,a1
-				move.w	(a1),12(a0)
+				move.w	(a1),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
 				move.l	wallhitheight,d0
 				move.l	d0,ShotT_AccYPos_w(a0)
@@ -1133,15 +1134,16 @@ FireAtPlayer1:
 				move.w	#19,d1
 
 .findonefree:
-				move.w	12(a5),d0
+				move.w	ObjT_ZoneID_w(a5),d0
 				blt.s	.foundonefree
-				adda.w	#64,a5
+
+				adda.w	#OBJ_NEXT,a5
 				dbra	d1,.findonefree
 
 				bra		.cantshoot
 
 .foundonefree:
-				move.b	#2,16(a5)
+				move.b	#OBJ_TYPE_PROJECTILE,ObjT_TypeID_b(a5)
 				move.l	#ObjRotated_vl,a6
 				move.w	(a0),d0
 				lea		(a6,d0.w*8),a6
@@ -1214,7 +1216,7 @@ FireAtPlayer1:
 				move.w	d0,ShotT_VelocityZ_w(a5)
 
 				move.l	#%110010,EntT_EnemyFlags_l(a5)
-				move.w	12(a0),12(a5)
+				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w(a5)
 				move.w	4(a0),d0
 				move.w	d0,4(a5)
 				ext.l	d0
@@ -1338,10 +1340,10 @@ SHOOTPLAYER2:
 				move.w	#19,d1
 
 .findonefree2:
-				move.w	12(a0),d2
+				move.w	ObjT_ZoneID_w(a0),d2
 				blt.s	.foundonefree2
 
-				adda.w	#64,a0
+				adda.w	#OBJ_NEXT,a0
 				dbra	d1,.findonefree2
 
 				move.w	tsx,oldx
@@ -1360,7 +1362,7 @@ SHOOTPLAYER2:
 				move.b	#0,ShotT_Size_b(a0)
 				move.b	#0,ShotT_Anim_b(a0)
 				move.l	backroom,a1
-				move.w	(a1),12(a0)
+				move.w	(a1),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
 				move.l	wallhitheight,d0
 				move.l	d0,ShotT_AccYPos_w(a0)
@@ -1377,16 +1379,16 @@ FireAtPlayer2:
 				move.w	#19,d1
 
 .findonefree:
-				move.w	12(a5),d0
+				move.w	ObjT_ZoneID_w(a5),d0
 				blt.s	.foundonefree
 
-				adda.w	#64,a5
+				adda.w	#OBJ_NEXT,a5
 				dbra	d1,.findonefree
 
 				bra		.cantshoot
 
 .foundonefree:
-				move.b	#2,16(a5)
+				move.b	#OBJ_TYPE_PROJECTILE,ObjT_TypeID_b(a5)
 				move.l	#ObjRotated_vl,a6
 				move.w	(a0),d0
 				lea		(a6,d0.w*8),a6
@@ -1442,7 +1444,7 @@ FireAtPlayer2:
 				sub.w	oldz,d0
 				move.w	d0,ShotT_VelocityZ_w(a5)
 				move.l	#%110010,EntT_EnemyFlags_l(a5)
-				move.w	12(a0),12(a5)
+				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w(a5)
 				move.w	4(a0),d0
 				move.w	d0,4(a5)
 				ext.l	d0
