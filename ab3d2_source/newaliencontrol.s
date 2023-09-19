@@ -125,7 +125,7 @@ Collectable:
 				tst.b	AI_NoEnemies_b
 				beq.s	.no_locks
 
-				move.l	EntT_DoorsHeld_w(a0),d1
+				move.l	EntT_DoorsAndLiftsHeld_l(a0),d1
 				or.l	d1,Anim_DoorAndLiftLocks_l
 
 .no_locks:
@@ -171,7 +171,8 @@ Collectable:
 
 				bsr		Plr1_CollectItem
 
-				; todo - is this what is removing the item?
+				tst.w	d0
+				beq.s	.NotCollected1
 				move.w	#-1,ObjT_ZoneID_w(a0)
 				clr.b	ShotT_Worry_b(a0)
 
@@ -205,7 +206,7 @@ Activatable:
 				tst.b	AI_NoEnemies_b
 				beq.s	.no_locks
 
-				move.l	EntT_DoorsHeld_w(a0),d1
+				move.l	EntT_DoorsAndLiftsHeld_l(a0),d1
 				or.l	d1,Anim_DoorAndLiftLocks_l
 
 .no_locks:
@@ -286,7 +287,7 @@ Activatable:
 
 ACTIVATED:
 				move.w	d0,EntT_ZoneID_w(a0)
-; move.l EntT_DoorsHeld_w(a0),d1
+; move.l EntT_DoorsAndLiftsHeld_l(a0),d1
 ; or.l d1,Anim_DoorAndLiftLocks_l
 				tst.b	ShotT_Worry_b(a0)
 				bne.s	.worry_about
@@ -455,7 +456,7 @@ StillHere:
 				tst.b	AI_NoEnemies_b
 				beq.s	.no_locks
 
-				move.l	EntT_DoorsHeld_w(a0),d1
+				move.l	EntT_DoorsAndLiftsHeld_l(a0),d1
 				or.l	d1,Anim_DoorAndLiftLocks_l
 
 .no_locks:
@@ -522,20 +523,53 @@ intodeco:
 
 				rts
 
+				align 4
+
+obj_ConsumablePtr_l:	dc.l 0
+obj_ItemsPtr_l:			dc.l 0
+
 ; TODO - Generalise and factor into player.s
+				; a0 contains the object pointer
+				; trashes a1,a2,a3
 Plr1_CollectItem:
+				move.l	a0,a3 ; back up the object pointer
 
-; TODO - Check Game_CheckItemCollect() and bail on false
+				IFD BUILD_WITH_C
 
-;				IFD BUILD_WITH_C
-;
-;				movem.l	a0/a1/a2,-(sp)
-;				CALLC	Game_CheckCanCollect
-;				movem.l	(sp)+,a0/a1/a2
-;
-;				tst.w	d0
-;				bne.s	.can_collect
-;               ENDIF
+				move.l	GLF_DatabasePtr_l,a2
+				lea		GLFT_AmmoGive_l(a2),a1
+				add.l	#GLFT_GunGive_l,a2
+				moveq	#0,d0
+				move.b	EntT_Type_b(a0),d0
+				move.w	d0,d1
+				muls	#AmmoGiveLen,d0
+				muls	#GunGiveLen,d1
+				add.w	d1,a2
+				add.w	d0,a1
+
+				; Save recalculating these later...
+				move.l	a1,obj_ConsumablePtr_l
+				move.l	a2,obj_ItemsPtr_l
+
+				; If the item is a lock, it should always be collectable.
+				tst.l	EntT_DoorsAndLiftsHeld_l(a0)
+				bne.s	.can_collect
+
+				; Perform the inventory checks
+				lea		Plr1_Invetory_vw,a0
+
+				; a0 contains player 1 inventory
+				; a1 contains object consumables
+				; a2 contains object items
+				CALLC	Game_CheckInventoryLimits
+
+				move.l	a3,a0 ; restore object pointer
+
+				tst.w	d0
+				bne.s	.can_collect
+
+				rts
+				ENDIF
 
 .can_collect:
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
@@ -546,21 +580,21 @@ Plr1_CollectItem:
 
 				muls	#LVLT_MESSAGE_LENGTH,d0
 				add.l	Lvl_DataPtr_l,d0
-				move.l	a0,-(sp)
+
 				move.l	d0,a0
 				move.w	#LVLT_MESSAGE_LENGTH|MSG_TAG_NARRATIVE,d0
 				CALLC	Msg_PushLine
-				move.l	(sp)+,a0
+
+				move.l	a3,a0 ; restore object pointer
 
 				bra		.nodeftext
 
 .notext:
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.nodeftext
-
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
-				move.l	a0,-(sp)
+
 				muls	#GLFT_OBJ_NAME_LENGTH,d0
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_ObjectNames_l,d0
@@ -568,9 +602,21 @@ Plr1_CollectItem:
 				move.w	#GLFT_OBJ_NAME_LENGTH|MSG_TAG_DEFAULT,d0
 				CALLC	Msg_PushLine
 
-				move.l	(sp)+,a0
+				move.l	a3,a0 ; restore object pointer
 
 .nodeftext:
+				IFD		BUILD_WITH_C
+
+				lea		Plr1_Invetory_vw,a0
+				move.l	obj_ConsumablePtr_l,a1
+				move.l	obj_ItemsPtr_l,a2
+				CALLC	Game_AddToInventory
+
+				move.l	a3,a0 ; restore object pointer
+
+				ELSE
+				; Pure assembler build, old logic for now
+
 				move.l	GLF_DatabasePtr_l,a2
 				lea		GLFT_AmmoGive_l(a2),a3
 				add.l	#GLFT_GunGive_l,a2
@@ -583,12 +629,6 @@ Plr1_CollectItem:
 				add.w	d0,a3
 
 ; TODO - factor this out into Game_AddToPlayerInventory()
-
-; Check if player has max of all ammo types:
-
-;				bsr		CHECKPLAYERGOT
-;				tst.b	d0
-;				beq		.no_collect
 
 				move.w	#21,d0
 				move.l	#Plr1_Health_w,a1
@@ -605,6 +645,8 @@ Plr1_CollectItem:
 				move.w	(a2)+,d1
 				or.w	d1,(a1)+
 				dbra	d0,.add_weapons
+
+				ENDIF
 
 				move.l	GLF_DatabasePtr_l,a3
 				add.l	#GLFT_ObjectDefs,a3
@@ -627,11 +669,65 @@ Plr1_CollectItem:
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
 
+				moveq	#1,d0 ; we collected the item
 .nosoundmake:
 .no_collect:
 				rts
 
+				; a0 contains the object pointer
+				; trashes a1,a2,a3
 Plr2_CollectItem:
+				move.l	a0,a3 ; back up the object pointer
+
+				IFD BUILD_WITH_C
+
+				move.l	GLF_DatabasePtr_l,a2
+				lea		GLFT_AmmoGive_l(a2),a1
+				add.l	#GLFT_GunGive_l,a2
+				moveq	#0,d0
+				move.b	EntT_Type_b(a0),d0
+				move.w	d0,d1
+				muls	#AmmoGiveLen,d0
+				muls	#GunGiveLen,d1
+				add.w	d1,a2
+				add.w	d0,a1
+
+				; Save recalculating these later...
+				move.l	a1,obj_ConsumablePtr_l
+				move.l	a2,obj_ItemsPtr_l
+
+				; If the item is a lock, it should always be collectable.
+				tst.l	EntT_DoorsAndLiftsHeld_l(a0)
+				bne.s	.can_collect
+
+				; Perform the inventory checks
+				lea		Plr2_Invetory_vw,a0
+
+				; a0 contains player 1 inventory
+				; a1 contains object consumables
+				; a2 contains object items
+				CALLC	Game_CheckInventoryLimits
+
+				move.l	a3,a0 ; restore object pointer
+
+				tst.w	d0
+				bne.s	.can_collect
+
+				rts
+				ENDIF
+
+.can_collect:
+				IFD BUILD_WITH_C
+
+				lea		Plr2_Invetory_vw,a0
+				move.l	obj_ConsumablePtr_l,a1
+				move.l	obj_ItemsPtr_l,a2
+				CALLC	Game_AddToInventory
+
+				move.l	a3,a0 ; restore object pointer
+
+				ELSE
+
 				move.l	GLF_DatabasePtr_l,a2
 				lea		GLFT_AmmoGive_l(a2),a3
 				add.l	#GLFT_GunGive_l,a2
@@ -642,11 +738,6 @@ Plr2_CollectItem:
 				muls	#GunGiveLen,d1
 				add.w	d1,a2
 				add.w	d0,a3
-
-; Check if player has max of all ammo types:
-;				bsr		CHECKPLAYERGOT
-;				tst.b	d0
-;				beq		.no_collect
 
 				move.w	#21,d0
 				move.l	#Plr2_Health_w,a1
@@ -663,6 +754,8 @@ Plr2_CollectItem:
 				move.w	(a2)+,d1
 				or.w	d1,(a1)+
 				dbra	d0,.add_weapons
+
+				ENDIF
 
 				move.l	GLF_DatabasePtr_l,a3
 				add.l	#GLFT_ObjectDefs,a3

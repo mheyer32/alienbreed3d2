@@ -23,27 +23,43 @@ void Game_InitDefaults(void)
 /**
  * Check if an item can be collected based on the player's Inventory state
  */
-BOOL Game_CheckCanCollect(
+BOOL Game_CheckInventoryLimits(
     REG(a0, const Inventory*            inventory),
     REG(a1, const InventoryConsumables* consumables),
     REG(a2, const InventoryItems*       items)
 )
 {
-    /** If the item gives us an item we don't have, we can collect it */
-    if (items->ii_Jetpack && !inventory->inv_Items.ii_Jetpack) {
+#ifdef MULTIPLAYER_LEAVE_ITEMS
+    extern BYTE  Plr_MultiplayerType_b;
+    if (Plr_MultiplayerType_b == GAME_MODE_SINGLE_PLAYER) {
         return TRUE;
+        /* In single player, we can just early out if any item is given, even if we won't get ammo. */
+        UWORD const *itemPtr = &items->ii_Jetpack;
+        for (UWORD n = 0; n < sizeof(InventoryItems)/sizeof(UWORD); ++n) {
+            if (itemPtr[n]) {
+                return TRUE;
+            }
+        }
+    } else {
+        /**
+         * In multiplayer, don't collect items you have already, unless your ammo is not saturated.
+         */
+        UWORD const *itemPtr    = &items->ii_Jetpack;
+        UWORD const *invItemPtr = &inventory->inv_Items.ii_Jetpack;
+        for (UWORD n = 0; n < sizeof(InventoryItems)/sizeof(UWORD); ++n) {
+            if (itemPtr[n] && !invItemPtr[n]) {
+                return TRUE;
+            }
+        }
     }
-
-    if (items->ii_Shield && !inventory->inv_Items.ii_Shield) {
-        return TRUE;
-    }
-
-    for (UWORD n = 0; n < NUM_GUN_DEFS; ++n) {
-        if (items->ii_Weapons[n] && !inventory->inv_Items.ii_Weapons[n]) {
+#else
+    UWORD const *itemPtr = &items->ii_Jetpack;
+    for (UWORD n = 0; n < sizeof(InventoryItems)/sizeof(UWORD); ++n) {
+        if (itemPtr[n]) {
             return TRUE;
         }
     }
-
+#endif
     /** If the item gives us a quantity of something we aren't maxed out on, we can collect it */
     if (
         consumables->ic_Health > 0 &&

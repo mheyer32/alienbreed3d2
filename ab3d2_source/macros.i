@@ -356,3 +356,9 @@ CALLC			MACRO
 				jsr \1
 				ENDC
 				ENDM
+
+; Game macros
+
+FREE_OBJ		MACRO
+				move.w	#-1,ObjT_ZoneID_w(\1)
+				ENDM

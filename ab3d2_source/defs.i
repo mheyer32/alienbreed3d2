@@ -253,8 +253,12 @@ OBJ_NEXT	EQU	ObjT_SizeOf_l		; object after current
 		UWORD EntT_ImpactZ_w				; 44, 2
 		UWORD EntT_ImpactY_w				; 46, 2
 		UWORD EntT_VelocityY_w				; 48, 2
-		UWORD EntT_DoorsHeld_w				; 50, 2
+
+ 		; Union
+		LABEL EntT_DoorsAndLiftsHeld_l		; 50, 4 ; actually accessd as a long
+		PADDING 2
 		UWORD EntT_Timer3_w					; 52, 2
+
 		; union field of UWORD, UBYTE[2]
 		LABEL EntT_Timer4_w					; 54, 0
 		UBYTE EntT_Type_b					; 54, 1
@@ -271,8 +275,6 @@ ENT_PREV_2	EQU (-EntT_SizeOf_l*2)	; entity two before current
 ENT_PREV	EQU (-EntT_SizeOf_l)	; entity before current
 ENT_NEXT	EQU	EntT_SizeOf_l		; entity after current
 ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
-
-		; There must be data belonging to the entity after this point at least as far as 162
 
 	; Runtime projectile extension for ObjT
 	STRUCTURE ShotT,ObjT_Header_SizeOf_l

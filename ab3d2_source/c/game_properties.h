@@ -11,6 +11,8 @@
 #define GAME_DEFAULT_FUEL_LIMIT 250
 #define GAME_UNCAPPED_LIMIT 32767
 
+#define GAME_MODE_SINGLE_PLAYER 's'
+
 typedef struct {
     InventoryConsumables gmp_MaxInventory;
     /** TODO other things here ... */
@@ -30,7 +32,7 @@ extern void Game_InitDefaults(void);
  * Note that the consumables and items provided by an entiity are stored in separate arrays in the GLF data, so
  * this function requires pointers to each.
  */
-extern BOOL Game_CheckCanCollect(
+extern BOOL Game_CheckInventoryLimits(
     REG(a0, const Inventory*            inventory),
     REG(a1, const InventoryConsumables* consumables),
     REG(a2, const InventoryItems*       items)

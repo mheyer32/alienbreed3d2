@@ -246,7 +246,7 @@ ai_JustDied:
 				move.w	#0,EntT_ImpactY_w(a2)
 				move.b	AlienT_HitPoints_w+1(a4),18(a2)
 				move.b	#0,19(a2)
-				move.l	EntT_DoorsHeld_w(a0),EntT_DoorsHeld_w(a2)
+				move.l	EntT_DoorsAndLiftsHeld_l(a0),EntT_DoorsAndLiftsHeld_l(a2)
 				move.b	ShotT_InUpperZone_b(a0),ShotT_InUpperZone_b(a2)
 				move.b	#3,16-64(a2)
 				dbra	d7,.spawn_loop
