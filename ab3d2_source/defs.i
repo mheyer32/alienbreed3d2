@@ -389,6 +389,9 @@ GLFT_BUL_NAME_LENGTH EQU 20
 		PADDING (NUM_BULLET_DEFS*2)-2
 		LABEL GModT_SizeOf_l			; 44
 
+NUM_INVENTORY_ITEMS EQU (NUM_GUN_DEFS+2)
+NUM_INVENTORY_CONSUMABLES EQU (NUM_BULLET_DEFS+2)
+
 *****************************
 * Door Definitions **********
 *****************************

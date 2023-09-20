@@ -31,13 +31,14 @@ BOOL Game_CheckInventoryLimits(
 {
     UWORD const *plrInvPtr = &inventory->inv_Items.ii_Jetpack;
     UWORD const *objInvPtr = &items->ii_Jetpack;
-
+	UWORD givesAnything = 0;
     extern BYTE  Plr_MultiplayerType_b;
     if (Plr_MultiplayerType_b == GAME_MODE_SINGLE_PLAYER) {
         /**
          * In single player, we can just early out if any item is given, even if we won't get ammo.
          */
         for (UWORD n = 0; n < sizeof(InventoryItems)/sizeof(UWORD); ++n) {
+            givesAnything |= objInvPtr[n];
             if (objInvPtr[n]) {
                 return TRUE;
             }
@@ -47,6 +48,7 @@ BOOL Game_CheckInventoryLimits(
          * In multiplayer, don't collect items you have already, unless your ammo is not saturated.
          */
         for (UWORD n = 0; n < sizeof(InventoryItems)/sizeof(UWORD); ++n) {
+            givesAnything |= objInvPtr[n];
             if (objInvPtr[n] && !plrInvPtr[n]) {
                 return TRUE;
             }
@@ -58,11 +60,12 @@ BOOL Game_CheckInventoryLimits(
     objInvPtr = &consumables->ic_Health;
     UWORD const *limPtr = &game_ModProps.gmp_MaxInventory.ic_Health;
     for (UWORD n = 0; n < sizeof(InventoryConsumables)/sizeof(UWORD); ++n) {
+        givesAnything += objInvPtr[n];
         if (objInvPtr[n] > 0 && plrInvPtr[n] < limPtr[n]) {
             return TRUE;
         }
     }
-    return FALSE;
+    return givesAnything ? FALSE : TRUE;
 }
 
 /**

@@ -528,14 +528,9 @@ intodeco:
 obj_ConsumablePtr_l:	dc.l 0
 obj_ItemsPtr_l:			dc.l 0
 
-; TODO - Generalise and factor into player.s
 				; a0 contains the object pointer
-				; trashes a1,a2,a3
-Plr1_CollectItem:
-				move.l	a0,a3 ; back up the object pointer
-
-				IFD BUILD_WITH_C
-
+				; returns consumables in a1, items in a2
+obj_SetInventoryPointers:
 				move.l	GLF_DatabasePtr_l,a2
 				lea		GLFT_AmmoGive_l(a2),a1
 				add.l	#GLFT_GunGive_l,a2
@@ -550,6 +545,14 @@ Plr1_CollectItem:
 				; Save recalculating these later...
 				move.l	a1,obj_ConsumablePtr_l
 				move.l	a2,obj_ItemsPtr_l
+				rts
+
+; TODO - Generalise and factor into player.s
+				; a0 contains the object pointer
+				; trashes a1,a2,a3
+Plr1_CollectItem:
+				move.l	a0,a3 ; back up the object pointer
+				bsr		obj_SetInventoryPointers
 
 				; If the item is a lock, it should always be collectable.
 				tst.l	EntT_DoorsAndLiftsHeld_l(a0)
@@ -564,12 +567,17 @@ Plr1_CollectItem:
 				CALLC	Game_CheckInventoryLimits
 
 				move.l	a3,a0 ; restore object pointer
-
 				tst.w	d0
 				bne.s	.can_collect
 
+				lea		Game_CantCollectItemText_vb,a0
+				move.w	#LVLT_MESSAGE_LENGTH|MSG_TAG_NARRATIVE,d0
+				CALLC	Msg_PushLineDedupLast
+
+				; Restore pointer and reset return
+				move.l	a3,a0
+				moveq	#0,d0
 				rts
-				ENDIF
 
 .can_collect:
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
@@ -605,49 +613,12 @@ Plr1_CollectItem:
 				move.l	a3,a0 ; restore object pointer
 
 .nodeftext:
-				IFD		BUILD_WITH_C
-
 				lea		Plr1_Invetory_vw,a0
 				move.l	obj_ConsumablePtr_l,a1
 				move.l	obj_ItemsPtr_l,a2
 				CALLC	Game_AddToInventory
 
 				move.l	a3,a0 ; restore object pointer
-
-				ELSE
-				; Pure assembler build, old logic for now
-
-				move.l	GLF_DatabasePtr_l,a2
-				lea		GLFT_AmmoGive_l(a2),a3
-				add.l	#GLFT_GunGive_l,a2
-				moveq	#0,d0
-				move.b	EntT_Type_b(a0),d0
-				move.w	d0,d1
-				muls	#AmmoGiveLen,d0
-				muls	#GunGiveLen,d1
-				add.w	d1,a2
-				add.w	d0,a3
-
-; TODO - factor this out into Game_AddToPlayerInventory()
-
-				move.w	#21,d0
-				move.l	#Plr1_Health_w,a1
-
-.add_ammo:
-				move.w	(a3)+,d1
-				add.w	d1,(a1)+
-				dbra	d0,.add_ammo
-
-				move.w	#11,d0
-				move.l	#Plr1_Shield_w,a1
-
-.add_weapons:
-				move.w	(a2)+,d1
-				or.w	d1,(a1)+
-				dbra	d0,.add_weapons
-
-				ENDIF
-
 				move.l	GLF_DatabasePtr_l,a3
 				add.l	#GLFT_ObjectDefs,a3
 				moveq	#0,d0
@@ -678,23 +649,7 @@ Plr1_CollectItem:
 				; trashes a1,a2,a3
 Plr2_CollectItem:
 				move.l	a0,a3 ; back up the object pointer
-
-				IFD BUILD_WITH_C
-
-				move.l	GLF_DatabasePtr_l,a2
-				lea		GLFT_AmmoGive_l(a2),a1
-				add.l	#GLFT_GunGive_l,a2
-				moveq	#0,d0
-				move.b	EntT_Type_b(a0),d0
-				move.w	d0,d1
-				muls	#AmmoGiveLen,d0
-				muls	#GunGiveLen,d1
-				add.w	d1,a2
-				add.w	d0,a1
-
-				; Save recalculating these later...
-				move.l	a1,obj_ConsumablePtr_l
-				move.l	a2,obj_ItemsPtr_l
+				bsr		obj_SetInventoryPointers
 
 				; If the item is a lock, it should always be collectable.
 				tst.l	EntT_DoorsAndLiftsHeld_l(a0)
@@ -709,54 +664,18 @@ Plr2_CollectItem:
 				CALLC	Game_CheckInventoryLimits
 
 				move.l	a3,a0 ; restore object pointer
-
 				tst.w	d0
 				bne.s	.can_collect
 
 				rts
-				ENDIF
 
 .can_collect:
-				IFD BUILD_WITH_C
-
 				lea		Plr2_Invetory_vw,a0
 				move.l	obj_ConsumablePtr_l,a1
 				move.l	obj_ItemsPtr_l,a2
 				CALLC	Game_AddToInventory
 
 				move.l	a3,a0 ; restore object pointer
-
-				ELSE
-
-				move.l	GLF_DatabasePtr_l,a2
-				lea		GLFT_AmmoGive_l(a2),a3
-				add.l	#GLFT_GunGive_l,a2
-				moveq	#0,d0
-				move.b	EntT_Type_b(a0),d0
-				move.w	d0,d1
-				muls	#AmmoGiveLen,d0
-				muls	#GunGiveLen,d1
-				add.w	d1,a2
-				add.w	d0,a3
-
-				move.w	#21,d0
-				move.l	#Plr2_Health_w,a1
-
-.add_ammo:
-				move.w	(a3)+,d1
-				add.w	d1,(a1)+
-				dbra	d0,.add_ammo
-
-				move.w	#11,d0
-				move.l	#Plr2_Shield_w,a1 ; Armour!
-
-.add_weapons:
-				move.w	(a2)+,d1
-				or.w	d1,(a1)+
-				dbra	d0,.add_weapons
-
-				ENDIF
-
 				move.l	GLF_DatabasePtr_l,a3
 				add.l	#GLFT_ObjectDefs,a3
 				moveq	#0,d0
@@ -785,10 +704,6 @@ Plr2_CollectItem:
 				clr.b	ShotT_Worry_b(a0)
 
 .no_collect:
-				rts
-
-CHECKPLAYERGOT:
-				move.b	#1,d0
 				rts
 
 Plr1_CheckObjectCollide:

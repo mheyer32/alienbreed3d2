@@ -49,6 +49,10 @@ Game_TwoPlayerVictoryMessages_vb:
 
 				dc.b	"Thank you for your kind interest, I look forward to your custom in future lives."
 
+Game_CantCollectItemText_vb:
+				dc.b	"I can't collect this just now...",0
+
+				align 4
 Game_SinglePlayerVictoryText_vb:
 				;;;;	;;;;"12345678901234567890123456789012345678901234567890123456789012345678901234567890"
 				dc.b	0,0,"                                                                                "
