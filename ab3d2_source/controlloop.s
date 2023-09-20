@@ -1241,6 +1241,8 @@ LOADPOSITION:
 				muls	#2+(22*2)+(12*2),d0
 				add.l	d0,a0
 
+; 0xABADCAFE - This is where the inventory is loaded from the saved game slot
+.load_player_inventory:
 				move.l	#Plr_Health_w,a1
 				move.w	(a0)+,MAXLEVEL
 
@@ -1250,6 +1252,12 @@ LOADPOSITION:
 				REPT	6
 				move.l	(a0)+,(a1)+
 				ENDR
+
+				IFD BUILD_WITH_C
+				move.l  #Plr_Health_w,a0
+				CALLC   Game_ApplyInventoryLimits
+				ENDIF
+
 
 				move.w	MAXLEVEL,d0
 				move.l	#mnu_CURRENTLEVELLINE,a1

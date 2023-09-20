@@ -11,7 +11,9 @@
 #define GAME_DEFAULT_FUEL_LIMIT 250
 #define GAME_UNCAPPED_LIMIT 32767
 
-#define GAME_MODE_SINGLE_PLAYER 's'
+#define GAME_MODE_SINGLE_PLAYER 'n'
+#define GAME_MODE_TWO_PLAYER_MASTER 'm'
+#define GAME_MODE_TWO_PLAYER_SLAVE 's'
 
 typedef struct {
     InventoryConsumables gmp_MaxInventory;
@@ -48,6 +50,13 @@ extern void Game_AddToInventory(
     REG(a0, Inventory*                  inventory),
     REG(a1, const InventoryConsumables* consumables),
     REG(a2, const InventoryItems*       items)
+);
+
+/**
+ * Applys the current limits to any saved game after loading.
+ */
+extern void Game_ApplyInventoryLimits(
+    REG(a0, Inventory* inventory)
 );
 
 #endif // GAME_PROPERTIES_H

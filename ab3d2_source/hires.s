@@ -3080,7 +3080,7 @@ Plr1_Use:
 
 				bgt.s	.notdead
 
-				move.w	#-1,12+128(a0)
+				move.w	#-1,ObjT_ZoneID_w+ENT_NEXT_2(a0)
 				rts
 
 .notdead:
