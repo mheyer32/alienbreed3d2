@@ -570,12 +570,19 @@ Plr1_CollectItem:
 				tst.w	d0
 				bne.s	.can_collect
 
+				tst.w	EntT_Timer2_w(a0)
+				bgt		.skip_no_collect_message
+
 				lea		Game_CantCollectItemText_vb,a0
 				move.w	#LVLT_MESSAGE_LENGTH|MSG_TAG_NARRATIVE,d0
 				CALLC	Msg_PushLineDedupLast
-
 				; Restore pointer and reset return
 				move.l	a3,a0
+
+				move.w	#200,EntT_Timer2_w(a0)
+
+.skip_no_collect_message:
+				sub.w	#1,EntT_Timer2_w(a0)
 				moveq	#0,d0
 				rts
 
