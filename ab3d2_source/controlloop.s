@@ -73,7 +73,7 @@ Game_Start:
 
 				jsr		Res_LoadSoundFx
 				jsr		Res_LoadWallTextures
-				jsr		Res_LoadFloorTextures
+				jsr		Res_LoadFloorsAndTextures
 				jsr		Res_LoadObjects
 
 				move.l	#draw_BackdropImageName_vb,a0
@@ -202,7 +202,7 @@ QUITTT:
 
 				jsr		Res_FreeWallTextures
 				jsr		Res_FreeSoundFx
-				jsr		Res_FreeFloorTextures
+				jsr		Res_FreeFloorsAndTextures
 				jsr		Res_FreeObjects
 
 				jsr		_CloseLowLevel

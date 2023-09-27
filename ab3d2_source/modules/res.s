@@ -180,11 +180,11 @@ Res_FreeSoundFx:
 
 ; *****************************************************************************
 ; *
-; * Floor (and ceiling) Textures
+; * Floor/Ceiling and model Textures
 ; *
 ; *****************************************************************************
 
-Res_LoadFloorTextures:
+Res_LoadFloorsAndTextures:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_FloorFilename_l,a0
 				move.l	#Draw_FloorTexturesPtr_l,d0
@@ -221,7 +221,7 @@ Res_LoadFloorTextures:
 ; move.l d0,Draw_TexturePalettePtr_l
 				rts
 
-Res_FreeFloorTextures:
+Res_FreeFloorsAndTextures:
 				RES_FREEPTR Draw_FloorTexturesPtr_l
 				RES_FREEPTR Draw_TextureMapsPtr_l
 				RES_FREEPTR Draw_TexturePalettePtr_l

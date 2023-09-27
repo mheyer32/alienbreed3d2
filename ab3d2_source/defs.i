@@ -381,16 +381,32 @@ GLFT_BUL_NAME_LENGTH EQU 20
 		STRUCT GLFT_EchoTable_l,(60)
 		LABEL  GLFT_SizeOf_l
 
-	; Custom game properties
-	STRUCTURE GModT,0
-		UWORD GModT_Health_w		        ; 2
-		UWORD GModT_JetpackFuel_w			; 2
-		UWORD GModT_AmmoCounts_vw			; 40 - UWORD[20]
-		PADDING (NUM_BULLET_DEFS*2)-2
-		LABEL GModT_SizeOf_l			; 44
-
 NUM_INVENTORY_ITEMS EQU (NUM_GUN_DEFS+2)
 NUM_INVENTORY_CONSUMABLES EQU (NUM_BULLET_DEFS+2)
+
+
+	; Inventory consumables
+	STRUCTURE InvCT,0
+		UWORD InvCT_Health_w		        ; 2
+		UWORD InvCT_JetpackFuel_w			; 2
+		UWORD InvCT_AmmoCounts_vw			; 40 - UWORD[20]
+		PADDING (NUM_BULLET_DEFS*2)-2
+		LABEL InvCT_SizeOf_l				; 44
+
+
+	; Inventory items
+	STRUCTURE InvIT,0
+		UWORD InvIT_Shield_w				; 2
+		UWORD InvIT_JetPack_w				; 2
+		UWORD InvIT_Weapons_vw				; 20 - UWORD[10]
+		PADDING (NUM_GUN_DEFS*2)-2
+		LABEL InvIT_SizeOf_l				; 24
+
+	; Custom game properties
+	STRUCTURE GModT,0
+		STRUCTURE GModT_MaxInv,(InvCT_SizeOf_l), 44
+		LABEL GModT_SizeOf_l				; 44
+
 
 *****************************
 * Door Definitions **********
