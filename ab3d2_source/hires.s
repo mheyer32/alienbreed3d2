@@ -6655,7 +6655,7 @@ noclipleftGOUR:
 				;asl.l	#2,d2
 				;ext.l	d0
 				;divs.l	d0,d2
-				;move.l	d2,dst
+				;move.l	d2,draw_Distance_l
 				;asr.l	#7,d2
 				;asr.l	#2,d2
 
@@ -6663,7 +6663,7 @@ noclipleftGOUR:
 				mulu.w	OneOverN_vw(pc,d0.w*2),d2	;
 				lsr.l	#8,d2
 
-				move.l	d2,dst
+				move.l	d2,draw_Distance_l
 				asr.l	#7,d2
 				asr.l	#2,d2
 
@@ -6728,7 +6728,7 @@ noclipleftGOUR:
 
 				move.l	a6,a3
 				movem.l	d0/d7/a2/a4/a5/a6,-(a7)
-				move.l	dst,d0
+				move.l	draw_Distance_l,d0
 				move.l	Draw_TexturePalettePtr_l,a1
 				add.l	#256*32,a1
 				move.l	Draw_FloorTexturesPtr_l,a0
@@ -6824,7 +6824,7 @@ dofloornoclipGOUR:
 				move.l	a6,a3
 				movem.l	d0/d7/a2/a4/a5/a6,-(a7)
 				move.l	d6,d0
-				move.l	d0,dst
+				move.l	d0,draw_Distance_l
 				move.l	Draw_TexturePalettePtr_l,a1
 				add.l	#256*32,a1
 				move.l	Draw_FloorTexturesPtr_l,a0
@@ -6899,7 +6899,7 @@ rightedge:		dc.w	0
 ;rndpt:			dc.l	rndtab
 
 
-dst:			dc.l	0
+draw_Distance_l:			dc.l	0
 
 ********************************************************************************
 				; Draw one floor line
@@ -6908,7 +6908,7 @@ FloorLine:
 				move.l	Draw_FloorTexturesPtr_l,a0
 				adda.w	whichtile,a0
 				move.w	lighttype,d1
-				move.l	d0,dst					; View2FloorDist*64 * 256 / firstline
+				move.l	d0,draw_Distance_l					; View2FloorDist*64 * 256 / firstline
 				move.l	d0,d2					;
 				********************
 * Old version
@@ -6956,7 +6956,7 @@ Chunky:
 pastast:
 				move.w	lighttype,d1
 
-				move.l	d0,dst
+				move.l	d0,draw_Distance_l
 
 				move.l	d0,d2
 *********************
@@ -7472,7 +7472,7 @@ REFLECTIONWATER:
 
 				move.l	Draw_TexturePalettePtr_l,a1
 				add.l	#256*16,a1
-				move.l	dst,d0
+				move.l	draw_Distance_l,d0
 				clr.b	d0
 
 				add.w	d0,d0
@@ -7484,7 +7484,7 @@ REFLECTIONWATER:
 
 				adda.w	d0,a1
 
-				move.l	dst,d0
+				move.l	draw_Distance_l,d0
 				asl.w	#7,d0
 				add.w	wtan,d0
 				and.w	#8191,d0
@@ -7492,7 +7492,7 @@ REFLECTIONWATER:
 				move.w	(a0,d0.w),d0
 				ext.l	d0
 
-				move.l	dst,d3
+				move.l	draw_Distance_l,d3
 				add.w	#300,d3
 				divs	d3,d0
 				asr.w	#5,d0
@@ -7505,7 +7505,7 @@ REFLECTIONWATER:
 
 oknotoffbotototr
 
-; move.w dst,d3
+; move.w draw_Distance_l,d3
 ; asr.w #7,d3
 ; add.w d3,d0
 
@@ -7557,15 +7557,14 @@ acrossscrnwr:
 				rts
 
 texturedwater:
-
 				move.l	d1,d4
 
 				add.l	wateroff,d5
 
 				move.l	Draw_TexturePalettePtr_l,a1
 				add.l	#256*16,a1
-				move.l	dst,d0
-				asr.l	#2,d0
+				move.l	draw_Distance_l,d0
+;				asr.l	#2,d0
 				clr.b	d0
 
 				add.w	d0,d0
@@ -7576,7 +7575,7 @@ texturedwater:
 
 				adda.w	d0,a1
 
-				move.l	dst,d0
+				move.l	draw_Distance_l,d0
 				asl.w	#7,d0
 				add.w	wtan,d0
 				and.w	#8191,d0
@@ -7584,7 +7583,7 @@ texturedwater:
 				move.w	(a0,d0.w),d0
 				ext.l	d0
 
-				move.l	dst,d3
+				move.l	draw_Distance_l,d3
 				add.w	#300,d3
 				divs	d3,d0
 				asr.w	#5,d0
@@ -7597,7 +7596,7 @@ texturedwater:
 
 oknotoffbototot
 
-; move.w dst,d3
+; move.w draw_Distance_l,d3
 ; asr.w #7,d3
 ; add.w d3,d0
 
@@ -7657,7 +7656,7 @@ texturedwaterDOUB:
 
 				move.l	Draw_TexturePalettePtr_l,a1
 				add.l	#256*16,a1
-				move.l	dst,d0
+				move.l	draw_Distance_l,d0
 				asr.l	#2,d0
 				clr.b	d0
 
@@ -7669,7 +7668,7 @@ texturedwaterDOUB:
 
 				adda.w	d0,a1
 
-				move.l	dst,d0
+				move.l	draw_Distance_l,d0
 				asl.w	#7,d0
 				add.w	wtan,d0
 				and.w	#8191,d0
@@ -7677,7 +7676,7 @@ texturedwaterDOUB:
 				move.w	(a0,d0.w),d0
 				ext.l	d0
 
-				move.l	dst,d3
+				move.l	draw_Distance_l,d3
 				add.w	#300,d3
 				divs	d3,d0
 				asr.w	#5,d0
@@ -7690,7 +7689,7 @@ texturedwaterDOUB:
 
 .oknotoffbototot
 
-; move.w dst,d3
+; move.w draw_Distance_l,d3
 ; asr.w #7,d3
 ; add.w d3,d0
 
