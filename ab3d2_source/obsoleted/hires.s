@@ -1038,14 +1038,13 @@ waitmaster:
 				move.l	d0,Vid_CentreY_w
 				move.l	d1,Vid_CentreY_w+4
 
-; 0xABADCAFE - this needs a countdown timer to slow down the water animation
-				move.l	draw_LastWaterFramePtr_l,a0
-				move.l	(a0)+,draw_WaterFramePtr_l
-				cmp.l	#draw_EndWaterFramePtrs_l,a0
+				move.l	waterpt,a0
+				move.l	(a0)+,watertouse
+				cmp.l	#endwaterlist,a0
 				blt.s	okwat
-				move.l	#draw_WaterFramePtrs_vl,a0
+				move.l	#waterlist,a0
 okwat:
-				move.l	a0,draw_LastWaterFramePtr_l
+				move.l	a0,waterpt
 
 				add.w	#640,wtan
 				and.w	#8191,wtan
@@ -3960,6 +3959,8 @@ intorcliplop:	;		clips
 				bra		intorcliplop
 
 outofrcliplop:
+
+
 				move.w	Draw_LeftClip_w,d0
 				ext.l	d0
 				move.l	d0,Draw_LeftClip_l
@@ -4219,17 +4220,33 @@ polyloop:
 				blt		jumpoutofloop
 				beq		itsawall
 				cmp.w	#3,d0
+;				beq		itsasetclip
 				blt		itsafloor
 				cmp.w	#4,d0
 				beq		itsanobject
 
+;				cmp.w	#5,d0
+;				beq		itsanarc
+
+;				cmp.w	#6,d0
+;				beq		itsalightbeam
 				cmp.w	#7,d0
 				beq.s	itswater
-
+;				cmp.w	#9,d0
+;				ble		itsachunkyfloor
+;				cmp.w	#11,d0
+;				ble		itsabumpyfloor
 				cmp.w	#12,d0
 				beq.s	itsbackdrop
+;				cmp.w	#13,d0
+;				beq.s	itsaseewall
 
 				bra		polyloop
+
+;itsaseewall:
+;				; st		wall_SeeThrough_b
+;				jsr		Draw_Wall
+;				bra		polyloop
 
 itsbackdrop:
 				jsr		Draw_SkyBackdrop
@@ -4240,13 +4257,47 @@ itswater:
 				move.w	#2,SMALLIT
 				move.w	#3,d0
 				clr.b	draw_UseGouraudFlats_b
+;				move.l	#draw_FloorLine,LineToUse
 				st		draw_UseWater_b
+				clr.b	draw_UseBumpMappedFlats_b
 				jsr		Draw_Flats
 				bra		polyloop
+
+;itsanarc:
+;				jsr		CurveDraw
+;				bra		polyloop
 
 itsanobject:
 				jsr		Draw_Objects
 				bra		polyloop
+
+;itsalightbeam:
+;				jsr		LightDraw
+;				bra		polyloop
+
+;itsabumpyfloor:
+;				move.w	#1,SMALLIT
+;				sub.w	#9,d0
+;				st		draw_UseBumpMappedFlats_b
+;				st		draw_SmoothBumpMaps_b
+;				clr.b	draw_UseWater_b
+;				move.l	#draw_FloorLineBumped,LineToUse
+;				jsr		Draw_Flats
+;				bra		polyloop
+
+;itsachunkyfloor:
+;				move.w	#1,SMALLIT
+;				subq.w	#7,d0
+;				st		draw_UseBumpMappedFlats_b
+;				sub.w	#12,draw_TopClip_w
+;				; add.w #10,draw_BottomClip_w
+;				clr.b	draw_SmoothBumpMaps_b
+;				clr.b	draw_UseWater_b
+;				move.l	#draw_FloorLineBumped,LineToUse
+;				jsr		Draw_Flats
+;				add.w	#12,draw_TopClip_w
+;				; sub.w #10,draw_BottomClip_w
+;				bra		polyloop
 
 itsafloor:
 				move.l	Draw_PointBrightsPtr_l,FloorPtBrightsPtr_l
@@ -4279,8 +4330,9 @@ itsafloor:
 ;				move.l	d0,SSTACK
 ;				movem.l	(a7)+,a0/d0
 
-				;* 1,2 = floor/roof
+;				move.l	#draw_FloorLine,LineToUse	;* 1,2 = floor/roof
 				clr.b	draw_UseWater_b
+				clr.b	draw_UseBumpMappedFlats_b
 				move.b	draw_GouraudFlatsSelected_b,draw_UseGouraudFlats_b
 				jsr		Draw_Flats
 
@@ -4291,7 +4343,8 @@ itsafloor:
 ;				move.l	(a7)+,a0
 
 				bra		polyloop
-
+;itsasetclip:
+;				bra		polyloop
 itsawall:
 ;				; clr.b	wall_SeeThrough_b
 ;				; move.l #stripbuffer,a1
@@ -4319,6 +4372,7 @@ noturn:
 ; d1 = speed moved l/r
 
 				move.w	d1,lrs
+
 				rts
 
 lrs:			dc.w	0
@@ -6331,7 +6385,7 @@ pastscale:
 
 				move.l	Draw_TexturePalettePtr_l,a1
 				add.l	#256*32,a1
-
+;				move.l	LineToUse,a5
 				lea		draw_FloorLine,a5
 				move.w	#4,tonextline			; line tab advance?
 
@@ -6364,7 +6418,7 @@ pix1h:
 				cmp.w	d4,d7
 				blt		predontdrawfloor		; bottom >= Vid_CentreY_w - bottomclip
 				cmp.w	d4,d1
-				bge.s	.nocliptoproof			F; top >= Vid_CentreY_w - bottomclip
+				bge.s	.nocliptoproof			; top >= Vid_CentreY_w - bottomclip
 				move.w	d4,d1					; top = Vid_CentreY_w - bottomclip
 .nocliptoproof
 				cmp.w	d3,d7
@@ -6399,6 +6453,7 @@ clipfloor:
 
 doneclip:
 				lea		(a4,d1*2),a4			; go to top linetab
+; move.l #dists,a2
 				move.w	View2FloorDist,d0
 ***************************************************************
 ;could this be screen width * 0.33333 ?
@@ -6579,7 +6634,6 @@ dofloorGOUR:
 				cmp.w	d4,d2
 				ble.s	nocliprightGOUR
 				move.w	d4,d2
-
 nocliprightGOUR:
 				move.w	(a4),d1
 				cmp.w	d4,d1
@@ -6590,7 +6644,6 @@ nocliprightGOUR:
 				subq	#1,d6
 				sub.w	d1,d6
 				move.w	d3,d1
-
 noclipleftGOUR:
 				cmp.w	d1,d2
 				ble		nodrawlineGOUR
@@ -6641,6 +6694,7 @@ noclipleftGOUR:
 				ble.s	.okdr
 				move.w	#30,d3
 .okdr:
+
 				sub.w	d1,d3
 				asl.w	#8,d1
 				move.w	d1,leftbright
@@ -6682,8 +6736,8 @@ noclipleftGOUR:
 				adda.w	whichtile,a0
 				jsr		pastfloorbright
 				movem.l	(a7)+,d0/d7/a2/a4/a5/a6
+nodrawlineGOUR
 
-nodrawlineGOUR:
 				sub.w	#1,disttobot
 
 				move.w	linedir(pc),d3
@@ -6697,10 +6751,11 @@ nodrawlineGOUR:
 				subq	#1,d7
 				bgt		dofloorGOUR
 
-predontdrawfloorGOUR:
+predontdrawfloorGOUR
 				move.l	(a7)+,a0
 
 dontdrawfloorGOUR:
+
 				rts
 
 REFPTR:			dc.l	0
@@ -6790,11 +6845,17 @@ dofloornoclipGOUR:
 				add.w	d3,d0
 				subq	#1,d7
 				bgt		dofloornoclipGOUR
+
 				bra		predontdrawfloorGOUR
 
+
+
+dists:
+; incbin "floordists"
 drawit:			dc.w	0
 
 				align 4
+LineToUse:		dc.l	0
 
 ***************************
 * Right then, time for the floor
@@ -6808,6 +6869,31 @@ drawit:			dc.w	0
 
 tstwhich:		dc.w	0
 whichtile:		dc.w	0
+
+PLAINSCALE:
+;incbin "includes/plainscale"
+
+storeit:		dc.l	0
+
+doacrossline:
+val				SET		0
+				REPT	32
+				move.w	d0,val(a3)
+val				SET		val+4
+				ENDR
+val				SET		val+4
+				REPT	32
+				move.w	d0,val(a3)
+val				SET		val+4
+				ENDR
+val				SET		val+4
+				REPT	32
+				move.w	d0,val(a3)
+val				SET		val+4
+				ENDR
+				rts
+
+
 leftedge:		dc.w	0
 rightedge:		dc.w	0
 
@@ -6818,37 +6904,80 @@ draw_Distance_l:			dc.l	0
 ********************************************************************************
 				; Draw one floor line
 draw_FloorLine:
+
 				move.l	Draw_FloorTexturesPtr_l,a0
 				adda.w	whichtile,a0
 				move.w	lighttype,d1
 				move.l	d0,draw_Distance_l					; View2FloorDist*64 * 256 / firstline
 				move.l	d0,d2					;
 				********************
-;* Old version
+* Old version
 				asr.l	#2,d2
 				asr.l	#8,d2					; View2FloorDist / 1024
+
 				add.w	#5,d1					; add 5 to lighttype?!
+
 				add.w	d2,d1					; clamp lighting on the line
 				bge.s	.fixedbright
-
 				moveq	#0,d1					; low clamp
-
 .fixedbright:
 				cmp.w	#28,d1
 				ble.s	.smallbright
-
 				move.w	#28,d1					; high clamp
-
 .smallbright:
 				move.l	Draw_TexturePalettePtr_l,a1
 				add.l	#256*32,a1
+				add.l	floorbright(pc,d1.w*4),a1 ; adjust brightness of line
+				bra		pastfloorbright
 
-				; todo - is this used?
-				add.w	.floorbright(pc,d1.w*2),a1 ; adjust brightness of line
+ConstCol:		dc.w	0
+
+draw_FloorLineBumped:
+				tst.b	draw_SmoothBumpMaps_b
+				beq.s	Chunky
+
+				move.l	#SmoothTile,a0
+				lea		Smoothscalecols,a1
+				bra		pastast
+
+Chunky:
+				moveq	#0,d2
+				move.l	#Bumptile,a0
+				move.w	whichtile,d2
+				adda.w	d2,a0
+				ror.l	#2,d2
+				lsr.w	#6,d2
+				rol.l	#2,d2
+				and.w	#15,d2
+				move.l	#ConstCols,a1
+				move.w	(a1,d2.w*2),ConstCol
+				lea		Bumpscalecols,a1
+
+pastast:
+				move.w	lighttype,d1
+
+				move.l	d0,draw_Distance_l
+
+				move.l	d0,d2
+*********************
+* Old version
+				asr.l	#2,d2
+				asr.l	#8,d2
+				add.w	#5,d1
+
+				add.w	d2,d1
+				bge.s	.fixedbright
+				moveq	#0,d1
+.fixedbright:
+				cmp.w	#31,d1
+				ble.s	.smallbright
+				move.w	#31,d1
+.smallbright:
+				add.l	floorbright(pc,d1.w*2),a1
 				bra		pastfloorbright
 
 				align 4
-.floorbright:
+floorbright:
 				dc.w	512*0
 				dc.w	512*1
 				dc.w	512*2
@@ -7065,7 +7194,7 @@ doneallmult:
 				move.w	startsmoothx,d3
 
 				tst.b	draw_UseWater_b
-				bne		draw_WaterSurfaceDouble
+				bne		texturedwaterDOUB
 		; tst.b draw_UseGouraudFlats_b
 				bra		gouraudfloorDOUB
 
@@ -7085,7 +7214,7 @@ allintofirst:
 tstwat:
 
 				tst.b	draw_UseWater_b
-				bne		draw_WaterSurface
+				bne		texturedwater
 ; tst.b draw_UseGouraudFlats_b					; FIXME: this effectively disables bumpmapped floors...
 												; opportunity to reenable and see what happens
 				;bra		gouraudfloor
@@ -7094,13 +7223,24 @@ tstwat:
 				bne		draw_GoraudFloor060
 				bra		draw_GoraudFloor
 
+
+******************************
+* BumpMap the floor/ceiling! *
+				tst.b	draw_UseBumpMappedFlats_b
+				bne.s	BumpMap
+******************************
+
 ordinary:
 				moveq	#0,d0
 
 				dbra	d7,acrossscrn
 				rts
 
+draw_UseBumpMappedFlats_b:	dc.w	0
+draw_SmoothBumpMaps_b:		dc.w	0
 draw_UseGouraudFlats_b:		dc.w	0
+
+				include	"bumpmap.s"
 
 				align 4
 backbefore:
@@ -7294,10 +7434,9 @@ acrossscrngourD:
 				rts
 
 				align 4
-draw_LastWaterFramePtr_l:
-				dc.l	draw_WaterFramePtrs_vl
+waterpt:		dc.l	waterlist
 
-draw_WaterFramePtrs_vl:
+waterlist:
 				dc.l	draw_WaterFrames_vb
 				dc.l	draw_WaterFrames_vb+2
 				dc.l	draw_WaterFrames_vb+256
@@ -7306,16 +7445,21 @@ draw_WaterFramePtrs_vl:
 				dc.l	draw_WaterFrames_vb+512+2
 				dc.l	draw_WaterFrames_vb+768
 				dc.l	draw_WaterFrames_vb+768+2
-draw_EndWaterFramePtrs_l:
+; dc.l draw_WaterFrames_vb+768
+; dc.l draw_WaterFrames_vb+512+2
+; dc.l draw_WaterFrames_vb+512
+; dc.l draw_WaterFrames_vb+256+2
+; dc.l draw_WaterFrames_vb+256
+; dc.l draw_WaterFrames_vb+2
+endwaterlist:
 
-draw_WaterFramePtr_l:		dc.l	draw_WaterFrames_vb
-
-
-wateroff:		dc.l	0
+watertouse:		dc.l	draw_WaterFrames_vb
 
 wtan:			dc.w	0
+wateroff:		dc.l	0
 
-draw_WaterSurface:
+REFLECTIONWATER:
+
 				move.l	d1,d4
 
 				add.l	wateroff,d5
@@ -7323,17 +7467,17 @@ draw_WaterSurface:
 				move.l	Draw_TexturePalettePtr_l,a1
 				add.l	#256*16,a1
 				move.l	draw_Distance_l,d0
-;				asr.l	#2,d0 ; 0xABADCAFE - this seems to affect the opacity
 				clr.b	d0
 
 				add.w	d0,d0
-				cmp.w	#9*512,d0
+				cmp.w	#12*512,d0
 				blt.s	.notoowater
-
-				move.w	#9*512,d0
+				move.w	#12*512,d0
 
 .notoowater:
+
 				adda.w	d0,a1
+
 				move.l	draw_Distance_l,d0
 				asl.w	#7,d0
 				add.w	wtan,d0
@@ -7341,6 +7485,98 @@ draw_WaterSurface:
 				move.l	#SinCosTable_vw,a0
 				move.w	(a0,d0.w),d0
 				ext.l	d0
+
+				move.l	draw_Distance_l,d3
+				add.w	#300,d3
+				divs	d3,d0
+				asr.w	#5,d0
+				addq	#4,d0
+				cmp.w	disttobot,d0
+				blt.s	oknotoffbotototr
+
+				move.w	disttobot,d0
+				subq	#1,d0
+
+oknotoffbotototr
+
+; move.w draw_Distance_l,d3
+; asr.w #7,d3
+; add.w d3,d0
+
+				muls	#SCREEN_WIDTH,d0
+				tst.w	above
+				beq.s	nonnnnnegr
+				neg.l	d0
+
+nonnnnnegr:
+
+				move.l	d0,a6
+
+				move.l	watertouse,a0
+
+; move.l #mixtab,a5
+
+				moveq	#0,d1
+
+				move.w	startsmoothx,d3
+				dbra	d7,acrossscrnwr
+				rts
+
+backbeforewr:
+				and.w	d1,d5
+				move.w	(a0,d5.w*4),d0
+				move.b	(a3,a6.w),d0
+				move.w	(a1,d0.w),(a3)+
+				add.w	a4,d3
+				addx.l	d6,d5
+				dbcs	d7,acrossscrnwr
+				dbcc	d7,backbeforewr
+				rts
+
+acrossscrnwr:
+				move.w	d5,d3
+				move.l	d5,d6
+				lsr.w	#8,d3
+				swap	d6
+				move.b	d3,d6
+				move.w	(a0,d6.w*4),d0
+				add.l	d2,d5
+				move.w	(a4,a6.w),d1
+				addq	#2,a4
+				move.b	(a3,a6.w),d1
+				move.b	(a5,d1.l),d0
+				and.l	d4,d5
+				move.w	(a1,d0.w),(a3)+
+				dbra	d7,acrossscrnwr
+				rts
+
+texturedwater:
+				move.l	d1,d4
+
+				add.l	wateroff,d5
+
+				move.l	Draw_TexturePalettePtr_l,a1
+				add.l	#256*16,a1
+				move.l	draw_Distance_l,d0
+;				asr.l	#2,d0
+				clr.b	d0
+
+				add.w	d0,d0
+				cmp.w	#9*512,d0
+				blt.s	.notoowater
+				move.w	#9*512,d0
+.notoowater:
+
+				adda.w	d0,a1
+
+				move.l	draw_Distance_l,d0
+				asl.w	#7,d0
+				add.w	wtan,d0
+				and.w	#8191,d0
+				move.l	#SinCosTable_vw,a0
+				move.w	(a0,d0.w),d0
+				ext.l	d0
+
 				move.l	draw_Distance_l,d3
 				add.w	#300,d3
 				divs	d3,d0
@@ -7348,10 +7584,11 @@ draw_WaterSurface:
 				addq	#4,d0
 				cmp.w	disttobot,d0
 				blt.s	oknotoffbototot
+
 				move.w	disttobot,d0
 				subq	#1,d0
 
-oknotoffbototot:
+oknotoffbototot
 
 ; move.w draw_Distance_l,d3
 ; asr.w #7,d3
@@ -7370,7 +7607,9 @@ oknotoffbototot:
 nonnnnneg:
 
 				move.l	d0,a6
-				move.l	draw_WaterFramePtr_l,a0
+
+				move.l	watertouse,a0
+
 				move.w	startsmoothx,d3
 				dbra	d7,acrossscrnw
 				rts
@@ -7403,9 +7642,12 @@ acrossscrnw:
 				rts
 
 
-draw_WaterSurfaceDouble:
+texturedwaterDOUB:
+
 				move.l	d1,d4
+
 				add.l	wateroff,d5
+
 				move.l	Draw_TexturePalettePtr_l,a1
 				add.l	#256*16,a1
 				move.l	draw_Distance_l,d0
@@ -7456,9 +7698,13 @@ draw_WaterSurfaceDouble:
 				neg.l	d0
 
 .nonnnnneg:
+
 				move.l	d0,a6
-				move.l	draw_WaterFramePtr_l,a0
+
+				move.l	watertouse,a0
+
 				add.l	d2,d2
+
 				move.w	startsmoothx,d3
 				dbra	d7,acrossscrnwD
 				rts
