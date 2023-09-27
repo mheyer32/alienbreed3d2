@@ -4205,21 +4205,22 @@ polyloop:
 				and.w	#$ff,d0
 
 				; TODO - 0xABADCAFE - this can be a regular jump table.
-				; 0,1,2 => itsawall
-				; 3     => itsasetclip
+				; 0     => itsawall
+				; 1,2   => itsafloor (or ceiling)
+				; 3     => itsasetclip (unused)
 				; 4     => itsanobject
 				; 5,6   => do nothing (no arcs/light beams yet. Intriguing idea)
 				; 7     => itswater
-				; 8,9   => itsachunkyfloor
-				; 10,11 => itsabumpyfloor
+				; 8,9   => itsachunkyfloor (unused)
+				; 10,11 => itsabumpyfloor (unused)
 				; 12    => itsbackdrop
-				; 13    => itsaseewall
+				; 13    => itsaseewall (unused)
 
 				tst.b	d0
 				blt		jumpoutofloop
 				beq		itsawall
 				cmp.w	#3,d0
-				beq		itsasetclip
+;				beq		itsasetclip
 				blt		itsafloor
 				cmp.w	#4,d0
 				beq		itsanobject
@@ -4231,21 +4232,21 @@ polyloop:
 ;				beq		itsalightbeam
 				cmp.w	#7,d0
 				beq.s	itswater
-				cmp.w	#9,d0
-				ble		itsachunkyfloor
-				cmp.w	#11,d0
-				ble		itsabumpyfloor
+;				cmp.w	#9,d0
+;				ble		itsachunkyfloor
+;				cmp.w	#11,d0
+;				ble		itsabumpyfloor
 				cmp.w	#12,d0
 				beq.s	itsbackdrop
-				cmp.w	#13,d0
-				beq.s	itsaseewall
+;				cmp.w	#13,d0
+;				beq.s	itsaseewall
 
 				bra		polyloop
 
-itsaseewall:
-;				st		wall_SeeThrough_b
-				jsr		Draw_Wall
-				bra		polyloop
+;itsaseewall:
+;				; st		wall_SeeThrough_b
+;				jsr		Draw_Wall
+;				bra		polyloop
 
 itsbackdrop:
 				jsr		Draw_SkyBackdrop
@@ -4256,7 +4257,7 @@ itswater:
 				move.w	#2,SMALLIT
 				move.w	#3,d0
 				clr.b	draw_UseGouraudFlats_b
-				move.l	#FloorLine,LineToUse
+;				move.l	#draw_FloorLine,LineToUse
 				st		draw_UseWater_b
 				clr.b	draw_UseBumpMappedFlats_b
 				jsr		Draw_Flats
@@ -4274,37 +4275,37 @@ itsanobject:
 ;				jsr		LightDraw
 ;				bra		polyloop
 
-itsabumpyfloor:
-				move.w	#1,SMALLIT
-				sub.w	#9,d0
-				st		draw_UseBumpMappedFlats_b
-				st		draw_SmoothBumpMaps_b
-				clr.b	draw_UseWater_b
-				move.l	#BumpLine,LineToUse
-				jsr		Draw_Flats
-				bra		polyloop
+;itsabumpyfloor:
+;				move.w	#1,SMALLIT
+;				sub.w	#9,d0
+;				st		draw_UseBumpMappedFlats_b
+;				st		draw_SmoothBumpMaps_b
+;				clr.b	draw_UseWater_b
+;				move.l	#draw_FloorLineBumped,LineToUse
+;				jsr		Draw_Flats
+;				bra		polyloop
 
-itsachunkyfloor:
-				move.w	#1,SMALLIT
-				subq.w	#7,d0
-				st		draw_UseBumpMappedFlats_b
-				sub.w	#12,draw_TopClip_w
-; add.w #10,draw_BottomClip_w
-				clr.b	draw_SmoothBumpMaps_b
-				clr.b	draw_UseWater_b
-				move.l	#BumpLine,LineToUse
-				jsr		Draw_Flats
-				add.w	#12,draw_TopClip_w
-; sub.w #10,draw_BottomClip_w
-				bra		polyloop
+;itsachunkyfloor:
+;				move.w	#1,SMALLIT
+;				subq.w	#7,d0
+;				st		draw_UseBumpMappedFlats_b
+;				sub.w	#12,draw_TopClip_w
+;				; add.w #10,draw_BottomClip_w
+;				clr.b	draw_SmoothBumpMaps_b
+;				clr.b	draw_UseWater_b
+;				move.l	#draw_FloorLineBumped,LineToUse
+;				jsr		Draw_Flats
+;				add.w	#12,draw_TopClip_w
+;				; sub.w #10,draw_BottomClip_w
+;				bra		polyloop
 
 itsafloor:
 				move.l	Draw_PointBrightsPtr_l,FloorPtBrightsPtr_l
-
 				move.w	Draw_CurrentZone_w,d1
 				muls	#80,d1
 				cmp.w	#2,d0
 				bne.s	.nfl
+
 				add.l	#2,d1
 .nfl:
 				add.l	d1,FloorPtBrightsPtr_l
@@ -4329,7 +4330,7 @@ itsafloor:
 ;				move.l	d0,SSTACK
 ;				movem.l	(a7)+,a0/d0
 
-				move.l	#FloorLine,LineToUse	;* 1,2 = floor/roof
+;				move.l	#draw_FloorLine,LineToUse	;* 1,2 = floor/roof
 				clr.b	draw_UseWater_b
 				clr.b	draw_UseBumpMappedFlats_b
 				move.b	draw_GouraudFlatsSelected_b,draw_UseGouraudFlats_b
@@ -4342,11 +4343,11 @@ itsafloor:
 ;				move.l	(a7)+,a0
 
 				bra		polyloop
-itsasetclip:
-				bra		polyloop
+;itsasetclip:
+;				bra		polyloop
 itsawall:
-;				clr.b	wall_SeeThrough_b
-; move.l #stripbuffer,a1
+;				; clr.b	wall_SeeThrough_b
+;				; move.l #stripbuffer,a1
 				jsr		Draw_Wall
 				bra		polyloop
 
@@ -5310,7 +5311,7 @@ nofloor:
 CLRNOFLOOR:		dc.w	0
 
 Draw_Flats:
-
+; a5
 * If D0 =1 then its a floor otherwise (=2) it's
 * a roof.
 				move.w	#0,above				; reset 'above'
@@ -6384,8 +6385,8 @@ pastscale:
 
 				move.l	Draw_TexturePalettePtr_l,a1
 				add.l	#256*32,a1
-				move.l	LineToUse,a5
-
+;				move.l	LineToUse,a5
+				lea		draw_FloorLine,a5
 				move.w	#4,tonextline			; line tab advance?
 
 				bra		pix2h
@@ -6483,8 +6484,8 @@ doneclip:
 ; sub.l d1,REFPTR
 				move.l	Draw_TexturePalettePtr_l,a1
 				add.l	#256*32,a1
-				move.l	LineToUse,a5			; This function ptr has been stored by the very outermost
-
+;				move.l	LineToUse,a5			; This function ptr has been stored by the very outermost
+				lea		draw_FloorLine,a5
 				move.w	#2,tonextline			; lefttab/righttab advance?
 
 
@@ -6898,12 +6899,11 @@ rightedge:		dc.w	0
 
 ;rndpt:			dc.l	rndtab
 
-
 draw_Distance_l:			dc.l	0
 
 ********************************************************************************
 				; Draw one floor line
-FloorLine:
+draw_FloorLine:
 
 				move.l	Draw_FloorTexturesPtr_l,a0
 				adda.w	whichtile,a0
@@ -6932,7 +6932,7 @@ FloorLine:
 
 ConstCol:		dc.w	0
 
-BumpLine:
+draw_FloorLineBumped:
 				tst.b	draw_SmoothBumpMaps_b
 				beq.s	Chunky
 
@@ -6973,49 +6973,43 @@ pastast:
 				ble.s	.smallbright
 				move.w	#31,d1
 .smallbright:
-				add.l	floorbright(pc,d1.w*4),a1
+				add.l	floorbright(pc,d1.w*2),a1
 				bra		pastfloorbright
 
 				align 4
 floorbright:
-				dc.l	512*0
-				dc.l	512*1
-				dc.l	512*2
-				dc.l	512*3
-				dc.l	512*4
-
-				dc.l	512*5
-				dc.l	512*6
-				dc.l	512*7
-				dc.l	512*8
-				dc.l	512*9
-
-				dc.l	512*10
-				dc.l	512*11
-				dc.l	512*12
-				dc.l	512*13
-				dc.l	512*14
-
-				dc.l	512*15
-				dc.l	512*16
-				dc.l	512*17
-				dc.l	512*18
-				dc.l	512*19
-
-				dc.l	512*20
-				dc.l	512*21
-				dc.l	512*22
-				dc.l	512*23
-				dc.l	512*24
-
-				dc.l	512*25
-				dc.l	512*26
-				dc.l	512*27
-				dc.l	512*28
-				dc.l	512*29
-
-				dc.l	512*30
-				dc.l	512*31
+				dc.w	512*0
+				dc.w	512*1
+				dc.w	512*2
+				dc.w	512*3
+				dc.w	512*4
+				dc.w	512*5
+				dc.w	512*6
+				dc.w	512*7
+				dc.w	512*8
+				dc.w	512*9
+				dc.w	512*10
+				dc.w	512*11
+				dc.w	512*12
+				dc.w	512*13
+				dc.w	512*14
+				dc.w	512*15
+				dc.w	512*16
+				dc.w	512*17
+				dc.w	512*18
+				dc.w	512*19
+				dc.w	512*20
+				dc.w	512*21
+				dc.w	512*22
+				dc.w	512*23
+				dc.w	512*24
+				dc.w	512*25
+				dc.w	512*26
+				dc.w	512*27
+				dc.w	512*28
+				dc.w	512*29
+				dc.w	512*30
+				dc.w	512*31
 
 widthleft:		dc.w	0
 scaleval:		dc.w	0
