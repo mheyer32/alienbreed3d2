@@ -4,7 +4,7 @@
 
 			align 4
 
-game_NullMessage_vb:	dcb.b	160,' '
+;game_NullMessage_vb:	dcb.b	160,' '
 
 
 Game_SoundOptionsText_vb:

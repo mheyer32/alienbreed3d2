@@ -7686,7 +7686,7 @@ Objectloop2:
 ; beq JUMPBULLET
 
 doneobj2:
-				adda.w	#64,a0
+				adda.w	ENT_NEXT,a0
 				addq	#8,a5
 				bra		Objectloop2
 
@@ -7732,7 +7732,6 @@ ALWALK:
 intowalk:
 
 NOSIDES2:
-
 				move.b	d0,2(a5)
 				move.l	GLF_DatabasePtr_l,a6
 
@@ -7855,7 +7854,8 @@ dosomething:
 				addq.w	#1,Anim_FramesToDraw_w
 				movem.l	d0-d7/a0-a6,-(a7)
 
-				jsr		Draw_NarrateText
+; Text narration superceded by on display messaging
+;				jsr		Draw_NarrateText
 
 				bsr		DOALLANIMS
 
@@ -7956,7 +7956,6 @@ lasttogsound:	dc.w	0
 OLDLTOG:		dc.w	0
 
 pastster:
-
 				cmp.b	#'4',d1
 				seq		CHANNELDATA+8
 				seq		CHANNELDATA+12
@@ -8182,7 +8181,7 @@ timenotneg:
 				asr.l	#8,d0
 				move.l	#draw_Digits_vb,a1
 				move.w	#7,d2
-digitlop
+digitlop:
 				divs	#10,d0
 				swap	d0
 				lea		(a1,d0.w*8),a2

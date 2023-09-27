@@ -250,6 +250,7 @@ GETSTATS:
 
 
 SETPLAYERS:
+				; 0xABADCAFE - Set level file names. TODO - this should probably be moved to a helper
 				move.w	PLOPT,d0
 				add.b	#'a',d0
 				move.b	d0,Lvl_BinFilenameX_vb
@@ -257,6 +258,11 @@ SETPLAYERS:
 				move.b	d0,Lvl_ClipsFilenameX_vb
 				move.b	d0,Lvl_MapFilenameX_vb
 				move.b	d0,Lvl_FlyMapFilenameX_vb
+
+				; Optional files - floor tile override and level properties
+				move.b	d0,Lvl_FloorFilenameX_vb
+				move.b	d0,Lvl_ModPropsFilenameX_vb
+
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq		Plr_InitSlave
