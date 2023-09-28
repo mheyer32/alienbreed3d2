@@ -138,7 +138,7 @@ io_FlushPass:
 				beq.s	.load_failed
 
 				move.l	d0,IO_DOSFileHandle_l
-				jsr		IO_LoadAndUnpackFile
+				jsr		io_LoadAndUnpackFile
 
 				st		d7
 				move.l	(a2),a3
@@ -181,12 +181,34 @@ io_TryToOpen:
 ; *
 ; *****************************************************************************
 
-IO_LoadAndUnpackFile:
+io_LoadAndUnpackFile:
 				; Load a file in and unpack it if necessary.
 				; Pointer to name in a0
 				; Returns address in d0 and length in d1
 				movem.l	d0-d7/a0-a6,-(a7)
 				bra.s	io_LoadCommon
+
+; Load an optional file, i.e. one that might not exist.
+IO_LoadFileOptional:
+				IFD MEMTRACK
+				SERPRINTF <"IO_LoadFileOptional %s",13,10>,a0
+				ENDC
+
+				movem.l	d0-d7/a0-a6,-(a7)
+				move.l	a0,d1
+				move.l	a0,a5			; Save filename in a5 for error reporting
+				move.l	#MODE_OLDFILE,d2
+				CALLDOS	Open
+
+				move.l	d0,IO_DOSFileHandle_l
+				bne.s	io_LoadCommon
+
+				movem.l	(a7)+,d0-d7/a0-a6
+
+				clr.l	d0 ; null address
+				clr.l	d1 ; zero length
+
+				rts
 
 IO_LoadFile:
 				; Load a file in and unpack it if necessary.

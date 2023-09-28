@@ -20,7 +20,7 @@
 
 Res_LoadObjects:
 ; PRSDG
-				move.l	#io_ObjectPointers_vl,a2 ; XXX: Not used?
+;				move.l	#io_ObjectPointers_vl,a2 ; XXX: Not used?
 				move.l	GLF_DatabasePtr_l,a0
 				lea		GLFT_ObjGfxNames_l(a0),a0
 				move.l	#MEMF_ANY,IO_MemType_l
@@ -187,7 +187,7 @@ Res_FreeSoundFx:
 Res_LoadFloorsAndTextures:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_FloorFilename_l,a0
-				move.l	#Draw_FloorTexturesPtr_l,d0
+				move.l	#Draw_GlobalFloorTexturesPtr_l,d0
 				move.l	#0,d1
 				move.l	#MEMF_ANY,IO_MemType_l
 				jsr		IO_QueueFile
@@ -201,8 +201,8 @@ Res_LoadFloorsAndTextures:
 				move.b	(a0)+,(a1)+
 				beq.s	.copied
 				bra.s	.copy_loop
-.copied:
 
+.copied:
 				subq	#1,a1
 				move.l	a1,io_FileExtPointer_l
 				move.l	#io_Buffer_vb,a0
@@ -222,7 +222,7 @@ Res_LoadFloorsAndTextures:
 				rts
 
 Res_FreeFloorsAndTextures:
-				RES_FREEPTR Draw_FloorTexturesPtr_l
+				RES_FREEPTR Draw_GlobalFloorTexturesPtr_l
 				RES_FREEPTR Draw_TextureMapsPtr_l
 				RES_FREEPTR Draw_TexturePalettePtr_l
 				rts
@@ -281,6 +281,16 @@ Res_FreeWallTextures:
 ; *****************************************************************************
 
 Res_FreeLevelData:
+				; check for and free any custom floor overrides
+				tst.l Draw_LevelFloorTexturesPtr_l
+				beq.s .no_floor_overrides
+
+				RES_FREEPTR Draw_LevelFloorTexturesPtr_l
+
+				; reset the Draw_FloorTexturesPtr_l back to global set
+				move.l	Draw_GlobalFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
+
+.no_floor_overrides:
 				RES_FREEPTR Lvl_WalkLinksPtr_l
 				RES_FREEPTR Lvl_FlyLinksPtr_l
 				RES_FREEPTR Lvl_GraphicsPtr_l

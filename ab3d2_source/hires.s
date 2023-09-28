@@ -326,6 +326,22 @@ Game_Begin:
 				jsr		IO_LoadFile
 				move.l	d0,Lvl_ClipsPtr_l
 
+				; Load the (optional) floor level graphics
+				; First, ensure the globals are active
+				move.l	Draw_GlobalFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
+
+				move.l	#MEMF_ANY,IO_MemType_l
+				move.l	#Lvl_FloorFilename_vb,a0
+				jsr		IO_LoadFileOptional
+
+				move.l	d0,Draw_LevelFloorTexturesPtr_l
+				beq.s	.no_floor_overrides
+
+				; Override
+				move.l	Draw_LevelFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
+
+.no_floor_overrides:
+
 noload:
 				; What for?
 				IFNE	CD32VER
@@ -7686,7 +7702,7 @@ Objectloop2:
 ; beq JUMPBULLET
 
 doneobj2:
-				adda.w	ENT_NEXT,a0
+				adda.w	#ENT_NEXT,a0
 				addq	#8,a5
 				bra		Objectloop2
 
