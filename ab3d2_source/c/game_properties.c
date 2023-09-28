@@ -23,52 +23,49 @@ void Game_InitDefaults(void)
 /**
  * Check if an item can be collected based on the player's Inventory state
  */
-BOOL Game_CheckCanCollect(
+BOOL Game_CheckInventoryLimits(
     REG(a0, const Inventory*            inventory),
     REG(a1, const InventoryConsumables* consumables),
     REG(a2, const InventoryItems*       items)
 )
 {
-    /** If the item gives us an item we don't have, we can collect it */
-    if (items->ii_Jetpack && !inventory->inv_Items.ii_Jetpack) {
-        return TRUE;
-    }
-
-    if (items->ii_Shield && !inventory->inv_Items.ii_Shield) {
-        return TRUE;
-    }
-
-    for (UWORD n = 0; n < NUM_GUN_DEFS; ++n) {
-        if (items->ii_Weapons[n] && !inventory->inv_Items.ii_Weapons[n]) {
-            return TRUE;
+    UWORD const *plrInvPtr = &inventory->inv_Items.ii_Jetpack;
+    UWORD const *objInvPtr = &items->ii_Jetpack;
+	UWORD givesAnything = 0;
+    extern BYTE  Plr_MultiplayerType_b;
+    if (Plr_MultiplayerType_b == GAME_MODE_SINGLE_PLAYER) {
+        /**
+         * In single player, we can just early out if any item is given, even if we won't get ammo.
+         */
+        for (UWORD n = 0; n < sizeof(InventoryItems)/sizeof(UWORD); ++n) {
+            givesAnything |= objInvPtr[n];
+            if (objInvPtr[n]) {
+                return TRUE;
+            }
+        }
+    } else {
+        /**
+         * In multiplayer, don't collect items you have already, unless your ammo is not saturated.
+         */
+        for (UWORD n = 0; n < sizeof(InventoryItems)/sizeof(UWORD); ++n) {
+            givesAnything |= objInvPtr[n];
+            if (objInvPtr[n] && !plrInvPtr[n]) {
+                return TRUE;
+            }
         }
     }
 
     /** If the item gives us a quantity of something we aren't maxed out on, we can collect it */
-    if (
-        consumables->ic_Health > 0 &&
-        inventory->inv_Consumables.ic_Health < game_ModProps.gmp_MaxInventory.ic_Health
-    ) {
-        return TRUE;
-    }
-
-    /** If the item gives us fuel and we aren't maxed. we can collect */
-    if (
-        consumables->ic_JetpackFuel > 0 &&
-        inventory->inv_Consumables.ic_JetpackFuel < game_ModProps.gmp_MaxInventory.ic_JetpackFuel
-    ) {
-        return TRUE;
-    }
-
-    for (UWORD n = 0; n < NUM_BULLET_DEFS; ++n) {
-        if (
-            consumables->ic_AmmoCounts[n] > 0 &&
-            inventory->inv_Consumables.ic_AmmoCounts[n] < game_ModProps.gmp_MaxInventory.ic_AmmoCounts[n]
-        ) {
+    plrInvPtr = &inventory->inv_Consumables.ic_Health;
+    objInvPtr = &consumables->ic_Health;
+    UWORD const *limPtr = &game_ModProps.gmp_MaxInventory.ic_Health;
+    for (UWORD n = 0; n < sizeof(InventoryConsumables)/sizeof(UWORD); ++n) {
+        givesAnything += objInvPtr[n];
+        if (objInvPtr[n] > 0 && plrInvPtr[n] < limPtr[n]) {
             return TRUE;
         }
     }
-    return FALSE;
+    return givesAnything ? FALSE : TRUE;
 }
 
 /**
@@ -89,31 +86,37 @@ void Game_AddToInventory(
     REG(a1, const InventoryConsumables* consumables),
     REG(a2, const InventoryItems*       items)
 ) {
-    /** Add all of the items to the player inventory */
-    inventory->inv_Items.ii_Jetpack |= items->ii_Jetpack;
-    inventory->inv_Items.ii_Shield  |= items->ii_Shield;
-    for (UWORD n = 0; n < NUM_GUN_DEFS; ++n) {
-        inventory->inv_Items.ii_Weapons[n] |= items->ii_Weapons[n];
+    UWORD       *plrInvPtr = &inventory->inv_Items.ii_Jetpack;
+    UWORD const *objInvPtr = &items->ii_Jetpack;
+
+    /* Add all the items */
+    for (UWORD n = 0; n < sizeof(InventoryItems)/sizeof(UWORD); ++n) {
+        plrInvPtr[n] |= objInvPtr[n];
     }
 
-    inventory->inv_Consumables.ic_Health = addSaturated(
-        inventory->inv_Consumables.ic_Health,
-        consumables->ic_Health,
-        game_ModProps.gmp_MaxInventory.ic_Health
-    );
+    plrInvPtr = &inventory->inv_Consumables.ic_Health;
+    objInvPtr = &consumables->ic_Health;
 
-    inventory->inv_Consumables.ic_JetpackFuel = addSaturated(
-        inventory->inv_Consumables.ic_JetpackFuel,
-        consumables->ic_JetpackFuel,
-        game_ModProps.gmp_MaxInventory.ic_JetpackFuel
-    );
+    UWORD const* limInvPtr = &game_ModProps.gmp_MaxInventory.ic_Health;
 
-    for (UWORD n = 0; n < NUM_BULLET_DEFS; ++n) {
-        inventory->inv_Consumables.ic_AmmoCounts[n] = addSaturated(
-            inventory->inv_Consumables.ic_AmmoCounts[n],
-            consumables->ic_AmmoCounts[n],
-            game_ModProps.gmp_MaxInventory.ic_AmmoCounts[n]
+    /* Add all the consumables */
+    for (UWORD n = 0; n < sizeof(InventoryConsumables)/sizeof(UWORD); ++n) {
+        plrInvPtr[n] = addSaturated(
+            plrInvPtr[n],
+            objInvPtr[n],
+            limInvPtr[n]
         );
+    }
+}
+
+void Game_ApplyInventoryLimits(REG(a0, Inventory* inventory))
+{
+    UWORD const *limPtr = &game_ModProps.gmp_MaxInventory.ic_Health;
+    UWORD *invPtr         = &inventory->inv_Consumables.ic_Health;
+    for (UWORD n = 0; n < sizeof(InventoryConsumables)/sizeof(UWORD); ++n) {
+        if (invPtr[n] > limPtr[n]) {
+            invPtr[n] = limPtr[n];
+        }
     }
 }
 

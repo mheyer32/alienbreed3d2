@@ -4,7 +4,7 @@
 
 			align 4
 
-game_NullMessage_vb:	dcb.b	160,' '
+;game_NullMessage_vb:	dcb.b	160,' '
 
 
 Game_SoundOptionsText_vb:
@@ -49,6 +49,10 @@ Game_TwoPlayerVictoryMessages_vb:
 
 				dc.b	"Thank you for your kind interest, I look forward to your custom in future lives."
 
+Game_CantCollectItemText_vb:
+				dc.b	"I can't carry any more of these just now.",0
+
+				align 4
 Game_SinglePlayerVictoryText_vb:
 				;;;;	;;;;"12345678901234567890123456789012345678901234567890123456789012345678901234567890"
 				dc.b	0,0,"                                                                                "

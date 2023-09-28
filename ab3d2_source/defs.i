@@ -253,8 +253,12 @@ OBJ_NEXT	EQU	ObjT_SizeOf_l		; object after current
 		UWORD EntT_ImpactZ_w				; 44, 2
 		UWORD EntT_ImpactY_w				; 46, 2
 		UWORD EntT_VelocityY_w				; 48, 2
-		UWORD EntT_DoorsHeld_w				; 50, 2
+
+ 		; Union
+		LABEL EntT_DoorsAndLiftsHeld_l		; 50, 4 ; actually accessd as a long
+		PADDING 2
 		UWORD EntT_Timer3_w					; 52, 2
+
 		; union field of UWORD, UBYTE[2]
 		LABEL EntT_Timer4_w					; 54, 0
 		UBYTE EntT_Type_b					; 54, 1
@@ -271,8 +275,6 @@ ENT_PREV_2	EQU (-EntT_SizeOf_l*2)	; entity two before current
 ENT_PREV	EQU (-EntT_SizeOf_l)	; entity before current
 ENT_NEXT	EQU	EntT_SizeOf_l		; entity after current
 ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
-
-		; There must be data belonging to the entity after this point at least as far as 162
 
 	; Runtime projectile extension for ObjT
 	STRUCTURE ShotT,ObjT_Header_SizeOf_l
@@ -379,13 +381,32 @@ GLFT_BUL_NAME_LENGTH EQU 20
 		STRUCT GLFT_EchoTable_l,(60)
 		LABEL  GLFT_SizeOf_l
 
+NUM_INVENTORY_ITEMS EQU (NUM_GUN_DEFS+2)
+NUM_INVENTORY_CONSUMABLES EQU (NUM_BULLET_DEFS+2)
+
+
+	; Inventory consumables
+	STRUCTURE InvCT,0
+		UWORD InvCT_Health_w		        ; 2
+		UWORD InvCT_JetpackFuel_w			; 2
+		UWORD InvCT_AmmoCounts_vw			; 40 - UWORD[20]
+		PADDING (NUM_BULLET_DEFS*2)-2
+		LABEL InvCT_SizeOf_l				; 44
+
+
+	; Inventory items
+	STRUCTURE InvIT,0
+		UWORD InvIT_Shield_w				; 2
+		UWORD InvIT_JetPack_w				; 2
+		UWORD InvIT_Weapons_vw				; 20 - UWORD[10]
+		PADDING (NUM_GUN_DEFS*2)-2
+		LABEL InvIT_SizeOf_l				; 24
+
 	; Custom game properties
 	STRUCTURE GModT,0
-		UWORD GModT_Health_w		        ; 2
-		UWORD GModT_JetpackFuel_w			; 2
-		UWORD GModT_AmmoCounts_vw			; 40 - UWORD[20]
-		PADDING (NUM_BULLET_DEFS*2)-2
-		LABEL GModT_SizeOf_l			; 44
+		STRUCTURE GModT_MaxInv,(InvCT_SizeOf_l), 44
+		LABEL GModT_SizeOf_l				; 44
+
 
 *****************************
 * Door Definitions **********

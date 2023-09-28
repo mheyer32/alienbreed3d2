@@ -14,7 +14,7 @@ IO_DOSFileHandle_l:		ds.l	1
 io_EndOfQueue_l:		ds.l	1
 
 ; Array of object pointers
-io_ObjectPointers_vl:	ds.l	160
+;io_ObjectPointers_vl:	ds.l	160
 
 ; block properties
 io_BlockLength_l:		ds.l	1

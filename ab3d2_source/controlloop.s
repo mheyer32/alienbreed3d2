@@ -73,7 +73,7 @@ Game_Start:
 
 				jsr		Res_LoadSoundFx
 				jsr		Res_LoadWallTextures
-				jsr		Res_LoadFloorTextures
+				jsr		Res_LoadFloorsAndTextures
 				jsr		Res_LoadObjects
 
 				move.l	#draw_BackdropImageName_vb,a0
@@ -202,7 +202,7 @@ QUITTT:
 
 				jsr		Res_FreeWallTextures
 				jsr		Res_FreeSoundFx
-				jsr		Res_FreeFloorTextures
+				jsr		Res_FreeFloorsAndTextures
 				jsr		Res_FreeObjects
 
 				jsr		_CloseLowLevel
@@ -250,6 +250,7 @@ GETSTATS:
 
 
 SETPLAYERS:
+				; 0xABADCAFE - Set level file names. TODO - this should probably be moved to a helper
 				move.w	PLOPT,d0
 				add.b	#'a',d0
 				move.b	d0,Lvl_BinFilenameX_vb
@@ -257,6 +258,11 @@ SETPLAYERS:
 				move.b	d0,Lvl_ClipsFilenameX_vb
 				move.b	d0,Lvl_MapFilenameX_vb
 				move.b	d0,Lvl_FlyMapFilenameX_vb
+
+				; Optional files - floor tile override and level properties
+				move.b	d0,Lvl_FloorFilenameX_vb
+				move.b	d0,Lvl_ModPropsFilenameX_vb
+
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq		Plr_InitSlave
@@ -1241,6 +1247,8 @@ LOADPOSITION:
 				muls	#2+(22*2)+(12*2),d0
 				add.l	d0,a0
 
+; 0xABADCAFE - This is where the inventory is loaded from the saved game slot
+.load_player_inventory:
 				move.l	#Plr_Health_w,a1
 				move.w	(a0)+,MAXLEVEL
 
@@ -1250,6 +1258,12 @@ LOADPOSITION:
 				REPT	6
 				move.l	(a0)+,(a1)+
 				ENDR
+
+				IFD BUILD_WITH_C
+				move.l  #Plr_Health_w,a0
+				CALLC   Game_ApplyInventoryLimits
+				ENDIF
+
 
 				move.w	MAXLEVEL,d0
 				move.l	#mnu_CURRENTLEVELLINE,a1

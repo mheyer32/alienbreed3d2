@@ -37,9 +37,14 @@ Draw_ObjectPtrs_vl:				ds.l	DRAW_MAX_OBJECTS*4
 Draw_TextureMapsPtr_l:			ds.l	1
 Draw_TexturePalettePtr_l:		ds.l	1
 Draw_BackdropImagePtr_l:		ds.l	1
-Draw_FloorTexturesPtr_l:		ds.l	1
+Draw_FloorTexturesPtr_l:		ds.l	1 ; this will be a copy of either Draw_GlobalFloorTexturesPtr_l
+										  ; or Draw_LevelFloorTexturesPtr_l if the level has an override.
 Draw_PalettePtr_l:				ds.l	1
 Draw_ChunkPtr_l:				ds.l	1
+
+; Allow levels to override the floor texture tiles
+Draw_GlobalFloorTexturesPtr_l:  ds.l	1 ; this is the pointer to the global set of floor tiles
+Draw_LevelFloorTexturesPtr_l:	ds.l	1 ; this is the pointer to the current level override, if any.
 
 draw_AngleBrights_vl:			ds.l	8*2
 draw_Pals_vl:					ds.l	2*49

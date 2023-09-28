@@ -1784,7 +1784,7 @@ JUMPALIEN:
 				tst.b	EntT_NumLives_b(a0)
 				beq.s	.nolock
 
-				move.l	EntT_DoorsHeld_w(a0),d0
+				move.l	EntT_DoorsAndLiftsHeld_l(a0),d0
 				or.l	d0,Anim_DoorAndLiftLocks_l
 
 .nolock:

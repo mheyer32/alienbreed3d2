@@ -22,21 +22,22 @@
 #define NUM_WALL_TEXTURES   16
 
 typedef struct {
+    /* Note that we have separate named fields here, but we regard the struct as equivalent to UWORD[]*/
     UWORD ic_Health;
     UWORD ic_JetpackFuel;
     UWORD ic_AmmoCounts[NUM_BULLET_DEFS];
-}  __attribute__((packed)) InventoryConsumables;
+}  __attribute__((packed)) __attribute__ ((aligned (2))) InventoryConsumables;
 
 typedef struct {
+    /* Note that we have separate named fields here, but we regard the struct as equivalent to UWORD[]*/
     UWORD ii_Shield;
     UWORD ii_Jetpack;
     UWORD ii_Weapons[NUM_GUN_DEFS];
-} __attribute__((packed)) InventoryItems;
+} __attribute__((packed)) __attribute__ ((aligned (2))) InventoryItems;
 
 typedef struct {
     InventoryConsumables inv_Consumables;
-	InventoryItems       inv_Items;
-} __attribute__((packed)) Inventory;
-
+    InventoryItems       inv_Items;
+} __attribute__((packed)) __attribute__ ((aligned (2))) Inventory;
 
 #endif // DEFS_H
