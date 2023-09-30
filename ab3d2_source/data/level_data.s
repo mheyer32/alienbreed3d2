@@ -21,6 +21,11 @@ _Lvl_FloorFilename_s::	; for C
 Lvl_FloorFilename_vb:		dc.b	'ab3:levels/level_'
 Lvl_FloorFilenameX_vb:		dc.b	'a/floortile',0
 
+; For per-level wall overrides
+Lvl_WallFilename_vb:		dc.b	'ab3:levels/level_'
+Lvl_WallFilenameX_vb:		dc.b	'a/wall_'
+Lvl_WallFilenameN_vb:		dc.b	'0.256wad',0
+
 ; For per-level modifications (
 _Lvl_ModPropsFilename_s::	; for C
 Lvl_ModPropsFilename_vb:		dc.b	'ab3:levels/level_'

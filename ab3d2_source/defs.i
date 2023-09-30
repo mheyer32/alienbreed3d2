@@ -234,6 +234,11 @@ OBJ_TYPE_PLAYER2 EQU 5
 OBJ_PREV	EQU (-ObjT_SizeOf_l)	; object before current
 OBJ_NEXT	EQU	ObjT_SizeOf_l		; object after current
 
+	MACRO NEXT_OBJ
+	add.w #OBJ_NEXT,\1
+	ENDM
+
+
 	; Runtime entity extension for ObjT
 	STRUCTURE EntT,ObjT_Header_SizeOf_l
 		UBYTE EntT_NumLives_b				; 18, 1

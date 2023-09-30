@@ -290,57 +290,7 @@ Game_Begin:
 				move.l	#_custom,a6
 				jsr		SETPLAYERS
 
-				move.l	#MEMF_ANY,IO_MemType_l
-				move.l	#Lvl_MapFilename_vb,a0
-				jsr		IO_LoadFile
-				move.l	d0,Lvl_WalkLinksPtr_l
-
-				move.l	#MEMF_ANY,IO_MemType_l
-				move.l	#Lvl_FlyMapFilename_vb,a0
-				jsr		IO_LoadFile
-				move.l	d0,Lvl_FlyLinksPtr_l
-
-				moveq	#0,d1
-				move.b	Lvl_BinFilenameX_vb,d1
-				sub.b	#'a',d1
-				lsl.w	#6,d1
-				move.l	GLF_DatabasePtr_l,a0
-				lea		GLFT_LevelMusic_l(a0),a0
-
-				move.l	#MEMF_CHIP,IO_MemType_l
-				jsr		IO_LoadFile
-				move.l	d0,Lvl_MusicPtr_l
-
-				move.l	#MEMF_ANY,IO_MemType_l
-				move.l	#Lvl_BinFilename_vb,a0
-				jsr		IO_LoadFile
-				move.l	d0,Lvl_DataPtr_l
-
-				move.l	#MEMF_ANY,IO_MemType_l
-				move.l	#Lvl_GfxFilename_vb,a0
-				jsr		IO_LoadFile
-				move.l	d0,Lvl_GraphicsPtr_l
-
-				move.l	#MEMF_ANY,IO_MemType_l
-				move.l	#Lvl_ClipsFilename_vb,a0
-				jsr		IO_LoadFile
-				move.l	d0,Lvl_ClipsPtr_l
-
-				; Load the (optional) floor level graphics
-				; First, ensure the globals are active
-				move.l	Draw_GlobalFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
-
-				move.l	#MEMF_ANY,IO_MemType_l
-				move.l	#Lvl_FloorFilename_vb,a0
-				jsr		IO_LoadFileOptional
-
-				move.l	d0,Draw_LevelFloorTexturesPtr_l
-				beq.s	.no_floor_overrides
-
-				; Override
-				move.l	Draw_LevelFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
-
-.no_floor_overrides:
+				jsr		Res_LoadLevelData
 
 noload:
 				; What for?
@@ -4721,19 +4671,19 @@ CalcPLR1InLine:
 
 				move.w	d1,(a3)+
 
-				add.w	#64,a4
+				add.w	#OBJ_NEXT,a4
 				dbra	d7,.objpointrotlop
 
 				rts
 
 .itaux:
-				add.w	#64,a4
+				add.w	#OBJ_NEXT,a4
 				bra		.objpointrotlop
 
 .noworkout:
 				move.b	#0,(a2)+
 				move.w	#0,(a3)+
-				add.w	#64,a4
+				add.w	#OBJ_NEXT,a4
 				dbra	d7,.objpointrotlop
 				rts
 
@@ -4790,31 +4740,32 @@ CalcPLR2InLine:
 				bgt.s	.notinline
 
 				st		d3
-.notinline
+.notinline:
 				move.b	d3,(a2)+
 
 				move.w	d1,(a3)+
 
-				add.w	#64,a4
+				add.w	#OBJ_NEXT,a4
 				dbra	d7,.objpointrotlop
 
 				rts
 
 .itaux:
-				add.w	#64,a4
+				add.w	#OBJ_NEXT,a4
 				bra		.objpointrotlop
 
 .noworkout:
 				move.w	#0,(a3)+
 				move.b	#0,(a2)+
-				add.w	#64,a4
+				add.w	#OBJ_NEXT,a4
 				dbra	d7,.objpointrotlop
+
 				rts
 
 
 RotateObjectPts:
 				move.w	Temp_SinVal_w,d5				; fetch sine of rotation
-				move.w	Temp_CosVal_w,d6				; consine
+				move.w	Temp_CosVal_w,d6				; cosine
 
 				move.l	Lvl_ObjectDataPtr_l,a4
 				move.l	Lvl_ObjectPointsPtr_l,a0
@@ -4923,19 +4874,19 @@ RotateObjectPtsFullScreen:
 				move.l	d2,(a1)+
 				sub.l	xwobble,d2
 
-				add.w	#64,a4
+				add.w	#OBJ_NEXT,a4
 				dbra	d7,.objpointrotlop
 
 				rts
 
 .itaux:
-				add.w	#64,a4
+				add.w	#OBJ_NEXT,a4
 				bra		.objpointrotlop
 
 .noworkout:
 				move.l	#0,(a1)+
 				move.l	#0,(a1)+
-				add.w	#64,a4
+				add.w	#OBJ_NEXT,a4
 				dbra	d7,.objpointrotlop
 				rts
 
