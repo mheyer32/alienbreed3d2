@@ -240,14 +240,14 @@ Res_LoadWallTextures:
 				;* then call FLUSHQUEUE, which actually loads
 				;* the files in...
 
-				move.l	#Draw_WallTexturePtrs_vl,a0
+				move.l	#Draw_GlobalWallTexturePtrs_vl,a0
 				moveq	#NUM_WALL_TEXTURES-1,d7
 
 .empty_walls:
 				move.l	#0,(a0)+
 				dbra	d7,.empty_walls
 
-				move.l	#Draw_WallTexturePtrs_vl,a4
+				move.l	#Draw_GlobalWallTexturePtrs_vl,a4
 				move.l	GLF_DatabasePtr_l,a3
 				add.l	#GLFT_WallGFXNames_l,a3
 				move.l	#MEMF_ANY,IO_MemType_l
@@ -270,9 +270,10 @@ Res_LoadWallTextures:
 				rts
 
 Res_FreeWallTextures:
-				lea		Draw_WallTexturePtrs_vl,a2
+				lea		Draw_GlobalWallTexturePtrs_vl,a2
 				moveq	#NUM_WALL_TEXTURES-1,d2
 				bra		res_FreeList
+
 
 ; *****************************************************************************
 ; *
@@ -280,17 +281,119 @@ Res_FreeWallTextures:
 ; *
 ; *****************************************************************************
 
+Res_LoadLevelData:
+				move.l	#MEMF_ANY,IO_MemType_l
+				move.l	#Lvl_MapFilename_vb,a0
+				jsr		IO_LoadFile
+				move.l	d0,Lvl_WalkLinksPtr_l
+
+				move.l	#MEMF_ANY,IO_MemType_l
+				move.l	#Lvl_FlyMapFilename_vb,a0
+				jsr		IO_LoadFile
+				move.l	d0,Lvl_FlyLinksPtr_l
+
+				moveq	#0,d1
+				move.b	Lvl_BinFilenameX_vb,d1
+				sub.b	#'a',d1
+				lsl.w	#6,d1
+				move.l	GLF_DatabasePtr_l,a0
+				lea		GLFT_LevelMusic_l(a0),a0
+
+				move.l	#MEMF_CHIP,IO_MemType_l
+				jsr		IO_LoadFile
+				move.l	d0,Lvl_MusicPtr_l
+
+				move.l	#MEMF_ANY,IO_MemType_l
+				move.l	#Lvl_BinFilename_vb,a0
+				jsr		IO_LoadFile
+				move.l	d0,Lvl_DataPtr_l
+
+				move.l	#MEMF_ANY,IO_MemType_l
+				move.l	#Lvl_GfxFilename_vb,a0
+				jsr		IO_LoadFile
+				move.l	d0,Lvl_GraphicsPtr_l
+
+				move.l	#MEMF_ANY,IO_MemType_l
+				move.l	#Lvl_ClipsFilename_vb,a0
+				jsr		IO_LoadFile
+				move.l	d0,Lvl_ClipsPtr_l
+
+				; Load the (optional) floor level graphics
+				; First, ensure the globals are active
+				move.l	Draw_GlobalFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
+
+				move.l	#MEMF_ANY,IO_MemType_l
+				move.l	#Lvl_FloorFilename_vb,a0
+				jsr		IO_LoadFileOptional
+
+				move.l	d0,Draw_LevelFloorTexturesPtr_l
+				beq.s	.done_floor_override
+
+				; Override
+				move.l	Draw_LevelFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
+
+.done_floor_override:
+				movem.l	d2/a2/a3/a4/a5,-(sp)
+				move.l	#Draw_GlobalWallTexturePtrs_vl,a2
+				move.l	#Draw_LevelWallTexturePtrs_vl,a3
+				move.l	#Draw_WallTexturePtrs_vl,a4
+				moveq	#NUM_WALL_TEXTURES-1,d2
+				lea		.bin2hex,a5
+
+.do_wall:
+				; First, put the default wall into Draw_WallTexturePtrs_vl
+				move.l	(a2)+,(a4)
+
+				; complete the filename
+				move.b	(a5)+,Lvl_WallFilenameN_vb
+				move.l	#Lvl_WallFilename_vb,a0
+				jsr		IO_LoadFileOptional
+
+				move.l	d0,(a3)+
+				beq.s	.done_this_wall
+
+				; pointer was not null, so move it into Draw_WallTexturePtrs_vl
+				move.l	d0,(a4)
+
+.done_this_wall:
+				add.w	#4,a4
+				dbra	d2,.do_wall
+
+				movem.l	(sp)+,d2/a2/a3/a4/a5
+				rts
+
+.bin2hex:		dc.b	"0123456789ABCDEF"
+
+				align 4
+
 Res_FreeLevelData:
 				; check for and free any custom floor overrides
 				tst.l Draw_LevelFloorTexturesPtr_l
-				beq.s .no_floor_overrides
+				beq.s .done_floor_overrides
 
 				RES_FREEPTR Draw_LevelFloorTexturesPtr_l
 
 				; reset the Draw_FloorTexturesPtr_l back to global set
 				move.l	Draw_GlobalFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
 
-.no_floor_overrides:
+.done_floor_overrides:
+				movem.l	d2/a2,-(sp)
+				moveq	#NUM_WALL_TEXTURES-1,d2
+				move.l	#Draw_LevelWallTexturePtrs_vl,a2
+
+.free_wall_overrides:
+				move.l	(a2),a1
+				beq.s	.done_this_wall
+
+				CALLEXEC FreeVec
+
+.done_this_wall:
+				clr.l	(a2)+
+				dbra	d2,.free_wall_overrides
+
+				movem.l	(sp)+,d2/a2
+.free_other:
+
 				RES_FREEPTR Lvl_WalkLinksPtr_l
 				RES_FREEPTR Lvl_FlyLinksPtr_l
 				RES_FREEPTR Lvl_GraphicsPtr_l
