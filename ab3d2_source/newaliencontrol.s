@@ -186,6 +186,9 @@ Collectable:
 
 				bsr		Plr2_CollectItem
 
+				tst.w	d0
+				beq.s	.NotCollected2
+
 				; todo - is this what is removing the item?
 				move.w	#-1,ObjT_ZoneID_w(a0)
 				clr.b	ShotT_Worry_b(a0)
@@ -647,8 +650,9 @@ Plr1_CollectItem:
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				moveq	#1,d0 ; we collected the item
 .nosoundmake:
+				moveq	#1,d0 ; we collected the item
+
 .no_collect:
 				rts
 
@@ -707,8 +711,8 @@ Plr2_CollectItem:
 				movem.l	(a7)+,d0-d7/a0-a6
 
 .nosoundmake:
-				move.w	#-1,ObjT_ZoneID_w(a0)
-				clr.b	ShotT_Worry_b(a0)
+				moveq	#1,d0 ; we collected the item
+				clr.b	ShotT_Worry_b(a0) ; why ?
 
 .no_collect:
 				rts
