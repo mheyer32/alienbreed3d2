@@ -573,6 +573,10 @@ Plr1_CollectItem:
 				tst.w	d0
 				bne.s	.can_collect
 
+				; don't show the "cant collect" in multiplayer
+				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
+				bne.s	.skip_no_collect_quiet
+
 				tst.w	EntT_Timer2_w(a0)
 				bgt		.skip_no_collect_message
 
@@ -586,6 +590,8 @@ Plr1_CollectItem:
 
 .skip_no_collect_message:
 				sub.w	#1,EntT_Timer2_w(a0)
+
+.skip_no_collect_quiet:
 				moveq	#0,d0
 				rts
 
