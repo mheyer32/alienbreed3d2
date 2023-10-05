@@ -388,10 +388,13 @@ void Sys_ReadMouse()
     static WORD oldMouseY;
     WORD diffY = joy0dat >> 8;
     diffY -= oldMouseY;
-    if (diffY >= 127)
+    if (diffY >= 127) {
         diffY -= 255;
-    else if (diffY < -127)
+    }
+    else if (diffY < -127) {
         diffY += 255;
+    }
+
     // Emulate weird add.b stuff in original code
     oldMouseY = (oldMouseY & 0xff00) | ((diffY+oldMouseY) & 0xff);
     Sys_MouseY += diffY;

@@ -126,7 +126,7 @@ NUM_WALL_TEXTURES	EQU 16
 		UBYTE PlrT_TmpDucked_b				; 236
 		UBYTE PlrT_StoodOnLift_b			; 237
 
-		UBYTE PlrT_Reserved1_b				; 238
+		UBYTE PlrT_InvMouse_b				; 238
 		UBYTE PlrT_Reserved2_b				; 239
 
 		; Tables

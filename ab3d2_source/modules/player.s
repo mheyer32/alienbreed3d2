@@ -111,6 +111,10 @@ plr_MouseControl:
 
 .bug2:
 				move.w	Sys_MouseY,d3
+				tst.b	PlrT_InvMouse_b(a0)
+				beq.s	.no_invert
+				neg.w	d3
+.no_invert:
 				sub.w	Sys_OldMouseY,d3
 				add.w	d3,Sys_OldMouseY
 				move.w	STOPOFFSET,d0
@@ -285,10 +289,12 @@ plr_KeyboardControl:
 				tst.b	RAWKEY_M(a5)
 				beq.s	.notselmouse
 
+				clr.b	RAWKEY_M(a5)
 				clr.b	PlrT_Keys_b(a0)
 				clr.b	PlrT_Path_b(a0)
 				st		PlrT_Mouse_b(a0)
 				clr.b	PlrT_Joystick_b(a0)
+				eor.b	#-1,PlrT_InvMouse_b(a0)
 
 .notselmouse:
 				lea		1(a5),a4
