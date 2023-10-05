@@ -6,7 +6,6 @@
 
 ;game_NullMessage_vb:	dcb.b	160,' '
 
-
 Game_SoundOptionsText_vb:
 				;;;;	"1234567890123456789012345678901234567890"
 				dc.b	"Audio: Four Channel Mono                "
@@ -18,12 +17,6 @@ Game_LightingOptionsText_vb:
 				;;;;	"1234567890123456789012345678901234567890"
 				dc.b	"Lighting: Moving Lightsources Disabled  "
 				dc.b	"Lighting: Moving Lightsources Enabled   "
-
-Game_DrawHighQualityText_vb:
-				dc.b	"Renderer: High Quality                  "
-
-Game_DrawLowQualityText_vb:
-				dc.b	"Renderer: Reduced Quality               "
 
 Game_TwoPlayerVictoryMessages_vb:
 				;;;;	"1234567890123456789012345678901234567890"
@@ -49,8 +42,28 @@ Game_TwoPlayerVictoryMessages_vb:
 
 				dc.b	"Thank you for your kind interest, I look forward to your custom in future lives."
 
+Game_DrawHighQualityText_vb:
+				dc.b	"Renderer: High Quality",0
+
+Game_DrawLowQualityText_vb:
+				dc.b	"Renderer: Reduced Quality",0
+
+
 Game_CantCollectItemText_vb:
 				dc.b	"I can't carry any more of these just now.",0
+
+Game_InputKeyboard_vb:
+				dc.b	"Input: Keyboard Only",0
+
+Game_InputJoystick_vb:
+				dc.b	"Input: Joystick",0
+
+Game_InputMouse_vb:
+				dc.b	"Input: Mouse and Keyboard",0
+
+Game_InputMouseInv_vb:
+				dc.b	"Input: Mouse (Inverted) and Keyboard",0
+
 
 				align 4
 Game_SinglePlayerVictoryText_vb:

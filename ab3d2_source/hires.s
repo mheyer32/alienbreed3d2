@@ -8032,14 +8032,17 @@ noret:
 noret2:
 				tst.b	RAWKEY_F6(a5)
 				beq.s	.nogood
+
 				tst.b	OLDGOOD
 				bne.s	.nogood2
-				st		OLDGOOD
 
+				st		OLDGOOD
 				move.l	#Game_DrawHighQualityText_vb,d0
 				not.b	Draw_GoodRender_b
 				bne.s	.okgood
+
 				move.l	#Game_DrawLowQualityText_vb,d0
+
 .okgood:
 				move.l	d0,a0
 				move.w	#OPTS_MESSAGE_LENGTH|MSG_TAG_OPTIONS,d0

@@ -242,9 +242,9 @@ plr_KeyboardControl:
 .use_bottom:
 				clr.b	PlrT_Squished_b(a0)
 				move.l	#PLR_STAND_HEIGHT,PlrT_SnapSquishedHeight_l(a0)
-
 				cmp.l	#PLR_STAND_HEIGHT+3*1024,d0
 				bgt.s	.oktostand
+
 				st		PlrT_Squished_b(a0)
 				move.l	#PLR_CROUCH_HEIGHT,PlrT_SnapSquishedHeight_l(a0)
 
@@ -271,6 +271,16 @@ plr_KeyboardControl:
 				tst.b	RAWKEY_K(a5)
 				beq.s	.notselkey
 
+				clr.b	RAWKEY_K(a5)
+
+				st		PlrT_InvMouse_b(a0) ; hack for when mouse is re-selected
+
+				move.l	a0,-(sp)
+				move.l	#Game_InputKeyboard_vb,a0
+				move.w	#OPTS_MESSAGE_LENGTH|MSG_TAG_OPTIONS,d0
+				CALLC	Msg_PushLine
+
+				move.l	(sp)+,a0
 				st		PlrT_Keys_b(a0)
 				clr.b	PlrT_Path_b(a0)
 				clr.b	PlrT_Mouse_b(a0)
@@ -280,10 +290,20 @@ plr_KeyboardControl:
 				tst.b	RAWKEY_J(a5)
 				beq.s	.notseljoy
 
+				st		PlrT_InvMouse_b(a0) ; hack for when mouse is re-selected
+
+				clr.b	RAWKEY_J(a5)
 				clr.b	PlrT_Keys_b(a0)
 				clr.b	PlrT_Path_b(a0)
 				clr.b	PlrT_Mouse_b(a0)
 				st		PlrT_Joystick_b(a0)
+
+				move.l	a0,-(sp)
+				move.l	#Game_InputJoystick_vb,a0
+				move.w	#OPTS_MESSAGE_LENGTH|MSG_TAG_OPTIONS,d0
+				CALLC	Msg_PushLine
+
+				move.l	(sp)+,a0
 
 .notseljoy:
 				tst.b	RAWKEY_M(a5)
@@ -295,6 +315,19 @@ plr_KeyboardControl:
 				st		PlrT_Mouse_b(a0)
 				clr.b	PlrT_Joystick_b(a0)
 				eor.b	#-1,PlrT_InvMouse_b(a0)
+				beq.s	.mouse_normal
+
+				move.l	a0,-(sp)
+				move.l	#Game_InputMouseInv_vb,a0
+				bra.s	.mouse_msg
+
+.mouse_normal:
+				move.l	a0,-(sp)
+				move.l	#Game_InputMouse_vb,a0
+.mouse_msg:
+				move.w	#OPTS_MESSAGE_LENGTH|MSG_TAG_OPTIONS,d0
+				CALLC	Msg_PushLine
+				move.l	(sp)+,a0
 
 .notselmouse:
 				lea		1(a5),a4
