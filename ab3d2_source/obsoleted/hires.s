@@ -1631,7 +1631,7 @@ IWasPlayer1:
 				neg.w	Temp_SinVal_w
 .nolookback:
 
-				jsr		OrderZones
+				jsr		Zone_OrderZones
 				jsr		objmoveanim
 
 				; ASM build only
@@ -1735,7 +1735,7 @@ drawplayer2:
 				neg.w	Temp_SinVal_w
 
 .nolookback:
-				jsr		OrderZones
+				jsr		Zone_OrderZones
 				jsr		objmoveanim
 
 				; ASM build only

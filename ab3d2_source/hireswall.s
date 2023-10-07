@@ -1591,7 +1591,7 @@ simplewallPACK2:
 ; There's code that expects	these in the right order to allow for movem
 				align	4
 TOTHEMIDDLE:	dc.w	0
-Vid_BottomY_w:	dc.w	0
+Vid_BottomY_w:	dc.w	0				; also accessed as long
 Vid_CentreY_w:	dc.w	FS_HEIGHT/2
 TOPOFFSET:		dc.w	0
 BIGMIDDLEY:		dc.l	SCREEN_WIDTH*FS_HEIGHT/2
