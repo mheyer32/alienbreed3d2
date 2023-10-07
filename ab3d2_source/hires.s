@@ -3855,7 +3855,7 @@ noplr2either:
 
 ; move.l #Zone_FinalOrderTable_vw,a0
 
-
+; 0xABADCAFE - This is where we process the visible zones and their content
 subroomloop:
 ; move.w (a0)+,d7
 				move.w	-(a0),d7
@@ -3883,60 +3883,63 @@ subroomloop:
 finditit:
 				tst.w	(a1)
 				blt		nomoretodoatall
+
 				cmp.w	(a1),d7
-				beq		outoffind
+				beq		.outoffind
+
 				adda.w	#8,a1
 				bra		finditit
 
-outoffind:
+.outoffind:
 				move.l	a1,-(a7)
 				move.w	#0,Draw_LeftClip_w
 				move.w	Vid_RightX_w,Draw_RightClip_w
 				moveq	#0,d7
 				move.w	2(a1),d7
-				blt.s	outofrcliplop
+				blt.s	.outofrcliplop
 				move.l	Lvl_ClipsPtr_l,a0
 				lea		(a0,d7.l*2),a0
 
 				tst.w	(a0)
-				blt		outoflcliplop
+				blt		.outoflcliplop
 
-				bsr		NEWsetlclip
+				bsr		Draw_SetLeftClip
 
-intolcliplop:	;		clips
+.intolcliplop:	;		clips
 				tst.w	(a0)
-				blt		outoflcliplop
+				blt		.outoflcliplop
 
-				bsr		NEWsetlclip
-				bra		intolcliplop
+				bsr		Draw_SetLeftClip
+				bra		.intolcliplop
 
-outoflcliplop:
-
+.outoflcliplop:
 				addq	#2,a0
 
 				tst.w	(a0)
-				blt		outofrcliplop
+				blt		.outofrcliplop
 
-				bsr		NEWsetrclip
+				bsr		Draw_SetRightClip
 
-intorcliplop:	;		clips
+.intorcliplop:	;		clips
 				tst.w	(a0)
-				blt		outofrcliplop
+				blt		.outofrcliplop
 
-				bsr		NEWsetrclip
-				bra		intorcliplop
+				bsr		Draw_SetRightClip
+				bra		.intorcliplop
 
-outofrcliplop:
+.outofrcliplop:
 				move.w	Draw_LeftClip_w,d0
 				ext.l	d0
 				move.l	d0,Draw_LeftClip_l
 
 				cmp.w	Vid_RightX_w,d0
 				bge		dontbothercantseeit
+
 				move.w	Draw_RightClip_w,d1
 				ext.l	d1
 				move.l	d1,Draw_RightClip_l
 				blt		dontbothercantseeit
+
 				cmp.w	d1,d0
 				bge		dontbothercantseeit
 
@@ -5043,7 +5046,7 @@ ENDGAMESCROLL:
 
 
 
-NEWsetlclip:
+Draw_SetLeftClip:
 				move.l	#OnScreen_vl,a1
 				move.l	#Rotated_vl,a2
 				move.l	Lvl_ConnectTablePtr_l,a3
@@ -5092,7 +5095,7 @@ NEWsetlclip:
 
 				rts
 
-NEWsetrclip:
+Draw_SetRightClip:
 				move.l	#OnScreen_vl,a1
 				move.l	#Rotated_vl,a2
 				move.l	Lvl_ConnectTablePtr_l,a3

@@ -3933,13 +3933,13 @@ outoffind:
 				tst.w	(a0)
 				blt		outoflcliplop
 
-				bsr		NEWsetlclip
+				bsr		Draw_SetClipLimits
 
 intolcliplop:	;		clips
 				tst.w	(a0)
 				blt		outoflcliplop
 
-				bsr		NEWsetlclip
+				bsr		Draw_SetClipLimits
 				bra		intolcliplop
 
 outoflcliplop:
@@ -3949,13 +3949,13 @@ outoflcliplop:
 				tst.w	(a0)
 				blt		outofrcliplop
 
-				bsr		NEWsetrclip
+				bsr		Draw_SetRightClip
 
 intorcliplop:	;		clips
 				tst.w	(a0)
 				blt		outofrcliplop
 
-				bsr		NEWsetrclip
+				bsr		Draw_SetRightClip
 				bra		intorcliplop
 
 outofrcliplop:
@@ -5127,9 +5127,8 @@ ENDGAMESCROLL:
 * Set left and right clip values
 *************************************
 
-
-
-NEWsetlclip:
+Draw_SetClipLimits:
+				; 0xABADCAFE - TODO Test for PVS defect
 				move.l	#OnScreen_vl,a1
 				move.l	#Rotated_vl,a2
 				move.l	Lvl_ConnectTablePtr_l,a3
@@ -5178,7 +5177,7 @@ NEWsetlclip:
 
 				rts
 
-NEWsetrclip:
+Draw_SetRightClip:
 				move.l	#OnScreen_vl,a1
 				move.l	#Rotated_vl,a2
 				move.l	Lvl_ConnectTablePtr_l,a3
