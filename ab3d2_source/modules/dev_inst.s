@@ -290,7 +290,7 @@ Dev_PrintStats:
 				move.l		#120,d0
 				bsr			Dev_PrintF
 
-				; OrderZones
+				; Zone_OrderZones
 				lea			dev_Reserved2_w,a1
 				lea			.dev_ss_stats_order_zones_vb,a0
 				move.l		#136,d0

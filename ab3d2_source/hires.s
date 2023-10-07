@@ -1001,7 +1001,7 @@ waitmaster:
 
 				move.l	#SMIDDLEY,a0
 				movem.l	(a0)+,d0/d1
-				move.l	d0,Vid_CentreY_w
+				move.l	d0,Vid_CentreY_w	; why long?
 				move.l	d1,Vid_CentreY_w+4
 
 ; 0xABADCAFE - this needs a countdown timer to slow down the water animation
@@ -1009,6 +1009,7 @@ waitmaster:
 				move.l	(a0)+,draw_WaterFramePtr_l
 				cmp.l	#draw_EndWaterFramePtrs_l,a0
 				blt.s	okwat
+
 				move.l	#draw_WaterFramePtrs_vl,a0
 okwat:
 				move.l	a0,draw_LastWaterFramePtr_l
@@ -1598,7 +1599,7 @@ IWasPlayer1:
 				neg.w	Temp_SinVal_w
 .nolookback:
 
-				jsr		OrderZones
+				jsr		Zone_OrderZones
 				jsr		objmoveanim
 
 				; ASM build only
@@ -1702,7 +1703,7 @@ drawplayer2:
 				neg.w	Temp_SinVal_w
 
 .nolookback:
-				jsr		OrderZones
+				jsr		Zone_OrderZones
 				jsr		objmoveanim
 
 				; ASM build only

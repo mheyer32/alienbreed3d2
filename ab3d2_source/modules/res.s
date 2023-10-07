@@ -333,6 +333,10 @@ Res_LoadLevelData:
 				move.l	Draw_LevelFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
 
 .done_floor_override:
+;				move.l	#MEMF_ANY,IO_MemType_l
+;				move.l	#Lvl_ModPropsFilename_vb,a0
+;				jsr		IO_LoadFileOptional
+
 				movem.l	d2/a2/a3/a4/a5,-(sp)
 				move.l	#Draw_GlobalWallTexturePtrs_vl,a2
 				move.l	#Draw_LevelWallTexturePtrs_vl,a3
