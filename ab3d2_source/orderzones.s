@@ -23,8 +23,14 @@ Zone_OrderZones:
 				move.l	#zone_ToDrawTable_vw,a1
 				move.l	#Sys_Workspace_vl,a4
 				move.l	a1,a3
-				moveq	#99,d0 ; todo - do we limit the number of zones processed to 100 ?
+
+				; prepare to clear out zone_ToDrawTable_vw
+				; @todo - zone_ToDrawTable_vw is 400 words, this only clears 100 longs, which is half.
+				moveq	#99,d0
 				moveq	#0,d1
+
+				; a1 points at zone_ToDrawTable_vw
+				; a0 points at Lvl_ListOfGraphRooms
 
 .clear_table:
 				move.l	d1,(a1)+

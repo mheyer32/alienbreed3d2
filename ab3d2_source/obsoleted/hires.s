@@ -3916,49 +3916,49 @@ finditit:
 				tst.w	(a1)
 				blt		nomoretodoatall
 				cmp.w	(a1),d7
-				beq		outoffind
+				beq		done_find
 				adda.w	#8,a1
 				bra		finditit
 
-outoffind:
+done_find:
 				move.l	a1,-(a7)
 				move.w	#0,Draw_LeftClip_w
 				move.w	Vid_RightX_w,Draw_RightClip_w
 				moveq	#0,d7
 				move.w	2(a1),d7
-				blt.s	outofrcliplop
+				blt.s	done_right_clip
 				move.l	Lvl_ClipsPtr_l,a0
 				lea		(a0,d7.l*2),a0
 
 				tst.w	(a0)
-				blt		outoflcliplop
+				blt		done_left_clip
 
-				bsr		NEWsetlclip
+				bsr		Draw_SetClipLimits
 
-intolcliplop:	;		clips
+left_clip:	;		clips
 				tst.w	(a0)
-				blt		outoflcliplop
+				blt		done_left_clip
 
-				bsr		NEWsetlclip
-				bra		intolcliplop
+				bsr		Draw_SetClipLimits
+				bra		left_clip
 
-outoflcliplop:
+done_left_clip:
 
 				addq	#2,a0
 
 				tst.w	(a0)
-				blt		outofrcliplop
+				blt		done_right_clip
 
-				bsr		NEWsetrclip
+				bsr		Draw_SetRightClip
 
-intorcliplop:	;		clips
+right_clip:	;		clips
 				tst.w	(a0)
-				blt		outofrcliplop
+				blt		done_right_clip
 
-				bsr		NEWsetrclip
-				bra		intorcliplop
+				bsr		Draw_SetRightClip
+				bra		right_clip
 
-outofrcliplop:
+done_right_clip:
 
 
 				move.w	Draw_LeftClip_w,d0
@@ -3966,21 +3966,21 @@ outofrcliplop:
 				move.l	d0,Draw_LeftClip_l
 
 				cmp.w	Vid_RightX_w,d0
-				bge		dontbothercantseeit
+				bge		.skip_not_visible
 				move.w	Draw_RightClip_w,d1
 				ext.l	d1
 				move.l	d1,Draw_RightClip_l
-				blt		dontbothercantseeit
+				blt		.skip_not_visible
 				cmp.w	d1,d0
-				bge		dontbothercantseeit
+				bge		.skip_not_visible
 
 				move.l	yoff,d0
 				cmp.l	SplitHeight,d0
-				blt		botfirst
+				blt		lower_zone_first
 
 				move.l	ThisRoomToDraw+4,a0
 				cmp.l	Lvl_GraphicsPtr_l,a0
-				beq.s	noupperroom
+				beq.s	lower_zone_only
 				st		Draw_DoUpper_b
 
 				move.l	draw_BackupRoomPtr_l,a1
@@ -3989,7 +3989,8 @@ outofrcliplop:
 
 				move.l	#CurrentPointBrights_vl+4,Draw_PointBrightsPtr_l
 				bsr		dothisroom
-noupperroom:
+
+lower_zone_only:
 				move.l	ThisRoomToDraw,a0
 				clr.b	Draw_DoUpper_b
 				move.l	#CurrentPointBrights_vl,Draw_PointBrightsPtr_l
@@ -4002,23 +4003,24 @@ noupperroom:
 
 				move.l	ZoneT_Water_l(a1),d2
 				cmp.l	yoff,d2
-				blt.s	.abovefirst
+				blt.s	.lzo_above_water_first
 				move.l	d2,Draw_BeforeWaterTop_l
 				move.l	d1,Draw_BeforeWaterBottom_l
 				move.l	d2,Draw_AfterWaterBottom_l
 				move.l	d0,Draw_AfterWaterTop_l
-				bra.s	.belowfirst
-.abovefirst:
+				bra.s	.lzo_below_water_first
+
+.lzo_above_water_first:
 				move.l	d0,Draw_BeforeWaterTop_l
 				move.l	d2,Draw_BeforeWaterBottom_l
 				move.l	d1,Draw_AfterWaterBottom_l
 				move.l	d2,Draw_AfterWaterTop_l
-.belowfirst:
 
+.lzo_below_water_first:
 				bsr		dothisroom
 
-				bra		dontbothercantseeit
-botfirst:
+				bra		.skip_not_visible
+lower_zone_first:
 
 				move.l	ThisRoomToDraw,a0
 				clr.b	Draw_DoUpper_b
@@ -4060,7 +4062,7 @@ botfirst:
 				bsr		dothisroom
 noupperroom2:
 
-dontbothercantseeit:
+.skip_not_visible:
 pastemp:
 
 				move.l	(a7)+,a1
@@ -5127,9 +5129,8 @@ ENDGAMESCROLL:
 * Set left and right clip values
 *************************************
 
-
-
-NEWsetlclip:
+Draw_SetClipLimits:
+				; 0xABADCAFE - TODO Test for PVS defect
 				move.l	#OnScreen_vl,a1
 				move.l	#Rotated_vl,a2
 				move.l	Lvl_ConnectTablePtr_l,a3
@@ -5178,7 +5179,7 @@ NEWsetlclip:
 
 				rts
 
-NEWsetrclip:
+Draw_SetRightClip:
 				move.l	#OnScreen_vl,a1
 				move.l	#Rotated_vl,a2
 				move.l	Lvl_ConnectTablePtr_l,a3
