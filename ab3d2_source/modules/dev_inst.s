@@ -331,6 +331,12 @@ Dev_PrintStats:
 ;				move.l		#168,d0
 ;				bsr			Dev_PrintF
 
+				; Clip Limits
+;				lea			Draw_LeftClip_l,a1
+;				lea			.dev_ss_clip_vb,a0
+;				move.l		#152+32,d0
+;				bsr			Dev_PrintF
+
 				rts
 
 .fullscreen_stats:
@@ -364,6 +370,9 @@ Dev_PrintStats:
 				dc.b		"ZI:%3d",0
 .dev_ss_stats_060_vb:
 				dc.b		"060:%3s",0
+
+.dev_ss_clip_vb:
+				dc.b		"LC:%5d %5d RC: %5d %5d",0
 
 ; Stats for the division pogrom 2.0
 ;.dev_ss_stats_long_divide_vb:
