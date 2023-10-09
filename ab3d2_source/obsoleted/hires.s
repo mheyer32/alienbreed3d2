@@ -3988,7 +3988,7 @@ done_right_clip:
 				move.l	ZoneT_UpperFloor_l(a1),Draw_BottomOfRoom_l
 
 				move.l	#CurrentPointBrights_vl+4,Draw_PointBrightsPtr_l
-				bsr		dothisroom
+				bsr		draw_RenderCurrentZone
 
 lower_zone_only:
 				move.l	ThisRoomToDraw,a0
@@ -4017,7 +4017,7 @@ lower_zone_only:
 				move.l	d2,Draw_AfterWaterTop_l
 
 .lzo_below_water_first:
-				bsr		dothisroom
+				bsr		draw_RenderCurrentZone
 
 				bra		.skip_not_visible
 lower_zone_first:
@@ -4048,7 +4048,7 @@ lower_zone_first:
 .belowfirst:
 
 
-				bsr		dothisroom
+				bsr		draw_RenderCurrentZone
 				move.l	ThisRoomToDraw+4,a0
 				cmp.l	Lvl_GraphicsPtr_l,a0
 				beq.s	noupperroom2
@@ -4059,7 +4059,7 @@ lower_zone_first:
 				move.l	ZoneT_UpperFloor_l(a1),Draw_BottomOfRoom_l
 
 				st		Draw_DoUpper_b
-				bsr		dothisroom
+				bsr		draw_RenderCurrentZone
 noupperroom2:
 
 .skip_not_visible:
@@ -4175,7 +4175,7 @@ nowaterfull:
 				rts
 
 
-dothisroom:
+draw_RenderCurrentZone:
 				move.w	(a0)+,d0
 				move.w	d0,Draw_CurrentZone_w
 				move.w	d0,d1
