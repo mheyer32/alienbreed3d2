@@ -141,6 +141,10 @@ BOOL Sys_OpenLibs(void)
         goto fail;
     }
 
+    if (!(PotgoBase = OpenResource(POTGONAME))) {
+        goto fail;
+    }
+
     {
         /* Set up the (software)interrupt structure. Note that this task runs at  */
         /* priority 0. Software interrupts may only be priority -32, -16, 0, +16, */
