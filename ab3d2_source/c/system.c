@@ -29,8 +29,16 @@
 
 #define INTUITIONNAME "intuition.library"
 
+#define CLOSELIB(lib)                       \
+    if (lib) {                              \
+        CloseLibrary((struct Library*)lib); \
+        lib = NULL;                         \
+    }
+
 extern struct TimeRequest sys_TimerRequest;
 extern struct EClockVal Sys_FrameTimeECV_q[2];
+extern struct Library *MiscResourceBase;
+
 extern ULONG Sys_ECVToMsFactor_l;
 extern ULONG Sys_FrameTimes_vl[8];
 extern ULONG Sys_FrameNumber_l;
@@ -54,6 +62,7 @@ static BOOL gotSerialBits;
 static UWORD allocPotBits;
 
 struct Library *CYBERGFX_BASE_NAME = NULL;
+
 
 extern VOID VBlankInterrupt(void);
 extern VOID key_interrupt(void);
@@ -131,12 +140,6 @@ BOOL Sys_OpenLibs(void)
     if (!(IntuitionBase = (struct IntuitionBase *)OpenLibrary(INTUITIONNAME, 36))) {
         goto fail;
     }
-    if (!(MiscBase = OpenResource(MISCNAME))) {
-        goto fail;
-    }
-    if (!(PotgoBase = OpenResource(POTGONAME))) {
-        goto fail;
-    }
 
     {
         /* Set up the (software)interrupt structure. Note that this task runs at  */
@@ -174,11 +177,6 @@ fail:
     return FALSE;
 }
 
-#define CLOSELIB(lib)                       \
-    if (lib) {                              \
-        CloseLibrary((struct Library*)lib); \
-        lib = NULL;                         \
-    }
 
 void Sys_CloseLibs(void)
 {
@@ -190,11 +188,55 @@ void Sys_CloseLibs(void)
     }
     // Resources can't be closed or released
     PotgoBase = NULL;
-    MiscBase = NULL;
+    MiscResourceBase = NULL;
 
     CLOSELIB(IntuitionBase);
     CLOSELIB(GfxBase);
     CLOSELIB(CyberGfxBase);
+}
+
+/*
+ * Factored out allocation of Serial port resources so that the game can just disable
+ * two player mode rather than exit.
+ */
+static void sys_ReleaseSerial(void)
+{
+    if (MiscResourceBase) {
+        LOCAL_SYSBASE();
+        if (gotSerialBits) {
+            FreeMiscResource(MR_SERIALBITS);
+            gotSerialBits = FALSE;
+        }
+        if (gotSerialPort) {
+            FreeMiscResource(MR_SERIALPORT);
+            gotSerialPort = FALSE;
+        }
+        MiscResourceBase = NULL;
+    }
+}
+
+static void sys_AllocateSerial(void)
+{
+    LOCAL_SYSBASE();
+
+    if (!(MiscResourceBase = OpenResource(MISCNAME)) ) {
+        return;
+    }
+
+    if (AllocMiscResource(MR_SERIALPORT, AppName)) {
+        goto fail;
+    }
+
+    gotSerialPort = TRUE;
+    if (AllocMiscResource(MR_SERIALBITS, AppName)) {
+       goto fail;
+    }
+    gotSerialBits = TRUE;
+    serper = 31;  // 19200 baud, 8 bits, no parity
+    return;
+
+fail:
+    sys_ReleaseSerial();
 }
 
 BOOL sys_InitHardware()
@@ -205,20 +247,12 @@ BOOL sys_InitHardware()
     Sys_Move16_b    = (SysBase->AttnFlags & (AFF_68040|AFF_68060)) ? 0xFF : 0;
     Sys_CPU_68060_b = (SysBase->AttnFlags & AFF_68060) ? 0xFF : 0;
 
-    if (AllocMiscResource(MR_SERIALPORT, AppName)) {
-        goto fail;
-    }
-    gotSerialPort = TRUE;
-    if (AllocMiscResource(MR_SERIALBITS, AppName)) {
-        goto fail;
-    }
-    gotSerialBits = TRUE;
-
     // FIXME: is this really necessary? Are we doing anything with the Potgo register?
     // Is this for the joystick/mouse firebuttons?
     allocPotBits = AllocPotBits(0b110000000000);
 
-    serper = 31;  // 19200 baud, 8 bits, no parity
+    // Attempt allocation of the serial port resources
+    sys_AllocateSerial();
 
     return TRUE;
 
@@ -296,15 +330,7 @@ static void SAVEDS FakeVBlankInterrupt(REG(a1, struct VBLData *data))
 
 void sys_ReleaseHardware()
 {
-    if (gotSerialBits) {
-        FreeMiscResource(MR_SERIALBITS);
-        gotSerialBits = FALSE;
-    }
-    if (gotSerialPort) {
-        FreeMiscResource(MR_SERIALPORT);
-        gotSerialPort = FALSE;
-    }
-
+    sys_ReleaseSerial();
     FreePotBits(allocPotBits);
 }
 

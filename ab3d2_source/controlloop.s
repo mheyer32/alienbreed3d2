@@ -108,15 +108,19 @@ BACKTOMENU:
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	BACKTOSLAVE
+
 				cmp.b	#PLR_MASTER,Plr_MultiplayerType_b
 				beq.s	BACKTOMASTER
 				bsr		READMAINMENU
 				bra		DONEMENU
+
 BACKTOMASTER:
 				bsr		MASTERMENU
 				bra		DONEMENU
+
 BACKTOSLAVE:
 				bsr		SLAVEMENU
+
 DONEMENU:
 				tst.b	SHOULDQUIT
 				bne		QUITTT
@@ -187,7 +191,6 @@ DONEMENU:
 
 dontusestats:
 				CALLC	mnu_setscreen
-
 
 				bra		BACKTOMENU
 
@@ -599,7 +602,11 @@ GETACHAR:
 
 
 MASTERMENU:
+				tst.l	_MiscResourceBase
+				bne.s	.ok_master
+				rts
 
+.ok_master:
 				move.b	#PLR_MASTER,Plr_MultiplayerType_b
 
 				move.w	#0,LEVELSELECTED
@@ -673,6 +680,11 @@ MASTERMENU:
 				rts
 
 SLAVEMENU:
+				tst.l	_MiscResourceBase
+				bne.s	.ok_master
+				rts
+
+.ok_master:
 
 				move.b	#PLR_SLAVE,Plr_MultiplayerType_b
 
