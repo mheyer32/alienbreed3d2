@@ -5,6 +5,8 @@
 
 extern Game_ModProperties game_ModProps;
 
+extern struct FileInfoBlock io_FileInfoBlock;
+
 static void game_LoadModProperties(void);
 
 /**
@@ -126,14 +128,14 @@ void game_LoadModProperties()
     if (DOSFALSE == modPropsFH) {
         return;
     }
-    struct FileInfoBlock* modPropsFIB = (struct FileInfoBlock*)Sys_GetTemporaryWorkspace();
-    ExamineFH(modPropsFH, modPropsFIB);
+
+    ExamineFH(modPropsFH, &io_FileInfoBlock);
 
     if (
-        modPropsFIB->fib_DirEntryType >= 0 ||
-        modPropsFIB->fib_Size < (LONG)sizeof(Game_ModProperties)
+       io_FileInfoBlock.fib_DirEntryType >= 0 ||
+       io_FileInfoBlock.fib_Size < (LONG)sizeof(Game_ModProperties)
     ) {
-        return;
+       return;
     }
 
     Game_ModProperties* props = (Game_ModProperties*)Sys_GetTemporaryWorkspace();

@@ -28,4 +28,5 @@ io_ObjectName_vb:		ds.b	160
 io_Buffer_vb:			ds.b	80   ; todo - can these be merged ?
 
 ; File info block
+_io_FileInfoBlock::
 io_FileInfoBlock_vb:	ds.b	fib_SIZEOF
