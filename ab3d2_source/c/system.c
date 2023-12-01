@@ -38,6 +38,8 @@
 extern struct TimeRequest sys_TimerRequest;
 extern struct EClockVal Sys_FrameTimeECV_q[2];
 extern struct Library *MiscResourceBase;
+extern struct Library *PotgoResourceBase;
+
 
 extern ULONG Sys_ECVToMsFactor_l;
 extern ULONG Sys_FrameTimes_vl[8];
@@ -137,11 +139,8 @@ BOOL Sys_OpenLibs(void)
     if (!(GfxBase = (struct GfxBase *)OpenLibrary(GRAPHICSNAME, 36))) {
         goto fail;
     }
-    if (!(IntuitionBase = (struct IntuitionBase *)OpenLibrary(INTUITIONNAME, 36))) {
-        goto fail;
-    }
 
-    if (!(PotgoBase = OpenResource(POTGONAME))) {
+    if (!(IntuitionBase = (struct IntuitionBase *)OpenLibrary(INTUITIONNAME, 36))) {
         goto fail;
     }
 
@@ -191,7 +190,7 @@ void Sys_CloseLibs(void)
         TimerBase = NULL;
     }
     // Resources can't be closed or released
-    PotgoBase = NULL;
+    PotgoResourceBase = NULL;
     MiscResourceBase = NULL;
 
     CLOSELIB(IntuitionBase);
@@ -219,7 +218,7 @@ static void sys_ReleaseSerial(void)
     }
 }
 
-static void sys_AllocateSerial(void)
+static void sys_AttemptAllocateSerial(void)
 {
     LOCAL_SYSBASE();
 
@@ -243,6 +242,27 @@ fail:
     sys_ReleaseSerial();
 }
 
+static void sys_ReleaseJoystick(void)
+{
+    if (PotgoResourceBase) {
+        FreePotBits(allocPotBits);
+    }
+    PotgoResourceBase = NULL;
+}
+
+static void sys_AttemptAllocateJoystick(void)
+{
+    LOCAL_SYSBASE();
+    if (!(PotgoResourceBase = OpenResource(POTGONAME)) ) {
+        return;
+    }
+    // FIXME: is this really necessary? Are we doing anything with the Potgo register?
+    // Is this for the joystick/mouse firebuttons?
+    allocPotBits = AllocPotBits(0b110000000000);
+}
+
+
+
 BOOL sys_InitHardware()
 {
     LOCAL_SYSBASE();
@@ -251,12 +271,11 @@ BOOL sys_InitHardware()
     Sys_Move16_b    = (SysBase->AttnFlags & (AFF_68040|AFF_68060)) ? 0xFF : 0;
     Sys_CPU_68060_b = (SysBase->AttnFlags & AFF_68060) ? 0xFF : 0;
 
-    // FIXME: is this really necessary? Are we doing anything with the Potgo register?
-    // Is this for the joystick/mouse firebuttons?
-    allocPotBits = AllocPotBits(0b110000000000);
+    // Attempt allocation of the serial port resource
+    sys_AttemptAllocateSerial();
 
-    // Attempt allocation of the serial port resources
-    sys_AllocateSerial();
+    // Attempt allocation of the joystick resource
+    sys_AttemptAllocateJoystick();
 
     return TRUE;
 
@@ -334,6 +353,7 @@ static void SAVEDS FakeVBlankInterrupt(REG(a1, struct VBLData *data))
 
 void sys_ReleaseHardware()
 {
+    sys_ReleaseJoystick();
     sys_ReleaseSerial();
     FreePotBits(allocPotBits);
 }
