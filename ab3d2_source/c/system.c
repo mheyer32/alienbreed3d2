@@ -2,6 +2,7 @@
 #include "screen.h"
 #include "draw.h"
 #include "message.h"
+#include "game_preferences.h"
 
 #include <SDI_compiler.h>
 #include <SDI_misc.h>
@@ -103,6 +104,10 @@ BOOL Sys_Init()
         goto fail;
     }
 
+    // Save the game prefs (bindings etc).
+    // We should probably just have a Game_Done() and Game_Init() pair and trampoline from there.
+    Game_LoadPreferences();
+
     return TRUE;
 
 fail:
@@ -115,6 +120,11 @@ void Sys_Done()
     Draw_Shutdown();
     sys_RemoveInterrupts();
     sys_ReleaseHardware();
+
+    // Save the game prefs (bindings etc).
+    // We should probably just have a Game_Done() and Game_Init() pair and trampoline from there.
+    Game_SavePreferences();
+
     ((struct Process*)SysBase->ThisTask)->pr_WindowPtr = sys_OldWindowPtr;
     // Display any buffered error message after cleanup
     // but before closing libraries

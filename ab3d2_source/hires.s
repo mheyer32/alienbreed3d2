@@ -7521,9 +7521,6 @@ pastster:
 
 				bra		notogglesound2
 
-Prefsfile:
-				dc.b	'k8nx'
-
 notogglesound:
 				clr.b	lasttogsound
 
