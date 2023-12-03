@@ -238,6 +238,11 @@ centre_view_key:	dc.b	RAWKEY_SEMICOLON
 next_weapon_key:	dc.b	RAWKEY_BSLASH
 spare_key:          dc.b    0
 
+_Prefs_FullScreen::     dc.b    0
+_Prefs_PixelMode::      dc.b    0
+_Prefs_VertMargin::     dc.b    0
+_Prefs_SimpleLighting:: dc.b    0
+
                 align 4
 _Prefs_PersistedEnd::
 

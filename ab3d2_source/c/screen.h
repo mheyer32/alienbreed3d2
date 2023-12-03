@@ -41,6 +41,8 @@ extern BOOL Vid_isRTG;
 extern WORD Vid_ScreenHeight;
 extern WORD Vid_ScreenWidth;
 
+extern UBYTE Vid_FullScreen_b;
+
 extern void LoadMainPalette(void);
 extern void Vid_OpenMainScreen(void);
 extern void vid_SetupDoubleheightCopperlist(void);
