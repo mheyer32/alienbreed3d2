@@ -242,6 +242,7 @@ _Prefs_FullScreen::     dc.b    0
 _Prefs_PixelMode::      dc.b    0
 _Prefs_VertMargin::     dc.b    0
 _Prefs_SimpleLighting:: dc.b    0
+_Prefs_FPSLimit::       dc.b    0
 
                 align 4
 _Prefs_PersistedEnd::

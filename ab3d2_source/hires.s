@@ -7120,6 +7120,7 @@ COUNTSPACE:		ds.b	160
 _Vid_VBLCount_l::
 Vid_VBLCount_l:		dc.l	0
 Vid_VBLCountLast_l:	dc.l	0
+_Vid_FPSLimit_l::   ; todo - this only ranges 0-5, so a byte is more than enough
 Vid_FPSLimit_l:		dc.l	0
 
 OtherInter:
