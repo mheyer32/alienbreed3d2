@@ -19,14 +19,16 @@ extern UBYTE Vid_FullScreenTemp_b;
 extern UBYTE Draw_ForceSimpleWalls_b;
 
 extern LONG  Vid_FPSLimit_l;
+extern WORD  Vid_LetterBoxMarginHeight_w;
 
 // Extreme MVP version
 
 void Game_ApplyPreferences(void) {
-    Vid_FullScreenTemp_b = Vid_FullScreen_b = Prefs_FullScreen;
-    Vid_DoubleHeight_b      = Prefs_PixelMode;
-    Draw_ForceSimpleWalls_b = Prefs_SimpleLighting;
-    Vid_FPSLimit_l          = Prefs_FPSLimit;
+    Vid_FullScreenTemp_b        = Vid_FullScreen_b = Prefs_FullScreen;
+    Vid_DoubleHeight_b          = Prefs_PixelMode;
+    Draw_ForceSimpleWalls_b     = Prefs_SimpleLighting;
+    Vid_FPSLimit_l              = Prefs_FPSLimit;
+    Vid_LetterBoxMarginHeight_w = Prefs_VertMargin;
 }
 
 void Game_LoadPreferences(void) {
@@ -49,6 +51,7 @@ void Game_SavePreferences(void) {
     Prefs_PixelMode      = Vid_DoubleHeight_b;
     Prefs_SimpleLighting = Draw_ForceSimpleWalls_b;
     Prefs_FPSLimit       = (UBYTE)Vid_FPSLimit_l;
+    Prefs_VertMargin     = (UBYTE)Vid_LetterBoxMarginHeight_w;
 
     Write(gamePrefsFH, Prefs_Persisted, (Prefs_PersistedEnd - Prefs_Persisted));
     Close(gamePrefsFH);
