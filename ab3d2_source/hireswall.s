@@ -59,6 +59,7 @@ draw_AngleBright_w:			dc.w	0
 draw_WallIterations_w:		dc.w	0
 draw_MultCount_w:			dc.w	0
 
+_Draw_GoodRender_b::
 Draw_GoodRender_b:			dc.w	$ff00 ; accessed as byte all over the code
 
 SCALE			MACRO

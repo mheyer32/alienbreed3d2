@@ -14,10 +14,13 @@ extern UBYTE Prefs_PixelMode;
 extern UBYTE Prefs_VertMargin;
 extern UBYTE Prefs_SimpleLighting;
 extern UBYTE Prefs_FPSLimit;
+extern UBYTE Prefs_DynamicLights;
+extern UBYTE Prefs_RenderQuality;
 
 extern UBYTE Vid_FullScreenTemp_b;
 extern UBYTE Draw_ForceSimpleWalls_b;
-
+extern UBYTE Draw_GoodRender_b;
+extern UBYTE Anim_LightingEnabled_b;
 extern LONG  Vid_FPSLimit_l;
 extern WORD  Vid_LetterBoxMarginHeight_w;
 
@@ -29,6 +32,8 @@ void Game_ApplyPreferences(void) {
     Draw_ForceSimpleWalls_b     = Prefs_SimpleLighting;
     Vid_FPSLimit_l              = Prefs_FPSLimit;
     Vid_LetterBoxMarginHeight_w = Prefs_VertMargin;
+    Anim_LightingEnabled_b      = Prefs_DynamicLights;
+    Draw_GoodRender_b           = Prefs_RenderQuality;
 }
 
 void Game_LoadPreferences(void) {
@@ -52,6 +57,8 @@ void Game_SavePreferences(void) {
     Prefs_SimpleLighting = Draw_ForceSimpleWalls_b;
     Prefs_FPSLimit       = (UBYTE)Vid_FPSLimit_l;
     Prefs_VertMargin     = (UBYTE)Vid_LetterBoxMarginHeight_w;
+    Prefs_DynamicLights  = Anim_LightingEnabled_b;
+    Prefs_RenderQuality  = Draw_GoodRender_b;
 
     Write(gamePrefsFH, Prefs_Persisted, (Prefs_PersistedEnd - Prefs_Persisted));
     Close(gamePrefsFH);

@@ -243,6 +243,8 @@ _Prefs_PixelMode::      dc.b    0
 _Prefs_VertMargin::     dc.b    0
 _Prefs_SimpleLighting:: dc.b    0
 _Prefs_FPSLimit::       dc.b    0
+_Prefs_DynamicLights::  dc.b    0
+_Prefs_RenderQuality::  dc.b    0
 
                 align 4
 _Prefs_PersistedEnd::
