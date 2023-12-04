@@ -28,7 +28,9 @@ extern WORD  Vid_LetterBoxMarginHeight_w;
 
 void Game_ApplyPreferences(void) {
     Vid_FullScreenTemp_b        = Vid_FullScreen_b = Prefs_FullScreen;
-    Vid_DoubleHeight_b          = Prefs_PixelMode;
+    if (!Vid_isRTG) {
+        Vid_DoubleHeight_b          = Prefs_PixelMode;
+    }
     Draw_ForceSimpleWalls_b     = Prefs_SimpleLighting;
     Vid_FPSLimit_l              = Prefs_FPSLimit;
     Vid_LetterBoxMarginHeight_w = Prefs_VertMargin;
