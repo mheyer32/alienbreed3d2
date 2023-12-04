@@ -211,7 +211,13 @@ QUITTT:
 
 				rts
 
-; KEY OPTIONS:
+; PREFERENCES (TODO - SHIP OUT):
+
+                align 4
+_Prefs_Persisted::
+Prefsfile:
+                    dc.b	'k8nx'
+
 AssignableKeys_vb:
 turn_left_key:		dc.b	RAWKEY_LEFT
 turn_right_key:		dc.b	RAWKEY_RIGHT
@@ -230,11 +236,18 @@ look_up_key:		dc.b	RAWKEY_EQUAL
 look_down_key:		dc.b	RAWKEY_UNDERSCORE
 centre_view_key:	dc.b	RAWKEY_SEMICOLON
 next_weapon_key:	dc.b	RAWKEY_BSLASH
+spare_key:          dc.b    0
 
+_Prefs_FullScreen::     dc.b    0
+_Prefs_PixelMode::      dc.b    0
+_Prefs_VertMargin::     dc.b    0
+_Prefs_SimpleLighting:: dc.b    0
+_Prefs_FPSLimit::       dc.b    0
+_Prefs_DynamicLights::  dc.b    0
+_Prefs_RenderQuality::  dc.b    0
 
-				IFD	DEV
-
-				ENDC
+                align 4
+_Prefs_PersistedEnd::
 
 templeftkey:	dc.b	0
 temprightkey:	dc.b	0

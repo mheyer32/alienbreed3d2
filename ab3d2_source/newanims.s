@@ -1,5 +1,6 @@
 				align 2
 ; Byte data
+_Anim_LightingEnabled_b::
 Anim_LightingEnabled_b:	dc.b	$ff
 anim_LiftAtTop_b:		dc.b	0
 anim_LiftAtBottom_b:	dc.b	0
