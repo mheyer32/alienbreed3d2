@@ -7856,6 +7856,9 @@ COUNTSPACE:		ds.b	160
 _Vid_VBLCount_l::
 Vid_VBLCount_l:		dc.l	0
 Vid_VBLCountLast_l:	dc.l	0
+
+; TODO - this only ranges 0-5, convert to byte?
+_Vid_FPSLimit_l::
 Vid_FPSLimit_l:		dc.l	0
 
 OtherInter:

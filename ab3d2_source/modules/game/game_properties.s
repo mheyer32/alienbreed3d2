@@ -1,7 +1,7 @@
 
 ; *****************************************************************************
 ; *
-; * modules/game_properties.s
+; * modules/game/game_properties.s
 ; *
 ; * TODO - For the assembler only build, implement these
 ; *
