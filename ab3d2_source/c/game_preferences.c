@@ -1,3 +1,8 @@
+#include "game_preferences.h"
+
+#include <exec/types.h>
+#include <dos/dos.h>
+#include "screen.h"
 
 extern struct FileInfoBlock io_FileInfoBlock;
 
