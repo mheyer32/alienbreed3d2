@@ -1,8 +1,9 @@
-#include "system.h"
-#include "screen.h"
 #include "game_preferences.h"
+
+#include <exec/types.h>
 #include <dos/dos.h>
 #include <proto/dos.h>
+#include "screen.h"
 
 extern struct FileInfoBlock io_FileInfoBlock;
 
@@ -28,7 +29,9 @@ extern WORD  Vid_LetterBoxMarginHeight_w;
 
 void Game_ApplyPreferences(void) {
     Vid_FullScreenTemp_b        = Vid_FullScreen_b = Prefs_FullScreen;
-    Vid_DoubleHeight_b          = Prefs_PixelMode;
+    if (Vid_isRTG) {
+        Vid_DoubleHeight_b          = Prefs_PixelMode;
+    }
     Draw_ForceSimpleWalls_b     = Prefs_SimpleLighting;
     Vid_FPSLimit_l              = Prefs_FPSLimit;
     Vid_LetterBoxMarginHeight_w = Prefs_VertMargin;
@@ -41,9 +44,11 @@ void Game_LoadPreferences(void) {
     if (DOSFALSE == gamePrefsFH) {
         return;
     }
-    Read(gamePrefsFH, Prefs_Persisted, (Prefs_PersistedEnd - Prefs_Persisted));
+    LONG size = (Prefs_PersistedEnd - Prefs_Persisted);
+    if (size == Read(gamePrefsFH, Prefs_Persisted, size)) {
+        Game_ApplyPreferences();
+    }
     Close(gamePrefsFH);
-    Game_ApplyPreferences();
 }
 
 void Game_SavePreferences(void) {

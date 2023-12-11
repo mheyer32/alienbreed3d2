@@ -248,6 +248,7 @@ _Prefs_RenderQuality::  dc.b    0
 
                 align 4
 _Prefs_PersistedEnd::
+PrefsfileEnd:
 
 templeftkey:	dc.b	0
 temprightkey:	dc.b	0

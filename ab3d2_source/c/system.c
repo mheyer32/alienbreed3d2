@@ -104,7 +104,7 @@ BOOL Sys_Init()
         goto fail;
     }
 
-    // Save the game prefs (bindings etc).
+    // Load the game prefs (bindings etc).
     // We should probably just have a Game_Done() and Game_Init() pair and trampoline from there.
     Game_LoadPreferences();
 
