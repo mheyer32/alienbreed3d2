@@ -407,10 +407,16 @@ NUM_INVENTORY_CONSUMABLES EQU (NUM_BULLET_DEFS+2)
 		PADDING (NUM_GUN_DEFS*2)-2
 		LABEL InvIT_SizeOf_l				; 24
 
+	; Full Inventory
+	STRUCTURE InvT,0
+		STRUCT InvT_Consumables,(InvCT_SizeOf_l)	; 44
+		STRUCT InvT_Items,(InvIT_SizeOf_l)			; 24
+		LABEL InvT_SizeOf_l							; 68
+
 	; Custom game properties
 	STRUCTURE GModT,0
-		STRUCTURE GModT_MaxInv,(InvCT_SizeOf_l), 44
-		LABEL GModT_SizeOf_l				; 44
+		STRUCTURE GModT_MaxInv,(InvT_SizeOf_l)		; 68
+		LABEL GModT_SizeOf_l						; 68
 
 
 *****************************

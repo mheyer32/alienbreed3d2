@@ -40,7 +40,7 @@ BOOL Game_CheckInventoryLimits(
          * In single player, we can just early out if any item is given, even if we won't get ammo.
          */
         for (UWORD n = 0; n < sizeof(InventoryItems)/sizeof(UWORD); ++n) {
-            givesAnything |= objInvPtr[n];
+            //givesAnything |= objInvPtr[n];
             if (objInvPtr[n]) {
                 return TRUE;
             }
