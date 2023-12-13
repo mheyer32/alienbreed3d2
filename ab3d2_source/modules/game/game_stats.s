@@ -23,21 +23,14 @@ Game_LoadStats:
 				move.l	d0,d4 ; backup handle in d4
 
 				move.l	#Game_Stats,d2
-				move.l	#Game_StatsEnd,d3
-				sub.l	d2,d3 ; size in d3
+				move.l	#GStatT_SizeOf_l,d3
 
 				CALLDOS	Read
 
-				move.l	d0,d2 ; bytes read
+				;move.l	d0,d2 ; bytes read - todo checks and things
 
 				move.l	d4,d1 ; d1 trashed by read
 				CALLDOS Close
-
-				cmp.l	d2,d3 ; check read size
-				bne.s	.io_error
-
-				; assume loaded OK
-				movem.l	(a7)+,d0-d4/a6
 
 .io_error:
 				movem.l	(a7)+,d0-d4/a6

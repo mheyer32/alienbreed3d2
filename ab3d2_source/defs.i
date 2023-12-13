@@ -186,7 +186,7 @@ NUM_WALL_TEXTURES	EQU 16
 		UWORD AlienT_HitPoints_w			; 32, 2
 		UWORD AlienT_Height_w				; 34, 2
 		UWORD AlienT_Girth_w				; 36, 2
-		UWORD AlienT_SplatType_w			; 38, 2
+		UWORD AlienT_SplatType_w			; 38, 2 - either the projectile class, or spanwed alien class
 		UWORD AlienT_Auxilliary_w			; 40, 2
 		LABEL AlienT_SizeOf_l				; 42
 

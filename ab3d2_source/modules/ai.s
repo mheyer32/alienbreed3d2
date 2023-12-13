@@ -160,6 +160,12 @@ ai_TakeDamage:
 				rts
 
 ai_JustDied:
+				; Record the kill.
+				clr.l   d0
+				move.l  #Game_Stats+GStatT_AlienKills_vw,a1
+				move.b  EntT_Type_b(a0),d0
+				add.w   #1,(a1,d0.w*2)
+
 				move.b	#0,EntT_NumLives_b(a0)
 				move.w	EntT_DisplayText_w(a0),d0
 				blt.s	.no_text
@@ -186,11 +192,11 @@ ai_JustDied:
 				add.l	d0,a2
 				move.b	AlienT_SplatType_w+1(a2),d0
 				move.b	d0,Anim_SplatType_w
-				cmp.b	#20,d0
+				cmp.b	#NUM_BULLET_DEFS,d0					; Projectile type 0-19
 				blt		.go_splutch
 
-				sub.b	#20,Anim_SplatType_w
-				sub.b	#20,d0
+				sub.b	#NUM_BULLET_DEFS,Anim_SplatType_w	; Spawned alien type 0-19
+				sub.b	#NUM_BULLET_DEFS,d0
 				ext.w	d0
 				move.l	GLF_DatabasePtr_l,a2
 				add.l	#GLFT_AlienDefs_l,a2

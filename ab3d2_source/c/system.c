@@ -3,6 +3,7 @@
 #include "draw.h"
 #include "message.h"
 #include "game_preferences.h"
+#include "game_stats.h"
 
 #include <SDI_compiler.h>
 #include <SDI_misc.h>
@@ -107,6 +108,7 @@ BOOL Sys_Init()
     // Load the game prefs (bindings etc).
     // We should probably just have a Game_Done() and Game_Init() pair and trampoline from there.
     Game_LoadPreferences();
+    Game_LoadStats();
 
     return TRUE;
 
@@ -124,6 +126,7 @@ void Sys_Done()
     // Save the game prefs (bindings etc).
     // We should probably just have a Game_Done() and Game_Init() pair and trampoline from there.
     Game_SavePreferences();
+    Game_SaveStats();
 
     ((struct Process*)SysBase->ThisTask)->pr_WindowPtr = sys_OldWindowPtr;
     // Display any buffered error message after cleanup
