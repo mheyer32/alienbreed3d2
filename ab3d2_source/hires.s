@@ -74,6 +74,7 @@ QUIT_KEY				equ RAWKEY_NUM_ASTERISK
 				include "bss/draw_bss.s"
 				include "bss/zone_bss.s"
 				include "bss/tables_bss.s"
+				include "bss/game_bss.s"
 
 ; INITIALISED (DATA) DATA
 				include "data/system_data.s"
@@ -198,6 +199,7 @@ _startup:
 				include		"modules/message.s"
 				include		"modules/game/game_properties.s"
 				include		"modules/game/game_preferences.s"
+				include		"modules/game/game_stats.s"
 
 				IFD MEMTRACK
 				include "modules/dev_memtrack.s"

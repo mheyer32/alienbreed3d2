@@ -394,7 +394,7 @@ NUM_INVENTORY_CONSUMABLES EQU (NUM_BULLET_DEFS+2)
 	STRUCTURE InvCT,0
 		UWORD InvCT_Health_w		        ; 2
 		UWORD InvCT_JetpackFuel_w			; 2
-		UWORD InvCT_AmmoCounts_vw			; 40 - UWORD[20]
+		UWORD InvCT_AmmoCounts_vw			; 40 - UWORD[NUM_BULLET_DEFS]
 		PADDING (NUM_BULLET_DEFS*2)-2
 		LABEL InvCT_SizeOf_l				; 44
 
@@ -403,7 +403,7 @@ NUM_INVENTORY_CONSUMABLES EQU (NUM_BULLET_DEFS+2)
 	STRUCTURE InvIT,0
 		UWORD InvIT_Shield_w				; 2
 		UWORD InvIT_JetPack_w				; 2
-		UWORD InvIT_Weapons_vw				; 20 - UWORD[10]
+		UWORD InvIT_Weapons_vw				; 20 - UWORD[NUM_GUN_DEFS]
 		PADDING (NUM_GUN_DEFS*2)-2
 		LABEL InvIT_SizeOf_l				; 24
 
@@ -417,6 +417,26 @@ NUM_INVENTORY_CONSUMABLES EQU (NUM_BULLET_DEFS+2)
 	STRUCTURE GModT,0
 		STRUCTURE GModT_MaxInv,(InvCT_SizeOf_l)		; 44
 		LABEL GModT_SizeOf_l						; 44
+
+	; Game statistics
+	STRUCTURE GStatT,0
+		; Number of times each level attempted
+		UWORD GStatT_LevelPlayCounts_vw			; 32 - UWORD[NUM_LEVELS]
+		PADDING (NUM_LEVELS*2)-2
+
+		; Number of times each level beaten
+		UWORD GStatT_LevelWonCounts_vw			; 32 - UWORD[NUM_LEVELS]
+		PADDING (NUM_LEVELS*2)-2
+
+		; Number of times killed in each level
+		UWORD GStatT_LevelFailCounts_vw			; 32 - UWORD[NUM_LEVELS]
+		PADDING (NUM_LEVELS*2)-2
+
+		; Number of aliens killed, by type
+		UWORD GStatT_AlienKills_vw
+		PADDING (NUM_ALIEN_DEFS*2)-2			; 40 - UWORD[NUM_ALIEN_DEFS]
+
+		LABEL GStatT_SizeOf_l					; 136
 
 
 *****************************

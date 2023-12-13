@@ -36,6 +36,7 @@ OBJS = c/main.o \
 	   c/message.o \
 	   c/game_properties.o \
 	   c/game_preferences.o \
+	   c/game_stats.o \
 	   c/hires.o
 
 hiresC: AFLAGS+=-DBUILD_WITH_C
