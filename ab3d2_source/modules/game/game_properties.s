@@ -3,7 +3,7 @@
 ; *
 ; * modules/game/game_properties.s
 ; *
-; * TODO - For the assembler only build, implement these
+; * Handles the loading and application of game modification data
 ; *
 ; *****************************************************************************
 

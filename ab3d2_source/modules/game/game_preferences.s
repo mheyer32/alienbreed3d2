@@ -3,7 +3,7 @@
 ; *
 ; * modules/game/game_preferences.s
 ; *
-; * TODO - For the assembler only build, implement these
+; * Handles the persistence of in-game user settings
 ; *
 ; *****************************************************************************
 
