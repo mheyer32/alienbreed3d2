@@ -476,4 +476,29 @@ Dev_DrawGraph:
 				movem.l	(sp)+,d0/d1/d2/a0/a1/a2
 				rts
 
+; Dump raw memory to a file
+; a0 = filename
+; a1 = memory location
+; d0 = bytes
+Dev_Dump:
+				movem.l	d1-d4/a2/a6,-(sp)
+				move.l	a1,a2 ; buffer
+				move.l	d0,d3 ; length
+				move.l	a0,d1 ; filename
+				move.l	#MODE_READWRITE,d2
+				CALLDOS	Open
+
+                move.l	d0,d1 ; handle
+				beq.s	.open_fail
+
+				move.l	d1,d4 ; back up as read/write clobber
+				move.l	a2,d2 ; buffer location, size still in d3
+				CALLDOS Write
+
+				move.l  d4,d1 ; handle
+				CALLDOS Close
+.open_fail:
+				movem.l	(sp)+,d1-d4/a2/a6
+				rts
+
 				ENDC

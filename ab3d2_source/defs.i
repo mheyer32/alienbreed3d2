@@ -390,7 +390,7 @@ NUM_INVENTORY_ITEMS EQU (NUM_GUN_DEFS+2)
 NUM_INVENTORY_CONSUMABLES EQU (NUM_BULLET_DEFS+2)
 
 
-	; Inventory consumables
+	; Inventory consumables (health/fuel/ammo)
 	STRUCTURE InvCT,0
 		UWORD InvCT_Health_w		        ; 2
 		UWORD InvCT_JetpackFuel_w			; 2
@@ -399,7 +399,7 @@ NUM_INVENTORY_CONSUMABLES EQU (NUM_BULLET_DEFS+2)
 		LABEL InvCT_SizeOf_l				; 44
 
 
-	; Inventory items
+	; Inventory items (weapons/jetpack/shield)
 	STRUCTURE InvIT,0
 		UWORD InvIT_Shield_w				; 2
 		UWORD InvIT_JetPack_w				; 2
@@ -407,10 +407,16 @@ NUM_INVENTORY_CONSUMABLES EQU (NUM_BULLET_DEFS+2)
 		PADDING (NUM_GUN_DEFS*2)-2
 		LABEL InvIT_SizeOf_l				; 24
 
+	; Full Inventory (player/collectable)
+	STRUCTURE InvT,0
+		STRUCT InvT_Consumables,(InvCT_SizeOf_l)	; 44
+		STRUCT InvT_Items,(InvIT_SizeOf_l)			; 24
+		LABEL InvT_SizeOf_l							; 68
+
 	; Custom game properties
 	STRUCTURE GModT,0
-		STRUCTURE GModT_MaxInv,(InvCT_SizeOf_l), 44
-		LABEL GModT_SizeOf_l				; 44
+		STRUCTURE GModT_MaxInv,(InvCT_SizeOf_l)		; 44
+		LABEL GModT_SizeOf_l						; 44
 
 
 *****************************

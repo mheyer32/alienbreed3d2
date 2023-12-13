@@ -3,13 +3,11 @@
 
 #include "defs.h"
 
-#define GAME_PROPERTIES_DATA_PATH "ab3:Includes/game_properties.dat"
-
 /** Inventory limits for the default game */
 #define GAME_DEFAULT_AMMO_LIMIT 10000
 #define GAME_DEFAULT_HEALTH_LIMIT 10000
 #define GAME_DEFAULT_FUEL_LIMIT 250
-#define GAME_UNCAPPED_LIMIT 32767
+#define GAME_UNCAPPED_LIMIT 32000
 
 #define GAME_MODE_SINGLE_PLAYER 'n'
 #define GAME_MODE_TWO_PLAYER_MASTER 'm'
