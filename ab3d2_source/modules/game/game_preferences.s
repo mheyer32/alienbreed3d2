@@ -13,7 +13,7 @@
 Game_LoadPreferences:
 				movem.l	d0-d4/a6,-(a7)
 
-				move.l	#game_PrefsName,d1
+				move.l	#Game_SettingsFile_vb,d1
 				move.l	#MODE_OLDFILE,d2
 				CALLDOS	Open
 
@@ -75,7 +75,7 @@ Game_SavePreferences:
 
 				movem.l	d0-d4/a6,-(a7)
 
-				move.l	#game_PrefsName,d1
+				move.l	#Game_SettingsFile_vb,d1
 				move.l	#MODE_READWRITE,d2
 				CALLDOS	Open
 
@@ -102,7 +102,5 @@ Game_SavePreferences:
 				movem.l	(a7)+,d0-d4/a6
 				rts
 
-game_PrefsName:
-				dc.b "ab3:game.prefs",0
 				ENDIF
 

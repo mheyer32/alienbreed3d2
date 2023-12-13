@@ -7,6 +7,8 @@
 
 extern struct FileInfoBlock io_FileInfoBlock;
 
+extern char const Game_SettingsFile[];
+
 extern UBYTE Prefs_Persisted[];
 extern UBYTE Prefs_PersistedEnd[];
 
@@ -40,7 +42,7 @@ void Game_ApplyPreferences(void) {
 }
 
 void Game_LoadPreferences(void) {
-    BPTR gamePrefsFH = Open(GAME_PREFS_PATH, MODE_OLDFILE);
+    BPTR gamePrefsFH = Open(Game_SettingsFile, MODE_OLDFILE);
     if (DOSFALSE == gamePrefsFH) {
         return;
     }
@@ -52,7 +54,7 @@ void Game_LoadPreferences(void) {
 }
 
 void Game_SavePreferences(void) {
-    BPTR gamePrefsFH = Open(GAME_PREFS_PATH, MODE_READWRITE);
+    BPTR gamePrefsFH = Open(Game_SettingsFile, MODE_READWRITE);
     if (DOSFALSE == gamePrefsFH) {
         return;
     }

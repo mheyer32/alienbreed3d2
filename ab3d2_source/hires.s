@@ -81,6 +81,7 @@ QUIT_KEY				equ RAWKEY_NUM_ASTERISK
 				include "data/level_data.s"
 				include "data/tables_data.s"
 				include "data/text_data.s"
+				include "data/game_data.s"
 
 				section .text,code
 

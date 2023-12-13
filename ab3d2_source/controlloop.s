@@ -1273,11 +1273,8 @@ LOADPOSITION:
 				move.l	(a0)+,(a1)+
 				ENDR
 
-				IFD BUILD_WITH_C
 				move.l  #Plr_Health_w,a0
 				CALLC   Game_ApplyInventoryLimits
-				ENDIF
-
 
 				move.w	MAXLEVEL,d0
 				move.l	#mnu_CURRENTLEVELLINE,a1

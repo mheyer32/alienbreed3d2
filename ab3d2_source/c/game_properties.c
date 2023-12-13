@@ -5,6 +5,8 @@
 
 extern Game_ModProperties game_ModProps;
 
+extern char const Game_PropertiesFile[];
+
 extern struct FileInfoBlock io_FileInfoBlock;
 
 static void game_LoadModProperties(void);
@@ -124,7 +126,7 @@ void Game_ApplyInventoryLimits(REG(a0, Inventory* inventory))
 
 void game_LoadModProperties()
 {
-    BPTR modPropsFH = Open(GAME_PROPERTIES_DATA_PATH, MODE_OLDFILE);
+    BPTR modPropsFH = Open(Game_PropertiesFile, MODE_OLDFILE);
     if (DOSFALSE == modPropsFH) {
         return;
     }

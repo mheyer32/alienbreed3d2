@@ -12,26 +12,26 @@
 GAME_DEFAULT_AMMO_LIMIT   equ 10000
 GAME_DEFAULT_HEALTH_LIMIT equ 10000
 GAME_DEFAULT_FUEL_LIMIT   equ 250
-GAME_UNCAPPED_LIMIT       equ 32767
+GAME_UNCAPPED_LIMIT       equ 32000
 
 				align 4
 
 ;void Game_InitDefaults(void)
 Game_InitDefaults:
-				lea		game_ModProps,a0
-				move.w	#GAME_DEFAULT_HEALTH_LIMIT,InvCT_Health_w(a0)
-				move.w	#GAME_DEFAULT_FUEL_LIMIT,InvCT_JetpackFuel_w(a0)
-				add.w 	#InvCT_AmmoCounts_vw,a0
+				move.w	#GAME_DEFAULT_HEALTH_LIMIT,game_ModProps+InvCT_Health_w
+				move.w	#GAME_DEFAULT_FUEL_LIMIT,game_ModProps+InvCT_JetpackFuel_w
+				lea		game_ModProps+InvCT_AmmoCounts_vw,a0
 				move.w	#NUM_BULLET_DEFS-1,d0
+				move.w	#GAME_DEFAULT_AMMO_LIMIT,d1
 
 .loop:
-				move.w	#GAME_DEFAULT_AMMO_LIMIT,(a0)+
+				move.w	d1,(a0)+
 				dbra	d0,.loop
 
 				; drop right through here
 game_LoadModProperties:
 				movem.l	d0-d4/a5-a6,-(sp)
-				move.l	#game_PropertiesDataPath,d1
+				move.l	#Game_PropertiesFile_vb,d1
 				move.l	#MODE_OLDFILE,d2
 				CALLDOS	Open
 
@@ -99,6 +99,8 @@ game_LoadModProperties:
 				movem.l (sp)+,d0-d4/a5-a6
 				rts
 
+
+				align 4
 ;d0: BOOL Game_CheckInventoryLimits(
 ;    a0: const Inventory*,
 ;    a1: const InventoryConsumables*,
@@ -220,7 +222,7 @@ Game_AddToInventory:
 				move.w	#NUM_INVENTORY_CONSUMABLES-1,d0
 				movem.l	d2/a3,-(sp)
 
-				lea		game_ModProps,a3
+				lea		game_ModProps+InvCT_Health_w,a3
 				clr.l	d1
 				clr.l	d2
 
@@ -254,10 +256,20 @@ Game_AddToInventory:
 
 ;void Game_ApplyInventoryLimits(a0: Inventory*)
 Game_ApplyInventoryLimits:
-				rts
+				move.w	#NUM_INVENTORY_CONSUMABLES-1,d0
+				lea		game_ModProps+InvCT_Health_w,a1
 
-game_PropertiesDataPath:
-				dc.b	"ab3:Includes/game_properties.dat",0
+.clamp_loop:
+				move.w	(a1)+,d1 ; max value
+				cmp.w	(a0),d1
+				bgt.s	.no_clamp
+
+				move.w	d1,(a0)  ; clamp inventory to max
+.no_clamp:
+				add.w	#2,a0
+				dbra	d0,.clamp_loop
+
+				rts
 
 				ENDIF
 
