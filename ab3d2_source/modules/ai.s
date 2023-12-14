@@ -160,12 +160,6 @@ ai_TakeDamage:
 				rts
 
 ai_JustDied:
-				; Record the kill.
-				clr.l   d0
-				move.l  #Game_Stats+GStatT_AlienKills_vw,a1
-				move.b  EntT_Type_b(a0),d0
-				add.w   #1,(a1,d0.w*2)
-
 				move.b	#0,EntT_NumLives_b(a0)
 				move.w	EntT_DisplayText_w(a0),d0
 				blt.s	.no_text
@@ -186,6 +180,10 @@ ai_JustDied:
 				move.w	4(a2,d3.w*8),newz
 				moveq	#0,d0
 				move.b	EntT_Type_b(a0),d0
+
+				; Record the (messy) kill...
+				STATS_KILL
+
 				muls	#AlienT_SizeOf_l,d0
 				move.l	GLF_DatabasePtr_l,a2
 				lea		GLFT_AlienDefs_l(a2),a2

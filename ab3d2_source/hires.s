@@ -231,7 +231,7 @@ Game_SlavePaused_b:			dc.b	0
 				align 4
 Game_ShowIntroText:
 				move.l	Lvl_IntroTextPtr_l,a0     ; Pointer to main narrative text
-				move.w	PLOPT,d0                  ; Level number
+				move.w	Game_LevelNumber_w,d0                  ; Level number
 				muls	#82*16,d0                 ; Fixed size of 82 chars per line, 16 lines ?
 				add.l	d0,a0                     ; offset into narrative
 				move.w	#15,d7                    ; line counter
@@ -263,6 +263,8 @@ Game_ClearIntroText:
 				rts
 
 Game_Begin:
+
+
 ;				move.w	#0,TXTCOLL
 ;				move.w	#0,MIXCOLL
 ;				move.w	#0,TOPCOLL
@@ -304,6 +306,9 @@ noload:
 				ENDC
 
 				CALLDEV	DataReset
+
+				; Record the start
+				STATS_PLAY
 
 ;****************************
 ;* Initialize level
@@ -350,7 +355,7 @@ noload:
 				move.l	20+6(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_FloorLinesPtr_l
-				move.w	-2(a2),ENDZONE
+				move.w	-2(a2),Lvl_ExitZoneID_w
 				move.l	24+6(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_ObjectDataPtr_l
@@ -1951,7 +1956,7 @@ noend:
 				move.l	Plr1_ZonePtr_l,a0
 				move.w	(a0),d0
 
-				cmp.w	ENDZONE,d0
+				cmp.w	Lvl_ExitZoneID_w,d0
 
 ; change this for quick exit, charlie
 zzzz:
@@ -2808,7 +2813,7 @@ SAVELETTER:		dc.b	'd',0
 				include "modules/dev_inst.s"
 
 
-ENDZONE:		dc.w	0
+Lvl_ExitZoneID_w:		dc.w	0
 
 ***************************************************************************
 ***************************************************************************
@@ -4610,6 +4615,9 @@ endlevel:
 				bgt.s	wevewon
 				move.w	#0,draw_DisplayEnergyCount_w
 
+				; Record the failure
+				STATS_DIED
+
 				; ASM build only
 				IFND BUILD_WITH_C
 				jsr		Draw_BorderEnergyBar
@@ -4631,6 +4639,9 @@ playgameover:
 				bra		wevelost
 
 wevewon:
+				; Record the victory
+				STATS_WON
+
 				; Disable audio DMA
 				move.w	#$f,$dff000+dmacon
 

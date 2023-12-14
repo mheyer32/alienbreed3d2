@@ -1,6 +1,6 @@
 #ifndef GAME_STATS_H
 #define GAME_STATS_H
-
+#include <SDI_compiler.h>
 #include "defs.h"
 
 typedef struct {
