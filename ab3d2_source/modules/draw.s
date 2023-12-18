@@ -372,4 +372,4 @@ Draw_NarrateText:
 				rts
 
 
-
+				include "modules/draw/draw_glyph.s"
