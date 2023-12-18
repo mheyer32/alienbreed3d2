@@ -3,6 +3,8 @@
 #include <SDI_compiler.h>
 #include "defs.h"
 
+#define MAX_ACHIEVEMENTS 128
+
 typedef struct {
     /** Total number of times the player has attempted a level */
     UWORD gs_LevelPlayCounts[NUM_LEVELS];
@@ -15,6 +17,9 @@ typedef struct {
 
     /** Total number of times the player has killed each class of alien */
     UWORD gs_AlienKills[NUM_ALIEN_DEFS];
+
+    /** Bitmap of achievements. A mod may define up to MAX_ACHIEVEMENTS */
+    UBYTE gs_Achieved[MAX_ACHIEVEMENTS/8];
 
 } Game_Stats;
 
