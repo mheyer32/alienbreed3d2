@@ -371,5 +371,3 @@ Draw_NarrateText:
 .NOCHARYET:
 				rts
 
-
-				include "modules/draw/draw_glyph.s"
