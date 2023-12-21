@@ -7,37 +7,6 @@
 ; *
 ; *****************************************************************************
 
-				; Begin a level
-				; Trashes d0/a0
-STATS_PLAY		MACRO
-				move.l	#Game_Stats+GStatT_LevelPlayCounts_vw,a0
-				move.w	Game_LevelNumber_w,d0
-				add.w	#1,(a0,d0.w*2)
-				ENDM
-
-				; Reach the end of a level
-				; Trashes d0/a0
-STATS_WON		MACRO
-				move.l	#Game_Stats+GStatT_LevelWonCounts_vw,a0
-				move.w	Game_LevelNumber_w,d0
-				add.w	#1,(a0,d0.w*2)
-				ENDM
-
-				; Died
-				; Trashes d0/a0
-STATS_DIED		MACRO
-				move.l	#Game_Stats+GStatT_LevelFailCounts_vw,a0
-				move.w	Game_LevelNumber_w,d0
-				add.w	#1,(a0,d0.w*2)
-				ENDM
-
-				; Trashes a1
-				; Expects EntT_Type_b in d0
-STATS_KILL		MACRO
-				move.l  #Game_Stats+GStatT_AlienKills_vw,a1
-				add.w   #1,(a1,d0.w*2)
-				ENDM
-
 				IFND BUILD_WITH_C
 				align 4
 

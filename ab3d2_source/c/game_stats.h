@@ -23,7 +23,22 @@ typedef struct {
 
 } Game_Stats;
 
+typedef enum  {
+	KILL_COUNT			= 0, // kill count of a particular enemy class
+	KILL_GROUP_COUNT	= 1, // Kill count over a group of enemy classes
+} AchievementRule;
+
+struct Achievement;
+
+typedef BOOL (*Rule)(struct Achievement const*);
+
+struct Achievement {
+	char const* ac_Name;
+	Rule	ac_Rule;
+	UBYTE	ac_UByte[8];
+};
+
 extern void Game_LoadStats(void);
 extern void Game_SaveStats(void);
-
+extern void Game_CheckStats(void);
 #endif // GAME_STATS_H

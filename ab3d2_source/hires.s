@@ -1757,6 +1757,10 @@ nodrawp2:
 				DEV_RESTORE	d0/d1/a0/a1
 
 				IFD BUILD_WITH_C
+				tst.l		Game_CheckStatsEvent_l
+				beq.s		.no_check_stats
+				CALLC		Game_CheckStats
+.no_check_stats:
 				CALLC Vid_Present
 				ELSE
 				jsr Vid_ConvertC2P

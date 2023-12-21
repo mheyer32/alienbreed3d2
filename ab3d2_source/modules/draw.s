@@ -371,5 +371,3 @@ Draw_NarrateText:
 .NOCHARYET:
 				rts
 
-
-

@@ -442,6 +442,8 @@ MAX_ACHIEVEMENTS EQU 128
 
 		LABEL GStatT_SizeOf_l
 
+STATS_EVENTBIT_KILL EQU 1
+
 
 *****************************
 * Door Definitions **********
