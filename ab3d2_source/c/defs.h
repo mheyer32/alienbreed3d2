@@ -23,7 +23,7 @@
 
 /*
  * These structures are managed by the assembler side and the alignment constraints are to preven the compiler
- * from padding them further for alignment purposes. It does not mean that the structures themselves are only#
+ * from padding them further for alignment purposes. It does not mean that the structures themselves are only
  * aligned to a 2 byte boundary,
  */
 typedef struct {

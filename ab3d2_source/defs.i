@@ -418,7 +418,8 @@ MAX_ACHIEVEMENTS EQU 128
 	STRUCTURE GModT,0
 		; Default inventory limits
 		STRUCTURE GModT_MaxInv,(InvCT_SizeOf_l)		; 44
-		LABEL GModT_SizeOf_l						; 44
+		;UWORD     GModT_NumAchievements             ; 2
+		LABEL GModT_SizeOf_l						; 46
 
 	; Game statistics
 	STRUCTURE GStatT,0

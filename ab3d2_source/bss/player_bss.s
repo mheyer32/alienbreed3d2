@@ -62,6 +62,7 @@ Plr1_TmpAngPos_w:			ds.w	1
 Plr1_TimeToShoot_w:			ds.w	1
 
 ; CAUTION This section is loaded/saved and must not be reordered
+_Plr1_Inventory::
 Plr1_Invetory_vw:
 Plr1_Health_w:				ds.w	1
 Plr1_JetpackFuel_w:			ds.w	1
@@ -171,6 +172,7 @@ Plr2_SnapAngSpd_w:			ds.w	1
 Plr2_TmpAngPos_w:			ds.w	1 ; hires.s
 Plr2_TimeToShoot_w:			ds.w	1
 
+_Plr2_Inventory::
 Plr2_Invetory_vw:
 Plr2_Health_w:				ds.w	1
 Plr2_JetpackFuel_w:			ds.w	1

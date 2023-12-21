@@ -10,6 +10,9 @@ extern Game_ModProperties       game_ModProps;
 extern Game_PlayerProgression   game_PlayerProgression;
 extern ULONG                    Game_ProgressSignal; // signal to check progress
 
+extern Inventory    Plr1_Inventory;
+extern Inventory    Plr2_Inventory;
+
 void game_LoadPlayerProgression(void) {
     BPTR gameProgressFH = Open(game_ProgressFile, MODE_OLDFILE);
     if (DOSFALSE == gameProgressFH) {
@@ -89,19 +92,19 @@ Achievement test[] = {
     {
         // Kill 10 beasts
         "Achievement: Beast Bashin' (Pest control 10/200)",
-        "Health Cap +20HP",
+        0,
         game_AchievementRuleKillCount,
-        {PARAM_WORD(0),PARAM_WORD(1)}, // alien type, count
-        20, // health cap bonus
-        0,  // immediate health bonus
+        {PARAM_WORD(0),PARAM_WORD(10)}, // alien type, count
     },
 
     {
         // kill 50 beasts
         "Achievement: Alien Bleed (Pest control 50/200)",
-        0,
+        "Rewarded HP +50",
         game_AchievementRuleKillCount,
         {PARAM_WORD(0),PARAM_WORD(50)}, // alien type, count
+        0,   // no health cap bonus
+        50   // immediate health bonus
     },
 
     {
@@ -115,11 +118,12 @@ Achievement test[] = {
     {
         // Kill 200 beasts
         "Achievement: Xenocide (Pest control 200/200)",
-        0,
+        "Rewarded HP +100 / HP Cap +150",
         game_AchievementRuleKillCount,
         {PARAM_WORD(0),PARAM_WORD(200)}, // alien type, count
+        150, // health cap bonus
+        200, // immediate health bonus
     },
-
 
     {
         // Kill 10 security drones
@@ -148,18 +152,30 @@ Achievement test[] = {
 
 /**
  *  Apply the reward for an achievement.
+ *  TODO - multiplayer, figure out what we should be doing here...
  */
 static void game_ApplyAchievementReward(Achievement const* achievement) {
     Msg_PushLine(achievement->ac_RewardDesc, MSG_TAG_OPTIONS|80);
+
+    InventoryConsumables* player_ic = &Plr1_Inventory.inv_Consumables;
+
+    // First, apply any cap modifications
     game_ModProps.gmp_MaxInventory.ic_Health      += achievement->ac_HealthCapBonus;
     game_ModProps.gmp_MaxInventory.ic_JetpackFuel += achievement->ac_FuelCapBonus;
+
+    // Now any instant bonuses
+    player_ic->ic_Health += achievement->ac_HealthBonus;
 
     if (
         achievement->ac_AmmoType > -1 &&
         achievement->ac_AmmoType < NUM_BULLET_DEFS
     ) {
         game_ModProps.gmp_MaxInventory.ic_AmmoCounts[achievement->ac_AmmoType] += achievement->ac_AmmoTypeCapBonus;
+        player_ic->ic_AmmoCounts[achievement->ac_AmmoType] += achievement->ac_AmmoTypeBonus;
     }
+
+    // Apply (updated) caps to inventory
+    Game_ApplyInventoryLimits(&Plr1_Inventory);
 }
 
 void Game_UpdatePlayerProgress(void) {
