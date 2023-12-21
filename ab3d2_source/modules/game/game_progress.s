@@ -10,10 +10,21 @@
 				IFND BUILD_WITH_C
 				align 4
 
-Game_LoadStats:
+Game_Init:
+                bsr game_LoadModProperties
+                bsr game_LoadPreferences
+                bsr game_LoadPlayerProgression
+                rts
+
+Game_Done:
+                bsr game_SavePlayerProgression
+                bsr game_SavePreferences
+                rts
+
+game_LoadPlayerProgression:
 				movem.l	d0-d4/a6,-(a7)
 
-				move.l	#Game_StatsFile_vb,d1
+				move.l	#game_ProgressFile_vb,d1
 				move.l	#MODE_OLDFILE,d2
 				CALLDOS	Open
 
@@ -22,7 +33,7 @@ Game_LoadStats:
 
 				move.l	d0,d4 ; backup handle in d4
 
-				move.l	#Game_Stats,d2
+				move.l	#game_PlayerProgression,d2
 				move.l	#GStatT_SizeOf_l,d3
 
 				CALLDOS	Read
@@ -37,10 +48,10 @@ Game_LoadStats:
 				rts
 
 
-Game_SaveStats:
+game_SavePlayerProgression:
 				movem.l	d0-d4/a6,-(a7)
 
-				move.l	#Game_StatsFile_vb,d1
+				move.l	#game_ProgressFile_vb,d1
 				move.l	#MODE_READWRITE,d2
 				CALLDOS	Open
 
@@ -49,8 +60,8 @@ Game_SaveStats:
 
 				move.l	d0,d4
 
-				move.l	#Game_Stats,d2
-				move.l	#Game_StatsEnd,d3
+				move.l	#game_PlayerProgression,d2
+				move.l	#game_PlayerProgressionEnd,d3
 				sub.l	d2,d3 ; size in d3
 
 				CALLDOS	Write

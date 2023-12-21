@@ -1,27 +1,54 @@
 #include "system.h"
-#include "game_properties.h"
+#include "game.h"
 #include <dos/dos.h>
 #include <proto/dos.h>
 
 extern Game_ModProperties game_ModProps;
 
-extern char const Game_PropertiesFile[];
+extern char const game_PropertiesFile[];
 
 extern struct FileInfoBlock io_FileInfoBlock;
 
-static void game_LoadModProperties(void);
-
-/**
- * Install the game default values. This is basically uncapped ammo, health.
- */
-void Game_InitDefaults(void)
+void game_LoadModProperties(void)
 {
+    /* Safely initialise defaults */
     game_ModProps.gmp_MaxInventory.ic_Health      = GAME_DEFAULT_HEALTH_LIMIT;
     game_ModProps.gmp_MaxInventory.ic_JetpackFuel = GAME_DEFAULT_FUEL_LIMIT;
     for (int i = 0; i < NUM_BULLET_DEFS; ++i) {
         game_ModProps.gmp_MaxInventory.ic_AmmoCounts[i] = GAME_DEFAULT_AMMO_LIMIT;
     }
-    game_LoadModProperties();
+    BPTR modPropsFH = Open(game_PropertiesFile, MODE_OLDFILE);
+    if (DOSFALSE == modPropsFH) {
+        return;
+    }
+
+    ExamineFH(modPropsFH, &io_FileInfoBlock);
+
+    if (
+       io_FileInfoBlock.fib_DirEntryType >= 0 ||
+       io_FileInfoBlock.fib_Size < (LONG)sizeof(Game_ModProperties)
+    ) {
+       return;
+    }
+
+    Game_ModProperties* props = (Game_ModProperties*)Sys_GetTemporaryWorkspace();
+
+    LONG bytesRead = Read(modPropsFH, props, sizeof(Game_ModProperties));
+    if (bytesRead == (LONG)sizeof(Game_ModProperties)) {
+        if (props->gmp_MaxInventory.ic_Health < GAME_UNCAPPED_LIMIT) {
+            game_ModProps.gmp_MaxInventory.ic_Health = props->gmp_MaxInventory.ic_Health;
+        }
+        if (props->gmp_MaxInventory.ic_JetpackFuel < GAME_UNCAPPED_LIMIT) {
+            game_ModProps.gmp_MaxInventory.ic_JetpackFuel = props->gmp_MaxInventory.ic_JetpackFuel;
+        }
+
+        for (int i = 0; i < NUM_BULLET_DEFS; ++i) {
+            if (props->gmp_MaxInventory.ic_AmmoCounts[i] < GAME_UNCAPPED_LIMIT) {
+                game_ModProps.gmp_MaxInventory.ic_AmmoCounts[i] = props->gmp_MaxInventory.ic_AmmoCounts[i];
+            }
+        }
+    }
+    Close(modPropsFH);
 }
 
 /**
@@ -124,38 +151,4 @@ void Game_ApplyInventoryLimits(REG(a0, Inventory* inventory))
     }
 }
 
-void game_LoadModProperties()
-{
-    BPTR modPropsFH = Open(Game_PropertiesFile, MODE_OLDFILE);
-    if (DOSFALSE == modPropsFH) {
-        return;
-    }
 
-    ExamineFH(modPropsFH, &io_FileInfoBlock);
-
-    if (
-       io_FileInfoBlock.fib_DirEntryType >= 0 ||
-       io_FileInfoBlock.fib_Size < (LONG)sizeof(Game_ModProperties)
-    ) {
-       return;
-    }
-
-    Game_ModProperties* props = (Game_ModProperties*)Sys_GetTemporaryWorkspace();
-
-    LONG bytesRead = Read(modPropsFH, props, sizeof(Game_ModProperties));
-    if (bytesRead == (LONG)sizeof(Game_ModProperties)) {
-        if (props->gmp_MaxInventory.ic_Health < GAME_UNCAPPED_LIMIT) {
-            game_ModProps.gmp_MaxInventory.ic_Health = props->gmp_MaxInventory.ic_Health;
-        }
-        if (props->gmp_MaxInventory.ic_JetpackFuel < GAME_UNCAPPED_LIMIT) {
-            game_ModProps.gmp_MaxInventory.ic_JetpackFuel = props->gmp_MaxInventory.ic_JetpackFuel;
-        }
-
-        for (int i = 0; i < NUM_BULLET_DEFS; ++i) {
-            if (props->gmp_MaxInventory.ic_AmmoCounts[i] < GAME_UNCAPPED_LIMIT) {
-                game_ModProps.gmp_MaxInventory.ic_AmmoCounts[i] = props->gmp_MaxInventory.ic_AmmoCounts[i];
-            }
-        }
-    }
-    Close(modPropsFH);
-}

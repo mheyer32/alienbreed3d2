@@ -143,8 +143,7 @@ Sys_Init:
 				CALLEXEC AddIntServer
 				ENDC
 
-				bsr		Game_LoadStats
-				bsr		Game_LoadPreferences
+				bsr     Game_Init
 
 				; All successful
 				moveq		#1,d0
@@ -177,8 +176,7 @@ Sys_Done:
 				move.l	#sys_POTBITS,d0
 				CALLPOTGO	FreePotBits
 
-				bsr		Game_SavePreferences
-				bsr		Game_SaveStats
+				bsr     Game_Done
 
 				move.l	$4.w,a0
 				move.l	ThisTask(a0),a0

@@ -371,7 +371,7 @@ SET_MEM_BIT		MACRO
 				; Begin a level
 				; Trashes d0/a0
 STATS_PLAY		MACRO
-				move.l	#Game_Stats+GStatT_LevelPlayCounts_vw,a0
+				move.l	#game_PlayerProgression+GStatT_LevelPlayCounts_vw,a0
 				move.w	Game_LevelNumber_w,d0
 				add.w	#1,(a0,d0.w*2)
 				ENDM
@@ -379,7 +379,7 @@ STATS_PLAY		MACRO
 				; Reach the end of a level
 				; Trashes d0/a0
 STATS_WON		MACRO
-				move.l	#Game_Stats+GStatT_LevelWonCounts_vw,a0
+				move.l	#game_PlayerProgression+GStatT_LevelWonCounts_vw,a0
 				move.w	Game_LevelNumber_w,d0
 				add.w	#1,(a0,d0.w*2)
 				ENDM
@@ -387,7 +387,7 @@ STATS_WON		MACRO
 				; Died
 				; Trashes d0/a0
 STATS_DIED		MACRO
-				move.l	#Game_Stats+GStatT_LevelFailCounts_vw,a0
+				move.l	#game_PlayerProgression+GStatT_LevelFailCounts_vw,a0
 				move.w	Game_LevelNumber_w,d0
 				add.w	#1,(a0,d0.w*2)
 				ENDM
@@ -395,8 +395,8 @@ STATS_DIED		MACRO
 				; Trashes a1
 				; Expects EntT_Type_b in d0
 STATS_KILL		MACRO
-				move.l  #Game_Stats+GStatT_AlienKills_vw,a1
+				move.l  #game_PlayerProgression+GStatT_AlienKills_vw,a1
 				add.w   #1,(a1,d0.w*2)
-				move.l	#1,Game_CheckStatsEvent_l
-				SET_MEM_BIT	STATS_EVENTBIT_KILL,Game_CheckStatsEvent_l
+				move.l	#1,Game_ProgressSignal_l
+				SET_MEM_BIT	STATS_EVENTBIT_KILL,Game_ProgressSignal_l
 				ENDM

@@ -180,7 +180,7 @@ _startup:
 				addq	#1,d0
 				dbra	d1,.fill_const
 
-				CALLC	Game_InitDefaults
+;				CALLC	Game_Init ; this might be the best place
 
 				jsr		Game_Start
 
@@ -199,7 +199,7 @@ _startup:
 				include		"modules/message.s"
 				include		"modules/game/game_properties.s"
 				include		"modules/game/game_preferences.s"
-				include		"modules/game/game_stats.s"
+				include		"modules/game/game_progress.s"
 
 				IFD MEMTRACK
 				include "modules/dev_memtrack.s"
@@ -1757,10 +1757,10 @@ nodrawp2:
 				DEV_RESTORE	d0/d1/a0/a1
 
 				IFD BUILD_WITH_C
-				tst.l		Game_CheckStatsEvent_l
-				beq.s		.no_check_stats
-				CALLC		Game_CheckStats
-.no_check_stats:
+				tst.l		Game_ProgressSignal_l
+				beq.s		.no_update_progress
+				CALLC		Game_UpdatePlayerProgress
+.no_update_progress:
 				CALLC Vid_Present
 				ELSE
 				jsr Vid_ConvertC2P

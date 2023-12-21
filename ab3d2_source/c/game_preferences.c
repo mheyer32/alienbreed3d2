@@ -1,4 +1,4 @@
-#include "game_preferences.h"
+#include "game.h"
 
 #include <exec/types.h>
 #include <dos/dos.h>
@@ -7,7 +7,7 @@
 
 extern struct FileInfoBlock io_FileInfoBlock;
 
-extern char const Game_SettingsFile[];
+extern char const game_PreferencesFile[];
 
 extern UBYTE Prefs_Persisted[];
 extern UBYTE Prefs_PersistedEnd[];
@@ -29,10 +29,10 @@ extern WORD  Vid_LetterBoxMarginHeight_w;
 
 // Extreme MVP version
 
-void Game_ApplyPreferences(void) {
+void game_ApplyPreferences(void) {
     Vid_FullScreenTemp_b        = Vid_FullScreen_b = Prefs_FullScreen;
     if (Vid_isRTG) {
-        Vid_DoubleHeight_b          = Prefs_PixelMode;
+        Vid_DoubleHeight_b      = Prefs_PixelMode;
     }
     Draw_ForceSimpleWalls_b     = Prefs_SimpleLighting;
     Vid_FPSLimit_l              = Prefs_FPSLimit;
@@ -41,20 +41,20 @@ void Game_ApplyPreferences(void) {
     Draw_GoodRender_b           = Prefs_RenderQuality;
 }
 
-void Game_LoadPreferences(void) {
-    BPTR gamePrefsFH = Open(Game_SettingsFile, MODE_OLDFILE);
+void game_LoadPreferences(void) {
+    BPTR gamePrefsFH = Open(game_PreferencesFile, MODE_OLDFILE);
     if (DOSFALSE == gamePrefsFH) {
         return;
     }
     LONG size = (Prefs_PersistedEnd - Prefs_Persisted);
     if (size == Read(gamePrefsFH, Prefs_Persisted, size)) {
-        Game_ApplyPreferences();
+        game_ApplyPreferences();
     }
     Close(gamePrefsFH);
 }
 
-void Game_SavePreferences(void) {
-    BPTR gamePrefsFH = Open(Game_SettingsFile, MODE_READWRITE);
+void game_SavePreferences(void) {
+    BPTR gamePrefsFH = Open(game_PreferencesFile, MODE_READWRITE);
     if (DOSFALSE == gamePrefsFH) {
         return;
     }

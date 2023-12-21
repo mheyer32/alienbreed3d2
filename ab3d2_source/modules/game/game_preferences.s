@@ -10,10 +10,10 @@
 				IFND BUILD_WITH_C
 				align 4
 
-Game_LoadPreferences:
+game_LoadPreferences:
 				movem.l	d0-d4/a6,-(a7)
 
-				move.l	#Game_SettingsFile_vb,d1
+				move.l	#game_PreferencesFile_vb,d1
 				move.l	#MODE_OLDFILE,d2
 				CALLDOS	Open
 
@@ -40,14 +40,14 @@ Game_LoadPreferences:
 				movem.l	(a7)+,d0-d4/a6
 
 				; drop through here
-				bra.s	Game_ApplyPreferences
+				bra.s	game_ApplyPreferences
 
 .io_error:
 				movem.l	(a7)+,d0-d4/a6
 				rts
 
 
-Game_ApplyPreferences:
+game_ApplyPreferences:
 				move.b	_Prefs_FullScreen,Vid_FullScreen_b
 				move.b	_Prefs_FullScreen,Vid_FullScreenTemp_b
 				move.b	_Prefs_SimpleLighting,Draw_ForceSimpleWalls_b
@@ -65,7 +65,7 @@ Game_ApplyPreferences:
 				rts
 
 
-Game_SavePreferences:
+game_SavePreferences:
 				move.b	Vid_FullScreen_b,_Prefs_FullScreen
 				move.b	Draw_ForceSimpleWalls_b,_Prefs_SimpleLighting
 				move.b	Vid_FPSLimit_l+3,_Prefs_FPSLimit
@@ -75,7 +75,7 @@ Game_SavePreferences:
 
 				movem.l	d0-d4/a6,-(a7)
 
-				move.l	#Game_SettingsFile_vb,d1
+				move.l	#game_PreferencesFile_vb,d1
 				move.l	#MODE_READWRITE,d2
 				CALLDOS	Open
 

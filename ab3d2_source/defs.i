@@ -416,11 +416,15 @@ MAX_ACHIEVEMENTS EQU 128
 
 	; Custom game properties
 	STRUCTURE GModT,0
+		; Default inventory limits
 		STRUCTURE GModT_MaxInv,(InvCT_SizeOf_l)		; 44
 		LABEL GModT_SizeOf_l						; 44
 
 	; Game statistics
 	STRUCTURE GStatT,0
+		; Progressed inventory limits
+		STRUCTURE GStatT_MaxInv,(InvCT_SizeOf_l)	; 44
+
 		; Number of times each level attempted
 		UWORD GStatT_LevelPlayCounts_vw			; 32 - UWORD[NUM_LEVELS]
 		PADDING (NUM_LEVELS*2)-2
