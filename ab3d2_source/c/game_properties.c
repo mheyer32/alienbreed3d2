@@ -2,12 +2,58 @@
 #include "game.h"
 #include <dos/dos.h>
 #include <proto/dos.h>
+#include <proto/exec.h>
+
+#include <stdio.h>
 
 extern Game_ModProperties game_ModProps;
-
-extern char const game_PropertiesFile[];
+extern Achievement*       game_AchievementsDataPtr;
+extern Rule               game_AchievementRules[];
+extern char const         game_PropertiesFile[];
 
 extern struct FileInfoBlock io_FileInfoBlock;
+
+/**
+ * Free any achievements data that was loaded
+ */
+void game_FreeAchievementsData(void) {
+    if (game_AchievementsDataPtr) {
+        FreeVec(game_AchievementsDataPtr);
+    }
+    game_AchievementsDataPtr = 0;
+    game_ModProps.gmp_NumAchievements = 0;
+    game_ModProps.gmp_AchievementSize = 0;
+}
+
+/**
+ * Prepare any loaded achievements data. This involves replacing nonzero string offsets with their addresses in the
+ * shared string heap
+ */
+void game_InitAchievementsData(void) {
+    if (!game_AchievementsDataPtr || !game_ModProps.gmp_NumAchievements) {
+        return;
+    }
+    char const* stringHeap = (char const*)game_AchievementsDataPtr + (game_ModProps.gmp_NumAchievements * sizeof(Achievement));
+    ULONG offset;
+    for (UWORD i = 0; i < game_ModProps.gmp_NumAchievements; ++i) {
+        if ( (offset = (ULONG)game_AchievementsDataPtr[i].ac_Name) ) {
+            game_AchievementsDataPtr[i].ac_Name = stringHeap + offset;
+        }
+        if ( (offset = (ULONG)game_AchievementsDataPtr[i].ac_RewardDesc) ) {
+            game_AchievementsDataPtr[i].ac_RewardDesc = stringHeap + offset;
+        }
+        offset = (ULONG)game_AchievementsDataPtr[i].ac_Rule;
+        game_AchievementsDataPtr[i].ac_Rule = game_AchievementRules[offset];
+/*
+        printf(
+            "Achievement %d [%s] Rule %p\n",
+            (int)i,
+            game_AchievementsDataPtr[i].ac_Name,
+            game_AchievementsDataPtr[i].ac_Rule
+        );
+*/
+    }
+}
 
 void game_LoadModProperties(void)
 {
@@ -47,7 +93,37 @@ void game_LoadModProperties(void)
                 game_ModProps.gmp_MaxInventory.ic_AmmoCounts[i] = props->gmp_MaxInventory.ic_AmmoCounts[i];
             }
         }
+        game_ModProps.gmp_NumAchievements =
+            props->gmp_NumAchievements < GAME_MAX_ACHIEVEMENTS ?
+            props->gmp_NumAchievements : 0;
+        game_ModProps.gmp_AchievementSize =
+            props->gmp_NumAchievements ?
+            props->gmp_AchievementSize : 0;
     }
+/*
+    printf(
+        "Read main mod properties %s, have %d achievements (%d bytes) to load\n.",
+        game_PropertiesFile,
+        (int)game_ModProps.gmp_NumAchievements,
+        (int)game_ModProps.gmp_AchievementSize
+    );
+*/
+    /** Now, read in the achievements data */
+    if (
+        game_ModProps.gmp_NumAchievements &&
+        game_ModProps.gmp_AchievementSize > (game_ModProps.gmp_NumAchievements * sizeof(Achievement)) &&
+        (game_AchievementsDataPtr = AllocVec(game_ModProps.gmp_AchievementSize, MEMF_ANY))
+    ) {
+
+        bytesRead = Read(modPropsFH, game_AchievementsDataPtr, game_ModProps.gmp_AchievementSize);
+
+        if (bytesRead != game_ModProps.gmp_AchievementSize) {
+            game_FreeAchievementsData();
+        } else {
+            game_InitAchievementsData();
+        }
+    }
+
     Close(modPropsFH);
 }
 

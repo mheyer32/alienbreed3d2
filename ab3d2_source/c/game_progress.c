@@ -9,9 +9,12 @@ extern char const               game_ProgressFile[];
 extern Game_ModProperties       game_ModProps;
 extern Game_PlayerProgression   game_PlayerProgression;
 extern ULONG                    Game_ProgressSignal; // signal to check progress
+extern Rule                     game_AchievementRules[];
+extern Achievement*             game_AchievementsDataPtr;
 
-extern Inventory    Plr1_Inventory;
-extern Inventory    Plr2_Inventory;
+extern Inventory                Plr1_Inventory;
+extern Inventory                Plr2_Inventory;
+
 
 void game_LoadPlayerProgression(void) {
     BPTR gameProgressFH = Open(game_ProgressFile, MODE_OLDFILE);
@@ -83,72 +86,11 @@ static BOOL game_AchievementRuleGroupKillCount(Achievement const* achievement) {
     return FALSE;
 }
 
-
-/**
- * TODO - Incorporate this structure type into the mod properties with an ID in place of the rule, which will be
- *        swapped for the correct function pointer after loading up.
- */
-Achievement test[] = {
-    {
-        // Kill 10 beasts
-        "Achievement: Beast Bashin' (Pest control 10/200)",
-        0,
-        game_AchievementRuleKillCount,
-        {PARAM_WORD(0),PARAM_WORD(10)}, // alien type, count
-    },
-
-    {
-        // kill 50 beasts
-        "Achievement: Alien Bleed (Pest control 50/200)",
-        "Rewarded HP +50",
-        game_AchievementRuleKillCount,
-        {PARAM_WORD(0),PARAM_WORD(50)}, // alien type, count
-        0,   // no health cap bonus
-        50   // immediate health bonus
-    },
-
-    {
-        // kill 100 beasts
-        "Achievement: Endangered Species (Pest control 100/200)",
-        0,
-        game_AchievementRuleKillCount,
-        {PARAM_WORD(0),PARAM_WORD(100)}, // alien type, count
-    },
-
-    {
-        // Kill 200 beasts
-        "Achievement: Xenocide (Pest control 200/200)",
-        "Rewarded HP +100 / HP Cap +150",
-        game_AchievementRuleKillCount,
-        {PARAM_WORD(0),PARAM_WORD(200)}, // alien type, count
-        150, // health cap bonus
-        200, // immediate health bonus
-    },
-
-    {
-        // Kill 10 security drones
-        "Achievement: Light 'Em Up",
-        0,
-        game_AchievementRuleKillCount,
-        {PARAM_WORD(14),PARAM_WORD(10)},
-    },
-
-    {
-        // Kill 20 flying things
-        "Achievement: Death From Below!",
-        0,
-        game_AchievementRuleGroupKillCount,
-        {
-            PARAM_LONG(    // alien type mask
-                1 << 4  |
-                1 << 7  |
-                1 << 14 |
-                1 << 15
-            ),
-            PARAM_WORD(20) // count
-        },
-    }
+Rule game_AchievementRules[] = {
+    game_AchievementRuleKillCount,
+    game_AchievementRuleGroupKillCount,
 };
+
 
 /**
  *  Apply the reward for an achievement.
@@ -180,17 +122,16 @@ static void game_ApplyAchievementReward(Achievement const* achievement) {
 
 void Game_UpdatePlayerProgress(void) {
 
-    // TODO - track ID range rather than all achievements
-    //      - tag achivements by event type to speed up skipping
+    Achievement const* achievements = game_AchievementsDataPtr;
 
-    for (UWORD id = 0; id < sizeof(test)/sizeof(Achievement); ++id) {
+    for (UWORD id = 0; id < game_ModProps.gmp_NumAchievements; ++id) {
         if (
             !game_CheckAchieved(id) &&
-            test[id].ac_Rule(&test[id])
+            achievements[id].ac_Rule(&achievements[id])
         ) {
-            Msg_PushLine(test[id].ac_Name, MSG_TAG_OPTIONS|80);
-            if (test[id].ac_RewardDesc) {
-                game_ApplyAchievementReward(&test[id]);
+            Msg_PushLine(achievements[id].ac_Name, MSG_TAG_OPTIONS|80);
+            if (achievements[id].ac_RewardDesc) {
+                game_ApplyAchievementReward(&achievements[id]);
             }
             game_MarkAchieved(id);
         }

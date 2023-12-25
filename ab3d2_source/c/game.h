@@ -16,6 +16,11 @@
 
 /**
  * Achievement definition
+ *
+ * The name and description point to a shared strings lump after the achievement data
+ * The strings themselves must be 80 chars or less. Thus the maximum size of these data are
+ *
+ * NUM_ACHIEVEMENTS * sizeof(AchievementStruct) + 2*80*NUM_ACHIEVEMENTS
  */
 struct AchievementStruct;
 typedef BOOL (*Rule)(struct AchievementStruct const*);
@@ -23,6 +28,7 @@ struct AchievementStruct {
     char const* ac_Name;             // 4 4    Name
     char const* ac_RewardDesc;       // 4 8    Reward message
     Rule        ac_Rule;             // 4 12   Rule Logic
+
     UBYTE       ac_RuleParams[8];    // 8 20   Parameters (really a union)
     UWORD       ac_HealthCapBonus;   // 2 24   Health cap increase
     UWORD       ac_HealthBonus;      // 2 22   Immediate health bonus (applies after cap increase)
@@ -40,7 +46,8 @@ typedef struct AchievementStruct Achievement;
  */
 typedef struct {
     InventoryConsumables gmp_MaxInventory;
-    //UWORD                gmp_NumAchievements;
+    UWORD                gmp_NumAchievements;   // Number of defined achievements
+    UWORD                gmp_AchievementSize;   // total size of the achivement data ssection (bytes)
     /** TODO other things here ... */
 } Game_ModProperties;
 
