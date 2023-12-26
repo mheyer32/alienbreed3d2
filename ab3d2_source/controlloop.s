@@ -1584,6 +1584,7 @@ CONTROL_OPTS:
 				dc.w	15,30,10,1
 				dc.w	-1
 
+_Game_LevelNumber::
 Game_LevelNumber_w:		dc.w	0
 
 

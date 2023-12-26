@@ -52,6 +52,7 @@ Plr1_Energy_w:				ds.w	1
 Plr1_CosVal_w:				ds.w	1
 Plr1_SinVal_w:				ds.w	1
 Plr1_AngPos_w:				ds.w	1
+_Plr1_Zone::
 Plr1_Zone_w:				ds.w	1
 Plr1_FloorSpd_w:			ds.w	1
 Plr1_RoomBright_w: 			ds.w	1

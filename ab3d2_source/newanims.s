@@ -760,9 +760,18 @@ BACKSFX:
 .nosfx:
 				rts
 
+
 objmoveanim:
+                move.w  Plr1_Zone_w,d0
 				move.l	Plr1_ZonePtr_l,a0
 				move.w	(a0),Plr1_Zone_w
+
+				cmp.w   Plr1_Zone_w,d0
+                beq.s   .not_changed
+
+                SET_MEM_BIT	STATS_EVENTBIT_MOVE,Game_ProgressSignal_l
+
+.not_changed:
 				move.l	Plr2_ZonePtr_l,a0
 				move.w	(a0),Plr2_Zone_w
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b

@@ -1900,8 +1900,8 @@ plr1only:
 				asr.w	#3,d0
 				bset	d1,(a1,d0.w)
 				bra		.doallrooms2
-.allroomsdone2:
 
+.allroomsdone2:
 				move.l	#%000001,d7
 				lea		AI_AlienTeamWorkspace_vl,a2
 				move.l	Lvl_ObjectDataPtr_l,a0

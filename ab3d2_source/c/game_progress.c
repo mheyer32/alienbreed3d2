@@ -3,7 +3,7 @@
 #include <proto/exec.h>
 #include <dos/dos.h>
 #include <proto/dos.h>
-
+#include <stdio.h>
 
 extern char const               game_ProgressFile[];
 extern Game_ModProperties       game_ModProps;
@@ -66,19 +66,29 @@ static inline BOOL game_MarkAchieved(UWORD i) {
 #define PARAM_WORD(w) ((w) >> 8),((w) & 0xFF)
 #define PARAM_LONG(w) ((w) >> 24),(((w) >> 16) & 0xFF),(((w) >> 8) & 0xFF),((w) & 0xFF)
 
+/**
+ * Achievement test for killing a single alien class
+ */
 static BOOL game_AchievementRuleKillCount(Achievement const* achievement) {
     UWORD const * ac_Params = (UWORD const *)&(achievement->ac_RuleParams[0]);
     return game_PlayerProgression.gs_AlienKills[ac_Params[0]] >= ac_Params[1];
 }
 
+/**
+ * Achievement test for killing a total of any group of alien classes
+ */
 static BOOL game_AchievementRuleGroupKillCount(Achievement const* achievement) {
     ULONG enemyMask = *(ULONG const*)&(achievement->ac_RuleParams[0]) & ((1 << NUM_ALIEN_DEFS) - 1);
     UWORD count     = *(UWORD const*)&(achievement->ac_RuleParams[sizeof(ULONG)]);
 
+    UWORD total     = 0;
+
     for (UWORD id = 0; id < NUM_ALIEN_DEFS; ++id) {
+        if (enemyMask && (1 << id)) {
+            total += game_PlayerProgression.gs_AlienKills[id];
+        }
         if (
-            enemyMask & (1 << id) &&
-            game_PlayerProgression.gs_AlienKills[id] >= count
+            total >= count
         ) {
             return TRUE;
         }
@@ -86,9 +96,18 @@ static BOOL game_AchievementRuleGroupKillCount(Achievement const* achievement) {
     return FALSE;
 }
 
+extern UWORD Plr1_Zone;
+extern UWORD Game_LevelNumber;
+
+static BOOL game_AchievementZoneFound(Achievement const* achievement) {
+    ULONG levelAndZone = ((ULONG)Game_LevelNumber << 16) | Plr1_Zone;
+    return levelAndZone == *(ULONG const*)&(achievement->ac_RuleParams[0]);
+}
+
 Rule game_AchievementRules[] = {
     game_AchievementRuleKillCount,
     game_AchievementRuleGroupKillCount,
+    game_AchievementZoneFound,
 };
 
 
