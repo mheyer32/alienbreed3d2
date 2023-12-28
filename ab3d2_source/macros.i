@@ -368,28 +368,24 @@ SET_MEM_BIT		MACRO
 				bset.b	#(\1&7),\2+3-(\1>>3)
 				ENDM
 
+
+				IFD BUILD_WITH_C
+
 				; Begin a level
 				; Trashes d0/a0
+
 STATS_PLAY		MACRO
-				move.l	#game_PlayerProgression+GStatT_LevelPlayCounts_vw,a0
-				move.w	Game_LevelNumber_w,d0
-				add.w	#1,(a0,d0.w*2)
+                CALLC   Game_LevelBegin
 				ENDM
 
-				; Reach the end of a level
-				; Trashes d0/a0
 STATS_WON		MACRO
-				move.l	#game_PlayerProgression+GStatT_LevelWonCounts_vw,a0
-				move.w	Game_LevelNumber_w,d0
-				add.w	#1,(a0,d0.w*2)
+                CALLC   Game_LevelWon
 				ENDM
 
 				; Died
 				; Trashes d0/a0
 STATS_DIED		MACRO
-				move.l	#game_PlayerProgression+GStatT_LevelFailCounts_vw,a0
-				move.w	Game_LevelNumber_w,d0
-				add.w	#1,(a0,d0.w*2)
+                CALLC   Game_LevelFailed
 				ENDM
 
 				; Trashes a1
@@ -400,3 +396,21 @@ STATS_KILL		MACRO
 				move.l	#1,Game_ProgressSignal_l
 				SET_MEM_BIT	STATS_EVENTBIT_KILL,Game_ProgressSignal_l
 				ENDM
+
+				ELSE
+
+				; At this time, there are no game progress for asm-only build
+
+STATS_PLAY		MACRO
+                ENDM
+
+STATS_WON		MACRO
+                ENDM
+
+STATS_DIED		MACRO
+                ENDM
+
+STATS_KILL		MACRO
+                ENDM
+
+				ENDC

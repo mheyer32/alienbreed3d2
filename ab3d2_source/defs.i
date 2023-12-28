@@ -427,6 +427,10 @@ MAX_ACHIEVEMENTS EQU 128
 		; Progressed inventory limits
 		STRUCTURE GStatT_MaxInv,(InvCT_SizeOf_l)	; 44
 
+		; Best time so far for each level
+		ULONG GStatT_LevelBestTimes_vl              ; 64 - ULONG[NUM_LEVELS]
+		PADDING (NUM_LEVELS*4)-4
+
 		; Number of times each level attempted
 		UWORD GStatT_LevelPlayCounts_vw			; 32 - UWORD[NUM_LEVELS]
 		PADDING (NUM_LEVELS*2)-2
@@ -439,9 +443,24 @@ MAX_ACHIEVEMENTS EQU 128
 		UWORD GStatT_LevelFailCounts_vw			; 32 - UWORD[NUM_LEVELS]
 		PADDING (NUM_LEVELS*2)-2
 
+		; Number of times the player has improved their best time, per level
+		UWORD GStatT_LevelImprovedTimeCounts_vw	; 32 - UWORD[NUM_LEVELS]
+		PADDING (NUM_LEVELS*2)-2
+
+
 		; Number of aliens killed, by type
 		UWORD GStatT_AlienKills_vw
 		PADDING (NUM_ALIEN_DEFS*2)-2			; 40 - UWORD[NUM_ALIEN_DEFS]
+
+        ; Total health collected
+        ULONG GStatT_TotalHealthCollected_w     ; 4
+
+        ; Total fuel collected
+        ULONG GStatT_TotalFuelCollected_w       ; 4
+
+        ; Total ammo collected, per ammo class
+        ULONG GStatT_TotalAmmoFound_vw
+        PADDING (NUM_BULLET_DEFS*4)-4           ; 80 UWORD[NUM_BULLET_DEFS]
 
 		UBYTE GStatT_Achieved_vb
 		PADDING (MAX_ACHIEVEMENTS/8)-1
@@ -450,7 +469,7 @@ MAX_ACHIEVEMENTS EQU 128
 
 STATS_EVENTBIT_KILL EQU 0
 STATS_EVENTBIT_MOVE EQU 1
-
+STATS_EVENTBIT_LVL  EQU 2
 
 *****************************
 * Door Definitions **********

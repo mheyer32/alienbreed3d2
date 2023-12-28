@@ -8,7 +8,7 @@
 
 extern Game_ModProperties game_ModProps;
 extern Achievement*       game_AchievementsDataPtr;
-extern Rule               game_AchievementRules[];
+extern UWORD              game_AchievementRuleMask[];
 extern char const         game_PropertiesFile[];
 
 extern struct FileInfoBlock io_FileInfoBlock;
@@ -42,16 +42,9 @@ void game_InitAchievementsData(void) {
         if ( (offset = (ULONG)game_AchievementsDataPtr[i].ac_RewardDesc) ) {
             game_AchievementsDataPtr[i].ac_RewardDesc = stringHeap + offset;
         }
-        offset = (ULONG)game_AchievementsDataPtr[i].ac_Rule;
-        game_AchievementsDataPtr[i].ac_Rule = game_AchievementRules[offset];
-/*
-        printf(
-            "Achievement %d [%s] Rule %p\n",
-            (int)i,
-            game_AchievementsDataPtr[i].ac_Name,
-            game_AchievementsDataPtr[i].ac_Rule
-        );
-*/
+
+        offset = game_AchievementsDataPtr[i].ac_RuleId;
+        game_AchievementsDataPtr[i].ac_RuleMask = game_AchievementRuleMask[offset];
     }
 }
 

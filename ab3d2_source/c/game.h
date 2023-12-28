@@ -14,6 +14,11 @@
 #define GAME_MODE_TWO_PLAYER_SLAVE 's'
 #define GAME_MAX_ACHIEVEMENTS 128
 
+#define STATS_EVENTBIT_KILL 0
+#define STATS_EVENTBIT_MOVE 1
+#define STATS_EVENTBIT_LVL  2
+
+
 /**
  * Achievement definition
  *
@@ -27,7 +32,9 @@ typedef BOOL (*Rule)(struct AchievementStruct const*);
 struct AchievementStruct {
     char const* ac_Name;             // 4 4    Name
     char const* ac_RewardDesc;       // 4 8    Reward message
-    Rule        ac_Rule;             // 4 12   Rule Logic
+
+    UWORD       ac_RuleMask;         // 2      Determined at load time
+    UWORD       ac_RuleId;           // 2
 
     UBYTE       ac_RuleParams[8];    // 8 20   Parameters (really a union)
     UWORD       ac_HealthCapBonus;   // 2 24   Health cap increase
@@ -58,6 +65,11 @@ typedef struct {
     /** Current player ammo cap */
     InventoryConsumables gs_MaxInventory;
 
+    // Level related statistics
+
+    /** The best elapsed time so far for each level. Only level completion counts */
+    ULONG gs_LevelBestTimes[NUM_LEVELS];
+
     /** Total number of times the player has attempted a level */
     UWORD gs_LevelPlayCounts[NUM_LEVELS];
 
@@ -67,8 +79,20 @@ typedef struct {
     /** Total number of times the player failed a level */
     UWORD gs_LevelFailCounts[NUM_LEVELS];
 
+    /** The number of times so far the player has bested their previous time record */
+    UWORD gs_LevelImprovedTimeCounts[NUM_LEVELS];
+
     /** Total number of times the player has killed each class of alien */
     UWORD gs_AlienKills[NUM_ALIEN_DEFS];
+
+    /** Total health collected */
+    ULONG gs_TotalHealthCollected;
+
+    /** Total fuel collected */
+    ULONG gs_TotalFuelCollected;
+
+    /** Total ammo collected, per ammo class */
+    ULONG gs_TotalAmmoFound[NUM_BULLET_DEFS];
 
     /** Bitmap of achievements. A mod may define up to GAME_MAX_ACHIEVEMENTS */
     UBYTE gs_Achieved[GAME_MAX_ACHIEVEMENTS/8];
@@ -131,5 +155,8 @@ extern void Game_ApplyInventoryLimits(
     REG(a0, Inventory* inventory)
 );
 
+extern void Game_LevelBegin(void);
+extern void Game_LevelWon(void);
+extern void Game_LevelFailed(void);
 
 #endif // GAME_H

@@ -307,7 +307,9 @@ noload:
 
 				CALLDEV	DataReset
 
-				; Record the start
+				; Initialise the messages buffer
+				CALLC   Msg_Init
+				; Record the start. This may write new messages.
 				STATS_PLAY
 
 ;****************************
@@ -701,7 +703,7 @@ CLRDAM:
 				move.l	Vid_Screen2Ptr_l,Vid_DrawScreenPtr_l
 
 ; Clear message buffers
-				CALLC	Msg_Init
+;				CALLC	Msg_Init
 
 				; Initialise FPS
 				clr.l	Sys_FrameNumber_l

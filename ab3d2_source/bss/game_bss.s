@@ -15,3 +15,6 @@ game_PlayerProgressionEnd:
 
 _game_AchievementsDataPtr::
 game_AchievementsDataPtr_l:     ds.l 1
+
+_game_BestLevelTimeBuffer::
+game_BestLevelTimeBuffer_vb:    ds.b LVLT_MESSAGE_LENGTH
