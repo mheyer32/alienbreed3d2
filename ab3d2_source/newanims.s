@@ -769,7 +769,7 @@ objmoveanim:
 				cmp.w   Plr1_Zone_w,d0
                 beq.s   .not_changed
 
-                SET_MEM_BIT	STATS_EVENTBIT_MOVE,Game_ProgressSignal_l
+                SET_MEM_BIT	GAME_EVENTBIT_ZONE_CHANGE,Game_ProgressSignal_l
 
 .not_changed:
 				move.l	Plr2_ZonePtr_l,a0

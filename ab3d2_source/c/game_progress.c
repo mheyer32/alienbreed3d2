@@ -124,7 +124,7 @@ static BOOL game_AchievementRuleGroupKillCount(Achievement const* achievement) {
  * }
  *
  */
-static BOOL game_AchievementZoneFound(Achievement const* achievement) {
+static BOOL game_AchievementRuleZoneFound(Achievement const* achievement) {
     ULONG levelAndZone = ((ULONG)Game_LevelNumber << 16) | Plr1_Zone;
     return levelAndZone == *(ULONG const*)&(achievement->ac_RuleParams[0]);
 }
@@ -135,20 +135,20 @@ static BOOL game_AchievementZoneFound(Achievement const* achievement) {
  * params {
  *     ULONG levelMask;   Which levels (32 bit to allow expansion in future)
  *     UWORD countLimit;  Number of times an improvement was made
- *     BOOL  total;       When true, the total improvement count across the levels is tested
- *                        When false, any one of the individual levels must meet the improvement count.
+ *     BOOL  overall;     When true, tests the total improvement count across the all levels in the mask.
+ *                        When false, test any one of the individual levels must meet the improvement count.
  * }
  *
  */
-static BOOL game_AchievementLevelTimeImproved(Achievement const* achievement) {
+static BOOL game_AchievementRuleLevelTimeImproved(Achievement const* achievement) {
     UWORD const * ac_Params = (UWORD const *)&(achievement->ac_RuleParams[0]);
     ULONG levelMask     = *((ULONG*)(&ac_Params[0]));
     UWORD countLimit    = ac_Params[2];
     UWORD count         = 0;
-    BOOL  total         = ac_Params[3];
+    BOOL  overall       = ac_Params[3];
     for (UWORD levelNum = 0; levelNum < NUM_LEVELS; ++levelNum) {
         if (levelMask & (1 << levelNum)) {
-            if (total) {
+            if (overall) {
                 count += game_PlayerProgression.gs_LevelImprovedTimeCounts[levelNum];
             } else {
                 count = game_PlayerProgression.gs_LevelImprovedTimeCounts[levelNum];
@@ -161,21 +161,55 @@ static BOOL game_AchievementLevelTimeImproved(Achievement const* achievement) {
     return FALSE;
 }
 
+/**
+ * Achievement test for times the player died
+ *
+ * params {
+ *     ULONG levelMask;   Which levels (32 bit to allow expansion in future)
+ *     UWORD countLimit;
+ *     BOOL  overall;
+ * }
+ *
+ */
+static BOOL game_AchievementRuleTimesDied(Achievement const* achievement) {
+    UWORD const * ac_Params = (UWORD const *)&(achievement->ac_RuleParams[0]);
+    ULONG levelMask  = *((ULONG*)(&ac_Params[0]));
+    UWORD countLimit = ac_Params[2];
+    UWORD count      = 0;
+    BOOL  overall    = ac_Params[3];
+    for (UWORD levelNum = 0; levelNum < NUM_LEVELS; ++levelNum) {
+        if (levelMask & (1 << levelNum)) {
+            if (overall) {
+                count += game_PlayerProgression.gs_LevelFailCounts[levelNum];
+            } else {
+                count = game_PlayerProgression.gs_LevelFailCounts[levelNum];
+            }
+            if (count >= countLimit) {
+                return TRUE;
+            }
+        }
+    }
+    return FALSE;
+}
+
 Rule game_AchievementRules[] = {
     game_AchievementRuleKillCount,
     game_AchievementRuleGroupKillCount,
-    game_AchievementZoneFound,
-    game_AchievementLevelTimeImproved
+    game_AchievementRuleZoneFound,
+    game_AchievementRuleLevelTimeImproved,
+    game_AchievementRuleTimesDied,
 };
 
 /**
- * Event signal bit masks
+ * Event signal bit masks. These are masked against the Game_ProgressSignal and where there is a nonzero result
+ * the corresponding rule from game_AchievementRules[] needs to be invoked
  */
 UWORD game_AchievementRuleMask[] = {
-    1 << STATS_EVENTBIT_KILL,
-    1 << STATS_EVENTBIT_KILL,
-    1 << STATS_EVENTBIT_MOVE,
-    1 << STATS_EVENTBIT_LVL,
+    1 << GAME_EVENTBIT_KILL,
+    1 << GAME_EVENTBIT_KILL,
+    1 << GAME_EVENTBIT_ZONE_CHANGE,
+    1 << GAME_EVENTBIT_LEVEL_START,
+    1 << GAME_EVENTBIT_LEVEL_START,
 };
 
 /**
@@ -280,7 +314,7 @@ void Game_LevelBegin(void) {
         Msg_PushLine(game_BestLevelTimeBuffer, MSG_TAG_OPTIONS|(outPtr - game_BestLevelTimeBuffer));
     }
 
-    Game_ProgressSignal |= (1 << STATS_EVENTBIT_LVL);
+    Game_ProgressSignal |= (1 << GAME_EVENTBIT_LEVEL_START);
     Game_UpdatePlayerProgress();
 }
 

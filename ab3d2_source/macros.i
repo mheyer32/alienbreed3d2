@@ -394,7 +394,7 @@ STATS_KILL		MACRO
 				move.l  #game_PlayerProgression+GStatT_AlienKills_vw,a1
 				add.w   #1,(a1,d0.w*2)
 				move.l	#1,Game_ProgressSignal_l
-				SET_MEM_BIT	STATS_EVENTBIT_KILL,Game_ProgressSignal_l
+				SET_MEM_BIT	GAME_EVENTBIT_KILL,Game_ProgressSignal_l
 				ENDM
 
 				ELSE
