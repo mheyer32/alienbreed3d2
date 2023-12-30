@@ -4,8 +4,6 @@
 #include <proto/dos.h>
 #include <proto/exec.h>
 
-#include <stdio.h>
-
 extern Game_ModProperties       game_ModProps;
 extern Game_PlayerProgression   game_PlayerProgression;
 extern Achievement*             game_AchievementsDataPtr;
@@ -18,7 +16,8 @@ extern struct FileInfoBlock io_FileInfoBlock;
 /**
  * Free any achievements data that was loaded
  */
-void game_FreeAchievementsData(void) {
+void game_FreeAchievementsData(void)
+{
     if (game_AchievementsDataPtr) {
         FreeVec(game_AchievementsDataPtr);
     }
@@ -31,7 +30,8 @@ void game_FreeAchievementsData(void) {
  * Prepare any loaded achievements data. This involves replacing nonzero string offsets with their addresses in the
  * shared string heap
  */
-void game_InitAchievementsData(void) {
+void game_InitAchievementsData(void)
+{
     if (!game_AchievementsDataPtr || !game_ModProps.gmp_NumAchievements) {
         return;
     }
@@ -95,14 +95,7 @@ void game_LoadModProperties(void)
             props->gmp_NumAchievements ?
             props->gmp_AchievementSize : 0;
     }
-/*
-    printf(
-        "Read main mod properties %s, have %d achievements (%d bytes) to load\n.",
-        game_PropertiesFile,
-        (int)game_ModProps.gmp_NumAchievements,
-        (int)game_ModProps.gmp_AchievementSize
-    );
-*/
+
     /** Now, read in the achievements data */
     if (
         game_ModProps.gmp_NumAchievements &&
@@ -187,7 +180,8 @@ void Game_AddToInventory(
     REG(a0, Inventory*                  inventory),
     REG(a1, const InventoryConsumables* consumables),
     REG(a2, const InventoryItems*       items)
-) {
+)
+{
     UWORD       *plrInvPtr = &inventory->inv_Items.ii_Jetpack;
     UWORD const *objInvPtr = &items->ii_Jetpack;
 

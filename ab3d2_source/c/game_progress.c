@@ -12,14 +12,11 @@ extern Game_PlayerProgression   game_PlayerProgression;
 extern ULONG                    Game_ProgressSignal; // signal to check progress
 extern Rule                     game_AchievementRules[];
 extern Achievement*             game_AchievementsDataPtr;
-
 extern Inventory                Plr1_Inventory;
 extern Inventory                Plr2_Inventory;
-
 extern UWORD Plr1_Zone;
 extern UWORD Game_LevelNumber;
 extern char  game_BestLevelTimeBuffer[];
-
 
 static struct timeval game_LevelBegin = { {0}, {0} };
 static struct timeval game_LevelEnd   = { {0}, {0} };
@@ -27,7 +24,8 @@ static struct timeval game_LevelEnd   = { {0}, {0} };
 /**
  * Load the player's current progression, if any.
  */
-void game_LoadPlayerProgression(void) {
+void game_LoadPlayerProgression(void)
+{
     BPTR gameProgressFH = Open(game_ProgressFile, MODE_OLDFILE);
     if (DOSFALSE == gameProgressFH) {
         // Set the initial state of the player's inventory cap to the default for the game mod.
@@ -54,7 +52,8 @@ void game_LoadPlayerProgression(void) {
 /**
  * Persist the player's current progression.
  */
-void game_SavePlayerProgression(void) {
+void game_SavePlayerProgression(void)
+{
     BPTR gameProgressFH = Open(game_ProgressFile, MODE_READWRITE);
     if (DOSFALSE == gameProgressFH) {
         return;
@@ -69,11 +68,13 @@ void game_SavePlayerProgression(void) {
     Close(gameProgressFH);
 }
 
-static inline BOOL game_CheckAchieved(UWORD i) {
+static inline BOOL game_CheckAchieved(UWORD i)
+{
 	return game_PlayerProgression.gs_Achieved[(i >> 3)] & (1 << (i & 7));
 }
 
-static inline BOOL game_MarkAchieved(UWORD i) {
+static inline BOOL game_MarkAchieved(UWORD i)
+{
 	return game_PlayerProgression.gs_Achieved[(i >> 3)] |= (1 << (i & 7));
 }
 
@@ -86,7 +87,8 @@ static inline BOOL game_MarkAchieved(UWORD i) {
  * }
  *
  */
-static BOOL game_AchievementRuleKillCount(Achievement const* achievement) {
+static BOOL game_AchievementRuleKillCount(Achievement const* achievement)
+{
     UWORD const * ac_Params = (UWORD const *)&(achievement->ac_RuleParams[0]);
     return game_PlayerProgression.gs_AlienKills[ac_Params[0]] >= ac_Params[1];
 }
@@ -100,10 +102,10 @@ static BOOL game_AchievementRuleKillCount(Achievement const* achievement) {
  * }
  *
  */
-static BOOL game_AchievementRuleStuffCollected(Achievement const* achievement) {
+static BOOL game_AchievementRuleStuffCollected(Achievement const* achievement)
+{
     ULONG totalCount = *(ULONG const*)&(achievement->ac_RuleParams[0]);
     UWORD consumable = *(UWORD const*)&(achievement->ac_RuleParams[sizeof(ULONG)]);
-
     ULONG *consumables = &game_PlayerProgression.gs_TotalHealthCollected;
     return consumables[consumable] >= totalCount;
 }
@@ -118,7 +120,8 @@ static BOOL game_AchievementRuleStuffCollected(Achievement const* achievement) {
  * }
  *
  */
-static BOOL game_AchievementRuleGroupKillCount(Achievement const* achievement) {
+static BOOL game_AchievementRuleGroupKillCount(Achievement const* achievement)
+{
     ULONG enemyMask  = *(ULONG const*)&(achievement->ac_RuleParams[0]) & ((1 << NUM_ALIEN_DEFS) - 1);
     UWORD countLimit = *(UWORD const*)&(achievement->ac_RuleParams[sizeof(ULONG)]);
     UWORD count      = 0;
@@ -142,7 +145,8 @@ static BOOL game_AchievementRuleGroupKillCount(Achievement const* achievement) {
  * }
  *
  */
-static BOOL game_AchievementRuleZoneFound(Achievement const* achievement) {
+static BOOL game_AchievementRuleZoneFound(Achievement const* achievement)
+{
     ULONG levelAndZone = ((ULONG)Game_LevelNumber << 16) | Plr1_Zone;
     return levelAndZone == *(ULONG const*)&(achievement->ac_RuleParams[0]);
 }
@@ -158,7 +162,8 @@ static BOOL game_AchievementRuleZoneFound(Achievement const* achievement) {
  * }
  *
  */
-static BOOL game_AchievementRuleLevelTimeImproved(Achievement const* achievement) {
+static BOOL game_AchievementRuleLevelTimeImproved(Achievement const* achievement)
+{
     UWORD const * ac_Params = (UWORD const *)&(achievement->ac_RuleParams[0]);
     ULONG levelMask     = *((ULONG*)(&ac_Params[0]));
     UWORD countLimit    = ac_Params[2];
@@ -189,7 +194,8 @@ static BOOL game_AchievementRuleLevelTimeImproved(Achievement const* achievement
  * }
  *
  */
-static BOOL game_AchievementRuleTimesDied(Achievement const* achievement) {
+static BOOL game_AchievementRuleTimesDied(Achievement const* achievement)
+{
     UWORD const * ac_Params = (UWORD const *)&(achievement->ac_RuleParams[0]);
     ULONG levelMask  = *((ULONG*)(&ac_Params[0]));
     UWORD countLimit = ac_Params[2];
@@ -236,7 +242,8 @@ UWORD game_AchievementRuleMask[] = {
  *  Apply the reward for an achievement.
  *  TODO - multiplayer, figure out what we should be doing here...
  */
-static void game_ApplyAchievementReward(Achievement const* achievement) {
+static void game_ApplyAchievementReward(Achievement const* achievement)
+{
     Msg_PushLine(achievement->ac_RewardDesc, MSG_TAG_OPTIONS|80);
 
     InventoryConsumables* player_ic = &Plr1_Inventory.inv_Consumables;
@@ -270,7 +277,8 @@ static void game_ApplyAchievementReward(Achievement const* achievement) {
  * The remainder are evaluated using their enumerated rule function. Any that return true are marked as
  * achieved, the corresponding message is displayed and the reward, if any, is applied.
  */
-void Game_UpdatePlayerProgress(void) {
+void Game_UpdatePlayerProgress(void)
+{
     Achievement const* achievements = game_AchievementsDataPtr;
     for (UWORD id = 0; id < game_ModProps.gmp_NumAchievements; ++id) {
         /** Early out on any achiecvements where the rule mask doesn't intersect with the event signal */
@@ -307,7 +315,8 @@ static void SAVEDS PutChProc(REG(d0, char c), REG(a3, char** out))
  *
  * If we have played the level before, we show the currently recorded best time for the level.
  */
-void Game_LevelBegin(void) {
+void Game_LevelBegin(void)
+{
     GetSysTime(&game_LevelBegin);
     ++game_PlayerProgression.gs_LevelPlayCounts[Game_LevelNumber];
 
@@ -344,7 +353,8 @@ void Game_LevelBegin(void) {
  * Capture the end time and calculate the level duration. If the duration is better than any existing one
  * for this level, update it and increment the corresponding improved time counter for the level.
  */
-void Game_LevelWon(void) {
+void Game_LevelWon(void)
+{
     GetSysTime(&game_LevelEnd);
     SubTime(&game_LevelEnd, &game_LevelBegin);
     ++game_PlayerProgression.gs_LevelWonCounts[Game_LevelNumber];
@@ -361,6 +371,7 @@ void Game_LevelWon(void) {
  * Called when the level fails. Maybe there's a point to recording how long it took before that happened
  * for a sort of anti-achievement.
  */
-void Game_LevelFailed(void) {
+void Game_LevelFailed(void)
+{
     ++game_PlayerProgression.gs_LevelFailCounts[Game_LevelNumber];
 }

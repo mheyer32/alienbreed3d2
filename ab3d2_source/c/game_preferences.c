@@ -6,12 +6,9 @@
 #include "screen.h"
 
 extern struct FileInfoBlock io_FileInfoBlock;
-
 extern char const game_PreferencesFile[];
-
 extern UBYTE Prefs_Persisted[];
 extern UBYTE Prefs_PersistedEnd[];
-
 extern UBYTE Prefs_FullScreen;
 extern UBYTE Prefs_PixelMode;
 extern UBYTE Prefs_VertMargin;
@@ -19,7 +16,6 @@ extern UBYTE Prefs_SimpleLighting;
 extern UBYTE Prefs_FPSLimit;
 extern UBYTE Prefs_DynamicLights;
 extern UBYTE Prefs_RenderQuality;
-
 extern UBYTE Vid_FullScreenTemp_b;
 extern UBYTE Draw_ForceSimpleWalls_b;
 extern UBYTE Draw_GoodRender_b;
@@ -29,7 +25,8 @@ extern WORD  Vid_LetterBoxMarginHeight_w;
 
 // Extreme MVP version
 
-void game_ApplyPreferences(void) {
+void game_ApplyPreferences(void)
+{
     Vid_FullScreenTemp_b        = Vid_FullScreen_b = Prefs_FullScreen;
     if (Vid_isRTG) {
         Vid_DoubleHeight_b      = Prefs_PixelMode;
@@ -41,7 +38,8 @@ void game_ApplyPreferences(void) {
     Draw_GoodRender_b           = Prefs_RenderQuality;
 }
 
-void game_LoadPreferences(void) {
+void game_LoadPreferences(void)
+{
     BPTR gamePrefsFH = Open(game_PreferencesFile, MODE_OLDFILE);
     if (DOSFALSE == gamePrefsFH) {
         return;
@@ -53,7 +51,8 @@ void game_LoadPreferences(void) {
     Close(gamePrefsFH);
 }
 
-void game_SavePreferences(void) {
+void game_SavePreferences(void)
+{
     BPTR gamePrefsFH = Open(game_PreferencesFile, MODE_READWRITE);
     if (DOSFALSE == gamePrefsFH) {
         return;

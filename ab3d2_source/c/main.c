@@ -5,8 +5,6 @@
 #include <proto/cybergraphics.h>
 #include <proto/dos.h>
 
-#include <stdio.h>
-
 extern void startup(void);
 
 const long __nocommandline=1;
@@ -43,7 +41,7 @@ int main(int argc, char *argv[])
 
     if (Vid_ScreenMode == INVALID_ID)
     {
-        puts("Invalid Screenmode");
+        PutStr("Invalid Screenmode\n");
         goto fail;
     }
     if (CyberGfxBase)
