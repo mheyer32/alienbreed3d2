@@ -92,6 +92,24 @@ static BOOL game_AchievementRuleKillCount(Achievement const* achievement) {
 }
 
 /**
+ * Achievement test for killing a single alien class:
+ *
+ * params {
+ *     UWORD totalCount;
+ *     UWORD consumable; // 0 == health, 1 == fuel, 2... = ammo class 0 ....
+ * }
+ *
+ */
+static BOOL game_AchievementRuleStuffCollected(Achievement const* achievement) {
+    ULONG totalCount = *(ULONG const*)&(achievement->ac_RuleParams[0]);
+    UWORD consumable = *(UWORD const*)&(achievement->ac_RuleParams[sizeof(ULONG)]);
+
+    ULONG *consumables = &game_PlayerProgression.gs_TotalHealthCollected;
+    return consumables[consumable] >= totalCount;
+}
+
+
+/**
  * Achievement test for killing a total of any group of alien classes:
  *
  * params {
@@ -198,6 +216,7 @@ Rule game_AchievementRules[] = {
     game_AchievementRuleZoneFound,
     game_AchievementRuleLevelTimeImproved,
     game_AchievementRuleTimesDied,
+    game_AchievementRuleStuffCollected,
 };
 
 /**
@@ -210,6 +229,7 @@ UWORD game_AchievementRuleMask[] = {
     1 << GAME_EVENTBIT_ZONE_CHANGE,
     1 << GAME_EVENTBIT_LEVEL_START,
     1 << GAME_EVENTBIT_LEVEL_START,
+    1 << GAME_EVENTBIT_ADD_INVENTORY,
 };
 
 /**

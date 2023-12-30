@@ -16,8 +16,8 @@
 
 #define GAME_EVENTBIT_KILL 0
 #define GAME_EVENTBIT_ZONE_CHANGE 1
-#define GAME_EVENTBIT_LEVEL_START  2
-
+#define GAME_EVENTBIT_LEVEL_START 2
+#define GAME_EVENTBIT_ADD_INVENTORY 3
 
 /**
  * Achievement definition
@@ -84,6 +84,8 @@ typedef struct {
 
     /** Total number of times the player has killed each class of alien */
     UWORD gs_AlienKills[NUM_ALIEN_DEFS];
+
+    /** The following totals fields are defined in the same order as for InventoryConsumables, but are 32-bit */
 
     /** Total health collected */
     ULONG gs_TotalHealthCollected;

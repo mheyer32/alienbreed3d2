@@ -6,10 +6,12 @@
 
 #include <stdio.h>
 
-extern Game_ModProperties game_ModProps;
-extern Achievement*       game_AchievementsDataPtr;
-extern UWORD              game_AchievementRuleMask[];
-extern char const         game_PropertiesFile[];
+extern Game_ModProperties       game_ModProps;
+extern Game_PlayerProgression   game_PlayerProgression;
+extern Achievement*             game_AchievementsDataPtr;
+extern UWORD                    game_AchievementRuleMask[];
+extern char const               game_PropertiesFile[];
+extern ULONG                    Game_ProgressSignal; // signal to check progress
 
 extern struct FileInfoBlock io_FileInfoBlock;
 
@@ -197,6 +199,8 @@ void Game_AddToInventory(
     plrInvPtr = &inventory->inv_Consumables.ic_Health;
     objInvPtr = &consumables->ic_Health;
 
+    ULONG* game_TotalCollectedPtr = &game_PlayerProgression.gs_TotalHealthCollected;
+
     UWORD const* limInvPtr = &game_ModProps.gmp_MaxInventory.ic_Health;
 
     /* Add all the consumables */
@@ -206,13 +210,16 @@ void Game_AddToInventory(
             objInvPtr[n],
             limInvPtr[n]
         );
+        /** Add to the totals for progression. These are intentionally defined in the same order */
+        game_TotalCollectedPtr[n] += objInvPtr[n];
     }
+    Game_ProgressSignal |= (1 << GAME_EVENTBIT_ADD_INVENTORY);
 }
 
 void Game_ApplyInventoryLimits(REG(a0, Inventory* inventory))
 {
     UWORD const *limPtr = &game_ModProps.gmp_MaxInventory.ic_Health;
-    UWORD *invPtr         = &inventory->inv_Consumables.ic_Health;
+    UWORD *invPtr       = &inventory->inv_Consumables.ic_Health;
     for (UWORD n = 0; n < sizeof(InventoryConsumables)/sizeof(UWORD); ++n) {
         if (invPtr[n] > limPtr[n]) {
             invPtr[n] = limPtr[n];
