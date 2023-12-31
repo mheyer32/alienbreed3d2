@@ -199,13 +199,15 @@ void Game_AddToInventory(
 
     /* Add all the consumables */
     for (UWORD n = 0; n < sizeof(InventoryConsumables)/sizeof(UWORD); ++n) {
+        /** For achievements, we need to track the amount actually collected */
+        UWORD preInv = plrInvPtr[n];
         plrInvPtr[n] = addSaturated(
             plrInvPtr[n],
             objInvPtr[n],
             limInvPtr[n]
         );
-        /** Add to the totals for progression. These are intentionally defined in the same order */
-        game_TotalCollectedPtr[n] += objInvPtr[n];
+        /** Add to the collected total for progression. These are intentionally defined in the same order */
+        game_TotalCollectedPtr[n] += plrInvPtr[n] - preInv;
     }
     Game_ProgressSignal |= (1 << GAME_EVENTBIT_ADD_INVENTORY);
 }
