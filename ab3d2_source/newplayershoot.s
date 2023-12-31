@@ -66,23 +66,23 @@ Plr1_Shot:
 				tst.w	(a0)
 				blt		.out_of_line
 
-				cmp.b	#3,16(a0) ; ??? ODefT_CollideHeight_w / AlienT_DamageToFollowup_w
+				cmp.b	#OBJ_TYPE_AUX,ObjT_TypeID_b(a0) ; AUX not targetable
 				beq		.not_lined_up
 
 				tst.b	(a1)+
 				beq.s	.not_lined_up
 
-				btst	#0,17(a0) ; ???
+				btst	#0,ObjT_SeePlayer_b(a0) ; Line of sight?
 				beq.s	.not_lined_up
 
-				tst.w	12(a0) ; ??? ODefT_DefaultAnimLen_w / AlienT_ResponseTimeout_w
+				tst.w	ObjT_ZoneID_w(a0) ; removed if zone id is negative
 				blt.s	.not_lined_up
 
-				move.b	16(a0),d6
-				btst	d6,d7
+				move.b	ObjT_TypeID_b(a0),d6
+				btst	d6,               ; shotflags, but what?
 				beq.s	.not_lined_up
 
-				tst.b	EntT_NumLives_b(a0)
+				tst.b	EntT_NumLives_b(a0) ; already dead
 				beq.s	.not_lined_up
 
 				move.w	(a0),d5
