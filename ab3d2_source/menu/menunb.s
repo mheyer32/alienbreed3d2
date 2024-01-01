@@ -1601,8 +1601,8 @@ mnu_MYCUSTOMOPTSTEXT:
 optionLines:				;12345678901234567890
 				dc.b	'  -QUAKE MOUSE      ',1;OFF  ',1
 				dc.b	'  --ALWAYS RUN      ',1;OFF  ',1
-				dc.b	'  INVERT MOUSE      ',1;OFF  ',1
-				dc.b	'  --C2P--OFF--      ',1;OFF  ',1
+				dc.b	'  OPTION     3  N/A ',1;OFF  ',1
+				dc.b	'  OPTION     4  N/A ',1;OFF  ',1
 				dc.b	'  OPTION     5  N/A ',1
 				dc.b	'  OPTION     6  N/A ',1
 				dc.b	'  OPTION     7  N/A ',1
