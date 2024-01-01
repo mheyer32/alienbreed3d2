@@ -211,16 +211,16 @@ QUITTT:
 
 				rts
 
+customOptionsBuffer:
+quakeMouse:			dc.b	0
+alwaysRun			dc.b	0
+
 ; PREFERENCES (TODO - SHIP OUT):
 
                 align 4
 _Prefs_Persisted::
 Prefsfile:
                     dc.b	'k8nx'
-
-customOptionsBuffer:
-quakeMouse:			dc.b	0
-alwaysRun			dc.b	0
 
 AssignableKeys_vb:
 turn_left_key:		dc.b	RAWKEY_LEFT
