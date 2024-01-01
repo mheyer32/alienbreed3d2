@@ -1492,7 +1492,7 @@ mnu_MYMAINMENU:
 				dc.l	mnu_MYMAINMENUTEXT
 				dc.w	0,40
 				dc.w	20
-				dc.w	7
+				dc.w	8
 				dc.l	0,0
 				dc.l	0,0
 				dc.l	0,0
@@ -1513,7 +1513,7 @@ mnu_CURRENTLEVELLINE:
 				dc.b	'    GAME CREDITS    ',1
 				dc.b	'   LOAD  POSITION   ',1
 				dc.b	'   SAVE  POSITION   ',1
-;				dc.b	'                    ',1
+				dc.b	'   CUSTOM OPTIONS   ',1
 				dc.b	'                    ',1
 				dc.b	'                    ',0
 
@@ -1580,7 +1580,35 @@ mnu_MYLEVELMENUTEXT2:
 				dc.b	'                    ',0
 
 				EVEN
+mnu_MYCUSTOMOPTSMENU:
+				dc.w	0,0
+				dc.l	mnu_MYCUSTOMOPTSTEXT
+				dc.w	0,40
+				dc.w	20
+				dc.w	9
+				ds.l	18
 
+;was going to use these to change the text in the menu but bodged it.
+; optOn:
+	; dc.b 'ON ',1
+; optOff:
+	; dc.b 'OFF',1
+
+mnu_MYCUSTOMOPTSTEXT:
+;					 12345678901234567890
+				dc.b	'                    ',1
+				dc.b	'                    ',1
+optionLines:				;12345678901234567890
+				dc.b	'  -QUAKE MOUSE      ',1;OFF  ',1
+				dc.b	'  --ALWAYS RUN      ',1;OFF  ',1
+				dc.b	'  INVERT MOUSE      ',1;OFF  ',1
+				dc.b	'  --C2P--OFF--      ',1;OFF  ',1
+				dc.b	'  OPTION     5  N/A ',1
+				dc.b	'  OPTION     6  N/A ',1
+				dc.b	'  OPTION     7  N/A ',1
+				dc.b	'  OPTION     8  N/A ',1
+				dc.b	'     MAIN  MENU     ',0
+				EVEN
 ***************************************************************
 mnu_MYCONTROLSONE:
 				dc.w	0,0

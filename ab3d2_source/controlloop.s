@@ -218,6 +218,10 @@ _Prefs_Persisted::
 Prefsfile:
                     dc.b	'k8nx'
 
+customOptionsBuffer:
+quakeMouse:			dc.b	0
+alwaysRun			dc.b	0
+
 AssignableKeys_vb:
 turn_left_key:		dc.b	RAWKEY_LEFT
 turn_right_key:		dc.b	RAWKEY_RIGHT
@@ -423,14 +427,14 @@ READMAINMENU:
 				bra		.rdlop
 .nosave:
 ***************************************************************
-;				cmp.w	#7,d0
-;				bne		playgame
-;				bsr		WAITREL
+				cmp.w	#7,d0
+				bne		playgame
+				bsr		WAITREL
 
-;				bsr		customOptions
+				bsr		customOptions
 
-;				lea		mnu_MYMAINMENU,a0
-;				bsr		MYOPENMENU
+				lea		mnu_MYMAINMENU,a0
+				bsr		MYOPENMENU
 
 				bsr		WAITREL
 				bra		.rdlop
@@ -520,6 +524,73 @@ DEFGAME:
 
 .defloaded;								 can use this now
 				not.b	LOADEXT;			 reset for next load
+				rts
+***************************************************************
+customOptions:
+;fixme: there are better ways to do this, but it works (of sorts).AL
+.redraw
+; copy current setting over to menu
+				move.l	#customOptionsBuffer,a0
+				move.l	#optionLines+17,a1
+				moveq	#1,d1
+.copyOpts
+				move.b	(a0)+,d0
+				add.b	#132,d0		;start of the keyboard layout
+				add.b	#24,d0		;cos i and o look like 1 and 0 in the menu font
+				move.b	d0,(a1)
+				add.l	#21,a1		;end of the line/start of next i guess
+				dbra	d1,.copyOpts
+
+				lea		mnu_MYCUSTOMOPTSMENU,a0
+				bsr		MYOPENMENU
+.rdloop
+				lea		mnu_MYCUSTOMOPTSMENU,a0
+				bsr		CHECKMENU
+
+				cmp.w	#8,d0
+				beq	.customOptionsDone
+
+				cmp.w	#0,d0
+				bne.s	.co2
+				not.b	quakeMouse
+				bra	.w8
+.co2
+				cmp.w	#1,d0
+				bne.s	.co3
+				not.b	alwaysRun
+				bra	.w8
+.co3
+				cmp.w	#2,d0
+				bne.s	.co4
+				bra	.w8
+.co4
+				cmp.w	#3,d0
+				bne.s	.co5
+				bra	.w8
+.co5
+				cmp.w	#4,d0
+				bne.s	.co6
+				;opt5
+				bra	.w8
+.co6
+				cmp.w	#5,d0
+				bne.s	.co7
+				;opt6
+				bra	.w8
+.co7
+				cmp.w	#6,d0
+				bne.s	.co8
+				;opt7
+				bra	.w8
+.co8
+				cmp.w	#7,d0
+				bne.s	.w8
+				;opt8
+.w8
+				lea		mnu_MYCUSTOMOPTSMENU,a0
+				jsr		mnu_redraw
+				bra		.redraw
+.customOptionsDone
 				rts
 ***************************************************************
 playgame:
