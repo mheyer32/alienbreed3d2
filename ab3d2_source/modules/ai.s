@@ -97,7 +97,7 @@ ai_DoDie:
 				st		ai_GetOut_w
 
 .still_dying:
-				move.b	#0,EntT_NumLives_b(a0)
+				move.b	#0,EntT_HitPoints_b(a0)
 				tst.w	ObjT_ZoneID_w+ENT_PREV(a0)
 				blt.s	.no_copy_in
 
@@ -116,7 +116,7 @@ ai_TakeDamage:
 				move.w	(a2),d0
 				asr.w	#2,d0					; divide by 4
 				moveq	#0,d1
-				move.b	EntT_NumLives_b(a0),d1
+				move.b	EntT_HitPoints_b(a0),d1
 				move.b	#0,EntT_DamageTaken_b(a0)
 				cmp.w	d0,d1
 				ble		ai_JustDied
@@ -160,7 +160,7 @@ ai_TakeDamage:
 				rts
 
 ai_JustDied:
-				move.b	#0,EntT_NumLives_b(a0)
+				move.b	#0,EntT_HitPoints_b(a0)
 				move.w	EntT_DisplayText_w(a0),d0
 				blt.s	.no_text
 
@@ -205,7 +205,7 @@ ai_JustDied:
 				; * Spawn some smaller aliens...
 				move.w	#2,d7					; number to do.
 				move.l	AI_OtherAlienDataPtrs_vl,a2
-				add.l	#64,a2
+				NEXT_OBJ    a2
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d1
 				move.l	(a1,d1.w*8),d0
@@ -217,7 +217,7 @@ ai_JustDied:
 				move.w	ObjT_ZoneID_w(a2),d2
 				blt.s	.found_one_free
 
-				tst.b	EntT_NumLives_b(a2)
+				tst.b	EntT_HitPoints_b(a2)
 				beq.s	.found_one_free
 
 				adda.w	#ENT_NEXT_2,a2 ; todo - why two slots here?
@@ -225,7 +225,7 @@ ai_JustDied:
 				bra		.cant_shoot
 
 .found_one_free:
-				move.b	AlienT_HitPoints_w+1(a4),EntT_NumLives_b(a2)
+				move.b	AlienT_HitPoints_w+1(a4),EntT_HitPoints_b(a2)
 				move.b	Anim_SplatType_w,EntT_Type_b(a2)
 				move.b	#-1,EntT_DisplayText_w(a2)
 				move.b	#0,16(a2)
@@ -235,7 +235,7 @@ ai_JustDied:
 				move.w	4(a0),4(a2)
 				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w(a2)
 				move.w	ObjT_ZoneID_w(a0),EntT_ZoneID_w(a2)
-				move.w	#-1,12-64(a2)
+				move.w	#-1,ObjT_ZoneID_w+ENT_PREV(a2)
 				move.w	EntT_CurrentControlPoint_w(a0),EntT_CurrentControlPoint_w(a2)
 				move.w	EntT_CurrentControlPoint_w(a0),EntT_TargetControlPoint_w(a2)
 				move.b	#-1,EntT_TeamNumber_b(a2)
@@ -248,11 +248,11 @@ ai_JustDied:
 				move.w	#0,EntT_ImpactX_w(a2)
 				move.w	#0,EntT_ImpactZ_w(a2)
 				move.w	#0,EntT_ImpactY_w(a2)
-				move.b	AlienT_HitPoints_w+1(a4),18(a2)
-				move.b	#0,19(a2)
+				move.b	AlienT_HitPoints_w+1(a4),EntT_HitPoints_b(a2)
+				move.b	#0,EntT_DamageTaken_b(a2)
 				move.l	EntT_DoorsAndLiftsHeld_l(a0),EntT_DoorsAndLiftsHeld_l(a2)
 				move.b	ShotT_InUpperZone_b(a0),ShotT_InUpperZone_b(a2)
-				move.b	#3,16-64(a2)
+				move.b  #OBJ_TYPE_AUX,ObjT_TypeID_b+ENT_PREV(a2)
 				dbra	d7,.spawn_loop
 
 .cant_shoot:
@@ -369,7 +369,7 @@ ai_ProwlFly:
 				move.w	#100,(a1)
 				bra		.new_store
 
-.no_new_store
+.no_new_store:
 				sub.w	#1,(a1)
 				bgt.s	.new_store
 
@@ -402,10 +402,10 @@ ai_ProwlFly:
 
 				moveq	#0,d1
 
-.no_bin
+.no_bin:
 				dbra	d7,.try_again
 
-.okaway2
+.okaway2:
 				move.w	#50,(a1)
 
 
@@ -431,7 +431,7 @@ ai_Widget:
 				bne.s	.okaway
 				move.w	EntT_CurrentControlPoint_w(a0),d0
 
-.okaway
+.okaway:
 				move.w	d0,EntT_TargetControlPoint_w(a0)
 
 .no_player_noise:
@@ -788,7 +788,7 @@ ai_ChargeCommon:
 				move.w	AngRet,EntT_CurrentAngle_w(a0)
 
 .hit_something:
-				tst.w	12-64(a0)
+				tst.w   ObjT_ZoneID_w+ENT_PREV(a0)
 				blt.s	.no_copy_in
 
 				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w+ENT_PREV(a0)
@@ -836,7 +836,7 @@ ai_ChargeCommon:
 
 				bra.s	.cant_see_player
 
-.attack_player
+.attack_player:
 				move.w	ai_AnimFacing_w,d0
 				add.w	d0,EntT_CurrentAngle_w(a0)
 				move.b	#1,EntT_CurrentMode_b(a0)
@@ -1755,7 +1755,7 @@ ai_CheckDamage:
 				move.b	EntT_DamageTaken_b(a0),d2
 				beq		.noscream
 
-				sub.b	d2,EntT_NumLives_b(a0)
+				sub.b	d2,EntT_HitPoints_b(a0)
 				bgt		.not_dead_yet
 
 				moveq	#0,d0
@@ -1777,10 +1777,10 @@ ai_CheckDamage:
 				movem.l	d0-d7/a0-a6,-(a7)
 				sub.l	Lvl_ObjectPointsPtr_l,a1
 				add.l	#ObjRotated_vl,a1
-				move.l	(a1),Noisex
-				move.w	#400,Noisevol
-				move.w	#14,Samplenum
-				move.b	#1,chanpick
+				move.l	(a1),Aud_NoiseX_w
+				move.w	#400,Aud_NoiseVol_w
+				move.w	#14,Aud_SampleNum_w
+				move.b	#1,Aud_ChannelPick_b
 				clr.b	notifplaying
 				st		backbeat
 				move.w	(a0),IDNUM
@@ -1812,10 +1812,10 @@ ai_CheckDamage:
 				movem.l	d0-d7/a0-a6,-(a7)
 				sub.l	Lvl_ObjectPointsPtr_l,a1
 				add.l	#ObjRotated_vl,a1
-				move.l	(a1),Noisex
-				move.w	#200,Noisevol
-				move.w	screamsound,Samplenum
-				move.b	#1,chanpick
+				move.l	(a1),Aud_NoiseX_w
+				move.w	#200,Aud_NoiseVol_w
+				move.w	screamsound,Aud_SampleNum_w
+				move.b	#1,Aud_ChannelPick_b
 				clr.b	notifplaying
 				st		backbeat
 				move.w	(a0),IDNUM
@@ -1832,10 +1832,10 @@ ai_CheckDamage:
 				movem.l	d0-d7/a0-a6,-(a7)
 				sub.l	Lvl_ObjectPointsPtr_l,a1
 				add.l	#ObjRotated_vl,a1
-				move.l	(a1),Noisex
-				move.w	#200,Noisevol
-				move.w	screamsound,Samplenum
-				move.b	#1,chanpick
+				move.l	(a1),Aud_NoiseX_w
+				move.w	#200,Aud_NoiseVol_w
+				move.w	screamsound,Aud_SampleNum_w
+				move.b	#1,Aud_ChannelPick_b
 				clr.b	notifplaying
 				move.w	(a0),IDNUM
 				st		backbeat
@@ -1952,29 +1952,27 @@ ai_DoAttackAnim:
 				beq.s	.vector
 
 .glare:
-				move.l	#0,8-64(a0)
+				move.l  #0,OBJ_PREV+ObjT_YPos_l(a0) ; why if we are overwriting later?
 				move.b	(a4,d0.w),d3
 				ext.w	d3
 				neg.w	d3
-				move.w	d3,8-64(a0)
-				move.b	1(a4,d0.w),11-64(a0)
-				move.w	2(a4,d0.w),6-64(a0)
-
+				move.w  d3,OBJ_PREV+ObjT_YPos_l(a0)
+				move.b	1(a4,d0.w),OBJ_PREV+11(a0) ; hacks ?
+				move.w	2(a4,d0.w),OBJ_PREV+6(a0)  ; hacks ?
 				bra		.noaux
 
 .vector:
-				move.l	#0,8-64(a0)
-				move.b	(a4,d0.w),9-64(a0)
-				move.b	1(a4,d0.w),11-64(a0)
-				move.w	#$ffff,6-64(a0)
-
+				move.l  #0,OBJ_PREV+ObjT_YPos_l(a0)
+				move.b	(a4,d0.w),OBJ_PREV+9(a0)    ; hacks?
+				move.b	1(a4,d0.w),OBJ_PREV+11(a0)  ; hacks?
+				move.w	#$ffff,OBJ_PREV+6(a0)
 				bra		.noaux
 
 .bitmap:
-				move.l	#0,8-64(a0)
-				move.b	(a4,d0.w),9-64(a0)
-				move.b	1(a4,d0.w),11-64(a0)
-				move.w	2(a4,d0.w),6-64(a0)
+				move.l  #0,OBJ_PREV+ObjT_YPos_l(a0)
+				move.b	(a4,d0.w),OBJ_PREV+9(a0)
+				move.b	1(a4,d0.w),OBJ_PREV+11(a0)
+				move.w	2(a4,d0.w),OBJ_PREV+6(a0)
 
 .noaux:
 				move.w	#-1,6(a0)

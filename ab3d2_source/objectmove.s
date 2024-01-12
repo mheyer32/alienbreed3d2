@@ -1718,12 +1718,15 @@ Collision:
 				move.l	Lvl_ObjectDataPtr_l,a0
 				move.w	CollId,d0
 				asl.w	#6,d0
-				move.w	12(a0,d0.w),MYROOM
-				move.b	16(a0,d0.w),d0
+				move.w	ObjT_ZoneID_w(a0,d0.w),MYROOM
+				move.b	ObjT_TypeID_b(a0,d0.w),d0
 				ext.w	d0
 
-				sub.w	#64,a0
+				PREV_OBJ	a0
+
 				move.l	Lvl_ObjectPointsPtr_l,a1
+
+				; todo - is this actually used here?
 				move.l	#ColBoxTable,a2
 				lea		(a2,d0.w*8),a3
 
@@ -1737,22 +1740,21 @@ Collision:
 				clr.b	hitwall
 
 checkcol:
-				add.w	#64,a0
-
+				NEXT_OBJ	a0
 				move.w	(a0),d0
 				blt		checkedallcol
 
 				cmp.w	CollId,d0
 				beq.s	checkcol
 
-				tst.w	12(a0)
+				tst.w	ObjT_ZoneID_w(a0)
 				blt.s	checkcol
 
 				move.w	MYROOM,d1
-				cmp.w	12(a0),d1
+				cmp.w	ObjT_ZoneID_w(a0),d1
 				bne.s	checkcol
 
-				tst.b	EntT_NumLives_b(a0)
+				tst.b	EntT_HitPoints_b(a0)
 				beq.s	checkcol
 
 				move.b	ShotT_InUpperZone_b(a0),d1
@@ -1760,7 +1762,7 @@ checkcol:
 				bne		checkcol
 
 				moveq	#0,d3
-				move.b	16(a0),d3
+				move.b	ObjT_TypeID_b(a0),d3
 				blt		checkcol
 				beq		.ycol
 
@@ -1776,7 +1778,7 @@ checkcol:
 				blt		checkcol
 				bgt		.ycol
 
-				tst.b	EntT_NumLives_b(a0)
+				tst.b	EntT_HitPoints_b(a0)
 				ble		checkcol
 
 .ycol
@@ -1784,10 +1786,11 @@ checkcol:
 ; btst d3,d7
 ; beq checkcol
 
-				move.w	4(a0),d1
+				move.w	ObjT_ZPos_l(a0),d1
 				sub.w	2(a2,d3.w*8),d1
 				cmp.w	d1,d5
 				blt		checkcol
+
 				add.w	4(a2,d3.w*8),d1
 				cmp.w	d1,d4
 				bgt		checkcol
@@ -1796,10 +1799,12 @@ checkcol:
 				move.w	4(a1,d0.w*8),d2
 				sub.w	newx,d1
 				bge.s	.xnoneg
+
 				neg.w	d1
 .xnoneg:
 				sub.w	newz,d2
 				bge.s	.znoneg
+
 				neg.w	d2
 .znoneg:
 				cmp.w	d1,d2
@@ -1932,7 +1937,7 @@ ITSATEL:
 FindCloseRoom:
 ; d0 is distance.
 
-				move.w	4(a0),d1
+				move.w	ObjT_ZPos_l(a0),d1
 				ext.l	d1
 				asl.l	#7,d1
 				move.l	d1,oldy
@@ -1942,9 +1947,9 @@ FindCloseRoom:
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				move.w	(a1),oldx
-				move.w	4(a1),oldz
+				move.w	ObjT_ZPos_l(a1),oldz
 
-				move.w	12(a0),d2
+				move.w	ObjT_ZoneID_w(a0),d2
 				move.l	Lvl_ZoneAddsPtr_l,a5
 				move.l	(a5,d2.w*4),d2
 				add.l	Lvl_DataPtr_l,d2
@@ -1982,7 +1987,7 @@ FindCloseRoom:
 
 				move.l	#Obj_RoomPath_vw,a2
 				move.l	#possclose,a3
-				move.w	12(a0),(a3)+
+				move.w	ObjT_ZoneID_w(a0),(a3)+
 
 putinmore:
 				move.w	(a2)+,(a3)+
@@ -2013,7 +2018,7 @@ putinmore2:
 				move.w	#-1,(a3)+
 
 
-				move.w	12(a0),d7
+				move.w	ObjT_ZoneID_w(a0),d7
 
 				move.l	Zone_EndOfListPtr_l,a3
 FINDCLOSELOOP:
@@ -2033,7 +2038,7 @@ outin:
 
 foundclose:
 
-				move.w	d7,EntT_ZoneID_w(a0)
+				move.w	d7,ObjT_ZoneID_w(a0)
 
 				rts
 

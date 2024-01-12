@@ -2881,18 +2881,18 @@ Plr1_Use:
 				sub.w	d2,Plr1_Health_w
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.w	#$fffa,IDNUM
-				move.w	#19,Samplenum
+				move.w	#19,Aud_SampleNum_w
 				clr.b	notifplaying
-				move.w	#0,Noisex
-				move.w	#0,Noisez
-				move.w	#60,Noisevol
+				move.w	#0,Aud_NoiseX_w
+				move.w	#0,Aud_NoiseZ_w
+				move.w	#60,Aud_NoiseVol_w
 				jsr		MakeSomeNoise
 
 				movem.l	(a7)+,d0-d7/a0-a6
 
 .notbeenshot:
 				move.b	#0,EntT_DamageTaken_b(a0)
-				move.b	#10,EntT_NumLives_b(a0)
+				move.b	#10,EntT_HitPoints_b(a0)
 				move.w	Plr1_TmpAngPos_w,EntT_CurrentAngle_w(a0)
 				move.b	Plr1_StoodInTop_b,ShotT_InUpperZone_b(a0)
 				move.w	(a1),ObjT_ZoneID_w(a0)
@@ -2960,7 +2960,7 @@ Plr1_Use:
 
 .notbeenshot2:
 				move.b	#0,EntT_DamageTaken_b(a0)
-				move.b	#10,EntT_NumLives_b(a0)
+				move.b	#10,EntT_HitPoints_b(a0)
 				move.b	Plr2_StoodInTop_b,ShotT_InUpperZone_b(a0)
 				move.w	(a1),ObjT_ZoneID_w(a0)
 				move.w	(a1),d2
@@ -3147,19 +3147,19 @@ Plr2_Use:
 				move.l	#7*2116,hitcol
 				sub.w	d2,Plr2_Health_w
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.w	#19,Samplenum
+				move.w	#19,Aud_SampleNum_w
 				clr.b	notifplaying
 				move.w	#$fffa,IDNUM
-				move.w	#0,Noisex
-				move.w	#0,Noisez
-				move.w	#60,Noisevol
+				move.w	#0,Aud_NoiseX_w
+				move.w	#0,Aud_NoiseZ_w
+				move.w	#60,Aud_NoiseVol_w
 				jsr		MakeSomeNoise
 
 				movem.l	(a7)+,d0-d7/a0-a6
 
 .notbeenshot:
 				move.b	#0,EntT_DamageTaken_b(a0)
-				move.b	#10,EntT_NumLives_b(a0)
+				move.b	#10,EntT_HitPoints_b(a0)
 				move.w	Plr2_TmpAngPos_w,EntT_CurrentAngle_w(a0)
 				move.b	Plr2_StoodInTop_b,ShotT_InUpperZone_b(a0)
 				move.w	(a1),ObjT_ZoneID_w(a0)
@@ -3215,7 +3215,7 @@ Plr2_Use:
 
 .notbeenshot2:
 				move.b	#0,EntT_DamageTaken_b(a0)
-				move.b	#10,EntT_NumLives_b(a0)
+				move.b	#10,EntT_HitPoints_b(a0)
 
 				move.b	Plr1_StoodInTop_b,ShotT_InUpperZone_b(a0)
 
@@ -3509,10 +3509,10 @@ Plr1_Control:
 				move.l	Plr1_ZOff_l,Plr1_SnapZOff_l
 
 				SAVEREGS
-				move.w	#0,Noisex
-				move.w	#0,Noisez
-				move.w	#26,Samplenum
-				move.w	#100,Noisevol
+				move.w	#0,Aud_NoiseX_w
+				move.w	#0,Aud_NoiseZ_w
+				move.w	#26,Aud_SampleNum_w
+				move.w	#100,Aud_NoiseVol_w
 				move.w	#$fff9,IDNUM
 				jsr		MakeSomeNoise
 				GETREGS
@@ -3720,10 +3720,10 @@ Plr2_Control:
 				move.l	Plr2_ZOff_l,Plr2_SnapZOff_l
 
 				SAVEREGS
-				move.w	#0,Noisex
-				move.w	#0,Noisez
-				move.w	#26,Samplenum
-				move.w	#100,Noisevol
+				move.w	#0,Aud_NoiseX_w
+				move.w	#0,Aud_NoiseZ_w
+				move.w	#26,Aud_SampleNum_w
+				move.w	#100,Aud_NoiseVol_w
 				move.w	#$fff9,IDNUM
 				jsr		MakeSomeNoise
 				GETREGS
@@ -7293,14 +7293,14 @@ NOSIDES2:
 
 				movem.l	d0-d7/a0-a6,-(a7)
 				subq	#1,d0
-				move.w	d0,Samplenum
+				move.w	d0,Aud_SampleNum_w
 				clr.b	notifplaying
 				move.w	(a0),IDNUM
-				move.w	#80,Noisevol
+				move.w	#80,Aud_NoiseVol_w
 				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
-				move.l	(a1),Noisex
+				move.l	(a1),Aud_NoiseX_w
 				jsr		MakeSomeNoise
 
 				movem.l	(a7)+,d0-d7/a0-a6
@@ -7464,7 +7464,7 @@ dosomething:
 				addq	#1,d0
 				and.w	#3,d0
 				move.w	d0,TOPPOPT
-				move.b	STEROPT(pc,d0.w*2),STEREO
+				move.b	STEROPT(pc,d0.w*2),Aud_Stereo_b
 
 
 				move.b	STEROPT+1(pc,d0.w*2),d1
@@ -8662,15 +8662,15 @@ NoiseMade3pRIGHT: dc.b	0
 * work, given say position of noise, volume
 * and sample number.
 
-Samplenum:		dc.w	0
-Noisex:			dc.w	0
-Noisez:			dc.w	0
-Noisevol:		dc.w	0
-chanpick:		dc.w	0
-IDNUM:			dc.w	0
-needleft:		dc.b	0
-needright:		dc.b	0
-STEREO:			dc.b	$FF
+Aud_SampleNum_w:    dc.w	0
+Aud_NoiseX_w:       dc.w	0
+Aud_NoiseZ_w:       dc.w	0
+Aud_NoiseVol_w:     dc.w	0
+Aud_ChannelPick_b:  dc.w	0
+IDNUM:              dc.w	0
+Aud_NeedLeft_b:     dc.b	0
+Aud_NeedRight_b:    dc.b	0
+Aud_Stereo_b:       dc.b	$FF
 
 				even
 CHANNELDATA:
@@ -8753,11 +8753,11 @@ dontworry:
 ; Ok its fine for us to play a sound.
 ; So calculate left/right volume.
 
-				move.w	Noisex,d1
+				move.w	Aud_NoiseX_w,d1
 				muls	d1,d1
-				move.w	Noisez,d2
+				move.w	Aud_NoiseZ_w,d2
 				muls	d2,d2
-				move.w	Noisevol,d3
+				move.w	Aud_NoiseVol_w,d3
 				move.w	#32767,noiseloud
 				moveq	#1,d0
 				add.l	d1,d2
@@ -8794,7 +8794,7 @@ dontworry:
 				move.w	#1,d0
 .stillnot02
 
-				move.w	Noisevol,d3
+				move.w	Aud_NoiseVol_w,d3
 				ext.l	d3
 				asl.l	#6,d3
 				cmp.l	#32767,d3
@@ -8817,11 +8817,11 @@ notooloud:
 ; d3 contains volume of noise.
 
 				move.w	d3,d4
-				tst.b	STEREO
+				tst.b	Aud_Stereo_b
 				beq		NOSTEREO
 
 				move.w	d3,d2
-				muls	Noisex,d2
+				muls	Aud_NoiseX_w,d2
 				asl.w	#2,d0
 				divs	d0,d2
 
@@ -8842,7 +8842,7 @@ donequiet:
 
 ; d3 contains volume of noise.
 
-				move.w	#$ffff,needleft
+				move.w	#$ffff,Aud_NeedLeft_b
 
 				move.l	#0,RIGHTOFFSET
 				move.l	#0,LEFTOFFSET
@@ -8855,20 +8855,20 @@ donequiet:
 
 ; Left is louder; is it MUCH louder?
 
-				st		needleft
+				st		Aud_NeedLeft_b
 				move.w	d3,d2
 				sub.w	d4,d2
 				cmp.w	#32,d2
-				slt		needright
+				slt		Aud_NeedRight_b
 				bra		aboutsame
 
 RightLouder:
 				move.l	#4,RIGHTOFFSET
-				st		needright
+				st		Aud_NeedRight_b
 				move.w	d4,d2
 				sub.w	d3,d2
 				cmp.w	#32,d2
-				slt		needleft
+				slt		Aud_NeedLeft_b
 
 aboutsame:
 NoLouder:
@@ -8921,7 +8921,7 @@ FOUNDALEFT:
 				move.w	d0,32(a3)
 				move.w	noiseloud,2(a3)
 
-				move.w	Samplenum,d5
+				move.w	Aud_SampleNum_w,d5
 
 				move.l	#Aud_SampleList_vl,a3
 				move.l	(a3,d5.w*8),a1
@@ -9022,7 +9022,7 @@ FOUNDARIGHT:
 				move.w	d0,32(a3)
 				move.w	noiseloud,2(a3)
 
-				move.w	Samplenum,d5
+				move.w	Aud_SampleNum_w,d5
 				move.l	#Aud_SampleList_vl,a3
 				move.l	(a3,d5.w*8),a1
 				move.l	4(a3,d5.w*8),a2
@@ -9133,7 +9133,7 @@ FOUNDACHAN:
 				move.w	d0,32(a3)
 				move.w	noiseloud,2(a3)
 
-				move.w	Samplenum,d5
+				move.w	Aud_SampleNum_w,d5
 
 				move.l	#Aud_SampleList_vl,a3
 				move.l	(a3,d5.w*8),a1

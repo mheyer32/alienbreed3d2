@@ -35,7 +35,7 @@ Plr_Initialise:
 				move.l	d0,Plr1_SnapTYOff_l
 				move.l	Plr1_ZonePtr_l,plr1_OldRoomPtr_l
 				move.l	Lvl_DataPtr_l,a1
-				add.l	#160*10,a1
+				add.l	#LVLT_MESSAGE_LENGTH*LVLT_MESSAGE_COUNT,a1
 				move.w	10(a1),d0
 				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d0.w*4),d0
@@ -809,6 +809,7 @@ plr_Fall:
 				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	.not_in_water
+
 				move.l	#-512,plr_JumpSpeed_l
 
 .not_in_water:
@@ -840,6 +841,7 @@ plr_Fall:
 				tst.w	PlrT_JetpackFuel_w(a0)
 				beq.s	.not_flying
 
+				; TODO - Apply the active jetpack fuel cap here
 				; cap the fuel. We should make that mod configurable
 				cmp.w	#250,PlrT_JetpackFuel_w(a0)
 				ble.s	.have_jetpack_fuel
@@ -880,6 +882,7 @@ plr_Fall:
 				move.w	plr_FallDamage_w,d3
 				sub.w	#100,d3
 				ble.s	.skip_damage_2
+
 				move.l	PlrT_ObjectPtr_l(a0),a4
 				add.b	d3,EntT_DamageTaken_b(a4)
 
@@ -903,10 +906,10 @@ plr_Fall:
 				blt.s	.no_splash_fx
 
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.w	#6,Samplenum ; todo define a constant for this
-				move.w	#0,Noisex
-				move.w	#100,Noisez
-				move.w	#80,Noisevol
+				move.w	#6,Aud_SampleNum_w ; todo define a constant for this
+				move.w	#0,Aud_NoiseX_w
+				move.w	#100,Aud_NoiseZ_w
+				move.w	#80,Aud_NoiseVol_w
 				move.w	#$fff8,IDNUM
 				clr.b	notifplaying
 				jsr		MakeSomeNoise
@@ -983,10 +986,10 @@ plr_DoFootstepFX:
 				blt.s	.no_foot_sound
 
 .have_water:
-				move.w	d0,Samplenum
-				move.w	#0,Noisex
-				move.w	#100,Noisez
-				move.w	#80,Noisevol
+				move.w	d0,Aud_SampleNum_w
+				move.w	#0,Aud_NoiseX_w
+				move.w	#100,Aud_NoiseZ_w
+				move.w	#80,Aud_NoiseVol_w
 				move.w	#$fff8,IDNUM
 				clr.b	notifplaying
 				move.b	PlrT_Echo_b(a0),SourceEcho

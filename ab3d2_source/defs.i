@@ -235,13 +235,16 @@ OBJ_PREV	EQU (-ObjT_SizeOf_l)	; object before current
 OBJ_NEXT	EQU	ObjT_SizeOf_l		; object after current
 
 	MACRO NEXT_OBJ
-	add.w #OBJ_NEXT,\1
+	add.w #ObjT_SizeOf_l,\1
 	ENDM
 
+	MACRO PREV_OBJ
+	sub.w #ObjT_SizeOf_l,\1
+	ENDM
 
 	; Runtime entity extension for ObjT
 	STRUCTURE EntT,ObjT_Header_SizeOf_l
-		UBYTE EntT_NumLives_b				; 18, 1
+		UBYTE EntT_HitPoints_b				; 18, 1
 		UBYTE EntT_DamageTaken_b			; 19, 1
 		UBYTE EntT_CurrentMode_b			; 20, 1
 		UBYTE EntT_TeamNumber_b				; 21, 1
@@ -486,6 +489,7 @@ DL_Never		EQU		1
 ; TODO - Level Structure
 
 LVLT_MESSAGE_LENGTH EQU 160
+LVLT_MESSAGE_COUNT  EQU 10
 
 ; For two player victory messages
 GAME_DM_VICTORY_MESSAGE_LENGTH EQU 80

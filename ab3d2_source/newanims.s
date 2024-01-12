@@ -744,16 +744,16 @@ BACKSFX:
 
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_AmbientSFX_l,a0
-				move.w	(a0,d0.w*2),Samplenum
+				move.w	(a0,d0.w*2),Aud_SampleNum_w
 				move.w	#$fff0,IDNUM
 				st.b	notifplaying
-				move.l	#0,Noisex
+				move.l	#0,Aud_NoiseX_w
 				move.b	#0,PlayEcho
 				jsr		GetRand
 
 				and.w	#15,d0
 				add.w	#32,d0
-				move.w	d0,Noisevol
+				move.w	d0,Aud_NoiseVol_w
 
 				jsr		MakeSomeNoise
 
@@ -907,7 +907,7 @@ notallliftsdone:
 				sub.l	d5,d4
 				add.l	d4,d4
 				swap	d4
-				move.w	d4,Noisex
+				move.w	d4,Aud_NoiseX_w
 				move.w	Temp_SinVal_w,d4
 				move.w	Temp_CosVal_w,d5
 				muls	d2,d4
@@ -915,7 +915,7 @@ notallliftsdone:
 				sub.l	d5,d4
 				add.l	d4,d4
 				swap	d4
-				move.w	d4,Noisez
+				move.w	d4,Aud_NoiseZ_w
 				move.w	(a0),d3
 				move.w	d3,(a6)+
 				move.w	2(a0),d2
@@ -936,11 +936,11 @@ notallliftsdone:
 				tst.w	d2
 				beq.s	.nonoise3
 
-				move.w	#50,Noisevol
-				move.w	anim_ClosedSoundFX_w,Samplenum
+				move.w	#50,Aud_NoiseVol_w
+				move.w	anim_ClosedSoundFX_w,Aud_SampleNum_w
 				blt.s	.nonoise3
 
-				move.b	#1,chanpick
+				move.b	#1,Aud_ChannelPick_b
 				clr.b	notifplaying
 				move.w	#$fffd,IDNUM
 
@@ -962,11 +962,11 @@ notallliftsdone:
 				beq.s	.nonoise
 
 				move.w	#0,(a6)
-				move.w	#50,Noisevol
-				move.w	anim_OpenedSoundFX_w,Samplenum
+				move.w	#50,Aud_NoiseVol_w
+				move.w	anim_OpenedSoundFX_w,Aud_SampleNum_w
 				blt.s	.nonoise
 
-				move.b	#1,chanpick
+				move.b	#1,Aud_ChannelPick_b
 				clr.b	notifplaying
 				move.w	#$fffd,IDNUM
 
@@ -1079,11 +1079,11 @@ liftwalls:
 				beq.s	.nothinghit
 
 				move.w	d7,(a5)
-				move.w	#50,Noisevol
-				move.w	anim_ActionSoundFX_w,Samplenum
+				move.w	#50,Aud_NoiseVol_w
+				move.w	anim_ActionSoundFX_w,Aud_SampleNum_w
 				blt.s	.nothinghit
 
-				move.b	#1,chanpick
+				move.b	#1,Aud_ChannelPick_b
 				st		notifplaying
 				move.w	#$fffe,IDNUM
 
@@ -1278,7 +1278,7 @@ notalldoorsdone:
 				sub.l	d5,d4
 				add.l	d4,d4
 				swap	d4
-				move.w	d4,Noisex
+				move.w	d4,Aud_NoiseX_w
 				move.w	Temp_SinVal_w,d4
 				move.w	Temp_CosVal_w,d5
 				muls	d2,d4
@@ -1286,7 +1286,7 @@ notalldoorsdone:
 				sub.l	d5,d4
 				add.l	d4,d4
 				swap	d4
-				move.w	d4,Noisez
+				move.w	d4,Aud_NoiseZ_w
 				move.w	(a0),d3
 				move.w	2(a0),d2
 				move.w	8(a0),d7
@@ -1303,11 +1303,11 @@ notalldoorsdone:
 
 				tst.w	d2
 				beq.s	.nonoise
-				move.w	#50,Noisevol
-				move.w	anim_ClosedSoundFX_w,Samplenum
+				move.w	#50,Aud_NoiseVol_w
+				move.w	anim_ClosedSoundFX_w,Aud_SampleNum_w
 				blt.s	.nonoise
 
-				move.b	#1,chanpick
+				move.b	#1,Aud_ChannelPick_b
 				clr.b	notifplaying
 				move.w	#$fffd,IDNUM
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
@@ -1327,11 +1327,11 @@ nolower:
 				beq.s	.nonoise
 
 				move.w	#0,(a6)
-				move.w	#50,Noisevol
-				move.w	anim_OpenedSoundFX_w,Samplenum
+				move.w	#50,Aud_NoiseVol_w
+				move.w	anim_OpenedSoundFX_w,Aud_SampleNum_w
 				blt.s	.nonoise
 
-				move.b	#1,chanpick
+				move.b	#1,Aud_ChannelPick_b
 				clr.b	notifplaying
 				move.w	#$fffd,IDNUM
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
@@ -1453,11 +1453,11 @@ doorwalls:
 				beq.s	nothinghit
 
 				move.w	d7,(a5)
-				move.w	#50,Noisevol
-				move.w	anim_ActionSoundFX_w,Samplenum
+				move.w	#50,Aud_NoiseVol_w
+				move.w	anim_ActionSoundFX_w,Aud_SampleNum_w
 				blt.s	nothinghit
 
-				move.b	#1,chanpick
+				move.b	#1,Aud_ChannelPick_b
 				clr.b	notifplaying
 				move.w	#$fffd,IDNUM
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
@@ -1602,11 +1602,11 @@ backtoend:
 				move.w	Conditions,d4
 				bclr	d3,d4
 				move.w	d4,Conditions
-				move.w	#0,Noisex
-				move.w	#0,Noisez
-				move.w	#50,Noisevol
-				move.w	#10,Samplenum
-				move.b	#1,chanpick
+				move.w	#0,Aud_NoiseX_w
+				move.w	#0,Aud_NoiseZ_w
+				move.w	#50,Aud_NoiseVol_w
+				move.w	#10,Aud_SampleNum_w
+				move.b	#1,Aud_ChannelPick_b
 				st		notifplaying
 				move.w	#$fffc,IDNUM
 
@@ -1662,11 +1662,11 @@ p1_SpaceIsPressed:
 				bchg	d3,d4
 				move.w	d4,Conditions
 				move.b	#0,3(a0)
-				move.w	#0,Noisex
-				move.w	#0,Noisez
-				move.w	#50,Noisevol
-				move.w	#10,Samplenum
-				move.b	#1,chanpick
+				move.w	#0,Aud_NoiseX_w
+				move.w	#0,Aud_NoiseZ_w
+				move.w	#50,Aud_NoiseVol_w
+				move.w	#10,Aud_SampleNum_w
+				move.b	#1,Aud_ChannelPick_b
 				st		notifplaying
 				move.w	#$fffc,IDNUM
 
@@ -1719,11 +1719,11 @@ p2_SpaceIsPressed:
 				bchg	d3,d4
 				move.w	d4,Conditions
 				movem.l	a0/a1/d0,-(a7)
-				move.w	#0,Noisex
-				move.w	#0,Noisez
-				move.w	#50,Noisevol
-				move.w	#10,Samplenum
-				move.b	#1,chanpick
+				move.w	#0,Aud_NoiseX_w
+				move.w	#0,Aud_NoiseZ_w
+				move.w	#50,Aud_NoiseVol_w
+				move.w	#10,Aud_SampleNum_w
+				move.b	#1,Aud_ChannelPick_b
 				st		notifplaying
 				move.w	#$fffc,IDNUM
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
@@ -1791,7 +1791,7 @@ JUMPALIEN:
 				tst.w	ObjT_ZoneID_w(a0)
 				blt.s	.dontworry
 
-				tst.b	EntT_NumLives_b(a0)
+				tst.b	EntT_HitPoints_b(a0)
 				beq.s	.nolock
 
 				move.l	EntT_DoorsAndLiftsHeld_l(a0),d0
@@ -1856,10 +1856,10 @@ notdoneflame:
 				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
-				move.l	(a1),Noisex
-				move.w	#200,Noisevol
-				move.w	#22,Samplenum
-				move.b	#1,chanpick
+				move.l	(a1),Aud_NoiseX_w
+				move.w	#200,Aud_NoiseVol_w
+				move.w	#22,Aud_SampleNum_w
+				move.b	#1,Aud_ChannelPick_b
 				clr.b	notifplaying
 				move.w	(a0),IDNUM
 				jsr		MakeSomeNoise
@@ -2147,11 +2147,11 @@ notdoneanim:
 
 				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d1
-				move.l	(a1,d1.w*8),Noisex
-; move.w d0,Noisevol
+				move.l	(a1,d1.w*8),Aud_NoiseX_w
+; move.w d0,Aud_NoiseVol_w
 ; swap d0
-				move.w	#200,Noisevol
-				move.w	d0,Samplenum
+				move.w	#200,Aud_NoiseVol_w
+				move.w	d0,Aud_SampleNum_w
 				move.w	d1,IDNUM
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -2216,9 +2216,9 @@ notdoneanim:
 
 				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d1
-				move.l	(a1,d1.w*8),Noisex
-				move.w	#200,Noisevol
-				move.w	d0,Samplenum
+				move.l	(a1,d1.w*8),Aud_NoiseX_w
+				move.w	#200,Aud_NoiseVol_w
+				move.w	d0,Aud_SampleNum_w
 				move.w	d1,IDNUM
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -2401,9 +2401,9 @@ nomovebul:
 
 				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d1
-				move.l	(a1,d1.w*8),Noisex
-				move.w	#200,Noisevol
-				move.w	d0,Samplenum
+				move.l	(a1,d1.w*8),Aud_NoiseX_w
+				move.w	#200,Aud_NoiseVol_w
+				move.w	d0,Aud_SampleNum_w
 				move.w	d1,IDNUM
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -2543,7 +2543,7 @@ notasplut:
 				bne		.notanasty
 
 .notanobj:
-				tst.b	EntT_NumLives_b(a3)
+				tst.b	EntT_HitPoints_b(a3)
 				beq		.notanasty
 
 ; move.l #ColBoxTable,a6
@@ -2618,9 +2618,9 @@ notasplut:
 
 				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d1
-				move.l	(a1,d1.w*8),Noisex
-				move.w	#200,Noisevol
-				move.w	d0,Samplenum
+				move.l	(a1,d1.w*8),Aud_NoiseX_w
+				move.w	#200,Aud_NoiseVol_w
+				move.w	d0,Aud_SampleNum_w
 				move.w	d1,IDNUM
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -2858,7 +2858,7 @@ HitObjLoop:
 				bra.s	.okblast
 
 .checkalien:
-				tst.b	EntT_NumLives_b(a2)
+				tst.b	EntT_HitPoints_b(a2)
 				beq.s	HitObjLoop
 
 .okblast:
