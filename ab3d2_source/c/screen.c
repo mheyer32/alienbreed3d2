@@ -30,8 +30,6 @@
 
 #include <SDI_compiler.h>
 
-#include <stdio.h>
-
 #define SCREEN_TITLEBAR_HACK
 
 extern UWORD draw_Palette_vw[768];
@@ -391,9 +389,7 @@ static void CopyFrameBuffer(UBYTE *dst, const UBYTE *src, WORD dstBytesPerRow, W
 
 void Vid_Present()
 {
-    //Draw_ChunkyTextProp(Vid_FastBufferPtr_l, SCREEN_WIDTH, 80, "This is an example of proportional rendering!", 4, 4, 255);
-    //Draw_ChunkyTextProp(Vid_FastBufferPtr_l, SCREEN_WIDTH, 80, "0123456789!\"$%^&*(){}[]|_+.,:;#@", 4, 12, 255);
-
+    /** Render any buffered up messages before we submit the screen */
     Msg_Render();
 
     if (Vid_isRTG) {

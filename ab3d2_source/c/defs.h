@@ -21,6 +21,11 @@
 #define NUM_SFX             64
 #define NUM_WALL_TEXTURES   16
 
+/*
+ * These structures are managed by the assembler side and the alignment constraints are to preven the compiler
+ * from padding them further for alignment purposes. It does not mean that the structures themselves are only
+ * aligned to a 2 byte boundary,
+ */
 typedef struct {
     /* Note that we have separate named fields here, but we regard the struct as equivalent to UWORD[]*/
     UWORD ic_Health;
@@ -39,5 +44,15 @@ typedef struct {
     InventoryConsumables inv_Consumables;
     InventoryItems       inv_Items;
 } __attribute__((packed)) __attribute__ ((aligned (2))) Inventory;
+
+typedef struct {
+    LONG o_XPos;
+    LONG o_ZPos;
+    LONG o_YPos;
+    UWORD o_ZoneID;
+    UWORD o_Unused;
+    UBYTE o_TypeID;
+    UBYTE o_SeePlayer;
+} ObjBase;
 
 #endif // DEFS_H

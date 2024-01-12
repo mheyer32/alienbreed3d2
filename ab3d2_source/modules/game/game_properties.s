@@ -16,8 +16,7 @@ GAME_UNCAPPED_LIMIT       equ 32000
 
 				align 4
 
-;void Game_InitDefaults(void)
-Game_InitDefaults:
+game_LoadModProperties:
 				move.w	#GAME_DEFAULT_HEALTH_LIMIT,game_ModProps+InvCT_Health_w
 				move.w	#GAME_DEFAULT_FUEL_LIMIT,game_ModProps+InvCT_JetpackFuel_w
 				lea		game_ModProps+InvCT_AmmoCounts_vw,a0
@@ -28,10 +27,8 @@ Game_InitDefaults:
 				move.w	d1,(a0)+
 				dbra	d0,.loop
 
-				; drop right through here
-game_LoadModProperties:
 				movem.l	d0-d4/a5-a6,-(sp)
-				move.l	#Game_PropertiesFile_vb,d1
+				move.l	#game_PropertiesFile_vb,d1
 				move.l	#MODE_OLDFILE,d2
 				CALLDOS	Open
 

@@ -186,7 +186,7 @@ NUM_WALL_TEXTURES	EQU 16
 		UWORD AlienT_HitPoints_w			; 32, 2
 		UWORD AlienT_Height_w				; 34, 2
 		UWORD AlienT_Girth_w				; 36, 2
-		UWORD AlienT_SplatType_w			; 38, 2
+		UWORD AlienT_SplatType_w			; 38, 2 - either the projectile class, or spanwed alien class
 		UWORD AlienT_Auxilliary_w			; 40, 2
 		LABEL AlienT_SizeOf_l				; 42
 
@@ -235,13 +235,16 @@ OBJ_PREV	EQU (-ObjT_SizeOf_l)	; object before current
 OBJ_NEXT	EQU	ObjT_SizeOf_l		; object after current
 
 	MACRO NEXT_OBJ
-	add.w #OBJ_NEXT,\1
+	add.w #ObjT_SizeOf_l,\1
 	ENDM
 
+	MACRO PREV_OBJ
+	sub.w #ObjT_SizeOf_l,\1
+	ENDM
 
 	; Runtime entity extension for ObjT
 	STRUCTURE EntT,ObjT_Header_SizeOf_l
-		UBYTE EntT_NumLives_b				; 18, 1
+		UBYTE EntT_HitPoints_b				; 18, 1
 		UBYTE EntT_DamageTaken_b			; 19, 1
 		UBYTE EntT_CurrentMode_b			; 20, 1
 		UBYTE EntT_TeamNumber_b				; 21, 1
@@ -389,12 +392,13 @@ GLFT_BUL_NAME_LENGTH EQU 20
 NUM_INVENTORY_ITEMS EQU (NUM_GUN_DEFS+2)
 NUM_INVENTORY_CONSUMABLES EQU (NUM_BULLET_DEFS+2)
 
+MAX_ACHIEVEMENTS EQU 128
 
 	; Inventory consumables (health/fuel/ammo)
 	STRUCTURE InvCT,0
 		UWORD InvCT_Health_w		        ; 2
 		UWORD InvCT_JetpackFuel_w			; 2
-		UWORD InvCT_AmmoCounts_vw			; 40 - UWORD[20]
+		UWORD InvCT_AmmoCounts_vw			; 40 - UWORD[NUM_BULLET_DEFS]
 		PADDING (NUM_BULLET_DEFS*2)-2
 		LABEL InvCT_SizeOf_l				; 44
 
@@ -403,7 +407,7 @@ NUM_INVENTORY_CONSUMABLES EQU (NUM_BULLET_DEFS+2)
 	STRUCTURE InvIT,0
 		UWORD InvIT_Shield_w				; 2
 		UWORD InvIT_JetPack_w				; 2
-		UWORD InvIT_Weapons_vw				; 20 - UWORD[10]
+		UWORD InvIT_Weapons_vw				; 20 - UWORD[NUM_GUN_DEFS]
 		PADDING (NUM_GUN_DEFS*2)-2
 		LABEL InvIT_SizeOf_l				; 24
 
@@ -415,9 +419,59 @@ NUM_INVENTORY_CONSUMABLES EQU (NUM_BULLET_DEFS+2)
 
 	; Custom game properties
 	STRUCTURE GModT,0
+		; Default inventory limits
 		STRUCTURE GModT_MaxInv,(InvCT_SizeOf_l)		; 44
-		LABEL GModT_SizeOf_l						; 44
+		UWORD     GModT_NumAchievements             ; 2
+		UWORD     GModT_AchievementSize             ; 2
+		LABEL GModT_SizeOf_l						; 48
 
+	; Game statistics
+	STRUCTURE GStatT,0
+		; Progressed inventory limits
+		STRUCTURE GStatT_MaxInv,(InvCT_SizeOf_l)	; 44
+
+		; Best time so far for each level
+		ULONG GStatT_LevelBestTimes_vl              ; 64 - ULONG[NUM_LEVELS]
+		PADDING (NUM_LEVELS*4)-4
+
+		; Number of times each level attempted
+		UWORD GStatT_LevelPlayCounts_vw			; 32 - UWORD[NUM_LEVELS]
+		PADDING (NUM_LEVELS*2)-2
+
+		; Number of times each level beaten
+		UWORD GStatT_LevelWonCounts_vw			; 32 - UWORD[NUM_LEVELS]
+		PADDING (NUM_LEVELS*2)-2
+
+		; Number of times killed in each level
+		UWORD GStatT_LevelFailCounts_vw			; 32 - UWORD[NUM_LEVELS]
+		PADDING (NUM_LEVELS*2)-2
+
+		; Number of times the player has improved their best time, per level
+		UWORD GStatT_LevelImprovedTimeCounts_vw	; 32 - UWORD[NUM_LEVELS]
+		PADDING (NUM_LEVELS*2)-2
+
+		; Number of aliens killed, by type
+		UWORD GStatT_AlienKills_vw
+		PADDING (NUM_ALIEN_DEFS*2)-2			; 40 - UWORD[NUM_ALIEN_DEFS]
+
+        ; Total health collected
+        ULONG GStatT_TotalHealthCollected_w     ; 4
+
+        ; Total fuel collected
+        ULONG GStatT_TotalFuelCollected_w       ; 4
+
+        ; Total ammo collected, per ammo class
+        ULONG GStatT_TotalAmmoFound_vw
+        PADDING (NUM_BULLET_DEFS*4)-4           ; 80 UWORD[NUM_BULLET_DEFS]
+
+		UBYTE GStatT_Achieved_vb
+		PADDING (MAX_ACHIEVEMENTS/8)-1
+
+		LABEL GStatT_SizeOf_l
+
+GAME_EVENTBIT_KILL EQU 0
+GAME_EVENTBIT_ZONE_CHANGE EQU 1
+GAME_EVENTBIT_LEVEL_START  EQU 2
 
 *****************************
 * Door Definitions **********
@@ -435,6 +489,7 @@ DL_Never		EQU		1
 ; TODO - Level Structure
 
 LVLT_MESSAGE_LENGTH EQU 160
+LVLT_MESSAGE_COUNT  EQU 10
 
 ; For two player victory messages
 GAME_DM_VICTORY_MESSAGE_LENGTH EQU 80
