@@ -51,7 +51,7 @@ Game_Start:
 				jsr		IO_LoadFile
 				move.l	d0,GLF_DatabasePtr_l
 
-				move.l	#LEVELTEXTNAME,a0
+				move.l	#Game_StoryFile_vb,a0
 				jsr		IO_LoadFile
 				move.l	d0,Lvl_IntroTextPtr_l
 
@@ -269,7 +269,7 @@ GETSTATS:
 
 SETPLAYERS:
 				; 0xABADCAFE - Set level file names. TODO - this should probably be moved to a helper
-				move.w	PLOPT,d0
+				move.w	Game_LevelNumber_w,d0
 				add.b	#'a',d0
 				move.b	d0,Lvl_BinFilenameX_vb
 				move.b	d0,Lvl_GfxFilenameX_vb
@@ -292,7 +292,7 @@ onepla:
 
 Plr_InitMaster:
 				clr.b	AI_NoEnemies_b
-				move.w	PLOPT,d0
+				move.w	Game_LevelNumber_w,d0
 				jsr		SENDFIRST
 
 				move.w	Rand1,d0
@@ -304,7 +304,7 @@ Plr_InitMaster:
 Plr_InitSlave:
 				clr.b	AI_NoEnemies_b
 				jsr		RECFIRST
-				move.w	d0,PLOPT
+				move.w	d0,Game_LevelNumber_w
 				add.b	#'a',d0
 				move.b	d0,Lvl_BinFilenameX_vb
 				move.b	d0,Lvl_GfxFilenameX_vb
@@ -316,12 +316,11 @@ Plr_InitSlave:
 				move.w	d0,Rand1
 				bsr		TWOPLAYER
 
-
 				rts
 
 ********************************************************
 
-ASKFORDISK:
+;ASKFORDISK:
 ;lea RVAL1+300(pc),a0
 ;lea RVAL2+900(pc),a1
 ; PRSDD
@@ -594,7 +593,7 @@ customOptions:
 				rts
 ***************************************************************
 playgame:
-				move.w	MAXLEVEL,PLOPT
+				move.w	MAXLEVEL,Game_LevelNumber_w
 				rts
 
 SHOULDQUIT:		dc.w	0
@@ -754,7 +753,7 @@ MASTERMENU:
 
 .playgame
 
-				move.w	LEVELSELECTED,PLOPT
+				move.w	LEVELSELECTED,Game_LevelNumber_w
 				rts
 
 SLAVEMENU:
@@ -946,8 +945,6 @@ CHANGECONTROLS:
 				add.w	#16,a0
 				move.w	#$2020,(a0)
 
-
-
 				movem.l	a0/d0,-(a7)
 
 				lea		mnu_MYCONTROLSONE,a0
@@ -1027,26 +1024,8 @@ CHANGECONTROLS2:
 
 MAXLEVEL:		dc.w	0
 
-SHOWCREDITS:
-				move.w	#2,OptScrn
-				bsr		DRAWOPTSCRN
-				move.w	#0,OPTNUM
-				bsr		HIGHLIGHT
-
-				bsr		WAITREL
-
-.rdlop:
-				bsr		CHECKMENU
-				tst.w	d0
-				blt.s	.rdlop
-
-				bra		READMAINMENU
-
-HELDDOWN:
-				dc.w	0
 
 WAITREL:
-
 				movem.l	d0/d1/d2/d3,-(a7)
 
 				move.l	#KeyMap_vb,a5
@@ -1099,7 +1078,6 @@ MYOPENMENU:
 				rts
 
 CHECKMENU:
-
 				move.b	#0,lastpressed
 
 .loop:			movem.l	a0,-(a7)
@@ -1118,45 +1096,6 @@ CHECKMENU:
 
 				rts
 
-HIGHLIGHT:
-
-				SAVEREGS
-
-				move.w	OptScrn,d0
-				move.l	#MENUDATA,a0
-				move.l	4(a0,d0.w*8),a0
-				move.w	OPTNUM,d0
-				lea		(a0,d0.w*8),a0
-				move.w	(a0)+,d0				;left
-				move.w	(a0)+,d1				;top
-				move.w	(a0)+,d2				;width
-
-				muls	#16*8,d1
-				move.l	OPTSPRADDR,a1
-				add.w	d1,a1
-				add.w	#8+16,a1
-				move.l	#SCRTOSPR2,a5
-				adda.w	d0,a5
-				adda.w	d0,a5
-
-NOTLOP:
-
-				move.w	(a5)+,d3
-				lea		(a1,d3.w),a2
-				not.b	(a2)
-				not.b	16(a2)
-				not.b	32(a2)
-				not.b	48(a2)
-				not.b	64(a2)
-				not.b	80(a2)
-				not.b	96(a2)
-				not.b	112(a2)
-				not.b	128(a2)
-				subq	#1,d2
-				bgt.s	NOTLOP
-
-				GETREGS
-				rts
 
 SCRTOSPR2:
 val				SET		0
@@ -1450,14 +1389,14 @@ MENUDATA:
 				dc.l	ONEPLAYERMENU_TXT
 				dc.l	ONEPLAYERMENU_OPTS
 ;1
-				dc.l	INSTRUCTIONS_TXT
-				dc.l	INSTRUCTIONS_OPTS
+;				dc.l	INSTRUCTIONS_TXT
+;				dc.l	INSTRUCTIONS_OPTS
 ;2
 				dc.l	CREDITMENU_TXT
 				dc.l	CREDITMENU_OPTS
 ;3
-				dc.l	ASKFORDISK_TXT
-				dc.l	ASKFORDISK_OPTS
+;				dc.l	ASKFORDISK_TXT
+;				dc.l	ASKFORDISK_OPTS
 ;4
 ; dc.l ONEPLAYERMENU_TXT
 ; dc.l ONEPLAYERMENU_OPTS
@@ -1470,8 +1409,8 @@ MENUDATA:
 				dc.l	CONTROL_TXT
 				dc.l	CONTROL_OPTS
 ;7
-				dc.l	PROTMENU_TXT
-				dc.l	CONTROL_OPTS
+;				dc.l	PROTMENU_TXT
+;				dc.l	CONTROL_OPTS
 ;8
 				dc.l	LOADMENU_TXT
 				dc.l	LOADMENU_OPTS
@@ -1479,8 +1418,8 @@ MENUDATA:
 				dc.l	SAVEMENU_TXT
 				dc.l	SAVEMENU_OPTS
 ;10
-				dc.l	LEVELDISK_TXT
-				dc.l	ASKFORDISK_OPTS
+;				dc.l	LEVELDISK_TXT
+;				dc.l	ASKFORDISK_OPTS
 
 
 EMPTYSLOTNAME:
@@ -1538,41 +1477,6 @@ LOADMENU_OPTS:
 				dc.w	14,21,12,1
 				dc.w	-1
 
-LEVELDISK_TXT:
-;      0123456789012345678901234567890123456789
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'  IF PLAYING FROM DISK, PLEASE INSERT   ' ;0
-				dc.b	'       LEVELS DISK IN DRIVE DF0:        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'     PRESS MOUSE BUTTON WHEN READY..    ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-
 
 SAVEMENU_TXT:
 ;      0123456789012345678901234567890123456789
@@ -1585,35 +1489,6 @@ SAVEMENU_TXT:
 				dc.b	'                                        ' ;6
 				dc.b	'                                        ' ;7
 				dc.b	'                                        ' ;8
-;SSLOTA:
-;				dc.b	'                                        ' ;9
-;				dc.b	'                                        ' ;0
-;SSLOTB:
-;				dc.b	'                                        ' ;1
-;				dc.b	'                                        ' ;2
-;SSLOTC:
-;				dc.b	'                                        ' ;3
-;				dc.b	'                                        ' ;4
-;SSLOTD:
-;				dc.b	'                                        ' ;5
-;				dc.b	'                                        ' ;6
-;SSLOTE:
-;				dc.b	'                                        ' ;7
-;				dc.b	'                                        ' ;8
-;SSLOTF:
-;				dc.b	'                                        ' ;9
-;				dc.b	'                                        ' ;0
-;				dc.b	'               * CANCEL *               ' ;1
-;				dc.b	'                                        ' ;2
-;				dc.b	'                                        ' ;3
-;				dc.b	'                                        ' ;4
-;				dc.b	'                                        ' ;5
-;				dc.b	'                                        ' ;6
-;				dc.b	'                                        ' ;7
-;				dc.b	'                                        ' ;8
-;				dc.b	'                                        ' ;9
-;				dc.b	'                                        ' ;0
-;				dc.b	'                                        ' ;1
 
 SAVEMENU_OPTS:
 				dc.w	0,9,40,1
@@ -1624,47 +1499,6 @@ SAVEMENU_OPTS:
 				dc.w	0,19,40,1
 				dc.w	14,21,12,1
 				dc.w	-1
-
-
-ASKFORDISK_TXT:
-;      0123456789012345678901234567890123456789
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'         PLEASE INSERT VOLUME:          ' ;3
-				dc.b	'                                        ' ;4
-;VOLLINE:
-;				dc.b	'                                        ' ;9
-;				dc.b	'                                        ' ;9
-;				dc.b	'          PRESS MOUSE BUTTON            ' ;5
-;				dc.b	'          WHEN DISK ACTIVITY            ' ;6
-;				dc.b	'               FINISHES                 ' ;7
-;				dc.b	'                                        ' ;8
-;				dc.b	'                                        ' ;1
-;				dc.b	'                                        ' ;2
-;				dc.b	'                                        ' ;3
-;				dc.b	'                                        ' ;4
-;				dc.b	'                                        ' ;5
-;				dc.b	'                                        ' ;6
-;				dc.b	'                                        ' ;7
-;				dc.b	'                                        ' ;8
-;				dc.b	'                                        ' ;9
-;				dc.b	'                                        ' ;0
-;				dc.b	'                                        ' ;1
-
-ASKFORDISK_OPTS:
-				dc.w	-1
-
 
 ONEPLAYERMENU_TXT:
 ;      0123456789012345678901234567890123456789
@@ -1750,44 +1584,6 @@ SLAVEPLAYERMENU_TXT:
 				dc.b	'                                        ' ;9
 				dc.b	'                                        ' ;9
 
-
-PROTMENU_TXT:
-;      0123456789012345678901234567890123456789
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	' TYPE IN THREE DIGIT CODE FROM MANUAL : ' ;2
-				dc.b	'                                        ' ;3
-PROTLINE:
-				dc.b	'        TABLE 00 ROW 00 COLUMN 00       ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-
-
-
 SLAVEPLAYERMENU_OPTS:
 				dc.w	12,12,16,1
 				dc.w	15,14,10,1
@@ -1859,46 +1655,10 @@ CONTROL_OPTS:
 				dc.w	15,30,10,1
 				dc.w	-1
 
-PLOPT:			dc.w	0
+_Game_LevelNumber::
+Game_LevelNumber_w:		dc.w	0
 
-INSTRUCTIONS_TXT:
-;      0123456789012345678901234567890123456789
-				dc.b	'Main controls:                          ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'Curs Keys = Forward / Backward          ' ;3
-				dc.b	'            Turn left / right           ' ;4
-				dc.b	'          Right Alt = Fire              ' ;5
-				dc.b	'        Right Shift = Run               ' ;6
-				dc.b	'                  > = Slide Left        ' ;7
-				dc.b	'                  ? = Slide Right       ' ;8
-				dc.b	'              SPACE = Operate Door/Lift ' ;9
-				dc.b	'                  D = Duck              ' ;0
-				dc.b	'                  J = Joystick Control  ' ;1
-				dc.b	'                  K = Keyboard Control  ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'              1,2,3 = Select weapon     ' ;4
-				dc.b	'              ENTER = Toggle screen size' ;5
-				dc.b	'                ESC = Quit              ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'The one player game has no objective and' ;9
-				dc.b	'the only way to finish is to die or quit' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'The two-player game is supposed to be a ' ;2
-				dc.b	'fight to the death but will probably be ' ;3
-				dc.b	'a fight-till-we-find-the-rocket-launcher' ;4
-				dc.b	'then-blow-ourselves-up type game.       ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'LOOK OUT FOR TELEPORTERS: They usually  ' ;7
-				dc.b	'have glowing red walls and overhead     ' ;8
-				dc.b	'lights. Useful for getting behind your  ' ;9
-				dc.b	' opponent!                              ' ;0
-				dc.b	'  Just a taster of what is to come....  ' ;1
-				dc.b	'                                        ' ;0
 
-INSTRUCTIONS_OPTS:
-				dc.w	0,0,0,1
-				dc.w	-1
 
 CREDITMENU_TXT:
 
@@ -2011,7 +1771,8 @@ CREDITMENU_OPTS:
 FADEAMOUNT:		dc.w	0
 FADEVAL:		dc.w	0
 
-LEVELTEXTNAME:	dc.b	'ab3:includes/TEXT_FILE'
+Game_StoryFile_vb:
+				dc.b	'ab3:includes/TEXT_FILE'
 
 				even
 

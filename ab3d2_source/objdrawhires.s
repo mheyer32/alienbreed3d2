@@ -132,7 +132,7 @@ Draw_Objects:
 				beq.s	.in_this_zone
 
 .not_in_this_zone:
-				adda.w	#64,a1
+				NEXT_OBJ	a1
 				addq	#1,d0
 				bra		.insert_an_object
 
@@ -159,7 +159,7 @@ Draw_Objects:
 
 				move.w	d1,(a4)
 				move.w	d0,2(a4)
-				adda.w	#64,a1
+				NEXT_OBJ	a1
 				addq	#1,d0
 				bra		.insert_an_object
 
