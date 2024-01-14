@@ -1725,11 +1725,6 @@ Collision:
 				PREV_OBJ	a0
 
 				move.l	Lvl_ObjectPointsPtr_l,a1
-
-				; todo - is this actually used here?
-				move.l	#ColBoxTable,a2
-				lea		(a2,d0.w*8),a3
-
 				move.l	CollideFlags,d7
 				move.b	StoodInTop,d6
 				move.l	newy,d4
@@ -1843,49 +1838,6 @@ checkcol:
 
 checkedallcol:
 				rts
-
-ColBoxTable:
-
-; red scurrying alien
-				dc.w	40,60,120,0
-; Medipack
-				dc.w	40,20,40,0
-; Bullet
-				dc.w	40,20,40,0
-; Gun
-				dc.w	40,20,40,0
-; Key
-				dc.w	40,20,40,0
-; PLayer1
-				dc.w	40,40,80,0
-;Robot
-				dc.w	40,50,100,0
-;?
-				dc.w	40,20,40,0
-; Flying Nasty
-				dc.w	80,60,120,0
-; Ammo
-				dc.w	40,20,40,0
-; Barrel
-				dc.w	40,30,60,0
-;PlAYER2
-				dc.w	40,40,80,0
-; Mutant Marine
-				dc.w	40,40,80,0
-; worm
-				dc.w	80,60,120,0
-; huge red thing
-				dc.w	160,100,200,0
-; small red thing
-				dc.w	80,50,100,0
-; tree
-				dc.w	80,60,120,0
-; eyeball
-				dc.w	40,30,60,0
-; Tough Marine
-				dc.w	40,40,80,0
-; ShotGun Marine
-				dc.w	40,40,80,0
 
 FromZone:		dc.w	0
 OKTEL:			dc.w	0

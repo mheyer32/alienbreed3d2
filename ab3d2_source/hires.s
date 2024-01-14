@@ -4333,8 +4333,6 @@ CalcPLR1InLine:
 
 				moveq	#0,d2
 				move.b	ObjT_TypeID_b(a4),d2
-;move.l #ColBoxTable,a6
-;lea (a6,d2.w*8),a6
 
 				sub.w	Plr1_ZOff_l,d1
 				move.w	d0,d2
@@ -4407,8 +4405,6 @@ CalcPLR2InLine:
 
 				moveq	#0,d2
 				move.b	ObjT_TypeID_b(a4),d2
-; move.l #ColBoxTable,a6
-; lea (a6,d2.w*8),a6
 
 				sub.w	Plr2_ZOff_l,d1
 				move.w	d0,d2

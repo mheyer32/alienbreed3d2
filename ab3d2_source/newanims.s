@@ -2546,9 +2546,6 @@ notasplut:
 				tst.b	EntT_HitPoints_b(a3)
 				beq		.notanasty
 
-; move.l #ColBoxTable,a6
-; lea (a6,d1.w*8),a6
-
 				move.w	4(a3),d1
 				move.w	4(a0),d2
 				sub.w	d1,d2
