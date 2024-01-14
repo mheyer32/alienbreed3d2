@@ -1116,7 +1116,7 @@ SHOOTPLAYER1:
 				move.w	ObjT_ZoneID_w(a0),d2
 				blt.s	.foundonefree2
 
-				adda.w	#OBJ_NEXT,a0
+				NEXT_OBJ	a0
 				dbra	d1,.findonefree2
 
 				move.w	tsx,oldx
@@ -1162,7 +1162,7 @@ FireAtPlayer1:
 				move.w	ObjT_ZoneID_w(a5),d0
 				blt.s	.foundonefree
 
-				adda.w	#OBJ_NEXT,a5
+				NEXT_OBJ	a5
 				dbra	d1,.findonefree
 
 				bra		.cantshoot
@@ -1368,7 +1368,7 @@ SHOOTPLAYER2:
 				move.w	ObjT_ZoneID_w(a0),d2
 				blt.s	.foundonefree2
 
-				adda.w	#OBJ_NEXT,a0
+				NEXT_OBJ	a0
 				dbra	d1,.findonefree2
 
 				move.w	tsx,oldx
@@ -1407,7 +1407,7 @@ FireAtPlayer2:
 				move.w	ObjT_ZoneID_w(a5),d0
 				blt.s	.foundonefree
 
-				adda.w	#OBJ_NEXT,a5
+				NEXT_OBJ	a5
 				dbra	d1,.findonefree
 
 				bra		.cantshoot

@@ -405,6 +405,7 @@ assignclips:
 dowholezone:
 				tst.w	(a3)
 				blt.s	nomorethiszone
+
 				tst.w	2(a3)
 				blt.s	thisonenull
 
@@ -430,9 +431,6 @@ nomorethiszone:
 				move.l	a2,Lvl_ConnectTablePtr_l
 
 noclips:
-
-************************************
-
 				clr.b	Plr1_StoodInTop_b
 				move.l	#PLR_STAND_HEIGHT,Plr1_SnapHeight_l
 
@@ -1909,7 +1907,8 @@ plr1only:
 				move.l	Lvl_ObjectDataPtr_l,a0
 				sub.w	#ObjT_SizeOf_l,a0
 .doallobs:
-				add.w	#OBJ_NEXT,a0
+				NEXT_OBJ	a0
+
 				move.w	(a0),d0
 				blt.s	.allobsdone
 
@@ -3478,8 +3477,8 @@ Plr1_Control:
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	(a0),CollId
 
-				move.l	#%111111111111111111,CollideFlags
-				jsr		Collision
+				move.l	#%111111111111111111,Obj_CollideFlags_l
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.teleport
 
@@ -3525,11 +3524,11 @@ Plr1_Control:
 				move.w	#%100000000,wallflags
 				move.b	Plr1_StoodInTop_b,StoodInTop
 
-				move.l	#%1011111110111000011,CollideFlags
+				move.l	#%1011111110111000011,Obj_CollideFlags_l
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	(a0),CollId
 
-				jsr		Collision
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.nothitanything
 				move.w	oldx,Plr1_XOff_l
@@ -3690,8 +3689,8 @@ Plr2_Control:
 ;				move.w	Plr2_ObjectPtr_l,a0 ; 0xABADCAFE - word size - is this a bug?
 				move.l	Plr2_ObjectPtr_l,a0
 				move.w	(a0),CollId
-				move.l	#%111111111111111111,CollideFlags
-				jsr		Collision
+				move.l	#%111111111111111111,Obj_CollideFlags_l
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.teleport
 
@@ -3736,11 +3735,11 @@ Plr2_Control:
 				move.w	#%100000000000,wallflags
 				move.b	Plr2_StoodInTop_b,StoodInTop
 
-				move.l	#%1011111010111100011,CollideFlags
+				move.l	#%1011111010111100011,Obj_CollideFlags_l
 				move.l	Plr2_ObjectPtr_l,a0
 				move.w	(a0),CollId
 
-				jsr		Collision
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.nothitanything
 				move.w	oldx,Plr2_XOff_l
@@ -4361,24 +4360,22 @@ CalcPLR1InLine:
 				bgt.s	.notinline
 
 				st		d3
-.notinline
+.notinline:
 				move.b	d3,(a2)+
-
 				move.w	d1,(a3)+
-
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 
 				rts
 
 .itaux:
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				bra		.objpointrotlop
 
 .noworkout:
 				move.b	#0,(a2)+
 				move.w	#0,(a3)+
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 				rts
 
@@ -4433,24 +4430,23 @@ CalcPLR2InLine:
 				bgt.s	.notinline
 
 				st		d3
+
 .notinline:
 				move.b	d3,(a2)+
-
 				move.w	d1,(a3)+
-
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 
 				rts
 
 .itaux:
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				bra		.objpointrotlop
 
 .noworkout:
 				move.w	#0,(a3)+
 				move.b	#0,(a2)+
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 
 				rts
@@ -4514,13 +4510,13 @@ RotateObjectPts:
 				rts
 
 .itaux:
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				bra		.objpointrotlop
 
 .noworkout:
-				move.l	#0,(a1)+
-				move.l	#0,(a1)+
-				add.w	#OBJ_NEXT,a4
+				clr.l	(a1)+
+				clr.l	(a1)+
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 				rts
 
@@ -4566,20 +4562,20 @@ RotateObjectPtsFullScreen:
 				add.l	xwobble,d2
 				move.l	d2,(a1)+
 				sub.l	xwobble,d2
-
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 
 				rts
 
 .itaux:
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
+
 				bra		.objpointrotlop
 
 .noworkout:
 				move.l	#0,(a1)+
 				move.l	#0,(a1)+
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 				rts
 

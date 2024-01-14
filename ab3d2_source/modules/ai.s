@@ -593,8 +593,8 @@ ai_Widget:
 
 .not_next_cpt:
 				move.w	#%1000000000,wallflags
-				move.l	#%00001000110010000010,CollideFlags
-				jsr		Collision
+				move.l	#%00001000110010000010,Obj_CollideFlags_l
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.can_move
 
@@ -758,8 +758,8 @@ ai_ChargeCommon:
 				jsr		HeadTowardsAng
 				move.w	#%1000000000,wallflags
 
-				move.l	#%100000,CollideFlags
-				jsr		Collision
+				move.l	#%100000,Obj_CollideFlags_l
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.not_hit_player
 
@@ -770,8 +770,8 @@ ai_ChargeCommon:
 				bra		.hit_something
 
 .not_hit_player:
-				move.l	#%11111111110111000010,CollideFlags
-				jsr		Collision
+				move.l	#%11111111110111000010,Obj_CollideFlags_l
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.can_move
 
@@ -1190,8 +1190,8 @@ ai_ChargeFlyingCommon:
 				jsr		HeadTowardsAng
 				move.w	#%1000000000,wallflags
 
-				move.l	#%100000,CollideFlags
-				jsr		Collision
+				move.l	#%100000,Obj_CollideFlags_l
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.not_hit_player
 
@@ -1202,8 +1202,8 @@ ai_ChargeFlyingCommon:
 				bra		.hit_something
 
 .not_hit_player:
-				move.l	#%11111111110111000010,CollideFlags
-				jsr		Collision
+				move.l	#%11111111110111000010,Obj_CollideFlags_l
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.can_move
 
@@ -1419,8 +1419,8 @@ ai_ApproachCommon:
 				jsr		HeadTowardsAng
 				move.w	#%1000000000,wallflags
 
-				move.l	#%100000,CollideFlags
-				jsr		Collision
+				move.l	#%100000,Obj_CollideFlags_l
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.not_hit_player
 
@@ -1431,8 +1431,8 @@ ai_ApproachCommon:
 				bra		.hit_something
 
 .not_hit_player:
-				move.l	#%11111111110111000010,CollideFlags
-				jsr		Collision
+				move.l	#%11111111110111000010,Obj_CollideFlags_l
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.can_move
 

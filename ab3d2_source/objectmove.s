@@ -1709,23 +1709,22 @@ GoInDirection:
 				move.w	d2,newz
 				rts
 
-CollideFlags:	dc.l	0
+Obj_CollideFlags_l:	dc.l	0
 
-MYROOM:			dc.w	0
 
-Collision:
 
+Obj_DoCollision:
 				move.l	Lvl_ObjectDataPtr_l,a0
 				move.w	CollId,d0
 				asl.w	#6,d0
-				move.w	ObjT_ZoneID_w(a0,d0.w),MYROOM
+				move.w	ObjT_ZoneID_w(a0,d0.w),.tmp_zone_id_w
 				move.b	ObjT_TypeID_b(a0,d0.w),d0
 				ext.w	d0
 
 				PREV_OBJ	a0
 
 				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.l	CollideFlags,d7
+				move.l	Obj_CollideFlags_l,d7
 				move.b	StoodInTop,d6
 				move.l	newy,d4
 				move.l	d4,d5
@@ -1734,35 +1733,35 @@ Collision:
 				asr.l	#7,d5
 				clr.b	hitwall
 
-checkcol:
+.check_collide:
 				NEXT_OBJ	a0
 				move.w	(a0),d0
-				blt		checkedallcol
+				blt		.checked_all_collide
 
 				cmp.w	CollId,d0
-				beq.s	checkcol
+				beq.s	.check_collide
 
 				tst.w	ObjT_ZoneID_w(a0)
-				blt.s	checkcol
+				blt.s	.check_collide
 
-				move.w	MYROOM,d1
+				move.w	.tmp_zone_id_w,d1
 				cmp.w	ObjT_ZoneID_w(a0),d1
-				bne.s	checkcol
+				bne.s	.check_collide
 
 				tst.b	EntT_HitPoints_b(a0)
-				beq.s	checkcol
+				beq.s	.check_collide
 
 				move.b	ShotT_InUpperZone_b(a0),d1
 				eor.b	d6,d1
-				bne		checkcol
+				bne		.check_collide
 
 				moveq	#0,d3
 				move.b	ObjT_TypeID_b(a0),d3
-				blt		checkcol
+				blt		.check_collide
 				beq		.ycol
 
 				cmp.b	#1,d3
-				bne		checkcol
+				bne		.check_collide
 
 				move.l	GLF_DatabasePtr_l,a4
 				add.l	#GLFT_ObjectDefs,a4
@@ -1770,25 +1769,25 @@ checkcol:
 				move.b	EntT_Type_b(a0),d1
 				muls	#ODefT_SizeOf_l,d1
 				cmp.w	#2,ODefT_Behaviour_w(a4,d1.w)
-				blt		checkcol
+				blt		.check_collide
 				bgt		.ycol
 
 				tst.b	EntT_HitPoints_b(a0)
-				ble		checkcol
+				ble		.check_collide
 
-.ycol
+.ycol:
 
 ; btst d3,d7
-; beq checkcol
+; beq .check_collide
 
 				move.w	ObjT_ZPos_l(a0),d1
 				sub.w	2(a2,d3.w*8),d1
 				cmp.w	d1,d5
-				blt		checkcol
+				blt		.check_collide
 
 				add.w	4(a2,d3.w*8),d1
 				cmp.w	d1,d4
-				bgt		checkcol
+				bgt		.check_collide
 
 				move.w	(a1,d0.w*8),d1
 				move.w	4(a1,d0.w*8),d2
@@ -1806,13 +1805,13 @@ checkcol:
 				ble.s	.checkx
 				sub.w	#80,d2
 				cmp.w	#80,d2
-				bgt		checkcol
+				bgt		.check_collide
 				st		hitwall
-				bra		checkedallcol
+				bra		.checked_all_collide
 .checkx:
 				sub.w	#80,d1
 				cmp.w	#80,d1
-				bgt		checkcol
+				bgt		.check_collide
 
 				move.w	(a1,d0.w*8),d1
 				move.w	4(a1,d0.w*8),d2
@@ -1829,15 +1828,17 @@ checkcol:
 				muls	d2,d2
 				add.l	d1,d2
 				cmp.l	d2,d7
-				bgt		checkcol
+				bgt		.check_collide
 
 				st		hitwall
-				bra		checkedallcol
+;				bra		.checked_all_collide
 
-; bra checkcol
+; bra .check_collide
 
-checkedallcol:
+.checked_all_collide:
 				rts
+.tmp_zone_id_w:
+				dc.w	0
 
 FromZone:		dc.w	0
 OKTEL:			dc.w	0
@@ -1865,9 +1866,9 @@ ITSATEL:
 				add.l	d0,newy
 				move.w	ZoneT_TelX_w(a2),newx
 				move.w	ZoneT_TelZ_w(a2),newz
-				move.l	#%1111111111111111111,CollideFlags
+				move.l	#%1111111111111111111,Obj_CollideFlags_l
 				movem.l	a0/a1/a2,-(a7)
-				bsr		Collision
+				bsr		Obj_DoCollision
 				movem.l	(a7)+,a0/a1/a2
 
 				move.l	floortemp,d0
