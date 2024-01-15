@@ -1212,7 +1212,7 @@ INMIDDLE:
 				add.l	d2,a1
 				move.w	Plr1_TmpAngPos_w,d0
 				neg.w	d0
-				add.w	#4096,d0
+				add.w	#SINE_SIZE,d0
 				AMOD_I	d0
 				asr.w	#8,d0
 				asr.w	#1,d0

@@ -8,14 +8,17 @@ MAX_ONE_OVER_N	EQU	511
 ; sine/cosine << 15, contains two full cycles (720 degrees) over 8192 entries
 SinCosTable_vw:		incbin	"bigsine"
 
+; the size of one complete cycle - not the actual size of the table
+SINE_SIZE		EQU 4096
+
 SINE_OFS		EQU 0
-COSINE_OFS		EQU 2048
+COSINE_OFS		EQU (SINE_SIZE/2)
 
 ; Modulus mask value when doing *address* based calculation, e.g. (a0,dN.w)
-SINTAB_MASK_ADR	EQU 8190
+SINTAB_MASK_ADR	EQU (SINE_SIZE*2)-2
 
 ; Modulus mask value when doing *index* based calculation, e.g. (a0, dN.w*2)
-SINTAB_MASK_IDX	EQU 8191
+SINTAB_MASK_IDX	EQU (SINE_SIZE*2)-1
 
 ; Angle modulus (address mask)
 AMOD_A			MACRO

@@ -219,6 +219,8 @@ OBJ_TYPE_PLAYER2 EQU 5
 	; of the object is, e.g. decoration, bullet, alien, collectable etc.
 	STRUCTURE ObjT,0
 		; TODO work out what the hidden data are.
+		; It appears these are accessed as bytes in some use cases, so the probability is that the
+		; data is overwritten or repurposed for temporary objects (projectiles/explosions)
 		ULONG ObjT_XPos_l			; 0, 4 - To be confirmed
 		ULONG ObjT_ZPos_l 			; 4, 4 - To be confirmed
 		ULONG ObjT_YPos_l 			; 8, 4 - To be confirmed
@@ -501,3 +503,9 @@ MSG_TAG_NARRATIVE EQU 0
 MSG_TAG_DEFAULT   EQU (1<<14)
 MSG_TAG_OPTIONS   EQU (2<<14)
 MSG_TAG_OTHER     EQU (3<<14)
+
+; Other stuff
+
+SKY_BACKDROP_W    EQU 648
+SKY_BACKDROP_H    EQU 240
+

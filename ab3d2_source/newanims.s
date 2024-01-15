@@ -2670,6 +2670,9 @@ sky_early_exit:
 ;
 ; Fills in the sky. Preserves a0
 ;
+; Backdrop image is SKY_BACKDROP_W*SKY_BACKDROP_H.
+; Not sure why SKY_BACKDROP_W is 648.
+;
 Draw_SkyBackdrop:
 				DEV_CHECK SKYFILL,sky_early_exit
 
@@ -2683,14 +2686,14 @@ Draw_SkyBackdrop:
 				move.l	a0,-(a7)
 				move.w	tmpangpos,d5
 				and.w	#4095,d5
-				muls	#648,d5
+				muls	#SKY_BACKDROP_W,d5
 
 				; 0xABADCAFE - division pogrom
 				;divs	#4096,d5
 
 				asr.l	#8,d5
 				asr.l	#4,d5
-				muls	#240,d5
+				muls	#SKY_BACKDROP_H,d5
 
 ; CACHE_ON d1
 				tst.b	Vid_FullScreen_b
@@ -2699,14 +2702,14 @@ Draw_SkyBackdrop:
 				move.l	Vid_FastBufferPtr_l,a0
 				move.l	Draw_BackdropImagePtr_l,a5
 				move.l	a5,a3
-				add.l	#155520,a3
-				add.l	#240,a5
+				add.l	#(SKY_BACKDROP_W*SKY_BACKDROP_H),a3
+				add.l	#SKY_BACKDROP_H,a5
 ; move.l #EndBackPicture,a3
 ; move.l #Draw_BackdropImagePtr_l+240,a5
 				move.l	Draw_BackdropImagePtr_l,a1
 ; lea.l Draw_BackdropImagePtr_l,a1
 				add.l	d5,a1
-				add.w	#240,a1
+				add.w	#SKY_BACKDROP_H,a1
 				move.w	Vid_CentreY_w,d7
 				move.w	d7,d6
 				move.w	d6,d5
@@ -2715,9 +2718,9 @@ Draw_SkyBackdrop:
 				sub.w	d6,a1
 				sub.w	d6,a5
 				asr.w	#2,d7
-				move.w	#240,d1
-				move.w	#240,d2
-				move.w	#480,d5
+				move.w	#SKY_BACKDROP_H,d1
+				move.w	#SKY_BACKDROP_H,d2
+				move.w	#(SKY_BACKDROP_H*2),d5
 				move.w	#191,d4
 
 .horline:
@@ -2757,13 +2760,13 @@ draw_SkyBackDropFullscreen:
 				move.l	Vid_FastBufferPtr_l,a0
 				move.l	Draw_BackdropImagePtr_l,a5
 				move.l	a5,a3
-				add.l	#155520,a3
-				add.l	#240,a5
+				add.l	#(SKY_BACKDROP_W*SKY_BACKDROP_H),a3
+				add.l	#SKY_BACKDROP_H,a5
 ; move.l #EndBackPicture,a3
-; move.l #Draw_BackdropImagePtr_l+240,a5
+; move.l #Draw_BackdropImagePtr_l+SKY_BACKDROP_H,a5
 				move.l	Draw_BackdropImagePtr_l,a1
 				add.l	d5,a1
-				add.w	#240,a1
+				add.w	#SKY_BACKDROP_H,a1
 				move.w	Vid_CentreY_w,d7
 				move.w	d7,d6
 				sub.w	d6,a1
@@ -2788,7 +2791,7 @@ draw_SkyBackDropFullscreen:
 				adda.w	#SCREEN_WIDTH*4,a2
 				dbra	d3,.vertline
 
-				add.w	#240,a1
+				add.w	#SKY_BACKDROP_H,a1
 				cmp.l	a1,a3
 				bgt.s	.noend
 
@@ -2800,9 +2803,7 @@ draw_SkyBackDropFullscreen:
 				move.l	(a7)+,a0
 				rts
 
-
-
-
+				; Exploding object in a0 (TBC)
 ComputeBlast:
 				clr.w	anim_DoneFlames_w
 				move.w	d0,d6
@@ -2810,7 +2811,7 @@ ComputeBlast:
 				move.w	d0,d1
 				ext.l	d6
 				neg.w	d1
-				move.w	12(a0),d0
+				move.w	ObjT_ZoneID_w(a0),d0
 ; jsr Flash
 
 				move.l	Lvl_ZoneAddsPtr_l,a2
@@ -2818,13 +2819,13 @@ ComputeBlast:
 				add.l	Lvl_DataPtr_l,a2
 				move.l	a2,anim_MiddleRoom_l
 				move.l	Lvl_ObjectDataPtr_l,a2
-				suba.w	#ObjT_SizeOf_l,a2
+				PREV_OBJ a2
 				ext.l	d6
 				move.l	a0,-(a7)
 
 HitObjLoop:
 				move.l	anim_MiddleRoom_l,FromRoom
-				add.w	#ObjT_SizeOf_l,a2
+				NEXT_OBJ a2
 				move.w	(a2),d0
 				blt		CheckedEmAll
 
@@ -2833,12 +2834,12 @@ HitObjLoop:
 
 				moveq	#0,d1
 				move.b	ObjT_TypeID_b(a2),d1
-				cmp.b	#1,d1
+				cmp.b	#OBJ_TYPE_OBJECT,d1
 				beq.s	HitObjLoop
 
 				blt.s	.checkalien
 
-				cmp.b	#3,d1
+				cmp.b	#OBJ_TYPE_AUX,d1
 				beq.s	HitObjLoop
 
 				bgt.s	.checkalien
@@ -2874,17 +2875,20 @@ HitObjLoop:
 				tst.b	CanSee
 				beq		HitObjLoop
 
+				; 0xABADAFE - TODO - Revisit this
+				; Splash Damage does not seem to take vertical separation into consideration
+				; here, only X and Z coordinates
 				move.w	Targetx,d0
-				sub.w	Viewerx,d0
+				sub.w	Viewerx,d0 ; tx-vx
 				move.w	d0,d2
 				move.w	Targetz,d1
-				sub.w	Viewerz,d1
+				sub.w	Viewerz,d1 ; tz-vx
 				move.w	d1,d3
-				muls	d2,d2
-				muls	d3,d3
+				muls	d2,d2      ; (tx-vx)^2
+				muls	d3,d3      ; (tz-vz)^2
 				move.w	#1,d4
-				add.l	d3,d2
-				beq		.oksqr
+				add.l	d3,d2      ; (tx-vx)^2 + (tz-vz)^2 - sum of squares in d2
+				beq		.oksqr	   ; already zero
 
 				move.w	#31,d4
 

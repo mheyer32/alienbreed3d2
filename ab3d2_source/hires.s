@@ -1603,7 +1603,7 @@ IWasPlayer1:
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	#-1,12+128(a0)
 
-				eor.w	#4096,angpos
+				eor.w	#SINE_SIZE,angpos
 				neg.w	Temp_CosVal_w					; view direction 180deg
 				neg.w	Temp_SinVal_w
 .nolookback:
@@ -1707,7 +1707,7 @@ drawplayer2:
 
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	#-1,12+128(a0)
-				eor.w	#4096,angpos
+				eor.w	#SINE_SIZE,angpos
 				neg.w	Temp_CosVal_w
 				neg.w	Temp_SinVal_w
 
@@ -3069,7 +3069,7 @@ Plr1_Use:
 				move.l	Plr1_ZonePtr_l,a1
 
 				move.w	EntT_CurrentAngle_w(a0),d0
-				add.w	#4096,d0
+				add.w	#SINE_SIZE,d0
 				AMOD_A	d0
 				move.w	d0,EntT_CurrentAngle_w+ENT_NEXT_2(a0)
 
@@ -3333,7 +3333,7 @@ Plr2_Use:
 .notdead:
 				move.l	Plr2_ZonePtr_l,a1
 				move.w	EntT_CurrentAngle_w(a0),d0
-				add.w	#4096,d0
+				add.w	#SINE_SIZE,d0
 				AMOD_A	d0
 				move.w	d0,EntT_CurrentAngle_w+ENT_NEXT(a0)
 
