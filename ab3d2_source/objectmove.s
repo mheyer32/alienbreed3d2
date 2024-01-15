@@ -1205,9 +1205,9 @@ HeadTowardsAng:
 				move.w	SinRet,d0
 				move.w	#0,d2
 				move.l	#SinCosTable_vw,a2
-				lea		2048(a2),a3
+				lea		COSINE_OFS(a2),a3
 				move.w	#3,d5
-				move.w	#2048,d6
+				move.w	#COSINE_OFS,d6
 findanglop:
 
 				move.w	(a2,d2.w*2),d3
@@ -1260,7 +1260,6 @@ CheckHit:
 ONLYSEE:		dc.w	0
 
 GetNextCPt:
-
 				clr.b	ONLYSEE
 				cmp.w	d0,d1
 				beq.s	noneedforhassle
@@ -1288,7 +1287,6 @@ FromRoom:		dc.l	0
 ToRoom:			dc.l	0
 CanSee:			dc.w	0
 Facedir:		dc.w	0
-
 				even
 
 CanItBeSeenAng:
@@ -1297,8 +1295,8 @@ CanItBeSeenAng:
 				move.w	Facedir,d0
 				move.l	#SinCosTable_vw,a0
 				add.w	d0,a0
-				move.w	(a0),d0
-				move.w	2048(a0),d1
+				move.w	(a0),d0 ; SINE_OFS
+				move.w	COSINE_OFS(a0),d1
 				move.w	Targetx,d2
 				sub.w	Viewerx,d2
 				move.w	Targetz,d3
@@ -1696,7 +1694,7 @@ GoInDirection:
 				move.l	#SinCosTable_vw,a0
 				lea		(a0,d0.w),a0
 				move.w	(a0),d1
-				move.w	2048(a0),d2
+				move.w	COSINE_OFS(a0),d2
 				muls	speed,d1
 				add.l	d1,d1
 				muls	speed,d2

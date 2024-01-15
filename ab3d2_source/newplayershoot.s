@@ -44,7 +44,7 @@ Plr1_Shot:
 				move.l	#SinCosTable_vw,a0
 				lea		(a0,d0.w),a0
 				move.w	(a0),tempxdir
-				move.w	2048(a0),tempzdir
+				move.w	COSINE_OFS(a0),tempzdir
 				move.w	Plr1_XOff_l,tempxoff
 				move.w	Plr1_ZOff_l,tempzoff
 				move.l	Plr1_YOff_l,tempyoff
@@ -374,7 +374,7 @@ Plr2_Shot:
 				move.l	#SinCosTable_vw,a0
 				lea		(a0,d0.w),a0
 				move.w	(a0),tempxdir
-				move.w	2048(a0),tempzdir
+				move.w	COSINE_OFS(a0),tempzdir
 				move.w	Plr2_XOff_l,tempxoff
 				move.w	Plr2_ZOff_l,tempzoff
 				move.l	Plr2_YOff_l,tempyoff
@@ -688,7 +688,7 @@ plr1_FireProjectile:
 				muls	#128,d6
 				neg.w	d6
 				add.w	tempangpos,d6
-				and.w	#8190,d6
+				ANG_MOD	d6
 				bra		firefive
 
 plr2_FireProjectile:
@@ -701,7 +701,7 @@ plr2_FireProjectile:
 				muls	#128,d6
 				neg.w	d6
 				add.w	tempangpos,d6
-				and.w	#8190,d6
+				ANG_MOD	d6
 
 firefive:
 				move.l	Plr_ShotDataPtr_l,a0
@@ -750,12 +750,12 @@ firefive:
 				move.l	#SinCosTable_vw,a1
 				move.w	(a1,d6.w),d0
 				ext.l	d0
-				add.w	#2048,a1
+				add.w	#COSINE_OFS,a1
 				move.w	(a1,d6.w),d2
 				ext.l	d2
 
 				add.w	#256,d6
-				and.w	#8190,d6
+				ANG_MOD	d6
 
 				move.w	BulletSpd,d1
 				asl.l	d1,d0

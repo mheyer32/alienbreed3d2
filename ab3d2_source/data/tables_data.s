@@ -8,6 +8,15 @@ MAX_ONE_OVER_N	EQU	511
 ; sine/cosine << 15, contains two full cycles (720 degrees) over 8192 entries
 SinCosTable_vw:		incbin	"bigsine"
 
+SINE_OFS		EQU 0
+
+COSINE_OFS		EQU 2048
+SINTAB_MASK		EQU 8190
+
+ANG_MOD			MACRO
+				and.w	#SINTAB_MASK,\1
+				ENDM
+
 ; stores x/3 and x mod 3 for x=0...660
 DivThreeTable_vb:
 val				SET		0

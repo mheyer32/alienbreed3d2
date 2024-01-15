@@ -1878,7 +1878,7 @@ BOTPART:
 				lea		(a2,d2.w),a5			; sine of object rotation wrt view
 				move.l	#boxbrights_vw,a6
 				move.w	(a5),d6					; sine of object rotation
-				move.w	2048(a5),d7				; cosine of object rotation. WHY DOES IT NOT NEED OOB/WRAP CHECK?
+				move.w	COSINE_OFS(a5),d7		; cosine of object rotation. WHY DOES IT NOT NEED OOB/WRAP CHECK?
 												; bigsine is 16kb, so 8192 words
 												; this may mean the table is covering 4pi/720deg
 rotate_object:

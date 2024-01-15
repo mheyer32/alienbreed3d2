@@ -344,7 +344,7 @@ room_point_loop_A:
 .okpos2:
 				movem.l	d0/d1/d2/d3/d4/d5,-(a7)
 				move.w	(a6),d0
-				move.w	2048(a6),d1
+				move.w	COSINE_OFS(a6),d1
 				muls	d7,d1
 				muls	d6,d0
 				add.l	d0,d1
@@ -359,7 +359,7 @@ room_point_loop_A:
 
 .okkkkk:
 				move.w	(a6),d0
-				move.w	2048(a6),d1
+				move.w	COSINE_OFS(a6),d1
 				muls	d0,d7
 				muls	d1,d6
 				sub.l	d6,d7
@@ -633,11 +633,11 @@ Anim_ExplodeIntoBits:
 				move.b	#2,16(a2)
 				jsr		GetRand
 
-				and.w	#8190,d0
+				ANG_MOD	d0
 				move.l	#SinCosTable_vw,a2
 				adda.w	d0,a2
 				move.w	(a2),d3
-				move.w	2048(a2),d4
+				move.w	COSINE_OFS(a2),d4
 				jsr		GetRand
 
 				and.w	#3,d0
@@ -1910,7 +1910,7 @@ notdoneflame:
 				move.l	#SinCosTable_vw,a1
 				move.w	EntT_CurrentAngle_w(a0),d0
 				move.w	(a1,d0.w),d1
-				adda.w	#2048,a1
+				adda.w	#COSINE_OFS,a1
 				move.w	(a1,d0.w),d2
 				ext.l	d1
 				ext.l	d2

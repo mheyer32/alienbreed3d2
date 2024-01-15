@@ -2919,7 +2919,7 @@ Plr1_Use:
 				move.b	#OBJ_TYPE_PLAYER2,ObjT_TypeID_b(a0)
 
 				move.w	Plr2_TmpAngPos_w,d0
-				and.w	#8190,d0
+				ANG_MOD	d0
 				move.w	d0,EntT_CurrentAngle_w(a0)
 ;
 ; jsr ViewpointToDraw
@@ -3070,7 +3070,7 @@ Plr1_Use:
 
 				move.w	EntT_CurrentAngle_w(a0),d0
 				add.w	#4096,d0
-				and.w	#8190,d0
+				ANG_MOD	d0
 				move.w	d0,EntT_CurrentAngle_w+ENT_NEXT_2(a0)
 
 				move.w	(a1),ObjT_ZoneID_w+ENT_NEXT_2(a0)
@@ -3190,7 +3190,7 @@ Plr2_Use:
 				move.b	#OBJ_TYPE_PLAYER1,ObjT_TypeID_b(a0)
 
 				move.w	Plr1_AngPos_w,d0
-				and.w	#8190,d0
+				ANG_MOD	d0
 				move.w	d0,EntT_CurrentAngle_w(a0)
 
 				move.l	Lvl_ObjectPointsPtr_l,a1
@@ -3334,7 +3334,7 @@ Plr2_Use:
 				move.l	Plr2_ZonePtr_l,a1
 				move.w	EntT_CurrentAngle_w(a0),d0
 				add.w	#4096,d0
-				and.w	#8190,d0
+				ANG_MOD	d0
 				move.w	d0,EntT_CurrentAngle_w+ENT_NEXT(a0)
 
 				move.w	(a1),ObjT_ZoneID_w+ENT_NEXT(a0)
@@ -3405,8 +3405,8 @@ Plr1_Control:
 				move.w	d0,Plr1_AngPos_w
 				move.l	#SinCosTable_vw,a1
 				move.w	(a1,d0.w),Plr1_SinVal_w
-				add.w	#2048,d0
-				and.w	#8190,d0
+				add.w	#COSINE_OFS,d0
+				ANG_MOD	d0
 				move.w	(a1,d0.w),Plr1_CosVal_w
 
 				move.l	Plr1_TmpYOff_l,d0
@@ -3618,8 +3618,8 @@ Plr2_Control:
 
 				move.l	#SinCosTable_vw,a1
 				move.w	(a1,d0.w),Plr2_SinVal_w
-				add.w	#2048,d0
-				and.w	#8190,d0
+				add.w	#COSINE_OFS,d0
+				ANG_MOD	d0
 				move.w	(a1,d0.w),Plr2_CosVal_w
 
 				move.l	Plr2_TmpYOff_l,d0
@@ -3818,7 +3818,7 @@ DrawDisplay:
 				move.l	#SinCosTable_vw,a0
 				move.w	angpos,d0
 				move.w	(a0,d0.w),d6
-				adda.w	#2048,a0				; +90 deg?
+				adda.w	#COSINE_OFS,a0				; +90 deg?
 				move.w	(a0,d0.w),d7
 				move.w	d6,Temp_SinVal_w
 				move.w	d7,Temp_CosVal_w
@@ -7847,7 +7847,7 @@ nostartalan:
 				move.w	d3,Plr1_SnapAngSpd_w
 				add.w	d3,Plr1_SnapAngPos_w
 				add.w	d3,Plr1_SnapAngPos_w
-				and.w	#8190,Plr1_SnapAngPos_w
+				ANG_MOD	Plr1_SnapAngPos_w
 
 				bra		nocontrols
 
@@ -7940,7 +7940,7 @@ control2:
 				move.w	d3,Plr2_SnapAngSpd_w
 				add.w	d3,Plr2_SnapAngPos_w
 				add.w	d3,Plr2_SnapAngPos_w
-				and.w	#8190,Plr2_SnapAngPos_w
+				ANG_MOD	Plr2_SnapAngPos_w
 				bra.s	nocontrols
 
 .propercontrol:

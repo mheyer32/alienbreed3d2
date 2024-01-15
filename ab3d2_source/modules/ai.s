@@ -1691,10 +1691,10 @@ ai_CheckInFront:
 				sub.w	newz,d1
 
 				move.w	EntT_CurrentAngle_w(a0),d2
-				and.w	#8190,d2
+				ANG_MOD	d2
 				move.l	#SinCosTable_vw,a3
 				move.w	(a3,d2.w),d3
-				add.l	#2048,d2
+				add.l	#COSINE_OFS,d2
 				move.w	(a3,d2.w),d4
 
 				muls	d3,d0

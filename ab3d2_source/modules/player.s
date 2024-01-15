@@ -82,10 +82,10 @@ plr_MouseControl:
 				move.l	#SinCosTable_vw,a1
 				move.w	PlrT_SnapAngSpd_w(a0),d1
 				move.w	angpos,d0
-				and.w	#8190,d0
+				ANG_MOD	d0
 				move.w	d0,PlrT_SnapAngPos_w(a0)
 				move.w	(a1,d0.w),PlrT_SnapSinVal_w(a0)
-				adda.w	#2048,a1
+				adda.w	#COSINE_OFS,a1
 				move.w	(a1,d0.w),PlrT_SnapCosVal_w(a0)
 				move.l	PlrT_SnapXSpdVal_l(a0),d6
 				move.l	PlrT_SnapZSpdVal_l(a0),d7
@@ -613,7 +613,7 @@ plr_KeyboardControl:
 				and.w	#8191,d0
 				move.w	d0,PlrT_SnapAngPos_w(a0)
 				move.w	(a1,d0.w),PlrT_SnapSinVal_w(a0)
-				adda.w	#2048,a1
+				adda.w	#COSINE_OFS,a1
 				move.w	(a1,d0.w),PlrT_SnapCosVal_w(a0)
 				move.l	PlrT_SnapXSpdVal_l(a0),d6
 				move.l	PlrT_SnapZSpdVal_l(a0),d7
@@ -791,7 +791,7 @@ plr_Fall:
 				move.w	Plr_AddToBobble_w,d3
 				move.w	d3,d4
 				add.w	PlrT_Bobble_w(a0),d3
-				and.w	#8190,d3
+				ANG_MOD	d3
 				move.w	d3,PlrT_Bobble_w(a0)
 				add.w	PlrT_WalkSFXTime_w(a0),d4
 				move.w	d4,d3
@@ -862,7 +862,7 @@ plr_Fall:
 				move.w	#0,plr_FallDamage_w
 				move.w	#40,d3
 				add.w	PlrT_Bobble_w(a0),d3
-				and.w	#8190,d3
+				ANG_MOD	d3
 				move.w	d3,PlrT_Bobble_w(a0)
 
 .not_flying:
