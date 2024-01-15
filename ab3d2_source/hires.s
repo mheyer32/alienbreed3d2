@@ -1024,7 +1024,7 @@ okwat:
 				move.l	a0,draw_LastWaterFramePtr_l
 
 				add.w	#640,wtan
-				and.w	#8191,wtan
+				ANG_MOD2	wtan
 				add.l	#1,wateroff
 				and.l	#$3fff3fff,wateroff
 
@@ -6861,7 +6861,7 @@ draw_WaterSurface:
 				move.l	draw_Distance_l,d0
 				asl.w	#7,d0
 				add.w	wtan,d0
-				and.w	#8191,d0
+				ANG_MOD2	d0
 				move.l	#SinCosTable_vw,a0
 				move.w	(a0,d0.w),d0
 				ext.l	d0
@@ -6947,7 +6947,7 @@ draw_WaterSurfaceDouble:
 				move.l	draw_Distance_l,d0
 				asl.w	#7,d0
 				add.w	wtan,d0
-				and.w	#8191,d0
+				ANG_MOD2	d0
 				move.l	#SinCosTable_vw,a0
 				move.w	(a0,d0.w),d0
 				ext.l	d0

@@ -610,7 +610,7 @@ plr_KeyboardControl:
 				neg.w	d4
 
 .skip_step_right:
-				and.w	#8191,d0
+				ANG_MOD2	d0
 				move.w	d0,PlrT_SnapAngPos_w(a0)
 				move.w	(a1,d0.w),PlrT_SnapSinVal_w(a0)
 				adda.w	#COSINE_OFS,a1
