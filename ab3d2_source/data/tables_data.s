@@ -9,9 +9,8 @@ MAX_ONE_OVER_N	EQU	511
 SinCosTable_vw:		incbin	"bigsine"
 
 SINE_OFS		EQU 0
-
 COSINE_OFS		EQU 2048
-SINTAB_MASK		EQU 8191
+SINTAB_MASK		EQU 8190
 
 ; Note that original masks for ANG_MOD were to replace a 8190 immediate. I think this is a bug but...
 ANG_MOD			MACRO
