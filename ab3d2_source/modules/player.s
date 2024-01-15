@@ -82,7 +82,7 @@ plr_MouseControl:
 				move.l	#SinCosTable_vw,a1
 				move.w	PlrT_SnapAngSpd_w(a0),d1
 				move.w	angpos,d0
-				ANG_MOD	d0
+				AMOD_A	d0
 				move.w	d0,PlrT_SnapAngPos_w(a0)
 				move.w	(a1,d0.w),PlrT_SnapSinVal_w(a0)
 				adda.w	#COSINE_OFS,a1
@@ -610,7 +610,7 @@ plr_KeyboardControl:
 				neg.w	d4
 
 .skip_step_right:
-				ANG_MOD2	d0
+				AMOD_I	d0
 				move.w	d0,PlrT_SnapAngPos_w(a0)
 				move.w	(a1,d0.w),PlrT_SnapSinVal_w(a0)
 				adda.w	#COSINE_OFS,a1
@@ -791,7 +791,7 @@ plr_Fall:
 				move.w	Plr_AddToBobble_w,d3
 				move.w	d3,d4
 				add.w	PlrT_Bobble_w(a0),d3
-				ANG_MOD	d3
+				AMOD_A	d3
 				move.w	d3,PlrT_Bobble_w(a0)
 				add.w	PlrT_WalkSFXTime_w(a0),d4
 				move.w	d4,d3
@@ -862,7 +862,7 @@ plr_Fall:
 				move.w	#0,plr_FallDamage_w
 				move.w	#40,d3
 				add.w	PlrT_Bobble_w(a0),d3
-				ANG_MOD	d3
+				AMOD_A	d3
 				move.w	d3,PlrT_Bobble_w(a0)
 
 .not_flying:

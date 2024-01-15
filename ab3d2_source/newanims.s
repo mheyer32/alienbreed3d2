@@ -633,7 +633,7 @@ Anim_ExplodeIntoBits:
 				move.b	#2,16(a2)
 				jsr		GetRand
 
-				ANG_MOD	d0
+				AMOD_A	d0
 				move.l	#SinCosTable_vw,a2
 				adda.w	d0,a2
 				move.w	(a2),d3

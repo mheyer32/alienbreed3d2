@@ -10,16 +10,21 @@ SinCosTable_vw:		incbin	"bigsine"
 
 SINE_OFS		EQU 0
 COSINE_OFS		EQU 2048
-SINTAB_MASK		EQU 8190
 
-; Note that original masks for ANG_MOD were to replace a 8190 immediate. I think this is a bug but...
-ANG_MOD			MACRO
-				and.w	#SINTAB_MASK,\1
+; Modulus mask value when doing *address* based calculation, e.g. (a0,dN.w)
+SINTAB_MASK_ADR	EQU 8190
+
+; Modulus mask value when doing *index* based calculation, e.g. (a0, dN.w*2)
+SINTAB_MASK_IDX	EQU 8191
+
+; Angle modulus (address mask)
+AMOD_A			MACRO
+				and.w	#SINTAB_MASK_ADR,\1
 				ENDM
 
-; ... declare a second version that explicitly used the 8191 value in case we do need to revert ANG_MOD to 8190
-ANG_MOD2		MACRO
-				and.w	#SINTAB_MASK|1,\1
+; Angle modulus (index mask)
+AMOD_I			MACRO
+				and.w	#SINTAB_MASK_IDX,\1
 				ENDM
 
 ; stores x/3 and x mod 3 for x=0...660

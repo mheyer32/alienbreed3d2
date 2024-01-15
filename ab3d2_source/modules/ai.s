@@ -1691,7 +1691,7 @@ ai_CheckInFront:
 				sub.w	newz,d1
 
 				move.w	EntT_CurrentAngle_w(a0),d2
-				ANG_MOD	d2
+				AMOD_A	d2
 				move.l	#SinCosTable_vw,a3
 				move.w	(a3,d2.w),d3
 				add.l	#COSINE_OFS,d2

@@ -1024,7 +1024,7 @@ okwat:
 				move.l	a0,draw_LastWaterFramePtr_l
 
 				add.w	#640,wtan
-				ANG_MOD2	wtan
+				AMOD_I	wtan
 				add.l	#1,wateroff
 				and.l	#$3fff3fff,wateroff
 
@@ -2919,7 +2919,7 @@ Plr1_Use:
 				move.b	#OBJ_TYPE_PLAYER2,ObjT_TypeID_b(a0)
 
 				move.w	Plr2_TmpAngPos_w,d0
-				ANG_MOD	d0
+				AMOD_A	d0
 				move.w	d0,EntT_CurrentAngle_w(a0)
 ;
 ; jsr ViewpointToDraw
@@ -3070,7 +3070,7 @@ Plr1_Use:
 
 				move.w	EntT_CurrentAngle_w(a0),d0
 				add.w	#4096,d0
-				ANG_MOD	d0
+				AMOD_A	d0
 				move.w	d0,EntT_CurrentAngle_w+ENT_NEXT_2(a0)
 
 				move.w	(a1),ObjT_ZoneID_w+ENT_NEXT_2(a0)
@@ -3190,7 +3190,7 @@ Plr2_Use:
 				move.b	#OBJ_TYPE_PLAYER1,ObjT_TypeID_b(a0)
 
 				move.w	Plr1_AngPos_w,d0
-				ANG_MOD	d0
+				AMOD_A	d0
 				move.w	d0,EntT_CurrentAngle_w(a0)
 
 				move.l	Lvl_ObjectPointsPtr_l,a1
@@ -3334,7 +3334,7 @@ Plr2_Use:
 				move.l	Plr2_ZonePtr_l,a1
 				move.w	EntT_CurrentAngle_w(a0),d0
 				add.w	#4096,d0
-				ANG_MOD	d0
+				AMOD_A	d0
 				move.w	d0,EntT_CurrentAngle_w+ENT_NEXT(a0)
 
 				move.w	(a1),ObjT_ZoneID_w+ENT_NEXT(a0)
@@ -3406,7 +3406,7 @@ Plr1_Control:
 				move.l	#SinCosTable_vw,a1
 				move.w	(a1,d0.w),Plr1_SinVal_w
 				add.w	#COSINE_OFS,d0
-				ANG_MOD	d0
+				AMOD_A	d0
 				move.w	(a1,d0.w),Plr1_CosVal_w
 
 				move.l	Plr1_TmpYOff_l,d0
@@ -3619,7 +3619,7 @@ Plr2_Control:
 				move.l	#SinCosTable_vw,a1
 				move.w	(a1,d0.w),Plr2_SinVal_w
 				add.w	#COSINE_OFS,d0
-				ANG_MOD	d0
+				AMOD_A	d0
 				move.w	(a1,d0.w),Plr2_CosVal_w
 
 				move.l	Plr2_TmpYOff_l,d0
@@ -6861,7 +6861,7 @@ draw_WaterSurface:
 				move.l	draw_Distance_l,d0
 				asl.w	#7,d0
 				add.w	wtan,d0
-				ANG_MOD2	d0
+				AMOD_I	d0
 				move.l	#SinCosTable_vw,a0
 				move.w	(a0,d0.w),d0
 				ext.l	d0
@@ -6947,7 +6947,7 @@ draw_WaterSurfaceDouble:
 				move.l	draw_Distance_l,d0
 				asl.w	#7,d0
 				add.w	wtan,d0
-				ANG_MOD2	d0
+				AMOD_I	d0
 				move.l	#SinCosTable_vw,a0
 				move.w	(a0,d0.w),d0
 				ext.l	d0
@@ -7847,7 +7847,7 @@ nostartalan:
 				move.w	d3,Plr1_SnapAngSpd_w
 				add.w	d3,Plr1_SnapAngPos_w
 				add.w	d3,Plr1_SnapAngPos_w
-				ANG_MOD	Plr1_SnapAngPos_w
+				AMOD_A	Plr1_SnapAngPos_w
 
 				bra		nocontrols
 
@@ -7940,7 +7940,7 @@ control2:
 				move.w	d3,Plr2_SnapAngSpd_w
 				add.w	d3,Plr2_SnapAngPos_w
 				add.w	d3,Plr2_SnapAngPos_w
-				ANG_MOD	Plr2_SnapAngPos_w
+				AMOD_A	Plr2_SnapAngPos_w
 				bra.s	nocontrols
 
 .propercontrol:

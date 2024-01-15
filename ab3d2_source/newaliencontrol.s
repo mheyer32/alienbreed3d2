@@ -941,7 +941,7 @@ THISPLRzoff:	dc.w	0
 ViewpointToDraw:
 				move.w	EntT_CurrentAngle_w(a0),d3
 				sub.w	angpos,d3
-				ANG_MOD	d3
+				AMOD_A	d3
 				move.l	#SinCosTable_vw,a2
 				move.w	(a2,d3.w),d2
 				adda.w	#COSINE_OFS,a2

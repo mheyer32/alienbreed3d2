@@ -688,7 +688,7 @@ plr1_FireProjectile:
 				muls	#128,d6
 				neg.w	d6
 				add.w	tempangpos,d6
-				ANG_MOD	d6
+				AMOD_A	d6
 				bra		firefive
 
 plr2_FireProjectile:
@@ -701,7 +701,7 @@ plr2_FireProjectile:
 				muls	#128,d6
 				neg.w	d6
 				add.w	tempangpos,d6
-				ANG_MOD	d6
+				AMOD_A	d6
 
 firefive:
 				move.l	Plr_ShotDataPtr_l,a0
@@ -755,7 +755,7 @@ firefive:
 				ext.l	d2
 
 				add.w	#256,d6
-				ANG_MOD	d6
+				AMOD_A	d6
 
 				move.w	BulletSpd,d1
 				asl.l	d1,d0

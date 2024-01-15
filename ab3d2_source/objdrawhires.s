@@ -1213,7 +1213,7 @@ INMIDDLE:
 				move.w	Plr1_TmpAngPos_w,d0
 				neg.w	d0
 				add.w	#4096,d0
-				ANG_MOD2	d0
+				AMOD_I	d0
 				asr.w	#8,d0
 				asr.w	#1,d0
 				sub.b	#3,d0
@@ -1447,7 +1447,7 @@ draw_CalcBrightRings:
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.w	AngRet,d1
 				neg.w	d1
-				ANG_MOD2	d1
+				AMOD_I	d1
 				asr.w	#8,d1
 				asr.w	#1,d1
 				move.b	#48,(a2,d1.w)
@@ -1616,7 +1616,7 @@ draw_CalcBrightsInZone:
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.w	AngRet,d1
 				neg.w	d1
-				ANG_MOD2	d1
+				AMOD_I	d1
 				asr.w	#8,d1
 				asr.w	#1,d1
 				move.w	(a0),d0
@@ -1873,7 +1873,7 @@ BOTPART:
 				move.w	draw_ObjectAng_w,d2
 				sub.w	#2048,d2				; 90deg
 				sub.w	angpos,d2				; view angle
-				ANG_MOD2	d2					; wrap 360deg
+				AMOD_I	d2					; wrap 360deg
 				move.l	#SinCosTable_vw,a2
 				lea		(a2,d2.w),a5			; sine of object rotation wrt view
 				move.l	#boxbrights_vw,a6
