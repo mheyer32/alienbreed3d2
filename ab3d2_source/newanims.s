@@ -1627,6 +1627,7 @@ p1_SpaceIsPressed:
 				move.w	(a0),d3
 				blt		.NotCloseEnough
 
+				; calculate distance squared and compare to squared threshold
 				move.w	4(a0),d3
 				lea		(a1,d3.w*4),a2
 				move.w	(a2),d3
@@ -1684,6 +1685,7 @@ p2_SpaceIsPressed:
 				move.w	(a0),d3
 				blt		.NotCloseEnough
 
+				; calculate distance squared and compare to squared threshold
 				move.w	4(a0),d3
 				lea		(a1,d3.w*4),a2
 				move.w	(a2),d3
@@ -1836,92 +1838,92 @@ JUMPBULLET:
 ;				move.w	#10,EntT_Timer4_w(a0)
 ;				rts
 
-maybeflame:
-				sub.w	d0,EntT_Timer4_w(a0)
-				blt.s	yesflame
-				rts
+;maybeflame:
+;				sub.w	d0,EntT_Timer4_w(a0)
+;				blt.s	yesflame
+;				rts
 
-yesflame:
-				move.w	#10,EntT_Timer4_w(a0)
-				sub.w	#1,EntT_Timer2_w(a0)
-				bgt.s	notdoneflame
+;yesflame:
+;				move.w	#10,EntT_Timer4_w(a0)
+;				sub.w	#1,EntT_Timer2_w(a0)
+;				bgt.s	notdoneflame
+;
+;				move.w	EntT_Timer1_w(a0),EntT_Timer3_w(a0)
 
-				move.w	EntT_Timer1_w(a0),EntT_Timer3_w(a0)
-
-notdoneflame:
-				cmp.w	#4,EntT_Timer2_w(a0)
-				bne.s	.nowhoosh
-
-				movem.l	d0-d7/a0-a6,-(a7)
-				move.l	#ObjRotated_vl,a1
-				move.w	(a0),d0
-				lea		(a1,d0.w*8),a1
-				move.l	(a1),Aud_NoiseX_w
-				move.w	#200,Aud_NoiseVol_w
-				move.w	#22,Aud_SampleNum_w
-				move.b	#1,Aud_ChannelPick_b
-				clr.b	notifplaying
-				move.w	(a0),IDNUM
-				jsr		MakeSomeNoise
-
-				movem.l	(a7)+,d0-d7/a0-a6
-
-.nowhoosh:
-
+;notdoneflame:
+;				cmp.w	#4,EntT_Timer2_w(a0)
+;				bne.s	.nowhoosh
+;
+;				movem.l	d0-d7/a0-a6,-(a7)
+;				move.l	#ObjRotated_vl,a1
+;				move.w	(a0),d0
+;				lea		(a1,d0.w*8),a1
+;				move.l	(a1),Aud_NoiseX_w
+;				move.w	#200,Aud_NoiseVol_w
+;				move.w	#22,Aud_SampleNum_w
+;				move.b	#1,Aud_ChannelPick_b
+;				clr.b	notifplaying
+;				move.w	(a0),IDNUM
+;				jsr		MakeSomeNoise
+;
+;				movem.l	(a7)+,d0-d7/a0-a6
+;
+;.nowhoosh:
+;
 ; Gas pipe: facing direction is given by
 ; leved (perpendicular to wall) so
 ; just continuously spray out flame!
-				move.l	AI_AlienShotDataPtr_l,a5
-				move.w	#19,d1
+;				move.l	AI_AlienShotDataPtr_l,a5
+;				move.w	#19,d1
 
 				; Walk the list of objects looking for one that's free (is not assigned to a zone)
-.findonefree:
-				move.w	ObjT_ZoneID_w(a5),d0
-				blt.s	.foundonefree
+;.findonefree:
+;				move.w	ObjT_ZoneID_w(a5),d0
+;				blt.s	.foundonefree
+;
+;				adda.w	#ObjT_SizeOf_l,a5
+;				dbra	d1,.findonefree
+;
+;				rts
 
-				adda.w	#ObjT_SizeOf_l,a5
-				dbra	d1,.findonefree
-
-				rts
-
-.foundonefree:
-				move.b	#OBJ_TYPE_PROJECTILE,ObjT_TypeID_b(a5) ; setting the type here
-				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w(a5)
-				move.w	4(a0),d0 ; positional data?
-				sub.w	#80,d0
-				move.w	d0,4(a5)
-				ext.l	d0
-				asl.l	#7,d0
-				move.l	d0,ShotT_AccYPos_w(a5)
-				clr.b	ShotT_Status_b(a5)
-				move.w	#0,ShotT_VelocityY_w(a5)
-				move.w	(a0),d0
-				move.w	(a5),d1
-				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.l	(a1,d0.w*8),(a1,d1.w*8)
-				move.l	4(a1,d0.w*8),4(a1,d1.w*8)
-				move.b	#3,ShotT_Size_b(a5)
-				move.w	#0,ShotT_Flags_w(a5)
-				move.w	#0,ShotT_Gravity_w(a5)
-				move.b	#7,ShotT_Power_w(a5)
-				move.l	#%100000100000,EntT_EnemyFlags_l(a5)
-				move.w	#0,ShotT_Anim_b(a5)
-				move.w	#0,ShotT_Lifetime_w(a5)
-				move.l	#SinCosTable_vw,a1
-				move.w	EntT_CurrentAngle_w(a0),d0
-				move.w	(a1,d0.w),d1
-				adda.w	#COSINE_OFS,a1
-				move.w	(a1,d0.w),d2
-				ext.l	d1
-				ext.l	d2
-				asl.l	#4,d1
-				asl.l	#4,d2
-				swap	d1
-				swap	d2
-				move.w	d1,ShotT_VelocityX_w(a5)
-				move.w	d2,ShotT_VelocityZ_w(a5)
-				st		ShotT_Worry_b(a5)
-				rts
+;.foundonefree:
+;				move.b	#OBJ_TYPE_PROJECTILE,ObjT_TypeID_b(a5) ; setting the type here
+;				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w(a5)
+;				move.w	4(a0),d0 ; positional data?
+;				sub.w	#80,d0
+;				move.w	d0,4(a5)
+;				ext.l	d0
+;				asl.l	#7,d0
+;				move.l	d0,ShotT_AccYPos_w(a5)
+;				clr.b	ShotT_Status_b(a5)
+;				move.w	#0,ShotT_VelocityY_w(a5)
+;				move.w	(a0),d0
+;				move.w	(a5),d1
+;				move.l	Lvl_ObjectPointsPtr_l,a1
+;				move.l	(a1,d0.w*8),(a1,d1.w*8)
+;				move.l	4(a1,d0.w*8),4(a1,d1.w*8)
+;				move.b	#3,ShotT_Size_b(a5)
+;				move.w	#0,ShotT_Flags_w(a5)
+;				move.w	#0,ShotT_Gravity_w(a5)
+;				move.b	#7,ShotT_Power_w(a5)
+;				move.l	#%100000100000,EntT_EnemyFlags_l(a5)
+;				move.w	#0,ShotT_Anim_b(a5)
+;				move.w	#0,ShotT_Lifetime_w(a5)
+;				move.l	#SinCosTable_vw,a1
+;				move.w	EntT_CurrentAngle_w(a0),d0
+;				move.w	(a1,d0.w),d1
+;				adda.w	#COSINE_OFS,a1
+;				move.w	(a1,d0.w),d2
+;				ext.l	d1
+;				ext.l	d2
+;				asl.l	#4,d1
+;				asl.l	#4,d2
+;				swap	d1
+;				swap	d2
+;				move.w	d1,ShotT_VelocityX_w(a5)
+;				move.w	d2,ShotT_VelocityZ_w(a5)
+;				st		ShotT_Worry_b(a5)
+;				rts
 
 				include	"newaliencontrol.s"
 
