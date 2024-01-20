@@ -837,7 +837,7 @@ TWOPLAYER:
 
 				move.l	#Plr1_AmmoCounts_vw,a0
 				move.l	#Plr2_AmmoCounts_vw,a1
-				move.w	#19,d1
+				move.w	#NUM_BULLET_DEFS-1,d1
 .putinvals:
 				jsr		GetRand
 				and.w	#63,d0

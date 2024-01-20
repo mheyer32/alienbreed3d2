@@ -33,7 +33,7 @@ Plr1_SnapZSpdVal_l:			ds.l	1
 Plr1_SnapHeight_l:			ds.l	1
 Plr1_SnapTargHeight_l: 		ds.l	1
 Plr1_TmpXOff_l:				ds.l	1 ; also accessed as w, todo determine correct size
-Plr1_TmpZOff_l:				ds.l	1
+Plr1_TmpZOff_l:				ds.l	1 ; suspect 16:16
 Plr1_TmpYOff_l:				ds.l	1
 
 ; Private fields

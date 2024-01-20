@@ -344,7 +344,7 @@ room_point_loop_A:
 .okpos2:
 				movem.l	d0/d1/d2/d3/d4/d5,-(a7)
 				move.w	(a6),d0
-				move.w	2048(a6),d1
+				move.w	COSINE_OFS(a6),d1
 				muls	d7,d1
 				muls	d6,d0
 				add.l	d0,d1
@@ -359,7 +359,7 @@ room_point_loop_A:
 
 .okkkkk:
 				move.w	(a6),d0
-				move.w	2048(a6),d1
+				move.w	COSINE_OFS(a6),d1
 				muls	d0,d7
 				muls	d1,d6
 				sub.l	d6,d7
@@ -610,7 +610,7 @@ Anim_ExplodeIntoBits:
 
 .oksplut:
 				move.l	AI_AlienShotDataPtr_l,a5
-				move.w	#19,d1
+				move.w	#NUM_ALIEN_SHOT_DATA-1,d1
 
 .findeight:
 				move.w	ObjT_ZoneID_w(a5),d0
@@ -633,11 +633,11 @@ Anim_ExplodeIntoBits:
 				move.b	#2,16(a2)
 				jsr		GetRand
 
-				and.w	#8190,d0
+				AMOD_A	d0
 				move.l	#SinCosTable_vw,a2
 				adda.w	d0,a2
 				move.w	(a2),d3
-				move.w	2048(a2),d4
+				move.w	COSINE_OFS(a2),d4
 				jsr		GetRand
 
 				and.w	#3,d0
@@ -1627,6 +1627,7 @@ p1_SpaceIsPressed:
 				move.w	(a0),d3
 				blt		.NotCloseEnough
 
+				; calculate distance squared and compare to squared threshold
 				move.w	4(a0),d3
 				lea		(a1,d3.w*4),a2
 				move.w	(a2),d3
@@ -1684,6 +1685,7 @@ p2_SpaceIsPressed:
 				move.w	(a0),d3
 				blt		.NotCloseEnough
 
+				; calculate distance squared and compare to squared threshold
 				move.w	4(a0),d3
 				lea		(a1,d3.w*4),a2
 				move.w	(a2),d3
@@ -1836,92 +1838,92 @@ JUMPBULLET:
 ;				move.w	#10,EntT_Timer4_w(a0)
 ;				rts
 
-maybeflame:
-				sub.w	d0,EntT_Timer4_w(a0)
-				blt.s	yesflame
-				rts
+;maybeflame:
+;				sub.w	d0,EntT_Timer4_w(a0)
+;				blt.s	yesflame
+;				rts
 
-yesflame:
-				move.w	#10,EntT_Timer4_w(a0)
-				sub.w	#1,EntT_Timer2_w(a0)
-				bgt.s	notdoneflame
+;yesflame:
+;				move.w	#10,EntT_Timer4_w(a0)
+;				sub.w	#1,EntT_Timer2_w(a0)
+;				bgt.s	notdoneflame
+;
+;				move.w	EntT_Timer1_w(a0),EntT_Timer3_w(a0)
 
-				move.w	EntT_Timer1_w(a0),EntT_Timer3_w(a0)
-
-notdoneflame:
-				cmp.w	#4,EntT_Timer2_w(a0)
-				bne.s	.nowhoosh
-
-				movem.l	d0-d7/a0-a6,-(a7)
-				move.l	#ObjRotated_vl,a1
-				move.w	(a0),d0
-				lea		(a1,d0.w*8),a1
-				move.l	(a1),Aud_NoiseX_w
-				move.w	#200,Aud_NoiseVol_w
-				move.w	#22,Aud_SampleNum_w
-				move.b	#1,Aud_ChannelPick_b
-				clr.b	notifplaying
-				move.w	(a0),IDNUM
-				jsr		MakeSomeNoise
-
-				movem.l	(a7)+,d0-d7/a0-a6
-
-.nowhoosh:
-
+;notdoneflame:
+;				cmp.w	#4,EntT_Timer2_w(a0)
+;				bne.s	.nowhoosh
+;
+;				movem.l	d0-d7/a0-a6,-(a7)
+;				move.l	#ObjRotated_vl,a1
+;				move.w	(a0),d0
+;				lea		(a1,d0.w*8),a1
+;				move.l	(a1),Aud_NoiseX_w
+;				move.w	#200,Aud_NoiseVol_w
+;				move.w	#22,Aud_SampleNum_w
+;				move.b	#1,Aud_ChannelPick_b
+;				clr.b	notifplaying
+;				move.w	(a0),IDNUM
+;				jsr		MakeSomeNoise
+;
+;				movem.l	(a7)+,d0-d7/a0-a6
+;
+;.nowhoosh:
+;
 ; Gas pipe: facing direction is given by
 ; leved (perpendicular to wall) so
 ; just continuously spray out flame!
-				move.l	AI_AlienShotDataPtr_l,a5
-				move.w	#19,d1
+;				move.l	AI_AlienShotDataPtr_l,a5
+;				move.w	#NUM_ALIEN_SHOT_DATA-1,d1
 
 				; Walk the list of objects looking for one that's free (is not assigned to a zone)
-.findonefree:
-				move.w	ObjT_ZoneID_w(a5),d0
-				blt.s	.foundonefree
+;.findonefree:
+;				move.w	ObjT_ZoneID_w(a5),d0
+;				blt.s	.foundonefree
+;
+;				adda.w	#ObjT_SizeOf_l,a5
+;				dbra	d1,.findonefree
+;
+;				rts
 
-				adda.w	#ObjT_SizeOf_l,a5
-				dbra	d1,.findonefree
-
-				rts
-
-.foundonefree:
-				move.b	#OBJ_TYPE_PROJECTILE,ObjT_TypeID_b(a5) ; setting the type here
-				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w(a5)
-				move.w	4(a0),d0 ; positional data?
-				sub.w	#80,d0
-				move.w	d0,4(a5)
-				ext.l	d0
-				asl.l	#7,d0
-				move.l	d0,ShotT_AccYPos_w(a5)
-				clr.b	ShotT_Status_b(a5)
-				move.w	#0,ShotT_VelocityY_w(a5)
-				move.w	(a0),d0
-				move.w	(a5),d1
-				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.l	(a1,d0.w*8),(a1,d1.w*8)
-				move.l	4(a1,d0.w*8),4(a1,d1.w*8)
-				move.b	#3,ShotT_Size_b(a5)
-				move.w	#0,ShotT_Flags_w(a5)
-				move.w	#0,ShotT_Gravity_w(a5)
-				move.b	#7,ShotT_Power_w(a5)
-				move.l	#%100000100000,EntT_EnemyFlags_l(a5)
-				move.w	#0,ShotT_Anim_b(a5)
-				move.w	#0,ShotT_Lifetime_w(a5)
-				move.l	#SinCosTable_vw,a1
-				move.w	EntT_CurrentAngle_w(a0),d0
-				move.w	(a1,d0.w),d1
-				adda.w	#2048,a1
-				move.w	(a1,d0.w),d2
-				ext.l	d1
-				ext.l	d2
-				asl.l	#4,d1
-				asl.l	#4,d2
-				swap	d1
-				swap	d2
-				move.w	d1,ShotT_VelocityX_w(a5)
-				move.w	d2,ShotT_VelocityZ_w(a5)
-				st		ShotT_Worry_b(a5)
-				rts
+;.foundonefree:
+;				move.b	#OBJ_TYPE_PROJECTILE,ObjT_TypeID_b(a5) ; setting the type here
+;				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w(a5)
+;				move.w	4(a0),d0 ; positional data?
+;				sub.w	#80,d0
+;				move.w	d0,4(a5)
+;				ext.l	d0
+;				asl.l	#7,d0
+;				move.l	d0,ShotT_AccYPos_w(a5)
+;				clr.b	ShotT_Status_b(a5)
+;				move.w	#0,ShotT_VelocityY_w(a5)
+;				move.w	(a0),d0
+;				move.w	(a5),d1
+;				move.l	Lvl_ObjectPointsPtr_l,a1
+;				move.l	(a1,d0.w*8),(a1,d1.w*8)
+;				move.l	4(a1,d0.w*8),4(a1,d1.w*8)
+;				move.b	#3,ShotT_Size_b(a5)
+;				move.w	#0,ShotT_Flags_w(a5)
+;				move.w	#0,ShotT_Gravity_w(a5)
+;				move.b	#7,ShotT_Power_w(a5)
+;				move.l	#%100000100000,EntT_EnemyFlags_l(a5)
+;				move.w	#0,ShotT_Anim_b(a5)
+;				move.w	#0,ShotT_Lifetime_w(a5)
+;				move.l	#SinCosTable_vw,a1
+;				move.w	EntT_CurrentAngle_w(a0),d0
+;				move.w	(a1,d0.w),d1
+;				adda.w	#COSINE_OFS,a1
+;				move.w	(a1,d0.w),d2
+;				ext.l	d1
+;				ext.l	d2
+;				asl.l	#4,d1
+;				asl.l	#4,d2
+;				swap	d1
+;				swap	d2
+;				move.w	d1,ShotT_VelocityX_w(a5)
+;				move.w	d2,ShotT_VelocityZ_w(a5)
+;				st		ShotT_Worry_b(a5)
+;				rts
 
 				include	"newaliencontrol.s"
 
@@ -2546,9 +2548,6 @@ notasplut:
 				tst.b	EntT_HitPoints_b(a3)
 				beq		.notanasty
 
-; move.l #ColBoxTable,a6
-; lea (a6,d1.w*8),a6
-
 				move.w	4(a3),d1
 				move.w	4(a0),d2
 				sub.w	d1,d2
@@ -2673,6 +2672,9 @@ sky_early_exit:
 ;
 ; Fills in the sky. Preserves a0
 ;
+; Backdrop image is SKY_BACKDROP_W*SKY_BACKDROP_H.
+; Not sure why SKY_BACKDROP_W is 648.
+;
 Draw_SkyBackdrop:
 				DEV_CHECK SKYFILL,sky_early_exit
 
@@ -2686,14 +2688,14 @@ Draw_SkyBackdrop:
 				move.l	a0,-(a7)
 				move.w	tmpangpos,d5
 				and.w	#4095,d5
-				muls	#648,d5
+				muls	#SKY_BACKDROP_W,d5
 
 				; 0xABADCAFE - division pogrom
 				;divs	#4096,d5
 
 				asr.l	#8,d5
 				asr.l	#4,d5
-				muls	#240,d5
+				muls	#SKY_BACKDROP_H,d5
 
 ; CACHE_ON d1
 				tst.b	Vid_FullScreen_b
@@ -2702,14 +2704,14 @@ Draw_SkyBackdrop:
 				move.l	Vid_FastBufferPtr_l,a0
 				move.l	Draw_BackdropImagePtr_l,a5
 				move.l	a5,a3
-				add.l	#155520,a3
-				add.l	#240,a5
+				add.l	#(SKY_BACKDROP_W*SKY_BACKDROP_H),a3
+				add.l	#SKY_BACKDROP_H,a5
 ; move.l #EndBackPicture,a3
 ; move.l #Draw_BackdropImagePtr_l+240,a5
 				move.l	Draw_BackdropImagePtr_l,a1
 ; lea.l Draw_BackdropImagePtr_l,a1
 				add.l	d5,a1
-				add.w	#240,a1
+				add.w	#SKY_BACKDROP_H,a1
 				move.w	Vid_CentreY_w,d7
 				move.w	d7,d6
 				move.w	d6,d5
@@ -2718,9 +2720,9 @@ Draw_SkyBackdrop:
 				sub.w	d6,a1
 				sub.w	d6,a5
 				asr.w	#2,d7
-				move.w	#240,d1
-				move.w	#240,d2
-				move.w	#480,d5
+				move.w	#SKY_BACKDROP_H,d1
+				move.w	#SKY_BACKDROP_H,d2
+				move.w	#(SKY_BACKDROP_H*2),d5
 				move.w	#191,d4
 
 .horline:
@@ -2760,13 +2762,13 @@ draw_SkyBackDropFullscreen:
 				move.l	Vid_FastBufferPtr_l,a0
 				move.l	Draw_BackdropImagePtr_l,a5
 				move.l	a5,a3
-				add.l	#155520,a3
-				add.l	#240,a5
+				add.l	#(SKY_BACKDROP_W*SKY_BACKDROP_H),a3
+				add.l	#SKY_BACKDROP_H,a5
 ; move.l #EndBackPicture,a3
-; move.l #Draw_BackdropImagePtr_l+240,a5
+; move.l #Draw_BackdropImagePtr_l+SKY_BACKDROP_H,a5
 				move.l	Draw_BackdropImagePtr_l,a1
 				add.l	d5,a1
-				add.w	#240,a1
+				add.w	#SKY_BACKDROP_H,a1
 				move.w	Vid_CentreY_w,d7
 				move.w	d7,d6
 				sub.w	d6,a1
@@ -2791,7 +2793,7 @@ draw_SkyBackDropFullscreen:
 				adda.w	#SCREEN_WIDTH*4,a2
 				dbra	d3,.vertline
 
-				add.w	#240,a1
+				add.w	#SKY_BACKDROP_H,a1
 				cmp.l	a1,a3
 				bgt.s	.noend
 
@@ -2803,9 +2805,7 @@ draw_SkyBackDropFullscreen:
 				move.l	(a7)+,a0
 				rts
 
-
-
-
+				; Exploding object in a0 (TBC)
 ComputeBlast:
 				clr.w	anim_DoneFlames_w
 				move.w	d0,d6
@@ -2813,7 +2813,7 @@ ComputeBlast:
 				move.w	d0,d1
 				ext.l	d6
 				neg.w	d1
-				move.w	12(a0),d0
+				move.w	ObjT_ZoneID_w(a0),d0
 ; jsr Flash
 
 				move.l	Lvl_ZoneAddsPtr_l,a2
@@ -2821,13 +2821,13 @@ ComputeBlast:
 				add.l	Lvl_DataPtr_l,a2
 				move.l	a2,anim_MiddleRoom_l
 				move.l	Lvl_ObjectDataPtr_l,a2
-				suba.w	#ObjT_SizeOf_l,a2
+				PREV_OBJ a2
 				ext.l	d6
 				move.l	a0,-(a7)
 
 HitObjLoop:
 				move.l	anim_MiddleRoom_l,FromRoom
-				add.w	#ObjT_SizeOf_l,a2
+				NEXT_OBJ a2
 				move.w	(a2),d0
 				blt		CheckedEmAll
 
@@ -2836,12 +2836,12 @@ HitObjLoop:
 
 				moveq	#0,d1
 				move.b	ObjT_TypeID_b(a2),d1
-				cmp.b	#1,d1
+				cmp.b	#OBJ_TYPE_OBJECT,d1
 				beq.s	HitObjLoop
 
 				blt.s	.checkalien
 
-				cmp.b	#3,d1
+				cmp.b	#OBJ_TYPE_AUX,d1
 				beq.s	HitObjLoop
 
 				bgt.s	.checkalien
@@ -2877,17 +2877,20 @@ HitObjLoop:
 				tst.b	CanSee
 				beq		HitObjLoop
 
+				; 0xABADAFE - TODO - Revisit this
+				; Splash Damage does not seem to take vertical separation into consideration
+				; here, only X and Z coordinates
 				move.w	Targetx,d0
-				sub.w	Viewerx,d0
+				sub.w	Viewerx,d0 ; tx-vx
 				move.w	d0,d2
 				move.w	Targetz,d1
-				sub.w	Viewerz,d1
+				sub.w	Viewerz,d1 ; tz-vx
 				move.w	d1,d3
-				muls	d2,d2
-				muls	d3,d3
+				muls	d2,d2      ; (tx-vx)^2
+				muls	d3,d3      ; (tz-vz)^2
 				move.w	#1,d4
-				add.l	d3,d2
-				beq		.oksqr
+				add.l	d3,d2      ; (tx-vx)^2 + (tz-vz)^2 - sum of squares in d2
+				beq		.oksqr	   ; already zero
 
 				move.w	#31,d4
 
@@ -3037,7 +3040,7 @@ CheckedEmAll:
 				asl.l	#7,d0
 				move.l	d0,oldy
 				moveq	#2,d5
-				move.w	#19,NUMTOCHECK
+				move.w	#NUM_PLR_SHOT_DATA-1,NUMTOCHECK
 				move.w	#2,d6
 
 radiusloop:
