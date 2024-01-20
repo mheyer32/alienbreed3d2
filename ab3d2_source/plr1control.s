@@ -45,7 +45,7 @@ Plr1_FollowPath:
 				move.w	d1,Plr1_SnapZOff_l
 				move.w	4(a0),d0
 				add.w	d0,d0
-				and.w	#8190,d0
+				AMOD_A	d0
 				move.w	d0,Plr1_AngPos_w
 				move.w	Anim_TempFrames_w,d0
 				asl.w	#3,d0

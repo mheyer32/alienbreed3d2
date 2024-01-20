@@ -21,8 +21,8 @@
 ;******************************************************************************
 Plr_Initialise:
 				move.l	Lvl_DataPtr_l,a1
-				add.l	#160*10,a1
-				move.w	4(a1),d0
+				add.l	#LVLT_MESSAGE_LENGTH*LVLT_MESSAGE_COUNT,a1
+				move.w	LvlT_Plr1_Start_ZoneID_w(a1),d0
 				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d0.w*4),d0
 				add.l	Lvl_DataPtr_l,d0
@@ -36,7 +36,7 @@ Plr_Initialise:
 				move.l	Plr1_ZonePtr_l,plr1_OldRoomPtr_l
 				move.l	Lvl_DataPtr_l,a1
 				add.l	#LVLT_MESSAGE_LENGTH*LVLT_MESSAGE_COUNT,a1
-				move.w	10(a1),d0
+				move.w	LvlT_Plr2_Start_ZoneID_w(a1),d0
 				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d0.w*4),d0
 				add.l	Lvl_DataPtr_l,d0
@@ -49,14 +49,14 @@ Plr_Initialise:
 				move.l	d0,Plr2_SnapTYOff_l
 				move.l	d0,Plr2_YOff_l
 				move.l	Plr2_ZonePtr_l,plr2_OldRoomPtr_l
-				move.w	(a1),Plr1_SnapXOff_l
-				move.w	2(a1),Plr1_SnapZOff_l
-				move.w	(a1),Plr1_XOff_l
-				move.w	2(a1),Plr1_ZOff_l
-				move.w	6(a1),Plr2_SnapXOff_l
-				move.w	8(a1),Plr2_SnapZOff_l
-				move.w	6(a1),Plr2_XOff_l
-				move.w	8(a1),Plr2_ZOff_l
+				move.w	LvlT_Plr1_StartX_w(a1),Plr1_SnapXOff_l
+				move.w	LvlT_Plr1_StartZ_w(a1),Plr1_SnapZOff_l
+				move.w	LvlT_Plr1_StartX_w(a1),Plr1_XOff_l
+				move.w	LvlT_Plr1_StartZ_w(a1),Plr1_ZOff_l
+				move.w	LvlT_Plr2_StartX_w(a1),Plr2_SnapXOff_l
+				move.w	LvlT_Plr2_StartZ_w(a1),Plr2_SnapZOff_l
+				move.w	LvlT_Plr2_StartX_w(a1),Plr2_XOff_l
+				move.w	LvlT_Plr2_StartZ_w(a1),Plr2_ZOff_l
 
 				move.l	#%100011,plr1_DefaultEnemyFlags_l
 				move.l	#%010011,plr2_DefaultEnemyFlags_l
@@ -82,10 +82,10 @@ plr_MouseControl:
 				move.l	#SinCosTable_vw,a1
 				move.w	PlrT_SnapAngSpd_w(a0),d1
 				move.w	angpos,d0
-				and.w	#8190,d0
+				AMOD_A	d0
 				move.w	d0,PlrT_SnapAngPos_w(a0)
 				move.w	(a1,d0.w),PlrT_SnapSinVal_w(a0)
-				adda.w	#2048,a1
+				adda.w	#COSINE_OFS,a1
 				move.w	(a1,d0.w),PlrT_SnapCosVal_w(a0)
 				move.l	PlrT_SnapXSpdVal_l(a0),d6
 				move.l	PlrT_SnapZSpdVal_l(a0),d7
@@ -610,10 +610,10 @@ plr_KeyboardControl:
 				neg.w	d4
 
 .skip_step_right:
-				and.w	#8191,d0
+				AMOD_I	d0
 				move.w	d0,PlrT_SnapAngPos_w(a0)
 				move.w	(a1,d0.w),PlrT_SnapSinVal_w(a0)
-				adda.w	#2048,a1
+				adda.w	#COSINE_OFS,a1
 				move.w	(a1,d0.w),PlrT_SnapCosVal_w(a0)
 				move.l	PlrT_SnapXSpdVal_l(a0),d6
 				move.l	PlrT_SnapZSpdVal_l(a0),d7
@@ -791,7 +791,7 @@ plr_Fall:
 				move.w	Plr_AddToBobble_w,d3
 				move.w	d3,d4
 				add.w	PlrT_Bobble_w(a0),d3
-				and.w	#8190,d3
+				AMOD_A	d3
 				move.w	d3,PlrT_Bobble_w(a0)
 				add.w	PlrT_WalkSFXTime_w(a0),d4
 				move.w	d4,d3
@@ -862,7 +862,7 @@ plr_Fall:
 				move.w	#0,plr_FallDamage_w
 				move.w	#40,d3
 				add.w	PlrT_Bobble_w(a0),d3
-				and.w	#8190,d3
+				AMOD_A	d3
 				move.w	d3,PlrT_Bobble_w(a0)
 
 .not_flying:

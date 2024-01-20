@@ -334,33 +334,39 @@ noload:
 				adda.w	#16,a0
 				move.l	a0,Lvl_ZoneAddsPtr_l
 
+				; Level data begins with messages
 				move.l	Lvl_DataPtr_l,a4
-				lea		160*10(a4),a1
+				lea		LVLT_MESSAGE_LENGTH*LVLT_MESSAGE_COUNT(a4),a1
 
-				lea		54(a1),a2
+				; Followed by LvlT structure (pointed to by a1)
+
+				lea		LvlT_ControlPointCoords_vw(a1),a2
 				move.l	a2,Lvl_ControlPointCoordsPtr_l
-				move.w	12(a1),Lvl_NumControlPoints_w
-				move.w	14(a1),Lvl_NumPoints_w
+				move.w	LvlT_NumControlPoints_w(a1),Lvl_NumControlPoints_w
+				move.w	LvlT_NumPoints_w(a1),Lvl_NumPoints_w
 
-				move.l	16+6(a1),a2
+				move.l	LvlT_OffsetToPoints_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_PointsPtr_l
-				move.w	8+6(a1),d0
+
+				move.w	LvlT_NumPoints_w(a1),d0
 				lea		4(a2,d0.w*4),a2
 				move.l	a2,PointBrightsPtr_l
-				move.w	16(a1),d0
+				move.w	LvlT_NumZones_w(a1),d0
 				addq	#1,d0
-				muls	#80,d0
+				muls	#80,d0 ; todo - is 80 a fixed length points per zone (e.g. 10x 32-bit x/y pairs) value?
 				add.l	d0,a2
 				move.l	a2,Lvl_ZoneBorderPointsPtr_l
 
-				move.l	20+6(a1),a2
+				move.l	LvlT_OffsetToFloorLines_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_FloorLinesPtr_l
 				move.w	-2(a2),Lvl_ExitZoneID_w
-				move.l	24+6(a1),a2
+
+				move.l	LvlT_OffsetToObjects_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_ObjectDataPtr_l
+
 *****************************************
 * Just for charles
 
@@ -369,32 +375,37 @@ noload:
 ; sub.w #40,4(a2)
 ; move.w #45*256+45,14(a2)
 ****************************************
-				move.l	28+6(a1),a2
+
+				; Temporary object buffers used for player and alien projectile entities.
+				; todo - why are these embedded in the data file and not just a dynamically added space?
+				move.l	LvlT_OffsetToPlayerShot_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Plr_ShotDataPtr_l
-				move.l	32+6(a1),a2
+
+				move.l	LvlT_OffsetToAlienShot_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,AI_AlienShotDataPtr_l
 
-				add.l	#64*20,a2
+				add.l	#ShotT_SizeOf_l*NUM_ALIEN_SHOT_DATA,a2
 				move.l	a2,AI_OtherAlienDataPtrs_vl
 
-				move.l	36+6(a1),a2
+				move.l	LvlT_OffsetToObjectPoints_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_ObjectPointsPtr_l
-				move.l	40+6(a1),a2
+
+				move.l	LvlT_OffsetToPlr1Obj_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Plr1_ObjectPtr_l
-				move.l	44+6(a1),a2
+
+				move.l	LvlT_OffsetToPlr2Obj_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Plr2_ObjectPtr_l
-				move.w	14+6(a1),Lvl_NumObjectPoints_w
 
-; bra noclips
+				move.w	LvlT_NumObjectPoints_w(a1),Lvl_NumObjectPoints_w
 
 				move.l	Lvl_ClipsPtr_l,a2
 				moveq	#0,d0
-				move.w	10+6(a1),d7				;numzones
+				move.w	LvlT_NumZones_w(a1),d7
 				move.w	d7,Zone_Count_w
 
 assignclips:
@@ -405,6 +416,7 @@ assignclips:
 dowholezone:
 				tst.w	(a3)
 				blt.s	nomorethiszone
+
 				tst.w	2(a3)
 				blt.s	thisonenull
 
@@ -430,9 +442,6 @@ nomorethiszone:
 				move.l	a2,Lvl_ConnectTablePtr_l
 
 noclips:
-
-************************************
-
 				clr.b	Plr1_StoodInTop_b
 				move.l	#PLR_STAND_HEIGHT,Plr1_SnapHeight_l
 
@@ -1026,7 +1035,7 @@ okwat:
 				move.l	a0,draw_LastWaterFramePtr_l
 
 				add.w	#640,wtan
-				and.w	#8191,wtan
+				AMOD_I	wtan
 				add.l	#1,wateroff
 				and.l	#$3fff3fff,wateroff
 
@@ -1605,7 +1614,7 @@ IWasPlayer1:
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	#-1,12+128(a0)
 
-				eor.w	#4096,angpos
+				eor.w	#SINE_SIZE,angpos
 				neg.w	Temp_CosVal_w					; view direction 180deg
 				neg.w	Temp_SinVal_w
 .nolookback:
@@ -1709,7 +1718,7 @@ drawplayer2:
 
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	#-1,12+128(a0)
-				eor.w	#4096,angpos
+				eor.w	#SINE_SIZE,angpos
 				neg.w	Temp_CosVal_w
 				neg.w	Temp_SinVal_w
 
@@ -1909,7 +1918,8 @@ plr1only:
 				move.l	Lvl_ObjectDataPtr_l,a0
 				sub.w	#ObjT_SizeOf_l,a0
 .doallobs:
-				add.w	#OBJ_NEXT,a0
+				NEXT_OBJ	a0
+
 				move.w	(a0),d0
 				blt.s	.allobsdone
 
@@ -2920,7 +2930,7 @@ Plr1_Use:
 				move.b	#OBJ_TYPE_PLAYER2,ObjT_TypeID_b(a0)
 
 				move.w	Plr2_TmpAngPos_w,d0
-				and.w	#8190,d0
+				AMOD_A	d0
 				move.w	d0,EntT_CurrentAngle_w(a0)
 ;
 ; jsr ViewpointToDraw
@@ -3070,8 +3080,8 @@ Plr1_Use:
 				move.l	Plr1_ZonePtr_l,a1
 
 				move.w	EntT_CurrentAngle_w(a0),d0
-				add.w	#4096,d0
-				and.w	#8190,d0
+				add.w	#SINE_SIZE,d0
+				AMOD_A	d0
 				move.w	d0,EntT_CurrentAngle_w+ENT_NEXT_2(a0)
 
 				move.w	(a1),ObjT_ZoneID_w+ENT_NEXT_2(a0)
@@ -3191,7 +3201,7 @@ Plr2_Use:
 				move.b	#OBJ_TYPE_PLAYER1,ObjT_TypeID_b(a0)
 
 				move.w	Plr1_AngPos_w,d0
-				and.w	#8190,d0
+				AMOD_A	d0
 				move.w	d0,EntT_CurrentAngle_w(a0)
 
 				move.l	Lvl_ObjectPointsPtr_l,a1
@@ -3334,8 +3344,8 @@ Plr2_Use:
 .notdead:
 				move.l	Plr2_ZonePtr_l,a1
 				move.w	EntT_CurrentAngle_w(a0),d0
-				add.w	#4096,d0
-				and.w	#8190,d0
+				add.w	#SINE_SIZE,d0
+				AMOD_A	d0
 				move.w	d0,EntT_CurrentAngle_w+ENT_NEXT(a0)
 
 				move.w	(a1),ObjT_ZoneID_w+ENT_NEXT(a0)
@@ -3406,8 +3416,8 @@ Plr1_Control:
 				move.w	d0,Plr1_AngPos_w
 				move.l	#SinCosTable_vw,a1
 				move.w	(a1,d0.w),Plr1_SinVal_w
-				add.w	#2048,d0
-				and.w	#8190,d0
+				add.w	#COSINE_OFS,d0
+				AMOD_A	d0
 				move.w	(a1,d0.w),Plr1_CosVal_w
 
 				move.l	Plr1_TmpYOff_l,d0
@@ -3478,8 +3488,8 @@ Plr1_Control:
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	(a0),CollId
 
-				move.l	#%111111111111111111,CollideFlags
-				jsr		Collision
+				move.l	#%111111111111111111,Obj_CollideFlags_l
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.teleport
 
@@ -3525,11 +3535,11 @@ Plr1_Control:
 				move.w	#%100000000,wallflags
 				move.b	Plr1_StoodInTop_b,StoodInTop
 
-				move.l	#%1011111110111000011,CollideFlags
+				move.l	#%1011111110111000011,Obj_CollideFlags_l
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	(a0),CollId
 
-				jsr		Collision
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.nothitanything
 				move.w	oldx,Plr1_XOff_l
@@ -3619,8 +3629,8 @@ Plr2_Control:
 
 				move.l	#SinCosTable_vw,a1
 				move.w	(a1,d0.w),Plr2_SinVal_w
-				add.w	#2048,d0
-				and.w	#8190,d0
+				add.w	#COSINE_OFS,d0
+				AMOD_A	d0
 				move.w	(a1,d0.w),Plr2_CosVal_w
 
 				move.l	Plr2_TmpYOff_l,d0
@@ -3690,8 +3700,8 @@ Plr2_Control:
 ;				move.w	Plr2_ObjectPtr_l,a0 ; 0xABADCAFE - word size - is this a bug?
 				move.l	Plr2_ObjectPtr_l,a0
 				move.w	(a0),CollId
-				move.l	#%111111111111111111,CollideFlags
-				jsr		Collision
+				move.l	#%111111111111111111,Obj_CollideFlags_l
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.teleport
 
@@ -3736,11 +3746,11 @@ Plr2_Control:
 				move.w	#%100000000000,wallflags
 				move.b	Plr2_StoodInTop_b,StoodInTop
 
-				move.l	#%1011111010111100011,CollideFlags
+				move.l	#%1011111010111100011,Obj_CollideFlags_l
 				move.l	Plr2_ObjectPtr_l,a0
 				move.w	(a0),CollId
 
-				jsr		Collision
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.nothitanything
 				move.w	oldx,Plr2_XOff_l
@@ -3819,7 +3829,7 @@ DrawDisplay:
 				move.l	#SinCosTable_vw,a0
 				move.w	angpos,d0
 				move.w	(a0,d0.w),d6
-				adda.w	#2048,a0				; +90 deg?
+				adda.w	#COSINE_OFS,a0				; +90 deg?
 				move.w	(a0,d0.w),d7
 				move.w	d6,Temp_SinVal_w
 				move.w	d7,Temp_CosVal_w
@@ -4333,8 +4343,6 @@ CalcPLR1InLine:
 
 				moveq	#0,d2
 				move.b	ObjT_TypeID_b(a4),d2
-;move.l #ColBoxTable,a6
-;lea (a6,d2.w*8),a6
 
 				sub.w	Plr1_ZOff_l,d1
 				move.w	d0,d2
@@ -4363,24 +4371,22 @@ CalcPLR1InLine:
 				bgt.s	.notinline
 
 				st		d3
-.notinline
+.notinline:
 				move.b	d3,(a2)+
-
 				move.w	d1,(a3)+
-
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 
 				rts
 
 .itaux:
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				bra		.objpointrotlop
 
 .noworkout:
 				move.b	#0,(a2)+
 				move.w	#0,(a3)+
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 				rts
 
@@ -4407,8 +4413,6 @@ CalcPLR2InLine:
 
 				moveq	#0,d2
 				move.b	ObjT_TypeID_b(a4),d2
-; move.l #ColBoxTable,a6
-; lea (a6,d2.w*8),a6
 
 				sub.w	Plr2_ZOff_l,d1
 				move.w	d0,d2
@@ -4437,24 +4441,23 @@ CalcPLR2InLine:
 				bgt.s	.notinline
 
 				st		d3
+
 .notinline:
 				move.b	d3,(a2)+
-
 				move.w	d1,(a3)+
-
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 
 				rts
 
 .itaux:
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				bra		.objpointrotlop
 
 .noworkout:
 				move.w	#0,(a3)+
 				move.b	#0,(a2)+
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 
 				rts
@@ -4518,13 +4521,13 @@ RotateObjectPts:
 				rts
 
 .itaux:
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				bra		.objpointrotlop
 
 .noworkout:
-				move.l	#0,(a1)+
-				move.l	#0,(a1)+
-				add.w	#OBJ_NEXT,a4
+				clr.l	(a1)+
+				clr.l	(a1)+
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 				rts
 
@@ -4570,20 +4573,20 @@ RotateObjectPtsFullScreen:
 				add.l	xwobble,d2
 				move.l	d2,(a1)+
 				sub.l	xwobble,d2
-
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 
 				rts
 
 .itaux:
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
+
 				bra		.objpointrotlop
 
 .noworkout:
 				move.l	#0,(a1)+
 				move.l	#0,(a1)+
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 				rts
 
@@ -6869,7 +6872,7 @@ draw_WaterSurface:
 				move.l	draw_Distance_l,d0
 				asl.w	#7,d0
 				add.w	wtan,d0
-				and.w	#8191,d0
+				AMOD_I	d0
 				move.l	#SinCosTable_vw,a0
 				move.w	(a0,d0.w),d0
 				ext.l	d0
@@ -6955,7 +6958,7 @@ draw_WaterSurfaceDouble:
 				move.l	draw_Distance_l,d0
 				asl.w	#7,d0
 				add.w	wtan,d0
-				and.w	#8191,d0
+				AMOD_I	d0
 				move.l	#SinCosTable_vw,a0
 				move.w	(a0,d0.w),d0
 				ext.l	d0
@@ -7855,7 +7858,7 @@ nostartalan:
 				move.w	d3,Plr1_SnapAngSpd_w
 				add.w	d3,Plr1_SnapAngPos_w
 				add.w	d3,Plr1_SnapAngPos_w
-				and.w	#8190,Plr1_SnapAngPos_w
+				AMOD_A	Plr1_SnapAngPos_w
 
 				bra		nocontrols
 
@@ -7948,7 +7951,7 @@ control2:
 				move.w	d3,Plr2_SnapAngSpd_w
 				add.w	d3,Plr2_SnapAngPos_w
 				add.w	d3,Plr2_SnapAngPos_w
-				and.w	#8190,Plr2_SnapAngPos_w
+				AMOD_A	Plr2_SnapAngPos_w
 				bra.s	nocontrols
 
 .propercontrol:

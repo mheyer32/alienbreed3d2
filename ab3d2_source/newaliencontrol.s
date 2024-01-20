@@ -941,10 +941,10 @@ THISPLRzoff:	dc.w	0
 ViewpointToDraw:
 				move.w	EntT_CurrentAngle_w(a0),d3
 				sub.w	angpos,d3
-				and.w	#8190,d3
+				AMOD_A	d3
 				move.l	#SinCosTable_vw,a2
 				move.w	(a2,d3.w),d2
-				adda.w	#2048,a2
+				adda.w	#COSINE_OFS,a2
 				move.w	(a2,d3.w),d3
 				ext.l	d2
 				ext.l	d3
@@ -1110,13 +1110,13 @@ SHOOTPLAYER1:
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	(a7)+,objroom
 				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
+				move.w	#NUM_PLR_SHOT_DATA-1,d1
 
 .findonefree2:
 				move.w	ObjT_ZoneID_w(a0),d2
 				blt.s	.foundonefree2
 
-				adda.w	#OBJ_NEXT,a0
+				NEXT_OBJ	a0
 				dbra	d1,.findonefree2
 
 				move.w	tsx,oldx
@@ -1156,13 +1156,13 @@ FireAtPlayer1:
 				move.w	(a0),d1
 				lea		(a1,d1.w*8),a1
 				move.l	AI_AlienShotDataPtr_l,a5
-				move.w	#19,d1
+				move.w	#NUM_ALIEN_SHOT_DATA-1,d1
 
 .findonefree:
 				move.w	ObjT_ZoneID_w(a5),d0
 				blt.s	.foundonefree
 
-				adda.w	#OBJ_NEXT,a5
+				NEXT_OBJ	a5
 				dbra	d1,.findonefree
 
 				bra		.cantshoot
@@ -1362,13 +1362,13 @@ SHOOTPLAYER2:
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	(a7)+,objroom
 				move.l	AI_AlienShotDataPtr_l,a0
-				move.w	#19,d1
+				move.w	#NUM_ALIEN_SHOT_DATA-1,d1
 
 .findonefree2:
 				move.w	ObjT_ZoneID_w(a0),d2
 				blt.s	.foundonefree2
 
-				adda.w	#OBJ_NEXT,a0
+				NEXT_OBJ	a0
 				dbra	d1,.findonefree2
 
 				move.w	tsx,oldx
@@ -1401,13 +1401,13 @@ SHOOTPLAYER2:
 
 FireAtPlayer2:
 				move.l	AI_AlienShotDataPtr_l,a5
-				move.w	#19,d1
+				move.w	#NUM_ALIEN_SHOT_DATA-1,d1
 
 .findonefree:
 				move.w	ObjT_ZoneID_w(a5),d0
 				blt.s	.foundonefree
 
-				adda.w	#OBJ_NEXT,a5
+				NEXT_OBJ	a5
 				dbra	d1,.findonefree
 
 				bra		.cantshoot

@@ -559,14 +559,14 @@ draw_right_side_glare:
 
 draw_Bitmap:
 				move.l	#0,draw_AuxX_w
-				cmp.b	#3,16(a0)
+				cmp.b	#OBJ_TYPE_AUX,ObjT_TypeID_b(a0)
 				bne.s	.not_auxilliary_object
 
 				move.w	ShotT_AuxOffsetX_w(a0),draw_AuxX_w
 				move.w	ShotT_AuxOffsetY_w(a0),draw_AuxY_w
 
 .not_auxilliary_object:
-				tst.l   8(a0)
+				tst.l   ObjT_YPos_l(a0)
 				blt		draw_bitmap_glare
 
 				move.w	(a0)+,d0				;pt num
@@ -1212,8 +1212,8 @@ INMIDDLE:
 				add.l	d2,a1
 				move.w	Plr1_TmpAngPos_w,d0
 				neg.w	d0
-				add.w	#4096,d0
-				and.w	#8191,d0
+				add.w	#SINE_SIZE,d0
+				AMOD_I	d0
 				asr.w	#8,d0
 				asr.w	#1,d0
 				sub.b	#3,d0
@@ -1447,7 +1447,7 @@ draw_CalcBrightRings:
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.w	AngRet,d1
 				neg.w	d1
-				and.w	#8191,d1
+				AMOD_I	d1
 				asr.w	#8,d1
 				asr.w	#1,d1
 				move.b	#48,(a2,d1.w)
@@ -1616,7 +1616,7 @@ draw_CalcBrightsInZone:
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.w	AngRet,d1
 				neg.w	d1
-				and.w	#8191,d1
+				AMOD_I	d1
 				asr.w	#8,d1
 				asr.w	#1,d1
 				move.w	(a0),d0
@@ -1873,12 +1873,12 @@ BOTPART:
 				move.w	draw_ObjectAng_w,d2
 				sub.w	#2048,d2				; 90deg
 				sub.w	angpos,d2				; view angle
-				and.w	#8191,d2				; wrap 360deg
+				AMOD_I	d2					; wrap 360deg
 				move.l	#SinCosTable_vw,a2
 				lea		(a2,d2.w),a5			; sine of object rotation wrt view
 				move.l	#boxbrights_vw,a6
 				move.w	(a5),d6					; sine of object rotation
-				move.w	2048(a5),d7				; cosine of object rotation. WHY DOES IT NOT NEED OOB/WRAP CHECK?
+				move.w	COSINE_OFS(a5),d7		; cosine of object rotation. WHY DOES IT NOT NEED OOB/WRAP CHECK?
 												; bigsine is 16kb, so 8192 words
 												; this may mean the table is covering 4pi/720deg
 rotate_object:
