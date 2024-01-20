@@ -559,14 +559,14 @@ draw_right_side_glare:
 
 draw_Bitmap:
 				move.l	#0,draw_AuxX_w
-				cmp.b	#3,16(a0)
+				cmp.b	#OBJ_TYPE_AUX,ObjT_TypeID_b(a0)
 				bne.s	.not_auxilliary_object
 
 				move.w	ShotT_AuxOffsetX_w(a0),draw_AuxX_w
 				move.w	ShotT_AuxOffsetY_w(a0),draw_AuxY_w
 
 .not_auxilliary_object:
-				tst.l   8(a0)
+				tst.l   ObjT_YPos_l(a0)
 				blt		draw_bitmap_glare
 
 				move.w	(a0)+,d0				;pt num

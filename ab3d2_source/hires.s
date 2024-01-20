@@ -334,33 +334,39 @@ noload:
 				adda.w	#16,a0
 				move.l	a0,Lvl_ZoneAddsPtr_l
 
+				; Level data begins with messages
 				move.l	Lvl_DataPtr_l,a4
-				lea		160*10(a4),a1
+				lea		LVLT_MESSAGE_LENGTH*LVLT_MESSAGE_COUNT(a4),a1
 
-				lea		54(a1),a2
+				; Followed by LvlT structure (pointed to by a1)
+
+				lea		LvlT_ControlPointCoords_vw(a1),a2
 				move.l	a2,Lvl_ControlPointCoordsPtr_l
-				move.w	12(a1),Lvl_NumControlPoints_w
-				move.w	14(a1),Lvl_NumPoints_w
+				move.w	LvlT_NumControlPoints_w(a1),Lvl_NumControlPoints_w
+				move.w	LvlT_NumPoints_w(a1),Lvl_NumPoints_w
 
-				move.l	16+6(a1),a2
+				move.l	LvlT_OffsetToPoints_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_PointsPtr_l
-				move.w	8+6(a1),d0
+
+				move.w	LvlT_NumPoints_w(a1),d0
 				lea		4(a2,d0.w*4),a2
 				move.l	a2,PointBrightsPtr_l
-				move.w	16(a1),d0
+				move.w	LvlT_NumZones_w(a1),d0
 				addq	#1,d0
-				muls	#80,d0
+				muls	#80,d0 ; todo - is 80 a fixed length points per zone (e.g. 10x 32-bit x/y pairs) value?
 				add.l	d0,a2
 				move.l	a2,Lvl_ZoneBorderPointsPtr_l
 
-				move.l	20+6(a1),a2
+				move.l	LvlT_OffsetToFloorLines_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_FloorLinesPtr_l
 				move.w	-2(a2),Lvl_ExitZoneID_w
-				move.l	24+6(a1),a2
+
+				move.l	LvlT_OffsetToObjects_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_ObjectDataPtr_l
+
 *****************************************
 * Just for charles
 
@@ -369,32 +375,37 @@ noload:
 ; sub.w #40,4(a2)
 ; move.w #45*256+45,14(a2)
 ****************************************
-				move.l	28+6(a1),a2
+
+				; Temporary object buffers used for player and alien projectile entities.
+				; todo - why are these embedded in the data file and not just a dynamically added space?
+				move.l	LvlT_OffsetToPlayerShot_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Plr_ShotDataPtr_l
-				move.l	32+6(a1),a2
+
+				move.l	LvlT_OffsetToAlienShot_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,AI_AlienShotDataPtr_l
 
-				add.l	#64*20,a2
+				add.l	#ShotT_SizeOf_l*NUM_ALIEN_SHOT_DATA,a2
 				move.l	a2,AI_OtherAlienDataPtrs_vl
 
-				move.l	36+6(a1),a2
+				move.l	LvlT_OffsetToObjectPoints_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_ObjectPointsPtr_l
-				move.l	40+6(a1),a2
+
+				move.l	LvlT_OffsetToPlr1Obj_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Plr1_ObjectPtr_l
-				move.l	44+6(a1),a2
+
+				move.l	LvlT_OffsetToPlr2Obj_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Plr2_ObjectPtr_l
-				move.w	14+6(a1),Lvl_NumObjectPoints_w
 
-; bra noclips
+				move.w	LvlT_NumObjectPoints_w(a1),Lvl_NumObjectPoints_w
 
 				move.l	Lvl_ClipsPtr_l,a2
 				moveq	#0,d0
-				move.w	10+6(a1),d7				;numzones
+				move.w	LvlT_NumZones_w(a1),d7
 				move.w	d7,Zone_Count_w
 
 assignclips:

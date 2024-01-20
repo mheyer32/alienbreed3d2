@@ -309,7 +309,7 @@ Plr1_Shot:
 .nofurther:
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
+				move.w	#NUM_PLR_SHOT_DATA-1,d1
 
 .findonefree2:
 				move.w  ObjT_ZoneID_w(a0),d0
@@ -639,7 +639,7 @@ Plr2_Shot:
 .nofurther:
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
+				move.w	#NUM_PLR_SHOT_DATA-1,d1
 
 .findonefree2:
 				move.w  ObjT_ZoneID_w(a0),d2
@@ -705,7 +705,7 @@ plr2_FireProjectile:
 
 firefive:
 				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
+				move.w	#NUM_PLR_SHOT_DATA-1,d1
 
 .findonefree:
 				move.w  ObjT_ZoneID_w(a0),d0
@@ -783,11 +783,10 @@ firefive:
 				rts
 
 plr1_HitscanSucceded:
-
 ; Just blow it up.
 
 				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
+				move.w	#NUM_PLR_SHOT_DATA-1,d1
 .findonefree:
 				move.w  ObjT_ZoneID_w(a0),d2
 				blt.s	.foundonefree
@@ -892,7 +891,7 @@ plr1_HitscanFailed:
 				movem.l	(a7)+,d0-d7/a0-a6
 
 				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
+				move.w	#NUM_PLR_SHOT_DATA-1,d1
 .findonefree2:
 				move.w  ObjT_ZoneID_w(a0),d2
 				blt.s	.foundonefree2
@@ -929,7 +928,7 @@ plr2_HitscanSucceded:
 ; Just blow it up.
 
 				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
+				move.w	#NUM_PLR_SHOT_DATA-1,d1
 .findonefree:
 				move.w  ObjT_ZoneID_w(a0),d2
 				blt.s	.foundonefree
@@ -1034,7 +1033,7 @@ plr2_HitscanFailed:
 				movem.l	(a7)+,d0-d7/a0-a6
 
 				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
+				move.w	#NUM_PLR_SHOT_DATA-1,d1
 
 .findonefree2:
 				move.w  ObjT_ZoneID_w(a0),d2

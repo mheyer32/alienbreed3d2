@@ -610,7 +610,7 @@ Anim_ExplodeIntoBits:
 
 .oksplut:
 				move.l	AI_AlienShotDataPtr_l,a5
-				move.w	#19,d1
+				move.w	#NUM_ALIEN_SHOT_DATA-1,d1
 
 .findeight:
 				move.w	ObjT_ZoneID_w(a5),d0
@@ -1874,7 +1874,7 @@ JUMPBULLET:
 ; leved (perpendicular to wall) so
 ; just continuously spray out flame!
 ;				move.l	AI_AlienShotDataPtr_l,a5
-;				move.w	#19,d1
+;				move.w	#NUM_ALIEN_SHOT_DATA-1,d1
 
 				; Walk the list of objects looking for one that's free (is not assigned to a zone)
 ;.findonefree:
@@ -3040,7 +3040,7 @@ CheckedEmAll:
 				asl.l	#7,d0
 				move.l	d0,oldy
 				moveq	#2,d5
-				move.w	#19,NUMTOCHECK
+				move.w	#NUM_PLR_SHOT_DATA-1,NUMTOCHECK
 				move.w	#2,d6
 
 radiusloop:

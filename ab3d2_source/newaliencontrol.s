@@ -1110,7 +1110,7 @@ SHOOTPLAYER1:
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	(a7)+,objroom
 				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
+				move.w	#NUM_PLR_SHOT_DATA-1,d1
 
 .findonefree2:
 				move.w	ObjT_ZoneID_w(a0),d2
@@ -1156,7 +1156,7 @@ FireAtPlayer1:
 				move.w	(a0),d1
 				lea		(a1,d1.w*8),a1
 				move.l	AI_AlienShotDataPtr_l,a5
-				move.w	#19,d1
+				move.w	#NUM_ALIEN_SHOT_DATA-1,d1
 
 .findonefree:
 				move.w	ObjT_ZoneID_w(a5),d0
@@ -1362,7 +1362,7 @@ SHOOTPLAYER2:
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	(a7)+,objroom
 				move.l	AI_AlienShotDataPtr_l,a0
-				move.w	#19,d1
+				move.w	#NUM_ALIEN_SHOT_DATA-1,d1
 
 .findonefree2:
 				move.w	ObjT_ZoneID_w(a0),d2
@@ -1401,7 +1401,7 @@ SHOOTPLAYER2:
 
 FireAtPlayer2:
 				move.l	AI_AlienShotDataPtr_l,a5
-				move.w	#19,d1
+				move.w	#NUM_ALIEN_SHOT_DATA-1,d1
 
 .findonefree:
 				move.w	ObjT_ZoneID_w(a5),d0
