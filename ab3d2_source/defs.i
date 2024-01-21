@@ -252,7 +252,7 @@ OBJ_NEXT	EQU	ObjT_SizeOf_l		; object after current
 		UBYTE EntT_TeamNumber_b				; 21, 1
 		UWORD EntT_CurrentSpeed_w 			; 22, 2 unused
 		UWORD EntT_DisplayText_w			; 24, 2
-		UWORD EntT_ZoneID_w					; 26, 2
+		UWORD EntT_ZoneID_w					; 26, 2 ; todo - how is this related to ObjT_ZoneID_w ?
 		UWORD EntT_CurrentControlPoint_w	; 28, 2
 		UWORD EntT_CurrentAngle_w			; 30, 2
 		UWORD EntT_TargetControlPoint_w		; 32, 2

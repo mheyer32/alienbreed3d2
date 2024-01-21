@@ -90,9 +90,9 @@ ai_DoDie:
 				tst.b	ai_FinishedAnim_b
 				beq.s	.still_dying
 
-				move.w	#-1,ObjT_ZoneID_w(a0)
-				move.w	#-1,EntT_ZoneID_w(a0)
-				move.b	#0,16(a0)
+				FREE_ENT	a0
+
+				move.b	#OBJ_TYPE_ALIEN,ObjT_TypeID_b(a0)
 				clr.b	ShotT_Worry_b(a0)
 				st		ai_GetOut_w
 
@@ -1804,8 +1804,8 @@ ai_CheckDamage:
 				cmp.b	#40,d2
 				blt		.noexplode
 
-				move.w	#-1,ObjT_ZoneID_w(a0)
-				move.w	ObjT_ZoneID_w(a0),EntT_ZoneID_w(a0)
+				FREE_ENT	a0
+
 				rts
 
 .noexplode:
@@ -1917,8 +1917,8 @@ ai_DoAttackAnim:
 				move.w	2(a6,d1.w),ai_AnimFacing_w
 
 .noanimface:
-				move.w	#-1,EntT_ZoneID_w+ENT_PREV(a0)
-				move.w	#-1,ObjT_ZoneID_w+ENT_PREV(a0)
+				FREE_ENT_2	a0,ENT_PREV
+
 				move.w	AUXOBJ,d3
 				blt		.noaux
 

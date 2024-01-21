@@ -993,10 +993,9 @@ notallliftsdone:
 				asl.w	#2,d0
 				move.w	d0,2(a1)
 				move.w	d3,d0
-				muls	#256,d3
-				; 0xABADCAFE - come back to the overflow here
-				;ext.l	d3	; Safety - sign extend before shift
-				;asl.l	#8,d3
+
+				ext.l	d3	; Safety - sign extend before shift
+				asl.l	#8,d3
 				move.w	(a0)+,d5
 				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d5.w*4),a1
@@ -2024,8 +2023,8 @@ noworrylife:
 				cmp.w	BulT_PopFrames_l+2(a6),d2
 				ble.s	notdonepopping
 
-				move.w	#-1,ObjT_ZoneID_w(a0)
-				move.w	#-1,EntT_ZoneID_w(a0)
+				FREE_ENT	a0
+
 				clr.b	ShotT_Status_b(a0)
 				move.b	#0,ShotT_Anim_b(a0)
 				rts
