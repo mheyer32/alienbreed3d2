@@ -363,6 +363,21 @@ FREE_OBJ		MACRO
 				move.w	#-1,ObjT_ZoneID_w(\1)
 				ENDM
 
+FREE_OBJ_2		MACRO
+				move.w	#-1,ObjT_ZoneID_w+\2(\1)
+				ENDM
+
+FREE_ENT		MACRO
+				move.w	#-1,ObjT_ZoneID_w(\1)
+				move.w	#-1,EntT_ZoneID_w(\1)
+				ENDM
+
+FREE_ENT_2		MACRO
+				move.w	#-1,ObjT_ZoneID_w+\2(\1)
+				move.w	#-1,EntT_ZoneID_w+\2(\1)
+				ENDM
+
+
 ; Set a bit in memory
 SET_MEM_BIT		MACRO
 				bset.b	#(\1&7),\2+3-(\1>>3)
