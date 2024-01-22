@@ -685,7 +685,7 @@ plr1_FireProjectile:
 				move.w	ShootT_BulCount_w(a6),d5
 				move.w	d5,d6
 				subq	#1,d6
-				asl.w	#7,d6
+				asl.w	#7,d6 ; was muls #128
 				neg.w	d6
 				add.w	tempangpos,d6
 				AMOD_A	d6
@@ -698,7 +698,7 @@ plr2_FireProjectile:
 				move.w	ShootT_BulCount_w(a6),d5
 				move.w	d5,d6
 				subq	#1,d6
-				asl.w	#7,d6
+				asl.w	#7,d6 ; was muls #128
 				neg.w	d6
 				add.w	tempangpos,d6
 				AMOD_A	d6
