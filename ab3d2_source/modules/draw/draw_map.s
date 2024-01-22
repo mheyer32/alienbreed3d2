@@ -7,12 +7,17 @@ DoTheMapWotNastyCharlesIsForcingMeToDo:
 				; as the zoom speed is insane under emulations
 
 				move.l	Draw_TexturePalettePtr_l,a4
-				add.l	#256*32,a4
+				;add.l	#256*32,a4
+
+				add.l	#256*26,a4 ; glare 25% ?
+
 				; add.w Draw_MapZoomLevel_w,a4
 
 				move.l	#KeyMap_vb,a5
 				tst.b	RAWKEY_F1(a5)			; Zoom In
 				beq.s	.skip_zoom_in
+
+				clr.b	RAWKEY_F1(a5)
 
 				tst.w	Draw_MapZoomLevel_w
 				beq.s	.skip_zoom_in
@@ -22,6 +27,8 @@ DoTheMapWotNastyCharlesIsForcingMeToDo:
 .skip_zoom_in:
 				tst.b	RAWKEY_F2(a5)			; Zoom Out
 				beq.s	.skip_zoom_out
+
+				clr.b	RAWKEY_F2(a5)
 
 				cmp.w	#7,Draw_MapZoomLevel_w
 				bge.s	.skip_zoom_out
@@ -66,11 +73,9 @@ wall_mapped:
 				move.w	#$e00,d4
 
 .not_a_door:
-				st		draw_MapTRTrans_b
 				bra.s	decided_colour
 
 wall_seen:
-				clr.b	draw_MapTRTrans_b
 				move.w	#MAP_SOLID_WALL_PEN,d4
 				asr.l	#2,d5
 				bcc.s	.not_a_door
@@ -114,27 +119,24 @@ decided_wall:
 
 				; FIXME: why does map rendering have an effect on wall rendering?
 shown_map:
-				clr.b	draw_MapTRTrans_b		; FIXME seems like there is code for
-									; translucent map rendering, check it out
-
 				; Is this drawing the Arrow?
-				move.w	draw_MapXOffset_w,d0
-				move.w	draw_MapZOffset_w,d1
-				neg.w	d1
-				move.w	d0,d2
-				move.w	d1,d3
-				sub.w	#128,d1
-				add.w	#128,d3
-				move.w	#250,d4
-				bsr		draw_MapClipAndDraw
+				;move.w	draw_MapXOffset_w,d0
+				;move.w	draw_MapZOffset_w,d1
+				;neg.w	d1
+				;move.w	d0,d2
+				;move.w	d1,d3
+				;sub.w	#128,d1
+				;add.w	#128,d3
+				;move.w	#250,d4
+				;bsr		draw_MapClipAndDraw
 
 				move.w	draw_MapXOffset_w,d0
 				move.w	draw_MapZOffset_w,d1
 				neg.w	d1
 				move.w	d0,d2
 				move.w	d1,d3
-				sub.w	#128,d1
-				sub.w	#32,d3
+				sub.w	#64-32,d1
+				sub.w	#32-32,d3
 				sub.w	#64,d2
 				move.w	#250,d4
 				bsr		draw_MapClipAndDraw
@@ -144,8 +146,8 @@ shown_map:
 				neg.w	d1
 				move.w	d0,d2
 				move.w	d1,d3
-				sub.w	#128,d1
-				sub.w	#32,d3
+				sub.w	#64-32,d1
+				sub.w	#32-32,d3
 				add.w	#64,d2
 				move.w	#250,d4
 				bsr		draw_MapClipAndDraw
@@ -153,6 +155,10 @@ shown_map:
 				rts
 
 draw_MapClipAndDraw:
+				; d0 x1
+				; d1 y1
+				; d2 x2
+				; d3 y2
 				tst.b	Vid_FullScreen_b
 				beq.s	.nodov
 
@@ -345,138 +351,13 @@ done_bottom_clip:
 				; TODO - come back and fix. Probably needs a better pen choice for the
 				; transparency blending as well as the transformation fixes.
 
-				bra		draw_MapTransLine
-
-				;tst.b	draw_MapTRTrans_b
-				;bne		draw_MapTransLine
-
 				bra		draw_MapLine
-
-map_offscreen:
-no_line_trans:
-				rts
 
 Draw_MapZoomLevel_w:	dc.w	3
 draw_MapXOffset_w:		dc.w	0
 draw_MapZOffset_w:		dc.w	0
-draw_MapTRTrans_b:		dc.b	0
 
-				even
-
-				; FIXME: Transformation bugs in drawing and better pens needed. Blue maybe?
-draw_MapTransLine:
-				move.l	Vid_FastBufferPtr_l,a0			; screen to render to.
-
-				tst.b	Vid_FullScreen_b
-				beq.s	.nooffset
-
-				add.l	#(SCREEN_WIDTH*40)+(48*2),a0
-
-.nooffset:
-				cmp.w	d1,d3
-				bgt.s	.okdown
-
-				bne.s	.aline
-				cmp.w	d0,d2
-				beq.s	no_line_trans
-
-.aline:
-				exg		d0,d2
-				exg		d1,d3
-
-.okdown:
-				move.w	d1,d5
-				muls	#SCREEN_WIDTH,d5
-				add.l	d5,a0
-				lea		(a0,d0.w*2),a0
-				sub.w	d1,d3
-				sub.w	d0,d2
-				bge		down_right_trans
-
-down_left_trans:
-				neg.w	d2
-				cmp.w	d2,d3
-				bgt.s	down_more_left_trans
-
-down_left_more_trans:
-				move.w	#SCREEN_WIDTH,d6
-				move.w	d2,d0
-				move.w	d2,d7
-
-.line_loop:
-				move.b	(a0),d4
-				move.b	(a4,d4.w*2),(a0)
-				subq	#1,a0
-				sub.w	d3,d0
-				bgt.s	.no_extra
-
-				add.w	d2,d0
-				add.w	d6,a0
-.no_extra:
-				dbra	d7,.line_loop
-
-				rts
-
-down_more_left_trans:
-				move.w	#SCREEN_WIDTH,d6
-				move.w	d3,d0
-				move.w	d3,d7
-
-.line_loop:
-				move.b	(a0),d4
-				move.b	(a4,d4.w*2),(a0)
-				add.w	d6,a0
-				sub.w	d2,d0
-				bgt.s	.no_extra
-
-				add.w	d3,d0
-				subq	#1,a0
-.no_extra:
-				dbra	d7,.line_loop
-
-				rts
-
-down_right_trans:
-				cmp.w	d2,d3
-				bgt.s	down_more_right_trans
-
-down_right_more_trans:
-				move.w	#SCREEN_WIDTH,d6
-				move.w	d2,d0
-				move.w	d2,d7
-
-.line_loop:
-				move.b	(a0),d4
-				move.b	(a4,d4.w*2),(a0)+
-				sub.w	d3,d0
-				bgt.s	.no_extra
-
-				add.w	d2,d0
-				add.w	d6,a0
-.no_extra:
-				dbra	d7,.line_loop
-
-				rts
-
-down_more_right_trans:
-				move.w	#SCREEN_WIDTH,d6
-				move.w	d3,d0
-				move.w	d3,d7
-
-.line_loop:
-				move.b	(a0),d4
-				move.b	(a4,d4.w*2),(a0)
-				add.w	d6,a0
-				sub.w	d2,d0
-				bgt.s	.no_extra
-
-				add.w	d3,d0
-				addq	#1,a0
-.no_extra:
-				dbra	d7,.line_loop
-
-				rts
-
+map_offscreen:
 no_line:
 				rts
 
@@ -522,7 +403,11 @@ down_left_more:
 				addq	#1,a0
 
 .line_loop:
-				move.b	d4,-(a0)
+				;move.b	d4,-(a0)
+
+				move.b	-(a0),d4			; read chunky buffer
+				move.b	(a4,d4.w),(a0)	; Replace and write back
+
 				sub.w	d3,d0
 				bgt.s	.no_extra
 
@@ -539,7 +424,11 @@ down_more_left:
 				move.w	d3,d7
 
 .line_loop:
-				move.b	d4,(a0)
+				;move.b	d4,(a0)
+
+				move.b	(a0),d4			; read chunky buffer
+				move.b	(a4,d4.w),(a0)	; Replace and write back
+
 				add.w	d6,a0
 				sub.w	d2,d0
 				bgt.s	.no_extra
@@ -561,7 +450,11 @@ down_right_more:
 				move.w	d2,d7
 
 .line_loop:
-				move.b	d4,(a0)+
+				;move.b	d4,(a0)+
+
+				move.b	(a0),d4			; read chunky buffer
+				move.b	(a4,d4.w),(a0)+	; Replace and write back
+
 				sub.w	d3,d0
 				bgt.s	.no_extra
 
@@ -578,7 +471,11 @@ down_more_right:
 				move.w	d3,d7
 
 .line_loop:
-				move.b	d4,(a0)
+				;move.b	d4,(a0)
+
+				move.b	(a0),d4			; read chunky buffer
+				move.b	(a4,d4.w),(a0)	; Replace and write back
+
 				add.w	d6,a0
 				sub.w	d2,d0
 				bgt.s	.no_extra
