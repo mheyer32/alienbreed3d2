@@ -787,7 +787,7 @@ game_main_loop:
 				move.w	#7,d2
 				jsr		Anim_ExplodeIntoBits
 
-				move.w	#-1,ObjT_ZoneID_w(a0)
+				FREE_OBJ	a0
 
 .notmess:
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
@@ -831,8 +831,8 @@ game_main_loop:
 				move.w	Plr1_TmpZOff_l,newz
 				move.w	#7,d2
 				jsr		Anim_ExplodeIntoBits
-				move.w	#-1,ObjT_ZoneID_w(a0)
 
+				FREE_OBJ	a0
 .notmess2:
 				;FIXME: should use _LVOWritePotgo here!
 				move.w	#%110000000000,_custom+potgo ; POTGO -start Potentiometer reading
@@ -1098,8 +1098,9 @@ okwat:
 
 				move.l	#$60000,Plr2_TmpYOff_l
 				move.l	Plr2_ObjectPtr_l,a0
-				move.w	#-1,EntT_ZoneID_w(a0)
-				move.w	#-1,ObjT_ZoneID_w(a0)
+
+				FREE_ENT	a0
+
 				move.b	#0,ObjT_SeePlayer_b(a0)
 				move.l	#BollocksRoom,Plr2_ZonePtr_l
 
@@ -1612,7 +1613,8 @@ IWasPlayer1:
 				beq.s	.nolookback
 
 				move.l	Plr1_ObjectPtr_l,a0
-				move.w	#-1,12+128(a0)
+
+				FREE_OBJ_2	a0,ENT_NEXT_2
 
 				eor.w	#SINE_SIZE,angpos
 				neg.w	Temp_CosVal_w					; view direction 180deg
@@ -1717,7 +1719,9 @@ drawplayer2:
 				beq.s	.nolookback
 
 				move.l	Plr1_ObjectPtr_l,a0
-				move.w	#-1,12+128(a0)
+
+				FREE_OBJ_2	a0,ENT_NEXT_2
+
 				eor.w	#SINE_SIZE,angpos
 				neg.w	Temp_CosVal_w
 				neg.w	Temp_SinVal_w
@@ -2924,7 +2928,7 @@ Plr1_Use:
 				tst.w	Plr1_Health_w
 				bgt.s	.okh1
 
-				move.w	#-1,ObjT_ZoneID_w(a0)
+				FREE_OBJ	a0
 .okh1:
 				move.l	Plr2_ObjectPtr_l,a0
 				move.b	#OBJ_TYPE_PLAYER2,ObjT_TypeID_b(a0)
@@ -3066,14 +3070,14 @@ Plr1_Use:
 				tst.w	Plr2_Health_w
 				bgt.s	.okh
 
-				move.w	#-1,ObjT_ZoneID_w(a0)
+				FREE_OBJ	a0
 .okh:
 				move.l	Plr1_ObjectPtr_l,a0
 				tst.w	Plr1_Health_w
 
 				bgt.s	.notdead
 
-				move.w	#-1,ObjT_ZoneID_w+ENT_NEXT_2(a0)
+				FREE_OBJ_2	a0,ENT_NEXT_2
 				rts
 
 .notdead:
@@ -3192,7 +3196,8 @@ Plr2_Use:
 
 				tst.w	Plr2_Health_w
 				bgt.s	.okh55
-				move.w	#-1,ObjT_ZoneID_w(a0)
+
+				FREE_OBJ	a0
 .okh55:
 
 ***********************************
@@ -3330,7 +3335,8 @@ Plr2_Use:
 .ddone:
 				tst.w	Plr1_Health_w
 				bgt.s	.okh
-				move.w	#-1,ObjT_ZoneID_w(a0)
+
+				FREE_OBJ	a0
 .okh:
 
 **********************************
@@ -3338,7 +3344,7 @@ Plr2_Use:
 				move.l	Plr2_ObjectPtr_l,a0
 				tst.w	Plr2_Health_w
 				bgt.s	.notdead
-				move.w	#-1,ObjT_ZoneID_w+ENT_NEXT(a0)
+				FREE_OBJ_2	a0,ENT_NEXT
 				rts
 
 .notdead:
@@ -3867,8 +3873,9 @@ DrawDisplay:
 				bne.s	doplr2too
 
 				move.l	Plr2_ObjectPtr_l,a0
-				move.w	#-1,ObjT_ZoneID_w(a0)
-				move.w	#-1,EntT_ZoneID_w(a0)
+
+				FREE_ENT	a0
+
 				bra		noplr2either
 
 doplr2too:
@@ -7798,7 +7805,8 @@ nostartalan:
 
 				move.l	#7*2116,hitcol
 				move.l	Plr1_ObjectPtr_l,a0
-				move.w	#-1,12+128(a0)
+
+				FREE_OBJ_2	a0,ENT_NEXT_2
 
 				clr.b	Plr1_Fire_b
 				clr.b	Plr1_Clicked_b
@@ -7888,7 +7896,9 @@ control2:
 
 				move.l	#7*2116,hitcol
 				move.l	Plr1_ObjectPtr_l,a0
-				move.w	#-1,12+128(a0)
+
+				FREE_OBJ_2	a0,ENT_NEXT_2
+
 				clr.b	Plr2_Fire_b
 				move.w	#0,Plr_AddToBobble_w
 				move.l	#PLR_CROUCH_HEIGHT,Plr2_SnapHeight_l
