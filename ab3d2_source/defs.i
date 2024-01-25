@@ -565,4 +565,20 @@ SKY_BACKDROP_H    EQU 240
 		UWORD WD_LeftBot_w		; 16
 		UWORD WD_RightBot_w		; 18
 
+		UWORD WD_Unknown_0_w	; 20
+		UWORD WD_Unknown_1_w	; 22
+
+		; Whole wall for simple case, lower half for full Gouraud case
+		LABEL WD_LeftBrightScaled_l	; 24 ; union
+		UWORD WD_LeftBright_w	; 24
+		UWORD WD_RightBright_w	; 26
+
+		ULONG WD_DHorizBright_l	; 28
+
+		LABEL WD_UpperLeftBrightScaled_l ; 32 ; union
+		UWORD WD_UpperLeftBright_w	; 32
+		UWORD WD_UpperRightBright_w ; 34
+
+		ULONG WD_DUpperHorizBright_l ; 36
+
 		LABEL WD_SizeOf_l

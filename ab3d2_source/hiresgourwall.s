@@ -107,33 +107,33 @@ DoleftendGOUR:
 
 ; *** Gouraud shading ***
 				moveq	#0,d5
-				move.w	26(a0),d5
-				sub.w	24(a0),d5
+				move.w	WD_RightBright_w(a0),d5
+				sub.w	WD_LeftBright_w(a0),d5
 				add.w	d5,d5
 				swap	d5
 				asr.l	d6,d5
-				move.l	d5,28(a0)				; Deltas for lighting values?
+				move.l	d5,WD_DHorizBright_l(a0)		; Deltas for lighting values?
 
 				moveq	#0,d5
-				move.w	24(a0),d5
+				move.w	WD_LeftBright_w(a0),d5
 				add.w	d5,d5
 				swap	d5
-				move.l	d5,24(a0)				; 24(a0) << 17
+				move.l	d5,WD_LeftBrightScaled_l(a0)		; 24(a0) << 17
 
 ; *** Extra Gouraud Shading ***
 				moveq	#0,d5
-				move.w	34(a0),d5
-				sub.w	32(a0),d5
+				move.w	WD_UpperRightBright_w(a0),d5
+				sub.w	WD_UpperLeftBright_w(a0),d5
 				add.w	d5,d5
 				swap	d5
 				asr.l	d6,d5
-				move.l	d5,36(a0)				; Deltas for lighting values?
+				move.l	d5,WD_DUpperHorizBright_l(a0)				; Deltas for lighting values?
 
 				moveq	#0,d5
-				move.w	32(a0),d5
+				move.w	WD_UpperLeftBright_w(a0),d5
 				add.w	d5,d5
 				swap	d5
-				move.l	d5,32(a0)				; 32(a0) << 17
+				move.l	d5,WD_UpperLeftBrightScaled_l(a0)				; 32(a0) << 17
 
 				; Is this preparing the strips to draw?
 				or.l	#$ffff0000,d7			; high word for number of iterations/iterations mask
@@ -166,16 +166,16 @@ DoleftendGOUR:
 				add.l	a3,d0
 
 				; forward differencing vertex color shading?!
-				move.l	28(a0),d5
-				add.l	d5,24(a0)
-				move.l	36(a0),d5
-				add.l	d5,32(a0)
+				move.l	WD_DHorizBright_l(a0),d5
+				add.l	d5,WD_LeftBrightScaled_l(a0)
+				move.l	WD_DUpperHorizBright_l(a0),d5
+				add.l	d5,WD_UpperLeftBrightScaled_l(a0)
 
 				dbra	d7,.scr_divide_loop
 				rts
 
 .scr_not_off_left:
-				move.w	d0,d6		; This continuuously moves the 'Draw_LeftClip_w' out by one pixel
+				move.w	d0,d6		; This continuously moves the 'Draw_LeftClip_w' out by one pixel
 									; So we always only produce new strips at integer x coordinates
 
 				cmp.w	Draw_RightClip_w(pc),d0
@@ -188,8 +188,8 @@ DoleftendGOUR:
 				move.l	d2,(a2)+
 				move.l	d3,(a2)+
 				move.l	d4,(a2)+
-				move.l	24(a0),(a2)+			; this is immediately overwriting workspace area
-				move.l	32(a0),(a2)+			; but I guess the writing is trailing the reading
+				move.l	WD_LeftBrightScaled_l(a0),(a2)+		 ; this is immediately overwriting workspace area
+				move.l	WD_UpperLeftBrightScaled_l(a0),(a2)+ ; but I guess the writing is trailing the reading
 
 				; iterate further
 				swap	d0
@@ -198,10 +198,10 @@ DoleftendGOUR:
 				add.l	a5,d2
 				add.l	a6,d3
 				add.l	a1,d4
-				move.l	28(a0),d5
-				add.l	d5,24(a0)
-				move.l	36(a0),d5
-				add.l	d5,32(a0)
+				move.l	WD_DHorizBright_l(a0),d5
+				add.l	d5,WD_LeftBrightScaled_l(a0)
+				move.l	WD_DUpperHorizBright_l(a0),d5
+				add.l	d5,WD_UpperLeftBrightScaled_l(a0)
 				add.l	#$10000,d7
 				dbra	d7,.scr_divide_loop
 
@@ -305,7 +305,7 @@ DoleftendGOUR:
 				asr.w	#1,d7
 				sub.w	d6,d7
 				move.l	Draw_PalettePtr_l,a4
-				bsr		ScreenWallstripdrawGOUR
+				bsr		draw_ScreenWallStripGouraud
 
 				move.w	(a7)+,d7
 
@@ -393,7 +393,7 @@ scrdrawlopGDOUB:
 				asr.w	#1,d7
 				sub.w	d6,d7
 				move.l	Draw_PalettePtr_l,a4
-				bsr		ScreenWallstripdrawGOUR
+				bsr		draw_ScreenWallStripGouraud
 
 				move.w	(a7)+,d7				; restore
 
@@ -879,7 +879,7 @@ nostripqG:
 				rts
 
 
-ScreenWallstripdrawGOUR:
+draw_ScreenWallStripGouraud:
 				swap	d6
 				clr.w	d6
 				move.l	d6,draw_GouraudStart_l

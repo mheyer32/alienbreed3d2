@@ -249,14 +249,14 @@ sometodraw:
 
 ; *** Gouraud shading ***
 				moveq	#0,d5
-				move.w	26(a0),d5 ; right brightness ?
-				sub.w	24(a0),d5 ; left brightness ?
+				move.w	WD_RightBright_w(a0),d5 ; right brightness ?
+				sub.w	WD_LeftBright_w(a0),d5 ; left brightness ?
 				add.w	d5,d5
 				swap	d5
 				asr.l	d6,d5
-				move.l	d5,28(a0) ; brightness step?
+				move.l	d5,WD_DHorizBright_l(a0) ; brightness step?
 				moveq	#0,d5
-				move.w	24(a0),d5
+				move.w	WD_LeftBright_w(a0),d5
 				add.w	d5,d5
 				swap	d5
 
@@ -332,7 +332,7 @@ screendivide:
 				move.l	WD_DDist_l(a0),a5
 				move.l	WD_DTop_l(a0),a6
 				move.l	WD_DBot_l(a0),a1
-				move.l	28(a0),a0 ; what does this point to?
+				move.l	WD_DHorizBright_l(a0),a0 ; using a0 as a data value here
 
 scrdivlop:
 				swap	d0
