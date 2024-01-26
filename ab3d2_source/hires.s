@@ -6181,16 +6181,19 @@ draw_WaterSurface:
 				add.l	wateroff,d5
 
 				move.l	Draw_TexturePalettePtr_l,a1
-				add.l	#256*16,a1
+				add.l	#256*16,a1 ; halfway into the glare shade table
 				move.l	draw_Distance_l,d0
+
 ;				asr.l	#2,d0 ; 0xABADCAFE - this seems to affect the opacity
-				clr.b	d0
+				;clr.b	d0
+
+				and.l	#$3f00,d0
 
 				add.w	d0,d0
-				cmp.w	#9*512,d0
+				cmp.w	#5*512,d0
 				blt.s	.notoowater
 
-				move.w	#9*512,d0
+				move.w	#5*512,d0
 
 .notoowater:
 				adda.w	d0,a1
