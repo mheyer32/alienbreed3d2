@@ -35,6 +35,11 @@ draw_3DPointsRotated_vl:		ds.l	250*3	; rotated 3D points in X/Z plane (y pointin
 Draw_WallTexturePtrs_vl:		ds.l	NUM_WALL_TEXTURES
 Draw_ObjectPtrs_vl:				ds.l	DRAW_MAX_OBJECTS*4
 Draw_TextureMapsPtr_l:			ds.l	1
+
+; Shade Tables, 64x256
+; The first 32 begin with pure white and gradually saturating towards the palette at row 32. Used for glare/specular.
+; The remaining rows are increasingly darkended towards black and are used for general lighting.
+; Each entry is byte index to the nearest palette match for the given variation.
 Draw_TexturePalettePtr_l:		ds.l	1
 Draw_BackdropImagePtr_l:		ds.l	1
 Draw_FloorTexturesPtr_l:		ds.l	1 ; this will be a copy of either Draw_GlobalFloorTexturesPtr_l

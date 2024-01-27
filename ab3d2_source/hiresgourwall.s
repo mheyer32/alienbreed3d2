@@ -29,14 +29,13 @@ draw_GouraudStart_l:	dc.l	0
 * 16(a0)=leftbot
 * 18(a0)=rightbot
 
-
 DoleftendGOUR:
 				move.w	Draw_LeftClip_w,d0
 				sub.w	#1,d0
 				move.w	d0,Draw_LeftClipAndLast_w
-				move.w	(a0),d0					; leftx
-				move.w	2(a0),d1				; rightx
-				sub.w	d0,d1					; width
+				move.w	(a0),d0					; WD_LeftX_w(a0)
+				move.w	WD_RightX_w(a0),d1
+				sub.w	d0,d1
 				bge.s	.some_to_draw
 
 				rts
@@ -63,78 +62,78 @@ DoleftendGOUR:
 				swap	d7
 				clr.w	d1						; width in high word
 				asr.l	d6,d1					; divide down by shift
-				move.l	d1,(a0)					; save
+				move.l	d1,(a0)					; WD_DWidth_l save
 
 				; Reading input walls from a0 and writing calculated deltas back into a0
 				moveq	#0,d1
-				move.w	4(a0),d1				; leftbm
+				move.w	WD_LeftBM_w(a0),d1		; leftbm
 				moveq	#0,d2
-				move.w	6(a0),d2				; rightbm
+				move.w	WD_RightBM_w(a0),d2		; rightbm
 				sub.w	d1,d2					; dBm = (rightbm -leftbm)
 				swap	d1						; leftbm in high word
 				swap	d2						;
 				asr.l	d6,d2					; dBM >> widthShift
-				move.l	d2,4(a0)				; store dBM in 4(a0)
+				move.l	d2,WD_DBM_l(a0)			; store dBM in 4(a0)
 
 				moveq	#0,d2
-				move.w	8(a0),d2				; leftdist
+				move.w	WD_LeftDist_w(a0),d2	; leftdist
 				moveq	#0,d3
-				move.w	10(a0),d3				; rightdist
+				move.w	WD_RightDist_w(a0),d3	; rightdist
 				sub.w	d2,d3					; dDist = rightdist - leftfist
 				swap	d2						; d2 = leftdist << 16
 				swap	d3
 				asr.l	d6,d3					; (dDist << 16)  >> widthShift
-				move.l	d3,8(a0)				; store dDist in 8(a0)
+				move.l	d3,WD_DDist_l(a0)		; store dDist in 8(a0)
 
 				moveq	#0,d3					; lefttop
-				move.w	12(a0),d3
+				move.w	WD_LeftTop_w(a0),d3
 				moveq	#0,d4
-				move.w	14(a0),d4				; righttop
+				move.w	WD_RightTop_w(a0),d4	; righttop
 				sub.w	d3,d4					; dTop = (rightTop - leftTop)
 				swap	d3						; lefttop in high word
 				swap	d4						;
 				asr.l	d6,d4					; (dTop << 16) >> widthShift
-				move.l	d4,12(a0)				; dTop in 12(a0)
+				move.l	d4,WD_DTop_l(a0)		; dTop in 12(a0)
 
 				moveq	#0,d4					; left bottom
-				move.w	16(a0),d4
+				move.w	WD_LeftBot_w(a0),d4
 				moveq	#0,d5
-				move.w	18(a0),d5				; right bottom
+				move.w	WD_RightBot_w(a0),d5	; right bottom
 				sub.w	d4,d5					; dBot = rightbot-leftbot
 				swap	d4						; leftbot << 16
 				swap	d5
 				asr.l	d6,d5					; (dBot << 16) >> widthShift
-				move.l	d5,16(a0)
+				move.l	d5,WD_DBot_l(a0)
 
 ; *** Gouraud shading ***
 				moveq	#0,d5
-				move.w	26(a0),d5
-				sub.w	24(a0),d5
+				move.w	WD_RightBright_w(a0),d5
+				sub.w	WD_LeftBright_w(a0),d5
 				add.w	d5,d5
 				swap	d5
 				asr.l	d6,d5
-				move.l	d5,28(a0)				; Deltas for lighting values?
+				move.l	d5,WD_DHorizBright_l(a0)		; Deltas for lighting values?
 
 				moveq	#0,d5
-				move.w	24(a0),d5
+				move.w	WD_LeftBright_w(a0),d5
 				add.w	d5,d5
 				swap	d5
-				move.l	d5,24(a0)				; 24(a0) << 17
+				move.l	d5,WD_LeftBrightScaled_l(a0)		; 24(a0) << 17
 
 ; *** Extra Gouraud Shading ***
 				moveq	#0,d5
-				move.w	34(a0),d5
-				sub.w	32(a0),d5
+				move.w	WD_UpperRightBright_w(a0),d5
+				sub.w	WD_UpperLeftBright_w(a0),d5
 				add.w	d5,d5
 				swap	d5
 				asr.l	d6,d5
-				move.l	d5,36(a0)				; Deltas for lighting values?
+				move.l	d5,WD_DUpperHorizBright_l(a0)				; Deltas for lighting values?
 
 				moveq	#0,d5
-				move.w	32(a0),d5
+				move.w	WD_UpperLeftBright_w(a0),d5
 				add.w	d5,d5
 				swap	d5
-				move.l	d5,32(a0)				; 32(a0) << 17
+				move.l	d5,WD_UpperLeftBrightScaled_l(a0)				; 32(a0) << 17
 
 				; Is this preparing the strips to draw?
 				or.l	#$ffff0000,d7			; high word for number of iterations/iterations mask
@@ -142,12 +141,12 @@ DoleftendGOUR:
 				move.l	#Sys_Workspace_vl,a2
 
 				move.l	(a0),a3					; (Width<<16)>>widthShift
-				move.l	4(a0),a4				; dBM
-				move.l	8(a0),a5				; dDist
-				move.l	12(a0),a6				; dTop
-				move.l	16(a0),a1				; dBottom
+				move.l	WD_DBM_l(a0),a4			; dBM
+				move.l	WD_DDist_l(a0),a5		; dDist
+				move.l	WD_DTop_l(a0),a6		; dTop
+				move.l	WD_DBot_l(a0),a1		; dBottom
 
-				;iterate through strips until we get past Draw_LeftClip_w
+				; iterate through strips until we get past Draw_LeftClip_w
 				; I think, Draw_LeftClip_w is a continuously updated x coordinate that
 				; denotes "undrawn" space on screen to prevent partially covered walls
 				; from overwriting walls in front
@@ -167,16 +166,16 @@ DoleftendGOUR:
 				add.l	a3,d0
 
 				; forward differencing vertex color shading?!
-				move.l	28(a0),d5
-				add.l	d5,24(a0)
-				move.l	36(a0),d5
-				add.l	d5,32(a0)
+				move.l	WD_DHorizBright_l(a0),d5
+				add.l	d5,WD_LeftBrightScaled_l(a0)
+				move.l	WD_DUpperHorizBright_l(a0),d5
+				add.l	d5,WD_UpperLeftBrightScaled_l(a0)
 
 				dbra	d7,.scr_divide_loop
 				rts
 
 .scr_not_off_left:
-				move.w	d0,d6		; This continuuously moves the 'Draw_LeftClip_w' out by one pixel
+				move.w	d0,d6		; This continuously moves the 'Draw_LeftClip_w' out by one pixel
 									; So we always only produce new strips at integer x coordinates
 
 				cmp.w	Draw_RightClip_w(pc),d0
@@ -189,8 +188,8 @@ DoleftendGOUR:
 				move.l	d2,(a2)+
 				move.l	d3,(a2)+
 				move.l	d4,(a2)+
-				move.l	24(a0),(a2)+			; this is immediately overwriting workspace area
-				move.l	32(a0),(a2)+			; but I guess the writing is trailing the reading
+				move.l	WD_LeftBrightScaled_l(a0),(a2)+		 ; this is immediately overwriting workspace area
+				move.l	WD_UpperLeftBrightScaled_l(a0),(a2)+ ; but I guess the writing is trailing the reading
 
 				; iterate further
 				swap	d0
@@ -199,10 +198,10 @@ DoleftendGOUR:
 				add.l	a5,d2
 				add.l	a6,d3
 				add.l	a1,d4
-				move.l	28(a0),d5
-				add.l	d5,24(a0)
-				move.l	36(a0),d5
-				add.l	d5,32(a0)
+				move.l	WD_DHorizBright_l(a0),d5
+				add.l	d5,WD_LeftBrightScaled_l(a0)
+				move.l	WD_DUpperHorizBright_l(a0),d5
+				add.l	d5,WD_UpperLeftBrightScaled_l(a0)
 				add.l	#$10000,d7
 				dbra	d7,.scr_divide_loop
 
@@ -306,7 +305,7 @@ DoleftendGOUR:
 				asr.w	#1,d7
 				sub.w	d6,d7
 				move.l	Draw_PalettePtr_l,a4
-				bsr		ScreenWallstripdrawGOUR
+				bsr		draw_ScreenWallStripGouraud
 
 				move.w	(a7)+,d7
 
@@ -394,7 +393,7 @@ scrdrawlopGDOUB:
 				asr.w	#1,d7
 				sub.w	d6,d7
 				move.l	Draw_PalettePtr_l,a4
-				bsr		ScreenWallstripdrawGOUR
+				bsr		draw_ScreenWallStripGouraud
 
 				move.w	(a7)+,d7				; restore
 
@@ -823,11 +822,11 @@ computeloop2G:
 
 OTHERHALFG:
 				move.w	d1,(a0)
-				move.w	d3,2(a0)
-				move.w	d4,4(a0)
-				move.w	d5,6(a0)
-				move.w	d0,8(a0)
-				move.w	d2,10(a0)
+				move.w	d3,WD_RightX_w(a0)
+				move.w	d4,WD_LeftBM_w(a0)
+				move.w	d5,WD_RightBM_w(a0)
+				move.w	d0,WD_LeftDist_w(a0)
+				move.w	d2,WD_RightDist_w(a0)
 				move.w	draw_LBR_w,d5
 				sub.w	#300,d5
 				ext.w	d5
@@ -880,7 +879,7 @@ nostripqG:
 				rts
 
 
-ScreenWallstripdrawGOUR:
+draw_ScreenWallStripGouraud:
 				swap	d6
 				clr.w	d6
 				move.l	d6,draw_GouraudStart_l

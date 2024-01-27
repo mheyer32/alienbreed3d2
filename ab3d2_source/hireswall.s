@@ -184,8 +184,8 @@ Doleftend:
 				move.w	Draw_LeftClip_w,d0
 				sub.w	#1,d0
 				move.w	d0,Draw_LeftClipAndLast_w
-				move.w	(a0),d0
-				move.w	2(a0),d1
+				move.w	(a0),d0					; WD_LeftX_w
+				move.w	WD_RightX_w(a0),d1
 				sub.w	d0,d1
 				bge.s	sometodraw
 				rts
@@ -205,58 +205,58 @@ sometodraw:
 				swap	d7
 				clr.w	d1
 				asr.l	d6,d1
-				move.l	d1,(a0)
+				move.l	d1,(a0) ; WD_DWidth_l(a0)
 
 				moveq	#0,d1
-				move.w	4(a0),d1
+				move.w	WD_LeftBM_w(a0),d1
 				moveq	#0,d2
-				move.w	6(a0),d2
+				move.w	WD_RightBM_w(a0),d2
 				sub.w	d1,d2
 				swap	d1
 				swap	d2
 				asr.l	d6,d2
-				move.l	d2,4(a0)
+				move.l	d2,WD_DBM_l(a0)
 
 				moveq	#0,d2
-				move.w	8(a0),d2
+				move.w	WD_LeftDist_w(a0),d2
 				moveq	#0,d3
-				move.w	10(a0),d3
+				move.w	WD_RightDist_w(a0),d3
 				sub.w	d2,d3
 				swap	d2
 				swap	d3
 				asr.l	d6,d3
-				move.l	d3,8(a0)
+				move.l	d3,WD_DDist_l(a0)
 
 				moveq	#0,d3
-				move.w	12(a0),d3
+				move.w	WD_LeftTop_w(a0),d3
 				moveq	#0,d4
-				move.w	14(a0),d4
+				move.w	WD_RightTop_w(a0),d4
 				sub.w	d3,d4
 				swap	d3
 				swap	d4
 				asr.l	d6,d4
-				move.l	d4,12(a0)
+				move.l	d4,WD_DTop_l(a0)
 
 				moveq	#0,d4
-				move.w	16(a0),d4
+				move.w	WD_LeftBot_w(a0),d4
 				moveq	#0,d5
-				move.w	18(a0),d5
+				move.w	WD_RightBot_w(a0),d5
 				sub.w	d4,d5
 				swap	d4
 				swap	d5
 				asr.l	d6,d5
-				move.l	d5,16(a0)
+				move.l	d5,WD_DBot_l(a0)
 
 ; *** Gouraud shading ***
 				moveq	#0,d5
-				move.w	26(a0),d5
-				sub.w	24(a0),d5
+				move.w	WD_RightBright_w(a0),d5 ; right brightness ?
+				sub.w	WD_LeftBright_w(a0),d5 ; left brightness ?
 				add.w	d5,d5
 				swap	d5
 				asr.l	d6,d5
-				move.l	d5,28(a0)
+				move.l	d5,WD_DHorizBright_l(a0) ; brightness step?
 				moveq	#0,d5
-				move.w	24(a0),d5
+				move.w	WD_LeftBright_w(a0),d5
 				add.w	d5,d5
 				swap	d5
 
@@ -327,12 +327,12 @@ screendivide:
 				move.w	Draw_LeftClipAndLast_w(pc),d6
 				move.l	#Sys_Workspace_vl,a2
 
-				move.l	(a0),a3
-				move.l	4(a0),a4
-				move.l	8(a0),a5
-				move.l	12(a0),a6
-				move.l	16(a0),a1
-				move.l	28(a0),a0
+				move.l	(a0),a3 ; WD_DWidth_l
+				move.l	WD_DBM_l(a0),a4
+				move.l	WD_DDist_l(a0),a5
+				move.l	WD_DTop_l(a0),a6
+				move.l	WD_DBot_l(a0),a1
+				move.l	WD_DHorizBright_l(a0),a0 ; using a0 as a data value here
 
 scrdivlop:
 				swap	d0
@@ -452,6 +452,7 @@ scrdrawlop:
 				move.l	a2,a4
 				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a2
 
+				; dithering?
 				and.b	#$fe,d6
 				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a4
 
@@ -461,7 +462,7 @@ scrdrawlop:
 
 .nobrightswap:
 				move.w	d7,-(a7)
-				bsr		ScreenWallstripdraw
+				bsr		draw_ScreenWallStrip
 				move.w	(a7)+,d7
 
 toosmall:
@@ -541,7 +542,7 @@ scrdrawlopDOUB:
 
 .nobrightswap:
 				move.w	d7,-(a7)
-				bsr		ScreenWallstripdraw
+				bsr		draw_ScreenWallStrip
 				move.w	(a7)+,d7
 				dbra	d7,scrdrawlopDOUB
 				rts
@@ -712,6 +713,7 @@ scrdrawlopFULLDOUB:
 
 ********************************************************************************
 
+; TODO - 0xABADCAFE come back to this because curved walls would be awesome.
 ;******************************************************************
 ;
 ;* Curve drawing routine. We have to know:
@@ -962,61 +964,7 @@ scrdrawlopFULLDOUB:
 ;
 
 ********************************************************************************
-;protcheck:
-; sub.l #53624,a3
-; add.l #2345215,a2
-; lea passspace-$30000(pc),a1
-; add.l #$30000,a1
-; lea startpass(pc),a5
-; move.w #endpass-startpass-1,d1
-;copypass:
-; move.b (a5)+,(a1)+
-; dbra d1,copypass
-; sub.l a5,a5
-; lea passspace-$30000(pc),a1
-; add.l #$30000,a1
-; jsr (a1)
-; lea passspace-$30000(pc),a1
-; add.l #$30000,a1
-; lea startpass(pc),a5
-; move.w #(endpass-startpass)/2-1,d1
-;erasepass:
-; move.w -(a5),(a1)+
-; dbra d1,erasepass
-; sub.l a5,a5
-; sub.l a1,a1
-; eor.l #$af594c72,d0
-; sub.l #123453986,a4
-; move.l d0,(a4)
-; add.l #123453986,a4
-; move.l #0,d0
-; sub.l #2345215,a2
-; jsr (a2)
-; sub.l a2,a2
-; eor.l #$af594c72,d0
-; sub.l #123453986,a4
-; move.l (a4),d1
-; add.l #123453986,a4
-; cmp.l d1,d0
-; bne.s notrightt
-; add.l #53624,a3
-; move.w #9,d7
-;sayitsok:
-; move.l (a3)+,a2
-; add.l #78935450,a2
-; st (a2)
-; dbra d7,sayitsok
-;notrightt:
-; sub.l a3,a3
-;nullit:
-; rts
-;
-; incbin "includes/protroutencoded"
 
-endprot:
-
-
-******************************************************************
 
 ; This routine renders a wall that has it's upper and lower brightnesses the same.
 draw_WallSimpleShaded:
@@ -1334,7 +1282,7 @@ alloffright2:
 nostripq:
 				rts
 
-ScreenWallstripdraw:
+draw_ScreenWallStrip:
 				move.w	d4,d6
 				cmp.w	draw_TopClip_w(pc),d6
 				blt.s	nostripq

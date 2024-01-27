@@ -1011,8 +1011,11 @@ object_behind:
 draw_bitmap_additive:
 				DEV_CHECK	ADDITIVE_BITMAPS,object_behind
 				DEV_INC.w	VisibleAdditiveCount
-				move.l	draw_BasePalPtr_l,a4
 
+				 ; draw_BasePalPtr_l contains 32 sets of 256 blend values for this bitmap,
+				 ; one for each of the bit map colours blended onto an existing palette entry.
+
+				move.l	draw_BasePalPtr_l,a4
 draw_right_side_additive:
 				swap	d7
 				move.l	midobj_l,a5
@@ -1878,9 +1881,8 @@ BOTPART:
 				lea		(a2,d2.w),a5			; sine of object rotation wrt view
 				move.l	#boxbrights_vw,a6
 				move.w	(a5),d6					; sine of object rotation
-				move.w	COSINE_OFS(a5),d7		; cosine of object rotation. WHY DOES IT NOT NEED OOB/WRAP CHECK?
-												; bigsine is 16kb, so 8192 words
-												; this may mean the table is covering 4pi/720deg
+				move.w	COSINE_OFS(a5),d7		; cosine of object rotation.
+												; Note: SinCosTable covers covers 4pi/720deg
 rotate_object:
 				move.w	(a3),d2					; xpt
 				move.w	2(a3),d3				; ypt
@@ -1916,7 +1918,7 @@ rotate_object:
 				add.l	d0,d0					; * 2
 ; Projection for polygonal objects to screen here?
 				tst.b	Vid_FullScreen_b
-				beq.s	smallscreen_conv
+				beq		smallscreen_conv
 
 fullscreen_conv:
 				; 0xABADCAFE - this is very weird. If I supply the correct factor of 5/3, vector models break
@@ -1939,15 +1941,32 @@ fullscreen_conv:
 				move.l	d4,(a2)+				;
 				move.w	(a2),d5					; z'
 				add.w	d1,d5					; z'' = z' + zpos_of_view
-				ble		.ptbehind
+				ble		.point_behind
 
-				cmp.w	#DRAW_VECTOR_MAX_Z,d5	; skip object beyond this distance.
-				bgt		nomoreparts
+				cmp.w	#DRAW_VECTOR_MAX_Z,d5	; skip all vectors beyond this distance.
+				bgt		no_more_parts
+
+				; 0xABADCAFE - calculate 5/3 * value/z as 5*value / 3*z
+				; This can overflow d5. We trap this and use the older version of the scaling code.
+
+				cmp.w	#32767/3,d5	; we will overflow on x 3, so use the old version there
+				bgt.s	.old_scaler
 
 				move.w	d5,(a2)+
 
-				; FIXME: can we factor the 3/2 scaling into Z somewhere else?
-				add.w	d5,d5					; z'' * 2  to achieve  3/2 scaling for fullscreen
+				move.w	d5,d6
+				add.w	d5,d5 ; d5 = z*2 (still used elsewhere)
+				add.w	d5,d6 ; d6 = z*3
+				muls.l	#5,d4
+				divs	d6,d4 ; ys = y*5/z*3
+				muls.l	#5,d3
+				divs	d6,d3 ; xs = x*5/z*3
+
+				bra.s	.done_scaler
+
+.old_scaler:
+				move.w	d5,(a2)+
+				add.w	d5,d5
 
 				; 0xABADCAFE - going to be multiplying by 5/3 here for the 320 fullscreen
 				move.l	#3413,d6
@@ -1957,7 +1976,7 @@ fullscreen_conv:
 				muls.l	d6,d4						; before the multiplication step
 				asr.l	#8,d4						; y'' * 3.333
 
-				divs	d5,d4						; ys = (x*3)/(z*2)
+				divs	d5,d4						; ys = (x*3.333)/(z*2)
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
 				; approximate 3.333 => 3413/1024
@@ -1965,9 +1984,10 @@ fullscreen_conv:
 				muls.l	d6,d3						; before the multiplication
 				asr.l	#8,d3						; x'' * 3.333
 
-				divs	d5,d3						; xs = (x*3)/(z*2)
+				divs	d5,d3						; xs = (x*3.333)/(z*2)
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
+.done_scaler:
 				add.w	Vid_CentreX_w,d3			; mid_x of screen
 				add.w	draw_PolygonCentreY_w,d4	; mid_y of screen
 				move.w	d3,(a3)+					; store xs,ys in draw_2DPointsProjected_vl
@@ -1976,10 +1996,11 @@ fullscreen_conv:
 
 				bra		done_conv
 
-.ptbehind:
+.point_behind:
 				move.w	d5,(a2)+
-				move.w	#32767,(a3)+
-				move.w	#32767,(a3)+
+				;move.w	#32767,(a3)+
+				;move.w	#32767,(a3)+
+				move.l	#$7fff7fff,(a3)+
 				dbra	d7,.convert_to_screen
 
 				bra		done_conv
@@ -2001,10 +2022,10 @@ smallscreen_conv:
 				move.l	d4,(a2)+
 				move.w	(a2),d5
 				add.w	d1,d5
-				ble		.ptbehind2
+				ble		.point_behind_2
 
 				cmp.w	#DRAW_VECTOR_MAX_Z,d5	; skip object beyond this distance.
-				bgt		nomoreparts
+				bgt		no_more_parts
 
 				move.w	d5,(a2)+
 
@@ -2020,7 +2041,7 @@ smallscreen_conv:
 
 				bra		done_conv
 
-.ptbehind2:
+.point_behind_2:
 				move.w	d5,(a2)+
 				move.w	#32767,(a3)+
 				move.w	#32767,(a3)+
@@ -2054,6 +2075,7 @@ done_conv:
 .okpos:
 				cmp.w	#31,d1
 				ble.s	.oksmall
+
 				move.w	#31,d1
 
 .oksmall:
@@ -2142,9 +2164,9 @@ domoreshift:
 doneallparts:
 				move.l	#draw_PartBuffer_vw,a0
 
-Partloop:
+.part_loop:
 				move.l	(a0)+,d7
-				blt		nomoreparts
+				blt		no_more_parts
 
 				moveq	#0,d0
 				move.w	(a0),d0
@@ -2153,9 +2175,9 @@ Partloop:
 				move.l	d0,a1
 				move.w	#0,firstpt
 
-polyloo:
+.polygon_loop:
 				tst.w	(a1)
-				blt.s	nomorepolys
+				blt.s	.no_more_polygons
 
 				movem.l	a0/a1/d7,-(a7)
 				bsr		doapoly
@@ -2163,12 +2185,12 @@ polyloo:
 				movem.l	(a7)+,a0/a1/d7
 				move.w	(a1),d0
 				lea		18(a1,d0.w*4),a1
-				bra.s	polyloo
+				bra.s	.polygon_loop
 
-nomorepolys:
-				bra		Partloop
+.no_more_polygons:
+				bra		.part_loop
 
-nomoreparts:
+no_more_parts:
 				rts
 
 				align 4
