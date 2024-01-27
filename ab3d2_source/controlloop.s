@@ -1188,7 +1188,7 @@ JUSTDRAWIT:
 				moveq	#0,d2
 
 				move.w	#31,d0
-linelop:
+line_loop:
 				move.w	#39,d1
 				move.l	#SCRTOSPR,a4
 				move.l	a3,a2
@@ -1206,7 +1206,7 @@ charlop:
 				add.w	(a4)+,a2
 				dbra	d1,charlop
 				add.w	#16*8,a3
-				dbra	d0,linelop
+				dbra	d0,line_loop
 
 				rts
 
