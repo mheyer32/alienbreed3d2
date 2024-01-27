@@ -3,17 +3,27 @@ MAP_SOLID_WALL_PEN	EQU	255
 MAP_STEP_WALL_PEN	EQU 254
 
 DoTheMapWotNastyCharlesIsForcingMeToDo:
+
+
 				; 0xABADCAFE - Fixme - make these assignable and remember to clear the keys
 				; as the zoom speed is insane under emulations
 
 				move.l	Draw_TexturePalettePtr_l,a4
 				;add.l	#256*32,a4
 
-				add.l	#256*26,a4 ; glare 25% ?
+				add.l	#256*26,a4 ; glare offset
 
 				; add.w Draw_MapZoomLevel_w,a4
 
 				move.l	#KeyMap_vb,a5
+
+				tst.b	RAWKEY_NUM_ENTER(a5)
+				beq.s	.skip_render_toggle
+
+				clr.b	RAWKEY_NUM_ENTER(a5)
+				not.b	draw_MapTransparent_b
+
+.skip_render_toggle:
 				tst.b	RAWKEY_F1(a5)			; Zoom In
 				beq.s	.skip_zoom_in
 
@@ -356,6 +366,7 @@ done_bottom_clip:
 Draw_MapZoomLevel_w:	dc.w	3
 draw_MapXOffset_w:		dc.w	0
 draw_MapZOffset_w:		dc.w	0
+draw_MapTransparent_b:	dc.w	0
 
 map_offscreen:
 no_line:
@@ -402,32 +413,50 @@ down_left_more:
 				move.w	d2,d7
 				addq	#1,a0
 
-.line_loop:
-				;move.b	d4,-(a0)
+				tst.b	draw_MapTransparent_b
+				bne.s	.line_loop_transparent
 
-				move.b	-(a0),d4			; read chunky buffer
-				move.b	(a4,d4.w),(a0)	; Replace and write back
+.line_loop:		; regular solid colour mode
+				move.b	d4,-(a0)
 
 				sub.w	d3,d0
 				bgt.s	.no_extra
 
 				add.w	d2,d0
 				add.w	d6,a0
+
 .no_extra:
 				dbra	d7,.line_loop
 
 				rts
+
+.line_loop_transparent:
+				move.b	-(a0),d4		; read chunky buffer
+				move.b	(a4,d4.w),(a0)	; Replace and write back
+
+				sub.w	d3,d0
+				bgt.s	.no_extra_transparent
+
+				add.w	d2,d0
+				add.w	d6,a0
+
+.no_extra_transparent:
+				dbra	d7,.line_loop_transparent
+
+				rts
+
+
 
 down_more_left:
 				move.w	#SCREEN_WIDTH,d6
 				move.w	d3,d0
 				move.w	d3,d7
 
-.line_loop:
-				;move.b	d4,(a0)
+				tst.b	draw_MapTransparent_b
+				bne.s	.line_loop_transparent
 
-				move.b	(a0),d4			; read chunky buffer
-				move.b	(a4,d4.w),(a0)	; Replace and write back
+.line_loop:		; regular solid colour mode
+				move.b	d4,(a0)
 
 				add.w	d6,a0
 				sub.w	d2,d0
@@ -435,8 +464,26 @@ down_more_left:
 
 				add.w	d3,d0
 				subq	#1,a0
+
 .no_extra:
 				dbra	d7,.line_loop
+
+				rts
+
+
+.line_loop_transparent:
+				move.b	(a0),d4			; read chunky buffer
+				move.b	(a4,d4.w),(a0)	; Replace and write back
+
+				add.w	d6,a0
+				sub.w	d2,d0
+				bgt.s	.no_extra_transparent
+
+				add.w	d3,d0
+				subq	#1,a0
+
+.no_extra_transparent:
+				dbra	d7,.line_loop_transparent
 
 				rts
 
@@ -449,19 +496,35 @@ down_right_more:
 				move.w	d2,d0
 				move.w	d2,d7
 
-.line_loop:
-				;move.b	d4,(a0)+
+				tst.b	draw_MapTransparent_b
+				bne.s	.line_loop_transparent
 
-				move.b	(a0),d4			; read chunky buffer
-				move.b	(a4,d4.w),(a0)+	; Replace and write back
-
+.line_loop:		; regular solid colour mode
+				move.b	d4,(a0)+
 				sub.w	d3,d0
 				bgt.s	.no_extra
 
 				add.w	d2,d0
 				add.w	d6,a0
+
 .no_extra:
 				dbra	d7,.line_loop
+
+				rts
+
+
+.line_loop_transparent:
+				move.b	(a0),d4			; read chunky buffer
+				move.b	(a4,d4.w),(a0)+	; Replace and write back
+
+				sub.w	d3,d0
+				bgt.s	.no_extra_transparent
+
+				add.w	d2,d0
+				add.w	d6,a0
+
+.no_extra_transparent:
+				dbra	d7,.line_loop_transparent
 
 				rts
 
@@ -470,19 +533,35 @@ down_more_right:
 				move.w	d3,d0
 				move.w	d3,d7
 
-.line_loop:
-				;move.b	d4,(a0)
+				tst.b	draw_MapTransparent_b
+				bne.s	.line_loop_transparent
 
+.line_loop:		; regular solid colour mode
+				move.b	d4,(a0)
+				add.w	d6,a0
+				sub.w	d2,d0
+				bgt.s	.no_extra
+
+				add.w	d3,d0
+				addq	#1,a0
+
+.no_extra:
+				dbra	d7,.line_loop
+				rts
+
+
+.line_loop_transparent:
 				move.b	(a0),d4			; read chunky buffer
 				move.b	(a4,d4.w),(a0)	; Replace and write back
 
 				add.w	d6,a0
 				sub.w	d2,d0
-				bgt.s	.no_extra
+				bgt.s	.no_extra_transparent
 				add.w	d3,d0
 				addq	#1,a0
-.no_extra:
-				dbra	d7,.line_loop
+
+.no_extra_transparent:
+				dbra	d7,.line_loop_transparent
 				rts
 
 
