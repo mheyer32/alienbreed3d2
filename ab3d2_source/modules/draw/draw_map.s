@@ -2,6 +2,9 @@
 MAP_SOLID_WALL_PEN	EQU	255
 MAP_STEP_WALL_PEN	EQU 254
 
+					align 4
+draw_BaseMapTransparencyPtr_l:	ds.l	1
+
 DoTheMapWotNastyCharlesIsForcingMeToDo:
 
 
@@ -9,9 +12,8 @@ DoTheMapWotNastyCharlesIsForcingMeToDo:
 				; as the zoom speed is insane under emulations
 
 				move.l	Draw_TexturePalettePtr_l,a4
-				;add.l	#256*32,a4
-
-				add.l	#256*26,a4 ; glare offset
+				add.l	#256*25,a4 ; glare offset
+				move.l	a4,draw_BaseMapTransparencyPtr_l
 
 				; add.w Draw_MapZoomLevel_w,a4
 
@@ -86,11 +88,13 @@ wall_mapped:
 				bra.s	decided_colour
 
 wall_seen:
+				move.l	draw_BaseMapTransparencyPtr_l,a4
 				move.w	#MAP_SOLID_WALL_PEN,d4
 				asr.l	#2,d5
 				bcc.s	.not_a_door
 
 				move.w	#MAP_STEP_WALL_PEN,d4
+				add.w	#256*2,a4 ; 2 steps more transparent
 
 .not_a_door:
 decided_colour:
