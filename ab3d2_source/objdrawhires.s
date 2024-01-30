@@ -2043,8 +2043,10 @@ smallscreen_conv:
 
 .point_behind_2:
 				move.w	d5,(a2)+
-				move.w	#32767,(a3)+
-				move.w	#32767,(a3)+
+				;move.w	#32767,(a3)+
+				;move.w	#32767,(a3)+
+				move.l	#$7fff7fff,(a3)+
+
 				dbra	d7,.convert_to_screen
 
 done_conv:
@@ -2198,6 +2200,14 @@ polybright:		dc.l	0
 firstpt:		dc.w	0
 PolyAng:		dc.w	0
 
+; 0xABADCAFE - Based on findings by @AndyLoft
+; For polygon culling in screen coordinates, trims any polygons with screen space points
+; outside the range -GUARDBAND to +GUARDBAND
+GUARDBAND		EQU		8191
+
+; for cmp2
+;guardband_vw:	dc.w	-GUARDBAND,GUARDBAND
+
 doapoly:
 				move.w	#960,draw_Left_w
 				move.w	#-10,draw_Right_w
@@ -2211,12 +2221,37 @@ doapoly:
 
 checkbeh:
 				move.w	(a1),d0
-				cmp.w	#32767,(a3,d0.w*4)
-				bne.s	.notbeh
+				;cmp.w	#32767,(a3,d0.w*4)
+				;bne.s	.notbeh
 
-				cmp.w	#32767,2(a3,d0.w*4)
-				bne.s	.notbeh
+				;cmp.w	#32767,2(a3,d0.w*4)
+				;bne.s	.notbeh
 
+				move.l	(a3,d0.w*4),d0
+
+				; 020/030/040
+				;cmp2.w	guardband_vw(pc),d0
+				;bcc.s		.notbeh
+
+				;swap	d0
+				;cmp2.w	guardband_vw(pc),d0
+				;bcc.s		.notbeh
+
+				cmp.w	#-GUARDBAND,d0
+				blt.s	.guard_clip
+
+				cmp.w	#GUARDBAND,d0
+				bgt.s	.guard_clip
+
+				swap	d0
+
+				cmp.w	#-GUARDBAND,d0
+				blt.s	.guard_clip
+
+				cmp.w	#GUARDBAND,d0
+				ble.s	.notbeh
+
+.guard_clip:
 				movem.l	(a7)+,d0-d7/a0-a6
 				bra		polybehind
 
