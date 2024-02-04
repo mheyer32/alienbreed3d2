@@ -119,20 +119,34 @@ plr_MouseControl:
 				add.w	d3,Sys_OldMouseY
 				move.w	STOPOFFSET,d0
 				move.w	d3,d2
-				asl.w	#7,d2
+***************************************************************
+; shoehorned this in here due to the projectiles not having the same trajectory in full screen compaired to small screen
+
+				tst.b	Vid_FullScreen_b
+				beq.s	.small
+
+				muls.w	#85,d2	;this is better. but there is probably a better way. multiply by 2/3 of 128
+				bra.s	.big
+
+.small:
+				asl.w	#7,d2	;multiply by 128
+
+.big:
+***************************************************************
+				;asl.w	#7,d2
 				add.w	d2,PlrT_AimSpeed_l(a0)
 				add.w	d3,d0
-				cmp.w	#-80,d0
+				cmp.w	LookMax,d0
 				bgt.s	.skip_look_up
 
 				move.w	#-512*20,PlrT_AimSpeed_l(a0)
-				move.w	#-80,d0
+				move.w	LookMax,d0
 
 .skip_look_up:
-				cmp.w	#80,d0
+				cmp.w	LookMin,d0
 				blt.s	.skip_look_down
 				move.w	#512*20,PlrT_AimSpeed_l(a0)
-				move.w	#80,d0
+				move.w	LookMin,d0
 
 .skip_look_down:
 				move.w	d0,STOPOFFSET
@@ -459,11 +473,11 @@ plr_KeyboardControl:
 
 				sub.w	#512,PlrT_AimSpeed_l(a0)
 				sub.w	#4,d0
-				cmp.w	#-80,d0
+				cmp.w	LookMax,d0
 				bgt.s	.skip_look_up
 
 				move.w	#-512*20,PlrT_AimSpeed_l(a0)
-				move.w	#-80,d0
+				move.w	LookMax,d0
 
 .skip_look_up:
 				moveq	#0,d7
@@ -473,11 +487,11 @@ plr_KeyboardControl:
 
 				add.w	#512,PlrT_AimSpeed_l(a0)
 				add.w	#4,d0
-				cmp.w	#80,d0
+				cmp.w	LookMin,d0
 				blt.s	.skip_look_down
 
 				move.w	#512*20,PlrT_AimSpeed_l(a0)
-				move.w	#80,d0
+				move.w	LookMin,d0
 
 .skip_look_down:
 				move.b	centre_view_key,d7
