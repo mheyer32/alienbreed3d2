@@ -217,8 +217,8 @@ xwobxoff:					dc.w	0
 xwobzoff:					dc.w	0
 CollId:						dc.w	0
 
-LookMin:	dc.w 0
-LookMax:	dc.w 0
+View_LookMin_w:	dc.w 0
+View_LookMax_w:	dc.w 0
 
 ; Byte Aligned
 Game_MasterQuit_b:			dc.b	0
@@ -751,16 +751,16 @@ CLRDAM:
 				beq.s	.small
 
 				move.w	#FS_HEIGHT/2,d0
-				move.w	d0,LookMin
+				move.w	d0,View_LookMin_w
 				neg.w	d0
-				move.w	d0,LookMax
+				move.w	d0,View_LookMax_w
 				bra	.big
 
 .small
 				move.w	#SMALL_HEIGHT/2,d0
-				move.w	d0,LookMin
+				move.w	d0,View_LookMin_w
 				neg.w	d0
-				move.w	d0,LookMax
+				move.w	d0,View_LookMax_w
 
 .big
 ***************************************************************
@@ -2045,9 +2045,9 @@ SetupRenderbufferSize:
 
 
 				move.w	#FS_HEIGHT/2,d0
-				move.w	d0,LookMin
+				move.w	d0,View_LookMin_w
 				neg.w	d0
-				move.w	d0,LookMax
+				move.w	d0,View_LookMax_w
 				move.w	STOPOFFSET,d0
 				move.w	d0,d1
 				asr.w	#1,d1			;STOPOFFSET * 0.5
@@ -2058,9 +2058,9 @@ SetupRenderbufferSize:
 
 .small
 				move.w	#SMALL_HEIGHT/2,d0
-				move.w	d0,LookMin
+				move.w	d0,View_LookMin_w
 				neg.w	d0
-				move.w	d0,LookMax
+				move.w	d0,View_LookMax_w
 				move.w	STOPOFFSET,d0
 				muls.w	#2,d0
 				divs.w	#3,d0
@@ -7186,7 +7186,7 @@ nostartalan:
 				clr.b	Plr1_Clicked_b
 				move.w	#0,Plr_AddToBobble_w
 				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapHeight_l
-				move.w	LookMax,d0					; Is this related to render buffer height
+				move.w	View_LookMax_w,d0					; Is this related to render buffer height
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
@@ -7276,7 +7276,7 @@ control2:
 				clr.b	Plr2_Fire_b
 				move.w	#0,Plr_AddToBobble_w
 				move.l	#PLR_CROUCH_HEIGHT,Plr2_SnapHeight_l
-				move.w	LookMax,d0
+				move.w	View_LookMax_w,d0
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
