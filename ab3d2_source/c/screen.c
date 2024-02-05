@@ -238,12 +238,16 @@ void LoadMainPalette()
 {
     ULONG palette[256 * 3 + 2];
     palette[0] = (256 << 16) | 0;  // 256 entries, starting at index 0
+    ULONG gun = 0;
     int c = 0;
     for (; c < 768; ++c) {
-        palette[c + 1] = draw_Palette_vw[c] << 24;
+        /* splat the 8-bit value into all 32 */
+        gun = draw_Palette_vw[c];
+        gun |= gun << 8;
+        gun |= gun << 16;
+        palette[c + 1] = gun;
     }
     palette[c + 1] = 0;
-
     LoadRGB32(ViewPortAddress(Vid_MainWindow_l), palette);
 }
 
