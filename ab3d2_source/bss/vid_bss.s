@@ -37,6 +37,13 @@ _Vid_MainWindow_l:
 vid_MainWindow_l:			ds.l	1
 ;vid_SafeMsgPort_l		ds.l	1			; this message port reveives messages when the old screen bitmap can be safely written to
 											; i.e. when the screen flip actually happened
+
+; Palette data to be submitted to LoadRGB32 calls
+_Vid_LoadRGB32Struct_vl::
+Vid_LoadRGB32Struct_vl:       ds.l    1
+vid_LoadRGB32Data_vl:       ds.l    256*3   ; 32-bit R, B, G
+vid_LoadRGB32End_l:         ds.l    1
+
 _Vid_ScreenBufferIndex_w::
 Vid_ScreenBufferIndex_w:		ds.w	1	; Index (0/1) of current screen buffer displayed.
 											; FIXME: unify the buffer index handling with Vid_DrawScreenPtr_l/Vid_DisplayScreenPtr_l

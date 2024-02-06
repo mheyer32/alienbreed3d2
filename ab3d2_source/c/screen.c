@@ -32,7 +32,8 @@
 
 #define SCREEN_TITLEBAR_HACK
 
-extern UWORD draw_Palette_vw[768];
+extern UWORD draw_Palette_vw[3 * 256];
+extern ULONG Vid_LoadRGB32Struct_vl[3 * 256 + 2];
 
 static PLANEPTR rasters[2];
 struct BitMap bitmaps[2];
@@ -172,7 +173,7 @@ void Vid_OpenMainScreen(void)
         CMOVE(doubleHeightCopList, bpl2mod, -8);
         CEND(doubleHeightCopList);
 #pragma GCC diagnostic pop
-	}
+    }
 
     SetPointer(Vid_MainWindow_l, emptySprite, 1, 0, 0, 0);
     LoadMainPalette();
@@ -236,8 +237,7 @@ void vid_SetupDoubleheightCopperlist(void)
 
 void LoadMainPalette()
 {
-    ULONG palette[256 * 3 + 2];
-    palette[0] = (256 << 16) | 0;  // 256 entries, starting at index 0
+    Vid_LoadRGB32Struct_vl[0] = (256 << 16) | 0;  // 256 entries, starting at index 0
     ULONG gun = 0;
     int c = 0;
     for (; c < 768; ++c) {
@@ -245,10 +245,10 @@ void LoadMainPalette()
         gun = draw_Palette_vw[c];
         gun |= gun << 8;
         gun |= gun << 16;
-        palette[c + 1] = gun;
+        Vid_LoadRGB32Struct_vl[c + 1] = gun;
     }
-    palette[c + 1] = 0;
-    LoadRGB32(ViewPortAddress(Vid_MainWindow_l), palette);
+    Vid_LoadRGB32Struct_vl[c + 1] = 0;
+    LoadRGB32(ViewPortAddress(Vid_MainWindow_l), Vid_LoadRGB32Struct_vl);
 }
 
 ULONG GetScreenMode()
