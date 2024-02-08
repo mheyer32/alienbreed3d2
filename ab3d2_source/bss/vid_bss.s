@@ -40,7 +40,7 @@ vid_MainWindow_l:			ds.l	1
 
 ; Palette data to be submitted to LoadRGB32 calls
 _Vid_LoadRGB32Struct_vl::
-Vid_LoadRGB32Struct_vl:       ds.l    1
+Vid_LoadRGB32Struct_vl:     ds.l    1
 vid_LoadRGB32Data_vl:       ds.l    256*3   ; 32-bit R, B, G
 vid_LoadRGB32End_l:         ds.l    1
 
@@ -62,3 +62,6 @@ Vid_DoubleWidth_b:				ds.b	1	; Double Width Pixel Mode
 _Vid_WaitForDisplayMsg_b::
 Vid_WaitForDisplayMsg_b: 		ds.b	1
 Vid_ResolutionOption_b:			ds.b	1	; cycles between pixel modes
+
+_Vid_GammaLevel_b::
+Vid_GammaLevel_b:               ds.b    1

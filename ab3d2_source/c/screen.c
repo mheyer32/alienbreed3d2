@@ -237,16 +237,32 @@ void vid_SetupDoubleheightCopperlist(void)
 
 void LoadMainPalette()
 {
-    Vid_LoadRGB32Struct_vl[0] = (256 << 16) | 0;  // 256 entries, starting at index 0
+    extern UBYTE const Vid_GammaIncTables_vb[256 * 8];
+    extern UBYTE Vid_GammaLevel_b;
     ULONG gun = 0;
     int c = 0;
-    for (; c < 768; ++c) {
-        /* splat the 8-bit value into all 32 */
-        gun = draw_Palette_vw[c];
-        gun |= gun << 8;
-        gun |= gun << 16;
-        Vid_LoadRGB32Struct_vl[c + 1] = gun;
+
+    Vid_LoadRGB32Struct_vl[0] = (256 << 16) | 0;  // 256 entries, starting at index 0
+
+    if (Vid_GammaLevel_b > 0) {
+        UBYTE const* gamma = Vid_GammaIncTables_vb + (((UWORD)((Vid_GammaLevel_b - 1) & 7)) << 8);
+        for (; c < 768; ++c) {
+            /* splat the 8-bit value into all 32 */
+            gun = gamma[draw_Palette_vw[c]];
+            gun |= gun << 8;
+            gun |= gun << 16;
+            Vid_LoadRGB32Struct_vl[c + 1] = gun;
+        }
+    } else {
+        for (; c < 768; ++c) {
+            /* splat the 8-bit value into all 32 */
+            gun = draw_Palette_vw[c];
+            gun |= gun << 8;
+            gun |= gun << 16;
+            Vid_LoadRGB32Struct_vl[c + 1] = gun;
+        }
     }
+
     Vid_LoadRGB32Struct_vl[c + 1] = 0;
     LoadRGB32(ViewPortAddress(Vid_MainWindow_l), Vid_LoadRGB32Struct_vl);
 }
@@ -357,9 +373,9 @@ static void CopyFrameBuffer(UBYTE *dst, const UBYTE *src, WORD dstBytesPerRow, W
 
         } else {
             for (WORD y = 0; y < height / 2; ++y) {
-                memcpy(dst, src, width);
+                CopyMem(src, dst, width);
                 dst += dstBytesPerRow;
-                memcpy(dst, src, width);
+                CopyMem(src, dst, width);
                 src += SCREEN_WIDTH * 2;
                 dst += dstBytesPerRow;
             }
@@ -381,7 +397,7 @@ static void CopyFrameBuffer(UBYTE *dst, const UBYTE *src, WORD dstBytesPerRow, W
 
         } else {
             for (WORD y = 0; y < height; ++y) {
-                memcpy(dst, src, width);
+                CopyMem(src, dst, width);
                 src += SCREEN_WIDTH;
                 dst += dstBytesPerRow;
             }

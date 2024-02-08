@@ -83,7 +83,7 @@ QUIT_KEY				equ RAWKEY_NUM_ASTERISK
 				include "data/tables_data.s"
 				include "data/text_data.s"
 				include "data/game_data.s"
-
+                include "data/vid_data.s"
 				section .text,code
 
 				xref _Vid_isRTG
@@ -2054,9 +2054,9 @@ SetupRenderbufferSize:
 
 				IFND BUILD_WITH_C
 LoadMainPalette:
-				sub.l	#256*4*3+2+2+4+4,a7		; reserve stack for 256 color entries + numColors + firstColor
-				move.l	a7,a1
-				move.l	a7,a0
+				lea Vid_LoadRGB32Struct_vl,a1
+				move.l  a1,a0
+
 				lea		draw_Palette_vw,a2
 				move.w	#256,(a0)+				; number of entries
 				move.w	#0,(a0)+				; start index
@@ -2075,7 +2075,6 @@ LoadMainPalette:
 				lea		sc_ViewPort(a0),a0
 				CALLGRAF LoadRGB32				; a1 still points to start of palette
 
-				add.l	#256*4*3+2+2+4+4,a7		;restore stack
 				rts
 
 				ENDIF
@@ -6910,20 +6909,37 @@ nolighttoggle:
 
 nolighttoggle2:
 				tst.b	RAWKEY_F5(a5)
-				beq.s	noret
 
-				tst.b	OLDRET
-				bne.s	noret2
+				beq.b   .no_gamma
 
-				st		OLDRET
-				CALLC	Msg_PullLast
+				clr.b   RAWKEY_F5(a5)
 
-				bra		noret2
+                clr.l   d0
+                move.b  Vid_GammaLevel_b,d0
+                add.w   #1,d0
+                cmp.w   #8,d0
+                ble.b   .set_gamma
 
-noret:
-				clr.b	OLDRET
+                clr.w   d0
+.set_gamma:
+                move.b  d0,Vid_GammaLevel_b
+                CALLC   LoadMainPalette
+.no_gamma:
 
-noret2:
+;				beq.s	noret
+;
+;				tst.b	OLDRET
+;				bne.s	noret2
+;
+;				st		OLDRET
+;				CALLC	Msg_PullLast
+;
+;				bra		noret2
+;
+;noret:
+;				clr.b	OLDRET
+;
+;noret2:
 				tst.b	RAWKEY_F6(a5)
 				beq.s	.nogood
 
