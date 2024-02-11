@@ -838,7 +838,7 @@ game_main_loop:
 				move.w	#%110000000000,_custom+potgo ; POTGO -start Potentiometer reading
 													; FIXME: shouldn't this be in a regular interrupt, like VBL?
 
-				move.b	MAPON,REALMAPON
+				move.b	MAPON,draw_RenderMap_b
 
 				move.b	Vid_FullScreenTemp_b,d0
 				move.b	Vid_FullScreen_b,d1
@@ -882,7 +882,7 @@ game_main_loop:
 ;				move.l	d0,hitcol
 
 nofadedownhc:
-				;bsr		LoadMainPalette		; should only reload the palatte when hit
+				;bsr		Vid_LoadMainPalette		; should only reload the palatte when hit
 
 				st		READCONTROLS
 				move.l	#$dff000,a6
@@ -1751,7 +1751,7 @@ drawplayer2:
 				bsr		DrawDisplay
 
 nodrawp2:
-				tst.b	REALMAPON
+				tst.b	draw_RenderMap_b
 				beq.s	.nomap
 				bsr		DoTheMapWotNastyCharlesIsForcingMeToDo
 
@@ -2053,7 +2053,7 @@ SetupRenderbufferSize:
 				rts
 
 				IFND BUILD_WITH_C
-LoadMainPalette:
+Vid_LoadMainPalette:
 				lea Vid_LoadRGB32Struct_vl,a1
 				move.l  a1,a0
 
@@ -3329,11 +3329,11 @@ _Sys_MouseY::
 Sys_MouseY:		dc.w	0 ; Pitch?
 
 MAPON:			dc.w	$0
-REALMAPON:		dc.w	0
+draw_RenderMap_b:		dc.w	0
 
 RotateLevelPts:	;		Does					this rotate ALL points in the level EVERY frame?
 
-				tst.b	REALMAPON
+				tst.b	draw_RenderMap_b
 				beq		ONLYTHELONELY			; When REALMAP is on, we apparently need to transform all level points,
 										; otherwise only the visible subset
 
@@ -6908,22 +6908,94 @@ nolighttoggle:
 				clr.b	OLDLTOG
 
 nolighttoggle2:
-				tst.b	RAWKEY_F5(a5)
+				tst.b	draw_RenderMap_b
+				bne		.no_gamma
 
-				beq.b   .no_gamma
+.dec_bright_offset:
+				tst.b	RAWKEY_NUM_1(a5)
+				beq.s	.res_bright_offset
 
-				clr.b   RAWKEY_F5(a5)
+				clr.b	RAWKEY_NUM_1(a5)
+				sub.w	#128,Vid_BrightnessOffset_w
+				bra		.update_palette
 
-                clr.l   d0
-                move.b  Vid_GammaLevel_b,d0
-                add.w   #1,d0
-                cmp.w   #8,d0
-                ble.b   .set_gamma
+.res_bright_offset:
+				tst.b	RAWKEY_NUM_2(a5)
+				beq.s	.inc_bright_offset
 
-                clr.w   d0
+				clr.b	RAWKEY_NUM_2(a5)
+				clr.w	Vid_BrightnessOffset_w
+				bra		.update_palette
+
+.inc_bright_offset:
+				tst.b	RAWKEY_NUM_3(a5)
+				beq.s	.dec_contrast_adjust
+
+				clr.b	RAWKEY_NUM_3(a5)
+				add.w	#128,Vid_BrightnessOffset_w
+				bra		.update_palette
+
+.dec_contrast_adjust:
+				tst.b	RAWKEY_NUM_4(a5)
+				beq		.res_contrast_adjust
+
+				clr.b	RAWKEY_NUM_4(a5)
+				sub.w	#16,Vid_ContrastAdjust_w
+				bra		.update_palette
+
+.res_contrast_adjust:
+				tst.b	RAWKEY_NUM_5(a5)
+				beq.s	.inc_contrast_adjust
+
+				clr.b	RAWKEY_NUM_5(a5)
+				move.w	#$0100,Vid_ContrastAdjust_w
+				bra		.update_palette
+
+.inc_contrast_adjust:
+				tst.b	RAWKEY_NUM_6(a5)
+				beq.s	.dec_gamma
+
+				clr.b	RAWKEY_NUM_6(a5)
+				add.w	#16,Vid_ContrastAdjust_w
+				bra		.update_palette
+
+.dec_gamma:
+				tst.b	RAWKEY_NUM_7(a5)
+				beq.s	.res_gamma
+
+				clr.b	RAWKEY_NUM_7(a5)
+				sub.b	#1,Vid_GammaLevel_b
+				bge		.update_palette
+
+				clr.b	Vid_GammaLevel_b
+				bra		.update_palette
+
+.res_gamma:
+				tst.b	RAWKEY_NUM_8(a5)
+				beq.s	.inc_gamma
+
+				clr.b	RAWKEY_NUM_8(a5)
+				clr.b	Vid_GammaLevel_b
+				bra		.update_palette
+
+.inc_gamma:
+				tst.b	RAWKEY_NUM_9(a5)
+				beq		.no_gamma
+
+				clr.b	RAWKEY_NUM_9(a5)
+
+				clr.l   d0
+				move.b  Vid_GammaLevel_b,d0
+				add.w   #1,d0
+				cmp.w   #8,d0
+				ble.b   .set_gamma
+
+                move.w	#8,d0
 .set_gamma:
                 move.b  d0,Vid_GammaLevel_b
-                CALLC   LoadMainPalette
+
+.update_palette:
+                CALLC   Vid_LoadMainPalette
 .no_gamma:
 
 ;				beq.s	noret

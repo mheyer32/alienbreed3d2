@@ -63,5 +63,3 @@ _Vid_WaitForDisplayMsg_b::
 Vid_WaitForDisplayMsg_b: 		ds.b	1
 Vid_ResolutionOption_b:			ds.b	1	; cycles between pixel modes
 
-_Vid_GammaLevel_b::
-Vid_GammaLevel_b:               ds.b    1

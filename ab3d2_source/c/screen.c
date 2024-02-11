@@ -176,7 +176,7 @@ void Vid_OpenMainScreen(void)
     }
 
     SetPointer(Vid_MainWindow_l, emptySprite, 1, 0, 0, 0);
-    LoadMainPalette();
+    Vid_LoadMainPalette();
 }
 
 void Vid_CloseMainScreen()
@@ -235,11 +235,13 @@ void vid_SetupDoubleheightCopperlist(void)
     RethinkDisplay();
 }
 
-void LoadMainPalette()
+void Vid_LoadMainPalette()
 {
     extern UBYTE const Vid_GammaIncTables_vb[256 * 8];
+	extern UWORD Vid_ContrastAdjust_w;
+	extern WORD  Vid_BrightnessOffset_w;
     extern UBYTE Vid_GammaLevel_b;
-    ULONG gun = 0;
+    LONG gun = 0;
     int c = 0;
 
     Vid_LoadRGB32Struct_vl[0] = (256 << 16) | 0;  // 256 entries, starting at index 0
@@ -247,19 +249,16 @@ void LoadMainPalette()
     if (Vid_GammaLevel_b > 0) {
         UBYTE const* gamma = Vid_GammaIncTables_vb + (((UWORD)((Vid_GammaLevel_b - 1) & 7)) << 8);
         for (; c < 768; ++c) {
-            /* splat the 8-bit value into all 32 */
-            gun = gamma[draw_Palette_vw[c]];
-            gun |= gun << 8;
-            gun |= gun << 16;
-            Vid_LoadRGB32Struct_vl[c + 1] = gun;
+            gun = gamma[draw_Palette_vw[c]] * Vid_ContrastAdjust_w + Vid_BrightnessOffset_w;
+            gun = gun < 0 ? 0 : (gun > 65535 ? 65535 : gun);
+            Vid_LoadRGB32Struct_vl[c + 1] = (ULONG)gun << 16 | gun;
         }
     } else {
         for (; c < 768; ++c) {
             /* splat the 8-bit value into all 32 */
-            gun = draw_Palette_vw[c];
-            gun |= gun << 8;
-            gun |= gun << 16;
-            Vid_LoadRGB32Struct_vl[c + 1] = gun;
+            gun = draw_Palette_vw[c] * Vid_ContrastAdjust_w + Vid_BrightnessOffset_w;
+            gun = gun < 0 ? 0 : (gun > 65535 ? 65535 : gun);
+            Vid_LoadRGB32Struct_vl[c + 1] = (ULONG)gun << 16 | gun;
         }
     }
 

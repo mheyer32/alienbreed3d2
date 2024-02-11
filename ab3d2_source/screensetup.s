@@ -121,7 +121,7 @@ YYY:
 				move.l	d0,d3
 				CALLINT	SetPointer
 
-				jsr		LoadMainPalette
+				jsr		Vid_LoadMainPalette
 
 				move.l	vid_MainWindow_l,a0
 				CALLINT ViewPortAddress
