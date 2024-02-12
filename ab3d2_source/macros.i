@@ -429,3 +429,9 @@ STATS_KILL		MACRO
                 ENDM
 
 				ENDC
+
+				; Macro for defining lables that are both ASM and C accessible
+DECLC			MACRO
+_\1::
+\1:
+				ENDM
