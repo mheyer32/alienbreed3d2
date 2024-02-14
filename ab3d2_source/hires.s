@@ -2060,63 +2060,6 @@ SetupRenderbufferSize:
 				CALLC	Draw_ResetGameDisplay
 				rts
 
-				IFND BUILD_WITH_C
-Vid_LoadMainPalette:
-				lea Vid_LoadRGB32Struct_vl,a1
-				move.l  a1,a0
-
-				lea		draw_Palette_vw,a2
-				move.w	#256,(a0)+				; number of entries
-				move.w	#0,(a0)+				; start index
-				move.w	#256*3-1,d0				; 768 entries
-
-				; draw_Palette_vw stores each entry as word
-.setCol:
-				clr.l	d1
-				move.w	(a2)+,d1
-				ror.l	#8,d1
-				move.l	d1,(a0)+
-				dbra	d0,.setCol
-				clr.l	(a0)					; terminate list
-
-				move.l	Vid_MainScreen_l,a0
-				lea		sc_ViewPort(a0),a0
-				CALLGRAF LoadRGB32				; a1 still points to start of palette
-
-				rts
-
-				ENDIF
-
-CLRTWOLINES:
-				move.l	d2,-(a7)
-
-				moveq	#0,d1
-				move.w	#7,d2
-.ccc:
-				move.l	d1,2(a0)
-				move.l	d1,6(a0)
-				move.l	d1,10(a0)
-				move.l	d1,14(a0)
-				move.l	d1,18(a0)
-				move.l	d1,22(a0)
-				move.l	d1,26(a0)
-				move.l	d1,30(a0)
-				move.l	d1,34(a0)
-				move.l	d1,2+40(a0)
-				move.l	d1,6+40(a0)
-				move.l	d1,10+40(a0)
-				move.l	d1,14+40(a0)
-				move.l	d1,18+40(a0)
-				move.l	d1,22+40(a0)
-				move.l	d1,26+40(a0)
-				move.l	d1,30+40(a0)
-				move.l	d1,34+40(a0)
-				add.l	#10240,a0				; next bitplane
-				dbra	d2,.ccc
-				move.l	(a7)+,d2
-				rts
-
-				align 2
 LASTDH:			dc.b	0
 LASTDW:			dc.b	0
 DOANYWATER:		dc.w	0

@@ -76,7 +76,7 @@ Vid_CheckSettingsAdjust:
 
 				clr.b	RAWKEY_NUM_6(a5)
 
-				cmpi.w	#VID_BRIGHT_ADJ_MAX,Vid_ContrastAdjust_w
+				cmpi.w	#VID_CONTRAST_ADJ_MAX,Vid_ContrastAdjust_w
 				bge		.skip_update_palette
 
 				add.w	#VID_CONTRAST_ADJ_STEP,Vid_ContrastAdjust_w
@@ -118,3 +118,31 @@ Vid_CheckSettingsAdjust:
 
 .skip_update_palette:
 				rts
+
+; todo add bright/contrast/gamma adjustments for ASM/AGA
+				IFND BUILD_WITH_C
+Vid_LoadMainPalette:
+				lea Vid_LoadRGB32Struct_vl,a1
+				move.l  a1,a0
+
+				lea		draw_Palette_vw,a2
+				move.w	#256,(a0)+				; number of entries
+				move.w	#0,(a0)+				; start index
+				move.w	#256*3-1,d0				; 768 entries
+
+				; draw_Palette_vw stores each entry as word
+.setCol:
+				clr.l	d1
+				move.w	(a2)+,d1
+				ror.l	#8,d1
+				move.l	d1,(a0)+
+				dbra	d0,.setCol
+				clr.l	(a0)					; terminate list
+
+				move.l	Vid_MainScreen_l,a0
+				lea		sc_ViewPort(a0),a0
+				CALLGRAF LoadRGB32				; a1 still points to start of palette
+
+				rts
+
+				ENDIF

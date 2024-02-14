@@ -9,7 +9,7 @@ VID_CONTRAST_ADJ_DEF	EQU	$0100
 
 			align 4
 
-; Brightening curves. Each table converts a linear channe value to an increasingly brightened
+; Brightening curves. Each table converts a linear channel value to an increasingly brightened
 ; version, based on a basic gamma curve approximation.
 
 ; TODO - Recalculate 16 bit since we end up calculating a 32-bit pen value for LoadRGB32()

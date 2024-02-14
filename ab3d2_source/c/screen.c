@@ -21,7 +21,7 @@
 #include <proto/graphics.h>
 #include <proto/intuition.h>
 
-#ifdef USE_DEBUG_LIG
+#ifdef USE_DEBUG_LIB
 #include <clib/debug_protos.h>
 #endif
 
@@ -453,7 +453,7 @@ void Vid_Present()
 
             UnLockBitMap(bmHandle);
         }
-#ifdef USE_DEBUG_LIG
+#ifdef USE_DEBUG_LIB
         else {
             KPrintF("Could not lock bitmap\n");
         }
