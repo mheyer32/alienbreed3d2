@@ -2,10 +2,18 @@
 
 ; Statically initialised (non-zero) data
 
+VID_CONTRAST_ADJ_STEP 	EQU 8
+VID_CONTRAST_ADJ_MIN	EQU 80
+VID_CONTRAST_ADJ_MAX	EQU	512
+VID_CONTRAST_ADJ_DEF	EQU	$0100
+
 			align 4
 
 ; Brightening curves. Each table converts a linear channe value to an increasingly brightened
 ; version, based on a basic gamma curve approximation.
+
+; TODO - Recalculate 16 bit since we end up calculating a 32-bit pen value for LoadRGB32()
+
 _Vid_GammaIncTables_vb::
 Vid_GammaIncTable1_vb: ; x^0.9375
 				dc.b 0,1,2,3,5,6,7,8,9,11,12,13,14,15,16,17
@@ -152,7 +160,7 @@ Vid_GammaIncTable8_vb: ; x^0.5
 				dc.b 247,247,248,248,249,249,250,250,251,251,252,252,253,253,254,255
 
 	DECLC	Vid_ContrastAdjust_w
-			dc.w	$0100
+			dc.w	VID_CONTRAST_ADJ_DEF
 
 	DECLC	Vid_BrightnessOffset_w
 			dc.w	0
@@ -160,6 +168,8 @@ Vid_GammaIncTable8_vb: ; x^0.5
 	DECLC	Vid_GammaLevel_b
 			dc.b	0
 
-			even
+	DECLC	Vid_UpdatePalette_b
+			dc.b	0
+
 
 

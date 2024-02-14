@@ -1771,10 +1771,17 @@ nodrawp2:
 				CALLDEV		DrawGraph
 				DEV_RESTORE	d0/d1/a0/a1
 
+				tst.b		Vid_UpdatePalette_b
+				bne.s		.no_palette_update
+
+				CALLC		Vid_LoadMainPalette
+
+.no_palette_update:
 				IFD BUILD_WITH_C
 				tst.l		Game_ProgressSignal_l
 				beq.s		.no_update_progress
 				CALLC		Game_UpdatePlayerProgress
+
 .no_update_progress:
 				CALLC Vid_Present
 				ELSE

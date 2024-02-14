@@ -9,10 +9,6 @@ VID_BRIGHT_ADJ_STEP EQU 128
 VID_BRIGHT_ADJ_MIN	EQU -4096
 VID_BRIGHT_ADJ_MAX	EQU	5120
 
-VID_CONTRAST_ADJ_STEP 	EQU 8
-VID_CONTRAST_ADJ_MIN	EQU 80
-VID_CONTRAST_ADJ_MAX	EQU	512
-VID_CONTRAST_ADJ_DEF	EQU	$0100
 
 				align 4
 
@@ -20,6 +16,7 @@ VID_CONTRAST_ADJ_DEF	EQU	$0100
 ; a5 contains keyboard state. No regs clobbered.
 ;
 Vid_CheckSettingsAdjust:
+				clr.b	Vid_UpdatePalette_b
 ; Brightness offset (black point)
 .dec_bright_offset:
 				tst.b	RAWKEY_NUM_1(a5)
@@ -117,9 +114,7 @@ Vid_CheckSettingsAdjust:
 				add.b	#1,Vid_GammaLevel_b
 
 .update_palette:
-				; TODO - This should set a flag and only be called for frame flip
-				;        Is this the cause of reported freeze ups?
-                CALLC   Vid_LoadMainPalette
+				st		Vid_UpdatePalette_b
 
 .skip_update_palette:
 				rts
