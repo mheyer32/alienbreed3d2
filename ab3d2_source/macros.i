@@ -89,14 +89,14 @@ SCROLL_WB		MACRO
 				bne.s	.\@
 				ENDM
 *---------------------------------------------------------------------------*
-PALETTE32COL	MACRO
-				dc.l	$1800000,$1820000,$1840000,$1860000,$1880000,$18a0000
-				dc.l	$18c0000,$18e0000,$1900000,$1920000,$1940000,$1960000
-				dc.l	$1980000,$19a0000,$19c0000,$19e0000,$1a00000,$1a20000
-				dc.l	$1a40000,$1a60000,$1a80000,$1aa0000,$1ac0000,$1ae0000
-				dc.l	$1b00000,$1b20000,$1b40000,$1b60000,$1b80000,$1ba0000
-				dc.l	$1bc0000,$1be0000
-				ENDM
+;PALETTE32COL	MACRO
+;				dc.l	$1800000,$1820000,$1840000,$1860000,$1880000,$18a0000
+;				dc.l	$18c0000,$18e0000,$1900000,$1920000,$1940000,$1960000
+;				dc.l	$1980000,$19a0000,$19c0000,$19e0000,$1a00000,$1a20000
+;				dc.l	$1a40000,$1a60000,$1a80000,$1aa0000,$1ac0000,$1ae0000
+;				dc.l	$1b00000,$1b20000,$1b40000,$1b60000,$1b80000,$1ba0000
+;				dc.l	$1bc0000,$1be0000
+;				ENDM
 *---------------------------------------------------------------------------*
 
 * QMOVE		 move a constant into a reg the quickest way (probbly)      *
@@ -430,7 +430,7 @@ STATS_KILL		MACRO
 
 				ENDC
 
-				; Macro for defining lables that are both ASM and C accessible
+				; Macro for defining identifier labels that are both ASM and C accessible
 DECLC			MACRO
 _\1::
 \1:
