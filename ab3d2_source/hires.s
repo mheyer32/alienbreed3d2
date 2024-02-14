@@ -1791,6 +1791,7 @@ nodrawp2:
 				move.w	#100,d0					; maximum in fullscreen mode
 				tst.b	Vid_FullScreen_b
 				bne.s	.isFullscreen
+
 				move.w	#60,d0					; maximum in small screen mode
 
 .isFullscreen:
@@ -6909,109 +6910,11 @@ nolighttoggle:
 
 nolighttoggle2:
 				tst.b	draw_RenderMap_b
-				bne		.no_gamma
+				bne.s	.no_vid_adjust
 
-.dec_bright_offset:
-				tst.b	RAWKEY_NUM_1(a5)
-				beq.s	.res_bright_offset
+				bsr		Vid_CheckSettingsAdjust
 
-				clr.b	RAWKEY_NUM_1(a5)
-				sub.w	#128,Vid_BrightnessOffset_w
-				bra		.update_palette
-
-.res_bright_offset:
-				tst.b	RAWKEY_NUM_2(a5)
-				beq.s	.inc_bright_offset
-
-				clr.b	RAWKEY_NUM_2(a5)
-				clr.w	Vid_BrightnessOffset_w
-				bra		.update_palette
-
-.inc_bright_offset:
-				tst.b	RAWKEY_NUM_3(a5)
-				beq.s	.dec_contrast_adjust
-
-				clr.b	RAWKEY_NUM_3(a5)
-				add.w	#128,Vid_BrightnessOffset_w
-				bra		.update_palette
-
-.dec_contrast_adjust:
-				tst.b	RAWKEY_NUM_4(a5)
-				beq		.res_contrast_adjust
-
-				clr.b	RAWKEY_NUM_4(a5)
-				sub.w	#16,Vid_ContrastAdjust_w
-				bra		.update_palette
-
-.res_contrast_adjust:
-				tst.b	RAWKEY_NUM_5(a5)
-				beq.s	.inc_contrast_adjust
-
-				clr.b	RAWKEY_NUM_5(a5)
-				move.w	#$0100,Vid_ContrastAdjust_w
-				bra		.update_palette
-
-.inc_contrast_adjust:
-				tst.b	RAWKEY_NUM_6(a5)
-				beq.s	.dec_gamma
-
-				clr.b	RAWKEY_NUM_6(a5)
-				add.w	#16,Vid_ContrastAdjust_w
-				bra		.update_palette
-
-.dec_gamma:
-				tst.b	RAWKEY_NUM_7(a5)
-				beq.s	.res_gamma
-
-				clr.b	RAWKEY_NUM_7(a5)
-				sub.b	#1,Vid_GammaLevel_b
-				bge		.update_palette
-
-				clr.b	Vid_GammaLevel_b
-				bra		.update_palette
-
-.res_gamma:
-				tst.b	RAWKEY_NUM_8(a5)
-				beq.s	.inc_gamma
-
-				clr.b	RAWKEY_NUM_8(a5)
-				clr.b	Vid_GammaLevel_b
-				bra		.update_palette
-
-.inc_gamma:
-				tst.b	RAWKEY_NUM_9(a5)
-				beq		.no_gamma
-
-				clr.b	RAWKEY_NUM_9(a5)
-
-				clr.l   d0
-				move.b  Vid_GammaLevel_b,d0
-				add.w   #1,d0
-				cmp.w   #8,d0
-				ble.b   .set_gamma
-
-                move.w	#8,d0
-.set_gamma:
-                move.b  d0,Vid_GammaLevel_b
-
-.update_palette:
-                CALLC   Vid_LoadMainPalette
-.no_gamma:
-
-;				beq.s	noret
-;
-;				tst.b	OLDRET
-;				bne.s	noret2
-;
-;				st		OLDRET
-;				CALLC	Msg_PullLast
-;
-;				bra		noret2
-;
-;noret:
-;				clr.b	OLDRET
-;
-;noret2:
+.no_vid_adjust:
 				tst.b	RAWKEY_F6(a5)
 				beq.s	.nogood
 
@@ -8662,6 +8565,7 @@ FOUNDACHAN:
 
 				include	"modules/res.s"
 				include	"modules/file_io.s"
+				include "modules/vid.s"
 				include	"controlloop.s"
 
 
