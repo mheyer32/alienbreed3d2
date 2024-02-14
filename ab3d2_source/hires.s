@@ -83,7 +83,7 @@ QUIT_KEY				equ RAWKEY_NUM_ASTERISK
 				include "data/tables_data.s"
 				include "data/text_data.s"
 				include "data/game_data.s"
-
+                include "data/vid_data.s"
 				section .text,code
 
 				xref _Vid_isRTG
@@ -838,7 +838,7 @@ game_main_loop:
 				move.w	#%110000000000,_custom+potgo ; POTGO -start Potentiometer reading
 													; FIXME: shouldn't this be in a regular interrupt, like VBL?
 
-				move.b	MAPON,REALMAPON
+				move.b	MAPON,draw_RenderMap_b
 
 				move.b	Vid_FullScreenTemp_b,d0
 				move.b	Vid_FullScreen_b,d1
@@ -882,7 +882,7 @@ game_main_loop:
 ;				move.l	d0,hitcol
 
 nofadedownhc:
-				;bsr		LoadMainPalette		; should only reload the palatte when hit
+				;bsr		Vid_LoadMainPalette		; should only reload the palatte when hit
 
 				st		READCONTROLS
 				move.l	#$dff000,a6
@@ -1751,7 +1751,7 @@ drawplayer2:
 				bsr		DrawDisplay
 
 nodrawp2:
-				tst.b	REALMAPON
+				tst.b	draw_RenderMap_b
 				beq.s	.nomap
 				bsr		DoTheMapWotNastyCharlesIsForcingMeToDo
 
@@ -1771,10 +1771,17 @@ nodrawp2:
 				CALLDEV		DrawGraph
 				DEV_RESTORE	d0/d1/a0/a1
 
+				tst.b		Vid_UpdatePalette_b
+				bne.s		.no_palette_update
+
+				CALLC		Vid_LoadMainPalette
+
+.no_palette_update:
 				IFD BUILD_WITH_C
 				tst.l		Game_ProgressSignal_l
 				beq.s		.no_update_progress
 				CALLC		Game_UpdatePlayerProgress
+
 .no_update_progress:
 				CALLC Vid_Present
 				ELSE
@@ -1791,6 +1798,7 @@ nodrawp2:
 				move.w	#100,d0					; maximum in fullscreen mode
 				tst.b	Vid_FullScreen_b
 				bne.s	.isFullscreen
+
 				move.w	#60,d0					; maximum in small screen mode
 
 .isFullscreen:
@@ -2052,64 +2060,6 @@ SetupRenderbufferSize:
 				CALLC	Draw_ResetGameDisplay
 				rts
 
-				IFND BUILD_WITH_C
-LoadMainPalette:
-				sub.l	#256*4*3+2+2+4+4,a7		; reserve stack for 256 color entries + numColors + firstColor
-				move.l	a7,a1
-				move.l	a7,a0
-				lea		draw_Palette_vw,a2
-				move.w	#256,(a0)+				; number of entries
-				move.w	#0,(a0)+				; start index
-				move.w	#256*3-1,d0				; 768 entries
-
-				; draw_Palette_vw stores each entry as word
-.setCol:
-				clr.l	d1
-				move.w	(a2)+,d1
-				ror.l	#8,d1
-				move.l	d1,(a0)+
-				dbra	d0,.setCol
-				clr.l	(a0)					; terminate list
-
-				move.l	Vid_MainScreen_l,a0
-				lea		sc_ViewPort(a0),a0
-				CALLGRAF LoadRGB32				; a1 still points to start of palette
-
-				add.l	#256*4*3+2+2+4+4,a7		;restore stack
-				rts
-
-				ENDIF
-
-CLRTWOLINES:
-				move.l	d2,-(a7)
-
-				moveq	#0,d1
-				move.w	#7,d2
-.ccc:
-				move.l	d1,2(a0)
-				move.l	d1,6(a0)
-				move.l	d1,10(a0)
-				move.l	d1,14(a0)
-				move.l	d1,18(a0)
-				move.l	d1,22(a0)
-				move.l	d1,26(a0)
-				move.l	d1,30(a0)
-				move.l	d1,34(a0)
-				move.l	d1,2+40(a0)
-				move.l	d1,6+40(a0)
-				move.l	d1,10+40(a0)
-				move.l	d1,14+40(a0)
-				move.l	d1,18+40(a0)
-				move.l	d1,22+40(a0)
-				move.l	d1,26+40(a0)
-				move.l	d1,30+40(a0)
-				move.l	d1,34+40(a0)
-				add.l	#10240,a0				; next bitplane
-				dbra	d2,.ccc
-				move.l	(a7)+,d2
-				rts
-
-				align 2
 LASTDH:			dc.b	0
 LASTDW:			dc.b	0
 DOANYWATER:		dc.w	0
@@ -3330,11 +3280,11 @@ _Sys_MouseY::
 Sys_MouseY:		dc.w	0 ; Pitch?
 
 MAPON:			dc.w	$0
-REALMAPON:		dc.w	0
+draw_RenderMap_b:		dc.w	0
 
 RotateLevelPts:	;		Does					this rotate ALL points in the level EVERY frame?
 
-				tst.b	REALMAPON
+				tst.b	draw_RenderMap_b
 				beq		ONLYTHELONELY			; When REALMAP is on, we apparently need to transform all level points,
 										; otherwise only the visible subset
 
@@ -6909,21 +6859,12 @@ nolighttoggle:
 				clr.b	OLDLTOG
 
 nolighttoggle2:
-				tst.b	RAWKEY_F5(a5)
-				beq.s	noret
+				tst.b	draw_RenderMap_b
+				bne.s	.no_vid_adjust
 
-				tst.b	OLDRET
-				bne.s	noret2
+				bsr		Vid_CheckSettingsAdjust
 
-				st		OLDRET
-				CALLC	Msg_PullLast
-
-				bra		noret2
-
-noret:
-				clr.b	OLDRET
-
-noret2:
+.no_vid_adjust:
 				tst.b	RAWKEY_F6(a5)
 				beq.s	.nogood
 
@@ -8574,6 +8515,7 @@ FOUNDACHAN:
 
 				include	"modules/res.s"
 				include	"modules/file_io.s"
+				include "modules/vid.s"
 				include	"controlloop.s"
 
 

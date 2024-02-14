@@ -48,30 +48,37 @@ game_LoadPreferences:
 
 
 game_ApplyPreferences:
-				move.b	_Prefs_FullScreen,Vid_FullScreen_b
-				move.b	_Prefs_FullScreen,Vid_FullScreenTemp_b
-				move.b	_Prefs_SimpleLighting,Draw_ForceSimpleWalls_b
-				move.b	_Prefs_FPSLimit,Vid_FPSLimit_l+3
-				move.b	_Prefs_VertMargin,Vid_LetterBoxMarginHeight_w+1
-				move.b	_Prefs_DynamicLights,Anim_LightingEnabled_b
-				move.b	_Prefs_RenderQuality,Draw_GoodRender_b
+				move.b	Prefs_FullScreen_b,Vid_FullScreen_b
+				move.b	Prefs_FullScreen_b,Vid_FullScreenTemp_b
+				move.b	Prefs_SimpleLighting_b,Draw_ForceSimpleWalls_b
+				move.b	Prefs_FPSLimit_b,Vid_FPSLimit_l+3
+				move.b	Prefs_VertMargin_b,Vid_LetterBoxMarginHeight_w+1
+				move.b	Prefs_DynamicLights_b,Anim_LightingEnabled_b
+				move.b	Prefs_RenderQuality_b,Draw_GoodRender_b
 
 ;				tst.w 	_Vid_isRTG ; no RTG in asm version yet
 ;				bne.s	.done
 
-				move.b _Prefs_PixelMode,_Vid_DoubleHeight_b
+				move.b Prefs_PixelMode_b,_Vid_DoubleHeight_b
 
+				move.w Prefs_ContrastAdjust_AGA_w,Vid_ContrastAdjust_w
+				move.w Prefs_BrightnessOffset_AGA_w,Vid_BrightnessOffset_w
+				move.b Prefs_GammaLevel_AGA_b,Vid_GammaLevel_b
 .done:
 				rts
 
 
 game_SavePreferences:
-				move.b	Vid_FullScreen_b,_Prefs_FullScreen
-				move.b	Draw_ForceSimpleWalls_b,_Prefs_SimpleLighting
-				move.b	Vid_FPSLimit_l+3,_Prefs_FPSLimit
-				move.b	Vid_LetterBoxMarginHeight_w+1,_Prefs_VertMargin
-				move.b	Anim_LightingEnabled_b,_Prefs_DynamicLights
-				move.b	Draw_GoodRender_b,_Prefs_RenderQuality
+				move.b	Vid_FullScreen_b,Prefs_FullScreen_b
+				move.b	Draw_ForceSimpleWalls_b,Prefs_SimpleLighting_b
+				move.b	Vid_FPSLimit_l+3,Prefs_FPSLimit_b
+				move.b	Vid_LetterBoxMarginHeight_w+1,Prefs_VertMargin_b
+				move.b	Anim_LightingEnabled_b,Prefs_DynamicLights_b
+				move.b	Draw_GoodRender_b,Prefs_RenderQuality_b
+
+				move.w Vid_ContrastAdjust_w,Prefs_ContrastAdjust_AGA_w
+				move.w Vid_BrightnessOffset_w,Prefs_BrightnessOffset_AGA_w
+				move.b Vid_GammaLevel_b,Prefs_GammaLevel_AGA_b
 
 				movem.l	d0-d4/a6,-(a7)
 
