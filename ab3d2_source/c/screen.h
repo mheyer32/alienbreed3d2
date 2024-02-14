@@ -43,11 +43,11 @@ extern WORD Vid_ScreenWidth;
 
 extern UBYTE Vid_FullScreen_b;
 
-extern void LoadMainPalette(void);
+extern void Vid_LoadMainPalette(void);
 extern void Vid_OpenMainScreen(void);
 extern void vid_SetupDoubleheightCopperlist(void);
 extern void Vid_CloseMainScreen(void);
-extern void LoadMainPalette(void);
+extern void Vid_LoadMainPalette(void);
 extern ULONG GetScreenMode();
 
 #endif  // SCREEN_C

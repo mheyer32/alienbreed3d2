@@ -313,6 +313,12 @@ Dev_PrintStats:
 				move.l		#136+32,d0
 				bsr			Dev_PrintF
 
+				; Brightess
+				lea			Vid_ContrastAdjust_w,a1
+				lea			.dev_ss_vid_bright_vb,a0
+				move.l		#136+48,d0
+				bsr			Dev_PrintF
+
 ;				; Long Divisions
 ;				lea			dev_Reserved1_w,a1
 ;				lea			.dev_ss_stats_long_divide_vb,a0
@@ -373,6 +379,9 @@ Dev_PrintStats:
 
 .dev_ss_clip_vb:
 				dc.b		"LC:%5d %5d RC: %5d %5d",0
+
+.dev_ss_vid_bright_vb:
+				dc.b		"VC:%5d VB:%5d",0
 
 ; Stats for the division pogrom 2.0
 ;.dev_ss_stats_long_divide_vb:
