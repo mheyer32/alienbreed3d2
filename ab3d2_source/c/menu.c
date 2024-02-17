@@ -213,7 +213,7 @@ void mnu_clearscreen(REG(d0, BOOL fade))
 
     }
 
-    LoadMainPalette();
+    Vid_LoadMainPalette();
 }
 
 

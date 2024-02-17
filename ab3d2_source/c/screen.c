@@ -21,7 +21,7 @@
 #include <proto/graphics.h>
 #include <proto/intuition.h>
 
-#ifdef USE_DEBUG_LIG
+#ifdef USE_DEBUG_LIB
 #include <clib/debug_protos.h>
 #endif
 
@@ -32,7 +32,8 @@
 
 #define SCREEN_TITLEBAR_HACK
 
-extern UWORD draw_Palette_vw[768];
+extern UWORD draw_Palette_vw[3 * 256];
+extern ULONG Vid_LoadRGB32Struct_vl[3 * 256 + 2];
 
 static PLANEPTR rasters[2];
 struct BitMap bitmaps[2];
@@ -172,10 +173,10 @@ void Vid_OpenMainScreen(void)
         CMOVE(doubleHeightCopList, bpl2mod, -8);
         CEND(doubleHeightCopList);
 #pragma GCC diagnostic pop
-	}
+    }
 
     SetPointer(Vid_MainWindow_l, emptySprite, 1, 0, 0, 0);
-    LoadMainPalette();
+    Vid_LoadMainPalette();
 }
 
 void Vid_CloseMainScreen()
@@ -234,17 +235,35 @@ void vid_SetupDoubleheightCopperlist(void)
     RethinkDisplay();
 }
 
-void LoadMainPalette()
+void Vid_LoadMainPalette()
 {
-    ULONG palette[256 * 3 + 2];
-    palette[0] = (256 << 16) | 0;  // 256 entries, starting at index 0
+    extern UBYTE const Vid_GammaIncTables_vb[256 * 8];
+	extern UWORD Vid_ContrastAdjust_w;
+	extern WORD  Vid_BrightnessOffset_w;
+    extern UBYTE Vid_GammaLevel_b;
+    LONG gun = 0;
     int c = 0;
-    for (; c < 768; ++c) {
-        palette[c + 1] = draw_Palette_vw[c] << 24;
-    }
-    palette[c + 1] = 0;
 
-    LoadRGB32(ViewPortAddress(Vid_MainWindow_l), palette);
+    Vid_LoadRGB32Struct_vl[0] = (256 << 16) | 0;  // 256 entries, starting at index 0
+
+    if (Vid_GammaLevel_b > 0) {
+        UBYTE const* gamma = Vid_GammaIncTables_vb + (((UWORD)((Vid_GammaLevel_b - 1) & 7)) << 8);
+        for (; c < 768; ++c) {
+            gun = gamma[draw_Palette_vw[c]] * Vid_ContrastAdjust_w + Vid_BrightnessOffset_w;
+            gun = gun < 0 ? 0 : (gun > 65535 ? 65535 : gun);
+            Vid_LoadRGB32Struct_vl[c + 1] = (ULONG)gun << 16 | gun;
+        }
+    } else {
+        for (; c < 768; ++c) {
+            /* splat the 8-bit value into all 32 */
+            gun = draw_Palette_vw[c] * Vid_ContrastAdjust_w + Vid_BrightnessOffset_w;
+            gun = gun < 0 ? 0 : (gun > 65535 ? 65535 : gun);
+            Vid_LoadRGB32Struct_vl[c + 1] = (ULONG)gun << 16 | gun;
+        }
+    }
+
+    Vid_LoadRGB32Struct_vl[c + 1] = 0;
+    LoadRGB32(ViewPortAddress(Vid_MainWindow_l), Vid_LoadRGB32Struct_vl);
 }
 
 ULONG GetScreenMode()
@@ -353,9 +372,9 @@ static void CopyFrameBuffer(UBYTE *dst, const UBYTE *src, WORD dstBytesPerRow, W
 
         } else {
             for (WORD y = 0; y < height / 2; ++y) {
-                memcpy(dst, src, width);
+                CopyMem(src, dst, width);
                 dst += dstBytesPerRow;
-                memcpy(dst, src, width);
+                CopyMem(src, dst, width);
                 src += SCREEN_WIDTH * 2;
                 dst += dstBytesPerRow;
             }
@@ -377,7 +396,7 @@ static void CopyFrameBuffer(UBYTE *dst, const UBYTE *src, WORD dstBytesPerRow, W
 
         } else {
             for (WORD y = 0; y < height; ++y) {
-                memcpy(dst, src, width);
+                CopyMem(src, dst, width);
                 src += SCREEN_WIDTH;
                 dst += dstBytesPerRow;
             }
@@ -434,7 +453,7 @@ void Vid_Present()
 
             UnLockBitMap(bmHandle);
         }
-#ifdef USE_DEBUG_LIG
+#ifdef USE_DEBUG_LIB
         else {
             KPrintF("Could not lock bitmap\n");
         }

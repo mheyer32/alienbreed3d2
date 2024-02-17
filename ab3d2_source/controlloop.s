@@ -218,6 +218,8 @@ alwaysRun			dc.b	0
 ; PREFERENCES (TODO - SHIP OUT):
 
                 align 4
+
+; TODO - this should be a strucutre definition.
 _Prefs_Persisted::
 Prefsfile:
                     dc.b	'k8nx'
@@ -242,13 +244,47 @@ centre_view_key:	dc.b	RAWKEY_SEMICOLON
 next_weapon_key:	dc.b	RAWKEY_BSLASH
 spare_key:          dc.b    0
 
-_Prefs_FullScreen::     dc.b    0
-_Prefs_PixelMode::      dc.b    0
-_Prefs_VertMargin::     dc.b    0
-_Prefs_SimpleLighting:: dc.b    0
-_Prefs_FPSLimit::       dc.b    0
-_Prefs_DynamicLights::  dc.b    0
-_Prefs_RenderQuality::  dc.b    0
+	DECLC	Prefs_FullScreen_b
+		dc.b	0
+
+	DECLC	Prefs_PixelMode_b
+		dc.b	0
+
+	DECLC	Prefs_VertMargin_b
+		dc.b	0
+
+	DECLC	Prefs_SimpleLighting_b
+		dc.b	0
+
+	DECLC	Prefs_FPSLimit_b
+		dc.b	0
+
+	DECLC	Prefs_DynamicLights_b
+		dc.b	0
+
+	DECLC	Prefs_RenderQuality_b
+		dc.b	0
+
+; Padding
+Prefs_Unused_b:	dc.b	0
+
+	DECLC	Prefs_ContrastAdjust_AGA_w
+		dc.w	$0100
+
+	DECLC	Prefs_ContrastAdjust_RTG_w
+		dc.w	$0100
+
+	DECLC	Prefs_BrightnessOffset_AGA_w
+		dc.w	0
+
+	DECLC	Prefs_BrightnessOffset_RTG_w
+		dc.w	0
+
+	DECLC	Prefs_GammaLevel_AGA_b
+		dc.b	0
+
+	DECLC	Prefs_GammaLevel_RTG_b
+		dc.b	0
 
                 align 4
 _Prefs_PersistedEnd::
