@@ -217,6 +217,7 @@ xwobxoff:					dc.w	0
 xwobzoff:					dc.w	0
 CollId:						dc.w	0
 
+View_KeyLook_w: dc.w 0
 View_LookMin_w:	dc.w 0
 View_LookMax_w:	dc.w 0
 
@@ -750,6 +751,7 @@ CLRDAM:
 				tst.b	Vid_FullScreen_b
 				beq.s	.small
 
+				move.w	#6,View_KeyLook_w
 				move.w	#FS_HEIGHT/2,d0
 				move.w	d0,View_LookMin_w
 				neg.w	d0
@@ -757,6 +759,7 @@ CLRDAM:
 				bra	.big
 
 .small
+				move.w	#4,View_KeyLook_w
 				move.w	#SMALL_HEIGHT/2,d0
 				move.w	d0,View_LookMin_w
 				neg.w	d0
@@ -2051,7 +2054,7 @@ SetupRenderbufferSize:
 				tst.b	Vid_FullScreen_b
 				beq.s	.small
 
-
+				move.w	#6,View_KeyLook_w
 				move.w	#FS_HEIGHT/2,d0
 				move.w	d0,View_LookMin_w
 				neg.w	d0
@@ -2065,6 +2068,7 @@ SetupRenderbufferSize:
 				bra	.big
 
 .small
+				move.w	#4,View_KeyLook_w
 				move.w	#SMALL_HEIGHT/2,d0
 				move.w	d0,View_LookMin_w
 				neg.w	d0

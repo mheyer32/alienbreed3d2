@@ -472,7 +472,8 @@ plr_KeyboardControl:
 				beq.s	.skip_look_up
 
 				sub.w	#512,PlrT_AimSpeed_l(a0)
-				sub.w	#4,d0
+				;sub.w	#4,d0
+				sub.w	View_KeyLook_w,d0
 				cmp.w	View_LookMax_w,d0
 				bgt.s	.skip_look_up
 
@@ -486,7 +487,8 @@ plr_KeyboardControl:
 				beq.s	.skip_look_down
 
 				add.w	#512,PlrT_AimSpeed_l(a0)
-				add.w	#4,d0
+				;add.w	#4,d0
+				add.w	View_KeyLook_w,d0
 				cmp.w	View_LookMin_w,d0
 				blt.s	.skip_look_down
 
