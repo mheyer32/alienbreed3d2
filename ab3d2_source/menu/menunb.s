@@ -1599,14 +1599,14 @@ mnu_MYCUSTOMOPTSTEXT:
 				dc.b	'                    ',1
 				dc.b	'                    ',1
 optionLines:				;12345678901234567890
-				dc.b	'  -QUAKE MOUSE      ',1;OFF  ',1
-				dc.b	'  --ALWAYS RUN      ',1;OFF  ',1
-				dc.b	'  OPTION     3  N/A ',1;OFF  ',1
-				dc.b	'  OPTION     4  N/A ',1;OFF  ',1
-				dc.b	'  OPTION     5  N/A ',1
-				dc.b	'  OPTION     6  N/A ',1
-				dc.b	'  OPTION     7  N/A ',1
-				dc.b	'  OPTION     8  N/A ',1
+				dc.b	'  ORIGINAL MOUSE    ',1;OFF  ',1
+				dc.b	'  ALWAYS RUN        ',1;OFF  ',1
+				dc.b	'  OPTION 3          ',1;OFF  ',1
+				dc.b	'  OPTION 4          ',1;OFF  ',1
+				dc.b	'  OPTION 5          ',1
+				dc.b	'  OPTION 6          ',1
+				dc.b	'  OPTION 7          ',1
+				dc.b	'  OPTION 8          ',1
 				dc.b	'     MAIN  MENU     ',0
 				EVEN
 ***************************************************************
