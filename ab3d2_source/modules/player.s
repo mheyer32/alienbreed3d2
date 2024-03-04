@@ -146,7 +146,7 @@ plr_MouseControl:
 
 				; The right mouse button triggers the next_weapon key
 				move.b	next_weapon_key,d7
-				tst.b	quakeMouse
+				tst.b	Prefs_OriginalMouse_b
 				beq.s	.notQuake
 				move.b	forward_key,d7
 .notQuake
@@ -510,8 +510,8 @@ plr_KeyboardControl:
 				move.w	PlrT_SnapAngPos_w(a0),d0
 				move.w	PlrT_SnapAngSpd_w(a0),d3
 ***************************************************************
-				tst.b	alwaysRun
-				bne.s	.alwaysRun
+				tst.b	Prefs_AlwaysRun_b
+				bne.s	.always_run
 				move.w	#35,d1
 				move.w	#2,d2
 				move.w	#10,Plr_TurnSpeed_w
@@ -524,8 +524,8 @@ plr_KeyboardControl:
 				move.w	#14,Plr_TurnSpeed_w
 .nofaster:
 				bra	.faster
-.alwaysRun:
 
+.always_run:
 				move.w	#60,d1
 				move.w	#3,d2
 				move.w	#14,Plr_TurnSpeed_w
