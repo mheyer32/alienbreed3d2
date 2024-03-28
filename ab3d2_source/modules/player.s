@@ -160,6 +160,10 @@ plr_MouseControl:
 
 				; The right mouse button triggers the next_weapon key
 				move.b	next_weapon_key,d7
+				tst.b	Prefs_OriginalMouse_b
+				beq.s	.notQuake
+				move.b	forward_key,d7
+.notQuake
 				btst	#2,$dff000+potinp		; right button
 				seq		(a5,d7.w)
 
@@ -521,19 +525,37 @@ plr_KeyboardControl:
 				move.l	d0,SBIGMIDDLEY
 				move.w	PlrT_SnapAngPos_w(a0),d0
 				move.w	PlrT_SnapAngSpd_w(a0),d3
+***************************************************************
+				tst.b	Prefs_AlwaysRun_b
+				bne.s	.always_run
 				move.w	#35,d1
 				move.w	#2,d2
 				move.w	#10,Plr_TurnSpeed_w
 				moveq	#0,d7
 				move.b	run_key,d7
 				tst.b	(a5,d7.w)
-				beq.s	.skip_run
+				beq.s	.nofaster
+				move.w	#60,d1
+				move.w	#3,d2
+				move.w	#14,Plr_TurnSpeed_w
+.nofaster:
+				bra	.faster
 
+.always_run:
 				move.w	#60,d1
 				move.w	#3,d2
 				move.w	#14,Plr_TurnSpeed_w
 
-.skip_run:
+				moveq	#0,d7
+				move.b	run_key,d7
+				tst.b	(a5,d7.w)
+
+				beq.s	.faster
+				move.w	#35,d1
+				move.w	#2,d2
+				move.w	#10,Plr_TurnSpeed_w
+.faster:
+***************************************************************
 				tst.b	PlrT_Squished_b(a0)
 				bne.s	.crouch_2
 

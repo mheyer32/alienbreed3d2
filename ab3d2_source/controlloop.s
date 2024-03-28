@@ -211,6 +211,8 @@ QUITTT:
 
 				rts
 
+
+
 ; PREFERENCES (TODO - SHIP OUT):
 
                 align 4
@@ -281,6 +283,11 @@ Prefs_Unused_b:	dc.b	0
 
 	DECLC	Prefs_GammaLevel_RTG_b
 		dc.b	0
+
+    ; Moved here to be included in the persisted preferences
+Prefs_CustomOptionsBuffer_vb:
+Prefs_OriginalMouse_b:		dc.b	0
+Prefs_AlwaysRun_b:			dc.b	0
 
                 align 4
 _Prefs_PersistedEnd::
@@ -458,14 +465,14 @@ READMAINMENU:
 				bra		.rdlop
 .nosave:
 ***************************************************************
-;				cmp.w	#7,d0
-;				bne		playgame
-;				bsr		WAITREL
+				cmp.w	#7,d0
+				bne		playgame
+				bsr		WAITREL
 
-;				bsr		customOptions
+				bsr		customOptions
 
-;				lea		mnu_MYMAINMENU,a0
-;				bsr		MYOPENMENU
+				lea		mnu_MYMAINMENU,a0
+				bsr		MYOPENMENU
 
 				bsr		WAITREL
 				bra		.rdlop
@@ -555,6 +562,86 @@ DEFGAME:
 
 .defloaded;								 can use this now
 				not.b	LOADEXT;			 reset for next load
+				rts
+***************************************************************
+
+
+
+customOptions:
+;fixme: there are better ways to do this, but it works (of sorts).AL
+.redraw:
+; copy current setting over to menu
+				move.l	#Prefs_CustomOptionsBuffer_vb,a0
+				move.l	#optionLines+17,a1
+				moveq	#1,d1
+.copyOpts:
+				move.b	(a0)+,d0
+
+				bne.s   .enabled
+				move.b  #'N',d0
+				bra.s   .copy
+.enabled:
+                move.b  #'Y',d0
+
+				;add.b	#132,d0		;start of the keyboard layout
+				;add.b	#24,d0		;cos i and o look like 1 and 0 in the menu font
+
+.copy:
+				move.b	d0,(a1)
+				add.l	#21,a1		;end of the line/start of next i guess
+				dbra	d1,.copyOpts
+
+				lea		mnu_MYCUSTOMOPTSMENU,a0
+				bsr		MYOPENMENU
+.rdloop:
+				lea		mnu_MYCUSTOMOPTSMENU,a0
+				bsr		CHECKMENU
+
+				cmp.w	#8,d0
+				beq	.customOptionsDone
+
+				cmp.w	#0,d0
+				bne.s	.co2
+				not.b	Prefs_OriginalMouse_b
+				bra	.w8
+.co2:
+				cmp.w	#1,d0
+				bne.s	.co3
+				not.b	Prefs_AlwaysRun_b
+				bra	.w8
+.co3:
+				cmp.w	#2,d0
+				bne.s	.co4
+				bra	.w8
+.co4:
+				cmp.w	#3,d0
+				bne.s	.co5
+				bra	.w8
+.co5:
+				cmp.w	#4,d0
+				bne.s	.co6
+				;opt5
+				bra	.w8
+.co6:
+				cmp.w	#5,d0
+				bne.s	.co7
+				;opt6
+				bra	.w8
+.co7:
+				cmp.w	#6,d0
+				bne.s	.co8
+				;opt7
+				bra	.w8
+.co8:
+				cmp.w	#7,d0
+				bne.s	.w8
+				;opt8
+.w8:
+				lea		mnu_MYCUSTOMOPTSMENU,a0
+				jsr		mnu_redraw
+				bra		.redraw
+
+.customOptionsDone:
 				rts
 ***************************************************************
 playgame:
