@@ -471,8 +471,9 @@ noclips:
 ; move.l #Blurbfield,$dff080
 
 				IFD BUILD_WITH_C
-				tst.w	_Vid_isRTG
-				bne.s	.skipChangeScreen
+				;tst.w	_Vid_isRTG
+				;bne.s	.skipChangeScreen
+				bra.s .skipChangeScreen
 				ENDIF
 
 				IFNE	DISPLAYMSGPORT_HACK
@@ -8750,6 +8751,19 @@ closeeverything:
 ;.noPotgoResource
 ;
 ;				move.l	#0,d0					; FIXME indicate failure
+
+				IFNE	DISPLAYMSGPORT_HACK
+				;empty Vid_DisplayMsgPort_l and set Vid_ScreenBufferIndex_w to 0
+				;so the starting point is the same every time
+.clrMsgPort:
+				move.l	Vid_DisplayMsgPort_l,a0
+				CALLEXEC GetMsg
+				tst.l	d0
+				bne.s	.clrMsgPort
+				ENDC
+
+				clr.w	Vid_ScreenBufferIndex_w
+
 				rts
 
 
