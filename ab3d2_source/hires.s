@@ -8752,6 +8752,11 @@ closeeverything:
 ;
 ;				move.l	#0,d0					; FIXME indicate failure
 
+				IFD BUILD_WITH_C
+				tst.w	_Vid_isRTG
+				bne.s	.skipClear
+				ENDIF
+				
 				IFNE	DISPLAYMSGPORT_HACK
 				;empty Vid_DisplayMsgPort_l and set Vid_ScreenBufferIndex_w to 0
 				;so the starting point is the same every time
@@ -8763,7 +8768,7 @@ closeeverything:
 				ENDC
 
 				clr.w	Vid_ScreenBufferIndex_w
-
+.skipClear
 				rts
 
 
