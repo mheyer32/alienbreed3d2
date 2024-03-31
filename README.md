@@ -16,7 +16,15 @@ A summary of the changes are listed below:
 * Player statistics are persisted on exit.
    * This is primarily to support expanded modding by tracking metrics such as things killed, things collected, times killed etc.
    * For the original game, only the best level time on replaying a level is shown.
- 
+
+### Bugfixes
+
+Some annoying bugs have been fixed:
+* Damange is no longer inflicted by dangerous floor surfaces when not in contact.
+* Liquid pools that have dangerous floor surfaces behave as if the whole volume of the pool is dangerous:
+   * Flying above the pool does not result in damage.
+   * Swimming in the pool does result in damage.
+* Polygon rendering glitches are greatly reduced. 
 
 ### Default Input Configuration
 
@@ -55,7 +63,7 @@ Note that these keys may change in subsequent releases as various options are co
 When the Automap is displayed:
 * Numeric Pad 5 centres on the player.
 * Numeric Pad 1/2/3/4/6/7/8/9 scrolls the map in the implied direction.
-* Numeric Pad Period (.) toggles green/transparent overlay mode.
+* Numeric Pad . (period) toggles green/transparent overlay mode.
 
 When the Automap is not displayed:
 * Numeric Pad 7/8/9 adjust display gamma (7 decreases, 8 resets, 9 increases)
@@ -71,6 +79,35 @@ The Custom Options menu provides the following additional options:
 * Original Mouse:
    * Uses the original Team17 release mouse behaviour, with Right Mouse to move forwards.
 * Always run. 
+
+## Modding Improvements
+
+Improvements have been made to allow modders to make more expansive changes to visuals and behaviours:
+
+### New Features
+* Each level can redefine the floor texture tile by adding a custome floortile to the level directory.
+* Each level can refefine any wall texture by adding a wall_N.256wad, where N is the hex index of the slot (0-F) to override.
+* A new properties file, AB3:Includes/game.props can be defined that extends over the original game link file and can add new properties:
+   * Inventory carry limits (ammo, things)
+   * Special ammo classes that can modify carry limits and be assigned as the ammo given by special items:
+      * These make use of the 10 (alien) ammo slots that the player cannot otherwise use.
+      * An example might be a bandolier that, once the player has collected an item giving this ammo, increases the amount of bullets that can be carried.
+   * Achievements:
+      * Achievements can be defined around:
+         * Alien kill counts.
+         * Group alien kill counts, i.e. any of a group of different alien types.
+         * First time entering a Zone (for specific secrets)
+         * Item collected counts
+         * Level time improvements (beating a previous record)
+         * Player died count
+      * Achievements can give rewards:
+         * Additional ammunition, health or fuel.
+         * Increase carry limits for ammunition, health or fuel.
+ * Note that the binary game properties file is compiled from a JSON specification for which no native tooling yet exists.
+
+### Bugfixes
+* Doors and lifts are no longer restricted to the leftmost edge of a wall texture.
+
 
 ## Background
 
@@ -102,6 +139,7 @@ In order to be able to cross-compile the code via vasm I had to:
 * remove copy protection code/menu
 * re-enable the fire effect in the main menu
 * turn the default keymapping to AWSD+mouse. Make left mouse button shoot and right mouse button select next weapon
+
 
 ## Building
 The currently maintained and buildable source code is located within the `ab3d2_source/` directory. The original game sources are retained in the `ab3d2_old_source/` directory.
@@ -140,7 +178,7 @@ Please note the following limitations of the present build:
 * There is no message display in game, as this used a hires slice at the foot of the view.
 * There is no palette animation, e.g. pain flashes.
 
-The game supports double buffered vertical sync and frame rate capping. These can be cycled through using the F7 key.
+The game supports double buffered vertical sync and frame rate capping. Frame caps can be cycled through using the F7 key.
 
 
 ### Developer
