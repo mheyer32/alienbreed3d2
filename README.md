@@ -1,7 +1,78 @@
 # Alien Breed 3D II The Killing Grounds 
 
 This repo contains a compileable version of the Alien Breed 3D II source.
-It produces executables that can run the original game's data.
+It produces executables that can run the original game data or mods created with the
+original/compatible tooling.
+
+## Changes
+
+A summary of the changes are listed below:
+* Numerous bug fixes and performance improvements.
+* No longer takes over the system and can exit back to Workbench.
+* Fullscreen is now 320 rather than 288 pixels wide (no side borders)
+* RTG cards are supported, provided there is a compatible 256-colour 320x240 or 320x256 screenmode configured.
+   * AGA is still required as the menus are still rendered using the native chipset.
+* Player settings and bindings are persisted on exit.
+* Player statistics are persisted on exit.
+   * This is primarily to support expanded modding by tracking metrics such as things killed, things collected, times killed etc.
+   * For the original game, only the best level time on replaying a level is shown.
+ 
+
+### Default Input Configuration
+
+When starting the game for the first time, the input defaults to keyboard and mouse. The controls have been modernised since the original Team17 release:
+* W/A/S/D for movement and sidestep.
+* C for crouch/stand.
+* F to use/activate.
+* Space to jump/fly.
+* Left Shift to walk/run
+* Left Mouse to fire
+
+These keys, and more are remain user definable.
+
+### Fixed Keys
+
+Note that these keys may change in subsequent releases as various options are consolidated. The following keys are fixed and not user definable:
+* Esc to exit the current level.
+* F1 / F2 Adjust automap zoom.
+* F3 to cycle audio options.
+* F4 toggles dynamic lighting effects.
+* F6 toggles wall render quality
+* F7 cycles frame rate cap
+* F8 toggles between full and simplified shading.
+* F9 toggles pixel mode.
+   * Presently this is only 1x1 or 1x2.
+* F10 toggles between 2/3 and full screen size.
+* Tab toggles Automap display.
+* K chooses keyboard-only input.
+* M chooses keyboard and mouse input.
+   * Repeated selection chooses between normal and inverted mouse mode.
+* J chooses joystick/joypad input.
+* Numeric Pad +/- adjust vertical border size.
+* Numeric Pad * exits to the desktop.
+   * Note this happens whether in the game or in the menu.
+
+When the Automap is displayed:
+* Numeric Pad 5 centres on the player.
+* Numeric Pad 1/2/3/4/6/7/8/9 scrolls the map in the implied direction.
+* Numeric Pad Period (.) toggles green/transparent overlay mode.
+
+When the Automap is not displayed:
+* Numeric Pad 7/8/9 adjust display gamma (7 decreases, 8 resets, 9 increases)
+* Numeric Pad 4/5/6 adjust display contrast (4 decreases, 5 resets, 6 increases)
+* Numeric Pad 1/2/3 adjust display black point (1 decreases, 2 resets, 3 increases)
+
+All options are persisted on clean exist.
+* Display options are persisted independently for AGA and RTG screenmodes.  
+
+### Custom Options
+
+The Custom Options menu provides the following additional options:
+* Original Mouse:
+   * Uses the original Team17 release mouse behaviour, with Right Mouse to move forwards.
+* Always run. 
+
+## Background
 
 This repo is based on and still contains the original source release of TKG. The
 original code is very messy, apparently containing multiple versions of the
@@ -113,26 +184,27 @@ Please note that the development build may be less stable and also slower. Featu
     * AI attack (N)
 
 
-
 ## Considerations
-Note: This section is out of date as several of these improvements have been made.
+Note: This section is generally always out of date as several of these improvements have been made and/or are in progress.
 
 There are MANY ways this game can be improved:
 
-* include faster C2P   code just as in legacy patches and WHDLoad slaves
-* remove system-takeover, in partcular writing to DMACON and INTENA
-** open regular screen, support RTG
-** use intution for keyboard control
-** allow exiting the game
-* something is badly screwed up in level C
-* going back to the main menu to change controls makes the level start over
-* performance improvements?
-* quality improvements?
-** the rendering code often produces rather wobbly output
-* more options in the game to enable/disable gouraud shading and bumpmapping as well as glare objects
-* general code cleanups
-** cleaner startup/shutdown
-** the current code mixes code and data willy-nilly, all in one object file. Using multiple object files and XREF/XDEF may be cleaner.
-** remove old, unused commented-out cruft 
+* Use Intution for keyboard control.
+* Going back to the main menu to change controls makes the level start over.
+* Performance improvements (in progress).
+* Quality improvements.
+   * The rendering code often produces rather wobbly output.
+   * Better modding support (in progress)
+* More options in the game to enable/disable gouraud shading and bumpmapping as well as glare objects
+   * Available in dev build.
+   * Option to disable some for regular game as a possible performance improvement. 
+* General code cleanups (in progress):
+   * Improvements to code organisation, identifier names, etc. (in progress).
+   * Refactoring:
+      * Extraction of pure data from code (in progress)
+      * Deduplication of common code (in progress)  
+   * The current code mixes code and data willy-nilly, all in one object file.
+      * Using multiple object files and XREF/XDEF may be cleaner.
+      * Remove old, unused commented-out cruft (in progress). 
 
 
