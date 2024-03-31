@@ -96,10 +96,10 @@ Improvements have been made to allow modders to make more expansive changes to v
       * Achievements can be defined around:
          * Alien kill counts.
          * Group alien kill counts, i.e. any of a group of different alien types.
-         * First time entering a Zone (for specific secrets)
+         * First time entering a Zone, for finding specific secrets.
          * Item collected counts
-         * Level time improvements (beating a previous record)
-         * Player died count
+         * Level time improvements, e.g. beating a previous record.
+         * Player died count.
       * Achievements can give rewards:
          * Additional ammunition, health or fuel.
          * Increase carry limits for ammunition, health or fuel.
