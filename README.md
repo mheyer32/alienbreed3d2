@@ -11,7 +11,7 @@ A summary of the changes are listed below:
 * No longer takes over the system and can exit back to Workbench.
 * Fullscreen is now 320 rather than 288 pixels wide (no side borders)
 * RTG cards are supported, provided there is a compatible 256-colour 320x240 or 320x256 screenmode configured.
-   * AGA is still required as the menus are still rendered using the native chipset.
+   * Native chipset is still required as the menus are still rendered in Chip RAM using the blitter. Confirmed working on AGA and ECS systems.
 * Player settings and bindings are persisted on exit.
 * Player statistics are persisted on exit.
    * This is primarily to support expanded modding by tracking metrics such as things killed, things collected, times killed etc.
