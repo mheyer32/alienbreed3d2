@@ -22,7 +22,7 @@ CHUNKYXMAX EQU	BPLX
 CHUNKYYMAX EQU	BPLY
 	ENDC
 
-	section	code,code
+	section	.text,code
 
 ; d0.w	chunkyx [chunky-pixels]
 ; d1.w	chunkyy [chunky-pixels]
@@ -271,7 +271,7 @@ c2p2x1_8_c5_030
 	movem.l	(sp)+,d2-d7/a2-a6
 	rts
 
-	section	bss,bss
+	section	.bss,bss
 
 c2p2x1_8_c5_030_scroffs	ds.l	1
 c2p2x1_8_c5_030_pixels	ds.l	1

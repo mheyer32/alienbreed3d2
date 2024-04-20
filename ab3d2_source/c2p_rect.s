@@ -11,7 +11,7 @@
 ; By Mikael Kalms, although strongly influenced by Aki's and Azure's
 ;  040+ routines
 
-	section	code,code
+	section	.text,code
 
 ; d0.w	x [multiple of 32]
 ; d1.w	y

@@ -20,7 +20,7 @@
 
 Res_LoadObjects:
 ; PRSDG
-				move.l	#io_ObjectPointers_vl,a2
+;				move.l	#io_ObjectPointers_vl,a2 ; XXX: Not used?
 				move.l	GLF_DatabasePtr_l,a0
 				lea		GLFT_ObjGfxNames_l(a0),a0
 				move.l	#MEMF_ANY,IO_MemType_l
@@ -101,24 +101,29 @@ Res_LoadObjects:
 .end_load_vectors:
 				rts
 
-Res_FreeObjects:
-				move.l	#io_ObjectPointers_vl,a2
 
-.release_obj_loop:
-				move.l	(a2)+,io_BlockStart_l
-				move.l	(a2)+,io_BlockLength_l
-				tst.l	io_BlockStart_l
-				ble.s	.end_release_obj
-
-				move.l	a2,-(a7) ; is this necessary? Does a2 get clobbered by FreeVec?
-				move.l	io_BlockStart_l,d1
-				move.l	d1,a1
+RES_FREEPTR		macro
+				move.l	\1,a1
+				clr.l	\1
 				CALLEXEC FreeVec
+				endm
 
-				move.l	(a7)+,a2
-				bra.s	.release_obj_loop
+Res_FreeObjects:
+				RES_FREEPTR GLF_DatabasePtr_l
+				RES_FREEPTR Lvl_IntroTextPtr_l
+				RES_FREEPTR Draw_BackdropImagePtr_l
+				move.w	#DRAW_MAX_OBJECTS*4-1,d2
+				lea		Draw_ObjectPtrs_vl,a2
+				bsr		res_FreeList
+				moveq	#DRAW_MAX_POLY_OBJECTS-1,d2
+				lea		Draw_PolyObjects_vl,a2
+				; fall through
 
-.end_release_obj:
+; d2 = number of pointers-1, a2=list
+res_FreeList:
+				move.l	(a2)+,a1
+				CALLEXEC FreeVec
+				dbf		d2,res_FreeList
 				rts
 
 ; *****************************************************************************
@@ -127,40 +132,32 @@ Res_FreeObjects:
 ; *
 ; *****************************************************************************
 
+RES_NUM_SFX=59 ; XXX: Shouldn't this be NUM_SFX? But doesn't work with karlos-tkg
+
 Res_LoadSoundFx:
 				move.l	GLF_DatabasePtr_l,a0
 				lea		GLFT_SFXFilenames_l(a0),a0
 				move.l	#Aud_SampleList_vl,a1
-				move.w	#58,d7
+				move.w	#RES_NUM_SFX-1,d7
+				move.l	#MEMF_ANY,IO_MemType_l
 
 .load_sound_loop:
 				tst.b	(a0)
-				bne.s	.ok_to_load
+				beq.s	.skip
 
-				add.w	#64,a0
-				addq	#8,a1
-				dbra	d7,.load_sound_loop
-				move.l	#-1,(a1)+				; terminate list?
-				rts
-
-.ok_to_load:
-				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	a1,d0
 				move.l	d0,d1
 				add.l	#4,d1
 				jsr		IO_QueueFile
 
+.skip:
 				addq	#8,a1
-; move.l d0,(a1)+
-; add.l d1,d0
-; move.l d0,(a1)+
 				adda.w	#64,a0
 				dbra	d7,.load_sound_loop
-				move.l	#MEMF_ANY,IO_MemType_l
 				rts
 
 Res_PatchSoundFx:								; transform the list of {{startaddress, length},...}
-				move.w	#58,d7					; into {{startaddress, endaddress},...}
+				move.w	#RES_NUM_SFX-1,d7		; into {{startaddress, endaddress},...}
 				move.l	#Aud_SampleList_vl,a1
 
 .patch_loop:
@@ -171,30 +168,26 @@ Res_PatchSoundFx:								; transform the list of {{startaddress, length},...}
 				rts
 
 Res_FreeSoundFx:
-				move.l	#Aud_SampleList_vl,a0
+				move.l	#Aud_SampleList_vl,a2
+				move.w	#RES_NUM_SFX-1,d2
 .relmem:
-				move.l	(a0)+,d1
-				bge.s	.okrel
-				rts
-.okrel:
-				move.l	(a0)+,d0
-				sub.l	d1,d0
-				move.l	d1,a1
-				move.l	a0,-(a7)
+				move.l	(a2),a1
+				clr.l	(a2)
 				CALLEXEC FreeVec
-				move.l	(a7)+,a0
-				bra		.relmem
+				addq.w	#8,a2
+				dbf		d2,.relmem
+				rts
 
 ; *****************************************************************************
 ; *
-; * Floor (and ceiling) Textures
+; * Floor/Ceiling and model Textures
 ; *
 ; *****************************************************************************
 
-Res_LoadFloorTextures:
+Res_LoadFloorsAndTextures:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_FloorFilename_l,a0
-				move.l	#Draw_FloorTexturesPtr_l,d0
+				move.l	#Draw_GlobalFloorTexturesPtr_l,d0
 				move.l	#0,d1
 				move.l	#MEMF_ANY,IO_MemType_l
 				jsr		IO_QueueFile
@@ -208,8 +201,8 @@ Res_LoadFloorTextures:
 				move.b	(a0)+,(a1)+
 				beq.s	.copied
 				bra.s	.copy_loop
-.copied:
 
+.copied:
 				subq	#1,a1
 				move.l	a1,io_FileExtPointer_l
 				move.l	#io_Buffer_vb,a0
@@ -228,10 +221,10 @@ Res_LoadFloorTextures:
 ; move.l d0,Draw_TexturePalettePtr_l
 				rts
 
-Res_FreeFloorTextures:
-				move.l	Draw_FloorTexturesPtr_l,d1
-				CALLEXEC FreeVec
-				clr.l	Draw_FloorTexturesPtr_l
+Res_FreeFloorsAndTextures:
+				RES_FREEPTR Draw_GlobalFloorTexturesPtr_l
+				RES_FREEPTR Draw_TextureMapsPtr_l
+				RES_FREEPTR Draw_TexturePalettePtr_l
 				rts
 
 ; *****************************************************************************
@@ -247,21 +240,22 @@ Res_LoadWallTextures:
 				;* then call FLUSHQUEUE, which actually loads
 				;* the files in...
 
-				move.l	#Draw_WallTexturePtrs_vl,a0
-				moveq	#39,d7
+				move.l	#Draw_GlobalWallTexturePtrs_vl,a0
+				moveq	#NUM_WALL_TEXTURES-1,d7
 
 .empty_walls:
 				move.l	#0,(a0)+
 				dbra	d7,.empty_walls
 
-				move.l	#Draw_WallTexturePtrs_vl,a4
+				move.l	#Draw_GlobalWallTexturePtrs_vl,a4
 				move.l	GLF_DatabasePtr_l,a3
 				add.l	#GLFT_WallGFXNames_l,a3
 				move.l	#MEMF_ANY,IO_MemType_l
+				move.w	#NUM_WALL_TEXTURES-1,d7
 
 .load_loop:
 				move.l	(a3),d0
-				beq		.loaded_all
+				beq		.done					; XXX maybe just skip this entry?
 
 				move.l	a3,a0
 				move.l	a4,d0					; address to put start pos
@@ -269,35 +263,17 @@ Res_LoadWallTextures:
 				jsr		IO_QueueFile
 
 				addq	#4,a4
-
 				adda.w	#64,a3
-				bra		.load_loop
+				dbf		d7,.load_loop
 
-.loaded_all:
+.done:
 				rts
 
 Res_FreeWallTextures:
-				move.l	#Draw_WallTexturePtrs_vl,a0
-.free_mem:
-				move.l	4(a5),d0
-				beq.s	.free_all
+				lea		Draw_GlobalWallTexturePtrs_vl,a2
+				moveq	#NUM_WALL_TEXTURES-1,d2
+				bra		res_FreeList
 
-				move.l	(a0),d1
-				beq.s	.not_this_mem
-
-				move.l	d1,a1
-				movem.l	a0/a5,-(a7)
-				CALLEXEC FreeVec
-
-				movem.l	(a7)+,a0/a5
-
-.not_this_mem:
-				addq	#8,a5
-				addq	#4,a0
-				bra.s	.free_mem
-
-.free_all:
-				rts
 
 ; *****************************************************************************
 ; *
@@ -305,26 +281,128 @@ Res_FreeWallTextures:
 ; *
 ; *****************************************************************************
 
+Res_LoadLevelData:
+				move.l	#MEMF_ANY,IO_MemType_l
+				move.l	#Lvl_MapFilename_vb,a0
+				jsr		IO_LoadFile
+				move.l	d0,Lvl_WalkLinksPtr_l
+
+				move.l	#MEMF_ANY,IO_MemType_l
+				move.l	#Lvl_FlyMapFilename_vb,a0
+				jsr		IO_LoadFile
+				move.l	d0,Lvl_FlyLinksPtr_l
+
+				moveq	#0,d1
+				move.b	Lvl_BinFilenameX_vb,d1
+				sub.b	#'a',d1
+				lsl.w	#6,d1
+				move.l	GLF_DatabasePtr_l,a0
+				lea		GLFT_LevelMusic_l(a0),a0
+
+				move.l	#MEMF_CHIP,IO_MemType_l
+				jsr		IO_LoadFile
+				move.l	d0,Lvl_MusicPtr_l
+
+				move.l	#MEMF_ANY,IO_MemType_l
+				move.l	#Lvl_BinFilename_vb,a0
+				jsr		IO_LoadFile
+				move.l	d0,Lvl_DataPtr_l
+
+				move.l	#MEMF_ANY,IO_MemType_l
+				move.l	#Lvl_GfxFilename_vb,a0
+				jsr		IO_LoadFile
+				move.l	d0,Lvl_GraphicsPtr_l
+
+				move.l	#MEMF_ANY,IO_MemType_l
+				move.l	#Lvl_ClipsFilename_vb,a0
+				jsr		IO_LoadFile
+				move.l	d0,Lvl_ClipsPtr_l
+
+				; Load the (optional) floor level graphics
+				; First, ensure the globals are active
+				move.l	Draw_GlobalFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
+
+				move.l	#MEMF_ANY,IO_MemType_l
+				move.l	#Lvl_FloorFilename_vb,a0
+				jsr		IO_LoadFileOptional
+
+				move.l	d0,Draw_LevelFloorTexturesPtr_l
+				beq.s	.done_floor_override
+
+				; Override
+				move.l	Draw_LevelFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
+
+.done_floor_override:
+;				move.l	#MEMF_ANY,IO_MemType_l
+;				move.l	#Lvl_ModPropsFilename_vb,a0
+;				jsr		IO_LoadFileOptional
+
+				movem.l	d2/a2/a3/a4/a5,-(sp)
+				move.l	#Draw_GlobalWallTexturePtrs_vl,a2
+				move.l	#Draw_LevelWallTexturePtrs_vl,a3
+				move.l	#Draw_WallTexturePtrs_vl,a4
+				moveq	#NUM_WALL_TEXTURES-1,d2
+				lea		.bin2hex,a5
+
+.do_wall:
+				; First, put the default wall into Draw_WallTexturePtrs_vl
+				move.l	(a2)+,(a4)
+
+				; complete the filename
+				move.b	(a5)+,Lvl_WallFilenameN_vb
+				move.l	#Lvl_WallFilename_vb,a0
+				jsr		IO_LoadFileOptional
+
+				move.l	d0,(a3)+
+				beq.s	.done_this_wall
+
+				; pointer was not null, so move it into Draw_WallTexturePtrs_vl
+				move.l	d0,(a4)
+
+.done_this_wall:
+				add.w	#4,a4
+				dbra	d2,.do_wall
+
+				movem.l	(sp)+,d2/a2/a3/a4/a5
+				rts
+
+.bin2hex:		dc.b	"0123456789ABCDEF"
+
+				align 4
+
 Res_FreeLevelData:
-				move.l	Lvl_WalkLinksPtr_l,a1
-				CALLEXEC FreeVec
-				clr.l	Lvl_WalkLinksPtr_l
+				; check for and free any custom floor overrides
+				tst.l Draw_LevelFloorTexturesPtr_l
+				beq.s .done_floor_overrides
 
-				move.l	Lvl_FlyLinksPtr_l,a1
-				CALLEXEC FreeVec
-				clr.l	Lvl_FlyLinksPtr_l
+				RES_FREEPTR Draw_LevelFloorTexturesPtr_l
 
-				move.l	Lvl_GraphicsPtr_l,a1
-				CALLEXEC FreeVec
-				clr.l	Lvl_GraphicsPtr_l
+				; reset the Draw_FloorTexturesPtr_l back to global set
+				move.l	Draw_GlobalFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
 
-				move.l	Lvl_ClipsPtr_l,a1
-				CALLEXEC FreeVec
-				clr.l	Lvl_ClipsPtr_l
+.done_floor_overrides:
+				movem.l	d2/a2,-(sp)
+				moveq	#NUM_WALL_TEXTURES-1,d2
+				move.l	#Draw_LevelWallTexturePtrs_vl,a2
 
-				move.l	Lvl_MusicPtr_l,a1
+.free_wall_overrides:
+				move.l	(a2),a1
+				beq.s	.done_this_wall
+
 				CALLEXEC FreeVec
-				clr.l	Lvl_MusicPtr_l
+
+.done_this_wall:
+				clr.l	(a2)+
+				dbra	d2,.free_wall_overrides
+
+				movem.l	(sp)+,d2/a2
+.free_other:
+
+				RES_FREEPTR Lvl_WalkLinksPtr_l
+				RES_FREEPTR Lvl_FlyLinksPtr_l
+				RES_FREEPTR Lvl_GraphicsPtr_l
+				RES_FREEPTR Lvl_ClipsPtr_l
+				RES_FREEPTR Lvl_MusicPtr_l
 				rts
 
 ; *****************************************************************************

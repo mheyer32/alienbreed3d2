@@ -44,18 +44,20 @@ Plr1_Shot:
 				move.l	#SinCosTable_vw,a0
 				lea		(a0,d0.w),a0
 				move.w	(a0),tempxdir
-				move.w	2048(a0),tempzdir
+				move.w	COSINE_OFS(a0),tempzdir
 				move.w	Plr1_XOff_l,tempxoff
 				move.w	Plr1_ZOff_l,tempzoff
 				move.l	Plr1_YOff_l,tempyoff
 				add.l	#10*128,tempyoff
 				move.b	Plr1_StoodInTop_b,tempStoodInTop
-				move.l	Plr1_RoomPtr_l,tempRoompt
+				move.l	Plr1_ZonePtr_l,tempRoompt
 				move.l	#%100011,d7
 				move.w	#-1,d0
 				move.l	#0,targetydiff
 				move.l	#$7fff,d1
-				move.l	Lvl_ZoneAddsPtr_l,a3
+
+				;move.l	Lvl_ZoneAddsPtr_l,a3
+
 				move.l	#Plr1_ObsInLine_vb,a1
 				move.l	Lvl_ObjectDataPtr_l,a0
 				move.l	#Plr1_ObjectDistances_vw,a2
@@ -64,23 +66,23 @@ Plr1_Shot:
 				tst.w	(a0)
 				blt		.out_of_line
 
-				cmp.b	#3,16(a0)
+				cmp.b	#OBJ_TYPE_AUX,ObjT_TypeID_b(a0) ; AUX not targetable
 				beq		.not_lined_up
 
 				tst.b	(a1)+
 				beq.s	.not_lined_up
 
-				btst	#0,17(a0)
+				btst	#0,ObjT_SeePlayer_b(a0) ; Line of sight?
 				beq.s	.not_lined_up
 
-				tst.w	12(a0)
+				tst.w	ObjT_ZoneID_w(a0) ; removed if zone id is negative
 				blt.s	.not_lined_up
 
-				move.b	16(a0),d6
-				btst	d6,d7
+				move.b	ObjT_TypeID_b(a0),d6
+				btst	d6,d7               ; shotflags, but what?
 				beq.s	.not_lined_up
 
-				tst.b	EntT_NumLives_b(a0)
+				tst.b	EntT_HitPoints_b(a0) ; already dead
 				beq.s	.not_lined_up
 
 				move.w	(a0),d5
@@ -117,7 +119,7 @@ Plr1_Shot:
 				move.w	d5,d0
 
 .not_lined_up:
-				add.w	#64,a0
+				add.w	#ENT_NEXT,a0
 				bra		.find_closest_in_line
 
 .out_of_line:
@@ -144,10 +146,10 @@ Plr1_Shot:
 				move.l	Plr1_ObjectPtr_l,a2
 				move.w	(a2),d0
 				move.l	#ObjRotated_vl,a2
-				move.l	(a2,d0.w*8),Noisex
-				move.w	#100,Noisevol
-				move.w	#100,AI_Player1NoiseVol_w
-				move.w	#12,Samplenum
+				move.l	(a2,d0.w*8),Aud_NoiseX_w
+				move.w	#100,Aud_NoiseVol_w
+				move.w	#100,Plr1_NoiseVol_w
+				move.w	#12,Aud_SampleNum_w
 				clr.b	notifplaying
 				move.b	#$fb,IDNUM
 				jsr		MakeSomeNoise
@@ -157,8 +159,10 @@ Plr1_Shot:
 .okcanshoot:
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.notplr1
+
+				; update the viewport weapon entity timer
 				move.l	Plr1_ObjectPtr_l,a2
-				move.w	#1,EntT_Timer1_w+128(a2)
+				move.w	#1,ENT_NEXT_2+EntT_Timer1_w(a2)
 
 .notplr1:
 				move.w	ShootT_Delay_w(a6),Plr1_TimeToShoot_w
@@ -171,11 +175,11 @@ Plr1_Shot:
 				move.l	Plr1_ObjectPtr_l,a2
 				move.w	(a2),d2
 				move.l	#ObjRotated_vl,a2
-				move.l	(a2,d2.w*8),Noisex
-				move.w	#100,AI_Player1NoiseVol_w
-				move.w	#300,Noisevol
-				move.w	ShootT_SFX_w(a6),Samplenum
-				move.b	#2,chanpick
+				move.l	(a2,d2.w*8),Aud_NoiseX_w
+				move.w	#100,Plr1_NoiseVol_w
+				move.w	#300,Aud_NoiseVol_w
+				move.w	ShootT_SFX_w(a6),Aud_SampleNum_w
+				move.b	#2,Aud_ChannelPick_b
 				clr.b	notifplaying
 				movem.l	d0/a0/d5/d6/d7/a6/a4/a5,-(a7)
 				move.b	#$fb,IDNUM
@@ -280,7 +284,7 @@ Plr1_Shot:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	Plr1_RoomPtr_l,objroom
+				move.l	Plr1_ZonePtr_l,objroom
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:
@@ -305,12 +309,13 @@ Plr1_Shot:
 .nofurther:
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
+				move.w	#NUM_PLR_SHOT_DATA-1,d1
 
 .findonefree2:
-				move.w	12(a0),d2
+				move.w  ObjT_ZoneID_w(a0),d0
 				blt.s	.foundonefree2
-				adda.w	#64,a0
+
+				NEXT_OBJ    a0
 				dbra	d1,.findonefree2
 
 				rts
@@ -325,7 +330,7 @@ Plr1_Shot:
 				move.b	BULTYPE+1,ShotT_Size_b(a0)
 				move.b	#0,ShotT_Anim_b(a0)
 				move.l	objroom,a1
-				move.w	(a1),12(a0)
+				move.w	(a1),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
 				move.l	wallhitheight,d0
 				move.l	d0,ShotT_AccYPos_w(a0)
@@ -369,18 +374,20 @@ Plr2_Shot:
 				move.l	#SinCosTable_vw,a0
 				lea		(a0,d0.w),a0
 				move.w	(a0),tempxdir
-				move.w	2048(a0),tempzdir
+				move.w	COSINE_OFS(a0),tempzdir
 				move.w	Plr2_XOff_l,tempxoff
 				move.w	Plr2_ZOff_l,tempzoff
 				move.l	Plr2_YOff_l,tempyoff
 				add.l	#10*128,tempyoff
 				move.b	Plr2_StoodInTop_b,tempStoodInTop
-				move.l	Plr2_RoomPtr_l,tempRoompt
+				move.l	Plr2_ZonePtr_l,tempRoompt
 				move.l	#%10011,d7
 				move.w	#-1,d0
 				move.l	#0,targetydiff
 				move.l	#$7fff,d1
-				move.l	Lvl_ZoneAddsPtr_l,a3
+
+				;move.l	Lvl_ZoneAddsPtr_l,a3
+
 				move.l	#Plr2_ObsInLine_vb,a1
 				move.l	Lvl_ObjectDataPtr_l,a0
 				move.l	#Plr2_ObjectDistances_vw,a2
@@ -389,7 +396,7 @@ Plr2_Shot:
 				tst.w	(a0)
 				blt		.out_of_line
 
-				cmp.b	#3,16(a0)
+				cmp.b	#OBJ_TYPE_AUX,ObjT_TypeID_b(a0)
 				beq		.not_lined_up
 
 				tst.b	(a1)+
@@ -398,14 +405,14 @@ Plr2_Shot:
 				btst	#1,17(a0)
 				beq.s	.not_lined_up
 
-				tst.w	12(a0)
+				tst.w	ObjT_ZoneID_w(a0)
 				blt.s	.not_lined_up
 
-				move.b	16(a0),d6
+				move.b	ObjT_TypeID_b(a0),d6
 				btst	d6,d7
 				beq.s	.not_lined_up
 
-				tst.b	EntT_NumLives_b(a0)
+				tst.b	EntT_HitPoints_b(a0)
 				beq.s	.not_lined_up
 
 				move.w	(a0),d5
@@ -441,7 +448,7 @@ Plr2_Shot:
 				move.w	d5,d0
 
 .not_lined_up:
-				add.w	#64,a0
+				NEXT_OBJ    a0
 				bra		.find_closest_in_line
 
 .out_of_line:
@@ -468,10 +475,10 @@ Plr2_Shot:
 				move.l	Plr2_ObjectPtr_l,a2
 				move.w	(a2),d0
 				move.l	#ObjRotated_vl,a2
-				move.l	(a2,d0.w*8),Noisex
-				move.w	#300,Noisevol
-				move.w	#100,AI_Player2NoiseVol_w
-				move.w	#12,Samplenum
+				move.l	(a2,d0.w*8),Aud_NoiseX_w
+				move.w	#300,Aud_NoiseVol_w
+				move.w	#100,Plr2_NoiseVol_w
+				move.w	#12,Aud_SampleNum_w
 				clr.b	notifplaying
 				move.b	#$fb,IDNUM
 				jsr		MakeSomeNoise
@@ -481,8 +488,10 @@ Plr2_Shot:
 .okcanshoot:
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				bne.s	.notplr2
+
+				; update the viewport weapon entity timer
 				move.l	Plr1_ObjectPtr_l,a2
-				move.w	#1,EntT_Timer1_w+128(a2)
+				move.w	#1,ENT_NEXT_2+EntT_Timer1_w(a2)
 
 .notplr2:
 				move.w	ShootT_Delay_w(a6),Plr2_TimeToShoot_w
@@ -495,11 +504,11 @@ Plr2_Shot:
 				move.l	Plr2_ObjectPtr_l,a2
 				move.w	(a2),d2
 				move.l	#ObjRotated_vl,a2
-				move.l	(a2,d2.w*8),Noisex
-				move.w	#100,AI_Player2NoiseVol_w
-				move.w	#300,Noisevol
-				move.w	ShootT_SFX_w(a6),Samplenum
-				move.b	#2,chanpick
+				move.l	(a2,d2.w*8),Aud_NoiseX_w
+				move.w	#100,Plr2_NoiseVol_w
+				move.w	#300,Aud_NoiseVol_w
+				move.w	ShootT_SFX_w(a6),Aud_SampleNum_w
+				move.b	#2,Aud_ChannelPick_b
 				clr.b	notifplaying
 
 				movem.l	d0/a0/d5/d6/d7/a6/a4/a5,-(a7)
@@ -605,7 +614,7 @@ Plr2_Shot:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	Plr2_RoomPtr_l,objroom
+				move.l	Plr2_ZonePtr_l,objroom
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:
@@ -630,12 +639,13 @@ Plr2_Shot:
 .nofurther:
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
+				move.w	#NUM_PLR_SHOT_DATA-1,d1
 
 .findonefree2:
-				move.w	12(a0),d2
+				move.w  ObjT_ZoneID_w(a0),d2
 				blt.s	.foundonefree2
-				adda.w	#64,a0
+
+				NEXT_OBJ    a0
 				dbra	d1,.findonefree2
 
 				rts
@@ -650,7 +660,7 @@ Plr2_Shot:
 				move.b	BULTYPE+1,ShotT_Size_b(a0)
 				move.b	#0,ShotT_Anim_b(a0)
 				move.l	objroom,a1
-				move.w	(a1),12(a0)
+				move.w  (a1),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
 				move.l	wallhitheight,d0
 				move.l	d0,ShotT_AccYPos_w(a0)
@@ -675,10 +685,10 @@ plr1_FireProjectile:
 				move.w	ShootT_BulCount_w(a6),d5
 				move.w	d5,d6
 				subq	#1,d6
-				muls	#128,d6
+				asl.w	#7,d6 ; was muls #128
 				neg.w	d6
 				add.w	tempangpos,d6
-				and.w	#8190,d6
+				AMOD_A	d6
 				bra		firefive
 
 plr2_FireProjectile:
@@ -688,19 +698,20 @@ plr2_FireProjectile:
 				move.w	ShootT_BulCount_w(a6),d5
 				move.w	d5,d6
 				subq	#1,d6
-				muls	#128,d6
+				asl.w	#7,d6 ; was muls #128
 				neg.w	d6
 				add.w	tempangpos,d6
-				and.w	#8190,d6
+				AMOD_A	d6
 
 firefive:
 				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
+				move.w	#NUM_PLR_SHOT_DATA-1,d1
 
 .findonefree:
-				move.w	12(a0),d0
+				move.w  ObjT_ZoneID_w(a0),d0
 				blt.s	.foundonefree
-				adda.w	#64,a0
+
+				NEXT_OBJ    a0
 				dbra	d1,.findonefree
 
 				rts
@@ -739,26 +750,26 @@ firefive:
 				move.l	#SinCosTable_vw,a1
 				move.w	(a1,d6.w),d0
 				ext.l	d0
-				add.w	#2048,a1
+				add.w	#COSINE_OFS,a1
 				move.w	(a1,d6.w),d2
 				ext.l	d2
 
 				add.w	#256,d6
-				and.w	#8190,d6
+				AMOD_A	d6
 
 				move.w	BulletSpd,d1
 				asl.l	d1,d0
 				move.l	d0,ShotT_VelocityX_w(a0)
 				ext.l	d2
 				asl.l	d1,d2
-				move.b	#2,16(a0)
+				move.b	#OBJ_TYPE_PROJECTILE,ObjT_TypeID_b(a0)
 				move.l	d2,ShotT_VelocityZ_w(a0)
 				move.w	bulyspd,ShotT_VelocityY_w(a0)
 				move.b	tempStoodInTop,ShotT_InUpperZone_b(a0)
 				move.w	#0,ShotT_Lifetime_w(a0)
 				move.l	d7,EntT_EnemyFlags_l(a0)
 				move.l	tempRoompt,a2
-				move.w	(a2),12(a0)
+				move.w	(a2),ObjT_ZoneID_w(a0)
 				move.l	tempyoff,d0
 				add.l	#20*128,d0
 				move.l	d0,ShotT_AccYPos_w(a0)
@@ -772,22 +783,21 @@ firefive:
 				rts
 
 plr1_HitscanSucceded:
-
 ; Just blow it up.
 
 				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
-.findonefree
-				move.w	12(a0),d2
+				move.w	#NUM_PLR_SHOT_DATA-1,d1
+.findonefree:
+				move.w  ObjT_ZoneID_w(a0),d2
 				blt.s	.foundonefree
-				adda.w	#64,a0
+
+				NEXT_OBJ    a0
 				dbra	d1,.findonefree
 
 				rts
 
 .foundonefree:
-
-				move.b	#2,16(a0)
+				move.b  #OBJ_TYPE_PROJECTILE,ObjT_TypeID_b(a0)
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
 				move.l	(a1,d0.w*8),(a1,d2.w*8)
@@ -801,7 +811,7 @@ plr1_HitscanSucceded:
 				ext.l	d1
 				asl.l	#7,d1
 				move.l	d1,ShotT_AccYPos_w(a0)
-				move.w	12(a4),12(a0)
+				move.w	ObjT_ZoneID_w(a4),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
 				move.w	4(a4),4(a0)
 
@@ -855,7 +865,7 @@ plr1_HitscanFailed:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	Plr1_RoomPtr_l,objroom
+				move.l	Plr1_ZonePtr_l,objroom
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:
@@ -881,18 +891,18 @@ plr1_HitscanFailed:
 				movem.l	(a7)+,d0-d7/a0-a6
 
 				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
-.findonefree2
-				move.w	12(a0),d2
+				move.w	#NUM_PLR_SHOT_DATA-1,d1
+.findonefree2:
+				move.w  ObjT_ZoneID_w(a0),d2
 				blt.s	.foundonefree2
-				adda.w	#64,a0
+
+				NEXT_OBJ    a0
 				dbra	d1,.findonefree2
 
 				rts
 
 .foundonefree2:
-
-				move.b	#2,16(a0)
+				move.b  #OBJ_TYPE_PROJECTILE,ObjT_TypeID_b(a0)
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
 				move.w	newx,(a1,d2.w*8)
@@ -903,7 +913,7 @@ plr1_HitscanFailed:
 				move.b	#0,ShotT_Anim_b(a0)
 
 				move.l	objroom,a1
-				move.w	(a1),12(a0)
+				move.w  (a1),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
 				move.l	newy,d1
 				move.l	d1,ShotT_AccYPos_w(a0)
@@ -918,17 +928,18 @@ plr2_HitscanSucceded:
 ; Just blow it up.
 
 				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
-.findonefree
-				move.w	12(a0),d2
+				move.w	#NUM_PLR_SHOT_DATA-1,d1
+.findonefree:
+				move.w  ObjT_ZoneID_w(a0),d2
 				blt.s	.foundonefree
-				adda.w	#64,a0
+
+				NEXT_OBJ    a0
 				dbra	d1,.findonefree
 
 				rts
 
 .foundonefree:
-				move.b	#2,16(a0)
+				move.b  #OBJ_TYPE_PROJECTILE,ObjT_TypeID_b(a0)
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
 				move.l	(a1,d0.w*8),(a1,d2.w*8)
@@ -942,7 +953,7 @@ plr2_HitscanSucceded:
 				ext.l	d1
 				asl.l	#7,d1
 				move.l	d1,ShotT_AccYPos_w(a0)
-				move.w	12(a4),12(a0)
+				move.w	ObjT_ZoneID_w(a4),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
 				move.w	4(a4),4(a0)
 
@@ -995,7 +1006,7 @@ plr2_HitscanFailed:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	Plr2_RoomPtr_l,objroom
+				move.l	Plr2_ZonePtr_l,objroom
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:
@@ -1022,18 +1033,19 @@ plr2_HitscanFailed:
 				movem.l	(a7)+,d0-d7/a0-a6
 
 				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
+				move.w	#NUM_PLR_SHOT_DATA-1,d1
 
 .findonefree2:
-				move.w	12(a0),d2
+				move.w  ObjT_ZoneID_w(a0),d2
 				blt.s	.foundonefree2
-				adda.w	#64,a0
+
+				NEXT_OBJ    a0
 				dbra	d1,.findonefree2
 
 				rts
 
 .foundonefree2:
-				move.b	#2,16(a0)
+				move.b  #OBJ_TYPE_PROJECTILE,ObjT_TypeID_b(a0)
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
 				move.w	newx,(a1,d2.w*8)
@@ -1044,7 +1056,7 @@ plr2_HitscanFailed:
 				move.b	#0,ShotT_Anim_b(a0)
 
 				move.l	objroom,a1
-				move.w	(a1),12(a0)
+				move.w	(a1),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
 				move.l	newy,d1
 				move.l	d1,ShotT_AccYPos_w(a0)

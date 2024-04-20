@@ -11,19 +11,13 @@
 
 				IFD	DEV
 
-				section bss,bss
+				section .bss,bss
 				align 4
 dev_GraphBuffer_vb:			ds.b	DEV_GRAPH_BUFFER_SIZE*2 ; array of times
-dev_ECVToMsFactor_l:		ds.l	1   ; factor for converting EClock value differences to ms
 
 ; EClockVal stamps
-dev_ECVFrameBegin_q:		ds.l	2	; timestamp at the start of the frame
 dev_ECVDrawDone_q:			ds.l	2	; timestamp at the end of drawing
 dev_ECVChunkyDone_q:		ds.l	2	; timestamp at the end of chunky to planar
-dev_ECVFrameEnd_q:			ds.l	2	; timestamp at the end of the frame
-
-; FPS Filter
-dev_FrameTimes_vl:			ds.l	8	; Most recent frame durations
 
 dev_SkipFlags_l:			ds.l	1	; Mask of disabled flags (i.e. set when something is skipped)
 
@@ -54,41 +48,36 @@ dev_FPSIntAvg_w:			ds.w	1
 dev_FPSFracAvg_w:			ds.w	1
 dev_Reserved1_w:			ds.w	1
 
+dev_Reserved2_w:			ds.w	1
+dev_Reserved3_w:			ds.w	1
+dev_Reserved4_w:			ds.w	1
+dev_Reserved5_w:			ds.w	1
 ; Not cleared per frame
 dev_FrameIndex_w:			ds.w	1	; frame number % DEV_GRAPH_BUFFER_SIZE
 
 
 ; Character buffer for printing
-dev_CharBuffer_vb:	dcb.b	64
+dev_CharBuffer_vb:			dcb.b	64
 
-				section code,code
+;//////////////////////////////////////////////////////////////////////////////
+
+				section .text,code
 				align 4
 
 
-;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-; Initialise the developer options
+;******************************************************************************
+;*
+;* Initialise developer options (timer stuff has moved to system.s)
+;*
+;******************************************************************************
 Dev_Init:
-				lea		timername,a0
-				lea		timerrequest,a1
-				moveq	#0,d0
-				moveq	#0,d1
-				CALLEXEC OpenDevice
-
-				move.l	timerrequest+IO_DEVICE,_TimerBase
-				move.l	d0,timerflag
-
-				; Grab the EClockRate
-				lea		dev_ECVFrameBegin_q,a0
-				jsr		Dev_TimeStamp
-
-				; Convert eclock rate to scale factor that we will first multiply by, then divide by 65536
-				move.l	#65536000,d1
-				divu.l	d0,d1
-				move.l	d1,dev_ECVToMsFactor_l
-
 				rts
 
+;******************************************************************************
+;*
+;* Reset Metrics Data
+;*
+;******************************************************************************
 Dev_DataReset:
 				lea		dev_GraphBuffer_vb,a0
 				move.l	#(DEV_GRAPH_BUFFER_SIZE/16)-1,d0
@@ -101,6 +90,11 @@ Dev_DataReset:
 				clr.w	dev_DrawTimeMsAvg_w
 				rts
 
+;******************************************************************************
+;*
+;* Clears the chunky draw buffer to mid grey
+;*
+;******************************************************************************
 Dev_ClearFastBuffer:
 				move.l	Vid_FastBufferPtr_l,a0
 				move.l	#(VID_FAST_BUFFER_SIZE/16)-1,d0
@@ -113,29 +107,26 @@ Dev_ClearFastBuffer:
 				dbra	d0,.loop
 				rts
 
-;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-; Subtract two timestamps, First pointed to by a0, second by a1. Full return in d1 (upper) : d0(lower)
-; Generally we don't care about the upper, but it's calculated in case we want it.
-dev_Elapsed:
-				move.l	d2,-(sp)
-				move.l	(a1),d1
-				move.l	4(a1),d0
-				move.l	(a0),d2
-				sub.l	4(a0),d0
-				subx.l	d2,d1
-				move.l	(sp)+,d2
-				rts
-
-;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-; Mark the beginning of a new frame.
+;******************************************************************************
+;*
+;* Mark frame beginning for instrumentation
+;*
+;******************************************************************************
 Dev_MarkFrameBegin:
 				move.w	dev_FrameIndex_w,d0
 				addq.w	#1,d0
 				and.w	#DEV_GRAPH_BUFFER_MASK,d0
 				move.w	d0,dev_FrameIndex_w
+
+				; Reset the divisor extrema
+				bne.s	.skip_reset_divisor
+				move.w	#32767,dev_Reserved4_w
+				move.w	#-32768,dev_Reserved5_w
+
+.skip_reset_divisor:
 				lea		dev_Counters_vw,a0
+				clr.l	(a0)+
 				clr.l	(a0)+
 				clr.l	(a0)+
 				clr.l	(a0)+
@@ -155,19 +146,13 @@ Dev_MarkFrameBegin:
 				bsr		Dev_ClearFastBuffer
 
 .no_clear:
-				lea		dev_ECVFrameBegin_q,a0
-
-				; intentional fall through to Dev_TimeStamp
-
-; Generic timestamp, uses EClockVal in a0
-Dev_TimeStamp:
-				move.l	a6,-(sp)
-				move.l	_TimerBase,a6
-				jsr		_LVOReadEClock(a6)
-				move.l	(sp)+,a6
 				rts
 
-; Mark the end of drawing
+;******************************************************************************
+;*
+;* Mark end of drawing for instrumentation
+;*
+;******************************************************************************
 Dev_MarkDrawDone:
 				; sum up the different rendered object types this frame
 				lea		dev_Counters_vw,a0
@@ -185,24 +170,30 @@ Dev_MarkDrawDone:
 				add.w	(a0)+,d0				; bitmaps
 				move.w	d0,dev_VisibleObjectCount_w
 				lea		dev_ECVDrawDone_q,a0
-				bra.s	Dev_TimeStamp
+				CALLC	Sys_MarkTime
+				rts
 
-; Mark the end of chunky conversion / copy
+
+;******************************************************************************
+;*
+;* Mark end of c2p/transfer for instrumentation
+;*
+;******************************************************************************
 Dev_MarkChunkyDone:
 				lea		dev_ECVChunkyDone_q,a0
-				bra.s	Dev_TimeStamp
+				CALLC	Sys_MarkTime
+				rts
 
-; Mark the end of the frame
-Dev_MarkFrameEnd:
-				lea		dev_ECVFrameEnd_q,a0
-				bra.s	Dev_TimeStamp
-
-; Basic printf() type functionality based on exec/RawDoFmt(). Keep the data size shorter than dev_CharBuffer_vb
-; or expect overflow.
-; d0: coordinate pair (x16:y16)
-; a0: format template
-; a1: data stream
-
+;******************************************************************************
+;*
+;* Basic printf() type functionality based on exec/RawDoFmt(). Keep the data
+;* size shorter than dev_CharBuffer_vb or expect overflow.
+;*
+;* d0: coordinate pair (x16:y16)
+;* a0: format template
+;* a1: data stream
+;*
+;******************************************************************************
 Dev_PrintF:
 				movem.l		d2/a2/a3/a6,-(sp)
 				move.l		d0,d2					; coordinate pair
@@ -235,41 +226,26 @@ Dev_PrintF:
 				add.w		#1,.dev_Length
 				rts
 
+;******************************************************************************
+;*
+;* Display developer instrumentation
+;*
+;******************************************************************************
 Dev_PrintStats:
-				lea			dev_ECVFrameBegin_q,a0
-				lea			dev_ECVFrameEnd_q,a1
-				bsr			dev_ECVDiffToMs
-
-				; Keep track of the last 8 frame durations
-				move.w		dev_FrameIndex_w,d1
-				and.w		#$7,d1
-				lea			dev_FrameTimes_vl,a0
-				move.l		d0,(a0,d1.w*4)
-
-				; Sum and average
-				move.l		(a0)+,d0
-				add.l		(a0)+,d0
-				add.l		(a0)+,d0
-				add.l		(a0)+,d0
-				add.l		(a0)+,d0
-				add.l		(a0)+,d0
-				add.l		(a0)+,d0
-				add.l		(a0)+,d0
-				lsr.l		#3,d0							; Average
-
-				move.l		#10000,d1
-				divu.l		d0,d1							; frames per 10 seconds
-				divu.w		#10,d1							; decimate, remainder contains 1/10th seconds
-				swap		d1								;
-				move.l		d1,dev_FPSIntAvg_w				; Shove it out
+				; Use the system recorded FPS average
+				move.l		Sys_FPSIntAvg_w,dev_FPSIntAvg_w
 
 				tst.b		Vid_FullScreen_b
 				bne			.fullscreen_stats
 
 				; smallscreen
 				lea			dev_TotalCounters_vw,a1
-				lea			.dev_ss_stats_obj_vb,a0
+				lea			.dev_fs_stats_tpl_vb,a0
+				IFND		BUILD_WITH_C
 				move.l		#8,d0
+				ELSE
+				move.l		#(SCREEN_HEIGHT-24),d0
+				ENDIF
 				bsr			Dev_PrintF
 
 				; Simple walls
@@ -314,6 +290,59 @@ Dev_PrintStats:
 				move.l		#120,d0
 				bsr			Dev_PrintF
 
+				; Zone_OrderZones
+				lea			dev_Reserved2_w,a1
+				lea			.dev_ss_stats_order_zones_vb,a0
+				move.l		#136,d0
+				bsr			Dev_PrintF
+
+				; Player1 Zone ID
+				lea			Plr1_Zone_w,a1
+				lea			.dev_ss_stats_zone_vb,a0
+				move.l		#136+16,d0
+				bsr			Dev_PrintF
+
+				; 68060 optimisations
+				lea			.dev_ss_stats_060_vb,a0
+				lea			.dev_strptr_bool_off,a1
+				tst.b		Sys_CPU_68060_b
+				beq.b		.print
+				addq		#4,a1
+
+.print:
+				move.l		#136+32,d0
+				bsr			Dev_PrintF
+
+				; Brightess
+				lea			Vid_ContrastAdjust_w,a1
+				lea			.dev_ss_vid_bright_vb,a0
+				move.l		#136+48,d0
+				bsr			Dev_PrintF
+
+;				; Long Divisions
+;				lea			dev_Reserved1_w,a1
+;				lea			.dev_ss_stats_long_divide_vb,a0
+;				move.l		#136,d0
+;				bsr			Dev_PrintF
+
+;				; Min Divisor
+;				lea			dev_Reserved4_w,a1
+;				lea			.dev_ss_stats_min_divisor_vb,a0
+;				move.l		#152,d0
+;				bsr			Dev_PrintF
+
+;				; Max Divisor
+;				lea			dev_Reserved5_w,a1
+;				lea			.dev_ss_stats_max_divisor_vb,a0
+;				move.l		#168,d0
+;				bsr			Dev_PrintF
+
+				; Clip Limits
+;				lea			Draw_LeftClip_l,a1
+;				lea			.dev_ss_clip_vb,a0
+;				move.l		#152+32,d0
+;				bsr			Dev_PrintF
+
 				rts
 
 .fullscreen_stats:
@@ -325,47 +354,81 @@ Dev_PrintStats:
 				rts
 
 .dev_fs_stats_tpl_vb:
-				dc.b		"w:%2d f:%2d o:%2d/%2d d:%2dms %2d.%dfps",0
-
-.dev_ss_stats_obj_vb:
-				dc.b		"Wall:%2d, Flt:%2d, Obj:%2d/%2d, Drw:%2dms, %2d.%dfps",0
+				dc.b		"W:%2d F:%2d O:%2d/%2d D:%2dms %2d.%-2dfps ",0
 
 .dev_ss_stats_wall_simple_vb:
-				dc.b		"WS:%2d",0
+				dc.b		"WS:%3d",0
 .dev_ss_stats_wall_shaded_vb:
-				dc.b		"WG:%2d",0
+				dc.b		"WG:%3d",0
 .dev_ss_stats_obj_poly_vb:
-				dc.b		"OP:%2d",0
+				dc.b		"OP:%3d",0
 .dev_ss_stats_obj_glare_vb:
-				dc.b		"OG:%2d",0
+				dc.b		"OG:%3d",0
 .dev_ss_stats_obj_lightmap_vb:
-				dc.b		"OL:%2d",0
+				dc.b		"OL:%3d",0
 .dev_ss_stats_obj_additive_vb:
-				dc.b		"OA:%2d",0
+				dc.b		"OA:%3d",0
 .dev_ss_stats_obj_bitmap_vb:
-				dc.b		"OB:%2d",0
+				dc.b		"OB:%3d",0
+.dev_ss_stats_order_zones_vb:
+				dc.b		"OZ:%3d",0
+.dev_ss_stats_zone_vb:
+				dc.b		"ZI:%3d",0
+.dev_ss_stats_060_vb:
+				dc.b		"060:%3s",0
+
+.dev_ss_clip_vb:
+				dc.b		"LC:%5d %5d RC: %5d %5d",0
+
+.dev_ss_vid_bright_vb:
+				dc.b		"VC:%5d VB:%5d",0
+
+; Stats for the division pogrom 2.0
+;.dev_ss_stats_long_divide_vb:
+;				dc.b		"LD:%4d ",0
+;.dev_ss_stats_min_divisor_vb:
+;				dc.b		"mD:%4d ",0
+;.dev_ss_stats_max_divisor_vb:
+;				dc.b		"MD:%4d ",0
+
+.dev_bool_off_vb:
+ 				dc.b		"off",0
+.dev_bool_on_vb:
+				dc.b		"on",0
 
 				align 4
 
-;///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+.dev_strptr_bool_off:
+				dc.l		.dev_bool_off_vb
 
-; Calculate the difference between a pair of ECV timestamps to milliseconds. Return is 16 bit.
-; Start timestamp pointed to by a0
-; End timestamp pointed to by a1
-; return ms in d0
+.dev_strptr_bool_on:
+				dc.l		.dev_bool_on_vb
+
+				align 4
+
+;******************************************************************************
+;*
+;* Calculate the difference between a pair of ECV timestamps to milliseconds.
+;* Return is 16 bit. Start timestamp pointed to by a0, end timestamp pointed
+;* to by a1. Return ms in d0.
+;*
+;******************************************************************************
 dev_ECVDiffToMs:
 				move.l	4(a1),d0
 				sub.l	4(a0),d0
-				mulu.l	dev_ECVToMsFactor_l,d0
+				mulu.l	Sys_ECVToMsFactor_l,d0
 				clr.w	d0
 				swap	d0
 				rts
 
-
-; Calculate the times and store in the graph data buffer
+;******************************************************************************
+;*
+;* Calculate the times and store in the graph data buffer
+;*
+;******************************************************************************
 Dev_DrawGraph:
 				movem.l	d0/d1/d2/a0/a1/a2,-(sp)
-				lea		dev_ECVFrameBegin_q,a0
+				lea		Sys_FrameTimeECV_q,a0
 				lea		dev_ECVDrawDone_q,a1
 				bsr.s	dev_ECVDiffToMs
 				lea		dev_GraphBuffer_vb,a0			; Put the ms value into the graph buffer
@@ -422,11 +485,29 @@ Dev_DrawGraph:
 				movem.l	(sp)+,d0/d1/d2/a0/a1/a2
 				rts
 
-timerrequest:				ds.b	IOTV_SIZE
-timername:					dc.b	"timer.device",0
+; Dump raw memory to a file
+; a0 = filename
+; a1 = memory location
+; d0 = bytes
+Dev_Dump:
+				movem.l	d1-d4/a2/a6,-(sp)
+				move.l	a1,a2 ; buffer
+				move.l	d0,d3 ; length
+				move.l	a0,d1 ; filename
+				move.l	#MODE_READWRITE,d2
+				CALLDOS	Open
 
-				align	4
-_TimerBase:		dc.l	0
-timerflag:		dc.l	-1
+                move.l	d0,d1 ; handle
+				beq.s	.open_fail
+
+				move.l	d1,d4 ; back up as read/write clobber
+				move.l	a2,d2 ; buffer location, size still in d3
+				CALLDOS Write
+
+				move.l  d4,d1 ; handle
+				CALLDOS Close
+.open_fail:
+				movem.l	(sp)+,d1-d4/a2/a6
+				rts
 
 				ENDC

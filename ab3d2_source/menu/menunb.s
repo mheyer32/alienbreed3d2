@@ -36,11 +36,11 @@ WAITBLIT:		MACRO
 ;		include	"demo:System/Main_V3.82.S"
 
 mnu_start:		bsr.w	mnu_copycredz
-				bsr.w	mnu_setscreen
+				CALLC	mnu_setscreen
 				move.l	a7,mnu_mainstack
 
 				;bsr.w	mnu_viewcredz
-				;bsr.w	mnu_cls
+				;bsr.w	mnu_cls        WaitTOF();
 				;IFND	mnu_nocode
 				;bsr.w	mnu_protection
 				;ENDC
@@ -52,219 +52,8 @@ mnu_loop:		lea		mnu_mainmenu,a0
 				bsr.w	mnu_domenu
 				bra.w	mnu_loop
 mnu_exit:		move.l	mnu_mainstack,a7
-				bsr.w	mnu_clearscreen
-				rts
-
-				IFND	mnu_nocode
-mnu_protection:
-.retry:			moveq.l	#0,d0
-				bsr.w	mnu_getrnd
-				move.l	d0,d2
-				bsr.w	mnu_getrnd
-				move.l	d0,d1
-				bsr.w	mnu_getrnd
-				lsr.w	#4,d2
-				lsr.w	#2,d1
-				divu	#7,d0
-				swap.w	d0						; d0=Page number
-				divu	#50,d1
-				swap.w	d1
-				addq.w	#1,d1					; d1=Row number
-				divu	#17,d2
-				swap.w	d2
-				addq.w	#1,d2					; d2=Column number
-				movem.l	d0-d2,-(a7)
-				add.w	#65,d0
-				move.b	d0,mnu_tableptr
-				add.w	#64,d2
-				move.b	d2,mnu_columnptr
-				move.w	d1,d2
-				ext.l	d1
-				divu	#10,d1
-				add.w	#48,d1
-				move.b	d1,mnu_rowptr
-				swap.w	d1
-				add.w	#48,d1
-				move.b	d1,mnu_rowptr+1
-				lea		mnu_protecttext,a0
-				moveq.l	#4,d0
-				moveq.l	#60,d1
-				bsr.w	mnu_printxy
-				clr.w	mnu_row
-				clr.w	mnu_spread
-				move.w	#1,mnu_items
-				move.w	#180,mnu_cury
-				moveq.l	#0,d7
-.print:			move.l	d7,-(a7)
-				lea		mnu_numberptr,a0
-				moveq.l	#24,d0
-				move.l	#180,d1
-				bsr.w	mnu_printxy
-				move.l	(a7)+,d7
-.inploop:		move.l	d7,-(a7)
-				move.w	#24,mnu_curx
-				add.w	d7,mnu_curx
-				add.w	d7,mnu_curx
-				bsr.w	mnu_docursor
-				jsr		key_readkey
-				move.l	(a7)+,d7
-				tst.b	d0
-				beq.s	.inploop
-				lea		mnu_numberptr,a0
-				add.l	d7,a0
-				tst.w	d7
-				beq.s	.skipback
-				cmp.b	#65,d0
-				bne.s	.skipback
-; back space
-				move.b	#32,(a0)
-				subq.w	#1,d7
-				bra.s	.print
-.skipback:		cmp.w	#3,d7
-				bne.s	.noenter
-				cmp.w	#68,d0
-				beq.s	.enter
-				cmp.w	#64,d0
-				bne.s	.noenter
-.enter:			bra.s	.exit
-.noenter:		cmp.w	#3,d7
-				beq.s	.error
-				cmp.b	#1,d0
-				blo.s	.error
-				cmp.b	#10,d0
-				bhi.s	.error
-				bne.s	.oknum
-				moveq	#0,d0
-.oknum:
-				add.b	#'0',d0
-				move.b	d0,(a0)
-				addq.w	#1,d7
-				bra.w	.print
-.error:			move.l	#mnu_errcursanim,mnu_frameptr
-				bra.w	.inploop
-.exit:			movem.l	(a7)+,d0-d2
-				bsr.w	mnu_decoder
-				moveq.l	#0,d1
-				moveq.l	#0,d2
-				move.b	mnu_numberptr,d1
-				sub.w	#48,d1
-				mulu	#10,d1
-				move.b	mnu_numberptr+1,d2
-				sub.w	#48,d2
-				add.w	d2,d1
-				mulu	#10,d1
-				move.b	mnu_numberptr+2,d2
-				sub.w	#48,d2
-				add.w	d2,d1
-				cmp.w	d1,d0
-				beq.s	.ok
-				move.l	#mnu_errcursanim,mnu_frameptr
-				move.b	#32,mnu_numberptr
-				move.b	#32,mnu_numberptr+1
-				move.b	#32,mnu_numberptr+2
-				subq.w	#1,.tries
-				beq.s	.quit
-				bra.w	.retry
-.ok:			rts
-.quit:			bsr.w	mnu_cls
-				moveq.l	#4,d0
-				moveq.l	#110,d1
-				lea		mnu_dontbelong,a0
-				bsr.w	mnu_printxy
-				clr.l	counter
-				move.l	#mnu_errcursorlong,mnu_frameptr
-				move.w	#34,mnu_curx
-				move.w	#130,mnu_cury
-.w8loop:		bsr.w	mnu_docursor
-				cmp.l	#100,counter
-				blo.s	.w8loop
-				jmp		mnu_exit
-.tries:			dc.w	3
-
-mnu_decoder:;in: d0.l=Table
-;			d1.l=Row
-;			d2.l=Column
-
-MODIT			MACRO
-				divs	#643,\1
-				swap	\1
-				ENDM
-
-				lea		.variables(pc),a0
-				asl.w	#4,d0
-				add.w	d0,a0
-
-				move.w	d1,d0					;row
-				muls	d0,d0					;row*row
-				MODIT	d0
-				move.w	d2,d4					;col
-				muls	d4,d4					;col*col
-				MODIT	d4
-				move.w	d0,d5					;row*row
-				muls	d5,d5					;row*row*row*row
-				MODIT	d5
-				move.w	d4,d6					;col*col
-				muls	d6,d6					;col*col*col*col
-				MODIT	d6
-				muls	d5,d6					;row*row*row*row*col*col*col*col
-				MODIT	d6
-				muls	(a0),d6					;*var a
-				MODIT	d6
-
-				muls	d1,d4
-				MODIT	d4
-				muls	d2,d4
-				muls	2(a0),d4
-				MODIT	d4
-				add.w	d4,d6
-
-				move.w	d1,d0
-				muls	d2,d0
-				MODIT	d0
-				muls	4(a0),d0
-				MODIT	d0
-				add.w	d0,d6
-				muls	6(a0),d1
-				MODIT	d1
-				muls	8(a0),d2
-				MODIT	d2
-				add.w	d1,d2
-				add.w	d2,d6
-				add.w	10(a0),d6
-				ext.l	d6
-				MODIT	d6
-				neg.w	d6
-				add.w	#999,d6
-				move.w	d6,d0
-				rts
-
-
-		a b c d e f
-.variables:		dc.w	54,97,2,94,66,23,0,0	; Table A
-				dc.w	61,78,247,622,59,324,0,0 ; Table B
-				dc.w	34,76,99,168,43,66,0,0	; Table C
-				dc.w	63,67,422,132,66,87,0,0	; Table D
-				dc.w	43,49,47,84,51,9,0,0	; Table E
-				dc.w	34,97,20,61,74,33,0,0	; Table F
-				dc.w	74,54,61,62,96,147,0,0	; Table G
-.dividers:
-;	dc.l	643*2000
-				dc.w	643
-				dc.l	999
-
-				ENDC
-
-mnu_getrnd:		move.w	_custom+joy0dat,d0
-				add.w	_custom+joy1dat,d0
-				add.w	_custom+dskdatr,d0
-				add.w	_custom+pot0dat,d0
-				add.w	_custom+pot1dat,d0
-				add.w	_custom+potinp,d0
-				add.w	_custom+serdatr,d0
-				add.w	_custom+dskbytr,d0
-				add.w	_custom+dmaconr,d0
-				add.w	_custom+vposr,d0
-				add.w	_custom+vhposr,d0
+				moveq	#1,d0 ; Fade out
+				CALLC	mnu_clearscreen
 				rts
 
 mnu_viewcredz:	clr.l	counter
@@ -286,8 +75,17 @@ mnu_copycredz:	lea		mnu_frame,a0
 				dbra	d0,.loop
 				rts
 
+				IFND BUILD_WITH_C
+; Input: d0 = fade?
 mnu_clearscreen:
+				; Note: mnu_clearscreen is called on exit even if the menu isn't active
+				; So exit out early if that's the case.
+				tst.l	MenuScreen
+				beq		.noScreen
+				tst.b	d0
+				beq		.fade_done
 				bsr.w	mnu_fadeout
+.fade_done:
 				clr.l	main_vblint				; prevent VBL kicking off new blits
 				WAITBLIT
 				CALLGRAF WaitTOF
@@ -316,7 +114,7 @@ mnu_setscreen:
 .setPlane		move.l	#mnu_morescreen,(a0)+	; the hardcoded background pattern
 				dbra	d0,.setPlane
 
-				lea		MainNewScreen,a0
+				sub.l	a0,a0
 				lea		ScreenTags,a1
 				CALLINT	OpenScreenTagList
 				move.l	d0,MenuScreen
@@ -347,20 +145,22 @@ mnu_setscreen:
 				;move.l	#SCREEN_HEIGHT,d3
 				;CALLINT ChangeWindowBox
 
-				bsr.w	mnu_init
+				CALLC	mnu_init
 				clr.w	mnu_fadefactor
 				bsr.w	mnu_fade
 
 				move.l	#mnu_vblint,main_vblint
 				bsr.w	mnu_fadein
 				rts
-
-mnu_vblint:		bsr.w	mnu_movescreen
-				bsr.w	mnu_dofire
+				ENDIF
+_mnu_vblint::
+mnu_vblint:		CALLC	mnu_movescreen
+				CALLC	mnu_dofire
 				bsr.w	mnu_animcursor
 				bsr.w	mnu_plot
 				rts
 
+				IFND	BUILD_WITH_C
 mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				bsr.w	mnu_createpalette
 
@@ -421,39 +221,9 @@ mnu_init:		bsr.w	mnu_initrnd				; Uses palette buffer
 				dbra	d1,.setbplptrs
 				rts
 
-;-------------------------------------------------------------- Init palette --
-mnu_setpalette:	lea		mnu_palette,a2
+				ENDIF
 
-				;LoadRGB32
-				sub.l	#256*4*3+2+2+4,a7		; reserve stack for 256 color entries + numColors + firstColor
-				move.l	a7,a1
-				move.l	a1,a0
-				move.w	#256,(a0)+				; number of entries
-				move.w	#0,(a0)+				; start index
-				move.w	#255,d0
-				; need to expand the 8 bits to 32bits per gun
-.setCol			move.l	(a2)+,d1
-				move.l	d1,d2
-				clr.w	d2
-				rol.l	#8,d2
-				move.l	d2,(a0)+
-				move.l	d1,d2
-				clr.b	d2
-				swap	d2
-				move.l	d2,(a0)+				; this has some stuff in lower word, butt hey'll be discarded
-				ror.l	#8,d1
-				move.l	d1,(a0)+				; same here
-				dbra	d0,.setCol
-				clr.l	(a0)					; terminate list
-
-				move.l	MenuScreen,a0
-				lea		sc_ViewPort(a0),a0
-				CALLGRAF LoadRGB32
-
-				add.l	#256*4*3+2+2+4,a7
-				rts
-
-
+_mnu_initrnd::
 mnu_initrnd:	lea		mnu_palette+256,a1
 				move.w	#255,d0
 .parityloop:	move.b	d0,d1
@@ -499,6 +269,8 @@ mnu_initrnd:	lea		mnu_palette+256,a1
 				move.b	d2,(a0)+
 				dbra	d0,.loop
 				rts
+
+				IFND BUILD_WITH_C
 
 				; scroll first two bitplanes
 mnu_movescreen:	move.l	MenuScreen,a1
@@ -596,9 +368,9 @@ mnu_createpalette:
 .cont:			dbra	d0,.loop
 				rts
 
-
 mnu_fadespeed	equ		16
 
+_mnu_fadein::
 mnu_fadein:		clr.w	mnu_fadefactor
 				moveq.l	#256/mnu_fadespeed-1,d0
 .loop:			move.l	d0,-(a7)
@@ -616,7 +388,7 @@ mnu_fadein:		clr.w	mnu_fadefactor
 				CALLGRAF WaitTOF
 				bsr.w	mnu_fade
 				rts
-
+_mnu_fadeout::
 mnu_fadeout:	move.w	#256,mnu_fadefactor
 				moveq.l	#256/mnu_fadespeed-1,d0
 .loop:			move.l	d0,-(a7)
@@ -635,6 +407,7 @@ mnu_fadeout:	move.w	#256,mnu_fadefactor
 				bsr.w	mnu_fade
 				rts
 
+_mnu_fadefactor::
 mnu_fadefactor:	dc.w	0
 
 mnu_fade:		lea		mnu_palette,a2
@@ -677,6 +450,7 @@ mnu_fade:		lea		mnu_palette,a2
 
 				add.l	#256*4*3+2+2+4+4,a7		;restore stack
 				rts
+				ENDIF
 
 
 mnu_printxy:;in:a0,d0,d1=Text ptr,XPos,YPos (XPos in words YPos in pixels)
@@ -725,6 +499,8 @@ mnu_printxy:;in:a0,d0,d1=Text ptr,XPos,YPos (XPos in words YPos in pixels)
 				bra		.loop
 .exit:			rts
 
+				IFND BUILD_WITH_C
+
 mnu_dofire:		btst.b	#0,main_counter+3
 				beq.s	.noskip
 				rts
@@ -747,6 +523,9 @@ mnu_dofire:		btst.b	#0,main_counter+3
 				CALLGRAF QBSBlit
 				rts
 
+				ENDIF
+
+_getrnd::
 getrnd:			moveq.l	#0,d0
 				move.w	mnu_rnd,d0
 				and.l	#8190,d0
@@ -757,11 +536,16 @@ getrnd:			moveq.l	#0,d0
 
 .rnd:			dc.w	0
 
+_mnu_rnd::
 mnu_rnd:		dc.w	0
+_mnu_bltbusy::
 mnu_bltbusy:	dc.w	0
+
 
 mnu_speed		=		1
 mnu_size		=		256
+
+				IFND BUILD_WITH_C
 
 mnu_subtract:	dc.l	0
 mnu_count:		dc.w	0
@@ -831,6 +615,7 @@ mnu_pass4:		move.l	#mnu_pass1,bn_function(a1) ; restore first pass ptr
 				moveq.l	#0,d0					; this was the last pass
 				rts
 
+				ENDIF
 
 				cnop	0,4
 mnu_cls:		lea		mnu_morescreen+40*256*6,a1 ; start from 6th plane, down to plane 3
@@ -1048,7 +833,11 @@ mnu_waitmenu:;out: d0=Selection number
 				bsr.w	mnu_printxy
 .skip:
 
-.w8key:			bsr.w	mnu_docursor
+.w8key:			tst.b	SHOULDQUIT
+				bne.b	.exit_game
+				bsr.w	mnu_docursor
+				CALLGRAF WaitTOF				; wait a bit to give the BlitTask more time
+				CALLGRAF WaitTOF
 				jsr		key_readkey
 				tst.w	d0
 				beq.s	.w8key
@@ -1066,21 +855,29 @@ mnu_waitmenu:;out: d0=Selection number
 				beq.s	.sliderr
 				cmp.b	#79,d0
 				beq.s	.sliderl
+				cmp.b	#QUIT_KEY,d0
+				beq.s	.exit_game
 				move.l	#mnu_errcursanim,mnu_frameptr
 				bra.w	.loop
+
+.exit_game:		st		SHOULDQUIT
+				; fall through
 .exit:			moveq.l	#-1,d0					; Esc key
 				moveq.l	#0,d1
 				rts
+
 .sliderr:		moveq.l	#41,d1
 				bra.s	.cpcont
 .sliderl:		moveq.l	#42,d1
 				bra.s	.cpcont
 .quit:			moveq.l	#0,d1
+
 .cpcont:		move.w	mnu_row,d0
 				divu	mnu_items,d0
 				swap.w	d0
 				and.l	#$ffff,d0
 				rts
+
 .down:			addq.w	#1,mnu_row
 				bra.w	.loop
 .up:			subq.w	#1,mnu_row
@@ -1431,13 +1228,15 @@ mnu_playgame:	cmp.w	#1,mnu_playtype			; Is it 2 player master ???
 				beq.s	.playgame
 				rts
 				ENDC
-.playgame:		bsr.w	mnu_clearscreen
+.playgame:
+				moveq	#1,d0 ; Fade out
+				CALLC	mnu_clearscreen
 ;-------------------------------------- Jump to game here !! --
 				move.w	mnu_playtype,d0
 				lea		.playtypeptr,a0
 				move.l	(a0,d0.w*4),a0
 				jsr		(a0)
-				bsr.w	mnu_setscreen
+				CALLC	mnu_setscreen
 				rts
 .playtypeptr:	dc.l	mnu_play1p
 				dc.l	mnu_play2pMaster
@@ -1667,6 +1466,7 @@ mnu_printdelay:	dc.l	0
 
 ;----------------------------------------------------------------- Fire data --
 
+_mnu_rndptr::
 mnu_rndptr:		dc.l	mnu_morescreen+6*40*256
 mnu_sourceptrs:	dc.l	mnu_morescreen+3*40*256+mnu_speed*40
 				dc.l	mnu_morescreen+4*40*256+mnu_speed*40
@@ -1692,7 +1492,7 @@ mnu_MYMAINMENU:
 				dc.l	mnu_MYMAINMENUTEXT
 				dc.w	0,40
 				dc.w	20
-				dc.w	7
+				dc.w	8
 				dc.l	0,0
 				dc.l	0,0
 				dc.l	0,0
@@ -1713,7 +1513,7 @@ mnu_CURRENTLEVELLINE:
 				dc.b	'    GAME CREDITS    ',1
 				dc.b	'   LOAD  POSITION   ',1
 				dc.b	'   SAVE  POSITION   ',1
-;				dc.b	'                    ',1
+				dc.b	'   CUSTOM OPTIONS   ',1
 				dc.b	'                    ',1
 				dc.b	'                    ',0
 
@@ -1780,7 +1580,35 @@ mnu_MYLEVELMENUTEXT2:
 				dc.b	'                    ',0
 
 				EVEN
+mnu_MYCUSTOMOPTSMENU:
+				dc.w	0,0
+				dc.l	mnu_MYCUSTOMOPTSTEXT
+				dc.w	0,40
+				dc.w	20
+				dc.w	9
+				ds.l	18
 
+;was going to use these to change the text in the menu but bodged it.
+; optOn:
+	; dc.b 'ON ',1
+; optOff:
+	; dc.b 'OFF',1
+
+mnu_MYCUSTOMOPTSTEXT:
+;					 12345678901234567890
+				dc.b	'                    ',1
+				dc.b	'                    ',1
+optionLines:				;12345678901234567890
+				dc.b	'  ORIGINAL MOUSE    ',1;OFF  ',1
+				dc.b	'  ALWAYS RUN        ',1;OFF  ',1
+				dc.b	'  OPTION 3          ',1;OFF  ',1
+				dc.b	'  OPTION 4          ',1;OFF  ',1
+				dc.b	'  OPTION 5          ',1
+				dc.b	'  OPTION 6          ',1
+				dc.b	'  OPTION 7          ',1
+				dc.b	'  OPTION 8          ',1
+				dc.b	'     MAIN  MENU     ',0
+				EVEN
 ***************************************************************
 mnu_MYCONTROLSONE:
 				dc.w	0,0
@@ -2216,21 +2044,27 @@ mnu_buttonanim:	dc.b	236,236,236,236
 				dc.b	24
 				even
 mnu_font:		incbin	"menu/font16x16.raw2"
+_mnu_fontpal::
 mnu_fontpal:	incbin	"menu/font16x16.pal2"
+_mnu_firepal::
 mnu_firepal:	incbin	"menu/firepal.pal2"
+_mnu_backpal::
 mnu_backpal:	incbin	"menu/back.pal"
 
+_mnu_palette::
 mnu_palette:	ds.l	256						; 4byte per pixel, 24bit used
 
 mnu_frame:		incbin	"menu/credits_only.raw"
 
 counter:		dc.l	0
+_main_vblint::
 main_vblint:	dc.l	0
+_main_counter::
 main_counter:	dc.l	0
 main_vbrbase:	dc.l	0
 timer:			dc.l	0
 
-
+				IFND BUILD_WITH_C
 BltNode			dc.l	0						; bn_n
 				dc.l	mnu_pass1				; bn_function
 				dc.b	0						; bn_stat
@@ -2238,6 +2072,7 @@ BltNode			dc.l	0						; bn_n
 				dc.w	0						; bn_blitsize
 				dc.w	0						; bn_beamsync
 				dc.l	0						; bn_cleanup
+				ENDIF
 
 
 Bitmap			dc.w	SCREEN_WIDTH/8					; bm_BytesPerRow
@@ -2257,6 +2092,7 @@ ScreenTags		dc.l	SA_Width,SCREEN_WIDTH
 				dc.l	SA_DisplayID,PAL_MONITOR_ID
 				dc.l	TAG_END,0
 
+_MenuScreen::
 MenuScreen		dc.l	0
 
 WindowTags		dc.l	WA_Left,0
@@ -2273,19 +2109,23 @@ WTagScreenPtr	dc.l	0						; will fill in screen pointer later
 				dc.l	WA_Backdrop,1
 				dc.l	TAG_END,0
 
+_MenuWindow::
 MenuWindow		dc.l	0
 
-				section	data,data
+				section	.data,data
 
+_mnu_background::
 mnu_background	incbin	"menu/back2.raw"		; 2x320x256 bitplanes
 
-				section	bss_c,bss_c
+				section	.bsschip,bss_c
 
+_mnu_screen::
 mnu_screen:		ds.b	2*40*512				; 4 color background,. 320x512 pixels
+_mnu_morescreen::
 mnu_morescreen:	ds.b	8*40*SCREEN_HEIGHT				; 8 bitplanes 320x256 pixels
 
 				align	8				; align for fetch mode 3
 
 emptySprite		ds.w	6,0
 
-				section	code,code
+				section	.text,code

@@ -19,6 +19,9 @@ DEV_SKIP_LIGHTSOURCED_BITMAPS	EQU 6
 DEV_SKIP_POLYGON_MODELS			EQU 7
 DEV_SKIP_FASTBUFFER_CLEAR		EQU 8
 DEV_SKIP_AI_ATTACK				EQU 9
+DEV_SKIP_TIMEGRAPH				EQU 10
+DEV_SKIP_LIGHTING				EQU 11
+DEV_SKIP_SKYFILL				EQU 12
 
 ; When any of the level geometry is skipped, we need to make sure the fast buffer gets cleared
 DEV_CLEAR_FASTBUFFER_MASK		EQU (1<<DEV_SKIP_FLATS)|(1<<DEV_SKIP_SIMPLE_WALLS)|(1<<DEV_SKIP_SHADED_WALLS)
@@ -49,6 +52,11 @@ DEV_INC			MACRO
 DEV_DEC			MACRO
 				subq.\0	#1,dev_\1_\0
 				ENDM
+
+DEV_INCN		MACRO
+				addq.\0	#\2,dev_\1_\0
+				ENDM
+
 
 ; Macros for saving register state.
 DEV_SAVE		MACRO
@@ -81,11 +89,36 @@ DEV_TOGGLE		MACRO
 ; Macro for checking if a specific key should toggle a feature
 DEV_CHECK_KEY	MACRO
 				tst.b		\1(a5)
-				beq.s		.dev_skip_\2
+				beq.s		.dev_skip_\2\@
 				clr.b		\1(a5)
 				DEV_TOGGLE	\2
-.dev_skip_\2:
+.dev_skip_\2\@:
 				ENDM
+
+DEV_SNE			MACRO
+				btst.b	#(DEV_SKIP_\1)&7,dev_SkipFlags_l+3-(DEV_SKIP_\1>>3)
+				sne.b	\2
+				ENDM
+
+DEV_SEQ			MACRO
+				btst.b	#(DEV_SKIP_\1)&7,dev_SkipFlags_l+3-(DEV_SKIP_\1>>3)
+				seq.b	\2
+				ENDM
+
+
+DEV_CHECK_DIVISOR	MACRO
+					cmp.w	dev_Reserved4_w,\1
+					bgt.s	.divisor_test_max\@
+					move.w	\1,dev_Reserved4_w
+
+.divisor_test_max\@:
+				cmp.w	dev_Reserved5_w,\1
+				blt.s	.divisor_test_done\@
+				move.w	\1,dev_Reserved5_w
+
+.divisor_test_done\@:
+				ENDM
+
 ; For the release build, all the macros are empty and no code is generated.
 				ELSE
 
@@ -96,6 +129,9 @@ DEV_ELAPSED32	MACRO
 				ENDM
 
 DEV_INC			MACRO
+				ENDM
+
+DEV_INCN		MACRO
 				ENDM
 
 DEV_DEC			MACRO
@@ -122,4 +158,13 @@ DEV_TOGGLE		MACRO
 DEV_CHECK_KEY	MACRO
 				ENDM
 
+DEV_SNE			MACRO
+				ENDM
+
+DEV_SEQ			MACRO
+				ENDM
+
+
+DEV_CHECK_DIVISOR MACRO
+				ENDM
 				ENDC

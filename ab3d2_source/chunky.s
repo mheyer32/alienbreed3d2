@@ -12,6 +12,7 @@
 
 FS_C2P_HEIGHT equ FS_HEIGHT-FS_HEIGHT_C2P_DIFF
 
+_Vid_ConvertC2P::
 Vid_ConvertC2P:
 				tst.b	d5
 				beq.s	.noteleffect

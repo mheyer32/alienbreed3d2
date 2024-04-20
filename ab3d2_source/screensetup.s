@@ -1,3 +1,4 @@
+				IFND BUILD_WITH_C
 vid_MyAllocRaster:
 				move.l	#SCREEN_WIDTH,d0		; want all planes in one chunk of memory
 				move.l	#(SCREEN_HEIGHT*8)+1,d1
@@ -66,7 +67,7 @@ Vid_OpenMainScreen:
 
 				tst.l	d0
 				;	beq	exit_closeall
-				move.l	d0,Vid_ScreenBuffers_vl+0		; FIXME: free upon exit
+				move.l	d0,Vid_ScreenBuffers_vl+0
 				move.l	Vid_MainScreen_l,a0
 				lea		vid_MainBitmap1,a1
 				clr.l	d0
@@ -74,7 +75,7 @@ Vid_OpenMainScreen:
 
 				tst.l	d0
 				;	beq	exit_closeall
-				move.l	d0,Vid_ScreenBuffers_vl+4		; FIXME: free upon exit
+				move.l	d0,Vid_ScreenBuffers_vl+4
 
 				;CALLEXEC CreateMsgPort
 				;tst.l	d0
@@ -85,7 +86,7 @@ Vid_OpenMainScreen:
 
 				tst.l	d0
 				;	beq	exit_closeall
-				move.l	d0,Vid_DisplayMsgPort_l		; FIXME: free upon exit
+				move.l	d0,Vid_DisplayMsgPort_l
 
 YYY:
 				move.l	Vid_ScreenBuffers_vl+0,a0
@@ -120,7 +121,7 @@ YYY:
 				move.l	d0,d3
 				CALLINT	SetPointer
 
-				jsr		LoadMainPalette
+				jsr		Vid_LoadMainPalette
 
 				move.l	vid_MainWindow_l,a0
 				CALLINT ViewPortAddress
@@ -130,9 +131,14 @@ YYY:
 				lea		vid_VidControlTags_vl,a1
 				CALLGRAF VideoControl
 
+				moveq	#ucl_SIZEOF,d0
+				move.l	#MEMF_PUBLIC!MEMF_CLEAR,d1
+				CALLEXEC AllocMem
+				move.l	d0,vid_MyUCopList_l
+
 				; Setup a User copperlist to enable doubleheight rendering
 				move.l	_GfxBase,a6
-				lea		vid_MyUCopList_vb,a2
+				move.l	d0,a2
 
 				CINIT	a2,116*6+4	; 232 modulos
 
@@ -161,6 +167,50 @@ YYY:
 
 				rts
 
+Vid_CloseMainScreen:
+				; Use CloseScreen to get rid of UCpoList (see see C source for details)
+				move.l	vid_MainWindow_l,a0
+				CALLINT ViewPortAddress
+				move.l	d0,a0
+				move.l	vid_MyUCopList_l,vp_UCopIns(a0)
+
+				; CloseWindow
+				move.l	vid_MainWindow_l,a0
+				CALLINT	CloseWindow
+
+				; FreeScreenBuffer
+				move.l	Vid_MainScreen_l,a0
+				move.l	Vid_ScreenBuffers_vl+0,a1
+				CALLINT	FreeScreenBuffer
+
+				move.l	Vid_MainScreen_l,a0
+				move.l	Vid_ScreenBuffers_vl+4,a1
+				CALLINT	FreeScreenBuffer
+
+				; DeleteMsgPort
+				move.l	Vid_DisplayMsgPort_l,a0
+				CALLEXEC DeleteMsgPort
+
+				; CloseScreen
+				move.l	Vid_MainScreen_l,a0
+				CALLINT CloseScreen
+
+				; FreeRaster
+				move.l	Vid_FastBufferAllocPtr_l,a1
+				CALLEXEC FreeVec
+
+				move.l	Vid_MyRaster0_l,a0
+				move.w	#SCREEN_WIDTH,d0
+				move.w	#SCREEN_HEIGHT*8+1,d1
+				CALLGRAF FreeRaster
+
+				move.l	Vid_MyRaster1_l,a0
+				move.w	#SCREEN_WIDTH,d0
+				move.w	#SCREEN_HEIGHT*8+1,d1
+				CALLGRAF FreeRaster
+
+				rts
+
 vid_SetupDoubleheightCopperlist:
 				; Install copperlist
 				move.l	vid_MainWindow_l,a0
@@ -172,7 +222,7 @@ vid_SetupDoubleheightCopperlist:
 
 				tst.b	Vid_DoubleHeight_b
 				beq.s	.noDoubleheight
-				move.l	#vid_MyUCopList_vb,vp_UCopIns(a2)
+				move.l	vid_MyUCopList_l,vp_UCopIns(a2)
 				bra.s	.install
 
 .noDoubleheight:
@@ -255,10 +305,11 @@ vid_MainBitmap1:
 				ds.l	8						; bm_Planes
 
 				align	4
-vid_MyUCopList_vb:
-				ds.b	ucl_SIZEOF				; see copper.i
+vid_MyUCopList_l:
+				ds.l	1
 
 				align	4
 vid_VidControlTags_vl:
 				dc.l	VTAG_USERCLIP_SET,1
 				dc.l	VTAG_END_CM,0
+				ENDIF

@@ -1,13 +1,13 @@
 
-			section bss,bss
+			section .bss,bss
 
 ; BSS data - to be included in BSS section
 			align 4
 
 ; Ad hoc tables that we don't know where else to put yet.
 
-COMPACTMAP:		ds.l	257
-BIGMAP:			ds.l	256*10
+Lvl_CompactMap_vl:		ds.l	257
+Lvl_BigMap_vl:			ds.l	256*10
 
 PointBrightsPtr_l:		ds.l	1
 CurrentPointBrights_vl:	ds.l	2*256*10
@@ -29,7 +29,7 @@ Storage_vl:				ds.l	500  ; drawing
 
 Aud_EmptyBuffer_vl:		ds.l	100 ; hires.s - audio
 Aud_EmptyBufferEnd:
-Aud_SampleList_vl:		ds.l	133
+Aud_SampleList_vl:		ds.l	NUM_SFX*2 ; {start,end}
 
 LeftSideTable_vw:		ds.w	512*2
 RightSideTable_vw:		ds.w	512*2
@@ -41,4 +41,9 @@ anim_DoorHeightTable_vw:	ds.w	40 ; newanims.s
 
 Obj_RoomPath_vw:			ds.w	100 ; objmove.s
 
+_game_ModProps::
+game_ModProps:
+                        ds.w    GModT_SizeOf_l
+
+_KeyMap_vb::
 KeyMap_vb:				ds.b	256

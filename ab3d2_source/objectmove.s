@@ -822,7 +822,6 @@ checkifcrossed:
 				moveq	#1,d0
 .ohbugger:
 
-
 				move.l	newy,d4
 				sub.l	oldy,d4
 				divs	d0,d4
@@ -1206,9 +1205,9 @@ HeadTowardsAng:
 				move.w	SinRet,d0
 				move.w	#0,d2
 				move.l	#SinCosTable_vw,a2
-				lea		2048(a2),a3
+				lea		COSINE_OFS(a2),a3
 				move.w	#3,d5
-				move.w	#2048,d6
+				move.w	#COSINE_OFS,d6
 findanglop:
 
 				move.w	(a2,d2.w*2),d3
@@ -1261,7 +1260,6 @@ CheckHit:
 ONLYSEE:		dc.w	0
 
 GetNextCPt:
-
 				clr.b	ONLYSEE
 				cmp.w	d0,d1
 				beq.s	noneedforhassle
@@ -1289,7 +1287,6 @@ FromRoom:		dc.l	0
 ToRoom:			dc.l	0
 CanSee:			dc.w	0
 Facedir:		dc.w	0
-
 				even
 
 CanItBeSeenAng:
@@ -1298,8 +1295,8 @@ CanItBeSeenAng:
 				move.w	Facedir,d0
 				move.l	#SinCosTable_vw,a0
 				add.w	d0,a0
-				move.w	(a0),d0
-				move.w	2048(a0),d1
+				move.w	(a0),d0 ; SINE_OFS
+				move.w	COSINE_OFS(a0),d1
 				move.w	Targetx,d2
 				sub.w	Viewerx,d2
 				move.w	Targetz,d3
@@ -1697,7 +1694,7 @@ GoInDirection:
 				move.l	#SinCosTable_vw,a0
 				lea		(a0,d0.w),a0
 				move.w	(a0),d1
-				move.w	2048(a0),d2
+				move.w	COSINE_OFS(a0),d2
 				muls	speed,d1
 				add.l	d1,d1
 				muls	speed,d2
@@ -1710,25 +1707,22 @@ GoInDirection:
 				move.w	d2,newz
 				rts
 
-CollideFlags:	dc.l	0
+Obj_CollideFlags_l:	dc.l	0
 
-MYROOM:			dc.w	0
 
-Collision:
 
+Obj_DoCollision:
 				move.l	Lvl_ObjectDataPtr_l,a0
 				move.w	CollId,d0
 				asl.w	#6,d0
-				move.w	12(a0,d0.w),MYROOM
-				move.b	16(a0,d0.w),d0
+				move.w	ObjT_ZoneID_w(a0,d0.w),.tmp_zone_id_w
+				move.b	ObjT_TypeID_b(a0,d0.w),d0
 				ext.w	d0
 
-				sub.w	#64,a0
-				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.l	#ColBoxTable,a2
-				lea		(a2,d0.w*8),a3
+				PREV_OBJ	a0
 
-				move.l	CollideFlags,d7
+				move.l	Lvl_ObjectPointsPtr_l,a1
+				move.l	Obj_CollideFlags_l,d7
 				move.b	StoodInTop,d6
 				move.l	newy,d4
 				move.l	d4,d5
@@ -1737,83 +1731,85 @@ Collision:
 				asr.l	#7,d5
 				clr.b	hitwall
 
-checkcol:
-				add.w	#64,a0
-
+.check_collide:
+				NEXT_OBJ	a0
 				move.w	(a0),d0
-				blt		checkedallcol
+				blt		.checked_all_collide
 
 				cmp.w	CollId,d0
-				beq.s	checkcol
+				beq.s	.check_collide
 
-				tst.w	12(a0)
-				blt.s	checkcol
+				tst.w	ObjT_ZoneID_w(a0)
+				blt.s	.check_collide
 
-				move.w	MYROOM,d1
-				cmp.w	12(a0),d1
-				bne.s	checkcol
+				move.w	.tmp_zone_id_w,d1
+				cmp.w	ObjT_ZoneID_w(a0),d1
+				bne.s	.check_collide
 
-				tst.b	EntT_NumLives_b(a0)
-				beq.s	checkcol
+				tst.b	EntT_HitPoints_b(a0)
+				beq.s	.check_collide
 
 				move.b	ShotT_InUpperZone_b(a0),d1
 				eor.b	d6,d1
-				bne		checkcol
+				bne		.check_collide
 
 				moveq	#0,d3
-				move.b	16(a0),d3
-				blt		checkcol
+				move.b	ObjT_TypeID_b(a0),d3
+				blt		.check_collide
 				beq		.ycol
 
 				cmp.b	#1,d3
-				bne		checkcol
+				bne		.check_collide
 
 				move.l	GLF_DatabasePtr_l,a4
 				add.l	#GLFT_ObjectDefs,a4
 				moveq	#0,d1
 				move.b	EntT_Type_b(a0),d1
-				muls	#ObjT_SizeOf_l,d1
-				cmp.w	#2,ObjT_Behaviour_w(a4,d1.w)
-				blt		checkcol
+				muls	#ODefT_SizeOf_l,d1
+				cmp.w	#2,ODefT_Behaviour_w(a4,d1.w)
+				blt		.check_collide
 				bgt		.ycol
 
-				tst.b	EntT_NumLives_b(a0)
-				ble		checkcol
+				tst.b	EntT_HitPoints_b(a0)
+				ble		.check_collide
 
-.ycol
+.ycol:
 
 ; btst d3,d7
-; beq checkcol
+; beq .check_collide
 
-				move.w	4(a0),d1
+				move.w	ObjT_ZPos_l(a0),d1
 				sub.w	2(a2,d3.w*8),d1
 				cmp.w	d1,d5
-				blt		checkcol
+				blt		.check_collide
+
 				add.w	4(a2,d3.w*8),d1
 				cmp.w	d1,d4
-				bgt		checkcol
+				bgt		.check_collide
 
 				move.w	(a1,d0.w*8),d1
 				move.w	4(a1,d0.w*8),d2
 				sub.w	newx,d1
 				bge.s	.xnoneg
+
 				neg.w	d1
 .xnoneg:
 				sub.w	newz,d2
 				bge.s	.znoneg
+
 				neg.w	d2
 .znoneg:
 				cmp.w	d1,d2
 				ble.s	.checkx
 				sub.w	#80,d2
 				cmp.w	#80,d2
-				bgt		checkcol
+				bgt		.check_collide
 				st		hitwall
-				bra		checkedallcol
+				bra		.checked_all_collide
 .checkx:
 				sub.w	#80,d1
 				cmp.w	#80,d1
-				bgt		checkcol
+				bgt		.check_collide
 
 				move.w	(a1,d0.w*8),d1
 				move.w	4(a1,d0.w*8),d2
@@ -1830,58 +1826,17 @@ checkcol:
 				muls	d2,d2
 				add.l	d1,d2
 				cmp.l	d2,d7
-				bgt		checkcol
+				bgt		.check_collide
 
 				st		hitwall
-				bra		checkedallcol
+;				bra		.checked_all_collide
 
-; bra checkcol
+; bra .check_collide
 
-checkedallcol:
+.checked_all_collide:
 				rts
-
-ColBoxTable:
-
-; red scurrying alien
-				dc.w	40,60,120,0
-; Medipack
-				dc.w	40,20,40,0
-; Bullet
-				dc.w	40,20,40,0
-; Gun
-				dc.w	40,20,40,0
-; Key
-				dc.w	40,20,40,0
-; PLayer1
-				dc.w	40,40,80,0
-;Robot
-				dc.w	40,50,100,0
-;?
-				dc.w	40,20,40,0
-; Flying Nasty
-				dc.w	80,60,120,0
-; Ammo
-				dc.w	40,20,40,0
-; Barrel
-				dc.w	40,30,60,0
-;PlAYER2
-				dc.w	40,40,80,0
-; Mutant Marine
-				dc.w	40,40,80,0
-; worm
-				dc.w	80,60,120,0
-; huge red thing
-				dc.w	160,100,200,0
-; small red thing
-				dc.w	80,50,100,0
-; tree
-				dc.w	80,60,120,0
-; eyeball
-				dc.w	40,30,60,0
-; Tough Marine
-				dc.w	40,40,80,0
-; ShotGun Marine
-				dc.w	40,40,80,0
+.tmp_zone_id_w:
+				dc.w	0
 
 FromZone:		dc.w	0
 OKTEL:			dc.w	0
@@ -1909,9 +1864,9 @@ ITSATEL:
 				add.l	d0,newy
 				move.w	ZoneT_TelX_w(a2),newx
 				move.w	ZoneT_TelZ_w(a2),newz
-				move.l	#%1111111111111111111,CollideFlags
+				move.l	#%1111111111111111111,Obj_CollideFlags_l
 				movem.l	a0/a1/a2,-(a7)
-				bsr		Collision
+				bsr		Obj_DoCollision
 				movem.l	(a7)+,a0/a1/a2
 
 				move.l	floortemp,d0
@@ -1933,7 +1888,7 @@ ITSATEL:
 FindCloseRoom:
 ; d0 is distance.
 
-				move.w	4(a0),d1
+				move.w	ObjT_ZPos_l(a0),d1
 				ext.l	d1
 				asl.l	#7,d1
 				move.l	d1,oldy
@@ -1943,9 +1898,9 @@ FindCloseRoom:
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				lea		(a1,d1.w*8),a1
 				move.w	(a1),oldx
-				move.w	4(a1),oldz
+				move.w	ObjT_ZPos_l(a1),oldz
 
-				move.w	12(a0),d2
+				move.w	ObjT_ZoneID_w(a0),d2
 				move.l	Lvl_ZoneAddsPtr_l,a5
 				move.l	(a5,d2.w*4),d2
 				add.l	Lvl_DataPtr_l,d2
@@ -1983,7 +1938,7 @@ FindCloseRoom:
 
 				move.l	#Obj_RoomPath_vw,a2
 				move.l	#possclose,a3
-				move.w	12(a0),(a3)+
+				move.w	ObjT_ZoneID_w(a0),(a3)+
 
 putinmore:
 				move.w	(a2)+,(a3)+
@@ -2014,7 +1969,7 @@ putinmore2:
 				move.w	#-1,(a3)+
 
 
-				move.w	12(a0),d7
+				move.w	ObjT_ZoneID_w(a0),d7
 
 				move.l	Zone_EndOfListPtr_l,a3
 FINDCLOSELOOP:
@@ -2034,7 +1989,7 @@ outin:
 
 foundclose:
 
-				move.w	d7,EntT_GraphicRoom_w(a0)
+				move.w	d7,ObjT_ZoneID_w(a0)
 
 				rts
 

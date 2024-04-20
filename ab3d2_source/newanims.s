@@ -1,5 +1,6 @@
 				align 2
 ; Byte data
+_Anim_LightingEnabled_b::
 Anim_LightingEnabled_b:	dc.b	$ff
 anim_LiftAtTop_b:		dc.b	0
 anim_LiftAtBottom_b:	dc.b	0
@@ -343,7 +344,7 @@ room_point_loop_A:
 .okpos2:
 				movem.l	d0/d1/d2/d3/d4/d5,-(a7)
 				move.w	(a6),d0
-				move.w	2048(a6),d1
+				move.w	COSINE_OFS(a6),d1
 				muls	d7,d1
 				muls	d6,d0
 				add.l	d0,d1
@@ -358,7 +359,7 @@ room_point_loop_A:
 
 .okkkkk:
 				move.w	(a6),d0
-				move.w	2048(a6),d1
+				move.w	COSINE_OFS(a6),d1
 				muls	d0,d7
 				muls	d1,d6
 				sub.l	d6,d7
@@ -608,14 +609,14 @@ Anim_ExplodeIntoBits:
 				move.w	#7,d2
 
 .oksplut:
-				move.l	NastyShotDataPtr_l,a5
-				move.w	#19,d1
+				move.l	AI_AlienShotDataPtr_l,a5
+				move.w	#NUM_ALIEN_SHOT_DATA-1,d1
 
 .findeight:
-				move.w	12(a5),d0
+				move.w	ObjT_ZoneID_w(a5),d0
 				blt.s	.gotonehere
 
-				adda.w	#64,a5
+				adda.w	#ObjT_SizeOf_l,a5
 				dbra	d1,.findeight
 
 				rts
@@ -632,11 +633,11 @@ Anim_ExplodeIntoBits:
 				move.b	#2,16(a2)
 				jsr		GetRand
 
-				and.w	#8190,d0
+				AMOD_A	d0
 				move.l	#SinCosTable_vw,a2
 				adda.w	d0,a2
 				move.w	(a2),d3
-				move.w	2048(a2),d4
+				move.w	COSINE_OFS(a2),d4
 				jsr		GetRand
 
 				and.w	#3,d0
@@ -662,8 +663,8 @@ Anim_ExplodeIntoBits:
 				neg.w	d0
 				move.w	d0,ShotT_VelocityY_w(a5)
 				move.l	#0,EntT_EnemyFlags_l(a5)
-				move.w	12(a0),12(a5)
-				move.w	4(a0),d0
+				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w(a5)
+				move.w	4(a0),d0 ; what is this ?
 				move.w	d0,4(a5)
 				add.w	#6,d0
 				ext.l	d0
@@ -723,7 +724,7 @@ BACKSFX:
 				and.w	#127,d0
 				add.w	#100,d0
 				move.w	d0,anim_TimeToNoise_w
-				move.l	RoomPtr_l,a0
+				move.l	ZonePtr_l,a0
 				add.w	anim_OddEven_w,a0
 				move.w	#2,d0
 				sub.w	anim_OddEven_w,d0
@@ -743,26 +744,35 @@ BACKSFX:
 
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_AmbientSFX_l,a0
-				move.w	(a0,d0.w*2),Samplenum
+				move.w	(a0,d0.w*2),Aud_SampleNum_w
 				move.w	#$fff0,IDNUM
 				st.b	notifplaying
-				move.l	#0,Noisex
+				move.l	#0,Aud_NoiseX_w
 				move.b	#0,PlayEcho
 				jsr		GetRand
 
 				and.w	#15,d0
 				add.w	#32,d0
-				move.w	d0,Noisevol
+				move.w	d0,Aud_NoiseVol_w
 
 				jsr		MakeSomeNoise
 
 .nosfx:
 				rts
 
+
 objmoveanim:
-				move.l	Plr1_RoomPtr_l,a0
+                move.w  Plr1_Zone_w,d0
+				move.l	Plr1_ZonePtr_l,a0
 				move.w	(a0),Plr1_Zone_w
-				move.l	Plr2_RoomPtr_l,a0
+
+				cmp.w   Plr1_Zone_w,d0
+                beq.s   .not_changed
+
+                SET_MEM_BIT	GAME_EVENTBIT_ZONE_CHANGE,Game_ProgressSignal_l
+
+.not_changed:
+				move.l	Plr2_ZonePtr_l,a0
 				move.w	(a0),Plr2_Zone_w
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.okp2
@@ -770,8 +780,8 @@ objmoveanim:
 				move.w	#-5,Plr2_Zone_w
 
 .okp2:
-				move.w	#0,AI_Player1NoiseVol_w
-				move.w	#0,AI_Player2NoiseVol_w
+				move.w	#0,Plr1_NoiseVol_w
+				move.w	#0,Plr2_NoiseVol_w
 				move.l	#AI_BoredomSpace_vl,AI_BoredomPtr_l
 				bsr		BACKSFX
 
@@ -786,7 +796,7 @@ objmoveanim:
 				bsr		DoorRoutine
 
 				move.w	#0,Plr1_FloorSpd_w
-				move.w	#0,plr2_FloorSpd_w
+				move.w	#0,Plr2_FloorSpd_w
 				bsr		LiftRoutine
 
 				cmp	#0,Anim_Timer_w		;Anim_Timer_w decriment moved to VBlankInterrupt:
@@ -897,7 +907,7 @@ notallliftsdone:
 				sub.l	d5,d4
 				add.l	d4,d4
 				swap	d4
-				move.w	d4,Noisex
+				move.w	d4,Aud_NoiseX_w
 				move.w	Temp_SinVal_w,d4
 				move.w	Temp_CosVal_w,d5
 				muls	d2,d4
@@ -905,7 +915,7 @@ notallliftsdone:
 				sub.l	d5,d4
 				add.l	d4,d4
 				swap	d4
-				move.w	d4,Noisez
+				move.w	d4,Aud_NoiseZ_w
 				move.w	(a0),d3
 				move.w	d3,(a6)+
 				move.w	2(a0),d2
@@ -926,11 +936,11 @@ notallliftsdone:
 				tst.w	d2
 				beq.s	.nonoise3
 
-				move.w	#50,Noisevol
-				move.w	anim_ClosedSoundFX_w,Samplenum
+				move.w	#50,Aud_NoiseVol_w
+				move.w	anim_ClosedSoundFX_w,Aud_SampleNum_w
 				blt.s	.nonoise3
 
-				move.b	#1,chanpick
+				move.b	#1,Aud_ChannelPick_b
 				clr.b	notifplaying
 				move.w	#$fffd,IDNUM
 
@@ -952,11 +962,11 @@ notallliftsdone:
 				beq.s	.nonoise
 
 				move.w	#0,(a6)
-				move.w	#50,Noisevol
-				move.w	anim_OpenedSoundFX_w,Samplenum
+				move.w	#50,Aud_NoiseVol_w
+				move.w	anim_OpenedSoundFX_w,Aud_SampleNum_w
 				blt.s	.nonoise
 
-				move.b	#1,chanpick
+				move.b	#1,Aud_ChannelPick_b
 				clr.b	notifplaying
 				move.w	#$fffd,IDNUM
 
@@ -983,16 +993,15 @@ notallliftsdone:
 				asl.w	#2,d0
 				move.w	d0,2(a1)
 				move.w	d3,d0
-				muls	#256,d3
-				; 0xABADCAFE - come back to the overflow here
-				;ext.l	d3	; Safety - sign extend before shift
-				;asl.l	#8,d3
+
+				ext.l	d3	; Safety - sign extend before shift
+				asl.l	#8,d3
 				move.w	(a0)+,d5
 				move.l	Lvl_ZoneAddsPtr_l,a1
 				move.l	(a1,d5.w*4),a1
 				add.l	Lvl_DataPtr_l,a1
 				move.w	(a1),d5
-				move.l	Plr1_RoomPtr_l,a3
+				move.l	Plr1_ZonePtr_l,a3
 				move.l	d3,2(a1)
 				neg.w	d0
 				cmp.w	(a3),d5
@@ -1002,12 +1011,12 @@ notallliftsdone:
 				move.w	anim_FloorMoveSpeed_w,Plr1_FloorSpd_w
 
 .nosetfloorspd1:
-				move.l	Plr2_RoomPtr_l,a3
+				move.l	Plr2_ZonePtr_l,a3
 				cmp.w	(a3),d5
 				seq		plr2_StoodOnLift_b
 				bne.s	.nosetfloorspd2
 
-				move.w	anim_FloorMoveSpeed_w,plr2_FloorSpd_w
+				move.w	anim_FloorMoveSpeed_w,Plr2_FloorSpd_w
 
 .nosetfloorspd2:
 				move.w	(a0)+,d2				; conditions
@@ -1034,7 +1043,7 @@ notallliftsdone:
 				add.l	Lvl_GraphicsPtr_l,a1
 				move.l	(a0)+,a2
 				adda.w	d0,a2
-				move.l	a2,10(a1)
+				move.w	a2,12(a1);was move.l	a2,10(a1)
 				move.l	d3,20(a1)
 				bra.s	.simplecheck
 
@@ -1069,11 +1078,11 @@ liftwalls:
 				beq.s	.nothinghit
 
 				move.w	d7,(a5)
-				move.w	#50,Noisevol
-				move.w	anim_ActionSoundFX_w,Samplenum
+				move.w	#50,Aud_NoiseVol_w
+				move.w	anim_ActionSoundFX_w,Aud_SampleNum_w
 				blt.s	.nothinghit
 
-				move.b	#1,chanpick
+				move.b	#1,Aud_ChannelPick_b
 				st		notifplaying
 				move.w	#$fffe,IDNUM
 
@@ -1087,7 +1096,7 @@ liftwalls:
 				add.l	Lvl_GraphicsPtr_l,a1
 				move.l	(a0)+,a2
 				adda.w	d0,a2
-				move.l	a2,10(a1)
+				move.w	a2,12(a1);was move.l	a2,10(a1)
 				move.l	d3,20(a1)
 				bra		liftwalls
 
@@ -1268,7 +1277,7 @@ notalldoorsdone:
 				sub.l	d5,d4
 				add.l	d4,d4
 				swap	d4
-				move.w	d4,Noisex
+				move.w	d4,Aud_NoiseX_w
 				move.w	Temp_SinVal_w,d4
 				move.w	Temp_CosVal_w,d5
 				muls	d2,d4
@@ -1276,7 +1285,7 @@ notalldoorsdone:
 				sub.l	d5,d4
 				add.l	d4,d4
 				swap	d4
-				move.w	d4,Noisez
+				move.w	d4,Aud_NoiseZ_w
 				move.w	(a0),d3
 				move.w	2(a0),d2
 				move.w	8(a0),d7
@@ -1293,11 +1302,11 @@ notalldoorsdone:
 
 				tst.w	d2
 				beq.s	.nonoise
-				move.w	#50,Noisevol
-				move.w	anim_ClosedSoundFX_w,Samplenum
+				move.w	#50,Aud_NoiseVol_w
+				move.w	anim_ClosedSoundFX_w,Aud_SampleNum_w
 				blt.s	.nonoise
 
-				move.b	#1,chanpick
+				move.b	#1,Aud_ChannelPick_b
 				clr.b	notifplaying
 				move.w	#$fffd,IDNUM
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
@@ -1317,11 +1326,11 @@ nolower:
 				beq.s	.nonoise
 
 				move.w	#0,(a6)
-				move.w	#50,Noisevol
-				move.w	anim_OpenedSoundFX_w,Samplenum
+				move.w	#50,Aud_NoiseVol_w
+				move.w	anim_OpenedSoundFX_w,Aud_SampleNum_w
 				blt.s	.nonoise
 
-				move.b	#1,chanpick
+				move.b	#1,Aud_ChannelPick_b
 				clr.b	notifplaying
 				move.w	#$fffd,IDNUM
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
@@ -1343,10 +1352,14 @@ NOTMOVING:
 				move.w	d2,d7
 				move.l	(a0)+,a1
 				add.l	Lvl_GraphicsPtr_l,a1
+				; asr.w	#2,d3
+				; move.w	d3,d0
+				; asl.w	#2,d0
+				; move.w	d0,2(a1)
+				; move.w	d3,d0
+
+				move.w	d3,2(a1)
 				asr.w	#2,d3
-				move.w	d3,d0
-				asl.w	#2,d0
-				move.w	d0,2(a1)
 				move.w	d3,d0
 
 				muls	#256,d3
@@ -1405,7 +1418,7 @@ simplecheck:
 				add.l	Lvl_GraphicsPtr_l,a1
 				move.l	(a0)+,a2
 				adda.w	d0,a2
-				move.l	a2,10(a1)
+				move.w	a2,12(a1);was move.l	a2,10(a1)
 				move.l	d3,24(a1)
 				bra.s	simplecheck
 
@@ -1439,11 +1452,11 @@ doorwalls:
 				beq.s	nothinghit
 
 				move.w	d7,(a5)
-				move.w	#50,Noisevol
-				move.w	anim_ActionSoundFX_w,Samplenum
+				move.w	#50,Aud_NoiseVol_w
+				move.w	anim_ActionSoundFX_w,Aud_SampleNum_w
 				blt.s	nothinghit
 
-				move.b	#1,chanpick
+				move.b	#1,Aud_ChannelPick_b
 				clr.b	notifplaying
 				move.w	#$fffd,IDNUM
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
@@ -1456,7 +1469,7 @@ nothinghit:
 				add.l	Lvl_GraphicsPtr_l,a1
 				move.l	(a0)+,a2
 				adda.w	d0,a2
-				move.l	a2,10(a1)
+				move.w	a2,12(a1);was move.l	a2,10(a1)
 				move.l	d3,24(a1)
 				bra.s	doorwalls
 
@@ -1588,11 +1601,11 @@ backtoend:
 				move.w	Conditions,d4
 				bclr	d3,d4
 				move.w	d4,Conditions
-				move.w	#0,Noisex
-				move.w	#0,Noisez
-				move.w	#50,Noisevol
-				move.w	#10,Samplenum
-				move.b	#1,chanpick
+				move.w	#0,Aud_NoiseX_w
+				move.w	#0,Aud_NoiseZ_w
+				move.w	#50,Aud_NoiseVol_w
+				move.w	#10,Aud_SampleNum_w
+				move.b	#1,Aud_ChannelPick_b
 				st		notifplaying
 				move.w	#$fffc,IDNUM
 
@@ -1613,6 +1626,7 @@ p1_SpaceIsPressed:
 				move.w	(a0),d3
 				blt		.NotCloseEnough
 
+				; calculate distance squared and compare to squared threshold
 				move.w	4(a0),d3
 				lea		(a1,d3.w*4),a2
 				move.w	(a2),d3
@@ -1648,11 +1662,11 @@ p1_SpaceIsPressed:
 				bchg	d3,d4
 				move.w	d4,Conditions
 				move.b	#0,3(a0)
-				move.w	#0,Noisex
-				move.w	#0,Noisez
-				move.w	#50,Noisevol
-				move.w	#10,Samplenum
-				move.b	#1,chanpick
+				move.w	#0,Aud_NoiseX_w
+				move.w	#0,Aud_NoiseZ_w
+				move.w	#50,Aud_NoiseVol_w
+				move.w	#10,Aud_SampleNum_w
+				move.b	#1,Aud_ChannelPick_b
 				st		notifplaying
 				move.w	#$fffc,IDNUM
 
@@ -1670,6 +1684,7 @@ p2_SpaceIsPressed:
 				move.w	(a0),d3
 				blt		.NotCloseEnough
 
+				; calculate distance squared and compare to squared threshold
 				move.w	4(a0),d3
 				lea		(a1,d3.w*4),a2
 				move.w	(a2),d3
@@ -1705,11 +1720,11 @@ p2_SpaceIsPressed:
 				bchg	d3,d4
 				move.w	d4,Conditions
 				movem.l	a0/a1/d0,-(a7)
-				move.w	#0,Noisex
-				move.w	#0,Noisez
-				move.w	#50,Noisevol
-				move.w	#10,Samplenum
-				move.b	#1,chanpick
+				move.w	#0,Aud_NoiseX_w
+				move.w	#0,Aud_NoiseZ_w
+				move.w	#50,Aud_NoiseVol_w
+				move.w	#10,Aud_SampleNum_w
+				move.b	#1,Aud_ChannelPick_b
 				st		notifplaying
 				move.w	#$fffc,IDNUM
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
@@ -1733,7 +1748,7 @@ closedist:		dc.w	0
 				include	"newplayershoot.s"
 
 
-NUMZONES:		dc.w	0
+Zone_Count_w:		dc.w	0
 
 ObjectHandler:
 				move.l	#ObjectWorkspace_vl,WorkspacePtr_l
@@ -1741,11 +1756,18 @@ ObjectHandler:
 				move.l	Lvl_ObjectDataPtr_l,a0
 
 Objectloop:
+				; object list is -1 terminated
 				tst.w	(a0)
 				blt		doneallobj
 
-				move.w	12(a0),EntT_GraphicRoom_w(a0)
-				move.b	16(a0),d0
+				move.w	ObjT_ZoneID_w(a0),EntT_ZoneID_w(a0)
+
+				; All the object classes test if ObjT_ZoneID_w is negative and skip, so we can just do that here to
+				; have a bit less branching
+				blt		doneobj
+
+				; Jump to the appropriate handler
+				move.b	ObjT_TypeID_b(a0),d0
 				cmp.b	#1,d0
 
 				blt		JUMPALIEN
@@ -1757,7 +1779,7 @@ Objectloop:
 
 doneobj:
 dontworryyourprettyhead:
-				adda.w	#64,a0
+				adda.w	#ObjT_SizeOf_l,a0
 				add.l	#8,WorkspacePtr_l
 				add.l	#2,AI_DamagePtr_l
 				add.l	#8,AI_BoredomPtr_l
@@ -1767,13 +1789,13 @@ doneallobj:
 				rts
 
 JUMPALIEN:
-				tst.w	12(a0)
+				tst.w	ObjT_ZoneID_w(a0)
 				blt.s	.dontworry
 
-				tst.b	EntT_NumLives_b(a0)
+				tst.b	EntT_HitPoints_b(a0)
 				beq.s	.nolock
 
-				move.l	EntT_DoorsHeld_w(a0),d0
+				move.l	EntT_DoorsAndLiftsHeld_l(a0),d0
 				or.l	d0,Anim_DoorAndLiftLocks_l
 
 .nolock:
@@ -1781,17 +1803,18 @@ JUMPALIEN:
 				beq		.dontworry
 				jsr		ItsAnAlien
 
-				tst.w	12-64(a0)
-				blt.s	.notanaux
-				move.w	12(a0),12-64(a0)
-				move.w	12(a0),EntT_GraphicRoom_w-64(a0)
+				tst.w	ObjT_ZoneID_w-ObjT_SizeOf_l(a0)
+				blt.s	.not_auxilliary_object
 
-.notanaux:
+				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w-ObjT_SizeOf_l(a0)
+				move.w	ObjT_ZoneID_w(a0),EntT_ZoneID_w-ObjT_SizeOf_l(a0)
+
+.not_auxilliary_object:
 .dontworry:
 				bra		doneobj
 
 JUMPOBJECT:
-				tst.w	12(a0)
+				tst.w	ObjT_ZoneID_w(a0)
 				blt.s	.dontworry
 
 				jsr		ItsAnObject
@@ -1814,91 +1837,92 @@ JUMPBULLET:
 ;				move.w	#10,EntT_Timer4_w(a0)
 ;				rts
 
-maybeflame:
-				sub.w	d0,EntT_Timer4_w(a0)
-				blt.s	yesflame
-				rts
+;maybeflame:
+;				sub.w	d0,EntT_Timer4_w(a0)
+;				blt.s	yesflame
+;				rts
 
-yesflame:
-				move.w	#10,EntT_Timer4_w(a0)
-				sub.w	#1,EntT_Timer2_w(a0)
-				bgt.s	notdoneflame
+;yesflame:
+;				move.w	#10,EntT_Timer4_w(a0)
+;				sub.w	#1,EntT_Timer2_w(a0)
+;				bgt.s	notdoneflame
+;
+;				move.w	EntT_Timer1_w(a0),EntT_Timer3_w(a0)
 
-				move.w	EntT_Timer1_w(a0),EntT_Timer3_w(a0)
-
-notdoneflame:
-				cmp.w	#4,EntT_Timer2_w(a0)
-				bne.s	.nowhoosh
-
-				movem.l	d0-d7/a0-a6,-(a7)
-				move.l	#ObjRotated_vl,a1
-				move.w	(a0),d0
-				lea		(a1,d0.w*8),a1
-				move.l	(a1),Noisex
-				move.w	#200,Noisevol
-				move.w	#22,Samplenum
-				move.b	#1,chanpick
-				clr.b	notifplaying
-				move.w	(a0),IDNUM
-				jsr		MakeSomeNoise
-
-				movem.l	(a7)+,d0-d7/a0-a6
-
-.nowhoosh:
-
+;notdoneflame:
+;				cmp.w	#4,EntT_Timer2_w(a0)
+;				bne.s	.nowhoosh
+;
+;				movem.l	d0-d7/a0-a6,-(a7)
+;				move.l	#ObjRotated_vl,a1
+;				move.w	(a0),d0
+;				lea		(a1,d0.w*8),a1
+;				move.l	(a1),Aud_NoiseX_w
+;				move.w	#200,Aud_NoiseVol_w
+;				move.w	#22,Aud_SampleNum_w
+;				move.b	#1,Aud_ChannelPick_b
+;				clr.b	notifplaying
+;				move.w	(a0),IDNUM
+;				jsr		MakeSomeNoise
+;
+;				movem.l	(a7)+,d0-d7/a0-a6
+;
+;.nowhoosh:
+;
 ; Gas pipe: facing direction is given by
 ; leved (perpendicular to wall) so
 ; just continuously spray out flame!
-				move.l	NastyShotDataPtr_l,a5
-				move.w	#19,d1
+;				move.l	AI_AlienShotDataPtr_l,a5
+;				move.w	#NUM_ALIEN_SHOT_DATA-1,d1
 
-.findonefree:
-				move.w	12(a5),d0
-				blt.s	.foundonefree
+				; Walk the list of objects looking for one that's free (is not assigned to a zone)
+;.findonefree:
+;				move.w	ObjT_ZoneID_w(a5),d0
+;				blt.s	.foundonefree
+;
+;				adda.w	#ObjT_SizeOf_l,a5
+;				dbra	d1,.findonefree
+;
+;				rts
 
-				adda.w	#64,a5
-				dbra	d1,.findonefree
-
-				rts
-
-.foundonefree:
-				move.b	#2,16(a5)
-				move.w	12(a0),12(a5)
-				move.w	4(a0),d0
-				sub.w	#80,d0
-				move.w	d0,4(a5)
-				ext.l	d0
-				asl.l	#7,d0
-				move.l	d0,ShotT_AccYPos_w(a5)
-				clr.b	ShotT_Status_b(a5)
-				move.w	#0,ShotT_VelocityY_w(a5)
-				move.w	(a0),d0
-				move.w	(a5),d1
-				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.l	(a1,d0.w*8),(a1,d1.w*8)
-				move.l	4(a1,d0.w*8),4(a1,d1.w*8)
-				move.b	#3,ShotT_Size_b(a5)
-				move.w	#0,ShotT_Flags_w(a5)
-				move.w	#0,ShotT_Gravity_w(a5)
-				move.b	#7,ShotT_Power_w(a5)
-				move.l	#%100000100000,EntT_EnemyFlags_l(a5)
-				move.w	#0,ShotT_Anim_b(a5)
-				move.w	#0,ShotT_Lifetime_w(a5)
-				move.l	#SinCosTable_vw,a1
-				move.w	EntT_CurrentAngle_w(a0),d0
-				move.w	(a1,d0.w),d1
-				adda.w	#2048,a1
-				move.w	(a1,d0.w),d2
-				ext.l	d1
-				ext.l	d2
-				asl.l	#4,d1
-				asl.l	#4,d2
-				swap	d1
-				swap	d2
-				move.w	d1,ShotT_VelocityX_w(a5)
-				move.w	d2,ShotT_VelocityZ_w(a5)
-				st		ShotT_Worry_b(a5)
-				rts
+;.foundonefree:
+;				move.b	#OBJ_TYPE_PROJECTILE,ObjT_TypeID_b(a5) ; setting the type here
+;				move.w	ObjT_ZoneID_w(a0),ObjT_ZoneID_w(a5)
+;				move.w	4(a0),d0 ; positional data?
+;				sub.w	#80,d0
+;				move.w	d0,4(a5)
+;				ext.l	d0
+;				asl.l	#7,d0
+;				move.l	d0,ShotT_AccYPos_w(a5)
+;				clr.b	ShotT_Status_b(a5)
+;				move.w	#0,ShotT_VelocityY_w(a5)
+;				move.w	(a0),d0
+;				move.w	(a5),d1
+;				move.l	Lvl_ObjectPointsPtr_l,a1
+;				move.l	(a1,d0.w*8),(a1,d1.w*8)
+;				move.l	4(a1,d0.w*8),4(a1,d1.w*8)
+;				move.b	#3,ShotT_Size_b(a5)
+;				move.w	#0,ShotT_Flags_w(a5)
+;				move.w	#0,ShotT_Gravity_w(a5)
+;				move.b	#7,ShotT_Power_w(a5)
+;				move.l	#%100000100000,EntT_EnemyFlags_l(a5)
+;				move.w	#0,ShotT_Anim_b(a5)
+;				move.w	#0,ShotT_Lifetime_w(a5)
+;				move.l	#SinCosTable_vw,a1
+;				move.w	EntT_CurrentAngle_w(a0),d0
+;				move.w	(a1,d0.w),d1
+;				adda.w	#COSINE_OFS,a1
+;				move.w	(a1,d0.w),d2
+;				ext.l	d1
+;				ext.l	d2
+;				asl.l	#4,d1
+;				asl.l	#4,d2
+;				swap	d1
+;				swap	d2
+;				move.w	d1,ShotT_VelocityX_w(a5)
+;				move.w	d2,ShotT_VelocityZ_w(a5)
+;				st		ShotT_Worry_b(a5)
+;				rts
 
 				include	"newaliencontrol.s"
 
@@ -1920,8 +1944,8 @@ anim_Brightness_w:		dc.w	0
 
 ItsABullet:
 				move.b	#0,timeout
-				move.w	12(a0),d0
-				move.w	d0,EntT_GraphicRoom_w(a0)
+				move.w	ObjT_ZoneID_w(a0),d0
+				move.w	d0,EntT_ZoneID_w(a0)
 				blt		doneshot
 
 				moveq	#0,d1
@@ -1999,8 +2023,8 @@ noworrylife:
 				cmp.w	BulT_PopFrames_l+2(a6),d2
 				ble.s	notdonepopping
 
-				move.w	#-1,12(a0)
-				move.w	#-1,EntT_GraphicRoom_w(a0)
+				FREE_ENT	a0
+
 				clr.b	ShotT_Status_b(a0)
 				move.b	#0,ShotT_Anim_b(a0)
 				rts
@@ -2020,7 +2044,7 @@ notdonepopping:
 				ext.l	d3
 				asl.l	#7,d3
 				move.l	d3,Anim_BrightY_l
-				move.w	12(a0),d3
+				move.w	ObjT_ZoneID_w(a0),d3
 				jsr		anim_BrightenPoints
 
 .nobright:
@@ -2124,11 +2148,11 @@ notdoneanim:
 
 				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d1
-				move.l	(a1,d1.w*8),Noisex
-; move.w d0,Noisevol
+				move.l	(a1,d1.w*8),Aud_NoiseX_w
+; move.w d0,Aud_NoiseVol_w
 ; swap d0
-				move.w	#200,Noisevol
-				move.w	d0,Samplenum
+				move.w	#200,Aud_NoiseVol_w
+				move.w	d0,Aud_SampleNum_w
 				move.w	d1,IDNUM
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -2193,9 +2217,9 @@ notdoneanim:
 
 				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d1
-				move.l	(a1,d1.w*8),Noisex
-				move.w	#200,Noisevol
-				move.w	d0,Samplenum
+				move.l	(a1,d1.w*8),Aud_NoiseX_w
+				move.w	#200,Aud_NoiseVol_w
+				move.w	d0,Aud_SampleNum_w
 				move.w	d1,IDNUM
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -2378,9 +2402,9 @@ nomovebul:
 
 				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d1
-				move.l	(a1,d1.w*8),Noisex
-				move.w	#200,Noisevol
-				move.w	d0,Samplenum
+				move.l	(a1,d1.w*8),Aud_NoiseX_w
+				move.w	#200,Aud_NoiseVol_w
+				move.w	d0,Aud_SampleNum_w
 				move.w	d1,IDNUM
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -2410,8 +2434,8 @@ nomovebul:
 
 lab:
 				move.l	objroom,a3
-				move.w	(a3),12(a0)
-				move.w	(a3),EntT_GraphicRoom_w(a0)
+				move.w	(a3),ObjT_ZoneID_w(a0)
+				move.w	(a3),EntT_ZoneID_w(a0)
 				move.l	newx,(a1)
 				move.l	newz,4(a1)
 ;************
@@ -2495,7 +2519,7 @@ notasplut:
 				tst.w	(a3)
 				blt		.checkedall
 
-				tst.w	12(a3)
+				tst.w	ObjT_ZoneID_w(a3)
 				blt		.notanasty
 
 				move.b	ShotT_InUpperZone_b(a0),d1
@@ -2515,16 +2539,13 @@ notasplut:
 				move.l	GLF_DatabasePtr_l,a4
 				add.l	#GLFT_ObjectDefs,a4
 				move.b	EntT_Type_b(a3),d1
-				muls	#ObjT_SizeOf_l,d1
-				cmp.w	#2,ObjT_Behaviour_w(a4,d1.w)
+				muls	#ODefT_SizeOf_l,d1
+				cmp.w	#2,ODefT_Behaviour_w(a4,d1.w)
 				bne		.notanasty
 
 .notanobj:
-				tst.b	EntT_NumLives_b(a3)
+				tst.b	EntT_HitPoints_b(a3)
 				beq		.notanasty
-
-; move.l #ColBoxTable,a6
-; lea (a6,d1.w*8),a6
 
 				move.w	4(a3),d1
 				move.w	4(a0),d2
@@ -2595,9 +2616,9 @@ notasplut:
 
 				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d1
-				move.l	(a1,d1.w*8),Noisex
-				move.w	#200,Noisevol
-				move.w	d0,Samplenum
+				move.l	(a1,d1.w*8),Aud_NoiseX_w
+				move.w	#200,Aud_NoiseVol_w
+				move.w	d0,Aud_SampleNum_w
 				move.w	d1,IDNUM
 
 				movem.l	d0-d7/a0-a6,-(a7)
@@ -2645,35 +2666,51 @@ MAKEBACKROUT:
 				rts
 
 ****************************************
+sky_early_exit:
+				rts
+;
+; Fills in the sky. Preserves a0
+;
+; Backdrop image is SKY_BACKDROP_W*SKY_BACKDROP_H.
+; Not sure why SKY_BACKDROP_W is 648.
+;
+Draw_SkyBackdrop:
+				DEV_CHECK SKYFILL,sky_early_exit
 
-putinbackdrop:
+				; bail if the zone is tagged as having no sky
+				lea		Zone_BackdropDisable_vb,a5
+				move.w	Plr1_Zone_w,d5
+				tst.b	(a5,d5.w)
+				bne.b	sky_early_exit
+
+
 				move.l	a0,-(a7)
 				move.w	tmpangpos,d5
 				and.w	#4095,d5
-				muls	#648,d5
+				muls	#SKY_BACKDROP_W,d5
 
 				; 0xABADCAFE - division pogrom
 				;divs	#4096,d5
 
 				asr.l	#8,d5
 				asr.l	#4,d5
-				muls	#240,d5
+				muls	#SKY_BACKDROP_H,d5
 
 ; CACHE_ON d1
 				tst.b	Vid_FullScreen_b
-				bne		BIGBACK
+				bne		draw_SkyBackDropFullscreen
 
 				move.l	Vid_FastBufferPtr_l,a0
 				move.l	Draw_BackdropImagePtr_l,a5
 				move.l	a5,a3
-				add.l	#155520,a3
-				add.l	#240,a5
+				add.l	#(SKY_BACKDROP_W*SKY_BACKDROP_H),a3
+				add.l	#SKY_BACKDROP_H,a5
 ; move.l #EndBackPicture,a3
 ; move.l #Draw_BackdropImagePtr_l+240,a5
 				move.l	Draw_BackdropImagePtr_l,a1
 ; lea.l Draw_BackdropImagePtr_l,a1
 				add.l	d5,a1
-				add.w	#240,a1
+				add.w	#SKY_BACKDROP_H,a1
 				move.w	Vid_CentreY_w,d7
 				move.w	d7,d6
 				move.w	d6,d5
@@ -2682,17 +2719,17 @@ putinbackdrop:
 				sub.w	d6,a1
 				sub.w	d6,a5
 				asr.w	#2,d7
-				move.w	#240,d1
-				move.w	#240,d2
-				move.w	#480,d5
+				move.w	#SKY_BACKDROP_H,d1
+				move.w	#SKY_BACKDROP_H,d2
+				move.w	#(SKY_BACKDROP_H*2),d5
 				move.w	#191,d4
 
-horline:
+.horline:
 				move.w	d7,d3
 				move.l	a0,a2
 				move.l	a1,a4
 
-vertline:
+.vertline:
 				move.w	(a4)+,d0
 				move.b	d0,(a2)
 				move.b	(a4)+,d0
@@ -2703,7 +2740,7 @@ vertline:
 				move.b	(a4)+,d0
 				move.b	d0,SCREEN_WIDTH*3(a2)
 				adda.w	#SCREEN_WIDTH*4,a2
-				dbra	d3,vertline
+				dbra	d3,.vertline
 
 				add.w	d1,a1
 				cmp.l	a1,a3
@@ -2715,22 +2752,22 @@ vertline:
 				exg		d1,d2
 				exg		d2,d5
 				addq.w	#1,a0
-				dbra	d4,horline
+				dbra	d4,.horline
 
 				move.l	(a7)+,a0
 				rts
 
-BIGBACK:
+draw_SkyBackDropFullscreen:
 				move.l	Vid_FastBufferPtr_l,a0
 				move.l	Draw_BackdropImagePtr_l,a5
 				move.l	a5,a3
-				add.l	#155520,a3
-				add.l	#240,a5
+				add.l	#(SKY_BACKDROP_W*SKY_BACKDROP_H),a3
+				add.l	#SKY_BACKDROP_H,a5
 ; move.l #EndBackPicture,a3
-; move.l #Draw_BackdropImagePtr_l+240,a5
+; move.l #Draw_BackdropImagePtr_l+SKY_BACKDROP_H,a5
 				move.l	Draw_BackdropImagePtr_l,a1
 				add.l	d5,a1
-				add.w	#240,a1
+				add.w	#SKY_BACKDROP_H,a1
 				move.w	Vid_CentreY_w,d7
 				move.w	d7,d6
 				sub.w	d6,a1
@@ -2755,7 +2792,7 @@ BIGBACK:
 				adda.w	#SCREEN_WIDTH*4,a2
 				dbra	d3,.vertline
 
-				add.w	#240,a1
+				add.w	#SKY_BACKDROP_H,a1
 				cmp.l	a1,a3
 				bgt.s	.noend
 
@@ -2767,9 +2804,7 @@ BIGBACK:
 				move.l	(a7)+,a0
 				rts
 
-
-
-
+				; Exploding object in a0 (TBC)
 ComputeBlast:
 				clr.w	anim_DoneFlames_w
 				move.w	d0,d6
@@ -2777,7 +2812,7 @@ ComputeBlast:
 				move.w	d0,d1
 				ext.l	d6
 				neg.w	d1
-				move.w	12(a0),d0
+				move.w	ObjT_ZoneID_w(a0),d0
 ; jsr Flash
 
 				move.l	Lvl_ZoneAddsPtr_l,a2
@@ -2785,27 +2820,27 @@ ComputeBlast:
 				add.l	Lvl_DataPtr_l,a2
 				move.l	a2,anim_MiddleRoom_l
 				move.l	Lvl_ObjectDataPtr_l,a2
-				suba.w	#64,a2
+				PREV_OBJ a2
 				ext.l	d6
 				move.l	a0,-(a7)
 
 HitObjLoop:
 				move.l	anim_MiddleRoom_l,FromRoom
-				add.w	#64,a2
+				NEXT_OBJ a2
 				move.w	(a2),d0
 				blt		CheckedEmAll
 
-				tst.w	12(a2)
+				tst.w	ObjT_ZoneID_w(a2)
 				blt.s	HitObjLoop
 
 				moveq	#0,d1
-				move.b	16(a2),d1
-				cmp.b	#1,d1
+				move.b	ObjT_TypeID_b(a2),d1
+				cmp.b	#OBJ_TYPE_OBJECT,d1
 				beq.s	HitObjLoop
 
 				blt.s	.checkalien
 
-				cmp.b	#3,d1
+				cmp.b	#OBJ_TYPE_AUX,d1
 				beq.s	HitObjLoop
 
 				bgt.s	.checkalien
@@ -2822,11 +2857,11 @@ HitObjLoop:
 				bra.s	.okblast
 
 .checkalien:
-				tst.b	EntT_NumLives_b(a2)
+				tst.b	EntT_HitPoints_b(a2)
 				beq.s	HitObjLoop
 
 .okblast:
-				move.w	12(a2),d1
+				move.w	ObjT_ZoneID_w(a2),d1
 				move.l	Lvl_ZoneAddsPtr_l,a3
 				move.l	(a3,d1.w*4),a3
 				add.l	Lvl_DataPtr_l,a3
@@ -2841,17 +2876,20 @@ HitObjLoop:
 				tst.b	CanSee
 				beq		HitObjLoop
 
+				; 0xABADAFE - TODO - Revisit this
+				; Splash Damage does not seem to take vertical separation into consideration
+				; here, only X and Z coordinates
 				move.w	Targetx,d0
-				sub.w	Viewerx,d0
+				sub.w	Viewerx,d0 ; tx-vx
 				move.w	d0,d2
 				move.w	Targetz,d1
-				sub.w	Viewerz,d1
+				sub.w	Viewerz,d1 ; tz-vx
 				move.w	d1,d3
-				muls	d2,d2
-				muls	d3,d3
+				muls	d2,d2      ; (tx-vx)^2
+				muls	d3,d3      ; (tz-vz)^2
 				move.w	#1,d4
-				add.l	d3,d2
-				beq		.oksqr
+				add.l	d3,d2      ; (tx-vx)^2 + (tz-vz)^2 - sum of squares in d2
+				beq		.oksqr	   ; already zero
 
 				move.w	#31,d4
 
@@ -2936,7 +2974,7 @@ okdamage:
 ; asl.l #2,d1
 				divs	d7,d0
 				divs	d7,d1
-				move.b	16(a2),d2
+				move.b	ObjT_TypeID_b(a2),d2
 				cmp.b	#2,d2
 				bne.s	.impactalien
 
@@ -3001,7 +3039,7 @@ CheckedEmAll:
 				asl.l	#7,d0
 				move.l	d0,oldy
 				moveq	#2,d5
-				move.w	#19,NUMTOCHECK
+				move.w	#NUM_PLR_SHOT_DATA-1,NUMTOCHECK
 				move.w	#2,d6
 
 radiusloop:
@@ -3011,10 +3049,10 @@ DOFLAMES:
 				move.w	NUMTOCHECK,d1
 
 .findonefree:
-				move.w	12(a3),d2
+				move.w	ObjT_ZoneID_w(a3),d2
 				blt.s	.foundonefree
 
-				adda.w	#64,a3
+				adda.w	#ObjT_SizeOf_l,a3
 				dbra	d1,.findonefree
 
 				rts

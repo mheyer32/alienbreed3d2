@@ -1,5 +1,5 @@
 
-			section bss,bss
+			section .bss,bss
 
 ; BSS data - to be included in BSS section
 			align 4
@@ -24,8 +24,7 @@ AI_FollowupSpeed_w:			ds.w	1
 AI_FollowupTimer_w:			ds.w	1
 AI_ReactionTime_w:			ds.w	1
 AI_VecObj_w:				ds.w	1
-AI_Player1NoiseVol_w:		ds.w	1
-AI_Player2NoiseVol_w:		ds.w	1
+
 ai_MiddleCPT_w:				ds.w	1
 ai_GetOut_w:				ds.w	1
 ai_ToSide_w:				ds.w	1

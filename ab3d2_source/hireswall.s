@@ -59,6 +59,7 @@ draw_AngleBright_w:			dc.w	0
 draw_WallIterations_w:		dc.w	0
 draw_MultCount_w:			dc.w	0
 
+_Draw_GoodRender_b::
 Draw_GoodRender_b:			dc.w	$ff00 ; accessed as byte all over the code
 
 SCALE			MACRO
@@ -183,8 +184,8 @@ Doleftend:
 				move.w	Draw_LeftClip_w,d0
 				sub.w	#1,d0
 				move.w	d0,Draw_LeftClipAndLast_w
-				move.w	(a0),d0
-				move.w	2(a0),d1
+				move.w	(a0),d0					; WD_LeftX_w
+				move.w	WD_RightX_w(a0),d1
 				sub.w	d0,d1
 				bge.s	sometodraw
 				rts
@@ -204,58 +205,58 @@ sometodraw:
 				swap	d7
 				clr.w	d1
 				asr.l	d6,d1
-				move.l	d1,(a0)
+				move.l	d1,(a0) ; WD_DWidth_l(a0)
 
 				moveq	#0,d1
-				move.w	4(a0),d1
+				move.w	WD_LeftBM_w(a0),d1
 				moveq	#0,d2
-				move.w	6(a0),d2
+				move.w	WD_RightBM_w(a0),d2
 				sub.w	d1,d2
 				swap	d1
 				swap	d2
 				asr.l	d6,d2
-				move.l	d2,4(a0)
+				move.l	d2,WD_DBM_l(a0)
 
 				moveq	#0,d2
-				move.w	8(a0),d2
+				move.w	WD_LeftDist_w(a0),d2
 				moveq	#0,d3
-				move.w	10(a0),d3
+				move.w	WD_RightDist_w(a0),d3
 				sub.w	d2,d3
 				swap	d2
 				swap	d3
 				asr.l	d6,d3
-				move.l	d3,8(a0)
+				move.l	d3,WD_DDist_l(a0)
 
 				moveq	#0,d3
-				move.w	12(a0),d3
+				move.w	WD_LeftTop_w(a0),d3
 				moveq	#0,d4
-				move.w	14(a0),d4
+				move.w	WD_RightTop_w(a0),d4
 				sub.w	d3,d4
 				swap	d3
 				swap	d4
 				asr.l	d6,d4
-				move.l	d4,12(a0)
+				move.l	d4,WD_DTop_l(a0)
 
 				moveq	#0,d4
-				move.w	16(a0),d4
+				move.w	WD_LeftBot_w(a0),d4
 				moveq	#0,d5
-				move.w	18(a0),d5
+				move.w	WD_RightBot_w(a0),d5
 				sub.w	d4,d5
 				swap	d4
 				swap	d5
 				asr.l	d6,d5
-				move.l	d5,16(a0)
+				move.l	d5,WD_DBot_l(a0)
 
 ; *** Gouraud shading ***
 				moveq	#0,d5
-				move.w	26(a0),d5
-				sub.w	24(a0),d5
+				move.w	WD_RightBright_w(a0),d5 ; right brightness ?
+				sub.w	WD_LeftBright_w(a0),d5 ; left brightness ?
 				add.w	d5,d5
 				swap	d5
 				asr.l	d6,d5
-				move.l	d5,28(a0)
+				move.l	d5,WD_DHorizBright_l(a0) ; brightness step?
 				moveq	#0,d5
-				move.w	24(a0),d5
+				move.w	WD_LeftBright_w(a0),d5
 				add.w	d5,d5
 				swap	d5
 
@@ -326,12 +327,12 @@ screendivide:
 				move.w	Draw_LeftClipAndLast_w(pc),d6
 				move.l	#Sys_Workspace_vl,a2
 
-				move.l	(a0),a3
-				move.l	4(a0),a4
-				move.l	8(a0),a5
-				move.l	12(a0),a6
-				move.l	16(a0),a1
-				move.l	28(a0),a0
+				move.l	(a0),a3 ; WD_DWidth_l
+				move.l	WD_DBM_l(a0),a4
+				move.l	WD_DDist_l(a0),a5
+				move.l	WD_DTop_l(a0),a6
+				move.l	WD_DBot_l(a0),a1
+				move.l	WD_DHorizBright_l(a0),a0 ; using a0 as a data value here
 
 scrdivlop:
 				swap	d0
@@ -451,6 +452,7 @@ scrdrawlop:
 				move.l	a2,a4
 				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a2
 
+				; dithering?
 				and.b	#$fe,d6
 				add.w	draw_BrightnessScaleTable_vw(pc,d6*2),a4
 
@@ -460,7 +462,7 @@ scrdrawlop:
 
 .nobrightswap:
 				move.w	d7,-(a7)
-				bsr		ScreenWallstripdraw
+				bsr		draw_ScreenWallStrip
 				move.w	(a7)+,d7
 
 toosmall:
@@ -540,7 +542,7 @@ scrdrawlopDOUB:
 
 .nobrightswap:
 				move.w	d7,-(a7)
-				bsr		ScreenWallstripdraw
+				bsr		draw_ScreenWallStrip
 				move.w	(a7)+,d7
 				dbra	d7,scrdrawlopDOUB
 				rts
@@ -711,6 +713,7 @@ scrdrawlopFULLDOUB:
 
 ********************************************************************************
 
+; TODO - 0xABADCAFE come back to this because curved walls would be awesome.
 ;******************************************************************
 ;
 ;* Curve drawing routine. We have to know:
@@ -961,64 +964,10 @@ scrdrawlopFULLDOUB:
 ;
 
 ********************************************************************************
-;protcheck:
-; sub.l #53624,a3
-; add.l #2345215,a2
-; lea passspace-$30000(pc),a1
-; add.l #$30000,a1
-; lea startpass(pc),a5
-; move.w #endpass-startpass-1,d1
-;copypass:
-; move.b (a5)+,(a1)+
-; dbra d1,copypass
-; sub.l a5,a5
-; lea passspace-$30000(pc),a1
-; add.l #$30000,a1
-; jsr (a1)
-; lea passspace-$30000(pc),a1
-; add.l #$30000,a1
-; lea startpass(pc),a5
-; move.w #(endpass-startpass)/2-1,d1
-;erasepass:
-; move.w -(a5),(a1)+
-; dbra d1,erasepass
-; sub.l a5,a5
-; sub.l a1,a1
-; eor.l #$af594c72,d0
-; sub.l #123453986,a4
-; move.l d0,(a4)
-; add.l #123453986,a4
-; move.l #0,d0
-; sub.l #2345215,a2
-; jsr (a2)
-; sub.l a2,a2
-; eor.l #$af594c72,d0
-; sub.l #123453986,a4
-; move.l (a4),d1
-; add.l #123453986,a4
-; cmp.l d1,d0
-; bne.s notrightt
-; add.l #53624,a3
-; move.w #9,d7
-;sayitsok:
-; move.l (a3)+,a2
-; add.l #78935450,a2
-; st (a2)
-; dbra d7,sayitsok
-;notrightt:
-; sub.l a3,a3
-;nullit:
-; rts
-;
-; incbin "includes/protroutencoded"
 
-endprot:
-
-
-******************************************************************
 
 ; This routine renders a wall that has it's upper and lower brightnesses the same.
-draw_WallFlatShaded:
+draw_WallSimpleShaded:
 				DEV_INC.w VisibleSimpleWalls
 
 				move.w	d6,draw_WallIterations_w
@@ -1141,19 +1090,27 @@ draw_WallFlatShaded:
 
 				move.w	(a1)+,d4
 				move.w	(a1)+,draw_LBR_w
-; d1=left x, d4=left end, d0=left dist
 
+				; d1=left x, d4=left end, d0=left dist
+
+				;DEV_CHECK_DIVISOR d0
 				divs.l	d0,d1
+				;DEV_INC.w Reserved1
+
 				moveq	#0,d5
 				move.w	Vid_CentreX_w,d5
 				add.l	d5,d1
 
 				move.l	draw_TopOfWall_l(pc),d5
 				divs	d0,d5
+				;DEV_INC.w Reserved1
+
 				add.w	Vid_CentreY_w,d5
 				move.w	d5,draw_StripTop_w
 				move.l	draw_BottomOfWall_l(pc),d5
 				divs	d0,d5
+				;DEV_INC.w Reserved1
+
 				add.w	Vid_CentreY_w,d5
 				move.w	d5,draw_StripBottom_w
 
@@ -1166,7 +1123,10 @@ draw_WallFlatShaded:
 				ext.l	d2
 				move.l	#Storage_vl,a0
 				move.l	(a1),d3
+
 				divs.l	d2,d3
+				;DEV_INC.w Reserved1
+
 				moveq	#0,d5
 				move.w	Vid_CentreX_w,d5
 				add.l	d5,d3
@@ -1198,7 +1158,7 @@ draw_WallFlatShaded:
 
 				move.b	d0,d3
 				and.b	#15,d0
-				move.l	COMPACTPTR,a0
+				move.l	Lvl_CompactMapPtr_l,a0
 				moveq	#0,d1
 				move.w	d0,d2
 				add.w	d0,d0
@@ -1211,7 +1171,7 @@ draw_WallFlatShaded:
 
 .no_door:
 				or.l	d1,(a0)
-				move.l	BIGPTR,a0
+				move.l	Lvl_BigMapPtr_l,a0
 
 				move.w	draw_WallLeftPoint_w,(a0,d2.w*4)
 				move.w	draw_WallRightPoint_w,2(a0,d2.w*4)
@@ -1240,10 +1200,15 @@ computeloop2:
 				bra		alloffleft2
 
 .in_front:
+				;DEV_CHECK_DIVISOR d2
+
 				ext.l	d2
 				move.l	#Storage_vl,a0
 				move.l	(a1),d3
+
 				divs.l	d2,d3
+				;DEV_INC.w Reserved1
+
 				moveq	#0,d5
 				move.w	Vid_CentreX_w,d5
 				add.l	d5,d3
@@ -1317,7 +1282,7 @@ alloffright2:
 nostripq:
 				rts
 
-ScreenWallstripdraw:
+draw_ScreenWallStrip:
 				move.w	d4,d6
 				cmp.w	draw_TopClip_w(pc),d6
 				blt.s	nostripq
@@ -1349,6 +1314,58 @@ nocliptop:
 				bra		gotoend
 
 ;wlcnt:			dc.w	0 ; unused
+
+				ifd OPT060
+
+drawwallS060_loop	macro
+val set \2
+.loop\<val>:
+				; grab packed texel
+				ifeq    \1-0
+				moveq   #%00011111,d1
+				and.b   1(a5,d4.w*2),d1
+				endc
+				ifeq    \1-1
+				move.w  (a5,d4.w*2),d1
+				lsr.w   #5,d1
+				and.w   #%00011111,d1
+				endc
+				ifeq    \1-2
+				moveq   #%01111100,d1
+				and.b   (a5,d4.w*2),d1
+				lsr.b   #2,d1
+				endc
+
+				; v step (fractional first, then integer part)
+				add.l   d3,d4
+				addx.w  d2,d4
+				and.w   d7,d4
+
+				; store through palette lookup (note: alternates between a2 and a4)
+				ifeq \2
+				move.b  (a2,d1.w*2),(a3)
+				else
+				move.b  (a4,d1.w*2),(a3)
+				endc
+
+				; dest += width
+				adda.w  d0,a3
+val set val^1
+				dbf     d6,.loop\<val>
+				rts
+				endm
+
+drawwallS060	macro
+				and.w   d7,d4   ; make sure offset is masked
+				drawwallS060_loop \1,0
+				drawwallS060_loop \1,1
+				endm
+
+drawwallPACK0:	drawwallS060 0
+drawwallPACK1:	drawwallS060 1
+drawwallPACK2:	drawwallS060 2
+
+				else ; OPT060
 
 				align 4
 drawwalldimPACK0:
@@ -1427,6 +1444,8 @@ drawwallPACK2:
 				addx.w	d2,d4
 				dbra	d6,drawwalldimPACK2
 				rts
+
+				endc ; OPT060
 
 usesimple:
 				mulu	d3,d4
@@ -1521,7 +1540,7 @@ simplewallPACK2:
 ; There's code that expects	these in the right order to allow for movem
 				align	4
 TOTHEMIDDLE:	dc.w	0
-Vid_BottomY_w:	dc.w	0
+Vid_BottomY_w:	dc.w	0				; also accessed as long
 Vid_CentreY_w:	dc.w	FS_HEIGHT/2
 TOPOFFSET:		dc.w	0
 BIGMIDDLEY:		dc.l	SCREEN_WIDTH*FS_HEIGHT/2
@@ -2131,8 +2150,13 @@ cliptotestfirstbehind:
 				sub.l	(a5,d2*8),d3			; line dx, integer part ?
 				move.w	6(a5,d0*8),d6
 				sub.w	6(a5,d2*8),d6			; line dy, fractional part?
+
+
+				;DEV_CHECK_DIVISOR d6
 				ext.l	d6
+
 				divs.l	d6,d3					; dx/dy
+				;DEV_INC.w Reserved1
 
 				move.w	6(a5,d2.w*8),d6			; FIXME: why fetch a second time?
 				ext.l	d6
@@ -2142,8 +2166,13 @@ cliptotestfirstbehind:
 
 				move.l	(a5,d2*8),d6
 				move.w	6(a5,d2*8),d4
+
+				;DEV_CHECK_DIVISOR d4
 				ext.l	d4
+
+				; 0xABADCAFE < 10 per frame
 				divs.l	d4,d6
+				;DEV_INC.w Reserved1
 
 ; move.w Vid_CentreX_w,d4
 ; ext.l d4
@@ -2163,7 +2192,10 @@ cliptotestsecbehind:
 				move.w	6(a5,d2*8),d6
 				sub.w	6(a5,d0*8),d6
 				ext.l	d6
+
 				divs.l	d6,d3
+				;DEV_INC.w Reserved1
+
 				move.w	6(a5,d0.w*8),d6
 				ext.l	d6
 				muls.l	d6,d3
@@ -2177,7 +2209,9 @@ cliptotestsecbehind:
 				move.l	(a5,d0*8),d6
 				move.w	6(a5,d0*8),d4
 				ext.l	d4
+
 				divs.l	d4,d6
+				;DEV_INC.w Reserved1
 
 ; move.w Vid_CentreX_w,d4
 ; ext.l d4
@@ -2191,7 +2225,10 @@ pastclip:
 				move.l	(a5,d0*8),d3
 				move.w	6(a5,d0*8),d4
 				ext.l	d4
+
 				divs.l	d4,d3
+				;DEV_INC.w Reserved1
+
 				move.w	Vid_CentreX_w,d4
 				ext.l	d4
 				add.l	d4,d3
@@ -2199,7 +2236,10 @@ pastclip:
 				move.l	(a5,d2*8),d6
 				move.w	6(a5,d2*8),d4
 				ext.l	d4
+
 				divs.l	d4,d6
+				;DEV_INC.w Reserved1
+
 				move.w	Vid_CentreX_w,d4
 				ext.l	d4
 				add.l	d4,d6
@@ -2304,7 +2344,7 @@ cant_tell:
 
 				move.w	#-1,draw_WallLastStripX_w
 
-				; 0xABADCAFE - refactored from draw_WallFlatShaded and draw_WallGouraudShaded
+				; 0xABADCAFE - refactored from draw_WallSimpleShaded and draw_WallGouraudShaded
 .test_one_in_front:
 				tst.w	d1
 				bgt.s	.one_in_front
@@ -2423,31 +2463,111 @@ cant_tell:
 				move.w	#5,d6
 
 .choose_renderer:
-				; Now determine which renderer to use
-				; Compare the corner brightnesses
+				; Now determine which renderer to use. First check for simplified lighting.
 
+				DEV_CHECK	LIGHTING,.dev_draw_fullbright
+
+				tst.b	Draw_ForceSimpleWalls_b
+				beq.s	.check_corners
+
+				move.w	draw_LeftWallBright_w,d0
+				add.w	draw_LeftWallTopBright_w,d0
+				asr.w	#1,d0
+				move.w	d0,draw_LeftWallBright_w
+				move.w	draw_RightWallBright_w,d0
+				add.w	draw_RightWallTopBright_w,d0
+				asr.w	#1,d0
+				move.w	d0,draw_RightWallBright_w
+				bra.s	.do_simple_shaded
+
+				; Compare the corner brightnesses
+.check_corners:
 				; 0xABADCAFE
 				; Today I Learned: Non-Gouraud walls are not flat shaded. The have the same
 				; horizontal-only shading that the original Alien Breed 3D had. Therefore to
 				; the original code was correct. We just change the access order here.
-				move.w	draw_LeftWallBright_w,d0
-				cmp.w	draw_LeftWallTopBright_w,d0
-				bne.s	.do_shaded
-				move.w	draw_RightWallBright_w,d0
-				cmp.w	draw_RightWallTopBright_w,d0
-				bne.s	.do_shaded
 
-.do_flat:
+				; 0xABADCAFE
+				; Today I Learned: The runtime brightness values are derved according to the following
+				; relationship:
+				;
+				; Rb ~= 1.6 * abs(Lb) + Wb + C
+				;
+				; Where:
+				;     Rb = Runtime brightness
+				;     Lb = Level-defined point brightness (range is -20 to +20)
+				;     Wb = Level-defined wall brightness offset (effectively an ambient term)
+				;     C  = Global ambient bias, set to 300
+				;
+				; The result is approximate since the value for equal magnitude but oppositely signed
+				; values of Lb are subject to off-by-one errors in the result. For example:
+				;
+				;     Lb =  10 => Rb = 315
+				;     Lb = -10 => Rb = 316
+				;     Lb =  15 => Rb = 323
+				;     Lb = -15 => Rb = 324
+				;     Lb =  20 => Rb = 331
+				;     Lb = -20 => Rb = 332
+				;
+				; I think these values are generated by the actual level editor. To compare these, we
+				; should compute the absolute difference.
+
+
+				;move.w	draw_LeftWallBright_w,d0
+				;cmp.w	draw_LeftWallTopBright_w,d0
+				;bne.s	.do_gouraud_shaded
+				;move.w	draw_RightWallBright_w,d0
+				;cmp.w	draw_RightWallTopBright_w,d0
+				;bne.s	.do_gouraud_shaded
+
+
+				; Test left edge brightness difference
+				move.w	draw_LeftWallBright_w,d0
+				sub.w	draw_LeftWallTopBright_w,d0
+				bge.s	.left_delta_positive
+				neg.w	d0
+
+.left_delta_positive:
+				cmp.w	#2,d0
+				bgt.s	.do_gouraud_shaded
+
+				; Test right edge brightness difference
+				move.w	draw_RightWallBright_w,d0
+				sub.w	draw_RightWallTopBright_w,d0
+				bge.s	.right_delta_positive
+				neg.w	d0
+
+.right_delta_positive:
+				cmp.w	#2,d0
+				bgt.s	.do_gouraud_shaded
+
+.do_simple_shaded:
 				DEV_CHECK	SIMPLE_WALLS,.function_done
-				bsr			draw_WallFlatShaded
+				bsr			draw_WallSimpleShaded
 				bra.s		.function_done
 
-.do_shaded:
+.do_gouraud_shaded:
 				DEV_CHECK	SHADED_WALLS,.function_done
 				bsr			draw_WallGouraudShaded
 
 .function_done:
 				movem.l	(a7)+,d7/a0/a5/a6
+
+				IFD DEV
+				rts
+
+; Force all walls to be brightly lit
+.dev_draw_fullbright:
+				move.w		#1,draw_LeftWallBright_w
+				move.w		#1,draw_LeftWallTopBright_w
+				move.w		#1,draw_RightWallBright_w
+				move.w		#1,draw_RightWallTopBright_w
+				bsr			draw_WallSimpleShaded
+
+				bra.s		.function_done
+
+				ENDC
+
 
 wallfacingaway:
 				rts

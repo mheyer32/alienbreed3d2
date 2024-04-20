@@ -1,6 +1,6 @@
 BumpMap:
 
-				tst.b	smoothbumps
+				tst.b	draw_SmoothBumpMaps_b
 				bne		SmoothMap
 
 				move.w	ConstCol,d0
@@ -11,7 +11,7 @@ BumpMap:
 				beq		bumpthefloor
 
 				move.l	#24*128,d0
-				divs	dst,d0
+				divs	draw_Distance_l,d0
 				subq	#1,d0
 				blt.s	ordinary
 				beq.s	OneBelow
@@ -831,7 +831,7 @@ TwelveBelow:
 
 bumpthefloor:
 				move.l	#14*128,d0
-				divs	dst,d0
+				divs	draw_Distance_l,d0
 				subq.w	#1,d0
 				blt		ordinary
 				beq.s	OneAbove
@@ -1342,7 +1342,7 @@ SmoothMap:
 				beq		smooththefloor
 
 				move.l	#14*128,d0
-				divs	dst,d0
+				divs	draw_Distance_l,d0
 				subq	#1,d0
 				blt		ordinary
 				beq.s	OneBelowS
@@ -1950,7 +1950,7 @@ SevenBelowS:
 
 smooththefloor:
 				move.l	#14*128,d0
-				divs	dst,d0
+				divs	draw_Distance_l,d0
 				subq.w	#1,d0
 				blt		ordinary
 ; beq.s OneAbove

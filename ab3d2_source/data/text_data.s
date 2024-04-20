@@ -1,4 +1,4 @@
-			section data,data
+			section .data,data
 
 ; Statically initialised (non-zero) data
 
@@ -6,88 +6,64 @@
 
 Game_SoundOptionsText_vb:
 				;;;;	"1234567890123456789012345678901234567890"
-				dc.b	"Four Channel Mono Selected              "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
-
-				dc.b	"Four Channel Stereo Selected            "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
-
-				dc.b	"Eight Channel Mono Selected             "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
-
-				dc.b	"Eight Channel Stereo Selected           "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
+				dc.b	"Audio: Four Channel Mono                "
+				dc.b	"Audio: Four Channel Stereo              "
+				dc.b	"Audio: Eight Channel Mono               "
+				dc.b	"Audio: Eight Channel Stereo             "
 
 Game_LightingOptionsText_vb:
 				;;;;	"1234567890123456789012345678901234567890"
-				dc.b	"Lighting Effects Deactivated            "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
-
-				dc.b	"Lighting Effects Activated              "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
-
-Game_DrawHighQualityText_vb:
-				dc.b	"Rendering Quality : High                "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
-
-Game_DrawLowQualityText_vb:
-				dc.b	"Rendering Quality : Reduced             "
-				dc.b	"                                        "
-				dc.b	"                                        "
-				dc.b	"                                        "
-
+				dc.b	"Lighting: Moving Lightsources Disabled  "
+				dc.b	"Lighting: Moving Lightsources Enabled   "
 
 Game_TwoPlayerVictoryMessages_vb:
 				;;;;	"1234567890123456789012345678901234567890"
 				dc.b	"Enemy Player Vanquished!                "
 				dc.b	"                                        "
-				dc.b	"Enemy Player Vanquished!                "
-				dc.b	"                                        "
 
-				dc.b	"Oooh, that one must have hurt!          "
-				dc.b	"                                        "
 				dc.b	"Oooh, that one must have hurt!          "
 				dc.b	"                                        "
 
 				dc.b	"Opponent IS toast!                      "
 				dc.b	"                                        "
-				dc.b	"Opponent IS toast!                      "
-				dc.b	"                                        "
 
 				dc.b	"Does it hurt? DOES it? DOES IT?!?       "
 				dc.b	"                                        "
-				dc.b	"Does it hurt? DOES it? DOES IT?!?       "
-				dc.b	"                                        "
 
-				dc.b	"Gosh, I",39,"m dreadfully sorry, old chap; didn't see you there!                     "
-				dc.b	"Gosh, I",39,"m dreadfully sorry, old chap; didn't see you there!                     "
+				dc.b	"Gosh, I'm dreadfully sorry, old chap; didn't see you there!                     "
 
 				dc.b	"Now go away before I taunt you a second time.                                   "
-				dc.b	"Now go away before I taunt you a second time.                                   "
 
-				dc.b	"Eh, sorry about that there mate, didn",39,"t know it was loaded, know worra mean?    "
-				dc.b	"Eh, sorry about that there mate, didn",39,"t know it was loaded, know worra mean?    "
+				dc.b	"Eh, sorry about that there mate, didn't know it was loaded, know worra mean?    "
 
-				dc.b	"Stand and deliver, your money or...  oh. Never mind.                            "
 				dc.b	"Stand and deliver, your money or...  oh. Never mind.                            "
 
 				dc.b	"Thank you for your kind interest, I look forward to your custom in future lives."
-				dc.b	"Thank you for your kind interest, I look forward to your custom in future lives."
 
+Game_DrawHighQualityText_vb:
+				dc.b	"Renderer: High Quality",0
+
+Game_DrawLowQualityText_vb:
+				dc.b	"Renderer: Reduced Quality",0
+
+
+Game_CantCollectItemText_vb:
+				dc.b	"I can't carry any more of these just now.",0
+
+Game_InputKeyboard_vb:
+				dc.b	"Input: Keyboard Only",0
+
+Game_InputJoystick_vb:
+				dc.b	"Input: Joystick",0
+
+Game_InputMouse_vb:
+				dc.b	"Input: Mouse and Keyboard",0
+
+Game_InputMouseInv_vb:
+				dc.b	"Input: Mouse (Inverted) and Keyboard",0
+
+
+				align 4
 Game_SinglePlayerVictoryText_vb:
 				;;;;	;;;;"12345678901234567890123456789012345678901234567890123456789012345678901234567890"
 				dc.b	0,0,"                                                                                "

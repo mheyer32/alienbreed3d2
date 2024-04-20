@@ -41,57 +41,31 @@ Game_FinishedLevel_b:
 
 				align	4
 
-
-INTUITION_REV	equ		31	;					v1.1
-int_name		INTNAME
-				even
-
-
 Game_Start:
+				move.l	a7,sys_RecoveryStack	; Save stack pointer for Sys_FatalError
+
 				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
-
-				move.l	#doslibname,a1
-				moveq	#0,d0
-				CALLEXEC OpenLibrary
-				move.l	d0,_DOSBase
-
-				moveq	#INTUITION_REV,d0		version
-				lea		int_name(pc),a1
-				CALLEXEC OpenLibrary
-				tst.l	d0
-;	beq	exit_false		if failed then quit
-				move.l	d0,_IntuitionBase		else save the pointer
-
-				; Open Graphics.library, store old coppper list etc.
-				jsr		OpenGraphics
-
-				jsr		Vid_OpenMainScreen
+				CALLC	Vid_OpenMainScreen
 
 				move.l	#GLF_DatabaseName_vb,a0
 				jsr		IO_LoadFile
 				move.l	d0,GLF_DatabasePtr_l
 
-				move.l	#LEVELTEXTNAME,a0
+				move.l	#Game_StoryFile_vb,a0
 				jsr		IO_LoadFile
 				move.l	d0,Lvl_IntroTextPtr_l
 
 				jsr		_InitLowLevel
 
-******************************
-
 				;jsr		mnu_start	; For some reason this doesn't work
 										; Shows the wrong menu
 
 				jsr		mnu_copycredz
-				jsr		mnu_setscreen
+
+				CALLC	mnu_setscreen
 				move.l	a7,mnu_mainstack	; not sure if this is the right thing or even in use...
 
-******************************
-
-
-**********************************************
 				jsr		IO_InitQueue
-**********************************************
 
 				;move.w	#0,FADEVAL
 				;move.w	#31,FADEAMOUNT
@@ -99,7 +73,7 @@ Game_Start:
 
 				jsr		Res_LoadSoundFx
 				jsr		Res_LoadWallTextures
-				jsr		Res_LoadFloorTextures
+				jsr		Res_LoadFloorsAndTextures
 				jsr		Res_LoadObjects
 
 				move.l	#draw_BackdropImageName_vb,a0
@@ -130,9 +104,7 @@ Game_Start:
 				bsr		DEFAULTGAME
 
 BACKTOMENU:
-
-				jsr		CLEARKEYBOARD
-
+				CALLC	Sys_ClearKeyboard
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	BACKTOSLAVE
@@ -146,16 +118,15 @@ BACKTOMASTER:
 BACKTOSLAVE:
 				bsr		SLAVEMENU
 DONEMENU:
+				tst.b	SHOULDQUIT
+				bne		QUITTT
 
-
-				jsr		mnu_clearscreen
+				moveq	#1,d0 ; Fade out
+				CALLC	mnu_clearscreen
 
 				;	bsr		WAITREL
 
 				FILTER
-
-				tst.b	SHOULDQUIT
-				bne		QUITTT
 
 				clr.b	Game_FinishedLevel_b
 
@@ -190,19 +161,7 @@ DONEMENU:
 *************************************
 				jsr		IO_InitQueue
 
-				move.l	#draw_BorderPacked_vb,d0
-				moveq	#0,d1
-				move.l	Vid_Screen1Ptr_l,a0
-				lea		Sys_Workspace_vl,a1
-				lea		$0,a2
-				jsr		unLHA
-
-				move.l	#draw_BorderPacked_vb,d0
-				moveq	#0,d1
-				move.l	Vid_Screen2Ptr_l,a0
-				lea		Sys_Workspace_vl,a1
-				lea		$0,a2
-				jsr		unLHA
+				CALLC	Draw_ResetGameDisplay
 
 *************************************
 
@@ -227,46 +186,42 @@ DONEMENU:
 				ENDR
 
 dontusestats:
-				jsr		mnu_setscreen
+				CALLC	mnu_setscreen
 
 
 				bra		BACKTOMENU
 
 QUITTT:
+				moveq	#0,d0 ; No fading
+				CALLC	mnu_clearscreen ; Maybe No-op
+
 				move.l	Lvl_DataPtr_l,a1
 				CALLEXEC FreeVec
 
-				move.l	Vid_FastBufferAllocPtr_l,a1
-				CALLEXEC FreeVec
+				CALLC	Vid_CloseMainScreen
 
-				move.l	Vid_MyRaster0_l,a0
-				move.w	#SCREEN_WIDTH,d0
-				move.w	#SCREEN_HEIGHT*8+1,d1
-				CALLGRAF FreeRaster
-
-				move.l	Vid_MyRaster1_l,a0
-				move.w	#SCREEN_WIDTH,d0
-				move.w	#SCREEN_HEIGHT*8+1,d1
-				CALLGRAF FreeRaster
-
-; jsr Res_FreeWallTextures
+				jsr		Res_FreeWallTextures
 				jsr		Res_FreeSoundFx
-				jsr		Res_FreeFloorTextures
+				jsr		Res_FreeFloorsAndTextures
 				jsr		Res_FreeObjects
 
-				lea		VBLANKInt,a1
-				moveq	#INTB_VERTB,d0
-				CALLEXEC RemIntServer
-
-				lea		KEYInt,a1
-				moveq	#INTB_PORTS,d0
-				CALLEXEC RemIntServer
+				jsr		_CloseLowLevel
 
 				move.l	#0,d0
 
 				rts
 
-; KEY OPTIONS:
+
+
+; PREFERENCES (TODO - SHIP OUT):
+
+                align 4
+
+; TODO - this should be a strucutre definition.
+_Prefs_Persisted::
+Prefsfile:
+                    dc.b	'k8nx'
+
 AssignableKeys_vb:
 turn_left_key:		dc.b	RAWKEY_LEFT
 turn_right_key:		dc.b	RAWKEY_RIGHT
@@ -285,11 +240,58 @@ look_up_key:		dc.b	RAWKEY_EQUAL
 look_down_key:		dc.b	RAWKEY_UNDERSCORE
 centre_view_key:	dc.b	RAWKEY_SEMICOLON
 next_weapon_key:	dc.b	RAWKEY_BSLASH
+spare_key:          dc.b    0
 
+	DECLC	Prefs_FullScreen_b
+		dc.b	0
 
-				IFD	DEV
+	DECLC	Prefs_PixelMode_b
+		dc.b	0
 
-				ENDC
+	DECLC	Prefs_VertMargin_b
+		dc.b	0
+
+	DECLC	Prefs_SimpleLighting_b
+		dc.b	0
+
+	DECLC	Prefs_FPSLimit_b
+		dc.b	0
+
+	DECLC	Prefs_DynamicLights_b
+		dc.b	0
+
+	DECLC	Prefs_RenderQuality_b
+		dc.b	0
+
+; Padding
+Prefs_Unused_b:	dc.b	0
+
+	DECLC	Prefs_ContrastAdjust_AGA_w
+		dc.w	$0100
+
+	DECLC	Prefs_ContrastAdjust_RTG_w
+		dc.w	$0100
+
+	DECLC	Prefs_BrightnessOffset_AGA_w
+		dc.w	0
+
+	DECLC	Prefs_BrightnessOffset_RTG_w
+		dc.w	0
+
+	DECLC	Prefs_GammaLevel_AGA_b
+		dc.b	0
+
+	DECLC	Prefs_GammaLevel_RTG_b
+		dc.b	0
+
+    ; Moved here to be included in the persisted preferences
+Prefs_CustomOptionsBuffer_vb:
+Prefs_OriginalMouse_b:		dc.b	0
+Prefs_AlwaysRun_b:			dc.b	0
+
+                align 4
+_Prefs_PersistedEnd::
+PrefsfileEnd:
 
 templeftkey:	dc.b	0
 temprightkey:	dc.b	0
@@ -305,13 +307,19 @@ GETSTATS:
 
 
 SETPLAYERS:
-				move.w	PLOPT,d0
+				; 0xABADCAFE - Set level file names. TODO - this should probably be moved to a helper
+				move.w	Game_LevelNumber_w,d0
 				add.b	#'a',d0
 				move.b	d0,Lvl_BinFilenameX_vb
 				move.b	d0,Lvl_GfxFilenameX_vb
 				move.b	d0,Lvl_ClipsFilenameX_vb
 				move.b	d0,Lvl_MapFilenameX_vb
 				move.b	d0,Lvl_FlyMapFilenameX_vb
+
+				; Optional files - floor tile override and level properties
+				move.b	d0,Lvl_FloorFilenameX_vb
+				move.b	d0,Lvl_WallFilenameX_vb
+				move.b	d0,Lvl_ModPropsFilenameX_vb
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq		Plr_InitSlave
@@ -323,7 +331,7 @@ onepla:
 
 Plr_InitMaster:
 				clr.b	AI_NoEnemies_b
-				move.w	PLOPT,d0
+				move.w	Game_LevelNumber_w,d0
 				jsr		SENDFIRST
 
 				move.w	Rand1,d0
@@ -335,7 +343,7 @@ Plr_InitMaster:
 Plr_InitSlave:
 				clr.b	AI_NoEnemies_b
 				jsr		RECFIRST
-				move.w	d0,PLOPT
+				move.w	d0,Game_LevelNumber_w
 				add.b	#'a',d0
 				move.b	d0,Lvl_BinFilenameX_vb
 				move.b	d0,Lvl_GfxFilenameX_vb
@@ -347,30 +355,16 @@ Plr_InitSlave:
 				move.w	d0,Rand1
 				bsr		TWOPLAYER
 
-
 				rts
 
 ********************************************************
 
-ASKFORDISK:
+;ASKFORDISK:
 ;lea RVAL1+300(pc),a0
 ;lea RVAL2+900(pc),a1
 ; PRSDD
 				move.w	#10,OptScrn
 				bsr		DRAWOPTSCRN
-
-ProtChkNLev1:
-.wtrel:
-				btst	#7,$bfe001
-				beq.s	.wtrel
-
-wtclick:
-				add.w	#$235,-300(a0)
-				add.w	#$4533,-900(a0)
-				btst	#6,$bfe001
-				bne.s	wtclick
-
-				rts
 
 ********************************************************
 
@@ -471,14 +465,14 @@ READMAINMENU:
 				bra		.rdlop
 .nosave:
 ***************************************************************
-;				cmp.w	#7,d0
-;				bne		playgame
-;				bsr		WAITREL
+				cmp.w	#7,d0
+				bne		playgame
+				bsr		WAITREL
 
-;				bsr		customOptions
+				bsr		customOptions
 
-;				lea		mnu_MYMAINMENU,a0
-;				bsr		MYOPENMENU
+				lea		mnu_MYMAINMENU,a0
+				bsr		MYOPENMENU
 
 				bsr		WAITREL
 				bra		.rdlop
@@ -515,6 +509,7 @@ levelMenu2:
 				SAVEREGS
 				;bsr	DEFAULTGAME
 				not.b	LOADEXT
+				add	#8,d0
 				bsr	DEFGAME
 				GETREGS
 				move	d0,MAXLEVEL
@@ -569,8 +564,88 @@ DEFGAME:
 				not.b	LOADEXT;			 reset for next load
 				rts
 ***************************************************************
+
+
+
+customOptions:
+;fixme: there are better ways to do this, but it works (of sorts).AL
+.redraw:
+; copy current setting over to menu
+				move.l	#Prefs_CustomOptionsBuffer_vb,a0
+				move.l	#optionLines+17,a1
+				moveq	#1,d1
+.copyOpts:
+				move.b	(a0)+,d0
+
+				bne.s   .enabled
+				move.b  #'N',d0
+				bra.s   .copy
+.enabled:
+                move.b  #'Y',d0
+
+				;add.b	#132,d0		;start of the keyboard layout
+				;add.b	#24,d0		;cos i and o look like 1 and 0 in the menu font
+
+.copy:
+				move.b	d0,(a1)
+				add.l	#21,a1		;end of the line/start of next i guess
+				dbra	d1,.copyOpts
+
+				lea		mnu_MYCUSTOMOPTSMENU,a0
+				bsr		MYOPENMENU
+.rdloop:
+				lea		mnu_MYCUSTOMOPTSMENU,a0
+				bsr		CHECKMENU
+
+				cmp.w	#8,d0
+				beq	.customOptionsDone
+
+				cmp.w	#0,d0
+				bne.s	.co2
+				not.b	Prefs_OriginalMouse_b
+				bra	.w8
+.co2:
+				cmp.w	#1,d0
+				bne.s	.co3
+				not.b	Prefs_AlwaysRun_b
+				bra	.w8
+.co3:
+				cmp.w	#2,d0
+				bne.s	.co4
+				bra	.w8
+.co4:
+				cmp.w	#3,d0
+				bne.s	.co5
+				bra	.w8
+.co5:
+				cmp.w	#4,d0
+				bne.s	.co6
+				;opt5
+				bra	.w8
+.co6:
+				cmp.w	#5,d0
+				bne.s	.co7
+				;opt6
+				bra	.w8
+.co7:
+				cmp.w	#6,d0
+				bne.s	.co8
+				;opt7
+				bra	.w8
+.co8:
+				cmp.w	#7,d0
+				bne.s	.w8
+				;opt8
+.w8:
+				lea		mnu_MYCUSTOMOPTSMENU,a0
+				jsr		mnu_redraw
+				bra		.redraw
+
+.customOptionsDone:
+				rts
+***************************************************************
 playgame:
-				move.w	MAXLEVEL,PLOPT
+				move.w	MAXLEVEL,Game_LevelNumber_w
 				rts
 
 SHOULDQUIT:		dc.w	0
@@ -730,7 +805,7 @@ MASTERMENU:
 
 .playgame
 
-				move.w	LEVELSELECTED,PLOPT
+				move.w	LEVELSELECTED,Game_LevelNumber_w
 				rts
 
 SLAVEMENU:
@@ -814,8 +889,8 @@ TWOPLAYER:
 
 				move.l	#Plr1_AmmoCounts_vw,a0
 				move.l	#Plr2_AmmoCounts_vw,a1
-				move.w	#19,d1
-.putinvals
+				move.w	#NUM_BULLET_DEFS-1,d1
+.putinvals:
 				jsr		GetRand
 				and.w	#63,d0
 				add.w	#5,d0
@@ -825,17 +900,17 @@ TWOPLAYER:
 
 				rts
 
-				move.w	#0,OldEnergy
-				move.w	#127,Energy
-				jsr		Draw_BorderEnergyBar
+				; this entire bit seems unreachable?
+				; ASM build only
+				move.w	#127,draw_DisplayEnergyCount_w
+				move.w	#0,draw_DisplayAmmoCount_w
 
-				move.w	#63,OldAmmo
-				move.w	#0,Ammo
+				IFND BUILD_WITH_C
+				jsr		Draw_BorderEnergyBar
 				jsr		Draw_BorderAmmoBar
-				move.w	#0,OldAmmo
+				ENDIF
 
 				move.b	#0,Plr1_GunSelected_b
-
 				move.b	#0,Plr2_GunSelected_b
 				rts
 
@@ -858,7 +933,6 @@ DEFAULTGAME:
 				clr.l	(a0)+
 				clr.l	(a0)+
 				clr.l	(a0)+
-
 				clr.l	(a1)+
 				clr.l	(a1)+
 				clr.l	(a1)+
@@ -878,52 +952,6 @@ DEFAULTGAME:
 
 				rts
 
-CHKPROT:		dc.w	0
-
-GETPARITY:
-				move.w	#6,d3
-.calcparity:
-				btst	d3,d0
-				beq.s	.nochange
-				bchg	#7,d0
-.nochange:
-				dbra	d3,.calcparity
-				rts
-
-CHECKPARITY:
-				move.w	#6,d3
-				move.b	#$0,d2
-.calcparity:
-				btst	d3,d0
-				beq.s	.nochange
-				bchg	#7,d2
-.nochange:
-				dbra	d3,.calcparity
-				move.b	d0,d1
-				and.b	#$80,d1
-				eor.b	d1,d2
-				sne		d5
-				rts
-
-CALCPASSWORD:
-				rts
-
-PASSLINETOGAME:
-				rts
-
-illega:
-
-				move.w	#-1,d0
-
-				rts
-
-PASSBUFFER:
-				ds.b	8
-
-CHECKBUFFER:	ds.b	8
-
-PASS:
-				ds.b	16
 
 **************************************************
 
@@ -968,8 +996,6 @@ CHANGECONTROLS:
 				add.l	d1,a0
 				add.w	#16,a0
 				move.w	#$2020,(a0)
-
-
 
 				movem.l	a0/d0,-(a7)
 
@@ -1050,26 +1076,8 @@ CHANGECONTROLS2:
 
 MAXLEVEL:		dc.w	0
 
-SHOWCREDITS:
-				move.w	#2,OptScrn
-				bsr		DRAWOPTSCRN
-				move.w	#0,OPTNUM
-				bsr		HIGHLIGHT
-
-				bsr		WAITREL
-
-.rdlop:
-				bsr		CHECKMENU
-				tst.w	d0
-				blt.s	.rdlop
-
-				bra		READMAINMENU
-
-HELDDOWN:
-				dc.w	0
 
 WAITREL:
-
 				movem.l	d0/d1/d2/d3,-(a7)
 
 				move.l	#KeyMap_vb,a5
@@ -1122,7 +1130,6 @@ MYOPENMENU:
 				rts
 
 CHECKMENU:
-
 				move.b	#0,lastpressed
 
 .loop:			movem.l	a0,-(a7)
@@ -1141,45 +1148,6 @@ CHECKMENU:
 
 				rts
 
-HIGHLIGHT:
-
-				SAVEREGS
-
-				move.w	OptScrn,d0
-				move.l	#MENUDATA,a0
-				move.l	4(a0,d0.w*8),a0
-				move.w	OPTNUM,d0
-				lea		(a0,d0.w*8),a0
-				move.w	(a0)+,d0				;left
-				move.w	(a0)+,d1				;top
-				move.w	(a0)+,d2				;width
-
-				muls	#16*8,d1
-				move.l	OPTSPRADDR,a1
-				add.w	d1,a1
-				add.w	#8+16,a1
-				move.l	#SCRTOSPR2,a5
-				adda.w	d0,a5
-				adda.w	d0,a5
-
-NOTLOP:
-
-				move.w	(a5)+,d3
-				lea		(a1,d3.w),a2
-				not.b	(a2)
-				not.b	16(a2)
-				not.b	32(a2)
-				not.b	48(a2)
-				not.b	64(a2)
-				not.b	80(a2)
-				not.b	96(a2)
-				not.b	112(a2)
-				not.b	128(a2)
-				subq	#1,d2
-				bgt.s	NOTLOP
-
-				GETREGS
-				rts
 
 SCRTOSPR2:
 val				SET		0
@@ -1272,7 +1240,7 @@ JUSTDRAWIT:
 				moveq	#0,d2
 
 				move.w	#31,d0
-linelop:
+line_loop:
 				move.w	#39,d1
 				move.l	#SCRTOSPR,a4
 				move.l	a3,a2
@@ -1290,7 +1258,7 @@ charlop:
 				add.w	(a4)+,a2
 				dbra	d1,charlop
 				add.w	#16*8,a3
-				dbra	d0,linelop
+				dbra	d0,line_loop
 
 				rts
 
@@ -1355,6 +1323,8 @@ LOADPOSITION:
 				muls	#2+(22*2)+(12*2),d0
 				add.l	d0,a0
 
+; 0xABADCAFE - This is where the inventory is loaded from the saved game slot
+.load_player_inventory:
 				move.l	#Plr_Health_w,a1
 				move.w	(a0)+,MAXLEVEL
 
@@ -1364,6 +1334,9 @@ LOADPOSITION:
 				REPT	6
 				move.l	(a0)+,(a1)+
 				ENDR
+
+				move.l  #Plr_Health_w,a0
+				CALLC   Game_ApplyInventoryLimits
 
 				move.w	MAXLEVEL,d0
 				move.l	#mnu_CURRENTLEVELLINE,a1
@@ -1468,14 +1441,14 @@ MENUDATA:
 				dc.l	ONEPLAYERMENU_TXT
 				dc.l	ONEPLAYERMENU_OPTS
 ;1
-				dc.l	INSTRUCTIONS_TXT
-				dc.l	INSTRUCTIONS_OPTS
+;				dc.l	INSTRUCTIONS_TXT
+;				dc.l	INSTRUCTIONS_OPTS
 ;2
 				dc.l	CREDITMENU_TXT
 				dc.l	CREDITMENU_OPTS
 ;3
-				dc.l	ASKFORDISK_TXT
-				dc.l	ASKFORDISK_OPTS
+;				dc.l	ASKFORDISK_TXT
+;				dc.l	ASKFORDISK_OPTS
 ;4
 ; dc.l ONEPLAYERMENU_TXT
 ; dc.l ONEPLAYERMENU_OPTS
@@ -1488,8 +1461,8 @@ MENUDATA:
 				dc.l	CONTROL_TXT
 				dc.l	CONTROL_OPTS
 ;7
-				dc.l	PROTMENU_TXT
-				dc.l	CONTROL_OPTS
+;				dc.l	PROTMENU_TXT
+;				dc.l	CONTROL_OPTS
 ;8
 				dc.l	LOADMENU_TXT
 				dc.l	LOADMENU_OPTS
@@ -1497,8 +1470,8 @@ MENUDATA:
 				dc.l	SAVEMENU_TXT
 				dc.l	SAVEMENU_OPTS
 ;10
-				dc.l	LEVELDISK_TXT
-				dc.l	ASKFORDISK_OPTS
+;				dc.l	LEVELDISK_TXT
+;				dc.l	ASKFORDISK_OPTS
 
 
 EMPTYSLOTNAME:
@@ -1556,41 +1529,6 @@ LOADMENU_OPTS:
 				dc.w	14,21,12,1
 				dc.w	-1
 
-LEVELDISK_TXT:
-;      0123456789012345678901234567890123456789
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'  IF PLAYING FROM DISK, PLEASE INSERT   ' ;0
-				dc.b	'       LEVELS DISK IN DRIVE DF0:        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'     PRESS MOUSE BUTTON WHEN READY..    ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;0
-
 
 SAVEMENU_TXT:
 ;      0123456789012345678901234567890123456789
@@ -1603,35 +1541,6 @@ SAVEMENU_TXT:
 				dc.b	'                                        ' ;6
 				dc.b	'                                        ' ;7
 				dc.b	'                                        ' ;8
-;SSLOTA:
-;				dc.b	'                                        ' ;9
-;				dc.b	'                                        ' ;0
-;SSLOTB:
-;				dc.b	'                                        ' ;1
-;				dc.b	'                                        ' ;2
-;SSLOTC:
-;				dc.b	'                                        ' ;3
-;				dc.b	'                                        ' ;4
-;SSLOTD:
-;				dc.b	'                                        ' ;5
-;				dc.b	'                                        ' ;6
-;SSLOTE:
-;				dc.b	'                                        ' ;7
-;				dc.b	'                                        ' ;8
-;SSLOTF:
-;				dc.b	'                                        ' ;9
-;				dc.b	'                                        ' ;0
-;				dc.b	'               * CANCEL *               ' ;1
-;				dc.b	'                                        ' ;2
-;				dc.b	'                                        ' ;3
-;				dc.b	'                                        ' ;4
-;				dc.b	'                                        ' ;5
-;				dc.b	'                                        ' ;6
-;				dc.b	'                                        ' ;7
-;				dc.b	'                                        ' ;8
-;				dc.b	'                                        ' ;9
-;				dc.b	'                                        ' ;0
-;				dc.b	'                                        ' ;1
 
 SAVEMENU_OPTS:
 				dc.w	0,9,40,1
@@ -1642,47 +1551,6 @@ SAVEMENU_OPTS:
 				dc.w	0,19,40,1
 				dc.w	14,21,12,1
 				dc.w	-1
-
-
-ASKFORDISK_TXT:
-;      0123456789012345678901234567890123456789
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'         PLEASE INSERT VOLUME:          ' ;3
-				dc.b	'                                        ' ;4
-;VOLLINE:
-;				dc.b	'                                        ' ;9
-;				dc.b	'                                        ' ;9
-;				dc.b	'          PRESS MOUSE BUTTON            ' ;5
-;				dc.b	'          WHEN DISK ACTIVITY            ' ;6
-;				dc.b	'               FINISHES                 ' ;7
-;				dc.b	'                                        ' ;8
-;				dc.b	'                                        ' ;1
-;				dc.b	'                                        ' ;2
-;				dc.b	'                                        ' ;3
-;				dc.b	'                                        ' ;4
-;				dc.b	'                                        ' ;5
-;				dc.b	'                                        ' ;6
-;				dc.b	'                                        ' ;7
-;				dc.b	'                                        ' ;8
-;				dc.b	'                                        ' ;9
-;				dc.b	'                                        ' ;0
-;				dc.b	'                                        ' ;1
-
-ASKFORDISK_OPTS:
-				dc.w	-1
-
 
 ONEPLAYERMENU_TXT:
 ;      0123456789012345678901234567890123456789
@@ -1768,44 +1636,6 @@ SLAVEPLAYERMENU_TXT:
 				dc.b	'                                        ' ;9
 				dc.b	'                                        ' ;9
 
-
-PROTMENU_TXT:
-;      0123456789012345678901234567890123456789
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	' TYPE IN THREE DIGIT CODE FROM MANUAL : ' ;2
-				dc.b	'                                        ' ;3
-PROTLINE:
-				dc.b	'        TABLE 00 ROW 00 COLUMN 00       ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-
-
-
 SLAVEPLAYERMENU_OPTS:
 				dc.w	12,12,16,1
 				dc.w	15,14,10,1
@@ -1877,46 +1707,10 @@ CONTROL_OPTS:
 				dc.w	15,30,10,1
 				dc.w	-1
 
-PLOPT:			dc.w	0
+_Game_LevelNumber::
+Game_LevelNumber_w:		dc.w	0
 
-INSTRUCTIONS_TXT:
-;      0123456789012345678901234567890123456789
-				dc.b	'Main controls:                          ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'Curs Keys = Forward / Backward          ' ;3
-				dc.b	'            Turn left / right           ' ;4
-				dc.b	'          Right Alt = Fire              ' ;5
-				dc.b	'        Right Shift = Run               ' ;6
-				dc.b	'                  > = Slide Left        ' ;7
-				dc.b	'                  ? = Slide Right       ' ;8
-				dc.b	'              SPACE = Operate Door/Lift ' ;9
-				dc.b	'                  D = Duck              ' ;0
-				dc.b	'                  J = Joystick Control  ' ;1
-				dc.b	'                  K = Keyboard Control  ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'              1,2,3 = Select weapon     ' ;4
-				dc.b	'              ENTER = Toggle screen size' ;5
-				dc.b	'                ESC = Quit              ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'The one player game has no objective and' ;9
-				dc.b	'the only way to finish is to die or quit' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'The two-player game is supposed to be a ' ;2
-				dc.b	'fight to the death but will probably be ' ;3
-				dc.b	'a fight-till-we-find-the-rocket-launcher' ;4
-				dc.b	'then-blow-ourselves-up type game.       ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'LOOK OUT FOR TELEPORTERS: They usually  ' ;7
-				dc.b	'have glowing red walls and overhead     ' ;8
-				dc.b	'lights. Useful for getting behind your  ' ;9
-				dc.b	' opponent!                              ' ;0
-				dc.b	'  Just a taster of what is to come....  ' ;1
-				dc.b	'                                        ' ;0
 
-INSTRUCTIONS_OPTS:
-				dc.w	0,0,0,1
-				dc.w	-1
 
 CREDITMENU_TXT:
 
@@ -2029,7 +1823,8 @@ CREDITMENU_OPTS:
 FADEAMOUNT:		dc.w	0
 FADEVAL:		dc.w	0
 
-LEVELTEXTNAME:	dc.b	'ab3:includes/TEXT_FILE'
+Game_StoryFile_vb:
+				dc.b	'ab3:includes/TEXT_FILE'
 
 				even
 

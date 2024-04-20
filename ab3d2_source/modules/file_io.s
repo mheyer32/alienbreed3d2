@@ -8,6 +8,9 @@
 ; * Mostly refactored from newloadfromdisk.s and wallchunk.s
 ; *
 ; *****************************************************************************
+; TODO: It's possible that some resources are leaked if a fatal error occurs
+;       during the loading process (due to calling Sys_FatalError), but for now
+;       that seems better than crashing.
 
 IO_MAX_FILENAME_LEN	EQU 79
 
@@ -93,15 +96,21 @@ IO_FlushQueue:
 
 				movem.l	d0-d7/a0-a6,-(a7)
 
-				jsr		mnu_setscreen
+				CALLC	mnu_setscreen
 
 				lea		mnu_askfordisk,a0
 				jsr		mnu_domenu
 
-				jsr		mnu_clearscreen
-
+				moveq	#1,d0 ; Fade out
+				CALLC	mnu_clearscreen
 
 				movem.l	(a7)+,d0-d7/a0-a6
+
+				tst.b	SHOULDQUIT
+				beq		.no_quit
+				lea		12(a2),a5
+				bra		io_LoadFailure
+.no_quit:
 				bsr		io_FlushPass
 				bra		.retry
 
@@ -129,7 +138,7 @@ io_FlushPass:
 				beq.s	.load_failed
 
 				move.l	d0,IO_DOSFileHandle_l
-				jsr		IO_LoadAndUnpackFile
+				jsr		io_LoadAndUnpackFile
 
 				st		d7
 				move.l	(a2),a3
@@ -156,6 +165,9 @@ io_FlushPass:
 
 io_TryToOpen:
 				movem.l	d1-d7/a0-a6,-(a7)
+				IFD MEMTRACK
+				SERPRINTF <"io_TryToOpen %s",13,10>,a0
+				ENDC
 				move.l	a0,d1
 				move.l	#MODE_OLDFILE,d2
 				CALLDOS	Open
@@ -169,24 +181,52 @@ io_TryToOpen:
 ; *
 ; *****************************************************************************
 
-IO_LoadAndUnpackFile:
+io_LoadAndUnpackFile:
 				; Load a file in and unpack it if necessary.
 				; Pointer to name in a0
 				; Returns address in d0 and length in d1
 				movem.l	d0-d7/a0-a6,-(a7)
 				bra.s	io_LoadCommon
 
+; Load an optional file, i.e. one that might not exist.
+IO_LoadFileOptional:
+				IFD MEMTRACK
+				SERPRINTF <"IO_LoadFileOptional %s",13,10>,a0
+				ENDC
+
+				movem.l	d0-d7/a0-a6,-(a7)
+				move.l	a0,d1
+				move.l	a0,a5			; Save filename in a5 for error reporting
+				move.l	#MODE_OLDFILE,d2
+				CALLDOS	Open
+
+				move.l	d0,IO_DOSFileHandle_l
+				bne.s	io_LoadCommon
+
+				movem.l	(a7)+,d0-d7/a0-a6
+
+				clr.l	d0 ; null address
+				clr.l	d1 ; zero length
+
+				rts
+
 IO_LoadFile:
 				; Load a file in and unpack it if necessary.
 				; Pointer to name in a0
 				; Returns address in d0 and length in d1
 
+				IFD MEMTRACK
+				SERPRINTF <"IO_LoadFile %s",13,10>,a0
+				ENDC
+
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.l	a0,d1
+				move.l	a0,a5			; Save filename in a5 for error reporting
 				move.l	#MODE_OLDFILE,d2
 				CALLDOS	Open
 
 				move.l	d0,IO_DOSFileHandle_l
+				beq		io_LoadFailure
 
 io_LoadCommon:
 				lea		io_FileInfoBlock_vb,a5
@@ -198,7 +238,7 @@ io_LoadCommon:
 				move.l	d0,io_BlockLength_l
 				add.l	#8,d0			; over-allocate by 8 bytes
 				move.l	IO_MemType_l,d1
-				CALLEXEC AllocVec
+				jsr		Sys_AllocVec
 
 				move.l	d0,io_BlockStart_l
 				move.l	IO_DOSFileHandle_l,d1
@@ -222,11 +262,24 @@ io_LoadCommon:
 				cmp.l	#'CSFX',(a0)
 				beq		io_LoadSample
 
+				IFD MEMTRACK
+				SERPRINTF <"LOAD-DONE",13,10>
+				ENDC
+
 ; Not a packed file so just return now.
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	io_BlockStart_l,d0
 				move.l	io_BlockLength_l,d1
 				rts
+
+io_LoadFailure:	; a5 = filename
+				move.l	a5,-(a7)
+				move.l	a7,a1
+				lea		.errfmt(pc),a0
+				move.l	#1,d0 ; Error code 1
+				bra		Sys_FatalError
+.errfmt:		dc.b 'Error loading file:',10,'%s',0
+				even
 
 io_LoadSample:
 				add.l	#4,d0					;Skip "CSFX"
@@ -236,7 +289,7 @@ io_LoadSample:
 				move.l	d0,.sample_size_l
 				move.l	a0,.compressed_sample_position_l
 				move.l	#MEMF_ANY,d1
-				CALLEXEC AllocVec
+				jsr		Sys_AllocVec
 				move.l	d0,.sample_position_l
 				move.l	.compressed_sample_position_l,a0
 				move.l	d0,a1
@@ -291,6 +344,10 @@ io_LoadSample:
 				move.b	d1,(a0)+
 				dbra	d0,.clip_loop
 
+				IFD MEMTRACK
+				SERPRINTF <"LOAD-DONE",13,10>
+				ENDC
+
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	.sample_position_l,d0
 				move.l	.sample_size_l,d1
@@ -307,7 +364,7 @@ io_HandlePacked:
 				move.l	4(a0),d0				; length of unpacked file.
 				move.l	d0,.unpacked_length_l
 				move.l	IO_MemType_l,d1
-				CALLEXEC AllocVec
+				jsr		Sys_AllocVec
 
 				move.l	d0,.unpacked_start_l
 				move.l	io_BlockStart_l,d0
@@ -327,6 +384,10 @@ io_HandlePacked:
 				cmp.l	#'CSFX',(a0)
 				beq		io_LoadSample
 
+				IFD MEMTRACK
+				SERPRINTF <"LOAD-DONE",13,10>
+				ENDC
+
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	.unpacked_start_l,d0
 				move.l	.unpacked_length_l,d1
@@ -336,10 +397,10 @@ io_HandlePacked:
 .unpacked_start_l:	dc.l	0
 .unpacked_length_l:	dc.l	0
 
-				section bss,bss
+				section .bss,bss
 .unlha_temp_buffer_vl:
 				ds.l	4096		; unLHA wants 16kb
 
-				section code,code
-
+				section .text,code
+_unLHA::
 unLHA:			incbin	"decomp4.raw"

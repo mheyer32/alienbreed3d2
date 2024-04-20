@@ -1,5 +1,5 @@
 
-			section bss,bss
+			section .bss,bss
 
 ; BSS data - to be included in BSS section
 			align 4
@@ -7,14 +7,14 @@
 ; Memory class to use for next loaded entity
 IO_MemType_l:			ds.l	1
 
-; dos.llibrary file handle
+; dos.library file handle
 IO_DOSFileHandle_l:		ds.l	1
 
 ; Private stuff
 io_EndOfQueue_l:		ds.l	1
 
 ; Array of object pointers
-io_ObjectPointers_vl:	ds.l	160
+;io_ObjectPointers_vl:	ds.l	160
 
 ; block properties
 io_BlockLength_l:		ds.l	1
@@ -28,4 +28,5 @@ io_ObjectName_vb:		ds.b	160
 io_Buffer_vb:			ds.b	80   ; todo - can these be merged ?
 
 ; File info block
+_io_FileInfoBlock::
 io_FileInfoBlock_vb:	ds.b	fib_SIZEOF

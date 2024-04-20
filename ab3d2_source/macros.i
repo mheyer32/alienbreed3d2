@@ -89,14 +89,14 @@ SCROLL_WB		MACRO
 				bne.s	.\@
 				ENDM
 *---------------------------------------------------------------------------*
-PALETTE32COL	MACRO
-				dc.l	$1800000,$1820000,$1840000,$1860000,$1880000,$18a0000
-				dc.l	$18c0000,$18e0000,$1900000,$1920000,$1940000,$1960000
-				dc.l	$1980000,$19a0000,$19c0000,$19e0000,$1a00000,$1a20000
-				dc.l	$1a40000,$1a60000,$1a80000,$1aa0000,$1ac0000,$1ae0000
-				dc.l	$1b00000,$1b20000,$1b40000,$1b60000,$1b80000,$1ba0000
-				dc.l	$1bc0000,$1be0000
-				ENDM
+;PALETTE32COL	MACRO
+;				dc.l	$1800000,$1820000,$1840000,$1860000,$1880000,$18a0000
+;				dc.l	$18c0000,$18e0000,$1900000,$1920000,$1940000,$1960000
+;				dc.l	$1980000,$19a0000,$19c0000,$19e0000,$1a00000,$1a20000
+;				dc.l	$1a40000,$1a60000,$1a80000,$1aa0000,$1ac0000,$1ae0000
+;				dc.l	$1b00000,$1b20000,$1b40000,$1b60000,$1b80000,$1ba0000
+;				dc.l	$1bc0000,$1be0000
+;				ENDM
 *---------------------------------------------------------------------------*
 
 * QMOVE		 move a constant into a reg the quickest way (probbly)      *
@@ -321,7 +321,7 @@ WTNOT			MACRO
 
 CINIT			MACRO	; \1 UCopList* \2 number of instructions to hold
 				move.l	\1,a0
-				move.w	#\2,d0
+				move.l	#\2,d0 ; NOTE: Must be long despite waht documentation says
 				jsr		_LVOUCopperListInit(a6)
 				ENDM
 
@@ -348,3 +348,90 @@ CEND			MACRO ; \1 UCopList*
 				CWAIT \1,#10000,#255
 				ENDM
 
+CALLC			MACRO
+				IFD BUILD_WITH_C
+				xref _\1
+				jsr _\1
+				ELSE
+				jsr \1
+				ENDC
+				ENDM
+
+; Game macros
+
+FREE_OBJ		MACRO
+				move.w	#-1,ObjT_ZoneID_w(\1)
+				ENDM
+
+FREE_OBJ_2		MACRO
+				move.w	#-1,ObjT_ZoneID_w+\2(\1)
+				ENDM
+
+FREE_ENT		MACRO
+				move.w	#-1,ObjT_ZoneID_w(\1)
+				move.w	#-1,EntT_ZoneID_w(\1)
+				ENDM
+
+FREE_ENT_2		MACRO
+				move.w	#-1,ObjT_ZoneID_w+\2(\1)
+				move.w	#-1,EntT_ZoneID_w+\2(\1)
+				ENDM
+
+
+; Set a bit in memory
+SET_MEM_BIT		MACRO
+				bset.b	#(\1&7),\2+3-(\1>>3)
+				ENDM
+
+
+				IFD BUILD_WITH_C
+
+				; Begin a level
+				; Trashes d0/a0
+
+STATS_PLAY		MACRO
+                CALLC   Game_LevelBegin
+				ENDM
+
+STATS_WON		MACRO
+                CALLC   Game_LevelWon
+				ENDM
+
+				; Died
+				; Trashes d0/a0
+STATS_DIED		MACRO
+                CALLC   Game_LevelFailed
+				ENDM
+
+				; Trashes a1
+				; Expects EntT_Type_b in d0
+STATS_KILL		MACRO
+				move.l  #game_PlayerProgression+GStatT_AlienKills_vw,a1
+				add.w   #1,(a1,d0.w*2)
+				move.l	#1,Game_ProgressSignal_l
+				SET_MEM_BIT	GAME_EVENTBIT_KILL,Game_ProgressSignal_l
+				ENDM
+
+				ELSE
+
+				; At this time, there are no game progress for asm-only build
+
+STATS_PLAY		MACRO
+                ENDM
+
+STATS_WON		MACRO
+                ENDM
+
+STATS_DIED		MACRO
+                ENDM
+
+STATS_KILL		MACRO
+                ENDM
+
+				ENDC
+
+				; Macro for defining identifier labels that are both ASM and C accessible
+DECLC			MACRO
+_\1::
+\1:
+				ENDM
