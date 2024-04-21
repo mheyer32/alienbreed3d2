@@ -106,7 +106,7 @@ IO_FlushQueue:
 
 				movem.l	(a7)+,d0-d7/a0-a6
 
-				tst.b	SHOULDQUIT
+				tst.b	Game_ShouldQuit_b
 				beq		.no_quit
 				lea		12(a2),a5
 				bra		io_LoadFailure

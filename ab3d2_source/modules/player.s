@@ -174,7 +174,7 @@ plr_KeyboardControl:
 				; Check for quit
 				tst.b	QUIT_KEY(a5)
 				beq.s	.no_quit
-				st		SHOULDQUIT
+				st		Game_ShouldQuit_b
 				st		Game_MasterQuit_b
 .no_quit:
 

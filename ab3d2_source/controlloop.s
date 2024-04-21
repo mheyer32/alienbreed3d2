@@ -103,23 +103,30 @@ Game_Start:
 
 				bsr		DEFAULTGAME
 
-BACKTOMENU:
+game_BackToMenu:
 				CALLC	Sys_ClearKeyboard
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
-				beq.s	BACKTOSLAVE
+				beq.s	game_BackToSlave
+
 				cmp.b	#PLR_MASTER,Plr_MultiplayerType_b
-				beq.s	BACKTOMASTER
-				bsr		READMAINMENU
-				bra		DONEMENU
-BACKTOMASTER:
-				bsr		MASTERMENU
-				bra		DONEMENU
-BACKTOSLAVE:
-				bsr		SLAVEMENU
-DONEMENU:
-				tst.b	SHOULDQUIT
-				bne		QUITTT
+				beq.s	game_BackToMaster
+
+				bsr		game_ReadMainMenu
+
+				bra		game_DoneMenu
+
+game_BackToMaster:
+				bsr		game_MasterMenu
+
+				bra		game_DoneMenu
+
+game_BackToSlave:
+				bsr		game_SlaveMenu
+
+game_DoneMenu:
+				tst.b	Game_ShouldQuit_b
+				bne		Game_Quit
 
 				moveq	#1,d0 ; Fade out
 				CALLC	mnu_clearscreen
@@ -129,13 +136,12 @@ DONEMENU:
 				FILTER
 
 				clr.b	Game_FinishedLevel_b
-
-				move.w	#0,Plr1_SnapAngPos_w
-				move.w	#0,Plr2_SnapAngPos_w
-				move.w	#0,Plr1_AngPos_w
-				move.w	#0,Plr2_AngPos_w
-				move.b	#0,Plr1_GunSelected_b
-				move.b	#0,Plr2_GunSelected_b
+				clr.w	Plr1_SnapAngPos_w
+				clr.w	Plr2_SnapAngPos_w
+				clr.w	Plr1_AngPos_w
+				clr.w	Plr2_AngPos_w
+				clr.b	Plr1_GunSelected_b
+				clr.b	Plr2_GunSelected_b
 
 ***************************
 				clr.b	AI_NoEnemies_b
@@ -189,9 +195,9 @@ dontusestats:
 				CALLC	mnu_setscreen
 
 
-				bra		BACKTOMENU
+				bra		game_BackToMenu
 
-QUITTT:
+Game_Quit:
 				moveq	#0,d0 ; No fading
 				CALLC	mnu_clearscreen ; Maybe No-op
 
@@ -368,28 +374,24 @@ Plr_InitSlave:
 
 ********************************************************
 
-READMAINMENU:
-
+game_ReadMainMenu:
 				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
-
 				move.w	MAXLEVEL,d0
-
-
 				move.l	#mnu_CURRENTLEVELLINE,a1
 				muls	#40,d0
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_LevelNames_l,a0
 				add.l	d0,a0
-				bsr		PUTINLINE
+				bsr		game_MenuSetLevelName
 
 ; Stay here until 'play game' is selected.
 
 				lea		mnu_MYMAINMENU,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 
 .rdlop:
 				lea		mnu_MYMAINMENU,a0
-				bsr		CHECKMENU
+				bsr		game_CheckMenu
 
 ***************************************************************
 				tst.w	d0
@@ -398,7 +400,7 @@ READMAINMENU:
 				cmp.w	#1,d0
 				bne		.noopt
 
-				bra		MASTERMENU
+				bra		game_MasterMenu
 
 .noopt:
 ***************************************************************
@@ -408,10 +410,10 @@ READMAINMENU:
 				bsr	levelMenu;cycleLevel
 
 				lea		mnu_MYMAINMENU,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 
 				bsr		WAITREL
-				bra		READMAINMENU;.rdlop
+				bra		game_ReadMainMenu;.rdlop
 
 .nonextlev:
 ***************************************************************
@@ -421,7 +423,7 @@ READMAINMENU:
 				bsr		CHANGECONTROLS
 
 				lea		mnu_MYMAINMENU,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 
 				bsr		WAITREL
 				bra		.rdlop
@@ -433,7 +435,7 @@ READMAINMENU:
 
 				;jsr		mnu_viewcredz
 				lea		mnu_MYMAINMENU,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 
 				bra		.rdlop
 
@@ -445,7 +447,7 @@ READMAINMENU:
 				jsr		LOADPOSITION
 
 				lea		mnu_MYMAINMENU,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 
 				bsr		WAITREL
 				bra		.rdlop
@@ -459,7 +461,7 @@ READMAINMENU:
 				jsr		SAVEPOSITION
 
 				lea		mnu_MYMAINMENU,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 
 				bsr		WAITREL
 				bra		.rdlop
@@ -472,7 +474,7 @@ READMAINMENU:
 				bsr		customOptions
 
 				lea		mnu_MYMAINMENU,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 
 				bsr		WAITREL
 				bra		.rdlop
@@ -481,10 +483,10 @@ READMAINMENU:
 ;fixme: there are better ways to do this, but it works.AL
 levelMenu:
 				lea		mnu_MYLEVELMENU,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 
 				lea		mnu_MYLEVELMENU,a0
-				bsr		CHECKMENU
+				bsr		game_CheckMenu
 
 				cmp.w	#8,d0
 				beq		levelMenu2
@@ -499,10 +501,10 @@ levelMenu:
 
 levelMenu2:
 				lea		mnu_MYLEVELMENU2,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 
 				lea		mnu_MYLEVELMENU2,a0
-				bsr		CHECKMENU
+				bsr		game_CheckMenu
 
 				cmp.w	#8,d0
 				beq	.levelSelectDone
@@ -592,10 +594,10 @@ customOptions:
 				dbra	d1,.copyOpts
 
 				lea		mnu_MYCUSTOMOPTSMENU,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 .rdloop:
 				lea		mnu_MYCUSTOMOPTSMENU,a0
-				bsr		CHECKMENU
+				bsr		game_CheckMenu
 
 				cmp.w	#8,d0
 				beq	.customOptionsDone
@@ -648,9 +650,9 @@ playgame:
 				move.w	MAXLEVEL,Game_LevelNumber_w
 				rts
 
-SHOULDQUIT:		dc.w	0
+Game_ShouldQuit_b:		dc.w	0
 
-LEVELSELECTED:
+game_LevelSelected_w:
 				dc.w	0
 
 				IFNE	CD32VER
@@ -734,46 +736,43 @@ GETACHAR:
 				ENDC
 
 
-MASTERMENU:
-
+game_MasterMenu:
 				move.b	#PLR_MASTER,Plr_MultiplayerType_b
-
-				move.w	#0,LEVELSELECTED
-
+				move.w	#0,game_LevelSelected_w
 				move.w	#0,d0
 				move.l	#mnu_CURRENTLEVELLINEM,a1
 				muls	#40,d0
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_LevelNames_l,a0
 				add.l	d0,a0
-				bsr		PUTINLINE
+				bsr		game_MenuSetLevelName
 
 ; Stay here until 'play game' is selected.
 
 				lea		mnu_MYMASTERMENU,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 
 .rdlop:
 				lea		mnu_MYMASTERMENU,a0
-				bsr		CHECKMENU
+				bsr		game_CheckMenu
 
 				cmp.w	#1,d0
 				bne.s	.nonextlev
 
-				move.w	LEVELSELECTED,d0
+				move.w	game_LevelSelected_w,d0
 				add.w	#1,d0
 				cmp.w	MAXLEVEL,d0
 				blt		.nowrap
 				moveq	#0,d0
 .nowrap:
 ; and.w #$f,d0
-				move.w	d0,LEVELSELECTED
+				move.w	d0,game_LevelSelected_w
 				move.l	#mnu_CURRENTLEVELLINEM,a1
 				muls	#40,d0
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_LevelNames_l,a0
 				add.l	d0,a0
-				bsr		PUTINLINE
+				bsr		game_MenuSetLevelName
 
 				lea		mnu_MYMASTERMENU,a0
 				jsr		mnu_redraw
@@ -788,7 +787,7 @@ MASTERMENU:
 				cmp.w	#0,d0
 				bne		.noopt
 
-				bra		SLAVEMENU
+				bra		game_SlaveMenu
 
 .noopt:
 				cmp.w	#3,d0
@@ -797,29 +796,29 @@ MASTERMENU:
 				bsr		CHANGECONTROLS
 
 				lea		mnu_MYMASTERMENU,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 
 				bra		.rdlop
 
 .nocontrol:
 
-.playgame
+.playgame:
 
-				move.w	LEVELSELECTED,Game_LevelNumber_w
+				move.w	game_LevelSelected_w,Game_LevelNumber_w
 				rts
 
-SLAVEMENU:
+game_SlaveMenu:
 
 				move.b	#PLR_SLAVE,Plr_MultiplayerType_b
 
 ; Stay here until 'play game' is selected.
 
 				lea		mnu_MYSLAVEMENU,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 
 .rdlop:
 				lea		mnu_MYSLAVEMENU,a0
-				bsr		CHECKMENU
+				bsr		game_CheckMenu
 				tst.w	d0
 				blt.s	.rdlop
 				bsr		WAITREL
@@ -830,7 +829,7 @@ SLAVEMENU:
 				cmp.w	#0,d0
 				bne		.noopt
 
-				bra		READMAINMENU
+				bra		game_ReadMainMenu
 
 .noopt:
 
@@ -840,7 +839,7 @@ SLAVEMENU:
 				bsr		CHANGECONTROLS
 
 				lea		mnu_MYSLAVEMENU,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 
 
 				bra		.rdlop
@@ -978,11 +977,11 @@ CHANGECONTROLS:
 				dbra	d1,.copykeys2
 
 				lea		mnu_MYCONTROLSONE,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 
 .rdlop:
 				lea		mnu_MYCONTROLSONE,a0
-				bsr		CHECKMENU
+				bsr		game_CheckMenu
 
 ; tst.w d0
 ; blt.s .rdlop
@@ -1027,11 +1026,11 @@ CHANGECONTROLS:
 
 CHANGECONTROLS2:
 				lea		mnu_MYCONTROLSTWO,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 
 .rdlop:
 				lea		mnu_MYCONTROLSTWO,a0
-				bsr		CHECKMENU
+				bsr		game_CheckMenu
 
 				cmp.w	#6,d0
 				beq		.backtomain
@@ -1116,36 +1115,39 @@ WAITREL2:
 				movem.l	(a7)+,d0/d1/d2/d3
 				rts
 
-PUTINLINE:
+game_MenuSetLevelName:
 				moveq	#19,d0
 .pill:
 				move.b	(a0)+,(a1)+
 				dbra	d0,.pill
 				rts
 
-MYOPENMENU:
-.redraw:		move.l	a0,-(a7)
+game_OpenMenu:
+.redraw:
+				move.l	a0,-(a7)
 				jsr		mnu_openmenu			; Open new menu
+
 				move.l	(a7)+,a0
 				rts
 
-CHECKMENU:
+game_CheckMenu:
 				move.b	#0,lastpressed
 
-.loop:			movem.l	a0,-(a7)
-				jsr		mnu_update
-				movem.l	(a7)+,a0
+.loop:
 				move.l	a0,-(a7)
+				jsr		mnu_update
+
+				;move.l	(a7)+,a0
+				;move.l	a0,-(a7)
 				jsr		mnu_waitmenu			; Wait for option
+
 				move.l	(a7)+,a0
 				moveq.l	#0,d2
 				move.w	mnu_row,d2
 				divu	14(a0),d2
 				swap.w	d2
 				move.w	d2,mnu_currentsel
-
 				move.w	d2,d0					; option number
-
 				rts
 
 
@@ -1229,21 +1231,20 @@ DRAWOPTSCRN:
 				bsr		CLROPTSCRN
 
 JUSTDRAWIT:
-
 				move.l	#font,a0
 				move.l	#MENUDATA,a1
 				move.w	OptScrn,d0
 				move.l	(a1,d0.w*8),a1
-
 				move.l	OPTSPRADDR,a3
 				add.l	#16,a3
 				moveq	#0,d2
-
 				move.w	#31,d0
+
 line_loop:
 				move.w	#39,d1
 				move.l	#SCRTOSPR,a4
 				move.l	a3,a2
+
 charlop:
 				move.b	(a1)+,d2
 				lea		(a0,d2.w*8),a5
@@ -1280,7 +1281,6 @@ SAVEGAMEPOS:	dc.l	0
 SAVEGAMELEN:	dc.l	0
 
 LOADPOSITION:
-
 				move.l	#SAVEGAMENAME,a0
 				move.l	#SAVEGAMEPOS,d0
 				move.l	#SAVEGAMELEN,d1
@@ -1289,32 +1289,31 @@ LOADPOSITION:
 				jsr		IO_FlushQueue
 
 				move.l	SAVEGAMEPOS,a2			; address of first saved game.
-
 				move.l	#mnu_LSLOTA+21,a4
-
 				move.l	a2,a3
 				add.w	#2+(22*2)+(12*2),a3
 				move.w	#4,d7
-.findlevs:
 
+.findlevs:
 				move.l	a4,a1
 				move.w	(a3),d1
 				muls	#40,d1
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_LevelNames_l,a0
 				add.l	d1,a0
-				jsr		PUTINLINE
+				bsr		game_MenuSetLevelName
+
 				add.l	#21,a4
 				add.w	#2+(22*2)+(12*2),a3
 
 				dbra	d7,.findlevs
 
 				lea		mnu_MYLOADMENU,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 
 .rdlop:
 				lea		mnu_MYLOADMENU,a0
-				bsr		CHECKMENU
+				bsr		game_CheckMenu
 
 				cmp.w	#6,d0
 				beq.s	.noload
@@ -1344,17 +1343,15 @@ LOADPOSITION:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_LevelNames_l,a0
 				add.l	d0,a0
-				bsr		PUTINLINE
+				bsr		game_MenuSetLevelName
 
 .noload:
-
 				move.l	SAVEGAMEPOS,a1
 				CALLEXEC FreeVec
 
 				rts
 
 SAVEPOSITION:
-
 				move.l	#SAVEGAMENAME,a0
 				move.l	#SAVEGAMEPOS,d0
 				move.l	#SAVEGAMELEN,d1
@@ -1377,32 +1374,28 @@ SAVEPOSITION:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_LevelNames_l,a0
 				add.l	d1,a0
-				jsr		PUTINLINE
+				bsr		game_MenuSetLevelName
 				add.l	#21,a4
 				add.w	#2+(22*2)+(12*2),a3
 
 				dbra	d7,.findlevs
 
 				lea		mnu_MYSAVEMENU,a0
-				bsr		MYOPENMENU
+				bsr		game_OpenMenu
 
 .rdlop:
 				lea		mnu_MYSAVEMENU,a0
-				bsr		CHECKMENU
+				bsr		game_CheckMenu
 
 				cmp.w	#5,d0
 				beq		.nosave
 
 				move.l	d0,-(a7)
-
 				move.l	(a7)+,d0
-
 				addq	#1,d0
-
 				move.l	SAVEGAMEPOS,a0
 				muls	#2+(22*2)+(12*2),d0
 				add.l	d0,a0
-
 				move.l	#Plr_Health_w,a1
 				move.w	MAXLEVEL,(a0)+
 
@@ -1438,381 +1431,378 @@ SAVEPOSITION:
 
 MENUDATA:
 ;0
-				dc.l	ONEPLAYERMENU_TXT
-				dc.l	ONEPLAYERMENU_OPTS
+;;				dc.l	ONEPLAYERMENU_TXT
+;;				dc.l	ONEPLAYERMENU_OPTS
 ;1
 ;				dc.l	INSTRUCTIONS_TXT
 ;				dc.l	INSTRUCTIONS_OPTS
 ;2
-				dc.l	CREDITMENU_TXT
-				dc.l	CREDITMENU_OPTS
+;;				dc.l	CREDITMENU_TXT
+;;				dc.l	CREDITMENU_OPTS
 ;3
 ;				dc.l	ASKFORDISK_TXT
 ;				dc.l	ASKFORDISK_OPTS
 ;4
 ; dc.l ONEPLAYERMENU_TXT
 ; dc.l ONEPLAYERMENU_OPTS
-				dc.l	MASTERPLAYERMENU_TXT
-				dc.l	MASTERPLAYERMENU_OPTS
+;;				dc.l	MASTERPLAYERMENU_TXT
+;;				dc.l	MASTERPLAYERMENU_OPTS
 ;5
-				dc.l	SLAVEPLAYERMENU_TXT
-				dc.l	SLAVEPLAYERMENU_OPTS
+;;				dc.l	SLAVEPLAYERMENU_TXT
+;;				dc.l	SLAVEPLAYERMENU_OPTS
 ;6
-				dc.l	CONTROL_TXT
-				dc.l	CONTROL_OPTS
+;				dc.l	CONTROL_TXT
+;				dc.l	CONTROL_OPTS
 ;7
 ;				dc.l	PROTMENU_TXT
 ;				dc.l	CONTROL_OPTS
 ;8
-				dc.l	LOADMENU_TXT
-				dc.l	LOADMENU_OPTS
+;;				dc.l	LOADMENU_TXT
+;;				dc.l	LOADMENU_OPTS
 ;9
-				dc.l	SAVEMENU_TXT
-				dc.l	SAVEMENU_OPTS
+;;				dc.l	SAVEMENU_TXT
+;;				dc.l	SAVEMENU_OPTS
 ;10
 ;				dc.l	LEVELDISK_TXT
 ;				dc.l	ASKFORDISK_OPTS
 
 
-EMPTYSLOTNAME:
+;EMPTYSLOTNAME:
 ;      0123456789012345678901234567890123456789
-				dc.b	'               EMPTY SLOT               '
+;;				dc.b	'               EMPTY SLOT               '
 
-LOADMENU_TXT:
+;;LOADMENU_TXT:
 ;      0123456789012345678901234567890123456789
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'         LOAD A SAVED POSITION:         ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-LSLOTA:
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-LSLOTB:
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-LSLOTC:
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-LSLOTD:
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-LSLOTE:
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-LSLOTF:
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'               * CANCEL *               ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
+;;				dc.b	'                                        ' ;0
+;;				dc.b	'                                        ' ;1
+;;				dc.b	'                                        ' ;2
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'         LOAD A SAVED POSITION:         ' ;4
+;;				dc.b	'                                        ' ;5
+;;				dc.b	'                                        ' ;6
+;;				dc.b	'                                        ' ;7
+;;				dc.b	'                                        ' ;8
+;;LSLOTA:
+;;				dc.b	'                                        ' ;9
+;;				dc.b	'                                        ' ;0
+;;LSLOTB:
+;;				dc.b	'                                        ' ;1
+;;				dc.b	'                                        ' ;2
+;;LSLOTC:
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'                                        ' ;4
+;;LSLOTD:
+;;				dc.b	'                                        ' ;5
+;;				dc.b	'                                        ' ;6
+;;LSLOTE:
+;;				dc.b	'                                        ' ;7
+;;				dc.b	'                                        ' ;8
+;;LSLOTF:
+;;				dc.b	'                                        ' ;9
+;;				dc.b	'                                        ' ;0
+;;				dc.b	'               * CANCEL *               ' ;1
+;;				dc.b	'                                        ' ;2
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'                                        ' ;4
+;;				dc.b	'                                        ' ;5
+;;				dc.b	'                                        ' ;6
+;;				dc.b	'                                        ' ;7
+;;				dc.b	'                                        ' ;8
+;;				dc.b	'                                        ' ;9
+;;				dc.b	'                                        ' ;0
+;;				dc.b	'                                        ' ;1
 
-LOADMENU_OPTS:
-				dc.w	0,9,40,1
-				dc.w	0,11,40,1
-				dc.w	0,13,40,1
-				dc.w	0,15,40,1
-				dc.w	0,17,40,1
-				dc.w	0,19,40,1
-				dc.w	14,21,12,1
-				dc.w	-1
+;;LOADMENU_OPTS:
+;;				dc.w	0,9,40,1
+;;				dc.w	0,11,40,1
+;;				dc.w	0,13,40,1
+;;				dc.w	0,15,40,1
+;;				dc.w	0,17,40,1
+;;				dc.w	0,19,40,1
+;;				dc.w	14,21,12,1
+;;				dc.w	-1
 
-
-SAVEMENU_TXT:
+;;SAVEMENU_TXT:
 ;      0123456789012345678901234567890123456789
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'         SAVE CURRENT POSITION:         ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
+;;				dc.b	'                                        ' ;0
+;;				dc.b	'                                        ' ;1
+;;				dc.b	'                                        ' ;2
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'         SAVE CURRENT POSITION:         ' ;4
+;;				dc.b	'                                        ' ;5
+;;				dc.b	'                                        ' ;6
+;;				dc.b	'                                        ' ;7
+;;				dc.b	'                                        ' ;8
 
-SAVEMENU_OPTS:
-				dc.w	0,9,40,1
-				dc.w	0,11,40,1
-				dc.w	0,13,40,1
-				dc.w	0,15,40,1
-				dc.w	0,17,40,1
-				dc.w	0,19,40,1
-				dc.w	14,21,12,1
-				dc.w	-1
+;;SAVEMENU_OPTS:
+;;				dc.w	0,9,40,1
+;;				dc.w	0,11,40,1
+;;				dc.w	0,13,40,1
+;;				dc.w	0,15,40,1
+;;				dc.w	0,17,40,1
+;;				dc.w	0,19,40,1
+;;				dc.w	14,21,12,1
+;;				dc.w	-1
 
-ONEPLAYERMENU_TXT:
+;;ONEPLAYERMENU_TXT:
 ;      0123456789012345678901234567890123456789
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
+;;				dc.b	'                                        ' ;0
+;;				dc.b	'                                        ' ;1
+;;				dc.b	'                                        ' ;2
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'                                        ' ;4
+;;				dc.b	'                                        ' ;5
+;;				dc.b	'                                        ' ;6
+;;				dc.b	'                                        ' ;7
+;;				dc.b	'                                        ' ;8
+;;				dc.b	'                                        ' ;9
+;;				dc.b	'                                        ' ;0
 
-ONEPLAYERMENU_OPTS:
-				dc.w	0,11,40,1
-				dc.w	16,13,8,1
-				dc.w	15,15,10,1
-				dc.w	12,17,16,1
-				dc.w	14,19,12,1
-				dc.w	12,21,16,1
-				dc.w	12,23,16,1
-				dc.w	-1
+;;ONEPLAYERMENU_OPTS:
+;;				dc.w	0,11,40,1
+;;				dc.w	16,13,8,1
+;;				dc.w	15,15,10,1
+;;				dc.w	12,17,16,1
+;;				dc.w	14,19,12,1
+;;				dc.w	12,21,16,1
+;;				dc.w	12,23,16,1
+;;				dc.w	-1
 
 
-MASTERPLAYERMENU_TXT:
+;;MASTERPLAYERMENU_TXT:
 ;      0123456789012345678901234567890123456789
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'            2 PLAYER  MASTER            ' ;2
-				dc.b	'                                        ' ;3
+;;				dc.b	'                                        ' ;0
+;;				dc.b	'                                        ' ;1
+;;				dc.b	'                                        ' ;2
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'                                        ' ;4
+;;				dc.b	'                                        ' ;5
+;;				dc.b	'                                        ' ;6
+;;				dc.b	'                                        ' ;7
+;;				dc.b	'                                        ' ;8
+;;				dc.b	'                                        ' ;9
+;;				dc.b	'                                        ' ;0
+;;				dc.b	'                                        ' ;1
+;;				dc.b	'            2 PLAYER  MASTER            ' ;2
+;;				dc.b	'                                        ' ;3
 
-MASTERPLAYERMENU_OPTS:
-				dc.w	12,12,16,1
-				dc.w	6,14,28,1
-				dc.w	15,16,10,1
-				dc.w	12,18,16,1
-				dc.w	-1
+;;MASTERPLAYERMENU_OPTS:
+;;				dc.w	12,12,16,1
+;;				dc.w	6,14,28,1
+;;				dc.w	15,16,10,1
+;;				dc.w	12,18,16,1
+;;				dc.w	-1
 
-SLAVEPLAYERMENU_TXT:
+;;SLAVEPLAYERMENU_TXT:
 ;      0123456789012345678901234567890123456789
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;1
-				dc.b	'             2 PLAYER SLAVE             ' ;4
-				dc.b	'                                        ' ;3
-				dc.b	'               PLAY  GAME               ' ;2
-				dc.b	'                                        ' ;5
-				dc.b	'            CONTROL  OPTIONS            ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;9
+;;				dc.b	'                                        ' ;0
+;;				dc.b	'                                        ' ;1
+;;				dc.b	'                                        ' ;2
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'                                        ' ;4
+;;				dc.b	'                                        ' ;5
+;;				dc.b	'                                        ' ;6
+;;				dc.b	'                                        ' ;7
+;;				dc.b	'                                        ' ;8
+;;				dc.b	'                                        ' ;9
+;;				dc.b	'                                        ' ;9
+;;				dc.b	'                                        ' ;1
+;;				dc.b	'             2 PLAYER SLAVE             ' ;4
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'               PLAY  GAME               ' ;2
+;;				dc.b	'                                        ' ;5
+;;				dc.b	'            CONTROL  OPTIONS            ' ;0
+;;				dc.b	'                                        ' ;1
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'                                        ' ;7
+;;				dc.b	'                                        ' ;7
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'                                        ' ;4
+;;				dc.b	'                                        ' ;5
+;;				dc.b	'                                        ' ;6
+;;				dc.b	'                                        ' ;7
+;;				dc.b	'                                        ' ;9
+;;				dc.b	'                                        ' ;9
+;;				dc.b	'                                        ' ;9
+;;				dc.b	'                                        ' ;9
 
-SLAVEPLAYERMENU_OPTS:
-				dc.w	12,12,16,1
-				dc.w	15,14,10,1
-				dc.w	12,16,16,1
-				dc.w	-1
+;;SLAVEPLAYERMENU_OPTS:
+;;				dc.w	12,12,16,1
+;;				dc.w	15,14,10,1
+;;				dc.w	12,16,16,1
+;;				dc.w	-1
 
 
-PLAYER_OPTS:
+;;PLAYER_OPTS:
 ;      0123456789012345678901234567890123456789
-				dc.b	'                 1 PLAYER               '
-				dc.b	'             2  PLAYER MASTER           '
-				dc.b	'              2 PLAYER SLAVE            '
+;;				dc.b	'                 1 PLAYER               '
+;;				dc.b	'             2  PLAYER MASTER           '
+;;				dc.b	'              2 PLAYER SLAVE            '
 
 
-CONTROL_TXT:
+;;CONTROL_TXT:
 ;      0123456789012345678901234567890123456789
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'            DEFINE  CONTROLS            ' ;2
-				dc.b	'                                        ' ;3
-;KEY_LINES:
-				dc.b	'     TURN LEFT                  LCK     ' ;4
-				dc.b	'     TURN RIGHT                 RCK     ' ;5
-				dc.b	'     FORWARDS                   UCK     ' ;6
-				dc.b	'     BACKWARDS                  DCK     ' ;7
-				dc.b	'     FIRE                       RAL     ' ;8
-				dc.b	'     OPERATE DOOR/LIFT/SWITCH   SPC     ' ;9
-				dc.b	'     RUN                        RSH     ' ;0
-				dc.b	'     FORCE SIDESTEP             RAM     ' ;1
-				dc.b	'     SIDESTEP LEFT               .      ' ;2
-				dc.b	'     SIDESTEP RIGHT              /      ' ;3
-				dc.b	'     DUCK                        D      ' ;4
-				dc.b	'     LOOK BEHIND                 L      ' ;5
-				dc.b	'     JUMP                       KP0     ' ;6
-				dc.b	'     LOOK UP                     ]      ' ;7
-				dc.b	'     LOOK DOWN                   #      ' ;8
-				dc.b	'     CENTRE VIEW                 ;      ' ;9
-				dc.b	'     NEXT WEAPON                RET     ' ;9
-				dc.b	'                                        ' ;9
-				dc.b	'             OTHER CONTROLS             ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'1-0   Select Weapon P              Pause' ;2
-				dc.b	'F1   Zoom in on map F3 4/8 Channel Sound' ;3
-				dc.b	'F2  Zoom out on map F4 Mono/Stereo Sound' ;4
-				dc.b	'F5 Recall Message   F6    Render Quality'
-				dc.b	'    Keypad 1-9 scroll map, 5 centres    ' ;5
-				dc.b	'                                        ' ;7
-				dc.b	'               MAIN  MENU               ' ;8
-				dc.b	'                                        ' ;1
+;;				dc.b	'                                        ' ;0
+;;				dc.b	'                                        ' ;1
+;;				dc.b	'            DEFINE  CONTROLS            ' ;2
+;;				dc.b	'                                        ' ;3
+;;;KEY_LINES:
+;;				dc.b	'     TURN LEFT                  LCK     ' ;4
+;;				dc.b	'     TURN RIGHT                 RCK     ' ;5
+;;				dc.b	'     FORWARDS                   UCK     ' ;6
+;;				dc.b	'     BACKWARDS                  DCK     ' ;7
+;;				dc.b	'     FIRE                       RAL     ' ;8
+;;				dc.b	'     OPERATE DOOR/LIFT/SWITCH   SPC     ' ;9
+;;				dc.b	'     RUN                        RSH     ' ;0
+;;				dc.b	'     FORCE SIDESTEP             RAM     ' ;1
+;;				dc.b	'     SIDESTEP LEFT               .      ' ;2
+;;				dc.b	'     SIDESTEP RIGHT              /      ' ;3
+;;				dc.b	'     DUCK                        D      ' ;4
+;;				dc.b	'     LOOK BEHIND                 L      ' ;5
+;;				dc.b	'     JUMP                       KP0     ' ;6
+;;				dc.b	'     LOOK UP                     ]      ' ;7
+;;				dc.b	'     LOOK DOWN                   #      ' ;8
+;;				dc.b	'     CENTRE VIEW                 ;      ' ;9
+;;				dc.b	'     NEXT WEAPON                RET     ' ;9
+;;				dc.b	'                                        ' ;9
+;;				dc.b	'             OTHER CONTROLS             ' ;0
+;;				dc.b	'                                        ' ;1
+;;				dc.b	'1-0   Select Weapon P              Pause' ;2
+;;				dc.b	'F1   Zoom in on map F3 4/8 Channel Sound' ;3
+;;				dc.b	'F2  Zoom out on map F4 Mono/Stereo Sound' ;4
+;;				dc.b	'F5 Recall Message   F6    Render Quality'
+;;				dc.b	'    Keypad 1-9 scroll map, 5 centres    ' ;5
+;;				dc.b	'                                        ' ;7
+;;				dc.b	'               MAIN  MENU               ' ;8
+;;				dc.b	'                                        ' ;1
 
-CONTROL_OPTS:
-				dc.w	5,4,30,1
-				dc.w	5,5,30,1
-				dc.w	5,6,30,1
-				dc.w	5,7,30,1
-				dc.w	5,8,30,1
-				dc.w	5,9,30,1
-				dc.w	5,10,30,1
-				dc.w	5,11,30,1
-				dc.w	5,12,30,1
-				dc.w	5,13,30,1
-				dc.w	5,14,30,1
-				dc.w	5,15,30,1
-				dc.w	5,16,30,1
-				dc.w	5,17,30,1
-				dc.w	5,18,30,1
-				dc.w	5,19,30,1
-				dc.w	5,20,30,1
-				dc.w	15,30,10,1
-				dc.w	-1
+;CONTROL_OPTS:
+;				dc.w	5,4,30,1
+;				dc.w	5,5,30,1
+;				dc.w	5,6,30,1
+;				dc.w	5,7,30,1
+;				dc.w	5,8,30,1
+;				dc.w	5,9,30,1
+;				dc.w	5,10,30,1
+;				dc.w	5,11,30,1
+;				dc.w	5,12,30,1
+;				dc.w	5,13,30,1
+;				dc.w	5,14,30,1
+;				dc.w	5,15,30,1
+;				dc.w	5,16,30,1
+;				dc.w	5,17,30,1
+;				dc.w	5,18,30,1
+;				dc.w	5,19,30,1
+;				dc.w	5,20,30,1
+;				dc.w	15,30,10,1
+;				dc.w	-1
 
 _Game_LevelNumber::
 Game_LevelNumber_w:		dc.w	0
 
-
-
-CREDITMENU_TXT:
+;;CREDITMENU_TXT:
 
 ;      0123456789012345678901234567890123456789
-				dc.b	'    Programming, Game Code, Graphics    ' ;0
-				dc.b	'         Game Design and Manual         ' ;1
-				dc.b	'            Andrew Clitheroe            ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'       Alien and Scenery Graphics       ' ;4
-				dc.b	'             Michael  Green             ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'           3D Object Designer           ' ;7
-				dc.b	'            Charles Blessing            ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'              Level Design              ' ;0
-				dc.b	'Jackie Lang   Michael Green  Ben Chanter' ;1
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;3
-				dc.b	'           Creative  Director           ' ;4
-				dc.b	'              Martyn Brown              ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'       Project Manager and Manual       ' ;7
-				dc.b	'          Phil Quirke-Webster           ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                 Music                  ' ;0
-				dc.b	'           Ben "666" Chanter            ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'      Cover Illustration and Logo       ' ;3
-				dc.b	'             Kevin Jenkins              ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'      Packaging and Manual Design       ' ;6
-				dc.b	'               Paul Sharp               ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'             QA and Playtest            ' ;9
-				dc.b	'     Too numerous to mention here!      ' ;0
-				dc.b	'                                        ' ;1
+;;				dc.b	'    Programming, Game Code, Graphics    ' ;0
+;;				dc.b	'         Game Design and Manual         ' ;1
+;;				dc.b	'            Andrew Clitheroe            ' ;2
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'       Alien and Scenery Graphics       ' ;4
+;;				dc.b	'             Michael  Green             ' ;5
+;;				dc.b	'                                        ' ;6
+;;				dc.b	'           3D Object Designer           ' ;7
+;;				dc.b	'            Charles Blessing            ' ;8
+;;				dc.b	'                                        ' ;9
+;;				dc.b	'              Level Design              ' ;0
+;;				dc.b	'Jackie Lang   Michael Green  Ben Chanter' ;1
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'           Creative  Director           ' ;4
+;;				dc.b	'              Martyn Brown              ' ;5
+;;				dc.b	'                                        ' ;6
+;;				dc.b	'       Project Manager and Manual       ' ;7
+;;				dc.b	'          Phil Quirke-Webster           ' ;8
+;;				dc.b	'                                        ' ;9
+;;				dc.b	'                 Music                  ' ;0
+;;				dc.b	'           Ben "666" Chanter            ' ;1
+;;				dc.b	'                                        ' ;2
+;;				dc.b	'      Cover Illustration and Logo       ' ;3
+;;				dc.b	'             Kevin Jenkins              ' ;4
+;;				dc.b	'                                        ' ;5
+;;				dc.b	'      Packaging and Manual Design       ' ;6
+;;				dc.b	'               Paul Sharp               ' ;7
+;;				dc.b	'                                        ' ;8
+;;				dc.b	'             QA and Playtest            ' ;9
+;;				dc.b	'     Too numerous to mention here!      ' ;0
+;;				dc.b	'                                        ' ;1
 
-				dc.b	'    Serial Link and 3D Object Editor:   ' ;4
-				dc.b	'                   by                   ' ;5
-				dc.b	'            Charles Blessing            ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                Graphics:               ' ;8
-				dc.b	'                   by                   ' ;9
-				dc.b	'              Mike  Oakley              ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'             Title  Picture             ' ;2
-				dc.b	'                   by                   ' ;3
-				dc.b	'               Mike Green               ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	' Inspiration, incentive, moral support, ' ;6
-				dc.b	'     level design and plenty of tea     ' ;7
-				dc.b	'         generously supplied by         ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'              Jackie  Lang              ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'    Music for the last demo composed    ' ;2
-				dc.b	'       by the inexpressibly evil:       ' ;3
-				dc.b	'                                        ' ;8
-				dc.b	'            *BAD* BEN CHANTER           ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'    Sadly no room for music this time   ' ;1
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;7
+;;				dc.b	'    Serial Link and 3D Object Editor:   ' ;4
+;;				dc.b	'                   by                   ' ;5
+;;				dc.b	'            Charles Blessing            ' ;6
+;;				dc.b	'                                        ' ;7
+;;				dc.b	'                Graphics:               ' ;8
+;;				dc.b	'                   by                   ' ;9
+;;				dc.b	'              Mike  Oakley              ' ;0
+;;				dc.b	'                                        ' ;1
+;;				dc.b	'             Title  Picture             ' ;2
+;;				dc.b	'                   by                   ' ;3
+;;				dc.b	'               Mike Green               ' ;4
+;;				dc.b	'                                        ' ;5
+;;				dc.b	' Inspiration, incentive, moral support, ' ;6
+;;				dc.b	'     level design and plenty of tea     ' ;7
+;;				dc.b	'         generously supplied by         ' ;8
+;;				dc.b	'                                        ' ;9
+;;				dc.b	'              Jackie  Lang              ' ;0
+;;				dc.b	'                                        ' ;1
+;;				dc.b	'    Music for the last demo composed    ' ;2
+;;				dc.b	'       by the inexpressibly evil:       ' ;3
+;;				dc.b	'                                        ' ;8
+;;				dc.b	'            *BAD* BEN CHANTER           ' ;9
+;;				dc.b	'                                        ' ;0
+;;				dc.b	'    Sadly no room for music this time   ' ;1
+;;				dc.b	'                                        ' ;7
+;;				dc.b	'                                        ' ;7
 
-CREDITMENU_OPTS:
-				dc.w	0,0,1,1
-				dc.w	-1
+;;CREDITMENU_OPTS:
+;;				dc.w	0,0,1,1
+;;				dc.w	-1
 
 
 ;      0123456789012345678901234567890123456789
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
-				dc.b	'                                        ' ;2
-				dc.b	'                                        ' ;3
-				dc.b	'                                        ' ;4
-				dc.b	'                                        ' ;5
-				dc.b	'                                        ' ;6
-				dc.b	'                                        ' ;7
-				dc.b	'                                        ' ;8
-				dc.b	'                                        ' ;9
-				dc.b	'                                        ' ;0
-				dc.b	'                                        ' ;1
+;;				dc.b	'                                        ' ;0
+;;				dc.b	'                                        ' ;1
+;;				dc.b	'                                        ' ;2
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'                                        ' ;4
+;;				dc.b	'                                        ' ;5
+;;				dc.b	'                                        ' ;6
+;;				dc.b	'                                        ' ;7
+;;				dc.b	'                                        ' ;8
+;;				dc.b	'                                        ' ;9
+;;				dc.b	'                                        ' ;0
+;;				dc.b	'                                        ' ;1
+;;				dc.b	'                                        ' ;2
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'                                        ' ;4
+;;				dc.b	'                                        ' ;5
+;;				dc.b	'                                        ' ;6
+;;				dc.b	'                                        ' ;7
+;;				dc.b	'                                        ' ;8
+;;				dc.b	'                                        ' ;9
+;;				dc.b	'                                        ' ;0
+;;				dc.b	'                                        ' ;1
+;;				dc.b	'                                        ' ;2
+;;				dc.b	'                                        ' ;3
+;;				dc.b	'                                        ' ;4
+;;				dc.b	'                                        ' ;5
+;;				dc.b	'                                        ' ;6
+;;				dc.b	'                                        ' ;7
+;;				dc.b	'                                        ' ;8
+;;				dc.b	'                                        ' ;9
+;;				dc.b	'                                        ' ;0
+;;				dc.b	'                                        ' ;1
 
 
 ********************************************************

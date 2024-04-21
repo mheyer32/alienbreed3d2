@@ -833,7 +833,7 @@ mnu_waitmenu:;out: d0=Selection number
 				bsr.w	mnu_printxy
 .skip:
 
-.w8key:			tst.b	SHOULDQUIT
+.w8key:			tst.b	Game_ShouldQuit_b
 				bne.b	.exit_game
 				bsr.w	mnu_docursor
 				CALLGRAF WaitTOF				; wait a bit to give the BlitTask more time
@@ -860,7 +860,7 @@ mnu_waitmenu:;out: d0=Selection number
 				move.l	#mnu_errcursanim,mnu_frameptr
 				bra.w	.loop
 
-.exit_game:		st		SHOULDQUIT
+.exit_game:		st		Game_ShouldQuit_b
 				; fall through
 .exit:			moveq.l	#-1,d0					; Esc key
 				moveq.l	#0,d1
