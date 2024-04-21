@@ -1045,17 +1045,11 @@ game_CheckMenu:
 				move.w	d2,d0					; option number
 				rts
 
-;OPTNUM:			dc.w	0
-;OptScrn:		dc.w	0
-
-SAVEGAMENAME:	dc.b	"ab3:boot.dat",0
-				even
-
 SAVEGAMEPOS:	dc.l	0
 SAVEGAMELEN:	dc.l	0
 
 LOADPOSITION:
-				move.l	#SAVEGAMENAME,a0
+				move.l	#Game_SavedGamesName_vb,a0
 				move.l	#SAVEGAMEPOS,d0
 				move.l	#SAVEGAMELEN,d1
 				jsr		IO_InitQueue
@@ -1126,7 +1120,7 @@ LOADPOSITION:
 				rts
 
 SAVEPOSITION:
-				move.l	#SAVEGAMENAME,a0
+				move.l	#Game_SavedGamesName_vb,a0
 				move.l	#SAVEGAMEPOS,d0
 				move.l	#SAVEGAMELEN,d1
 				jsr		IO_InitQueue
@@ -1180,7 +1174,7 @@ SAVEPOSITION:
 				move.l	(a1)+,(a0)+
 				ENDR
 
-				move.l	#SAVEGAMENAME,d1
+				move.l	#Game_SavedGamesName_vb,d1
 				move.l	#MODE_NEWFILE,d2
 				CALLDOS	Open
 				move.l	d0,IO_DOSFileHandle_l
@@ -1203,17 +1197,9 @@ SAVEPOSITION:
 
 				rts
 
-MENUDATA:
-; dummy
-
 _Game_LevelNumber::
 Game_LevelNumber_w:		dc.w	0
 
-
-********************************************************
-
-
-**************************************
 
 FADEAMOUNT:		dc.w	0
 FADEVAL:		dc.w	0
