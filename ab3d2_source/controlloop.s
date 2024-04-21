@@ -131,7 +131,7 @@ game_DoneMenu:
 				moveq	#1,d0 ; Fade out
 				CALLC	mnu_clearscreen
 
-				;	bsr		WAITREL
+				;	bsr		game_WaitForMenuKey
 
 				FILTER
 
@@ -401,8 +401,8 @@ game_ReadMainMenu:
 				lea		mnu_MYMAINMENU,a0
 				bsr		game_OpenMenu
 
-				bsr		WAITREL
-				bra		game_ReadMainMenu;.rdlop
+				bsr		game_WaitForMenuKey
+				bra		game_ReadMainMenu
 
 .nonextlev:
 ***************************************************************
@@ -414,7 +414,7 @@ game_ReadMainMenu:
 				lea		mnu_MYMAINMENU,a0
 				bsr		game_OpenMenu
 
-				bsr		WAITREL
+				bsr		game_WaitForMenuKey
 				bra		.rdlop
 
 .nocontrol:
@@ -433,39 +433,39 @@ game_ReadMainMenu:
 				cmp.w	#5,d0
 				bne		.noload
 
-				jsr		LOADPOSITION
+				jsr		game_LoadPosition
 
 				lea		mnu_MYMAINMENU,a0
 				bsr		game_OpenMenu
 
-				bsr		WAITREL
+				bsr		game_WaitForMenuKey
 				bra		.rdlop
 
 .noload:
 ***************************************************************
 				cmp.w	#6,d0
 				bne		.nosave
-				bsr		WAITREL
+				bsr		game_WaitForMenuKey
 
-				jsr		SAVEPOSITION
+				jsr		game_SavePosition
 
 				lea		mnu_MYMAINMENU,a0
 				bsr		game_OpenMenu
 
-				bsr		WAITREL
+				bsr		game_WaitForMenuKey
 				bra		.rdlop
 .nosave:
 ***************************************************************
 				cmp.w	#7,d0
 				bne		playgame
-				bsr		WAITREL
+				bsr		game_WaitForMenuKey
 
 				bsr		customOptions
 
 				lea		mnu_MYMAINMENU,a0
 				bsr		game_OpenMenu
 
-				bsr		WAITREL
+				bsr		game_WaitForMenuKey
 				bra		.rdlop
 ***************************************************************
 
@@ -727,7 +727,7 @@ game_SlaveMenu:
 				bsr		game_CheckMenu
 				tst.w	d0
 				blt.s	.rdlop
-				bsr		WAITREL
+				bsr		game_WaitForMenuKey
 
 				cmp.w	#1,d0
 				beq		.playgame
@@ -971,12 +971,15 @@ CHANGECONTROLS2:
 MAXLEVEL:		dc.w	0
 
 
-WAITREL:
+game_WaitForMenuKey:
 				movem.l	d0/d1/d2/d3,-(a7)
 
 				move.l	#KeyMap_vb,a5
 WAITREL2:
-				btst	#7,$bfe001
+				; Should this yield a bit?
+				;moveq	#1,d1
+				;CALLDOS Delay
+				btst	#7,$bfe001 ; cia
 				beq.s	WAITREL2
 
 				IFEQ	CD32VER
@@ -1032,8 +1035,6 @@ game_CheckMenu:
 				move.l	a0,-(a7)
 				jsr		mnu_update
 
-				;move.l	(a7)+,a0
-				;move.l	a0,-(a7)
 				jsr		mnu_waitmenu			; Wait for option
 
 				move.l	(a7)+,a0
@@ -1048,7 +1049,7 @@ game_CheckMenu:
 SAVEGAMEPOS:	dc.l	0
 SAVEGAMELEN:	dc.l	0
 
-LOADPOSITION:
+game_LoadPosition:
 				move.l	#Game_SavedGamesName_vb,a0
 				move.l	#SAVEGAMEPOS,d0
 				move.l	#SAVEGAMELEN,d1
@@ -1119,7 +1120,7 @@ LOADPOSITION:
 
 				rts
 
-SAVEPOSITION:
+game_SavePosition:
 				move.l	#Game_SavedGamesName_vb,a0
 				move.l	#SAVEGAMEPOS,d0
 				move.l	#SAVEGAMELEN,d1
