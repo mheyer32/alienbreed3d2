@@ -83,7 +83,8 @@ QUIT_KEY				equ RAWKEY_NUM_ASTERISK
 				include "data/tables_data.s"
 				include "data/text_data.s"
 				include "data/game_data.s"
-                include "data/vid_data.s"
+                		include "data/vid_data.s"
+
 				section .text,code
 
 				xref _Vid_isRTG
@@ -263,8 +264,6 @@ Game_ClearIntroText:
 				rts
 
 Game_Begin:
-
-
 ;				move.w	#0,TXTCOLL
 ;				move.w	#0,MIXCOLL
 ;				move.w	#0,TOPCOLL
@@ -3936,7 +3935,7 @@ wevewon:
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.nonextlev
-				add.w	#1,MAXLEVEL
+				add.w	#1,Game_MaxLevelNumber_w
 				st		Game_FinishedLevel_b
 
 .nonextlev:
@@ -3955,7 +3954,7 @@ playwelldone:
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	wevelost
-				cmp.w	#16,MAXLEVEL
+				cmp.w	#16,Game_MaxLevelNumber_w
 				bne.s	wevelost
 
 				jmp		ENDGAMESCROLL
@@ -6325,6 +6324,7 @@ dispco:
 				dc.w	0
 
 
+; todo - this is only used from the menu code
 key_readkey:
 				moveq	#0,d0
 				move.b	lastpressed,d0

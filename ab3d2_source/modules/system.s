@@ -60,7 +60,7 @@ Sys_FatalError:
 				bsr		.startline
 				CALLEXEC RawDoFmt
 				move.l	sys_RecoveryStack,a7
-				bra		QUITTT
+				bra		Game_Quit
 .putch:
 				tst.b	d0
 				beq		.end
