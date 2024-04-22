@@ -10,10 +10,11 @@ PREFIX = $(shell ./getprefix.sh "$(CC)")
 
 #-DCD32VER
 
-CFLAGS = -m68020-60 -mtune=68030 -noixemul -g -ggdb -O3
+CFLAGS = -noixemul -g -ggdb -O3
 LFLAGS = -noixemul -g -ggdb
 
-AFLAGS = -Fhunk -m68060 -linedebug -chklabels -align -L listing.txt -Dmnu_nocode=1 -DUSE_16X16_TEXEL_MULS -DOPT060
+# Allow 040+ instructions to be emitted in runtime detection cases
+AFLAGS = -Fhunk -m68060 -linedebug -chklabels -align -L listing.txt -Dmnu_nocode=1 -DUSE_16X16_TEXEL_MULS
 
 AFLAGS += -I../ \
 		  -I$(PREFIX)/m68k-amigaos/ndk-include \
@@ -24,9 +25,9 @@ AFLAGS += -I../ \
 
 VFLAGS = -b amigahunk -sc -l amiga -L $(PREFIX)m68k-amigaos/ndk/lib/libs
 
-all:	hires hiresC
+all:	tkg tkgC
 dev:	AFLAGS += -DDEV=1
-dev:	hires hiresC
+dev:	tkg tkgC
 
 OBJS = c/main.o \
 	   c/screen.o \
@@ -40,12 +41,41 @@ OBJS = c/main.o \
 	   c/game.o \
 	   c/hires.o
 
-hiresC: AFLAGS+=-DBUILD_WITH_C
-hiresC: ${OBJS}
+tkg: hires.o
+	$(VLINK) $(VFLAGS) $< -o $@
+
+tkgC: AFLAGS+=-DBUILD_WITH_C
+tkgC: CFLAGS+=-m68020-60 -mtune=68030
+tkgC: ${OBJS}
 		$(LINK) $(LFLAGS) $^ -ldebug -o $@
 
-hires: hires.o
+040:	tkg040 tkgC040
+040_dev:	AFLAGS += -DDEV=1
+040_dev:	tkg040 tkgC040
+
+
+tkg040: AFLAGS+=-DOPT040
+tkg040: hires.o
 	$(VLINK) $(VFLAGS) $< -o $@
+
+tkgC040: AFLAGS+=-DBUILD_WITH_C -DOPT040
+tkgC040: CFLAGS+=-m68040 -mtune=68040
+tkgC040: ${OBJS}
+		$(LINK) $(LFLAGS) $^ -ldebug -o $@
+
+060:	tkg060 tkgC060
+060_dev:	AFLAGS += -DDEV=1
+060_dev:	tkg060 tkgC060
+
+
+tkg060: AFLAGS+=-DOPT060
+tkg060: hires.o
+	$(VLINK) $(VFLAGS) $< -o $@
+
+tkgC060: AFLAGS+=-DBUILD_WITH_C -DOPT060
+tkgC060: CFLAGS+=-m68060 -mtune=68060
+tkgC060: ${OBJS}
+		$(LINK) $(LFLAGS) $^ -ldebug -o $@
 
 
 clean:
