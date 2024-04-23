@@ -4,8 +4,6 @@
 
 			align 4
 
-;game_NullMessage_vb:	dcb.b	160,' '
-
 Game_SoundOptionsText_vb:
 				;;;;	"1234567890123456789012345678901234567890"
 				dc.b	"Audio: Four Channel Mono                "

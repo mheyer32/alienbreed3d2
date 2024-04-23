@@ -83,7 +83,8 @@ QUIT_KEY				equ RAWKEY_NUM_ASTERISK
 				include "data/tables_data.s"
 				include "data/text_data.s"
 				include "data/game_data.s"
-                include "data/vid_data.s"
+                		include "data/vid_data.s"
+
 				section .text,code
 
 				xref _Vid_isRTG
@@ -267,8 +268,6 @@ Game_ClearIntroText:
 				rts
 
 Game_Begin:
-
-
 ;				move.w	#0,TXTCOLL
 ;				move.w	#0,MIXCOLL
 ;				move.w	#0,TOPCOLL
@@ -475,8 +474,9 @@ noclips:
 ; move.l #Blurbfield,$dff080
 
 				IFD BUILD_WITH_C
-				tst.w	_Vid_isRTG
-				bne.s	.skipChangeScreen
+				;tst.w	_Vid_isRTG
+				;bne.s	.skipChangeScreen
+				bra.s .skipChangeScreen
 				ENDIF
 
 				IFNE	DISPLAYMSGPORT_HACK
@@ -3992,7 +3992,7 @@ wevewon:
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.nonextlev
-				add.w	#1,MAXLEVEL
+				add.w	#1,Game_MaxLevelNumber_w
 				st		Game_FinishedLevel_b
 
 .nonextlev:
@@ -4011,7 +4011,7 @@ playwelldone:
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	wevelost
-				cmp.w	#16,MAXLEVEL
+				cmp.w	#16,Game_MaxLevelNumber_w
 				bne.s	wevelost
 
 				jmp		ENDGAMESCROLL
@@ -6381,6 +6381,7 @@ dispco:
 				dc.w	0
 
 
+; todo - this is only used from the menu code
 key_readkey:
 				moveq	#0,d0
 				move.b	lastpressed,d0
@@ -8807,6 +8808,24 @@ closeeverything:
 ;.noPotgoResource
 ;
 ;				move.l	#0,d0					; FIXME indicate failure
+
+				IFD BUILD_WITH_C
+				tst.w	_Vid_isRTG
+				bne.s	.skipClear
+				ENDIF
+				
+				IFNE	DISPLAYMSGPORT_HACK
+				;empty Vid_DisplayMsgPort_l and set Vid_ScreenBufferIndex_w to 0
+				;so the starting point is the same every time
+.clrMsgPort:
+				move.l	Vid_DisplayMsgPort_l,a0
+				CALLEXEC GetMsg
+				tst.l	d0
+				bne.s	.clrMsgPort
+				ENDC
+
+				clr.w	Vid_ScreenBufferIndex_w
+.skipClear
 				rts
 
 
