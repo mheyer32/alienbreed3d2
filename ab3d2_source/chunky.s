@@ -1,5 +1,4 @@
-; TODO - Use CPU tuned Kalms C2P 1x1 and 2x1 for 030
-
+; TODO - Define C2P pointers for 2/3 size and use Kalms
 				; a0 src chunky ptr
 				; a1 dst chipmem ptr
 				; d0 number of pixels per line
@@ -49,6 +48,7 @@ Vid_ConvertC2P:
 				move.l	#(SCREEN_WIDTH/8)*256,d5
 
 				move.l	a2,-(sp)
+
 				move.l	Vid_ChunkyFS1x1InitPtr_l,a2
 				jsr		(a2)
 
