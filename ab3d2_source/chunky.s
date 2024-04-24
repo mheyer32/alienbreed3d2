@@ -1,3 +1,5 @@
+; TODO - Use CPU tuned Kalms C2P 1x1 and 2x1 for 030
+
 				; a0 src chunky ptr
 				; a1 dst chipmem ptr
 				; d0 number of pixels per line

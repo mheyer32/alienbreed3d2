@@ -1,6 +1,6 @@
 ; 68060 optimised Gouraud Floor routine by @paraj / @saimo
 
-draw_GoraudFloor060:
+draw_GoraudFloor:
 				moveq   #0,d0
 				move.w	leftbright,d0
 				move.w  brightspd,d4
