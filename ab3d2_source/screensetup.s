@@ -8,6 +8,7 @@ vid_MyAllocRaster:
 				rts
 
 Vid_OpenMainScreen:
+				jsr		Vid_InitC2P
 				; Allocate Buffer 0
 				lea		vid_MainBitmap0,a0
 				moveq.l	#8,d0

@@ -8861,6 +8861,12 @@ welldone:
 				include	"serial_nightmare.s"
 
 				cnop	0,4
+
+				IFND OPT060
+				IFND OPT040
+				include "c2p1x1_8_c5_030_2.s"
+				ENDC
+				ENDC
 				include	"c2p1x1_8_c5_040.s"
 				include	"c2p_rect.s"
 				include	"c2p2x1_8_c5_gen.s"

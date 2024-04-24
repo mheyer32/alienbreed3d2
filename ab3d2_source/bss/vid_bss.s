@@ -12,6 +12,9 @@
 ; BSS data - to be included in BSS section
 			align 4
 
+Vid_ChunkyFS1x1InitPtr_l:	ds.l	1
+Vid_ChunkyFS1x1ConvPtr_l:	ds.l	1
+
 _Vid_FastBufferPtr_l::
 Vid_FastBufferPtr_l:		ds.l	1	; aligned address
 Vid_FastBufferAllocPtr_l:	ds.l	1	; allocated address
