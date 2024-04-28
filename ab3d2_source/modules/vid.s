@@ -14,6 +14,10 @@ VID_BRIGHT_ADJ_MAX	EQU	5120
 
 _Vid_InitC2P::
 Vid_InitC2P:
+;				move.l	#c2p1x1_8_c5_030_2_init,Vid_ChunkyFS1x1InitPtr_l
+;				move.l	#c2p1x1_8_c5_030_2,Vid_ChunkyFS1x1ConvPtr_l
+;				rts
+
 				IFND OPT060
 				IFND OPT040
 
