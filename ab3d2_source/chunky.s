@@ -1,3 +1,4 @@
+; TODO - Define C2P pointers for 2/3 size and use Kalms
 				; a0 src chunky ptr
 				; a1 dst chipmem ptr
 				; d0 number of pixels per line
@@ -45,15 +46,21 @@ Vid_ConvertC2P:
 				sub.w	d3,d1					; top letterbox
 				sub.w	d3,d1					; bottom letterbox: d1: number of lines
 				move.l	#(SCREEN_WIDTH/8)*256,d5
-				jsr		c2p1x1_8_c5_040_init
+
+				move.l	a2,-(sp)
+
+				move.l	Vid_ChunkyFS1x1InitPtr_l,a2
+				jsr		(a2)
 
 				; scroffsy only accounts for the Y offset in the destination buffer
 				move.l	Vid_FastBufferPtr_l,a0
 				mulu.w	#SCREEN_WIDTH,d3
 				lea		(a0,d3.w),a0
 				move.l	Vid_DrawScreenPtr_l,a1
-				jsr		c2p1x1_8_c5_040
+				move.l	Vid_ChunkyFS1x1ConvPtr_l,a2
+				jsr		(a2)
 
+				move.l	(sp)+,a2
 .nothingLeft:
 				rts
 
