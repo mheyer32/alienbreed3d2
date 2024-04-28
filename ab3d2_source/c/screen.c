@@ -52,6 +52,8 @@ WORD Vid_ScreenWidth;
 ULONG Vid_ScreenMode;
 BOOL Vid_isRTG;
 
+extern void Vid_InitC2P(void);
+
 void Vid_Present();
 void Vid_ConvertC2P();
 void Vid_CloseMainScreen();
@@ -63,6 +65,7 @@ void Vid_OpenMainScreen(void)
     LOCAL_GFX();
 
     if (!Vid_isRTG) {
+        CallAsm(&Vid_InitC2P);
         for (int i = 0; i < 2; ++i) {
             if (!(rasters[i] = AllocRaster(SCREEN_WIDTH, SCREEN_HEIGHT * 8 + 1))) {
                 Sys_FatalError("AllocRaster failed");

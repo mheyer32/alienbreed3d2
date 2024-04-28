@@ -5955,10 +5955,7 @@ tstwat:
 				bne		draw_WaterSurface
 ; tst.b draw_UseGouraudFlats_b					; FIXME: this effectively disables bumpmapped floors...
 												; opportunity to reenable and see what happens
-				;bra		gouraudfloor
 
-				tst.b	Sys_CPU_68060_b
-				bne		draw_GoraudFloor060
 				bra		draw_GoraudFloor
 
 ordinary:
@@ -6029,11 +6026,11 @@ gotoacross:
 leftbright:		dc.l  0
 brightspd:		dc.l  0
 
+				IFD OPT060
 				include "modules/draw/draw_floor_060.s"
-
-				align 4
-
+				ELSE
 				include "modules/draw/draw_floor.s"
+				ENDC
 
 				align 4
 
@@ -8921,6 +8918,12 @@ welldone:
 				include	"serial_nightmare.s"
 
 				cnop	0,4
+
+				IFND OPT060
+				IFND OPT040
+				include "c2p1x1_8_c5_030_2.s"
+				ENDC
+				ENDC
 				include	"c2p1x1_8_c5_040.s"
 				include	"c2p_rect.s"
 				include	"c2p2x1_8_c5_gen.s"

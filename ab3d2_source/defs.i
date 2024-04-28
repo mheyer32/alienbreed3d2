@@ -460,15 +460,15 @@ MAX_ACHIEVEMENTS EQU 128
 		UWORD GStatT_AlienKills_vw
 		PADDING (NUM_ALIEN_DEFS*2)-2			; 40 - UWORD[NUM_ALIEN_DEFS]
 
-        ; Total health collected
-        ULONG GStatT_TotalHealthCollected_w     ; 4
+		; Total health collected
+		ULONG GStatT_TotalHealthCollected_w     ; 4
 
-        ; Total fuel collected
-        ULONG GStatT_TotalFuelCollected_w       ; 4
+		; Total fuel collected
+		ULONG GStatT_TotalFuelCollected_w       ; 4
 
-        ; Total ammo collected, per ammo class
-        ULONG GStatT_TotalAmmoFound_vw
-        PADDING (NUM_BULLET_DEFS*4)-4           ; 80 UWORD[NUM_BULLET_DEFS]
+		; Total ammo collected, per ammo class
+		ULONG GStatT_TotalAmmoFound_vw
+		PADDING (NUM_BULLET_DEFS*4)-4           ; 80 UWORD[NUM_BULLET_DEFS]
 
 		UBYTE GStatT_Achieved_vb
 		PADDING (MAX_ACHIEVEMENTS/8)-1

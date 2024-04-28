@@ -12,6 +12,13 @@
 ; BSS data - to be included in BSS section
 			align 4
 
+Vid_ChunkyFS1x1InitPtr_l:		ds.l	1	; Points to 1x1 C2P Initialisation for Fullscreen
+Vid_ChunkyFS1x1ConvPtr_l:		ds.l	1	; Points to 1x1 C2P Conversion for Fullscreen
+
+;Vid_ChunkySmall1x1InitPtr_l:	ds.l	1	; Points to 1x1 C2P Initialisation for Small Screen
+;Vid_ChunkySmall1x1ConvPtr_l:	ds.l	1	; Points to 1x1 C2P Conersion for Small Screen
+
+
 _Vid_FastBufferPtr_l::
 Vid_FastBufferPtr_l:		ds.l	1	; aligned address
 Vid_FastBufferAllocPtr_l:	ds.l	1	; allocated address
