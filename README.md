@@ -147,61 +147,62 @@ The currently maintained and buildable source code is located within the `ab3d2_
 
 A standard GNU make compatible Makefile is included. This can be used with Bebbo's cross compiler suite for Linux. See: https://github.com/bebbo/amiga-gcc for details on installation.
 
-There are two targets that can be built.
+There are multiple targets that can be built.
+
+| Build | Description | CPU Target | Recipe |
+|------|-------------|-----|---------|
+|Release | Release, no debug, stripped | 68020+ | make rel |
+|||68040| make rel040 |
+|||68060| make rel060 | 
+|Test|Release mode, full debug, unstripped | 68020+ | make test
+|||68040| make test040 |
+|||68060| make test060 |
+| Developer | Developer mode, full debug, unstripped | 68020+ | make dev |
+|||68040| make dev040 |
+|||68060| make dev060 |
+
+Each recipe produces two binaries:
+
+- Pure assembler build:
+    - AGA only
+    - Generall lags behind the mixed assembler/C build featurewise.
+- Mixed assembler/C build:
+    - AGA and RTG.
+    - Older chipsets are supported in RGB mode.
+
+The pure assembler build is under review and may be dropped in future versions. There is generally no performance benefit over the mixed assembler/C builds.
+
+
+### Tuning
+
+Theere are three main CPU tuning options:
+
+- 68020+
+    - Runs on any 68020 or higher CPU, intended for 68030/50MHz.
+    - This build may still make use of optimised routines for specific CPUs, e.g. C2P for 030 or 040/060.
+- 68040
+    - Specifically excludes routines optimised for slower CPUs and any runtime indirections used to select them.
+    - May contain 68040-specific optimisations, e.g. cache aware, move16, etc.
+- 68060
+    - Specifically excludes routines optimised for slower CPUs and runtime indirections used to select them.
+    - May contain 68060-specific optimisations, e.g. cache aware, move16 and code rewritten for fast multiplication, zero cycle branches, superscalar execution, etc.
+
 
 ### Release
 
-This is the standard game engine. When build, this produces an AmigaOS executable `hires` that can be copied to your game directory. Example for cross compiling under linux:
-```
-$ git clone https://github.com/mheyer32/alienbreed3d2.git
-... snip output ...
-$ cd alienbreed3d2/ab3d2_source
-$ make
-vasmm68k_mot -Fhunk -m68060 -linedebug -chklabels -align -L listing.txt -Dmnu_nocode=1 -I../ -I/home/commander_reynolds/misc/amiga/m68k-amigaos/ndk-include -I../media -I../media/includes -o hires.o hires.s
-vasm 1.8k (c) in 2002-2021 Volker Barthelmann
-vasm M68k/CPU32/ColdFire cpu backend 2.4 (c) 2002-2021 Frank Wille
-vasm motorola syntax module 3.15a (c) 2002-2021 Frank Wille
-vasm hunk format output module 2.13 (c) 2002-2020 Frank Wille
+This is the intended build for end users:
 
-bss(aurw16):	      242340 bytes
-data(adrw16):	      144098 bytes
-code(acrx64):	      196568 bytes
-bss_c(aurw256):	      128416 bytes
-data_c(adrw2):	       58362 bytes
-vlink -b amigahunk -sc -l amiga -L /home/commander_reynolds/misc/amiga/m68k-amigaos/ndk/lib/libs hires.o -o hires
+- No devmode features
+- No debugging support
+- Fully stripped
 
-```
-The optimisation level is set for 68060, however at this time there are no specific requirements for 68060, 68040 or FPU.
+### Test
 
-Please note the following limitations of the present build:
-
-* There is no hires text mode, so level blurb is missing.
-* There is no message display in game, as this used a hires slice at the foot of the view.
-* There is no palette animation, e.g. pain flashes.
-
-The game supports double buffered vertical sync and frame rate capping. Frame caps can be cycled through using the F7 key.
-
+This is the same as the release build but full retains debugging support and is unstripped.
 
 ### Developer
-The developer build includes various extras to assist debugging and feature development.
-```
-$ cd alienbreed3d2/ab3d2_source
-$ make dev
-vasmm68k_mot -Fhunk -m68060 -linedebug -chklabels -align -L listing.txt -Dmnu_nocode=1 -I../ -I/home/commander_reynolds/misc/amiga/m68k-amigaos/ndk-include -I../media -I../media/includes -DDEV=1 -o hires.o hires.s
-vasm 1.8k (c) in 2002-2021 Volker Barthelmann
-vasm M68k/CPU32/ColdFire cpu backend 2.4 (c) 2002-2021 Frank Wille
-vasm motorola syntax module 3.15a (c) 2002-2021 Frank Wille
-vasm hunk format output module 2.13 (c) 2002-2020 Frank Wille
 
-bss(aurw16):	      242650 bytes
-data(adrw16):	      144098 bytes
-code(acrx64):	      197976 bytes
-bss_c(aurw256):	      128416 bytes
-data_c(adrw2):	       58362 bytes
-vlink -b amigahunk -sc -l amiga -L /home/commander_reynolds/misc/amiga/m68k-amigaos/ndk/lib/libs hires.o -o hires
-```
-
-Please note that the development build may be less stable and also slower. Features of the development build include:
+The developer build, in addition to full debugging support, includes various extras to assist debugging and feature development. This build should be considered unstable and is generally slower. Additional features of the development build include:
 
 * Performance metrics overlay:
     * Draw time
