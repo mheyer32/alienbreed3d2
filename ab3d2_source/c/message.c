@@ -83,7 +83,9 @@ static struct {
     WORD        lineNumber;
 
     /** Length below which a text string is guaranteed to fit */
-    UWORD       guranteedTextFitLimit;
+    UWORD       guranteedTextFitLimitFullScreen;
+
+    UWORD       guranteedTextFitLimitSmallScreen;
 
 } msg_Buffer;
 
@@ -132,9 +134,10 @@ void Msg_Init(void)
     msg_Buffer.lineNumber = MSG_LINE_BUFFER_SIZE - 1;
 
     /* Since we use proportional text rendering, base the guaranteed fit on the widest char */
-    msg_Buffer.guranteedTextFitLimit = (SCREEN_WIDTH / Draw_MaxPropCharWidth) - 2;
+    msg_Buffer.guranteedTextFitLimitFullScreen  = (SCREEN_WIDTH / Draw_MaxPropCharWidth) - 2;
+    msg_Buffer.guranteedTextFitLimitSmallScreen = ((SCREEN_WIDTH - (HUD_BORDER_WIDTH * 2) ) / Draw_MaxPropCharWidth) - 2;
 
-	/** Calculate the tick periods in EClocks from the ms values, based on the reported EClock rate */
+    /** Calculate the tick periods in EClocks from the ms values, based on the reported EClock rate */
     msg_Buffer.tickPeriod          = (Sys_EClockRate * MSG_SCROLL_PERIOD_MS) / 1000;
     msg_Buffer.deduplicationPeriod = (Sys_EClockRate * MSG_DEDUPLICATION_PERIOD_MS) / 1000;
 
@@ -154,25 +157,34 @@ void Msg_Init(void)
 }
 
 /**
- * Pushes a message line to the buffer, segmenting longer messages into multiple lines.
+ * Pushes a message line to the buffer, segmenting longer messages into multiple lines. This is sensitive
+ * to the screen size as the fit width changes.
  */
 void Msg_PushLine(REG(a0, const char* textPtr), REG(d0, UWORD lengthAndTag))
 {
     UWORD textLength = lengthAndTag & MSG_LENGTH_MASK;
-    if (textLength <= msg_Buffer.guranteedTextFitLimit) {
+    UWORD maxFit     = Vid_FullScreen_b ?
+        msg_Buffer.guranteedTextFitLimitFullScreen :
+        msg_Buffer.guranteedTextFitLimitSmallScreen;
+
+    if (textLength <= maxFit) {
         msg_PushLineRaw(textPtr, lengthAndTag);
     } else {
         const char* nextTextPtr = textPtr;
-        int lines     = 4;
+        int   lines   = 4;
         UWORD textTag = lengthAndTag & ~MSG_LENGTH_MASK;
+        maxFit        = Vid_FullScreen_b ?
+            SCREEN_WIDTH - (2 * DRAW_MSG_CHAR_W) :
+            SCREEN_WIDTH - (2 * (HUD_BORDER_WIDTH + DRAW_MSG_CHAR_W));
+
         do {
             UWORD fitLength = Draw_CalcPropTextSplit(
                 &nextTextPtr,
                 textLength,
-                SCREEN_WIDTH - (2 * DRAW_MSG_CHAR_W)
+                maxFit
             );
             msg_PushLineRaw(textPtr, fitLength|textTag);
-            textPtr = nextTextPtr;
+            textPtr     = nextTextPtr;
             textLength -= fitLength;
         } while (nextTextPtr && lines--);
     }
@@ -207,13 +219,9 @@ void Msg_PullLast(void)
 /**
  * Render the message buffer
  */
-void Msg_Render(void)
+void Msg_RenderToChunkyBuffer()
 {
-    if (!Vid_FullScreen_b) {
-        /* TODO - handle various display */
-        return;
-    }
-
+    // Fullscreen rendering happens in the chunky buffer...
     WORD  lastLine = msg_NextLineNumber(msg_Buffer.lineNumber);
     WORD  nextLine = lastLine;
     UWORD yPos = Vid_LetterBoxMarginHeight_w + 4;
@@ -240,6 +248,11 @@ void Msg_Render(void)
         msg_PushLineRaw(NULL, 0);
     }
 }
+
+void Msg_RenderToChunkyBitmap(UBYTE* bmBaseAddr, ULONG bmBytesPerRow) {
+
+}
+
 
 void msg_NudgeString(char* bufferPtr, UWORD bufferLen)
 {

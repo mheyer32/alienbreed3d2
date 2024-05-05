@@ -64,10 +64,16 @@ extern void Msg_PushLineDedupLast(REG(a0, const char* textPtr), REG(d0, UWORD le
 extern void Msg_PullLast(void);
 
 /**
- * Render the messages in the buffer. This depends on Draw_ChunkyTextProp() to render the lines. This should
- * be called immediately prior to display update.
+ * This version renders the text into the chunky buffer. This is for fullscreen mode regardless of RTG or
+ * Planar. This is called before copying the data to the VRAM bitmap.
  */
-extern void Msg_Render(void);
+extern void Msg_RenderToChunkyBuffer(void);
+
+/**
+ * This version renders the text onto the chunky bitmap. This is for 2/3 mode in RTG. The text is plotted
+ * to locked bitmap data.
+ */
+extern void Msg_RenderToChunkyBitmap(UBYTE* bmBaseAddr, ULONG bmBytesPerRow);
 
 
 #endif // MESSAGE_H

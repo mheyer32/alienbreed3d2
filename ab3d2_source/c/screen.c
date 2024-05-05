@@ -32,6 +32,13 @@
 
 #define SCREEN_TITLEBAR_HACK
 
+#ifdef SCREEN_TITLEBAR_HACK
+    #define SHOW_TITLE_STATE 0
+#else
+    #define SHOW_TITLE_STATE 1
+#endif
+
+
 extern UWORD draw_Palette_vw[3 * 256];
 extern ULONG Vid_LoadRGB32Struct_vl[3 * 256 + 2];
 
@@ -82,14 +89,22 @@ void Vid_OpenMainScreen(void)
         Vid_Screen1Ptr_l = bitmaps[0].Planes[0];
         Vid_Screen2Ptr_l = bitmaps[1].Planes[0];
 
-        if (!(Vid_MainScreen_l = OpenScreenTags(NULL, SA_Width, SCREEN_WIDTH, SA_Height, SCREEN_HEIGHT, SA_Depth, 8, SA_BitMap,
-                                                (Tag)&bitmaps[0], SA_Type, CUSTOMSCREEN, SA_Quiet, 1,
-#ifdef SCREEN_TITLEBAR_HACK
-                                                SA_ShowTitle, 0,
-#else
-			                                    SA_ShowTitle, 1,
-#endif
-			                                    SA_AutoScroll, 0, SA_FullPalette, 1, SA_DisplayID, Vid_ScreenMode, TAG_END, 0))) {
+        if (!(Vid_MainScreen_l = OpenScreenTags(
+            NULL,
+            /* Tags */
+            SA_Width, SCREEN_WIDTH,
+            SA_Height, SCREEN_HEIGHT,
+            SA_Depth, 8,
+            SA_BitMap, (Tag)&bitmaps[0],
+            SA_Type, CUSTOMSCREEN,
+            SA_Quiet, 1,
+            SA_ShowTitle, SHOW_TITLE_STATE,
+            SA_AutoScroll, 0,
+            SA_FullPalette, 1,
+            SA_DisplayID,
+            Vid_ScreenMode,
+            TAG_END, 0))
+        ) {
             Sys_FatalError("Failed to open screen for mode %ld", Vid_ScreenMode);
         }
 
@@ -104,15 +119,20 @@ void Vid_OpenMainScreen(void)
         }
 
     } else {
-        if (!(Vid_MainScreen_l =
-                  OpenScreenTags(NULL, SA_Width, SCREEN_WIDTH, SA_Height, SCREEN_HEIGHT, SA_Depth, 8, SA_Type,
-                                 CUSTOMSCREEN, SA_Quiet, 1,
-#ifdef SCREEN_TITLEBAR_HACK
-                                 SA_ShowTitle, 0,
-#else
-                                 SA_ShowTitle, 1,
-#endif
-                                 SA_AutoScroll, 0, SA_FullPalette, 1, SA_DisplayID, Vid_ScreenMode, TAG_END, 0))) {
+        if (!(Vid_MainScreen_l = OpenScreenTags(
+            NULL,
+            /* Tags */
+            SA_Width, SCREEN_WIDTH,
+            SA_Height, SCREEN_HEIGHT,
+            SA_Depth, 8,
+            SA_Type, CUSTOMSCREEN,
+            SA_Quiet, 1,
+            SA_ShowTitle, SHOW_TITLE_STATE,
+            SA_AutoScroll, 0,
+            SA_FullPalette, 1,
+            SA_DisplayID, Vid_ScreenMode,
+            TAG_END, 0))
+        ) {
             Sys_FatalError("Failed to open screen for mode %ld", Vid_ScreenMode);
         }
 
@@ -129,10 +149,22 @@ void Vid_OpenMainScreen(void)
         }
     }
 
-    if (!(Vid_MainWindow_l = OpenWindowTags(NULL, WA_Left, 0, WA_Top, 0, WA_Width, SCREEN_WIDTH, WA_Height,
-                                            SCREEN_HEIGHT, WA_CustomScreen, (Tag)Vid_MainScreen_l, WA_Activate, 1,
-                                            WA_Borderless, 1, WA_RMBTrap, 1,  // prevent menu rendering
-                                            WA_NoCareRefresh, 1, WA_SimpleRefresh, 1, WA_Backdrop, 1, TAG_END, 0))) {
+    if (!(Vid_MainWindow_l = OpenWindowTags(
+        NULL,
+        /* Tags */
+        WA_Left, 0,
+        WA_Top, 0,
+        WA_Width, SCREEN_WIDTH,
+        WA_Height, SCREEN_HEIGHT,
+        WA_CustomScreen, (Tag)Vid_MainScreen_l,
+        WA_Activate, 1,
+        WA_Borderless, 1,
+        WA_RMBTrap, 1,  // prevent menu rendering
+        WA_NoCareRefresh, 1,
+        WA_SimpleRefresh, 1,
+        WA_Backdrop, 1,
+        TAG_END, 0))
+    ) {
         Sys_FatalError("Could not open window");
     }
 
@@ -241,8 +273,8 @@ void vid_SetupDoubleheightCopperlist(void)
 void Vid_LoadMainPalette()
 {
     extern UBYTE const Vid_GammaIncTables_vb[256 * 8];
-	extern UWORD Vid_ContrastAdjust_w;
-	extern WORD  Vid_BrightnessOffset_w;
+    extern UWORD Vid_ContrastAdjust_w;
+    extern WORD  Vid_BrightnessOffset_w;
     extern UBYTE Vid_GammaLevel_b;
     LONG gun = 0;
     int c = 0;
@@ -318,17 +350,32 @@ ULONG GetScreenMode()
                 //                CalcCenteredWin(scr, sx, sy, &wx, &wy);
 
                 propertymask = DIPF_IS_EXTRAHALFBRITE | DIPF_IS_DUALPF | DIPF_IS_HAM;
-                rc = BestModeID(BIDTAG_NominalWidth, SCREEN_WIDTH, BIDTAG_NominalHeight, SCREEN_HEIGHT, BIDTAG_Depth, 8,
-                                BIDTAG_DIPFMustNotHave, propertymask, TAG_DONE);
+                rc = BestModeID(
+                    BIDTAG_NominalWidth, SCREEN_WIDTH,
+                    BIDTAG_NominalHeight, SCREEN_HEIGHT,
+                    BIDTAG_Depth, 8,
+                    BIDTAG_DIPFMustNotHave, propertymask,
+                    TAG_DONE
+                );
 
                 //                ASLSM_InitialLeftEdge, wx,
                 //                    ASLSM_InitialTopEdge, wy, ASLSM_InitialWidth, sx, ASLSM_InitialHeight, sy,
 
-                if (AslRequestTags(req, ASLSM_TitleText, (int)"The Killing Grounds", ASLSM_Screen, (int)scr,
-                                   ASLSM_InitialDisplayID, rc, ASLSM_MinWidth, SCREEN_WIDTH, ASLSM_MaxWidth,
-                                   SCREEN_WIDTH, ASLSM_MinHeight, 240, ASLSM_MinDepth, 8, ASLSM_MaxDepth, 8,
-                                   ASLSM_PropertyFlags, 0, ASLSM_PropertyMask, propertymask, ASLSM_CustomSMList,
-                                   (int)&mydisplaylist, TAG_DONE)) {
+                if (AslRequestTags(
+                    req,
+                    ASLSM_TitleText, (int)"The Killing Grounds",
+                    ASLSM_Screen, (int)scr,
+                    ASLSM_InitialDisplayID, rc,
+                    ASLSM_MinWidth, SCREEN_WIDTH,
+                    ASLSM_MaxWidth, SCREEN_WIDTH,
+                    ASLSM_MinHeight, 240,
+                    ASLSM_MinDepth, 8,
+                    ASLSM_MaxDepth, 8,
+                    ASLSM_PropertyFlags, 0,
+                    ASLSM_PropertyMask, propertymask,
+                    ASLSM_CustomSMList, (int)&mydisplaylist,
+                    TAG_DONE
+                )) {
                     rc = req->sm_DisplayID;
                 } else {
                     rc = INVALID_ID;
@@ -411,25 +458,28 @@ static void CopyFrameBuffer(UBYTE *dst, const UBYTE *src, WORD dstBytesPerRow, W
 
 void Vid_Present()
 {
-    /** Render any buffered up messages before we submit the screen */
-    Msg_Render();
-
+    if (Vid_FullScreen_b) {
+        /** Render any buffered up messages before we submit the screen */
+        Msg_RenderToChunkyBuffer();
+    }
     if (Vid_isRTG) {
         LOCAL_CYBERGFX();
 
-        UBYTE *bmdata;
+        UBYTE *bmPixelData;
         ULONG bmBytesPerRow;
         ULONG bmHeight;
-        APTR bmHandle = LockBitMapTags(Vid_MainScreen_l->ViewPort.RasInfo->BitMap,
-                                       LBMI_BYTESPERROW, (ULONG)&bmBytesPerRow,
-                                       LBMI_BASEADDRESS, (ULONG)&bmdata,
-                                       LBMI_HEIGHT, (ULONG)&bmHeight,
-                                       TAG_DONE);
+        APTR bmHandle = LockBitMapTags(
+            Vid_MainScreen_l->ViewPort.RasInfo->BitMap,
+            LBMI_BYTESPERROW, (ULONG)&bmBytesPerRow,
+            LBMI_BASEADDRESS, (ULONG)&bmPixelData,
+            LBMI_HEIGHT, (ULONG)&bmHeight,
+            TAG_DONE
+        );
         if (bmHandle) {
             if (Vid_FullScreen_b) {
-                WORD height = FS_C2P_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
+                WORD height     = FS_C2P_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
                 WORD topOffsett = (WORD)SCREEN_WIDTH * Vid_LetterBoxMarginHeight_w;
-                BYTE *dst = bmdata + topOffsett;
+                BYTE *dst       = bmPixelData + topOffsett;
                 const BYTE *src = Vid_FastBufferPtr_l + topOffsett;
 
                 if (
@@ -444,15 +494,18 @@ void Vid_Present()
                     CopyFrameBuffer(dst, src, bmBytesPerRow, SCREEN_WIDTH, height);
                 }
             } else {
-                WORD height = SMALL_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
+                WORD height     = SMALL_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
                 WORD topOffsett = SCREEN_WIDTH * Vid_LetterBoxMarginHeight_w;
-                BYTE *dst = bmdata + topOffsett + SCREEN_WIDTH * 20 + 64;
+                BYTE *dst       = bmPixelData + topOffsett + SCREEN_WIDTH * 20 + 64;
                 const BYTE *src = Vid_FastBufferPtr_l + topOffsett;
 
                 CopyFrameBuffer(dst, src, bmBytesPerRow, SMALL_WIDTH, height);
+
+                /* TODO*/
+                Msg_RenderToChunkyBitmap(bmPixelData, bmBytesPerRow);
             }
 
-            Draw_UpdateBorder_RTG(bmdata, bmBytesPerRow);
+            Draw_UpdateBorder_RTG(bmPixelData, bmBytesPerRow);
 
             UnLockBitMap(bmHandle);
         }

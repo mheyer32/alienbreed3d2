@@ -8,6 +8,8 @@
 #define SCREEN_DEPTH 8
 #define SCREEN_DEPTH_EXP 3
 
+#define HUD_BORDER_WIDTH 16
+
 /**
  * Define RTG_LONG_ALIGNED if you expect to perform 32-bit access to VRAM only
  */
