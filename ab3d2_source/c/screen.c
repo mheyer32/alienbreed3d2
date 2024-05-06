@@ -210,6 +210,7 @@ void Vid_OpenMainScreen(void)
 #pragma GCC diagnostic pop
     }
 
+    SetAPen(&Vid_MainScreen_l->RastPort, 8);
     SetPointer(Vid_MainWindow_l, emptySprite, 1, 0, 0, 0);
     Vid_LoadMainPalette();
 }
@@ -454,8 +455,6 @@ static void CopyFrameBuffer(UBYTE *dst, const UBYTE *src, WORD dstBytesPerRow, W
     }
 }
 
-
-
 void Vid_Present()
 {
     if (Vid_FullScreen_b) {
@@ -496,12 +495,17 @@ void Vid_Present()
             } else {
                 WORD height     = SMALL_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
                 WORD topOffsett = SCREEN_WIDTH * Vid_LetterBoxMarginHeight_w;
-                BYTE *dst       = bmPixelData + topOffsett + SCREEN_WIDTH * 20 + 64;
+                BYTE *dst       = bmPixelData + topOffsett + SCREEN_WIDTH * SMALL_YPOS + SMALL_XPOS;
                 const BYTE *src = Vid_FastBufferPtr_l + topOffsett;
 
                 CopyFrameBuffer(dst, src, bmBytesPerRow, SMALL_WIDTH, height);
 
-                /* TODO*/
+                Draw_ClearRect(
+                    HUD_BORDER_WIDTH,
+                    SMALL_HEIGHT + SMALL_YPOS,
+                    SCREEN_WIDTH - HUD_BORDER_WIDTH - 1,
+                    SCREEN_HEIGHT - HUD_BORDER_WIDTH - 8
+                );
                 Msg_RenderToChunkyBitmap(bmPixelData, bmBytesPerRow);
             }
 

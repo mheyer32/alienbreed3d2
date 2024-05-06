@@ -16,6 +16,11 @@
 #define DRAW_HUD_ITEM_SLOTS_X 24
 #define DRAW_HUD_ITEM_SLOTS_Y -16
 
+/* These define spacing used for text rendering. */
+#define DRAW_TEXT_MARGIN 4
+#define DRAW_TEXT_Y_SPACING 2
+
+
 /* These define the size of characters used in in game message display */
 #define DRAW_MSG_CHAR_W 8
 #define DRAW_MSG_CHAR_H 8
@@ -101,5 +106,7 @@ extern ULONG Draw_CalcPropWidth(const char *textPtr, UWORD maxLen);
 extern UWORD Draw_CalcPropTextSplit(const char** nextTextPtr, UWORD txtLength, UWORD width);
 
 extern UBYTE *Vid_FastBufferPtr_l;
+
+extern void Draw_ClearRect(UWORD x1, UWORD y1, UWORD x2, UWORD y2);
 
 #endif // DRAW_H

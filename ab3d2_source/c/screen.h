@@ -28,6 +28,10 @@
 #define SMALL_HEIGHT (UWORD)160
 #define FS_C2P_HEIGHT (FS_HEIGHT - FS_HEIGHT_C2P_DIFF)
 
+/** 2/3 screensize offsets */
+#define SMALL_YPOS 20
+#define SMALL_XPOS 64
+
 extern struct MsgPort *Vid_DisplayMsgPort_l;
 extern UBYTE Vid_WaitForDisplayMsg_b;
 extern struct ScreenBuffer *Vid_ScreenBuffers_vl[2];

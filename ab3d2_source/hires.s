@@ -497,10 +497,8 @@ noclips:
 				clr.b	Vid_WaitForDisplayMsg_b
 
 .skipChangeScreen:
-****************************
 				jsr		Plr_Initialise
 ; bsr initobjpos
-****************************
 
 				; setup audio channels
 				move.l	#$dff000,a6

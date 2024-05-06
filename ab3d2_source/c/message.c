@@ -224,7 +224,7 @@ void Msg_RenderToChunkyBuffer()
     // Fullscreen rendering happens in the chunky buffer...
     WORD  lastLine = msg_NextLineNumber(msg_Buffer.lineNumber);
     WORD  nextLine = lastLine;
-    UWORD yPos = Vid_LetterBoxMarginHeight_w + 4;
+    UWORD yPos = Vid_LetterBoxMarginHeight_w + DRAW_TEXT_MARGIN;
 
     do {
         if (NULL != msg_Buffer.lineTextPtrs[nextLine]) {
@@ -233,11 +233,11 @@ void Msg_RenderToChunkyBuffer()
                 SCREEN_WIDTH,
                 msg_Buffer.lineLengths[nextLine] & MSG_LENGTH_MASK,
                 msg_Buffer.lineTextPtrs[nextLine],
-                4,
+                DRAW_TEXT_MARGIN,
                 yPos,
                 msg_TagPens[msg_Buffer.lineLengths[nextLine] >> MSG_TAG_SHIFT]
             );
-            yPos += DRAW_MSG_CHAR_H + 2;
+            yPos += DRAW_MSG_CHAR_H + DRAW_TEXT_Y_SPACING;
         }
         nextLine = msg_NextLineNumber(nextLine);
     } while (nextLine != lastLine);
@@ -250,7 +250,32 @@ void Msg_RenderToChunkyBuffer()
 }
 
 void Msg_RenderToChunkyBitmap(UBYTE* bmBaseAddr, ULONG bmBytesPerRow) {
+    // Fullscreen rendering happens in the chunky buffer...
+    WORD  lastLine = msg_NextLineNumber(msg_Buffer.lineNumber);
+    WORD  nextLine = lastLine;
+    UWORD yPos     = SMALL_HEIGHT + SMALL_YPOS + DRAW_TEXT_MARGIN;
 
+    do {
+        if (NULL != msg_Buffer.lineTextPtrs[nextLine]) {
+            Draw_ChunkyTextProp(
+                bmBaseAddr,
+                bmBytesPerRow,
+                msg_Buffer.lineLengths[nextLine] & MSG_LENGTH_MASK,
+                msg_Buffer.lineTextPtrs[nextLine],
+                DRAW_TEXT_MARGIN + HUD_BORDER_WIDTH,
+                yPos,
+                msg_TagPens[msg_Buffer.lineLengths[nextLine] >> MSG_TAG_SHIFT]
+            );
+            yPos += DRAW_MSG_CHAR_H + DRAW_TEXT_Y_SPACING;
+        }
+        nextLine = msg_NextLineNumber(nextLine);
+    } while (nextLine != lastLine);
+
+    if (Sys_CheckTimeGE(&Sys_FrameTimeECV_q[0], &msg_Buffer.nextTickECV)) {
+        msg_Buffer.nextTickECV = Sys_FrameTimeECV_q[0];
+        Sys_AddTime(&msg_Buffer.nextTickECV, msg_Buffer.tickPeriod);
+        msg_PushLineRaw(NULL, 0);
+    }
 }
 
 

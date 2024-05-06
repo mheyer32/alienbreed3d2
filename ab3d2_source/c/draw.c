@@ -7,6 +7,7 @@
 #include <intuition/intuition.h>
 #include <proto/cybergraphics.h>
 #include <proto/exec.h>
+#include <proto/graphics.h>
 #include <string.h>  //memset
 
 /**
@@ -285,6 +286,12 @@ void Draw_ResetGameDisplay()
 }
 
 /**********************************************************************************************************************/
+
+void Draw_ClearRect(UWORD x1, UWORD y1, UWORD x2, UWORD y2)
+{
+    RectFill(&Vid_MainScreen_l->RastPort, x1, y1, x2, y2);
+}
+
 
 static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charCode, UBYTE pen);
 
