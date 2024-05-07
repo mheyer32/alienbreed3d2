@@ -7,8 +7,12 @@
 #define MSG_LINE_BUFFER_SIZE (1 << MSG_LINE_BUFFER_EXP)
 #define MSG_LINE_BUFFER_MASK (MSG_LINE_BUFFER_SIZE - 1)
 
+#define MSG_MAX_LINES_SMALL 4
+
 #define MSG_LENGTH_MASK 0x3FFF
 #define MSG_TAG_SHIFT 14
+
+
 
 extern UBYTE Vid_FullScreen_b;
 extern UWORD Vid_LetterBoxMarginHeight_w;
@@ -84,8 +88,13 @@ static struct {
 
     /** Length below which a text string is guaranteed to fit */
     UWORD       guranteedTextFitLimitFullScreen;
-
     UWORD       guranteedTextFitLimitSmallScreen;
+
+    /** For the small screen mode, the number of times to redraw. This should equal the number of screen buffers... */
+    UBYTE       redrawCount;
+
+    /** Basic indication that lines are visible */
+    UBYTE       linesVis;
 
 } msg_Buffer;
 
@@ -111,7 +120,10 @@ static void msg_NudgeString(char* bufferPtr, UWORD bufferLen);
  */
 static __inline WORD msg_NextLineNumber(WORD lineNumber)
 {
-    return (lineNumber + 1) & MSG_LINE_BUFFER_MASK;
+    if (Vid_FullScreen_b) {
+        return (lineNumber + 1) & MSG_LINE_BUFFER_MASK;
+    }
+    return (lineNumber < MSG_MAX_LINES_SMALL) ? lineNumber + 1 : 0;
 }
 
 /**
@@ -123,6 +135,9 @@ static __inline void msg_PushLineRaw(const char* textPtr, UWORD lengthAndTag)
     msg_Buffer.lineTextPtrs[lineNumber] = textPtr;
     msg_Buffer.lineLengths[lineNumber]  = lengthAndTag;
     msg_Buffer.lineNumber = lineNumber;
+    if (textPtr) {
+        msg_Buffer.linesVis = 1;
+    }
 }
 
 /**
@@ -132,6 +147,7 @@ void Msg_Init(void)
 {
     memset(&msg_Buffer, 0, sizeof(msg_Buffer));
     msg_Buffer.lineNumber = MSG_LINE_BUFFER_SIZE - 1;
+    msg_Buffer.redrawCount = 1; //2;
 
     /* Since we use proportional text rendering, base the guaranteed fit on the widest char */
     msg_Buffer.guranteedTextFitLimitFullScreen  = (SCREEN_WIDTH / Draw_MaxPropCharWidth) - 2;
@@ -166,6 +182,8 @@ void Msg_PushLine(REG(a0, const char* textPtr), REG(d0, UWORD lengthAndTag))
     UWORD maxFit     = Vid_FullScreen_b ?
         msg_Buffer.guranteedTextFitLimitFullScreen :
         msg_Buffer.guranteedTextFitLimitSmallScreen;
+
+    msg_Buffer.redrawCount = 1;//2;
 
     if (textLength <= maxFit) {
         msg_PushLineRaw(textPtr, lengthAndTag);
@@ -205,6 +223,7 @@ void Msg_PushLineDedupLast(REG(a0, const char* textPtr), REG(d0, UWORD lengthAnd
         Sys_AddTime(&msg_Buffer.nextDuplicateTickECV, msg_Buffer.deduplicationPeriod);
         Msg_PushLine(textPtr, lengthAndTag);
         msg_Buffer.lastMessagePtr = textPtr;
+        msg_Buffer.redrawCount = 1;//2;
     }
 }
 
@@ -217,9 +236,21 @@ void Msg_PullLast(void)
 }
 
 /**
+ * Called to advance the text buffer
+ */
+void msg_Tick(void) {
+    if (Sys_CheckTimeGE(&Sys_FrameTimeECV_q[0], &msg_Buffer.nextTickECV)) {
+        msg_Buffer.nextTickECV = Sys_FrameTimeECV_q[0];
+        Sys_AddTime(&msg_Buffer.nextTickECV, msg_Buffer.tickPeriod);
+        msg_PushLineRaw(NULL, 0);
+        msg_Buffer.redrawCount = 1; // 2;
+    }
+}
+
+/**
  * Render the message buffer
  */
-void Msg_RenderToChunkyBuffer()
+void Msg_RenderFullscreen()
 {
     // Fullscreen rendering happens in the chunky buffer...
     WORD  lastLine = msg_NextLineNumber(msg_Buffer.lineNumber);
@@ -241,41 +272,60 @@ void Msg_RenderToChunkyBuffer()
         }
         nextLine = msg_NextLineNumber(nextLine);
     } while (nextLine != lastLine);
-
-    if (Sys_CheckTimeGE(&Sys_FrameTimeECV_q[0], &msg_Buffer.nextTickECV)) {
-        msg_Buffer.nextTickECV = Sys_FrameTimeECV_q[0];
-        Sys_AddTime(&msg_Buffer.nextTickECV, msg_Buffer.tickPeriod);
-        msg_PushLineRaw(NULL, 0);
-    }
+    msg_Tick();
 }
 
-void Msg_RenderToChunkyBitmap(UBYTE* bmBaseAddr, ULONG bmBytesPerRow) {
-    // Fullscreen rendering happens in the chunky buffer...
-    WORD  lastLine = msg_NextLineNumber(msg_Buffer.lineNumber);
-    WORD  nextLine = lastLine;
-    UWORD yPos     = SMALL_HEIGHT + SMALL_YPOS + DRAW_TEXT_MARGIN;
+void Msg_RenderSmallScreenRTG(UBYTE* bmBaseAddr, ULONG bmBytesPerRow) {
 
-    do {
-        if (NULL != msg_Buffer.lineTextPtrs[nextLine]) {
-            Draw_ChunkyTextProp(
-                bmBaseAddr,
-                bmBytesPerRow,
-                msg_Buffer.lineLengths[nextLine] & MSG_LENGTH_MASK,
-                msg_Buffer.lineTextPtrs[nextLine],
-                DRAW_TEXT_MARGIN + HUD_BORDER_WIDTH,
-                yPos,
-                msg_TagPens[msg_Buffer.lineLengths[nextLine] >> MSG_TAG_SHIFT]
-            );
-            yPos += DRAW_MSG_CHAR_H + DRAW_TEXT_Y_SPACING;
-        }
-        nextLine = msg_NextLineNumber(nextLine);
-    } while (nextLine != lastLine);
+    /*
+     * In small screen mode, we make use of the fact that whatever we draw om the bitmap outside the 3D area
+     * will remain visible until we explicitly replace it. Therefore we can skip rendering. The one caveat
+     * we do have is that we need to make sure the text is rendered to both buffers.
+     *
+     * This is a lazy implementation that relies on redrawCount being set to the number of bitmaps. A better
+     * solution might be to render once then do a blit operation to copy it to the other buffers. That said,
+     * we are in a lock here.
+     *
+     * TODO - Robustly enure that after rendering no text, avoid doing anything here until there's something
+     * new to render.
+     */
+    if (msg_Buffer.redrawCount > 0 && msg_Buffer.linesVis) {
 
-    if (Sys_CheckTimeGE(&Sys_FrameTimeECV_q[0], &msg_Buffer.nextTickECV)) {
-        msg_Buffer.nextTickECV = Sys_FrameTimeECV_q[0];
-        Sys_AddTime(&msg_Buffer.nextTickECV, msg_Buffer.tickPeriod);
-        msg_PushLineRaw(NULL, 0);
+        /* Small screen rendering is direct to the bitmap */
+        WORD  lastLine = msg_NextLineNumber(msg_Buffer.lineNumber);
+        WORD  nextLine = lastLine;
+        UWORD yPos     = SMALL_HEIGHT + SMALL_YPOS + DRAW_TEXT_MARGIN;
+
+        /* Clear out the text area */
+        Draw_ClearRect(
+            HUD_BORDER_WIDTH,
+            yPos,
+            SCREEN_WIDTH - HUD_BORDER_WIDTH - 1,
+            SCREEN_HEIGHT - HUD_BORDER_WIDTH - 8
+        );
+
+        msg_Buffer.linesVis = 0;
+
+        do {
+            if (NULL != msg_Buffer.lineTextPtrs[nextLine]) {
+                Draw_ChunkyTextProp(
+                    bmBaseAddr,
+                    bmBytesPerRow,
+                    msg_Buffer.lineLengths[nextLine] & MSG_LENGTH_MASK,
+                    msg_Buffer.lineTextPtrs[nextLine],
+                    DRAW_TEXT_MARGIN + HUD_BORDER_WIDTH,
+                    yPos,
+                    msg_TagPens[msg_Buffer.lineLengths[nextLine] >> MSG_TAG_SHIFT]
+                );
+                yPos += DRAW_MSG_CHAR_H + DRAW_TEXT_Y_SPACING;
+                ++msg_Buffer.linesVis;
+            }
+            nextLine = msg_NextLineNumber(nextLine);
+        } while (nextLine != lastLine);
+        --msg_Buffer.redrawCount;
     }
+
+    msg_Tick();
 }
 
 

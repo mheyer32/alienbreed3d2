@@ -67,13 +67,13 @@ extern void Msg_PullLast(void);
  * This version renders the text into the chunky buffer. This is for fullscreen mode regardless of RTG or
  * Planar. This is called before copying the data to the VRAM bitmap.
  */
-extern void Msg_RenderToChunkyBuffer(void);
+extern void Msg_RenderFullscreen(void);
 
 /**
  * This version renders the text onto the chunky bitmap. This is for 2/3 mode in RTG. The text is plotted
  * to locked bitmap data.
  */
-extern void Msg_RenderToChunkyBitmap(UBYTE* bmBaseAddr, ULONG bmBytesPerRow);
+extern void Msg_RenderSmallScreenRTG(UBYTE* bmBaseAddr, ULONG bmBytesPerRow);
 
 
 #endif // MESSAGE_H

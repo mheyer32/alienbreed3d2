@@ -210,7 +210,7 @@ void Vid_OpenMainScreen(void)
 #pragma GCC diagnostic pop
     }
 
-    SetAPen(&Vid_MainScreen_l->RastPort, 8);
+    SetAPen(&Vid_MainScreen_l->RastPort, 255);
     SetPointer(Vid_MainWindow_l, emptySprite, 1, 0, 0, 0);
     Vid_LoadMainPalette();
 }
@@ -459,7 +459,7 @@ void Vid_Present()
 {
     if (Vid_FullScreen_b) {
         /** Render any buffered up messages before we submit the screen */
-        Msg_RenderToChunkyBuffer();
+        Msg_RenderFullscreen();
     }
     if (Vid_isRTG) {
         LOCAL_CYBERGFX();
@@ -500,13 +500,7 @@ void Vid_Present()
 
                 CopyFrameBuffer(dst, src, bmBytesPerRow, SMALL_WIDTH, height);
 
-                Draw_ClearRect(
-                    HUD_BORDER_WIDTH,
-                    SMALL_HEIGHT + SMALL_YPOS,
-                    SCREEN_WIDTH - HUD_BORDER_WIDTH - 1,
-                    SCREEN_HEIGHT - HUD_BORDER_WIDTH - 8
-                );
-                Msg_RenderToChunkyBitmap(bmPixelData, bmBytesPerRow);
+                Msg_RenderSmallScreenRTG(bmPixelData, bmBytesPerRow);
             }
 
             Draw_UpdateBorder_RTG(bmPixelData, bmBytesPerRow);

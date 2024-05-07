@@ -261,10 +261,12 @@ void Draw_ResetGameDisplay()
         ULONG bmBytesPerRow;
         APTR bmBaseAddress;
 
-        APTR bmHandle = LockBitMapTags(Vid_MainScreen_l->ViewPort.RasInfo->BitMap,
-                                       LBMI_BYTESPERROW, (ULONG)&bmBytesPerRow,
-                                       LBMI_BASEADDRESS, (ULONG)&bmBaseAddress,
-                                       TAG_DONE);
+        APTR bmHandle = LockBitMapTags(
+            Vid_MainScreen_l->ViewPort.RasInfo->BitMap,
+            LBMI_BYTESPERROW, (ULONG)&bmBytesPerRow,
+            LBMI_BASEADDRESS, (ULONG)&bmBaseAddress,
+            TAG_DONE
+        );
         if (bmHandle) {
             const UBYTE *src = draw_Border;
             WORD height = Vid_ScreenHeight < SCREEN_HEIGHT ? Vid_ScreenHeight : SCREEN_HEIGHT;
@@ -289,7 +291,9 @@ void Draw_ResetGameDisplay()
 
 void Draw_ClearRect(UWORD x1, UWORD y1, UWORD x2, UWORD y2)
 {
+    SetAPen(&Vid_MainScreen_l->RastPort, 0);
     RectFill(&Vid_MainScreen_l->RastPort, x1, y1, x2, y2);
+    SetAPen(&Vid_MainScreen_l->RastPort, 255);
 }
 
 
