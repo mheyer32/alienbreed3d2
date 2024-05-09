@@ -150,8 +150,8 @@ void Msg_Init(void)
     msg_Buffer.redrawCount = 1; //2;
 
     /* Since we use proportional text rendering, base the guaranteed fit on the widest char */
-    msg_Buffer.guranteedTextFitLimitFullScreen  = (SCREEN_WIDTH / Draw_MaxPropCharWidth) - 2;
-    msg_Buffer.guranteedTextFitLimitSmallScreen = ((SCREEN_WIDTH - (HUD_BORDER_WIDTH * 2) ) / Draw_MaxPropCharWidth) - 2;
+    msg_Buffer.guranteedTextFitLimitFullScreen  = (SCREEN_WIDTH / MAX_PROP_CHAR_WIDTH) - 2;
+    msg_Buffer.guranteedTextFitLimitSmallScreen = ((SCREEN_WIDTH - (HUD_BORDER_WIDTH * 2) ) / MAX_PROP_CHAR_WIDTH) - 2;
 
     /** Calculate the tick periods in EClocks from the ms values, based on the reported EClock rate */
     msg_Buffer.tickPeriod          = (Sys_EClockRate * MSG_SCROLL_PERIOD_MS) / 1000;

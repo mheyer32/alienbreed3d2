@@ -87,7 +87,13 @@ extern const char* Draw_ChunkyTextProp(
     UBYTE pen
 );
 
+#ifdef GEN_GLYPH_DATA
 extern UWORD Draw_MaxPropCharWidth;
+#define MAX_PROP_CHAR_WIDTH Draw_MaxPropCharWidth
+#else
+// Calculated last time...
+#define MAX_PROP_CHAR_WIDTH 7
+#endif
 
 /**
  * Calculate the expected pixel width of the provided string (up to the maximum length provided) based on proportional

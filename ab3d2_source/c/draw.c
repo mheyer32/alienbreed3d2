@@ -94,8 +94,6 @@ static UBYTE draw_BorderDigitsBuffer[DRAW_HUD_CHAR_SMALL_H * DRAW_HUD_CHAR_SMALL
 
 static UBYTE *FastBufferAllocPtr;
 
-UWORD Draw_MaxPropCharWidth = 0;
-
 /**********************************************************************************************************************/
 
 static void draw_PlanarToChunky(UBYTE *chunkyPtr, const PLANEPTR *planePtrs, ULONG numPixels);
@@ -105,7 +103,6 @@ static void draw_ReorderBorderDigits(UBYTE* toPlanarPtr, const UBYTE *planarBase
 
 static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charCode, UBYTE pen);
 
-static void draw_CalculateGlyphSpacing(void);
 
 static void draw_UpdateCounter_RTG(
     APTR bmBaseAddress,
@@ -142,6 +139,11 @@ static void draw_UpdateItems_Planar(
     UWORD xPos,
     UWORD yPos
 );
+
+#ifdef GEN_GLYPH_DATA
+UWORD Draw_MaxPropCharWidth = 0;
+static void draw_CalculateGlyphSpacing(void);
+#endif
 
 #include "draw_inline.h"
 
@@ -216,8 +218,9 @@ BOOL Draw_Init()
         DRAW_HUD_CHAR_SMALL_H
     );
 
+#ifdef GEN_GLYPH_DATA
     draw_CalculateGlyphSpacing();
-
+#endif
     draw_ResetHUDCounters();
 
     return TRUE;
@@ -796,6 +799,10 @@ static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charCode, UBY
     }
 }
 
+#ifdef GEN_GLYPH_DATA
+
+#include <stdio.h>
+
 /**
  * Very simple algorithm to scan the fixed with 8x8 font and determine some offset/width properties based on the glyph
  * bit patterns. We scan and populate draw_GlyphSpacing_vb with that data so that we can render the glyphs fixed or
@@ -833,7 +840,17 @@ static void draw_CalculateGlyphSpacing() {
 
         draw_GlyphSpacing_vb[i] = width << 4 | left;
     }
+
+    // Dump the generated table.
+    FILE* handle = fopen("RAM:glyph_spacing.bin", "wb");
+    if (handle) {
+        fwrite(draw_GlyphSpacing_vb, 1, 256, handle);
+        fclose(handle);
+    }
+    printf("MAX_PROP_CHAR_WIDTH %d\n", (int)Draw_MaxPropCharWidth);
 }
+
+#endif // GEN_GLYPH_DATA
 
 /**********************************************************************************************************************/
 
