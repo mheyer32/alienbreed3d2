@@ -799,6 +799,57 @@ static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charCode, UBY
     }
 }
 
+// TODO this planar routine should be moved to ASM
+static __inline UWORD ror16(UWORD v, WORD s) {
+    return (v >> s) | (v << (16 - s));
+}
+
+static void draw_PlanarGlyph(PLANEPTR drawPtr, WORD xPos, UBYTE charCode) {
+    UBYTE *glyphPtr     = &draw_ScrollChars_vb[(UWORD)charCode << 3];
+    BYTE   glyphLMargin = draw_GlyphSpacing_vb[charCode] & 0x7;
+    BYTE   glyphWidth   = draw_GlyphSpacing_vb[charCode] >> 4;
+
+    drawPtr += (xPos >> 3);
+    xPos = (xPos & 7) - glyphLMargin;
+    if (xPos < 0) {
+        xPos = -xPos;
+        drawPtr[0]                     = glyphPtr[0] << xPos;
+        drawPtr[SCREEN_WIDTH >> 3]     = glyphPtr[1] << xPos;
+        drawPtr[(2*SCREEN_WIDTH) >> 3] = glyphPtr[2] << xPos;
+        drawPtr[(3*SCREEN_WIDTH) >> 3] = glyphPtr[3] << xPos;
+        drawPtr[(4*SCREEN_WIDTH) >> 3] = glyphPtr[4] << xPos;
+        drawPtr[(5*SCREEN_WIDTH) >> 3] = glyphPtr[5] << xPos;
+        drawPtr[(6*SCREEN_WIDTH) >> 3] = glyphPtr[6] << xPos;
+        drawPtr[(7*SCREEN_WIDTH) >> 3] = glyphPtr[7] << xPos;
+    } else if (xPos == 0) {
+        drawPtr[0]                     = glyphPtr[0];
+        drawPtr[SCREEN_WIDTH >> 3]     = glyphPtr[1];
+        drawPtr[(2*SCREEN_WIDTH) >> 3] = glyphPtr[2];
+        drawPtr[(3*SCREEN_WIDTH) >> 3] = glyphPtr[3];
+        drawPtr[(4*SCREEN_WIDTH) >> 3] = glyphPtr[4];
+        drawPtr[(5*SCREEN_WIDTH) >> 3] = glyphPtr[5];
+        drawPtr[(6*SCREEN_WIDTH) >> 3] = glyphPtr[6];
+        drawPtr[(7*SCREEN_WIDTH) >> 3] = glyphPtr[7];
+    } else if (xPos + glyphWidth >= DRAW_MSG_CHAR_W) {
+        for (UWORD row = 0; row < DRAW_MSG_CHAR_H; ++row) {
+            UWORD rot = ror16(glyphPtr[row], xPos);
+            drawPtr[0] |= rot;
+            drawPtr[1] |= rot >> 8;
+            drawPtr += SCREEN_WIDTH >> 3;
+        }
+    } else {
+        drawPtr[0]                     = glyphPtr[0] >> xPos;
+        drawPtr[SCREEN_WIDTH >> 3]     = glyphPtr[1] >> xPos;
+        drawPtr[(2*SCREEN_WIDTH) >> 3] = glyphPtr[2] >> xPos;
+        drawPtr[(3*SCREEN_WIDTH) >> 3] = glyphPtr[3] >> xPos;
+        drawPtr[(4*SCREEN_WIDTH) >> 3] = glyphPtr[4] >> xPos;
+        drawPtr[(5*SCREEN_WIDTH) >> 3] = glyphPtr[5] >> xPos;
+        drawPtr[(6*SCREEN_WIDTH) >> 3] = glyphPtr[6] >> xPos;
+        drawPtr[(7*SCREEN_WIDTH) >> 3] = glyphPtr[7] >> xPos;
+    }
+}
+
+
 #ifdef GEN_GLYPH_DATA
 
 #include <stdio.h>
