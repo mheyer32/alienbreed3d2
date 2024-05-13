@@ -11,9 +11,9 @@
 #define HUD_BORDER_WIDTH 16
 
 /**
- * Define RTG_LONG_ALIGNED if you expect to perform 32-bit access to VRAM only
+ * Define GFX_LONG_ALIGNED if you expect to perform 32-bit access vram/chip only
  */
-#define RTG_LONG_ALIGNED
+#define GFX_LONG_ALIGNED
 
 #ifndef FS_HEIGHT_HACK
 #define FS_HEIGHT (SCREEN_HEIGHT - (UWORD)16)

@@ -1,17 +1,13 @@
 #include "system.h"
 #include "message.h"
 #include "draw.h"
-#include <string.h>
 
 #define MSG_LINE_BUFFER_EXP 3
 #define MSG_LINE_BUFFER_SIZE (1 << MSG_LINE_BUFFER_EXP)
 #define MSG_LINE_BUFFER_MASK (MSG_LINE_BUFFER_SIZE - 1)
 
-
 #define MSG_LENGTH_MASK 0x3FFF
 #define MSG_TAG_SHIFT 14
-
-
 
 extern UBYTE Vid_FullScreen_b;
 extern UWORD Vid_LetterBoxMarginHeight_w;
@@ -31,34 +27,6 @@ extern struct EClockVal Sys_FrameTimeECV_q[2];
 
 /**
  * Data for our messaging system
- *
- * TODO
- *
- * Add controls for message rendering (none, narrative only, all, etc).
- *
- * Implement 2/3 mode:
- *
- * Include fields calculated for 2/3 size. We will use the area below the main 2/3 display and also
- * potentially move the 2/3 window upwardsto create more vertical room for the message area.
- * The render width in 2/3 size should be reduced to preserve the HUD borders. This likely requires
- * a separate field for the guaranteed fit in 2/3 size.
- *
- * We should assume that we are in 2/3 mode for performance reasons and as such the text rendering
- * should aim for efficiency.
- *
- * We should plot the text only when it changes. This requires rendering it to front and back buffers.
- * The text will continue to display on all following frames as we are not clearing the entire region.
- *
- * For RTG we should use a blitter call to clear the text region of the target BitMap, then plot
- * into it directly using the current plotting routines. We should consider using the blitter a second
- * time to copy the newly drawn area to the second buffer. This should be able to use HW accelerated
- * blitter operations on most cards, but we might also need a CPU-only fallback and/or allow that
- * to be manually selected if desired for any reason.
- *
- * For Planar, we should consider monochrome using a palette index that's a straight power of two as
- * this allows us to use a similar approach for a single bitplane. We may not need to use the blitter
- * as we can perform planar plotting in a fast memory buffer then just copy that to the single bitplane
- * wholesale.
  *
  */
 static struct {
@@ -95,7 +63,7 @@ static struct {
     /** Basic indication that lines are visible */
     UBYTE       linesVis;
 
-} msg_Buffer;
+} msg_Buffer __attribute__ ((aligned (4))); /* Shouldn't be needed but just in case */
 
 extern BOOL Msg_SmallScreenNeedsRedraw(void) {
     return msg_Buffer.redrawCount > 0 && msg_Buffer.linesVis;
@@ -149,7 +117,8 @@ static __inline void msg_PushLineRaw(const char* textPtr, UWORD lengthAndTag)
  */
 void Msg_Init(void)
 {
-    memset(&msg_Buffer, 0, sizeof(msg_Buffer));
+    Sys_MemFillLong(&msg_Buffer, 0, sizeof(msg_Buffer)/sizeof(ULONG));
+
     msg_Buffer.lineNumber = MSG_LINE_BUFFER_SIZE - 1;
     msg_Buffer.redrawCount = 1; //2;
 
@@ -344,7 +313,7 @@ void Msg_RenderSmallScreenPlanar(UBYTE* plane) {
     msg_Buffer.linesVis = 0;
 
     /** clear out the text area */
-    memset(plane, 0, SCREEN_WIDTH * 16);
+    Sys_MemFillLong(plane, 0, SCREEN_WIDTH * 4);
     do {
         if (NULL != msg_Buffer.lineTextPtrs[nextLine]) {
             Draw_PlanarTextProp(
