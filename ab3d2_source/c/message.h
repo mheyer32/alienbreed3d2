@@ -35,6 +35,8 @@
 #define MSG_TAG_OPTIONS   (2 << 14)
 #define MSG_TAG_OTHER     (3 << 14)
 
+#define MSG_MAX_LINES_SMALL 4
+
 /**
  * Initialise the in-game message system. This should be called at the start of each level.
  *
@@ -71,9 +73,17 @@ extern void Msg_RenderFullscreen(void);
 
 /**
  * This version renders the text onto the chunky bitmap. This is for 2/3 mode in RTG. The text is plotted
- * to locked bitmap data.
+ * to locked bitmap data. We have to pass those in.
  */
 extern void Msg_RenderSmallScreenRTG(UBYTE* bmBaseAddr, ULONG bmBytesPerRow);
 
+/**
+ * This version renders the text onto the planar bitmap. This is for 2/3 mode in RTG.
+ */
+extern void Msg_RenderSmallScreenPlanar(UBYTE* plane);
+
+extern BOOL Msg_SmallScreenNeedsRedraw(void);
+
+extern void Msg_Tick(void);
 
 #endif // MESSAGE_H

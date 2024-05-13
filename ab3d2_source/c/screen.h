@@ -32,6 +32,7 @@
 #define SMALL_YPOS 20
 #define SMALL_XPOS 64
 
+
 extern struct MsgPort *Vid_DisplayMsgPort_l;
 extern UBYTE Vid_WaitForDisplayMsg_b;
 extern struct ScreenBuffer *Vid_ScreenBuffers_vl[2];

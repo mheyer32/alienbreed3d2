@@ -7,7 +7,6 @@
 #define MSG_LINE_BUFFER_SIZE (1 << MSG_LINE_BUFFER_EXP)
 #define MSG_LINE_BUFFER_MASK (MSG_LINE_BUFFER_SIZE - 1)
 
-#define MSG_MAX_LINES_SMALL 4
 
 #define MSG_LENGTH_MASK 0x3FFF
 #define MSG_TAG_SHIFT 14
@@ -97,6 +96,11 @@ static struct {
     UBYTE       linesVis;
 
 } msg_Buffer;
+
+extern BOOL Msg_SmallScreenNeedsRedraw(void) {
+    return msg_Buffer.redrawCount > 0 && msg_Buffer.linesVis;
+}
+
 
 /**
  * Take a message string, which will tend to be a fixed length, potentially space padded
@@ -238,7 +242,7 @@ void Msg_PullLast(void)
 /**
  * Called to advance the text buffer
  */
-void msg_Tick(void) {
+void Msg_Tick(void) {
     if (Sys_CheckTimeGE(&Sys_FrameTimeECV_q[0], &msg_Buffer.nextTickECV)) {
         msg_Buffer.nextTickECV = Sys_FrameTimeECV_q[0];
         Sys_AddTime(&msg_Buffer.nextTickECV, msg_Buffer.tickPeriod);
@@ -248,7 +252,8 @@ void msg_Tick(void) {
 }
 
 /**
- * Render the message buffer
+ * Render the message buffer directly into the fullscreen buffer. This works for AGA and RTG as the text is
+ * overlaid onto the game display.
  */
 void Msg_RenderFullscreen()
 {
@@ -272,9 +277,12 @@ void Msg_RenderFullscreen()
         }
         nextLine = msg_NextLineNumber(nextLine);
     } while (nextLine != lastLine);
-    msg_Tick();
 }
 
+/**
+ * Perform chunky text rendering to the provided locked bitmap. This is for RTG in small screen mode and
+ * renders outside the game area.
+ */
 void Msg_RenderSmallScreenRTG(UBYTE* bmBaseAddr, ULONG bmBytesPerRow) {
 
     /*
@@ -289,44 +297,71 @@ void Msg_RenderSmallScreenRTG(UBYTE* bmBaseAddr, ULONG bmBytesPerRow) {
      * TODO - Robustly enure that after rendering no text, avoid doing anything here until there's something
      * new to render.
      */
-    if (msg_Buffer.redrawCount > 0 && msg_Buffer.linesVis) {
 
-        /* Small screen rendering is direct to the bitmap */
-        WORD  lastLine = msg_NextLineNumber(msg_Buffer.lineNumber);
-        WORD  nextLine = lastLine;
-        UWORD yPos     = SMALL_HEIGHT + SMALL_YPOS + DRAW_TEXT_MARGIN;
+    /* Small screen rendering is direct to the bitmap */
+    WORD  lastLine = msg_NextLineNumber(msg_Buffer.lineNumber);
+    WORD  nextLine = lastLine;
+    UWORD yPos     = SMALL_HEIGHT + SMALL_YPOS + DRAW_TEXT_MARGIN;
 
-        /* Clear out the text area */
-        Draw_ClearRect(
-            HUD_BORDER_WIDTH,
-            yPos,
-            SCREEN_WIDTH - HUD_BORDER_WIDTH - 1,
-            SCREEN_HEIGHT - HUD_BORDER_WIDTH - 8
-        );
+    msg_Buffer.linesVis = 0;
 
-        msg_Buffer.linesVis = 0;
+    /* Clear out the text area */
+    Draw_ClearRect(
+        HUD_BORDER_WIDTH,
+        yPos,
+        SCREEN_WIDTH - HUD_BORDER_WIDTH - 1,
+        SCREEN_HEIGHT - HUD_BORDER_WIDTH - 8
+    );
 
-        do {
-            if (NULL != msg_Buffer.lineTextPtrs[nextLine]) {
-                Draw_ChunkyTextProp(
-                    bmBaseAddr,
-                    bmBytesPerRow,
-                    msg_Buffer.lineLengths[nextLine] & MSG_LENGTH_MASK,
-                    msg_Buffer.lineTextPtrs[nextLine],
-                    DRAW_TEXT_MARGIN + HUD_BORDER_WIDTH,
-                    yPos,
-                    msg_TagPens[msg_Buffer.lineLengths[nextLine] >> MSG_TAG_SHIFT]
-                );
-                yPos += DRAW_MSG_CHAR_H + DRAW_TEXT_Y_SPACING;
-                ++msg_Buffer.linesVis;
-            }
-            nextLine = msg_NextLineNumber(nextLine);
-        } while (nextLine != lastLine);
-        --msg_Buffer.redrawCount;
-    }
 
-    msg_Tick();
+    do {
+        if (NULL != msg_Buffer.lineTextPtrs[nextLine]) {
+            Draw_ChunkyTextProp(
+                bmBaseAddr,
+                bmBytesPerRow,
+                msg_Buffer.lineLengths[nextLine] & MSG_LENGTH_MASK,
+                msg_Buffer.lineTextPtrs[nextLine],
+                DRAW_TEXT_MARGIN + HUD_BORDER_WIDTH,
+                yPos,
+                msg_TagPens[msg_Buffer.lineLengths[nextLine] >> MSG_TAG_SHIFT]
+            );
+            yPos += DRAW_MSG_CHAR_H + DRAW_TEXT_Y_SPACING;
+            ++msg_Buffer.linesVis;
+        }
+        nextLine = msg_NextLineNumber(nextLine);
+    } while (nextLine != lastLine);
+    --msg_Buffer.redrawCount;
 }
+
+/**
+ * Perform planar text rendering to the provided bitplane. This is for AGA mode. The caller provides the bitplane
+ * to render to, which is assued to be clear.
+ */
+void Msg_RenderSmallScreenPlanar(UBYTE* plane) {
+    WORD  lastLine = msg_NextLineNumber(msg_Buffer.lineNumber);
+    WORD  nextLine = lastLine;
+    UWORD yPos = 0;
+    msg_Buffer.linesVis = 0;
+
+    /** clear out the text area */
+    memset(plane, 0, SCREEN_WIDTH * 16);
+    do {
+        if (NULL != msg_Buffer.lineTextPtrs[nextLine]) {
+            Draw_PlanarTextProp(
+                plane,
+                msg_Buffer.lineLengths[nextLine] & MSG_LENGTH_MASK,
+                msg_Buffer.lineTextPtrs[nextLine],
+                DRAW_TEXT_MARGIN + HUD_BORDER_WIDTH,
+                yPos
+            );
+            yPos += DRAW_MSG_CHAR_H + DRAW_TEXT_Y_SPACING;
+            ++msg_Buffer.linesVis;
+        }
+        nextLine = msg_NextLineNumber(nextLine);
+    } while (nextLine != lastLine);
+    --msg_Buffer.redrawCount;
+}
+
 
 
 void msg_NudgeString(char* bufferPtr, UWORD bufferLen)

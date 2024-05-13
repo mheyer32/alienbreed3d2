@@ -41,7 +41,11 @@
 #define LOW_ENERGY_COUNT_WARN_LIMIT 9
 #define DISPLAY_COUNT_LIMIT 999
 
+/** For planar graphics, this is a type pun for the 8 bitplane pointers */
 typedef PLANEPTR BitPlanes[SCREEN_DEPTH];
+
+/** For planar screens, the offset to a given bitplane */
+#define PLANE_OFFSET(n) ((n) * SCREEN_WIDTH * SCREEN_HEIGHT / SCREEN_DEPTH)
 
 extern void Draw_ResetGameDisplay(void);
 extern BOOL Draw_Init(void);
@@ -85,6 +89,14 @@ extern const char* Draw_ChunkyTextProp(
     UWORD xPos,
     UWORD yPos,
     UBYTE pen
+);
+
+const char* Draw_PlanarTextProp(
+    PLANEPTR drawPtr,
+    UWORD maxLen,
+    const char *textPtr,
+    UWORD xPos,
+    UWORD yPos
 );
 
 #ifdef GEN_GLYPH_DATA

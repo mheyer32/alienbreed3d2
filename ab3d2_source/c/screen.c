@@ -20,6 +20,7 @@
 #include <proto/exec.h>
 #include <proto/graphics.h>
 #include <proto/intuition.h>
+#include <string.h> // memset
 
 #ifdef USE_DEBUG_LIB
 #include <clib/debug_protos.h>
@@ -38,6 +39,7 @@
     #define SHOW_TITLE_STATE 1
 #endif
 
+#define TEXT_PLANE_SIZE (MSG_MAX_LINES_SMALL + 1) * (DRAW_MSG_CHAR_H + DRAW_TEXT_Y_SPACING) * (SCREEN_WIDTH / 8)
 
 extern UWORD draw_Palette_vw[3 * 256];
 extern ULONG Vid_LoadRGB32Struct_vl[3 * 256 + 2];
@@ -500,7 +502,9 @@ void Vid_Present()
 
                 CopyFrameBuffer(dst, src, bmBytesPerRow, SMALL_WIDTH, height);
 
-                Msg_RenderSmallScreenRTG(bmPixelData, bmBytesPerRow);
+                if (Msg_SmallScreenNeedsRedraw()) {
+                    Msg_RenderSmallScreenRTG(bmPixelData, bmBytesPerRow);
+                }
             }
 
             Draw_UpdateBorder_RTG(bmPixelData, bmBytesPerRow);
@@ -514,6 +518,18 @@ void Vid_Present()
 #endif
     } else {
         CallAsm(&Vid_ConvertC2P);
+        if (!Vid_FullScreen_b && Msg_SmallScreenNeedsRedraw()) {
+            PLANEPTR planes[3] = {
+                (PLANEPTR)(Vid_FastBufferPtr_l + (SCREEN_WIDTH * (SCREEN_HEIGHT - 16))),
+                &Vid_Screen1Ptr_l[PLANE_OFFSET(4) + ((SMALL_HEIGHT + SMALL_YPOS) * SCREEN_WIDTH / 8) ],
+                &Vid_Screen2Ptr_l[PLANE_OFFSET(4) + ((SMALL_HEIGHT + SMALL_YPOS) * SCREEN_WIDTH / 8) ]
+            };
+            Msg_RenderSmallScreenPlanar(planes[0]);
+            for (UWORD p = 1; p < 3; ++p) {;
+                CopyMemQuick(planes[0], planes[p], TEXT_PLANE_SIZE);
+            }
+        }
         Draw_UpdateBorder_Planar();
     }
+    Msg_Tick();
 }
