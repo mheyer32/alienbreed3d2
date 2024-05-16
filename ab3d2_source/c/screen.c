@@ -51,7 +51,6 @@ static CHIP WORD emptySprite[6];
 
 /** Copper lists for double height modes */
 static struct UCopList* doubleHeightCopList;
-static struct UCopList* doubleHeightSmallCopList;
 
 extern UBYTE Vid_FullScreen_b;
 extern UWORD Vid_LetterBoxMarginHeight_w;

@@ -120,7 +120,7 @@ void Msg_Init(void)
     Sys_MemFillLong(&msg_Buffer, 0, sizeof(msg_Buffer)/sizeof(ULONG));
 
     msg_Buffer.lineNumber = MSG_LINE_BUFFER_SIZE - 1;
-    msg_Buffer.redrawCount = 1; //2;
+    msg_Buffer.redrawCount = 1;
 
     /* Since we use proportional text rendering, base the guaranteed fit on the widest char */
     msg_Buffer.guranteedTextFitLimitFullScreen  = (SCREEN_WIDTH / MAX_PROP_CHAR_WIDTH) - 2;
@@ -156,13 +156,13 @@ void Msg_PushLine(REG(a0, const char* textPtr), REG(d0, UWORD lengthAndTag))
         msg_Buffer.guranteedTextFitLimitFullScreen :
         msg_Buffer.guranteedTextFitLimitSmallScreen;
 
-    msg_Buffer.redrawCount = 1;//2;
+    msg_Buffer.redrawCount = 1;
 
     if (textLength <= maxFit) {
         msg_PushLineRaw(textPtr, lengthAndTag);
     } else {
         const char* nextTextPtr = textPtr;
-        int   lines   = 4;
+        int   lines   = MSG_MAX_LINES_SMALL;
         UWORD textTag = lengthAndTag & ~MSG_LENGTH_MASK;
         maxFit        = Vid_FullScreen_b ?
             SCREEN_WIDTH - (2 * DRAW_MSG_CHAR_W) :
@@ -196,7 +196,7 @@ void Msg_PushLineDedupLast(REG(a0, const char* textPtr), REG(d0, UWORD lengthAnd
         Sys_AddTime(&msg_Buffer.nextDuplicateTickECV, msg_Buffer.deduplicationPeriod);
         Msg_PushLine(textPtr, lengthAndTag);
         msg_Buffer.lastMessagePtr = textPtr;
-        msg_Buffer.redrawCount = 1;//2;
+        msg_Buffer.redrawCount = 1;
     }
 }
 
@@ -282,7 +282,6 @@ void Msg_RenderSmallScreenRTG(UBYTE* bmBaseAddr, ULONG bmBytesPerRow) {
         SCREEN_HEIGHT - HUD_BORDER_WIDTH - 8
     );
 
-
     do {
         if (NULL != msg_Buffer.lineTextPtrs[nextLine]) {
             Draw_ChunkyTextProp(
@@ -330,8 +329,6 @@ void Msg_RenderSmallScreenPlanar(UBYTE* plane) {
     } while (nextLine != lastLine);
     --msg_Buffer.redrawCount;
 }
-
-
 
 void msg_NudgeString(char* bufferPtr, UWORD bufferLen)
 {
