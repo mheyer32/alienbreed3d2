@@ -43,6 +43,13 @@ _draw_ScrollChars_vb::
 draw_ScrollChars_vb:
 				incbin	"includes/scrollfont"
 
+				IFND	GEN_GLYPH_DATA
+				; We are using precalculated glyph spacing data
+_draw_GlyphSpacing_vb::
+draw_GlyphSpacing_vb:
+				incbin	"includes/glyph_spacing.bin"
+				ENDC
+
 				align 4
 draw_Digits_vb:
 				incbin	"numbers.inc"
@@ -102,3 +109,4 @@ draw_XZAngs_vw:
 
 ; todo - what is this?
 guff:			incbin	"includes/guff"
+

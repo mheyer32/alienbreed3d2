@@ -35,6 +35,8 @@
 #define MSG_TAG_OPTIONS   (2 << 14)
 #define MSG_TAG_OTHER     (3 << 14)
 
+#define MSG_MAX_LINES_SMALL 4
+
 /**
  * Initialise the in-game message system. This should be called at the start of each level.
  *
@@ -64,10 +66,24 @@ extern void Msg_PushLineDedupLast(REG(a0, const char* textPtr), REG(d0, UWORD le
 extern void Msg_PullLast(void);
 
 /**
- * Render the messages in the buffer. This depends on Draw_ChunkyTextProp() to render the lines. This should
- * be called immediately prior to display update.
+ * This version renders the text into the chunky buffer. This is for fullscreen mode regardless of RTG or
+ * Planar. This is called before copying the data to the VRAM bitmap.
  */
-extern void Msg_Render(void);
+extern void Msg_RenderFullscreen(void);
 
+/**
+ * This version renders the text onto the chunky bitmap. This is for 2/3 mode in RTG. The text is plotted
+ * to locked bitmap data. We have to pass those in.
+ */
+extern void Msg_RenderSmallScreenRTG(UBYTE* bmBaseAddr, ULONG bmBytesPerRow);
+
+/**
+ * This version renders the text onto the planar bitmap. This is for 2/3 mode in RTG.
+ */
+extern void Msg_RenderSmallScreenPlanar(UBYTE* plane);
+
+extern BOOL Msg_SmallScreenNeedsRedraw(void);
+
+extern void Msg_Tick(void);
 
 #endif // MESSAGE_H

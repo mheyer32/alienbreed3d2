@@ -31,12 +31,10 @@ gunny_b:		dc.b	0
 				IFND BUILD_WITH_C
 Draw_ResetGameDisplay:
 				move.l	Vid_Screen1Ptr_l,a0
-				jsr		.draw_ResetGameDisplay
+				bsr		.draw_ResetGameDisplay
 
 				move.l	Vid_Screen2Ptr_l,a0
-				jsr		.draw_ResetGameDisplay
-
-				rts
+				; fall through
 
 .draw_ResetGameDisplay:
 				move.l	#draw_BorderPacked_vb,d0

@@ -117,5 +117,8 @@ Draw_DoUpper_b:					ds.b	1
 _Draw_ForceSimpleWalls_b::
 Draw_ForceSimpleWalls_b:		ds.b	1
 
+		; Are we generating glyph data?
+		IFD	GEN_GLYPH_DATA
 _draw_GlyphSpacing_vb::
 draw_GlyphSpacing_vb:			ds.b    256
+		ENDC

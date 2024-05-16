@@ -11,6 +11,24 @@
 
 				align	4
 
+; dest  ULONG a0
+; value ULONG d0
+; size  WORD d1 (in longs)
+_Sys_MemFillLong::
+Sys_MemFillLong:
+			lsr.w	#2,d1	; 4 longs per loop
+			subq.w	#1,d1
+
+.clear_loop:
+			move.l	d0,(a0)+
+			move.l	d0,(a0)+
+			move.l	d0,(a0)+
+			move.l	d0,(a0)+
+			dbra	d1,.clear_loop
+			rts
+
+
+
 ;******************************************************************************
 ;*
 ;* Copy using move16. Don't call this if you don't have an 040, 060 or the
