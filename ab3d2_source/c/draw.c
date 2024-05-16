@@ -1,6 +1,9 @@
 #include "draw.h"
 #include "system.h"
 
+/* We need to know the number of message lines to display in 2/3 planar */
+#include "message.h"
+
 #include <SDI_compiler.h>
 #include <cybergraphics/cybergraphics.h>
 #include <graphics/gfx.h>
@@ -53,6 +56,8 @@ extern APTR Vid_DisplayScreenPtr_l;
     #define COPY(s, d, c) CopyMem((s), (d), (c))
 #endif
 
+PLANEPTR Draw_FastRamPlanePtr      = NULL;
+PLANEPTR Draw_BorderEdgeBackupPtr  = NULL;
 
 /**
  * Border digits when not low on ammo/health
@@ -166,6 +171,7 @@ BOOL Draw_Init()
 
     Vid_FastBufferPtr_l = (UBYTE *)(((ULONG)FastBufferAllocPtr + 15) & ~15);
 
+
     void (*border_convert)(UBYTE* to, const UBYTE *from, UWORD width, UWORD height);
 
     if (Vid_isRTG) {
@@ -251,6 +257,65 @@ void Draw_Shutdown()
 
 /**********************************************************************************************************************/
 
+#define MSG_PLANE_H (DRAW_MSG_CHAR_H + DRAW_TEXT_Y_SPACING) * (MSG_MAX_LINES_SMALL + 1)
+
+/**
+ * Repairs the border area of the fast ram plane in planar text mode by copying back the
+ * bits of the background image that were saved off during Draw_ResetGameDisplay().
+ */
+void Draw_RepairTextPlaneBorders()
+{
+    UWORD* src = (UWORD*)Draw_BorderEdgeBackupPtr;
+    UWORD* dst = (UWORD*)Draw_FastRamPlanePtr;
+
+    UWORD lines = MSG_PLANE_H;
+    while (lines--) {
+        // left edge
+        dst[0] = *src++;
+        // right edge
+        dst[(SCREEN_WIDTH / 16) - 1] = *src++;
+        dst += SCREEN_WIDTH / 16;
+    }
+}
+
+static void draw_ConfigureTextPlane(void) {
+    /*
+     * For 2/3 screensize, use the end of the chunky buffer for the text plane. We need
+     * enough space for the maximum number of lines (currently MSG_MAX_LINES_SMALL + 1)
+     * at full width:
+     *
+     * SCREEN_WIDTH * (DRAW_MSG_CHAR_H + DRAW_TEXT_Y_SPACING) bits per text line.
+     *
+     * This is safe because the chunky buffer is always full screen size.
+     */
+    ULONG size = SCREEN_WIDTH * MSG_PLANE_H / 8;
+
+    Draw_FastRamPlanePtr   = (PLANEPTR)(
+        Vid_FastBufferPtr_l + (SCREEN_WIDTH * SCREEN_HEIGHT) - size
+    );
+
+    /**
+     * We want to back up the left and right edge of the border for the bitplane we will
+     * be writing into. The borders are 16 pixels wide, so we need 16 bits * 2 = 4 bytes
+     * for each line of the plane.
+     */
+
+    size = 4 * MSG_PLANE_H;
+    Draw_BorderEdgeBackupPtr  = Draw_FastRamPlanePtr - size;
+
+    UWORD* dst = (UWORD*)Draw_BorderEdgeBackupPtr;
+    UWORD* src = (UWORD*)&Vid_Screen2Ptr_l[PLANE_OFFSET(DRAW_TEXT_PLANE_NUM) + DRAW_TEXT_SMALL_PLANE_OFFSET];
+
+    UWORD lines = MSG_PLANE_H;
+    while (lines--) {
+        // left edge
+        *dst++ = src[0];
+        // right edge
+        *dst++ = src[(SCREEN_WIDTH / 16) - 1];
+        src += SCREEN_WIDTH / 16;
+    }
+}
+
 /**
  * Re initialise the game display, clear out the previous view, reset HUD, etc.
  */
@@ -262,6 +327,9 @@ void Draw_ResetGameDisplay()
         unLHA(Vid_Screen1Ptr_l, draw_BorderPacked_vb, 0, Sys_GetTemporaryWorkspace(), NULL);
         unLHA(Vid_Screen2Ptr_l, draw_BorderPacked_vb, 0, Sys_GetTemporaryWorkspace(), NULL);
         Draw_UpdateBorder_Planar();
+        if (!Vid_FullScreen_b) {
+            draw_ConfigureTextPlane();
+        }
     } else {
         LOCAL_CYBERGFX();
 
@@ -295,6 +363,7 @@ void Draw_ResetGameDisplay()
         }
     }
 }
+
 
 /**********************************************************************************************************************/
 

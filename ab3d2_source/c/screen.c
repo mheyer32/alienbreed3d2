@@ -48,7 +48,11 @@ static PLANEPTR rasters[2];
 struct BitMap bitmaps[2];
 
 static CHIP WORD emptySprite[6];
+
+/** Copper lists for double height modes */
 static struct UCopList* doubleHeightCopList;
+static struct UCopList* doubleHeightSmallCopList;
+
 extern UBYTE Vid_FullScreen_b;
 extern UWORD Vid_LetterBoxMarginHeight_w;
 
@@ -186,8 +190,9 @@ void Vid_OpenMainScreen(void)
         // See note in Vid_CloseMainScreen
         doubleHeightCopList = AllocMem(sizeof(*doubleHeightCopList), MEMF_PUBLIC|MEMF_CLEAR);
         if (!doubleHeightCopList) {
-            Sys_FatalError("Could not allocate memory for copperlist");
+            Sys_FatalError("Could not allocate memory for fullscreen copperlist");
         }
+
 
         // HACK: The prototype for CINIT (UCopperListInit) says it accepts the number
         // of copper instructions as an UWORD, but KS3.1 actually expects an ULONG!
@@ -520,11 +525,15 @@ void Vid_Present()
         CallAsm(&Vid_ConvertC2P);
         if (!Vid_FullScreen_b && Msg_SmallScreenNeedsRedraw()) {
             PLANEPTR planes[3] = {
-                (PLANEPTR)(Vid_FastBufferPtr_l + (SCREEN_WIDTH * (SCREEN_HEIGHT - 16))),
-                &Vid_Screen1Ptr_l[PLANE_OFFSET(4) + ((SMALL_HEIGHT + SMALL_YPOS) * SCREEN_WIDTH / 8) ],
-                &Vid_Screen2Ptr_l[PLANE_OFFSET(4) + ((SMALL_HEIGHT + SMALL_YPOS) * SCREEN_WIDTH / 8) ]
+                Draw_FastRamPlanePtr,
+                &Vid_Screen1Ptr_l[PLANE_OFFSET(DRAW_TEXT_PLANE_NUM) + DRAW_TEXT_SMALL_PLANE_OFFSET ],
+                &Vid_Screen2Ptr_l[PLANE_OFFSET(DRAW_TEXT_PLANE_NUM) + DRAW_TEXT_SMALL_PLANE_OFFSET ]
             };
             Msg_RenderSmallScreenPlanar(planes[0]);
+
+            /* restore the borders of the plane */
+            Draw_RepairTextPlaneBorders();
+
             for (UWORD p = 1; p < 3; ++p) {;
                 CopyMemQuick(planes[0], planes[p], TEXT_PLANE_SIZE);
             }
