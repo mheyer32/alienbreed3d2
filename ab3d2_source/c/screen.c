@@ -463,7 +463,7 @@ static void CopyFrameBuffer(UBYTE *dst, const UBYTE *src, WORD dstBytesPerRow, W
 
 void Vid_Present()
 {
-    if (Vid_FullScreen_b) {
+    if (Vid_FullScreen_b && Msg_Enabled()) {
         /** Render any buffered up messages before we submit the screen */
         Msg_RenderFullscreen();
     }
@@ -506,7 +506,7 @@ void Vid_Present()
 
                 CopyFrameBuffer(dst, src, bmBytesPerRow, SMALL_WIDTH, height);
 
-                if (Msg_SmallScreenNeedsRedraw()) {
+                if (Msg_Enabled() && Msg_SmallScreenNeedsRedraw()) {
                     Msg_RenderSmallScreenRTG(bmPixelData, bmBytesPerRow);
                 }
             }
@@ -522,7 +522,7 @@ void Vid_Present()
 #endif
     } else {
         CallAsm(&Vid_ConvertC2P);
-        if (!Vid_FullScreen_b && Msg_SmallScreenNeedsRedraw()) {
+        if (!Vid_FullScreen_b && Msg_Enabled() && Msg_SmallScreenNeedsRedraw()) {
             PLANEPTR planes[3] = {
                 Draw_FastRamPlanePtr,
                 &Vid_Screen1Ptr_l[PLANE_OFFSET(DRAW_TEXT_PLANE_NUM) + DRAW_TEXT_SMALL_PLANE_OFFSET ],
@@ -539,5 +539,7 @@ void Vid_Present()
         }
         Draw_UpdateBorder_Planar();
     }
-    Msg_Tick();
+    if (Msg_Enabled()) {
+        Msg_Tick();
+    }
 }

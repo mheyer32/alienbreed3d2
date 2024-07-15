@@ -9,6 +9,8 @@
 #define MSG_LENGTH_MASK 0x3FFF
 #define MSG_TAG_SHIFT 14
 
+extern UBYTE Prefs_ShowMessages_b;
+
 extern UBYTE Vid_FullScreen_b;
 extern UWORD Vid_LetterBoxMarginHeight_w;
 extern void* Lvl_DataPtr_l;
@@ -151,6 +153,10 @@ void Msg_Init(void)
  */
 void Msg_PushLine(REG(a0, const char* textPtr), REG(d0, UWORD lengthAndTag))
 {
+    if (!Prefs_ShowMessages_b) {
+        return;
+    }
+
     UWORD textLength = lengthAndTag & MSG_LENGTH_MASK;
     UWORD maxFit     = Vid_FullScreen_b ?
         msg_Buffer.guranteedTextFitLimitFullScreen :
@@ -189,8 +195,10 @@ void Msg_PushLine(REG(a0, const char* textPtr), REG(d0, UWORD lengthAndTag))
 void Msg_PushLineDedupLast(REG(a0, const char* textPtr), REG(d0, UWORD lengthAndTag))
 {
     if (
-        textPtr != msg_Buffer.lastMessagePtr ||
-        Sys_CheckTimeGE(&Sys_FrameTimeECV_q[0], &msg_Buffer.nextDuplicateTickECV)
+        Prefs_ShowMessages_b && (
+            textPtr != msg_Buffer.lastMessagePtr ||
+            Sys_CheckTimeGE(&Sys_FrameTimeECV_q[0], &msg_Buffer.nextDuplicateTickECV)
+        )
     ) {
         msg_Buffer.nextDuplicateTickECV = Sys_FrameTimeECV_q[0];
         Sys_AddTime(&msg_Buffer.nextDuplicateTickECV, msg_Buffer.deduplicationPeriod);

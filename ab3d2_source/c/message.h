@@ -86,4 +86,10 @@ extern BOOL Msg_SmallScreenNeedsRedraw(void);
 
 extern void Msg_Tick(void);
 
+static __inline BOOL Msg_Enabled(void) {
+    extern UBYTE Prefs_ShowMessages_b;
+    return Prefs_ShowMessages_b;
+}
+
+
 #endif // MESSAGE_H

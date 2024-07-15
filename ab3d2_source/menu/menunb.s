@@ -1768,7 +1768,7 @@ mnu_MYCUSTOMOPTSTEXT:
 optionLines:				;12345678901234567890
 				dc.b	'  ORIGINAL MOUSE    ',1;OFF  ',1
 				dc.b	'  ALWAYS RUN        ',1;OFF  ',1
-				dc.b	'  OPTION 3          ',1;OFF  ',1
+				dc.b	'  SHOW MESSAGES     ',1;OFF  ',1
 				dc.b	'  OPTION 4          ',1;OFF  ',1
 				dc.b	'  OPTION 5          ',1
 				dc.b	'  OPTION 6          ',1
@@ -1800,7 +1800,7 @@ KEY_LINES:
 				dc.b	'  FORCE S/S      ',132+$67,'  ',1
 				dc.b	'  S/S LEFT       ',132+$39,'  ',1
 				dc.b	'  S/S RIGHT      ',132+$3a,'  ',1
-				dc.b	'  DUCK           ',132+$22,'  ',1
+				dc.b	'  CROUCH         ',132+$22,'  ',1
 				dc.b	'        MORE        ',0
 
 				EVEN
