@@ -23,6 +23,9 @@ DEV_SKIP_TIMEGRAPH				EQU 10
 DEV_SKIP_LIGHTING				EQU 11
 DEV_SKIP_SKYFILL				EQU 12
 
+; Skip rendering the overlay completely
+DEV_SKIP_OVERLAY				EQU 31
+
 ; When any of the level geometry is skipped, we need to make sure the fast buffer gets cleared
 DEV_CLEAR_FASTBUFFER_MASK		EQU (1<<DEV_SKIP_FLATS)|(1<<DEV_SKIP_SIMPLE_WALLS)|(1<<DEV_SKIP_SHADED_WALLS)
 

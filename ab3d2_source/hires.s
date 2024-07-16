@@ -501,10 +501,8 @@ noclips:
 				clr.b	Vid_WaitForDisplayMsg_b
 
 .skipChangeScreen:
-****************************
 				jsr		Plr_Initialise
 ; bsr initobjpos
-****************************
 
 				; setup audio channels
 				move.l	#$dff000,a6
@@ -3879,32 +3877,31 @@ RotateObjectPtsFullScreen:
 
 				sub.w	zoff,d1
 				move.w	d0,d2
-				muls	d6,d2
+				muls	d6,d2      ; pOEP
 				move.w	d1,d3
-				muls	d5,d3
+				muls	d5,d3      ; pOEP
 				sub.l	d3,d2
-
-
+                muls	d5,d0      ; pOEP
 				add.l	d2,d2
-				swap	d2
+				swap	d2         ; pOEP
 				move.w	d2,(a1)+
-
-				muls	d5,d0
-				muls	d6,d1
-
+				muls	d6,d1      ; pOEP
 				add.l	d0,d1
 				asl.l	#2,d1
-				swap	d1
+				swap	d1         ; pOEP
 				ext.l	d1
-				divs	#3,d1
-				moveq	#0,d3
+
+				;divs	#3,d1
+				muls    #85,d1     ; pOEP
+				move.l  xwobble,d3
+				asr.l   #8,d1 ; 85/256 approximation of division by 3
 
 				move.w	d1,(a1)+
 				ext.l	d2
 				asl.l	#7,d2
-				add.l	xwobble,d2
+				add.l	d3,d2
 				move.l	d2,(a1)+
-				sub.l	xwobble,d2
+				sub.l	d3,d2
 				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 
@@ -3916,8 +3913,8 @@ RotateObjectPtsFullScreen:
 				bra		.objpointrotlop
 
 .noworkout:
-				move.l	#0,(a1)+
-				move.l	#0,(a1)+
+				clr.l	(a1)+
+				clr.l	(a1)+
 				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 				rts

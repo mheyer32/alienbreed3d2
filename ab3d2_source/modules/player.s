@@ -415,6 +415,8 @@ plr_KeyboardControl:
 
 .noframelimit:
 
+				IFD DEV
+
 .toggle_skip_sky_for_zone:
 				; X toggles the sky background visibility for this zone
 				tst.b			RAWKEY_X(a5)
@@ -427,7 +429,7 @@ plr_KeyboardControl:
 
 .clear_zone_data:
 				tst.b			RAWKEY_Z(a5)
-				beq.s			.toggle_060
+				beq.s			.dev_toggles
 
 				clr.b			RAWKEY_Z(a5)
 
@@ -440,13 +442,6 @@ plr_KeyboardControl:
 				clr.l			(a1)+
 				clr.l			(a1)+
 				dbra			d0,.clear_loop
-
-.toggle_060:
-				tst.b			RAWKEY_H(a5)
-				beq.s			.dev_toggles
-
-				clr.b			RAWKEY_H(a5)
-				not.b			Sys_CPU_68060_b
 
 .dev_toggles:
 				; Developer toggles
@@ -462,10 +457,13 @@ plr_KeyboardControl:
 				DEV_CHECK_KEY	RAWKEY_N,AI_ATTACK
 				DEV_CHECK_KEY	RAWKEY_B,LIGHTING
 				DEV_CHECK_KEY	RAWKEY_V,SKYFILL
+				DEV_CHECK_KEY	RAWKEY_H,OVERLAY
 
 				; change the default floor gouraud state based on the lighting toggle
 				; todo - fix floor rendering when goraud is disabled, it's seriously glitched
 				;DEV_SEQ	LIGHTING,draw_GouraudFlatsSelected_b
+
+				ENDC
 
 				move.l	#SinCosTable_vw,a1
 				move.l	#KeyMap_vb,a5
@@ -525,9 +523,9 @@ plr_KeyboardControl:
 				move.l	d0,SBIGMIDDLEY
 				move.w	PlrT_SnapAngPos_w(a0),d0
 				move.w	PlrT_SnapAngSpd_w(a0),d3
-***************************************************************
 				tst.b	Prefs_AlwaysRun_b
 				bne.s	.always_run
+
 				move.w	#35,d1
 				move.w	#2,d2
 				move.w	#10,Plr_TurnSpeed_w
@@ -535,6 +533,7 @@ plr_KeyboardControl:
 				move.b	run_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.nofaster
+
 				move.w	#60,d1
 				move.w	#3,d2
 				move.w	#14,Plr_TurnSpeed_w

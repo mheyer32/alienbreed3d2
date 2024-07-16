@@ -79,6 +79,7 @@ Dev_Init:
 ;*
 ;******************************************************************************
 Dev_DataReset:
+				DEV_CHECK	OVERLAY,.done
 				lea		dev_GraphBuffer_vb,a0
 				move.l	#(DEV_GRAPH_BUFFER_SIZE/16)-1,d0
 .loop:
@@ -87,6 +88,7 @@ Dev_DataReset:
 				clr.l	(a0)+
 				clr.l	(a0)+
 				dbra	d0,.loop
+.done:
 				clr.w	dev_DrawTimeMsAvg_w
 				rts
 
@@ -119,12 +121,6 @@ Dev_MarkFrameBegin:
 				and.w	#DEV_GRAPH_BUFFER_MASK,d0
 				move.w	d0,dev_FrameIndex_w
 
-				; Reset the divisor extrema
-				bne.s	.skip_reset_divisor
-				move.w	#32767,dev_Reserved4_w
-				move.w	#-32768,dev_Reserved5_w
-
-.skip_reset_divisor:
 				lea		dev_Counters_vw,a0
 				clr.l	(a0)+
 				clr.l	(a0)+
@@ -231,7 +227,11 @@ Dev_PrintF:
 ;* Display developer instrumentation
 ;*
 ;******************************************************************************
+dev_SkipStats:
+				rts
 Dev_PrintStats:
+				DEV_CHECK	OVERLAY,dev_SkipStats
+
 				; Use the system recorded FPS average
 				move.l		Sys_FPSIntAvg_w,dev_FPSIntAvg_w
 
@@ -302,13 +302,6 @@ Dev_PrintStats:
 				move.l		#136+16,d0
 				bsr			Dev_PrintF
 
-				; 68060 optimisations
-				lea			.dev_ss_stats_060_vb,a0
-				lea			.dev_strptr_bool_off,a1
-				tst.b		Sys_CPU_68060_b
-				beq.b		.print
-				addq		#4,a1
-
 .print:
 				move.l		#136+32,d0
 				bsr			Dev_PrintF
@@ -319,23 +312,6 @@ Dev_PrintStats:
 				move.l		#136+48,d0
 				bsr			Dev_PrintF
 
-;				; Long Divisions
-;				lea			dev_Reserved1_w,a1
-;				lea			.dev_ss_stats_long_divide_vb,a0
-;				move.l		#136,d0
-;				bsr			Dev_PrintF
-
-;				; Min Divisor
-;				lea			dev_Reserved4_w,a1
-;				lea			.dev_ss_stats_min_divisor_vb,a0
-;				move.l		#152,d0
-;				bsr			Dev_PrintF
-
-;				; Max Divisor
-;				lea			dev_Reserved5_w,a1
-;				lea			.dev_ss_stats_max_divisor_vb,a0
-;				move.l		#168,d0
-;				bsr			Dev_PrintF
 
 				; Clip Limits
 ;				lea			Draw_LeftClip_l,a1
@@ -374,22 +350,12 @@ Dev_PrintStats:
 				dc.b		"OZ:%3d",0
 .dev_ss_stats_zone_vb:
 				dc.b		"ZI:%3d",0
-.dev_ss_stats_060_vb:
-				dc.b		"060:%3s",0
 
 .dev_ss_clip_vb:
 				dc.b		"LC:%5d %5d RC: %5d %5d",0
 
 .dev_ss_vid_bright_vb:
 				dc.b		"VC:%5d VB:%5d",0
-
-; Stats for the division pogrom 2.0
-;.dev_ss_stats_long_divide_vb:
-;				dc.b		"LD:%4d ",0
-;.dev_ss_stats_min_divisor_vb:
-;				dc.b		"mD:%4d ",0
-;.dev_ss_stats_max_divisor_vb:
-;				dc.b		"MD:%4d ",0
 
 .dev_bool_off_vb:
  				dc.b		"off",0
@@ -426,7 +392,10 @@ dev_ECVDiffToMs:
 ;* Calculate the times and store in the graph data buffer
 ;*
 ;******************************************************************************
+dev_SkipGraph:
+				rts
 Dev_DrawGraph:
+				DEV_CHECK	OVERLAY,dev_SkipGraph
 				movem.l	d0/d1/d2/a0/a1/a2,-(sp)
 				lea		Sys_FrameTimeECV_q,a0
 				lea		dev_ECVDrawDone_q,a1
