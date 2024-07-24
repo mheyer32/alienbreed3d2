@@ -411,7 +411,10 @@ plr_KeyboardControl:
 				clr.b			RAWKEY_X(a5)
 				lea				Zone_BackdropDisable_vb,a1
 				move.w			PlrT_Zone_w(a0),d0
-				not.b			(a1,d0.w)
+				move.w          d0,d1
+				lsr.w           #3,d0   ; byte offset into backdrop disable table
+				add.w           d0,a1
+                bchg.b          d1,(a1) ; d1 is applied modulo 8 here, toggle the bit
 
 .clear_zone_data:
 				tst.b			RAWKEY_Z(a5)
@@ -419,7 +422,7 @@ plr_KeyboardControl:
 
 				clr.b			RAWKEY_Z(a5)
 
-				move.w			#16-1,d0
+				move.w			#ZONE_BACKDROP_DISABLE_SIZE/16-1,d0
 				lea				Zone_BackdropDisable_vb,a1
 
 .clear_loop:
@@ -430,6 +433,8 @@ plr_KeyboardControl:
 				dbra			d0,.clear_loop
 
 .dev_toggles:
+				DEV_CHECK_KEY	RAWKEY_V,DUMP_BG_DISABLE
+
 				; Developer toggles
 				DEV_CHECK_KEY	RAWKEY_E,SIMPLE_WALLS
 				DEV_CHECK_KEY	RAWKEY_R,SHADED_WALLS
@@ -442,7 +447,6 @@ plr_KeyboardControl:
 				DEV_CHECK_KEY	RAWKEY_Q,FASTBUFFER_CLEAR
 				DEV_CHECK_KEY	RAWKEY_N,AI_ATTACK
 				DEV_CHECK_KEY	RAWKEY_B,LIGHTING
-				DEV_CHECK_KEY	RAWKEY_V,SKYFILL
 				DEV_CHECK_KEY	RAWKEY_H,OVERLAY
 
 				; change the default floor gouraud state based on the lighting toggle

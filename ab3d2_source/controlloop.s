@@ -294,6 +294,9 @@ Prefs_AlwaysRun_b:			dc.b	0
     DECLC   Prefs_ShowMessages_b
         dc.b    255
 
+    DECLC   Prefs_PlayMusic_b
+        dc.b    255
+
                 align 4
 _Prefs_PersistedEnd::
 PrefsfileEnd:
@@ -564,7 +567,7 @@ customOptions:
 ; copy current setting over to menu
 				move.l	#Prefs_CustomOptionsBuffer_vb,a0
 				move.l	#optionLines+17,a1
-				moveq	#2,d1
+				moveq	#3,d1
 .copyOpts:
 				move.b	(a0)+,d0
 
@@ -608,6 +611,7 @@ customOptions:
 .co4:
 				cmp.w	#3,d0
 				bne.s	.co5
+				not.b   Prefs_PlayMusic_b
 				bra	.w8
 .co5:
 				cmp.w	#4,d0
@@ -626,7 +630,7 @@ customOptions:
 				bra	.w8
 .co8:
 				cmp.w	#7,d0
-				bne.s	.w8
+				;bne.s	.w8
 				;opt8
 .w8:
 				lea		mnu_MYCUSTOMOPTSMENU,a0

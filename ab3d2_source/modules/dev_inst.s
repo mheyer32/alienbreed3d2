@@ -225,11 +225,18 @@ Dev_PrintF:
 ;******************************************************************************
 ;*
 ;* Display developer instrumentation
+;* This is a safe place to do IO ?
 ;*
 ;******************************************************************************
 dev_SkipStats:
 				rts
+
+dev_DumpLevelBackdropErrata:
+				DEV_DISABLE DUMP_BG_DISABLE
+				jsr			Lvl_DumpBackdropDisableData
+
 Dev_PrintStats:
+				DEV_CHECK	DUMP_BG_DISABLE,dev_DumpLevelBackdropErrata
 				DEV_CHECK	OVERLAY,dev_SkipStats
 
 				; Use the system recorded FPS average

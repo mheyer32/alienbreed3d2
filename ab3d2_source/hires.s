@@ -201,6 +201,7 @@ _startup:
 				include		"modules/game/game_properties.s"
 				include		"modules/game/game_preferences.s"
 				include		"modules/game/game_progress.s"
+				include		"modules/level.s"
 
 				IFD MEMTRACK
 				include "modules/dev_memtrack.s"
