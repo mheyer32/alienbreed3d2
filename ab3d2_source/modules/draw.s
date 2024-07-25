@@ -10,8 +10,6 @@
 ; *****************************************************************************
 
 				align	4
-draw_NarrateTextTime_w:
-				dc.w	5
 
 ; move me
 firstdigit_b:	dc.b	0

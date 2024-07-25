@@ -568,6 +568,8 @@ scaledownlop:
 
 *********************************
 
+				; TODO - check music is enabled
+
 				st		CHANNELDATA
 				jsr		mt_init
 
