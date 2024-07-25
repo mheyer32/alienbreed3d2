@@ -6664,9 +6664,6 @@ dosomething:
 				addq.w	#1,Anim_FramesToDraw_w
 				movem.l	d0-d7/a0-a6,-(a7)
 
-; Text narration superceded by on display messaging
-;				jsr		Draw_NarrateText
-
 				bsr		DOALLANIMS
 
 				sub.w	#1,timetodamage
