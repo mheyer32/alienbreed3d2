@@ -2049,6 +2049,8 @@ SetupRenderbufferSize:
 ***************************************************************
 				;is this a better way to shoehorn this in only when screen mode changes? AL
 ***************************************************************
+				tst.b	LASTDH
+				bne.s	.big
 				tst.b	Vid_FullScreen_b
 				beq.s	.small
 
