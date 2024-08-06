@@ -218,6 +218,10 @@ xwobxoff:					dc.w	0
 xwobzoff:					dc.w	0
 CollId:						dc.w	0
 
+View_KeyLook_w: dc.w 0
+View_LookMin_w:	dc.w 0
+View_LookMax_w:	dc.w 0
+
 ; Byte Aligned
 Game_MasterQuit_b:			dc.b	0
 Game_SlaveQuit_b:			dc.b	0
@@ -740,6 +744,27 @@ CLRDAM:
 				clr.l	Plr2_SnapXSpdVal_l
 				clr.l	Plr2_SnapZSpdVal_l
 				clr.l	Plr2_SnapYVel_l
+
+***************************************************************shoehorn this in here AL
+				tst.b	Vid_FullScreen_b
+				beq.s	.small
+
+				move.w	#6,View_KeyLook_w
+				move.w	#FS_HEIGHT/2,d0
+				move.w	d0,View_LookMin_w
+				neg.w	d0
+				move.w	d0,View_LookMax_w
+				bra	.big
+
+.small
+				move.w	#4,View_KeyLook_w
+				move.w	#SMALL_HEIGHT/2,d0
+				move.w	d0,View_LookMin_w
+				neg.w	d0
+				move.w	d0,View_LookMax_w
+
+.big
+***************************************************************
 
 game_main_loop:
 				move.w	#%110000000000,_custom+potgo
@@ -2021,6 +2046,40 @@ nnoend2:
 
 ; Check renderbuffer setup variables and wipe screen
 SetupRenderbufferSize:
+***************************************************************
+				;is this a better way to shoehorn this in only when screen mode changes? AL
+***************************************************************
+				tst.b	LASTDH
+				bne.s	.big
+				tst.b	Vid_FullScreen_b
+				beq.s	.small
+
+				move.w	#6,View_KeyLook_w
+				move.w	#FS_HEIGHT/2,d0
+				move.w	d0,View_LookMin_w
+				neg.w	d0
+				move.w	d0,View_LookMax_w
+				move.w	STOPOFFSET,d0
+				move.w	d0,d1
+				asr.w	#1,d1			;STOPOFFSET * 0.5
+				add.w	d1,d0			;STOPOFFSET * 1.5
+				move.w	d0,STOPOFFSET
+
+				bra	.big
+
+.small
+				move.w	#4,View_KeyLook_w
+				move.w	#SMALL_HEIGHT/2,d0
+				move.w	d0,View_LookMin_w
+				neg.w	d0
+				move.w	d0,View_LookMax_w
+				move.w	STOPOFFSET,d0
+				muls.w	#2,d0
+				divs.w	#3,d0
+				move.w	d0,STOPOFFSET
+
+.big
+***************************************************************
 				; FIXME dowe need to clamp here again?
 				cmp.w	#100,Vid_LetterBoxMarginHeight_w
 				blt.s	.wideScreenOk
@@ -7069,7 +7128,7 @@ nostartalan:
 				clr.b	Plr1_Clicked_b
 				move.w	#0,Plr_AddToBobble_w
 				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapHeight_l
-				move.w	#-80,d0					; Is this related to render buffer height
+				move.w	View_LookMax_w,d0					; Is this related to render buffer height
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
@@ -7159,7 +7218,7 @@ control2:
 				clr.b	Plr2_Fire_b
 				move.w	#0,Plr_AddToBobble_w
 				move.l	#PLR_CROUCH_HEIGHT,Plr2_SnapHeight_l
-				move.w	#-80,d0
+				move.w	View_LookMax_w,d0
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
