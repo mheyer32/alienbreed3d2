@@ -497,6 +497,12 @@ DL_Never		EQU		1
 LVLT_MESSAGE_LENGTH EQU 160
 LVLT_MESSAGE_COUNT  EQU 10
 
+; Maximum number of zones. Note that the game doesn't yet support this limit fully.
+LVL_EXPANDED_MAX_ZONE_COUNT EQU 512
+
+; Maximum number of zones. Once this is fully working, rededine as LVL_EXPANDED_MAX_ZONE_COUNT
+LVL_MAX_ZONE_COUNT EQU 256
+
 	; Level Data Structure (after message block of LVLT_MESSAGE_LENGTH*LVLT_MESSAGE_COUNT)
 	STRUCTURE LvlT,0					; offset, size
 		UWORD LvlT_Plr1_StartX_w		; 0, 2

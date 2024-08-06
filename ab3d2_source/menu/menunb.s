@@ -1700,6 +1700,7 @@ mnu_MYLEVELMENU:
 				dc.l	0,0
 				dc.l	0,0
 
+; TODO - inject loaded names
 mnu_MYLEVELMENUTEXT:
 ;					 12345678901234567890
 				dc.b	'                    ',1
@@ -1769,7 +1770,7 @@ optionLines:				;12345678901234567890
 				dc.b	'  ORIGINAL MOUSE    ',1;OFF  ',1
 				dc.b	'  ALWAYS RUN        ',1;OFF  ',1
 				dc.b	'  SHOW MESSAGES     ',1;OFF  ',1
-				dc.b	'  OPTION 4          ',1;OFF  ',1
+				dc.b	'  PLAY MUSIC        ',1;OFF  ',1
 				dc.b	'  OPTION 5          ',1
 				dc.b	'  OPTION 6          ',1
 				dc.b	'  OPTION 7          ',1

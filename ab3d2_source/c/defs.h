@@ -21,6 +21,13 @@
 #define NUM_SFX             64
 #define NUM_WALL_TEXTURES   16
 
+/* Maximum number of zones. Note that the game doesn't yet support this limit fully. */
+#define LVL_EXPANDED_MAX_ZONE_COUNT 512
+
+/* Maximum number of zones. Once this is fully working, rededine as LVL_EXPANDED_MAX_ZONE_COUNT */
+#define LVL_MAX_ZONE_COUNT 256
+
+
 /*
  * These structures are managed by the assembler side and the alignment constraints are to preven the compiler
  * from padding them further for alignment purposes. It does not mean that the structures themselves are only

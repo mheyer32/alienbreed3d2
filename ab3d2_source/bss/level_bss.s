@@ -40,6 +40,9 @@ Lvl_ControlPointCoordsPtr_l:	ds.l	1
 Lvl_GraphicsPtr_l:				ds.l	1
 Lvl_ClipsPtr_l:					ds.l	1
 
+; For custom properties and/or errata
+Lvl_ModPropertiesPtr_l:         ds.l    1
+
 ; Word aligned data
 Lvl_NumControlPoints_w:			ds.w	1
 Lvl_NumPoints_w:				ds.w	1

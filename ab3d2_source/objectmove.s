@@ -196,8 +196,8 @@ thisisawall2
 
 chkhttt:
 
-				move.w	d2,WALLXLEN
-				move.w	d5,WALLZLEN
+				;move.w	d2,WALLXLEN
+				;move.w	d5,WALLZLEN
 
 				move.l	d0,d7
 
@@ -730,7 +730,7 @@ CheckMoreFloorLines
 				tst.w	8(a2)
 				blt.s	CheckMoreFloorLines
 
-				clr.b	CrossIntoTop
+				;clr.b	CrossIntoTop
 
 				moveq	#0,d1
 				move.w	8(a2),d1
@@ -871,46 +871,50 @@ ERRORINMOVEMENT:
 				st		hitwall
 				rts
 
-objroomback:	dc.l	0
+				align 4
 
-deltax:			dc.w	0
-
-tstxval:		dc.l	0
+;tstxval:		dc.l	0
 oldx:			dc.l	0
 oldz:			dc.l	0
+oldy:			dc.l	0
 newx:			dc.l	0
 newz:			dc.l	0
+newy:			dc.l	0
+
 xdiff:			dc.l	0
 zdiff:			dc.l	0
 objroom:		dc.l	0
-hitwall:		dc.b	0
-exitfirst:		dc.b	0
+objroomback:	dc.l	0
+
+deltax:			dc.w	0
 speed:			dc.w	0
 wallflags:		dc.w	0
 distaway:		dc.w	0
-newy:			dc.l	0
-oldy:			dc.l	0
+
 thingheight:	dc.l	0
 StepUpVal:		dc.l	0
 StepDownVal:	dc.l	0
 wallhitheight:	dc.l	0
-seclot:			dc.b	0
+;seclot:			dc.b	0
 
-				even
-WALLXLEN:		dc.w	0
-WALLZLEN:		dc.w	0
-onwallx:		dc.w	0
-onwallz:		dc.w	0
-slidex:			dc.w	0
-slidez:			dc.w	0
-CrossIntoTop:	dc.b	0
+;WALLXLEN:		dc.w	0	; write only?
+;WALLZLEN:		dc.w	0	; write only?
+;onwallx:		dc.w	0
+;onwallz:		dc.w	0
+;slidex:			dc.w	0
+;slidez:			dc.w	0
+
+LowerFloorHeight:	dc.l	0
+LowerRoofHeight:	dc.l	0
+UpperFloorHeight:	dc.l	0
+UpperRoofHeight:	dc.l	0
+billy:				dc.l	0,0
+
+;CrossIntoTop:	dc.b	0	; write only ?
 StoodInTop:		dc.b	0
-LowerFloorHeight: dc.l	0
-LowerRoofHeight: dc.l	0
-UpperFloorHeight: dc.l	0
-UpperRoofHeight: dc.l	0
+hitwall:		dc.b	0
+exitfirst:		dc.b	0
 
-billy:			dc.l	0,0
 
 				even
 

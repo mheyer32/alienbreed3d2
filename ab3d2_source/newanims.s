@@ -2675,14 +2675,16 @@ sky_early_exit:
 ; Not sure why SKY_BACKDROP_W is 648.
 ;
 Draw_SkyBackdrop:
-				DEV_CHECK SKYFILL,sky_early_exit
 
 				; bail if the zone is tagged as having no sky
 				lea		Zone_BackdropDisable_vb,a5
 				move.w	Plr1_Zone_w,d5
-				tst.b	(a5,d5.w)
-				bne.b	sky_early_exit
+				move.w  d5,d3
+				lsr.w   #3,d5   ; byte offset into backdrop disable table
+				add.w   d5,a5
 
+				btst.b  d3,(a5) ; d3 is applied modulo 8, test the bit
+				bne.b	sky_early_exit
 
 				move.l	a0,-(a7)
 				move.w	tmpangpos,d5

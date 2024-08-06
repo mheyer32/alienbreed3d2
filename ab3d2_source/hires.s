@@ -201,6 +201,7 @@ _startup:
 				include		"modules/game/game_properties.s"
 				include		"modules/game/game_preferences.s"
 				include		"modules/game/game_progress.s"
+				include		"modules/level.s"
 
 				IFD MEMTRACK
 				include "modules/dev_memtrack.s"
@@ -570,6 +571,8 @@ scaledownlop:
 ; bne.s .noback
 
 *********************************
+
+				; TODO - check music is enabled
 
 				st		CHANNELDATA
 				jsr		mt_init
@@ -6721,9 +6724,6 @@ SAVESAVE:		dc.w	0
 dosomething:
 				addq.w	#1,Anim_FramesToDraw_w
 				movem.l	d0-d7/a0-a6,-(a7)
-
-; Text narration superceded by on display messaging
-;				jsr		Draw_NarrateText
 
 				bsr		DOALLANIMS
 
