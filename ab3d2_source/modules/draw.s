@@ -369,3 +369,36 @@ Draw_NarrateText:
 .NOCHARYET:
 				rts
 
+Draw_Crosshair:
+				move.l	Vid_FastBufferPtr_l,a0
+				add.w	Vid_CentreX_w,a0
+				move.w	Vid_BottomY_w,d0
+				muls.w	#SCREEN_WIDTH/2,d0
+***************************************************************
+;dirty hack for fullscreen to allow the crosshair to match 2/3 screen position while looking for a mor robust solution.
+***************************************************************
+				tst.b	Vid_FullScreen_b
+				beq.s	.small
+
+				cmp.w	#0,STOPOFFSET
+				ble.s .above
+
+				move.w	 STOPOFFSET,d1
+				divs.w #9,d1
+				muls.w #SCREEN_WIDTH,d1
+				add.w d1,d0
+				bra.s	.below
+
+.above
+				move.w	 STOPOFFSET,d1
+				neg.w	d1
+				divs.w #9,d1
+				muls.w #SCREEN_WIDTH,d1
+				sub.w d1,d0
+
+.below
+***************************************************************
+.small
+				add.l	d0,a0
+				move.b	#255,(a0)
+				rts
