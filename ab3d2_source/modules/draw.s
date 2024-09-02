@@ -380,25 +380,52 @@ Draw_Crosshair:
 				tst.b	Vid_FullScreen_b
 				beq.s	.small
 
-				cmp.w	#0,STOPOFFSET
-				ble.s .above
-
 				move.w	 STOPOFFSET,d1
-				divs.w #9,d1
-				muls.w #SCREEN_WIDTH,d1
+                ble.s   .above
+
+				muls.w  #(256/9),d1
+				asr.l   #8,d1
+
+				and.b   #$fe,d1
+
+				muls.w  #SCREEN_WIDTH,d1
+
 				add.w d1,d0
 				bra.s	.below
 
 .above
-				move.w	 STOPOFFSET,d1
+;				move.w	 STOPOFFSET,d1
 				neg.w	d1
-				divs.w #9,d1
-				muls.w #SCREEN_WIDTH,d1
+				;divs.w #9,d1
+				;muls.w #SCREEN_WIDTH,d1
+
+				muls.w  #(256/9),d1
+				asr.l   #8,d1
+
+                and.b   #$fe,d1
+
+
+				muls.w  #SCREEN_WIDTH,d1
+
 				sub.w d1,d0
 
 .below
 ***************************************************************
 .small
+
 				add.l	d0,a0
-				move.b	#255,(a0)
+
+				move.b  #254,d0
+				move.b	d0,-4*SCREEN_WIDTH-4(a0) ; TL
+				move.b	d0,-4*SCREEN_WIDTH+4(a0) ; TR
+                move.b	d0,-2*SCREEN_WIDTH-2(a0) ; TL
+				move.b	d0,-2*SCREEN_WIDTH+2(a0) ; TR
+
+				move.b	d0,2*SCREEN_WIDTH-2(a0) ; BL
+				move.b	d0,2*SCREEN_WIDTH+2(a0) ; BR
+				move.b	d0,4*SCREEN_WIDTH-4(a0) ; BL
+				move.b	d0,4*SCREEN_WIDTH+4(a0) ; BR
+
+
+
 				rts
