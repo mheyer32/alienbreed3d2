@@ -414,7 +414,13 @@ plr_KeyboardControl:
 				clr.l	Vid_FPSLimit_l
 
 .noframelimit:
+                tst.b   RAWKEY_NUM_DOT(a5)
+                beq.b   .done_normal_keys
+                add.b   #1,Prefs_CrossHairColour_b
+                and.b   #7,Prefs_CrossHairColour_b
+                clr.b   RAWKEY_NUM_DOT(a5)
 
+.done_normal_keys:
 				IFD DEV
 
 .toggle_skip_sky_for_zone:
