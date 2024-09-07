@@ -1770,8 +1770,8 @@ optionLines:				;12345678901234567890
 				dc.b	'  ORIGINAL MOUSE    ',1;OFF  ',1
 				dc.b	'  ALWAYS RUN        ',1;OFF  ',1
 				dc.b	'  SHOW MESSAGES     ',1;OFF  ',1
-				dc.b	'  PLAY MUSIC        ',1;OFF  ',1
-				dc.b	'  OPTION 5          ',1
+				dc.b	'  AUTO AIM OFF      ',1;OFF  ',1
+				dc.b	'  PLAY MUSIC        ',1;OFF  ',1        ',1
 				dc.b	'  OPTION 6          ',1
 				dc.b	'  OPTION 7          ',1
 				dc.b	'  OPTION 8          ',1
