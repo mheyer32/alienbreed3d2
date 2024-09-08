@@ -107,13 +107,15 @@ void game_SavePreferences(void)
 #include <stdlib.h>
 #include <memory.h>
 
+#include "key_defs.h"
+
 /**
  * Enumerate the types expected in the file
  */
 enum CFGParamType {
-    CFG_PARAM_TYPE_BOOL   = 0,
-    CFG_PARAM_TYPE_INT    = 1,
-    /* CFG_PARAM_TYPE_STRING = 2 TODO */
+    CFG_PARAM_TYPE_BOOL    = 0,
+    CFG_PARAM_TYPE_INT     = 1,
+    CFG_PARAM_TYPE_KEY     = 2,
 };
 
 /**
@@ -131,7 +133,7 @@ enum CFGVarType {
 /**
  * CFGOption
  *
- * Links a parameter name to the address of the target and defines the expected text file and target types
+ * Links a parameter name tod the address of the target and defines the expected text file and target types
  */
 typedef struct {
     char const *p_name; // The parameter name
@@ -140,25 +142,17 @@ typedef struct {
     UWORD      v_type;  // CFGMapType
 } CFGOption;
 
-static UBYTE test_bool_true         = 1;
-static UBYTE test_bool_false        = 1;
 
 /**
- * Defines the set of optioms. Just test cases for now.
+ * Defines the set of optioms.
  */
-CFGOption const options[] = {
-    {
-        "test_bool_true",       // Name of the parameter
-        &test_bool_true,        // Address of the variable to set
-        CFG_PARAM_TYPE_BOOL,    // Parameter tpe in file
-        CFG_VAR_TYPE_UBYTE      // Datatype of variable
-    },
-    {
-        "test_bool_false",
-        &test_bool_false,
-        CFG_PARAM_TYPE_BOOL,
-        CFG_VAR_TYPE_UBYTE
-    },
+static CFGOption const options[] = {
+
+    #include "prefs_keys.h"
+    #include "prefs_vid.h"
+
+
+
 };
 
 /**
@@ -184,11 +178,27 @@ static int parse_int(char const* buffer) {
 }
 
 /**
- * Parses a key name, for the custom key settings
+ * Parses a key name, for the custom key settings. Returns the raw key code, or -1 for no match
  */
 static int parse_key(char const* buffer) {
-    /** TODO */
-    return 0;
+
+    // Single char
+    if (0 == buffer[1]) {
+        for (unsigned int i = 0; i < sizeof(char_keys) / sizeof(CharKey); ++i) {
+            if (char_keys[i].name == buffer[0]) {
+                return char_keys[i].raw_code;
+            }
+        }
+    } else {
+        for (unsigned int i = 0; i < sizeof(special_keys) / sizeof(SpecialKey); ++i) {
+            if (0 == strcmp(special_keys[i].name, buffer)) {
+                return char_keys[i].raw_code;
+            }
+        }
+    }
+
+    // No match was found
+    return -1;
 }
 
 /**
@@ -334,9 +344,12 @@ key.right D
 key.duck  C
 key.jump  SPACE
 
+
 ; Gameplay
-aim.auto       false   ; shoot where I point, please
-aim.crosshair  true
+play.input          mouse   ; mouse, keys, joystick
+play.auto_aim       false   ; shoot where I point, please
+play.use_crosshair  true
+play.show_messages  true
 
 ; ...
 

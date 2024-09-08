@@ -224,6 +224,8 @@ Game_Quit:
 _Prefs_Persisted::
 Prefsfile:
                     dc.b	'k8nx'
+    ; DECLC Macro makes the identifier visible to C also
+    DECLC	Prefs_AssignableKeys_vb
 
 AssignableKeys_vb:
 turn_left_key:		dc.b	RAWKEY_LEFT
@@ -245,7 +247,6 @@ centre_view_key:	dc.b	RAWKEY_SEMICOLON
 next_weapon_key:	dc.b	RAWKEY_BSLASH
 spare_key:          dc.b    0
 
-    ; DECLC Macro makes the identifier visible to C also
 
 	DECLC	Prefs_FullScreen_b
 		dc.b	0
