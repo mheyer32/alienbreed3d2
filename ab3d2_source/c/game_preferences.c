@@ -313,6 +313,34 @@ void process_config(char const* name, FILE* fp) {
  * This is the main entry point. Takes the path of the file name and processes it.
  *
  * TODO - Rework for use with vanilla DOS library
+ *
+ * Example structure:
+
+; This is a comment. Anything after a ; is ignored until the end of the line
+; Settings are key value pairs. These are any non-whitespace characters and are matched and processed by
+; the parser.
+
+; Video options...
+vid.aga.fullscreen true
+vid.aga.margin     0
+vid.rtg.fullscreen 0
+vid.rtg.margin     0
+
+; Keybindings...
+key.walk  W
+key.back  S
+key.left  A
+key.right D
+key.duck  C
+key.jump  SPACE
+
+; Gameplay
+aim.auto       false   ; shoot where I point, please
+aim.crosshair  true
+
+; ...
+
+ *
  */
 void game_CFGParseOptionsFile(char const* file) {
     FILE* fp;
