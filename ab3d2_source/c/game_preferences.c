@@ -33,6 +33,8 @@ extern UWORD Vid_ContrastAdjust_w;
 extern UWORD Vid_BrightnessOffset_w;
 extern UBYTE Vid_GammaLevel_b;
 
+void game_CFGParseOptionsFile(char const*);
+
 // Extreme MVP version
 
 void game_ApplyPreferences(void)
@@ -57,50 +59,57 @@ void game_ApplyPreferences(void)
 
 void game_LoadPreferences(void)
 {
-    BPTR gamePrefsFH = Open(game_PreferencesFile, MODE_OLDFILE);
-    if (DOSFALSE == gamePrefsFH) {
-        return;
-    }
-    LONG size = (Prefs_PersistedEnd - Prefs_Persisted);
-    if (size == Read(gamePrefsFH, Prefs_Persisted, size)) {
-        game_ApplyPreferences();
-    }
-    Close(gamePrefsFH);
+    game_CFGParseOptionsFile("game_prefs.cfg");
+
+    // Temporarily disable
+    // BPTR gamePrefsFH = Open(game_PreferencesFile, MODE_OLDFILE);
+    // if (DOSFALSE == gamePrefsFH) {
+    //     return;
+    // }
+    // LONG size = (Prefs_PersistedEnd - Prefs_Persisted);
+    // if (size == Read(gamePrefsFH, Prefs_Persisted, size)) {
+    //     game_ApplyPreferences();
+    // }
+    // Close(gamePrefsFH);
 }
 
 void game_SavePreferences(void)
 {
-    BPTR gamePrefsFH = Open(game_PreferencesFile, MODE_READWRITE);
-    if (DOSFALSE == gamePrefsFH) {
-        return;
-    }
+    // Temporarily disable
 
-    Prefs_FullScreen_b     = Vid_FullScreen_b;
-    Prefs_PixelMode_b      = Vid_DoubleHeight_b;
-    Prefs_SimpleLighting_b = Draw_ForceSimpleWalls_b;
-    Prefs_FPSLimit_b       = (UBYTE)Vid_FPSLimit_l;
-    Prefs_VertMargin_b     = (UBYTE)Vid_LetterBoxMarginHeight_w;
-    Prefs_DynamicLights_b  = Anim_LightingEnabled_b;
-    Prefs_RenderQuality_b  = Draw_GoodRender_b;
-
-    if (Vid_isRTG) {
-        Prefs_ContrastAdjust_RTG_w   = Vid_ContrastAdjust_w;
-        Prefs_BrightnessOffset_RTG_w = Vid_BrightnessOffset_w;
-        Prefs_GammaLevel_RTG_b       = Vid_GammaLevel_b;
-    } else {
-        Prefs_ContrastAdjust_AGA_w   = Vid_ContrastAdjust_w;
-        Prefs_BrightnessOffset_AGA_w = Vid_BrightnessOffset_w;
-        Prefs_GammaLevel_AGA_b       = Vid_GammaLevel_b;
-    }
-
-    Write(gamePrefsFH, Prefs_Persisted, (Prefs_PersistedEnd - Prefs_Persisted));
-    Close(gamePrefsFH);
+    // BPTR gamePrefsFH = Open(game_PreferencesFile, MODE_READWRITE);
+    // if (DOSFALSE == gamePrefsFH) {
+    //     return;
+    // }
+    //
+    // Prefs_FullScreen_b     = Vid_FullScreen_b;
+    // Prefs_PixelMode_b      = Vid_DoubleHeight_b;
+    // Prefs_SimpleLighting_b = Draw_ForceSimpleWalls_b;
+    // Prefs_FPSLimit_b       = (UBYTE)Vid_FPSLimit_l;
+    // Prefs_VertMargin_b     = (UBYTE)Vid_LetterBoxMarginHeight_w;
+    // Prefs_DynamicLights_b  = Anim_LightingEnabled_b;
+    // Prefs_RenderQuality_b  = Draw_GoodRender_b;
+    //
+    // if (Vid_isRTG) {
+    //     Prefs_ContrastAdjust_RTG_w   = Vid_ContrastAdjust_w;
+    //     Prefs_BrightnessOffset_RTG_w = Vid_BrightnessOffset_w;
+    //     Prefs_GammaLevel_RTG_b       = Vid_GammaLevel_b;
+    // } else {
+    //     Prefs_ContrastAdjust_AGA_w   = Vid_ContrastAdjust_w;
+    //     Prefs_BrightnessOffset_AGA_w = Vid_BrightnessOffset_w;
+    //     Prefs_GammaLevel_AGA_b       = Vid_GammaLevel_b;
+    // }
+    //
+    // Write(gamePrefsFH, Prefs_Persisted, (Prefs_PersistedEnd - Prefs_Persisted));
+    // Close(gamePrefsFH);
 }
 
 /**
  * Textfile configurartion
  *
- * TODO - migrate IO to DOS library?
+ * TODO - Switch to DOS library for IO
+ *      - Maybe load the whole text file into memory and parse in place
+ *      - Hand rolled functions for string match / atoi
  */
 
 #include <stdio.h>
@@ -147,12 +156,8 @@ typedef struct {
  * Defines the set of optioms.
  */
 static CFGOption const options[] = {
-
     #include "prefs_keys.h"
     #include "prefs_vid.h"
-
-
-
 };
 
 /**
@@ -182,7 +187,7 @@ static int parse_int(char const* buffer) {
  */
 static int parse_key(char const* buffer) {
 
-    // Single char
+    // Single char match
     if (0 == buffer[1]) {
         for (unsigned int i = 0; i < sizeof(char_keys) / sizeof(CharKey); ++i) {
             if (char_keys[i].name == buffer[0]) {
@@ -363,5 +368,6 @@ void game_CFGParseOptionsFile(char const* file) {
             process_config(next, fp);
         }
         fclose(fp);
+        game_ApplyPreferences();
     }
 }
