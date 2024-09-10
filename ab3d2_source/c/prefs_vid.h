@@ -1,8 +1,7 @@
 #ifndef PREFS_VID_H
 #define PREFS_VID_H
 
-    /* Video GFCOptions */
-
+    /* Video Options */
     {
         "vid.contrast.aga",
         &Prefs_ContrastAdjust_AGA_w,
@@ -15,6 +14,7 @@
         CFG_PARAM_TYPE_INT,
         CFG_VAR_TYPE_UWORD
     },
+
     {
         "vid.brightness.aga",
         &Prefs_BrightnessOffset_AGA_w,
@@ -27,6 +27,7 @@
         CFG_PARAM_TYPE_INT,
         CFG_VAR_TYPE_WORD
     },
+
     {
         "vid.gamma.aga",
         &Prefs_GammaLevel_AGA_b,
@@ -39,6 +40,7 @@
         CFG_PARAM_TYPE_INT,
         CFG_VAR_TYPE_UBYTE
     },
+
     {
         "vid.fullscreen",
         &Prefs_FullScreen_b,

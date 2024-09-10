@@ -264,10 +264,10 @@ spare_key:          dc.b    0
 		dc.b	0
 
 	DECLC	Prefs_DynamicLights_b
-		dc.b	0
+		dc.b	255
 
 	DECLC	Prefs_RenderQuality_b
-		dc.b	0
+		dc.b	255
 
 ; Padding
 Prefs_Unused_b:	dc.b	0
@@ -301,7 +301,7 @@ Prefs_CustomOptionsBuffer_vb:
     DECLC   Prefs_ShowMessages_b
         dc.b    255
 
-    DECLC   Prefs_AutoAim_b
+    DECLC   Prefs_NoAutoAim_b
         dc.b	0
 
     DECLC   Prefs_CrossHairColour_b
@@ -621,7 +621,7 @@ customOptions:
 .co4:
 				cmp.w	#3,d0
 				bne.s	.co5
-				not.b   Prefs_AutoAim_b
+				not.b   Prefs_NoAutoAim_b
 				bra	.w8
 .co5:
 				cmp.w	#4,d0

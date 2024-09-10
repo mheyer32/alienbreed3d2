@@ -87,6 +87,7 @@ static CharKey char_keys[] = {
     { 'B',    0x35 },
     { 'N',    0x36 },
     { 'M',    0x37 },
+    { ';',    0x29 },
     { ',',    0x38 },
     { '.',    0x39 },
     { '/',    0x3A },
@@ -97,25 +98,25 @@ static CharKey char_keys[] = {
  * Non-printable keys. Assignable keys only.
  */
 static SpecialKey special_keys[] = {
-    { "bspc",   0x41 }, //
-    { "ent",    0x44 },
-    { "ctrl",   0x63 },
-    { "caps",   0x62 },
-    { "semi",   0x29 },
-    { "r?",     0x2B }, // right mystery key
-    { "lshft",  0x60 },
-    { "l?",     0x30 }, // left mystery key
-    { "rshft",  0x61 },
-    { "alt",    0x64 }, // same for left and right :(
-    { "lamiga", 0x66 },
-    { "spc",    0x40 },
-    { "ramiga", 0x67 },
-    { "del",    0x46 },
-    { "help",   0x5F },
-    { "up",     0x4C },
-    { "left",   0x4F },
-    { "down",   0x4D },
-    { "right",  0x4E },
+    { "BSPC",   0x41 }, //
+    { "ENT",    0x44 },
+    { "CTRL",   0x63 },
+    { "CAPS",   0x62 },
+    { "R?",     0x2B }, // right mystery key
+    { "LSHIFT", 0x60 },
+    { "R?",     0x30 }, // left mystery key
+    { "RSHIFT", 0x61 },
+    { "LALT",   0x64 }, // same for left and right :(
+    { "RALT",   0x64 }, // same for left and right :(
+    { "LAMIGA", 0x66 },
+    { "SPACE",  0x40 },
+    { "RAMIGA", 0x67 },
+    { "DEL",    0x46 },
+    { "HELP",   0x5F },
+    { "UP",     0x4C },
+    { "LEFT",   0x4F },
+    { "DOWN",   0x4D },
+    { "RIGHT",  0x4E },
 };
 
 

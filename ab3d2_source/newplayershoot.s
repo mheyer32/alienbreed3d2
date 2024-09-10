@@ -191,14 +191,14 @@ Plr1_Shot:
 
 				tst.b Plr1_Mouse_b
 				beq.s	.not_mouse
-				
-				tst.b	Prefs_AutoAim_b
+
+				tst.b	Prefs_NoAutoAim_b
 				bne.s	.no_auto_aim
-				
+
 .not_mouse
 				tst.l	BulT_Gravity_l(a5)
 				beq.s	.skip_aim
-				
+
 .no_auto_aim
 				move.w	Plr1_AimSpeed_l,d2
 				move.w	#8,d1

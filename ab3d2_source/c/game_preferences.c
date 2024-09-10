@@ -33,7 +33,14 @@ extern UWORD Vid_ContrastAdjust_w;
 extern UWORD Vid_BrightnessOffset_w;
 extern UBYTE Vid_GammaLevel_b;
 
-void game_CFGParseOptionsFile(char const*);
+extern UBYTE Prefs_OriginalMouse_b;
+extern UBYTE Prefs_AlwaysRun_b;
+extern UBYTE Prefs_NoAutoAim_b;
+extern UBYTE Prefs_CrossHairColour_b;
+extern UBYTE Prefs_ShowMessages_b;
+
+void Cfg_ParsePreferencesFile(char const*);
+void Cfg_WritePreferencesFile(char const*);
 
 // Extreme MVP version
 
@@ -59,49 +66,12 @@ void game_ApplyPreferences(void)
 
 void game_LoadPreferences(void)
 {
-    game_CFGParseOptionsFile("game_prefs.cfg");
-
-    // Temporarily disable
-    // BPTR gamePrefsFH = Open(game_PreferencesFile, MODE_OLDFILE);
-    // if (DOSFALSE == gamePrefsFH) {
-    //     return;
-    // }
-    // LONG size = (Prefs_PersistedEnd - Prefs_Persisted);
-    // if (size == Read(gamePrefsFH, Prefs_Persisted, size)) {
-    //     game_ApplyPreferences();
-    // }
-    // Close(gamePrefsFH);
+    Cfg_ParsePreferencesFile(game_PreferencesFile);
 }
 
 void game_SavePreferences(void)
 {
-    // Temporarily disable
-
-    // BPTR gamePrefsFH = Open(game_PreferencesFile, MODE_READWRITE);
-    // if (DOSFALSE == gamePrefsFH) {
-    //     return;
-    // }
-    //
-    // Prefs_FullScreen_b     = Vid_FullScreen_b;
-    // Prefs_PixelMode_b      = Vid_DoubleHeight_b;
-    // Prefs_SimpleLighting_b = Draw_ForceSimpleWalls_b;
-    // Prefs_FPSLimit_b       = (UBYTE)Vid_FPSLimit_l;
-    // Prefs_VertMargin_b     = (UBYTE)Vid_LetterBoxMarginHeight_w;
-    // Prefs_DynamicLights_b  = Anim_LightingEnabled_b;
-    // Prefs_RenderQuality_b  = Draw_GoodRender_b;
-    //
-    // if (Vid_isRTG) {
-    //     Prefs_ContrastAdjust_RTG_w   = Vid_ContrastAdjust_w;
-    //     Prefs_BrightnessOffset_RTG_w = Vid_BrightnessOffset_w;
-    //     Prefs_GammaLevel_RTG_b       = Vid_GammaLevel_b;
-    // } else {
-    //     Prefs_ContrastAdjust_AGA_w   = Vid_ContrastAdjust_w;
-    //     Prefs_BrightnessOffset_AGA_w = Vid_BrightnessOffset_w;
-    //     Prefs_GammaLevel_AGA_b       = Vid_GammaLevel_b;
-    // }
-    //
-    // Write(gamePrefsFH, Prefs_Persisted, (Prefs_PersistedEnd - Prefs_Persisted));
-    // Close(gamePrefsFH);
+    Cfg_WritePreferencesFile(game_PreferencesFile);
 }
 
 /**
@@ -121,16 +91,17 @@ void game_SavePreferences(void)
 /**
  * Enumerate the types expected in the file
  */
-enum CFGParamType {
-    CFG_PARAM_TYPE_BOOL    = 0,
-    CFG_PARAM_TYPE_INT     = 1,
-    CFG_PARAM_TYPE_KEY     = 2,
+enum Cfg_ParamType {
+    CFG_PARAM_TYPE_BOOL     = 0,
+    CFG_PARAM_TYPE_BOOL_INV = 1,
+    CFG_PARAM_TYPE_INT      = 2,
+    CFG_PARAM_TYPE_KEY      = 3,
 };
 
 /**
  * Enumerate the in-memory types of target values
  */
-enum CFGVarType {
+enum Cfg_VarType {
     CFG_VAR_TYPE_UBYTE = 0,
     CFG_VAR_TYPE_BYTE  = 1,
     CFG_VAR_TYPE_UWORD = 2,
@@ -139,53 +110,68 @@ enum CFGVarType {
     CFG_VAR_TYPE_LONG  = 5
 };
 
+
 /**
- * CFGOption
+ * Cfg_Setting
  *
  * Links a parameter name tod the address of the target and defines the expected text file and target types
  */
 typedef struct {
     char const *p_name; // The parameter name
-    void       *v_data; // The in-memory location of the value
-    UWORD      p_type;  // CFGParamType
-    UWORD      v_type;  // CFGMapType
-} CFGOption;
+    void       *v_data; // The in-memory location of the value to read/write
+    UWORD      p_type;  // Cfg_ParamType
+    UWORD      v_type;  // Cfg_VarType
+} Cfg_Setting;
 
+static char const* s_true  = "true";
+static char const* s_false = "false";
 
 /**
- * Defines the set of optioms.
+ * Defines the settings.
  */
-static CFGOption const options[] = {
+static Cfg_Setting const cfg_options[] = {
     #include "prefs_keys.h"
     #include "prefs_vid.h"
+    #include "prefs_gfx.h"
+    #include "prefs_misc.h"
 };
 
 /**
- * Parser - converts parameter to value
+ * Cfg_Parser - converts parameter to value
  */
-typedef int (*Parser)(char const*);
+typedef int (*Cfg_Parser)(char const*);
 
 /**
  * Parses a bool. Only "true" is accepted as true, everything else false
  *
  * TODO - add support for "on", "enabled" etc?
  */
-static int parse_bool(char const* buffer) {
-    return 0 == strcmp("true", buffer) ? 255 : 0;
+static int cfg_ParseBool(char const* buffer) {
+    return 0 == strcmp(s_true, buffer) ? 255 : 0;
 }
+
+/**
+ * Some of our flags are "true" by default but actually make more sense as an inverse from
+ * a configuration perspective, e.g. "disable messages". We can specify those as having an
+ * inverted boolean input
+ */
+static int cfg_ParseBoolInv(char const* buffer) {
+    return 0 != strcmp(s_true, buffer) ? 255 : 0;
+}
+
 
 /**
  * Parses a basic integer.
  *
  */
-static int parse_int(char const* buffer) {
+static int cfg_ParseInt(char const* buffer) {
     return atoi(buffer);
 }
 
 /**
  * Parses a key name, for the custom key settings. Returns the raw key code, or -1 for no match
  */
-static int parse_key(char const* buffer) {
+static int cfg_ParseKey(char const* buffer) {
 
     // Single char match
     if (0 == buffer[1]) {
@@ -207,18 +193,19 @@ static int parse_key(char const* buffer) {
 }
 
 /**
- * Parser per CFGType
+ * Cfg_Parser per Cfg_ParamType
  */
-Parser parsers[] = {
-    parse_bool,
-    parse_int,
-    parse_key
+Cfg_Parser cfg_parsers[] = {
+    cfg_ParseBool,
+    cfg_ParseBoolInv,
+    cfg_ParseInt,
+    cfg_ParseKey
 };
 
 /**
- * Setter - set an in memory value for an option
+ * Cfg_Setter - set an in memory value for an option
  */
-typedef void (*Setter)(CFGOption const*, char const*);
+typedef void (*Cfg_Setter)(Cfg_Setting const*, char const*);
 
 static inline int clamp(int value, int min, int max) {
     return value < min ? min : value > max ? max : value;
@@ -227,9 +214,9 @@ static inline int clamp(int value, int min, int max) {
 /**
  * Sets a UBYTE configurartion option
  */
-static void set_ubyte(CFGOption const* option, char const* param) {
+static void cfg_SetUByte(Cfg_Setting const* option, char const* param) {
     *((UBYTE*)option->v_data) = clamp(
-        parsers[option->p_type](param),
+        cfg_parsers[option->p_type](param),
         0,
         255
     );
@@ -238,9 +225,9 @@ static void set_ubyte(CFGOption const* option, char const* param) {
 /**
  * Sets a BYTE configurartion option
  */
-static void set_byte(CFGOption const* option, char const* param) {
+static void cfg_SetByte(Cfg_Setting const* option, char const* param) {
     *((BYTE*)option->v_data) = clamp(
-        parsers[option->p_type](param),
+        cfg_parsers[option->p_type](param),
         -128,
         127
     );
@@ -249,9 +236,9 @@ static void set_byte(CFGOption const* option, char const* param) {
 /**
  * Sets a UWORD configurartion option
  */
-static void set_uword(CFGOption const* option, char const* param) {
+static void cfg_SetUWord(Cfg_Setting const* option, char const* param) {
     *((UBYTE*)option->v_data) = clamp(
-        parsers[option->p_type](param),
+        cfg_parsers[option->p_type](param),
         0,
         65535
     );
@@ -260,9 +247,9 @@ static void set_uword(CFGOption const* option, char const* param) {
 /**
  * Sets a WORD configurartion option
  */
-static void set_word(CFGOption const* option, char const* param) {
+static void cfg_SetWord(Cfg_Setting const* option, char const* param) {
     *((BYTE*)option->v_data) = clamp(
-        parsers[option->p_type](param),
+        cfg_parsers[option->p_type](param),
         -32768,
         32767
     );
@@ -271,29 +258,29 @@ static void set_word(CFGOption const* option, char const* param) {
 /**
  * Sets a LONG (or ULONG) configurartion option
  */
-static void set_long(CFGOption const* option, char const* param) {
-    *((LONG*)option->v_data) = parsers[option->p_type](param);
+static void cfg_SetLong(Cfg_Setting const* option, char const* param) {
+    *((LONG*)option->v_data) = cfg_parsers[option->p_type](param);
 }
 
 /**
- * Setter per CFGMapType
+ * Cfg_Setter per Cfg_VarType
  */
-Setter setters[] = {
-    set_ubyte,
-    set_byte,
-    set_uword,
-    set_word,
-    set_long,
-    set_long
+Cfg_Setter cfg_setters[] = {
+    cfg_SetUByte,
+    cfg_SetByte,
+    cfg_SetUWord,
+    cfg_SetWord,
+    cfg_SetLong,
+    cfg_SetLong
 };
 
 /**
  * Reads the next word from the config file. This is anything that's not whitespace.
- * Anything beginning with a semicolon is ignored until the next newline
+ * Anything beginning with a colon is ignored until the next newline
  *
  * TODO - Rework to use vanilla DOS library?
  */
-static char const* read_word(FILE* fp) {
+static char const* cfg_ExtractString(FILE* fp) {
     static char buffer[128];
 
     buffer[0] = 0;
@@ -301,7 +288,7 @@ static char const* read_word(FILE* fp) {
         if (0 == fscanf(fp, "%s", buffer)) {
             return 0;
         }
-        if (buffer[0] == ';') {
+        if (buffer[0] == ':') {
             while (!feof(fp) && fgetc(fp) != '\n');
         } else {
             return buffer;
@@ -313,12 +300,12 @@ static char const* read_word(FILE* fp) {
 /**
  * Try to match the parameter name to a known option and process it
  */
-void process_config(char const* name, FILE* fp) {
-    for (unsigned int i = 0; i < sizeof(options) / sizeof(CFGOption); ++i) {
-        if (0 == strcmp(name, options[i].p_name)) {
-            setters[options[i].v_type](
-                &options[i],
-                read_word(fp)
+void cfg_ProcessSettings(char const* name, FILE* fp) {
+    for (unsigned int i = 0; i < sizeof(cfg_options) / sizeof(Cfg_Setting); ++i) {
+        if (0 == strcmp(name, cfg_options[i].p_name)) {
+            cfg_setters[cfg_options[i].v_type](
+                &cfg_options[i],
+                cfg_ExtractString(fp)
             );
         }
     }
@@ -329,45 +316,102 @@ void process_config(char const* name, FILE* fp) {
  *
  * TODO - Rework for use with vanilla DOS library
  *
- * Example structure:
-
-; This is a comment. Anything after a ; is ignored until the end of the line
-; Settings are key value pairs. These are any non-whitespace characters and are matched and processed by
-; the parser.
-
-; Video options...
-vid.aga.fullscreen true
-vid.aga.margin     0
-vid.rtg.fullscreen 0
-vid.rtg.margin     0
-
-; Keybindings...
-key.walk  W
-key.back  S
-key.left  A
-key.right D
-key.duck  C
-key.jump  SPACE
-
-
-; Gameplay
-play.input          mouse   ; mouse, keys, joystick
-play.auto_aim       false   ; shoot where I point, please
-play.use_crosshair  true
-play.show_messages  true
-
-; ...
-
- *
  */
-void game_CFGParseOptionsFile(char const* file) {
+void Cfg_ParsePreferencesFile(char const* file) {
     FILE* fp;
     if ( (fp = fopen(file, "rb")) ) {
         char const* next;
-        while ((next = read_word(fp))) {
-            process_config(next, fp);
+        while ((next = cfg_ExtractString(fp))) {
+            cfg_ProcessSettings(next, fp);
         }
         fclose(fp);
         game_ApplyPreferences();
+    }
+}
+
+char const* cfg_GetKeyName(UBYTE raw_code) {
+    static char name[2] = {0, 0};
+    for (unsigned i = 0; i < sizeof(special_keys)/sizeof(SpecialKey); ++i) {
+        if (special_keys[i].raw_code == raw_code) {
+            return special_keys[i].name;
+        }
+    }
+    for (unsigned i = 0; i < sizeof(char_keys)/sizeof(CharKey); ++i) {
+        if (char_keys[i].raw_code == raw_code) {
+            name[0] = (char)char_keys[i].name;
+            return name;
+        }
+    }
+    return "<none>";
+}
+
+void Cfg_WritePreferencesFile(char const* file) {
+    FILE* fp;
+    if ( (fp = fopen(file, "wb")) ) {
+        Prefs_FullScreen_b     = Vid_FullScreen_b;
+        Prefs_PixelMode_b      = Vid_DoubleHeight_b;
+        Prefs_SimpleLighting_b = Draw_ForceSimpleWalls_b;
+        Prefs_FPSLimit_b       = (UBYTE)Vid_FPSLimit_l;
+        Prefs_VertMargin_b     = (UBYTE)Vid_LetterBoxMarginHeight_w;
+        Prefs_DynamicLights_b  = Anim_LightingEnabled_b;
+        Prefs_RenderQuality_b  = Draw_GoodRender_b;
+
+        if (Vid_isRTG) {
+            Prefs_ContrastAdjust_RTG_w   = Vid_ContrastAdjust_w;
+            Prefs_BrightnessOffset_RTG_w = Vid_BrightnessOffset_w;
+            Prefs_GammaLevel_RTG_b       = Vid_GammaLevel_b;
+        } else {
+            Prefs_ContrastAdjust_AGA_w   = Vid_ContrastAdjust_w;
+            Prefs_BrightnessOffset_AGA_w = Vid_BrightnessOffset_w;
+            Prefs_GammaLevel_AGA_b       = Vid_GammaLevel_b;
+        }
+
+        for (unsigned int i = 0; i < sizeof(cfg_options) / sizeof(Cfg_Setting); ++i) {
+            LONG val = 0;
+            switch (cfg_options[i].v_type) {
+                case CFG_VAR_TYPE_UBYTE:
+                    val = *((UBYTE*)cfg_options[i].v_data);
+                    break;
+
+                case CFG_VAR_TYPE_BYTE:
+                    val = *((BYTE*)cfg_options[i].v_data);
+                    break;
+
+                case CFG_VAR_TYPE_UWORD:
+                    val = *((UWORD*)cfg_options[i].v_data);
+                    break;
+
+                case CFG_VAR_TYPE_WORD:
+                    val = *((WORD*)cfg_options[i].v_data);
+                    break;
+
+                case CFG_VAR_TYPE_ULONG:
+                case CFG_VAR_TYPE_LONG:
+                    val = *((LONG*)cfg_options[i].v_data);
+                    break;
+
+                default:
+                    continue;
+            }
+
+            switch (cfg_options[i].p_type) {
+                case CFG_PARAM_TYPE_BOOL_INV:
+                    val = (~val) & 0xFF;
+
+                case CFG_PARAM_TYPE_BOOL:
+                    fprintf(fp, "%-26s %s\n", cfg_options[i].p_name, (val ? s_true : s_false));
+                    break;
+
+                case CFG_PARAM_TYPE_KEY:
+                    fprintf(fp, "%-26s %s\n", cfg_options[i].p_name, cfg_GetKeyName(val));
+                    break;
+
+                default:
+                    fprintf(fp, "%-26s %d\n", cfg_options[i].p_name, val);
+                    break;
+            }
+
+        }
+        fclose(fp);
     }
 }
