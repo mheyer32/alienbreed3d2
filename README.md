@@ -7,79 +7,93 @@ original/compatible tooling.
 ## Changes
 
 A summary of the changes are listed below:
-* Numerous bug fixes and performance improvements.
-* No longer takes over the system and can exit back to Workbench.
-* Fullscreen is now 320 rather than 288 pixels wide (no side borders)
-* RTG cards are supported, provided there is a compatible 256-colour 320x240 or 320x256 screenmode configured.
-   * Native chipset is still required as the menus are still rendered in Chip RAM using the blitter.
-   * Confirmed working on AGA and ECS systems.
-* Player settings and bindings are persisted on exit.
-* Player statistics are persisted on exit.
-   * This is primarily to support expanded modding by tracking metrics such as things killed, things collected, times killed etc.
-   * For the original game, only the best level time on replaying a level is shown.
+
+- Numerous bug fixes and performance improvements.
+- No longer takes over the system and can exit back to Workbench.
+- Fullscreen is now 320 rather than 288 pixels wide (no side borders)
+- RTG cards are supported, provided there is a compatible 256-colour 320x240 or 320x256 screenmode configured.
+    - Native chipset is still required as the menus are still rendered in Chip RAM using the blitter.
+    - Confirmed working on AGA and ECS systems.
+- Player settings and bindings are persisted on exit.
+- Player statistics are persisted on exit.
+    - This is primarily to support expanded modding by tracking metrics such as things killed, things collected, times killed etc.
+    - For the original game, only the best level time on replaying a level is shown.
 
 ### Bugfixes
 
 Some annoying bugs have been fixed:
-* Damange is no longer inflicted by dangerous floor surfaces when not in contact.
-* Liquid pools that have dangerous floor surfaces behave as if the whole volume of the pool is dangerous:
-   * Flying above the pool does not result in damage.
-   * Swimming in the pool does result in damage.
-* Polygon rendering glitches are greatly reduced. 
+
+- Damange is no longer inflicted by dangerous floor surfaces when not in contact.
+- Liquid pools that have dangerous floor surfaces behave as if the whole volume of the pool is dangerous:
+    - Flying above the pool does not result in damage.
+    - Swimming in the pool does result in damage.
+- Polygon rendering glitches are greatly reduced. 
 
 ### Default Input Configuration
 
 When starting the game for the first time, the input defaults to keyboard and mouse. The controls have been modernised since the original Team17 release:
-* W/A/S/D for movement and sidestep.
-* C for crouch/stand.
-* F to use/activate.
-* Space to jump/fly.
-* Left Shift to walk/run
-* Left Mouse to fire
+
+- W/A/S/D for movement and sidestep.
+- C for crouch/stand.
+- F to use/activate.
+- Space to jump/fly.
+- Left Shift to walk/run
+- Left Mouse to fire
 
 These keys, and more are remain user definable.
 
 ### Fixed Keys
 
 Note that these keys may change in subsequent releases as various options are consolidated. The following keys are fixed and not user definable:
-* Esc to exit the current level.
-* F1 / F2 Adjust automap zoom.
-* F3 to cycle audio options.
-* F4 toggles dynamic lighting effects.
-* F6 toggles wall render quality
-* F7 cycles frame rate cap
-* F8 toggles between full and simplified shading.
-* F9 toggles pixel mode.
-   * Presently this is only 1x1 or 1x2.
-* F10 toggles between 2/3 and full screen size.
-* Tab toggles Automap display.
-* K chooses keyboard-only input.
-* M chooses keyboard and mouse input.
-   * Repeated selection chooses between normal and inverted mouse mode.
-* J chooses joystick/joypad input.
-* Numeric Pad +/- adjust vertical border size.
-* Numeric Pad * exits to the desktop.
-   * Note this happens whether in the game or in the menu.
+
+- Esc to exit the current level.
+- F1 / F2 Adjust automap zoom.
+- F3 to cycle audio options.
+- F4 toggles dynamic lighting effects.
+- F6 toggles wall render quality
+- F7 cycles frame rate cap
+- F8 toggles between full and simplified shading.
+- F9 toggles pixel mode.
+    - Presently this is only 1x1 or 1x2.
+- F10 toggles between 2/3 and full screen size.
+- Tab toggles Automap display.
+- K chooses keyboard-only input.
+- M chooses keyboard and mouse input.
+    - Repeated selection chooses between normal and inverted mouse mode.
+- J chooses joystick/joypad input.
+- Numeric Pad +/- adjust vertical border size.
+- Numeric Pad * exits to the desktop.
+    - Note this happens whether in the game or in the menu.
 
 When the Automap is displayed:
-* Numeric Pad 5 centres on the player.
-* Numeric Pad 1/2/3/4/6/7/8/9 scrolls the map in the implied direction.
-* Numeric Pad . (period) toggles green/transparent overlay mode.
+- Numeric Pad 5 centres on the player.
+- Numeric Pad 1/2/3/4/6/7/8/9 scrolls the map in the implied direction.
+- Numeric Pad . (period) toggles green/transparent overlay mode.
 
 When the Automap is not displayed:
-* Numeric Pad 7/8/9 adjust display gamma (7 decreases, 8 resets, 9 increases)
-* Numeric Pad 4/5/6 adjust display contrast (4 decreases, 5 resets, 6 increases)
-* Numeric Pad 1/2/3 adjust display black point (1 decreases, 2 resets, 3 increases)
+- Numeric Pad 7/8/9 adjust display gamma (7 decreases, 8 resets, 9 increases)
+- Numeric Pad 4/5/6 adjust display contrast (4 decreases, 5 resets, 6 increases)
+- Numeric Pad 1/2/3 adjust display black point (1 decreases, 2 resets, 3 increases)
 
 All options are persisted on clean exist.
-* Display options are persisted independently for AGA and RTG screenmodes.  
+- Display options are persisted independently for AGA and RTG screenmodes.  
 
 ### Custom Options
 
 The Custom Options menu provides the following additional options:
-* Original Mouse:
-   * Uses the original Team17 release mouse behaviour, with Right Mouse to move forwards.
-* Always run. 
+- Original Mouse:
+    - Uses the original Team17 release mouse behaviour, with Right Mouse to move forwards.
+- Always run.
+- Disable Auto Aim
+    - Disables the use of automatic aiming for projectile weapons
+    - When in use, a crosshair is shown that can have it's colour changed between a number of high visibility options, or removed.
+
+### Settings Persistence
+
+Settings are saved on clean exit and reloaded.
+
+- The C build uses a plaintext format that can be edited externally.
+- See: [Settings File](docs/settings.md) 
 
 ## Modding Improvements
 
