@@ -32,5 +32,19 @@
         CFG_VAR_TYPE_UBYTE
     },
 
+    {
+        "map.transparent",
+        &Draw_MapTransparent_b,
+        CFG_PARAM_TYPE_BOOL,
+        CFG_VAR_TYPE_UBYTE
+    },
+
+    {
+        "map.zoom",
+        &Draw_MapZoomLevel_w,
+        CFG_PARAM_TYPE_INT,
+        CFG_VAR_TYPE_UWORD
+    },
+
 
 #endif // PREFS_VID_H

@@ -39,6 +39,9 @@ extern UBYTE Prefs_NoAutoAim_b;
 extern UBYTE Prefs_CrossHairColour_b;
 extern UBYTE Prefs_ShowMessages_b;
 
+extern UBYTE Draw_MapTransparent_b;
+extern UWORD Draw_MapZoomLevel_w;
+
 void Cfg_ParsePreferencesFile(char const*);
 void Cfg_WritePreferencesFile(char const*);
 
@@ -62,6 +65,9 @@ void game_ApplyPreferences(void)
     Vid_LetterBoxMarginHeight_w = Prefs_VertMargin_b;
     Anim_LightingEnabled_b      = Prefs_DynamicLights_b;
     Draw_GoodRender_b           = Prefs_RenderQuality_b;
+
+    // Map zoom is 0-7. TODO - this should be defined somewhere
+    Draw_MapZoomLevel_w &= 7;
 }
 
 void game_LoadPreferences(void)
