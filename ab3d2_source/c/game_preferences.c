@@ -237,7 +237,7 @@ static void cfg_SetByte(Cfg_Setting const* option, char const* param) {
  * Sets a UWORD configurartion option
  */
 static void cfg_SetUWord(Cfg_Setting const* option, char const* param) {
-    *((UBYTE*)option->v_data) = clamp(
+    *((UWORD*)option->v_data) = clamp(
         cfg_parsers[option->p_type](param),
         0,
         65535
@@ -248,7 +248,7 @@ static void cfg_SetUWord(Cfg_Setting const* option, char const* param) {
  * Sets a WORD configurartion option
  */
 static void cfg_SetWord(Cfg_Setting const* option, char const* param) {
-    *((BYTE*)option->v_data) = clamp(
+    *((WORD*)option->v_data) = clamp(
         cfg_parsers[option->p_type](param),
         -32768,
         32767
