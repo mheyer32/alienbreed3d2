@@ -42,6 +42,8 @@ misc.always_run            false
 misc.disable_auto_aim      false
 misc.crosshair_colour      0
 misc.disable_messages      false
+map.transparent            false
+map.zoom                   3
 ```
 
 ### Notes
