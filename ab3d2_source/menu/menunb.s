@@ -1704,13 +1704,22 @@ mnu_MYLEVELMENUTEXT:
 ;					 12345678901234567890
 				dc.b	'                    ',1
 				dc.b	'                    ',1
+
+mnu_LevelAName_vb:
 				dc.b	'      LEVEL  A      ',1
+mnu_LevelBName_vb:
 				dc.b	'      LEVEL  B      ',1
+mnu_LevelCName_vb:
 				dc.b	'      LEVEL  C      ',1
+mnu_LevelDName_vb:
 				dc.b	'      LEVEL  D      ',1
+mnu_LevelEName_vb:
 				dc.b	'      LEVEL  E      ',1
+mnu_LevelFName_vb:
 				dc.b	'      LEVEL  F      ',1
+mnu_LevelGName_vb:
 				dc.b	'      LEVEL  G      ',1
+mnu_LevelHName_vb:
 				dc.b	'      LEVEL  H      ',1
 				dc.b	'     NEXT  PAGE     ',1
 				dc.b	'                    ',0
@@ -1735,13 +1744,21 @@ mnu_MYLEVELMENUTEXT2:
 ;					 12345678901234567890
 				dc.b	'                    ',1
 				dc.b	'                    ',1
+mnu_LevelIName_vb:
 				dc.b	'      LEVEL  I      ',1
+mnu_LevelJName_vb:
 				dc.b	'      LEVEL  J      ',1
+mnu_LevelKName_vb:
 				dc.b	'      LEVEL  K      ',1
+mnu_LevelLName_vb:
 				dc.b	'      LEVEL  L      ',1
+mnu_LevelMName_vb:
 				dc.b	'      LEVEL  M      ',1
+mnu_LevelNName_vb:
 				dc.b	'      LEVEL  N      ',1
+mnu_LevelOName_vb:
 				dc.b	'      LEVEL  O      ',1
+mnu_LevelPName_vb:
 				dc.b	'      LEVEL  P      ',1
 				dc.b	'     MAIN  MENU     ',1
 				dc.b	'                    ',0
@@ -1769,7 +1786,7 @@ optionLines:				;12345678901234567890
 				dc.b	'  ORIGINAL MOUSE    ',1;OFF  ',1
 				dc.b	'  ALWAYS RUN        ',1;OFF  ',1
 				dc.b	'  SHOW MESSAGES     ',1;OFF  ',1
-				dc.b	'  AUTO AIM OFF      ',1;OFF  ',1
+				dc.b	'  NO AUTO AIM       ',1;OFF  ',1
 				dc.b	'  OPTION 5          ',1
 				dc.b	'  OPTION 6          ',1
 				dc.b	'  OPTION 7          ',1
