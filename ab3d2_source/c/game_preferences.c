@@ -179,17 +179,18 @@ static int cfg_ParseInt(char const* buffer) {
  */
 static int cfg_ParseKey(char const* buffer) {
 
-    // Single char match
     if (0 == buffer[1]) {
+        // Single char key name
         for (unsigned int i = 0; i < sizeof(char_keys) / sizeof(CharKey); ++i) {
             if (char_keys[i].name == buffer[0]) {
                 return char_keys[i].raw_code;
             }
         }
     } else {
+        // Text key name
         for (unsigned int i = 0; i < sizeof(special_keys) / sizeof(SpecialKey); ++i) {
             if (0 == strcmp(special_keys[i].name, buffer)) {
-                return char_keys[i].raw_code;
+                return special_keys[i].raw_code;
             }
         }
     }
