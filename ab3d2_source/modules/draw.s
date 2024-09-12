@@ -436,11 +436,11 @@ Draw_Crosshair:
 				; TODO - this should be dedefinable by mod and/or user as they are currently defined
 				; by the default palette
 Draw_CrosshairPens_vb:
-                dc.b 255 ; intense green
-                dc.b 254 ; mid green
-                dc.b 190 ; intense yellow
-                dc.b  25 ; bright grey
-                dc.b 250 ; intense red
-                dc.b 133 ; ice blue
-                dc.b  69 ; intense blue
-                dc.b   0 ; off
+				dc.b   0 ; off
+				dc.b 255 ; intense green
+				dc.b 254 ; mid green
+				dc.b 190 ; intense yellow
+				dc.b  25 ; bright grey
+				dc.b 250 ; intense red
+				dc.b 133 ; ice blue
+				dc.b  69 ; intense blue

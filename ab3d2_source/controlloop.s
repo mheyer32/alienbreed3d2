@@ -305,7 +305,7 @@ Prefs_CustomOptionsBuffer_vb:
         dc.b	0
 
     DECLC   Prefs_CrossHairColour_b
-        dc.b    0
+        dc.b    1
 
                 align 4
 _Prefs_PersistedEnd::

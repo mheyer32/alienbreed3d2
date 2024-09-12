@@ -42,6 +42,10 @@ extern UBYTE Prefs_ShowMessages_b;
 extern UBYTE Draw_MapTransparent_b;
 extern UWORD Draw_MapZoomLevel_w;
 
+#ifdef DEV
+extern ULONG dev_SkipFlags_l;
+#endif
+
 void Cfg_ParsePreferencesFile(char const*);
 void Cfg_WritePreferencesFile(char const*);
 
@@ -113,7 +117,8 @@ enum Cfg_VarType {
     CFG_VAR_TYPE_UWORD = 2,
     CFG_VAR_TYPE_WORD  = 3,
     CFG_VAR_TYPE_ULONG = 4,
-    CFG_VAR_TYPE_LONG  = 5
+    CFG_VAR_TYPE_LONG  = 5,
+    CFG_VAR_TYPE_BIT   = 6,
 };
 
 
@@ -269,6 +274,7 @@ static void cfg_SetLong(Cfg_Setting const* option, char const* param) {
     *((LONG*)option->v_data) = cfg_parsers[option->p_type](param);
 }
 
+
 /**
  * Cfg_Setter per Cfg_VarType
  */
@@ -278,7 +284,7 @@ Cfg_Setter cfg_setters[] = {
     cfg_SetUWord,
     cfg_SetWord,
     cfg_SetLong,
-    cfg_SetLong
+    cfg_SetLong,
 };
 
 /**

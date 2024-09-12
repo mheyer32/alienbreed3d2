@@ -46,5 +46,13 @@
         CFG_VAR_TYPE_UWORD
     },
 
+#ifdef DEV
+    {
+        "dev.flags",
+        &dev_SkipFlags_l,
+        CFG_PARAM_TYPE_INT,
+        CFG_VAR_TYPE_ULONG
+    },
+#endif
 
 #endif // PREFS_VID_H
