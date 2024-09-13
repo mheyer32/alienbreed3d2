@@ -483,9 +483,8 @@ void Vid_Present()
         if (bmHandle) {
             if (Vid_FullScreen_b) {
                 WORD height     = FS_C2P_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
-                WORD topOffsett = (WORD)SCREEN_WIDTH * Vid_LetterBoxMarginHeight_w;
-                BYTE *dst       = bmPixelData + topOffsett;
-                const BYTE *src = Vid_FastBufferPtr_l + topOffsett;
+                const BYTE *src = Vid_FastBufferPtr_l + SCREEN_WIDTH * Vid_LetterBoxMarginHeight_w;
+                BYTE *dst       = bmPixelData + bmBytesPerRow * Vid_LetterBoxMarginHeight_w;
 
                 if (
                     (FS_WIDTH == SCREEN_WIDTH) &&
@@ -500,9 +499,8 @@ void Vid_Present()
                 }
             } else {
                 WORD height     = SMALL_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
-                WORD topOffsett = SCREEN_WIDTH * Vid_LetterBoxMarginHeight_w;
-                BYTE *dst       = bmPixelData + topOffsett + SCREEN_WIDTH * SMALL_YPOS + SMALL_XPOS;
-                const BYTE *src = Vid_FastBufferPtr_l + topOffsett;
+                BYTE *dst       = bmPixelData + bmBytesPerRow * (Vid_LetterBoxMarginHeight_w + SMALL_YPOS) + SMALL_XPOS;
+                const BYTE *src = Vid_FastBufferPtr_l + SCREEN_WIDTH * Vid_LetterBoxMarginHeight_w;
 
                 CopyFrameBuffer(dst, src, bmBytesPerRow, SMALL_WIDTH, height);
 
