@@ -19,7 +19,8 @@ dev_GraphBuffer_vb:			ds.b	DEV_GRAPH_BUFFER_SIZE*2 ; array of times
 dev_ECVDrawDone_q:			ds.l	2	; timestamp at the end of drawing
 dev_ECVChunkyDone_q:		ds.l	2	; timestamp at the end of chunky to planar
 
-dev_SkipFlags_l:			ds.l	1	; Mask of disabled flags (i.e. set when something is skipped)
+    DECLC dev_SkipFlags_l
+        ds.l	1	; Mask of disabled flags (i.e. set when something is skipped)
 
 ; Counters
 dev_Counters_vw:

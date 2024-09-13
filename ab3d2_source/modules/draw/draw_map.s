@@ -23,7 +23,7 @@ DoTheMapWotNastyCharlesIsForcingMeToDo:
 				beq.s	.skip_render_toggle
 
 				clr.b	RAWKEY_NUM_ENTER(a5)
-				not.b	draw_MapTransparent_b
+				not.b	Draw_MapTransparent_b
 
 .skip_render_toggle:
 				tst.b	RAWKEY_F1(a5)			; Zoom In
@@ -367,10 +367,14 @@ done_bottom_clip:
 
 				bra		draw_MapLine
 
-Draw_MapZoomLevel_w:	dc.w	3
+    DECLC Draw_MapZoomLevel_w
+        dc.w	3
+
+    DECLC Draw_MapTransparent_b
+        dc.w	0
+
 draw_MapXOffset_w:		dc.w	0
 draw_MapZOffset_w:		dc.w	0
-draw_MapTransparent_b:	dc.w	0
 
 map_offscreen:
 no_line:
@@ -417,7 +421,7 @@ down_left_more:
 				move.w	d2,d7
 				addq	#1,a0
 
-				tst.b	draw_MapTransparent_b
+				tst.b	Draw_MapTransparent_b
 				bne.s	.line_loop_transparent
 
 .line_loop:		; regular solid colour mode
@@ -456,7 +460,7 @@ down_more_left:
 				move.w	d3,d0
 				move.w	d3,d7
 
-				tst.b	draw_MapTransparent_b
+				tst.b	Draw_MapTransparent_b
 				bne.s	.line_loop_transparent
 
 .line_loop:		; regular solid colour mode
@@ -500,7 +504,7 @@ down_right_more:
 				move.w	d2,d0
 				move.w	d2,d7
 
-				tst.b	draw_MapTransparent_b
+				tst.b	Draw_MapTransparent_b
 				bne.s	.line_loop_transparent
 
 .line_loop:		; regular solid colour mode
@@ -537,7 +541,7 @@ down_more_right:
 				move.w	d3,d0
 				move.w	d3,d7
 
-				tst.b	draw_MapTransparent_b
+				tst.b	Draw_MapTransparent_b
 				bne.s	.line_loop_transparent
 
 .line_loop:		; regular solid colour mode

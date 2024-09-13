@@ -10,7 +10,7 @@ game_PropertiesFile_vb:			dc.b	"ab3:Includes/game.props",0
 			IFD BUILD_WITH_C
 
 _game_PreferencesFile::
-game_PreferencesFile_vb:		dc.b	"ab3:game.prefs",0
+game_PreferencesFile_vb:		dc.b	"ab3:prefs.cfg",0
 
 _game_ProgressFile::
 game_ProgressFile_vb:			dc.b	"ab3:game.stats",0

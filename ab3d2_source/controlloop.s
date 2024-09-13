@@ -224,6 +224,8 @@ Game_Quit:
 _Prefs_Persisted::
 Prefsfile:
                     dc.b	'k8nx'
+    ; DECLC Macro makes the identifier visible to C also
+    DECLC	Prefs_AssignableKeys_vb
 
 AssignableKeys_vb:
 turn_left_key:		dc.b	RAWKEY_LEFT
@@ -245,7 +247,6 @@ centre_view_key:	dc.b	RAWKEY_SEMICOLON
 next_weapon_key:	dc.b	RAWKEY_BSLASH
 spare_key:          dc.b    0
 
-    ; DECLC Macro makes the identifier visible to C also
 
 	DECLC	Prefs_FullScreen_b
 		dc.b	0
@@ -263,10 +264,10 @@ spare_key:          dc.b    0
 		dc.b	0
 
 	DECLC	Prefs_DynamicLights_b
-		dc.b	0
+		dc.b	255
 
 	DECLC	Prefs_RenderQuality_b
-		dc.b	0
+		dc.b	255
 
 ; Padding
 Prefs_Unused_b:	dc.b	0
@@ -300,11 +301,11 @@ Prefs_CustomOptionsBuffer_vb:
     DECLC   Prefs_ShowMessages_b
         dc.b    255
 
-    DECLC   Prefs_AutoAim_b
+    DECLC   Prefs_NoAutoAim_b
         dc.b	0
 
     DECLC   Prefs_CrossHairColour_b
-        dc.b    0
+        dc.b    1
 
                 align 4
 _Prefs_PersistedEnd::
@@ -620,7 +621,7 @@ customOptions:
 .co4:
 				cmp.w	#3,d0
 				bne.s	.co5
-				not.b   Prefs_AutoAim_b
+				not.b   Prefs_NoAutoAim_b
 				bra	.w8
 .co5:
 				cmp.w	#4,d0
