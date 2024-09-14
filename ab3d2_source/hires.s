@@ -62,6 +62,7 @@ PLR_SLAVE				equ 's' ; two player slave
 PLR_SINGLE				equ 'n' ; Single player
 
 QUIT_KEY				equ RAWKEY_NUM_ASTERISK
+;QUIT_KEY                equ RAWKEY_COMMA ; for days when I have no numberpad
 
 ; ZERO-INITIALISED DATA
 				include "bss/system_bss.s"
@@ -1792,12 +1793,12 @@ nodrawp2:
 .notplr2:
 				tst.b Plr1_Mouse_b
 				beq.s	.no_croshair
-				
-				tst.b Prefs_AutoAim_b
+
+				tst.b Prefs_NoAutoAim_b
 				beq.s	.no_croshair
-				
+
 				jsr	Draw_Crosshair
-				
+
 .no_croshair
 				CALLC		Sys_EvalFPS
 
@@ -8818,7 +8819,7 @@ closeeverything:
 				tst.w	_Vid_isRTG
 				bne.s	.skipClear
 				ENDIF
-				
+
 				IFNE	DISPLAYMSGPORT_HACK
 				;empty Vid_DisplayMsgPort_l and set Vid_ScreenBufferIndex_w to 0
 				;so the starting point is the same every time
