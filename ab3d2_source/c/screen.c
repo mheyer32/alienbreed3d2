@@ -463,9 +463,12 @@ static void CopyFrameBuffer(UBYTE *dst, const UBYTE *src, WORD dstBytesPerRow, W
 
 void Vid_Present()
 {
-    if (Vid_FullScreen_b && Msg_Enabled()) {
+    BOOL vid_FullRes = ~(Vid_DoubleHeight_b | Vid_DoubleWidth_b);
+
+    /** For full screen, full 1x1 resolution, render onto the chunky buffer */
+    if (Vid_FullScreen_b && vid_FullRes && Msg_Enabled()) {
         /** Render any buffered up messages before we submit the screen */
-        Msg_RenderFullscreen();
+        Msg_RenderFullsccreenBuffer();
     }
     if (Vid_isRTG) {
         LOCAL_CYBERGFX();
@@ -489,13 +492,15 @@ void Vid_Present()
                 if (
                     (FS_WIDTH == SCREEN_WIDTH) &&
                     (bmBytesPerRow == SCREEN_WIDTH) &&
-                    Vid_FullScreen_b &&
-                    !Vid_DoubleHeight_b &&
-                    !Vid_DoubleWidth_b
+                    vid_FullRes
                 ) {
                     CopyMemQuick(src, dst, SCREEN_WIDTH * height);
                 } else {
                     CopyFrameBuffer(dst, src, bmBytesPerRow, SCREEN_WIDTH, height);
+                }
+
+                if (!vid_FullRes && Msg_Enabled()) {
+                    Msg_RenderFullscreenRTG(bmPixelData, bmBytesPerRow);
                 }
             } else {
                 WORD height     = SMALL_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;

@@ -232,7 +232,7 @@ void Msg_Tick(void) {
  * Render the message buffer directly into the fullscreen buffer. This works for AGA and RTG as the text is
  * overlaid onto the game display.
  */
-void Msg_RenderFullscreen()
+void Msg_RenderFullsccreenBuffer()
 {
     // Fullscreen rendering happens in the chunky buffer...
     WORD  lastLine = msg_NextLineNumber(msg_Buffer.lineNumber);
@@ -244,6 +244,34 @@ void Msg_RenderFullscreen()
             Draw_ChunkyTextProp(
                 Vid_FastBufferPtr_l,
                 SCREEN_WIDTH,
+                msg_Buffer.lineLengths[nextLine] & MSG_LENGTH_MASK,
+                msg_Buffer.lineTextPtrs[nextLine],
+                DRAW_TEXT_MARGIN,
+                yPos,
+                msg_TagPens[msg_Buffer.lineLengths[nextLine] >> MSG_TAG_SHIFT]
+            );
+            yPos += DRAW_MSG_CHAR_H + DRAW_TEXT_Y_SPACING;
+        }
+        nextLine = msg_NextLineNumber(nextLine);
+    } while (nextLine != lastLine);
+}
+
+/**
+ * Perform chunky text rendering to the provided locked bitmap. This is for RTG in full screen mode in a non 1x1
+ * pixelmode. Renders into the bitmap
+ */
+void Msg_RenderFullscreenRTG(UBYTE* bmBaseAddr, ULONG bmBytesPerRow) {
+
+    // Fullscreen rendering happens in the chunky buffer...
+    WORD  lastLine = msg_NextLineNumber(msg_Buffer.lineNumber);
+    WORD  nextLine = lastLine;
+    UWORD yPos = Vid_LetterBoxMarginHeight_w + DRAW_TEXT_MARGIN;
+
+    do {
+        if (NULL != msg_Buffer.lineTextPtrs[nextLine]) {
+            Draw_ChunkyTextProp(
+                bmBaseAddr,
+                bmBytesPerRow,
                 msg_Buffer.lineLengths[nextLine] & MSG_LENGTH_MASK,
                 msg_Buffer.lineTextPtrs[nextLine],
                 DRAW_TEXT_MARGIN,
