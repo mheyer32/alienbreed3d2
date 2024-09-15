@@ -14,7 +14,7 @@ Msg_Init:
 Msg_PushLine:
 Msg_PushLineDedupLast:
 Msg_PullLast:
-Msg_RenderFullscreen:
+Msg_RenderFullsccreenBuffer:
 				rts
 
 				ENDIF

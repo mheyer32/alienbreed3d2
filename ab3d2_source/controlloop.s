@@ -101,6 +101,8 @@ Game_Start:
 				CALLDOS	Delay
 				ENDC
 
+				jsr		game_SetMenuLevelNames
+
 				bsr		DEFAULTGAME
 
 game_BackToMenu:
@@ -307,6 +309,8 @@ Prefs_CustomOptionsBuffer_vb:
     DECLC   Prefs_CrossHairColour_b
         dc.b    1
 
+    DECLC   Prefs_PlayMusic_b
+        dc.b    255
                 align 4
 _Prefs_PersistedEnd::
 PrefsfileEnd:
@@ -386,7 +390,7 @@ game_ReadMainMenu:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_LevelNames_l,a0
 				add.l	d0,a0
-				bsr		game_MenuSetLevelName
+				bsr		game_SetMenuLevelName
 
 ; Stay here until 'play game' is selected.
 
@@ -577,7 +581,7 @@ customOptions:
 ; copy current setting over to menu
 				move.l	#Prefs_CustomOptionsBuffer_vb,a0
 				move.l	#optionLines+17,a1
-				moveq	#3,d1
+				moveq	#4,d1
 .copyOpts:
 				move.b	(a0)+,d0
 
@@ -625,6 +629,7 @@ customOptions:
 				bra	.w8
 .co5:
 				cmp.w	#4,d0
+				not.b   Prefs_PlayMusic_b
 				bne.s	.co6
 				;opt5
 				bra	.w8
@@ -640,7 +645,7 @@ customOptions:
 				bra	.w8
 .co8:
 				cmp.w	#7,d0
-				bne.s	.w8
+				;bne.s	.w8
 				;opt8
 .w8:
 				lea		mnu_MYCUSTOMOPTSMENU,a0
@@ -668,7 +673,7 @@ game_MasterMenu:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_LevelNames_l,a0
 				add.l	d0,a0
-				bsr		game_MenuSetLevelName
+				bsr		game_SetMenuLevelName
 
 ; Stay here until 'play game' is selected.
 
@@ -695,7 +700,7 @@ game_MasterMenu:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_LevelNames_l,a0
 				add.l	d0,a0
-				bsr		game_MenuSetLevelName
+				bsr		game_SetMenuLevelName
 
 				lea		mnu_MYMASTERMENU,a0
 				jsr		mnu_redraw
@@ -1029,11 +1034,37 @@ game_WaitForMenuKey:
 				movem.l	(a7)+,d0/d1/d2/d3
 				rts
 
-game_MenuSetLevelName:
-				moveq	#19,d0
+LEVELNAME_DISPLAY_LEN	EQU	20
+LEVELNAME_PER_PAGE		EQU 8
+
+game_SetMenuLevelName:
+				moveq	#LEVELNAME_DISPLAY_LEN-1,d0
 .loop:
 				move.b	(a0)+,(a1)+
 				dbra	d0,.loop
+				rts
+
+game_SetMenuLevelNames:
+				move.l	GLF_DatabasePtr_l,a0
+				lea		mnu_LevelAName_vb,a1
+				add.l	#GLFT_LevelNames_l,a0
+				moveq	#LEVELNAME_PER_PAGE-1,d1
+
+.loop1:
+				bsr.s	game_SetMenuLevelName
+				add.w	#LEVELNAME_DISPLAY_LEN,a0
+				add.w	#1,a1
+				dbra	d1,.loop1
+
+				lea		mnu_LevelIName_vb,a1
+				moveq	#LEVELNAME_PER_PAGE-1,d1
+
+.loop2:
+				bsr.s	game_SetMenuLevelName
+				add.w	#LEVELNAME_DISPLAY_LEN,a0
+				add.w	#1,a1
+				dbra	d1,.loop2
+
 				rts
 
 game_OpenMenu:
@@ -1086,7 +1117,7 @@ game_LoadPosition:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_LevelNames_l,a0
 				add.l	d1,a0
-				bsr		game_MenuSetLevelName
+				bsr		game_SetMenuLevelName
 
 				add.l	#21,a4
 				add.w	#2+(22*2)+(12*2),a3
@@ -1128,7 +1159,7 @@ game_LoadPosition:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_LevelNames_l,a0
 				add.l	d0,a0
-				bsr		game_MenuSetLevelName
+				bsr		game_SetMenuLevelName
 
 .noload:
 				move.l	game_SavedGameSlotPtr_l,a1
@@ -1159,7 +1190,7 @@ game_SavePosition:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_LevelNames_l,a0
 				add.l	d1,a0
-				bsr		game_MenuSetLevelName
+				bsr		game_SetMenuLevelName
 				add.l	#21,a4
 				add.w	#2+(22*2)+(12*2),a3
 

@@ -1,14 +1,5 @@
 				align 4
 Game_Pause:
-				move.l	#PAUSETEXT,draw_GameMessagePtr_l
-				move.l	#ENDPAUSETEXT,draw_GameMessageEnd_l
-				move.w	#0,draw_GameMessageXPos_w
-				move.w	#40,draw_GameMessageTimer_w
-				move.w	#40,d6
-.waitpause:
-				jsr		Draw_NarrateText
-
-				dbra	d6,.waitpause
 
 .waitpress:
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
@@ -53,16 +44,6 @@ Game_Pause:
 
 				btst	#7,$bfe001
 				beq.s	.wr2
-
-				move.l	#draw_BlankMessage_vb,draw_GameMessagePtr_l
-				move.l	#draw_BlankMessage_vb+80,draw_GameMessageEnd_l
-				move.w	#0,draw_GameMessageXPos_w
-				move.w	#40,draw_GameMessageTimer_w
-				move.w	#40,d6
-
-.waitpause2:
-				jsr		Draw_NarrateText
-				dbra	d6,.waitpause2
 
 				rts
 

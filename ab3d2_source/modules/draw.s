@@ -10,8 +10,6 @@
 ; *****************************************************************************
 
 				align	4
-draw_NarrateTextTime_w:
-				dc.w	5
 
 ; move me
 firstdigit_b:	dc.b	0
@@ -299,75 +297,6 @@ draw_BorderDigit:
 				rts
 
 				ENDIF
-
-Draw_NarrateText:
-
-; sub.w #1,draw_NarrateTextTime_w
-; bge .NOCHARYET
-; move.w #3,draw_NarrateTextTime_w
-
-; FIXME: pixel scrolling for status line  was achieved via actual scroll registers
-;				move.l	#SCROLLSCRN,d1
-;				move.w	d1,scroll
-;				swap	d1
-;				move.w	d1,scrolh
-
-				move.w	draw_GameMessageTimer_w,d0
-				subq	#1,d0
-				move.w	d0,draw_GameMessageTimer_w
-				cmp.w	#40,d0
-				bge		.NOCHARYET
-				tst.w	d0
-				bge.s	.okcha
-
-				move.w	#500,draw_GameMessageTimer_w
-				bra		.NOCHARYET
-
-.okcha:
-				; FIMXE: need to redirect this to the actual screen
-				move.l	#SCROLLSCRN,a0
-				add.w	draw_GameMessageXPos_w,a0
-				moveq	#1,d7
-
-.doachar:
-				move.l	draw_GameMessagePtr_l,a1
-				moveq	#0,d1
-				move.b	(a1)+,d1				; character
-				move.l	a1,d2
-				cmp.l	draw_GameMessageEnd_l,d2
-				blt.s	.notrestartscroll
-				move.l	#draw_BlankMessage_vb,a1
-				move.l	#draw_BlankMessage_vb+80,draw_GameMessageEnd_l
-
-.notrestartscroll:
-				move.l	a1,draw_GameMessagePtr_l
-				move.l	#draw_ScrollChars_vb,a1
-				asl.w	#3,d1  ; each character glyph is 8 bytes
-				add.w	d1,a1  ; address of character glyph
-
-				; render into planes
-				move.b	(a1)+,(a0)
-				move.b	(a1)+,80(a0)
-				move.b	(a1)+,80*2(a0)
-				move.b	(a1)+,80*3(a0)
-				move.b	(a1)+,80*4(a0)
-				move.b	(a1)+,80*5(a0)
-				move.b	(a1)+,80*6(a0)
-				move.b	(a1)+,80*7(a0)
-
-				addq	#1,a0 ; advance a character position
-				dbra	d7,.doachar
-
-				move.w	draw_GameMessageXPos_w,d0
-				addq	#2,d0
-				move.w	d0,draw_GameMessageXPos_w
-				cmp.w	#80,d0
-				blt		.NOCHARYET
-
-				move.w	#0,draw_GameMessageXPos_w
-
-.NOCHARYET:
-				rts
 
 Draw_Crosshair:
                 ; Get the pen
