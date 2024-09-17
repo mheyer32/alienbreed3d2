@@ -62,6 +62,7 @@ PLR_SLAVE				equ 's' ; two player slave
 PLR_SINGLE				equ 'n' ; Single player
 
 QUIT_KEY				equ RAWKEY_NUM_ASTERISK
+;QUIT_KEY                equ RAWKEY_COMMA ; for days when I have no numberpad
 
 ; ZERO-INITIALISED DATA
 				include "bss/system_bss.s"
@@ -74,6 +75,7 @@ QUIT_KEY				equ RAWKEY_NUM_ASTERISK
 				include "bss/draw_bss.s"
 				include "bss/zone_bss.s"
 				include "bss/tables_bss.s"
+				include "bss/game_bss.s"
 
 ; INITIALISED (DATA) DATA
 				include "data/system_data.s"
@@ -81,6 +83,8 @@ QUIT_KEY				equ RAWKEY_NUM_ASTERISK
 				include "data/level_data.s"
 				include "data/tables_data.s"
 				include "data/text_data.s"
+				include "data/game_data.s"
+                		include "data/vid_data.s"
 
 				section .text,code
 
@@ -178,7 +182,7 @@ _startup:
 				addq	#1,d0
 				dbra	d1,.fill_const
 
-				CALLC	Game_InitDefaults
+;				CALLC	Game_Init ; this might be the best place
 
 				jsr		Game_Start
 
@@ -195,7 +199,10 @@ _startup:
 				; Include even in C version for assembly helpers
 				include		"modules/system.s"
 				include		"modules/message.s"
-				include		"modules/game_properties.s"
+				include		"modules/game/game_properties.s"
+				include		"modules/game/game_preferences.s"
+				include		"modules/game/game_progress.s"
+				include		"modules/level.s"
 
 				IFD MEMTRACK
 				include "modules/dev_memtrack.s"
@@ -213,6 +220,10 @@ xwobxoff:					dc.w	0
 xwobzoff:					dc.w	0
 CollId:						dc.w	0
 
+View_KeyLook_w: dc.w 0
+View_LookMin_w:	dc.w 0
+View_LookMax_w:	dc.w 0
+
 ; Byte Aligned
 Game_MasterQuit_b:			dc.b	0
 Game_SlaveQuit_b:			dc.b	0
@@ -227,7 +238,7 @@ Game_SlavePaused_b:			dc.b	0
 				align 4
 Game_ShowIntroText:
 				move.l	Lvl_IntroTextPtr_l,a0     ; Pointer to main narrative text
-				move.w	PLOPT,d0                  ; Level number
+				move.w	Game_LevelNumber_w,d0                  ; Level number
 				muls	#82*16,d0                 ; Fixed size of 82 chars per line, 16 lines ?
 				add.l	d0,a0                     ; offset into narrative
 				move.w	#15,d7                    ; line counter
@@ -301,6 +312,11 @@ noload:
 
 				CALLDEV	DataReset
 
+				; Initialise the messages buffer
+				CALLC   Msg_Init
+				; Record the start. This may write new messages.
+				STATS_PLAY
+
 ;****************************
 ;* Initialize level
 ;****************************
@@ -323,33 +339,39 @@ noload:
 				adda.w	#16,a0
 				move.l	a0,Lvl_ZoneAddsPtr_l
 
+				; Level data begins with messages
 				move.l	Lvl_DataPtr_l,a4
-				lea		160*10(a4),a1
+				lea		LVLT_MESSAGE_LENGTH*LVLT_MESSAGE_COUNT(a4),a1
 
-				lea		54(a1),a2
+				; Followed by LvlT structure (pointed to by a1)
+
+				lea		LvlT_ControlPointCoords_vw(a1),a2
 				move.l	a2,Lvl_ControlPointCoordsPtr_l
-				move.w	12(a1),Lvl_NumControlPoints_w
-				move.w	14(a1),Lvl_NumPoints_w
+				move.w	LvlT_NumControlPoints_w(a1),Lvl_NumControlPoints_w
+				move.w	LvlT_NumPoints_w(a1),Lvl_NumPoints_w
 
-				move.l	16+6(a1),a2
+				move.l	LvlT_OffsetToPoints_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_PointsPtr_l
-				move.w	8+6(a1),d0
+
+				move.w	LvlT_NumPoints_w(a1),d0
 				lea		4(a2,d0.w*4),a2
 				move.l	a2,PointBrightsPtr_l
-				move.w	16(a1),d0
+				move.w	LvlT_NumZones_w(a1),d0
 				addq	#1,d0
-				muls	#80,d0
+				muls	#80,d0 ; todo - is 80 a fixed length points per zone (e.g. 10x 32-bit x/y pairs) value?
 				add.l	d0,a2
 				move.l	a2,Lvl_ZoneBorderPointsPtr_l
 
-				move.l	20+6(a1),a2
+				move.l	LvlT_OffsetToFloorLines_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_FloorLinesPtr_l
-				move.w	-2(a2),ENDZONE
-				move.l	24+6(a1),a2
+				move.w	-2(a2),Lvl_ExitZoneID_w
+
+				move.l	LvlT_OffsetToObjects_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_ObjectDataPtr_l
+
 *****************************************
 * Just for charles
 
@@ -358,32 +380,37 @@ noload:
 ; sub.w #40,4(a2)
 ; move.w #45*256+45,14(a2)
 ****************************************
-				move.l	28+6(a1),a2
+
+				; Temporary object buffers used for player and alien projectile entities.
+				; todo - why are these embedded in the data file and not just a dynamically added space?
+				move.l	LvlT_OffsetToPlayerShot_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Plr_ShotDataPtr_l
-				move.l	32+6(a1),a2
+
+				move.l	LvlT_OffsetToAlienShot_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,AI_AlienShotDataPtr_l
 
-				add.l	#64*20,a2
+				add.l	#ShotT_SizeOf_l*NUM_ALIEN_SHOT_DATA,a2
 				move.l	a2,AI_OtherAlienDataPtrs_vl
 
-				move.l	36+6(a1),a2
+				move.l	LvlT_OffsetToObjectPoints_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_ObjectPointsPtr_l
-				move.l	40+6(a1),a2
+
+				move.l	LvlT_OffsetToPlr1Obj_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Plr1_ObjectPtr_l
-				move.l	44+6(a1),a2
+
+				move.l	LvlT_OffsetToPlr2Obj_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Plr2_ObjectPtr_l
-				move.w	14+6(a1),Lvl_NumObjectPoints_w
 
-; bra noclips
+				move.w	LvlT_NumObjectPoints_w(a1),Lvl_NumObjectPoints_w
 
 				move.l	Lvl_ClipsPtr_l,a2
 				moveq	#0,d0
-				move.w	10+6(a1),d7				;numzones
+				move.w	LvlT_NumZones_w(a1),d7
 				move.w	d7,Zone_Count_w
 
 assignclips:
@@ -394,6 +421,7 @@ assignclips:
 dowholezone:
 				tst.w	(a3)
 				blt.s	nomorethiszone
+
 				tst.w	2(a3)
 				blt.s	thisonenull
 
@@ -419,9 +447,6 @@ nomorethiszone:
 				move.l	a2,Lvl_ConnectTablePtr_l
 
 noclips:
-
-************************************
-
 				clr.b	Plr1_StoodInTop_b
 				move.l	#PLR_STAND_HEIGHT,Plr1_SnapHeight_l
 
@@ -451,8 +476,9 @@ noclips:
 ; move.l #Blurbfield,$dff080
 
 				IFD BUILD_WITH_C
-				tst.w	_Vid_isRTG
-				bne.s	.skipChangeScreen
+				;tst.w	_Vid_isRTG
+				;bne.s	.skipChangeScreen
+				bra.s .skipChangeScreen
 				ENDIF
 
 				IFNE	DISPLAYMSGPORT_HACK
@@ -477,10 +503,8 @@ noclips:
 				clr.b	Vid_WaitForDisplayMsg_b
 
 .skipChangeScreen:
-****************************
 				jsr		Plr_Initialise
 ; bsr initobjpos
-****************************
 
 				; setup audio channels
 				move.l	#$dff000,a6
@@ -548,6 +572,8 @@ scaledownlop:
 ; bne.s .noback
 
 *********************************
+
+				; TODO - check music is enabled
 
 				st		CHANNELDATA
 				jsr		mt_init
@@ -692,7 +718,7 @@ CLRDAM:
 				move.l	Vid_Screen2Ptr_l,Vid_DrawScreenPtr_l
 
 ; Clear message buffers
-				CALLC	Msg_Init
+;				CALLC	Msg_Init
 
 				; Initialise FPS
 				clr.l	Sys_FrameNumber_l
@@ -722,6 +748,27 @@ CLRDAM:
 				clr.l	Plr2_SnapXSpdVal_l
 				clr.l	Plr2_SnapZSpdVal_l
 				clr.l	Plr2_SnapYVel_l
+
+***************************************************************shoehorn this in here AL
+				tst.b	Vid_FullScreen_b
+				beq.s	.small
+
+				move.w	#6,View_KeyLook_w
+				move.w	#FS_HEIGHT/2,d0
+				move.w	d0,View_LookMin_w
+				neg.w	d0
+				move.w	d0,View_LookMax_w
+				bra	.big
+
+.small
+				move.w	#4,View_KeyLook_w
+				move.w	#SMALL_HEIGHT/2,d0
+				move.w	d0,View_LookMin_w
+				neg.w	d0
+				move.w	d0,View_LookMax_w
+
+.big
+***************************************************************
 
 game_main_loop:
 				move.w	#%110000000000,_custom+potgo
@@ -767,7 +814,7 @@ game_main_loop:
 				move.w	#7,d2
 				jsr		Anim_ExplodeIntoBits
 
-				move.w	#-1,ObjT_ZoneID_w(a0)
+				FREE_OBJ	a0
 
 .notmess:
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
@@ -811,14 +858,14 @@ game_main_loop:
 				move.w	Plr1_TmpZOff_l,newz
 				move.w	#7,d2
 				jsr		Anim_ExplodeIntoBits
-				move.w	#-1,ObjT_ZoneID_w(a0)
 
+				FREE_OBJ	a0
 .notmess2:
 				;FIXME: should use _LVOWritePotgo here!
 				move.w	#%110000000000,_custom+potgo ; POTGO -start Potentiometer reading
 													; FIXME: shouldn't this be in a regular interrupt, like VBL?
 
-				move.b	MAPON,REALMAPON
+				move.b	MAPON,draw_RenderMap_b
 
 				move.b	Vid_FullScreenTemp_b,d0
 				move.b	Vid_FullScreen_b,d1
@@ -862,7 +909,7 @@ game_main_loop:
 ;				move.l	d0,hitcol
 
 nofadedownhc:
-				;bsr		LoadMainPalette		; should only reload the palatte when hit
+				;bsr		Vid_LoadMainPalette		; should only reload the palatte when hit
 
 				st		READCONTROLS
 				move.l	#$dff000,a6
@@ -1015,7 +1062,7 @@ okwat:
 				move.l	a0,draw_LastWaterFramePtr_l
 
 				add.w	#640,wtan
-				and.w	#8191,wtan
+				AMOD_I	wtan
 				add.l	#1,wateroff
 				and.l	#$3fff3fff,wateroff
 
@@ -1078,8 +1125,9 @@ okwat:
 
 				move.l	#$60000,Plr2_TmpYOff_l
 				move.l	Plr2_ObjectPtr_l,a0
-				move.w	#-1,EntT_ZoneID_w(a0)
-				move.w	#-1,ObjT_ZoneID_w(a0)
+
+				FREE_ENT	a0
+
 				move.b	#0,ObjT_SeePlayer_b(a0)
 				move.l	#BollocksRoom,Plr2_ZonePtr_l
 
@@ -1592,9 +1640,10 @@ IWasPlayer1:
 				beq.s	.nolookback
 
 				move.l	Plr1_ObjectPtr_l,a0
-				move.w	#-1,12+128(a0)
 
-				eor.w	#4096,angpos
+				FREE_OBJ_2	a0,ENT_NEXT_2
+
+				eor.w	#SINE_SIZE,angpos
 				neg.w	Temp_CosVal_w					; view direction 180deg
 				neg.w	Temp_SinVal_w
 .nolookback:
@@ -1697,8 +1746,10 @@ drawplayer2:
 				beq.s	.nolookback
 
 				move.l	Plr1_ObjectPtr_l,a0
-				move.w	#-1,12+128(a0)
-				eor.w	#4096,angpos
+
+				FREE_OBJ_2	a0,ENT_NEXT_2
+
+				eor.w	#SINE_SIZE,angpos
 				neg.w	Temp_CosVal_w
 				neg.w	Temp_SinVal_w
 
@@ -1727,7 +1778,7 @@ drawplayer2:
 				bsr		DrawDisplay
 
 nodrawp2:
-				tst.b	REALMAPON
+				tst.b	draw_RenderMap_b
 				beq.s	.nomap
 				bsr		DoTheMapWotNastyCharlesIsForcingMeToDo
 
@@ -1740,6 +1791,15 @@ nodrawp2:
 				clr.b	plr2_Teleported_b
 
 .notplr2:
+				tst.b Plr1_Mouse_b
+				beq.s	.no_croshair
+
+				tst.b Prefs_NoAutoAim_b
+				beq.s	.no_croshair
+
+				jsr	Draw_Crosshair
+
+.no_croshair
 				CALLC		Sys_EvalFPS
 
 				DEV_SAVE	d0/d1/a0/a1
@@ -1747,7 +1807,18 @@ nodrawp2:
 				CALLDEV		DrawGraph
 				DEV_RESTORE	d0/d1/a0/a1
 
+				tst.b		Vid_UpdatePalette_b
+				bne.s		.no_palette_update
+
+				CALLC		Vid_LoadMainPalette
+
+.no_palette_update:
 				IFD BUILD_WITH_C
+				tst.l		Game_ProgressSignal_l
+				beq.s		.no_update_progress
+				CALLC		Game_UpdatePlayerProgress
+
+.no_update_progress:
 				CALLC Vid_Present
 				ELSE
 				jsr Vid_ConvertC2P
@@ -1763,6 +1834,7 @@ nodrawp2:
 				move.w	#100,d0					; maximum in fullscreen mode
 				tst.b	Vid_FullScreen_b
 				bne.s	.isFullscreen
+
 				move.w	#60,d0					; maximum in small screen mode
 
 .isFullscreen:
@@ -1887,14 +1959,15 @@ plr1only:
 				asr.w	#3,d0
 				bset	d1,(a1,d0.w)
 				bra		.doallrooms2
-.allroomsdone2:
 
+.allroomsdone2:
 				move.l	#%000001,d7
 				lea		AI_AlienTeamWorkspace_vl,a2
 				move.l	Lvl_ObjectDataPtr_l,a0
 				sub.w	#ObjT_SizeOf_l,a0
 .doallobs:
-				add.w	#OBJ_NEXT,a0
+				NEXT_OBJ	a0
+
 				move.w	(a0),d0
 				blt.s	.allobsdone
 
@@ -1947,7 +2020,7 @@ noend:
 				move.l	Plr1_ZonePtr_l,a0
 				move.w	(a0),d0
 
-				cmp.w	ENDZONE,d0
+				cmp.w	Lvl_ExitZoneID_w,d0
 
 ; change this for quick exit, charlie
 zzzz:
@@ -1986,6 +2059,40 @@ nnoend2:
 
 ; Check renderbuffer setup variables and wipe screen
 SetupRenderbufferSize:
+***************************************************************
+				;is this a better way to shoehorn this in only when screen mode changes? AL
+***************************************************************
+				tst.b	LASTDH
+				bne.s	.big
+				tst.b	Vid_FullScreen_b
+				beq.s	.small
+
+				move.w	#6,View_KeyLook_w
+				move.w	#FS_HEIGHT/2,d0
+				move.w	d0,View_LookMin_w
+				neg.w	d0
+				move.w	d0,View_LookMax_w
+				move.w	STOPOFFSET,d0
+				move.w	d0,d1
+				asr.w	#1,d1			;STOPOFFSET * 0.5
+				add.w	d1,d0			;STOPOFFSET * 1.5
+				move.w	d0,STOPOFFSET
+
+				bra	.big
+
+.small
+				move.w	#4,View_KeyLook_w
+				move.w	#SMALL_HEIGHT/2,d0
+				move.w	d0,View_LookMin_w
+				neg.w	d0
+				move.w	d0,View_LookMax_w
+				move.w	STOPOFFSET,d0
+				muls.w	#2,d0
+				divs.w	#3,d0
+				move.w	d0,STOPOFFSET
+
+.big
+***************************************************************
 				; FIXME dowe need to clamp here again?
 				cmp.w	#100,Vid_LetterBoxMarginHeight_w
 				blt.s	.wideScreenOk
@@ -2023,751 +2130,9 @@ SetupRenderbufferSize:
 				CALLC	Draw_ResetGameDisplay
 				rts
 
-				IFND BUILD_WITH_C
-LoadMainPalette:
-				sub.l	#256*4*3+2+2+4+4,a7		; reserve stack for 256 color entries + numColors + firstColor
-				move.l	a7,a1
-				move.l	a7,a0
-				lea		draw_Palette_vw,a2
-				move.w	#256,(a0)+				; number of entries
-				move.w	#0,(a0)+				; start index
-				move.w	#256*3-1,d0				; 768 entries
-
-				; draw_Palette_vw stores each entry as word
-.setCol:
-				clr.l	d1
-				move.w	(a2)+,d1
-				ror.l	#8,d1
-				move.l	d1,(a0)+
-				dbra	d0,.setCol
-				clr.l	(a0)					; terminate list
-
-				move.l	Vid_MainScreen_l,a0
-				lea		sc_ViewPort(a0),a0
-				CALLGRAF LoadRGB32				; a1 still points to start of palette
-
-				add.l	#256*4*3+2+2+4+4,a7		;restore stack
-				rts
-
-				ENDIF
-
-CLRTWOLINES:
-				move.l	d2,-(a7)
-
-				moveq	#0,d1
-				move.w	#7,d2
-.ccc:
-				move.l	d1,2(a0)
-				move.l	d1,6(a0)
-				move.l	d1,10(a0)
-				move.l	d1,14(a0)
-				move.l	d1,18(a0)
-				move.l	d1,22(a0)
-				move.l	d1,26(a0)
-				move.l	d1,30(a0)
-				move.l	d1,34(a0)
-				move.l	d1,2+40(a0)
-				move.l	d1,6+40(a0)
-				move.l	d1,10+40(a0)
-				move.l	d1,14+40(a0)
-				move.l	d1,18+40(a0)
-				move.l	d1,22+40(a0)
-				move.l	d1,26+40(a0)
-				move.l	d1,30+40(a0)
-				move.l	d1,34+40(a0)
-				add.l	#10240,a0				; next bitplane
-				dbra	d2,.ccc
-				move.l	(a7)+,d2
-				rts
-
-				align 2
 LASTDH:			dc.b	0
 LASTDW:			dc.b	0
-TRRANS:			dc.w	0
 DOANYWATER:		dc.w	0
-
-DoTheMapWotNastyCharlesIsForcingMeToDo:
-				; 0xABADCAFE - Fixme - make these assignable and remember to clear the keys
-				; as the zoom speed is insane under emulations
-
-				move.l	Draw_TexturePalettePtr_l,a4
-				add.l	#256*32,a4
-				; add.w Draw_MapZoomLevel_w,a4
-
-				move.l	#KeyMap_vb,a5
-				tst.b	RAWKEY_F1(a5)			; Zoom In
-				beq.s	.skip_zoom_in
-				tst.w	Draw_MapZoomLevel_w
-				beq.s	.skip_zoom_in
-
-				sub.w	#1,Draw_MapZoomLevel_w
-
-.skip_zoom_in:
-				tst.b	RAWKEY_F2(a5)			; Zoom Out
-				beq.s	.skip_zoom_out
-				cmp.w	#7,Draw_MapZoomLevel_w
-				bge.s	.skip_zoom_out
-
-				add.w	#1,Draw_MapZoomLevel_w
-
-.skip_zoom_out:
-				move.l	#Rotated_vl,a1
-				move.l	#Lvl_CompactMap_vl,a2
-				move.l	#Lvl_BigMap_vl-40,a3
-
-preshow:
-				add.w	#40,a3
-
-SHOWMAP:
-				move.l	(a2)+,d5
-				move.l	a2,d7
-				cmp.l	LastZonePtr_l,d7
-				bgt		shownmap
-
-				tst.l	d5
-				beq.s	preshow
-
-				move.w	#9,d7
-
-wallsofzone:
-				asr.l	#1,d5
-				bcs.s	WALLSEEN
-
-				asr.l	#1,d5
-				bcs.s	WALLMAPPED
-
-				asr.l	#1,d5
-				addq	#4,a3
-				bra		DECIDEDWALL
-
-WALLMAPPED:
-				move.w	#$b00,d4
-				asr.l	#1,d5
-				bcc.s	.notadoor
-				move.w	#$e00,d4
-
-.notadoor:
-				st		TRRANS
-
-				bra.s	DECIDEDCOLOUR
-
-WALLSEEN:
-				clr.b	TRRANS
-
-				move.w	#255,d4
-				asr.l	#2,d5
-				bcc.s	.notadoor
-				move.w	#254,d4
-
-.notadoor:
-DECIDEDCOLOUR:
-				move.w	(a3)+,d6
-				move.l	(a1,d6.w*8),d0
-				asr.l	#7,d0
-				movem.l	d7/d5,-(a7)
-				move.w	draw_MapXOffset_w,d5
-				ext.l	d5
-				add.l	d5,d0
-				move.l	4(a1,d6.w*8),d1
-				move.w	draw_MapZOffset_w,d5
-				ext.l	d5
-				add.l	d5,d1
-				move.w	(a3)+,d6
-				move.l	(a1,d6.w*8),d2
-				move.w	draw_MapXOffset_w,d5
-				ext.l	d5
-				asr.l	#7,d2
-				add.l	d5,d2
-				move.l	4(a1,d6.w*8),d3
-				move.w	draw_MapZOffset_w,d5
-				ext.l	d5
-				add.l	d5,d3
-
-				neg.l	d1
-				neg.l	d3
-
-				bsr		CLIPANDDRAW
-				movem.l	(a7)+,d7/d5
-
-				; 0xABADCAFE - TODO - Knowing if a wall is a door may help PVS in future
-DECIDEDWALL:
-				dbra	d7,wallsofzone
-				bra		SHOWMAP
-
-
-				; FIXME: why does map rendering have an effect on wall rendering?
-shownmap:
-				clr.b	TRRANS		; FIXME seems like there is code for
-									; translucent map rendering, check it out
-
-				; Is this drawing the Arrow?
-				move.w	draw_MapXOffset_w,d0
-				move.w	draw_MapZOffset_w,d1
-				neg.w	d1
-				move.w	d0,d2
-				move.w	d1,d3
-				sub.w	#128,d1
-				add.w	#128,d3
-				move.w	#250,d4
-				bsr		CLIPANDDRAW
-
-				move.w	draw_MapXOffset_w,d0
-				move.w	draw_MapZOffset_w,d1
-				neg.w	d1
-				move.w	d0,d2
-				move.w	d1,d3
-				sub.w	#128,d1
-				sub.w	#32,d3
-				sub.w	#64,d2
-				move.w	#250,d4
-				bsr		CLIPANDDRAW
-
-				move.w	draw_MapXOffset_w,d0
-				move.w	draw_MapZOffset_w,d1
-				neg.w	d1
-				move.w	d0,d2
-				move.w	d1,d3
-				sub.w	#128,d1
-				sub.w	#32,d3
-				add.w	#64,d2
-				move.w	#250,d4
-				bsr		CLIPANDDRAW
-				rts
-
-
-CLIPANDDRAW:
-				tst.b	Vid_FullScreen_b
-				beq.s	.nodov
-
-				; This is scaling the coordinates by 3/5 for Fullscreen (used to be 2/3 for 288 wide)
-				; For 320 wide, we are have a 3/5 ratio rather than 2/3
-				; use an 11 bit approximation based on 1229/2048
-				move.l d1,-(sp) ; todo - find a free register
-				move.w #1229,d1
-				muls  d1,d0 ; 320 * 3/5 = 192
-				muls  d1,d2
-				move.l #11,d1
-				asr.l d1,d0
-				asr.l d1,d2
-				move.l (sp)+,d1
-
-.nodov:
-				tst.b	Vid_DoubleWidth_b				; correct aspect ratio for DW/DH
-				beq.s	.noDoubleWidth
-				asr.w	#1,d0
-				asr.w	#1,d2
-
-.noDoubleWidth:
-				tst.b	Vid_DoubleHeight_b
-				;beq.s	.noDoubleHeight         ; 0xABADCAFE - commented out to avoid branch converted to nop
-				;asr.w	#1,d1					; DOUBLEHIGHT renderbuffer is still full height
-				;asr.w	#1,d3
-
-.noDoubleHeight:
-				move.w	Draw_MapZoomLevel_w,d5			; is this the map zoom?
-				asr.w	d5,d0					; I guess, this achieves X*0.5 + 0.5 for centered map rendering?
-				asr.w	d5,d1
-				asr.w	d5,d2
-				asr.w	d5,d3
-
-
-NOSCALING:
-				add.w	Vid_CentreX_w,d0
-				bge		p1xpos
-
-				add.w	Vid_CentreX_w,d2
-				blt		OFFSCREEN
-
-x1nx2p:			;		X1<0					X2>0, clip against X=0
-				move.w	d2,d6
-				sub.w	d0,d6					; dx
-				beq		OFFSCREEN				; dx == 0?
-
-				move.w	d3,d5
-				sub.w	d1,d5					; dy
-
-				muls.w	d0,d5					; x1 * dy
-				divs.w	d6,d5					; x1 * dy / dx
-				sub.w	d5,d1					; y1 = y1 - x * dy / dx
-				moveq.l	#0,d0					; x1 = 0
-
-				bra		doneleftclip
-
-p1xpos:
-				add.w	Vid_CentreX_w,d2
-				bge		doneleftclip
-
-				move.w	d0,d6
-				sub.w	d2,d6					; dx
-				ble		OFFSCREEN				; dx == 0?
-
-				move.w	d1,d5
-				sub.w	d3,d5					; dy
-
-				muls.w	d2,d5					; x2 * dy
-				divs.w	d6,d5					; x2 * dy / dx
-				sub.w	d5,d3					; y2 = y2 - x2 * dy / dx
-				moveq.l	#0,d2					; x2 == 0
-
-doneleftclip:
-				cmp.w	Vid_RightX_w,d0
-				blt		p1xneg
-
-				cmp.w	Vid_RightX_w,d2
-				bge		OFFSCREEN
-
-				move.w	d0,d6
-				sub.w	d2,d6					; dx
-				beq		OFFSCREEN
-
-				move.w	d3,d5
-				sub.w	d1,d5					; dy
-
-				sub.w	Vid_RightX_w,d0
-				addq.w	#1,d0
-
-				muls.w	d5,d0					; dy * (rightx -x1)
-				divs.w	d6,d0					; (dy * (rightx -x1))/dx
-				add.w	d0,d1					; y1 + (dy * (rightx -x1))/dx = y1 + dy/dx * (rightx - x1)
-				move.w	Vid_RightX_w,d0
-				subq.w	#1,d0
-
-				bra		donerightclip
-
-p1xneg:
-				cmp.w	Vid_RightX_w,d2
-				blt		donerightclip
-
-				move.w	d2,d6
-				sub.w	d0,d6
-				ble		OFFSCREEN
-
-				sub.w	Vid_RightX_w,d2
-				addq.w	#1,d2
-				move.w	d1,d5
-				sub.w	d3,d5
-
-				muls.w	d5,d2
-				divs.w	d6,d2
-				add.w	d2,d3
-				move.w	Vid_RightX_w,d2
-				subq.w	#1,d2
-
-donerightclip:
-
-*********************************
-
-				add.w	TOTHEMIDDLE,d1
-				bge		p1ypos
-
-				add.w	TOTHEMIDDLE,d3
-				blt		OFFSCREEN
-
-				move.w	d3,d6
-				sub.w	d1,d6
-				ble		OFFSCREEN
-
-				move.w	d2,d5
-				sub.w	d0,d5
-
-				muls.w	d1,d5
-				divs.w	d6,d5
-				sub.w	d5,d0
-				moveq.l	#0,d1
-
-				bra		donetopclip
-
-p1ypos:
-				add.w	TOTHEMIDDLE,d3
-				bge		donetopclip
-
-				move.w	d1,d6
-				sub.w	d3,d6
-				ble		OFFSCREEN
-
-				move.w	d0,d5
-				sub.w	d2,d5
-
-
-				muls.w	d3,d5
-				divs.w	d6,d5
-				sub.w	d5,d2
-				moveq.l	#0,d3
-
-donetopclip:
-				cmp.w	Vid_BottomY_w,d1
-				blt		p1yneg
-
-				cmp.w	Vid_BottomY_w,d3
-				bge		OFFSCREEN
-
-				move.w	d1,d6
-				sub.w	d3,d6
-				ble		OFFSCREEN
-
-				sub.w	Vid_BottomY_w,d1
-				addq.w	#1,d1
-				move.w	d2,d5
-				sub.w	d0,d5
-
-				muls.w	d5,d1
-				divs.w	d6,d1
-				add.w	d1,d0
-				move.w	Vid_BottomY_w,d1
-				subq.w	#1,d1
-
-				bra		donebotclip
-
-p1yneg:
-				cmp.w	Vid_BottomY_w,d3
-				blt		donebotclip
-
-				move.w	d3,d6
-				sub.w	d1,d6
-				ble		OFFSCREEN
-				sub.w	Vid_BottomY_w,d3
-				addq.w	#1,d3
-				move.w	d0,d5
-				sub.w	d2,d5
-
-				muls.w	d5,d3
-				divs.w	d6,d3
-				add.w	d3,d2
-				move.w	Vid_BottomY_w,d3
-				subq.w	#1,d3
-
-donebotclip:
-				tst.b	TRRANS
-				bne		DRAWAtransLINE
-				bra		DRAWAMAPLINE
-
-OFFSCREEN:
-NOLINEtrans:
-				rts
-
-Draw_MapZoomLevel_w:	dc.w	3
-draw_MapXOffset_w:		dc.w	0
-draw_MapZOffset_w:		dc.w	0
-
-
-				; FIXME: this is probably still on chunky screen
-DRAWAtransLINE:
-				move.l	Vid_FastBufferPtr_l,a0			; screen to render to.
-
-				tst.b	Vid_FullScreen_b
-				beq.s	.nooffset
-
-				add.l	#(SCREEN_WIDTH*40)+(48*2),a0
-
-.nooffset:
-				cmp.w	d1,d3
-				bgt.s	.okdown
-				bne.s	.aline
-				cmp.w	d0,d2
-				beq.s	NOLINEtrans
-
-.aline:
-				exg		d0,d2
-				exg		d1,d3
-
-.okdown:
-				move.w	d1,d5
-				muls	#SCREEN_WIDTH,d5
-				add.l	d5,a0
-				lea		(a0,d0.w*2),a0
-				sub.w	d1,d3
-				sub.w	d0,d2
-				bge		downrighttrans
-
-downlefttrans:
-				neg.w	d2
-				cmp.w	d2,d3
-				bgt.s	downmorelefttrans
-
-downleftmoretrans:
-				move.w	#SCREEN_WIDTH,d6
-				move.w	d2,d0
-				move.w	d2,d7
-
-.linelop:
-				move.b	(a0),d4
-				move.b	(a4,d4.w*2),(a0)
-				subq	#1,a0
-				sub.w	d3,d0
-				bgt.s	.noextra
-				add.w	d2,d0
-				add.w	d6,a0
-.noextra:
-				dbra	d7,.linelop
-				rts
-
-downmorelefttrans:
-				move.w	#SCREEN_WIDTH,d6
-				move.w	d3,d0
-				move.w	d3,d7
-
-.linelop:
-				move.b	(a0),d4
-				move.b	(a4,d4.w*2),(a0)
-				add.w	d6,a0
-				sub.w	d2,d0
-				bgt.s	.noextra
-				add.w	d3,d0
-				subq	#1,a0
-.noextra:
-				dbra	d7,.linelop
-
-				rts
-
-downrighttrans:
-				cmp.w	d2,d3
-				bgt.s	downmorerighttrans
-
-downrightmoretrans:
-				move.w	#SCREEN_WIDTH,d6
-				move.w	d2,d0
-				move.w	d2,d7
-
-.linelop:
-				move.b	(a0),d4
-				move.b	(a4,d4.w*2),(a0)+
-				sub.w	d3,d0
-				bgt.s	.noextra
-				add.w	d2,d0
-				add.w	d6,a0
-.noextra:
-				dbra	d7,.linelop
-
-				rts
-
-downmorerighttrans:
-				move.w	#SCREEN_WIDTH,d6
-				move.w	d3,d0
-				move.w	d3,d7
-
-.linelop:
-				move.b	(a0),d4
-				move.b	(a4,d4.w*2),(a0)
-				add.w	d6,a0
-				sub.w	d2,d0
-				bgt.s	.noextra
-				add.w	d3,d0
-				addq	#1,a0
-.noextra:
-				dbra	d7,.linelop
-
-				rts
-
-NOLINE:
-				rts
-
-DRAWAMAPLINE:
-;				move.b	Vid_DoubleHeight_b,d5
-;				or.b	Vid_DoubleWidth_b,d5
-;				tst.b	d5
-;				bne		DOITFAT
-
-				move.l	Vid_FastBufferPtr_l,a0			; screen to render to.
-				cmp.w	d1,d3
-				bgt.s	.okdown
-				bne.s	.aline
-				cmp.w	d0,d2
-				beq.s	NOLINE
-
-.aline:
-				exg		d0,d2
-				exg		d1,d3
-.okdown:
-
-				move.w	d1,d5
-				muls	#SCREEN_WIDTH,d5
-				add.l	d5,a0
-				lea		(a0,d0.w),a0
-
-				sub.w	d1,d3
-
-				sub.w	d0,d2
-				bge.s	downright
-
-downleft:
-				neg.w	d2
-				cmp.w	d2,d3
-				bgt.s	downmoreleft
-
-downleftmore:
-				move.w	#SCREEN_WIDTH,d6
-				move.w	d2,d0
-				move.w	d2,d7
-				addq	#1,a0
-
-.linelop:
-				move.b	d4,-(a0)
-				sub.w	d3,d0
-				bgt.s	.noextra
-				add.w	d2,d0
-				add.w	d6,a0
-.noextra:
-				dbra	d7,.linelop
-				rts
-
-downmoreleft:
-				move.w	#SCREEN_WIDTH,d6
-				move.w	d3,d0
-				move.w	d3,d7
-
-.linelop:
-				move.b	d4,(a0)
-				add.w	d6,a0
-				sub.w	d2,d0
-				bgt.s	.noextra
-				add.w	d3,d0
-				subq	#1,a0
-.noextra:
-				dbra	d7,.linelop
-
-				rts
-
-downright:
-				cmp.w	d2,d3
-				bgt.s	downmoreright
-
-downrightmore:
-				move.w	#SCREEN_WIDTH,d6
-				move.w	d2,d0
-				move.w	d2,d7
-
-.linelop:
-				move.b	d4,(a0)+
-				sub.w	d3,d0
-				bgt.s	.noextra
-				add.w	d2,d0
-				add.w	d6,a0
-.noextra:
-				dbra	d7,.linelop
-
-				rts
-
-downmoreright:
-				move.w	#SCREEN_WIDTH,d6
-				move.w	d3,d0
-				move.w	d3,d7
-
-.linelop:
-				move.b	d4,(a0)
-				add.w	d6,a0
-				sub.w	d2,d0
-				bgt.s	.noextra
-				add.w	d3,d0
-				addq	#1,a0
-.noextra:
-				dbra	d7,.linelop
-				rts
-
-
-DOITFAT:
-				move.l	Vid_FastBufferPtr_l,a0			; screen to render to.
-				cmp.w	d1,d3
-				bgt.s	.okdown
-				bne.s	.aline
-				cmp.w	d0,d2
-				beq		NOLINE
-.aline:
-				exg		d0,d2
-				exg		d1,d3
-.okdown:
-
-				move.w	d1,d5
-				muls	#SCREEN_WIDTH,d5
-				add.l	d5,a0
-				lea		(a0,d0.w),a0
-
-				sub.w	d1,d3
-
-				sub.w	d0,d2
-				bge		downrightFAT
-
-downleftFAT:
-				neg.w	d2
-				cmp.w	d2,d3
-				bgt.s	downmoreleftFAT
-
-downleftmoreFAT:
-				move.w	#SCREEN_WIDTH,d6
-				move.w	d2,d0
-				move.w	d2,d7
-				addq	#1,a0
-
-.linelop:
-				move.b	d4,319(a0)
-				move.b	d4,(a0)
-				move.b	d4,-(a0)
-				sub.w	d3,d0
-				bgt.s	.noextra
-				add.w	d2,d0
-				add.w	d6,a0
-.noextra:
-				dbra	d7,.linelop
-				rts
-
-downmoreleftFAT:
-				move.w	#SCREEN_WIDTH,d6
-				move.w	d3,d0
-				move.w	d3,d7
-
-.linelop:
-				move.b	d4,SCREEN_WIDTH(a0)
-				move.b	d4,1(a0)
-				move.b	d4,(a0)
-				add.w	d6,a0
-				sub.w	d2,d0
-				bgt.s	.noextra
-				add.w	d3,d0
-				subq	#1,a0
-.noextra:
-				dbra	d7,.linelop
-
-				rts
-
-downrightFAT:	; lol
-				cmp.w	d2,d3
-				bgt.s	downmorerightFAT
-
-downrightmoreFAT:
-				move.w	#SCREEN_WIDTH,d6
-				move.w	d2,d0
-				move.w	d2,d7
-
-.linelop:
-				move.b	d4,SCREEN_WIDTH(a0)
-				move.b	d4,(a0)+
-				move.b	d4,(a0)
-				sub.w	d3,d0
-				bgt.s	.noextra
-				add.w	d2,d0
-				add.w	d6,a0
-.noextra:
-				dbra	d7,.linelop
-
-				rts
-
-downmorerightFAT:
-				move.w	#SCREEN_WIDTH,d6
-				move.w	d3,d0
-				move.w	d3,d7
-
-.linelop:
-				move.b	d4,SCREEN_WIDTH(a0)
-				move.b	d4,1(a0)
-				move.b	d4,(a0)
-				add.w	d6,a0
-				sub.w	d2,d0
-				bgt.s	.noextra
-				add.w	d3,d0
-				addq	#1,a0
-.noextra:
-				dbra	d7,.linelop
-
-				rts
 
 ; Screenshot?
 SAVETHESCREEN:
@@ -2796,6 +2161,8 @@ SAVELETTER:		dc.b	'd',0
 
 				even
 
+				include "modules/draw/draw_map.s"
+
 				include "screensetup.s"
 				include	"chunky.s"
 
@@ -2804,7 +2171,7 @@ SAVELETTER:		dc.b	'd',0
 				include "modules/dev_inst.s"
 
 
-ENDZONE:		dc.w	0
+Lvl_ExitZoneID_w:		dc.w	0
 
 ***************************************************************************
 ***************************************************************************
@@ -2866,18 +2233,18 @@ Plr1_Use:
 				sub.w	d2,Plr1_Health_w
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.w	#$fffa,IDNUM
-				move.w	#19,Samplenum
+				move.w	#19,Aud_SampleNum_w
 				clr.b	notifplaying
-				move.w	#0,Noisex
-				move.w	#0,Noisez
-				move.w	#60,Noisevol
+				move.w	#0,Aud_NoiseX_w
+				move.w	#0,Aud_NoiseZ_w
+				move.w	#60,Aud_NoiseVol_w
 				jsr		MakeSomeNoise
 
 				movem.l	(a7)+,d0-d7/a0-a6
 
 .notbeenshot:
 				move.b	#0,EntT_DamageTaken_b(a0)
-				move.b	#10,EntT_NumLives_b(a0)
+				move.b	#10,EntT_HitPoints_b(a0)
 				move.w	Plr1_TmpAngPos_w,EntT_CurrentAngle_w(a0)
 				move.b	Plr1_StoodInTop_b,ShotT_InUpperZone_b(a0)
 				move.w	(a1),ObjT_ZoneID_w(a0)
@@ -2899,13 +2266,13 @@ Plr1_Use:
 				tst.w	Plr1_Health_w
 				bgt.s	.okh1
 
-				move.w	#-1,ObjT_ZoneID_w(a0)
+				FREE_OBJ	a0
 .okh1:
 				move.l	Plr2_ObjectPtr_l,a0
 				move.b	#OBJ_TYPE_PLAYER2,ObjT_TypeID_b(a0)
 
 				move.w	Plr2_TmpAngPos_w,d0
-				and.w	#8190,d0
+				AMOD_A	d0
 				move.w	d0,EntT_CurrentAngle_w(a0)
 ;
 ; jsr ViewpointToDraw
@@ -2945,7 +2312,7 @@ Plr1_Use:
 
 .notbeenshot2:
 				move.b	#0,EntT_DamageTaken_b(a0)
-				move.b	#10,EntT_NumLives_b(a0)
+				move.b	#10,EntT_HitPoints_b(a0)
 				move.b	Plr2_StoodInTop_b,ShotT_InUpperZone_b(a0)
 				move.w	(a1),ObjT_ZoneID_w(a0)
 				move.w	(a1),d2
@@ -3041,22 +2408,22 @@ Plr1_Use:
 				tst.w	Plr2_Health_w
 				bgt.s	.okh
 
-				move.w	#-1,ObjT_ZoneID_w(a0)
+				FREE_OBJ	a0
 .okh:
 				move.l	Plr1_ObjectPtr_l,a0
 				tst.w	Plr1_Health_w
 
 				bgt.s	.notdead
 
-				move.w	#-1,ObjT_ZoneID_w+ENT_NEXT_2(a0)
+				FREE_OBJ_2	a0,ENT_NEXT_2
 				rts
 
 .notdead:
 				move.l	Plr1_ZonePtr_l,a1
 
 				move.w	EntT_CurrentAngle_w(a0),d0
-				add.w	#4096,d0
-				and.w	#8190,d0
+				add.w	#SINE_SIZE,d0
+				AMOD_A	d0
 				move.w	d0,EntT_CurrentAngle_w+ENT_NEXT_2(a0)
 
 				move.w	(a1),ObjT_ZoneID_w+ENT_NEXT_2(a0)
@@ -3132,19 +2499,19 @@ Plr2_Use:
 				move.l	#7*2116,hitcol
 				sub.w	d2,Plr2_Health_w
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.w	#19,Samplenum
+				move.w	#19,Aud_SampleNum_w
 				clr.b	notifplaying
 				move.w	#$fffa,IDNUM
-				move.w	#0,Noisex
-				move.w	#0,Noisez
-				move.w	#60,Noisevol
+				move.w	#0,Aud_NoiseX_w
+				move.w	#0,Aud_NoiseZ_w
+				move.w	#60,Aud_NoiseVol_w
 				jsr		MakeSomeNoise
 
 				movem.l	(a7)+,d0-d7/a0-a6
 
 .notbeenshot:
 				move.b	#0,EntT_DamageTaken_b(a0)
-				move.b	#10,EntT_NumLives_b(a0)
+				move.b	#10,EntT_HitPoints_b(a0)
 				move.w	Plr2_TmpAngPos_w,EntT_CurrentAngle_w(a0)
 				move.b	Plr2_StoodInTop_b,ShotT_InUpperZone_b(a0)
 				move.w	(a1),ObjT_ZoneID_w(a0)
@@ -3167,7 +2534,8 @@ Plr2_Use:
 
 				tst.w	Plr2_Health_w
 				bgt.s	.okh55
-				move.w	#-1,ObjT_ZoneID_w(a0)
+
+				FREE_OBJ	a0
 .okh55:
 
 ***********************************
@@ -3176,7 +2544,7 @@ Plr2_Use:
 				move.b	#OBJ_TYPE_PLAYER1,ObjT_TypeID_b(a0)
 
 				move.w	Plr1_AngPos_w,d0
-				and.w	#8190,d0
+				AMOD_A	d0
 				move.w	d0,EntT_CurrentAngle_w(a0)
 
 				move.l	Lvl_ObjectPointsPtr_l,a1
@@ -3200,7 +2568,7 @@ Plr2_Use:
 
 .notbeenshot2:
 				move.b	#0,EntT_DamageTaken_b(a0)
-				move.b	#10,EntT_NumLives_b(a0)
+				move.b	#10,EntT_HitPoints_b(a0)
 
 				move.b	Plr1_StoodInTop_b,ShotT_InUpperZone_b(a0)
 
@@ -3305,7 +2673,8 @@ Plr2_Use:
 .ddone:
 				tst.w	Plr1_Health_w
 				bgt.s	.okh
-				move.w	#-1,ObjT_ZoneID_w(a0)
+
+				FREE_OBJ	a0
 .okh:
 
 **********************************
@@ -3313,14 +2682,14 @@ Plr2_Use:
 				move.l	Plr2_ObjectPtr_l,a0
 				tst.w	Plr2_Health_w
 				bgt.s	.notdead
-				move.w	#-1,ObjT_ZoneID_w+ENT_NEXT(a0)
+				FREE_OBJ_2	a0,ENT_NEXT
 				rts
 
 .notdead:
 				move.l	Plr2_ZonePtr_l,a1
 				move.w	EntT_CurrentAngle_w(a0),d0
-				add.w	#4096,d0
-				and.w	#8190,d0
+				add.w	#SINE_SIZE,d0
+				AMOD_A	d0
 				move.w	d0,EntT_CurrentAngle_w+ENT_NEXT(a0)
 
 				move.w	(a1),ObjT_ZoneID_w+ENT_NEXT(a0)
@@ -3391,8 +2760,8 @@ Plr1_Control:
 				move.w	d0,Plr1_AngPos_w
 				move.l	#SinCosTable_vw,a1
 				move.w	(a1,d0.w),Plr1_SinVal_w
-				add.w	#2048,d0
-				and.w	#8190,d0
+				add.w	#COSINE_OFS,d0
+				AMOD_A	d0
 				move.w	(a1,d0.w),Plr1_CosVal_w
 
 				move.l	Plr1_TmpYOff_l,d0
@@ -3463,8 +2832,8 @@ Plr1_Control:
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	(a0),CollId
 
-				move.l	#%111111111111111111,CollideFlags
-				jsr		Collision
+				move.l	#%111111111111111111,Obj_CollideFlags_l
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.teleport
 
@@ -3494,10 +2863,10 @@ Plr1_Control:
 				move.l	Plr1_ZOff_l,Plr1_SnapZOff_l
 
 				SAVEREGS
-				move.w	#0,Noisex
-				move.w	#0,Noisez
-				move.w	#26,Samplenum
-				move.w	#100,Noisevol
+				move.w	#0,Aud_NoiseX_w
+				move.w	#0,Aud_NoiseZ_w
+				move.w	#26,Aud_SampleNum_w
+				move.w	#100,Aud_NoiseVol_w
 				move.w	#$fff9,IDNUM
 				jsr		MakeSomeNoise
 				GETREGS
@@ -3510,11 +2879,11 @@ Plr1_Control:
 				move.w	#%100000000,wallflags
 				move.b	Plr1_StoodInTop_b,StoodInTop
 
-				move.l	#%1011111110111000011,CollideFlags
+				move.l	#%1011111110111000011,Obj_CollideFlags_l
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	(a0),CollId
 
-				jsr		Collision
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.nothitanything
 				move.w	oldx,Plr1_XOff_l
@@ -3604,8 +2973,8 @@ Plr2_Control:
 
 				move.l	#SinCosTable_vw,a1
 				move.w	(a1,d0.w),Plr2_SinVal_w
-				add.w	#2048,d0
-				and.w	#8190,d0
+				add.w	#COSINE_OFS,d0
+				AMOD_A	d0
 				move.w	(a1,d0.w),Plr2_CosVal_w
 
 				move.l	Plr2_TmpYOff_l,d0
@@ -3675,8 +3044,8 @@ Plr2_Control:
 ;				move.w	Plr2_ObjectPtr_l,a0 ; 0xABADCAFE - word size - is this a bug?
 				move.l	Plr2_ObjectPtr_l,a0
 				move.w	(a0),CollId
-				move.l	#%111111111111111111,CollideFlags
-				jsr		Collision
+				move.l	#%111111111111111111,Obj_CollideFlags_l
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.teleport
 
@@ -3705,10 +3074,10 @@ Plr2_Control:
 				move.l	Plr2_ZOff_l,Plr2_SnapZOff_l
 
 				SAVEREGS
-				move.w	#0,Noisex
-				move.w	#0,Noisez
-				move.w	#26,Samplenum
-				move.w	#100,Noisevol
+				move.w	#0,Aud_NoiseX_w
+				move.w	#0,Aud_NoiseZ_w
+				move.w	#26,Aud_SampleNum_w
+				move.w	#100,Aud_NoiseVol_w
 				move.w	#$fff9,IDNUM
 				jsr		MakeSomeNoise
 				GETREGS
@@ -3721,11 +3090,11 @@ Plr2_Control:
 				move.w	#%100000000000,wallflags
 				move.b	Plr2_StoodInTop_b,StoodInTop
 
-				move.l	#%1011111010111100011,CollideFlags
+				move.l	#%1011111010111100011,Obj_CollideFlags_l
 				move.l	Plr2_ObjectPtr_l,a0
 				move.w	(a0),CollId
 
-				jsr		Collision
+				jsr		Obj_DoCollision
 				tst.b	hitwall
 				beq.s	.nothitanything
 				move.w	oldx,Plr2_XOff_l
@@ -3804,7 +3173,7 @@ DrawDisplay:
 				move.l	#SinCosTable_vw,a0
 				move.w	angpos,d0
 				move.w	(a0,d0.w),d6
-				adda.w	#2048,a0				; +90 deg?
+				adda.w	#COSINE_OFS,a0				; +90 deg?
 				move.w	(a0,d0.w),d7
 				move.w	d6,Temp_SinVal_w
 				move.w	d7,Temp_CosVal_w
@@ -3842,8 +3211,9 @@ DrawDisplay:
 				bne.s	doplr2too
 
 				move.l	Plr2_ObjectPtr_l,a0
-				move.w	#-1,ObjT_ZoneID_w(a0)
-				move.w	#-1,EntT_ZoneID_w(a0)
+
+				FREE_ENT	a0
+
 				bra		noplr2either
 
 doplr2too:
@@ -3980,11 +3350,11 @@ _Sys_MouseY::
 Sys_MouseY:		dc.w	0 ; Pitch?
 
 MAPON:			dc.w	$0
-REALMAPON:		dc.w	0
+draw_RenderMap_b:		dc.w	0
 
 RotateLevelPts:	;		Does					this rotate ALL points in the level EVERY frame?
 
-				tst.b	REALMAPON
+				tst.b	draw_RenderMap_b
 				beq		ONLYTHELONELY			; When REALMAP is on, we apparently need to transform all level points,
 										; otherwise only the visible subset
 
@@ -4318,8 +3688,6 @@ CalcPLR1InLine:
 
 				moveq	#0,d2
 				move.b	ObjT_TypeID_b(a4),d2
-;move.l #ColBoxTable,a6
-;lea (a6,d2.w*8),a6
 
 				sub.w	Plr1_ZOff_l,d1
 				move.w	d0,d2
@@ -4348,24 +3716,22 @@ CalcPLR1InLine:
 				bgt.s	.notinline
 
 				st		d3
-.notinline
+.notinline:
 				move.b	d3,(a2)+
-
 				move.w	d1,(a3)+
-
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 
 				rts
 
 .itaux:
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				bra		.objpointrotlop
 
 .noworkout:
 				move.b	#0,(a2)+
 				move.w	#0,(a3)+
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 				rts
 
@@ -4392,8 +3758,6 @@ CalcPLR2InLine:
 
 				moveq	#0,d2
 				move.b	ObjT_TypeID_b(a4),d2
-; move.l #ColBoxTable,a6
-; lea (a6,d2.w*8),a6
 
 				sub.w	Plr2_ZOff_l,d1
 				move.w	d0,d2
@@ -4422,24 +3786,23 @@ CalcPLR2InLine:
 				bgt.s	.notinline
 
 				st		d3
+
 .notinline:
 				move.b	d3,(a2)+
-
 				move.w	d1,(a3)+
-
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 
 				rts
 
 .itaux:
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				bra		.objpointrotlop
 
 .noworkout:
 				move.w	#0,(a3)+
 				move.b	#0,(a2)+
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 
 				rts
@@ -4503,13 +3866,13 @@ RotateObjectPts:
 				rts
 
 .itaux:
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
 				bra		.objpointrotlop
 
 .noworkout:
-				move.l	#0,(a1)+
-				move.l	#0,(a1)+
-				add.w	#OBJ_NEXT,a4
+				clr.l	(a1)+
+				clr.l	(a1)+
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 				rts
 
@@ -4529,46 +3892,45 @@ RotateObjectPtsFullScreen:
 
 				sub.w	zoff,d1
 				move.w	d0,d2
-				muls	d6,d2
+				muls	d6,d2      ; pOEP
 				move.w	d1,d3
-				muls	d5,d3
+				muls	d5,d3      ; pOEP
 				sub.l	d3,d2
-
-
+                muls	d5,d0      ; pOEP
 				add.l	d2,d2
-				swap	d2
+				swap	d2         ; pOEP
 				move.w	d2,(a1)+
-
-				muls	d5,d0
-				muls	d6,d1
-
+				muls	d6,d1      ; pOEP
 				add.l	d0,d1
 				asl.l	#2,d1
-				swap	d1
+				swap	d1         ; pOEP
 				ext.l	d1
-				divs	#3,d1
-				moveq	#0,d3
+
+				;divs	#3,d1
+				muls    #85,d1     ; pOEP
+				move.l  xwobble,d3
+				asr.l   #8,d1 ; 85/256 approximation of division by 3
 
 				move.w	d1,(a1)+
 				ext.l	d2
 				asl.l	#7,d2
-				add.l	xwobble,d2
+				add.l	d3,d2
 				move.l	d2,(a1)+
-				sub.l	xwobble,d2
-
-				add.w	#OBJ_NEXT,a4
+				sub.l	d3,d2
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 
 				rts
 
 .itaux:
-				add.w	#OBJ_NEXT,a4
+				NEXT_OBJ	a4
+
 				bra		.objpointrotlop
 
 .noworkout:
-				move.l	#0,(a1)+
-				move.l	#0,(a1)+
-				add.w	#OBJ_NEXT,a4
+				clr.l	(a1)+
+				clr.l	(a1)+
+				NEXT_OBJ	a4
 				dbra	d7,.objpointrotlop
 				rts
 
@@ -4606,6 +3968,9 @@ endlevel:
 				bgt.s	wevewon
 				move.w	#0,draw_DisplayEnergyCount_w
 
+				; Record the failure
+				STATS_DIED
+
 				; ASM build only
 				IFND BUILD_WITH_C
 				jsr		Draw_BorderEnergyBar
@@ -4627,6 +3992,9 @@ playgameover:
 				bra		wevelost
 
 wevewon:
+				; Record the victory
+				STATS_WON
+
 				; Disable audio DMA
 				move.w	#$f,$dff000+dmacon
 
@@ -4636,7 +4004,7 @@ wevewon:
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.nonextlev
-				add.w	#1,MAXLEVEL
+				add.w	#1,Game_MaxLevelNumber_w
 				st		Game_FinishedLevel_b
 
 .nonextlev:
@@ -4655,7 +4023,7 @@ playwelldone:
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	wevelost
-				cmp.w	#16,MAXLEVEL
+				cmp.w	#16,Game_MaxLevelNumber_w
 				bne.s	wevelost
 
 				jmp		ENDGAMESCROLL
@@ -6599,10 +5967,7 @@ tstwat:
 				bne		draw_WaterSurface
 ; tst.b draw_UseGouraudFlats_b					; FIXME: this effectively disables bumpmapped floors...
 												; opportunity to reenable and see what happens
-				;bra		gouraudfloor
 
-				tst.b	Sys_CPU_68060_b
-				bne		draw_GoraudFloor060
 				bra		draw_GoraudFloor
 
 ordinary:
@@ -6673,11 +6038,11 @@ gotoacross:
 leftbright:		dc.l  0
 brightspd:		dc.l  0
 
+				IFD OPT060
 				include "modules/draw/draw_floor_060.s"
-
-				align 4
-
+				ELSE
 				include "modules/draw/draw_floor.s"
+				ENDC
 
 				align 4
 
@@ -6832,23 +6197,26 @@ draw_WaterSurface:
 				add.l	wateroff,d5
 
 				move.l	Draw_TexturePalettePtr_l,a1
-				add.l	#256*16,a1
+				add.l	#256*16,a1 ; halfway into the glare shade table
 				move.l	draw_Distance_l,d0
+
 ;				asr.l	#2,d0 ; 0xABADCAFE - this seems to affect the opacity
-				clr.b	d0
+				;clr.b	d0
+
+				and.l	#$3f00,d0
 
 				add.w	d0,d0
-				cmp.w	#9*512,d0
+				cmp.w	#5*512,d0
 				blt.s	.notoowater
 
-				move.w	#9*512,d0
+				move.w	#5*512,d0
 
 .notoowater:
 				adda.w	d0,a1
 				move.l	draw_Distance_l,d0
 				asl.w	#7,d0
 				add.w	wtan,d0
-				and.w	#8191,d0
+				AMOD_I	d0
 				move.l	#SinCosTable_vw,a0
 				move.w	(a0,d0.w),d0
 				ext.l	d0
@@ -6934,7 +6302,7 @@ draw_WaterSurfaceDouble:
 				move.l	draw_Distance_l,d0
 				asl.w	#7,d0
 				add.w	wtan,d0
-				and.w	#8191,d0
+				AMOD_I	d0
 				move.l	#SinCosTable_vw,a0
 				move.w	(a0,d0.w),d0
 				ext.l	d0
@@ -7022,6 +6390,7 @@ dispco:
 				dc.w	0
 
 
+; todo - this is only used from the menu code
 key_readkey:
 				moveq	#0,d0
 				move.b	lastpressed,d0
@@ -7120,6 +6489,7 @@ COUNTSPACE:		ds.b	160
 _Vid_VBLCount_l::
 Vid_VBLCount_l:		dc.l	0
 Vid_VBLCountLast_l:	dc.l	0
+_Vid_FPSLimit_l::   ; todo - this only ranges 0-5, so a byte is more than enough
 Vid_FPSLimit_l:		dc.l	0
 
 OtherInter:
@@ -7271,14 +6641,14 @@ NOSIDES2:
 
 				movem.l	d0-d7/a0-a6,-(a7)
 				subq	#1,d0
-				move.w	d0,Samplenum
+				move.w	d0,Aud_SampleNum_w
 				clr.b	notifplaying
 				move.w	(a0),IDNUM
-				move.w	#80,Noisevol
+				move.w	#80,Aud_NoiseVol_w
 				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
-				move.l	(a1),Noisex
+				move.l	(a1),Aud_NoiseX_w
 				jsr		MakeSomeNoise
 
 				movem.l	(a7)+,d0-d7/a0-a6
@@ -7365,9 +6735,6 @@ dosomething:
 				addq.w	#1,Anim_FramesToDraw_w
 				movem.l	d0-d7/a0-a6,-(a7)
 
-; Text narration superceded by on display messaging
-;				jsr		Draw_NarrateText
-
 				bsr		DOALLANIMS
 
 				sub.w	#1,timetodamage
@@ -7442,7 +6809,7 @@ dosomething:
 				addq	#1,d0
 				and.w	#3,d0
 				move.w	d0,TOPPOPT
-				move.b	STEROPT(pc,d0.w*2),STEREO
+				move.b	STEROPT(pc,d0.w*2),Aud_Stereo_b
 
 
 				move.b	STEROPT+1(pc,d0.w*2),d1
@@ -7521,9 +6888,6 @@ pastster:
 
 				bra		notogglesound2
 
-Prefsfile:
-				dc.b	'k8nx'
-
 notogglesound:
 				clr.b	lasttogsound
 
@@ -7559,21 +6923,12 @@ nolighttoggle:
 				clr.b	OLDLTOG
 
 nolighttoggle2:
-				tst.b	RAWKEY_F5(a5)
-				beq.s	noret
+				tst.b	draw_RenderMap_b
+				bne.s	.no_vid_adjust
 
-				tst.b	OLDRET
-				bne.s	noret2
+				bsr		Vid_CheckSettingsAdjust
 
-				st		OLDRET
-				CALLC	Msg_PullLast
-
-				bra		noret2
-
-noret:
-				clr.b	OLDRET
-
-noret2:
+.no_vid_adjust:
 				tst.b	RAWKEY_F6(a5)
 				beq.s	.nogood
 
@@ -7776,13 +7131,14 @@ nostartalan:
 
 				move.l	#7*2116,hitcol
 				move.l	Plr1_ObjectPtr_l,a0
-				move.w	#-1,12+128(a0)
+
+				FREE_OBJ_2	a0,ENT_NEXT_2
 
 				clr.b	Plr1_Fire_b
 				clr.b	Plr1_Clicked_b
 				move.w	#0,Plr_AddToBobble_w
 				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapHeight_l
-				move.w	#-80,d0					; Is this related to render buffer height
+				move.w	View_LookMax_w,d0					; Is this related to render buffer height
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
@@ -7836,7 +7192,7 @@ nostartalan:
 				move.w	d3,Plr1_SnapAngSpd_w
 				add.w	d3,Plr1_SnapAngPos_w
 				add.w	d3,Plr1_SnapAngPos_w
-				and.w	#8190,Plr1_SnapAngPos_w
+				AMOD_A	Plr1_SnapAngPos_w
 
 				bra		nocontrols
 
@@ -7866,11 +7222,13 @@ control2:
 
 				move.l	#7*2116,hitcol
 				move.l	Plr1_ObjectPtr_l,a0
-				move.w	#-1,12+128(a0)
+
+				FREE_OBJ_2	a0,ENT_NEXT_2
+
 				clr.b	Plr2_Fire_b
 				move.w	#0,Plr_AddToBobble_w
 				move.l	#PLR_CROUCH_HEIGHT,Plr2_SnapHeight_l
-				move.w	#-80,d0
+				move.w	View_LookMax_w,d0
 				move.w	d0,STOPOFFSET
 				neg.w	d0
 				add.w	TOTHEMIDDLE,d0
@@ -7929,7 +7287,7 @@ control2:
 				move.w	d3,Plr2_SnapAngSpd_w
 				add.w	d3,Plr2_SnapAngPos_w
 				add.w	d3,Plr2_SnapAngPos_w
-				and.w	#8190,Plr2_SnapAngPos_w
+				AMOD_A	Plr2_SnapAngPos_w
 				bra.s	nocontrols
 
 .propercontrol:
@@ -8643,15 +8001,15 @@ NoiseMade3pRIGHT: dc.b	0
 * work, given say position of noise, volume
 * and sample number.
 
-Samplenum:		dc.w	0
-Noisex:			dc.w	0
-Noisez:			dc.w	0
-Noisevol:		dc.w	0
-chanpick:		dc.w	0
-IDNUM:			dc.w	0
-needleft:		dc.b	0
-needright:		dc.b	0
-STEREO:			dc.b	$FF
+Aud_SampleNum_w:    dc.w	0
+Aud_NoiseX_w:       dc.w	0
+Aud_NoiseZ_w:       dc.w	0
+Aud_NoiseVol_w:     dc.w	0
+Aud_ChannelPick_b:  dc.w	0
+IDNUM:              dc.w	0
+Aud_NeedLeft_b:     dc.b	0
+Aud_NeedRight_b:    dc.b	0
+Aud_Stereo_b:       dc.b	$FF
 
 				even
 CHANNELDATA:
@@ -8734,11 +8092,11 @@ dontworry:
 ; Ok its fine for us to play a sound.
 ; So calculate left/right volume.
 
-				move.w	Noisex,d1
+				move.w	Aud_NoiseX_w,d1
 				muls	d1,d1
-				move.w	Noisez,d2
+				move.w	Aud_NoiseZ_w,d2
 				muls	d2,d2
-				move.w	Noisevol,d3
+				move.w	Aud_NoiseVol_w,d3
 				move.w	#32767,noiseloud
 				moveq	#1,d0
 				add.l	d1,d2
@@ -8775,7 +8133,7 @@ dontworry:
 				move.w	#1,d0
 .stillnot02
 
-				move.w	Noisevol,d3
+				move.w	Aud_NoiseVol_w,d3
 				ext.l	d3
 				asl.l	#6,d3
 				cmp.l	#32767,d3
@@ -8798,11 +8156,11 @@ notooloud:
 ; d3 contains volume of noise.
 
 				move.w	d3,d4
-				tst.b	STEREO
+				tst.b	Aud_Stereo_b
 				beq		NOSTEREO
 
 				move.w	d3,d2
-				muls	Noisex,d2
+				muls	Aud_NoiseX_w,d2
 				asl.w	#2,d0
 				divs	d0,d2
 
@@ -8823,7 +8181,7 @@ donequiet:
 
 ; d3 contains volume of noise.
 
-				move.w	#$ffff,needleft
+				move.w	#$ffff,Aud_NeedLeft_b
 
 				move.l	#0,RIGHTOFFSET
 				move.l	#0,LEFTOFFSET
@@ -8836,20 +8194,20 @@ donequiet:
 
 ; Left is louder; is it MUCH louder?
 
-				st		needleft
+				st		Aud_NeedLeft_b
 				move.w	d3,d2
 				sub.w	d4,d2
 				cmp.w	#32,d2
-				slt		needright
+				slt		Aud_NeedRight_b
 				bra		aboutsame
 
 RightLouder:
 				move.l	#4,RIGHTOFFSET
-				st		needright
+				st		Aud_NeedRight_b
 				move.w	d4,d2
 				sub.w	d3,d2
 				cmp.w	#32,d2
-				slt		needleft
+				slt		Aud_NeedLeft_b
 
 aboutsame:
 NoLouder:
@@ -8902,7 +8260,7 @@ FOUNDALEFT:
 				move.w	d0,32(a3)
 				move.w	noiseloud,2(a3)
 
-				move.w	Samplenum,d5
+				move.w	Aud_SampleNum_w,d5
 
 				move.l	#Aud_SampleList_vl,a3
 				move.l	(a3,d5.w*8),a1
@@ -9003,7 +8361,7 @@ FOUNDARIGHT:
 				move.w	d0,32(a3)
 				move.w	noiseloud,2(a3)
 
-				move.w	Samplenum,d5
+				move.w	Aud_SampleNum_w,d5
 				move.l	#Aud_SampleList_vl,a3
 				move.l	(a3,d5.w*8),a1
 				move.l	4(a3,d5.w*8),a2
@@ -9114,7 +8472,7 @@ FOUNDACHAN:
 				move.w	d0,32(a3)
 				move.w	noiseloud,2(a3)
 
-				move.w	Samplenum,d5
+				move.w	Aud_SampleNum_w,d5
 
 				move.l	#Aud_SampleList_vl,a3
 				move.l	(a3,d5.w*8),a1
@@ -9221,6 +8579,7 @@ FOUNDACHAN:
 
 				include	"modules/res.s"
 				include	"modules/file_io.s"
+				include "modules/vid.s"
 				include	"controlloop.s"
 
 
@@ -9455,6 +8814,24 @@ closeeverything:
 ;.noPotgoResource
 ;
 ;				move.l	#0,d0					; FIXME indicate failure
+
+				IFD BUILD_WITH_C
+				tst.w	_Vid_isRTG
+				bne.s	.skipClear
+				ENDIF
+
+				IFNE	DISPLAYMSGPORT_HACK
+				;empty Vid_DisplayMsgPort_l and set Vid_ScreenBufferIndex_w to 0
+				;so the starting point is the same every time
+.clrMsgPort:
+				move.l	Vid_DisplayMsgPort_l,a0
+				CALLEXEC GetMsg
+				tst.l	d0
+				bne.s	.clrMsgPort
+				ENDC
+
+				clr.w	Vid_ScreenBufferIndex_w
+.skipClear
 				rts
 
 
@@ -9550,6 +8927,12 @@ welldone:
 				include	"serial_nightmare.s"
 
 				cnop	0,4
+
+				IFND OPT060
+				IFND OPT040
+				include "c2p1x1_8_c5_030_2.s"
+				ENDC
+				ENDC
 				include	"c2p1x1_8_c5_040.s"
 				include	"c2p_rect.s"
 				include	"c2p2x1_8_c5_gen.s"

@@ -333,10 +333,15 @@ Res_LoadLevelData:
 				move.l	Draw_LevelFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
 
 .done_floor_override:
-;				move.l	#MEMF_ANY,IO_MemType_l
-;				move.l	#Lvl_ModPropsFilename_vb,a0
-;				jsr		IO_LoadFileOptional
+				move.l	#MEMF_ANY,IO_MemType_l
+				move.l	#Lvl_ModPropsFilename_vb,a0
+				jsr		IO_LoadFileOptional
 
+				move.l  d0,Lvl_ModPropertiesPtr_l
+
+				jsr		Lvl_InitLevelMods
+
+.done_level_properties:
 				movem.l	d2/a2/a3/a4/a5,-(sp)
 				move.l	#Draw_GlobalWallTexturePtrs_vl,a2
 				move.l	#Draw_LevelWallTexturePtrs_vl,a3
@@ -371,9 +376,15 @@ Res_LoadLevelData:
 				align 4
 
 Res_FreeLevelData:
+				tst.l   Lvl_ModPropertiesPtr_l
+				beq.s   .done_level_properties
+
+				RES_FREEPTR Lvl_ModPropertiesPtr_l
+
+.done_level_properties:
 				; check for and free any custom floor overrides
-				tst.l Draw_LevelFloorTexturesPtr_l
-				beq.s .done_floor_overrides
+				tst.l   Draw_LevelFloorTexturesPtr_l
+				beq.s   .done_floor_overrides
 
 				RES_FREEPTR Draw_LevelFloorTexturesPtr_l
 

@@ -186,7 +186,7 @@ NUM_WALL_TEXTURES	EQU 16
 		UWORD AlienT_HitPoints_w			; 32, 2
 		UWORD AlienT_Height_w				; 34, 2
 		UWORD AlienT_Girth_w				; 36, 2
-		UWORD AlienT_SplatType_w			; 38, 2
+		UWORD AlienT_SplatType_w			; 38, 2 - either the projectile class, or spanwed alien class
 		UWORD AlienT_Auxilliary_w			; 40, 2
 		LABEL AlienT_SizeOf_l				; 42
 
@@ -219,6 +219,8 @@ OBJ_TYPE_PLAYER2 EQU 5
 	; of the object is, e.g. decoration, bullet, alien, collectable etc.
 	STRUCTURE ObjT,0
 		; TODO work out what the hidden data are.
+		; It appears these are accessed as bytes in some use cases, so the probability is that the
+		; data is overwritten or repurposed for temporary objects (projectiles/explosions)
 		ULONG ObjT_XPos_l			; 0, 4 - To be confirmed
 		ULONG ObjT_ZPos_l 			; 4, 4 - To be confirmed
 		ULONG ObjT_YPos_l 			; 8, 4 - To be confirmed
@@ -235,19 +237,22 @@ OBJ_PREV	EQU (-ObjT_SizeOf_l)	; object before current
 OBJ_NEXT	EQU	ObjT_SizeOf_l		; object after current
 
 	MACRO NEXT_OBJ
-	add.w #OBJ_NEXT,\1
+	add.w #ObjT_SizeOf_l,\1
 	ENDM
 
+	MACRO PREV_OBJ
+	sub.w #ObjT_SizeOf_l,\1
+	ENDM
 
 	; Runtime entity extension for ObjT
 	STRUCTURE EntT,ObjT_Header_SizeOf_l
-		UBYTE EntT_NumLives_b				; 18, 1
+		UBYTE EntT_HitPoints_b				; 18, 1
 		UBYTE EntT_DamageTaken_b			; 19, 1
 		UBYTE EntT_CurrentMode_b			; 20, 1
 		UBYTE EntT_TeamNumber_b				; 21, 1
 		UWORD EntT_CurrentSpeed_w 			; 22, 2 unused
 		UWORD EntT_DisplayText_w			; 24, 2
-		UWORD EntT_ZoneID_w					; 26, 2
+		UWORD EntT_ZoneID_w					; 26, 2 ; todo - how is this related to ObjT_ZoneID_w ?
 		UWORD EntT_CurrentControlPoint_w	; 28, 2
 		UWORD EntT_CurrentAngle_w			; 30, 2
 		UWORD EntT_TargetControlPoint_w		; 32, 2
@@ -330,7 +335,11 @@ ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
 		UWORD ZoneT_FloorNoise_w		; 44, 2
 		UWORD ZoneT_UpperFloorNoise_w	; 46, 2
 		UWORD ZoneT_ListOfGraph_w		; 48, 2
+
 		LABEL ZoneT_SizeOf_l			; 50
+
+NUM_PLR_SHOT_DATA	EQU		20
+NUM_ALIEN_SHOT_DATA	EQU		20
 
 ;**************************
 ;* Game link file offsets *
@@ -389,29 +398,88 @@ GLFT_BUL_NAME_LENGTH EQU 20
 NUM_INVENTORY_ITEMS EQU (NUM_GUN_DEFS+2)
 NUM_INVENTORY_CONSUMABLES EQU (NUM_BULLET_DEFS+2)
 
+MAX_ACHIEVEMENTS EQU 128
 
-	; Inventory consumables
+	; Inventory consumables (health/fuel/ammo)
 	STRUCTURE InvCT,0
 		UWORD InvCT_Health_w		        ; 2
 		UWORD InvCT_JetpackFuel_w			; 2
-		UWORD InvCT_AmmoCounts_vw			; 40 - UWORD[20]
+		UWORD InvCT_AmmoCounts_vw			; 40 - UWORD[NUM_BULLET_DEFS]
 		PADDING (NUM_BULLET_DEFS*2)-2
 		LABEL InvCT_SizeOf_l				; 44
 
 
-	; Inventory items
+	; Inventory items (weapons/jetpack/shield)
 	STRUCTURE InvIT,0
 		UWORD InvIT_Shield_w				; 2
 		UWORD InvIT_JetPack_w				; 2
-		UWORD InvIT_Weapons_vw				; 20 - UWORD[10]
+		UWORD InvIT_Weapons_vw				; 20 - UWORD[NUM_GUN_DEFS]
 		PADDING (NUM_GUN_DEFS*2)-2
 		LABEL InvIT_SizeOf_l				; 24
 
+	; Full Inventory (player/collectable)
+	STRUCTURE InvT,0
+		STRUCT InvT_Consumables,(InvCT_SizeOf_l)	; 44
+		STRUCT InvT_Items,(InvIT_SizeOf_l)			; 24
+		LABEL InvT_SizeOf_l							; 68
+
 	; Custom game properties
 	STRUCTURE GModT,0
-		STRUCTURE GModT_MaxInv,(InvCT_SizeOf_l), 44
-		LABEL GModT_SizeOf_l				; 44
+		; Default inventory limits
+		STRUCTURE GModT_MaxInv,(InvCT_SizeOf_l)		; 44
+		UWORD     GModT_NumAchievements             ; 2
+		UWORD     GModT_AchievementSize             ; 2
+		LABEL GModT_SizeOf_l						; 48
 
+	; Game statistics
+	STRUCTURE GStatT,0
+		; Progressed inventory limits
+		STRUCTURE GStatT_MaxInv,(InvCT_SizeOf_l)	; 44
+
+		; Best time so far for each level
+		ULONG GStatT_LevelBestTimes_vl              ; 64 - ULONG[NUM_LEVELS]
+		PADDING (NUM_LEVELS*4)-4
+
+		; Number of times each level attempted
+		UWORD GStatT_LevelPlayCounts_vw			; 32 - UWORD[NUM_LEVELS]
+		PADDING (NUM_LEVELS*2)-2
+
+		; Number of times each level beaten
+		UWORD GStatT_LevelWonCounts_vw			; 32 - UWORD[NUM_LEVELS]
+		PADDING (NUM_LEVELS*2)-2
+
+		; Number of times killed in each level
+		UWORD GStatT_LevelFailCounts_vw			; 32 - UWORD[NUM_LEVELS]
+		PADDING (NUM_LEVELS*2)-2
+
+		; Number of times the player has improved their best time, per level
+		UWORD GStatT_LevelImprovedTimeCounts_vw	; 32 - UWORD[NUM_LEVELS]
+		PADDING (NUM_LEVELS*2)-2
+
+		; Number of aliens killed, by type
+		UWORD GStatT_AlienKills_vw
+		PADDING (NUM_ALIEN_DEFS*2)-2			; 40 - UWORD[NUM_ALIEN_DEFS]
+
+		; Total health collected
+		ULONG GStatT_TotalHealthCollected_w     ; 4
+
+		; Total fuel collected
+		ULONG GStatT_TotalFuelCollected_w       ; 4
+
+		; Total ammo collected, per ammo class
+		ULONG GStatT_TotalAmmoFound_vw
+		PADDING (NUM_BULLET_DEFS*4)-4           ; 80 UWORD[NUM_BULLET_DEFS]
+
+		UBYTE GStatT_Achieved_vb
+		PADDING (MAX_ACHIEVEMENTS/8)-1
+
+		LABEL GStatT_SizeOf_l
+
+		; TODO GPrefsT
+
+GAME_EVENTBIT_KILL EQU 0
+GAME_EVENTBIT_ZONE_CHANGE EQU 1
+GAME_EVENTBIT_LEVEL_START  EQU 2
 
 *****************************
 * Door Definitions **********
@@ -426,9 +494,45 @@ DR_Never		EQU		5
 DL_Timeout		EQU		0
 DL_Never		EQU		1
 
-; TODO - Level Structure
-
 LVLT_MESSAGE_LENGTH EQU 160
+LVLT_MESSAGE_COUNT  EQU 10
+
+; Maximum number of zones. Note that the game doesn't yet support this limit fully.
+LVL_EXPANDED_MAX_ZONE_COUNT EQU 512
+
+; Maximum number of zones. Once this is fully working, rededine as LVL_EXPANDED_MAX_ZONE_COUNT
+LVL_MAX_ZONE_COUNT EQU 256
+
+	; Level Data Structure (after message block of LVLT_MESSAGE_LENGTH*LVLT_MESSAGE_COUNT)
+	STRUCTURE LvlT,0					; offset, size
+		UWORD LvlT_Plr1_StartX_w		; 0, 2
+		UWORD LvlT_Plr1_StartZ_w		; 2, 2
+		UWORD LvlT_Plr1_Start_ZoneID_w 	; 4, 2
+		UWORD LvlT_Plr2_StartX_w		; 6, 2
+		UWORD LvlT_Plr2_StartZ_w		; 8, 2
+		UWORD LvlT_Plr2_Start_ZoneID_w 	; 10, 2
+
+		UWORD LvlT_NumControlPoints_w	; 12, 2
+		UWORD LvlT_NumPoints_w			; 14, 2
+
+		UWORD LvlT_NumZones_w			; 16, 2
+
+		UWORD LvlT_Unk_0_w				; 18,2
+		UWORD LvlT_NumObjectPoints_w	; 20,2
+
+		; Offset values are typically measured relative to the start of the file (inc message block)
+		ULONG LvlT_OffsetToPoints_l			; 22,4
+		ULONG LvlT_OffsetToFloorLines_l		; 26,4
+		ULONG LvlT_OffsetToObjects_l		; 30,4
+		ULONG LvlT_OffsetToPlayerShot_l		; 34,4
+		ULONG LvlT_OffsetToAlienShot_l		; 38,4
+		ULONG LvlT_OffsetToObjectPoints_l	; 42,4
+		ULONG LvlT_OffsetToPlr1Obj_l		; 46,4
+		ULONG LvlT_OffsetToPlr2Obj_l		; 50,4
+
+		LABEL LvlT_ControlPointCoords_vw	; 54 ?
+
+		LABEL LvlT_SizeOf_l
 
 ; For two player victory messages
 GAME_DM_VICTORY_MESSAGE_LENGTH EQU 80
@@ -440,3 +544,49 @@ MSG_TAG_NARRATIVE EQU 0
 MSG_TAG_DEFAULT   EQU (1<<14)
 MSG_TAG_OPTIONS   EQU (2<<14)
 MSG_TAG_OTHER     EQU (3<<14)
+
+; Other stuff
+
+SKY_BACKDROP_W    EQU 648
+SKY_BACKDROP_H    EQU 240
+
+; Rendering Stuff
+	; Data structure used by wall drawing
+	STRUCTURE WD,0
+		LABEL WD_DWidth_l		;  0 ; union
+		UWORD WD_LeftX_w		;  0
+		UWORD WD_RightX_w		;  2
+
+		LABEL WD_DBM_l			;  4 ; union
+		UWORD WD_LeftBM_w		;  4
+		UWORD WD_RightBM_w		;  6
+
+		LABEL WD_DDist_l		;  8 ; union
+		UWORD WD_LeftDist_w		;  8
+		UWORD WD_RightDist_w	; 10
+
+		LABEL WD_DTop_l			; 12 ; union
+		UWORD WD_LeftTop_w		; 12
+		UWORD WD_RightTop_w		; 14
+
+		LABEL WD_DBot_l			; 16 ; union
+		UWORD WD_LeftBot_w		; 16
+		UWORD WD_RightBot_w		; 18
+
+		UWORD WD_Unknown_0_w	; 20
+		UWORD WD_Unknown_1_w	; 22
+
+		; Whole wall for simple case, lower half for full Gouraud case
+		LABEL WD_LeftBrightScaled_l	; 24 ; union
+		UWORD WD_LeftBright_w	; 24
+		UWORD WD_RightBright_w	; 26
+
+		ULONG WD_DHorizBright_l	; 28
+
+		LABEL WD_UpperLeftBrightScaled_l ; 32 ; union
+		UWORD WD_UpperLeftBright_w	; 32
+		UWORD WD_UpperRightBright_w ; 34
+
+		ULONG WD_DUpperHorizBright_l ; 36
+
+		LABEL WD_SizeOf_l

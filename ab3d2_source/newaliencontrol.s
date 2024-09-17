@@ -383,7 +383,7 @@ Destructable:
 				cmp.w	ODefT_HitPoints_w(a3),d0
 				blt		StillHere
 
-				tst.b	EntT_NumLives_b(a0)
+				tst.b	EntT_HitPoints_b(a0)
 				beq.s	.alreadydead
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
@@ -405,7 +405,7 @@ Destructable:
 				move.w	#0,EntT_Timer1_w(a0)
 
 .alreadydead:
-				move.b	#0,EntT_NumLives_b(a0)
+				move.b	#0,EntT_HitPoints_b(a0)
 				move.w	ObjT_ZoneID_w(a0),d0
 				bge.s	.ok_in_room
 
@@ -455,7 +455,7 @@ StillHere:
 				rts
 
 .ok_in_room:
-				move.b	#1,EntT_NumLives_b(a0)
+				move.b	#1,EntT_HitPoints_b(a0)
 				tst.b	AI_NoEnemies_b
 				beq.s	.no_locks
 
@@ -469,7 +469,7 @@ StillHere:
 
 .worry_about:
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.w	12(a0),d2 ; think this is ObjT_ZoneID_w - TBC
+				move.w	ObjT_ZoneID_w(a0),d2
 				move.l	Lvl_ZoneAddsPtr_l,a5
 				move.l	(a5,d2.w*4),d0
 				add.l	Lvl_DataPtr_l,d0
@@ -521,7 +521,7 @@ intodeco:
 .in_lower_zone:
 .on_ceiling:
 				asr.l	#7,d0
-				move.w	d0,4(a0)
+				move.w	d0,ObjT_ZPos_l(a0)
 				bsr		DEFANIMOBJ
 
 				rts
@@ -645,14 +645,14 @@ Plr1_CollectItem:
 				blt.s	.nosoundmake
 
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.w	d0,Samplenum
+				move.w	d0,Aud_SampleNum_w
 				clr.b	notifplaying
 				move.w	(a0),IDNUM
-				move.w	#80,Noisevol
+				move.w	#80,Aud_NoiseVol_w
 				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
-				move.l	(a1),Noisex
+				move.l	(a1),Aud_NoiseX_w
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
 
@@ -704,14 +704,14 @@ Plr2_CollectItem:
 				blt.s	.nosoundmake
 
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.w	d0,Samplenum
+				move.w	d0,Aud_SampleNum_w
 				clr.b	notifplaying
 				move.w	(a0),IDNUM
-				move.w	#80,Noisevol
+				move.w	#80,Aud_NoiseVol_w
 				move.l	#ObjRotated_vl,a1
 				move.w	(a0),d0
 				lea		(a1,d0.w*8),a1
-				move.l	(a1),Noisex
+				move.l	(a1),Aud_NoiseX_w
 				move.b	#0,PlayEcho
 				jsr		MakeSomeNoise
 				movem.l	(a7)+,d0-d7/a0-a6
@@ -941,10 +941,10 @@ THISPLRzoff:	dc.w	0
 ViewpointToDraw:
 				move.w	EntT_CurrentAngle_w(a0),d3
 				sub.w	angpos,d3
-				and.w	#8190,d3
+				AMOD_A	d3
 				move.l	#SinCosTable_vw,a2
 				move.w	(a2,d3.w),d2
-				adda.w	#2048,a2
+				adda.w	#COSINE_OFS,a2
 				move.w	(a2,d3.w),d3
 				ext.l	d2
 				ext.l	d3
@@ -1110,13 +1110,13 @@ SHOOTPLAYER1:
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	(a7)+,objroom
 				move.l	Plr_ShotDataPtr_l,a0
-				move.w	#19,d1
+				move.w	#NUM_PLR_SHOT_DATA-1,d1
 
 .findonefree2:
 				move.w	ObjT_ZoneID_w(a0),d2
 				blt.s	.foundonefree2
 
-				adda.w	#OBJ_NEXT,a0
+				NEXT_OBJ	a0
 				dbra	d1,.findonefree2
 
 				move.w	tsx,oldx
@@ -1156,13 +1156,13 @@ FireAtPlayer1:
 				move.w	(a0),d1
 				lea		(a1,d1.w*8),a1
 				move.l	AI_AlienShotDataPtr_l,a5
-				move.w	#19,d1
+				move.w	#NUM_ALIEN_SHOT_DATA-1,d1
 
 .findonefree:
 				move.w	ObjT_ZoneID_w(a5),d0
 				blt.s	.foundonefree
 
-				adda.w	#OBJ_NEXT,a5
+				NEXT_OBJ	a5
 				dbra	d1,.findonefree
 
 				bra		.cantshoot
@@ -1172,9 +1172,9 @@ FireAtPlayer1:
 				move.l	#ObjRotated_vl,a6
 				move.w	(a0),d0
 				lea		(a6,d0.w*8),a6
-				move.l	(a6),Noisex
-				move.w	#100,Noisevol
-				move.b	#1,chanpick
+				move.l	(a6),Aud_NoiseX_w
+				move.w	#100,Aud_NoiseVol_w
+				move.b	#1,Aud_ChannelPick_b
 				clr.b	notifplaying
 				move.b	SHOTTYPE,d0
 				move.w	#0,ShotT_Lifetime_w(a5)
@@ -1362,13 +1362,13 @@ SHOOTPLAYER2:
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	(a7)+,objroom
 				move.l	AI_AlienShotDataPtr_l,a0
-				move.w	#19,d1
+				move.w	#NUM_ALIEN_SHOT_DATA-1,d1
 
 .findonefree2:
 				move.w	ObjT_ZoneID_w(a0),d2
 				blt.s	.foundonefree2
 
-				adda.w	#OBJ_NEXT,a0
+				NEXT_OBJ	a0
 				dbra	d1,.findonefree2
 
 				move.w	tsx,oldx
@@ -1401,13 +1401,13 @@ SHOOTPLAYER2:
 
 FireAtPlayer2:
 				move.l	AI_AlienShotDataPtr_l,a5
-				move.w	#19,d1
+				move.w	#NUM_ALIEN_SHOT_DATA-1,d1
 
 .findonefree:
 				move.w	ObjT_ZoneID_w(a5),d0
 				blt.s	.foundonefree
 
-				adda.w	#OBJ_NEXT,a5
+				NEXT_OBJ	a5
 				dbra	d1,.findonefree
 
 				bra		.cantshoot
@@ -1417,9 +1417,9 @@ FireAtPlayer2:
 				move.l	#ObjRotated_vl,a6
 				move.w	(a0),d0
 				lea		(a6,d0.w*8),a6
-				move.l	(a6),Noisex
-				move.w	#100,Noisevol
-				move.b	#1,chanpick
+				move.l	(a6),Aud_NoiseX_w
+				move.w	#100,Aud_NoiseVol_w
+				move.b	#1,Aud_ChannelPick_b
 				clr.b	notifplaying
 				move.b	SHOTPOWER,d0
 				move.w	#0,ShotT_Lifetime_w(a5)

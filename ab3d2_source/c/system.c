@@ -2,6 +2,7 @@
 #include "screen.h"
 #include "draw.h"
 #include "message.h"
+#include "game.h"
 
 #include <SDI_compiler.h>
 #include <SDI_misc.h>
@@ -103,6 +104,9 @@ BOOL Sys_Init()
         goto fail;
     }
 
+    // Load the game prefs (bindings etc).
+    Game_Init();
+
     return TRUE;
 
 fail:
@@ -115,6 +119,10 @@ void Sys_Done()
     Draw_Shutdown();
     sys_RemoveInterrupts();
     sys_ReleaseHardware();
+
+    // Save the game prefs (bindings etc).
+    Game_Done();
+
     ((struct Process*)SysBase->ThisTask)->pr_WindowPtr = sys_OldWindowPtr;
     // Display any buffered error message after cleanup
     // but before closing libraries

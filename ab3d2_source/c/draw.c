@@ -1,13 +1,18 @@
 #include "draw.h"
 #include "system.h"
 
+/* We need to know the number of message lines to display in 2/3 planar */
+#include "message.h"
+
 #include <SDI_compiler.h>
 #include <cybergraphics/cybergraphics.h>
 #include <graphics/gfx.h>
 #include <intuition/intuition.h>
 #include <proto/cybergraphics.h>
 #include <proto/exec.h>
-#include <string.h>  //memset
+#include <proto/graphics.h>
+
+#include <string.h>
 
 /**
  * TODO - dynamically allocate chunky buffers for RTG along with the main display.
@@ -44,6 +49,15 @@ extern UBYTE draw_GlyphSpacing_vb[256];
 
 /* Pointer to planar display */
 extern APTR Vid_DisplayScreenPtr_l;
+
+#ifdef GFX_LONG_ALIGNED
+    #define COPY(s, d, c) CopyMemQuick((s), (d), (c))
+#else
+    #define COPY(s, d, c) CopyMem((s), (d), (c))
+#endif
+
+PLANEPTR Draw_FastRamPlanePtr      = NULL;
+PLANEPTR Draw_BorderEdgeBackupPtr  = NULL;
 
 /**
  * Border digits when not low on ammo/health
@@ -93,18 +107,13 @@ static UBYTE draw_BorderDigitsBuffer[DRAW_HUD_CHAR_SMALL_H * DRAW_HUD_CHAR_SMALL
 
 static UBYTE *FastBufferAllocPtr;
 
-UWORD Draw_MaxPropCharWidth = 0;
-
 /**********************************************************************************************************************/
 
 static void draw_PlanarToChunky(UBYTE *chunkyPtr, const PLANEPTR *planePtrs, ULONG numPixels);
 static void draw_ValueToDigits(UWORD value, UWORD digits[3]);
 static void draw_ConvertBorderDigitsToChunky(UBYTE* chunkyPtr, const UBYTE *planarBasePtr, UWORD width, UWORD height);
 static void draw_ReorderBorderDigits(UBYTE* toPlanarPtr, const UBYTE *planarBasePtr, UWORD width, UWORD height);
-
 static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charCode, UBYTE pen);
-
-static void draw_CalculateGlyphSpacing(void);
 
 static void draw_UpdateCounter_RTG(
     APTR bmBaseAddress,
@@ -142,6 +151,11 @@ static void draw_UpdateItems_Planar(
     UWORD yPos
 );
 
+#ifdef GEN_GLYPH_DATA
+UWORD Draw_MaxPropCharWidth = 0;
+static void draw_CalculateGlyphSpacing(void);
+#endif
+
 #include "draw_inline.h"
 
 /**********************************************************************************************************************/
@@ -156,6 +170,7 @@ BOOL Draw_Init()
     }
 
     Vid_FastBufferPtr_l = (UBYTE *)(((ULONG)FastBufferAllocPtr + 15) & ~15);
+
 
     void (*border_convert)(UBYTE* to, const UBYTE *from, UWORD width, UWORD height);
 
@@ -215,8 +230,9 @@ BOOL Draw_Init()
         DRAW_HUD_CHAR_SMALL_H
     );
 
+#ifdef GEN_GLYPH_DATA
     draw_CalculateGlyphSpacing();
-
+#endif
     draw_ResetHUDCounters();
 
     return TRUE;
@@ -241,6 +257,65 @@ void Draw_Shutdown()
 
 /**********************************************************************************************************************/
 
+#define MSG_PLANE_H (DRAW_MSG_CHAR_H + DRAW_TEXT_Y_SPACING) * (MSG_MAX_LINES_SMALL + 1)
+
+/**
+ * Repairs the border area of the fast ram plane in planar text mode by copying back the
+ * bits of the background image that were saved off during Draw_ResetGameDisplay().
+ */
+void Draw_RepairTextPlaneBorders()
+{
+    UWORD* src = (UWORD*)Draw_BorderEdgeBackupPtr;
+    UWORD* dst = (UWORD*)Draw_FastRamPlanePtr;
+
+    UWORD lines = MSG_PLANE_H;
+    while (lines--) {
+        // left edge
+        dst[0] = *src++;
+        // right edge
+        dst[(SCREEN_WIDTH / 16) - 1] = *src++;
+        dst += SCREEN_WIDTH / 16;
+    }
+}
+
+static void draw_ConfigureTextPlane(void) {
+    /*
+     * For 2/3 screensize, use the end of the chunky buffer for the text plane. We need
+     * enough space for the maximum number of lines (currently MSG_MAX_LINES_SMALL + 1)
+     * at full width:
+     *
+     * SCREEN_WIDTH * (DRAW_MSG_CHAR_H + DRAW_TEXT_Y_SPACING) bits per text line.
+     *
+     * This is safe because the chunky buffer is always full screen size.
+     */
+    ULONG size = SCREEN_WIDTH * MSG_PLANE_H / 8;
+
+    Draw_FastRamPlanePtr   = (PLANEPTR)(
+        Vid_FastBufferPtr_l + (SCREEN_WIDTH * SCREEN_HEIGHT) - size
+    );
+
+    /**
+     * We want to back up the left and right edge of the border for the bitplane we will
+     * be writing into. The borders are 16 pixels wide, so we need 16 bits * 2 = 4 bytes
+     * for each line of the plane.
+     */
+
+    size = 4 * MSG_PLANE_H;
+    Draw_BorderEdgeBackupPtr  = Draw_FastRamPlanePtr - size;
+
+    UWORD* dst = (UWORD*)Draw_BorderEdgeBackupPtr;
+    UWORD* src = (UWORD*)&Vid_Screen2Ptr_l[PLANE_OFFSET(DRAW_TEXT_PLANE_NUM) + DRAW_TEXT_SMALL_PLANE_OFFSET];
+
+    UWORD lines = MSG_PLANE_H;
+    while (lines--) {
+        // left edge
+        *dst++ = src[0];
+        // right edge
+        *dst++ = src[(SCREEN_WIDTH / 16) - 1];
+        src += SCREEN_WIDTH / 16;
+    }
+}
+
 /**
  * Re initialise the game display, clear out the previous view, reset HUD, etc.
  */
@@ -252,28 +327,33 @@ void Draw_ResetGameDisplay()
         unLHA(Vid_Screen1Ptr_l, draw_BorderPacked_vb, 0, Sys_GetTemporaryWorkspace(), NULL);
         unLHA(Vid_Screen2Ptr_l, draw_BorderPacked_vb, 0, Sys_GetTemporaryWorkspace(), NULL);
         Draw_UpdateBorder_Planar();
+        if (!Vid_FullScreen_b) {
+            draw_ConfigureTextPlane();
+        }
     } else {
         LOCAL_CYBERGFX();
 
-        memset(Vid_FastBufferPtr_l, 0, SCREEN_WIDTH * SCREEN_HEIGHT);
+        Sys_MemFillLong(Vid_FastBufferPtr_l, 0, (SCREEN_WIDTH * SCREEN_HEIGHT) >> 2);
 
         ULONG bmBytesPerRow;
         APTR bmBaseAddress;
 
-        APTR bmHandle = LockBitMapTags(Vid_MainScreen_l->ViewPort.RasInfo->BitMap,
-                                       LBMI_BYTESPERROW, (ULONG)&bmBytesPerRow,
-                                       LBMI_BASEADDRESS, (ULONG)&bmBaseAddress,
-                                       TAG_DONE);
+        APTR bmHandle = LockBitMapTags(
+            Vid_MainScreen_l->ViewPort.RasInfo->BitMap,
+            LBMI_BYTESPERROW, (ULONG)&bmBytesPerRow,
+            LBMI_BASEADDRESS, (ULONG)&bmBaseAddress,
+            TAG_DONE
+        );
         if (bmHandle) {
             const UBYTE *src = draw_Border;
             WORD height = Vid_ScreenHeight < SCREEN_HEIGHT ? Vid_ScreenHeight : SCREEN_HEIGHT;
             src += (SCREEN_HEIGHT - height) * SCREEN_WIDTH;
 
             if (bmBytesPerRow == SCREEN_WIDTH) {
-                memcpy(bmBaseAddress, src, SCREEN_WIDTH * height);
+                COPY(src, bmBaseAddress, SCREEN_WIDTH * height);
             } else {
                 for (WORD y = 0; y < height; ++y) {
-                    memcpy(bmBaseAddress, src, SCREEN_WIDTH);
+                    COPY(src, bmBaseAddress, SCREEN_WIDTH);
                     bmBaseAddress += bmBytesPerRow;
                     src += SCREEN_WIDTH;
                 }
@@ -284,59 +364,26 @@ void Draw_ResetGameDisplay()
     }
 }
 
+
 /**********************************************************************************************************************/
 
-static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charCode, UBYTE pen);
-
-/**
- * Draw a length limited, null terminated string of fixed glyphs at a given coordinate.
- */
-const char* Draw_ChunkyText(
-    UBYTE *drawPtr,
-    UWORD drawSpan,
-    UWORD maxLen,
-    const char *textPtr,
-    UWORD xPos,
-    UWORD yPos,
-    UBYTE pen
-) {
-    drawPtr += drawSpan * yPos + xPos;
-    UBYTE charCode;
-    while ( (charCode = (UBYTE)*textPtr++) && maxLen-- > 0 ) {
-        /* Skip over all non-printing or blank. Assume ECMA-94 Latin 1 8-bit for Amiga 3.x */
-        if (Draw_IsPrintable(charCode)) {
-            draw_ChunkyGlyph(drawPtr, drawSpan, charCode, pen);
-        }
-        drawPtr += DRAW_MSG_CHAR_W;
-    }
-    return charCode ? textPtr : (const char*)NULL;
+void Draw_ClearRect(UWORD x1, UWORD y1, UWORD x2, UWORD y2)
+{
+    SetAPen(&Vid_MainScreen_l->RastPort, 0);
+    RectFill(&Vid_MainScreen_l->RastPort, x1, y1, x2, y2);
+    SetAPen(&Vid_MainScreen_l->RastPort, 255);
 }
 
 /**********************************************************************************************************************/
 
 /**
- * Draw a length limited, null terminated string of proportional glyphs at a given coordinate.
+ * Draw a line of proportional text on the level intro screen
+ *
+ * TODO this is a relic now and will probably never be implemented
  */
-const char* Draw_ChunkyTextProp(
-    UBYTE *drawPtr,
-    UWORD drawSpan,
-    UWORD maxLen,
-    const char *textPtr,
-    UWORD xPos,
-    UWORD yPos,
-    UBYTE pen
-) {
-    drawPtr += drawSpan * yPos + xPos;
-    UBYTE charCode;
-    while ( (charCode = (UBYTE)*textPtr++) && maxLen-- > 0 ) {
-        UBYTE glyphSpacing = draw_GlyphSpacing_vb[charCode];
-        /* Skip over all non-printing or blank. Assume ECMA-94 Latin 1 8-bit for Amiga 3.x */
-        if (Draw_IsPrintable(charCode)) {
-            draw_ChunkyGlyph(drawPtr - (glyphSpacing & 0xF), drawSpan, charCode, pen);
-        }
-        drawPtr += glyphSpacing >> 4;
-    }
-    return charCode ? textPtr : (const char*)NULL;
+void Draw_LineOfText(REG(a0, const char *ptr), REG(a1, APTR screenPointer), REG(d0,  ULONG xxxx))
+{
+
 }
 
 /**********************************************************************************************************************/
@@ -416,10 +463,206 @@ UWORD Draw_CalcPropTextSplit(const char** nextTextPtr, UWORD txtLength, UWORD fi
 /**********************************************************************************************************************/
 
 /**
- * Draw a line of proportional text on the level intro screen
+ * Draw a glyph into the target buffer, filling only the set pixels with the desired pen. There are probably lots
+ * of ways this can be optimised. Suitable for any chunky buffer.
  */
-void Draw_LineOfText(REG(a0, const char *ptr), REG(a1, APTR screenPointer), REG(d0,  ULONG xxxx))
+static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charCode, UBYTE pen)
 {
+    UBYTE *glyphPtr     = &draw_ScrollChars_vb[(UWORD)charCode << 3];
+    UBYTE  glyphLMargin = draw_GlyphSpacing_vb[charCode] & 0x7;
+    UBYTE  glyphWidth   = (draw_GlyphSpacing_vb[charCode] >> 4) - 1;
+    for (UWORD row = 0; row < DRAW_MSG_CHAR_H; ++row) {
+        UBYTE plane = *glyphPtr++;
+        UBYTE width = glyphWidth;
+        if (plane) {
+            switch (glyphLMargin) {
+                case 0: if (plane & 128) drawPtr[0] = pen; if (!--width) break;
+                case 1: if (plane & 64)  drawPtr[1] = pen; if (!--width) break;
+                case 2: if (plane & 32)  drawPtr[2] = pen; if (!--width) break;
+                case 3: if (plane & 16)  drawPtr[3] = pen; if (!--width) break;
+                case 4: if (plane & 8)   drawPtr[4] = pen; if (!--width) break;
+                case 5: if (plane & 4)   drawPtr[5] = pen; if (!--width) break;
+                case 6: if (plane & 2)   drawPtr[6] = pen; if (!--width) break;
+                case 7: if (plane & 1)   drawPtr[7] = pen; if (!--width) break;
+            }
+        }
+        drawPtr += drawSpan;
+    }
+}
+
+/**********************************************************************************************************************/
+
+/**
+ * Draw a length limited, null terminated string of fixed glyphs at a given coordinate. Suitable for any chunky
+ * buffer.
+ */
+const char* Draw_ChunkyText(
+    UBYTE *drawPtr,
+    UWORD drawSpan,
+    UWORD maxLen,
+    const char *textPtr,
+    UWORD xPos,
+    UWORD yPos,
+    UBYTE pen
+) {
+    drawPtr += drawSpan * yPos + xPos;
+    UBYTE charCode;
+    while ( (charCode = (UBYTE)*textPtr++) && maxLen-- > 0 ) {
+        /* Skip over all non-printing or blank. Assume ECMA-94 Latin 1 8-bit for Amiga 3.x */
+        if (Draw_IsPrintable(charCode)) {
+            draw_ChunkyGlyph(drawPtr, drawSpan, charCode, pen);
+        }
+        drawPtr += DRAW_MSG_CHAR_W;
+    }
+    return charCode ? textPtr : (const char*)NULL;
+}
+
+/**********************************************************************************************************************/
+
+/**
+ * Draw a length limited, null terminated string of proportional glyphs at a given coordinate. Suitable for any
+ * chunky buffer.
+ */
+const char* Draw_ChunkyTextProp(
+    UBYTE *drawPtr,
+    UWORD drawSpan,
+    UWORD maxLen,
+    const char *textPtr,
+    UWORD xPos,
+    UWORD yPos,
+    UBYTE pen
+) {
+    drawPtr += drawSpan * yPos + xPos;
+    UBYTE charCode;
+    while ( (charCode = (UBYTE)*textPtr++) && maxLen-- > 0 ) {
+        UBYTE glyphSpacing = draw_GlyphSpacing_vb[charCode];
+        /* Skip over all non-printing or blank. Assume ECMA-94 Latin 1 8-bit for Amiga 3.x */
+        if (Draw_IsPrintable(charCode)) {
+            draw_ChunkyGlyph(drawPtr - (glyphSpacing & 0xF), drawSpan, charCode, pen);
+        }
+        drawPtr += glyphSpacing >> 4;
+    }
+    return charCode ? textPtr : (const char*)NULL;
+}
+
+/**********************************************************************************************************************
+ *
+ * Border HUD stuff, RTG mode.
+ *
+ *********************************************************************************************************************/
+
+/**
+ * Render a counter single digit
+ */
+static void draw_RenderCounterDigit_RTG(UBYTE *drawPtr, const UBYTE *glyphPtr, UWORD digit, UWORD span) {
+
+#ifdef GFX_LONG_ALIGNED
+    const ULONG *digitPtr = (ULONG*)&glyphPtr[digit * DRAW_HUD_CHAR_W * DRAW_HUD_CHAR_H];
+    ULONG *drawPtr32 = (ULONG*)drawPtr;
+    span >>= 2;
+    for (UWORD y = 0; y < DRAW_HUD_CHAR_H; ++y) {
+        for (UWORD x = 0; x < DRAW_HUD_CHAR_W / sizeof(ULONG); ++x) {
+            drawPtr32[x] = *digitPtr++;
+        }
+        drawPtr32 += span;
+    }
+#else
+    const UBYTE *digitPtr = &glyphPtr[digit * DRAW_HUD_CHAR_W * DRAW_HUD_CHAR_H];
+    for (UWORD y = 0; y < DRAW_HUD_CHAR_H; ++y) {
+        for (UWORD x = 0; x < DRAW_HUD_CHAR_W; ++x) {
+            drawPtr[x] = *digitPtr++;
+        }
+        drawPtr += span;
+    }
+#endif
+}
+
+/**********************************************************************************************************************/
+
+/**
+ * Render a counter (3-digit) into
+ */
+static void draw_UpdateCounter_RTG(APTR bmBaseAddress, ULONG bmBytesPerRow, UWORD count, UWORD limit, UWORD xPos, UWORD yPos)
+{
+    UWORD digits[3];
+    draw_ValueToDigits(count, digits);
+
+    const UBYTE *glyphPtr = count > limit ?
+        draw_BorderDigitsGood :
+        draw_BorderDigitsWarn;
+
+    /* Render the digits into the mini buffer */
+    UBYTE* bufferPtr = draw_BorderDigitsBuffer;
+    for (UWORD d = 0; d < 3; ++d, bufferPtr += DRAW_HUD_CHAR_W) {
+        draw_RenderCounterDigit_RTG(bufferPtr, glyphPtr, digits[d], DRAW_COUNT_W);
+    }
+
+    /* Copy the mini buffer to the bitmap */
+    UBYTE* drawPtr = ((UBYTE*)bmBaseAddress) + xPos + yPos * bmBytesPerRow;
+
+    bufferPtr = draw_BorderDigitsBuffer;
+    for (UWORD y = 0; y < DRAW_HUD_CHAR_H; ++y, drawPtr += bmBytesPerRow, bufferPtr += DRAW_COUNT_W) {
+        COPY(bufferPtr, drawPtr, DRAW_COUNT_W);
+    }
+}
+
+/**********************************************************************************************************************/
+
+/**
+ * Render a counter single digit
+ */
+static void draw_RenderItemDigit_RTG(UBYTE *drawPtr, const UBYTE *glyphPtr, UWORD digit, UWORD span) {
+
+#ifdef GFX_LONG_ALIGNED
+    const ULONG *digitPtr = (ULONG*)&glyphPtr[digit * DRAW_HUD_CHAR_SMALL_W * DRAW_HUD_CHAR_SMALL_H];
+    ULONG *drawPtr32 = (ULONG*)drawPtr;
+    span >>= 2;
+    for (UWORD y = 0; y < DRAW_HUD_CHAR_SMALL_H; ++y) {
+        for (UWORD x = 0; x < DRAW_HUD_CHAR_SMALL_W / sizeof(ULONG); ++x) {
+            drawPtr32[x] = *digitPtr++;
+        }
+        drawPtr32 += span;
+    }
+#else
+    const UBYTE *digitPtr = &glyphPtr[digit * DRAW_HUD_CHAR_SMALL_W * DRAW_HUD_CHAR_SMALL_H];
+    for (UWORD y = 0; y < DRAW_HUD_CHAR_SMALL_H; ++y) {
+        for (UWORD x = 0; x < DRAW_HUD_CHAR_SMALL_W; ++x) {
+            drawPtr[x] = *digitPtr++;
+        }
+        drawPtr += span;
+    }
+#endif
+}
+
+/**********************************************************************************************************************/
+
+static void draw_UpdateItems_RTG(
+    APTR bmBaseAddress,
+    ULONG bmBytesPerRow,
+    const UWORD* itemSlots,
+    UWORD itemSelected,
+    UWORD xPos,
+    UWORD yPos
+) {
+    UBYTE* drawPtr = ((UBYTE*)bmBaseAddress) + xPos + yPos * bmBytesPerRow;
+
+    /* Render into the minibuffer */
+    UBYTE *bufferPtr = draw_BorderDigitsBuffer;
+    for (UWORD i = 0; i < DRAW_NUM_WEAPON_SLOTS; ++i, bufferPtr += DRAW_HUD_CHAR_SMALL_W) {
+        const UBYTE *glyphPtr = itemSelected == i ?
+            draw_BorderDigitsItemSelected :
+            itemSlots[i] ?
+                draw_BorderDigitsItemFound :
+                draw_BorderDigitsItem;
+
+        draw_RenderItemDigit_RTG(bufferPtr, glyphPtr, i, DRAW_HUD_CHAR_SMALL_W * 10);
+    }
+
+    /* Copy the mini buffer to the bitmap */
+    bufferPtr = draw_BorderDigitsBuffer;
+    for (UWORD i = 0; i < DRAW_HUD_CHAR_SMALL_H; ++i, drawPtr += bmBytesPerRow, bufferPtr += DRAW_HUD_CHAR_SMALL_W * 10) {
+        COPY(bufferPtr, drawPtr, DRAW_HUD_CHAR_SMALL_W * 10);
+    }
 
 }
 
@@ -476,175 +719,98 @@ void Draw_UpdateBorder_RTG(APTR bmBaseAddress, ULONG bmBytesPerRow)
 
 /**********************************************************************************************************************/
 
-extern UWORD Vid_ScreenBufferIndex_w;
+/**********************************************************************************************************************
+ *
+ * PLANAR MCPLANEFACE
+ *
+ * TODO - these routines can all be reimplemented as pure ASM as they can likely be improved significantly and will be
+ *        needed by the ASM/AGA only build in any case.
+ *
+ **********************************************************************************************************************/
 
-void Draw_UpdateBorder_Planar(void)
-{
-    INIT_ITEMS();
-
-    /* TODO - Determine the correct render target and rely on the pointer. For now, we ignore it and render to both */
-
-    if (itemSelected != draw_LastItemSelected || itemList != draw_LastItemList) {
-        draw_LastItemSelected = itemSelected;
-        draw_LastItemList     = itemList;
-
-        /* Inventory */
-        draw_UpdateItems_Planar(
-            Vid_DisplayScreenPtr_l,
-            SCREEN_WIDTH / SCREEN_DEPTH,
-            itemSlots,
-            itemSelected,
-            draw_ScreenXPos(DRAW_HUD_ITEM_SLOTS_X),
-            draw_ScreenYPos(DRAW_HUD_ITEM_SLOTS_Y)
-        );
-    }
-    /* Ammunition */
-    if (draw_LastDisplayAmmoCount_w != draw_DisplayAmmoCount_w) {
-        draw_LastDisplayAmmoCount_w = draw_DisplayAmmoCount_w;
-        draw_UpdateCounter_Planar(
-            Vid_DisplayScreenPtr_l,
-            SCREEN_WIDTH / SCREEN_DEPTH,
-            draw_DisplayAmmoCount_w,
-            LOW_AMMO_COUNT_WARN_LIMIT,
-            draw_ScreenXPos(DRAW_HUD_AMMO_COUNT_X),
-            draw_ScreenYPos(DRAW_HUD_AMMO_COUNT_Y)
-        );
-    }
-
-    /* Energy */
-    if (draw_LastDisplayEnergyCount_w != draw_DisplayEnergyCount_w) {
-        draw_LastDisplayEnergyCount_w = draw_DisplayEnergyCount_w;
-        draw_UpdateCounter_Planar(
-            Vid_DisplayScreenPtr_l,
-            SCREEN_WIDTH / SCREEN_DEPTH,
-            draw_DisplayEnergyCount_w,
-            LOW_ENERGY_COUNT_WARN_LIMIT,
-            draw_ScreenXPos(DRAW_HUD_ENERGY_COUNT_X),
-            draw_ScreenYPos(DRAW_HUD_ENERGY_COUNT_Y)
-        );
-    }
+static __inline UWORD ror16(UWORD v, WORD s) {
+    return (v >> s) | (v << (16 - s));
 }
 
-/**********************************************************************************************************************/
+static void draw_PlanarGlyph(PLANEPTR drawPtr, WORD xPos, UBYTE charCode) {
+    UBYTE *glyphPtr     = &draw_ScrollChars_vb[(UWORD)charCode << 3];
+    BYTE   glyphLMargin = draw_GlyphSpacing_vb[charCode] & 0x7;
+    BYTE   glyphWidth   = draw_GlyphSpacing_vb[charCode] >> 4;
+
+    drawPtr += (xPos >> 3);
+    xPos = (xPos & 7) - glyphLMargin;
+    if (xPos < 0) {
+        xPos = -xPos;
+        drawPtr[0]                     |= glyphPtr[0] << xPos;
+        drawPtr[SCREEN_WIDTH >> 3]     |= glyphPtr[1] << xPos;
+        drawPtr[(2*SCREEN_WIDTH) >> 3] |= glyphPtr[2] << xPos;
+        drawPtr[(3*SCREEN_WIDTH) >> 3] |= glyphPtr[3] << xPos;
+        drawPtr[(4*SCREEN_WIDTH) >> 3] |= glyphPtr[4] << xPos;
+        drawPtr[(5*SCREEN_WIDTH) >> 3] |= glyphPtr[5] << xPos;
+        drawPtr[(6*SCREEN_WIDTH) >> 3] |= glyphPtr[6] << xPos;
+        drawPtr[(7*SCREEN_WIDTH) >> 3] |= glyphPtr[7] << xPos;
+    } else if (xPos == 0) {
+        drawPtr[0]                     |= glyphPtr[0];
+        drawPtr[SCREEN_WIDTH >> 3]     |= glyphPtr[1];
+        drawPtr[(2*SCREEN_WIDTH) >> 3] |= glyphPtr[2];
+        drawPtr[(3*SCREEN_WIDTH) >> 3] |= glyphPtr[3];
+        drawPtr[(4*SCREEN_WIDTH) >> 3] |= glyphPtr[4];
+        drawPtr[(5*SCREEN_WIDTH) >> 3] |= glyphPtr[5];
+        drawPtr[(6*SCREEN_WIDTH) >> 3] |= glyphPtr[6];
+        drawPtr[(7*SCREEN_WIDTH) >> 3] |= glyphPtr[7];
+    } else if (xPos + glyphWidth >= DRAW_MSG_CHAR_W) {
+        for (UWORD row = 0; row < DRAW_MSG_CHAR_H; ++row) {
+            UWORD rot = ror16(glyphPtr[row], xPos);
+            drawPtr[0] |= rot;
+            drawPtr[1] |= rot >> 8;
+            drawPtr += SCREEN_WIDTH >> 3;
+        }
+    } else {
+        drawPtr[0]                     |= glyphPtr[0] >> xPos;
+        drawPtr[SCREEN_WIDTH >> 3]     |= glyphPtr[1] >> xPos;
+        drawPtr[(2*SCREEN_WIDTH) >> 3] |= glyphPtr[2] >> xPos;
+        drawPtr[(3*SCREEN_WIDTH) >> 3] |= glyphPtr[3] >> xPos;
+        drawPtr[(4*SCREEN_WIDTH) >> 3] |= glyphPtr[4] >> xPos;
+        drawPtr[(5*SCREEN_WIDTH) >> 3] |= glyphPtr[5] >> xPos;
+        drawPtr[(6*SCREEN_WIDTH) >> 3] |= glyphPtr[6] >> xPos;
+        drawPtr[(7*SCREEN_WIDTH) >> 3] |= glyphPtr[7] >> xPos;
+    }
+}
 
 /**
- * Render a counter single digit
+ * Draw a length limited, null terminated string of proportional glyphs at a given coordinate into a single
+ * bitplane. The idea here is that for AGA only, we will render into a fast buffer and then copy that to a
+ * target bitplane in chip ram so that the only chip ram accesses are long writes.
  */
-static void draw_RenderCounterDigit_RTG(UBYTE *drawPtr, const UBYTE *glyphPtr, UWORD digit, UWORD span) {
+const char* Draw_PlanarTextProp(
+    PLANEPTR drawPtr,
+    UWORD maxLen,
+    const char *textPtr,
+    UWORD xPos,
+    UWORD yPos
+) {
 
-#ifdef RTG_LONG_ALIGNED
-    const ULONG *digitPtr = (ULONG*)&glyphPtr[digit * DRAW_HUD_CHAR_W * DRAW_HUD_CHAR_H];
-    ULONG *drawPtr32 = (ULONG*)drawPtr;
-    span >>= 2;
-    for (UWORD y = 0; y < DRAW_HUD_CHAR_H; ++y) {
-        for (UWORD x = 0; x < DRAW_HUD_CHAR_W / sizeof(ULONG); ++x) {
-            drawPtr32[x] = *digitPtr++;
+    // Advance into the target bitplane by the y position. x position is handled  in the glyph plotting
+    // which needs it to work out bit shifts as well as basic byte offset.
+    drawPtr += yPos * (SCREEN_WIDTH >> 3);
+
+    UBYTE charCode;
+    while ( (charCode = (UBYTE)*textPtr++) && maxLen-- > 0 ) {
+        UBYTE glyphSpacing = draw_GlyphSpacing_vb[charCode];
+        /* Skip over all non-printing or blank. Assume ECMA-94 Latin 1 8-bit for Amiga 3.x */
+        if (Draw_IsPrintable(charCode)) {
+            draw_PlanarGlyph(drawPtr, xPos, charCode);
         }
-        drawPtr32 += span;
+        xPos += glyphSpacing >> 4;
     }
-#else
-    const UBYTE *digitPtr = &glyphPtr[digit * DRAW_HUD_CHAR_W * DRAW_HUD_CHAR_H];
-    for (UWORD y = 0; y < DRAW_HUD_CHAR_H; ++y) {
-        for (UWORD x = 0; x < DRAW_HUD_CHAR_W; ++x) {
-            drawPtr[x] = *digitPtr++;
-        }
-        drawPtr += span;
-    }
-#endif
+    return charCode ? textPtr : (const char*)NULL;
 }
 
-/**********************************************************************************************************************/
-
-/**
- * Render a counter (3-digit) into
- */
-static void draw_UpdateCounter_RTG(APTR bmBaseAddress, ULONG bmBytesPerRow, UWORD count, UWORD limit, UWORD xPos, UWORD yPos)
-{
-    UWORD digits[3];
-    draw_ValueToDigits(count, digits);
-
-    const UBYTE *glyphPtr = count > limit ?
-        draw_BorderDigitsGood :
-        draw_BorderDigitsWarn;
-
-    /* Render the digits into the mini buffer */
-    UBYTE* bufferPtr = draw_BorderDigitsBuffer;
-    for (UWORD d = 0; d < 3; ++d, bufferPtr += DRAW_HUD_CHAR_W) {
-        draw_RenderCounterDigit_RTG(bufferPtr, glyphPtr, digits[d], DRAW_COUNT_W);
-    }
-
-    /* Copy the mini buffer to the bitmap */
-    UBYTE* drawPtr = ((UBYTE*)bmBaseAddress) + xPos + yPos * bmBytesPerRow;
-
-    bufferPtr = draw_BorderDigitsBuffer;
-    for (UWORD y = 0; y < DRAW_HUD_CHAR_H; ++y, drawPtr += bmBytesPerRow, bufferPtr += DRAW_COUNT_W) {
-
-#ifdef RTG_LONG_ALIGNED
-        CopyMemQuick(bufferPtr, drawPtr, DRAW_COUNT_W);
-#else
-        memcpy(drawPtr, bufferPtr, DRAW_COUNT_W);
-#endif
-    }
-}
-
-/**********************************************************************************************************************/
-
-/**
- * Render a counter single digit
- */
-static void draw_RenderItemDigit_RTG(UBYTE *drawPtr, const UBYTE *glyphPtr, UWORD digit, UWORD span) {
-
-#ifdef RTG_LONG_ALIGNED
-    const ULONG *digitPtr = (ULONG*)&glyphPtr[digit * DRAW_HUD_CHAR_SMALL_W * DRAW_HUD_CHAR_SMALL_H];
-    ULONG *drawPtr32 = (ULONG*)drawPtr;
-    span >>= 2;
-    for (UWORD y = 0; y < DRAW_HUD_CHAR_SMALL_H; ++y) {
-        for (UWORD x = 0; x < DRAW_HUD_CHAR_SMALL_W / sizeof(ULONG); ++x) {
-            drawPtr32[x] = *digitPtr++;
-        }
-        drawPtr32 += span;
-    }
-#else
-    const UBYTE *digitPtr = &glyphPtr[digit * DRAW_HUD_CHAR_SMALL_W * DRAW_HUD_CHAR_SMALL_H];
-    for (UWORD y = 0; y < DRAW_HUD_CHAR_SMALL_H; ++y) {
-        for (UWORD x = 0; x < DRAW_HUD_CHAR_SMALL_W; ++x) {
-            drawPtr[x] = *digitPtr++;
-        }
-        drawPtr += span;
-    }
-#endif
-}
-static void draw_UpdateItems_RTG(APTR bmBaseAddress, ULONG bmBytesPerRow, const UWORD* itemSlots, UWORD itemSelected, UWORD xPos, UWORD yPos) {
-    UBYTE* drawPtr = ((UBYTE*)bmBaseAddress) + xPos + yPos * bmBytesPerRow;
-
-    /* Render into the minibuffer */
-    UBYTE *bufferPtr = draw_BorderDigitsBuffer;
-    for (UWORD i = 0; i < DRAW_NUM_WEAPON_SLOTS; ++i, bufferPtr += DRAW_HUD_CHAR_SMALL_W) {
-        const UBYTE *glyphPtr = itemSelected == i ?
-            draw_BorderDigitsItemSelected :
-            itemSlots[i] ?
-                draw_BorderDigitsItemFound :
-                draw_BorderDigitsItem;
-
-        draw_RenderItemDigit_RTG(bufferPtr, glyphPtr, i, DRAW_HUD_CHAR_SMALL_W * 10);
-    }
-
-    /* Copy the mini buffer to the bitmap */
-    bufferPtr = draw_BorderDigitsBuffer;
-    for (UWORD i = 0; i < DRAW_HUD_CHAR_SMALL_H; ++i, drawPtr += bmBytesPerRow, bufferPtr += DRAW_HUD_CHAR_SMALL_W * 10) {
-
-#ifdef RTG_LONG_ALIGNED
-        CopyMemQuick(bufferPtr, drawPtr, DRAW_HUD_CHAR_SMALL_W * 10);
-#else
-        memcpy(drawPtr, bufferPtr, DRAW_HUD_CHAR_SMALL_W * 10);
-#endif
-    }
-
-}
-
-/**********************************************************************************************************************/
-
-#define PLANE_OFFSET(n) ((n) * SCREEN_WIDTH * SCREEN_HEIGHT / SCREEN_DEPTH)
+/**********************************************************************************************************************
+ *
+ * Border HUD stuff, AGA mode.
+ *
+ *********************************************************************************************************************/
 
 /**
  * Render a single item digit
@@ -738,6 +904,53 @@ static void draw_UpdateCounter_Planar(APTR planes, ULONG bytesPerRow, UWORD coun
     }
 }
 
+void Draw_UpdateBorder_Planar(void)
+{
+    INIT_ITEMS();
+
+    /* TODO - Determine the correct render target and rely on the pointer. For now, we ignore it and render to both */
+
+    if (itemSelected != draw_LastItemSelected || itemList != draw_LastItemList) {
+        draw_LastItemSelected = itemSelected;
+        draw_LastItemList     = itemList;
+
+        /* Inventory */
+        draw_UpdateItems_Planar(
+            Vid_DisplayScreenPtr_l,
+            SCREEN_WIDTH / SCREEN_DEPTH,
+            itemSlots,
+            itemSelected,
+            draw_ScreenXPos(DRAW_HUD_ITEM_SLOTS_X),
+            draw_ScreenYPos(DRAW_HUD_ITEM_SLOTS_Y)
+        );
+    }
+    /* Ammunition */
+    if (draw_LastDisplayAmmoCount_w != draw_DisplayAmmoCount_w) {
+        draw_LastDisplayAmmoCount_w = draw_DisplayAmmoCount_w;
+        draw_UpdateCounter_Planar(
+            Vid_DisplayScreenPtr_l,
+            SCREEN_WIDTH / SCREEN_DEPTH,
+            draw_DisplayAmmoCount_w,
+            LOW_AMMO_COUNT_WARN_LIMIT,
+            draw_ScreenXPos(DRAW_HUD_AMMO_COUNT_X),
+            draw_ScreenYPos(DRAW_HUD_AMMO_COUNT_Y)
+        );
+    }
+
+    /* Energy */
+    if (draw_LastDisplayEnergyCount_w != draw_DisplayEnergyCount_w) {
+        draw_LastDisplayEnergyCount_w = draw_DisplayEnergyCount_w;
+        draw_UpdateCounter_Planar(
+            Vid_DisplayScreenPtr_l,
+            SCREEN_WIDTH / SCREEN_DEPTH,
+            draw_DisplayEnergyCount_w,
+            LOW_ENERGY_COUNT_WARN_LIMIT,
+            draw_ScreenXPos(DRAW_HUD_ENERGY_COUNT_X),
+            draw_ScreenYPos(DRAW_HUD_ENERGY_COUNT_Y)
+        );
+    }
+}
+
 /**********************************************************************************************************************/
 
 /* Lower level utility functions */
@@ -753,75 +966,6 @@ static void draw_ValueToDigits(UWORD value, UWORD digits[3]) {
     digits[2] = value % 10; value /= 10;
     digits[1] = value % 10; value /= 10;
     digits[0] = value;
-}
-
-/**********************************************************************************************************************/
-
-/**
- * Draw a glyph into the target buffer, filling only the set pixels with the desired pen. There are probably lots
- * of ways this can be optimised.
- */
-static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charCode, UBYTE pen)
-{
-    UBYTE *planarPtr = &draw_ScrollChars_vb[(UWORD)charCode << 3];
-    UBYTE  glyphSpacing = draw_GlyphSpacing_vb[charCode] & 0x7;
-    UBYTE  glyphWidth   = (draw_GlyphSpacing_vb[charCode] >> 4) - 1;
-    for (UWORD row = 0; row < DRAW_MSG_CHAR_H; ++row) {
-        UBYTE plane = *planarPtr++;
-        UBYTE width = glyphWidth;
-        if (plane) {
-            switch (glyphSpacing) {
-                case 0: if (plane & 128) drawPtr[0] = pen; if (!--width) break;
-                case 1: if (plane & 64)  drawPtr[1] = pen; if (!--width) break;
-                case 2: if (plane & 32)  drawPtr[2] = pen; if (!--width) break;
-                case 3: if (plane & 16)  drawPtr[3] = pen; if (!--width) break;
-                case 4: if (plane & 8)   drawPtr[4] = pen; if (!--width) break;
-                case 5: if (plane & 4)   drawPtr[5] = pen; if (!--width) break;
-                case 6: if (plane & 2)   drawPtr[6] = pen; if (!--width) break;
-                case 7: if (plane & 1)   drawPtr[7] = pen; if (!--width) break;
-            }
-        }
-        drawPtr += drawSpan;
-    }
-}
-
-/**
- * Very simple algorithm to scan the fixed with 8x8 font and determine some offset/width properties based on the glyph
- * bit patterns. We scan and populate draw_GlyphSpacing_vb with that data so that we can render the glyphs fixed or
- * proportionally.
- *
- * The algorithm isn't particularly optimised but we only do it once.
- */
-static void draw_CalculateGlyphSpacing() {
-    UBYTE *glyphPtr = draw_ScrollChars_vb;
-    for (UWORD i = 0; i < 256; ++i, glyphPtr += 8) {
-        UBYTE left  = 0;
-        UBYTE width = 4;
-
-        /* OR together the 8 planes to get a single value that has the largest width set */
-        UBYTE mask  = glyphPtr[0] | glyphPtr[1] | glyphPtr[2] | glyphPtr[3] |
-                      glyphPtr[4] | glyphPtr[5] | glyphPtr[6] | glyphPtr[7];
-
-        /* If the mask is zero, it means the glyph is empty. Assume the same space as the space glyph */
-        if (mask) {
-            UBYTE tmp = mask;
-            while (!(tmp & 0x80)) {
-                ++left;
-                tmp <<= 1;
-            }
-            tmp = 0;
-            while (!(mask & 0x01)) {
-                ++tmp;
-                mask >>= 1;
-            }
-            width = 9 - left - tmp;
-        }
-        if (width > Draw_MaxPropCharWidth) {
-            Draw_MaxPropCharWidth = width;
-        }
-
-        draw_GlyphSpacing_vb[i] = width << 4 | left;
-    }
 }
 
 /**********************************************************************************************************************/
@@ -899,3 +1043,71 @@ static void draw_PlanarToChunky(UBYTE *chunkyPtr, const PLANEPTR *planePtrs, ULO
         }
     }
 }
+
+/**********************************************************************************************************************/
+
+#ifdef GEN_GLYPH_DATA
+
+/**********************************************************************************************************************
+ *
+ * If compiled with GEN_GLYPH_DATA, we Calculate the char spacing data on initialisation and dump it. We can then
+ * reuse the dumped file as a binary include afterwards.
+ *
+ **********************************************************************************************************************/
+
+
+#include <stdio.h>
+
+/**
+ * Very simple algorithm to scan the fixed with 8x8 font and determine some offset/width properties based on the glyph
+ * bit patterns. We scan and populate draw_GlyphSpacing_vb with that data so that we can render the glyphs fixed or
+ * proportionally.
+ *
+ * The algorithm isn't particularly optimised but we only do it once.
+ */
+static void draw_CalculateGlyphSpacing() {
+    UBYTE *glyphPtr = draw_ScrollChars_vb;
+    for (UWORD i = 0; i < 256; ++i, glyphPtr += 8) {
+        UBYTE left  = 0;
+        UBYTE width = 4;
+
+        /* OR together the 8 planes to get a single value that has the largest width set */
+        UBYTE mask  = glyphPtr[0] | glyphPtr[1] | glyphPtr[2] | glyphPtr[3] |
+                      glyphPtr[4] | glyphPtr[5] | glyphPtr[6] | glyphPtr[7];
+
+        /* If the mask is zero, it means the glyph is empty. Assume the same space as the space glyph */
+        if (mask) {
+            UBYTE tmp = mask;
+            while (!(tmp & 0x80)) {
+                ++left;
+                tmp <<= 1;
+            }
+            tmp = 0;
+            while (!(mask & 0x01)) {
+                ++tmp;
+                mask >>= 1;
+            }
+            width = 9 - left - tmp;
+        }
+        if (width > Draw_MaxPropCharWidth) {
+            Draw_MaxPropCharWidth = width;
+        }
+
+        draw_GlyphSpacing_vb[i] = width << 4 | left;
+    }
+
+    // Dump the generated table.
+    FILE* handle = fopen("RAM:glyph_spacing.bin", "wb");
+    if (handle) {
+        fwrite(draw_GlyphSpacing_vb, 1, 256, handle);
+        fclose(handle);
+    }
+    printf("MAX_PROP_CHAR_WIDTH %d\n", (int)Draw_MaxPropCharWidth);
+}
+
+#endif // GEN_GLYPH_DATA
+
+
+
+
+

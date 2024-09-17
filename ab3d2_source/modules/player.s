@@ -21,8 +21,8 @@
 ;******************************************************************************
 Plr_Initialise:
 				move.l	Lvl_DataPtr_l,a1
-				add.l	#160*10,a1
-				move.w	4(a1),d0
+				add.l	#LVLT_MESSAGE_LENGTH*LVLT_MESSAGE_COUNT,a1
+				move.w	LvlT_Plr1_Start_ZoneID_w(a1),d0
 				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d0.w*4),d0
 				add.l	Lvl_DataPtr_l,d0
@@ -35,8 +35,8 @@ Plr_Initialise:
 				move.l	d0,Plr1_SnapTYOff_l
 				move.l	Plr1_ZonePtr_l,plr1_OldRoomPtr_l
 				move.l	Lvl_DataPtr_l,a1
-				add.l	#160*10,a1
-				move.w	10(a1),d0
+				add.l	#LVLT_MESSAGE_LENGTH*LVLT_MESSAGE_COUNT,a1
+				move.w	LvlT_Plr2_Start_ZoneID_w(a1),d0
 				move.l	Lvl_ZoneAddsPtr_l,a0
 				move.l	(a0,d0.w*4),d0
 				add.l	Lvl_DataPtr_l,d0
@@ -49,14 +49,14 @@ Plr_Initialise:
 				move.l	d0,Plr2_SnapTYOff_l
 				move.l	d0,Plr2_YOff_l
 				move.l	Plr2_ZonePtr_l,plr2_OldRoomPtr_l
-				move.w	(a1),Plr1_SnapXOff_l
-				move.w	2(a1),Plr1_SnapZOff_l
-				move.w	(a1),Plr1_XOff_l
-				move.w	2(a1),Plr1_ZOff_l
-				move.w	6(a1),Plr2_SnapXOff_l
-				move.w	8(a1),Plr2_SnapZOff_l
-				move.w	6(a1),Plr2_XOff_l
-				move.w	8(a1),Plr2_ZOff_l
+				move.w	LvlT_Plr1_StartX_w(a1),Plr1_SnapXOff_l
+				move.w	LvlT_Plr1_StartZ_w(a1),Plr1_SnapZOff_l
+				move.w	LvlT_Plr1_StartX_w(a1),Plr1_XOff_l
+				move.w	LvlT_Plr1_StartZ_w(a1),Plr1_ZOff_l
+				move.w	LvlT_Plr2_StartX_w(a1),Plr2_SnapXOff_l
+				move.w	LvlT_Plr2_StartZ_w(a1),Plr2_SnapZOff_l
+				move.w	LvlT_Plr2_StartX_w(a1),Plr2_XOff_l
+				move.w	LvlT_Plr2_StartZ_w(a1),Plr2_ZOff_l
 
 				move.l	#%100011,plr1_DefaultEnemyFlags_l
 				move.l	#%010011,plr2_DefaultEnemyFlags_l
@@ -82,10 +82,10 @@ plr_MouseControl:
 				move.l	#SinCosTable_vw,a1
 				move.w	PlrT_SnapAngSpd_w(a0),d1
 				move.w	angpos,d0
-				and.w	#8190,d0
+				AMOD_A	d0
 				move.w	d0,PlrT_SnapAngPos_w(a0)
 				move.w	(a1,d0.w),PlrT_SnapSinVal_w(a0)
-				adda.w	#2048,a1
+				adda.w	#COSINE_OFS,a1
 				move.w	(a1,d0.w),PlrT_SnapCosVal_w(a0)
 				move.l	PlrT_SnapXSpdVal_l(a0),d6
 				move.l	PlrT_SnapZSpdVal_l(a0),d7
@@ -119,20 +119,34 @@ plr_MouseControl:
 				add.w	d3,Sys_OldMouseY
 				move.w	STOPOFFSET,d0
 				move.w	d3,d2
-				asl.w	#7,d2
+***************************************************************
+; shoehorned this in here due to the projectiles not having the same trajectory in full screen compaired to small screen
+
+				tst.b	Vid_FullScreen_b
+				beq.s	.small
+
+				muls.w	#85,d2	;this is better. but there is probably a better way. multiply by 2/3 of 128
+				bra.s	.big
+
+.small:
+				asl.w	#7,d2	;multiply by 128
+
+.big:
+***************************************************************
+				;asl.w	#7,d2
 				add.w	d2,PlrT_AimSpeed_l(a0)
 				add.w	d3,d0
-				cmp.w	#-80,d0
+				cmp.w	View_LookMax_w,d0
 				bgt.s	.skip_look_up
 
 				move.w	#-512*20,PlrT_AimSpeed_l(a0)
-				move.w	#-80,d0
+				move.w	View_LookMax_w,d0
 
 .skip_look_up:
-				cmp.w	#80,d0
+				cmp.w	View_LookMin_w,d0
 				blt.s	.skip_look_down
 				move.w	#512*20,PlrT_AimSpeed_l(a0)
-				move.w	#80,d0
+				move.w	View_LookMin_w,d0
 
 .skip_look_down:
 				move.w	d0,STOPOFFSET
@@ -146,6 +160,10 @@ plr_MouseControl:
 
 				; The right mouse button triggers the next_weapon key
 				move.b	next_weapon_key,d7
+				tst.b	Prefs_OriginalMouse_b
+				beq.s	.notQuake
+				move.b	forward_key,d7
+.notQuake
 				btst	#2,$dff000+potinp		; right button
 				seq		(a5,d7.w)
 
@@ -170,7 +188,7 @@ plr_KeyboardControl:
 				; Check for quit
 				tst.b	QUIT_KEY(a5)
 				beq.s	.no_quit
-				st		SHOULDQUIT
+				st		Game_ShouldQuit_b
 				st		Game_MasterQuit_b
 .no_quit:
 
@@ -396,6 +414,14 @@ plr_KeyboardControl:
 				clr.l	Vid_FPSLimit_l
 
 .noframelimit:
+                tst.b   RAWKEY_NUM_DOT(a5)
+                beq.b   .done_normal_keys
+                add.b   #1,Prefs_CrossHairColour_b
+                and.b   #7,Prefs_CrossHairColour_b
+                clr.b   RAWKEY_NUM_DOT(a5)
+
+.done_normal_keys:
+				IFD DEV
 
 .toggle_skip_sky_for_zone:
 				; X toggles the sky background visibility for this zone
@@ -405,15 +431,18 @@ plr_KeyboardControl:
 				clr.b			RAWKEY_X(a5)
 				lea				Zone_BackdropDisable_vb,a1
 				move.w			PlrT_Zone_w(a0),d0
-				not.b			(a1,d0.w)
+				move.w          d0,d1
+				lsr.w           #3,d0   ; byte offset into backdrop disable table
+				add.w           d0,a1
+                bchg.b          d1,(a1) ; d1 is applied modulo 8 here, toggle the bit
 
 .clear_zone_data:
 				tst.b			RAWKEY_Z(a5)
-				beq.s			.toggle_060
+				beq.s			.dev_toggles
 
 				clr.b			RAWKEY_Z(a5)
 
-				move.w			#16-1,d0
+				move.w			#ZONE_BACKDROP_DISABLE_SIZE/16-1,d0
 				lea				Zone_BackdropDisable_vb,a1
 
 .clear_loop:
@@ -423,14 +452,9 @@ plr_KeyboardControl:
 				clr.l			(a1)+
 				dbra			d0,.clear_loop
 
-.toggle_060:
-				tst.b			RAWKEY_H(a5)
-				beq.s			.dev_toggles
-
-				clr.b			RAWKEY_H(a5)
-				not.b			Sys_CPU_68060_b
-
 .dev_toggles:
+				DEV_CHECK_KEY	RAWKEY_V,DUMP_BG_DISABLE
+
 				; Developer toggles
 				DEV_CHECK_KEY	RAWKEY_E,SIMPLE_WALLS
 				DEV_CHECK_KEY	RAWKEY_R,SHADED_WALLS
@@ -443,11 +467,13 @@ plr_KeyboardControl:
 				DEV_CHECK_KEY	RAWKEY_Q,FASTBUFFER_CLEAR
 				DEV_CHECK_KEY	RAWKEY_N,AI_ATTACK
 				DEV_CHECK_KEY	RAWKEY_B,LIGHTING
-				DEV_CHECK_KEY	RAWKEY_V,SKYFILL
+				DEV_CHECK_KEY	RAWKEY_H,OVERLAY
 
 				; change the default floor gouraud state based on the lighting toggle
 				; todo - fix floor rendering when goraud is disabled, it's seriously glitched
 				;DEV_SEQ	LIGHTING,draw_GouraudFlatsSelected_b
+
+				ENDC
 
 				move.l	#SinCosTable_vw,a1
 				move.l	#KeyMap_vb,a5
@@ -458,12 +484,13 @@ plr_KeyboardControl:
 				beq.s	.skip_look_up
 
 				sub.w	#512,PlrT_AimSpeed_l(a0)
-				sub.w	#4,d0
-				cmp.w	#-80,d0
+				;sub.w	#4,d0
+				sub.w	View_KeyLook_w,d0
+				cmp.w	View_LookMax_w,d0
 				bgt.s	.skip_look_up
 
 				move.w	#-512*20,PlrT_AimSpeed_l(a0)
-				move.w	#-80,d0
+				move.w	View_LookMax_w,d0
 
 .skip_look_up:
 				moveq	#0,d7
@@ -472,12 +499,13 @@ plr_KeyboardControl:
 				beq.s	.skip_look_down
 
 				add.w	#512,PlrT_AimSpeed_l(a0)
-				add.w	#4,d0
-				cmp.w	#80,d0
+				;add.w	#4,d0
+				add.w	View_KeyLook_w,d0
+				cmp.w	View_LookMin_w,d0
 				blt.s	.skip_look_down
 
 				move.w	#512*20,PlrT_AimSpeed_l(a0)
-				move.w	#80,d0
+				move.w	View_LookMin_w,d0
 
 .skip_look_down:
 				move.b	centre_view_key,d7
@@ -505,19 +533,38 @@ plr_KeyboardControl:
 				move.l	d0,SBIGMIDDLEY
 				move.w	PlrT_SnapAngPos_w(a0),d0
 				move.w	PlrT_SnapAngSpd_w(a0),d3
+				tst.b	Prefs_AlwaysRun_b
+				bne.s	.always_run
+
 				move.w	#35,d1
 				move.w	#2,d2
 				move.w	#10,Plr_TurnSpeed_w
 				moveq	#0,d7
 				move.b	run_key,d7
 				tst.b	(a5,d7.w)
-				beq.s	.skip_run
+				beq.s	.nofaster
 
 				move.w	#60,d1
 				move.w	#3,d2
 				move.w	#14,Plr_TurnSpeed_w
+.nofaster:
+				bra	.faster
 
-.skip_run:
+.always_run:
+				move.w	#60,d1
+				move.w	#3,d2
+				move.w	#14,Plr_TurnSpeed_w
+
+				moveq	#0,d7
+				move.b	run_key,d7
+				tst.b	(a5,d7.w)
+
+				beq.s	.faster
+				move.w	#35,d1
+				move.w	#2,d2
+				move.w	#10,Plr_TurnSpeed_w
+.faster:
+***************************************************************
 				tst.b	PlrT_Squished_b(a0)
 				bne.s	.crouch_2
 
@@ -610,10 +657,10 @@ plr_KeyboardControl:
 				neg.w	d4
 
 .skip_step_right:
-				and.w	#8191,d0
+				AMOD_I	d0
 				move.w	d0,PlrT_SnapAngPos_w(a0)
 				move.w	(a1,d0.w),PlrT_SnapSinVal_w(a0)
-				adda.w	#2048,a1
+				adda.w	#COSINE_OFS,a1
 				move.w	(a1,d0.w),PlrT_SnapCosVal_w(a0)
 				move.l	PlrT_SnapXSpdVal_l(a0),d6
 				move.l	PlrT_SnapZSpdVal_l(a0),d7
@@ -791,7 +838,7 @@ plr_Fall:
 				move.w	Plr_AddToBobble_w,d3
 				move.w	d3,d4
 				add.w	PlrT_Bobble_w(a0),d3
-				and.w	#8190,d3
+				AMOD_A	d3
 				move.w	d3,PlrT_Bobble_w(a0)
 				add.w	PlrT_WalkSFXTime_w(a0),d4
 				move.w	d4,d3
@@ -809,6 +856,7 @@ plr_Fall:
 				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	.not_in_water
+
 				move.l	#-512,plr_JumpSpeed_l
 
 .not_in_water:
@@ -840,6 +888,7 @@ plr_Fall:
 				tst.w	PlrT_JetpackFuel_w(a0)
 				beq.s	.not_flying
 
+				; TODO - Apply the active jetpack fuel cap here
 				; cap the fuel. We should make that mod configurable
 				cmp.w	#250,PlrT_JetpackFuel_w(a0)
 				ble.s	.have_jetpack_fuel
@@ -860,7 +909,7 @@ plr_Fall:
 				move.w	#0,plr_FallDamage_w
 				move.w	#40,d3
 				add.w	PlrT_Bobble_w(a0),d3
-				and.w	#8190,d3
+				AMOD_A	d3
 				move.w	d3,PlrT_Bobble_w(a0)
 
 .not_flying:
@@ -880,6 +929,7 @@ plr_Fall:
 				move.w	plr_FallDamage_w,d3
 				sub.w	#100,d3
 				ble.s	.skip_damage_2
+
 				move.l	PlrT_ObjectPtr_l(a0),a4
 				add.b	d3,EntT_DamageTaken_b(a4)
 
@@ -903,10 +953,10 @@ plr_Fall:
 				blt.s	.no_splash_fx
 
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.w	#6,Samplenum ; todo define a constant for this
-				move.w	#0,Noisex
-				move.w	#100,Noisez
-				move.w	#80,Noisevol
+				move.w	#6,Aud_SampleNum_w ; todo define a constant for this
+				move.w	#0,Aud_NoiseX_w
+				move.w	#100,Aud_NoiseZ_w
+				move.w	#80,Aud_NoiseVol_w
 				move.w	#$fff8,IDNUM
 				clr.b	notifplaying
 				jsr		MakeSomeNoise
@@ -983,10 +1033,10 @@ plr_DoFootstepFX:
 				blt.s	.no_foot_sound
 
 .have_water:
-				move.w	d0,Samplenum
-				move.w	#0,Noisex
-				move.w	#100,Noisez
-				move.w	#80,Noisevol
+				move.w	d0,Aud_SampleNum_w
+				move.w	#0,Aud_NoiseX_w
+				move.w	#100,Aud_NoiseZ_w
+				move.w	#80,Aud_NoiseVol_w
 				move.w	#$fff8,IDNUM
 				clr.b	notifplaying
 				move.b	PlrT_Echo_b(a0),SourceEcho

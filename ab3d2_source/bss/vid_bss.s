@@ -12,6 +12,13 @@
 ; BSS data - to be included in BSS section
 			align 4
 
+Vid_ChunkyFS1x1InitPtr_l:		ds.l	1	; Points to 1x1 C2P Initialisation for Fullscreen
+Vid_ChunkyFS1x1ConvPtr_l:		ds.l	1	; Points to 1x1 C2P Conversion for Fullscreen
+
+;Vid_ChunkySmall1x1InitPtr_l:	ds.l	1	; Points to 1x1 C2P Initialisation for Small Screen
+;Vid_ChunkySmall1x1ConvPtr_l:	ds.l	1	; Points to 1x1 C2P Conersion for Small Screen
+
+
 _Vid_FastBufferPtr_l::
 Vid_FastBufferPtr_l:		ds.l	1	; aligned address
 Vid_FastBufferAllocPtr_l:	ds.l	1	; allocated address
@@ -37,6 +44,13 @@ _Vid_MainWindow_l:
 vid_MainWindow_l:			ds.l	1
 ;vid_SafeMsgPort_l		ds.l	1			; this message port reveives messages when the old screen bitmap can be safely written to
 											; i.e. when the screen flip actually happened
+
+; Palette data to be submitted to LoadRGB32 calls
+_Vid_LoadRGB32Struct_vl::
+Vid_LoadRGB32Struct_vl:     ds.l    1
+vid_LoadRGB32Data_vl:       ds.l    256*3   ; 32-bit R, B, G
+vid_LoadRGB32End_l:         ds.l    1
+
 _Vid_ScreenBufferIndex_w::
 Vid_ScreenBufferIndex_w:		ds.w	1	; Index (0/1) of current screen buffer displayed.
 											; FIXME: unify the buffer index handling with Vid_DrawScreenPtr_l/Vid_DisplayScreenPtr_l
@@ -55,3 +69,8 @@ Vid_DoubleWidth_b:				ds.b	1	; Double Width Pixel Mode
 _Vid_WaitForDisplayMsg_b::
 Vid_WaitForDisplayMsg_b: 		ds.b	1
 Vid_ResolutionOption_b:			ds.b	1	; cycles between pixel modes
+
+; Menu
+_mnu_palette::
+mnu_palette:
+				ds.l	256						; 4byte per pixel, 24bit used

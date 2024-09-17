@@ -17,6 +17,8 @@ extern void Sys_FrameLap();
 // Warning: Sys_FatalError can only be called startup()
 extern void Sys_FatalError(REG(a0, const char* format), ...);
 
+extern void Sys_MemFillLong(REG(a0, void* buffer), REG(d0, ULONG value), REG(d1, WORD size));
+
 static inline void* Sys_GetTemporaryWorkspace()
 {
     extern ULONG Sys_Workspace_vl[];

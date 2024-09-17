@@ -8,6 +8,7 @@ vid_MyAllocRaster:
 				rts
 
 Vid_OpenMainScreen:
+				jsr		Vid_InitC2P
 				; Allocate Buffer 0
 				lea		vid_MainBitmap0,a0
 				moveq.l	#8,d0
@@ -121,7 +122,7 @@ YYY:
 				move.l	d0,d3
 				CALLINT	SetPointer
 
-				jsr		LoadMainPalette
+				jsr		Vid_LoadMainPalette
 
 				move.l	vid_MainWindow_l,a0
 				CALLINT ViewPortAddress

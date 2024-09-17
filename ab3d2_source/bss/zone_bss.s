@@ -14,4 +14,8 @@ Zone_FinalOrderTable_vw:		ds.w	400*2
 zone_FinalOrderTableBarrier_w:	ds.w	1 		; deliniates end of table
 
 			align 4
-Zone_BackdropDisable_vb:		ds.b	256		; todo - this needs to be defined
+; Bitmask
+
+ZONE_BACKDROP_DISABLE_SIZE  EQU LVL_EXPANDED_MAX_ZONE_COUNT/8
+
+Zone_BackdropDisable_vb:		ds.b	ZONE_BACKDROP_DISABLE_SIZE

@@ -16,6 +16,16 @@
 #define DRAW_HUD_ITEM_SLOTS_X 24
 #define DRAW_HUD_ITEM_SLOTS_Y -16
 
+/* These define spacing used for text rendering. */
+#define DRAW_TEXT_MARGIN 4
+#define DRAW_TEXT_Y_SPACING 2
+
+/* For 2/3 screen planar text rendering, this is the bit plane to draw into */
+#define DRAW_TEXT_PLANE_NUM 4
+
+/** For 2/3 screen planar text rendering , how far into the bitplane the text area is */
+#define DRAW_TEXT_SMALL_PLANE_OFFSET ((SMALL_HEIGHT + SMALL_YPOS + DRAW_TEXT_Y_SPACING) * SCREEN_WIDTH / 8)
+
 /* These define the size of characters used in in game message display */
 #define DRAW_MSG_CHAR_W 8
 #define DRAW_MSG_CHAR_H 8
@@ -36,13 +46,19 @@
 #define LOW_ENERGY_COUNT_WARN_LIMIT 9
 #define DISPLAY_COUNT_LIMIT 999
 
+/** For planar graphics, this is a type pun for the 8 bitplane pointers */
 typedef PLANEPTR BitPlanes[SCREEN_DEPTH];
+
+/** For planar screens, the offset to a given bitplane */
+#define PLANE_OFFSET(n) ((n) * SCREEN_WIDTH * SCREEN_HEIGHT / SCREEN_DEPTH)
 
 extern void Draw_ResetGameDisplay(void);
 extern BOOL Draw_Init(void);
 extern void Draw_Shutdown(void);
 extern void Draw_UpdateBorder_RTG(APTR bmHandle, ULONG bmBytesPerRow);
 extern void Draw_UpdateBorder_Planar(void);
+
+extern void Draw_RepairTextPlaneBorders(void);
 
 static __inline BOOL Draw_IsPrintable(UBYTE charCode) {
     return (charCode > 0x20 && charCode < 0x7F) || (charCode > 0xA0);
@@ -82,7 +98,21 @@ extern const char* Draw_ChunkyTextProp(
     UBYTE pen
 );
 
+const char* Draw_PlanarTextProp(
+    PLANEPTR drawPtr,
+    UWORD maxLen,
+    const char *textPtr,
+    UWORD xPos,
+    UWORD yPos
+);
+
+#ifdef GEN_GLYPH_DATA
 extern UWORD Draw_MaxPropCharWidth;
+#define MAX_PROP_CHAR_WIDTH Draw_MaxPropCharWidth
+#else
+// Calculated last time...
+#define MAX_PROP_CHAR_WIDTH 7
+#endif
 
 /**
  * Calculate the expected pixel width of the provided string (up to the maximum length provided) based on proportional
@@ -101,5 +131,10 @@ extern ULONG Draw_CalcPropWidth(const char *textPtr, UWORD maxLen);
 extern UWORD Draw_CalcPropTextSplit(const char** nextTextPtr, UWORD txtLength, UWORD width);
 
 extern UBYTE *Vid_FastBufferPtr_l;
+
+extern void Draw_ClearRect(UWORD x1, UWORD y1, UWORD x2, UWORD y2);
+
+extern PLANEPTR Draw_FastRamPlanePtr;
+extern PLANEPTR Draw_BorderEdgeBackupPtr;
 
 #endif // DRAW_H

@@ -1,23 +1,118 @@
 #include "system.h"
-#include "game_properties.h"
+#include "game.h"
 #include <dos/dos.h>
 #include <proto/dos.h>
+#include <proto/exec.h>
 
-extern Game_ModProperties game_ModProps;
+extern Game_ModProperties       game_ModProps;
+extern Game_PlayerProgression   game_PlayerProgression;
+extern Achievement*             game_AchievementsDataPtr;
+extern UWORD                    game_AchievementRuleMask[];
+extern char const               game_PropertiesFile[];
+extern ULONG                    Game_ProgressSignal; // signal to check progress
 
-static void game_LoadModProperties(void);
+extern struct FileInfoBlock io_FileInfoBlock;
 
 /**
- * Install the game default values. This is basically uncapped ammo, health.
+ * Free any achievements data that was loaded
  */
-void Game_InitDefaults(void)
+void game_FreeAchievementsData(void)
 {
+    if (game_AchievementsDataPtr) {
+        FreeVec(game_AchievementsDataPtr);
+    }
+    game_AchievementsDataPtr = 0;
+    game_ModProps.gmp_NumAchievements = 0;
+    game_ModProps.gmp_AchievementSize = 0;
+}
+
+/**
+ * Prepare any loaded achievements data. This involves replacing nonzero string offsets with their addresses in the
+ * shared string heap
+ */
+void game_InitAchievementsData(void)
+{
+    if (!game_AchievementsDataPtr || !game_ModProps.gmp_NumAchievements) {
+        return;
+    }
+    char const* stringHeap = (char const*)game_AchievementsDataPtr + (game_ModProps.gmp_NumAchievements * sizeof(Achievement));
+    ULONG offset;
+    for (UWORD i = 0; i < game_ModProps.gmp_NumAchievements; ++i) {
+        if ( (offset = (ULONG)game_AchievementsDataPtr[i].ac_Name) ) {
+            game_AchievementsDataPtr[i].ac_Name = stringHeap + offset;
+        }
+        if ( (offset = (ULONG)game_AchievementsDataPtr[i].ac_RewardDesc) ) {
+            game_AchievementsDataPtr[i].ac_RewardDesc = stringHeap + offset;
+        }
+
+        offset = game_AchievementsDataPtr[i].ac_RuleId;
+        game_AchievementsDataPtr[i].ac_RuleMask = game_AchievementRuleMask[offset];
+    }
+}
+
+void game_LoadModProperties(void)
+{
+    /* Safely initialise defaults */
     game_ModProps.gmp_MaxInventory.ic_Health      = GAME_DEFAULT_HEALTH_LIMIT;
     game_ModProps.gmp_MaxInventory.ic_JetpackFuel = GAME_DEFAULT_FUEL_LIMIT;
     for (int i = 0; i < NUM_BULLET_DEFS; ++i) {
         game_ModProps.gmp_MaxInventory.ic_AmmoCounts[i] = GAME_DEFAULT_AMMO_LIMIT;
     }
-    game_LoadModProperties();
+    BPTR modPropsFH = Open(game_PropertiesFile, MODE_OLDFILE);
+    if (DOSFALSE == modPropsFH) {
+        return;
+    }
+
+    ExamineFH(modPropsFH, &io_FileInfoBlock);
+
+    if (
+       io_FileInfoBlock.fib_DirEntryType >= 0 ||
+       io_FileInfoBlock.fib_Size < (LONG)sizeof(Game_ModProperties)
+    ) {
+       return;
+    }
+
+    Game_ModProperties* props = (Game_ModProperties*)Sys_GetTemporaryWorkspace();
+
+    LONG bytesRead = Read(modPropsFH, props, sizeof(Game_ModProperties));
+    if (bytesRead == (LONG)sizeof(Game_ModProperties)) {
+        if (props->gmp_MaxInventory.ic_Health < GAME_UNCAPPED_LIMIT) {
+            game_ModProps.gmp_MaxInventory.ic_Health = props->gmp_MaxInventory.ic_Health;
+        }
+        if (props->gmp_MaxInventory.ic_JetpackFuel < GAME_UNCAPPED_LIMIT) {
+            game_ModProps.gmp_MaxInventory.ic_JetpackFuel = props->gmp_MaxInventory.ic_JetpackFuel;
+        }
+
+        for (int i = 0; i < NUM_BULLET_DEFS; ++i) {
+            if (props->gmp_MaxInventory.ic_AmmoCounts[i] < GAME_UNCAPPED_LIMIT) {
+                game_ModProps.gmp_MaxInventory.ic_AmmoCounts[i] = props->gmp_MaxInventory.ic_AmmoCounts[i];
+            }
+        }
+        game_ModProps.gmp_NumAchievements =
+            props->gmp_NumAchievements < GAME_MAX_ACHIEVEMENTS ?
+            props->gmp_NumAchievements : 0;
+        game_ModProps.gmp_AchievementSize =
+            props->gmp_NumAchievements ?
+            props->gmp_AchievementSize : 0;
+    }
+
+    /** Now, read in the achievements data */
+    if (
+        game_ModProps.gmp_NumAchievements &&
+        game_ModProps.gmp_AchievementSize > (game_ModProps.gmp_NumAchievements * sizeof(Achievement)) &&
+        (game_AchievementsDataPtr = AllocVec(game_ModProps.gmp_AchievementSize, MEMF_ANY))
+    ) {
+
+        bytesRead = Read(modPropsFH, game_AchievementsDataPtr, game_ModProps.gmp_AchievementSize);
+
+        if (bytesRead != game_ModProps.gmp_AchievementSize) {
+            game_FreeAchievementsData();
+        } else {
+            game_InitAchievementsData();
+        }
+    }
+
+    Close(modPropsFH);
 }
 
 /**
@@ -38,7 +133,7 @@ BOOL Game_CheckInventoryLimits(
          * In single player, we can just early out if any item is given, even if we won't get ammo.
          */
         for (UWORD n = 0; n < sizeof(InventoryItems)/sizeof(UWORD); ++n) {
-            givesAnything |= objInvPtr[n];
+            //givesAnything |= objInvPtr[n];
             if (objInvPtr[n]) {
                 return TRUE;
             }
@@ -85,7 +180,8 @@ void Game_AddToInventory(
     REG(a0, Inventory*                  inventory),
     REG(a1, const InventoryConsumables* consumables),
     REG(a2, const InventoryItems*       items)
-) {
+)
+{
     UWORD       *plrInvPtr = &inventory->inv_Items.ii_Jetpack;
     UWORD const *objInvPtr = &items->ii_Jetpack;
 
@@ -97,22 +193,29 @@ void Game_AddToInventory(
     plrInvPtr = &inventory->inv_Consumables.ic_Health;
     objInvPtr = &consumables->ic_Health;
 
+    ULONG* game_TotalCollectedPtr = &game_PlayerProgression.gs_TotalHealthCollected;
+
     UWORD const* limInvPtr = &game_ModProps.gmp_MaxInventory.ic_Health;
 
     /* Add all the consumables */
     for (UWORD n = 0; n < sizeof(InventoryConsumables)/sizeof(UWORD); ++n) {
+        /** For achievements, we need to track the amount actually collected */
+        UWORD preInv = plrInvPtr[n];
         plrInvPtr[n] = addSaturated(
             plrInvPtr[n],
             objInvPtr[n],
             limInvPtr[n]
         );
+        /** Add to the collected total for progression. These are intentionally defined in the same order */
+        game_TotalCollectedPtr[n] += plrInvPtr[n] - preInv;
     }
+    Game_ProgressSignal |= (1 << GAME_EVENTBIT_ADD_INVENTORY);
 }
 
 void Game_ApplyInventoryLimits(REG(a0, Inventory* inventory))
 {
     UWORD const *limPtr = &game_ModProps.gmp_MaxInventory.ic_Health;
-    UWORD *invPtr         = &inventory->inv_Consumables.ic_Health;
+    UWORD *invPtr       = &inventory->inv_Consumables.ic_Health;
     for (UWORD n = 0; n < sizeof(InventoryConsumables)/sizeof(UWORD); ++n) {
         if (invPtr[n] > limPtr[n]) {
             invPtr[n] = limPtr[n];
@@ -120,38 +223,4 @@ void Game_ApplyInventoryLimits(REG(a0, Inventory* inventory))
     }
 }
 
-void game_LoadModProperties()
-{
-    BPTR modPropsFH = Open(GAME_PROPERTIES_DATA_PATH, MODE_OLDFILE);
-    if (DOSFALSE == modPropsFH) {
-        return;
-    }
-    struct FileInfoBlock* modPropsFIB = (struct FileInfoBlock*)Sys_GetTemporaryWorkspace();
-    ExamineFH(modPropsFH, modPropsFIB);
 
-    if (
-        modPropsFIB->fib_DirEntryType >= 0 ||
-        modPropsFIB->fib_Size < (LONG)sizeof(Game_ModProperties)
-    ) {
-        return;
-    }
-
-    Game_ModProperties* props = (Game_ModProperties*)Sys_GetTemporaryWorkspace();
-
-    LONG bytesRead = Read(modPropsFH, props, sizeof(Game_ModProperties));
-    if (bytesRead == (LONG)sizeof(Game_ModProperties)) {
-        if (props->gmp_MaxInventory.ic_Health < GAME_UNCAPPED_LIMIT) {
-            game_ModProps.gmp_MaxInventory.ic_Health = props->gmp_MaxInventory.ic_Health;
-        }
-        if (props->gmp_MaxInventory.ic_JetpackFuel < GAME_UNCAPPED_LIMIT) {
-            game_ModProps.gmp_MaxInventory.ic_JetpackFuel = props->gmp_MaxInventory.ic_JetpackFuel;
-        }
-
-        for (int i = 0; i < NUM_BULLET_DEFS; ++i) {
-            if (props->gmp_MaxInventory.ic_AmmoCounts[i] < GAME_UNCAPPED_LIMIT) {
-                game_ModProps.gmp_MaxInventory.ic_AmmoCounts[i] = props->gmp_MaxInventory.ic_AmmoCounts[i];
-            }
-        }
-    }
-    Close(modPropsFH);
-}

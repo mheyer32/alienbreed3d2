@@ -11,6 +11,24 @@
 
 				align	4
 
+; dest  ULONG a0
+; value ULONG d0
+; size  WORD d1 (in longs)
+_Sys_MemFillLong::
+Sys_MemFillLong:
+			lsr.w	#2,d1	; 4 longs per loop
+			subq.w	#1,d1
+
+.clear_loop:
+			move.l	d0,(a0)+
+			move.l	d0,(a0)+
+			move.l	d0,(a0)+
+			move.l	d0,(a0)+
+			dbra	d1,.clear_loop
+			rts
+
+
+
 ;******************************************************************************
 ;*
 ;* Copy using move16. Don't call this if you don't have an 040, 060 or the
@@ -60,7 +78,7 @@ Sys_FatalError:
 				bsr		.startline
 				CALLEXEC RawDoFmt
 				move.l	sys_RecoveryStack,a7
-				bra		QUITTT
+				bra		Game_Quit
 .putch:
 				tst.b	d0
 				beq		.end
@@ -143,6 +161,7 @@ Sys_Init:
 				CALLEXEC AddIntServer
 				ENDC
 
+				bsr     Game_Init
 
 				; All successful
 				moveq		#1,d0
@@ -174,6 +193,8 @@ Sys_Done:
 
 				move.l	#sys_POTBITS,d0
 				CALLPOTGO	FreePotBits
+
+				bsr     Game_Done
 
 				move.l	$4.w,a0
 				move.l	ThisTask(a0),a0
