@@ -49,7 +49,7 @@
 #ifdef DEV
     {
         "dev.flags",
-        &dev_SkipFlags_l,
+        &Dev_DebugFlags_l,
         CFG_PARAM_TYPE_INT,
         CFG_VAR_TYPE_ULONG
     },

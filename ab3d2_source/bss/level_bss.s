@@ -32,7 +32,9 @@ Lvl_ObjectDataPtr_l:			ds.l	1
 Lvl_FloorLinesPtr_l:			ds.l	1
 Lvl_PointsPtr_l:				ds.l	1	; Pointer to array of all 2D points in the world
 Lvl_ZoneGraphAddsPtr_l:			ds.l	1
-Lvl_ZoneAddsPtr_l:				ds.l	1
+
+_Lvl_ZonePtrsPtr_l::
+Lvl_ZonePtrsPtr_l:				ds.l	1	; Zone* pZone = LvlDataPtr_l[Lvl_ZonePtrsPtr_l[zone_id]]
 Lvl_LiftDataPtr_l:				ds.l	1
 Lvl_DoorDataPtr_l:				ds.l	1
 Lvl_SwitchDataPtr_l:			ds.l	1

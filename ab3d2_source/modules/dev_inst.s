@@ -9,18 +9,24 @@
 
 ; DEVMODE INSTRUMENTATION
 
+				align 4
+	DECLC	Dev_RegStatePtr_l
+			dc.l	0
+
+	DECLC	Dev_DebugFlags_l
+			dc.l	0
+
 				IFD	DEV
 
 				section .bss,bss
 				align 4
+
 dev_GraphBuffer_vb:			ds.b	DEV_GRAPH_BUFFER_SIZE*2 ; array of times
 
 ; EClockVal stamps
 dev_ECVDrawDone_q:			ds.l	2	; timestamp at the end of drawing
 dev_ECVChunkyDone_q:		ds.l	2	; timestamp at the end of chunky to planar
 
-    DECLC dev_SkipFlags_l
-        ds.l	1	; Mask of disabled flags (i.e. set when something is skipped)
 
 ; Counters
 dev_Counters_vw:
@@ -80,7 +86,7 @@ Dev_Init:
 ;*
 ;******************************************************************************
 Dev_DataReset:
-				DEV_CHECK	OVERLAY,.done
+				DEV_CHECK_SET	SKIP_OVERLAY,.done
 				lea		dev_GraphBuffer_vb,a0
 				move.l	#(DEV_GRAPH_BUFFER_SIZE/16)-1,d0
 .loop:
@@ -135,8 +141,8 @@ Dev_MarkFrameBegin:
 
 				; Check if the current skip flags require the fast buffer to be cleared
 
-				DEV_CHECK	FASTBUFFER_CLEAR,.no_clear
-				move.l		dev_SkipFlags_l,d0
+				DEV_CHECK_SET	SKIP_FASTBUFFER_CLEAR,.no_clear
+				move.l		Dev_DebugFlags_l,d0
 				and.l		#DEV_CLEAR_FASTBUFFER_MASK,d0
 				beq.s		.no_clear
 
@@ -233,12 +239,12 @@ dev_SkipStats:
 				rts
 
 dev_DumpLevelBackdropErrata:
-				DEV_DISABLE DUMP_BG_DISABLE
+				DEV_DISABLE SKIP_DUMP_BG_DISABLE
 				jsr			Lvl_DumpBackdropDisableData
 
 Dev_PrintStats:
-				DEV_CHECK	DUMP_BG_DISABLE,dev_DumpLevelBackdropErrata
-				DEV_CHECK	OVERLAY,dev_SkipStats
+				DEV_CHECK_SET	SKIP_DUMP_BG_DISABLE,dev_DumpLevelBackdropErrata
+				DEV_CHECK_SET	SKIP_OVERLAY,dev_SkipStats
 
 				; Use the system recorded FPS average
 				move.l		Sys_FPSIntAvg_w,dev_FPSIntAvg_w
@@ -403,7 +409,7 @@ dev_ECVDiffToMs:
 dev_SkipGraph:
 				rts
 Dev_DrawGraph:
-				DEV_CHECK	OVERLAY,dev_SkipGraph
+				DEV_CHECK_SET	SKIP_OVERLAY,dev_SkipGraph
 				movem.l	d0/d1/d2/a0/a1/a2,-(sp)
 				lea		Sys_FrameTimeECV_q,a0
 				lea		dev_ECVDrawDone_q,a1

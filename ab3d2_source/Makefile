@@ -27,8 +27,8 @@ VFLAGS = -b amigahunk -sc -l amiga -L $(PREFIX)m68k-amigaos/ndk/lib/libs
 
 # Generic dev builds - dev features, debugging on, unstripped
 dev:	tkg_dev tkgc_dev
-dev:	AFLAGS += -DDEV=1
-dev:	CFLAGS += -m68020-60 -mtune=68030 -DDEV -g -ggdb
+dev:	AFLAGS += -DDEV=1 -DZONE_DEBUG=1
+dev:	CFLAGS += -m68020-60 -mtune=68030 -DDEV -DZONE_DEBUG -g -ggdb
 dev:	LFLAGS += -g -ggdb
 
 # Generic test builds, release features, debugging on, unstripped
@@ -45,8 +45,8 @@ rel:
 
 # 68040 tuned dev builds
 dev040:	tkg_dev_040 tkgc_dev_040
-dev040:	AFLAGS += -DDEV=1 -DOPT040
-dev040:	CFLAGS += -m68040 -mtune=68040 -DDEV -g -ggdb
+dev040:	AFLAGS += -DDEV=1 -DZONE_DEBUG=1 -DOPT040
+dev040:	CFLAGS += -m68040 -mtune=68040 -DDEV -DZONE_DEBUG -g -ggdb
 dev040:	LFLAGS += -g -ggdb
 
 # 68040 tuned test builds
@@ -64,8 +64,8 @@ rel040:
 
 # 68060 tuned dev builds
 dev060:	tkg_dev_060 tkgc_dev_060
-dev060:	AFLAGS += -DDEV=1 -DOPT060
-dev060:	CFLAGS += -m68060 -mtune=68060 -DDEV -g -ggdb
+dev060:	AFLAGS += -DDEV=1 -DZONE_DEBUG=1  -DOPT060
+dev060:	CFLAGS += -m68060 -mtune=68060 -DDEV -DZONE_DEBUG -g -ggdb
 dev060:	LFLAGS += -g -ggdb
 
 # 68060 tuned test builds
@@ -91,6 +91,7 @@ OBJS = c/main.o \
 	   c/game_preferences.o \
 	   c/game_progress.o \
 	   c/game.o \
+	   c/zone_debug.o \
 	   c/hires.o
 
 # GENERIC ##################################

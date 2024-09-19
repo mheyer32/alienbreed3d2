@@ -43,7 +43,7 @@ extern UBYTE Draw_MapTransparent_b;
 extern UWORD Draw_MapZoomLevel_w;
 
 #ifdef DEV
-extern ULONG dev_SkipFlags_l;
+extern ULONG Dev_DebugFlags_l;
 #endif
 
 void Cfg_ParsePreferencesFile(char const*);

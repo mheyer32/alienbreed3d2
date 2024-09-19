@@ -2,11 +2,15 @@
 				align 4
 
 ; Beware - these are unions of word|long. Do not separate!
+_Draw_LeftClip_l::
 Draw_LeftClip_l:		dc.w	0 ; long
+_Draw_LeftClip_w::
 Draw_LeftClip_w:		dc.w	0 ; lsw
 
 ; Beware - these are unions of word|long. Do not separate!
+_Draw_RightClip_l::
 Draw_RightClip_l:		dc.w	0 ; long
+_Draw_RightClip_w::
 Draw_RightClip_w:		dc.w	0 ; lsw
 
 ;Draw_DefTopClip_w:		dc.w	0 ; written, never read
@@ -2339,7 +2343,7 @@ cant_tell:
 .choose_renderer:
 				; Now determine which renderer to use. First check for simplified lighting.
 
-				DEV_CHECK	LIGHTING,.dev_draw_fullbright
+				DEV_CHECK_SET	SKIP_LIGHTING,.dev_draw_fullbright
 
 				tst.b	Draw_ForceSimpleWalls_b
 				beq.s	.check_corners
@@ -2416,12 +2420,12 @@ cant_tell:
 				bgt.s	.do_gouraud_shaded
 
 .do_simple_shaded:
-				DEV_CHECK	SIMPLE_WALLS,.function_done
+				DEV_CHECK_SET	SKIP_SIMPLE_WALLS,.function_done
 				bsr			draw_WallSimpleShaded
 				bra.s		.function_done
 
 .do_gouraud_shaded:
-				DEV_CHECK	SHADED_WALLS,.function_done
+				DEV_CHECK_SET	SKIP_SHADED_WALLS,.function_done
 				bsr			draw_WallGouraudShaded
 
 .function_done:

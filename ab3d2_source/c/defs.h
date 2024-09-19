@@ -62,4 +62,5 @@ typedef struct {
     UBYTE o_SeePlayer;
 } ObjBase;
 
+#include "zone.h"
 #endif // DEFS_H

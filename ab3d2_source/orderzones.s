@@ -91,9 +91,9 @@ Zone_OrderZones:
 				move.l	#Sys_Workspace_vl,a6
 				lea		(a6,d0.w*4),a6
 				move.l	(a6),d6
-				move.l	Lvl_ZoneAddsPtr_l,a0
+				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d0.w*4),a0
-				add.l	Lvl_DataPtr_l,a0
+				;add.l	Lvl_DataPtr_l,a0 ; 0xABADCAFE pointer chase reduction
 				adda.w	ZoneT_ExitList_w(a0),a0
 				move.l	a5,a4
 

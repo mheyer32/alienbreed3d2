@@ -323,130 +323,160 @@ noload:
 ;* Poke all clip offsets into
 ;* correct bit of level data.
 ;****************************
+
+				; this is the loaded location of twolev.graph.bin
 				move.l	Lvl_GraphicsPtr_l,a0
-				move.l	12(a0),a1
-				add.l	a0,a1
-				move.l	a1,Lvl_ZoneGraphAddsPtr_l
-				move.l	(a0),a1
+
+				; Add the offsets to the base address to calculate pointers for
+				; various important level data.
+				move.l	TLGT_DoorDataOffset_l(a0),a1
 				add.l	a0,a1
 				move.l	a1,Lvl_DoorDataPtr_l
-				move.l	4(a0),a1
+
+				move.l	TLGT_LiftDataOffset_l(a0),a1
 				add.l	a0,a1
 				move.l	a1,Lvl_LiftDataPtr_l
-				move.l	8(a0),a1
+
+				move.l	TLGT_SwitchDataOffset_l(a0),a1
 				add.l	a0,a1
 				move.l	a1,Lvl_SwitchDataPtr_l
-				adda.w	#16,a0
-				move.l	a0,Lvl_ZoneAddsPtr_l
 
-				; Level data begins with messages
+				move.l	TLGT_ZoneGraphAddsOffset_l(a0),a1
+				add.l	a0,a1
+				move.l	a1,Lvl_ZoneGraphAddsPtr_l
+
+				adda.w	#TLGT_ZoneAddsOffset_l,a0
+				move.l	a0,Lvl_ZonePtrsPtr_l
+
+				; This is the loaded location of twolev.bin
 				move.l	Lvl_DataPtr_l,a4
+
+				; The first 1600 bytes are the fixed length message strings
 				lea		LVLT_MESSAGE_LENGTH*LVLT_MESSAGE_COUNT(a4),a1
 
-				; Followed by LvlT structure (pointed to by a1)
-
-				lea		LvlT_ControlPointCoords_vw(a1),a2
+				lea		TLBT_SizeOf_l(a1),a2
 				move.l	a2,Lvl_ControlPointCoordsPtr_l
-				move.w	LvlT_NumControlPoints_w(a1),Lvl_NumControlPoints_w
-				move.w	LvlT_NumPoints_w(a1),Lvl_NumPoints_w
+				move.w	TLBT_NumControlPoints_w(a1),Lvl_NumControlPoints_w
+				move.w	TLBT_NumPoints_w(a1),Lvl_NumPoints_w
 
-				move.l	LvlT_OffsetToPoints_l(a1),a2
+				move.l	TLBT_PointsOffset_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_PointsPtr_l
 
-				move.w	LvlT_NumPoints_w(a1),d0
+				move.w	TLBT_NumPoints_w(a1),d0
 				lea		4(a2,d0.w*4),a2
 				move.l	a2,PointBrightsPtr_l
-				move.w	LvlT_NumZones_w(a1),d0
+
+				move.w	TLBT_NumZones_w(a1),d0
 				addq	#1,d0
 				muls	#80,d0 ; todo - is 80 a fixed length points per zone (e.g. 10x 32-bit x/y pairs) value?
 				add.l	d0,a2
 				move.l	a2,Lvl_ZoneBorderPointsPtr_l
 
-				move.l	LvlT_OffsetToFloorLines_l(a1),a2
+				move.l	TLBT_FloorLineOffset_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_FloorLinesPtr_l
-				move.w	-2(a2),Lvl_ExitZoneID_w
 
-				move.l	LvlT_OffsetToObjects_l(a1),a2
+				move.w	-2(a2),Lvl_ExitZoneID_w
+				move.l	TLBT_ObjectDataOffset_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_ObjectDataPtr_l
 
-*****************************************
-* Just for charles
+;*****************************************
+;* Just for charles
 
 ; move.w #$6060,6(a2)
 ; move.l #$d0000,8(a2)
 ; sub.w #40,4(a2)
 ; move.w #45*256+45,14(a2)
-****************************************
+;****************************************
 
 				; Temporary object buffers used for player and alien projectile entities.
 				; todo - why are these embedded in the data file and not just a dynamically added space?
-				move.l	LvlT_OffsetToPlayerShot_l(a1),a2
+				move.l	TLBT_ShotDataOffset_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Plr_ShotDataPtr_l
 
-				move.l	LvlT_OffsetToAlienShot_l(a1),a2
+				move.l	TLBT_AlienShotDataOffset_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,AI_AlienShotDataPtr_l
 
 				add.l	#ShotT_SizeOf_l*NUM_ALIEN_SHOT_DATA,a2
 				move.l	a2,AI_OtherAlienDataPtrs_vl
 
-				move.l	LvlT_OffsetToObjectPoints_l(a1),a2
+				move.l	TLBT_ObjectPointsOffset_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_ObjectPointsPtr_l
 
-				move.l	LvlT_OffsetToPlr1Obj_l(a1),a2
+				move.l	TLBT_Plr1ObjectOffset_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Plr1_ObjectPtr_l
 
-				move.l	LvlT_OffsetToPlr2Obj_l(a1),a2
+				move.l	TLBT_Plr2ObjectOffset_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Plr2_ObjectPtr_l
 
-				move.w	LvlT_NumObjectPoints_w(a1),Lvl_NumObjectPoints_w
+				move.w	TLBT_NumObjects_w(a1),Lvl_NumObjectPoints_w
 
+; bra .noclips
+
+				; TODO - What are we doing here, exactly?
+				; a4 => Lvl_DataPtr_l (twolev.bin)
+				; a2 => Lvl_ClipsPtr_l (twolev.clips)
+				; a1 => Lvl_DataPtr_l + 1600 (twolev.bin, after message strings)
+				; a0 => Lvl_ZonePtrsPtr_l (from twolev.graph.bin)
 				move.l	Lvl_ClipsPtr_l,a2
 				moveq	#0,d0
-				move.w	LvlT_NumZones_w(a1),d7
+				move.w	TLBT_NumZones_w(a1),d7
 				move.w	d7,Zone_Count_w
 
-assignclips:
-				move.l	(a0)+,a3
-				add.l	a4,a3					; pointer to a zone
-				adda.w	#ZoneT_ListOfGraph_w,a3		; pointer to zonelist
+.assign_clips:
+				move.l	(a0),a3		; Lvl_ZonePtrsPtr_l are 32-bit offsets from Lvl_DataPtr_l
+				add.l	a4,a3		; Add the base address to get the pointer to the zone
 
-dowholezone:
+				; 0xABADCAFE - pointer chase reduction: Preconvert to an array of pointers
+				move.l	a3,(a0)+	; Replace Lvl_ZonePtrsPtr_l offset with the actual address
+
+				adda.w	#ZoneT_PotVisibleZoneList_vw,a3	; pointer to zonelist
+
+				; a3 = (UWORD*)(((UBYTE*)Lvl_ZonePtrsPtr_l++] + ZoneT_PotVisibleZoneList_vw)
+
+.do_whole_zone:
+				; a3 is pointing to sets of 4 word tuples (or 2,2,4, total size still 8)
+				; When tuple[0] < 0, whole list is done
+				; When tuple[1] < 0, clip search for the current tuple is done (TBC)
+				; Unsure what the interpretation of tuple[1] - tuple[3] is
 				tst.w	(a3)
-				blt.s	nomorethiszone
+				blt.s	.no_more_this_zone
 
 				tst.w	2(a3)
-				blt.s	thisonenull
+				blt.s	.this_one_null
 
 				move.l	d0,d1
 				asr.l	#1,d1
-				move.w	d1,2(a3)
+				move.w	d1,2(a3) ; value poked back in
 
-findnextclip:
+.find_next_clip:
 				cmp.w	#-2,(a2,d0.l)
-				beq.s	foundnextclip
+				beq.s	.found_next_clip
+
 				addq.l	#2,d0
-				bra.s	findnextclip
-foundnextclip:
+				bra.s	.find_next_clip
+
+.found_next_clip:
 				addq.l	#2,d0
 
-thisonenull:
-				addq	#8,a3
-				bra.s	dowholezone
-nomorethiszone:
-				dbra	d7,assignclips
+.this_one_null:
+				addq	#8,a3 				; Tuple size
+				bra.s	.do_whole_zone
+
+.no_more_this_zone:
+				dbra	d7,.assign_clips
 
 				lea		(a2,d0.l),a2
 				move.l	a2,Lvl_ConnectTablePtr_l
 
-noclips:
+.noclips:
 				clr.b	Plr1_StoodInTop_b
 				move.l	#PLR_STAND_HEIGHT,Plr1_SnapHeight_l
 
@@ -1371,7 +1401,7 @@ ASlaveShouldWaitOnHisMaster:
 
 donetalking:
 				move.l	#Zone_BrightTable_vl,a1
-				move.l	Lvl_ZoneAddsPtr_l,a2
+				move.l	Lvl_ZonePtrsPtr_l,a2
 				move.l	plr2_ListOfGraphRoomsPtr_l,a0
 ; move.l plr2_PointsToRotatePtr_l,a5
 				move.l	a0,a5
@@ -1386,7 +1416,8 @@ doallz:
 				add.w	#8,a0
 
 				move.l	(a2,d0.w*4),a3
-				add.l	Lvl_DataPtr_l,a3
+
+				; add.l	Lvl_DataPtr_l,a3 ; 0xABADCAFE - pointer chase reduction
 				move.w	ZoneT_Brightness_w(a3),d2
 
 				blt.s	justbright
@@ -1661,7 +1692,7 @@ IWasPlayer1:
 ;************* Do reflection ****************
 ;
 ; move.l Lvl_ListOfGraphRoomsPtr_l,a0
-; move.l Lvl_ZoneAddsPtr_l,a1
+; move.l Lvl_ZonePtrsPtr_l,a1
 ;checkwaterheights
 ; move.w (a0),d0
 ; blt allzonesdone
@@ -1936,21 +1967,23 @@ nodrawp2:
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq.s	plr1only
 
-				lea		ZoneT_ListOfGraph_w(a0),a0
+				lea		ZoneT_PotVisibleZoneList_vw(a0),a0
 .doallrooms:
 				move.w	(a0),d0
 				blt.s	.allroomsdone
+
 				addq	#8,a0
 				move.w	d0,d1
 				asr.w	#3,d0
 				bset	d1,(a1,d0.w)
 				bra		.doallrooms
+
 .allroomsdone:
 
 plr1only:
 
 				move.l	Plr1_ZonePtr_l,a0
-				lea		ZoneT_ListOfGraph_w(a0),a0
+				lea		ZoneT_PotVisibleZoneList_vw(a0),a0
 .doallrooms2:
 				move.w	(a0),d0
 				blt.s	.allroomsdone2
@@ -2851,9 +2884,9 @@ Plr1_Control:
 				move.w	ZoneT_TelZ_w(a0),Plr1_ZOff_l
 				move.l	Plr1_YOff_l,d1
 				sub.l	ZoneT_Floor_l(a0),d1
-				move.l	Lvl_ZoneAddsPtr_l,a0
+				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d0.w*4),a0
-				add.l	Lvl_DataPtr_l,a0
+				;add.l	Lvl_DataPtr_l,a0 ; 0xABADCAFE pointer chase reduction
 				move.l	a0,Plr1_ZonePtr_l
 				add.l	ZoneT_Floor_l(a0),d1
 				move.l	d1,Plr1_SnapYOff_l
@@ -3062,9 +3095,9 @@ Plr2_Control:
 				move.w	ZoneT_TelZ_w(a0),Plr2_ZOff_l
 				move.l	Plr2_YOff_l,d1
 				sub.l	ZoneT_Floor_l(a0),d1
-				move.l	Lvl_ZoneAddsPtr_l,a0
+				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d0.w*4),a0
-				add.l	Lvl_DataPtr_l,a0
+				;add.l	Lvl_DataPtr_l,a0 ; 0xABADCAFE pointer chase reduction
 				move.l	a0,Plr2_ZonePtr_l
 				add.l	ZoneT_Floor_l(a0),d1
 				move.l	d1,Plr2_SnapYOff_l
@@ -4316,7 +4349,7 @@ cornerprocessloop: ;	figure					out if any left/right clipping is necessary
 				bne		dontdrawreturn
 
 somefloortodraw:
-				DEV_CHECK	FLATS,dontdrawreturn
+				DEV_CHECK_SET	SKIP_FLATS,dontdrawreturn
 				DEV_INC.w	VisibleFlats
 				tst.b	draw_UseGouraudFlats_b
 				bne		goursides

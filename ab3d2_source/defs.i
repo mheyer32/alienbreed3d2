@@ -314,7 +314,9 @@ ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
 		LABEL ShotT_SizeOf_l		; 64
 
 	; Zone Structure todo - what gives with the 16-bit alignment of these?
-	STRUCTURE ZoneT,2
+	; TODO - consider rearranging the data after loading into something with optimal alignment
+	STRUCTURE ZoneT,0
+		UWORD ZoneT_ID_w                ;  2, 2
 		ULONG ZoneT_Floor_l				;  2, 4
 		ULONG ZoneT_Roof_l				;  6, 4
 		ULONG ZoneT_UpperFloor_l		; 10, 4
@@ -325,7 +327,7 @@ ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
 		UWORD ZoneT_ControlPoint_w		; 26, 2 really UBYTE[2]
 		UWORD ZoneT_BackSFXMask_w		; 28, 2 Originally long but always accessed as word
 		UWORD ZoneT_Unused_w            ; 30, 2 so this is the unused half
-		UWORD ZoneT_ExitList_w			; 32, 2
+		UWORD ZoneT_ExitList_w			; 32, 2 - Appears to be a negative terminated list preceeding the struct
 		UWORD ZoneT_Points_w			; 34, 2
 		UBYTE ZoneT_Back_b				; 36, 1 unused
 		UBYTE ZoneT_Echo_b				; 37, 1
@@ -334,8 +336,7 @@ ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
 		UWORD ZoneT_TelZ_w				; 42, 2
 		UWORD ZoneT_FloorNoise_w		; 44, 2
 		UWORD ZoneT_UpperFloorNoise_w	; 46, 2
-		UWORD ZoneT_ListOfGraph_w		; 48, 2
-
+		UWORD ZoneT_PotVisibleZoneList_vw		; 48, 2 - Set of Potentially Visible Zones (array of 4-word tuples)
 		LABEL ZoneT_SizeOf_l			; 50
 
 NUM_PLR_SHOT_DATA	EQU		20
@@ -503,6 +504,45 @@ LVL_EXPANDED_MAX_ZONE_COUNT EQU 512
 ; Maximum number of zones. Once this is fully working, rededine as LVL_EXPANDED_MAX_ZONE_COUNT
 LVL_MAX_ZONE_COUNT EQU 256
 
+;
+; LEVEL DATA FILES
+;
+	; twolev.bin data header, after the text messages (first: LVLT_MESSAGE_LENGTH * LVLT_NUM_MESSAGES)
+	STRUCTURE TLBT,0
+		UWORD TBLT_Plr1_StartXPos_w			; 0
+		UWORD TBLT_Plr1_StartZPos_w			; 2
+		UWORD TBLT_Plr1_StartZoneID_w		; 4
+		UWORD TBLT_Plr2_StartXPos_w			; 6
+		UWORD TBLT_Plr2_StartZPos_w			; 8
+		UWORD TBLT_Plr2_StartZoneID_w		; 10
+		UWORD TLBT_NumControlPoints_w		; 12
+		UWORD TLBT_NumPoints_w				; 14
+		UWORD TLBT_NumZones_w				; 16
+		UWORD TLBT_Unknown_w				; 18
+		UWORD TLBT_NumObjects_w				; 20
+		ULONG TLBT_PointsOffset_l			; 22
+		ULONG TLBT_FloorLineOffset_l		; 26
+		ULONG TLBT_ObjectDataOffset_l		; 30
+		ULONG TLBT_ShotDataOffset_l			; 34 - this in twolev.bin ?
+		ULONG TLBT_AlienShotDataOffset_l	; 38 - this in twolev.bin ?
+		ULONG TLBT_ObjectPointsOffset_l		; 42
+		ULONG TLBT_Plr1ObjectOffset_l		; 46
+		ULONG TLBT_Plr2ObjectOffset_l		; 50
+	LABEL TLBT_SizeOf_l						; This is the end of the header
+
+
+	; twolev.graph.bin data header
+	STRUCTURE TLGT,0
+		; Offset values
+
+		ULONG TLGT_DoorDataOffset_l			; 0
+		ULONG TLGT_LiftDataOffset_l			; 4
+		ULONG TLGT_SwitchDataOffset_l		; 8
+		ULONG TLGT_ZoneGraphAddsOffset_l	; 12
+		ULONG TLGT_ZoneAddsOffset_l			; 16
+	LABEL TLGT_SizeOf_l
+
+
 	; Level Data Structure (after message block of LVLT_MESSAGE_LENGTH*LVLT_MESSAGE_COUNT)
 	STRUCTURE LvlT,0					; offset, size
 		UWORD LvlT_Plr1_StartX_w		; 0, 2
@@ -590,3 +630,4 @@ SKY_BACKDROP_H    EQU 240
 		ULONG WD_DUpperHorizBright_l ; 36
 
 		LABEL WD_SizeOf_l
+

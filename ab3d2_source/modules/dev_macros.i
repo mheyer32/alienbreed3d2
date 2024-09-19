@@ -22,6 +22,8 @@ DEV_SKIP_AI_ATTACK				EQU 9
 DEV_SKIP_TIMEGRAPH				EQU 10
 DEV_SKIP_LIGHTING				EQU 11
 DEV_SKIP_DUMP_BG_DISABLE		EQU 12
+DEV_ZONE_TRACE					EQU 13
+DEV_ZONE_TRACE_VERBOSE_AF		EQU 14
 
 ; Skip rendering the overlay completely
 DEV_SKIP_OVERLAY				EQU 31
@@ -72,39 +74,44 @@ DEV_RESTORE		MACRO
 
 ; Macro for conditionally skipping code based on a devmode flag. Unfortunately there's no btst.l #<im>,<ea> for
 ; non data-register ea modes. So we calculate a byte offset as well as the bit position in that byte.
-DEV_CHECK		MACRO
-				btst.b	#(DEV_SKIP_\1)&7,dev_SkipFlags_l+3-(DEV_SKIP_\1>>3)
+DEV_CHECK_SET		MACRO
+				btst.b	#(DEV_\1)&7,Dev_DebugFlags_l+3-(DEV_\1>>3)
 				bne		\2
 				ENDM
 
+DEV_CHECK_CLR	MACRO
+				btst.b	#(DEV_\1)&7,Dev_DebugFlags_l+3-(DEV_\1>>3)
+				beq		\2
+				ENDM
+
 DEV_ENABLE		MACRO
-				bset.b	#(DEV_SKIP_\1)&7,dev_SkipFlags_l+3-(DEV_SKIP_\1>>3)
+				bset.b	#(DEV_\1)&7,Dev_DebugFlags_l+3-(DEV_\1>>3)
 				ENDM
 
 DEV_DISABLE		MACRO
-				bclr.b	#(DEV_SKIP_\1)&7,dev_SkipFlags_l+3-(DEV_SKIP_\1>>3)
+				bclr.b	#(DEV_\1)&7,Dev_DebugFlags_l+3-(DEV_\1>>3)
 				ENDM
 
 DEV_TOGGLE		MACRO
-				bchg.b	#(DEV_SKIP_\1)&7,dev_SkipFlags_l+3-(DEV_SKIP_\1>>3)
+				bchg.b	#(DEV_\1)&7,Dev_DebugFlags_l+3-(DEV_\1>>3)
 				ENDM
 
 ; Macro for checking if a specific key should toggle a feature
 DEV_CHECK_KEY	MACRO
 				tst.b		\1(a5)
-				beq.s		.dev_skip_\2\@
+				beq.s		.dev_\2\@
 				clr.b		\1(a5)
 				DEV_TOGGLE	\2
-.dev_skip_\2\@:
+.dev_\2\@:
 				ENDM
 
 DEV_SNE			MACRO
-				btst.b	#(DEV_SKIP_\1)&7,dev_SkipFlags_l+3-(DEV_SKIP_\1>>3)
+				btst.b	#(DEV_\1)&7,Dev_DebugFlags_l+3-(DEV_\1>>3)
 				sne.b	\2
 				ENDM
 
 DEV_SEQ			MACRO
-				btst.b	#(DEV_SKIP_\1)&7,dev_SkipFlags_l+3-(DEV_SKIP_\1>>3)
+				btst.b	#(DEV_\1)&7,Dev_DebugFlags_l+3-(DEV_\1>>3)
 				seq.b	\2
 				ENDM
 
@@ -146,7 +153,10 @@ DEV_SAVE		MACRO
 DEV_RESTORE		MACRO
 				ENDM
 
-DEV_CHECK		MACRO
+DEV_CHECK_SET	MACRO
+				ENDM
+
+DEV_CHECK_CLR	MACRO
 				ENDM
 
 DEV_ENABLE		MACRO
@@ -171,3 +181,55 @@ DEV_SEQ			MACRO
 DEV_CHECK_DIVISOR MACRO
 				ENDM
 				ENDC
+
+				IFD DEV
+
+				IFD	ZONE_DEBUG
+
+				IFD BUILD_WITH_C
+
+DEV_ZDBG		MACRO
+				DEV_CHECK_CLR	ZONE_TRACE,.no_trace\@
+				DEV_SAVE d0-d7/a0-a6
+				move.l	a7,Dev_RegStatePtr_l
+				CALLC \1
+				DEV_RESTORE d0-d7/a0-a6
+.no_trace\@:
+				ENDM
+
+DEV_ZDBG_CLIP	MACRO
+				move.w #\1,SetClipStage_w
+				ENDM
+
+				; BUILD_WITH_C
+				ELSE
+
+DEV_ZDBG		MACRO
+				ENDM
+
+DEV_ZDBG_CLIP	MACRO
+				ENDM
+
+				ENDIF
+
+				; ZONE_DEBUG
+				ELSE
+
+DEV_ZDBG		MACRO
+				ENDM
+
+DEV_ZDBG_CLIP	MACRO
+				ENDM
+
+				ENDIF
+
+				; DEV
+				ELSE
+
+DEV_ZDBG		MACRO
+				ENDM
+
+DEV_ZDBG_CLIP	MACRO
+				ENDM
+
+				ENDIF

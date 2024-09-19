@@ -1,4 +1,6 @@
 Draw_Zone_Graph:
+				DEV_ZDBG ZDbg_Init
+
 				move.l	Zone_EndOfListPtr_l,a0
 ; move.w #-1,(a0)
 
@@ -10,11 +12,17 @@ Draw_Zone_Graph:
 				move.w	-(a0),d7
 				blt		.done_all_zones
 
+				IFD	ZONE_DEBUG
+				move.w	d7,Draw_CurrentZone_w
+				ENDIF
+
+				DEV_ZDBG ZDbg_First
+
 				move.l	a0,-(a7)
 
-				move.l	Lvl_ZoneAddsPtr_l,a0
+				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d7.w*4),a0
-				add.l	Lvl_DataPtr_l,a0
+				;add.l	Lvl_DataPtr_l,a0 ; 0xABADCAFE pointer chase reduction
 				move.l	ZoneT_Roof_l(a0),SplitHeight
 				move.l	a0,draw_BackupRoomPtr_l
 
@@ -144,7 +152,7 @@ Draw_Zone_Graph:
 .lzo_below_water_first:
 				bsr		draw_RenderCurrentZone
 
-				bra		.skip_not_visible
+				bra		.ready_next
 
 .lower_zone_first:
 				move.l	ThisRoomToDraw,a0
@@ -184,11 +192,16 @@ Draw_Zone_Graph:
 
 				st		Draw_DoUpper_b
 				bsr		draw_RenderCurrentZone
+
 .noupperroom2:
+				IFD	ZONE_DEBUG
+				bra		.ready_next
+				ENDIF
 
 .skip_not_visible:
-;pastemp:
+				DEV_ZDBG ZDbg_Skip
 
+.ready_next:
 				move.l	(a7)+,a1
 				move.l	ThisRoomToDraw,a0
 				move.w	(a0),d7
@@ -203,11 +216,17 @@ Draw_Zone_Graph:
 				bra		.subroomloop
 
 .done_all_zones:
+				DEV_ZDBG ZDbg_Done
+				DEV_DISABLE ZONE_TRACE
+
 				rts
 
 draw_RenderCurrentZone:
 				move.w	(a0)+,d0
 				move.w	d0,Draw_CurrentZone_w
+
+				DEV_ZDBG ZDbg_Enter
+
 				move.w	d0,d1
 				muls	#40,d1
 				add.l	#Lvl_BigMap_vl,d1

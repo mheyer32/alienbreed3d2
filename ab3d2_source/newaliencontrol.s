@@ -21,9 +21,9 @@ ItsAnAlien:
 				rts
 
 .ok_alive:
-				move.l	Lvl_ZoneAddsPtr_l,a5
+				move.l	Lvl_ZonePtrsPtr_l,a5
 				move.l	(a5,d2.w*4),d0
-				add.l	Lvl_DataPtr_l,d0
+				;add.l	Lvl_DataPtr_l,d0 ; 0xABADCAFE pointer chase reduction
 				move.l	d0,objroom
 				move.l	d0,a6
 				move.b	ZoneT_Echo_b(a6),ALIENECHO
@@ -137,9 +137,9 @@ Collectable:
 .worry_about:
 				and.b	#$80,ShotT_Worry_b(a0)
 				move.l	a1,a2
-				move.l	Lvl_ZoneAddsPtr_l,a1
+				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	Lvl_DataPtr_l,a1
+				;add.l	Lvl_DataPtr_l,a1 ; 0xABADCAFE pointer chase reduction
 				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
@@ -220,9 +220,9 @@ Activatable:
 .worry_about:
 				and.b	#$80,ShotT_Worry_b(a0)
 				move.l	a1,a2
-				move.l	Lvl_ZoneAddsPtr_l,a1
+				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	Lvl_DataPtr_l,a1
+				;add.l	Lvl_DataPtr_l,a1 ; 0xABADCAFE pointer chase reduction
 				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
@@ -299,9 +299,9 @@ ACTIVATED:
 .worry_about:
 				and.b	#$80,ShotT_Worry_b(a0)
 				move.l	a1,a2
-				move.l	Lvl_ZoneAddsPtr_l,a1
+				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	Lvl_DataPtr_l,a1
+				;add.l	Lvl_DataPtr_l,a1 ; 0xABADCAFE pointer chase reduction
 				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
@@ -418,9 +418,9 @@ Destructable:
 
 .worry_about:
 				move.l	a1,a2
-				move.l	Lvl_ZoneAddsPtr_l,a1
+				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	Lvl_DataPtr_l,a1
+				;add.l	Lvl_DataPtr_l,a1 ; 0xABADCAFE pointer chase reduction
 				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
@@ -470,9 +470,9 @@ StillHere:
 .worry_about:
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.w	ObjT_ZoneID_w(a0),d2
-				move.l	Lvl_ZoneAddsPtr_l,a5
+				move.l	Lvl_ZonePtrsPtr_l,a5
 				move.l	(a5,d2.w*4),d0
-				add.l	Lvl_DataPtr_l,d0
+				;add.l	Lvl_DataPtr_l,d0 ; 0xABADCAFE pointer chase reduction
 				move.l	d0,objroom
 				move.w	(a0),d0
 				move.l	Lvl_ObjectPointsPtr_l,a1
@@ -496,9 +496,9 @@ Decoration:
 
 intodeco:
 				move.l	a1,a2
-				move.l	Lvl_ZoneAddsPtr_l,a1
+				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	Lvl_DataPtr_l,a1
+				;add.l	Lvl_DataPtr_l,a1 ; 0xABADCAFE pointer chase reduction
 				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
