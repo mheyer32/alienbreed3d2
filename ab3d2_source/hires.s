@@ -1410,17 +1410,15 @@ donetalking:
 				move.l	plr1_ListOfGraphRoomsPtr_l,a0
 ; move.l plr1_PointsToRotatePtr_l,a5
 				move.l	a0,a5
+
 doallz:
 				move.w	(a0),d0
 				blt.s	doneallz
 				add.w	#8,a0
-
 				move.l	(a2,d0.w*4),a3
-
-				; add.l	Lvl_DataPtr_l,a3 ; 0xABADCAFE - pointer chase reduction
 				move.w	ZoneT_Brightness_w(a3),d2
-
 				blt.s	justbright
+
 				move.w	d2,d3
 				lsr.w	#8,d3
 				tst.b	d3
@@ -1653,9 +1651,9 @@ IWasPlayer1:
 
 				move.w	#0,scaleval
 
-				move.l	Plr1_XOff_l,xoff
-				move.l	Plr1_YOff_l,yoff
-				move.l	Plr1_ZOff_l,zoff
+				move.l	Plr1_XOff_l,Plr_XOff_l
+				move.l	Plr1_YOff_l,Plr_YOff_l
+				move.l	Plr1_ZOff_l,Plr_ZOff_l
 				move.w	Plr1_AngPos_w,angpos
 				move.w	Plr1_CosVal_w,Temp_CosVal_w
 				move.w	Plr1_SinVal_w,Temp_SinVal_w
@@ -1709,11 +1707,11 @@ IWasPlayer1:
 ;
 ;WEHAVEAHEIGHT:
 ;
-; sub.l yoff,d0
+; sub.l Plr_YOff_l,d0
 ; blt.s underwater
 ;
 ; add.l d0,d0
-; add.l d0,yoff
+; add.l d0,Plr_YOff_l
 ;
 ; move.l FASTBUFFER2,Vid_FastBufferPtr_l
 ; move.w #0,Draw_LeftClip_w
@@ -1734,7 +1732,7 @@ IWasPlayer1:
 
 				st		DOANYWATER
 
-				move.l	Plr1_YOff_l,yoff
+				move.l	Plr1_YOff_l,Plr_YOff_l
 
 				move.w	#0,Draw_LeftClip_w
 				move.w	Vid_RightX_w,Draw_RightClip_w
@@ -1760,9 +1758,9 @@ IWasPlayer1:
 
 drawplayer2:
 				move.w	#0,scaleval
-				move.l	Plr2_XOff_l,xoff
-				move.l	Plr2_YOff_l,yoff
-				move.l	Plr2_ZOff_l,zoff
+				move.l	Plr2_XOff_l,Plr_XOff_l
+				move.l	Plr2_YOff_l,Plr_YOff_l
+				move.l	Plr2_ZOff_l,Plr_ZOff_l
 				move.w	Plr2_AngPos_w,angpos
 				move.w	Plr2_CosVal_w,Temp_CosVal_w
 				move.w	Plr2_SinVal_w,Temp_SinVal_w
@@ -2886,7 +2884,6 @@ Plr1_Control:
 				sub.l	ZoneT_Floor_l(a0),d1
 				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d0.w*4),a0
-				;add.l	Lvl_DataPtr_l,a0 ; 0xABADCAFE pointer chase reduction
 				move.l	a0,Plr1_ZonePtr_l
 				add.l	ZoneT_Floor_l(a0),d1
 				move.l	d1,Plr1_SnapYOff_l
@@ -3097,7 +3094,6 @@ Plr2_Control:
 				sub.l	ZoneT_Floor_l(a0),d1
 				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d0.w*4),a0
-				;add.l	Lvl_DataPtr_l,a0 ; 0xABADCAFE pointer chase reduction
 				move.l	a0,Plr2_ZonePtr_l
 				add.l	ZoneT_Floor_l(a0),d1
 				move.l	d1,Plr2_SnapYOff_l
@@ -3211,30 +3207,30 @@ DrawDisplay:
 				move.w	d6,Temp_SinVal_w
 				move.w	d7,Temp_CosVal_w
 
-				move.l	yoff,d0
-				asr.l	#8,d0					; yoff >> 8
+				move.l	Plr_YOff_l,d0
+				asr.l	#8,d0					; Plr_YOff_l >> 8
 				move.w	d0,d1
 				add.w	#256-32,d1				; 224
 				and.w	#255,d1
 				move.w	d1,draw_WallYOffset_w
 
-				move.l	yoff,d0					; is yoff the viewer's y position << 16?
-				asr.l	#6,d0					; yoff << 10
-				move.w	d0,flooryoff			; yoff << 10
+				move.l	Plr_YOff_l,d0					; is Plr_YOff_l the viewer's y position << 16?
+				asr.l	#6,d0					; Plr_YOff_l << 10
+				move.w	d0,flooryoff			; Plr_YOff_l << 10
 
-				move.w	xoff,d6
+				move.w	Plr_XOff_l,d6
 				move.w	d6,d3
-				asr.w	#1,d3					; xoff * 0.5
-				add.w	d3,d6					; xoff * 1.5
-				asr.w	#1,d6					; xoff * 0.75
-				move.w	d6,xoff34				; xoff * 3/4
+				asr.w	#1,d3					; Plr_XOff_l * 0.5
+				add.w	d3,d6					; Plr_XOff_l * 1.5
+				asr.w	#1,d6					; Plr_XOff_l * 0.75
+				move.w	d6,xoff34				; Plr_XOff_l * 3/4
 
-				move.w	zoff,d6
+				move.w	Plr_ZOff_l,d6
 				move.w	d6,d3
 				asr.w	#1,d3
 				add.w	d3,d6
 				asr.w	#1,d6
-				move.w	d6,zoff34				; zoff * 3/4
+				move.w	d6,zoff34				; Plr_ZOff_l * 3/4
 
 				bsr		RotateLevelPts
 				bsr		RotateObjectPts
@@ -3399,9 +3395,9 @@ RotateLevelPts:	;		Does					this rotate ALL points in the level EVERY frame?
 				move.l	Lvl_PointsPtr_l,a3
 				move.l	#Rotated_vl,a1				; stores only 2x800 points
 				move.l	#OnScreen_vl,a2
-				move.w	xoff,d4
+				move.w	Plr_XOff_l,d4
 				;asr.w	#1,d4
-				move.w	zoff,d5
+				move.w	Plr_ZOff_l,d5
 				;asr.w	#1,d5
 
 ; move.w #$c40,$dff106
@@ -3478,11 +3474,11 @@ BIGALL:
 
 pointrotlop2B:
 				move.w	(a3)+,d0				; x
-				sub.w	d4,d0					; x/2 - xoff
-				move.w	d0,d2					; x = x/2 -xoff
+				sub.w	d4,d0					; x/2 - Plr_XOff_l
+				move.w	d0,d2					; x = x/2 -Plr_XOff_l
 
 				move.w	(a3)+,d1				; z
-				sub.w	d5,d1					; z = z/2 - zoff
+				sub.w	d5,d1					; z = z/2 - Plr_ZOff_l
 
 				muls.w	d6,d2					; x*cos<<16
 				swap	d6
@@ -3548,8 +3544,8 @@ ONLYTHELONELY:
 				move.l	Lvl_PointsPtr_l,a3
 				move.l	#Rotated_vl,a1
 				move.l	#OnScreen_vl,a2
-				move.w	xoff,d4
-				move.w	zoff,d5
+				move.w	Plr_XOff_l,d4
+				move.w	Plr_ZOff_l,d5
 
 ; move.w #$c40,$dff106
 ; move.w #$f00,$dff180
@@ -3859,14 +3855,14 @@ RotateObjectPts:
 				beq.s	.itaux
 
 				move.w	(a0),d0					; x of object point
-				sub.w	xoff,d0					; viewX = X - cam X
+				sub.w	Plr_XOff_l,d0					; viewX = X - cam X
 				move.w	4(a0),d1				; z of object point
 				addq	#8,a0					; next point? or next object?
 
 				tst.w	ObjT_ZoneID_w(a4)		; Lvl_ObjectDataPtr_l
 				blt		.noworkout
 
-				sub.w	zoff,d1					; viewZ = Z - cam Z
+				sub.w	Plr_ZOff_l,d1					; viewZ = Z - cam Z
 
 				move.w	d0,d2
 				muls	d6,d2					; cosx = viewX * (cos << 16)
@@ -3916,14 +3912,14 @@ RotateObjectPtsFullScreen:
 				beq.s	.itaux
 
 				move.w	(a0),d0
-				sub.w	xoff,d0
+				sub.w	Plr_XOff_l,d0
 				move.w	4(a0),d1
 				addq	#8,a0
 
 				tst.w	ObjT_ZoneID_w(a4)
 				blt		.noworkout
 
-				sub.w	zoff,d1
+				sub.w	Plr_ZOff_l,d1
 				move.w	d0,d2
 				muls	d6,d2      ; pOEP
 				move.w	d1,d3
@@ -5023,8 +5019,8 @@ pastsides:
 				suba.w	#SCREEN_WIDTH,a6
 
 groundfloor:
-				move.w	xoff,d6
-				move.w	zoff,d7
+				move.w	Plr_XOff_l,d6
+				move.w	Plr_ZOff_l,d7
 				; add.w	xwobxoff,d6				; this was adding xwobxoff to d7, was this a bug?
 				add.w	xwobxoff,d7
 				add.w	xwobzoff,d6
@@ -8676,53 +8672,16 @@ test:			dc.l	0
 				ds.l	30
 
 
-; FIXME: since these are all empty symbols
-; it stands to reason that they're all unusable,
-; and any code referencing them.
-				even
-ConstCols:
-; incbin "constcols"
-				even
-Smoothscalecols:
-; incbin "smoothbumppalscaled"
-				even
-SmoothTile:
-; incbin "smoothbumptile"
-				even
-Bumpscalecols:
-; incbin "bumppalscaled"
-				even
-Bumptile:
-; incbin "bumptile"
-				even
-scalecols:		;incbin	"bytepixpalscaled"
-				even
-;floorscalecols:
-; incbin "floor256pal"
-; ds.w 256*4
-
-
-
-;angspd:			dc.w	0
+				align 4
+Plr_XOff_l:		dc.l	0
+Plr_ZOff_l:		dc.l	0
+Plr_YOff_l:		dc.l	0
 flooryoff:		dc.w	0						; viewer y pos << 6
-xoff:			dc.l	0
-zoff:			dc.l	0
-yoff:			dc.l	0
-
-
-; // READY PLAYER ONE /////////////////////////////////////////////////////////////////////
-
-; Player data definiton - TODO remove unused, tighten definitions, fix alignments
-
-
-				even
 XDiff_w:		dc.w	0
 ZDiff_w:		dc.w	0
 PlayEcho:		dc.w	0 ; accessed as byte
-PLR1:			dc.b	$ff
-PLR2:			dc.b	$ff
 
-ZonePtr_l:		dc.l	0
+; // READY PLAYER ONE /////////////////////////////////////////////////////////////////////
 
 *****************************************************************
 *
@@ -8731,29 +8690,22 @@ ZonePtr_l:		dc.l	0
 *****************************************************************
 
 
-wallpt:			dc.l	0
-floorpt:		dc.l	0
-startwait:		dc.w	0
-endwait:		dc.w	0
-
-Lvl_WalkLinksPtr_l:		dc.l	0
-Lvl_FlyLinksPtr_l:		dc.l	0
-
-				dc.l	0
+				align 4
+ZonePtr_l:			dc.l	0
+Lvl_WalkLinksPtr_l:	dc.l	0
+Lvl_FlyLinksPtr_l:	dc.l	0
+					dc.l	0
 Vid_CentreX_w:		dc.w	SMALL_WIDTH/2
 Vid_RightX_w:		dc.w	SMALL_WIDTH
 
 
-;SHADINGTABLE: incbin "shadefile"
-
 ******************************************
 * Link file !*****************************
 ******************************************
-
-GLF_DatabaseName_vb:		dc.b	"ab3:includes/test.lnk",0
+GLF_DatabasePtr_l:		dc.l	0
+GLF_DatabaseName_vb:	dc.b	"ab3:includes/test.lnk",0
 
 				align 4
-GLF_DatabasePtr_l:		dc.l	0
 
 ******************************************
 

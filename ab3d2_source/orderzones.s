@@ -6,11 +6,9 @@ zone_LastPosition_vw: ; basically a short coordinate pair
 				dc.l	-1
 
 Zone_OrderZones:
-				; TODO this needs to be triggered when the player changes zone.
-				; I've tried this by using the ZonePtr but it works only partially.
-				move.w	xoff,d0
+				move.w	Plr_XOff_l,d0
 				swap	d0
-				move.w	zoff,d0		  ; d0 is the short coordinate location of the player
+				move.w	Plr_ZOff_l,d0		  ; d0 is the short coordinate location of the player
 				and.l	#$FFF0FFF0,d0 ; reduce the change sensitivity a bit by discarding the low x/z bits
 				cmp.l	zone_LastPosition_vw,d0
 				bne		.continue
@@ -93,7 +91,6 @@ Zone_OrderZones:
 				move.l	(a6),d6
 				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d0.w*4),a0
-				;add.l	Lvl_DataPtr_l,a0 ; 0xABADCAFE pointer chase reduction
 				adda.w	ZoneT_ExitList_w(a0),a0
 				move.l	a5,a4
 
@@ -176,8 +173,8 @@ zone_InsertList:
 ; or closer than the current zone.
 
 				bset	d7,d6
-				move.w	xoff,d2
-				move.w	zoff,d3
+				move.w	Plr_XOff_l,d2
+				move.w	Plr_ZOff_l,d3
 				sub.w	(a1,d0.w),d2
 				sub.w	2(a1,d0.w),d3
 				muls	6(a1,d0.w),d2

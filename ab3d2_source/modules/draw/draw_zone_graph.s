@@ -22,7 +22,6 @@ Draw_Zone_Graph:
 
 				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d7.w*4),a0
-				;add.l	Lvl_DataPtr_l,a0 ; 0xABADCAFE pointer chase reduction
 				move.l	ZoneT_Roof_l(a0),SplitHeight
 				move.l	a0,draw_BackupRoomPtr_l
 
@@ -104,10 +103,10 @@ Draw_Zone_Graph:
 				cmp.w	d1,d0
 				bge		.skip_not_visible
 
-				move.l	yoff,d0
+				move.l	Plr_YOff_l,d0
 				cmp.l	SplitHeight,d0
 				blt		.lower_zone_first
-
+;Plr_XOff_l
 				move.l	ThisRoomToDraw+4,a0
 				cmp.l	Lvl_GraphicsPtr_l,a0
 				beq.s	.lower_zone_only
@@ -134,7 +133,7 @@ Draw_Zone_Graph:
 				move.l	d1,Draw_BottomOfRoom_l
 
 				move.l	ZoneT_Water_l(a1),d2
-				cmp.l	yoff,d2
+				cmp.l	Plr_YOff_l,d2
 				blt.s	.lzo_above_water_first
 
 				move.l	d2,Draw_BeforeWaterTop_l
@@ -164,7 +163,7 @@ Draw_Zone_Graph:
 				move.l	ZoneT_Floor_l(a1),d1
 				move.l	d1,Draw_BottomOfRoom_l
 				move.l	ZoneT_Water_l(a1),d2
-				cmp.l	yoff,d2
+				cmp.l	Plr_YOff_l,d2
 				blt.s	.lzf_above_water_first
 
 				move.l	d2,Draw_BeforeWaterTop_l

@@ -28,7 +28,6 @@ Plr_Initialise:
 				move.w	TBLT_Plr1_StartZoneID_w(a1),d0
 				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d0.w*4),d0
-				;add.l	Lvl_DataPtr_l,d0 ; 0xABADCAFE pointer chase reduction
 				move.l	d0,Plr1_ZonePtr_l
 				move.l	Plr1_ZonePtr_l,a0
 				move.l	ZoneT_Floor_l(a0),d0
@@ -48,7 +47,6 @@ Plr_Initialise:
 				move.w	TBLT_Plr2_StartZoneID_w(a1),d0
 				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d0.w*4),d0
-				;add.l	Lvl_DataPtr_l,d0  ; 0xABADCAFE pointer chase reduction
 				move.l	d0,Plr2_ZonePtr_l
 				move.l	Plr2_ZonePtr_l,a0
 				move.l	ZoneT_Floor_l(a0),d0
@@ -417,11 +415,11 @@ plr_KeyboardControl:
 				clr.l	Vid_FPSLimit_l
 
 .noframelimit:
-                tst.b   RAWKEY_NUM_DOT(a5)
-                beq.b   .done_normal_keys
-                add.b   #1,Prefs_CrossHairColour_b
-                and.b   #7,Prefs_CrossHairColour_b
-                clr.b   RAWKEY_NUM_DOT(a5)
+				tst.b   RAWKEY_NUM_DOT(a5)
+				beq.b   .done_normal_keys
+				add.b   #1,Prefs_CrossHairColour_b
+				and.b   #7,Prefs_CrossHairColour_b
+				clr.b   RAWKEY_NUM_DOT(a5)
 
 .done_normal_keys:
 				IFD DEV

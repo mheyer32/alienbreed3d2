@@ -799,7 +799,7 @@ scrdrawlopFULLDOUB:
 ;				move.w	(a0)+,brightmult(a2)
 ;				move.l	(a0)+,draw_TopOfWall_l
 ;				move.l	(a0)+,draw_BottomOfWall_l
-;				move.l	yoff,d6
+;				move.l	Plr_YOff_l,d6
 ;				sub.l	d6,draw_TopOfWall_l
 ;				sub.l	d6,draw_BottomOfWall_l
 ;
@@ -1981,7 +1981,7 @@ Draw_Wall:
 				move.w	Zone_Bright_w,draw_AngleBright_w
 ;move.w (a0)+,d1
 ;move.w (a0)+,d4
-				move.l	yoff,d6
+				move.l	Plr_YOff_l,d6
 
 				moveq	#0,d1
 				move.b	(a0)+,d1

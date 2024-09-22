@@ -226,7 +226,7 @@ draw_bitmap_glare:
 				move.w	draw_TopClip_w,d2
 				move.w	draw_BottomClip_w,d3
 				move.l	draw_TopY_3D_l,d6
-				sub.l	yoff,d6
+				sub.l	Plr_YOff_l,d6
 
 				; DEV_CHECK_DIVISOR d1
 				; 0xABADCAFE - Divisor is often bigger than our table
@@ -246,7 +246,7 @@ draw_bitmap_glare:
 .okobtc:
 				move.w	d6,draw_ObjClipT_w
 				move.l	draw_BottomY_3D_l,d6
-				sub.l	yoff,d6
+				sub.l	Plr_YOff_l,d6
 
 				; DEV_CHECK_DIVISOR d1
 				; 0xABADCAFE - Checked: Couldn't trigger
@@ -276,7 +276,7 @@ draw_bitmap_glare:
 				add.w	draw_AuxY_w,d2
 				ext.l	d2
 				asl.l	#7,d2
-				sub.l	yoff,d2
+				sub.l	Plr_YOff_l,d2
 
 				divs	d1,d2
 				;DEV_INC.w Reserved1 ; counts how many divisions
@@ -591,7 +591,7 @@ draw_Bitmap:
 				move.w	draw_TopClip_w,d2
 				move.w	draw_BottomClip_w,d3
 				move.l	draw_TopY_3D_l,d6
-				sub.l	yoff,d6
+				sub.l	Plr_YOff_l,d6
 
 				divs	d1,d6
 				;DEV_INC.w Reserved1 ; counts how many divisions
@@ -607,7 +607,7 @@ draw_Bitmap:
 .okobtc:
 				move.w	d6,draw_ObjClipT_w				; top object clip
 				move.l	draw_BottomY_3D_l,d6
-				sub.l	yoff,d6
+				sub.l	Plr_YOff_l,d6
 
 				divs	d1,d6
 				;DEV_INC.w Reserved1 ; counts how many divisions
@@ -686,7 +686,7 @@ pastobjscale:
 				add.w	draw_AuxY_w,d2
 				ext.l	d2
 				asl.l	#7,d2
-				sub.l	yoff,d2
+				sub.l	Plr_YOff_l,d2
 
 				divs	d1,d2
 				;DEV_INC.w Reserved1 ; counts how many divisions
@@ -1417,7 +1417,6 @@ draw_CalcBrightRings:
 				move.w	Draw_CurrentZone_w,d0
 				move.l	Lvl_ZonePtrsPtr_l,a4
 				move.l	(a4,d0.w*4),a4
-				;add.l	Lvl_DataPtr_l,a4 ; 0xABADCAFE pointer chase reduction
 				move.l	a4,a5
 				adda.w	ZoneT_ExitList_w(a4),a5
 
@@ -1928,8 +1927,8 @@ fullscreen_conv:
 				add.w	d3,d1					; d1 * 3  because 288 is ~1.5times larger than 196?
 												; if I change this, 3d objects start "swimming" with regard to the world
 				ext.l	d2
-				asl.l	#7,d2					; (view_ypos * 128 - yoff) * 2
-				sub.l	yoff,d2
+				asl.l	#7,d2					; (view_ypos * 128 - Plr_YOff_l) * 2
+				sub.l	Plr_YOff_l,d2
 				add.l	d2,d2
 
 .convert_to_screen:
@@ -2010,8 +2009,8 @@ smallscreen_conv:
 				add.w	d1,d1					; d1 * 2
 				ext.l	d2
 				asl.l	#7,d2
-				sub.l	yoff,d2
-				add.l	d2,d2					; (d2*128 - yoff) *2
+				sub.l	Plr_YOff_l,d2
+				add.l	d2,d2					; (d2*128 - Plr_YOff_l) *2
 
 .convert_to_screen:
 				move.l	(a2),d3

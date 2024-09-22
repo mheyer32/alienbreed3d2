@@ -23,7 +23,6 @@ ItsAnAlien:
 .ok_alive:
 				move.l	Lvl_ZonePtrsPtr_l,a5
 				move.l	(a5,d2.w*4),d0
-				;add.l	Lvl_DataPtr_l,d0 ; 0xABADCAFE pointer chase reduction
 				move.l	d0,objroom
 				move.l	d0,a6
 				move.b	ZoneT_Echo_b(a6),ALIENECHO
@@ -139,7 +138,6 @@ Collectable:
 				move.l	a1,a2
 				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				;add.l	Lvl_DataPtr_l,a1 ; 0xABADCAFE pointer chase reduction
 				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
@@ -222,7 +220,6 @@ Activatable:
 				move.l	a1,a2
 				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				;add.l	Lvl_DataPtr_l,a1 ; 0xABADCAFE pointer chase reduction
 				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
@@ -301,7 +298,6 @@ ACTIVATED:
 				move.l	a1,a2
 				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				;add.l	Lvl_DataPtr_l,a1 ; 0xABADCAFE pointer chase reduction
 				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
@@ -420,7 +416,6 @@ Destructable:
 				move.l	a1,a2
 				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				;add.l	Lvl_DataPtr_l,a1 ; 0xABADCAFE pointer chase reduction
 				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
@@ -472,7 +467,6 @@ StillHere:
 				move.w	ObjT_ZoneID_w(a0),d2
 				move.l	Lvl_ZonePtrsPtr_l,a5
 				move.l	(a5,d2.w*4),d0
-				;add.l	Lvl_DataPtr_l,d0 ; 0xABADCAFE pointer chase reduction
 				move.l	d0,objroom
 				move.w	(a0),d0
 				move.l	Lvl_ObjectPointsPtr_l,a1
@@ -498,7 +492,6 @@ intodeco:
 				move.l	a1,a2
 				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				;add.l	Lvl_DataPtr_l,a1 ; 0xABADCAFE pointer chase reduction
 				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 

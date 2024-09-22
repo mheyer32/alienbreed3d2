@@ -1,3 +1,4 @@
+#ifdef ZONE_DEBUG
 #include "system.h"
 #include "zone_debug.h"
 #include "message.h"
@@ -10,10 +11,8 @@ extern LONG Draw_RightClip_l;
 
 extern WORD Draw_LeftClip_w;
 extern WORD Draw_RightClip_w;
-
 extern LONG Plr1_Position_vl[3];
 extern WORD Plr1_Direction_vw[4];
-
 extern WORD SetClipStage_w;
 
 extern void* Dev_RegStatePtr_l;
@@ -176,11 +175,13 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
         );
         zList += 4; // I have no idea why but these records are 8 bytes apart
     } while (iZone > -1);
-    printf("\t]\n\tExitList: (%d) [\n", (int)zonePtr->z_ExitList);
+    printf("\t]\n\tExitList: (%d) [", (int)zonePtr->z_ExitList);
 
     zList = ((WORD*)zonePtr) + zonePtr->z_ExitList;
+    int i = 0;
     do {
-        printf("\t\t%d,\n", (int)*zList);
+        printf("%s%d,", ((i++ & 7) ? "" : "\n\t\t"), (int)*zList);
     } while (*zList++ >= 0);
-    puts("\t]\n}\n");
+    puts("\n\t]\n}\n");
 }
+#endif // ZONE_DEBUG
