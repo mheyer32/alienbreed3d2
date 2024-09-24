@@ -177,11 +177,12 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
     } while (iZone > -1);
     printf("\t]\n\tExitList: (%d) [", (int)zonePtr->z_ExitList);
 
-    zList = ((WORD*)zonePtr) + zonePtr->z_ExitList;
+    // ExitList is an address offset prior to the zone
+    zList = (WORD*)(((BYTE*)zonePtr) + zonePtr->z_ExitList);
     int i = 0;
     do {
         printf("%s%d,", ((i++ & 7) ? "" : "\n\t\t"), (int)*zList);
-    } while (*zList++ >= 0);
+    } while (++zList < ((WORD*)zonePtr));
     puts("\n\t]\n}\n");
 }
 #endif // ZONE_DEBUG
