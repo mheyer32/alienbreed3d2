@@ -34,9 +34,9 @@ MoveObject:
 
 gobackanddoitallagain:
 				move.l	a0,a5
-				adda.w	ZoneT_ExitList_w(a5),a0
+				adda.w	ZoneT_EdgeListOffset_w(a5),a0
 				move.l	a0,test
-				move.l	Lvl_FloorLinesPtr_l,a1
+				move.l	Lvl_ZoneEdgePtr_l,a1
 
 checkwalls:
 				move.w	(a0)+,d0
@@ -437,7 +437,7 @@ no_more_walls:
 notstill:
 
 				move.l	a5,a0
-				add.w	ZoneT_ExitList_w(a0),a0
+				add.w	ZoneT_EdgeListOffset_w(a0),a0
 
 checkotherwalls:
 				move.w	(a0)+,d0
@@ -716,9 +716,9 @@ NOOTHERWALLSNEEDED
 *****************************************************
 
 				move.l	a5,a0
-				adda.w	ZoneT_ExitList_w(a5),a0
+				adda.w	ZoneT_EdgeListOffset_w(a5),a0
 
-				move.l	Lvl_FloorLinesPtr_l,a1
+				move.l	Lvl_ZoneEdgePtr_l,a1
 CheckMoreFloorLines
 				move.w	(a0)+,d0				; Either a floor line or -1
 				blt		NoMoreFloorLines
@@ -1441,7 +1441,7 @@ nomorerclips:
 				sub.w	Viewerx,d0
 				sub.w	Viewerz,d1
 				move.l	FromRoom,a5
-				move.l	Lvl_FloorLinesPtr_l,a1
+				move.l	Lvl_ZoneEdgePtr_l,a1
 				move.b	ViewerTop,d2
 				move.w	Targety,d7
 				sub.w	Viewery,d7
@@ -1449,7 +1449,7 @@ nomorerclips:
 
 GoThroughZones:
 				move.l	a5,a0
-				adda.w	ZoneT_ExitList_w(a0),a0
+				adda.w	ZoneT_EdgeListOffset_w(a0),a0
 
 FindWayOut:
 				move.w	(a0)+,d5
@@ -1572,7 +1572,7 @@ FindCollisionPt:
 				sub.w	Viewerx,d0
 				sub.w	Viewerz,d1
 				move.l	FromRoom,a5
-				move.l	Lvl_FloorLinesPtr_l,a1
+				move.l	Lvl_ZoneEdgePtr_l,a1
 				move.b	ViewerTop,d2
 				move.w	Targety,d7
 				sub.w	Viewery,d7
@@ -1580,7 +1580,7 @@ FindCollisionPt:
 
 .GoThroughZones:
 				move.l	a5,a0
-				adda.w	ZoneT_ExitList_w(a0),a0
+				adda.w	ZoneT_EdgeListOffset_w(a0),a0
 
 .FindWayOut:
 				move.w	(a0)+,d5

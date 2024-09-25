@@ -29,7 +29,8 @@ Lvl_ListOfGraphRoomsPtr_l:		ds.l	1
 AI_AlienShotDataPtr_l:			ds.l	1
 Lvl_ObjectPointsPtr_l:			ds.l	1
 Lvl_ObjectDataPtr_l:			ds.l	1
-Lvl_FloorLinesPtr_l:			ds.l	1
+	DECLC Lvl_ZoneEdgePtr_l
+		ds.l	1
 Lvl_PointsPtr_l:				ds.l	1	; Pointer to array of all 2D points in the world
 Lvl_ZoneGraphAddsPtr_l:			ds.l	1
 

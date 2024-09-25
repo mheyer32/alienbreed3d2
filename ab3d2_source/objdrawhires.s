@@ -1413,12 +1413,12 @@ draw_CalcBrightRings:
 ; Now do the brightnesses of surrounding
 ; zones:
 
-				move.l	Lvl_FloorLinesPtr_l,a1
+				move.l	Lvl_ZoneEdgePtr_l,a1
 				move.w	Draw_CurrentZone_w,d0
 				move.l	Lvl_ZonePtrsPtr_l,a4
 				move.l	(a4,d0.w*4),a4
 				move.l	a4,a5
-				adda.w	ZoneT_ExitList_w(a4),a5
+				adda.w	ZoneT_EdgeListOffset_w(a4),a5
 
 .do_all_walls:
 				move.w	(a5)+,d0

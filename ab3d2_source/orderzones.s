@@ -84,14 +84,14 @@ Zone_OrderZones:
 
 .run_through_list:
 				DEV_INC.w	Reserved2
-				move.l	Lvl_FloorLinesPtr_l,a1
+				move.l	Lvl_ZoneEdgePtr_l,a1
 				move.w	2(a5),d0
 				move.l	#Sys_Workspace_vl,a6
 				lea		(a6,d0.w*4),a6
 				move.l	(a6),d6
 				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d0.w*4),a0
-				adda.w	ZoneT_ExitList_w(a0),a0
+				adda.w	ZoneT_EdgeListOffset_w(a0),a0
 				move.l	a5,a4
 
 				; tst.b farendfound

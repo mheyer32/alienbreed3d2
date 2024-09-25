@@ -75,7 +75,7 @@ void ZDbg_Init(void)
 void ZDbg_First(void)
 {
     printf(
-        "Beginning PVS at Zone %d\n",
+        "Dumping Zone %d\n",
         (int)Draw_CurrentZone_w
     );
 
@@ -148,8 +148,7 @@ void ZDbg_RightClip(void)
 void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
 
     printf(
-        "Zone {\n"
-        "\tID: %d\n"
+        "Zone %d {\n"
         "\tHeights: [LF:%d LC:%d UF:%d UC:%d WL:%d]\n"
         "\tPVS Zones: [\n",
         (int)zonePtr->z_ID,
@@ -167,7 +166,7 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
     do {
         iZone = *zList;
         printf(
-            "\t\t%3d, %5d, %5d, %5d\n",
+            "\t\t%3d, %6d, %6d, %6d\n",
             iZone,
             (int)zList[1],
             (int)zList[2], // significant?
@@ -175,13 +174,26 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
         );
         zList += 4; // I have no idea why but these records are 8 bytes apart
     } while (iZone > -1);
-    printf("\t]\n\tExitList: (%d) [", (int)zonePtr->z_ExitList);
+    printf("\t]\n\tEdge List: (Offset: %d) [\n", (int)zonePtr->z_EdgeListOffset);
 
     // ExitList is an address offset prior to the zone
-    zList = (WORD*)(((BYTE*)zonePtr) + zonePtr->z_ExitList);
-    int i = 0;
+    zList = (WORD*)(((BYTE*)zonePtr) + zonePtr->z_EdgeListOffset);
+
     do {
-        printf("%s%d,", ((i++ & 7) ? "" : "\n\t\t"), (int)*zList);
+        int edge = (int)*zList;
+        if (edge >= 0) {
+            ZEdge* edgePtr = Lvl_ZoneEdgePtr_l + edge;
+            printf(
+                "\t\t%3d [x:%6d z:%6d dx:%6d dz:%6d joins:%3d %6d %6d %6d ]\n",
+                edge,
+                (int)edgePtr->e_XPos,     (int)edgePtr->e_ZPos,
+                (int)edgePtr->e_XLen,     (int)edgePtr->e_ZLen,
+                (int)edgePtr->e_JoinZone, (int)edgePtr->e_Word_5,
+                (int)edgePtr->e_Word_6,   (int)edgePtr->e_Word_7
+            );
+        } else {
+            printf("\t\t%3d\n", edge);
+        }
     } while (++zList < ((WORD*)zonePtr));
     puts("\n\t]\n}\n");
 }

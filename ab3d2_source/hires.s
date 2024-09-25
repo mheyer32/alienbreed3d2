@@ -375,7 +375,7 @@ noload:
 
 				move.l	TLBT_FloorLineOffset_l(a1),a2
 				add.l	a4,a2
-				move.l	a2,Lvl_FloorLinesPtr_l
+				move.l	a2,Lvl_ZoneEdgePtr_l
 
 				move.w	-2(a2),Lvl_ExitZoneID_w
 				move.l	TLBT_ObjectDataOffset_l(a1),a2

@@ -1021,7 +1021,7 @@ notallliftsdone:
 				move.w	(a0)+,d5
 
 .dothesimplething:
-				move.l	Lvl_FloorLinesPtr_l,a3
+				move.l	Lvl_ZoneEdgePtr_l,a3
 
 .simplecheck:
 				move.w	(a0)+,d5
@@ -1041,7 +1041,7 @@ notallliftsdone:
 				bra		nomoreliftwalls
 
 .satisfied:
-				move.l	Lvl_FloorLinesPtr_l,a3
+				move.l	Lvl_ZoneEdgePtr_l,a3
 				moveq	#0,d4
 				moveq	#0,d5
 				move.b	(a0)+,d4
@@ -1394,7 +1394,7 @@ NotGoBackUp:
 				move.w	(a0)+,d5
 
 dothesimplething:
-				move.l	Lvl_FloorLinesPtr_l,a3
+				move.l	Lvl_ZoneEdgePtr_l,a3
 
 simplecheck:
 				move.w	(a0)+,d5
@@ -1427,7 +1427,7 @@ satisfied:
 				move.w	#$0,d1
 
 backfromtst:
-				move.l	Lvl_FloorLinesPtr_l,a3
+				move.l	Lvl_ZoneEdgePtr_l,a3
 
 doorwalls:
 				move.w	(a0)+,d5

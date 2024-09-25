@@ -327,7 +327,7 @@ ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
 		UWORD ZoneT_ControlPoint_w		; 26, 2 really UBYTE[2]
 		UWORD ZoneT_BackSFXMask_w		; 28, 2 Originally long but always accessed as word
 		UWORD ZoneT_Unused_w            ; 30, 2 so this is the unused half
-		UWORD ZoneT_ExitList_w			; 32, 2 - Appears to be a negative terminated list preceeding the struct
+		UWORD ZoneT_EdgeListOffset_w	; 32, 2 Offset relative to ZoneT instance
 		UWORD ZoneT_Points_w			; 34, 2
 		UBYTE ZoneT_Back_b				; 36, 1 unused
 		UBYTE ZoneT_Echo_b				; 37, 1
@@ -338,6 +338,19 @@ ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
 		UWORD ZoneT_UpperFloorNoise_w	; 46, 2
 		UWORD ZoneT_PotVisibleZoneList_vw		; 48, 2 - Set of Potentially Visible Zones (array of 4-word tuples)
 		LABEL ZoneT_SizeOf_l			; 50
+
+		; Edge structure. The ZoneT_EdgeListOffset_w points to a list of words that are indexes
+		; in an array of the following structure, pointed to by Lvl_ZoneEdgePtr_l
+		STRUCT EdgeT,0
+		WORD EdgeT_XPos_w     ; X coordinate
+		WORD EdgeT_ZPos_w     ; Z coordinate
+		WORD EdgeT_XLen_w     ; Length in X direction
+		WORD EdgeT_ZLen_w     ; Length in Z direction
+		WORD EdgeT_JoinZone_w ; Zone the edge joins to, or -1 for a solid wall
+		WORD EdgeT_Word_5     ; TODO
+		WORD EdgeT_Word_6     ; TODO
+		WORD EdgeT_Word_7     ; TODO
+		LABEL  EdgeT_SizeOf_l
 
 NUM_PLR_SHOT_DATA	EQU		20
 NUM_ALIEN_SHOT_DATA	EQU		20
