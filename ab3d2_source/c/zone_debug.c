@@ -184,12 +184,13 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
         if (edge >= 0) {
             ZEdge* edgePtr = Lvl_ZoneEdgePtr_l + edge;
             printf(
-                "\t\t%3d [x:%6d z:%6d dx:%6d dz:%6d joins:%3d %6d %6d %6d ]\n",
+                "\t\t%3d [x:%6d z:%6d dx:%6d dz:%6d joins:%3d %6d %3d %3d %04X ]\n",
                 edge,
                 (int)edgePtr->e_XPos,     (int)edgePtr->e_ZPos,
                 (int)edgePtr->e_XLen,     (int)edgePtr->e_ZLen,
                 (int)edgePtr->e_JoinZone, (int)edgePtr->e_Word_5,
-                (int)edgePtr->e_Word_6,   (int)edgePtr->e_Word_7
+                (int)edgePtr->e_Byte_12,  (int)edgePtr->e_Byte_13,
+                (unsigned)edgePtr->e_Flags
             );
         } else {
             printf("\t\t%3d\n", edge);
