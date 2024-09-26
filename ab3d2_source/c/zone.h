@@ -45,8 +45,9 @@ typedef struct {
     WORD e_ZLen;       // Length in Z direction
     WORD e_JoinZone;   // Zone the edge joins to, or -1 for a solid wall
     WORD e_Word_5;     // TODO
-    WORD e_Word_6;     // TODO
-    WORD e_Word_7;     // TODO
+    BYTE e_Byte_12;
+    BYTE e_Byte_13;
+    WORD e_Flags;      // TODO
 } __attribute__((packed)) __attribute__ ((aligned (2))) ZEdge;
 
 extern Zone** Lvl_ZonePtrsPtr_l;

@@ -1426,7 +1426,7 @@ draw_CalcBrightRings:
 
 				asl.w	#4,d0
 				lea		(a1,d0.w),a3
-				move.w	8(a3),d0
+				move.w	EdgeT_JoinZone_w(a3),d0
 				blt.s	.solid_wall				; a wall not an exit.
 
 				movem.l	a1/a4/a5,-(a7)
@@ -1436,8 +1436,8 @@ draw_CalcBrightRings:
 				bra		.do_all_walls
 
 .solid_wall:
-				move.w	4(a3),d1
-				move.w	6(a3),d2
+				move.w	EdgeT_XLen_w(a3),d1
+				move.w	EdgeT_ZLen_w(a3),d2
 				move.w	oldx,newx
 				move.w	oldz,newz
 				sub.w	d2,newx
