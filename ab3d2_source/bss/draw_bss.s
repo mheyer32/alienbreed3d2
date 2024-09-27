@@ -77,6 +77,7 @@ draw_PolyTopTab_vw:				ds.w	SCREEN_WIDTH*8
 draw_PartBuffer_vw: 			ds.w	4*32
 draw_PartBufferEnd:
 
+_Draw_CurrentZone_w::
 Draw_CurrentZone_w:				ds.w	1 ; public
 draw_SortIt_w:					ds.w	1
 draw_ObjectBright_w:			ds.w	1

@@ -323,130 +323,161 @@ noload:
 ;* Poke all clip offsets into
 ;* correct bit of level data.
 ;****************************
+
+				; this is the loaded location of twolev.graph.bin
 				move.l	Lvl_GraphicsPtr_l,a0
-				move.l	12(a0),a1
-				add.l	a0,a1
-				move.l	a1,Lvl_ZoneGraphAddsPtr_l
-				move.l	(a0),a1
+
+				; Add the offsets to the base address to calculate pointers for
+				; various important level data.
+				move.l	TLGT_DoorDataOffset_l(a0),a1
 				add.l	a0,a1
 				move.l	a1,Lvl_DoorDataPtr_l
-				move.l	4(a0),a1
+
+				move.l	TLGT_LiftDataOffset_l(a0),a1
 				add.l	a0,a1
 				move.l	a1,Lvl_LiftDataPtr_l
-				move.l	8(a0),a1
+
+				move.l	TLGT_SwitchDataOffset_l(a0),a1
 				add.l	a0,a1
 				move.l	a1,Lvl_SwitchDataPtr_l
-				adda.w	#16,a0
-				move.l	a0,Lvl_ZoneAddsPtr_l
 
-				; Level data begins with messages
+				move.l	TLGT_ZoneGraphAddsOffset_l(a0),a1
+				add.l	a0,a1
+				move.l	a1,Lvl_ZoneGraphAddsPtr_l
+
+				adda.w	#TLGT_ZoneAddsOffset_l,a0
+				move.l	a0,Lvl_ZonePtrsPtr_l
+
+				; This is the loaded location of twolev.bin
 				move.l	Lvl_DataPtr_l,a4
+
+				; The first 1600 bytes are the fixed length message strings
 				lea		LVLT_MESSAGE_LENGTH*LVLT_MESSAGE_COUNT(a4),a1
 
-				; Followed by LvlT structure (pointed to by a1)
-
-				lea		LvlT_ControlPointCoords_vw(a1),a2
+				lea		TLBT_SizeOf_l(a1),a2
 				move.l	a2,Lvl_ControlPointCoordsPtr_l
-				move.w	LvlT_NumControlPoints_w(a1),Lvl_NumControlPoints_w
-				move.w	LvlT_NumPoints_w(a1),Lvl_NumPoints_w
+				move.w	TLBT_NumControlPoints_w(a1),Lvl_NumControlPoints_w
+				move.w	TLBT_NumPoints_w(a1),Lvl_NumPoints_w
 
-				move.l	LvlT_OffsetToPoints_l(a1),a2
+				move.l	TLBT_PointsOffset_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_PointsPtr_l
 
-				move.w	LvlT_NumPoints_w(a1),d0
+				move.w	TLBT_NumPoints_w(a1),d0
 				lea		4(a2,d0.w*4),a2
 				move.l	a2,PointBrightsPtr_l
-				move.w	LvlT_NumZones_w(a1),d0
+
+				move.w	TLBT_NumZones_w(a1),d0
 				addq	#1,d0
 				muls	#80,d0 ; todo - is 80 a fixed length points per zone (e.g. 10x 32-bit x/y pairs) value?
 				add.l	d0,a2
 				move.l	a2,Lvl_ZoneBorderPointsPtr_l
 
-				move.l	LvlT_OffsetToFloorLines_l(a1),a2
+				move.l	TLBT_FloorLineOffset_l(a1),a2
 				add.l	a4,a2
-				move.l	a2,Lvl_FloorLinesPtr_l
-				move.w	-2(a2),Lvl_ExitZoneID_w
+				move.l	a2,Lvl_ZoneEdgePtr_l
 
-				move.l	LvlT_OffsetToObjects_l(a1),a2
+				move.w	-2(a2),Lvl_ExitZoneID_w
+				move.l	TLBT_ObjectDataOffset_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_ObjectDataPtr_l
 
-*****************************************
-* Just for charles
+;*****************************************
+;* Just for charles
 
 ; move.w #$6060,6(a2)
 ; move.l #$d0000,8(a2)
 ; sub.w #40,4(a2)
 ; move.w #45*256+45,14(a2)
-****************************************
+;****************************************
 
 				; Temporary object buffers used for player and alien projectile entities.
 				; todo - why are these embedded in the data file and not just a dynamically added space?
-				move.l	LvlT_OffsetToPlayerShot_l(a1),a2
+				move.l	TLBT_ShotDataOffset_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Plr_ShotDataPtr_l
 
-				move.l	LvlT_OffsetToAlienShot_l(a1),a2
+				move.l	TLBT_AlienShotDataOffset_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,AI_AlienShotDataPtr_l
 
 				add.l	#ShotT_SizeOf_l*NUM_ALIEN_SHOT_DATA,a2
 				move.l	a2,AI_OtherAlienDataPtrs_vl
 
-				move.l	LvlT_OffsetToObjectPoints_l(a1),a2
+				move.l	TLBT_ObjectPointsOffset_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Lvl_ObjectPointsPtr_l
 
-				move.l	LvlT_OffsetToPlr1Obj_l(a1),a2
+				move.l	TLBT_Plr1ObjectOffset_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Plr1_ObjectPtr_l
 
-				move.l	LvlT_OffsetToPlr2Obj_l(a1),a2
+				move.l	TLBT_Plr2ObjectOffset_l(a1),a2
 				add.l	a4,a2
 				move.l	a2,Plr2_ObjectPtr_l
 
-				move.w	LvlT_NumObjectPoints_w(a1),Lvl_NumObjectPoints_w
+				move.w	TLBT_NumObjects_w(a1),Lvl_NumObjectPoints_w
 
+; bra .noclips
+
+				; TODO - What are we doing here, exactly?
+				; a4 => Lvl_DataPtr_l (twolev.bin)
+				; a2 => Lvl_ClipsPtr_l (twolev.clips)
+				; a1 => Lvl_DataPtr_l + 1600 (twolev.bin, after message strings)
+				; a0 => Lvl_ZonePtrsPtr_l (from twolev.graph.bin)
 				move.l	Lvl_ClipsPtr_l,a2
 				moveq	#0,d0
-				move.w	LvlT_NumZones_w(a1),d7
+				move.w	TLBT_NumZones_w(a1),d7
 				move.w	d7,Zone_Count_w
 
-assignclips:
-				move.l	(a0)+,a3
-				add.l	a4,a3					; pointer to a zone
-				adda.w	#ZoneT_ListOfGraph_w,a3		; pointer to zonelist
+.assign_clips:
+				move.l	(a0),a3		; Lvl_ZonePtrsPtr_l are 32-bit offsets from Lvl_DataPtr_l
+				add.l	a4,a3		; Add the base address to get the pointer to the zone
 
-dowholezone:
-				tst.w	(a3)
-				blt.s	nomorethiszone
+				; 0xABADCAFE - pointer chase reduction: Preconvert to an array of pointers
+				move.l	a3,(a0)+	; Replace Lvl_ZonePtrsPtr_l offset with the actual address
 
-				tst.w	2(a3)
-				blt.s	thisonenull
+				adda.w	#ZoneT_PotVisibleZoneList_vw,a3	; pointer to zonelist
+
+				; a3 = (UWORD*)(((UBYTE*)Lvl_ZonePtrsPtr_l++] + ZoneT_PotVisibleZoneList_vw)
+
+.do_whole_zone:
+				; a3 is pointing to sets of 4 word tuples (or 2,2,4, total size still 8)
+				; When tuple[0] < 0, whole list is done
+				; When tuple[1] < 0, clip search for the current tuple is done (TBC)
+				; tuple[1] contains the runtime ordered distance during the PVS run
+				; Unsure what the interpretation of tuple[1] - tuple[3] is
+				tst.w	(a3) ; PVST_Zone_w
+				blt.s	.no_more_this_zone
+
+				tst.w	PVST_Dist_w(a3)
+				blt.s	.this_one_null
 
 				move.l	d0,d1
 				asr.l	#1,d1
-				move.w	d1,2(a3)
+				move.w	d1,PVST_Dist_w(a3) ; value poked back in
 
-findnextclip:
+.find_next_clip:
 				cmp.w	#-2,(a2,d0.l)
-				beq.s	foundnextclip
+				beq.s	.found_next_clip
+
 				addq.l	#2,d0
-				bra.s	findnextclip
-foundnextclip:
+				bra.s	.find_next_clip
+
+.found_next_clip:
 				addq.l	#2,d0
 
-thisonenull:
-				addq	#8,a3
-				bra.s	dowholezone
-nomorethiszone:
-				dbra	d7,assignclips
+.this_one_null:
+				addq	#PVST_SizeOf_l,a3 				; Tuple size
+				bra.s	.do_whole_zone
+
+.no_more_this_zone:
+				dbra	d7,.assign_clips
 
 				lea		(a2,d0.l),a2
 				move.l	a2,Lvl_ConnectTablePtr_l
 
-noclips:
+.noclips:
 				clr.b	Plr1_StoodInTop_b
 				move.l	#PLR_STAND_HEIGHT,Plr1_SnapHeight_l
 
@@ -621,17 +652,16 @@ NOCLTXT:
 
 				move.l	#Lvl_CompactMap_vl,a0
 				move.l	a0,LastZonePtr_l
-				move.w	#255,d0
-
-.clear_map_loop:
-				move.l	#0,(a0)+
-				dbra	d0,.clear_map_loop
+				clr.l   d0
+				move.w  #256,d1
+				bsr		Sys_MemFillLong
 
 				move.l	#Lvl_CompactMap_vl,a0
 				move.l	#Lvl_BigMap_vl,a1
 
 				bra		NOALLWALLS
 
+				; unreachable?
 				move.l	Lvl_ZoneGraphAddsPtr_l,a2
 DOALLWALLS:
 				move.l	(a2),d0
@@ -1371,7 +1401,7 @@ ASlaveShouldWaitOnHisMaster:
 
 donetalking:
 				move.l	#Zone_BrightTable_vl,a1
-				move.l	Lvl_ZoneAddsPtr_l,a2
+				move.l	Lvl_ZonePtrsPtr_l,a2
 				move.l	plr2_ListOfGraphRoomsPtr_l,a0
 ; move.l plr2_PointsToRotatePtr_l,a5
 				move.l	a0,a5
@@ -1380,16 +1410,15 @@ donetalking:
 				move.l	plr1_ListOfGraphRoomsPtr_l,a0
 ; move.l plr1_PointsToRotatePtr_l,a5
 				move.l	a0,a5
+
 doallz:
 				move.w	(a0),d0
 				blt.s	doneallz
 				add.w	#8,a0
-
 				move.l	(a2,d0.w*4),a3
-				add.l	Lvl_DataPtr_l,a3
 				move.w	ZoneT_Brightness_w(a3),d2
-
 				blt.s	justbright
+
 				move.w	d2,d3
 				lsr.w	#8,d3
 				tst.b	d3
@@ -1523,8 +1552,8 @@ findaverage:
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq		nosee
 
-				move.l	Plr1_ZonePtr_l,FromRoom
-				move.l	Plr2_ZonePtr_l,ToRoom
+				move.l	Plr1_ZonePtr_l,Obj_FromZonePtr_l
+				move.l	Plr2_ZonePtr_l,Obj_ToZonePtr_l
 				move.w	Plr1_TmpXOff_l,Viewerx
 				move.w	Plr1_TmpZOff_l,Viewerz
 				move.l	Plr1_TmpYOff_l,d0
@@ -1622,9 +1651,9 @@ IWasPlayer1:
 
 				move.w	#0,scaleval
 
-				move.l	Plr1_XOff_l,xoff
-				move.l	Plr1_YOff_l,yoff
-				move.l	Plr1_ZOff_l,zoff
+				move.l	Plr1_XOff_l,Plr_XOff_l
+				move.l	Plr1_YOff_l,Plr_YOff_l
+				move.l	Plr1_ZOff_l,Plr_ZOff_l
 				move.w	Plr1_AngPos_w,angpos
 				move.w	Plr1_CosVal_w,Temp_CosVal_w
 				move.w	Plr1_SinVal_w,Temp_SinVal_w
@@ -1661,7 +1690,7 @@ IWasPlayer1:
 ;************* Do reflection ****************
 ;
 ; move.l Lvl_ListOfGraphRoomsPtr_l,a0
-; move.l Lvl_ZoneAddsPtr_l,a1
+; move.l Lvl_ZonePtrsPtr_l,a1
 ;checkwaterheights
 ; move.w (a0),d0
 ; blt allzonesdone
@@ -1678,11 +1707,11 @@ IWasPlayer1:
 ;
 ;WEHAVEAHEIGHT:
 ;
-; sub.l yoff,d0
+; sub.l Plr_YOff_l,d0
 ; blt.s underwater
 ;
 ; add.l d0,d0
-; add.l d0,yoff
+; add.l d0,Plr_YOff_l
 ;
 ; move.l FASTBUFFER2,Vid_FastBufferPtr_l
 ; move.w #0,Draw_LeftClip_w
@@ -1703,7 +1732,7 @@ IWasPlayer1:
 
 				st		DOANYWATER
 
-				move.l	Plr1_YOff_l,yoff
+				move.l	Plr1_YOff_l,Plr_YOff_l
 
 				move.w	#0,Draw_LeftClip_w
 				move.w	Vid_RightX_w,Draw_RightClip_w
@@ -1729,9 +1758,9 @@ IWasPlayer1:
 
 drawplayer2:
 				move.w	#0,scaleval
-				move.l	Plr2_XOff_l,xoff
-				move.l	Plr2_YOff_l,yoff
-				move.l	Plr2_ZOff_l,zoff
+				move.l	Plr2_XOff_l,Plr_XOff_l
+				move.l	Plr2_YOff_l,Plr_YOff_l
+				move.l	Plr2_ZOff_l,Plr_ZOff_l
 				move.w	Plr2_AngPos_w,angpos
 				move.w	Plr2_CosVal_w,Temp_CosVal_w
 				move.w	Plr2_SinVal_w,Temp_SinVal_w
@@ -1936,25 +1965,27 @@ nodrawp2:
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq.s	plr1only
 
-				lea		ZoneT_ListOfGraph_w(a0),a0
+				lea		ZoneT_PotVisibleZoneList_vw(a0),a0
 .doallrooms:
-				move.w	(a0),d0
+				move.w	(a0),d0 ; PVST_Zone_w
 				blt.s	.allroomsdone
-				addq	#8,a0
+
+				addq	#PVST_SizeOf_l,a0
 				move.w	d0,d1
 				asr.w	#3,d0
 				bset	d1,(a1,d0.w)
 				bra		.doallrooms
+
 .allroomsdone:
 
 plr1only:
 
 				move.l	Plr1_ZonePtr_l,a0
-				lea		ZoneT_ListOfGraph_w(a0),a0
+				lea		ZoneT_PotVisibleZoneList_vw(a0),a0
 .doallrooms2:
 				move.w	(a0),d0
 				blt.s	.allroomsdone2
-				addq	#8,a0
+				addq	#PVST_SizeOf_l,a0
 				move.w	d0,d1
 				asr.w	#3,d0
 				bset	d1,(a1,d0.w)
@@ -2851,9 +2882,8 @@ Plr1_Control:
 				move.w	ZoneT_TelZ_w(a0),Plr1_ZOff_l
 				move.l	Plr1_YOff_l,d1
 				sub.l	ZoneT_Floor_l(a0),d1
-				move.l	Lvl_ZoneAddsPtr_l,a0
+				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d0.w*4),a0
-				add.l	Lvl_DataPtr_l,a0
 				move.l	a0,Plr1_ZonePtr_l
 				add.l	ZoneT_Floor_l(a0),d1
 				move.l	d1,Plr1_SnapYOff_l
@@ -2875,7 +2905,7 @@ Plr1_Control:
 
 .noteleport:
 
-				move.l	Plr1_ZonePtr_l,objroom
+				move.l	Plr1_ZonePtr_l,Obj_ZonePtr_l
 				move.w	#%100000000,wallflags
 				move.b	Plr1_StoodInTop_b,StoodInTop
 
@@ -2900,7 +2930,7 @@ Plr1_Control:
 				clr.b	Obj_WallBounce_b
 				bsr		MoveObject
 				move.b	StoodInTop,Plr1_StoodInTop_b
-				move.l	objroom,Plr1_ZonePtr_l
+				move.l	Obj_ZonePtr_l,Plr1_ZonePtr_l
 				move.w	newx,Plr1_XOff_l
 				move.w	newz,Plr1_ZOff_l
 				move.l	Plr1_XOff_l,Plr1_SnapXOff_l
@@ -3062,9 +3092,8 @@ Plr2_Control:
 				move.w	ZoneT_TelZ_w(a0),Plr2_ZOff_l
 				move.l	Plr2_YOff_l,d1
 				sub.l	ZoneT_Floor_l(a0),d1
-				move.l	Lvl_ZoneAddsPtr_l,a0
+				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d0.w*4),a0
-				add.l	Lvl_DataPtr_l,a0
 				move.l	a0,Plr2_ZonePtr_l
 				add.l	ZoneT_Floor_l(a0),d1
 				move.l	d1,Plr2_SnapYOff_l
@@ -3086,7 +3115,7 @@ Plr2_Control:
 
 .noteleport:
 
-				move.l	Plr2_ZonePtr_l,objroom
+				move.l	Plr2_ZonePtr_l,Obj_ZonePtr_l
 				move.w	#%100000000000,wallflags
 				move.b	Plr2_StoodInTop_b,StoodInTop
 
@@ -3111,7 +3140,7 @@ Plr2_Control:
 				clr.b	Obj_WallBounce_b
 				bsr		MoveObject
 				move.b	StoodInTop,Plr2_StoodInTop_b
-				move.l	objroom,Plr2_ZonePtr_l
+				move.l	Obj_ZonePtr_l,Plr2_ZonePtr_l
 				move.w	newx,Plr2_XOff_l
 				move.w	newz,Plr2_ZOff_l
 				move.l	Plr2_XOff_l,Plr2_SnapXOff_l
@@ -3178,30 +3207,30 @@ DrawDisplay:
 				move.w	d6,Temp_SinVal_w
 				move.w	d7,Temp_CosVal_w
 
-				move.l	yoff,d0
-				asr.l	#8,d0					; yoff >> 8
+				move.l	Plr_YOff_l,d0
+				asr.l	#8,d0					; Plr_YOff_l >> 8
 				move.w	d0,d1
 				add.w	#256-32,d1				; 224
 				and.w	#255,d1
 				move.w	d1,draw_WallYOffset_w
 
-				move.l	yoff,d0					; is yoff the viewer's y position << 16?
-				asr.l	#6,d0					; yoff << 10
-				move.w	d0,flooryoff			; yoff << 10
+				move.l	Plr_YOff_l,d0					; is Plr_YOff_l the viewer's y position << 16?
+				asr.l	#6,d0					; Plr_YOff_l << 10
+				move.w	d0,flooryoff			; Plr_YOff_l << 10
 
-				move.w	xoff,d6
+				move.w	Plr_XOff_l,d6
 				move.w	d6,d3
-				asr.w	#1,d3					; xoff * 0.5
-				add.w	d3,d6					; xoff * 1.5
-				asr.w	#1,d6					; xoff * 0.75
-				move.w	d6,xoff34				; xoff * 3/4
+				asr.w	#1,d3					; Plr_XOff_l * 0.5
+				add.w	d3,d6					; Plr_XOff_l * 1.5
+				asr.w	#1,d6					; Plr_XOff_l * 0.75
+				move.w	d6,xoff34				; Plr_XOff_l * 3/4
 
-				move.w	zoff,d6
+				move.w	Plr_ZOff_l,d6
 				move.w	d6,d3
 				asr.w	#1,d3
 				add.w	d3,d6
 				asr.w	#1,d6
-				move.w	d6,zoff34				; zoff * 3/4
+				move.w	d6,zoff34				; Plr_ZOff_l * 3/4
 
 				bsr		RotateLevelPts
 				bsr		RotateObjectPts
@@ -3366,9 +3395,9 @@ RotateLevelPts:	;		Does					this rotate ALL points in the level EVERY frame?
 				move.l	Lvl_PointsPtr_l,a3
 				move.l	#Rotated_vl,a1				; stores only 2x800 points
 				move.l	#OnScreen_vl,a2
-				move.w	xoff,d4
+				move.w	Plr_XOff_l,d4
 				;asr.w	#1,d4
-				move.w	zoff,d5
+				move.w	Plr_ZOff_l,d5
 				;asr.w	#1,d5
 
 ; move.w #$c40,$dff106
@@ -3445,11 +3474,11 @@ BIGALL:
 
 pointrotlop2B:
 				move.w	(a3)+,d0				; x
-				sub.w	d4,d0					; x/2 - xoff
-				move.w	d0,d2					; x = x/2 -xoff
+				sub.w	d4,d0					; x/2 - Plr_XOff_l
+				move.w	d0,d2					; x = x/2 -Plr_XOff_l
 
 				move.w	(a3)+,d1				; z
-				sub.w	d5,d1					; z = z/2 - zoff
+				sub.w	d5,d1					; z = z/2 - Plr_ZOff_l
 
 				muls.w	d6,d2					; x*cos<<16
 				swap	d6
@@ -3515,8 +3544,8 @@ ONLYTHELONELY:
 				move.l	Lvl_PointsPtr_l,a3
 				move.l	#Rotated_vl,a1
 				move.l	#OnScreen_vl,a2
-				move.w	xoff,d4
-				move.w	zoff,d5
+				move.w	Plr_XOff_l,d4
+				move.w	Plr_ZOff_l,d5
 
 ; move.w #$c40,$dff106
 ; move.w #$f00,$dff180
@@ -3826,14 +3855,14 @@ RotateObjectPts:
 				beq.s	.itaux
 
 				move.w	(a0),d0					; x of object point
-				sub.w	xoff,d0					; viewX = X - cam X
+				sub.w	Plr_XOff_l,d0					; viewX = X - cam X
 				move.w	4(a0),d1				; z of object point
 				addq	#8,a0					; next point? or next object?
 
 				tst.w	ObjT_ZoneID_w(a4)		; Lvl_ObjectDataPtr_l
 				blt		.noworkout
 
-				sub.w	zoff,d1					; viewZ = Z - cam Z
+				sub.w	Plr_ZOff_l,d1					; viewZ = Z - cam Z
 
 				move.w	d0,d2
 				muls	d6,d2					; cosx = viewX * (cos << 16)
@@ -3883,14 +3912,14 @@ RotateObjectPtsFullScreen:
 				beq.s	.itaux
 
 				move.w	(a0),d0
-				sub.w	xoff,d0
+				sub.w	Plr_XOff_l,d0
 				move.w	4(a0),d1
 				addq	#8,a0
 
 				tst.w	ObjT_ZoneID_w(a4)
 				blt		.noworkout
 
-				sub.w	zoff,d1
+				sub.w	Plr_ZOff_l,d1
 				move.w	d0,d2
 				muls	d6,d2      ; pOEP
 				move.w	d1,d3
@@ -4316,7 +4345,7 @@ cornerprocessloop: ;	figure					out if any left/right clipping is necessary
 				bne		dontdrawreturn
 
 somefloortodraw:
-				DEV_CHECK	FLATS,dontdrawreturn
+				DEV_CHECK_SET	SKIP_FLATS,dontdrawreturn
 				DEV_INC.w	VisibleFlats
 				tst.b	draw_UseGouraudFlats_b
 				bne		goursides
@@ -4990,8 +5019,8 @@ pastsides:
 				suba.w	#SCREEN_WIDTH,a6
 
 groundfloor:
-				move.w	xoff,d6
-				move.w	zoff,d7
+				move.w	Plr_XOff_l,d6
+				move.w	Plr_ZOff_l,d7
 				; add.w	xwobxoff,d6				; this was adding xwobxoff to d7, was this a bug?
 				add.w	xwobxoff,d7
 				add.w	xwobzoff,d6
@@ -8643,53 +8672,16 @@ test:			dc.l	0
 				ds.l	30
 
 
-; FIXME: since these are all empty symbols
-; it stands to reason that they're all unusable,
-; and any code referencing them.
-				even
-ConstCols:
-; incbin "constcols"
-				even
-Smoothscalecols:
-; incbin "smoothbumppalscaled"
-				even
-SmoothTile:
-; incbin "smoothbumptile"
-				even
-Bumpscalecols:
-; incbin "bumppalscaled"
-				even
-Bumptile:
-; incbin "bumptile"
-				even
-scalecols:		;incbin	"bytepixpalscaled"
-				even
-;floorscalecols:
-; incbin "floor256pal"
-; ds.w 256*4
-
-
-
-;angspd:			dc.w	0
+				align 4
+Plr_XOff_l:		dc.l	0
+Plr_ZOff_l:		dc.l	0
+Plr_YOff_l:		dc.l	0
 flooryoff:		dc.w	0						; viewer y pos << 6
-xoff:			dc.l	0
-zoff:			dc.l	0
-yoff:			dc.l	0
-
-
-; // READY PLAYER ONE /////////////////////////////////////////////////////////////////////
-
-; Player data definiton - TODO remove unused, tighten definitions, fix alignments
-
-
-				even
 XDiff_w:		dc.w	0
 ZDiff_w:		dc.w	0
 PlayEcho:		dc.w	0 ; accessed as byte
-PLR1:			dc.b	$ff
-PLR2:			dc.b	$ff
 
-ZonePtr_l:		dc.l	0
+; // READY PLAYER ONE /////////////////////////////////////////////////////////////////////
 
 *****************************************************************
 *
@@ -8698,29 +8690,22 @@ ZonePtr_l:		dc.l	0
 *****************************************************************
 
 
-wallpt:			dc.l	0
-floorpt:		dc.l	0
-startwait:		dc.w	0
-endwait:		dc.w	0
-
-Lvl_WalkLinksPtr_l:		dc.l	0
-Lvl_FlyLinksPtr_l:		dc.l	0
-
-				dc.l	0
+				align 4
+ZonePtr_l:			dc.l	0
+Lvl_WalkLinksPtr_l:	dc.l	0
+Lvl_FlyLinksPtr_l:	dc.l	0
+					dc.l	0
 Vid_CentreX_w:		dc.w	SMALL_WIDTH/2
 Vid_RightX_w:		dc.w	SMALL_WIDTH
 
 
-;SHADINGTABLE: incbin "shadefile"
-
 ******************************************
 * Link file !*****************************
 ******************************************
-
-GLF_DatabaseName_vb:		dc.b	"ab3:includes/test.lnk",0
+GLF_DatabasePtr_l:		dc.l	0
+GLF_DatabaseName_vb:	dc.b	"ab3:includes/test.lnk",0
 
 				align 4
-GLF_DatabasePtr_l:		dc.l	0
 
 ******************************************
 

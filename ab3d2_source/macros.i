@@ -269,7 +269,6 @@ GETREGS			MACRO
 				movem.l	(a7)+,d0-d7/a0-a6
 				ENDM
 
-
 WB				MACRO
 \@bf:
 				btst	#6,dmaconr(a6)

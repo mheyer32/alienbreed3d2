@@ -19,15 +19,13 @@ Sys_MemFillLong:
 			lsr.w	#2,d1	; 4 longs per loop
 			subq.w	#1,d1
 
-.clear_loop:
+.fill_loop:
 			move.l	d0,(a0)+
 			move.l	d0,(a0)+
 			move.l	d0,(a0)+
 			move.l	d0,(a0)+
-			dbra	d1,.clear_loop
+			dbra	d1,.fill_loop
 			rts
-
-
 
 ;******************************************************************************
 ;*

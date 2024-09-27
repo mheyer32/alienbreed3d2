@@ -199,14 +199,14 @@ draw_Object:
 				cmp.b	#$ff,6(a0)
 				bne		draw_Bitmap
 
-				DEV_CHECK	POLYGON_MODELS,.done
+				DEV_CHECK_SET	SKIP_POLYGON_MODELS,.done
 				bsr		draw_PolygonModel
 .done:
 				movem.l	(a7)+,d0-d7/a0-a6
 				rts
 
 draw_bitmap_glare:
-				DEV_CHECK	GLARE_BITMAPS,object_behind
+				DEV_CHECK_SET	SKIP_GLARE_BITMAPS,object_behind
 				move.w	(a0)+,d0				; Point number
 				move.w	2(a1,d0.w*8),d1			; depth
 				cmp.w	#DRAW_BITMAP_NEAR_PLANE,d1
@@ -226,7 +226,7 @@ draw_bitmap_glare:
 				move.w	draw_TopClip_w,d2
 				move.w	draw_BottomClip_w,d3
 				move.l	draw_TopY_3D_l,d6
-				sub.l	yoff,d6
+				sub.l	Plr_YOff_l,d6
 
 				; DEV_CHECK_DIVISOR d1
 				; 0xABADCAFE - Divisor is often bigger than our table
@@ -246,7 +246,7 @@ draw_bitmap_glare:
 .okobtc:
 				move.w	d6,draw_ObjClipT_w
 				move.l	draw_BottomY_3D_l,d6
-				sub.l	yoff,d6
+				sub.l	Plr_YOff_l,d6
 
 				; DEV_CHECK_DIVISOR d1
 				; 0xABADCAFE - Checked: Couldn't trigger
@@ -276,7 +276,7 @@ draw_bitmap_glare:
 				add.w	draw_AuxY_w,d2
 				ext.l	d2
 				asl.l	#7,d2
-				sub.l	yoff,d2
+				sub.l	Plr_YOff_l,d2
 
 				divs	d1,d2
 				;DEV_INC.w Reserved1 ; counts how many divisions
@@ -591,7 +591,7 @@ draw_Bitmap:
 				move.w	draw_TopClip_w,d2
 				move.w	draw_BottomClip_w,d3
 				move.l	draw_TopY_3D_l,d6
-				sub.l	yoff,d6
+				sub.l	Plr_YOff_l,d6
 
 				divs	d1,d6
 				;DEV_INC.w Reserved1 ; counts how many divisions
@@ -607,7 +607,7 @@ draw_Bitmap:
 .okobtc:
 				move.w	d6,draw_ObjClipT_w				; top object clip
 				move.l	draw_BottomY_3D_l,d6
-				sub.l	yoff,d6
+				sub.l	Plr_YOff_l,d6
 
 				divs	d1,d6
 				;DEV_INC.w Reserved1 ; counts how many divisions
@@ -686,7 +686,7 @@ pastobjscale:
 				add.w	draw_AuxY_w,d2
 				ext.l	d2
 				asl.l	#7,d2
-				sub.l	yoff,d2
+				sub.l	Plr_YOff_l,d2
 
 				divs	d1,d2
 				;DEV_INC.w Reserved1 ; counts how many divisions
@@ -915,7 +915,7 @@ pastobjscale:
 				tst.b	draw_Additive_b
 				bne		draw_bitmap_additive
 
-				DEV_CHECK	BITMAPS,object_behind
+				DEV_CHECK_SET	SKIP_BITMAPS,object_behind
 				DEV_INC.w	VisibleBitmapCount
 
 draw_right_side:
@@ -1009,7 +1009,7 @@ object_behind:
 				rts
 
 draw_bitmap_additive:
-				DEV_CHECK	ADDITIVE_BITMAPS,object_behind
+				DEV_CHECK_SET	SKIP_ADDITIVE_BITMAPS,object_behind
 				DEV_INC.w	VisibleAdditiveCount
 
 				 ; draw_BasePalPtr_l contains 32 sets of 256 blend values for this bitmap,
@@ -1101,7 +1101,7 @@ draw_right_side_additive:
 				bra		object_behind
 
 draw_bitmap_lighted:
-				DEV_CHECK	LIGHTSOURCED_BITMAPS,object_behind
+				DEV_CHECK_SET	SKIP_LIGHTSOURCED_BITMAPS,object_behind
 				DEV_INC.w	VisibleLightMapCount
 
 ; Make up lighting values
@@ -1413,13 +1413,12 @@ draw_CalcBrightRings:
 ; Now do the brightnesses of surrounding
 ; zones:
 
-				move.l	Lvl_FloorLinesPtr_l,a1
+				move.l	Lvl_ZoneEdgePtr_l,a1
 				move.w	Draw_CurrentZone_w,d0
-				move.l	Lvl_ZoneAddsPtr_l,a4
+				move.l	Lvl_ZonePtrsPtr_l,a4
 				move.l	(a4,d0.w*4),a4
-				add.l	Lvl_DataPtr_l,a4
 				move.l	a4,a5
-				adda.w	ZoneT_ExitList_w(a4),a5
+				adda.w	ZoneT_EdgeListOffset_w(a4),a5
 
 .do_all_walls:
 				move.w	(a5)+,d0
@@ -1427,7 +1426,7 @@ draw_CalcBrightRings:
 
 				asl.w	#4,d0
 				lea		(a1,d0.w),a3
-				move.w	8(a3),d0
+				move.w	EdgeT_JoinZone_w(a3),d0
 				blt.s	.solid_wall				; a wall not an exit.
 
 				movem.l	a1/a4/a5,-(a7)
@@ -1437,8 +1436,8 @@ draw_CalcBrightRings:
 				bra		.do_all_walls
 
 .solid_wall:
-				move.w	4(a3),d1
-				move.w	6(a3),d2
+				move.w	EdgeT_XLen_w(a3),d1
+				move.w	EdgeT_ZLen_w(a3),d2
 				move.w	oldx,newx
 				move.w	oldz,newz
 				sub.w	d2,newx
@@ -1928,8 +1927,8 @@ fullscreen_conv:
 				add.w	d3,d1					; d1 * 3  because 288 is ~1.5times larger than 196?
 												; if I change this, 3d objects start "swimming" with regard to the world
 				ext.l	d2
-				asl.l	#7,d2					; (view_ypos * 128 - yoff) * 2
-				sub.l	yoff,d2
+				asl.l	#7,d2					; (view_ypos * 128 - Plr_YOff_l) * 2
+				sub.l	Plr_YOff_l,d2
 				add.l	d2,d2
 
 .convert_to_screen:
@@ -2010,8 +2009,8 @@ smallscreen_conv:
 				add.w	d1,d1					; d1 * 2
 				ext.l	d2
 				asl.l	#7,d2
-				sub.l	yoff,d2
-				add.l	d2,d2					; (d2*128 - yoff) *2
+				sub.l	Plr_YOff_l,d2
+				add.l	d2,d2					; (d2*128 - Plr_YOff_l) *2
 
 .convert_to_screen:
 				move.l	(a2),d3
@@ -2553,6 +2552,7 @@ nodl:
 
 				rts
 
+				align 4
 ontoscr:
 val				SET		0
 				REPT	256
@@ -2709,6 +2709,7 @@ itsblack:
 
 				rts
 
+				align 4
 ontoscrGL:
 val				SET		0
 				REPT	256
@@ -2871,6 +2872,7 @@ nodlg:
 
 				rts
 
+				align 4
 ontoscrg:
 val				SET		0
 				REPT	256

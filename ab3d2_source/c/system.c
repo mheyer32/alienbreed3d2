@@ -254,11 +254,10 @@ static BOOL InstallFakeVBlankInterrupt(void)
     sys_TimerRequest.tr_node.io_Command = TR_ADDREQUEST; /* Initial iorequest to start */
     sys_TimerRequest.tr_time.tv_micro = 20000;           /* 50Hz software interrupt.        */
     BeginIO(&sys_TimerRequest.tr_node);
-
     return TRUE;
+
 fail:
     RemoveFakeVBlankInterrupt();
-
     return FALSE;
 }
 
@@ -433,8 +432,5 @@ void Sys_ReadMouse()
 
 void Sys_ClearKeyboard()
 {
-    for(int c = 0; c < 256; ++c)
-    {
-        KeyMap_vb[c] = 0;
-    }
+    Sys_MemFillLong(KeyMap_vb, 0, 256/sizeof(ULONG));
 }
