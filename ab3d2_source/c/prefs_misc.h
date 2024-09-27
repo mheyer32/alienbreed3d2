@@ -33,6 +33,13 @@
     },
 
     {
+        "misc.oz_sensitivity",
+        &Prefs_OrderZoneSensitivity,
+        CFG_PARAM_TYPE_INT,
+        CFG_VAR_TYPE_UBYTE
+    },
+
+    {
         "map.transparent",
         &Draw_MapTransparent_b,
         CFG_PARAM_TYPE_BOOL,

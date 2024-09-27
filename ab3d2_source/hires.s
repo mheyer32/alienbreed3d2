@@ -445,16 +445,17 @@ noload:
 				; a3 is pointing to sets of 4 word tuples (or 2,2,4, total size still 8)
 				; When tuple[0] < 0, whole list is done
 				; When tuple[1] < 0, clip search for the current tuple is done (TBC)
+				; tuple[1] contains the runtime ordered distance during the PVS run
 				; Unsure what the interpretation of tuple[1] - tuple[3] is
-				tst.w	(a3)
+				tst.w	(a3) ; PVST_Zone_w
 				blt.s	.no_more_this_zone
 
-				tst.w	2(a3)
+				tst.w	PVST_Dist_w(a3)
 				blt.s	.this_one_null
 
 				move.l	d0,d1
 				asr.l	#1,d1
-				move.w	d1,2(a3) ; value poked back in
+				move.w	d1,PVST_Dist_w(a3) ; value poked back in
 
 .find_next_clip:
 				cmp.w	#-2,(a2,d0.l)
@@ -467,7 +468,7 @@ noload:
 				addq.l	#2,d0
 
 .this_one_null:
-				addq	#8,a3 				; Tuple size
+				addq	#PVST_SizeOf_l,a3 				; Tuple size
 				bra.s	.do_whole_zone
 
 .no_more_this_zone:
@@ -651,17 +652,16 @@ NOCLTXT:
 
 				move.l	#Lvl_CompactMap_vl,a0
 				move.l	a0,LastZonePtr_l
-				move.w	#255,d0
-
-.clear_map_loop:
-				move.l	#0,(a0)+
-				dbra	d0,.clear_map_loop
+				clr.l   d0
+				move.w  #256,d1
+				bsr		Sys_MemFillLong
 
 				move.l	#Lvl_CompactMap_vl,a0
 				move.l	#Lvl_BigMap_vl,a1
 
 				bra		NOALLWALLS
 
+				; unreachable?
 				move.l	Lvl_ZoneGraphAddsPtr_l,a2
 DOALLWALLS:
 				move.l	(a2),d0
@@ -1552,8 +1552,8 @@ findaverage:
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq		nosee
 
-				move.l	Plr1_ZonePtr_l,FromRoom
-				move.l	Plr2_ZonePtr_l,ToRoom
+				move.l	Plr1_ZonePtr_l,Obj_FromZonePtr_l
+				move.l	Plr2_ZonePtr_l,Obj_ToZonePtr_l
 				move.w	Plr1_TmpXOff_l,Viewerx
 				move.w	Plr1_TmpZOff_l,Viewerz
 				move.l	Plr1_TmpYOff_l,d0
@@ -1967,10 +1967,10 @@ nodrawp2:
 
 				lea		ZoneT_PotVisibleZoneList_vw(a0),a0
 .doallrooms:
-				move.w	(a0),d0
+				move.w	(a0),d0 ; PVST_Zone_w
 				blt.s	.allroomsdone
 
-				addq	#8,a0
+				addq	#PVST_SizeOf_l,a0
 				move.w	d0,d1
 				asr.w	#3,d0
 				bset	d1,(a1,d0.w)
@@ -1985,7 +1985,7 @@ plr1only:
 .doallrooms2:
 				move.w	(a0),d0
 				blt.s	.allroomsdone2
-				addq	#8,a0
+				addq	#PVST_SizeOf_l,a0
 				move.w	d0,d1
 				asr.w	#3,d0
 				bset	d1,(a1,d0.w)
@@ -2905,7 +2905,7 @@ Plr1_Control:
 
 .noteleport:
 
-				move.l	Plr1_ZonePtr_l,objroom
+				move.l	Plr1_ZonePtr_l,Obj_ZonePtr_l
 				move.w	#%100000000,wallflags
 				move.b	Plr1_StoodInTop_b,StoodInTop
 
@@ -2930,7 +2930,7 @@ Plr1_Control:
 				clr.b	Obj_WallBounce_b
 				bsr		MoveObject
 				move.b	StoodInTop,Plr1_StoodInTop_b
-				move.l	objroom,Plr1_ZonePtr_l
+				move.l	Obj_ZonePtr_l,Plr1_ZonePtr_l
 				move.w	newx,Plr1_XOff_l
 				move.w	newz,Plr1_ZOff_l
 				move.l	Plr1_XOff_l,Plr1_SnapXOff_l
@@ -3115,7 +3115,7 @@ Plr2_Control:
 
 .noteleport:
 
-				move.l	Plr2_ZonePtr_l,objroom
+				move.l	Plr2_ZonePtr_l,Obj_ZonePtr_l
 				move.w	#%100000000000,wallflags
 				move.b	Plr2_StoodInTop_b,StoodInTop
 
@@ -3140,7 +3140,7 @@ Plr2_Control:
 				clr.b	Obj_WallBounce_b
 				bsr		MoveObject
 				move.b	StoodInTop,Plr2_StoodInTop_b
-				move.l	objroom,Plr2_ZonePtr_l
+				move.l	Obj_ZonePtr_l,Plr2_ZonePtr_l
 				move.w	newx,Plr2_XOff_l
 				move.w	newz,Plr2_ZOff_l
 				move.l	Plr2_XOff_l,Plr2_SnapXOff_l

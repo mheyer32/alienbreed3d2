@@ -9,7 +9,7 @@ Obj_AwayFromWall_b:	dc.b	0 ; accessed as byte
 Obj_WallBounce_b:	dc.b	0 ; accessed as byte
 
 MoveObject:
-				move.l	objroom,objroomback
+				move.l	Obj_ZonePtr_l,obj_ZoneBackupPtr_l
 				move.w	#50,obj_QuitLimit_w
 				move.l	#Obj_RoomPath_vw,obj_RoomPathPtr_l
 				clr.b	hitwall
@@ -28,7 +28,7 @@ MoveObject:
 
 .moving:
 				move.l	newy,wallhitheight
-				move.l	objroom,a0
+				move.l	Obj_ZonePtr_l,a0
 
 gobackanddoitallagain:
 				move.l	a0,a5
@@ -411,7 +411,7 @@ no_more_walls:
 				tst.w	zdiff
 				bne.s	notstill
 
-				move.l	objroom,a0
+				move.l	Obj_ZonePtr_l,a0
 				bra		mustbeinsameroom
 
 notstill:
@@ -789,7 +789,7 @@ checkifcrossed:
 				move.w	(a3),(a0)+
 				move.l	a0,obj_RoomPathPtr_l
 				move.l	a3,a0
-				move.l	a5,objroom
+				move.l	a5,Obj_ZonePtr_l
 				move.w	obj_QuitLimit_w,d0
 				sub.w	#1,d0
 				beq.s	ERRORINMOVEMENT
@@ -805,7 +805,7 @@ donefloorline:
 
 NoMoreFloorLines:
 				move.l	a5,a0
-				move.l	a5,objroom
+				move.l	a5,Obj_ZonePtr_l
 
 mustbeinsameroom:
 stopandleave:
@@ -818,7 +818,7 @@ ERRORINMOVEMENT:
 				move.w	oldx,newx
 				move.w	oldz,newz
 				move.l	oldy,newy
-				move.l	objroomback,objroom
+				move.l	obj_ZoneBackupPtr_l,Obj_ZonePtr_l
 				st		hitwall
 				rts
 
@@ -834,8 +834,8 @@ newy:			dc.l	0
 
 xdiff:			dc.l	0
 zdiff:			dc.l	0
-objroom:		dc.l	0
-objroomback:	dc.l	0
+Obj_ZonePtr_l:		dc.l	0
+obj_ZoneBackupPtr_l:	dc.l	0
 
 deltax:			dc.w	0
 speed:			dc.w	0
@@ -1187,6 +1187,7 @@ subang:
 nocossin:
 				rts
 
+				align 4
 AngRet:			dc.w	0
 Range:			dc.w	0
 GotThere:		dc.w	0
@@ -1243,8 +1244,9 @@ GetNextCPt:
 noneedforhassle:
 				rts
 
-FromRoom:		dc.l	0
-ToRoom:			dc.l	0
+				align 4
+Obj_FromZonePtr_l:	dc.l	0
+Obj_ToZonePtr_l:	dc.l	0
 CanSee:			dc.w	0
 Facedir:		dc.w	0
 				even
@@ -1270,12 +1272,13 @@ CanItBeSeenAng:
 				rts
 
 ItMightBeSeen:
-				move.l	ToRoom,a0
+				move.l	Obj_ToZonePtr_l,a0
 				move.w	(a0),d0
-				move.l	FromRoom,a0
+				move.l	Obj_FromZonePtr_l,a0
 				adda.w	#ZoneT_PotVisibleZoneList_vw,a0
 				bra.s	InList
 
+				align 4
 Viewerx:		dc.l	0
 Viewerz:		dc.l	0
 Targetx:		dc.l	0
@@ -1299,23 +1302,23 @@ insameroom:
 
 CanItBeSeen:
 				movem.l	d0-d7/a0-a6,-(a7)
-				move.l	ToRoom,a1
+				move.l	Obj_ToZonePtr_l,a1
 				move.w	(a1),d0
-				move.l	FromRoom,a0
+				move.l	Obj_FromZonePtr_l,a0
 				cmp.l	a0,a1
 				beq.s	insameroom
 
 				adda.w	#ZoneT_PotVisibleZoneList_vw,a0
 
 InList:
-				move.w	(a0),d1
-				tst.w	d1
+				move.w	(a0),d1 ; PVST_Zone_w
+				tst.w	d1 ; redundant?
 				blt		outlist
 
 				move.l	Lvl_ZoneGraphAddsPtr_l,a1
 				move.l	(a1,d1.w*8),a1
 				add.l	Lvl_GraphicsPtr_l,a1
-				adda.w	#8,a0
+				adda.w	#PVST_SizeOf_l,a0
 				cmp.w	(a1),d0
 				beq		isinlist
 
@@ -1348,6 +1351,7 @@ checklcliploop:
 
 				move.w	(a1),d0
 				blt.s	noleftone
+
 				move.l	(a2,d0.w*4),d3
 				move.w	d3,d4
 				sub.w	Viewerz,d4
@@ -1393,7 +1397,7 @@ nomorerclips:
 				move.w	Targetz,d1
 				sub.w	Viewerx,d0
 				sub.w	Viewerz,d1
-				move.l	FromRoom,a5
+				move.l	Obj_FromZonePtr_l,a5
 				move.l	Lvl_ZoneEdgePtr_l,a1
 				move.b	ViewerTop,d2
 				move.w	Targety,d7
@@ -1495,7 +1499,7 @@ madeit:
 				blt		outlist
 
 GotIn:
-				cmp.l	ToRoom,a5
+				cmp.l	Obj_ToZonePtr_l,a5
 				bne		GoThroughZones
 
 				move.b	TargetTop,d3
@@ -1519,7 +1523,7 @@ FindCollisionPt:
 				move.w	Targetz,d1
 				sub.w	Viewerx,d0
 				sub.w	Viewerz,d1
-				move.l	FromRoom,a5
+				move.l	Obj_FromZonePtr_l,a5
 				move.l	Lvl_ZoneEdgePtr_l,a1
 				move.b	ViewerTop,d2
 				move.w	Targety,d7
@@ -1816,7 +1820,7 @@ ITSATEL:
 				move.w	ZoneT_TelZone_w(a2),d0
 				move.l	Lvl_ZonePtrsPtr_l,a2
 				move.l	(a2,d0.w*4),a2
-				move.l	a2,objroom
+				move.l	a2,Obj_ZonePtr_l
 
 				rts
 
@@ -1836,7 +1840,7 @@ FindCloseRoom:
 				move.w	ObjT_ZoneID_w(a0),d2
 				move.l	Lvl_ZonePtrsPtr_l,a5
 				move.l	(a5,d2.w*4),d2
-				move.l	d2,objroom
+				move.l	d2,Obj_ZonePtr_l
 				move.w	THISPLRxoff,newx
 				move.w	THISPLRzoff,newz
 				move.w	d0,speed

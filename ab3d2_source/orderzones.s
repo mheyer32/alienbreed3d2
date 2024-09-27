@@ -1,4 +1,8 @@
 				align 4
+
+	DECLC Zone_MovementMask_l
+				dc.l	$FFF0FFF0
+
 tmp_ListOfGraphRoomsPtr_l:
 				dc.l	0
 
@@ -9,32 +13,25 @@ Zone_OrderZones:
 				move.w	Plr_XOff_l,d0
 				swap	d0
 				move.w	Plr_ZOff_l,d0		  ; d0 is the short coordinate location of the player
-				and.l	#$FFF0FFF0,d0 ; reduce the change sensitivity a bit by discarding the low x/z bits
+				and.l	Zone_MovementMask_l,d0 ; reduce the change sensitivity a bit by discarding the low x/z bits
 				cmp.l	zone_LastPosition_vw,d0
 				bne		.continue
 				rts
 
 .continue:
 				move.l	d0,zone_LastPosition_vw
-				move.l	Lvl_ListOfGraphRoomsPtr_l,a0 ; a0=list of rooms to draw.
-				move.l	a0,tmp_ListOfGraphRoomsPtr_l
-				move.l	#zone_ToDrawTable_vw,a1
-				move.l	#Sys_Workspace_vl,a4
-				move.l	a1,a3
 
 				; prepare to clear out zone_ToDrawTable_vw
 				; @todo - zone_ToDrawTable_vw is 400 words, this only clears 100 longs, which is half.
-				moveq	#99,d0
-				moveq	#0,d1
+				move.l  #zone_ToDrawTable_vw,a0
+				moveq	#0,d0
+				moveq	#100,d1
+				bsr		Sys_MemFillLong
 
-				; a1 points at zone_ToDrawTable_vw
-				; a0 points at Lvl_ListOfGraphRooms
-
-.clear_table:
-				move.l	d1,(a1)+
-				dbra	d0,.clear_table
-
-				move.l	a0,a1
+				move.l	Lvl_ListOfGraphRoomsPtr_l,a1 ; a0=list of rooms to draw.
+				move.l	a1,tmp_ListOfGraphRoomsPtr_l
+				move.l	#zone_ToDrawTable_vw,a3
+				move.l	#Sys_Workspace_vl,a4
 				move.l	#zone_OrderTable_vw,a5
 
 .set_to_draw:

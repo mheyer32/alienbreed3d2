@@ -121,12 +121,12 @@ anim_BrightenPoints:
 				lea		ZoneT_PotVisibleZoneList_vw(a0),a1
 
 bright_points:
-				move.w	(a1),d4
+				move.w	(a1),d4 ; PVST_Zone_w
 				blt		bright_all
 
 				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d4.w*4),a0
-				add.w	#8,a1
+				add.w	#PVST_SizeOf_l,a1
 				moveq	#9,d7
 				muls	#20,d4
 				lea		(a4,d4.w),a5
@@ -306,12 +306,12 @@ Anim_BrightenPointsAngle:
 				lea		ZoneT_PotVisibleZoneList_vw(a0),a1
 
 bright_points_A:
-				move.w	(a1),d4
+				move.w	(a1),d4 ; PVST_Zone_w
 				blt		bright_all_A
 
 				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d4.w*4),a0
-				add.w	#8,a1
+				add.w	#PVST_SizeOf_l,a1
 				moveq	#9,d3
 				muls	#20,d4
 				lea		(a4,d4.w),a5
@@ -2091,9 +2091,9 @@ notdoneanim:
 				move.b	d2,ShotT_Anim_b(a0)
 				move.l	Lvl_ZonePtrsPtr_l,a2
 				move.l	(a2,d0.w*4),d0
-				move.l	d0,objroom
+				move.l	d0,Obj_ZonePtr_l
 
-				move.l	objroom,a3
+				move.l	Obj_ZonePtr_l,a3
 				move.b	ZoneT_Echo_b(a3),PlayEcho
 				tst.b	ShotT_InUpperZone_b(a0)
 				beq.s	.notintop
@@ -2320,7 +2320,7 @@ lalal:
 				move.w	newx,d1
 				move.w	newz,d2
 				move.l	newy,Anim_BrightY_l
-				move.l	objroom,a0
+				move.l	Obj_ZonePtr_l,a0
 				move.w	(a0),d3
 				jsr		anim_BrightenPoints
 
@@ -2421,7 +2421,7 @@ nomovebul:
 				bne		.hitsomething
 
 lab:
-				move.l	objroom,a3
+				move.l	Obj_ZonePtr_l,a3
 				move.w	(a3),ObjT_ZoneID_w(a0)
 				move.w	(a3),EntT_ZoneID_w(a0)
 				move.l	newx,(a1)
@@ -2814,7 +2814,7 @@ ComputeBlast:
 				move.l	a0,-(a7)
 
 HitObjLoop:
-				move.l	anim_MiddleRoom_l,FromRoom
+				move.l	anim_MiddleRoom_l,Obj_FromZonePtr_l
 				NEXT_OBJ a2
 				move.w	(a2),d0
 				blt		CheckedEmAll
@@ -2853,7 +2853,7 @@ HitObjLoop:
 				move.w	ObjT_ZoneID_w(a2),d1
 				move.l	Lvl_ZonePtrsPtr_l,a3
 				move.l	(a3,d1.w*4),a3
-				move.l	a3,ToRoom
+				move.l	a3,Obj_ToZonePtr_l
 				move.l	Lvl_ObjectPointsPtr_l,a3
 				move.w	(a3,d0.w*8),Targetx
 				move.w	4(a3,d0.w*8),Targetz
@@ -3082,7 +3082,7 @@ DOFLAMES:
 				move.l	d3,newy
 				move.w	d1,newx
 				move.w	d2,newz
-				move.l	anim_MiddleRoom_l,objroom
+				move.l	anim_MiddleRoom_l,Obj_ZonePtr_l
 
 				movem.l	d5/d6/a0/a1/a3/d7/a6,-(a7)
 				move.w	#80,Obj_ExtLen_w
@@ -3091,7 +3091,7 @@ DOFLAMES:
 
 				movem.l	(a7)+,d5/d6/a0/a1/a3/d7/a6
 
-				move.l	objroom,a2
+				move.l	Obj_ZonePtr_l,a2
 				move.w	(a2),12(a3)
 				move.l	newy,d0
 				move.l	ZoneT_Floor_l(a2),d1

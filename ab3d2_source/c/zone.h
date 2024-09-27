@@ -39,19 +39,18 @@ typedef struct {
 }  __attribute__((packed)) __attribute__ ((aligned (2))) Zone;
 
 typedef struct {
-    WORD e_XPos;       // X coordinate
-    WORD e_ZPos;       // Z coordinate
-    WORD e_XLen;       // Length in X direction
-    WORD e_ZLen;       // Length in Z direction
-    WORD e_JoinZone;   // Zone the edge joins to, or -1 for a solid wall
-    WORD e_Word_5;     // TODO
-    BYTE e_Byte_12;    // TODO
-    BYTE e_Byte_13;    // TODO
-    WORD e_Flags;
+    WORD  e_XPos;       // X coordinate
+    WORD  e_ZPos;       // Z coordinate
+    WORD  e_XLen;       // Length in X direction
+    WORD  e_ZLen;       // Length in Z direction
+    WORD  e_JoinZone;   // Zone the edge joins to, or -1 for a solid wall
+    WORD  e_Word_5;     // TODO
+    BYTE  e_Byte_12;    // TODO
+    BYTE  e_Byte_13;    // TODO
+    UWORD e_Flags;
 } __attribute__((packed)) __attribute__ ((aligned (2))) ZEdge;
 
 extern Zone** Lvl_ZonePtrsPtr_l;
-
 extern ZEdge* Lvl_ZoneEdgePtr_l;
 
-#endif // ZONE_DEBUG_H
+#endif // ZONE_H

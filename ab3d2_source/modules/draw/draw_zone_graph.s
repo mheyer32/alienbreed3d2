@@ -216,7 +216,6 @@ Draw_Zone_Graph:
 
 .done_all_zones:
 				DEV_ZDBG ZDbg_Done
-				DEV_DISABLE ZONE_TRACE
 
 				rts
 

@@ -293,7 +293,7 @@ Plr1_Shot:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	Plr1_ZonePtr_l,objroom
+				move.l	Plr1_ZonePtr_l,Obj_ZonePtr_l
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:
@@ -338,7 +338,7 @@ Plr1_Shot:
 				move.w	#0,ShotT_Gravity_w(a0)
 				move.b	BULTYPE+1,ShotT_Size_b(a0)
 				move.b	#0,ShotT_Anim_b(a0)
-				move.l	objroom,a1
+				move.l	Obj_ZonePtr_l,a1
 				move.w	(a1),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
 				move.l	wallhitheight,d0
@@ -623,7 +623,7 @@ Plr2_Shot:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	Plr2_ZonePtr_l,objroom
+				move.l	Plr2_ZonePtr_l,Obj_ZonePtr_l
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:
@@ -668,7 +668,7 @@ Plr2_Shot:
 				move.w	#0,ShotT_Gravity_w(a0)
 				move.b	BULTYPE+1,ShotT_Size_b(a0)
 				move.b	#0,ShotT_Anim_b(a0)
-				move.l	objroom,a1
+				move.l	Obj_ZonePtr_l,a1
 				move.w  (a1),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
 				move.l	wallhitheight,d0
@@ -874,7 +874,7 @@ plr1_HitscanFailed:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	Plr1_ZonePtr_l,objroom
+				move.l	Plr1_ZonePtr_l,Obj_ZonePtr_l
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:
@@ -921,7 +921,7 @@ plr1_HitscanFailed:
 				move.b	BULTYPE+1,ShotT_Size_b(a0)
 				move.b	#0,ShotT_Anim_b(a0)
 
-				move.l	objroom,a1
+				move.l	Obj_ZonePtr_l,a1
 				move.w  (a1),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
 				move.l	newy,d1
@@ -1015,7 +1015,7 @@ plr2_HitscanFailed:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	Plr2_ZonePtr_l,objroom
+				move.l	Plr2_ZonePtr_l,Obj_ZonePtr_l
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:
@@ -1064,7 +1064,7 @@ plr2_HitscanFailed:
 				move.b	BULTYPE+1,ShotT_Size_b(a0)
 				move.b	#0,ShotT_Anim_b(a0)
 
-				move.l	objroom,a1
+				move.l	Obj_ZonePtr_l,a1
 				move.w	(a1),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
 				move.l	newy,d1

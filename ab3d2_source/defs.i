@@ -353,6 +353,13 @@ ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
 		WORD  EdgeT_Flags_w    ; 14 TODO - some sort of flags
 		LABEL EdgeT_SizeOf_l   ; 16
 
+	STRUCTURE PVST,0
+		WORD  PVST_Zone_w ; 0
+		WORD  PVST_Dist_w ; 2
+		WORD  PVST_Word_2 ; 4 TODO
+		WORD  PVST_Word_3 ; 6 TODO
+		LABEL PVST_SizeOf_l 8
+
 NUM_PLR_SHOT_DATA	EQU		20
 NUM_ALIEN_SHOT_DATA	EQU		20
 

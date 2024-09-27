@@ -23,7 +23,6 @@ DEV_SKIP_TIMEGRAPH				EQU 10
 DEV_SKIP_LIGHTING				EQU 11
 DEV_SKIP_DUMP_BG_DISABLE		EQU 12
 DEV_ZONE_TRACE					EQU 13
-DEV_ZONE_TRACE_VERBOSE_AF		EQU 14
 
 ; Skip rendering the overlay completely
 DEV_SKIP_OVERLAY				EQU 31
@@ -190,10 +189,10 @@ DEV_CHECK_DIVISOR MACRO
 
 DEV_ZDBG		MACRO
 				DEV_CHECK_CLR	ZONE_TRACE,.no_trace\@
-				DEV_SAVE d0-d7/a0-a6
-				move.l	a7,Dev_RegStatePtr_l
+				SAVEREGS
+				move.l  a7,Dev_RegStatePtr_l
 				CALLC \1
-				DEV_RESTORE d0-d7/a0-a6
+				GETREGS
 .no_trace\@:
 				ENDM
 

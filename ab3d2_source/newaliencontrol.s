@@ -23,7 +23,7 @@ ItsAnAlien:
 .ok_alive:
 				move.l	Lvl_ZonePtrsPtr_l,a5
 				move.l	(a5,d2.w*4),d0
-				move.l	d0,objroom
+				move.l	d0,Obj_ZonePtr_l
 				move.l	d0,a6
 				move.b	ZoneT_Echo_b(a6),ALIENECHO
 				moveq	#0,d0
@@ -467,7 +467,7 @@ StillHere:
 				move.w	ObjT_ZoneID_w(a0),d2
 				move.l	Lvl_ZonePtrsPtr_l,a5
 				move.l	(a5,d2.w*4),d0
-				move.l	d0,objroom
+				move.l	d0,Obj_ZonePtr_l
 				move.w	(a0),d0
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),newx
@@ -1075,7 +1075,7 @@ SHOOTPLAYER1:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	objroom,-(a7)
+				move.l	Obj_ZonePtr_l,-(a7)
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:
@@ -1099,9 +1099,9 @@ SHOOTPLAYER1:
 				bra		.again
 
 .nofurther:
-				move.l	objroom,backroom
+				move.l	Obj_ZonePtr_l,backroom
 				movem.l	(a7)+,d0-d7/a0-a6
-				move.l	(a7)+,objroom
+				move.l	(a7)+,Obj_ZonePtr_l
 				move.l	Plr_ShotDataPtr_l,a0
 				move.w	#NUM_PLR_SHOT_DATA-1,d1
 
@@ -1327,7 +1327,7 @@ SHOOTPLAYER2:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	objroom,-(a7)
+				move.l	Obj_ZonePtr_l,-(a7)
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:
@@ -1351,9 +1351,9 @@ SHOOTPLAYER2:
 				bra		.again
 
 .nofurther:
-				move.l	objroom,backroom
+				move.l	Obj_ZonePtr_l,backroom
 				movem.l	(a7)+,d0-d7/a0-a6
-				move.l	(a7)+,objroom
+				move.l	(a7)+,Obj_ZonePtr_l
 				move.l	AI_AlienShotDataPtr_l,a0
 				move.w	#NUM_ALIEN_SHOT_DATA-1,d1
 
