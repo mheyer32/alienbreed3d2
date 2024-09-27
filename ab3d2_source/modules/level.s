@@ -9,18 +9,13 @@ Lvl_InitLevelMods:
 ; Clears out the Zone_BackdropDisable_vb data
 ; Preserves registers
 Lvl_ClearBackdropDisable:
-				movem.l		d0/a0,-(sp)
-				move.w		#ZONE_BACKDROP_DISABLE_SIZE/16-1,d0
+				movem.l		d0/d1/a0,-(sp)
 				lea			Zone_BackdropDisable_vb,a0
+				clr.l		d0
+				move.w		#ZONE_BACKDROP_DISABLE_SIZE/4,d1
+				bsr			Sys_MemFillLong
 
-.clear_loop:
-				clr.l		(a0)+
-				clr.l		(a0)+
-				clr.l		(a0)+
-				clr.l		(a0)+
-				dbra		d0,.clear_loop
-
-				movem.l		(sp)+,d0/a0
+				movem.l		(sp)+,d0/d1/a0
 				rts
 
 

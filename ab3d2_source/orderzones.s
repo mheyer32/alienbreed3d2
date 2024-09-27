@@ -1,4 +1,8 @@
 				align 4
+
+	DECLC Zone_MovementMask_l
+				dc.l	$FFF0FFF0
+
 tmp_ListOfGraphRoomsPtr_l:
 				dc.l	0
 
@@ -6,37 +10,28 @@ zone_LastPosition_vw: ; basically a short coordinate pair
 				dc.l	-1
 
 Zone_OrderZones:
-				; TODO this needs to be triggered when the player changes zone.
-				; I've tried this by using the ZonePtr but it works only partially.
-				move.w	xoff,d0
+				move.w	Plr_XOff_l,d0
 				swap	d0
-				move.w	zoff,d0		  ; d0 is the short coordinate location of the player
-				and.l	#$FFF0FFF0,d0 ; reduce the change sensitivity a bit by discarding the low x/z bits
+				move.w	Plr_ZOff_l,d0		  ; d0 is the short coordinate location of the player
+				and.l	Zone_MovementMask_l,d0 ; reduce the change sensitivity a bit by discarding the low x/z bits
 				cmp.l	zone_LastPosition_vw,d0
 				bne		.continue
 				rts
 
 .continue:
 				move.l	d0,zone_LastPosition_vw
-				move.l	Lvl_ListOfGraphRoomsPtr_l,a0 ; a0=list of rooms to draw.
-				move.l	a0,tmp_ListOfGraphRoomsPtr_l
-				move.l	#zone_ToDrawTable_vw,a1
-				move.l	#Sys_Workspace_vl,a4
-				move.l	a1,a3
 
 				; prepare to clear out zone_ToDrawTable_vw
 				; @todo - zone_ToDrawTable_vw is 400 words, this only clears 100 longs, which is half.
-				moveq	#99,d0
-				moveq	#0,d1
+				move.l  #zone_ToDrawTable_vw,a0
+				moveq	#0,d0
+				moveq	#100,d1
+				bsr		Sys_MemFillLong
 
-				; a1 points at zone_ToDrawTable_vw
-				; a0 points at Lvl_ListOfGraphRooms
-
-.clear_table:
-				move.l	d1,(a1)+
-				dbra	d0,.clear_table
-
-				move.l	a0,a1
+				move.l	Lvl_ListOfGraphRoomsPtr_l,a1 ; a0=list of rooms to draw.
+				move.l	a1,tmp_ListOfGraphRoomsPtr_l
+				move.l	#zone_ToDrawTable_vw,a3
+				move.l	#Sys_Workspace_vl,a4
 				move.l	#zone_OrderTable_vw,a5
 
 .set_to_draw:
@@ -86,15 +81,14 @@ Zone_OrderZones:
 
 .run_through_list:
 				DEV_INC.w	Reserved2
-				move.l	Lvl_FloorLinesPtr_l,a1
+				move.l	Lvl_ZoneEdgePtr_l,a1
 				move.w	2(a5),d0
 				move.l	#Sys_Workspace_vl,a6
 				lea		(a6,d0.w*4),a6
 				move.l	(a6),d6
-				move.l	Lvl_ZoneAddsPtr_l,a0
+				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d0.w*4),a0
-				add.l	Lvl_DataPtr_l,a0
-				adda.w	ZoneT_ExitList_w(a0),a0
+				adda.w	ZoneT_EdgeListOffset_w(a0),a0
 				move.l	a5,a4
 
 				; tst.b farendfound
@@ -152,7 +146,7 @@ zone_InsertList:
 				; beq.s .insert_loop
 
 				moveq	#0,d1
-				move.w	8(a1,d0.w),d1
+				move.w	EdgeT_JoinZone_w(a1,d0.w),d1
 				blt.s	.buggergerger ; todo - figure out what this failure case really means
 
 				btst	d7,d6
@@ -176,12 +170,12 @@ zone_InsertList:
 ; or closer than the current zone.
 
 				bset	d7,d6
-				move.w	xoff,d2
-				move.w	zoff,d3
-				sub.w	(a1,d0.w),d2
-				sub.w	2(a1,d0.w),d3
-				muls	6(a1,d0.w),d2
-				muls	4(a1,d0.w),d3
+				move.w	Plr_XOff_l,d2
+				move.w	Plr_ZOff_l,d3
+				sub.w	(a1,d0.w),d2 ; EdgeT_XPos_w
+				sub.w	EdgeT_ZPos_w(a1,d0.w),d3
+				muls	EdgeT_ZLen_w(a1,d0.w),d2
+				muls	EdgeT_XLen_w(a1,d0.w),d3
 				addq	#1,d7
 				sub.l	d3,d2
 				ble.s	.put_done

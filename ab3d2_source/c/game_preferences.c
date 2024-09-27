@@ -42,12 +42,15 @@ extern UBYTE Prefs_ShowMessages_b;
 extern UBYTE Draw_MapTransparent_b;
 extern UWORD Draw_MapZoomLevel_w;
 
+extern ULONG Zone_MovementMask_l;
 #ifdef DEV
-extern ULONG dev_SkipFlags_l;
+extern ULONG Dev_DebugFlags_l;
 #endif
 
 void Cfg_ParsePreferencesFile(char const*);
 void Cfg_WritePreferencesFile(char const*);
+
+static UBYTE Prefs_OrderZoneSensitivity = 4;
 
 // Extreme MVP version
 
@@ -72,6 +75,13 @@ void game_ApplyPreferences(void)
 
     // Map zoom is 0-7. TODO - this should be defined somewhere
     Draw_MapZoomLevel_w &= 7;
+
+    // Zone ordering sensitivity
+    Prefs_OrderZoneSensitivity &= 7;
+
+    UWORD mask = ~((1 << Prefs_OrderZoneSensitivity) - 1);
+
+    Zone_MovementMask_l = ((ULONG)mask << 16) | mask;
 }
 
 void game_LoadPreferences(void)
