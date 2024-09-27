@@ -339,9 +339,9 @@ ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
 		UWORD ZoneT_PotVisibleZoneList_vw		; 48, 2 - Set of Potentially Visible Zones (array of 4-word tuples)
 		LABEL ZoneT_SizeOf_l			; 50
 
-		; Edge structure. The ZoneT_EdgeListOffset_w points to a list of words that are indexes
-		; in an array of the following structure, pointed to by Lvl_ZoneEdgePtr_l
-		STRUCT EdgeT,0
+	; Edge structure. The ZoneT_EdgeListOffset_w points to a list of words that are indexes
+	; in an array of the following structure, pointed to by Lvl_ZoneEdgePtr_l
+	STRUCTURE EdgeT,0
 		WORD  EdgeT_XPos_w     ; 0 X coordinate
 		WORD  EdgeT_ZPos_w     ; 2 Z coordinate
 		WORD  EdgeT_XLen_w     ; 4 Length in X direction
