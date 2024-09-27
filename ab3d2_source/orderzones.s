@@ -149,7 +149,7 @@ zone_InsertList:
 				; beq.s .insert_loop
 
 				moveq	#0,d1
-				move.w	8(a1,d0.w),d1
+				move.w	EdgeT_JoinZone_w(a1,d0.w),d1
 				blt.s	.buggergerger ; todo - figure out what this failure case really means
 
 				btst	d7,d6
@@ -175,10 +175,10 @@ zone_InsertList:
 				bset	d7,d6
 				move.w	Plr_XOff_l,d2
 				move.w	Plr_ZOff_l,d3
-				sub.w	(a1,d0.w),d2
-				sub.w	2(a1,d0.w),d3
-				muls	6(a1,d0.w),d2
-				muls	4(a1,d0.w),d3
+				sub.w	(a1,d0.w),d2 ; EdgeT_XPos_w
+				sub.w	EdgeT_ZPos_w(a1,d0.w),d3
+				muls	EdgeT_ZLen_w(a1,d0.w),d2
+				muls	EdgeT_XLen_w(a1,d0.w),d3
 				addq	#1,d7
 				sub.l	d3,d2
 				ble.s	.put_done

@@ -339,19 +339,19 @@ ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
 		UWORD ZoneT_PotVisibleZoneList_vw		; 48, 2 - Set of Potentially Visible Zones (array of 4-word tuples)
 		LABEL ZoneT_SizeOf_l			; 50
 
-		; Edge structure. The ZoneT_EdgeListOffset_w points to a list of words that are indexes
-		; in an array of the following structure, pointed to by Lvl_ZoneEdgePtr_l
-		STRUCT EdgeT,0
-		WORD EdgeT_XPos_w     ; 0 X coordinate
-		WORD EdgeT_ZPos_w     ; 2 Z coordinate
-		WORD EdgeT_XLen_w     ; 4 Length in X direction
-		WORD EdgeT_ZLen_w     ; 6 Length in Z direction
-		WORD EdgeT_JoinZone_w ; 8 Zone the edge joins to, or -1 for a solid wall
-		WORD EdgeT_Word_5     ; 10 TODO
-		BYTE EdgeT_Byte_12    ; 12
-		BYTE EdgeT_Byte_13    ; 13
-		WORD EdgeT_Flags      ; 14 TODO
-		LABEL  EdgeT_SizeOf_l
+	; Edge structure. The ZoneT_EdgeListOffset_w points to a list of words that are indexes
+	; in an array of the following structure, pointed to by Lvl_ZoneEdgePtr_l
+	STRUCTURE EdgeT,0
+		WORD  EdgeT_XPos_w     ; 0 X coordinate
+		WORD  EdgeT_ZPos_w     ; 2 Z coordinate
+		WORD  EdgeT_XLen_w     ; 4 Length in X direction
+		WORD  EdgeT_ZLen_w     ; 6 Length in Z direction
+		WORD  EdgeT_JoinZone_w ; 8 Zone the edge joins to, or -1 for a solid wall
+		WORD  EdgeT_Word_5     ; 10 TODO
+		BYTE  EdgeT_Byte_12    ; 12
+		BYTE  EdgeT_Byte_13    ; 13
+		WORD  EdgeT_Flags_w    ; 14 TODO - some sort of flags
+		LABEL EdgeT_SizeOf_l   ; 16
 
 NUM_PLR_SHOT_DATA	EQU		20
 NUM_ALIEN_SHOT_DATA	EQU		20
