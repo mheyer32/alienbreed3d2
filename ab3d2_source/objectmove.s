@@ -155,7 +155,7 @@ thisisawall2:
 .notomatoes:
 				move.w	newx,d0
 				move.w	newz,d1
-				sub.w	(a2),d0
+				sub.w	(a2),d0 ; EdgeT_XPos_w
 				sub.w	EdgeT_ZPos_w(a2),d1
 				sub.w	a4,d0
 				sub.w	a6,d1
@@ -195,7 +195,7 @@ chkhttt:
 
 				move.w	oldx,d0
 				move.w	oldz,d1
-				sub.w	(a2),d0
+				sub.w	(a2),d0 ; EdgeT_XPos_w
 				sub.w	EdgeT_ZPos_w(a2),d1
 				sub.w	a4,d0
 				sub.w	a6,d1
@@ -293,7 +293,7 @@ chkhttt:
 				move.w	newz,d7
 				sub.w	oldx,d6
 				sub.w	oldz,d7
-				move.w	(a2),d4
+				move.w	(a2),d4 ; EdgeT_XPos_w
 				add.w	a4,d4
 				sub.w	oldx,d4
 				muls	d4,d7;					negative if on left
@@ -310,7 +310,7 @@ chkhttt:
 				move.w	newz,d7
 				sub.w	oldx,d6
 				sub.w	oldz,d7
-				move.w	(a2),d4
+				move.w	(a2),d4 ; EdgeT_XPos_w
 				add.w	a4,d4
 				add.w	d2,d4
 				sub.w	oldx,d4
@@ -325,7 +325,7 @@ chkhttt:
 				bra		hitthewall
 
 othercheck:
-				sub.w	(a2),d6
+				sub.w	(a2),d6 ; EdgeT_XPos_w
 				sub.w	EdgeT_ZPos_w(a2),d7
 				sub.w	a4,d6
 				sub.w	a6,d7
@@ -532,7 +532,7 @@ anotherwalls:
 				sub.w	a6,d5
 				move.w	newx,d0
 				move.w	newz,d1
-				sub.w	(a2),d0
+				sub.w	(a2),d0 ; EdgeT_XPos_w
 				sub.w	EdgeT_ZPos_w(a2),d1
 				sub.w	a4,d0
 				sub.w	a6,d1
@@ -545,7 +545,7 @@ anotherwalls:
 				move.w	oldx,d1
 				move.w	newx,d3
 				sub.w	d1,d3
-				sub.w	(a2),d1
+				sub.w	(a2),d1 ; EdgeT_XPos_w
 				sub.w	a4,d1					;e-a=d1
 				move.w	EdgeT_ZPos_w(a2),d2
 				add.w	a6,d2
@@ -591,7 +591,7 @@ anotherwalls:
 				add.w	newz,d7
 				move.w	oldx,d0
 				move.w	oldz,d1
-				sub.w	(a2),d0
+				sub.w	(a2),d0 ; EdgeT_XPos_w
 				sub.w	EdgeT_ZPos_w(a2),d1
 				sub.w	a4,d0
 				sub.w	a6,d1
@@ -606,7 +606,7 @@ anotherwalls:
 				bra		.hitthewall
 
 				; Unreachable ?
-				sub.w	(a2),d6
+				sub.w	(a2),d6 ; EdgeT_XPos_w
 				sub.w	EdgeT_ZPos_w(a2),d7
 				move.w	d6,d4
 				bge.s	.okplus1
@@ -705,7 +705,7 @@ CheckMoreFloorLines:
 okthebottom:
 				move.w	newx,d0
 				move.w	newz,d1
-				sub.w	(a2),d0					;a
+				sub.w	(a2),d0	; EdgeT_XPos_w				;a
 				sub.w	EdgeT_ZPos_w(a2),d1				;b
 				muls	EdgeT_XLen_w(a2),d1
 				muls	EdgeT_ZLen_w(a2),d0
@@ -733,7 +733,7 @@ checkifcrossed:
 				move.w	newz,d7
 				sub.w	oldx,d6
 				sub.w	oldz,d7
-				move.w	(a2),d4
+				move.w	(a2),d4 ; EdgeT_XPos_w
 				sub.w	oldx,d4
 				muls	d4,d7;					negative if on left
 				move.w	EdgeT_ZPos_w(a2),d4
@@ -748,7 +748,7 @@ checkifcrossed:
 				move.w	newz,d7
 				sub.w	oldx,d6
 				sub.w	oldz,d7
-				move.w	(a2),d4
+				move.w	(a2),d4 ; EdgeT_XPos_w
 				add.w	EdgeT_XLen_w(a2),d4
 				sub.w	oldx,d4
 				muls	d4,d7;					negative if on left
@@ -765,7 +765,7 @@ checkifcrossed:
 				divs	EdgeT_Word_5(a2),d7
 				move.w	oldx,d0
 				move.w	oldz,d1
-				sub.w	(a2),d0
+				sub.w	(a2),d0 ; EdgeT_XPos_w
 				sub.w	EdgeT_ZPos_w(a2),d1
 				muls	EdgeT_XLen_w(a2),d1
 				muls	EdgeT_ZLen_w(a2),d0
@@ -1408,7 +1408,7 @@ FindWayOut:
 				blt		outlist
 				asl.w	#4,d5
 				lea		(a1,d5.w),a2
-				move.w	(a2),d3
+				move.w	(a2),d3 ; EdgeT_XPos_w
 				move.w	EdgeT_ZPos_w(a2),d4
 				sub.w	Viewerx,d3
 				sub.w	Viewerz,d4
@@ -1434,14 +1434,14 @@ FindWayOut:
 
 				move.w	Targetx,d3
 				move.w	Targetz,d4
-				sub.w	(a2),d3
+				sub.w	(a2),d3 ; EdgeT_XPos_w
 				sub.w	EdgeT_ZPos_w(a2),d4
 				muls	EdgeT_XLen_w(a2),d4
 				muls	EdgeT_ZLen_w(a2),d3
 				sub.l	d3,d4					; positive
 				move.w	Viewerx,d5
 				move.w	Viewerz,d6
-				sub.w	(a2),d5
+				sub.w	(a2),d5 ; EdgeT_XPos_w
 				sub.w	EdgeT_ZPos_w(a2),d6
 				muls	EdgeT_XLen_w(a2),d6
 				muls	EdgeT_ZLen_w(a2),d5
@@ -1534,7 +1534,7 @@ FindCollisionPt:
 				blt		outlist
 				asl.w	#4,d5
 				lea		(a1,d5.w),a2
-				move.w	(a2),d3
+				move.w	(a2),d3 ; EdgeT_XPos_w
 				move.w	EdgeT_ZPos_w(a2),d4
 				sub.w	Viewerx,d3
 				sub.w	Viewerz,d4
@@ -1557,14 +1557,14 @@ FindCollisionPt:
 
 				move.w	Targetx,d3
 				move.w	Targetz,d4
-				sub.w	(a2),d3
+				sub.w	(a2),d3 ; EdgeT_XPos_w
 				sub.w	EdgeT_ZPos_w(a2),d4
 				muls	EdgeT_XLen_w(a2),d4
 				muls	EdgeT_ZLen_w(a2),d3
 				sub.l	d3,d4					; positive
 				move.w	Viewerx,d5
 				move.w	Viewerz,d6
-				sub.w	(a2),d5
+				sub.w	(a2),d5 ; EdgeT_XPos_w
 				sub.w	EdgeT_ZPos_w(a2),d6
 				muls	EdgeT_XLen_w(a2),d6
 				muls	EdgeT_ZLen_w(a2),d5
