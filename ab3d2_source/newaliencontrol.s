@@ -1099,7 +1099,7 @@ SHOOTPLAYER1:
 				bra		.again
 
 .nofurther:
-				move.l	Obj_ZonePtr_l,backroom
+				move.l	Obj_ZonePtr_l,backupZonePtr_l
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	(a7)+,Obj_ZonePtr_l
 				move.l	Plr_ShotDataPtr_l,a0
@@ -1127,7 +1127,7 @@ SHOOTPLAYER1:
 				move.w	#0,ShotT_Gravity_w(a0)
 				move.b	#0,ShotT_Size_b(a0)
 				move.b	#0,ShotT_Anim_b(a0)
-				move.l	backroom,a1
+				move.l	backupZonePtr_l,a1
 				move.w	(a1),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
 				move.l	wallhitheight,d0
@@ -1351,7 +1351,7 @@ SHOOTPLAYER2:
 				bra		.again
 
 .nofurther:
-				move.l	Obj_ZonePtr_l,backroom
+				move.l	Obj_ZonePtr_l,backupZonePtr_l
 				movem.l	(a7)+,d0-d7/a0-a6
 				move.l	(a7)+,Obj_ZonePtr_l
 				move.l	AI_AlienShotDataPtr_l,a0
@@ -1379,7 +1379,7 @@ SHOOTPLAYER2:
 				move.w	#0,ShotT_Gravity_w(a0)
 				move.b	#0,ShotT_Size_b(a0)
 				move.b	#0,ShotT_Anim_b(a0)
-				move.l	backroom,a1
+				move.l	backupZonePtr_l,a1
 				move.w	(a1),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
 				move.l	wallhitheight,d0
@@ -1495,7 +1495,8 @@ FireAtPlayer2:
 				rts
 
 				align 4
-backroom:		dc.l	0
+
+backupZonePtr_l:		dc.l	0
 SHOTYOFF:		dc.l	0
 SHOTTYPE:		dc.w	0
 SHOTPOWER:		dc.w	0
