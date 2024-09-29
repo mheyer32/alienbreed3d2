@@ -31,21 +31,18 @@
         CFG_PARAM_TYPE_BOOL_INV,
         CFG_VAR_TYPE_UBYTE
     },
-
     {
         "misc.oz_sensitivity",
         &Prefs_OrderZoneSensitivity,
         CFG_PARAM_TYPE_INT,
         CFG_VAR_TYPE_UBYTE
     },
-
     {
         "map.transparent",
         &Draw_MapTransparent_b,
         CFG_PARAM_TYPE_BOOL,
         CFG_VAR_TYPE_UBYTE
     },
-
     {
         "map.zoom",
         &Draw_MapZoomLevel_w,
@@ -53,13 +50,4 @@
         CFG_VAR_TYPE_UWORD
     },
 
-#ifdef DEV
-    {
-        "dev.flags",
-        &Dev_DebugFlags_l,
-        CFG_PARAM_TYPE_INT,
-        CFG_VAR_TYPE_ULONG
-    },
-#endif
-
-#endif // PREFS_VID_H
+#endif // PREFS_MISC_H
