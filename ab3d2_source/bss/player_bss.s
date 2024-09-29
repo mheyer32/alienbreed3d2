@@ -17,12 +17,15 @@
 ; Long data
 Plr1_Data:
 Plr1_ObjectPtr_l:			ds.l	1
+
 Plr1_XOff_l:				ds.l	1 ; sometimes accessed as w - todo understand real size
 Plr1_YOff_l:				ds.l	1
 Plr1_ZOff_l:				ds.l	1 ; sometimes accessed as w - todo understand real size
 Plr1_ZonePtr_l:				ds.l	1
 Plr1_Height_l:				ds.l	1
 Plr1_AimSpeed_l:			ds.l	1
+
+_Plr1_Position_vl::
 Plr1_SnapXOff_l:			ds.l	1
 Plr1_SnapYOff_l:			ds.l	1
 Plr1_SnapYVel_l:			ds.l	1
@@ -49,6 +52,7 @@ plr1_DefaultEnemyFlags_l:	ds.l	1
 
 ; Word data
 Plr1_Energy_w:				ds.w	1
+_Plr1_Direction_vw::
 Plr1_CosVal_w:				ds.w	1
 Plr1_SinVal_w:				ds.w	1
 Plr1_AngPos_w:				ds.w	1
