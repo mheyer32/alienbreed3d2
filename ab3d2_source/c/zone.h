@@ -14,30 +14,48 @@
  *
  * This structure may have some long aligned data penalties.
  */
+
+/**
+ * This structure contains information about a potentially visible zone. A list of these
+ * is appended to each Zone structure. The final record has pvs_Zone set to -1.
+ */
 typedef struct {
-    WORD z_ID;                       //  2, 2
-    LONG z_Floor;                    //  2, 4
-    LONG z_Roof;                     //  6, 4
-    LONG z_UpperFloor;               // 10, 4
-    LONG z_UpperRoof;                // 14, 4
-    LONG z_Water;                    // 18, 4
-    WORD z_Brightness;               // 22, 2
-    WORD z_UpperBrightness;          // 24, 2
-    WORD z_ControlPoint;             // 26, 2 really UBYTE[2]
-    WORD z_BackSFXMask;              // 28, 2 Originally long but always accessed as word
-    WORD z_Unused;                   // 30, 2 so this is the unused half
-    WORD z_EdgeListOffset;                 // 32, 2
-    WORD z_Points;                   // 34, 2
-    UBYTE z_Back;                    // 36, 1 unused
+    WORD pvs_Zone;
+    WORD pvs_SortVal;
+    WORD pvs_Word2; // TODO
+    WORD pvs_Word3; // TODO
+} __attribute__((packed)) __attribute__ ((aligned (2))) ZPVSRecord;
+
+/**
+ * Main zone structure. Note that the long fields in here can be 2-byte aligned.
+ */
+typedef struct {
+    WORD  z_ID;                       //  2, 2
+    LONG  z_Floor;                    //  2, 4
+    LONG  z_Roof;                     //  6, 4
+    LONG  z_UpperFloor;               // 10, 4
+    LONG  z_UpperRoof;                // 14, 4
+    LONG  z_Water;                    // 18, 4
+    WORD  z_Brightness;               // 22, 2
+    WORD  z_UpperBrightness;          // 24, 2
+    WORD  z_ControlPoint;             // 26, 2 really UBYTE[2]
+    WORD  z_BackSFXMask;              // 28, 2 Originally long but always accessed as word
+    WORD  z_Unused;                   // 30, 2 so this is the unused half
+    WORD  z_EdgeListOffset;                 // 32, 2
+    WORD  z_Points;                   // 34, 2
+    UBYTE z_DrawBackdrop;            // 36, 1
     UBYTE z_Echo;                    // 37, 1
-    WORD z_TelZone;                  // 38, 2
-    WORD z_TelX;                     // 40, 2
-    WORD z_TelZ;                     // 42, 2
-    WORD z_FloorNoise;               // 44, 2
-    WORD z_UpperFloorNoise;          // 46, 2
-    WORD z_PotVisibleZoneList[1];    // 48, 2 Assumed vector, varying length
+    WORD  z_TelZone;                  // 38, 2
+    WORD  z_TelX;                     // 40, 2
+    WORD  z_TelZ;                     // 42, 2
+    WORD  z_FloorNoise;               // 44, 2
+    WORD  z_UpperFloorNoise;          // 46, 2
+    ZPVSRecord  z_PotVisibleZoneList[1];    // 48, 2 Vector, varying length
 }  __attribute__((packed)) __attribute__ ((aligned (2))) Zone;
 
+/**
+ * Edge structure.
+ */
 typedef struct {
     WORD  e_XPos;       // X coordinate
     WORD  e_ZPos;       // Z coordinate

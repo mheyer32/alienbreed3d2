@@ -329,7 +329,7 @@ ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
 		UWORD ZoneT_Unused_w            ; 30, 2 so this is the unused half
 		UWORD ZoneT_EdgeListOffset_w	; 32, 2 Offset relative to ZoneT instance
 		UWORD ZoneT_Points_w			; 34, 2
-		UBYTE ZoneT_Back_b				; 36, 1 unused
+		UBYTE ZoneT_DrawBackdrop_b		; 36, 1 Draw background?
 		UBYTE ZoneT_Echo_b				; 37, 1
 		UWORD ZoneT_TelZone_w			; 38, 2
 		UWORD ZoneT_TelX_w				; 40, 2
@@ -522,7 +522,7 @@ LVLT_MESSAGE_COUNT  EQU 10
 ; Maximum number of zones. Note that the game doesn't yet support this limit fully.
 LVL_EXPANDED_MAX_ZONE_COUNT EQU 512
 
-; Maximum number of zones. Once this is fully working, rededine as LVL_EXPANDED_MAX_ZONE_COUNT
+; Maximum number of zones. Once this is fully working, redefine as LVL_EXPANDED_MAX_ZONE_COUNT
 LVL_MAX_ZONE_COUNT EQU 256
 
 ;
@@ -555,7 +555,6 @@ LVL_MAX_ZONE_COUNT EQU 256
 	; twolev.graph.bin data header
 	STRUCTURE TLGT,0
 		; Offset values
-
 		ULONG TLGT_DoorDataOffset_l			; 0
 		ULONG TLGT_LiftDataOffset_l			; 4
 		ULONG TLGT_SwitchDataOffset_l		; 8

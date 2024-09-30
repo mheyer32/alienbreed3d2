@@ -57,7 +57,15 @@ static void ZDbg_ShowRegs(void)
 
 void ZDbg_Init(void)
 {
-    // Note that the debug flags are set durng an interrupt and can therefore become active
+    // Test hack for the U-bend level
+    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[2].pvs_Zone = -1;
+    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[3].pvs_Zone = -1;
+    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[4].pvs_Zone = -1;
+    //
+    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[3].pvs_Zone = -1;
+    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[4].pvs_Zone = -1;
+
+    // Note that the debug flags are set during an interrupt and can therefore become active
     // at any time. We therefore use our own latch here to ensure that once the flag is set,
     // we only start doing stuff after this init function is invoked.
 
@@ -82,6 +90,7 @@ void ZDbg_Init(void)
     // Fully dump the player's zone first with the PVS tree displayed
     // but not for the remaining zones traversed.
     ZDbg_DumpZone(Lvl_ZonePtrsPtr_l[Plr1_Zone]);
+
     zdbg_TraceFlags &= ~ ZDBG_TRACE_LIST_PVS;
 
     puts("Stepping through PVS zones in order...");
@@ -174,8 +183,7 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
         zonePtr->z_Water >> 8
     );
 
-    int iZone = 0;
-    WORD const* zList = zonePtr->z_PotVisibleZoneList;
+    ZPVSRecord const* p = zonePtr->z_PotVisibleZoneList;
 
     if (zdbg_TraceFlags & ZDBG_TRACE_LIST_PVS) {
         puts(
@@ -183,18 +191,18 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
             "\t\t| ID  | Dist   | ...... | ...... |\n"
             "\t\t+-----+--------+--------+--------|"
         );
-
+        int zone;
         do {
-            iZone = *zList;
+            zone = (int)p->pvs_Zone;
             printf(
                 "\t\t| %3d | %6d | %6d | %6d |\n",
-                iZone,
-                (int)zList[1], // distance
-                (int)zList[2], // significant?
-                (int)zList[3]  // significant?
+                zone,
+                (int)p->pvs_SortVal,
+                (int)p->pvs_Word2, // significant?
+                (int)p->pvs_Word2  // significant?
             );
-            zList += 4; // I have no idea why but these records are 8 bytes apart
-        } while (iZone > -1);
+            ++p;
+        } while (zone > -1);
     }
 
     printf(
@@ -204,7 +212,7 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
         (int)zonePtr->z_EdgeListOffset
     );
     // ExitList is an address offset prior to the zone
-    zList = (WORD*)(((BYTE*)zonePtr) + zonePtr->z_EdgeListOffset);
+    WORD const* zList = (WORD*)(((BYTE*)zonePtr) + zonePtr->z_EdgeListOffset);
 
     do {
         int edge = (int)*zList;

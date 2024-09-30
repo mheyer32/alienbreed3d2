@@ -1402,12 +1402,12 @@ ASlaveShouldWaitOnHisMaster:
 donetalking:
 				move.l	#Zone_BrightTable_vl,a1
 				move.l	Lvl_ZonePtrsPtr_l,a2
-				move.l	plr2_ListOfGraphRoomsPtr_l,a0
+				move.l	Plr2_PotVisibleZoneListPtr_l,a0
 ; move.l plr2_PointsToRotatePtr_l,a5
 				move.l	a0,a5
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	doallz
-				move.l	plr1_ListOfGraphRoomsPtr_l,a0
+				move.l	Plr1_PotVisibleZoneListPtr_l,a0
 ; move.l plr1_PointsToRotatePtr_l,a5
 				move.l	a0,a5
 
@@ -1657,7 +1657,7 @@ IWasPlayer1:
 				move.w	Plr1_AngPos_w,angpos
 				move.w	Plr1_CosVal_w,Temp_CosVal_w
 				move.w	Plr1_SinVal_w,Temp_SinVal_w
-				move.l	plr1_ListOfGraphRoomsPtr_l,Lvl_ListOfGraphRoomsPtr_l
+				move.l	Plr1_PotVisibleZoneListPtr_l,Lvl_ListOfGraphRoomsPtr_l
 				move.l	plr1_PointsToRotatePtr_l,PointsToRotatePtr_l
 				move.b	Plr1_Echo_b,PLREcho
 				move.l	Plr1_ZonePtr_l,ZonePtr_l
@@ -1764,7 +1764,7 @@ drawplayer2:
 				move.w	Plr2_AngPos_w,angpos
 				move.w	Plr2_CosVal_w,Temp_CosVal_w
 				move.w	Plr2_SinVal_w,Temp_SinVal_w
-				move.l	plr2_ListOfGraphRoomsPtr_l,Lvl_ListOfGraphRoomsPtr_l
+				move.l	Plr2_PotVisibleZoneListPtr_l,Lvl_ListOfGraphRoomsPtr_l
 				move.l	plr2_PointsToRotatePtr_l,PointsToRotatePtr_l
 				move.b	Plr2_Echo_b,PLREcho
 				move.l	Plr2_ZonePtr_l,ZonePtr_l
@@ -2769,7 +2769,8 @@ Path:
 endpath:
 pathpt:			dc.l	Path
 
-
+; TODO - Consolidate with Plr2_Control and move into a single function that takes a pointer
+;        to the player state
 Plr1_Control:
 ; Take a snapshot of everything.
 				move.l	Plr1_XOff_l,d2
@@ -2794,33 +2795,33 @@ Plr1_Control:
 				add.w	#COSINE_OFS,d0
 				AMOD_A	d0
 				move.w	(a1,d0.w),Plr1_CosVal_w
-
 				move.l	Plr1_TmpYOff_l,d0
 				move.w	plr1_TmpBobble_w,d1
 				move.w	(a1,d1.w),d1
 				move.w	d1,d3
 				ble.s	.notnegative
+
 				neg.w	d1
+
 .notnegative:
 				add.w	#16384,d1
 				asr.w	#4,d1
-
 				tst.b	Plr1_Ducked_b
 				bne.s	.notdouble
+
 				tst.b	Plr1_Squished_b
 				bne.s	.notdouble
+
 				add.w	d1,d1
 .notdouble:
 				ext.l	d1
-
 				move.l	d1,plr1_BobbleY_l
-
 				move.l	Plr1_Height_l,d4
 				sub.l	d1,d4
 				add.l	d1,d0
-
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.otherwob
+
 				asr.w	#6,d3
 				ext.l	d3
 				move.l	d3,xwobble
@@ -2835,36 +2836,35 @@ Plr1_Control:
 				asr.w	#6,d2					; 6 was 7 AL
 				neg.w	d2
 				move.w	d2,xwobzoff
-.otherwob:
 
+.otherwob:
 				move.l	d0,Plr1_YOff_l
 				move.l	d0,newy
 				move.l	d0,oldy
-
 				move.l	d4,thingheight
 				move.l	#40*256,StepUpVal
 				tst.b	Plr1_Squished_b
 				bne.s	.smallstep
+
 				tst.b	Plr1_Ducked_b
 				beq.s	.okbigstep
+
 .smallstep:
 				move.l	#10*256,StepUpVal
+
 .okbigstep:
-
 				move.l	#$1000000,StepDownVal
-
 				move.l	Plr1_ZonePtr_l,a0
 				move.w	ZoneT_TelZone_w(a0),d0
 				blt		.noteleport
 
 				move.w	ZoneT_TelX_w(a0),newx
 				move.w	ZoneT_TelZ_w(a0),newz
-
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	(a0),CollId
-
 				move.l	#%111111111111111111,Obj_CollideFlags_l
 				jsr		Obj_DoCollision
+
 				tst.b	hitwall
 				beq.s	.teleport
 
@@ -2873,9 +2873,7 @@ Plr1_Control:
 				bra		.noteleport
 
 .teleport:
-
 				st		plr1_Teleported_b
-
 				move.l	Plr1_ZonePtr_l,a0
 				move.w	ZoneT_TelZone_w(a0),d0
 				move.w	ZoneT_TelX_w(a0),Plr1_XOff_l
@@ -2904,31 +2902,31 @@ Plr1_Control:
 				bra		.cantmove
 
 .noteleport:
-
 				move.l	Plr1_ZonePtr_l,Obj_ZonePtr_l
 				move.w	#%100000000,wallflags
 				move.b	Plr1_StoodInTop_b,StoodInTop
-
 				move.l	#%1011111110111000011,Obj_CollideFlags_l
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	(a0),CollId
-
 				jsr		Obj_DoCollision
+
 				tst.b	hitwall
 				beq.s	.nothitanything
+
 				move.w	oldx,Plr1_XOff_l
 				move.w	oldz,Plr1_ZOff_l
 				move.l	Plr1_XOff_l,Plr1_SnapXOff_l
 				move.l	Plr1_ZOff_l,Plr1_SnapZOff_l
 				bra		.cantmove
-.nothitanything:
 
+.nothitanything:
 				move.w	#40,Obj_ExtLen_w
 				move.b	#0,Obj_AwayFromWall_b
 
 				clr.b	exitfirst
 				clr.b	Obj_WallBounce_b
 				bsr		MoveObject
+
 				move.b	StoodInTop,Plr1_StoodInTop_b
 				move.l	Obj_ZonePtr_l,Plr1_ZonePtr_l
 				move.w	newx,Plr1_XOff_l
@@ -2943,21 +2941,17 @@ Plr1_Control:
 				beq.s	notintop
 
 				move.l	ZoneT_UpperFloor_l(a0),d0
-notintop:
 
-				adda.w	#ZoneT_Points_w,a0
+notintop:
+				adda.w	#ZoneT_Points_w,a0 ; a0 = &ZoneT.ZoneT_Points_w
 				sub.l	Plr1_Height_l,d0
 				move.l	d0,Plr1_SnapTYOff_l
 				move.w	Plr1_TmpAngPos_w,tmpangpos
-
-; move.l (a0),a0		; jump to viewpoint list
-* A0 is pointing at a pointer to list of points to rotate
-				move.w	(a0)+,d1
+				move.w	(a0)+,d1 ; after move, a0 = &ZoneT.ZoneT_DrawBackdrop_b
 				ext.l	d1
 				add.l	Plr1_ZonePtr_l,d1
 				move.l	d1,plr1_PointsToRotatePtr_l
-				tst.b	(a0)+
-				;sne		DRAWNGRAPHTOP
+				tst.b	(a0)+ ; after move, a0 = &ZoneT.ZoneT_Echo_b
 				beq.s	nobackgraphics
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
@@ -2966,12 +2960,9 @@ notintop:
 				jsr		Draw_SkyBackdrop
 
 nobackgraphics:
-				move.b	(a0)+,Plr1_Echo_b
-
-				adda.w	#10,a0
-				move.l	a0,plr1_ListOfGraphRoomsPtr_l
-
-*************************************************
+				move.b	(a0)+,Plr1_Echo_b ; after move, a0 = &ZoneT.ZoneT_TelZone_w
+				adda.w	#10,a0 ; a0 = &ZoneT_PotVisibleZoneList_vw
+				move.l	a0,Plr1_PotVisibleZoneListPtr_l
 				rts
 
 ;DRAWNGRAPHTOP:	dc.w	0
@@ -2980,10 +2971,8 @@ nobackgraphics:
 Plr2_Control:
 ; Take a snapshot of everything.
 				move.l	Plr2_XOff_l,d2
-
 				move.l	d2,oldx
 				move.l	Plr2_ZOff_l,d3
-
 				move.l	d3,oldz
 				move.l	Plr2_TmpXOff_l,d0
 				move.l	d0,Plr2_XOff_l
@@ -2991,46 +2980,41 @@ Plr2_Control:
 				move.l	Plr2_TmpZOff_l,d1
 				move.l	d1,newz
 				move.l	d1,Plr2_ZOff_l
-
 				move.l	plr2_TmpHeight_l,Plr2_Height_l
-
 				sub.l	d2,d0
 				sub.l	d3,d1
 				move.l	d0,xdiff
 				move.l	d1,zdiff
 				move.w	Plr2_TmpAngPos_w,d0
 				move.w	d0,Plr2_AngPos_w
-
 				move.l	#SinCosTable_vw,a1
 				move.w	(a1,d0.w),Plr2_SinVal_w
 				add.w	#COSINE_OFS,d0
 				AMOD_A	d0
 				move.w	(a1,d0.w),Plr2_CosVal_w
-
 				move.l	Plr2_TmpYOff_l,d0
 				move.w	plr2_TmpBobble_w,d1
 				move.w	(a1,d1.w),d1
 				move.w	d1,d3
 				ble.s	.notnegative
+
 				neg.w	d1
+
 .notnegative:
 				add.w	#16384,d1
 				asr.w	#4,d1
-
 				tst.b	Plr2_Ducked_b
 				bne.s	.notdouble
 				tst.b	Plr2_Squished_b
 				bne.s	.notdouble
 				add.w	d1,d1
+
 .notdouble:
 				ext.l	d1
-
 				move.l	d1,plr2_BobbleY_l
-
 				move.l	Plr2_Height_l,d4
 				sub.l	d1,d4
 				add.l	d1,d0
-
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				bne.s	.otherwob
 				asr.w	#6,d3
@@ -3052,30 +3036,30 @@ Plr2_Control:
 				move.l	d0,Plr2_YOff_l
 				move.l	d0,newy
 				move.l	d0,oldy
-
 				move.l	d4,thingheight
 				move.l	#40*256,StepUpVal
 				tst.b	Plr2_Squished_b
 				bne.s	.smallstep
+
 				tst.b	Plr2_Ducked_b
 				beq.s	.okbigstep
+
 .smallstep:
 				move.l	#10*256,StepUpVal
+
 .okbigstep:
-
 				move.l	#$1000000,StepDownVal
-
 				move.l	Plr2_ZonePtr_l,a0
 				move.w	ZoneT_TelZone_w(a0),d0
 				blt		.noteleport
 
 				move.w	ZoneT_TelX_w(a0),newx
 				move.w	ZoneT_TelZ_w(a0),newz
-;				move.w	Plr2_ObjectPtr_l,a0 ; 0xABADCAFE - word size - is this a bug?
 				move.l	Plr2_ObjectPtr_l,a0
 				move.w	(a0),CollId
 				move.l	#%111111111111111111,Obj_CollideFlags_l
 				jsr		Obj_DoCollision
+
 				tst.b	hitwall
 				beq.s	.teleport
 
@@ -3085,7 +3069,6 @@ Plr2_Control:
 
 .teleport:
 				st		plr2_Teleported_b
-
 				move.l	Plr2_ZonePtr_l,a0
 				move.w	ZoneT_TelZone_w(a0),d0
 				move.w	ZoneT_TelX_w(a0),Plr2_XOff_l
@@ -3114,31 +3097,30 @@ Plr2_Control:
 				bra		.cantmove
 
 .noteleport:
-
 				move.l	Plr2_ZonePtr_l,Obj_ZonePtr_l
 				move.w	#%100000000000,wallflags
 				move.b	Plr2_StoodInTop_b,StoodInTop
-
 				move.l	#%1011111010111100011,Obj_CollideFlags_l
 				move.l	Plr2_ObjectPtr_l,a0
 				move.w	(a0),CollId
-
 				jsr		Obj_DoCollision
+
 				tst.b	hitwall
 				beq.s	.nothitanything
+
 				move.w	oldx,Plr2_XOff_l
 				move.w	oldz,Plr2_ZOff_l
 				move.l	Plr2_XOff_l,Plr2_SnapXOff_l
 				move.l	Plr2_ZOff_l,Plr2_SnapZOff_l
 				bra		.cantmove
-.nothitanything:
 
+.nothitanything:
 				move.w	#40,Obj_ExtLen_w
 				move.b	#0,Obj_AwayFromWall_b
-
 				clr.b	exitfirst
 				clr.b	Obj_WallBounce_b
 				bsr		MoveObject
+
 				move.b	StoodInTop,Plr2_StoodInTop_b
 				move.l	Obj_ZonePtr_l,Plr2_ZonePtr_l
 				move.w	newx,Plr2_XOff_l
@@ -3147,42 +3129,33 @@ Plr2_Control:
 				move.l	Plr2_ZOff_l,Plr2_SnapZOff_l
 
 .cantmove:
-
 				move.l	Plr2_ZonePtr_l,a0
-
 				move.l	ZoneT_Floor_l(a0),d0
 				tst.b	Plr2_StoodInTop_b
 				beq.s	.notintop
 				move.l	ZoneT_UpperFloor_l(a0),d0
-.notintop:
 
+.notintop:
 				adda.w	#ZoneT_Points_w,a0
 				sub.l	Plr2_Height_l,d0
 				move.l	d0,Plr2_SnapTYOff_l
 				move.w	Plr2_TmpAngPos_w,tmpangpos
-
-; move.l (a0),a0		; jump to viewpoint list
-* A0 is pointing at a pointer to list of points to rotate
 				move.w	(a0)+,d1
 				ext.l	d1
 				add.l	Plr2_ZonePtr_l,d1
 				move.l	d1,plr2_PointsToRotatePtr_l
 				tst.b	(a0)+
-				;sne		DRAWNGRAPHTOP
 				beq.s	.nobackgraphics
+
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				bne.s	.nobackgraphics
 
 				jsr		Draw_SkyBackdrop
 
 .nobackgraphics:
-
 				move.b	(a0)+,Plr2_Echo_b
-
 				adda.w	#10,a0
-				move.l	a0,plr2_ListOfGraphRoomsPtr_l
-
-*****************************************************
+				move.l	a0,Plr2_PotVisibleZoneListPtr_l
 				rts
 
 
@@ -3195,7 +3168,7 @@ DONTDOGUN:
 DrawDisplay:
 				clr.b	fillscrnwater
 
-				; bignsine is 16kb = 8192 words for 4pi (720deg)
+				; bigsine is 16kb = 8192 words for 4pi (720deg)
 				; --> 4096 words per 2pi
 				; --> 1024 words = 2048byte per 90deg
 

@@ -40,7 +40,7 @@ Plr1_TmpZOff_l:				ds.l	1 ; suspect 16:16
 Plr1_TmpYOff_l:				ds.l	1
 
 ; Private fields
-plr1_ListOfGraphRoomsPtr_l:	ds.l	1 ; hires.s
+Plr1_PotVisibleZoneListPtr_l:	ds.l	1 ; hires.s
 plr1_PointsToRotatePtr_l:	ds.l	1 ; hires.s
 plr1_BobbleY_l:				ds.l	1 ; hires.s
 plr1_TmpHeight_l:			ds.l	1 ; hires.s
@@ -153,7 +153,7 @@ Plr2_TmpZOff_l:				ds.l	1
 Plr2_TmpYOff_l:				ds.l	1
 
 ; Private fields
-plr2_ListOfGraphRoomsPtr_l: ds.l 	1 ; hires.s
+Plr2_PotVisibleZoneListPtr_l: ds.l 	1 ; hires.s
 plr2_PointsToRotatePtr_l:	ds.l 	1 ; hires.s
 plr2_BobbleY_l:				ds.l	1 ; hires.s
 plr2_TmpHeight_l:			ds.l	1 ; hires.s
