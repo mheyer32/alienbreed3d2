@@ -2026,8 +2026,9 @@ ai_CheckAttackOnGround:
 				move.l	ObjT_YPos_l(a0),d2
 				move.l	Plr1_SnapYOff_l,d3
 				sub.l	d3,d2
-				
-				cmp.l	thingheight,d2
+				move.l	thingheight,d3
+				asl.l	#1,d3;double the height of the thing
+				cmp.l	d3,d2
 				bgt.s	.dont_attack_player
 				
 				st		d0
