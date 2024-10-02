@@ -2027,17 +2027,11 @@ ai_CheckAttackOnGround:
 				move.l	Plr1_SnapYOff_l,d3
 				sub.l	d3,d2
 				
-				cmp.l	#THINGYDIST,d2
+				cmp.l	thingheight,d2
 				bgt.s	.dont_attack_player
-				
-				;removed as the hell hounds don't swim
-				;cmp.l	#-THINGYDIST,d2
-				;blt.s	.dont_attack_player
 				
 				st		d0
 				rts
-
-THINGYDIST	EQU	32767
 
 ai_GetRoomCPT:
 				move.l	objroom,a2
