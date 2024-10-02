@@ -282,7 +282,7 @@ ai_DoDefault:
 				rts
 
 ai_DoResponse:
-				DEV_CHECK	AI_ATTACK,ai_DoDefault
+				DEV_CHECK_SET	SKIP_AI_ATTACK,ai_DoDefault
 				cmp.w	#1,AI_ResponseMode_w
 				blt		ai_Charge
 				beq		ai_ChargeToSide
@@ -1559,7 +1559,7 @@ ai_CheckFloorCeiling:
 				sub.w	d4,d2
 				add.w	d4,d3
 
-				move.l	objroom,a2
+				move.l	Obj_ZonePtr_l,a2
 
 				move.l	ZoneT_Floor_l(a2),d0
 				move.l	ZoneT_Roof_l(a2),d1
@@ -1638,7 +1638,7 @@ ai_GetRoomStats:
 				move.w	newz,4(a1)
 
 ai_GetRoomStatsStill:
-				move.l	objroom,a2
+				move.l	Obj_ZonePtr_l,a2
 				move.w	(a2),12(a0)
 
 				move.l	ZoneT_Floor_l(a2),d0
@@ -1708,8 +1708,8 @@ AI_LookForPlayer1:
 				clr.b	CanSee
 				move.b	ShotT_InUpperZone_b(a0),ViewerTop
 				move.b	Plr1_StoodInTop_b,TargetTop
-				move.l	Plr1_ZonePtr_l,ToRoom
-				move.l	objroom,FromRoom
+				move.l	Plr1_ZonePtr_l,Obj_ToZonePtr_l
+				move.l	Obj_ZonePtr_l,Obj_FromZonePtr_l
 				move.w	newx,Viewerx
 				move.w	newz,Viewerz
 				move.w	Plr1_XOff_l,Targetx
@@ -2034,7 +2034,7 @@ ai_CheckAttackOnGround:
 				rts
 
 ai_GetRoomCPT:
-				move.l	objroom,a2
+				move.l	Obj_ZonePtr_l,a2
 				moveq	#0,d0
 				move.b	ZoneT_ControlPoint_w(a2),d0
 				tst.b	ShotT_InUpperZone_b(a0)

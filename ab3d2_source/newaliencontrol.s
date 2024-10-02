@@ -21,10 +21,9 @@ ItsAnAlien:
 				rts
 
 .ok_alive:
-				move.l	Lvl_ZoneAddsPtr_l,a5
+				move.l	Lvl_ZonePtrsPtr_l,a5
 				move.l	(a5,d2.w*4),d0
-				add.l	Lvl_DataPtr_l,d0
-				move.l	d0,objroom
+				move.l	d0,Obj_ZonePtr_l
 				move.l	d0,a6
 				move.b	ZoneT_Echo_b(a6),ALIENECHO
 				moveq	#0,d0
@@ -137,9 +136,8 @@ Collectable:
 .worry_about:
 				and.b	#$80,ShotT_Worry_b(a0)
 				move.l	a1,a2
-				move.l	Lvl_ZoneAddsPtr_l,a1
+				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	Lvl_DataPtr_l,a1
 				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
@@ -220,9 +218,8 @@ Activatable:
 .worry_about:
 				and.b	#$80,ShotT_Worry_b(a0)
 				move.l	a1,a2
-				move.l	Lvl_ZoneAddsPtr_l,a1
+				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	Lvl_DataPtr_l,a1
 				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
@@ -299,9 +296,8 @@ ACTIVATED:
 .worry_about:
 				and.b	#$80,ShotT_Worry_b(a0)
 				move.l	a1,a2
-				move.l	Lvl_ZoneAddsPtr_l,a1
+				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	Lvl_DataPtr_l,a1
 				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
@@ -418,9 +414,8 @@ Destructable:
 
 .worry_about:
 				move.l	a1,a2
-				move.l	Lvl_ZoneAddsPtr_l,a1
+				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	Lvl_DataPtr_l,a1
 				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
@@ -470,10 +465,9 @@ StillHere:
 .worry_about:
 				movem.l	d0-d7/a0-a6,-(a7)
 				move.w	ObjT_ZoneID_w(a0),d2
-				move.l	Lvl_ZoneAddsPtr_l,a5
+				move.l	Lvl_ZonePtrsPtr_l,a5
 				move.l	(a5,d2.w*4),d0
-				add.l	Lvl_DataPtr_l,d0
-				move.l	d0,objroom
+				move.l	d0,Obj_ZonePtr_l
 				move.w	(a0),d0
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),newx
@@ -496,9 +490,8 @@ Decoration:
 
 intodeco:
 				move.l	a1,a2
-				move.l	Lvl_ZoneAddsPtr_l,a1
+				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d0.w*4),a1
-				add.l	Lvl_DataPtr_l,a1
 				tst.w	ODefT_FloorCeiling_w(a2)
 				beq.s	.on_floor
 
@@ -1082,7 +1075,7 @@ SHOOTPLAYER1:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	objroom,-(a7)
+				move.l	Obj_ZonePtr_l,-(a7)
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:
@@ -1106,9 +1099,9 @@ SHOOTPLAYER1:
 				bra		.again
 
 .nofurther:
-				move.l	objroom,backroom
+				move.l	Obj_ZonePtr_l,backupZonePtr_l
 				movem.l	(a7)+,d0-d7/a0-a6
-				move.l	(a7)+,objroom
+				move.l	(a7)+,Obj_ZonePtr_l
 				move.l	Plr_ShotDataPtr_l,a0
 				move.w	#NUM_PLR_SHOT_DATA-1,d1
 
@@ -1134,7 +1127,7 @@ SHOOTPLAYER1:
 				move.w	#0,ShotT_Gravity_w(a0)
 				move.b	#0,ShotT_Size_b(a0)
 				move.b	#0,ShotT_Anim_b(a0)
-				move.l	backroom,a1
+				move.l	backupZonePtr_l,a1
 				move.w	(a1),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
 				move.l	wallhitheight,d0
@@ -1334,7 +1327,7 @@ SHOOTPLAYER2:
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
-				move.l	objroom,-(a7)
+				move.l	Obj_ZonePtr_l,-(a7)
 				movem.l	d0-d7/a0-a6,-(a7)
 
 .again:
@@ -1358,9 +1351,9 @@ SHOOTPLAYER2:
 				bra		.again
 
 .nofurther:
-				move.l	objroom,backroom
+				move.l	Obj_ZonePtr_l,backupZonePtr_l
 				movem.l	(a7)+,d0-d7/a0-a6
-				move.l	(a7)+,objroom
+				move.l	(a7)+,Obj_ZonePtr_l
 				move.l	AI_AlienShotDataPtr_l,a0
 				move.w	#NUM_ALIEN_SHOT_DATA-1,d1
 
@@ -1386,7 +1379,7 @@ SHOOTPLAYER2:
 				move.w	#0,ShotT_Gravity_w(a0)
 				move.b	#0,ShotT_Size_b(a0)
 				move.b	#0,ShotT_Anim_b(a0)
-				move.l	backroom,a1
+				move.l	backupZonePtr_l,a1
 				move.w	(a1),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
 				move.l	wallhitheight,d0
@@ -1502,7 +1495,8 @@ FireAtPlayer2:
 				rts
 
 				align 4
-backroom:		dc.l	0
+
+backupZonePtr_l:		dc.l	0
 SHOTYOFF:		dc.l	0
 SHOTTYPE:		dc.w	0
 SHOTPOWER:		dc.w	0

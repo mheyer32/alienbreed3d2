@@ -42,12 +42,15 @@ extern UBYTE Prefs_ShowMessages_b;
 extern UBYTE Draw_MapTransparent_b;
 extern UWORD Draw_MapZoomLevel_w;
 
+extern ULONG Zone_MovementMask_l;
 #ifdef DEV
-extern ULONG dev_SkipFlags_l;
+extern ULONG Dev_DebugFlags_l;
 #endif
 
 void Cfg_ParsePreferencesFile(char const*);
 void Cfg_WritePreferencesFile(char const*);
+
+static UBYTE Prefs_OrderZoneSensitivity = 4;
 
 // Extreme MVP version
 
@@ -72,6 +75,13 @@ void game_ApplyPreferences(void)
 
     // Map zoom is 0-7. TODO - this should be defined somewhere
     Draw_MapZoomLevel_w &= 7;
+
+    // Zone ordering sensitivity
+    Prefs_OrderZoneSensitivity &= 7;
+
+    UWORD mask = ~((1 << Prefs_OrderZoneSensitivity) - 1);
+
+    Zone_MovementMask_l = ((ULONG)mask << 16) | mask;
 }
 
 void game_LoadPreferences(void)
@@ -112,13 +122,15 @@ enum Cfg_ParamType {
  * Enumerate the in-memory types of target values
  */
 enum Cfg_VarType {
-    CFG_VAR_TYPE_UBYTE = 0,
-    CFG_VAR_TYPE_BYTE  = 1,
-    CFG_VAR_TYPE_UWORD = 2,
-    CFG_VAR_TYPE_WORD  = 3,
-    CFG_VAR_TYPE_ULONG = 4,
-    CFG_VAR_TYPE_LONG  = 5,
-    CFG_VAR_TYPE_BIT   = 6,
+    CFG_VAR_TYPE_UBYTE     = 0,
+    CFG_VAR_TYPE_BYTE      = 1,
+    CFG_VAR_TYPE_UWORD     = 2,
+    CFG_VAR_TYPE_WORD      = 3,
+    CFG_VAR_TYPE_ULONG     = 4,
+    CFG_VAR_TYPE_LONG      = 5,
+    CFG_VAR_TYPE_UBYTE_BIT = 6,
+    CFG_VAR_TYPE_UWORD_BIT = 7,
+    CFG_VAR_TYPE_ULONG_BIT = 8,
 };
 
 
@@ -130,7 +142,7 @@ enum Cfg_VarType {
 typedef struct {
     char const *p_name; // The parameter name
     void       *v_data; // The in-memory location of the value to read/write
-    UWORD      p_type;  // Cfg_ParamType
+    UWORD      p_type;  // Cfg_ParamType, or the bit number for a flag based VarType
     UWORD      v_type;  // Cfg_VarType
 } Cfg_Setting;
 
@@ -145,6 +157,7 @@ static Cfg_Setting const cfg_options[] = {
     #include "prefs_vid.h"
     #include "prefs_gfx.h"
     #include "prefs_misc.h"
+    #include "prefs_dev.h"
 };
 
 /**
@@ -211,7 +224,7 @@ Cfg_Parser cfg_parsers[] = {
     cfg_ParseBool,
     cfg_ParseBoolInv,
     cfg_ParseInt,
-    cfg_ParseKey
+    cfg_ParseKey,
 };
 
 /**
@@ -274,6 +287,35 @@ static void cfg_SetLong(Cfg_Setting const* option, char const* param) {
     *((LONG*)option->v_data) = cfg_parsers[option->p_type](param);
 }
 
+static void cfg_SetUByteBit(Cfg_Setting const* option, char const* param) {
+    UBYTE* p = (UBYTE*)option->v_data;
+    UBYTE  v = 1 << (option->p_type & 7);
+    if (cfg_ParseBool(param)) {
+        *p |= v;
+    } else {
+        *p &= ~v;
+    }
+}
+
+static void cfg_SetUWordBit(Cfg_Setting const* option, char const* param) {
+    UWORD* p = (UWORD*)option->v_data;
+    UWORD  v = 1 << (option->p_type & 15);
+    if (cfg_ParseBool(param)) {
+        *p |= v;
+    } else {
+        *p &= ~v;
+    }
+}
+
+static void cfg_SetULongBit(Cfg_Setting const* option, char const* param) {
+    ULONG* p = (ULONG*)option->v_data;
+    ULONG  v = 1 << (option->p_type & 31);
+    if (cfg_ParseBool(param)) {
+        *p |= v;
+    } else {
+        *p &= ~v;
+    }
+}
 
 /**
  * Cfg_Setter per Cfg_VarType
@@ -285,6 +327,9 @@ Cfg_Setter cfg_setters[] = {
     cfg_SetWord,
     cfg_SetLong,
     cfg_SetLong,
+    cfg_SetUByteBit,
+    cfg_SetUWordBit,
+    cfg_SetULongBit,
 };
 
 /**
@@ -381,6 +426,7 @@ void Cfg_WritePreferencesFile(char const* file) {
 
         for (unsigned int i = 0; i < sizeof(cfg_options) / sizeof(Cfg_Setting); ++i) {
             LONG val = 0;
+            UWORD type = cfg_options[i].p_type;
             switch (cfg_options[i].v_type) {
                 case CFG_VAR_TYPE_UBYTE:
                     val = *((UBYTE*)cfg_options[i].v_data);
@@ -403,11 +449,29 @@ void Cfg_WritePreferencesFile(char const* file) {
                     val = *((LONG*)cfg_options[i].v_data);
                     break;
 
+                case CFG_VAR_TYPE_UBYTE_BIT:
+                    val = *((UBYTE*)cfg_options[i].v_data);
+                    val &= 1 << (type & 7);
+                    type = CFG_PARAM_TYPE_BOOL;
+                    break;
+
+                case CFG_VAR_TYPE_UWORD_BIT:
+                    val = *((UWORD*)cfg_options[i].v_data);
+                    val &= 1 << (type & 15);
+                    type = CFG_PARAM_TYPE_BOOL;
+                    break;
+
+                case CFG_VAR_TYPE_ULONG_BIT:
+                    val = *((LONG*)cfg_options[i].v_data);
+                    val &= 1 << (type & 31);
+                    type = CFG_PARAM_TYPE_BOOL;
+                    break;
+
                 default:
                     continue;
             }
 
-            switch (cfg_options[i].p_type) {
+            switch (type) {
                 case CFG_PARAM_TYPE_BOOL_INV:
                     val = (~val) & 0xFF;
 

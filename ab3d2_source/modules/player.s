@@ -22,10 +22,12 @@
 Plr_Initialise:
 				move.l	Lvl_DataPtr_l,a1
 				add.l	#LVLT_MESSAGE_LENGTH*LVLT_MESSAGE_COUNT,a1
-				move.w	LvlT_Plr1_Start_ZoneID_w(a1),d0
-				move.l	Lvl_ZoneAddsPtr_l,a0
+
+				; player 1
+				; pZone = Lvl_DataPtr_l[Lvl_ZonePtrsPtr_l[zoneId_w]]
+				move.w	TBLT_Plr1_StartZoneID_w(a1),d0
+				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d0.w*4),d0
-				add.l	Lvl_DataPtr_l,d0
 				move.l	d0,Plr1_ZonePtr_l
 				move.l	Plr1_ZonePtr_l,a0
 				move.l	ZoneT_Floor_l(a0),d0
@@ -34,12 +36,17 @@ Plr_Initialise:
 				move.l	d0,Plr1_YOff_l
 				move.l	d0,Plr1_SnapTYOff_l
 				move.l	Plr1_ZonePtr_l,plr1_OldRoomPtr_l
-				move.l	Lvl_DataPtr_l,a1
-				add.l	#LVLT_MESSAGE_LENGTH*LVLT_MESSAGE_COUNT,a1
-				move.w	LvlT_Plr2_Start_ZoneID_w(a1),d0
-				move.l	Lvl_ZoneAddsPtr_l,a0
+				move.w	TBLT_Plr1_StartXPos_w(a1),Plr1_SnapXOff_l
+				move.w	TBLT_Plr1_StartZPos_w(a1),Plr1_SnapZOff_l
+				move.w	TBLT_Plr1_StartXPos_w(a1),Plr1_XOff_l
+				move.w	TBLT_Plr1_StartZPos_w(a1),Plr1_ZOff_l
+				move.l	#%100011,plr1_DefaultEnemyFlags_l
+
+				; player 2
+				; pZone = Lvl_DataPtr_l[Lvl_ZonePtrsPtr_l[zoneId_w]]
+				move.w	TBLT_Plr2_StartZoneID_w(a1),d0
+				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d0.w*4),d0
-				add.l	Lvl_DataPtr_l,d0
 				move.l	d0,Plr2_ZonePtr_l
 				move.l	Plr2_ZonePtr_l,a0
 				move.l	ZoneT_Floor_l(a0),d0
@@ -49,16 +56,10 @@ Plr_Initialise:
 				move.l	d0,Plr2_SnapTYOff_l
 				move.l	d0,Plr2_YOff_l
 				move.l	Plr2_ZonePtr_l,plr2_OldRoomPtr_l
-				move.w	LvlT_Plr1_StartX_w(a1),Plr1_SnapXOff_l
-				move.w	LvlT_Plr1_StartZ_w(a1),Plr1_SnapZOff_l
-				move.w	LvlT_Plr1_StartX_w(a1),Plr1_XOff_l
-				move.w	LvlT_Plr1_StartZ_w(a1),Plr1_ZOff_l
-				move.w	LvlT_Plr2_StartX_w(a1),Plr2_SnapXOff_l
-				move.w	LvlT_Plr2_StartZ_w(a1),Plr2_SnapZOff_l
-				move.w	LvlT_Plr2_StartX_w(a1),Plr2_XOff_l
-				move.w	LvlT_Plr2_StartZ_w(a1),Plr2_ZOff_l
-
-				move.l	#%100011,plr1_DefaultEnemyFlags_l
+				move.w	TBLT_Plr2_StartXPos_w(a1),Plr2_SnapXOff_l
+				move.w	TBLT_Plr2_StartZPos_w(a1),Plr2_SnapZOff_l
+				move.w	TBLT_Plr2_StartXPos_w(a1),Plr2_XOff_l
+				move.w	TBLT_Plr2_StartZPos_w(a1),Plr2_ZOff_l
 				move.l	#%010011,plr2_DefaultEnemyFlags_l
 				rts
 
@@ -414,11 +415,11 @@ plr_KeyboardControl:
 				clr.l	Vid_FPSLimit_l
 
 .noframelimit:
-                tst.b   RAWKEY_NUM_DOT(a5)
-                beq.b   .done_normal_keys
-                add.b   #1,Prefs_CrossHairColour_b
-                and.b   #7,Prefs_CrossHairColour_b
-                clr.b   RAWKEY_NUM_DOT(a5)
+				tst.b   RAWKEY_NUM_DOT(a5)
+				beq.b   .done_normal_keys
+				add.b   #1,Prefs_CrossHairColour_b
+				and.b   #7,Prefs_CrossHairColour_b
+				clr.b   RAWKEY_NUM_DOT(a5)
 
 .done_normal_keys:
 				IFD DEV
@@ -453,25 +454,24 @@ plr_KeyboardControl:
 				dbra			d0,.clear_loop
 
 .dev_toggles:
-				DEV_CHECK_KEY	RAWKEY_V,DUMP_BG_DISABLE
-
-				; Developer toggles
-				DEV_CHECK_KEY	RAWKEY_E,SIMPLE_WALLS
-				DEV_CHECK_KEY	RAWKEY_R,SHADED_WALLS
-				DEV_CHECK_KEY	RAWKEY_T,BITMAPS
-				DEV_CHECK_KEY	RAWKEY_Y,GLARE_BITMAPS
-				DEV_CHECK_KEY	RAWKEY_U,ADDITIVE_BITMAPS
-				DEV_CHECK_KEY	RAWKEY_I,LIGHTSOURCED_BITMAPS
-				DEV_CHECK_KEY	RAWKEY_O,POLYGON_MODELS
-				DEV_CHECK_KEY	RAWKEY_G,FLATS
-				DEV_CHECK_KEY	RAWKEY_Q,FASTBUFFER_CLEAR
-				DEV_CHECK_KEY	RAWKEY_N,AI_ATTACK
-				DEV_CHECK_KEY	RAWKEY_B,LIGHTING
-				DEV_CHECK_KEY	RAWKEY_H,OVERLAY
+				DEV_CHECK_KEY	RAWKEY_V,SKIP_DUMP_BG_DISABLE
+				DEV_CHECK_KEY	RAWKEY_E,SKIP_SIMPLE_WALLS
+				DEV_CHECK_KEY	RAWKEY_R,SKIP_SHADED_WALLS
+				DEV_CHECK_KEY	RAWKEY_T,SKIP_BITMAPS
+				DEV_CHECK_KEY	RAWKEY_Y,SKIP_GLARE_BITMAPS
+				DEV_CHECK_KEY	RAWKEY_U,SKIP_ADDITIVE_BITMAPS
+				DEV_CHECK_KEY	RAWKEY_I,SKIP_LIGHTSOURCED_BITMAPS
+				DEV_CHECK_KEY	RAWKEY_O,SKIP_POLYGON_MODELS
+				DEV_CHECK_KEY	RAWKEY_G,SKIP_FLATS
+				DEV_CHECK_KEY	RAWKEY_Q,SKIP_FASTBUFFER_CLEAR
+				DEV_CHECK_KEY	RAWKEY_N,SKIP_AI_ATTACK
+				DEV_CHECK_KEY	RAWKEY_B,SKIP_LIGHTING
+				DEV_CHECK_KEY	RAWKEY_H,SKIP_OVERLAY
+				DEV_CHECK_KEY	RAWKEY_COMMA,ZONE_TRACE
 
 				; change the default floor gouraud state based on the lighting toggle
 				; todo - fix floor rendering when goraud is disabled, it's seriously glitched
-				;DEV_SEQ	LIGHTING,draw_GouraudFlatsSelected_b
+				;DEV_SEQ	SKIP_LIGHTING,draw_GouraudFlatsSelected_b
 
 				ENDC
 
