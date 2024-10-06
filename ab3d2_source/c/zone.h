@@ -41,10 +41,10 @@ typedef struct {
     WORD  z_ControlPoint;             // 26, 2 really UBYTE[2]
     WORD  z_BackSFXMask;              // 28, 2 Originally long but always accessed as word
     WORD  z_Unused;                   // 30, 2 so this is the unused half
-    WORD  z_EdgeListOffset;                 // 32, 2
+    WORD  z_EdgeListOffset;           // 32, 2
     WORD  z_Points;                   // 34, 2
-    UBYTE z_DrawBackdrop;            // 36, 1
-    UBYTE z_Echo;                    // 37, 1
+    UBYTE z_DrawBackdrop;             // 36, 1
+    UBYTE z_Echo;                     // 37, 1
     WORD  z_TelZone;                  // 38, 2
     WORD  z_TelX;                     // 40, 2
     WORD  z_TelZ;                     // 42, 2
@@ -68,7 +68,14 @@ typedef struct {
     UWORD e_Flags;
 } __attribute__((packed)) __attribute__ ((aligned (2))) ZEdge;
 
+static __inline WORD const* zone_GetEdgeList(Zone const* zonePtr) {
+    return (WORD const*)(((BYTE const*)zonePtr) + zonePtr->z_EdgeListOffset);
+}
+
+
 extern Zone** Lvl_ZonePtrsPtr_l;
 extern ZEdge* Lvl_ZoneEdgePtr_l;
+
+
 
 #endif // ZONE_H

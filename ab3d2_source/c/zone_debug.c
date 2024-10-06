@@ -212,7 +212,7 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
         (int)zonePtr->z_EdgeListOffset
     );
     // ExitList is an address offset prior to the zone
-    WORD const* zList = (WORD*)(((BYTE*)zonePtr) + zonePtr->z_EdgeListOffset);
+    WORD const* zList = zone_GetEdgeList(zonePtr);
 
     do {
         int edge = (int)*zList;
