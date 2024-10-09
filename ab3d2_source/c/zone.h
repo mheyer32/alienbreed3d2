@@ -12,25 +12,46 @@
  * The end of the structure is a -1 terminated list of zone ID of the potentially visible set of zones
  * that could be visible from the current zone.
  *
- * This structure may have some long aligned data penalties.
+ * These structures may have some long aligned data penalties.
  */
+
+enum {
+    ZONE_ID_LIST_END       = -1,
+    ZONE_ID_REMOVED_MANUAL = -2,
+    ZONE_ID_REMOVED_AUTO   = -3,
+};
 
 /**
  * This structure contains information about a potentially visible zone. A list of these
- * is appended to each Zone structure. The final record has pvs_Zone set to -1.
+ * is appended to each Zone structure. The final record has pvs_ZoneID set to -1.
  */
 typedef struct {
-    WORD pvs_Zone;
+    WORD pvs_ZoneID;
     WORD pvs_SortVal;
     WORD pvs_Word2; // TODO
     WORD pvs_Word3; // TODO
 } __attribute__((packed)) __attribute__ ((aligned (2))) ZPVSRecord;
 
 /**
+ * Edge structure.
+ */
+typedef struct {
+    WORD  e_XPos;       // X coordinate
+    WORD  e_ZPos;       // Z coordinate
+    WORD  e_XLen;       // Length in X direction
+    WORD  e_ZLen;       // Length in Z direction
+    WORD  e_JoinZoneID; // Zone the edge joins to, or -1 for a solid wall
+    WORD  e_Word_5;     // TODO
+    BYTE  e_Byte_12;    // TODO
+    BYTE  e_Byte_13;    // TODO
+    UWORD e_Flags;
+} __attribute__((packed)) __attribute__ ((aligned (2))) ZEdge;
+
+/**
  * Main zone structure. Note that the long fields in here can be 2-byte aligned.
  */
 typedef struct {
-    WORD  z_ID;                       //  2, 2
+    WORD  z_ZoneID;                   //  2, 2
     LONG  z_Floor;                    //  2, 4
     LONG  z_Roof;                     //  6, 4
     LONG  z_UpperFloor;               // 10, 4
@@ -53,29 +74,17 @@ typedef struct {
     ZPVSRecord  z_PotVisibleZoneList[1];    // 48, 2 Vector, varying length
 }  __attribute__((packed)) __attribute__ ((aligned (2))) Zone;
 
-/**
- * Edge structure.
- */
-typedef struct {
-    WORD  e_XPos;       // X coordinate
-    WORD  e_ZPos;       // Z coordinate
-    WORD  e_XLen;       // Length in X direction
-    WORD  e_ZLen;       // Length in Z direction
-    WORD  e_JoinZone;   // Zone the edge joins to, or -1 for a solid wall
-    WORD  e_Word_5;     // TODO
-    BYTE  e_Byte_12;    // TODO
-    BYTE  e_Byte_13;    // TODO
-    UWORD e_Flags;
-} __attribute__((packed)) __attribute__ ((aligned (2))) ZEdge;
-
 static __inline WORD const* zone_GetEdgeList(Zone const* zonePtr) {
     return (WORD const*)(((BYTE const*)zonePtr) + zonePtr->z_EdgeListOffset);
 }
 
+static __inline BOOL zone_IsValidID(WORD id) {
+    return (id >= 0);
+}
+
+void Zone_ProcessPVS(REG(a0, Zone* zonePtr));
 
 extern Zone** Lvl_ZonePtrsPtr_l;
 extern ZEdge* Lvl_ZoneEdgePtr_l;
-
-
 
 #endif // ZONE_H

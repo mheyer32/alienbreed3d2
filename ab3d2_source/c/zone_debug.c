@@ -58,12 +58,12 @@ static void ZDbg_ShowRegs(void)
 void ZDbg_Init(void)
 {
     // Test hack for the U-bend level
-    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[2].pvs_Zone = -1;
-    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[3].pvs_Zone = -1;
-    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[4].pvs_Zone = -1;
+    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[2].pvs_ZoneID = -1;
+    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[3].pvs_ZoneID = -1;
+    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[4].pvs_ZoneID = -1;
     //
-    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[3].pvs_Zone = -1;
-    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[4].pvs_Zone = -1;
+    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[3].pvs_ZoneID = -1;
+    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[4].pvs_ZoneID = -1;
 
     // Note that the debug flags are set during an interrupt and can therefore become active
     // at any time. We therefore use our own latch here to ensure that once the flag is set,
@@ -87,11 +87,13 @@ void ZDbg_Init(void)
         (int)Plr1_Zone
     );
 
+    Zone_ProcessPVS(Lvl_ZonePtrsPtr_l[Plr1_Zone]);
+
     // Fully dump the player's zone first with the PVS tree displayed
     // but not for the remaining zones traversed.
     ZDbg_DumpZone(Lvl_ZonePtrsPtr_l[Plr1_Zone]);
 
-    zdbg_TraceFlags &= ~ ZDBG_TRACE_LIST_PVS;
+    zdbg_TraceFlags &= ~ZDBG_TRACE_LIST_PVS;
 
     puts("Stepping through PVS zones in order...");
 }
@@ -173,7 +175,7 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
     printf(
         "Zone %d {\n"
         "\tHeights: [LF:%d LC:%d UF:%d UC:%d WL:%d]\n",
-        (int)zonePtr->z_ID,
+        (int)zonePtr->z_ZoneID,
         // Note that heights appear to be 16.8, so scale down to give values
         // congruent with the editor.
         zonePtr->z_Floor >> 8,
@@ -193,7 +195,7 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
         );
         int zone;
         do {
-            zone = (int)p->pvs_Zone;
+            zone = (int)p->pvs_ZoneID;
             printf(
                 "\t\t| %3d | %6d | %6d | %6d |\n",
                 zone,
@@ -223,7 +225,7 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
                 edge,
                 (int)edgePtr->e_XPos,     (int)edgePtr->e_ZPos,
                 (int)edgePtr->e_XLen,     (int)edgePtr->e_ZLen,
-                (int)edgePtr->e_JoinZone, (int)edgePtr->e_Word_5,
+                (int)edgePtr->e_JoinZoneID, (int)edgePtr->e_Word_5,
                 (int)edgePtr->e_Byte_12,  (int)edgePtr->e_Byte_13,
                 (int)edgePtr->e_Flags
             );
