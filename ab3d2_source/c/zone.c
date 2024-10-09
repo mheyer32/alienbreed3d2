@@ -1,6 +1,17 @@
 #include "system.h"
 #include "zone.h"
 #include <stdio.h>
+
+#ifdef ZONE_DEBUG
+    #define dputchar(c) putchar(c)
+    #define dputs(msg) puts(msg)
+    #define dprintf(fmt, ...) printf(fmt, ## __VA_ARGS__)
+#else
+    #define dputchar(c)
+    #define dputs(msg)
+    #define dprintf()
+#endif
+
 /**
  * TODO these should be allocated dynamically or reserved from the general workspace buffer.
  */
@@ -36,32 +47,35 @@ void zone_InitCurrentPVS(Zone const* zonePtr, WORD const* removeListPtr) {
     WORD* pvsCurrentZonePtr      = zone_GetCurrentPVSBuffer();
     WORD  zoneID;
 
-    printf("Building PVS List for Zone %d\n\t", (int)zonePtr->z_ZoneID);
+    dprintf("Building PVS List for Zone %d: ", (int)zonePtr->z_ZoneID);
 
-    int runaway = 64;
-
+    int runaway = PVS_TRAVERSE_LIMIT;
     while ((zoneID = zonePVSPtr->pvs_ZoneID) > ZONE_ID_LIST_END && runaway-- > 0) {
-        printf("%d", zoneID);
+
+        dprintf("%d", zoneID);
 
         ++zonePVSPtr;
         WORD const* removePtr = removeListPtr;
         while (removePtr && zone_IsValidID(*removePtr)) {
             if (*removePtr++ == zoneID) {
                 zoneID = ZONE_ID_REMOVED_MANUAL;
-                putchar('*');
+                dputchar('*');
                 break;
             }
         }
         *pvsCurrentZonePtr++ = zoneID;
-        putchar(',');
+
+        dputchar(',');
     }
     *pvsCurrentZonePtr = ZONE_ID_LIST_END; // Terminate
 
-    puts("End");
-
+    #ifdef ZONE_DEBUG
     if (runaway <= 0) {
-        puts("\tRunaway");
+        dputs("\tRunaway");
     }
+    #endif
+
+    dputchar('\n');
 }
 
 /**
@@ -71,7 +85,7 @@ BOOL zone_CheckInCurrentPVSList(WORD zoneID) {
     WORD const* pvsCurrentZonePtr = zone_GetCurrentPVSBuffer();
     WORD nextZoneId;
 
-    int runaway = 16;
+    int runaway = PVS_TRAVERSE_LIMIT;
 
     while ((nextZoneId = *pvsCurrentZonePtr++) != ZONE_ID_LIST_END && runaway-- > 0) {
         if (zoneID == nextZoneId) {
@@ -79,9 +93,11 @@ BOOL zone_CheckInCurrentPVSList(WORD zoneID) {
         }
     }
 
+    #ifdef ZONE_DEBUG
     if (runaway <= 0) {
-        puts("zone_CheckInCurrentPVSList()\n\tRunaway");
+        dputs("zone_CheckInCurrentPVSList()\n\tRunaway");
     }
+    #endif
 
     return FALSE;
 }
@@ -92,7 +108,7 @@ BOOL zone_CheckInCurrentPVSList(WORD zoneID) {
 BOOL zone_CheckIsNotInVisitedPVSList(WORD zoneID, WORD const* endPtr) {
     WORD* visitedPVSPtr = zone_GetVisitedPVSBuffer();
 
-    int runaway = 16;
+    int runaway = PVS_TRAVERSE_LIMIT;
 
     while (visitedPVSPtr < endPtr && runaway-- > 0) {
         if (zoneID == *visitedPVSPtr++) {
@@ -100,25 +116,16 @@ BOOL zone_CheckIsNotInVisitedPVSList(WORD zoneID, WORD const* endPtr) {
         }
     }
 
+    #ifdef ZONE_DEBUG
     if (runaway <= 0) {
-        puts("zone_CheckIsNotInVisitedPVSList()\n\tRunaway");
+        dputs("zone_CheckIsNotInVisitedPVSList()\n\tRunaway");
     }
+    #endif
 
     return TRUE;
 }
 
-
-/**
- * This is the main analysis step. Starting with our Zone of interest, we explore the edge list
- * and each edge that connects to a zone that's not in our current pvs list we add it to the
- * list of zones to visit, if not already in that list.
- */
-void Zone_ProcessPVS(REG(a0, Zone* zonePtr)) {
-    // Create the initial zone list for the PVS
-    WORD test[] = {7, 8, 129, ZONE_ID_LIST_END}; // simulate zone 2 as being removed
-
-    zone_InitCurrentPVS(zonePtr, test);
-
+void zone_BuildVisitedPVS(Zone* zonePtr) {
     WORD* visitedPVSPtr  = zone_GetVisitedPVSBuffer();
     WORD  nextZoneId;
 
@@ -132,20 +139,20 @@ void Zone_ProcessPVS(REG(a0, Zone* zonePtr)) {
         WORD const* edgeIndexPtr = zone_GetEdgeList(zonePtr);
         WORD edgeID;
         WORD zonesAdded;
-        int runaway = 16;
+        int runaway = PVS_TRAVERSE_LIMIT;
 
-        printf("Testing edges of zone %d\n\t", (int)zonePtr->z_ZoneID);
+        dprintf("\tEdges of %d: ", (int)zonePtr->z_ZoneID);
 
         do {
             zonesAdded = 0;
 
-            int runaway2 = 16;
+            int runaway2 = EDGE_TRAVERSE_LIMIT;
 
             // This loop may add multiple zones to the visited list, but we need to keep track of the first
             // that was added
             while (zone_IsValidID( (edgeID = *edgeIndexPtr++) ) && runaway2-- > 0) {
 
-                printf("%d", (int)edgeID);
+                dprintf("%d", (int)edgeID);
 
                 // If the edge joins a zone, e_JoinZoneID says which one, otherwhise it's negative.
                 WORD joinZoneID = Lvl_ZoneEdgePtr_l[edgeID].e_JoinZoneID;
@@ -156,23 +163,22 @@ void Zone_ProcessPVS(REG(a0, Zone* zonePtr)) {
                 ) {
                     *visitedPVSPtr++ = joinZoneID;
                     *visitedPVSPtr   = ZONE_ID_LIST_END;
-
                     ++zonesAdded;
-                    printf(" [z:%d]", (int)joinZoneID);
+                    dprintf(" [z:%d]", (int)joinZoneID);
                 }
-                printf(", ");
+                dputchar(',');
             }
 
             if (runaway2 <= 0) {
-                puts("Runaway 2");
+                dputs("Runaway 2");
                 return;
             }
 
         } while (zonesAdded && runaway-- > 0);
-        puts("\n");
 
+        dputchar('\n');
         if (runaway <= 0) {
-            puts("\tRunaway");
+            dputs("\tRunaway");
             return;
         }
 
@@ -186,14 +192,26 @@ void Zone_ProcessPVS(REG(a0, Zone* zonePtr)) {
 
     *visitedPVSPtr = ZONE_ID_LIST_END;
 
-    visitedPVSPtr = zone_GetVisitedPVSBuffer();
-
-    puts("Visited Zone List\n\t");
+    #ifdef ZONE_DEBUG
+    dprintf("Visited Zone List: ");
+    visitedPVSPtr  = zone_GetVisitedPVSBuffer();
     do {
         nextZoneId = *visitedPVSPtr++;
-        printf("%d, ", nextZoneId);
-
+        dprintf("%d,", nextZoneId);
     } while (nextZoneId != ZONE_ID_LIST_END);
+    dputchar('\n');
+    #endif
+}
 
-    puts("\nEnd\n");
+/**
+ * This is the main analysis step. Starting with our Zone of interest, we explore the edge list
+ * and each edge that connects to a zone that's not in our current pvs list we add it to the
+ * list of zones to visit, if not already in that list.
+ */
+void Zone_ProcessPVS(REG(a0, Zone* zonePtr)) {
+    // Create the initial zone list for the PVS
+    //WORD test[] = {7, 8, 129, ZONE_ID_LIST_END}; // simulate zone 2 as being removed
+
+    zone_InitCurrentPVS(zonePtr, NULL);
+    zone_BuildVisitedPVS(zonePtr);
 }

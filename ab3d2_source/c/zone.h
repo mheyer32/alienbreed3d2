@@ -21,6 +21,9 @@ enum {
     ZONE_ID_REMOVED_AUTO   = -3,
 };
 
+#define PVS_TRAVERSE_LIMIT 100
+#define EDGE_TRAVERSE_LIMIT 10
+
 /**
  * This structure contains information about a potentially visible zone. A list of these
  * is appended to each Zone structure. The final record has pvs_ZoneID set to -1.
