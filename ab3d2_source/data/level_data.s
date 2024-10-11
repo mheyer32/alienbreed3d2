@@ -30,3 +30,8 @@ Lvl_WallFilenameN_vb:		dc.b	'0.256wad',0
 _Lvl_ModPropsFilename_s::	; for C
 Lvl_ModPropsFilename_vb:		dc.b	'ab3:levels/level_'
 Lvl_ModPropsFilenameX_vb:		dc.b	'a/properties.dat',0
+
+; For per-level modifications
+_Lvl_ErrataFilename_s::	; for C
+Lvl_ErrataFilename_vb:		dc.b	'ab3:levels/level_'
+Lvl_ErrataFilenameX_vb:		dc.b	'a/errata.dat',0

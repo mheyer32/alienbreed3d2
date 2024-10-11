@@ -57,18 +57,6 @@ static void ZDbg_ShowRegs(void)
 
 void ZDbg_Init(void)
 {
-    // Test hack for the U-bend level
-    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[2].pvs_ZoneID = -1;
-    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[3].pvs_ZoneID = -1;
-    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[4].pvs_ZoneID = -1;
-    //
-    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[3].pvs_ZoneID = -1;
-    // Lvl_ZonePtrsPtr_l[0]->z_PotVisibleZoneList[4].pvs_ZoneID = -1;
-
-    // Note that the debug flags are set during an interrupt and can therefore become active
-    // at any time. We therefore use our own latch here to ensure that once the flag is set,
-    // we only start doing stuff after this init function is invoked.
-
     zdbg_TraceFlags |= ZDBG_TRACE_RUNNING|ZDBG_TRACE_LIST_PVS;
     printf(
         "Draw_Zone_Graph()\n"
@@ -87,14 +75,17 @@ void ZDbg_Init(void)
         (int)Plr1_Zone
     );
 
-    Zone_ProcessPVS(Lvl_ZonePtrsPtr_l[Plr1_Zone]);
+    // WORD const errata[] = {
+    //     9, 7, 8, 129, ZONE_ID_LIST_END, // For zone 9, remove 7, 8 and 129
+    //     ZONE_ID_LIST_END                // Errata list end
+    // };
+    //
+    // Zone_ApplyPVSErrata(errata);
 
     // Fully dump the player's zone first with the PVS tree displayed
     // but not for the remaining zones traversed.
     ZDbg_DumpZone(Lvl_ZonePtrsPtr_l[Plr1_Zone]);
-
     zdbg_TraceFlags &= ~ZDBG_TRACE_LIST_PVS;
-
     puts("Stepping through PVS zones in order...");
 }
 

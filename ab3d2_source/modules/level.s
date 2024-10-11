@@ -2,6 +2,7 @@
 ; Initialises the level mods data
 ; For now, this is just the sky backdrop override data
 Lvl_InitLevelMods:
+
 				tst.l	Lvl_ModPropertiesPtr_l
 				beq.s	Lvl_ClearBackdropDisable
 				bra.s	Lvl_FillBackdropDisable

@@ -367,8 +367,12 @@ noload:
 				lea		4(a2,d0.w*4),a2
 				move.l	a2,PointBrightsPtr_l
 
-				move.w	TLBT_NumZones_w(a1),d0
+				move.w	TLBT_NumZones_w(a1),d0 ; actually 1 less than the zone count, because reasons.
 				addq	#1,d0
+
+				move.w  d0,Lvl_NumZones_w
+
+
 				muls	#80,d0 ; todo - is 80 a fixed length points per zone (e.g. 10x 32-bit x/y pairs) value?
 				add.l	d0,a2
 				move.l	a2,Lvl_ZoneBorderPointsPtr_l
@@ -476,6 +480,20 @@ noload:
 
 				lea		(a2,d0.l),a2
 				move.l	a2,Lvl_ConnectTablePtr_l
+
+				IFD BUILD_WITH_C
+
+				tst.l	Lvl_ErrataPtr_l
+				beq.s	.done_errata
+				movem.l	d0/d1/a0/a1,-(sp)
+				move.l	Lvl_ErrataPtr_l,a0
+				CALLC	Zone_ApplyPVSErrata
+
+				movem.l	(sp)+,d0/d1/a0/a1
+.done_errata:
+				ENDC
+
+
 
 .noclips:
 				clr.b	Plr1_StoodInTop_b
