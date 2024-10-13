@@ -483,6 +483,8 @@ noload:
 
 				IFD BUILD_WITH_C
 
+				DEV_CHECK_SET SKIP_PVS_AMEND,.done_errata
+
 				tst.l	Lvl_ErrataPtr_l
 				beq.s	.done_errata
 				movem.l	d0/d1/a0/a1,-(sp)
@@ -492,8 +494,6 @@ noload:
 				movem.l	(sp)+,d0/d1/a0/a1
 .done_errata:
 				ENDC
-
-
 
 .noclips:
 				clr.b	Plr1_StoodInTop_b

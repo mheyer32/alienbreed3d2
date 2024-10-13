@@ -15,6 +15,7 @@
     #define DEV_SKIP_LIGHTING				11
     #define DEV_SKIP_DUMP_BG_DISABLE		12
     #define DEV_ZONE_TRACE					13
+    #define DEV_SKIP_PVS_AMEND				14
     #define DEV_SKIP_OVERLAY				31
 
     {
@@ -89,6 +90,13 @@
         DEV_SKIP_LIGHTING,
         CFG_VAR_TYPE_ULONG_BIT
     },
+    {
+        "dev.no_pvs_amend",
+        &Dev_DebugFlags_l,
+        DEV_SKIP_PVS_AMEND,
+        CFG_VAR_TYPE_ULONG_BIT
+    },
+
     {
         "dev.no_overlay",
         &Dev_DebugFlags_l,
