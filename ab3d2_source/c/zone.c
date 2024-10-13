@@ -182,7 +182,7 @@ void zone_BuildVisitedPVS(Zone* zonePtr) {
             // that was added
             while (zone_IsValidEdgeID( (edgeID = *edgeIndexPtr++) ) && runaway2-- > 0) {
 
-                dprintf("%d", (int)edgeID);
+                //dprintf("%d", (int)edgeID);
 
                 // If the edge joins a zone, e_JoinZoneID says which one, otherwhise it's negative.
                 WORD joinZoneID = Lvl_ZoneEdgePtr_l[edgeID].e_JoinZoneID;
@@ -194,9 +194,8 @@ void zone_BuildVisitedPVS(Zone* zonePtr) {
                     *visitedPVSPtr++ = joinZoneID;
                     *visitedPVSPtr   = ZONE_ID_LIST_END;
                     ++zonesAdded;
-                    dprintf(" [z:%d]", (int)joinZoneID);
+                    dprintf("%d [z:%d],", (int)edgeID, (int)joinZoneID);
                 }
-                dputchar(',');
             }
 
             if (runaway2 <= 0) {

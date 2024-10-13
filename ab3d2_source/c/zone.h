@@ -22,7 +22,7 @@ enum {
 };
 
 #define PVS_TRAVERSE_LIMIT 100
-#define EDGE_TRAVERSE_LIMIT 10
+#define EDGE_TRAVERSE_LIMIT 16
 
 /**
  * This structure contains information about a potentially visible zone. A list of these
