@@ -88,6 +88,7 @@ typedef struct {
  *
  */
 void Zone_ApplyPVSErrata(REG(a0, WORD const* zonePVSErrataPtr));
+void Zone_ParseAll(void);
 
 extern Zone** Lvl_ZonePtrsPtr_l;
 extern ZEdge* Lvl_ZoneEdgePtr_l;
@@ -105,5 +106,22 @@ static __inline BOOL zone_IsValidEdgeID(WORD id) {
 static __inline WORD const* zone_GetEdgeList(Zone const* zonePtr) {
     return (WORD const*)(((BYTE const*)zonePtr) + zonePtr->z_EdgeListOffset);
 }
+
+/**
+ * Define an edgeID/offset pair for the per-edge PVS tag data
+ */
+typedef struct {
+    WORD zpvs_edgeID;
+    WORD zpvs_offset;
+} __attribute__((packed)) __attribute__ ((aligned (2))) ZEdgePVSIndex;
+
+/**
+ * Define a header structure for the per-edge PVS tag data
+ */
+struct {
+    WORD zpvs_zoneID;
+    WORD zpvs_edgeCount;
+    ZEdgePVSIndex zpvs_EdgeList[1]; // zpvs_edgeCount of these, followed by tag data
+}  __attribute__((packed)) __attribute__ ((aligned (2))) ZEdgePVSDataSet;
 
 #endif // ZONE_H

@@ -4,7 +4,7 @@
 
 #define DEBUG_ZONE_ERRATA
 
-#ifdef DEBUG_ZONE_ERRATA
+#if defined(ZONE_DEBUG) && defined(DEBUG_ZONE_ERRATA)
     #define dputchar(c) putchar(c)
     #define dputs(msg) puts(msg)
     #define dprintf(fmt, ...) printf(fmt, ## __VA_ARGS__)
@@ -171,7 +171,7 @@ void zone_BuildVisitedPVS(Zone* zonePtr) {
         WORD zonesAdded;
         int runaway = PVS_TRAVERSE_LIMIT;
 
-        dprintf("\tEdges of %d: ", (int)zonePtr->z_ZoneID);
+        //dprintf("\tEdges of %d: ", (int)zonePtr->z_ZoneID);
 
         do {
             zonesAdded = 0;
@@ -194,7 +194,7 @@ void zone_BuildVisitedPVS(Zone* zonePtr) {
                     *visitedPVSPtr++ = joinZoneID;
                     *visitedPVSPtr   = ZONE_ID_LIST_END;
                     ++zonesAdded;
-                    dprintf("%d [z:%d],", (int)edgeID, (int)joinZoneID);
+                    //dprintf("%d [z:%d],", (int)edgeID, (int)joinZoneID);
                 }
             }
 
@@ -205,7 +205,7 @@ void zone_BuildVisitedPVS(Zone* zonePtr) {
 
         } while (zonesAdded && runaway-- > 0);
 
-        dputchar('\n');
+        //dputchar('\n');
         if (runaway <= 0) {
             dputs("zone_BuildVisitedPVS() Runaway");
             return;
@@ -295,4 +295,69 @@ void Zone_ApplyPVSErrata(REG(a0, WORD const* zonePVSErrataPtr)) {
         }
         dprintf("\tDone. %d PVS lists amended\n", (int)numZones);
     }
+}
+
+/**
+ * Return the (unterminated) count of the number of PVS entries for the given zone
+ */
+static int zone_CountPVS(Zone const* pZonePtr) {
+    ZPVSRecord const* pPVSPtr = &pZonePtr->z_PotVisibleZoneList[0];
+    while (zone_IsValidZoneID(pPVSPtr->pvs_ZoneID)) {
+        ++pPVSPtr;
+    }
+    return (int)(pPVSPtr - &pZonePtr->z_PotVisibleZoneList[0]);
+}
+
+/**
+ * Return the number of joining edges for the current zone
+ */
+static int zone_CountJoiningEdges(Zone const* pZonePtr) {
+    int numEdges = 0;
+    WORD const* zEdgeList = zone_GetEdgeList(pZonePtr);
+    WORD edgeId;
+    while (zone_IsValidEdgeID( (edgeId = *zEdgeList++) )) {
+        if (zone_IsValidZoneID(Lvl_ZoneEdgePtr_l[edgeId].e_JoinZoneID)) {
+            ++numEdges;
+        }
+    }
+    return numEdges;
+}
+
+/**
+ *
+ */
+void Zone_ParseAll() {
+    dputs("Zone_ParseAll()");
+
+    // Begin with the assumption we need as many pointers as zones
+    int   totalSize  = Lvl_NumZones_w * sizeof(void*);
+
+    for (WORD zoneID = 0; zoneID < Lvl_NumZones_w; ++zoneID) {
+        Zone const* pZonePtr = Lvl_ZonePtrsPtr_l[zoneID];
+
+        int joinCount = zone_CountJoiningEdges(pZonePtr);
+        int pvsSize   = zone_CountPVS(pZonePtr);
+
+        // The size of ZEdgePVSDataSet includes one ZEdgePVSIndex entry...
+        // Assume for now that each per edge PVS entry is 1 WORD
+        int dataSize   = sizeof(ZEdgePVSDataSet) - sizeof(ZEdgePVSIndex) +
+            joinCount * (sizeof(ZEdgePVSIndex) + pvsSize * sizeof(WORD));
+
+        dprintf(
+            "\tID: %3d [%p] E: %d, P: %d, S: %d\n",
+            (int)zoneID,
+            pZonePtr,
+            joinCount,
+            pvsSize,
+            dataSize
+        );
+
+        totalSize += dataSize;
+    }
+
+    dprintf(
+        "Parsed %d Zones, Required data size: %d\n",
+        (int)Lvl_NumZones_w,
+        (int)totalSize
+    );
 }

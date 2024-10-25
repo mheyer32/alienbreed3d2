@@ -377,7 +377,14 @@ noload:
 				add.l	d0,a2
 				move.l	a2,Lvl_ZoneBorderPointsPtr_l
 
+				; todo - Determine the number of edges. This is probably
+				; (TLBT_ObjectDataOffset_l - TLBT_FloorLineOffset_l) / EdgeT_SizeOf_l
 				move.l	TLBT_FloorLineOffset_l(a1),a2
+
+				move.l  TLBT_ObjectDataOffset_l(a1),d0
+				sub.l	a2,d0
+				move.l	d0,Lvl_EdgeCount_l
+
 				add.l	a4,a2
 				move.l	a2,Lvl_ZoneEdgePtr_l
 
@@ -490,6 +497,8 @@ noload:
 				movem.l	d0/d1/a0/a1,-(sp)
 				move.l	Lvl_ErrataPtr_l,a0
 				CALLC	Zone_ApplyPVSErrata
+
+				CALLC	Zone_ParseAll
 
 				movem.l	(sp)+,d0/d1/a0/a1
 .done_errata:
