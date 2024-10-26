@@ -489,19 +489,20 @@ noload:
 				move.l	a2,Lvl_ConnectTablePtr_l
 
 				IFD BUILD_WITH_C
+				movem.l	d0/d1/a0/a1,-(sp)
 
 				DEV_CHECK_SET SKIP_PVS_AMEND,.done_errata
 
 				tst.l	Lvl_ErrataPtr_l
 				beq.s	.done_errata
-				movem.l	d0/d1/a0/a1,-(sp)
+
 				move.l	Lvl_ErrataPtr_l,a0
 				CALLC	Zone_ApplyPVSErrata
 
-				CALLC	Zone_ParseAll
+.done_errata:
+				CALLC	Zone_InitEdgePVS
 
 				movem.l	(sp)+,d0/d1/a0/a1
-.done_errata:
 				ENDC
 
 .noclips:

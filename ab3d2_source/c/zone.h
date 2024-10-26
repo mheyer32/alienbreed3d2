@@ -83,16 +83,18 @@ typedef struct {
  * The errata is a stream of words that are varying length lists that each begin with the
  * zone ID the errata applies to, followed by a ZONE_ID_LIST_END terminated list of IDs of
  * potentially visible zones to be removed from the PVS list for the starting zone. The errata
- * list itself is terminated by ZONE_ID_LIST_END, i.e. the word list ends with a double
+ * list itself is terminated by ZONEvoid Zone_InitEdgePVS(void);_ID_LIST_END, i.e. the word list ends with a double
  * ZONE_ID_LIST_END pair.
  *
  */
 void Zone_ApplyPVSErrata(REG(a0, WORD const* zonePVSErrataPtr));
-void Zone_ParseAll(void);
+void Zone_InitEdgePVS(void);
+void Zone_FreeEdgePVS(void);
 
 extern Zone** Lvl_ZonePtrsPtr_l;
 extern ZEdge* Lvl_ZoneEdgePtr_l;
 extern WORD   Lvl_NumZones_w;
+
 
 static __inline BOOL zone_IsValidZoneID(WORD id) {
     return id >= 0 && id < Lvl_NumZones_w;
@@ -123,5 +125,16 @@ struct {
     WORD zpvs_edgeCount;
     ZEdgePVSIndex zpvs_EdgeList[1]; // zpvs_edgeCount of these, followed by tag data
 }  __attribute__((packed)) __attribute__ ((aligned (2))) ZEdgePVSDataSet;
+
+/**
+ * Pointer to the runtime determined set of per edge PVS data. This data structure is as follows
+ *
+ * ZEdgePVSDataSet* [num_zones], ZEdgePVSDataSet, ZEdgePVSDataSet, ZEdgePVSDataSet ...
+ *
+ * Each ZEdgePVSDataSet instance varies in length and is followed by the list data for each edge.
+ * The start of the data therefore contains the
+ *
+ */
+extern void* Lvl_PerEdgePVSDataPtr_l;
 
 #endif // ZONE_H

@@ -1,10 +1,11 @@
 #include "system.h"
 #include "zone.h"
+#include <proto/exec.h>
 #include <stdio.h>
 
-#define DEBUG_ZONE_ERRATA
+//#define DEBUG_ZONE_ERRATA
 
-#if defined(ZONE_DEBUG) && defined(DEBUG_ZONE_ERRATA)
+#if defined(ZONE_DEBUG)
     #define dputchar(c) putchar(c)
     #define dputs(msg) puts(msg)
     #define dprintf(fmt, ...) printf(fmt, ## __VA_ARGS__)
@@ -38,7 +39,7 @@ static __inline WORD* zone_GetCurrentPVSBuffer() {
  */
 static __inline WORD* zone_GetVisitedPVSBuffer() {
     WORD* tmp = (WORD*)Sys_GetTemporaryWorkspace();
-    return tmp + 256;
+    return tmp + 1024;
 }
 
 
@@ -53,25 +54,25 @@ void zone_InitCurrentPVS(Zone const* zonePtr, WORD const* removeListPtr) {
     WORD* pvsCurrentZonePtr      = zone_GetCurrentPVSBuffer();
     WORD  zoneID;
 
-    dprintf("Building PVS List for Zone %d: ", (int)zonePtr->z_ZoneID);
+    //dprintf("Building PVS List for Zone %d: ", (int)zonePtr->z_ZoneID);
 
     int runaway = PVS_TRAVERSE_LIMIT;
     while ((zoneID = zonePVSPtr->pvs_ZoneID) > ZONE_ID_LIST_END && runaway-- > 0) {
 
-        dprintf("%d", zoneID);
+        //dprintf("%d", zoneID);
 
         ++zonePVSPtr;
         WORD const* removePtr = removeListPtr;
         while (removePtr && zone_IsValidZoneID(*removePtr)) {
             if (*removePtr++ == zoneID) {
                 zoneID = ZONE_ID_REMOVED_MANUAL;
-                dputchar('*');
+                //dputchar('*');
                 break;
             }
         }
         *pvsCurrentZonePtr++ = zoneID;
 
-        dputchar(',');
+        //dputchar(',');
     }
     *pvsCurrentZonePtr = ZONE_ID_LIST_END; // Terminate
 
@@ -81,7 +82,7 @@ void zone_InitCurrentPVS(Zone const* zonePtr, WORD const* removeListPtr) {
     }
     #endif
 
-    dputchar('\n');
+    //dputchar('\n');
 }
 
 /**
@@ -221,15 +222,15 @@ void zone_BuildVisitedPVS(Zone* zonePtr) {
 
     *visitedPVSPtr = ZONE_ID_LIST_END;
 
-    #ifdef ZONE_DEBUG
-    dprintf("Visited Zone List: ");
-    visitedPVSPtr  = zone_GetVisitedPVSBuffer();
-    do {
-        nextZoneId = *visitedPVSPtr++;
-        dprintf("%d,", nextZoneId);
-    } while (nextZoneId != ZONE_ID_LIST_END);
-    dputchar('\n');
-    #endif
+    // #ifdef ZONE_DEBUG
+    // dprintf("Visited Zone List: ");
+    // visitedPVSPtr  = zone_GetVisitedPVSBuffer();
+    // do {
+    //     nextZoneId = *visitedPVSPtr++;
+    //     dprintf("%d,", nextZoneId);
+    // } while (nextZoneId != ZONE_ID_LIST_END);
+    // dputchar('\n');
+    // #endif
 }
 
 /**
@@ -238,15 +239,15 @@ void zone_BuildVisitedPVS(Zone* zonePtr) {
  * set of zones.
  */
 void zone_RebuildCurrentPVS(Zone* zonePtr) {
-    dprintf("Rebuilding Current PVS for Zone %d: ", zonePtr->z_ZoneID);
+    //dprintf("Rebuilding Current PVS for Zone %d: ", zonePtr->z_ZoneID);
     WORD* pvsCurrentZonePtr = zone_GetCurrentPVSBuffer();
     WORD nextZoneId;
     do {
         nextZoneId = zone_GetVisitedZoneID(*pvsCurrentZonePtr);
-        dprintf("%d,", nextZoneId);
+        //dprintf("%d,", nextZoneId);
         *pvsCurrentZonePtr++ = nextZoneId;
     } while (nextZoneId != ZONE_ID_LIST_END);
-    dputchar('\n');
+    //dputchar('\n');
 
     pvsCurrentZonePtr = zone_GetCurrentPVSBuffer();
     ZPVSRecord*       pvsWritePtr = zonePtr->z_PotVisibleZoneList;
@@ -282,12 +283,12 @@ void Zone_ApplyPVSErrata(REG(a0, WORD const* zonePVSErrataPtr)) {
         WORD zoneID;
         while (zone_IsValidZoneID(zoneID = *zonePVSErrataPtr++)) {
             Zone* zonePtr = Lvl_ZonePtrsPtr_l[zoneID];
-            dprintf("\tZone %d [%p]: ", (int)zoneID, zonePtr);
+            //dprintf("\tZone %d [%p]: ", (int)zoneID, zonePtr);
             WORD const* removeListPtr = zonePVSErrataPtr;
             while (zone_IsValidZoneID( (zoneID = *zonePVSErrataPtr++) )) {
-                dprintf("%d, ", (int)zoneID);
+                //dprintf("%d, ", (int)zoneID);
             }
-            dputchar('\n');
+            //dputchar('\n');
             zone_InitCurrentPVS(zonePtr, removeListPtr);
             zone_BuildVisitedPVS(zonePtr);
             zone_RebuildCurrentPVS(zonePtr);
@@ -300,19 +301,19 @@ void Zone_ApplyPVSErrata(REG(a0, WORD const* zonePVSErrataPtr)) {
 /**
  * Return the (unterminated) count of the number of PVS entries for the given zone
  */
-static int zone_CountPVS(Zone const* pZonePtr) {
+static WORD zone_CountPVS(Zone const* pZonePtr) {
     ZPVSRecord const* pPVSPtr = &pZonePtr->z_PotVisibleZoneList[0];
     while (zone_IsValidZoneID(pPVSPtr->pvs_ZoneID)) {
         ++pPVSPtr;
     }
-    return (int)(pPVSPtr - &pZonePtr->z_PotVisibleZoneList[0]);
+    return (WORD)(pPVSPtr - &pZonePtr->z_PotVisibleZoneList[0]);
 }
 
 /**
  * Return the number of joining edges for the current zone
  */
-static int zone_CountJoiningEdges(Zone const* pZonePtr) {
-    int numEdges = 0;
+static WORD zone_CountJoiningEdges(Zone const* pZonePtr) {
+    WORD numEdges = 0;
     WORD const* zEdgeList = zone_GetEdgeList(pZonePtr);
     WORD edgeId;
     while (zone_IsValidEdgeID( (edgeId = *zEdgeList++) )) {
@@ -324,40 +325,53 @@ static int zone_CountJoiningEdges(Zone const* pZonePtr) {
 }
 
 /**
- *
+ * Calculates the allocation data size for the per-edge PVS data, returning the total allocation size,
+ * including the base pointer requirements. The pInfoPtr points to a buffer that is populated with the
+ * edge count and PVS length pairs for each of the Zones and the elementSize parameter specifies how
+ * big each element to in the per edge PVS data should be.
  */
-void Zone_ParseAll() {
-    dputs("Zone_ParseAll()");
+static ULONG zone_CalcEdgePVSDataSize(WORD* pInfoPtr, ULONG elementSize) {
+    /* Begin with the assumption we need as many pointers as zones */
+    ULONG totalSize = Lvl_NumZones_w * sizeof(void*);
 
-    // Begin with the assumption we need as many pointers as zones
-    int   totalSize  = Lvl_NumZones_w * sizeof(void*);
-
-    for (WORD zoneID = 0; zoneID < Lvl_NumZones_w; ++zoneID) {
+    for (WORD zoneID = 0, *pInfoPairPtr = pInfoPtr; zoneID < Lvl_NumZones_w; ++zoneID) {
         Zone const* pZonePtr = Lvl_ZonePtrsPtr_l[zoneID];
+        WORD joinCount = zone_CountJoiningEdges(pZonePtr);
+        WORD pvsSize   = zone_CountPVS(pZonePtr);
 
-        int joinCount = zone_CountJoiningEdges(pZonePtr);
-        int pvsSize   = zone_CountPVS(pZonePtr);
+        *pInfoPairPtr++ = joinCount;
+        *pInfoPairPtr++ = pvsSize;
 
         // The size of ZEdgePVSDataSet includes one ZEdgePVSIndex entry...
-        // Assume for now that each per edge PVS entry is 1 WORD
-        int dataSize   = sizeof(ZEdgePVSDataSet) - sizeof(ZEdgePVSIndex) +
-            joinCount * (sizeof(ZEdgePVSIndex) + pvsSize * sizeof(WORD));
-
-        dprintf(
-            "\tID: %3d [%p] E: %d, P: %d, S: %d\n",
-            (int)zoneID,
-            pZonePtr,
-            joinCount,
-            pvsSize,
-            dataSize
-        );
-
+        ULONG dataSize   = sizeof(ZEdgePVSDataSet) - sizeof(ZEdgePVSIndex) +
+            (ULONG)joinCount * (sizeof(ZEdgePVSIndex) + (ULONG)pvsSize * elementSize);
         totalSize += dataSize;
     }
 
+    return totalSize;
+}
+
+/**
+ *
+ */
+void Zone_InitEdgePVS() {
+    // Store the per zone facts ready for the second step.
+    WORD* pInfoPtr  = (WORD*)Sys_GetTemporaryWorkspace();
+    ULONG totalSize = zone_CalcEdgePVSDataSize(pInfoPtr, sizeof(WORD));
+
     dprintf(
-        "Parsed %d Zones, Required data size: %d\n",
+        "Zone_InitEdgePVS() Processed %d Zones, Required data size: %lu\n",
         (int)Lvl_NumZones_w,
-        (int)totalSize
+        totalSize
     );
+
+    Lvl_PerEdgePVSDataPtr_l = AllocVec(totalSize, MEMF_ANY);
+}
+
+void Zone_FreeEdgePVS() {
+    if (Lvl_PerEdgePVSDataPtr_l) {
+        FreeVec(Lvl_PerEdgePVSDataPtr_l);
+        Lvl_PerEdgePVSDataPtr_l = NULL;
+        dputs("Zone_FreeEdgePVS()");
+    }
 }

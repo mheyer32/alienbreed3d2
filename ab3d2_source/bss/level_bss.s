@@ -20,6 +20,10 @@ PointsToRotatePtr_l:			ds.l	1
 	DECLC Lvl_DataPtr_l
 					ds.l	1
 
+	DECLC Lvl_PerEdgePVSDataPtr_l
+					ds.l	1
+
+
 ;*************************************************************
 ;* ROOM GRAPHICAL DESCRIPTIONS : WALLS AND FLOORS ************
 ;*************************************************************

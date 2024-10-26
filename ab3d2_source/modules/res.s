@@ -427,6 +427,14 @@ Res_FreeLevelData:
 				RES_FREEPTR Lvl_GraphicsPtr_l
 				RES_FREEPTR Lvl_ClipsPtr_l
 				RES_FREEPTR Lvl_MusicPtr_l
+
+				IFD BUILD_WITH_C
+				; Edge PVS is managed by C code
+				movem.l d0/d1/a0/a1,-(sp)
+				CALLC Zone_FreeEdgePVS
+				movem.l (sp)+,d0/d1/a0/a1
+				ENDC
+
 				rts
 
 ; *****************************************************************************
