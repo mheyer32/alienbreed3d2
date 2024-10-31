@@ -110,31 +110,18 @@ static __inline WORD const* zone_GetEdgeList(Zone const* zonePtr) {
 }
 
 /**
- * Define an edgeID/offset pair for the per-edge PVS tag data
+ * Structure for the per-edge PVS:
+ *
+ * [Zone ID][Num Edges][Num PVS][EdgeID 0]...[EdgeID N][PVS List 0] ... [PVS List N]
  */
 typedef struct {
-    WORD zpvs_edgeID;
-    WORD zpvs_offset;
-} __attribute__((packed)) __attribute__ ((aligned (2))) ZEdgePVSIndex;
+    WORD zep_ZoneID;
+    WORD zep_ListSize;
+    WORD zep_EdgeCount;
+    WORD zep_EdgeIDList[1]; // zep_EdgeCount in length, followed by zep_EdgeCount sets of data
+}  __attribute__((packed)) __attribute__ ((aligned (2))) ZEdgePVSHeader;
 
-/**
- * Define a header structure for the per-edge PVS tag data
- */
-struct {
-    WORD zpvs_zoneID;
-    WORD zpvs_edgeCount;
-    ZEdgePVSIndex zpvs_EdgeList[1]; // zpvs_edgeCount of these, followed by tag data
-}  __attribute__((packed)) __attribute__ ((aligned (2))) ZEdgePVSDataSet;
 
-/**
- * Pointer to the runtime determined set of per edge PVS data. This data structure is as follows
- *
- * ZEdgePVSDataSet* [num_zones], ZEdgePVSDataSet, ZEdgePVSDataSet, ZEdgePVSDataSet ...
- *
- * Each ZEdgePVSDataSet instance varies in length and is followed by the list data for each edge.
- * The start of the data therefore contains the
- *
- */
 extern void* Lvl_PerEdgePVSDataPtr_l;
 
 #endif // ZONE_H
