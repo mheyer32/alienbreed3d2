@@ -30,4 +30,4 @@ Floor texture coordinates adopt the same scale as the X/Z directions. All floor/
 
 ![In World](./img/view_scale.png)
 
- 
+The player eye level when standing corresponds to a height of 48 Y units (1.5 metres), and 32 Y units (1.0 metres) when crouched.
