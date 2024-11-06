@@ -92,7 +92,8 @@ OBJS = c/main.o \
 	   c/game_progress.o \
 	   c/game.o \
 	   c/zone_debug.o \
-	   c/zone.o \
+	   c/zone_errata.o \
+	   c/zone_edge_pvs.o \
 	   c/hires.o
 
 # GENERIC ##################################

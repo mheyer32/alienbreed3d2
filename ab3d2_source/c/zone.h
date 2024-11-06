@@ -1,6 +1,18 @@
 #ifndef ZONE_H
 #define ZONE_H
 
+//#define DEBUG_ZONE_ERRATA
+
+#if defined(ZONE_DEBUG)
+    #define dputchar(c) putchar(c)
+    #define dputs(msg) puts(msg)
+    #define dprintf(fmt, ...) printf(fmt, ## __VA_ARGS__)
+#else
+    #define dputchar(c)
+    #define dputs(msg)
+    #define dprintf()
+#endif
+
 /**
  * @see defs.i
  *
