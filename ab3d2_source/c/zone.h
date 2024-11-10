@@ -102,6 +102,7 @@ typedef struct {
 void Zone_ApplyPVSErrata(REG(a0, WORD const* zonePVSErrataPtr));
 void Zone_InitEdgePVS(void);
 void Zone_FreeEdgePVS(void);
+void Zone_FillEdgePVS(void);
 
 extern Zone** Lvl_ZonePtrsPtr_l;
 extern ZEdge* Lvl_ZoneEdgePtr_l;
