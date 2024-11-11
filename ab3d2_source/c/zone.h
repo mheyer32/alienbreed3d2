@@ -134,6 +134,13 @@ typedef struct {
     WORD zep_EdgeIDList[1]; // zep_EdgeCount in length, followed by zep_EdgeCount sets of data
 }  __attribute__((packed)) __attribute__ ((aligned (2))) ZEdgePVSHeader;
 
+/**
+ * Returns the address of the start of the actual EdgePVSList. This immediately follows the
+ * ZEdgePVSHeader.zep_EdgeIDList array, which is zep_EdgeCount elements long.
+ */
+static __inline UBYTE* zone_GetEdgePVSListBase(ZEdgePVSHeader* zepPtr) {
+    return (UBYTE*)(&zepPtr->zep_EdgeIDList[zepPtr->zep_EdgeCount]);
+}
 
 extern void* Lvl_PerEdgePVSDataPtr_l;
 
