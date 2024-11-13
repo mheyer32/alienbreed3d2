@@ -25,6 +25,22 @@ static inline void* Sys_GetTemporaryWorkspace()
     return Sys_Workspace_vl;
 }
 
+static inline ULONG Sys_Round2(ULONG val)
+{
+    return (val + 1) & ~1UL;
+}
+
+static inline ULONG Sys_Round4(ULONG val)
+{
+    return (val + 3) & ~3UL;
+}
+
+static inline void* Sys_AlignLong(void const* ptr)
+{
+    return (void*)Sys_Round4((ULONG)ptr);
+}
+
+
 /**
  * Check to see if a given time is greater than or equal to another
  */
