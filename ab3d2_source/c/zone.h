@@ -38,17 +38,23 @@ enum {
 
 /**
  * This structure contains information about a potentially visible zone. A list of these
- * is appended to each Zone structure. The final record has pvs_ZoneID set to -1.
+ * is appended to each Zone structure in the loaded data. The final record has pvs_ZoneID
+ * set to -1.
+ *
+ * TODO - we ideally need to tag in here somewhere a flag that represents the visibility
+ * based on the current edge determination.
  */
 typedef struct {
     WORD pvs_ZoneID;
     WORD pvs_SortVal;
-    WORD pvs_Word2; // TODO
-    WORD pvs_Word3; // TODO
+    WORD pvs_Word2; // TODO figure out what this is
+    WORD pvs_Word3; // TODO figure out what this is
 } __attribute__((packed)) __attribute__ ((aligned (2))) ZPVSRecord;
 
 /**
- * Edge structure.
+ * Edge structure. These are stored in a large array loaded from disk and are referenced by
+ * ID. Each Zone structure is preceded by a list of 16-bit word indexes into the array, that
+ * is accessed by subtracting an offset stored in the Zone structure from the Zone address.
  */
 typedef struct {
     WORD  e_XPos;       // X coordinate
@@ -56,14 +62,18 @@ typedef struct {
     WORD  e_XLen;       // Length in X direction
     WORD  e_ZLen;       // Length in Z direction
     WORD  e_JoinZoneID; // Zone the edge joins to, or -1 for a solid wall
-    WORD  e_Word_5;     // TODO
-    BYTE  e_Byte_12;    // TODO
-    BYTE  e_Byte_13;    // TODO
+    WORD  e_Word_5;     // TODO figure out what this is
+    BYTE  e_Byte_12;    // TODO figure out what this is
+    BYTE  e_Byte_13;    // TODO figure out what this is
     UWORD e_Flags;
 } __attribute__((packed)) __attribute__ ((aligned (2))) ZEdge;
 
 /**
- * Main zone structure. Note that the long fields in here can be 2-byte aligned.
+ * Main zone structure. Note that the long fields in here can be 2-byte aligned due to the
+ * way in which the loaded data works, e.g:
+ *
+ * [list of zone edge indexes] [zone structure] [list of zone PVS record data]
+ *
  */
 typedef struct {
     WORD  z_ZoneID;                   //  2, 2
@@ -90,7 +100,7 @@ typedef struct {
 }  __attribute__((packed)) __attribute__ ((aligned (2))) Zone;
 
 /**
- * Apply the zone PVS Errata
+ * Zone PVS Errata
  *
  * The errata is a stream of words that are varying length lists that each begin with the
  * zone ID the errata applies to, followed by a ZONE_ID_LIST_END terminated list of IDs of
@@ -104,26 +114,47 @@ void Zone_InitEdgePVS(void);
 void Zone_FreeEdgePVS(void);
 void Zone_FillEdgePVS(void);
 
+/**
+ * Zone ID indexed array of Zone pointers
+ */
 extern Zone** Lvl_ZonePtrsPtr_l;
+
+/**
+ * Edge ID indexed array of ZEdge pointers
+ */
 extern ZEdge* Lvl_ZoneEdgePtr_l;
+
+/**
+ * Number of zones defined in the loaded level
+ */
 extern WORD   Lvl_NumZones_w;
 
-
+/**
+ *  Check if a Zone ID is valid. Must be between 0 and Lvl_NumZones_w-1
+ */
 static __inline BOOL zone_IsValidZoneID(WORD id) {
     return id >= 0 && id < Lvl_NumZones_w;
 }
 
+/**
+ *  Check if am Edge ID is valid.
+ *
+ *  TODO find and expose the maximum edge ID for proper range checking
+ */
 static __inline BOOL zone_IsValidEdgeID(WORD id) {
-    // TODO find and expose the maximum edge id for range checking here.
     return id >= 0;
 }
 
+/**
+ * Obtain the address of the list of edges for the current zone. This is obtained by
+ * adding the (negative) z_EdgeListOffset to the Zone address.
+ */
 static __inline WORD const* zone_GetEdgeList(Zone const* zonePtr) {
     return (WORD const*)(((BYTE const*)zonePtr) + zonePtr->z_EdgeListOffset);
 }
 
 /**
- * Structure for the per-edge PVS:
+ * Structure for the per-edge PVS data header:
  *
  * [Zone ID][Num Edges][Num PVS][EdgeID 0]...[EdgeID N][PVS List 0] ... [PVS List N]
  */
@@ -142,6 +173,6 @@ static __inline UBYTE* zone_GetEdgePVSListBase(ZEdgePVSHeader const* zepPtr) {
     return (UBYTE*)(&zepPtr->zep_EdgeIDList[zepPtr->zep_EdgeCount]);
 }
 
-extern void* Lvl_PerEdgePVSDataPtr_l;
+extern ZEdgePVSHeader** Lvl_ZEdgePVSHeaderPtrsPtr_l;
 
 #endif // ZONE_H

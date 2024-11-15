@@ -102,7 +102,7 @@ void Zone_InitEdgePVS() {
     ULONG totalSize    = zone_CalcEdgePVSDataSize(infoPairPtr);
 
     dprintf(
-        "Zone_InitEdgePVS() Processed %d Zones, Required data size: %u\n",
+        "Zone_InitEdgePVS() Processed %d Zones, Size: %u\n",
         (int)Lvl_NumZones_w,
         totalSize
     );
@@ -110,33 +110,27 @@ void Zone_InitEdgePVS() {
     // Round off the allocation to 4 bytes
     totalSize = Sys_Round4(totalSize);
 
-    Lvl_PerEdgePVSDataPtr_l = AllocVec(totalSize, MEMF_ANY);
+    // Allocate the space for the pointer table and the data
+    Lvl_ZEdgePVSHeaderPtrsPtr_l = (ZEdgePVSHeader**)AllocVec(totalSize, MEMF_ANY);
 
-    // For convenience, use a byte addressable pointer
-    UBYTE* rawBufferPtr = (UBYTE*)Lvl_PerEdgePVSDataPtr_l;
+    // The varying sized ZEdgePVSHeader instances begin after the table of pointers
+    ZEdgePVSHeader*  currentEdgePVSPtr = (ZEdgePVSHeader*)(
+        ((UBYTE*)Lvl_ZEdgePVSHeaderPtrsPtr_l) + Lvl_NumZones_w * sizeof(ZEdgePVSHeader*)
+    );
 
-    // Set up the list of pointers at the beginning
-    ZEdgePVSHeader** zonePtrBasePtr = (ZEdgePVSHeader**)rawBufferPtr;
-
-    // Set up the initial ZEdgePVSDataSet
-    ZEdgePVSHeader*  currentEdgePVSPtr = (ZEdgePVSHeader*)(rawBufferPtr + Lvl_NumZones_w * sizeof(ZEdgePVSHeader*));
-
-    ULONG dataSize;
 
     // First Pass - build the ZEdgePVSHeader data and populate the edge indexes
     for (WORD zoneID = 0; zoneID < Lvl_NumZones_w; ++zoneID) {
         currentEdgePVSPtr->zep_ZoneID    = zoneID;
         currentEdgePVSPtr->zep_ListSize  = *infoPairPtr++;
         currentEdgePVSPtr->zep_EdgeCount = *infoPairPtr++;
-        zonePtrBasePtr[zoneID]           = currentEdgePVSPtr;
+        Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID]  = currentEdgePVSPtr;
 
         // The size of ZEdgePVSDataSet includes one ZEdgePVSIndex entry...
-        dataSize = sizeof(ZEdgePVSHeader) - sizeof(WORD) +
+        ULONG dataSize = Sys_Round2(sizeof(ZEdgePVSHeader) - sizeof(WORD) +
             (ULONG)currentEdgePVSPtr->zep_EdgeCount * (sizeof(WORD) +
-            (ULONG)currentEdgePVSPtr->zep_ListSize);
-
-        // Ensure we stay word aligned here...
-        dataSize = (dataSize + 1) & ~1;
+            (ULONG)currentEdgePVSPtr->zep_ListSize)
+        );
 
         // dprintf(
         //     "%p [%u] %d %d %d {",
@@ -194,11 +188,6 @@ void Zone_InitEdgePVS() {
 static struct {
 
     /**
-     * Pointer to the list of pointers to the ZEdgePVSHeader data per zone.
-     */
-    ZEdgePVSHeader** zre_EdgePVSHeaderListPtr;
-
-    /**
      * Pointer to the Zone the edge PVS data are being determined for.
      */
     Zone const* zre_rootZonePtr;
@@ -234,10 +223,9 @@ static struct {
 static char buffer[256];
 
 static void zone_DumpPerEdgePVS(void) {
-    Zone_EdgePVSState.zre_EdgePVSHeaderListPtr = (ZEdgePVSHeader**)Lvl_PerEdgePVSDataPtr_l;
 
     for (WORD zoneID = 0; zoneID < Lvl_NumZones_w; ++zoneID) {
-        ZEdgePVSHeader const* edgePVSPtr = Zone_EdgePVSState.zre_EdgePVSHeaderListPtr[zoneID];
+        ZEdgePVSHeader const* edgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
         printf(
             "Zone %d: Edges: %d, PVS Size: %d\n",
             (int)zoneID,
@@ -291,7 +279,7 @@ static void zone_RecurseEdgePVS(WORD indexInPVS) {
     WORD zoneID = Zone_EdgePVSState.zre_FullPVSListPtr[indexInPVS];
 
     // Get the list of known joining edges for this zone.
-    ZEdgePVSHeader* currentEdgePVSPtr = Zone_EdgePVSState.zre_EdgePVSHeaderListPtr[zoneID];
+    ZEdgePVSHeader* currentEdgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
 
     for (WORD edgeNum = 0; edgeNum < currentEdgePVSPtr->zep_EdgeCount; ++edgeNum) {
         ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[currentEdgePVSPtr->zep_EdgeIDList[edgeNum]];
@@ -327,9 +315,7 @@ static void zone_RecurseEdgePVS(WORD indexInPVS) {
  */
 void Zone_FillEdgePVS() {
 
-    Zone_EdgePVSState.zre_EdgePVSHeaderListPtr = (ZEdgePVSHeader**)Lvl_PerEdgePVSDataPtr_l;
     Zone_EdgePVSState.zre_FullPVSListPtr = (WORD*)Sys_GetTemporaryWorkspace();
-
     Zone_EdgePVSState.zre_RecursionDepth = 0;
 
     for (WORD zoneID = 0; zoneID < Lvl_NumZones_w; ++zoneID) {
@@ -341,7 +327,7 @@ void Zone_FillEdgePVS() {
             Zone_EdgePVSState.zre_FullPVSListPtr
         );
 
-        ZEdgePVSHeader* currentEdgePVSPtr = Zone_EdgePVSState.zre_EdgePVSHeaderListPtr[zoneID];
+        ZEdgePVSHeader* currentEdgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
         Zone_EdgePVSState.zre_EdgePVSList = zone_GetEdgePVSListBase(currentEdgePVSPtr);
 
         // dprintf(
@@ -389,9 +375,9 @@ void Zone_FillEdgePVS() {
 }
 
 void Zone_FreeEdgePVS() {
-    if (Lvl_PerEdgePVSDataPtr_l) {
-        FreeVec(Lvl_PerEdgePVSDataPtr_l);
-        Lvl_PerEdgePVSDataPtr_l = NULL;
+    if (Lvl_ZEdgePVSHeaderPtrsPtr_l) {
+        FreeVec(Lvl_ZEdgePVSHeaderPtrsPtr_l);
+        Lvl_ZEdgePVSHeaderPtrsPtr_l = NULL;
         dputs("Zone_FreeEdgePVS()");
     }
 }
