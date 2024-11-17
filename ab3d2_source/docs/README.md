@@ -32,3 +32,14 @@ Floor texture coordinates adopt the same scale as the X/Z directions. All floor/
 
 The player eye level when standing corresponds to a height of 48 Y units (1.5 metres), and 32 Y units (1.0 metres) when crouched.
 
+### Angle System
+
+The game engine uses an angular sytstem of measure that divides the full circle into 8192. These values are used as indexes into a large, precomputed sine table with signed 16 bit precision:
+ 
+| Direction | Angle | Sine | Cosine |
+| - | - | - | - |
+| North | 0 | 0 | 32767 |
+| East | 2048 | 32767 | 0 |
+| South | 4096 | 0 | -32767 |
+| West | 6144 | -32767 | 0 |
+

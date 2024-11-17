@@ -393,3 +393,15 @@ void Zone_FreeEdgePVS() {
         dputs("Zone_FreeEdgePVS()");
     }
 }
+
+extern WORD Plr1_Direction_vw[];
+
+void Zone_CheckVisibleEdges(WORD zoneID) {
+    ZEdgePVSHeader const* edgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
+
+
+
+    for (WORD i = 0; i < edgePVSPtr->zep_EdgeCount; ++i) {
+        WORD edgeID = edgePVSPtr->zep_EdgeIDList[i];
+    }
+}
