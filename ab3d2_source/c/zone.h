@@ -1,6 +1,8 @@
 #ifndef ZONE_H
 #define ZONE_H
 
+#include "math25d.h"
+
 //#define DEBUG_ZONE_ERRATA
 
 #if defined(ZONE_DEBUG)
@@ -57,10 +59,8 @@ typedef struct {
  * is accessed by subtracting an offset stored in the Zone structure from the Zone address.
  */
 typedef struct {
-    WORD  e_XPos;       // X coordinate
-    WORD  e_ZPos;       // Z coordinate
-    WORD  e_XLen;       // Length in X direction
-    WORD  e_ZLen;       // Length in Z direction
+    Vec2W e_Pos;        // X coordinate
+    Vec2W e_Len;        // Length in X direction
     WORD  e_JoinZoneID; // Zone the edge joins to, or -1 for a solid wall
     WORD  e_Word_5;     // TODO figure out what this is
     BYTE  e_Byte_12;    // TODO figure out what this is
@@ -164,6 +164,7 @@ typedef struct {
     WORD zep_EdgeIDList[1]; // zep_EdgeCount in length, followed by zep_EdgeCount sets of data
 }  __attribute__((packed)) __attribute__ ((aligned (2))) ZEdgePVSHeader;
 
+
 /**
  * Returns the address of the start of the actual EdgePVSList. This immediately follows the
  * ZEdgePVSHeader.zep_EdgeIDList array, which is zep_EdgeCount elements long.
@@ -173,5 +174,8 @@ static __inline UBYTE* zone_GetEdgePVSListBase(ZEdgePVSHeader const* zepPtr) {
 }
 
 extern ZEdgePVSHeader** Lvl_ZEdgePVSHeaderPtrsPtr_l;
+
+void Zone_UpdateVectors(void);
+void Zone_CheckVisibleEdges(void);
 
 #endif // ZONE_H

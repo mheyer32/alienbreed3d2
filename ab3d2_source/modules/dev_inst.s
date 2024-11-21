@@ -10,11 +10,8 @@
 ; DEVMODE INSTRUMENTATION
 
 				align 4
-	DECLC	Dev_RegStatePtr_l
-			dc.l	0
-
-	DECLC	Dev_DebugFlags_l
-			dc.l	0
+		DCLC	Dev_RegStatePtr_l,	dc.l,	0
+		DCLC	Dev_DebugFlags_l,	dc.l,	0
 
 				IFD	DEV
 
@@ -316,12 +313,23 @@ Dev_PrintStats:
 				move.l		#136+16,d0
 				bsr			Dev_PrintF
 
+				; Edges Vis
+				lea         Zone_VisJoins_w,a1 ; close enoug
+				lea        .dev_ss_stats_join_vis_vb,a0
+				move.l		#136+32,d0
+				bsr			Dev_PrintF
+
 				; Player 1 Directions
 				lea         Plr1_CosVal_w,a1
 				lea        .dev_ss_stats_dir_vb,a0
-;.print:
 				move.l		#136+64,d0
 				bsr			Dev_PrintF
+
+				; Player 1 Position
+				;lea         zone_LastPosition_vw,a1 ; close enoug
+				;lea        .dev_ss_stats_pos_vb,a0
+				;move.l		#136+80,d0
+				;bsr			Dev_PrintF
 
 
 				rts
@@ -356,7 +364,11 @@ Dev_PrintStats:
 .dev_ss_stats_zone_vb:
 				dc.b		"ZI:%3d",0
 .dev_ss_stats_dir_vb:
-                dc.b        "C:%6d S:%6d A:%5d ",0
+                dc.b        "C:%6d S:%6d A:%5d  ",0
+.dev_ss_stats_pos_vb:
+                dc.b        "X:%5d Z:%5d",0
+.dev_ss_stats_join_vis_vb:
+                dc.b        "JE:%3d",0
 .dev_bool_off_vb:
  				dc.b		"off",0
 .dev_bool_on_vb:

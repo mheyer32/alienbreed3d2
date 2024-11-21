@@ -11,9 +11,9 @@ The game engine uses a fixed-point coordinate system. Generally, signed 16-bit v
 Using the four cardinal directions:
 
  - X represents the East/West direction.
-     - Value increases from East to West.
+     - Value increases from West to East.
  - Z represents the North/South direction.
-     - Value increases from North to South.
+     - Value increases from South to North.
 
 Vertically:
 

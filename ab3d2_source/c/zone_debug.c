@@ -62,18 +62,18 @@ void ZDbg_Init(void)
         "Draw_Zone_Graph()\n"
         "\tFrame: %d\n"
         "\tDebug: 0x%08X\n"
-        "\tPlayer {X:%d, Y:%d, Z:%d}, {cos:%d, sin:%d, ang:%d}\n\tPlayer in zone %d\n",
+        "\tPlayer {X:%d, Z:%d}, {cos:%d, sin:%d, ang:%d}\n\tPlayer in zone %d\n",
         Sys_FrameNumber_l,
         Dev_DebugFlags_l,
         Plr1_Position_vl[0] >> 16,
-        Plr1_Position_vl[1] >> 16,
         Plr1_Position_vl[2] >> 16,
-        (int)Plr1_Direction_vw[0],
-        (int)Plr1_Direction_vw[1],
-        (int)Plr1_Direction_vw[2],
-        (int)Plr1_Direction_vw[3],
+        (int)Plr1_Direction_vw[0], // sine
+        (int)Plr1_Direction_vw[1], // cosine
+        (int)Plr1_Direction_vw[2], // angle
         (int)Plr1_Zone
     );
+
+    Zone_CheckVisibleEdges();
 
     // WORD const errata[] = {
     //     9, 7, 8, 129, ZONE_ID_LIST_END, // For zone 9, remove 7, 8 and 129
@@ -214,8 +214,8 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
             printf(
                 "\t\t| %3d | %6d | %6d | %6d | %6d | %3d | %6d | %3d | %3d | %04X |\n",
                 edge,
-                (int)edgePtr->e_XPos,     (int)edgePtr->e_ZPos,
-                (int)edgePtr->e_XLen,     (int)edgePtr->e_ZLen,
+                (int)edgePtr->e_Pos.v_X,     (int)edgePtr->e_Pos.v_Z,
+                (int)edgePtr->e_Len.v_X,     (int)edgePtr->e_Len.v_Z,
                 (int)edgePtr->e_JoinZoneID, (int)edgePtr->e_Word_5,
                 (int)edgePtr->e_Byte_12,  (int)edgePtr->e_Byte_13,
                 (int)edgePtr->e_Flags

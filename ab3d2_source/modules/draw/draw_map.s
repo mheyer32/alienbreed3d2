@@ -367,11 +367,8 @@ done_bottom_clip:
 
 				bra		draw_MapLine
 
-    DECLC Draw_MapZoomLevel_w
-        dc.w	3
-
-    DECLC Draw_MapTransparent_b
-        dc.w	0
+		DCLC	Draw_MapZoomLevel_w,	dc.w,	3
+		DCLC	Draw_MapTransparent_b,	dc.w,	0
 
 draw_MapXOffset_w:		dc.w	0
 draw_MapZOffset_w:		dc.w	0

@@ -62,7 +62,7 @@ PLR_SLAVE				equ 's' ; two player slave
 PLR_SINGLE				equ 'n' ; Single player
 
 ;QUIT_KEY				equ RAWKEY_NUM_ASTERISK
-QUIT_KEY                equ RAWKEY_COMMA ; for days when I have no numberpad
+QUIT_KEY                equ RAWKEY_DOT ; for days when I have no numberpad
 
 ; ZERO-INITIALISED DATA
 				include "bss/system_bss.s"

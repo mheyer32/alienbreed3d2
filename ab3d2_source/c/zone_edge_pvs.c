@@ -1,5 +1,6 @@
 #include "system.h"
 #include "zone.h"
+#include "math25d.h"
 #include <proto/exec.h>
 #include <stdio.h>
 
@@ -41,6 +42,7 @@ static struct {
      */
     WORD  zre_ViewX;
     WORD  zre_ViewZ;
+    Vec2W zre_View;
 } Zone_EdgePVSState;
 
 static char buffer[256]; // just for debugging
@@ -58,8 +60,8 @@ static char buffer[256]; // just for debugging
  *
  */
 static inline int zone_SideOfEdge(ZEdge const* edgePtr, WORD const* coordPtr) {
-    return (int)edgePtr->e_XLen * (int)(coordPtr[1] - edgePtr->e_ZPos) -
-           (int)edgePtr->e_ZLen * (int)(coordPtr[0] - edgePtr->e_XPos);
+    return (int)edgePtr->e_Len.v_X * (int)(coordPtr[1] - edgePtr->e_Pos.v_Z) -
+           (int)edgePtr->e_Len.v_Z * (int)(coordPtr[0] - edgePtr->e_Pos.v_X);
 }
 
 /**
@@ -302,8 +304,8 @@ static void zone_FillZEdgePVSListData() {
         for (WORD edgeNum = 0; edgeNum < currentEdgePVSPtr->zep_EdgeCount; ++edgeNum) {
             ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[currentEdgePVSPtr->zep_EdgeIDList[edgeNum]];
 
-            Zone_EdgePVSState.zre_ViewX = ((edgePtr->e_XPos << 1) + edgePtr->e_XLen) >> 1;
-            Zone_EdgePVSState.zre_ViewZ = ((edgePtr->e_ZPos << 1) + edgePtr->e_ZLen) >> 1;
+            Zone_EdgePVSState.zre_ViewX = ((edgePtr->e_Pos.v_X << 1) + edgePtr->e_Len.v_X) >> 1;
+            Zone_EdgePVSState.zre_ViewZ = ((edgePtr->e_Pos.v_Z << 1) + edgePtr->e_Len.v_Z) >> 1;
 
             // Clear the visited index buffer, which requires a count of longwords
             // Sys_MemFillLong(
@@ -394,14 +396,142 @@ void Zone_FreeEdgePVS() {
     }
 }
 
+#define POS_X 0
+#define POS_Z 4
+extern WORD Plr1_Position_vl[];
+
+#define DIR_COS 0
+#define DIR_SIN 1
+#define DIR_ANG 2
 extern WORD Plr1_Direction_vw[];
 
-void Zone_CheckVisibleEdges(WORD zoneID) {
-    ZEdgePVSHeader const* edgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
+/**
+ * Assuming a 90 degree FOV, which is 2048 in our scaling
+ */
+#define FOV 2048
+#define HALF_FOV FOV/2
 
 
+static Vec2W zone_ViewPoint;
+static Vec2W zone_PerpDir;
+static Vec2W zone_LeftFOVDir;
+static Vec2W zone_RightFOVDir;
+
+extern WORD Zone_VisJoins_w;
+
+void Zone_UpdateVectors() {
+    // Forwards vector is      z: DIR_COS, x: DIR_SIN
+    // Perpendicular vector is z: DIR_SIN, x: -DIR_COS
+    //dputs("Zone_UpdateVectors()");
+    zone_ViewPoint.v_X   = Plr1_Position_vl[POS_X];
+    zone_ViewPoint.v_Z   = Plr1_Position_vl[POS_Z];
+    zone_PerpDir.v_X     = -Plr1_Direction_vw[DIR_COS];
+    zone_PerpDir.v_Z     = Plr1_Direction_vw[DIR_SIN];
+
+    // Get the direction vectors for the left and right field of view
+    WORD fovAngle        = Plr1_Direction_vw[DIR_ANG] - HALF_FOV;
+    zone_LeftFOVDir.v_X  = sinw(fovAngle);
+    zone_LeftFOVDir.v_Z  = cosw(fovAngle);
+    fovAngle += FOV;
+    zone_RightFOVDir.v_X = sinw(fovAngle);
+    zone_RightFOVDir.v_Z = cosw(fovAngle);
+}
+
+#define BIT_FRONT 1
+#define BIT_LEFT  2
+#define BIT_RIGHT 4
+
+extern LONG Sys_FrameNumber_l;
+
+extern WORD Plr1_Zone;
+
+/**
+ * TODO - debug fully and port to asm
+ */
+void Zone_CheckVisibleEdges(void) {
+
+    ZEdgePVSHeader const* edgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[Plr1_Zone];
+    Vec2W endPoint;
+    WORD  startFlags;
+    WORD  endFlags;
+    WORD  numVisible = 0;
+    WORD  edgeID;
+    Zone_UpdateVectors();
 
     for (WORD i = 0; i < edgePVSPtr->zep_EdgeCount; ++i) {
-        WORD edgeID = edgePVSPtr->zep_EdgeIDList[i];
+
+        edgeID = edgePVSPtr->zep_EdgeIDList[i];
+        ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[edgeID];
+
+        // dprintf(
+        //     "Checking Edge #%d [%d] [%p]\n",
+        //     (int)i,
+        //     (int)edgeID,
+        //     edgePtr
+        // );
+
+        startFlags = (sideOfDirection(
+            &zone_ViewPoint,
+            &zone_PerpDir,
+            &edgePtr->e_Pos
+        ) < 0) ? BIT_FRONT : 0; // <
+
+        startFlags |= (sideOfDirection(
+            &zone_ViewPoint,
+            &zone_LeftFOVDir,
+            &edgePtr->e_Pos
+        ) <= 0) ? BIT_LEFT : 0; // >=
+
+        startFlags |= (sideOfDirection(
+            &zone_ViewPoint,
+            &zone_RightFOVDir,
+            &edgePtr->e_Pos
+        ) >= 0) ? BIT_RIGHT : 0; // <=
+
+        if (startFlags == (BIT_FRONT|BIT_LEFT|BIT_RIGHT)) {
+//            dprintf("\tVisible. Start: %d\n", (int)startFlags);
+            ++numVisible;
+            continue;
+        }
+
+        endPoint.v_X = edgePtr->e_Pos.v_X + edgePtr->e_Len.v_X;
+        endPoint.v_Z = edgePtr->e_Pos.v_Z + edgePtr->e_Len.v_Z;
+
+        endFlags = (sideOfDirection(
+            &zone_ViewPoint,
+            &zone_PerpDir,
+            &endPoint
+        ) < 0) ? BIT_FRONT : 0; // <
+
+        endFlags |= (sideOfDirection(
+            &zone_ViewPoint,
+            &zone_LeftFOVDir,
+            &endPoint
+        ) <= 0) ? BIT_LEFT : 0; // >=
+
+        endFlags |= (sideOfDirection(
+            &zone_ViewPoint,
+            &zone_RightFOVDir,
+            &endPoint
+        ) >= 0) ? BIT_RIGHT : 0; // <=
+
+        if (endFlags == (BIT_FRONT|BIT_LEFT|BIT_RIGHT)) {
+            //dprintf("\tVisible. End: %d\n", (int)endFlags);
+            ++numVisible;
+            continue;
+        }
+
+        if (
+            ((startFlags|endFlags) & BIT_FRONT) &&
+            (startFlags & BIT_LEFT) == 0 &&
+            (endFlags & BIT_RIGHT) == 0
+        ) {
+            //dprintf("\tSpan. Start: %d End: %d\n", (int)startFlags, (int)endFlags);
+            ++numVisible;
+            continue;
+        }
+        //dprintf("\tNot visible. Start: %d End: %d\n", (int)startFlags, (int)endFlags);
+
     }
+    Zone_VisJoins_w = numVisible;
 }

@@ -430,7 +430,7 @@ STATS_KILL		MACRO
 				ENDC
 
 				; Macro for defining identifier labels that are both ASM and C accessible
-DECLC			MACRO
+DCLC			MACRO
 _\1::
-\1:
+\1: \2 \3 \4
 				ENDM

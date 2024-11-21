@@ -1,7 +1,6 @@
 				align 4
 
-	DECLC Zone_MovementMask_l
-				dc.l	$FFF0FFF0
+		DCLC	Zone_MovementMask_l,	dc.l,	$FFF0FFF0
 
 tmp_ListOfGraphRoomsPtr_l:
 				dc.l	0
@@ -10,6 +9,10 @@ zone_LastPosition_vw: ; basically a short coordinate pair
 				dc.l	-1
 
 Zone_OrderZones:
+				IFD BUILD_WITH_C
+				CALLC Zone_CheckVisibleEdges
+				ENDIF
+
 				move.w	Plr_XOff_l,d0
 				swap	d0
 				move.w	Plr_ZOff_l,d0		  ; d0 is the short coordinate location of the player

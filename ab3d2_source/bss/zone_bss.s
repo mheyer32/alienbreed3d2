@@ -13,6 +13,8 @@ Zone_OrderTable_Barrier_w:		ds.w	1 		; needs initialisation to -1
 Zone_FinalOrderTable_vw:		ds.w	400*2
 zone_FinalOrderTableBarrier_w:	ds.w	1 		; deliniates end of table
 
+		DCLC Zone_VisJoins_w,	ds.w,	1
+
 			align 4
 ; Bitmask
 
