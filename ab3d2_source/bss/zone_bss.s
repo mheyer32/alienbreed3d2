@@ -14,6 +14,11 @@ Zone_FinalOrderTable_vw:		ds.w	400*2
 zone_FinalOrderTableBarrier_w:	ds.w	1 		; deliniates end of table
 
 		DCLC Zone_VisJoins_w,	ds.w,	1
+		DCLC Zone_TotJoins_w,	ds.w,	1
+
+; TODO this is prototyping ony
+        DCLC Zone_PVSList_vw,   ds.w,    256
+		DCLC Zone_PVSMask_vb,   ds.b,    256
 
 			align 4
 ; Bitmask

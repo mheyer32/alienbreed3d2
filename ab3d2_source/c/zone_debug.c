@@ -71,9 +71,8 @@ void ZDbg_Init(void)
         (int)Plr1_Direction_vw[1], // cosine
         (int)Plr1_Direction_vw[2], // angle
         (int)Plr1_Zone
-    );
 
-    Zone_CheckVisibleEdges();
+    );
 
     // WORD const errata[] = {
     //     9, 7, 8, 129, ZONE_ID_LIST_END, // For zone 9, remove 7, 8 and 129
@@ -181,18 +180,19 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
     if (zdbg_TraceFlags & ZDBG_TRACE_LIST_PVS) {
         puts(
             "\tPVS Zones:\n"
-            "\t\t| ID  | Dist   | ...... | ...... |\n"
-            "\t\t+-----+--------+--------+--------|"
+            "\t\t| ID  | Dist   | ...... | ...... | EdgeVis |\n"
+            "\t\t+-----+--------+--------+--------+---------+"
         );
         int zone;
         do {
             zone = (int)p->pvs_ZoneID;
             printf(
-                "\t\t| %3d | %6d | %6d | %6d |\n",
+                "\t\t| %3d | %6d | %6d | %6d | %6d |\n",
                 zone,
                 (int)p->pvs_SortVal,
                 (int)p->pvs_Word2, // significant?
-                (int)p->pvs_Word2  // significant?
+                (int)p->pvs_Word2,  // significant?
+                (int)(Lvl_ZonePtrsPtr_l[zone]->z_Unused)
             );
             ++p;
         } while (zone > -1);

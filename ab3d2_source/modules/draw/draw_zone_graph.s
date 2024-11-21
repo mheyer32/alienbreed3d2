@@ -18,10 +18,17 @@ Draw_Zone_Graph:
 
 				DEV_ZDBG ZDbg_First
 
-				move.l	a0,-(a7)
 
-				move.l	Lvl_ZonePtrsPtr_l,a0
-				move.l	(a0,d7.w*4),a0
+				move.l	Lvl_ZonePtrsPtr_l,a2
+				move.l	(a2,d7.w*4),a2
+
+				; 0xABADCAFE - Quick Hack version of edge vis. If the zone is not tagged visible, skip
+				tst.w   ZoneT_Unused_w(a2)
+				beq     .subroomloop
+
+				move.l	a0,-(a7)
+                move.l  a2,a0
+
 				move.l	ZoneT_Roof_l(a0),SplitHeight
 				move.l	a0,draw_BackupRoomPtr_l
 

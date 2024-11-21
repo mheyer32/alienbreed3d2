@@ -381,7 +381,7 @@ void Zone_InitEdgePVS() {
     zone_FillZEdgePVSListData();
 
     #if defined(ZONE_DEBUG)
-    zone_DumpPerEdgePVS();
+    //zone_DumpPerEdgePVS();
     #endif
 }
 
@@ -418,6 +418,7 @@ static Vec2W zone_LeftFOVDir;
 static Vec2W zone_RightFOVDir;
 
 extern WORD Zone_VisJoins_w;
+extern WORD Zone_TotJoins_w;
 
 void Zone_UpdateVectors() {
     // Forwards vector is      z: DIR_COS, x: DIR_SIN
@@ -445,20 +446,46 @@ extern LONG Sys_FrameNumber_l;
 
 extern WORD Plr1_Zone;
 
+extern WORD  Zone_PVSList_vw[];
+extern UBYTE Zone_PVSMask_vb[];
+
+void zone_ClearEdgePVSBuffer(WORD size) {
+    Zone_PVSMask_vb[0] = 0xFF;
+    for (WORD i = 1; i < size; ++i) {
+        Zone_PVSMask_vb[i] = 0;
+    }
+}
+
+void zone_MergeEdgePVS(UBYTE const* data, WORD size) {
+    for (WORD i = 1; i < size; ++i) {
+        Zone_PVSMask_vb[i] |= data[i];
+    }
+}
+
+void zone_MarkVisibleViaEdges(WORD size) {
+    zone_MakePVSZoneIDList(Lvl_ZonePtrsPtr_l[Plr1_Zone], &Zone_PVSList_vw[0]);
+
+    for (WORD i = 0; i < size; ++i) {
+        Lvl_ZonePtrsPtr_l[Zone_PVSList_vw[i]]->z_Unused = Zone_PVSMask_vb[i];
+    }
+}
+
 /**
  * TODO - debug fully and port to asm
  */
 void Zone_CheckVisibleEdges(void) {
 
     ZEdgePVSHeader const* edgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[Plr1_Zone];
+    UBYTE const* edgePVSListPtr = zone_GetEdgePVSListBase(edgePVSPtr);
     Vec2W endPoint;
     WORD  startFlags;
     WORD  endFlags;
     WORD  numVisible = 0;
     WORD  edgeID;
     Zone_UpdateVectors();
+    zone_ClearEdgePVSBuffer(edgePVSPtr->zep_ListSize);
 
-    for (WORD i = 0; i < edgePVSPtr->zep_EdgeCount; ++i) {
+    for (WORD i = 0; i < edgePVSPtr->zep_EdgeCount; ++i, edgePVSListPtr += edgePVSPtr->zep_ListSize) {
 
         edgeID = edgePVSPtr->zep_EdgeIDList[i];
         ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[edgeID];
@@ -491,6 +518,7 @@ void Zone_CheckVisibleEdges(void) {
         if (startFlags == (BIT_FRONT|BIT_LEFT|BIT_RIGHT)) {
 //            dprintf("\tVisible. Start: %d\n", (int)startFlags);
             ++numVisible;
+            zone_MergeEdgePVS(edgePVSListPtr, edgePVSPtr->zep_ListSize);
             continue;
         }
 
@@ -518,6 +546,7 @@ void Zone_CheckVisibleEdges(void) {
         if (endFlags == (BIT_FRONT|BIT_LEFT|BIT_RIGHT)) {
             //dprintf("\tVisible. End: %d\n", (int)endFlags);
             ++numVisible;
+            zone_MergeEdgePVS(edgePVSListPtr,  edgePVSPtr->zep_ListSize);
             continue;
         }
 
@@ -528,10 +557,15 @@ void Zone_CheckVisibleEdges(void) {
         ) {
             //dprintf("\tSpan. Start: %d End: %d\n", (int)startFlags, (int)endFlags);
             ++numVisible;
+            zone_MergeEdgePVS(edgePVSListPtr, edgePVSPtr->zep_ListSize);
             continue;
         }
         //dprintf("\tNot visible. Start: %d End: %d\n", (int)startFlags, (int)endFlags);
 
     }
     Zone_VisJoins_w = numVisible;
+    Zone_TotJoins_w = edgePVSPtr->zep_EdgeCount;
+
+    zone_MarkVisibleViaEdges(edgePVSPtr->zep_ListSize);
+
 }

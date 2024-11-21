@@ -316,13 +316,13 @@ Dev_PrintStats:
 				; Edges Vis
 				lea         Zone_VisJoins_w,a1 ; close enoug
 				lea        .dev_ss_stats_join_vis_vb,a0
-				move.l		#136+32,d0
+				move.l		#136+64,d0
 				bsr			Dev_PrintF
 
 				; Player 1 Directions
 				lea         Plr1_CosVal_w,a1
 				lea        .dev_ss_stats_dir_vb,a0
-				move.l		#136+64,d0
+				move.l		#136+80,d0
 				bsr			Dev_PrintF
 
 				; Player 1 Position
@@ -368,7 +368,7 @@ Dev_PrintStats:
 .dev_ss_stats_pos_vb:
                 dc.b        "X:%5d Z:%5d",0
 .dev_ss_stats_join_vis_vb:
-                dc.b        "JE:%3d",0
+                dc.b        "JE:%3d/%3d",0
 .dev_bool_off_vb:
  				dc.b		"off",0
 .dev_bool_on_vb:
