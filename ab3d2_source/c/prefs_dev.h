@@ -16,6 +16,7 @@
     #define DEV_SKIP_DUMP_BG_DISABLE		12
     #define DEV_ZONE_TRACE					13
     #define DEV_SKIP_PVS_AMEND				14
+    #define DEV_SKIP_EDGE_PVS				15
     #define DEV_SKIP_OVERLAY				31
 
     {
@@ -96,6 +97,12 @@
         DEV_SKIP_PVS_AMEND,
         CFG_VAR_TYPE_ULONG_BIT
     },
+    {
+        "dev.no_edge_pvs",
+        &Dev_DebugFlags_l,
+        DEV_SKIP_EDGE_PVS,
+        CFG_VAR_TYPE_ULONG_BIT
+    },
 
     {
         "dev.no_overlay",
@@ -103,7 +110,6 @@
         DEV_SKIP_OVERLAY,
         CFG_VAR_TYPE_ULONG_BIT
     },
-
 
 #endif
 #endif // PREFS_DEV_H

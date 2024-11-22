@@ -38,6 +38,12 @@
         CFG_VAR_TYPE_UBYTE
     },
     {
+        "misc.edge_pvs_fov",
+        &Zone_PVSFieldOfView,
+        CFG_PARAM_TYPE_INT,
+        CFG_VAR_TYPE_WORD
+    },
+    {
         "map.transparent",
         &Draw_MapTransparent_b,
         CFG_PARAM_TYPE_BOOL,

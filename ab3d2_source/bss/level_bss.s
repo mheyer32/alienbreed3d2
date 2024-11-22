@@ -26,7 +26,9 @@ PointsToRotatePtr_l:			ds.l	1
 
 Lvl_ZoneBorderPointsPtr_l:		ds.l	1
 Lvl_ConnectTablePtr_l:			ds.l	1
-Lvl_ListOfGraphRoomsPtr_l:		ds.l	1
+
+		DCLC Lvl_ListOfGraphRoomsPtr_l,	ds.l,	1; points at the list of PVS zones for rendering
+
 AI_AlienShotDataPtr_l:			ds.l	1
 Lvl_ObjectPointsPtr_l:			ds.l	1
 Lvl_ObjectDataPtr_l:			ds.l	1

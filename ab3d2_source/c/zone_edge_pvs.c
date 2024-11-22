@@ -409,8 +409,11 @@ extern WORD Plr1_Direction_vw[];
  * Assuming a 90 degree FOV, which is 2048 in our scaling
  */
 #define FOV 2048
-#define HALF_FOV FOV/2
 
+/**
+ *  This can be overridden in by config
+ */
+WORD Zone_PVSFieldOfView = FOV;
 
 static Vec2W zone_ViewPoint;
 static Vec2W zone_PerpDir;
@@ -430,10 +433,10 @@ void Zone_UpdateVectors() {
     zone_PerpDir.v_Z     = Plr1_Direction_vw[DIR_SIN];
 
     // Get the direction vectors for the left and right field of view
-    WORD fovAngle        = Plr1_Direction_vw[DIR_ANG] - HALF_FOV;
+    WORD fovAngle        = Plr1_Direction_vw[DIR_ANG] - (Zone_PVSFieldOfView >> 1);
     zone_LeftFOVDir.v_X  = sinw(fovAngle);
     zone_LeftFOVDir.v_Z  = cosw(fovAngle);
-    fovAngle += FOV;
+    fovAngle += Zone_PVSFieldOfView;
     zone_RightFOVDir.v_X = sinw(fovAngle);
     zone_RightFOVDir.v_Z = cosw(fovAngle);
 }
@@ -444,10 +447,10 @@ void Zone_UpdateVectors() {
 
 extern LONG Sys_FrameNumber_l;
 
-extern WORD Plr1_Zone;
-
 extern WORD  Zone_PVSList_vw[];
 extern UBYTE Zone_PVSMask_vb[];
+
+extern ZPVSRecord* Lvl_ListOfGraphRoomsPtr_l;
 
 void zone_ClearEdgePVSBuffer(WORD size) {
     Zone_PVSMask_vb[0] = 0xFF;
@@ -463,7 +466,8 @@ void zone_MergeEdgePVS(UBYTE const* data, WORD size) {
 }
 
 void zone_MarkVisibleViaEdges(WORD size) {
-    zone_MakePVSZoneIDList(Lvl_ZonePtrsPtr_l[Plr1_Zone], &Zone_PVSList_vw[0]);
+    WORD zoneID = Lvl_ListOfGraphRoomsPtr_l->pvs_ZoneID;
+    zone_MakePVSZoneIDList(Lvl_ZonePtrsPtr_l[zoneID], &Zone_PVSList_vw[0]);
 
     for (WORD i = 0; i < size; ++i) {
         Lvl_ZonePtrsPtr_l[Zone_PVSList_vw[i]]->z_Unused = Zone_PVSMask_vb[i];
@@ -474,8 +478,9 @@ void zone_MarkVisibleViaEdges(WORD size) {
  * TODO - debug fully and port to asm
  */
 void Zone_CheckVisibleEdges(void) {
+    WORD zoneID = Lvl_ListOfGraphRoomsPtr_l->pvs_ZoneID;
 
-    ZEdgePVSHeader const* edgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[Plr1_Zone];
+    ZEdgePVSHeader const* edgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
     UBYTE const* edgePVSListPtr = zone_GetEdgePVSListBase(edgePVSPtr);
     Vec2W endPoint;
     WORD  startFlags;

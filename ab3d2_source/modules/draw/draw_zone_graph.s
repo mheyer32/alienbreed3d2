@@ -22,10 +22,13 @@ Draw_Zone_Graph:
 				move.l	Lvl_ZonePtrsPtr_l,a2
 				move.l	(a2,d7.w*4),a2
 
+				DEV_CHECK_SET SKIP_EDGE_PVS,.no_edge_pvs
+
 				; 0xABADCAFE - Quick Hack version of edge vis. If the zone is not tagged visible, skip
 				tst.w   ZoneT_Unused_w(a2)
 				beq     .subroomloop
 
+.no_edge_pvs:
 				move.l	a0,-(a7)
                 move.l  a2,a0
 
