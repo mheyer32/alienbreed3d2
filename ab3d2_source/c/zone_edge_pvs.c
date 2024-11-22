@@ -108,19 +108,19 @@ static WORD zone_CountJoiningEdges(Zone const* zonePtr) {
 /**
  * Calculates the allocation data size for the per-edge PVS data, returning the total allocation
  * size, including the base pointer requirements.
- * The infoPairBufferPtr points to a buffer that is populated with the edge count and PVS length
+ * The infoTupleBufferPtr points to a buffer that is populated with the edge count and PVS length
  * pairs for each of the Zones.
  */
-static ULONG zone_CalcEdgePVSDataSize(WORD* infoPairBufferPtr) {
+static ULONG zone_CalcEdgePVSDataSize(WORD* infoTupleBufferPtr) {
     /* Begin with the assumption we need as many pointers as zones */
     ULONG totalSize = Lvl_NumZones_w * sizeof(ZEdgePVSHeader*);
 
-    for (WORD zoneID = 0, *infoPairPtr = infoPairBufferPtr; zoneID < Lvl_NumZones_w; ++zoneID) {
+    for (WORD zoneID = 0, *infoTuplePtr = infoTupleBufferPtr; zoneID < Lvl_NumZones_w; ++zoneID) {
         Zone const* zonePtr = Lvl_ZonePtrsPtr_l[zoneID];
         WORD joinCount      = zone_CountJoiningEdges(zonePtr);
         WORD pvsSize        = zone_CountPVS(zonePtr);
-        *infoPairPtr++      = pvsSize;
-        *infoPairPtr++      = joinCount;
+        *infoTuplePtr++      = pvsSize;
+        *infoTuplePtr++      = joinCount;
 
         // The size of ZEdgePVSDataSet includes one edge id entry already...
         ULONG dataSize   = sizeof(ZEdgePVSHeader) - sizeof(WORD) +
@@ -128,6 +128,17 @@ static ULONG zone_CalcEdgePVSDataSize(WORD* infoPairBufferPtr) {
 
         // Ensure that the data remains aligned to a word bounary.
         dataSize = Sys_Round2(dataSize);
+
+        *infoTuplePtr++ = (WORD)dataSize;
+
+        // dprintf(
+        //     "Zone %d JE:%d PS: %d S:%u\n",
+        //     (int)zoneID,
+        //     (int)joinCount,
+        //     (int)pvsSize,
+        //     dataSize
+        // );
+
         totalSize += dataSize;
     }
     return totalSize;
@@ -137,17 +148,18 @@ static ULONG zone_CalcEdgePVSDataSize(WORD* infoPairBufferPtr) {
  * Returns the address of the zeroth ZEdgePVSHeader in the set.
  */
 static inline ZEdgePVSHeader* zone_ZEdgePVSHeaderBase(void const* basePtr) {
-    return (ZEdgePVSHeader*)((UBYTE*)basePtr) +
-        Lvl_NumZones_w * sizeof(ZEdgePVSHeader*);
+    return (ZEdgePVSHeader*)(
+        ((UBYTE*)basePtr) + Lvl_NumZones_w * sizeof(ZEdgePVSHeader*)
+    );
 }
 
 /**
- * Calculateds the required memory for the Edge PVS data and allocates it. In the process of
+ * Calculates the required memory for the Edge PVS data and allocates it. In the process of
  * calculating the size, populates an array of PVS Size / Connecting Edge Count pairs, the
  * location of which is passed in.
  */
-static ZEdgePVSHeader** zone_AllocEdgePVS(WORD* infoPairPtr) {
-    ULONG totalSize = zone_CalcEdgePVSDataSize(infoPairPtr);
+static ZEdgePVSHeader** zone_AllocEdgePVS(WORD* infoTupleBufferPtr) {
+    ULONG totalSize = zone_CalcEdgePVSDataSize(infoTupleBufferPtr);
 
     dprintf(
         "zone_AllocEdgePVS() Processed %d Zones, Size: %u\n",
@@ -166,20 +178,16 @@ static ZEdgePVSHeader** zone_AllocEdgePVS(WORD* infoPairPtr) {
  * Builds up the pointer table with the location for each ZEdgePVSHeader and populates
  * the ZEdgePVSHeader structure fields.
  */
-static void zone_FillZEdgePVSHeaders(ZEdgePVSHeader* currentEdgePVSPtr, WORD const* infoPairPtr) {
+static void zone_FillZEdgePVSHeaders(ZEdgePVSHeader* currentEdgePVSPtr, WORD const* infoTuplePtr) {
 
     // First Pass - build the ZEdgePVSHeader data and populate the edge indexes.
     for (WORD zoneID = 0; zoneID < Lvl_NumZones_w; ++zoneID) {
         currentEdgePVSPtr->zep_ZoneID    = zoneID;
-        currentEdgePVSPtr->zep_ListSize  = *infoPairPtr++;
-        currentEdgePVSPtr->zep_EdgeCount = *infoPairPtr++;
+        currentEdgePVSPtr->zep_ListSize  = *infoTuplePtr++;
+        currentEdgePVSPtr->zep_EdgeCount = *infoTuplePtr++;
         Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID]  = currentEdgePVSPtr;
 
-        // The size of ZEdgePVSDataSet includes one ZEdgePVSIndex entry...
-        ULONG dataSize = Sys_Round2(sizeof(ZEdgePVSHeader) - sizeof(WORD) +
-            (ULONG)currentEdgePVSPtr->zep_EdgeCount * (sizeof(WORD) +
-            (ULONG)currentEdgePVSPtr->zep_ListSize)
-        );
+        ULONG dataSize = *infoTuplePtr++;
 
         // dprintf(
         //     "%p [%u] %d %d %d {",
@@ -365,16 +373,22 @@ static void zone_DumpPerEdgePVS(void) {
  * Allocates and initialises the per-edge PVS data.
  */
 void Zone_InitEdgePVS() {
+
+    ULONG infoTupleBufferSize = (ULONG)Lvl_NumZones_w * 3 * sizeof(WORD);
+
+    dprintf("Zone_InitEdgePVS() need %u bytes for info buffer\n", infoTupleBufferSize);
+
     // Store the per zone list size / edge count ready for the second step.
-    WORD* infoPairPtr  = (WORD*)Sys_GetTemporaryWorkspace();
+    //WORD* infoTupleBufferPtr = (WORD*)AllocVec(infoTupleBufferSize, MEMF_ANY);
+    WORD* infoTupleBufferPtr = (WORD*)Sys_GetTemporaryWorkspace();
 
     // Allocate the space for the pointer table and the data.
-    Lvl_ZEdgePVSHeaderPtrsPtr_l = zone_AllocEdgePVS(infoPairPtr);
+    Lvl_ZEdgePVSHeaderPtrsPtr_l = zone_AllocEdgePVS(infoTupleBufferPtr);
 
     // Fill in the ZEdgePVS Header Structures
     zone_FillZEdgePVSHeaders(
         zone_ZEdgePVSHeaderBase(Lvl_ZEdgePVSHeaderPtrsPtr_l),
-        infoPairPtr
+        infoTupleBufferPtr
     );
 
     // Fill in the ZEdgePVS body list data
@@ -383,6 +397,8 @@ void Zone_InitEdgePVS() {
     #if defined(ZONE_DEBUG)
     //zone_DumpPerEdgePVS();
     #endif
+
+    //FreeVec(infoTupleBufferPtr);
 }
 
 /**
