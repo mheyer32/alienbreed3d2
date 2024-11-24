@@ -594,6 +594,24 @@ LVL_MAX_ZONE_COUNT EQU 256
 
 		LABEL LvlT_SizeOf_l
 
+    ; Object Data Definition
+	STRUCTURE DoorT,0
+		UWORD DoorT_Bottom_w			;  0, 2
+		UWORD DoorT_Top_w				;  2, 2
+		UWORD DoorT_OpeningSpeed_w		;  4, 2
+		UWORD DoorT_ClosingSpeed_w		;  6, 2
+		UWORD DoorT_OpenDuration_w		;  8, 2
+		UWORD DoorT_OpeningSoundFX_w	; 10, 2
+		UWORD DoorT_ClosingSoundFX_w	; 12, 2
+		UWORD DoorT_OpenedSoundFX_w		; 14, 2
+		UWORD DoorT_ClosedSoundFX_w		; 16, 2
+		UWORD DoorT_Word9_w				; 18, 2 - something X coordinate related
+		UWORD DoorT_Word10_w			; 20, 2 - something Z coordinate related
+		UWORD DoorT_Word11_w			; 22, 2
+		UWORD DoorT_Word12_w			; 24, 2
+		UWORD DoorT_Long_w				; 26, 4
+		UWORD DooeT_ZoneID_w			; 30, 2 - Is this the zone ID the door is attached to?
+
 ; For two player victory messages
 GAME_DM_VICTORY_MESSAGE_LENGTH EQU 80
 

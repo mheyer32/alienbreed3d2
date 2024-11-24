@@ -1235,7 +1235,7 @@ DoorRoutine:
 
 doadoor:
 				add.w	#1,anim_ThisDoor_w
-				move.w	(a0)+,d0				; bottom of door movement
+				move.w	(a0)+,d0				; 0: bottom of door movement
 				cmp.w	#999,d0
 				bne		notalldoorsdone
 
@@ -1244,21 +1244,21 @@ doadoor:
 				rts
 
 notalldoorsdone:
-				move.w	(a0)+,d1				; top of door movement.
-				move.w	(a0)+,anim_OpeningSpeed_w
+				move.w	(a0)+,d1				; 2: top of door movement.
+				move.w	(a0)+,anim_OpeningSpeed_w	; 4:
 				neg.w	anim_OpeningSpeed_w
-				move.w	(a0)+,anim_ClosingSpeed_w
-				move.w	(a0)+,anim_OpenDuration_w
-				move.w	(a0)+,anim_OpeningSoundFX_w
-				move.w	(a0)+,anim_ClosingSoundFX_w
-				move.w	(a0)+,anim_OpenedSoundFX_w
-				move.w	(a0)+,anim_ClosedSoundFX_w
+				move.w	(a0)+,anim_ClosingSpeed_w	; 6:
+				move.w	(a0)+,anim_OpenDuration_w	; 8:
+				move.w	(a0)+,anim_OpeningSoundFX_w	; 10:
+				move.w	(a0)+,anim_ClosingSoundFX_w	; 12:
+				move.w	(a0)+,anim_OpenedSoundFX_w	; 14:
+				move.w	(a0)+,anim_ClosedSoundFX_w	; 16:
 				subq.w	#1,anim_OpeningSoundFX_w
 				subq.w	#1,anim_ClosingSoundFX_w
 				subq.w	#1,anim_OpenedSoundFX_w
 				subq.w	#1,anim_ClosedSoundFX_w
-				move.w	(a0)+,d2
-				move.w	(a0)+,d3
+				move.w	(a0)+,d2					; 18:
+				move.w	(a0)+,d3					; 20:
 				sub.w	Plr1_TmpXOff_l,d2
 				sub.w	Plr1_TmpZOff_l,d3
 				move.w	Temp_CosVal_w,d4
@@ -1277,15 +1277,15 @@ notalldoorsdone:
 				add.l	d4,d4
 				swap	d4
 				move.w	d4,Aud_NoiseZ_w
-				move.w	(a0),d3
-				move.w	2(a0),d2
-				move.w	8(a0),d7
+				move.w	(a0),d3						; 22:
+				move.w	2(a0),d2					; 24:
+				move.w	8(a0),d7					; 30:
 				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d7.w*4),a1
 				move.b	ZoneT_Echo_b(a1),PlayEcho
 				muls	Anim_TempFrames_w,d2
 				add.w	d2,d3
-				move.w	2(a0),d2
+				move.w	2(a0),d2					; 24:
 				cmp.w	d3,d0
 				sle		anim_DoorClosed_b
 				bgt.s	nolower
@@ -1336,11 +1336,11 @@ NOTMOVING:
 				sub.w	d3,d0
 				cmp.w	#15*16,d0
 				sge		d6
-				move.w	d3,(a0)+
+				move.w	d3,(a0)+					; 22:
 				move.l	a0,a5
-				move.w	d2,(a0)+
+				move.w	d2,(a0)+					; 24:
 				move.w	d2,d7
-				move.l	(a0)+,a1
+				move.l	(a0)+,a1					; 26:
 				add.l	Lvl_GraphicsPtr_l,a1
 				; asr.w	#2,d3
 				; move.w	d3,d0
@@ -1357,7 +1357,7 @@ NOTMOVING:
 				;asl.l	#8,d3
 
 				move.l	Lvl_ZonePtrsPtr_l,a1
-				move.w	(a0)+,d5
+				move.w	(a0)+,d5					; 30:
 				move.l	(a1,d5.w*4),a1
 				move.l	d3,6(a1)
 				neg.w	d0
@@ -1379,12 +1379,12 @@ NOTMOVING:
 
 				move.w	#-16,d7
 				move.w	#$8000,d1
-				move.w	(a0)+,d2
-				move.w	(a0)+,d5
+				move.w	(a0)+,d2				; 32:
+				move.w	(a0)+,d5				; 34:
 				bra		backfromtst
 
 NotGoBackUp:
-				move.w	(a0)+,d2				; conditions
+				move.w	(a0)+,d2				; 36: conditions
 ; and.w Conditions,d2
 				move.w	anim_ThisDoor_w,d2
 				move.w	Anim_DoorAndLiftLocks_l,d5
@@ -2664,9 +2664,13 @@ sky_early_exit:
 ;
 Draw_SkyBackdrop:
 
-				; bail if the zone is tagged as having no sky
+				; Bail if the zone is tagged as having no sky
+				; Don't use Plr1_Zone_w as it changes on interrupt
+
+				move.l  Lvl_ListOfGraphRoomsPtr_l,a5
+                move.w  PVST_Zone_w(a5),d5
 				lea		Zone_BackdropDisable_vb,a5
-				move.w	Plr1_Zone_w,d5
+
 				move.w  d5,d3
 				lsr.w   #3,d5   ; byte offset into backdrop disable table
 				add.w   d5,a5
