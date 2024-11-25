@@ -461,12 +461,12 @@ noload:
 				tst.w	(a3) ; PVST_Zone_w
 				blt.s	.no_more_this_zone
 
-				tst.w	PVST_Dist_w(a3)
+				tst.w	PVST_ClipID_w(a3)
 				blt.s	.this_one_null
 
 				move.l	d0,d1
 				asr.l	#1,d1
-				move.w	d1,PVST_Dist_w(a3) ; value poked back in
+				move.w	d1,PVST_ClipID_w(a3) ; value poked back in
 
 .find_next_clip:
 				cmp.w	#-2,(a2,d0.l)
@@ -3352,7 +3352,7 @@ nowaterfull:
 				align 4
 Lvl_CompactMapPtr_l:			dc.l	0
 Lvl_BigMapPtr_l:				dc.l	0
-ThisRoomToDraw:					dc.l	0,0
+Draw_CurrentZonePtr_l:			dc.l	0,0
 SplitHeight:					dc.l	0
 draw_WallID_w:					dc.w	0
 SMALLIT:						dc.w	0
@@ -3382,11 +3382,11 @@ Sys_MouseY:		dc.w	0 ; Pitch?
 MAPON:			dc.w	$0
 draw_RenderMap_b:		dc.w	0
 
-RotateLevelPts:	;		Does					this rotate ALL points in the level EVERY frame?
+RotateLevelPts:	;		Does this rotate ALL points in the level EVERY frame?
 
 				tst.b	draw_RenderMap_b
-				beq		ONLYTHELONELY			; When REALMAP is on, we apparently need to transform all level points,
-										; otherwise only the visible subset
+				beq		ONLYTHELONELY		; When REALMAP is on, we apparently need to transform all level points,
+											; otherwise only the visible subset
 
 				; Rotate all level points
 				move.w	Temp_SinVal_w,d6

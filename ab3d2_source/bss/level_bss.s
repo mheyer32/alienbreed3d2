@@ -34,8 +34,8 @@ Lvl_ObjectPointsPtr_l:			ds.l	1
 Lvl_ObjectDataPtr_l:			ds.l	1
 
 		DCLC Lvl_ZoneEdgePtr_l,	ds.l,	1
+		DCLC Lvl_PointsPtr_l,	ds.l,	1	; Pointer to array of all 2D points in the world
 
-Lvl_PointsPtr_l:				ds.l	1	; Pointer to array of all 2D points in the world
 Lvl_ZoneGraphAddsPtr_l:			ds.l	1
 
 		DCLC Lvl_ZonePtrsPtr_l,	ds.l,	1	; Zone* pZone = LvlDataPtr_l[Lvl_ZonePtrsPtr_l[zone_id]]
@@ -45,7 +45,8 @@ Lvl_DoorDataPtr_l:				ds.l	1
 Lvl_SwitchDataPtr_l:			ds.l	1
 Lvl_ControlPointCoordsPtr_l:	ds.l	1
 Lvl_GraphicsPtr_l:				ds.l	1
-Lvl_ClipsPtr_l:					ds.l	1
+
+		DCLC Lvl_ClipsPtr_l,	ds.l,	1	; Indexes into point data
 
 ; For custom properties and/or errata
 Lvl_ModPropertiesPtr_l:         ds.l    1
@@ -55,7 +56,9 @@ Lvl_ErrataPtr_l:                ds.l    1
 
 ; Word aligned data
 Lvl_NumControlPoints_w:			ds.w	1
-Lvl_NumPoints_w:				ds.w	1
+
+		DCLC Lvl_NumPoints_w,	ds.w,	1
+
 Lvl_NumObjectPoints_w:			ds.w	1
 
 		DCLC Lvl_NumZones_w,	ds.w,	1

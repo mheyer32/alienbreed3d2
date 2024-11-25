@@ -14,9 +14,11 @@ CurrentPointBrights_vl:		ds.l	2*256*10
 ClipsTable_vl:				ds.l	30
 EndOfClipPtr_l:				ds.l	1
 
-Rotated_vl:					ds.l	2*800	; store rotated X and Z coordinates with Z scaling applied
+		DCLC Rotated_vl,	ds.l,	2*800	; store rotated X and Z coordinates with Z scaling applied
+
 ObjRotated_vl:				ds.l	2*500
-OnScreen_vl:				ds.l	2*800	; store screen projected X coordinates for rotated points
+
+		DCLC OnScreen_vl,	ds.l,	2*800	; store screen projected X coordinates for rotated points
 
 WorkspacePtr_l:				ds.l	1	; hires.s - may depend on position relative to ObjectWorkspace_vl
 ObjectWorkspace_vl:			ds.l	600 ; hires.s

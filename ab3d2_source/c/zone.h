@@ -48,7 +48,7 @@ enum {
  */
 typedef struct {
     WORD pvs_ZoneID;
-    WORD pvs_SortVal;
+    WORD pvs_ClipID;
     WORD pvs_Word2; // TODO figure out what this is
     WORD pvs_Word3; // TODO figure out what this is
 } __attribute__((packed)) __attribute__ ((aligned (2))) ZPVSRecord;
@@ -152,6 +152,13 @@ static __inline WORD const* zone_GetEdgeList(Zone const* zonePtr) {
     return (WORD const*)(((BYTE const*)zonePtr) + zonePtr->z_EdgeListOffset);
 }
 
+typedef struct {
+    WORD zei_EdgeID;
+    WORD zei_StartPointID;
+    WORD zei_EndPointID;
+    WORD zei_Reserved;
+} __attribute__((packed)) __attribute__ ((aligned (2))) ZEdgeInfo;
+
 /**
  * Structure for the per-edge PVS data header:
  *
@@ -161,8 +168,9 @@ typedef struct {
     WORD zep_ZoneID;
     WORD zep_ListSize;
     WORD zep_EdgeCount;
-    WORD zep_EdgeIDList[1]; // zep_EdgeCount in length, followed by zep_EdgeCount sets of data
-}  __attribute__((packed)) __attribute__ ((aligned (2))) ZEdgePVSHeader;
+    ZEdgeInfo zep_EdgeInfoList[1];
+    //WORD zep_EdgeIDList[1]; // zep_EdgeCount in length, followed by zep_EdgeCount sets of data
+} __attribute__((packed)) __attribute__ ((aligned (2))) ZEdgePVSHeader;
 
 
 /**
@@ -170,7 +178,8 @@ typedef struct {
  * ZEdgePVSHeader.zep_EdgeIDList array, which is zep_EdgeCount elements long.
  */
 static __inline UBYTE* zone_GetEdgePVSListBase(ZEdgePVSHeader const* zepPtr) {
-    return (UBYTE*)(&zepPtr->zep_EdgeIDList[zepPtr->zep_EdgeCount]);
+    //return (UBYTE*)(&zepPtr->zep_EdgeIDList[zepPtr->zep_EdgeCount]);
+    return (UBYTE*)(&zepPtr->zep_EdgeInfoList[zepPtr->zep_EdgeCount]);
 }
 
 extern ZEdgePVSHeader** Lvl_ZEdgePVSHeaderPtrsPtr_l;

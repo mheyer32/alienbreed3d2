@@ -355,7 +355,7 @@ ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
 
 	STRUCTURE PVST,0
 		WORD  PVST_Zone_w ; 0
-		WORD  PVST_Dist_w ; 2
+		WORD  PVST_ClipID_w ; 2
 		WORD  PVST_Word_2 ; 4 TODO
 		WORD  PVST_Word_3 ; 6 TODO
 		LABEL PVST_SizeOf_l 8
@@ -610,7 +610,7 @@ LVL_MAX_ZONE_COUNT EQU 256
 		UWORD DoorT_Word11_w			; 22, 2
 		UWORD DoorT_Word12_w			; 24, 2
 		UWORD DoorT_Long_w				; 26, 4
-		UWORD DooeT_ZoneID_w			; 30, 2 - Is this the zone ID the door is attached to?
+		UWORD DoorT_ZoneID_w			; 30, 2 - Is this the zone ID the door is attached to?
 
 ; For two player victory messages
 GAME_DM_VICTORY_MESSAGE_LENGTH EQU 80

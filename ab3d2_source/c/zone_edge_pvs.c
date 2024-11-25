@@ -4,6 +4,9 @@
 #include <proto/exec.h>
 #include <stdio.h>
 
+extern Vec2W const* Lvl_PointsPtr_l;
+extern WORD Lvl_NumPoints_w;
+
 /**
  * Data structure used to keep track of key information during the recursive evaluation of
  * the per-edge PVS data for a zone. This data is accessed by recursive code, limiting the
@@ -123,8 +126,8 @@ static ULONG zone_CalcEdgePVSDataSize(WORD* infoTupleBufferPtr) {
         *infoTuplePtr++      = joinCount;
 
         // The size of ZEdgePVSDataSet includes one edge id entry already...
-        ULONG dataSize   = sizeof(ZEdgePVSHeader) - sizeof(WORD) +
-            (ULONG)joinCount * (sizeof(WORD) + (ULONG)pvsSize);
+        ULONG dataSize   = sizeof(ZEdgePVSHeader) - sizeof(ZEdgeInfo) +
+            (ULONG)joinCount * (sizeof(ZEdgeInfo) + (ULONG)pvsSize);
 
         // Ensure that the data remains aligned to a word bounary.
         dataSize = Sys_Round2(dataSize);
@@ -206,7 +209,8 @@ static void zone_FillZEdgePVSHeaders(ZEdgePVSHeader* currentEdgePVSPtr, WORD con
         WORD edgeID;
         while (zone_IsValidEdgeID( (edgeID = *zEdgeList++) )) {
             if (zone_IsValidZoneID(Lvl_ZoneEdgePtr_l[edgeID].e_JoinZoneID)) {
-                currentEdgePVSPtr->zep_EdgeIDList[edgeIndex++] = edgeID;
+                //currentEdgePVSPtr->zep_EdgeIDList[edgeIndex++] = edgeID;
+                currentEdgePVSPtr->zep_EdgeInfoList[edgeIndex++].zei_EdgeID = edgeID;
                 //dprintf("%d ", (int)edgeID);
             }
         }
@@ -249,7 +253,9 @@ static void zone_RecurseEdgePVS(WORD indexInPVS) {
     ZEdgePVSHeader* currentEdgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
 
     for (WORD edgeNum = 0; edgeNum < currentEdgePVSPtr->zep_EdgeCount; ++edgeNum) {
-        ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[currentEdgePVSPtr->zep_EdgeIDList[edgeNum]];
+        //ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[currentEdgePVSPtr->zep_EdgeIDList[edgeNum]];
+        ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[currentEdgePVSPtr->zep_EdgeInfoList[edgeNum].zei_EdgeID];
+
         WORD nextZoneID = edgePtr->e_JoinZoneID;
 
         // Get the index position of the adjoining zone in the PVS list
@@ -310,7 +316,8 @@ static void zone_FillZEdgePVSListData() {
         // Need to mark each distinct visited zone as "potentially visible"
 
         for (WORD edgeNum = 0; edgeNum < currentEdgePVSPtr->zep_EdgeCount; ++edgeNum) {
-            ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[currentEdgePVSPtr->zep_EdgeIDList[edgeNum]];
+//            ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[currentEdgePVSPtr->zep_EdgeIDList[edgeNum]];
+            ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[currentEdgePVSPtr->zep_EdgeInfoList[edgeNum].zei_EdgeID];
 
             Zone_EdgePVSState.zre_ViewX = ((edgePtr->e_Pos.v_X << 1) + edgePtr->e_Len.v_X) >> 1;
             Zone_EdgePVSState.zre_ViewZ = ((edgePtr->e_Pos.v_Z << 1) + edgePtr->e_Len.v_Z) >> 1;
@@ -337,6 +344,49 @@ static void zone_FillZEdgePVSListData() {
                 zone_RecurseEdgePVS(indexInPVS);
             }
             Zone_EdgePVSState.zre_EdgePVSList += currentEdgePVSPtr->zep_ListSize;
+        }
+    }
+}
+
+/**
+ * Accepts a coordinate and attempts to locate it in the set of points in the level. Returns the index of
+ * the point, if found, or -1 if not. Does the matching by considering the points as pure longwords.
+ */
+static WORD zone_GetPointIndex(Vec2W const* p) {
+    ULONG const* pointPtr = (ULONG const*)Lvl_PointsPtr_l;
+    ULONG match = *((ULONG const*)p);
+    for (WORD i = 0; i < Lvl_NumPoints_w; ++i) {
+        if (match == pointPtr[i]) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+/**
+ * Once we have built the initial edge PVS data, we need to find the index of their end coordinetes in the
+ * level point data. These indexes are preserved across transformation and this allows us to find their
+ * post-transformation screen space horizontal extent. This in turn allows us to address the fairly frequent
+ * edge case that we are looking through a single edge that is going to go unclipped.
+ */
+static void zone_FillEdgePointIndexes(void) {
+    Vec2W end;
+    for (WORD zoneID = 0; zoneID < Lvl_NumZones_w; ++zoneID) {
+        ZEdgePVSHeader* edgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
+        for (WORD i = 0; i < edgePVSPtr->zep_EdgeCount; ++i) {
+            ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[edgePVSPtr->zep_EdgeInfoList[i].zei_EdgeID];
+            end.v_X = edgePtr->e_Pos.v_X + edgePtr->e_Len.v_X;
+            end.v_Z = edgePtr->e_Pos.v_Z + edgePtr->e_Len.v_Z;
+            edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID = zone_GetPointIndex(&edgePtr->e_Pos);
+            edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID   = zone_GetPointIndex(&end);
+
+            printf(
+                "Zone #%d, Edge #%d, start #%d, end #%d\n",
+                (int)(zoneID),
+                (int)(edgePVSPtr->zep_EdgeInfoList[i].zei_EdgeID),
+                (int)(edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID),
+                (int)(edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID)
+            );
         }
     }
 }
@@ -393,6 +443,8 @@ void Zone_InitEdgePVS() {
 
     // Fill in the ZEdgePVS body list data
     zone_FillZEdgePVSListData();
+
+    zone_FillEdgePointIndexes();
 
     #if defined(ZONE_DEBUG)
     //zone_DumpPerEdgePVS();
@@ -508,7 +560,9 @@ void Zone_CheckVisibleEdges(void) {
 
     for (WORD i = 0; i < edgePVSPtr->zep_EdgeCount; ++i, edgePVSListPtr += edgePVSPtr->zep_ListSize) {
 
-        edgeID = edgePVSPtr->zep_EdgeIDList[i];
+        //edgeID = edgePVSPtr->zep_EdgeIDList[i];
+        edgeID = edgePVSPtr->zep_EdgeInfoList[i].zei_EdgeID;
+
         ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[edgeID];
 
         // dprintf(

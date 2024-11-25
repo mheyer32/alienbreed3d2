@@ -17,6 +17,12 @@ extern WORD SetClipStage_w;
 extern void* Dev_RegStatePtr_l;
 extern ULONG Dev_DebugFlags_l;
 
+extern WORD const* Lvl_ClipsPtr_l;
+
+extern Vec2W const* Lvl_PointsPtr_l;
+extern Vec2W const Rotated_vl[];
+extern WORD OnScreen_vl[];
+
 #define DEV_ZONE_TRACE            (1<<13)
 static ULONG zdbg_TraceFlags = 0;
 
@@ -85,6 +91,20 @@ void ZDbg_Init(void)
     // but not for the remaining zones traversed.
     ZDbg_DumpZone(Lvl_ZonePtrsPtr_l[Plr1_Zone]);
     zdbg_TraceFlags &= ~ZDBG_TRACE_LIST_PVS;
+
+    puts("Point data (index, level, rotated, onscreen)");
+    for (WORD i = 0; i < 20; ++i) {
+        printf(
+            "\t%3d: {%6d, %6d} => {%6d, %6d} : %6d\n",
+            (int)i,
+            (int)Lvl_PointsPtr_l[i].v_X,
+            (int)Lvl_PointsPtr_l[i].v_Z,
+            (int)Rotated_vl[i].v_X,
+            (int)Rotated_vl[i].v_Z,
+            (int)OnScreen_vl[i]
+        );
+    }
+
     puts("Stepping through PVS zones in order...");
 }
 
@@ -123,6 +143,16 @@ void ZDbg_Skip(void)
     );
 }
 
+void ZDbg_SkipEdge(void)
+{
+    if (!(zdbg_TraceFlags & ZDBG_TRACE_RUNNING)) {
+        return;
+    }
+    printf(
+        "\nDECISION: SKIP ZONE %3d (Edge PVS)\n",
+        (int)Draw_CurrentZone_w
+    );
+}
 
 void ZDbg_Done(void)
 {
@@ -161,6 +191,8 @@ void ZDbg_RightClip(void)
     );
 }
 
+
+
 void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
     printf(
         "Zone %d {\n"
@@ -180,7 +212,7 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
     if (zdbg_TraceFlags & ZDBG_TRACE_LIST_PVS) {
         puts(
             "\tPVS Zones:\n"
-            "\t\t| ID  | Dist   | ...... | ...... | EdgeVis |\n"
+            "\t\t| ID  | Clip   | ...... | ...... | EdgeVis |\n"
             "\t\t+-----+--------+--------+--------+---------+"
         );
         int zone;
@@ -189,10 +221,10 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
             printf(
                 "\t\t| %3d | %6d | %6d | %6d | %6d |\n",
                 zone,
-                (int)p->pvs_SortVal,
+                (int)(p->pvs_ClipID >= 0 ? Lvl_ClipsPtr_l[p->pvs_ClipID] : -1 ),
                 (int)p->pvs_Word2, // significant?
                 (int)p->pvs_Word2,  // significant?
-                (int)(Lvl_ZonePtrsPtr_l[zone]->z_Unused)
+                (int)(zone >= 0 ? Lvl_ZonePtrsPtr_l[zone]->z_Unused : 0)
             );
             ++p;
         } while (zone > -1);

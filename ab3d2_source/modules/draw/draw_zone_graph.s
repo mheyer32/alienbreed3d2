@@ -26,7 +26,11 @@ Draw_Zone_Graph:
 
 				; 0xABADCAFE - Quick Hack version of edge vis. If the zone is not tagged visible, skip
 				tst.w   ZoneT_Unused_w(a2)
-				beq     .subroomloop
+				bne		.no_edge_pvs
+
+				DEV_ZDBG ZDbg_SkipEdge
+
+				bra     .subroomloop
 
 .no_edge_pvs:
 				move.l	a0,-(a7)
@@ -41,19 +45,19 @@ Draw_Zone_Graph:
 
 				add.l	Lvl_GraphicsPtr_l,a0
 				add.l	Lvl_GraphicsPtr_l,a2
-				move.l	a2,ThisRoomToDraw+4
-				move.l	a0,ThisRoomToDraw
+				move.l	a2,Draw_CurrentZonePtr_l+4
+				move.l	a0,Draw_CurrentZonePtr_l
 
 				move.l	Lvl_ListOfGraphRoomsPtr_l,a1
 
 .finditit:
-				tst.w	(a1)
+				tst.w	(a1) ; PVST_Zone_w
 				blt		.nomoretodoatall
 
-				cmp.w	(a1),d7
+				cmp.w	(a1),d7 ; PVST_Zone_w
 				beq		.done_find
 
-				adda.w	#8,a1
+				adda.w	#PVST_SizeOf_l,a1
 				bra		.finditit
 
 .done_find:
@@ -63,7 +67,7 @@ Draw_Zone_Graph:
 				move.w	#0,Draw_LeftClip_w
 				move.w	Vid_RightX_w,Draw_RightClip_w
 				moveq	#0,d7
-				move.w	2(a1),d7
+				move.w	PVST_ClipID_w(a1),d7
 				blt.s	.done_right_clip
 
 				move.l	Lvl_ClipsPtr_l,a0
@@ -117,7 +121,7 @@ Draw_Zone_Graph:
 				cmp.l	SplitHeight,d0
 				blt		.lower_zone_first
 ;Plr_XOff_l
-				move.l	ThisRoomToDraw+4,a0
+				move.l	Draw_CurrentZonePtr_l+4,a0
 				cmp.l	Lvl_GraphicsPtr_l,a0
 				beq.s	.lower_zone_only
 
@@ -132,7 +136,7 @@ Draw_Zone_Graph:
 
 				; Room does not have an upper zone
 .lower_zone_only:
-				move.l	ThisRoomToDraw,a0
+				move.l	Draw_CurrentZonePtr_l,a0
 				clr.b	Draw_DoUpper_b
 				move.l	#CurrentPointBrights_vl,Draw_PointBrightsPtr_l
 
@@ -164,7 +168,7 @@ Draw_Zone_Graph:
 				bra		.ready_next
 
 .lower_zone_first:
-				move.l	ThisRoomToDraw,a0
+				move.l	Draw_CurrentZonePtr_l,a0
 				clr.b	Draw_DoUpper_b
 				move.l	#CurrentPointBrights_vl,Draw_PointBrightsPtr_l
 				move.l	draw_BackupRoomPtr_l,a1
@@ -190,7 +194,7 @@ Draw_Zone_Graph:
 
 .lzf_below_water_first:
 				bsr		draw_RenderCurrentZone
-				move.l	ThisRoomToDraw+4,a0
+				move.l	Draw_CurrentZonePtr_l+4,a0
 				cmp.l	Lvl_GraphicsPtr_l,a0
 				beq.s	.noupperroom2
 
@@ -212,7 +216,7 @@ Draw_Zone_Graph:
 
 .ready_next:
 				move.l	(a7)+,a1
-				move.l	ThisRoomToDraw,a0
+				move.l	Draw_CurrentZonePtr_l,a0
 				move.w	(a0),d7
 
 				adda.w	#8,a1
