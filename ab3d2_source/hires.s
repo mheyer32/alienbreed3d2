@@ -8697,7 +8697,7 @@ Lvl_WalkLinksPtr_l:	dc.l	0
 Lvl_FlyLinksPtr_l:	dc.l	0
 					dc.l	0
 Vid_CentreX_w:		dc.w	SMALL_WIDTH/2
-Vid_RightX_w:		dc.w	SMALL_WIDTH
+		DCLC Vid_RightX_w, dc.w, SMALL_WIDTH
 
 
 ******************************************

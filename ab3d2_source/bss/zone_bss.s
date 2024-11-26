@@ -15,17 +15,20 @@ zone_FinalOrderTableBarrier_w:	ds.w	1 		; deliniates end of table
 
 		DCLC Zone_VisJoins_w,	ds.w,	1
 		DCLC Zone_TotJoins_w,	ds.w,	1
+		DCLC Zone_EdgeClipIndexes_vw, ds.w, 2
 
 
-; TODO this is prototyping ony
+; TODO this is prototyping only
         ds.w 128 ; padding
 
-        DCLC Zone_PVSList_vw,   ds.w,    512
+		DCLC Zone_PVSList_vw,   ds.w,    512
 		DCLC Zone_PVSMask_vb,   ds.b,    512
 
         ds.w 128 ; padding
 
 			align 4
+
+
 ; Bitmask
 
 ZONE_BACKDROP_DISABLE_SIZE  EQU LVL_EXPANDED_MAX_ZONE_COUNT/8

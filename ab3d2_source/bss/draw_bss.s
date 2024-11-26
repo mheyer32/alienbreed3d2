@@ -77,7 +77,10 @@ draw_PolyTopTab_vw:				ds.w	SCREEN_WIDTH*8
 draw_PartBuffer_vw: 			ds.w	4*32
 draw_PartBufferEnd:
 
-    DCLC Draw_CurrentZone_w, ds.w, 1
+	DCLC Draw_CurrentZone_w,	ds.w,	1
+	DCLC Draw_ZoneClipL_w,		ds.w,	1
+	DCLC Draw_ZoneClipR_w,		ds.w,	1
+
 draw_SortIt_w:					ds.w	1
 draw_ObjectBright_w:			ds.w	1
 draw_ObjectAng_w:				ds.w	1
@@ -96,7 +99,6 @@ draw_OffLeftBy_w:				ds.w	1
 draw_Left_w:					ds.w	1
 draw_Right_w:					ds.w	1
 draw_DownStrip_w:				ds.w	1
-
 
 ; Border Ammo/Energy
 		DCLC draw_DisplayEnergyCount_w,		ds.w,	1

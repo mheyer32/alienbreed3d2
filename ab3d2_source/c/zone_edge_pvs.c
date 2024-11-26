@@ -7,6 +7,7 @@
 extern Vec2W const* Lvl_PointsPtr_l;
 extern WORD Lvl_NumPoints_w;
 
+
 /**
  * Data structure used to keep track of key information during the recursive evaluation of
  * the per-edge PVS data for a zone. This data is accessed by recursive code, limiting the
@@ -122,8 +123,8 @@ static ULONG zone_CalcEdgePVSDataSize(WORD* infoTupleBufferPtr) {
         Zone const* zonePtr = Lvl_ZonePtrsPtr_l[zoneID];
         WORD joinCount      = zone_CountJoiningEdges(zonePtr);
         WORD pvsSize        = zone_CountPVS(zonePtr);
-        *infoTuplePtr++      = pvsSize;
-        *infoTuplePtr++      = joinCount;
+        *infoTuplePtr++     = pvsSize;
+        *infoTuplePtr++     = joinCount;
 
         // The size of ZEdgePVSDataSet includes one edge id entry already...
         ULONG dataSize   = sizeof(ZEdgePVSHeader) - sizeof(ZEdgeInfo) +
@@ -209,7 +210,6 @@ static void zone_FillZEdgePVSHeaders(ZEdgePVSHeader* currentEdgePVSPtr, WORD con
         WORD edgeID;
         while (zone_IsValidEdgeID( (edgeID = *zEdgeList++) )) {
             if (zone_IsValidZoneID(Lvl_ZoneEdgePtr_l[edgeID].e_JoinZoneID)) {
-                //currentEdgePVSPtr->zep_EdgeIDList[edgeIndex++] = edgeID;
                 currentEdgePVSPtr->zep_EdgeInfoList[edgeIndex++].zei_EdgeID = edgeID;
                 //dprintf("%d ", (int)edgeID);
             }
@@ -253,7 +253,6 @@ static void zone_RecurseEdgePVS(WORD indexInPVS) {
     ZEdgePVSHeader* currentEdgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
 
     for (WORD edgeNum = 0; edgeNum < currentEdgePVSPtr->zep_EdgeCount; ++edgeNum) {
-        //ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[currentEdgePVSPtr->zep_EdgeIDList[edgeNum]];
         ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[currentEdgePVSPtr->zep_EdgeInfoList[edgeNum].zei_EdgeID];
 
         WORD nextZoneID = edgePtr->e_JoinZoneID;
@@ -316,7 +315,6 @@ static void zone_FillZEdgePVSListData() {
         // Need to mark each distinct visited zone as "potentially visible"
 
         for (WORD edgeNum = 0; edgeNum < currentEdgePVSPtr->zep_EdgeCount; ++edgeNum) {
-//            ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[currentEdgePVSPtr->zep_EdgeIDList[edgeNum]];
             ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[currentEdgePVSPtr->zep_EdgeInfoList[edgeNum].zei_EdgeID];
 
             Zone_EdgePVSState.zre_ViewX = ((edgePtr->e_Pos.v_X << 1) + edgePtr->e_Len.v_X) >> 1;
@@ -429,7 +427,6 @@ void Zone_InitEdgePVS() {
     dprintf("Zone_InitEdgePVS() need %u bytes for info buffer\n", infoTupleBufferSize);
 
     // Store the per zone list size / edge count ready for the second step.
-    //WORD* infoTupleBufferPtr = (WORD*)AllocVec(infoTupleBufferSize, MEMF_ANY);
     WORD* infoTupleBufferPtr = (WORD*)Sys_GetTemporaryWorkspace();
 
     // Allocate the space for the pointer table and the data.
@@ -545,6 +542,10 @@ void zone_MarkVisibleViaEdges(WORD size) {
 /**
  * TODO - debug fully and port to asm
  */
+
+// 0 = left, 1 = right
+extern WORD Zone_EdgeClipIndexes_vw[];
+
 void Zone_CheckVisibleEdges(void) {
     WORD zoneID = Lvl_ListOfGraphRoomsPtr_l->pvs_ZoneID;
 
@@ -555,6 +556,7 @@ void Zone_CheckVisibleEdges(void) {
     WORD  endFlags;
     WORD  numVisible = 0;
     WORD  edgeID;
+    WORD  lastIndex = -1;
     Zone_UpdateVectors();
     zone_ClearEdgePVSBuffer(edgePVSPtr->zep_ListSize);
 
@@ -576,23 +578,24 @@ void Zone_CheckVisibleEdges(void) {
             &zone_ViewPoint,
             &zone_PerpDir,
             &edgePtr->e_Pos
-        ) < 0) ? BIT_FRONT : 0; // <
+        ) < 0) ? BIT_FRONT : 0;
 
         startFlags |= (sideOfDirection(
             &zone_ViewPoint,
             &zone_LeftFOVDir,
             &edgePtr->e_Pos
-        ) <= 0) ? BIT_LEFT : 0; // >=
+        ) <= 0) ? BIT_LEFT : 0;
 
         startFlags |= (sideOfDirection(
             &zone_ViewPoint,
             &zone_RightFOVDir,
             &edgePtr->e_Pos
-        ) >= 0) ? BIT_RIGHT : 0; // <=
+        ) >= 0) ? BIT_RIGHT : 0;
 
         if (startFlags == (BIT_FRONT|BIT_LEFT|BIT_RIGHT)) {
 //            dprintf("\tVisible. Start: %d\n", (int)startFlags);
             ++numVisible;
+            lastIndex = i;
             zone_MergeEdgePVS(edgePVSListPtr, edgePVSPtr->zep_ListSize);
             continue;
         }
@@ -604,23 +607,24 @@ void Zone_CheckVisibleEdges(void) {
             &zone_ViewPoint,
             &zone_PerpDir,
             &endPoint
-        ) < 0) ? BIT_FRONT : 0; // <
+        ) < 0) ? BIT_FRONT : 0;
 
         endFlags |= (sideOfDirection(
             &zone_ViewPoint,
             &zone_LeftFOVDir,
             &endPoint
-        ) <= 0) ? BIT_LEFT : 0; // >=
+        ) <= 0) ? BIT_LEFT : 0;
 
         endFlags |= (sideOfDirection(
             &zone_ViewPoint,
             &zone_RightFOVDir,
             &endPoint
-        ) >= 0) ? BIT_RIGHT : 0; // <=
+        ) >= 0) ? BIT_RIGHT : 0;
 
         if (endFlags == (BIT_FRONT|BIT_LEFT|BIT_RIGHT)) {
             //dprintf("\tVisible. End: %d\n", (int)endFlags);
             ++numVisible;
+            lastIndex = i;
             zone_MergeEdgePVS(edgePVSListPtr,  edgePVSPtr->zep_ListSize);
             continue;
         }
@@ -632,6 +636,7 @@ void Zone_CheckVisibleEdges(void) {
         ) {
             //dprintf("\tSpan. Start: %d End: %d\n", (int)startFlags, (int)endFlags);
             ++numVisible;
+            lastIndex = i;
             zone_MergeEdgePVS(edgePVSListPtr, edgePVSPtr->zep_ListSize);
             continue;
         }
@@ -643,4 +648,45 @@ void Zone_CheckVisibleEdges(void) {
 
     zone_MarkVisibleViaEdges(edgePVSPtr->zep_ListSize);
 
+    // When only one connecting edge is visible, set the indecies of the start and end point
+    // for these so that when we come to the drawing stage, we can look up the transformed
+    // values
+    if (1 == numVisible) {
+        Zone_EdgeClipIndexes_vw[0] = edgePVSPtr->zep_EdgeInfoList[lastIndex].zei_StartPointID;
+        Zone_EdgeClipIndexes_vw[1] = edgePVSPtr->zep_EdgeInfoList[lastIndex].zei_EndPointID;
+    } else {
+        Zone_EdgeClipIndexes_vw[0] = -1;
+        Zone_EdgeClipIndexes_vw[1] = -1;
+    }
+
+}
+
+extern WORD Draw_CurrentZone_w;
+extern WORD Draw_ZoneClipL_w;
+extern WORD Draw_ZoneClipR_w;
+extern WORD OnScreen_vl[];
+extern WORD Vid_RightX_w;
+
+/**
+ * Called from within the sub room loop in assembler.
+ */
+void Zone_SetupEdgeClipping(void) {
+    // If we have one visible join and we are not in the root zone, lookup and set the single edge
+    // clip extents.
+    if (1 == Zone_VisJoins_w && Lvl_ListOfGraphRoomsPtr_l->pvs_ZoneID != Draw_CurrentZone_w) {
+        WORD clip = OnScreen_vl[Zone_EdgeClipIndexes_vw[0]];
+
+        Draw_ZoneClipL_w = clip < 0 ? 0 : (
+            clip > Vid_RightX_w ? Vid_RightX_w : clip
+        );
+
+        clip = OnScreen_vl[Zone_EdgeClipIndexes_vw[1]];
+        Draw_ZoneClipR_w = clip < Draw_ZoneClipL_w ? Draw_ZoneClipL_w : (
+            clip > Vid_RightX_w ? Vid_RightX_w : clip
+        );
+
+    } else {
+        Draw_ZoneClipL_w = 0;
+        Draw_ZoneClipR_w = Vid_RightX_w;
+    }
 }

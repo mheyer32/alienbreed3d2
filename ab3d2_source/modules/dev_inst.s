@@ -314,7 +314,7 @@ Dev_PrintStats:
 				bsr			Dev_PrintF
 
 				; Edges Vis
-				lea         Zone_VisJoins_w,a1 ; close enoug
+				lea         Zone_VisJoins_w,a1 ; close enough
 				lea        .dev_ss_stats_join_vis_vb,a0
 				move.l		#136+64,d0
 				bsr			Dev_PrintF
@@ -326,11 +326,10 @@ Dev_PrintStats:
 				bsr			Dev_PrintF
 
 				; Player 1 Position
-				;lea         zone_LastPosition_vw,a1 ; close enoug
+				;lea         zone_LastPosition_vw,a1 ; close enough
 				;lea        .dev_ss_stats_pos_vb,a0
 				;move.l		#136+80,d0
 				;bsr			Dev_PrintF
-
 
 				rts
 
@@ -369,6 +368,8 @@ Dev_PrintStats:
                 dc.b        "X:%5d Z:%5d",0
 .dev_ss_stats_join_vis_vb:
                 dc.b        "JE:%3d/%3d",0
+;.dev_ss_stats_edge_clips_vb:
+;                dc.b        "L:%4d, R:%4d",0
 .dev_bool_off_vb:
  				dc.b		"off",0
 .dev_bool_on_vb:

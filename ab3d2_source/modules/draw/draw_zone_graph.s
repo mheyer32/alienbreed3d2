@@ -6,18 +6,28 @@ Draw_Zone_Graph:
 
 ; move.l #Zone_FinalOrderTable_vw,a0
 
+
 ; 0xABADCAFE - This is where we process the visible zones and their content
 .subroomloop:
 ; move.w (a0)+,d7
 				move.w	-(a0),d7
 				blt		.done_all_zones
 
-				IFD	ZONE_DEBUG
 				move.w	d7,Draw_CurrentZone_w
+				clr.w	Draw_ZoneClipL_w;
+				move.w	Vid_RightX_w,Draw_ZoneClipR_w
+
+				IFD BUILD_WITH_C
+				DEV_CHECK_SET SKIP_EDGE_PVS,.no_edge_clip
+
+				move.l a0,-(sp)
+				CALLC Zone_SetupEdgeClipping
+				move.l (sp)+,a0
+
+.no_edge_clip:
 				ENDIF
 
 				DEV_ZDBG ZDbg_First
-
 
 				move.l	Lvl_ZonePtrsPtr_l,a2
 				move.l	(a2,d7.w*4),a2
@@ -63,9 +73,14 @@ Draw_Zone_Graph:
 .done_find:
 				move.l	a1,-(a7)
 
-				; First, initialise the clips to the extreme left/right of the view and refines
-				move.w	#0,Draw_LeftClip_w
-				move.w	Vid_RightX_w,Draw_RightClip_w
+				; First, initialise the clips to the extreme left/right of the view and refine
+				;move.w	#0,Draw_LeftClip_w
+				;move.w	Vid_RightX_w,Draw_RightClip_w
+
+				; Set the initial clip extents.
+				move.w	Draw_ZoneClipL_w,Draw_LeftClip_w
+				move.w	Draw_ZoneClipR_w,Draw_RightClip_w
+
 				moveq	#0,d7
 				move.w	PVST_ClipID_w(a1),d7
 				blt.s	.done_right_clip
@@ -100,6 +115,7 @@ Draw_Zone_Graph:
 				bra		.right_clip
 
 .done_right_clip:
+				; TODO - compare with Draw_ZoneClipL_w/Draw_ZoneClipR_w and reject/clamp
 
 				; 0xABADCAFE - sign extensions and comparisons. Check these
 				move.w	Draw_LeftClip_w,d0
