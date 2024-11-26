@@ -471,9 +471,9 @@ extern WORD Plr1_Position_vl[];
 extern WORD Plr1_Direction_vw[];
 
 /**
- * Assuming a 90 degree FOV, which is 2048 in our scaling
+ * 2048 = 90 degrees, in game fov is about 79
  */
-#define FOV 2048
+#define FOV 1800
 
 /**
  *  This can be overridden in by config
