@@ -548,7 +548,7 @@ sys_OpenLibs:
 				lea.l		MiscResourceName,a1
 				CALLEXEC 	OpenResource
 
-				move.l		d0,_MiscResourceBase
+				move.l		d0,_MiscBase
                 beq.s	   	.fail
 
 				; Potgo Resource
@@ -556,7 +556,7 @@ sys_OpenLibs:
 				lea.l		PotgoResourceName,a1
 				CALLEXEC 	OpenResource
 
-				move.l		d0,_PotgoResourceBase
+				move.l		d0,_PotgoBase
 				beq.s   	.fail
 
 				; Timer Device
