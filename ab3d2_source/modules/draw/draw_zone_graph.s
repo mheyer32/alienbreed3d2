@@ -14,17 +14,25 @@ Draw_Zone_Graph:
 				blt		.done_all_zones
 
 				move.w	d7,Draw_CurrentZone_w
+
+				IFD BUILD_WITH_C
+
 				clr.w	Draw_ZoneClipL_w;
 				move.w	Vid_RightX_w,Draw_ZoneClipR_w
 
-				IFD BUILD_WITH_C
 				DEV_CHECK_SET SKIP_EDGE_PVS,.no_edge_clip
 
 				move.l a0,-(sp)
 				CALLC Zone_SetupEdgeClipping
 				move.l (sp)+,a0
 
+				tst.b Draw_ForceZoneSkip_b
+				bne .subroomloop
+
 .no_edge_clip:
+				ELSE
+				clr.w	Draw_ZoneClipL_w;
+				move.w	Vid_RightX_w,Draw_ZoneClipR_w
 				ENDIF
 
 				DEV_ZDBG ZDbg_First
@@ -115,17 +123,42 @@ Draw_Zone_Graph:
 				bra		.right_clip
 
 .done_right_clip:
-				; TODO - compare with Draw_ZoneClipL_w/Draw_ZoneClipR_w and reject/clamp
+				; TODO - Validate that the computed clips are always between the zone limits
 
 				; 0xABADCAFE - sign extensions and comparisons. Check these
 				move.w	Draw_LeftClip_w,d0
-				ext.l	d0
+
+				; Check if left out of bounds, i.e. beyond the right limit
+				;cmp.w	Draw_ZoneClipR_w,d0
+				;ble		.skip_not_visible
+
+				; Clamp against left limit
+				;cmp.w	Draw_ZoneClipL_w,d0
+				;ble		.pass_left
+
+				;move.w	Draw_ZoneClipL_w,d0
+				;move.w	d0,Draw_LeftClip_w
+
+.pass_left:
+				ext.l	d0 ; why?
 				move.l	d0,Draw_LeftClip_l
 
-				cmp.w	Vid_RightX_w,d0
-				bge		.skip_not_visible
+;				cmp.w	Vid_RightX_w,d0
+;				bge		.skip_not_visible
 
+				; Check if right out of bounds, i.e. beyond the left limit
 				move.w	Draw_RightClip_w,d1
+				;cmp.w 	Draw_ZoneClipL_w,d1
+				;bge 	.skip_not_visible
+
+				; Clamp against zone right clip
+				;cmp.w	Draw_ZoneClipR_w,d1
+				;bge     .pass_right
+
+				;move.w	Draw_ZoneClipR_w,d1
+				;move.w	d1,Draw_RightClip_w
+
+.pass_right:
 				ext.l	d1
 				move.l	d1,Draw_RightClip_l
 				blt		.skip_not_visible

@@ -378,13 +378,13 @@ static void zone_FillEdgePointIndexes(void) {
             edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID = zone_GetPointIndex(&edgePtr->e_Pos);
             edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID   = zone_GetPointIndex(&end);
 
-            printf(
-                "Zone #%d, Edge #%d, start #%d, end #%d\n",
-                (int)(zoneID),
-                (int)(edgePVSPtr->zep_EdgeInfoList[i].zei_EdgeID),
-                (int)(edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID),
-                (int)(edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID)
-            );
+            // dprintf(
+            //     "Zone #%d, Edge #%d, start #%d, end #%d\n",
+            //     (int)(zoneID),
+            //     (int)(edgePVSPtr->zep_EdgeInfoList[i].zei_EdgeID),
+            //     (int)(edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID),
+            //     (int)(edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID)
+            // );
         }
     }
 }
@@ -662,31 +662,34 @@ void Zone_CheckVisibleEdges(void) {
 }
 
 extern WORD Draw_CurrentZone_w;
-extern WORD Draw_ZoneClipL_w;
-extern WORD Draw_ZoneClipR_w;
 extern WORD OnScreen_vl[];
 extern WORD Vid_RightX_w;
-
+extern UBYTE Draw_ForceZoneSkip_b;
 /**
  * Called from within the sub room loop in assembler.
  */
 void Zone_SetupEdgeClipping(void) {
     // If we have one visible join and we are not in the root zone, lookup and set the single edge
     // clip extents.
+    Draw_ZoneClipL_w = 0;
+    Draw_ZoneClipR_w = Vid_RightX_w;
+    Draw_ForceZoneSkip_b = 0;
+
     if (1 == Zone_VisJoins_w && Lvl_ListOfGraphRoomsPtr_l->pvs_ZoneID != Draw_CurrentZone_w) {
-        WORD clip = OnScreen_vl[Zone_EdgeClipIndexes_vw[0]];
+        WORD clipL = OnScreen_vl[Zone_EdgeClipIndexes_vw[0]];
+        WORD clipR = OnScreen_vl[Zone_EdgeClipIndexes_vw[1]];
 
-        Draw_ZoneClipL_w = clip < 0 ? 0 : (
-            clip > Vid_RightX_w ? Vid_RightX_w : clip
+        // Maps space PVS testing isn't perfect due to the imprecision of pre-transformation checks.
+        if (clipR <= 0 || clipL >= Vid_RightX_w) {
+            Draw_ForceZoneSkip_b = 0xFF;
+            Zone_VisJoins_w = 0;
+            return;
+        }
+
+        Draw_ZoneClipL_w = clipL < 0 ? 0 : clipL;
+        Draw_ZoneClipR_w = clipR < Draw_ZoneClipL_w ? Draw_ZoneClipL_w : (
+            clipR > Vid_RightX_w ? Vid_RightX_w : clipR
         );
 
-        clip = OnScreen_vl[Zone_EdgeClipIndexes_vw[1]];
-        Draw_ZoneClipR_w = clip < Draw_ZoneClipL_w ? Draw_ZoneClipL_w : (
-            clip > Vid_RightX_w ? Vid_RightX_w : clip
-        );
-
-    } else {
-        Draw_ZoneClipL_w = 0;
-        Draw_ZoneClipR_w = Vid_RightX_w;
     }
 }

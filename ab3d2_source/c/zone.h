@@ -184,6 +184,16 @@ static __inline UBYTE* zone_GetEdgePVSListBase(ZEdgePVSHeader const* zepPtr) {
 
 extern ZEdgePVSHeader** Lvl_ZEdgePVSHeaderPtrsPtr_l;
 
+/** Number of visible joining endges currently in view */
+extern WORD Zone_VisJoins_w;
+
+/** Array indexes of the end coordinates of the visible joining edge when Zone_VisJoins_w == 1 */
+extern WORD Zone_EdgeClipIndexes_vw[2];
+
+/** Onscreen maximum clip extents - either the full screen, or the portion visible through the edge */
+extern WORD Draw_ZoneClipL_w;
+extern WORD Draw_ZoneClipR_w;
+
 void Zone_UpdateVectors(void);
 void Zone_CheckVisibleEdges(void);
 

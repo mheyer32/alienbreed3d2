@@ -110,7 +110,8 @@ draw_WhichDoing_b:				ds.b	1
 draw_InUpperZone_b:				ds.b	1
 Draw_DoUpper_b:					ds.b	1
 
-		DCLC Draw_ForceSimpleWalls_b,		ds.b,	1
+		DCLC Draw_ForceSimpleWalls_b,	ds.b,	1
+		DCLC Draw_ForceZoneSkip_b,		ds.b,	1
 
 		; Are we generating glyph data?
 		IFD	GEN_GLYPH_DATA

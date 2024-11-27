@@ -319,6 +319,13 @@ Dev_PrintStats:
 				move.l		#136+64,d0
 				bsr			Dev_PrintF
 
+				; Clips
+				;lea         Draw_ZoneClipL_w,a1 ; close enough
+				;lea        .dev_ss_stats_join_vis_vb,a0
+				;move.l		#136+80,d0
+				;bsr			Dev_PrintF
+
+
 				; Player 1 Directions
 				lea         Plr1_CosVal_w,a1
 				lea        .dev_ss_stats_dir_vb,a0
@@ -368,8 +375,8 @@ Dev_PrintStats:
                 dc.b        "X:%5d Z:%5d",0
 .dev_ss_stats_join_vis_vb:
                 dc.b        "JE:%3d/%3d",0
-;.dev_ss_stats_edge_clips_vb:
-;                dc.b        "L:%4d, R:%4d",0
+.dev_ss_stats_edge_clips_vb:
+                dc.b        "L:%4d, R:%4d",0
 .dev_bool_off_vb:
  				dc.b		"off",0
 .dev_bool_on_vb:

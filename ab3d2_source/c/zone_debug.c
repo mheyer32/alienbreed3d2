@@ -68,7 +68,8 @@ void ZDbg_Init(void)
         "Draw_Zone_Graph()\n"
         "\tFrame: %d\n"
         "\tDebug: 0x%08X\n"
-        "\tPlayer {X:%d, Z:%d}, {cos:%d, sin:%d, ang:%d}\n\tPlayer in zone %d\n",
+        "\tPlayer {X:%d, Z:%d}, {cos:%d, sin:%d, ang:%d}\n\tPlayer in zone %d\n"
+        "\tVis Joining Edges %d\n",
         Sys_FrameNumber_l,
         Dev_DebugFlags_l,
         Plr1_Position_vl[0] >> 16,
@@ -76,9 +77,19 @@ void ZDbg_Init(void)
         (int)Plr1_Direction_vw[0], // sine
         (int)Plr1_Direction_vw[1], // cosine
         (int)Plr1_Direction_vw[2], // angle
-        (int)Plr1_Zone
-
+        (int)Plr1_Zone,
+        (int)Zone_VisJoins_w
     );
+
+    if (1 == Zone_VisJoins_w) {
+        printf(
+            "\tVis Edge: ID: {L:%d, R:%d}, OS:{L:%d, R:%d}, ZC:{L:%d, R:%d}, DC:{L:%d, R:%d}\n",
+            (int)Zone_EdgeClipIndexes_vw[0], (int)Zone_EdgeClipIndexes_vw[1],
+            (int)OnScreen_vl[Zone_EdgeClipIndexes_vw[0]],(int)OnScreen_vl[Zone_EdgeClipIndexes_vw[1]],
+            (int)Draw_ZoneClipL_w, (int)Draw_ZoneClipR_w,
+            (int)Draw_LeftClip_w, (int)Draw_RightClip_w
+        );
+    }
 
     // WORD const errata[] = {
     //     9, 7, 8, 129, ZONE_ID_LIST_END, // For zone 9, remove 7, 8 and 129
@@ -92,18 +103,18 @@ void ZDbg_Init(void)
     ZDbg_DumpZone(Lvl_ZonePtrsPtr_l[Plr1_Zone]);
     zdbg_TraceFlags &= ~ZDBG_TRACE_LIST_PVS;
 
-    puts("Point data (index, level, rotated, onscreen)");
-    for (WORD i = 0; i < 20; ++i) {
-        printf(
-            "\t%3d: {%6d, %6d} => {%6d, %6d} : %6d\n",
-            (int)i,
-            (int)Lvl_PointsPtr_l[i].v_X,
-            (int)Lvl_PointsPtr_l[i].v_Z,
-            (int)Rotated_vl[i].v_X,
-            (int)Rotated_vl[i].v_Z,
-            (int)OnScreen_vl[i]
-        );
-    }
+    // puts("Point data (index, level, rotated, onscreen)");
+    // for (WORD i = 0; i < 20; ++i) {
+    //     printf(
+    //         "\t%3d: {%6d, %6d} => {%6d, %6d} : %6d\n",
+    //         (int)i,
+    //         (int)Lvl_PointsPtr_l[i].v_X,
+    //         (int)Lvl_PointsPtr_l[i].v_Z,
+    //         (int)Rotated_vl[i].v_X,
+    //         (int)Rotated_vl[i].v_Z,
+    //         (int)OnScreen_vl[i]
+    //     );
+    // }
 
     puts("Stepping through PVS zones in order...");
 }
@@ -123,10 +134,12 @@ void ZDbg_Enter(void)
         return;
     }
     printf(
-        "\nDECISION: PASS ZONE %3d [L:%d R:%d]\n",
+        "\nDECISION: PASS ZONE %3d [L:%d/%d R:%d/%d]\n",
         (int)Draw_CurrentZone_w,
         Draw_LeftClip_l,
-        Draw_RightClip_l
+        (int)Draw_ZoneClipL_w,
+        Draw_RightClip_l,
+        (int)Draw_ZoneClipR_w
     );
 }
 
@@ -136,10 +149,12 @@ void ZDbg_Skip(void)
         return;
     }
     printf(
-        "\nDECISION: SKIP ZONE %3d [L:%d R:%d]\n",
+        "\nDECISION: SKIP ZONE %3d [L:%d/%d R:%d/%d]\n",
         (int)Draw_CurrentZone_w,
-        (int)Draw_LeftClip_w,
-        (int)Draw_RightClip_w
+        Draw_LeftClip_l,
+        (int)Draw_ZoneClipL_w,
+        Draw_RightClip_l,
+        (int)Draw_ZoneClipR_w
     );
 }
 
@@ -171,10 +186,12 @@ void ZDbg_LeftClip(void)
         return;
     }
     printf(
-        "\tLeft Clip: %d [L:%d R:%d]\n",
+        "\tLeft Clip: %d [L:%d/%d R:%d/%d]\n",
         (int)SetClipStage_w,
         (int)Draw_LeftClip_w,
-        (int)Draw_RightClip_w
+        (int)Draw_ZoneClipL_w,
+        (int)Draw_RightClip_w,
+        (int)Draw_ZoneClipR_w
     );
 }
 
@@ -184,10 +201,12 @@ void ZDbg_RightClip(void)
         return;
     }
     printf(
-        "\tRight Clip: %d [L:%d R:%d]\n",
+        "\tRight Clip: %d [L:%d/%d R:%d/%d]\n",
         (int)SetClipStage_w,
         (int)Draw_LeftClip_w,
-        (int)Draw_RightClip_w
+        (int)Draw_ZoneClipL_w,
+        (int)Draw_RightClip_w,
+        (int)Draw_ZoneClipR_w
     );
 }
 
