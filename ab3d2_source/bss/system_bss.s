@@ -21,8 +21,8 @@ _DOSBase:					ds.l	1
 						ENDIF
 _GfxBase::					ds.l	1
 _IntuitionBase::			ds.l	1
-_MiscResourceBase::			ds.l	1
-_PotgoResourceBase::		ds.l	1
+_MiscBase::                 ds.l	1
+_PotgoBase::                ds.l	1
 _TimerBase::				ds.l	1
 
 ; Chunk of statically allocated data for various calculations

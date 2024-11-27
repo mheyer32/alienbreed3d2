@@ -8775,7 +8775,7 @@ closeeverything:
 				jsr		Res_FreeLevelData
 				jsr		Res_ReleaseScreenMemory
 ;
-;				move.l	_MiscResourceBase,d0
+;				move.l	_MiscBase,d0
 ;				beq.s	.noMiscResourceBase
 ;				move.l	d0,a6
 ;				; FIXME: would need to check if we actually allocated them successfully
@@ -8784,7 +8784,7 @@ closeeverything:
 ;				move.l	#MR_SERIALBITS,d0
 ;				jsr		_LVOFreeMiscResource(a6)
 ;
-;				clr.l	_MiscResourceBase		; Resource library doesn't have a 'close'?
+;				clr.l	_MiscBase		; Resource library doesn't have a 'close'?
 ;
 ;.noMiscResourceBase
 ;
