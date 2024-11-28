@@ -422,6 +422,18 @@ static void zone_DumpPerEdgePVS(void) {
  */
 void Zone_InitEdgePVS() {
 
+    #if defined(ZONE_DEBUG)
+    union {
+        struct EClockVal ev;
+        uint64_t u64;
+    } start;
+    union {
+        struct EClockVal ev;
+        uint64_t u64;
+    } end;
+    Sys_MarkTime(&start.ev);
+    #endif
+
     ULONG infoTupleBufferSize = (ULONG)Lvl_NumZones_w * 3 * sizeof(WORD);
 
     dprintf("Zone_InitEdgePVS() need %u bytes for info buffer\n", infoTupleBufferSize);
@@ -445,9 +457,12 @@ void Zone_InitEdgePVS() {
 
     #if defined(ZONE_DEBUG)
     //zone_DumpPerEdgePVS();
+    Sys_MarkTime(&end.ev);
+
+    ULONG ticks = (ULONG)(end.u64 - start.u64);
+    dprintf("Built PVS dataset, took %lu EClock ticks\n", ticks);
     #endif
 
-    //FreeVec(infoTupleBufferPtr);
 }
 
 /**
