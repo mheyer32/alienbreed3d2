@@ -670,13 +670,13 @@ void Zone_CheckVisibleEdges(void) {
     // When only one connecting edge is visible, set the indecies of the start and end point
     // for these so that when we come to the drawing stage, we can look up the transformed
     // values
-    if (1 == numVisible) {
-        Zone_EdgeClipIndexes_vw[0] = edgePVSPtr->zep_EdgeInfoList[lastIndex].zei_StartPointID;
-        Zone_EdgeClipIndexes_vw[1] = edgePVSPtr->zep_EdgeInfoList[lastIndex].zei_EndPointID;
-    } else {
-        Zone_EdgeClipIndexes_vw[0] = -1;
-        Zone_EdgeClipIndexes_vw[1] = -1;
-    }
+    //if (1 == numVisible) {
+    //    Zone_EdgeClipIndexes_vw[0] = edgePVSPtr->zep_EdgeInfoList[lastIndex].zei_StartPointID;
+    //    Zone_EdgeClipIndexes_vw[1] = edgePVSPtr->zep_EdgeInfoList[lastIndex].zei_EndPointID;
+    //} else {
+    //    Zone_EdgeClipIndexes_vw[0] = -1;
+    //    Zone_EdgeClipIndexes_vw[1] = -1;
+    //}
 
 }
 

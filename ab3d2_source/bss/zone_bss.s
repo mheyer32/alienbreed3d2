@@ -15,7 +15,7 @@ zone_FinalOrderTableBarrier_w:	ds.w	1 		; deliniates end of table
 
 		DCLC Zone_VisJoins_w,	ds.w,	1
 		DCLC Zone_TotJoins_w,	ds.w,	1
-		DCLC Zone_EdgeClipIndexes_vw, ds.w, 2
+		;DCLC Zone_EdgeClipIndexes_vw, ds.w, 2
 
 		DCLC Zone_EdgePointIndexes_vw, ds.w, 32
 
