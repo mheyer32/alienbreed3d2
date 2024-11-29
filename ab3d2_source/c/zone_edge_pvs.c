@@ -561,6 +561,9 @@ void zone_MarkVisibleViaEdges(WORD size) {
 // 0 = left, 1 = right
 extern WORD Zone_EdgeClipIndexes_vw[];
 
+// -1 terminated buffer of edge point indexes that must be transformed
+extern WORD Zone_EdgePointIndexes_vw[];
+
 void Zone_CheckVisibleEdges(void) {
     WORD zoneID = Lvl_ListOfGraphRoomsPtr_l->pvs_ZoneID;
 
@@ -575,19 +578,16 @@ void Zone_CheckVisibleEdges(void) {
     Zone_UpdateVectors();
     zone_ClearEdgePVSBuffer(edgePVSPtr->zep_ListSize);
 
+    WORD* edgePointIndex = &Zone_EdgePointIndexes_vw[0];
+
     for (WORD i = 0; i < edgePVSPtr->zep_EdgeCount; ++i, edgePVSListPtr += edgePVSPtr->zep_ListSize) {
 
-        //edgeID = edgePVSPtr->zep_EdgeIDList[i];
         edgeID = edgePVSPtr->zep_EdgeInfoList[i].zei_EdgeID;
 
-        ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[edgeID];
+        *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
+        *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID;
 
-        // dprintf(
-        //     "Checking Edge #%d [%d] [%p]\n",
-        //     (int)i,
-        //     (int)edgeID,
-        //     edgePtr
-        // );
+        ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[edgeID];
 
         startFlags = (sideOfDirection(
             &zone_ViewPoint,
@@ -608,7 +608,6 @@ void Zone_CheckVisibleEdges(void) {
         ) >= 0) ? BIT_RIGHT : 0;
 
         if (startFlags == (BIT_FRONT|BIT_LEFT|BIT_RIGHT)) {
-//            dprintf("\tVisible. Start: %d\n", (int)startFlags);
             ++numVisible;
             lastIndex = i;
             zone_MergeEdgePVS(edgePVSListPtr, edgePVSPtr->zep_ListSize);
@@ -658,6 +657,8 @@ void Zone_CheckVisibleEdges(void) {
         //dprintf("\tNot visible. Start: %d End: %d\n", (int)startFlags, (int)endFlags);
 
     }
+
+    *edgePointIndex = EDGE_POINT_ID_LIST_END;
     Zone_VisJoins_w = numVisible;
     Zone_TotJoins_w = edgePVSPtr->zep_EdgeCount;
 

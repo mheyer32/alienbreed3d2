@@ -3554,20 +3554,17 @@ ONLYTHELONELY:
 				tst.b	Vid_FullScreen_b
 				bne		BIGLONELY
 
-pointrotlop:
+.point_rotate_loop:
 				move.w	(a0)+,d7
-				blt		outofpointrot
+				blt		.check_vis_edge_points
 
 				move.w	(a3,d7*4),d0
 				sub.w	d4,d0
-
 				move.w	d0,d2
 				move.w	2(a3,d7*4),d1
-
 				sub.w	d5,d1
 				muls	d6,d2
 				swap	d6
-
 				move.w	d1,d3
 				muls	d6,d3
 				sub.l	d3,d2
@@ -3578,10 +3575,8 @@ pointrotlop:
 ;				asl.l	#7,d2
 
 				asr.l	#8,d2					; x' = int(2*x') << 8
-
 				add.l	xwobble,d2
 				move.l	d2,(a1,d7*8)
-
 				muls	d6,d0
 				swap	d6
 				muls	d6,d1
@@ -3593,13 +3588,13 @@ pointrotlop:
 
 				asr.l	#8,d1					;
 				asr.l	#7,d1					; z' = int(z') * 2
-
 				move.l	d1,4(a1,d7*8)
-
 				tst.w	d1
 				bgt.s	.ptnotbehind
+
 				tst.w	d2
 				bgt.s	.onrightsomewhere
+
 				move.w	#0,d2
 				bra		.putin
 
@@ -3610,30 +3605,38 @@ pointrotlop:
 .ptnotbehind:
 				divs	d1,d2
 				add.w	Vid_CentreX_w,d2
+
 .putin:
 				move.w	d2,(a2,d7*2)
-
-				bra		pointrotlop
+				bra		.point_rotate_loop
 
 ; move.w #$c40,$dff106
 ; move.w #$ff0,$dff180
 
+; Make sure we rotate the points of the shared edges, no matter what.
+.check_vis_edge_points:
+				cmp.w	#EDGE_POINT_ID_LIST_END,d7
+				beq.s	.done
+
+				; One more pass
+				move.l	#Zone_EdgePointIndexes_vw,a0
+				bra		.point_rotate_loop
+
+.done:
 				rts
 
 BIGLONELY:
 
-.pointrotlop:
+.point_rotate_loop:
 				move.w	(a0)+,d7
-				blt.s	.outofpointrot
+				blt.s	.check_vis_edge_points
 
 				move.w	(a3,d7*4),d0
 				sub.w	d4,d0
 				move.w	d0,d2
-
 				move.w	2(a3,d7*4),d1
 				sub.w	d5,d1
 				muls	d6,d2
-
 				swap	d6
 				move.w	d1,d3
 				muls	d6,d3
@@ -3645,10 +3648,8 @@ BIGLONELY:
 ;				asl.l	#7,d2
 
 				asr.l	#8,d2					; x' = int(2*x') << 8
-
 				add.l	xwobble,d2
 				move.l	d2,(a1,d7*8)
-
 				muls	d6,d0
 				swap	d6
 				muls	d6,d1
@@ -3662,9 +3663,7 @@ BIGLONELY:
 				muls	#1229,d1 ; 1229/2048 = 0.600097
 				asr.l	#8,d1
 				asr.l	#4,d1    ; z' * 6/5
-
 				move.l	d1,4(a1,d7*8)
-
 				tst.w	d1
 				bgt.s	.ptnotbehind
 				tst.w	d2
@@ -3677,21 +3676,27 @@ BIGLONELY:
 				bra		.putin
 
 .ptnotbehind:
-
 				divs	d1,d2
 				add.w	Vid_CentreX_w,d2
+
 .putin:
-				move.w	d2,(a2,d7*2)			; this means the a2 array will also be sparsely written to,
+				move.w	d2,(a2,d7*2)	; this means the a2 array will also be sparsely written to,
 										; but then again doesn't need reindeexing the input indices.
 										; maybe it is worthwhile investigating if its possible to re-index
 										; and write in a packed manner
 
-				bra		.pointrotlop
+				bra		.point_rotate_loop
 
-.outofpointrot:
-; move.w #$c40,$dff106
-; move.w #$ff0,$dff180
+; Make sure we rotate the points of the shared edges, no matter what.
+.check_vis_edge_points:
+				cmp.w	#EDGE_POINT_ID_LIST_END,d7
+				beq.s	.done
 
+				; One more pass
+				move.l	#Zone_EdgePointIndexes_vw,a0
+				bra		.point_rotate_loop
+
+.done:
 				rts
 
 CalcPLR1InLine:

@@ -33,6 +33,7 @@ enum {
     ZONE_ID_LIST_END       = -1,
     ZONE_ID_REMOVED_MANUAL = -2,
     ZONE_ID_REMOVED_AUTO   = -3,
+    EDGE_POINT_ID_LIST_END = -4
 };
 
 #define PVS_TRAVERSE_LIMIT 100
@@ -126,12 +127,12 @@ extern ZEdge* Lvl_ZoneEdgePtr_l;
 /**
  * Number of zones defined in the loaded level
  */
-extern WORD   Lvl_NumZones_w;
+extern WORD Lvl_NumZones_w;
 
 /**
  *  Check if a Zone ID is valid. Must be between 0 and Lvl_NumZones_w-1
  */
-static __inline BOOL zone_IsValidZoneID(WORD id) {
+static inline BOOL zone_IsValidZoneID(WORD id) {
     return id >= 0 && id < Lvl_NumZones_w;
 }
 
@@ -140,7 +141,7 @@ static __inline BOOL zone_IsValidZoneID(WORD id) {
  *
  *  TODO find and expose the maximum edge ID for proper range checking
  */
-static __inline BOOL zone_IsValidEdgeID(WORD id) {
+static inline BOOL zone_IsValidEdgeID(WORD id) {
     return id >= 0;
 }
 
@@ -148,8 +149,12 @@ static __inline BOOL zone_IsValidEdgeID(WORD id) {
  * Obtain the address of the list of edges for the current zone. This is obtained by
  * adding the (negative) z_EdgeListOffset to the Zone address.
  */
-static __inline WORD const* zone_GetEdgeList(Zone const* zonePtr) {
+static inline WORD const* zone_GetEdgeList(Zone const* zonePtr) {
     return (WORD const*)(((BYTE const*)zonePtr) + zonePtr->z_EdgeListOffset);
+}
+
+static inline WORD const* zone_GetPointIndexList(Zone const* zonePtr) {
+    return (WORD const*)(((BYTE const*)zonePtr) + zonePtr->z_Points);
 }
 
 typedef struct {
@@ -177,8 +182,7 @@ typedef struct {
  * Returns the address of the start of the actual EdgePVSList. This immediately follows the
  * ZEdgePVSHeader.zep_EdgeIDList array, which is zep_EdgeCount elements long.
  */
-static __inline UBYTE* zone_GetEdgePVSListBase(ZEdgePVSHeader const* zepPtr) {
-    //return (UBYTE*)(&zepPtr->zep_EdgeIDList[zepPtr->zep_EdgeCount]);
+static inline UBYTE* zone_GetEdgePVSListBase(ZEdgePVSHeader const* zepPtr) {
     return (UBYTE*)(&zepPtr->zep_EdgeInfoList[zepPtr->zep_EdgeCount]);
 }
 
