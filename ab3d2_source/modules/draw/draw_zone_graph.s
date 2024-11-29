@@ -26,8 +26,18 @@ Draw_Zone_Graph:
 				CALLC Zone_SetupEdgeClipping
 				move.l (sp)+,a0
 
-				tst.b Draw_ForceZoneSkip_b
+				tst.b	Draw_ForceZoneSkip_b
 				bne .subroomloop
+
+				; Unreliable
+				;beq		.skip_short_circuit
+
+				;move.l #Zone_FinalOrderTable_vw,a0
+				;move.w (a0),d7
+				;move.w d7,Draw_CurrentZone_w
+
+;.skip_short_circuit:
+
 
 .no_edge_clip:
 				ELSE
