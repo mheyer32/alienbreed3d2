@@ -10,11 +10,8 @@
 ; DEVMODE INSTRUMENTATION
 
 				align 4
-	DECLC	Dev_RegStatePtr_l
-			dc.l	0
-
-	DECLC	Dev_DebugFlags_l
-			dc.l	0
+		DCLC	Dev_RegStatePtr_l,	dc.l,	0
+		DCLC	Dev_DebugFlags_l,	dc.l,	0
 
 				IFD	DEV
 
@@ -316,22 +313,30 @@ Dev_PrintStats:
 				move.l		#136+16,d0
 				bsr			Dev_PrintF
 
-.print:
-				move.l		#136+32,d0
+				; Edges Vis
+				lea         Zone_VisJoins_w,a1 ; close enough
+				lea        .dev_ss_stats_join_vis_vb,a0
+				move.l		#136+64,d0
 				bsr			Dev_PrintF
 
-				; Brightess
-				;lea			Vid_ContrastAdjust_w,a1
-				;lea			.dev_ss_vid_bright_vb,a0
-				;move.l		#136+48,d0
+				; Clips
+				;lea         Draw_ZoneClipL_w,a1 ; close enough
+				;lea        .dev_ss_stats_join_vis_vb,a0
+				;move.l		#136+80,d0
 				;bsr			Dev_PrintF
 
 
-				; Clip Limits
-;				lea			Draw_LeftClip_l,a1
-;				lea			.dev_ss_clip_vb,a0
-;				move.l		#152+32,d0
-;				bsr			Dev_PrintF
+				; Player 1 Directions
+				lea         Plr1_CosVal_w,a1
+				lea        .dev_ss_stats_dir_vb,a0
+				move.l		#136+80,d0
+				bsr			Dev_PrintF
+
+				; Player 1 Position
+				;lea         zone_LastPosition_vw,a1 ; close enough
+				;lea        .dev_ss_stats_pos_vb,a0
+				;move.l		#136+80,d0
+				;bsr			Dev_PrintF
 
 				rts
 
@@ -364,13 +369,14 @@ Dev_PrintStats:
 				dc.b		"OZ:%3d",0
 .dev_ss_stats_zone_vb:
 				dc.b		"ZI:%3d",0
-
-;.dev_ss_clip_vb:
-;				dc.b		"LC:%5d %5d RC: %5d %5d",0
-
-;.dev_ss_vid_bright_vb:
-;				dc.b		"VC:%5d VB:%5d",0
-
+.dev_ss_stats_dir_vb:
+                dc.b        "C:%6d S:%6d A:%5d  ",0
+.dev_ss_stats_pos_vb:
+                dc.b        "X:%5d Z:%5d",0
+.dev_ss_stats_join_vis_vb:
+                dc.b        "JE:%3d/%3d",0
+.dev_ss_stats_edge_clips_vb:
+                dc.b        "L:%4d, R:%4d",0
 .dev_bool_off_vb:
  				dc.b		"off",0
 .dev_bool_on_vb:

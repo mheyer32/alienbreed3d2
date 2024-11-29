@@ -35,7 +35,7 @@ _sys_OldWindowPtr::
 sys_OldWindowPtr:			ds.l	1
 
 sys_RecoveryStack:			ds.l	1
-sys_ErrorBuffer_vb:			ds.b	255
+sys_ErrorBuffer_vb:			ds.b	256 ; 255
 sys_ErrorHeight_b:			ds.w	1			; Also signals that an error occured
 							align 4
 

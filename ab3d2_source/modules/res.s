@@ -339,6 +339,13 @@ Res_LoadLevelData:
 
 				move.l  d0,Lvl_ModPropertiesPtr_l
 
+				move.l	#MEMF_ANY,IO_MemType_l
+				move.l  #Lvl_ErrataFilename_vb,a0
+
+				jsr     IO_LoadFileOptional
+
+				move.l  d0,Lvl_ErrataPtr_l
+
 				jsr		Lvl_InitLevelMods
 
 .done_level_properties:
@@ -376,6 +383,12 @@ Res_LoadLevelData:
 				align 4
 
 Res_FreeLevelData:
+				tst.l    Lvl_ErrataPtr_l
+				beq.s   .done_level_errata
+
+				RES_FREEPTR Lvl_ErrataPtr_l
+
+.done_level_errata:
 				tst.l   Lvl_ModPropertiesPtr_l
 				beq.s   .done_level_properties
 
@@ -397,7 +410,7 @@ Res_FreeLevelData:
 				move.l	#Draw_LevelWallTexturePtrs_vl,a2
 
 .free_wall_overrides:
-				move.l	(a2),a1
+				move.l	(a2),a1 ; TODO - is this broken?
 				beq.s	.done_this_wall
 
 				CALLEXEC FreeVec
@@ -407,13 +420,21 @@ Res_FreeLevelData:
 				dbra	d2,.free_wall_overrides
 
 				movem.l	(sp)+,d2/a2
-.free_other:
 
+.free_other:
 				RES_FREEPTR Lvl_WalkLinksPtr_l
 				RES_FREEPTR Lvl_FlyLinksPtr_l
 				RES_FREEPTR Lvl_GraphicsPtr_l
 				RES_FREEPTR Lvl_ClipsPtr_l
 				RES_FREEPTR Lvl_MusicPtr_l
+
+				IFD BUILD_WITH_C
+				; Edge PVS is managed by C code
+				movem.l d0/d1/a0/a1,-(sp)
+				CALLC Zone_FreeEdgePVS
+				movem.l (sp)+,d0/d1/a0/a1
+				ENDC
+
 				rts
 
 ; *****************************************************************************

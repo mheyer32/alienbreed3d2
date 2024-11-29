@@ -14,7 +14,8 @@ VID_CONTRAST_ADJ_DEF	EQU	$0100
 
 ; TODO - Recalculate 16 bit since we end up calculating a 32-bit pen value for LoadRGB32()
 
-_Vid_GammaIncTables_vb::
+		DCLC Vid_GammaIncTables_vb
+
 Vid_GammaIncTable1_vb: ; x^0.9375
 				dc.b 0,1,2,3,5,6,7,8,9,11,12,13,14,15,16,17
 				dc.b 19,20,21,22,23,24,25,26,27,28,29,31,32,33,34,35
@@ -159,17 +160,10 @@ Vid_GammaIncTable8_vb: ; x^0.5
 				dc.b 238,239,240,240,241,241,242,242,243,243,244,244,245,245,246,246
 				dc.b 247,247,248,248,249,249,250,250,251,251,252,252,253,253,254,255
 
-	DECLC	Vid_ContrastAdjust_w
-			dc.w	VID_CONTRAST_ADJ_DEF
-
-	DECLC	Vid_BrightnessOffset_w
-			dc.w	0
-
-	DECLC	Vid_GammaLevel_b
-			dc.b	0
-
-	DECLC	Vid_UpdatePalette_b
-			dc.b	0
+		DCLC	Vid_ContrastAdjust_w,	dc.w,	VID_CONTRAST_ADJ_DEF
+		DCLC	Vid_BrightnessOffset_w,	dc.w,	0
+		DCLC	Vid_GammaLevel_b,		dc.b,	0
+		DCLC	Vid_UpdatePalette_b,	dc.b,	0
 
 
 

@@ -62,6 +62,7 @@ Draw_SetLeftClip:
 				DEV_ZDBG_CLIP 5
 				DEV_ZDBG ZDbg_LeftClip
 
+				; d0 is Lvl_ClipsPtr_l[ClipID], so the Clip value is a point index into the onscreen array
 				move.w	(a1,d0*2),d1			; left x on screen
 				move.w	(a0),d2
 				move.w	2(a3,d2.w*4),d2

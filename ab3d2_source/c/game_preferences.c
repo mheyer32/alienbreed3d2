@@ -47,6 +47,8 @@ extern ULONG Zone_MovementMask_l;
 extern ULONG Dev_DebugFlags_l;
 #endif
 
+extern WORD Zone_PVSFieldOfView;
+
 void Cfg_ParsePreferencesFile(char const*);
 void Cfg_WritePreferencesFile(char const*);
 
