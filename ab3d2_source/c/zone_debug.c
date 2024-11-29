@@ -20,7 +20,7 @@ extern ULONG Dev_DebugFlags_l;
 extern WORD const* Lvl_ClipsPtr_l;
 
 extern Vec2W const* Lvl_PointsPtr_l;
-extern Vec2W const Rotated_vl[];
+extern Vec2L const Rotated_vl[];
 extern WORD OnScreen_vl[];
 
 #define DEV_ZONE_TRACE            (1<<13)
@@ -61,6 +61,8 @@ static void ZDbg_ShowRegs(void)
     }
 }
 
+extern WORD Zone_EdgePointIndexes_vw[];
+
 void ZDbg_Init(void)
 {
     zdbg_TraceFlags |= ZDBG_TRACE_RUNNING|ZDBG_TRACE_LIST_PVS;
@@ -81,15 +83,27 @@ void ZDbg_Init(void)
         (int)Zone_VisJoins_w
     );
 
-    if (1 == Zone_VisJoins_w) {
+    for (WORD i = 0; i < (Zone_VisJoins_w << 1); ++i) {
         printf(
-            "\tVis Edge: ID: {L:%d, R:%d}, OS:{L:%d, R:%d}, ZC:{L:%d, R:%d}, DC:{L:%d, R:%d}\n",
-            (int)Zone_EdgeClipIndexes_vw[0], (int)Zone_EdgeClipIndexes_vw[1],
-            (int)OnScreen_vl[Zone_EdgeClipIndexes_vw[0]],(int)OnScreen_vl[Zone_EdgeClipIndexes_vw[1]],
-            (int)Draw_ZoneClipL_w, (int)Draw_ZoneClipR_w,
-            (int)Draw_LeftClip_w, (int)Draw_RightClip_w
+            "%d: IDX:%d, Rot: {%d, %d}, OSV:%d\n",
+            (int)i,
+            (int)Zone_EdgePointIndexes_vw[i],
+            Rotated_vl[Zone_EdgePointIndexes_vw[i]].v_X,
+            Rotated_vl[Zone_EdgePointIndexes_vw[i]].v_Z,
+            (int)OnScreen_vl[Zone_EdgePointIndexes_vw[i]]
         );
     }
+
+
+    // if (1 == Zone_VisJoins_w) {
+    //     printf(
+    //         "\tVis Edge: ID: {L:%d, R:%d}, OS:{L:%d, R:%d}, ZC:{L:%d, R:%d}, DC:{L:%d, R:%d}\n",
+    //         (int)Zone_EdgeClipIndexes_vw[0], (int)Zone_EdgeClipIndexes_vw[1],
+    //         (int)OnScreen_vl[Zone_EdgeClipIndexes_vw[0]],(int)OnScreen_vl[Zone_EdgeClipIndexes_vw[1]],
+    //         (int)Draw_ZoneClipL_w, (int)Draw_ZoneClipR_w,
+    //         (int)Draw_LeftClip_w, (int)Draw_RightClip_w
+    //     );
+    // }
 
     // WORD const errata[] = {
     //     9, 7, 8, 129, ZONE_ID_LIST_END, // For zone 9, remove 7, 8 and 129

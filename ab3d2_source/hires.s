@@ -3453,8 +3453,10 @@ pointrotlop2:
 
 				tst.l	d1
 				bgt.s	ptnotbehind
+
 				tst.l	d2
 				bgt.s	onrightsomewhere
+
 				move.w	#0,d2
 				bra		putin
 onrightsomewhere:
@@ -3517,8 +3519,10 @@ pointrotlop2B:
 
 				tst.l	d1
 				bgt.s	ptnotbehindB
+
 				tst.l	d2
 				bgt.s	onrightsomewhereB
+
 				moveq.l	#0,d2
 				bra		putinB
 
@@ -3589,10 +3593,14 @@ ONLYTHELONELY:
 				asr.l	#8,d1					;
 				asr.l	#7,d1					; z' = int(z') * 2
 				move.l	d1,4(a1,d7*8)
-				tst.w	d1
+				;tst.w	d1 						; should this be tst.l ?
+                tst.l	d1
+
 				bgt.s	.ptnotbehind
 
-				tst.w	d2
+                ;tst.w	d2
+
+				tst.l	d2
 				bgt.s	.onrightsomewhere
 
 				move.w	#0,d2
@@ -3664,10 +3672,14 @@ BIGLONELY:
 				asr.l	#8,d1
 				asr.l	#4,d1    ; z' * 6/5
 				move.l	d1,4(a1,d7*8)
-				tst.w	d1
+				;tst.w	d1
+				tst.l	d1
 				bgt.s	.ptnotbehind
-				tst.w	d2
+
+				;tst.w	d2
+				tst.l	d2
 				bgt.s	.onrightsomewhere
+
 				move.w	#0,d2
 				bra		.putin
 

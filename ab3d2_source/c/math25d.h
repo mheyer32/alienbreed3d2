@@ -7,6 +7,12 @@ typedef struct {
 }  __attribute__((packed)) __attribute__ ((aligned (2))) Vec2W;
 
 typedef struct {
+    LONG v_X;
+    LONG v_Z;
+}  __attribute__((packed)) __attribute__ ((aligned (4))) Vec2L;
+
+
+typedef struct {
     WORD v_X;
     WORD v_Y;
     WORD v_Z;

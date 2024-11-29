@@ -584,9 +584,6 @@ void Zone_CheckVisibleEdges(void) {
 
         edgeID = edgePVSPtr->zep_EdgeInfoList[i].zei_EdgeID;
 
-        *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
-        *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID;
-
         ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[edgeID];
 
         startFlags = (sideOfDirection(
@@ -611,6 +608,8 @@ void Zone_CheckVisibleEdges(void) {
             ++numVisible;
             lastIndex = i;
             zone_MergeEdgePVS(edgePVSListPtr, edgePVSPtr->zep_ListSize);
+            *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
+            *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID;
             continue;
         }
 
@@ -640,6 +639,8 @@ void Zone_CheckVisibleEdges(void) {
             ++numVisible;
             lastIndex = i;
             zone_MergeEdgePVS(edgePVSListPtr,  edgePVSPtr->zep_ListSize);
+            *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
+            *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID;
             continue;
         }
 
@@ -652,6 +653,8 @@ void Zone_CheckVisibleEdges(void) {
             ++numVisible;
             lastIndex = i;
             zone_MergeEdgePVS(edgePVSListPtr, edgePVSPtr->zep_ListSize);
+            *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
+            *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID;
             continue;
         }
         //dprintf("\tNot visible. Start: %d End: %d\n", (int)startFlags, (int)endFlags);
@@ -691,21 +694,55 @@ void Zone_SetupEdgeClipping(void) {
     Draw_ZoneClipR_w = Vid_RightX_w;
     Draw_ForceZoneSkip_b = 0;
 
-    if (1 == Zone_VisJoins_w && Lvl_ListOfGraphRoomsPtr_l->pvs_ZoneID != Draw_CurrentZone_w) {
-        WORD clipL = OnScreen_vl[Zone_EdgeClipIndexes_vw[0]];
-        WORD clipR = OnScreen_vl[Zone_EdgeClipIndexes_vw[1]];
+    WORD minL = Vid_RightX_w;
+    WORD maxR = 0;
+    if (Zone_VisJoins_w > 0 && Lvl_ListOfGraphRoomsPtr_l->pvs_ZoneID != Draw_CurrentZone_w) {
+        for (WORD i = 0; i < (Zone_VisJoins_w << 1); i += 2) {
+            WORD scrL = OnScreen_vl[Zone_EdgePointIndexes_vw[i]];
+            WORD scrR = OnScreen_vl[Zone_EdgePointIndexes_vw[i + 1]];
 
-        // Maps space PVS testing isn't perfect due to the imprecision of pre-transformation checks.
-        if (clipR <= 0 || clipL >= Vid_RightX_w) {
-            Draw_ForceZoneSkip_b = 0xFF;
-            Zone_VisJoins_w = 0;
-            return;
+            // Deal with conversion overflow issues
+            if (scrL > scrR) {
+                scrL = 0;
+                scrR = Vid_RightX_w;
+            }
+
+            // Tracm min/max
+            if (scrL < minL) {
+                minL = scrL;
+            }
+            if (scrR > maxR) {
+                maxR = scrR;
+            }
+        }
+        if (minL < 0) {
+            minL = 0;
+        }
+        if (maxR > Vid_RightX_w) {
+            maxR = Vid_RightX_w;
         }
 
-        Draw_ZoneClipL_w = clipL < 0 ? 0 : clipL;
-        Draw_ZoneClipR_w = clipR < Draw_ZoneClipL_w ? Draw_ZoneClipL_w : (
-            clipR > Vid_RightX_w ? Vid_RightX_w : clipR
-        );
+        Draw_ZoneClipL_w = minL;
+        Draw_ZoneClipR_w = maxR;
 
     }
+
+
+    // if (1 == Zone_VisJoins_w && Lvl_ListOfGraphRoomsPtr_l->pvs_ZoneID != Draw_CurrentZone_w) {
+    //     WORD clipL = OnScreen_vl[Zone_EdgeClipIndexes_vw[0]];
+    //     WORD clipR = OnScreen_vl[Zone_EdgeClipIndexes_vw[1]];
+    //
+    //     // Maps space PVS testing isn't perfect due to the imprecision of pre-transformation checks.
+    //     if (clipR <= 0 || clipL >= Vid_RightX_w) {
+    //         Draw_ForceZoneSkip_b = 0xFF;
+    //         Zone_VisJoins_w = 0;
+    //         return;
+    //     }
+    //
+    //     Draw_ZoneClipL_w = clipL < 0 ? 0 : clipL;
+    //     Draw_ZoneClipR_w = clipR < Draw_ZoneClipL_w ? Draw_ZoneClipL_w : (
+    //         clipR > Vid_RightX_w ? Vid_RightX_w : clipR
+    //     );
+    //
+    // }
 }
