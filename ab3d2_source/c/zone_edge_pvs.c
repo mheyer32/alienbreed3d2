@@ -559,7 +559,7 @@ void zone_MarkVisibleViaEdges(WORD size) {
  */
 
 // 0 = left, 1 = right
-extern WORD Zone_EdgeClipIndexes_vw[];
+//extern WORD Zone_EdgeClipIndexes_vw[];
 
 // -1 terminated buffer of edge point indexes that must be transformed
 extern WORD Zone_EdgePointIndexes_vw[];
