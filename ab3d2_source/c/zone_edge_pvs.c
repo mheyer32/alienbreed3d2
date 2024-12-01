@@ -7,7 +7,6 @@
 extern Vec2W const* Lvl_PointsPtr_l;
 extern WORD Lvl_NumPoints_w;
 
-
 /**
  * Data structure used to keep track of key information during the recursive evaluation of
  * the per-edge PVS data for a zone. This data is accessed by recursive code, limiting the
@@ -39,14 +38,10 @@ static struct {
     LONG zre_RecursionDepth;
 
     /**
-     * Viewpoint for the evaluation of edge facing towards/away. This is the centre point of
-     * the edge that connects the zre_rootZonePtr to the an immediate child. Every zone connected
-     * via that child is tested by evaluating whether or not the edges connecting them are still
-     * front facing from this point.
+     * These are the start and end coordinates of the edge for which the PVS is being evaluated.
      */
-    WORD  zre_ViewX;
-    WORD  zre_ViewZ;
-    Vec2W zre_View;
+    Vec2W zre_ViewPoint1;
+    Vec2W zre_ViewPoint2;
 } Zone_EdgePVSState;
 
 static char buffer[256]; // just for debugging
@@ -63,9 +58,9 @@ static char buffer[256]; // just for debugging
  * Where d is 0, P is on the line of AB. Positive values are one one side, negative the other.
  *
  */
-static inline int zone_SideOfEdge(ZEdge const* edgePtr, WORD const* coordPtr) {
-    return (int)edgePtr->e_Len.v_X * (int)(coordPtr[1] - edgePtr->e_Pos.v_Z) -
-           (int)edgePtr->e_Len.v_Z * (int)(coordPtr[0] - edgePtr->e_Pos.v_X);
+static inline int zone_SideOfEdge(ZEdge const* edgePtr, Vec2W const* coordPtr) {
+    return (int)edgePtr->e_Len.v_X * (int)(coordPtr->v_Z - edgePtr->e_Pos.v_Z) -
+           (int)edgePtr->e_Len.v_Z * (int)(coordPtr->v_X - edgePtr->e_Pos.v_X);
 }
 
 /**
@@ -277,7 +272,11 @@ static void zone_RecurseEdgePVS(WORD indexInPVS) {
 
         // TODO - Other tests - what about impassible height differences?
 
-        if (zone_SideOfEdge(edgePtr, &Zone_EdgePVSState.zre_ViewX) < 0) {
+        // Test both ends of the edge.
+        if (
+            zone_SideOfEdge(edgePtr, &Zone_EdgePVSState.zre_ViewPoint1) < 0 ||
+            zone_SideOfEdge(edgePtr, &Zone_EdgePVSState.zre_ViewPoint2) < 0
+        ) {
             zone_RecurseEdgePVS(indexInPVS);
         }
     }
@@ -317,8 +316,11 @@ static void zone_FillZEdgePVSListData() {
         for (WORD edgeNum = 0; edgeNum < currentEdgePVSPtr->zep_EdgeCount; ++edgeNum) {
             ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[currentEdgePVSPtr->zep_EdgeInfoList[edgeNum].zei_EdgeID];
 
-            Zone_EdgePVSState.zre_ViewX = ((edgePtr->e_Pos.v_X << 1) + edgePtr->e_Len.v_X) >> 1;
-            Zone_EdgePVSState.zre_ViewZ = ((edgePtr->e_Pos.v_Z << 1) + edgePtr->e_Len.v_Z) >> 1;
+            Zone_EdgePVSState.zre_ViewPoint1.v_X = edgePtr->e_Pos.v_X;
+            Zone_EdgePVSState.zre_ViewPoint1.v_Z = edgePtr->e_Pos.v_Z;
+
+            Zone_EdgePVSState.zre_ViewPoint2.v_X = edgePtr->e_Pos.v_X + edgePtr->e_Len.v_X;
+            Zone_EdgePVSState.zre_ViewPoint2.v_Z = edgePtr->e_Pos.v_Z + edgePtr->e_Len.v_Z;
 
             // Clear the visited index buffer, which requires a count of longwords
             // Sys_MemFillLong(
