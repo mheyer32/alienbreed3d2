@@ -294,7 +294,7 @@ static void zone_FillZEdgePVSListData() {
         Zone_EdgePVSState.zre_rootZonePtr    = Lvl_ZonePtrsPtr_l[zoneID];
 
         // Fill the buffer with the list of zones in the PVS for our zone
-        WORD* endPtr = zone_MakePVSZoneIDList(
+        zone_MakePVSZoneIDList(
             Zone_EdgePVSState.zre_rootZonePtr,
             Zone_EdgePVSState.zre_FullPVSListPtr
         );
@@ -560,9 +560,6 @@ void zone_MarkVisibleViaEdges(WORD size) {
  * TODO - debug fully and port to asm
  */
 
-// 0 = left, 1 = right
-//extern WORD Zone_EdgeClipIndexes_vw[];
-
 // -1 terminated buffer of edge point indexes that must be transformed
 extern WORD Zone_EdgePointIndexes_vw[];
 
@@ -576,7 +573,6 @@ void Zone_CheckVisibleEdges(void) {
     WORD  endFlags;
     WORD  numVisible = 0;
     WORD  edgeID;
-    WORD  lastIndex = -1;
     Zone_UpdateVectors();
     zone_ClearEdgePVSBuffer(edgePVSPtr->zep_ListSize);
 
@@ -608,7 +604,6 @@ void Zone_CheckVisibleEdges(void) {
 
         if (startFlags == (BIT_FRONT|BIT_LEFT|BIT_RIGHT)) {
             ++numVisible;
-            lastIndex = i;
             zone_MergeEdgePVS(edgePVSListPtr, edgePVSPtr->zep_ListSize);
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID;
@@ -637,9 +632,7 @@ void Zone_CheckVisibleEdges(void) {
         ) >= 0) ? BIT_RIGHT : 0;
 
         if (endFlags == (BIT_FRONT|BIT_LEFT|BIT_RIGHT)) {
-            //dprintf("\tVisible. End: %d\n", (int)endFlags);
             ++numVisible;
-            lastIndex = i;
             zone_MergeEdgePVS(edgePVSListPtr,  edgePVSPtr->zep_ListSize);
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID;
@@ -653,14 +646,11 @@ void Zone_CheckVisibleEdges(void) {
         ) {
             //dprintf("\tSpan. Start: %d End: %d\n", (int)startFlags, (int)endFlags);
             ++numVisible;
-            lastIndex = i;
             zone_MergeEdgePVS(edgePVSListPtr, edgePVSPtr->zep_ListSize);
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID;
             continue;
         }
-        //dprintf("\tNot visible. Start: %d End: %d\n", (int)startFlags, (int)endFlags);
-
     }
 
     *edgePointIndex = EDGE_POINT_ID_LIST_END;
@@ -668,18 +658,6 @@ void Zone_CheckVisibleEdges(void) {
     Zone_TotJoins_w = edgePVSPtr->zep_EdgeCount;
 
     zone_MarkVisibleViaEdges(edgePVSPtr->zep_ListSize);
-
-    // When only one connecting edge is visible, set the indecies of the start and end point
-    // for these so that when we come to the drawing stage, we can look up the transformed
-    // values
-    //if (1 == numVisible) {
-    //    Zone_EdgeClipIndexes_vw[0] = edgePVSPtr->zep_EdgeInfoList[lastIndex].zei_StartPointID;
-    //    Zone_EdgeClipIndexes_vw[1] = edgePVSPtr->zep_EdgeInfoList[lastIndex].zei_EndPointID;
-    //} else {
-    //    Zone_EdgeClipIndexes_vw[0] = -1;
-    //    Zone_EdgeClipIndexes_vw[1] = -1;
-    //}
-
 }
 
 extern WORD Draw_CurrentZone_w;
@@ -729,22 +707,4 @@ void Zone_SetupEdgeClipping(void) {
 
     }
 
-
-    // if (1 == Zone_VisJoins_w && Lvl_ListOfGraphRoomsPtr_l->pvs_ZoneID != Draw_CurrentZone_w) {
-    //     WORD clipL = OnScreen_vl[Zone_EdgeClipIndexes_vw[0]];
-    //     WORD clipR = OnScreen_vl[Zone_EdgeClipIndexes_vw[1]];
-    //
-    //     // Maps space PVS testing isn't perfect due to the imprecision of pre-transformation checks.
-    //     if (clipR <= 0 || clipL >= Vid_RightX_w) {
-    //         Draw_ForceZoneSkip_b = 0xFF;
-    //         Zone_VisJoins_w = 0;
-    //         return;
-    //     }
-    //
-    //     Draw_ZoneClipL_w = clipL < 0 ? 0 : clipL;
-    //     Draw_ZoneClipR_w = clipR < Draw_ZoneClipL_w ? Draw_ZoneClipL_w : (
-    //         clipR > Vid_RightX_w ? Vid_RightX_w : clipR
-    //     );
-    //
-    // }
 }

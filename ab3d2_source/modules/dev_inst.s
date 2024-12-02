@@ -260,57 +260,57 @@ Dev_PrintStats:
 				bsr			Dev_PrintF
 
 				; Simple walls
-				lea			dev_VisibleSimpleWalls_w,a1
-				lea			.dev_ss_stats_wall_simple_vb,a0
-				move.l		#24,d0
-				bsr			Dev_PrintF
+				;lea			dev_VisibleSimpleWalls_w,a1
+				;lea			.dev_ss_stats_wall_simple_vb,a0
+				;move.l		#24,d0
+				;bsr			Dev_PrintF
 
 				; Shaded walls
-				lea			dev_VisibleShadedWalls_w,a1
-				lea			.dev_ss_stats_wall_shaded_vb,a0
-				move.l		#40,d0
-				bsr			Dev_PrintF
+				;lea			dev_VisibleShadedWalls_w,a1
+				;lea			.dev_ss_stats_wall_shaded_vb,a0
+				;move.l		#40,d0
+				;bsr			Dev_PrintF
 
 				; Polygon objects
-				lea			dev_VisibleModelCount_w,a1
-				lea			.dev_ss_stats_obj_poly_vb,a0
-				move.l		#56,d0
-				bsr			Dev_PrintF
+				;lea			dev_VisibleModelCount_w,a1
+				;lea			.dev_ss_stats_obj_poly_vb,a0
+				;move.l		#56,d0
+				;bsr			Dev_PrintF
 
 				; Glare objects
-				lea			dev_VisibleGlareCount_w,a1
-				lea			.dev_ss_stats_obj_glare_vb,a0
-				move.l		#72,d0
-				bsr			Dev_PrintF
+				;lea			dev_VisibleGlareCount_w,a1
+				;lea			.dev_ss_stats_obj_glare_vb,a0
+				;move.l		#72,d0
+				;bsr			Dev_PrintF
 
 				; Lightmap bitmap objects
-				lea			dev_VisibleLightMapCount_w,a1
-				lea			.dev_ss_stats_obj_lightmap_vb,a0
-				move.l		#88,d0
-				bsr			Dev_PrintF
+				;lea			dev_VisibleLightMapCount_w,a1
+				;lea			.dev_ss_stats_obj_lightmap_vb,a0
+				;move.l		#88,d0
+				;bsr			Dev_PrintF
 
 				; Additive bitmap objects
-				lea			dev_VisibleAdditiveCount_w,a1
-				lea			.dev_ss_stats_obj_additive_vb,a0
-				move.l		#104,d0
-				bsr			Dev_PrintF
+				;lea			dev_VisibleAdditiveCount_w,a1
+				;lea			.dev_ss_stats_obj_additive_vb,a0
+				;move.l		#104,d0
+				;bsr			Dev_PrintF
 
 				; Vanilla bitmap objects
-				lea			dev_VisibleBitmapCount_w,a1
-				lea			.dev_ss_stats_obj_bitmap_vb,a0
-				move.l		#120,d0
-				bsr			Dev_PrintF
+				;lea			dev_VisibleBitmapCount_w,a1
+				;lea			.dev_ss_stats_obj_bitmap_vb,a0
+				;move.l		#120,d0
+				;bsr			Dev_PrintF
 
 				; Zone_OrderZones
-				lea			dev_Reserved2_w,a1
-				lea			.dev_ss_stats_order_zones_vb,a0
-				move.l		#136,d0
-				bsr			Dev_PrintF
+				;lea			dev_Reserved2_w,a1
+				;lea			.dev_ss_stats_order_zones_vb,a0
+				;move.l		#136,d0
+				;bsr			Dev_PrintF
 
 				; Player1 Zone ID
 				lea			Plr1_Zone_w,a1
 				lea			.dev_ss_stats_zone_vb,a0
-				move.l		#136+16,d0
+				move.l		#136+48,d0
 				bsr			Dev_PrintF
 
 				; Edges Vis
@@ -327,10 +327,10 @@ Dev_PrintStats:
 
 
 				; Player 1 Directions
-				lea         Plr1_CosVal_w,a1
-				lea        .dev_ss_stats_dir_vb,a0
-				move.l		#136+80,d0
-				bsr			Dev_PrintF
+				;lea         Plr1_CosVal_w,a1
+				;lea        .dev_ss_stats_dir_vb,a0
+				;move.l		#136+80,d0
+				;bsr			Dev_PrintF
 
 				; Player 1 Position
 				;lea         zone_LastPosition_vw,a1 ; close enough
