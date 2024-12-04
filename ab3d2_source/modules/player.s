@@ -405,14 +405,14 @@ plr_KeyboardControl:
 				beq.s	.noframelimit
 
 				clr.b	RAWKEY_F7(a5)
-				cmp.l	#5,Vid_FPSLimit_l
+				cmp.w	#5,Sys_FPSLimit_w
 				beq.s	.resetfpslimit
 
-				addq.l	#1,Vid_FPSLimit_l
+				addq.w	#1,Sys_FPSLimit_w
 				bra.s	.noframelimit
 
 .resetfpslimit:
-				clr.l	Vid_FPSLimit_l
+				clr.w	Sys_FPSLimit_w
 
 .noframelimit:
 				tst.b   RAWKEY_NUM_DOT(a5)

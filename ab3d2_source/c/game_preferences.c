@@ -20,7 +20,7 @@ extern UBYTE Vid_FullScreenTemp_b;
 extern UBYTE Draw_ForceSimpleWalls_b;
 extern UBYTE Draw_GoodRender_b;
 extern UBYTE Anim_LightingEnabled_b;
-extern LONG  Vid_FPSLimit_l;
+extern WORD  Sys_FPSLimit_w;
 extern WORD  Vid_LetterBoxMarginHeight_w;
 
 extern UWORD Prefs_ContrastAdjust_AGA_w;
@@ -70,7 +70,7 @@ void game_ApplyPreferences(void)
         Vid_GammaLevel_b        = Prefs_GammaLevel_AGA_b;
     }
     Draw_ForceSimpleWalls_b     = Prefs_SimpleLighting_b;
-    Vid_FPSLimit_l              = Prefs_FPSLimit_b;
+    Sys_FPSLimit_w              = Prefs_FPSLimit_b;
     Vid_LetterBoxMarginHeight_w = Prefs_VertMargin_b;
     Anim_LightingEnabled_b      = Prefs_DynamicLights_b;
     Draw_GoodRender_b           = Prefs_RenderQuality_b;
@@ -411,7 +411,7 @@ void Cfg_WritePreferencesFile(char const* file) {
         Prefs_FullScreen_b     = Vid_FullScreen_b;
         Prefs_PixelMode_b      = Vid_DoubleHeight_b;
         Prefs_SimpleLighting_b = Draw_ForceSimpleWalls_b;
-        Prefs_FPSLimit_b       = (UBYTE)Vid_FPSLimit_l;
+        Prefs_FPSLimit_b       = (UBYTE)Sys_FPSLimit_w;
         Prefs_VertMargin_b     = (UBYTE)Vid_LetterBoxMarginHeight_w;
         Prefs_DynamicLights_b  = Anim_LightingEnabled_b;
         Prefs_RenderQuality_b  = Draw_GoodRender_b;

@@ -349,7 +349,7 @@ Dev_PrintStats:
 				rts
 
 .dev_fs_stats_tpl_vb:
-				dc.b		"W:%2d F:%2d O:%2d/%2d D:%2dms %2d.%-2dfps ",0
+				dc.b		"W:%2d F:%2d O:%2d/%2d D:%2dms %2d.%d %d",0
 
 .dev_ss_stats_wall_simple_vb:
 				dc.b		"WS:%3d",0

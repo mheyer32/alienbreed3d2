@@ -369,8 +369,11 @@ void Sys_EvalFPS()
         return;
     }
 
-    Sys_FPSFracAvg_w = ((UWORD)1000 % (UWORD)avg)/10;
-    Sys_FPSIntAvg_w = (UWORD)1000 / (UWORD)avg;
+    UWORD fps10x = ((UWORD)10000 / (UWORD)avg);
+
+    // The compiler should be able to figure out that this needs 32/16 => 16r:16q
+    Sys_FPSFracAvg_w = fps10x % (UWORD)10;
+    Sys_FPSIntAvg_w  = fps10x / (UWORD)10;
 }
 
 static void SAVEDS PutChProc(REG(d0, char c), REG(a3, char** out))
@@ -381,12 +384,15 @@ static void SAVEDS PutChProc(REG(d0, char c), REG(a3, char** out))
 
 void Sys_ShowFPS()
 {
+    extern WORD Vid_ScreenHeight;
+    extern WORD Sys_FPSLimit_w;
+
     char text[16];
     char* outPtr = text;
 
-    RawDoFmt("%2d.%d", &Sys_FPSIntAvg_w, (void (*)()) & PutChProc, &outPtr);
+    RawDoFmt("%2d.%d %d ", &Sys_FPSIntAvg_w, (void (*)()) & PutChProc, &outPtr);
     LOCAL_GFX();
-    Move(&Vid_MainScreen_l->RastPort, 0, 8);
+    Move(&Vid_MainScreen_l->RastPort, 192, Vid_ScreenHeight - 14);
     Text(&Vid_MainScreen_l->RastPort, text, outPtr - text - 1);
 }
 

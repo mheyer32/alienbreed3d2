@@ -1016,7 +1016,7 @@ nofadedownhc:
 
 .nopause:
 				move.l	Vid_VBLCountLast_l,d2
-				add.l	Vid_FPSLimit_l,d2
+				add.w	Sys_FPSLimit_w,d2
 
 .waitvbl:
 				move.l	Vid_VBLCount_l,d3
@@ -5939,8 +5939,6 @@ COUNTSPACE:		ds.b	160
 _Vid_VBLCount_l::
 Vid_VBLCount_l:		dc.l	0
 Vid_VBLCountLast_l:	dc.l	0
-_Vid_FPSLimit_l::   ; todo - this only ranges 0-5, so a byte is more than enough
-Vid_FPSLimit_l:		dc.l	0
 
 OtherInter:
 				move.w	#$0010,$dff000+intreq
