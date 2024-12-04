@@ -49,6 +49,8 @@ extern ULONG Dev_DebugFlags_l;
 
 extern WORD Zone_PVSFieldOfView;
 
+extern UBYTE Prefs_DisplayFPS_b;
+
 void Cfg_ParsePreferencesFile(char const*);
 void Cfg_WritePreferencesFile(char const*);
 

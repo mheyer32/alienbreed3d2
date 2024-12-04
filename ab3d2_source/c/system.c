@@ -41,6 +41,7 @@ extern UWORD Sys_FPSFracAvg_w;
 extern UBYTE Sys_Move16_b;
 extern UBYTE Vid_FullScreenTemp_b;
 extern UBYTE Sys_CPU_68060_b;
+extern UBYTE Prefs_DisplayFPS_b;
 extern APTR sys_OldWindowPtr;
 
 extern struct EClockVal _Sys_FrameTimeECV_q[2];
@@ -60,6 +61,7 @@ extern VOID VBlankInterrupt(void);
 extern VOID key_interrupt(void);
 
 ULONG Sys_EClockRate = 0;
+
 
 static const char AppName[] = "TheKillingGrounds";
 static struct Interrupt VBLANKInt = {{NULL, NULL, NT_INTERRUPT, 9, (char *)AppName}, 0, VBlankInterrupt};
@@ -360,6 +362,9 @@ void Sys_FrameLap()
 
 void Sys_EvalFPS()
 {
+    if (!Prefs_DisplayFPS_b) {
+        return;
+    }
     ULONG avg = 0;
     for (int x = 0; x < 8; ++x) {
         avg += Sys_FrameTimes_vl[x];
@@ -384,6 +389,10 @@ static void SAVEDS PutChProc(REG(d0, char c), REG(a3, char** out))
 
 void Sys_ShowFPS()
 {
+    if (!Prefs_DisplayFPS_b) {
+        return;
+    }
+
     extern WORD Vid_ScreenHeight;
     extern WORD Sys_FPSLimit_w;
 
