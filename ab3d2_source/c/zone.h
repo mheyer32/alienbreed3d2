@@ -12,7 +12,7 @@
 #else
     #define dputchar(c)
     #define dputs(msg)
-    #define dprintf()
+    #define dprintf(fmt, ...)
 #endif
 
 /**
