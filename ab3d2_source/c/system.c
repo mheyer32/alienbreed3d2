@@ -392,7 +392,7 @@ void Sys_ShowFPS()
 
     RawDoFmt("%2d.%d %d ", &Sys_FPSIntAvg_w, (void (*)()) & PutChProc, &outPtr);
     LOCAL_GFX();
-    Move(&Vid_MainScreen_l->RastPort, 192, Vid_ScreenHeight - 14);
+    Move(&Vid_MainScreen_l->RastPort, 192, Vid_ScreenHeight - 13);
     Text(&Vid_MainScreen_l->RastPort, text, outPtr - text - 1);
 }
 
