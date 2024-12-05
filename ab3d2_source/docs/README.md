@@ -34,8 +34,8 @@ The player eye level when standing corresponds to a height of 48 Y units (1.5 me
 
 ### Angle System
 
-The game engine uses an angular sytstem of measure that divides the full circle into 8192. These values are used as indexes into a large, precomputed sine table with signed 16 bit precision:
- 
+The game engine uses an angular system of measure that divides the full circle into 4096. These values are used as indexes into a large, precomputed sine table with signed 16 bit precision:
+
 | Direction | Angle | Sine | Cosine |
 | - | - | - | - |
 | North | 0 | 0 | 32767 |
@@ -43,3 +43,4 @@ The game engine uses an angular sytstem of measure that divides the full circle 
 | South | 4096 | 0 | -32767 |
 | West | 6144 | -32767 | 0 |
 
+Note that the sine table contains 8192 entries, comprising two complete cycles of the sine function. This allows both sine and cosine to use the same table, without wrapping.

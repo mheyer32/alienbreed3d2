@@ -2,6 +2,7 @@
 #define GAME_H
 #include <SDI_compiler.h>
 #include "defs.h"
+#include "asm_align.h"
 
 /** Inventory limits for the default game */
 #define GAME_DEFAULT_AMMO_LIMIT 10000
@@ -43,7 +44,7 @@ struct AchievementStruct {
     WORD        ac_AmmoType;         // 2 28   Ammunition type (-1 for none)
     UWORD       ac_AmmoTypeCapBonus; // 2 30   Capacity bonus for ammunition type
     UWORD       ac_AmmoTypeBonus;    // 2 32   Immediate bonus for ammunition type
-} __attribute__((packed)) __attribute__ ((aligned (2)));
+} ASM_ALIGN(sizeof(WORD));
 typedef struct AchievementStruct Achievement;
 
 /**

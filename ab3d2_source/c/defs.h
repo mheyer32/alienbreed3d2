@@ -2,6 +2,7 @@
 #define DEFS_H
 
 #include <exec/types.h>
+#include "asm_align.h"
 
 /**
  * C structure definitions to match the assembler ones in defs.i
@@ -38,19 +39,19 @@ typedef struct {
     UWORD ic_Health;
     UWORD ic_JetpackFuel;
     UWORD ic_AmmoCounts[NUM_BULLET_DEFS];
-}  __attribute__((packed)) __attribute__ ((aligned (2))) InventoryConsumables;
+} ASM_ALIGN(sizeof(WORD)) InventoryConsumables;
 
 typedef struct {
     /* Note that we have separate named fields here, but we regard the struct as equivalent to UWORD[]*/
     UWORD ii_Shield;
     UWORD ii_Jetpack;
     UWORD ii_Weapons[NUM_GUN_DEFS];
-} __attribute__((packed)) __attribute__ ((aligned (2))) InventoryItems;
+} ASM_ALIGN(sizeof(WORD))  InventoryItems;
 
 typedef struct {
     InventoryConsumables inv_Consumables;
     InventoryItems       inv_Items;
-} __attribute__((packed)) __attribute__ ((aligned (2))) Inventory;
+} ASM_ALIGN(sizeof(WORD))  Inventory;
 
 typedef struct {
     LONG o_XPos;

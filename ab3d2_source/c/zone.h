@@ -52,7 +52,7 @@ typedef struct {
     WORD pvs_ClipID;
     WORD pvs_Word2; // TODO figure out what this is
     WORD pvs_Word3; // TODO figure out what this is
-} __attribute__((packed)) __attribute__ ((aligned (2))) ZPVSRecord;
+} ASM_ALIGN(sizeof(WORD)) ZPVSRecord;
 
 /**
  * Edge structure. These are stored in a large array loaded from disk and are referenced by
@@ -67,7 +67,7 @@ typedef struct {
     BYTE  e_Byte_12;    // TODO figure out what this is
     BYTE  e_Byte_13;    // TODO figure out what this is
     UWORD e_Flags;
-} __attribute__((packed)) __attribute__ ((aligned (2))) ZEdge;
+} ASM_ALIGN(sizeof(WORD)) ZEdge;
 
 /**
  * Main zone structure. Note that the long fields in here can be 2-byte aligned due to the
@@ -98,7 +98,27 @@ typedef struct {
     WORD  z_FloorNoise;               // 44, 2
     WORD  z_UpperFloorNoise;          // 46, 2
     ZPVSRecord  z_PotVisibleZoneList[1];    // 48, 2 Vector, varying length
-}  __attribute__((packed)) __attribute__ ((aligned (2))) Zone;
+} ASM_ALIGN(sizeof(WORD)) Zone;
+
+typedef struct {
+    WORD zei_EdgeID;
+    WORD zei_StartPointID;
+    WORD zei_EndPointID;
+    WORD zei_Reserved;
+} ASM_ALIGN(sizeof(WORD)) ZEdgeInfo;
+
+/**
+ * Structure for the per-edge PVS data header:
+ *
+ * [Zone ID][Num Edges][Num PVS][EdgeID 0]...[EdgeID N][PVS List 0] ... [PVS List N]
+ */
+typedef struct {
+    WORD zep_ZoneID;
+    WORD zep_ListSize;
+    WORD zep_EdgeCount;
+    ZEdgeInfo zep_EdgeInfoList[1];
+    //WORD zep_EdgeIDList[1]; // zep_EdgeCount in length, followed by zep_EdgeCount sets of data
+} ASM_ALIGN(sizeof(WORD)) ZEdgePVSHeader;
 
 /**
  * Zone PVS Errata
@@ -156,26 +176,6 @@ static inline WORD const* zone_GetEdgeList(Zone const* zonePtr) {
 static inline WORD const* zone_GetPointIndexList(Zone const* zonePtr) {
     return (WORD const*)(((BYTE const*)zonePtr) + zonePtr->z_Points);
 }
-
-typedef struct {
-    WORD zei_EdgeID;
-    WORD zei_StartPointID;
-    WORD zei_EndPointID;
-    WORD zei_Reserved;
-} __attribute__((packed)) __attribute__ ((aligned (2))) ZEdgeInfo;
-
-/**
- * Structure for the per-edge PVS data header:
- *
- * [Zone ID][Num Edges][Num PVS][EdgeID 0]...[EdgeID N][PVS List 0] ... [PVS List N]
- */
-typedef struct {
-    WORD zep_ZoneID;
-    WORD zep_ListSize;
-    WORD zep_EdgeCount;
-    ZEdgeInfo zep_EdgeInfoList[1];
-    //WORD zep_EdgeIDList[1]; // zep_EdgeCount in length, followed by zep_EdgeCount sets of data
-} __attribute__((packed)) __attribute__ ((aligned (2))) ZEdgePVSHeader;
 
 
 /**

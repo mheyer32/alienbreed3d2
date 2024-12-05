@@ -1,22 +1,32 @@
 #ifndef MATH_25D_H
 #define MATH_25D_H
 
+#include "asm_align.h"
+
+/**
+ * Simple 2 compoment XZ vector, 16 bit precision
+ */
 typedef struct {
     WORD v_X;
     WORD v_Z;
-}  __attribute__((packed)) __attribute__ ((aligned (2))) Vec2W;
+} ASM_ALIGN(sizeof(WORD)) Vec2W;
 
+/**
+ * Simple 2 compoment XZ vector, 32 bit precision
+ */
 typedef struct {
     LONG v_X;
     LONG v_Z;
-}  __attribute__((packed)) __attribute__ ((aligned (4))) Vec2L;
+} ASM_ALIGN(sizeof(LONG)) Vec2L;
 
-
+/**
+ * Simple 3 compoment XYZ vector, 32 bit precision
+ */
 typedef struct {
     WORD v_X;
     WORD v_Y;
     WORD v_Z;
-}  __attribute__((packed)) __attribute__ ((aligned (2))) Vec3W;
+} ASM_ALIGN(sizeof(LONG)) Vec3W;
 
 #define SINTAB_SIZE 8192
 
