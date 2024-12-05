@@ -41,11 +41,12 @@ extern UWORD Sys_FPSFracAvg_w;
 extern UBYTE Sys_Move16_b;
 extern UBYTE Vid_FullScreenTemp_b;
 extern UBYTE Sys_CPU_68060_b;
+extern UBYTE Prefs_DisplayFPS_b;
 extern APTR sys_OldWindowPtr;
 
 extern struct EClockVal _Sys_FrameTimeECV_q[2];
 
-extern UWORD angpos;
+extern UWORD Vis_AngPos_w;
 extern WORD Sys_MouseY;
 
 extern UBYTE KeyMap_vb[256];
@@ -60,6 +61,7 @@ extern VOID VBlankInterrupt(void);
 extern VOID key_interrupt(void);
 
 ULONG Sys_EClockRate = 0;
+
 
 static const char AppName[] = "TheKillingGrounds";
 static struct Interrupt VBLANKInt = {{NULL, NULL, NT_INTERRUPT, 9, (char *)AppName}, 0, VBlankInterrupt};
@@ -360,6 +362,11 @@ void Sys_FrameLap()
 
 void Sys_EvalFPS()
 {
+#ifndef DEV
+    if (!Prefs_DisplayFPS_b) {
+        return;
+    }
+#endif
     ULONG avg = 0;
     for (int x = 0; x < 8; ++x) {
         avg += Sys_FrameTimes_vl[x];
@@ -369,8 +376,11 @@ void Sys_EvalFPS()
         return;
     }
 
-    Sys_FPSFracAvg_w = ((UWORD)1000 % (UWORD)avg)/10;
-    Sys_FPSIntAvg_w = (UWORD)1000 / (UWORD)avg;
+    UWORD fps10x = ((UWORD)10000 / (UWORD)avg);
+
+    // The compiler should be able to figure out that this needs 32/16 => 16r:16q
+    Sys_FPSFracAvg_w = fps10x % (UWORD)10;
+    Sys_FPSIntAvg_w  = fps10x / (UWORD)10;
 }
 
 static void SAVEDS PutChProc(REG(d0, char c), REG(a3, char** out))
@@ -381,12 +391,19 @@ static void SAVEDS PutChProc(REG(d0, char c), REG(a3, char** out))
 
 void Sys_ShowFPS()
 {
+    if (!Prefs_DisplayFPS_b) {
+        return;
+    }
+
+    extern WORD Vid_ScreenHeight;
+    extern WORD Sys_FPSLimit_w;
+
     char text[16];
     char* outPtr = text;
 
-    RawDoFmt("%2d.%d", &Sys_FPSIntAvg_w, (void (*)()) & PutChProc, &outPtr);
+    RawDoFmt("%2d.%d %d ", &Sys_FPSIntAvg_w, (void (*)()) & PutChProc, &outPtr);
     LOCAL_GFX();
-    Move(&Vid_MainScreen_l->RastPort, 0, 8);
+    Move(&Vid_MainScreen_l->RastPort, 192, Vid_ScreenHeight - 13);
     Text(&Vid_MainScreen_l->RastPort, text, outPtr - text - 1);
 }
 
@@ -424,7 +441,7 @@ void Sys_ReadMouse()
 
     // This directly steers player rotation
     //  the rotation sensitivity can be adjusted here
-    angpos += (diffX << 2);
+    Vis_AngPos_w += (diffX << 2);
 
     // FIXME: should use WritePotgo here... what does this even reset?
     // potgo = 0;

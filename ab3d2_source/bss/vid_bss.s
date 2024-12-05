@@ -30,7 +30,7 @@ _Vid_DrawScreenPtr_l::
 Vid_DrawScreenPtr_l:		ds.l	1
 
 _Vid_DisplayScreenPtr_l::
-Vid_DisplayScreenPtr_l:	ds.l	1
+Vid_DisplayScreenPtr_l:		ds.l	1
 
 _Vid_ScreenBuffers_vl:
 Vid_ScreenBuffers_vl:		ds.l	2

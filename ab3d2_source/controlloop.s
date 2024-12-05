@@ -226,8 +226,8 @@ Game_Quit:
 _Prefs_Persisted::
 Prefsfile:
                     dc.b	'k8nx'
-    ; DECLC Macro makes the identifier visible to C also
-    DECLC	Prefs_AssignableKeys_vb
+		; DCLC Macro makes the identifier visible to C also
+		DCLC	Prefs_AssignableKeys_vb
 
 AssignableKeys_vb:
 turn_left_key:		dc.b	RAWKEY_LEFT
@@ -249,68 +249,34 @@ centre_view_key:	dc.b	RAWKEY_SEMICOLON
 next_weapon_key:	dc.b	RAWKEY_BSLASH
 spare_key:          dc.b    0
 
-
-	DECLC	Prefs_FullScreen_b
-		dc.b	0
-
-	DECLC	Prefs_PixelMode_b
-		dc.b	0
-
-	DECLC	Prefs_VertMargin_b
-		dc.b	0
-
-	DECLC	Prefs_SimpleLighting_b
-		dc.b	0
-
-	DECLC	Prefs_FPSLimit_b
-		dc.b	0
-
-	DECLC	Prefs_DynamicLights_b
-		dc.b	255
-
-	DECLC	Prefs_RenderQuality_b
-		dc.b	255
+		DCLC Prefs_FullScreen_b,	dc.b,	0
+		DCLC Prefs_PixelMode_b,		dc.b,	0
+		DCLC Prefs_VertMargin_b,	dc.b,	0
+		DCLC Prefs_SimpleLighting_b,dc.b,	0
+		DCLC Prefs_FPSLimit_b,		dc.b,	0
+		DCLC Prefs_DynamicLights_b,	dc.b,	255
+		DCLC Prefs_RenderQuality_b,	dc.b,	255
 
 ; Padding
 Prefs_Unused_b:	dc.b	0
 
-	DECLC	Prefs_ContrastAdjust_AGA_w
-		dc.w	$0100
-
-	DECLC	Prefs_ContrastAdjust_RTG_w
-		dc.w	$0100
-
-	DECLC	Prefs_BrightnessOffset_AGA_w
-		dc.w	0
-
-	DECLC	Prefs_BrightnessOffset_RTG_w
-		dc.w	0
-
-	DECLC	Prefs_GammaLevel_AGA_b
-		dc.b	0
-
-	DECLC	Prefs_GammaLevel_RTG_b
-		dc.b	0
+		DCLC Prefs_ContrastAdjust_AGA_w,	dc.w,	$0100
+		DCLC Prefs_ContrastAdjust_RTG_w,	dc.w,	$0100
+		DCLC Prefs_BrightnessOffset_AGA_w,	dc.w,	0
+		DCLC Prefs_BrightnessOffset_RTG_w,	dc.w,	0
+		DCLC Prefs_GammaLevel_AGA_b,		dc.b,	0
+		DCLC Prefs_GammaLevel_RTG_b,		dc.b,	0
 
     ; Moved here to be included in the persisted preferences
 Prefs_CustomOptionsBuffer_vb:
-    DECLC   Prefs_OriginalMouse_b
-        dc.b	0
+		DCLC Prefs_OriginalMouse_b,			dc.b,	0
+		DCLC Prefs_AlwaysRun_b,				dc.b,	0
+		DCLC Prefs_ShowMessages_b,			dc.b,	255
+		DCLC Prefs_NoAutoAim_b,				dc.b,	0
+		DCLC Prefs_DisplayFPS_b,			dc.b,	0
+		DCLC Prefs_CrossHairColour_b,		dc.b,	1
+		DCLC Prefs_PlayMusic_b,				dc.b,	255
 
-    DECLC   Prefs_AlwaysRun_b
-        dc.b	0
-
-    DECLC   Prefs_ShowMessages_b
-        dc.b    255
-
-    DECLC   Prefs_NoAutoAim_b
-        dc.b	0
-
-    DECLC   Prefs_CrossHairColour_b
-        dc.b    1
-
-    DECLC   Prefs_PlayMusic_b
-        dc.b    255
                 align 4
 _Prefs_PersistedEnd::
 PrefsfileEnd:
@@ -342,6 +308,7 @@ SETPLAYERS:
 				move.b	d0,Lvl_FloorFilenameX_vb
 				move.b	d0,Lvl_WallFilenameX_vb
 				move.b	d0,Lvl_ModPropsFilenameX_vb
+				move.b	d0,Lvl_ErrataFilenameX_vb
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq		Plr_InitSlave
@@ -581,7 +548,7 @@ customOptions:
 ; copy current setting over to menu
 				move.l	#Prefs_CustomOptionsBuffer_vb,a0
 				move.l	#optionLines+17,a1
-				moveq	#4,d1
+				moveq	#4,d1 ; number of options
 .copyOpts:
 				move.b	(a0)+,d0
 
@@ -629,12 +596,13 @@ customOptions:
 				bra	.w8
 .co5:
 				cmp.w	#4,d0
-				not.b   Prefs_PlayMusic_b
+				not.b   Prefs_DisplayFPS_b
 				bne.s	.co6
 				;opt5
 				bra	.w8
 .co6:
 				cmp.w	#5,d0
+				not.b    Prefs_PlayMusic_b
 				bne.s	.co7
 				;opt6
 				bra	.w8

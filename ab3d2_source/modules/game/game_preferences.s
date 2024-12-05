@@ -51,7 +51,7 @@ game_ApplyPreferences:
 				move.b	Prefs_FullScreen_b,Vid_FullScreen_b
 				move.b	Prefs_FullScreen_b,Vid_FullScreenTemp_b
 				move.b	Prefs_SimpleLighting_b,Draw_ForceSimpleWalls_b
-				move.b	Prefs_FPSLimit_b,Vid_FPSLimit_l+3
+				move.b	Prefs_FPSLimit_b,Sys_FPSLimit_w+1
 				move.b	Prefs_VertMargin_b,Vid_LetterBoxMarginHeight_w+1
 				move.b	Prefs_DynamicLights_b,Anim_LightingEnabled_b
 				move.b	Prefs_RenderQuality_b,Draw_GoodRender_b
@@ -71,7 +71,7 @@ game_ApplyPreferences:
 game_SavePreferences:
 				move.b	Vid_FullScreen_b,Prefs_FullScreen_b
 				move.b	Draw_ForceSimpleWalls_b,Prefs_SimpleLighting_b
-				move.b	Vid_FPSLimit_l+3,Prefs_FPSLimit_b
+				move.b	Sys_FPSLimit_w+1,Prefs_FPSLimit_b
 				move.b	Vid_LetterBoxMarginHeight_w+1,Prefs_VertMargin_b
 				move.b	Anim_LightingEnabled_b,Prefs_DynamicLights_b
 				move.b	Draw_GoodRender_b,Prefs_RenderQuality_b

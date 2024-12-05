@@ -10,11 +10,8 @@
 ; DEVMODE INSTRUMENTATION
 
 				align 4
-	DECLC	Dev_RegStatePtr_l
-			dc.l	0
-
-	DECLC	Dev_DebugFlags_l
-			dc.l	0
+		DCLC	Dev_RegStatePtr_l,	dc.l,	0
+		DCLC	Dev_DebugFlags_l,	dc.l,	0
 
 				IFD	DEV
 
@@ -53,6 +50,7 @@ dev_DrawTimeMsAvg_w:		ds.w	1   ; two frame average of draw time
 dev_FPSIntAvg_w:			ds.w	1
 
 dev_FPSFracAvg_w:			ds.w	1
+dev_FPSLimit_w:				ds.w	1
 dev_Reserved1_w:			ds.w	1
 
 dev_Reserved2_w:			ds.w	1
@@ -248,6 +246,7 @@ Dev_PrintStats:
 
 				; Use the system recorded FPS average
 				move.l		Sys_FPSIntAvg_w,dev_FPSIntAvg_w
+				move.w		Sys_FPSLimit_w,dev_FPSLimit_w
 
 				tst.b		Vid_FullScreen_b
 				bne			.fullscreen_stats
@@ -263,75 +262,83 @@ Dev_PrintStats:
 				bsr			Dev_PrintF
 
 				; Simple walls
-				lea			dev_VisibleSimpleWalls_w,a1
-				lea			.dev_ss_stats_wall_simple_vb,a0
-				move.l		#24,d0
-				bsr			Dev_PrintF
+				;lea			dev_VisibleSimpleWalls_w,a1
+				;lea			.dev_ss_stats_wall_simple_vb,a0
+				;move.l		#24,d0
+				;bsr			Dev_PrintF
 
 				; Shaded walls
-				lea			dev_VisibleShadedWalls_w,a1
-				lea			.dev_ss_stats_wall_shaded_vb,a0
-				move.l		#40,d0
-				bsr			Dev_PrintF
+				;lea			dev_VisibleShadedWalls_w,a1
+				;lea			.dev_ss_stats_wall_shaded_vb,a0
+				;move.l		#40,d0
+				;bsr			Dev_PrintF
 
 				; Polygon objects
-				lea			dev_VisibleModelCount_w,a1
-				lea			.dev_ss_stats_obj_poly_vb,a0
-				move.l		#56,d0
-				bsr			Dev_PrintF
+				;lea			dev_VisibleModelCount_w,a1
+				;lea			.dev_ss_stats_obj_poly_vb,a0
+				;move.l		#56,d0
+				;bsr			Dev_PrintF
 
 				; Glare objects
-				lea			dev_VisibleGlareCount_w,a1
-				lea			.dev_ss_stats_obj_glare_vb,a0
-				move.l		#72,d0
-				bsr			Dev_PrintF
+				;lea			dev_VisibleGlareCount_w,a1
+				;lea			.dev_ss_stats_obj_glare_vb,a0
+				;move.l		#72,d0
+				;bsr			Dev_PrintF
 
 				; Lightmap bitmap objects
-				lea			dev_VisibleLightMapCount_w,a1
-				lea			.dev_ss_stats_obj_lightmap_vb,a0
-				move.l		#88,d0
-				bsr			Dev_PrintF
+				;lea			dev_VisibleLightMapCount_w,a1
+				;lea			.dev_ss_stats_obj_lightmap_vb,a0
+				;move.l		#88,d0
+				;bsr			Dev_PrintF
 
 				; Additive bitmap objects
-				lea			dev_VisibleAdditiveCount_w,a1
-				lea			.dev_ss_stats_obj_additive_vb,a0
-				move.l		#104,d0
-				bsr			Dev_PrintF
+				;lea			dev_VisibleAdditiveCount_w,a1
+				;lea			.dev_ss_stats_obj_additive_vb,a0
+				;move.l		#104,d0
+				;bsr			Dev_PrintF
 
 				; Vanilla bitmap objects
-				lea			dev_VisibleBitmapCount_w,a1
-				lea			.dev_ss_stats_obj_bitmap_vb,a0
-				move.l		#120,d0
-				bsr			Dev_PrintF
+				;lea			dev_VisibleBitmapCount_w,a1
+				;lea			.dev_ss_stats_obj_bitmap_vb,a0
+				;move.l		#120,d0
+				;bsr			Dev_PrintF
 
 				; Zone_OrderZones
-				lea			dev_Reserved2_w,a1
-				lea			.dev_ss_stats_order_zones_vb,a0
-				move.l		#136,d0
-				bsr			Dev_PrintF
+				;lea			dev_Reserved2_w,a1
+				;lea			.dev_ss_stats_order_zones_vb,a0
+				;move.l		#136,d0
+				;bsr			Dev_PrintF
 
 				; Player1 Zone ID
 				lea			Plr1_Zone_w,a1
 				lea			.dev_ss_stats_zone_vb,a0
-				move.l		#136+16,d0
+				move.l		#136+48,d0
 				bsr			Dev_PrintF
 
-.print:
-				move.l		#136+32,d0
+				; Edges Vis
+				lea         Zone_VisJoins_w,a1 ; close enough
+				lea        .dev_ss_stats_join_vis_vb,a0
+				move.l		#136+64,d0
 				bsr			Dev_PrintF
 
-				; Brightess
-				;lea			Vid_ContrastAdjust_w,a1
-				;lea			.dev_ss_vid_bright_vb,a0
-				;move.l		#136+48,d0
+				; Clips
+				;lea         Draw_ZoneClipL_w,a1 ; close enough
+				;lea        .dev_ss_stats_join_vis_vb,a0
+				;move.l		#136+80,d0
 				;bsr			Dev_PrintF
 
 
-				; Clip Limits
-;				lea			Draw_LeftClip_l,a1
-;				lea			.dev_ss_clip_vb,a0
-;				move.l		#152+32,d0
-;				bsr			Dev_PrintF
+				; Player 1 Directions
+				lea         Plr1_CosVal_w,a1
+				lea        .dev_ss_stats_dir_vb,a0
+				move.l		#136+80,d0
+				bsr			Dev_PrintF
+
+				; Player 1 Position
+				;lea         zone_LastPosition_vw,a1 ; close enough
+				;lea        .dev_ss_stats_pos_vb,a0
+				;move.l		#136+80,d0
+				;bsr			Dev_PrintF
 
 				rts
 
@@ -344,7 +351,7 @@ Dev_PrintStats:
 				rts
 
 .dev_fs_stats_tpl_vb:
-				dc.b		"W:%2d F:%2d O:%2d/%2d D:%2dms %2d.%-2dfps ",0
+				dc.b		"W:%2d F:%2d O:%2d/%2d D:%2dms %2d.%d %d",0
 
 .dev_ss_stats_wall_simple_vb:
 				dc.b		"WS:%3d",0
@@ -364,13 +371,14 @@ Dev_PrintStats:
 				dc.b		"OZ:%3d",0
 .dev_ss_stats_zone_vb:
 				dc.b		"ZI:%3d",0
-
-;.dev_ss_clip_vb:
-;				dc.b		"LC:%5d %5d RC: %5d %5d",0
-
-;.dev_ss_vid_bright_vb:
-;				dc.b		"VC:%5d VB:%5d",0
-
+.dev_ss_stats_dir_vb:
+                dc.b        "C:%6d S:%6d A:%5d  ",0
+.dev_ss_stats_pos_vb:
+                dc.b        "X:%5d Z:%5d",0
+.dev_ss_stats_join_vis_vb:
+                dc.b        "JE:%3d/%3d",0
+.dev_ss_stats_edge_clips_vb:
+                dc.b        "L:%4d, R:%4d",0
 .dev_bool_off_vb:
  				dc.b		"off",0
 .dev_bool_on_vb:

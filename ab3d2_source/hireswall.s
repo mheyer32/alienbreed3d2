@@ -2,19 +2,13 @@
 				align 4
 
 ; Beware - these are unions of word|long. Do not separate!
-_Draw_LeftClip_l::
-Draw_LeftClip_l:		dc.w	0 ; long
-_Draw_LeftClip_w::
-Draw_LeftClip_w:		dc.w	0 ; lsw
+		DCLC Draw_LeftClip_l,		dc.w,	0 ; long
+		DCLC Draw_LeftClip_w,		dc.w,	0 ; lsw
 
 ; Beware - these are unions of word|long. Do not separate!
-_Draw_RightClip_l::
-Draw_RightClip_l:		dc.w	0 ; long
-_Draw_RightClip_w::
-Draw_RightClip_w:		dc.w	0 ; lsw
+		DCLC Draw_RightClip_l,		dc.w,	0 ; long
+		DCLC Draw_RightClip_w,		dc.w,	0 ; lsw
 
-;Draw_DefTopClip_w:		dc.w	0 ; written, never read
-;Draw_DefBottomClip_w:	dc.w	0 ; written, never read
 Draw_LeftClipAndLast_w: dc.w	0
 
 ; Beware - these are unions of word|byte. Do not separate!
@@ -35,11 +29,13 @@ Draw_PointBrightsPtr_l: 		dc.l	0
 draw_WallTextureHeightMask_w:	dc.w	0
 draw_WallTextureHeightShift_w:	dc.w	0
 draw_WallTextureWidthMask_w:	dc.w	0
-Temp_SinVal_w:					dc.w	0 ; somewhat universal
-Temp_CosVal_w:					dc.w	0 ; somewhat universal
+
+		; TODO - these probably belonge somewhere else
+		DCLC Vis_SinVal_w,		dc.w,	0 ; somewhat universal
+		DCLC Vis_CosVal_w,		dc.w,	0 ; somewhat universal
+
 draw_TopClip_w:					dc.w	0
 draw_BottomClip_w:				dc.w	0
-;wall_SeeThrough_b:				dc.w	0 ; bool - not used
 
 				align 4
 draw_TopOfWall_l:			dc.l	0
@@ -63,8 +59,7 @@ draw_AngleBright_w:			dc.w	0
 draw_WallIterations_w:		dc.w	0
 draw_MultCount_w:			dc.w	0
 
-_Draw_GoodRender_b::
-Draw_GoodRender_b:			dc.w	$ff00 ; accessed as byte all over the code
+		DCLC Draw_GoodRender_b,		dc.w,	$ff00 ; accessed as byte all over the code
 
 SCALE			MACRO
 				dc.w	64*0
