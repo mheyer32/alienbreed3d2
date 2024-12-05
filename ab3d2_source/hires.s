@@ -1682,9 +1682,9 @@ IWasPlayer1:
 				move.l	Plr1_XOff_l,Plr_XOff_l
 				move.l	Plr1_YOff_l,Plr_YOff_l
 				move.l	Plr1_ZOff_l,Plr_ZOff_l
-				move.w	Plr1_AngPos_w,angpos
-				move.w	Plr1_CosVal_w,Temp_CosVal_w
-				move.w	Plr1_SinVal_w,Temp_SinVal_w
+				move.w	Plr1_AngPos_w,Vis_AngPos_w
+				move.w	Plr1_CosVal_w,Vis_CosVal_w
+				move.w	Plr1_SinVal_w,Vis_SinVal_w
 				move.l	Plr1_PotVisibleZoneListPtr_l,Lvl_ListOfGraphRoomsPtr_l
 				move.l	plr1_PointsToRotatePtr_l,PointsToRotatePtr_l
 				move.b	Plr1_Echo_b,PLREcho
@@ -1697,14 +1697,12 @@ IWasPlayer1:
 				beq.s	.nolookback
 
 				move.l	Plr1_ObjectPtr_l,a0
+				FREE_OBJ_2	a0,ENT_NEXT_2 ; weapon in hand
+				eor.w	#SINE_SIZE,Vis_AngPos_w
+				neg.w	Vis_CosVal_w					; view direction 180deg
+				neg.w	Vis_SinVal_w
 
-				FREE_OBJ_2	a0,ENT_NEXT_2
-
-				eor.w	#SINE_SIZE,angpos
-				neg.w	Temp_CosVal_w					; view direction 180deg
-				neg.w	Temp_SinVal_w
 .nolookback:
-
 				jsr		Zone_OrderZones
 				jsr		objmoveanim
 
@@ -1789,9 +1787,9 @@ drawplayer2:
 				move.l	Plr2_XOff_l,Plr_XOff_l
 				move.l	Plr2_YOff_l,Plr_YOff_l
 				move.l	Plr2_ZOff_l,Plr_ZOff_l
-				move.w	Plr2_AngPos_w,angpos
-				move.w	Plr2_CosVal_w,Temp_CosVal_w
-				move.w	Plr2_SinVal_w,Temp_SinVal_w
+				move.w	Plr2_AngPos_w,Vis_AngPos_w
+				move.w	Plr2_CosVal_w,Vis_CosVal_w
+				move.w	Plr2_SinVal_w,Vis_SinVal_w
 				move.l	Plr2_PotVisibleZoneListPtr_l,Lvl_ListOfGraphRoomsPtr_l
 				move.l	plr2_PointsToRotatePtr_l,PointsToRotatePtr_l
 				move.b	Plr2_Echo_b,PLREcho
@@ -1806,9 +1804,9 @@ drawplayer2:
 
 				FREE_OBJ_2	a0,ENT_NEXT_2
 
-				eor.w	#SINE_SIZE,angpos
-				neg.w	Temp_CosVal_w
-				neg.w	Temp_SinVal_w
+				eor.w	#SINE_SIZE,Vis_AngPos_w
+				neg.w	Vis_CosVal_w
+				neg.w	Vis_SinVal_w
 
 .nolookback:
 				jsr		Zone_OrderZones
@@ -3201,12 +3199,12 @@ DrawDisplay:
 				; --> 1024 words = 2048byte per 90deg
 
 				move.l	#SinCosTable_vw,a0
-				move.w	angpos,d0
+				move.w	Vis_AngPos_w,d0
 				move.w	(a0,d0.w),d6
 				adda.w	#COSINE_OFS,a0				; +90 deg?
 				move.w	(a0,d0.w),d7
-				move.w	d6,Temp_SinVal_w
-				move.w	d7,Temp_CosVal_w
+				move.w	d6,Vis_SinVal_w
+				move.w	d7,Vis_CosVal_w
 
 				move.l	Plr_YOff_l,d0
 				asr.l	#8,d0					; Plr_YOff_l >> 8
@@ -3371,13 +3369,13 @@ noturn:
 
 lrs:			dc.w	0
 
-_angpos::
-angpos:			dc.w	0 ; Yaw
+		DCLC Vis_AngPos_w,	dc.w,	0 ; Yaw
+
 mang:			dc.w	0
 Sys_OldMouseY:	dc.w	0
 xmouse:			dc.w	0
-_Sys_MouseY::
-Sys_MouseY:		dc.w	0 ; Pitch?
+
+		DCLC Sys_MouseY,	dc.w,	0 ; Pitch?
 
 MAPON:			dc.w	$0
 draw_RenderMap_b:		dc.w	0
@@ -5131,7 +5129,7 @@ drawit:			dc.w	0
 * For test purposes, give it
 * a3 = point to screen
 * d0= z distance away
-* and Temp_SinVal_w+Temp_CosVal_w must be set up.
+* and Vis_SinVal_w+Vis_CosVal_w must be set up.
 ***************************
 
 
@@ -5227,9 +5225,9 @@ pastfloorbright:
 				; as function of the player view direction
 				; d0 = distance of line to viewer along Z axis
 				move.l	d0,d1					; distance of line to viewer along Z axis
-				muls	Temp_CosVal_w,d1				; cos * dist
+				muls	Vis_CosVal_w,d1				; cos * dist
 				move.l	d0,d2
-				muls	Temp_SinVal_w,d2				;
+				muls	Vis_SinVal_w,d2				;
 				neg.l	d2						; -sin * width
 				asr.l	#2,d2
 				asr.l	#2,d1

@@ -438,7 +438,7 @@ Sys_ReadMouse:
 				asl.w	#2,d0
 				sub.w	.prevX,d0
 				add.w	d0,.prevX
-				add.w	d0,angpos
+				add.w	d0,Vis_AngPos_w
 				move.w	#0,lrs
 				rts
 

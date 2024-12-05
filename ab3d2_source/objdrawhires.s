@@ -1874,7 +1874,7 @@ BOTPART:
 				move.l	#draw_3DPointsRotated_vl,a4				; temp storage for rotated points?
 				move.w	draw_ObjectAng_w,d2
 				sub.w	#2048,d2				; 90deg
-				sub.w	angpos,d2				; view angle
+				sub.w	Vis_AngPos_w,d2				; view angle
 				AMOD_I	d2					; wrap 360deg
 				move.l	#SinCosTable_vw,a2
 				lea		(a2,d2.w),a5			; sine of object rotation wrt view

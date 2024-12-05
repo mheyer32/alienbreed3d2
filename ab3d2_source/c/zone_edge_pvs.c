@@ -505,17 +505,21 @@ static Vec2W zone_RightFOVDir;
 extern WORD Zone_VisJoins_w;
 extern WORD Zone_TotJoins_w;
 
+extern WORD Vis_CosVal_w;
+extern WORD Vis_SinVal_w;
+extern WORD Vis_AngPos_w;
+
 void Zone_UpdateVectors() {
     // Forwards vector is      z: DIR_COS, x: DIR_SIN
     // Perpendicular vector is z: DIR_SIN, x: -DIR_COS
     //dputs("Zone_UpdateVectors()");
     zone_ViewPoint.v_X   = Plr1_Position_vl[POS_X];
     zone_ViewPoint.v_Z   = Plr1_Position_vl[POS_Z];
-    zone_PerpDir.v_X     = -Plr1_Direction_vw[DIR_COS];
-    zone_PerpDir.v_Z     = Plr1_Direction_vw[DIR_SIN];
+    zone_PerpDir.v_X     = -Vis_CosVal_w;
+    zone_PerpDir.v_Z     = Vis_SinVal_w;
 
     // Get the direction vectors for the left and right field of view
-    WORD fovAngle        = Plr1_Direction_vw[DIR_ANG] - (Zone_PVSFieldOfView >> 1);
+    WORD fovAngle        = Vis_AngPos_w - (Zone_PVSFieldOfView >> 1);
     zone_LeftFOVDir.v_X  = sinw(fovAngle);
     zone_LeftFOVDir.v_Z  = cosw(fovAngle);
     fovAngle += Zone_PVSFieldOfView;

@@ -50,6 +50,7 @@ dev_DrawTimeMsAvg_w:		ds.w	1   ; two frame average of draw time
 dev_FPSIntAvg_w:			ds.w	1
 
 dev_FPSFracAvg_w:			ds.w	1
+dev_FPSLimit_w:				ds.w	1
 dev_Reserved1_w:			ds.w	1
 
 dev_Reserved2_w:			ds.w	1
@@ -245,6 +246,7 @@ Dev_PrintStats:
 
 				; Use the system recorded FPS average
 				move.l		Sys_FPSIntAvg_w,dev_FPSIntAvg_w
+				move.w		Sys_FPSLimit_w,dev_FPSLimit_w
 
 				tst.b		Vid_FullScreen_b
 				bne			.fullscreen_stats
@@ -327,10 +329,10 @@ Dev_PrintStats:
 
 
 				; Player 1 Directions
-				;lea         Plr1_CosVal_w,a1
-				;lea        .dev_ss_stats_dir_vb,a0
-				;move.l		#136+80,d0
-				;bsr			Dev_PrintF
+				lea         Plr1_CosVal_w,a1
+				lea        .dev_ss_stats_dir_vb,a0
+				move.l		#136+80,d0
+				bsr			Dev_PrintF
 
 				; Player 1 Position
 				;lea         zone_LastPosition_vw,a1 ; close enough

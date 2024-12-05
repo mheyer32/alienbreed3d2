@@ -14,9 +14,9 @@ RotateLevelPts:	;		Does this rotate ALL points in the level EVERY frame?
 											; otherwise only the visible subset
 
 				; Rotate all level points
-				move.w	Temp_SinVal_w,d6
+				move.w	Vis_SinVal_w,d6
 				swap	d6
-				move.w	Temp_CosVal_w,d6
+				move.w	Vis_CosVal_w,d6
 
 				move.l	Lvl_PointsPtr_l,a3
 				move.l	#Rotated_vl,a1				; stores only 2x800 points
@@ -170,9 +170,9 @@ putinB:
 				; This only rotates a subset of the points, with indices pointed to at PointsToRotatePtr_l
 ;ONLYTHELONELY:
 xform_pvs_subset:
-				move.w	Temp_SinVal_w,d6
+				move.w	Vis_SinVal_w,d6
 				swap	d6
-				move.w	Temp_CosVal_w,d6
+				move.w	Vis_CosVal_w,d6
 
 				move.l	PointsToRotatePtr_l,a0	; -1 terminated array of point indices to rotate
 				move.l	Lvl_PointsPtr_l,a3
@@ -486,8 +486,8 @@ CalcPLR2InLine:
 
 
 RotateObjectPts:
-				move.w	Temp_SinVal_w,d5				; fetch sine of rotation
-				move.w	Temp_CosVal_w,d6				; cosine
+				move.w	Vis_SinVal_w,d5				; fetch sine of rotation
+				move.w	Vis_CosVal_w,d6				; cosine
 
 				move.l	Lvl_ObjectDataPtr_l,a4
 				move.l	Lvl_ObjectPointsPtr_l,a0

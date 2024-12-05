@@ -46,7 +46,7 @@ extern APTR sys_OldWindowPtr;
 
 extern struct EClockVal _Sys_FrameTimeECV_q[2];
 
-extern UWORD angpos;
+extern UWORD Vis_AngPos_w;
 extern WORD Sys_MouseY;
 
 extern UBYTE KeyMap_vb[256];
@@ -362,9 +362,11 @@ void Sys_FrameLap()
 
 void Sys_EvalFPS()
 {
+#ifndef DEV
     if (!Prefs_DisplayFPS_b) {
         return;
     }
+#endif
     ULONG avg = 0;
     for (int x = 0; x < 8; ++x) {
         avg += Sys_FrameTimes_vl[x];
@@ -439,7 +441,7 @@ void Sys_ReadMouse()
 
     // This directly steers player rotation
     //  the rotation sensitivity can be adjusted here
-    angpos += (diffX << 2);
+    Vis_AngPos_w += (diffX << 2);
 
     // FIXME: should use WritePotgo here... what does this even reset?
     // potgo = 0;

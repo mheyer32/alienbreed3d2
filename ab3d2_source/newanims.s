@@ -893,16 +893,16 @@ notallliftsdone:
 				move.w	(a0)+,d3
 				sub.w	Plr1_TmpXOff_l,d2
 				sub.w	Plr1_TmpZOff_l,d3
-				move.w	Temp_CosVal_w,d4
-				move.w	Temp_SinVal_w,d5
+				move.w	Vis_CosVal_w,d4
+				move.w	Vis_SinVal_w,d5
 				muls	d2,d4
 				muls	d3,d5
 				sub.l	d5,d4
 				add.l	d4,d4
 				swap	d4
 				move.w	d4,Aud_NoiseX_w
-				move.w	Temp_SinVal_w,d4
-				move.w	Temp_CosVal_w,d5
+				move.w	Vis_SinVal_w,d4
+				move.w	Vis_CosVal_w,d5
 				muls	d2,d4
 				muls	d3,d5
 				sub.l	d5,d4
@@ -1261,16 +1261,16 @@ notalldoorsdone:
 				move.w	(a0)+,d3					; 20:
 				sub.w	Plr1_TmpXOff_l,d2
 				sub.w	Plr1_TmpZOff_l,d3
-				move.w	Temp_CosVal_w,d4
-				move.w	Temp_SinVal_w,d5
+				move.w	Vis_CosVal_w,d4
+				move.w	Vis_SinVal_w,d5
 				muls	d2,d4
 				muls	d3,d5
 				sub.l	d5,d4
 				add.l	d4,d4
 				swap	d4
 				move.w	d4,Aud_NoiseX_w
-				move.w	Temp_SinVal_w,d4
-				move.w	Temp_CosVal_w,d5
+				move.w	Vis_SinVal_w,d4
+				move.w	Vis_CosVal_w,d5
 				muls	d2,d4
 				muls	d3,d5
 				sub.l	d5,d4

@@ -82,7 +82,7 @@ plr_MouseControl:
 				move.l	(a7)+,a0
 				move.l	#SinCosTable_vw,a1
 				move.w	PlrT_SnapAngSpd_w(a0),d1
-				move.w	angpos,d0
+				move.w	Vis_AngPos_w,d0
 				AMOD_A	d0
 				move.w	d0,PlrT_SnapAngPos_w(a0)
 				move.w	(a1,d0.w),PlrT_SnapSinVal_w(a0)
