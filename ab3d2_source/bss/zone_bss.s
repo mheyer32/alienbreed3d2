@@ -13,8 +13,9 @@ Zone_OrderTable_Barrier_w:		ds.w	1 		; needs initialisation to -1
 Zone_FinalOrderTable_vw:		ds.w	400*2
 zone_FinalOrderTableBarrier_w:	ds.w	1 		; deliniates end of table
 
-		DCLC Zone_VisJoins_w,	ds.w,	1
-		DCLC Zone_TotJoins_w,	ds.w,	1
+		DCLC Zone_VisJoins_w,	ds.w,	1 		; The nuber of visible joins in the current zone
+		DCLC Zone_TotJoins_w,	ds.w,	1 		; The total number joins in the current zone
+		DCLC Zone_VisJoinMask_w,	ds.w,	1 		; Bitmap of the visible joining edges
 		;DCLC Zone_EdgeClipIndexes_vw, ds.w, 2
 
 		DCLC Zone_EdgePointIndexes_vw, ds.w, 32

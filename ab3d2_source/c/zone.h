@@ -191,14 +191,34 @@ extern ZEdgePVSHeader** Lvl_ZEdgePVSHeaderPtrsPtr_l;
 /** Number of visible joining endges currently in view */
 extern WORD Zone_VisJoins_w;
 
-/** Array indexes of the end coordinates of the visible joining edge when Zone_VisJoins_w == 1 */
-//extern WORD Zone_EdgeClipIndexes_vw[2];
-
 /** Onscreen maximum clip extents - either the full screen, or the portion visible through the edge */
 extern WORD Draw_ZoneClipL_w;
 extern WORD Draw_ZoneClipR_w;
 
-void Zone_UpdateVectors(void);
 void Zone_CheckVisibleEdges(void);
+
+/**
+ * Enumeration of the possible crossings from one Zone to another via their shared edge.
+ */
+typedef enum {
+    NO_PATH        = 0, // No height overlaps
+    LOWER_TO_LOWER = 1, // Lower halves of zones overlap
+    LOWER_TO_UPPER = 2, // Lower half of source zone overlaps with upper half of destination zone
+    LOWER_TO_BOTH  = 3, // Lower zone of source overlaps with both zones
+
+    UPPER_TO_LOWER = LOWER_TO_LOWER << 2,
+    UPPER_TO_UPPER = LOWER_TO_UPPER << 2,
+    UPPER_TO_BOTH  = LOWER_TO_BOTH  << 2,
+
+    BOTH_TO_LOWER  = LOWER_TO_LOWER|UPPER_TO_LOWER,
+    BOTH_TO_UPPER  = LOWER_TO_UPPER|UPPER_TO_UPPER,
+    BOTH           = LOWER_TO_LOWER|UPPER_TO_UPPER
+} ZoneCrossing;
+
+/**
+ * Determines the possible crossing between any two zones, based on their heights.
+ * Does not require that the zones are joined as only their relative heights are compared.
+ */
+ZoneCrossing Zone_DetermineCrossing(Zone const* from, Zone const* to);
 
 #endif // ZONE_H
