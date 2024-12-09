@@ -567,6 +567,8 @@ void zone_MarkVisibleViaEdges(WORD size) {
 // -1 terminated buffer of edge point indexes that must be transformed
 extern WORD Zone_EdgePointIndexes_vw[];
 
+extern UWORD Zone_VisJoinMask_w;
+
 void Zone_CheckVisibleEdges(void) {
     WORD zoneID = Lvl_ListOfGraphRoomsPtr_l->pvs_ZoneID;
 
@@ -577,6 +579,8 @@ void Zone_CheckVisibleEdges(void) {
     WORD  endFlags;
     WORD  numVisible = 0;
     WORD  edgeID;
+    UWORD visJoinMask = 0;
+
     Zone_UpdateVectors();
     zone_ClearEdgePVSBuffer(edgePVSPtr->zep_ListSize);
 
@@ -607,6 +611,7 @@ void Zone_CheckVisibleEdges(void) {
         ) >= 0) ? BIT_RIGHT : 0;
 
         if (startFlags == (BIT_FRONT|BIT_LEFT|BIT_RIGHT)) {
+            visJoinMask |= 1 << i;
             ++numVisible;
             zone_MergeEdgePVS(edgePVSListPtr, edgePVSPtr->zep_ListSize);
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
@@ -636,6 +641,7 @@ void Zone_CheckVisibleEdges(void) {
         ) >= 0) ? BIT_RIGHT : 0;
 
         if (endFlags == (BIT_FRONT|BIT_LEFT|BIT_RIGHT)) {
+            visJoinMask |= 1 << i;
             ++numVisible;
             zone_MergeEdgePVS(edgePVSListPtr,  edgePVSPtr->zep_ListSize);
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
@@ -648,6 +654,7 @@ void Zone_CheckVisibleEdges(void) {
             (startFlags & BIT_LEFT) == 0 &&
             (endFlags & BIT_RIGHT) == 0
         ) {
+            visJoinMask |= 1 << i;
             //dprintf("\tSpan. Start: %d End: %d\n", (int)startFlags, (int)endFlags);
             ++numVisible;
             zone_MergeEdgePVS(edgePVSListPtr, edgePVSPtr->zep_ListSize);
@@ -658,6 +665,9 @@ void Zone_CheckVisibleEdges(void) {
     }
 
     *edgePointIndex = EDGE_POINT_ID_LIST_END;
+
+    Zone_VisJoinMask_w = visJoinMask;
+
     Zone_VisJoins_w = numVisible;
     Zone_TotJoins_w = edgePVSPtr->zep_EdgeCount;
 
@@ -708,7 +718,81 @@ void Zone_SetupEdgeClipping(void) {
 
         Draw_ZoneClipL_w = minL;
         Draw_ZoneClipR_w = maxR;
+    }
+}
 
+
+#define DISABLED_HEIGHT (5000 << 8)
+
+typedef struct {
+    LONG zlp_Floor;
+    LONG zlp_Roof;
+} ASM_ALIGN(sizeof(WORD)) Zone_LevelPair;
+
+static inline Zone_LevelPair const* zone_GetLowerLevel(Zone const* zone) {
+    return (Zone_LevelPair const*)&zone->z_Floor;
+}
+
+static inline Zone_LevelPair const* zone_GetUpperLevel(Zone const* zone) {
+    return (Zone_LevelPair const*)&zone->z_UpperFloor;
+}
+
+static inline BOOL zone_HasUpper(Zone const* zone) {
+    return zone->z_UpperFloor < DISABLED_HEIGHT && zone->z_UpperFloor < zone->z_UpperRoof;
+}
+
+static inline BOOL zone_LevelOverlap(Zone_LevelPair const* z1, Zone_LevelPair const* z2) {
+    if (z1->zlp_Roof <= z2->zlp_Floor || z2->zlp_Roof <= z1->zlp_Floor) {
+        return FALSE;
+    }
+    return TRUE;
+}
+
+
+ZoneCrossing Zone_DetermineCrossing(Zone const* from, Zone const* to) {
+
+    ZoneCrossing result = zone_LevelOverlap(
+        zone_GetLowerLevel(from),
+        zone_GetLowerLevel(to)
+    ) ? LOWER_TO_LOWER : NO_PATH;
+
+    WORD test = (zone_HasUpper(from) ? 1 : 0) | (zone_HasUpper(to) ? 2 : 0);
+
+    switch (test) {
+
+        case 1:
+            // from has upper and lower, to has lower only.
+            result |= zone_LevelOverlap(
+                zone_GetUpperLevel(from),
+                zone_GetLowerLevel(to)
+            ) ? UPPER_TO_LOWER : NO_PATH;
+            break;
+
+        case 2:
+            // from has lower, to has lower and upper.
+            result |= zone_LevelOverlap(
+                zone_GetLowerLevel(from),
+                zone_GetUpperLevel(to)
+            ) ? LOWER_TO_UPPER : NO_PATH;
+            break;
+
+        case 3:
+            result |= zone_LevelOverlap(
+                zone_GetUpperLevel(from),
+                zone_GetLowerLevel(to)
+            ) ? UPPER_TO_LOWER : NO_PATH;
+            result |= zone_LevelOverlap(
+                zone_GetLowerLevel(from),
+                zone_GetUpperLevel(to)
+            ) ? LOWER_TO_UPPER : NO_PATH;
+            result |= zone_LevelOverlap(
+                zone_GetUpperLevel(from),
+                zone_GetUpperLevel(to)
+            ) ? UPPER_TO_UPPER : NO_PATH;
+            break;
+        default:
+            break;
     }
 
+    return result;
 }

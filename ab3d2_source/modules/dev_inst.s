@@ -376,7 +376,7 @@ Dev_PrintStats:
 .dev_ss_stats_pos_vb:
                 dc.b        "X:%5d Z:%5d",0
 .dev_ss_stats_join_vis_vb:
-                dc.b        "JE:%3d/%3d",0
+                dc.b        "JE:%3d/%3d [%04X]",0
 .dev_ss_stats_edge_clips_vb:
                 dc.b        "L:%4d, R:%4d",0
 .dev_bool_off_vb:
