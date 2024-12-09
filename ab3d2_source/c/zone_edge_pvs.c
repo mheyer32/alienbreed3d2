@@ -97,8 +97,15 @@ static WORD zone_CountJoiningEdges(Zone const* zonePtr) {
     WORD const* zEdgeList = zone_GetEdgeList(zonePtr);
     WORD edgeID;
     while (zone_IsValidEdgeID( (edgeID = *zEdgeList++) )) {
-        if (zone_IsValidZoneID(Lvl_ZoneEdgePtr_l[edgeID].e_JoinZoneID)) {
-            ++numEdges;
+        WORD nextZoneID;
+        if (zone_IsValidZoneID( (nextZoneID = Lvl_ZoneEdgePtr_l[edgeID].e_JoinZoneID)) ) {
+            ZoneCrossing crossing = Zone_DetermineCrossing(
+                zonePtr,
+                Lvl_ZonePtrsPtr_l[nextZoneID]
+            );
+            if (crossing != NO_PATH) {
+                ++numEdges;
+            }
         }
     }
     return numEdges;
@@ -203,9 +210,18 @@ static void zone_FillZEdgePVSHeaders(ZEdgePVSHeader* currentEdgePVSPtr, WORD con
         // Byte addressible offset from the beginning of the ZEdgePVSDataSet structure to the list data
         WORD edgeIndex  = 0;
         WORD edgeID;
+        WORD nextZoneID;
         while (zone_IsValidEdgeID( (edgeID = *zEdgeList++) )) {
-            if (zone_IsValidZoneID(Lvl_ZoneEdgePtr_l[edgeID].e_JoinZoneID)) {
-                currentEdgePVSPtr->zep_EdgeInfoList[edgeIndex++].zei_EdgeID = edgeID;
+            if (zone_IsValidZoneID( (nextZoneID = Lvl_ZoneEdgePtr_l[edgeID].e_JoinZoneID)) ) {
+
+                ZoneCrossing crossing = Zone_DetermineCrossing(
+                    zonePtr,
+                    Lvl_ZonePtrsPtr_l[nextZoneID]
+                );
+
+                if (crossing != NO_PATH) {
+                    currentEdgePVSPtr->zep_EdgeInfoList[edgeIndex++].zei_EdgeID = edgeID;
+                }
                 //dprintf("%d ", (int)edgeID);
             }
         }
@@ -721,9 +737,33 @@ void Zone_SetupEdgeClipping(void) {
     }
 }
 
+/**
+ * Remember: height values are inverted - smaller values are higher than larger ones.
+ */
+#define DISABLED_HEIGHT 5000
 
-#define DISABLED_HEIGHT (5000 << 8)
+/**
+ * Returns the canonical height of a level as reported in the editor. It is unclear if there are
+ * variations in the lower 8 bits at runtime, so we define this function to return a straight
+ * word value havine discarded the lower 8 bits.
+ *
+ * TODO - figure out if the shift is really necessary and remove if not
+ */
+static inline WORD heightOf(LONG level) {
+    return (level >> 8);
+}
 
+/**
+ * Test if a Zone has an upper level.
+ */
+static inline BOOL zone_HasUpper(Zone const* zone) {
+    WORD floor = heightOf(zone->z_UpperFloor);
+    return floor < DISABLED_HEIGHT && floor > heightOf(zone->z_UpperRoof);
+}
+
+/**
+ * Utility tuple that represents the floor/roof pair, for convenience.
+ */
 typedef struct {
     LONG zlp_Floor;
     LONG zlp_Roof;
@@ -737,14 +777,25 @@ static inline Zone_LevelPair const* zone_GetUpperLevel(Zone const* zone) {
     return (Zone_LevelPair const*)&zone->z_UpperFloor;
 }
 
-static inline BOOL zone_HasUpper(Zone const* zone) {
-    return zone->z_UpperFloor < DISABLED_HEIGHT && zone->z_UpperFloor < zone->z_UpperRoof;
-}
-
+/**
+ * Check if there is any overlap between given pair of Zone_LevelPair
+ *
+ * Remember: height values are inverted - smaller values are higher than larger ones.
+ */
 static inline BOOL zone_LevelOverlap(Zone_LevelPair const* z1, Zone_LevelPair const* z2) {
-    if (z1->zlp_Roof <= z2->zlp_Floor || z2->zlp_Roof <= z1->zlp_Floor) {
+    WORD floor = heightOf(z2->zlp_Floor);
+    WORD roof  = heightOf(z1->zlp_Roof);
+    if (roof >= floor) {
         return FALSE;
     }
+
+    floor = heightOf(z1->zlp_Floor);
+    roof  = heightOf(z2->zlp_Roof);
+    if (roof >= floor) {
+        return FALSE;
+    }
+
+    // I think this is sufficient?
     return TRUE;
 }
 
@@ -792,6 +843,15 @@ ZoneCrossing Zone_DetermineCrossing(Zone const* from, Zone const* to) {
             break;
         default:
             break;
+    }
+
+    if (result == NO_PATH) {
+        dprintf(
+            "\t%d -> %d: test case %d failed\n",
+            (int)from->z_ZoneID,
+            (int)to->z_ZoneID,
+            (int)test
+        );
     }
 
     return result;
