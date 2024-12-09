@@ -8,7 +8,6 @@
 CC=m68k-amigaos-gcc
 LINK=m68k-amigaos-gcc
 ASS=vasmm68k_mot
-VLINK=vlink
 STRIP=m68k-amigaos-strip
 
 #find the toolchain's directory
@@ -16,24 +15,20 @@ PREFIX = $(shell ./getprefix.sh "$(CC)")
 
 FLAVORS =dev test release
 CPUS =060 040 030
-BUILDS =c asm
 
 FLAVOR ?=dev
 CPU ?=060
-BUILD ?=c
 
-TARGETNAME = tkg$(BUILD)_$(FLAVOR)_$(CPU)
+TARGETNAME = tkg_$(FLAVOR)_$(CPU)
 
 SRC_DIR = c
 BUILD_DIR ?= _build
-INTERMEDIATE_DIR = $(BUILD_DIR)/$(CPU)/$(FLAVOR)/$(BUILD)
+INTERMEDIATE_DIR = $(BUILD_DIR)/$(CPU)/$(FLAVOR)
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(INTERMEDIATE_DIR)/hires.o
 
-ifeq ($(BUILD),c)
-	OBJS +=$(SRCS:$(SRC_DIR)/%.c=$(INTERMEDIATE_DIR)/%.o) 
-endif
+OBJS +=$(SRCS:$(SRC_DIR)/%.c=$(INTERMEDIATE_DIR)/%.o) 
 
 #- DCD32VER
 CFLAGS += -noixemul
@@ -47,8 +42,6 @@ AFLAGS += -I../ \
 		  -I../media/includes
 
 #AFLAGS += -DMEMTRACK = 1
-
-VFLAGS = -b amigahunk -sc -l amiga -L $(PREFIX)m68k-amigaos/ndk/lib/libs
 
 ifeq ($(FLAVOR),dev)
 	AFLAGS += -DDEV=1 -DZONE_DEBUG=1
@@ -71,33 +64,22 @@ else
 	CFLAGS += -m68020-60 -mtune=68030
 endif
 
-ifeq ($(BUILD),c)
-	AFLAGS += -DBUILD_WITH_C
+AFLAGS += -DBUILD_WITH_C
 #Use gcc for linking the C build
 $(TARGETNAME): $(OBJS)
 	$(info Linking $@)
 	$(LINK) $(LFLAGS) $(OBJS) -o $@ 
 	$(info ========================================================)
-else
-	LFLAGS += -nostartfiles -nodefaultlibs
-#Use vlink for linking the ASM build. For some reason, attempting to link with gcc's linker will result in unresolved symbols
-$(TARGETNAME): $(OBJS)
-	$(info Linking $@)
-	$(VLINK) $(VFLAGS) $(OBJS) -o $@ 
-	$(info ========================================================)
-endif
 
 
-all: $(foreach F,$(FLAVORS),$(foreach C,$(CPUS),$(foreach T,$(BUILDS),build-$(F)-$(C)-$(T))))
+all: $(foreach F,$(FLAVORS),$(foreach C,$(CPUS),build-$(F)-$(C)))
 
 build-%:
 	$(eval FLAVOR := $(strip $(word 1,$(subst -, ,$*))))
 	$(eval CPU := $(strip $(word 2,$(subst -, ,$*))))
-	$(eval BUILD := $(strip $(word 3,$(subst -, ,$*))))
 	$(if $(FLAVOR),,$(error Missing FLAVOR in $*))
 	$(if $(CPU),,$(error Missing CPU in $*))
-	$(if $(BUILD),,$(error Missing BUILD in $*))
-	$(MAKE) FLAVOR=$(FLAVOR) CPU=$(CPU) BUILD=$(BUILD) $(TARGETNAME)
+	$(MAKE) FLAVOR=$(FLAVOR) CPU=$(CPU) $(TARGETNAME)
 #############################################################
 
 clean:
