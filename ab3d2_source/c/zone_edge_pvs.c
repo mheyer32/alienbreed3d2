@@ -97,8 +97,15 @@ static WORD zone_CountJoiningEdges(Zone const* zonePtr) {
     WORD const* zEdgeList = zone_GetEdgeList(zonePtr);
     WORD edgeID;
     while (zone_IsValidEdgeID( (edgeID = *zEdgeList++) )) {
-        if (zone_IsValidZoneID(Lvl_ZoneEdgePtr_l[edgeID].e_JoinZoneID)) {
-            ++numEdges;
+        WORD nextZoneID;
+        if (zone_IsValidZoneID( (nextZoneID = Lvl_ZoneEdgePtr_l[edgeID].e_JoinZoneID)) ) {
+            ZoneCrossing crossing = Zone_DetermineCrossing(
+                zonePtr,
+                Lvl_ZonePtrsPtr_l[nextZoneID]
+            );
+            if (crossing != NO_PATH) {
+                ++numEdges;
+            }
         }
     }
     return numEdges;
@@ -203,9 +210,18 @@ static void zone_FillZEdgePVSHeaders(ZEdgePVSHeader* currentEdgePVSPtr, WORD con
         // Byte addressible offset from the beginning of the ZEdgePVSDataSet structure to the list data
         WORD edgeIndex  = 0;
         WORD edgeID;
+        WORD nextZoneID;
         while (zone_IsValidEdgeID( (edgeID = *zEdgeList++) )) {
-            if (zone_IsValidZoneID(Lvl_ZoneEdgePtr_l[edgeID].e_JoinZoneID)) {
-                currentEdgePVSPtr->zep_EdgeInfoList[edgeIndex++].zei_EdgeID = edgeID;
+            if (zone_IsValidZoneID( (nextZoneID = Lvl_ZoneEdgePtr_l[edgeID].e_JoinZoneID)) ) {
+
+                ZoneCrossing crossing = Zone_DetermineCrossing(
+                    zonePtr,
+                    Lvl_ZonePtrsPtr_l[nextZoneID]
+                );
+
+                if (crossing != NO_PATH) {
+                    currentEdgePVSPtr->zep_EdgeInfoList[edgeIndex++].zei_EdgeID = edgeID;
+                }
                 //dprintf("%d ", (int)edgeID);
             }
         }
@@ -567,6 +583,8 @@ void zone_MarkVisibleViaEdges(WORD size) {
 // -1 terminated buffer of edge point indexes that must be transformed
 extern WORD Zone_EdgePointIndexes_vw[];
 
+extern UWORD Zone_VisJoinMask_w;
+
 void Zone_CheckVisibleEdges(void) {
     WORD zoneID = Lvl_ListOfGraphRoomsPtr_l->pvs_ZoneID;
 
@@ -577,6 +595,8 @@ void Zone_CheckVisibleEdges(void) {
     WORD  endFlags;
     WORD  numVisible = 0;
     WORD  edgeID;
+    UWORD visJoinMask = 0;
+
     Zone_UpdateVectors();
     zone_ClearEdgePVSBuffer(edgePVSPtr->zep_ListSize);
 
@@ -607,6 +627,7 @@ void Zone_CheckVisibleEdges(void) {
         ) >= 0) ? BIT_RIGHT : 0;
 
         if (startFlags == (BIT_FRONT|BIT_LEFT|BIT_RIGHT)) {
+            visJoinMask |= 1 << i;
             ++numVisible;
             zone_MergeEdgePVS(edgePVSListPtr, edgePVSPtr->zep_ListSize);
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
@@ -636,6 +657,7 @@ void Zone_CheckVisibleEdges(void) {
         ) >= 0) ? BIT_RIGHT : 0;
 
         if (endFlags == (BIT_FRONT|BIT_LEFT|BIT_RIGHT)) {
+            visJoinMask |= 1 << i;
             ++numVisible;
             zone_MergeEdgePVS(edgePVSListPtr,  edgePVSPtr->zep_ListSize);
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
@@ -648,6 +670,7 @@ void Zone_CheckVisibleEdges(void) {
             (startFlags & BIT_LEFT) == 0 &&
             (endFlags & BIT_RIGHT) == 0
         ) {
+            visJoinMask |= 1 << i;
             //dprintf("\tSpan. Start: %d End: %d\n", (int)startFlags, (int)endFlags);
             ++numVisible;
             zone_MergeEdgePVS(edgePVSListPtr, edgePVSPtr->zep_ListSize);
@@ -658,6 +681,9 @@ void Zone_CheckVisibleEdges(void) {
     }
 
     *edgePointIndex = EDGE_POINT_ID_LIST_END;
+
+    Zone_VisJoinMask_w = visJoinMask;
+
     Zone_VisJoins_w = numVisible;
     Zone_TotJoins_w = edgePVSPtr->zep_EdgeCount;
 
@@ -708,7 +734,125 @@ void Zone_SetupEdgeClipping(void) {
 
         Draw_ZoneClipL_w = minL;
         Draw_ZoneClipR_w = maxR;
+    }
+}
 
+/**
+ * Remember: height values are inverted - smaller values are higher than larger ones.
+ */
+#define DISABLED_HEIGHT 5000
+
+/**
+ * Returns the canonical height of a level as reported in the editor. It is unclear if there are
+ * variations in the lower 8 bits at runtime, so we define this function to return a straight
+ * word value havine discarded the lower 8 bits.
+ *
+ * TODO - figure out if the shift is really necessary and remove if not
+ */
+static inline WORD heightOf(LONG level) {
+    return (level >> 8);
+}
+
+/**
+ * Test if a Zone has an upper level.
+ */
+static inline BOOL zone_HasUpper(Zone const* zone) {
+    WORD floor = heightOf(zone->z_UpperFloor);
+    return floor < DISABLED_HEIGHT && floor > heightOf(zone->z_UpperRoof);
+}
+
+/**
+ * Utility tuple that represents the floor/roof pair, for convenience.
+ */
+typedef struct {
+    LONG zlp_Floor;
+    LONG zlp_Roof;
+} ASM_ALIGN(sizeof(WORD)) Zone_LevelPair;
+
+static inline Zone_LevelPair const* zone_GetLowerLevel(Zone const* zone) {
+    return (Zone_LevelPair const*)&zone->z_Floor;
+}
+
+static inline Zone_LevelPair const* zone_GetUpperLevel(Zone const* zone) {
+    return (Zone_LevelPair const*)&zone->z_UpperFloor;
+}
+
+/**
+ * Check if there is any overlap between given pair of Zone_LevelPair
+ *
+ * Remember: height values are inverted - smaller values are higher than larger ones.
+ */
+static inline BOOL zone_LevelOverlap(Zone_LevelPair const* z1, Zone_LevelPair const* z2) {
+    WORD floor = heightOf(z2->zlp_Floor);
+    WORD roof  = heightOf(z1->zlp_Roof);
+    if (roof >= floor) {
+        return FALSE;
     }
 
+    floor = heightOf(z1->zlp_Floor);
+    roof  = heightOf(z2->zlp_Roof);
+    if (roof >= floor) {
+        return FALSE;
+    }
+
+    // I think this is sufficient?
+    return TRUE;
+}
+
+
+ZoneCrossing Zone_DetermineCrossing(Zone const* from, Zone const* to) {
+
+    ZoneCrossing result = zone_LevelOverlap(
+        zone_GetLowerLevel(from),
+        zone_GetLowerLevel(to)
+    ) ? LOWER_TO_LOWER : NO_PATH;
+
+    WORD test = (zone_HasUpper(from) ? 1 : 0) | (zone_HasUpper(to) ? 2 : 0);
+
+    switch (test) {
+
+        case 1:
+            // from has upper and lower, to has lower only.
+            result |= zone_LevelOverlap(
+                zone_GetUpperLevel(from),
+                zone_GetLowerLevel(to)
+            ) ? UPPER_TO_LOWER : NO_PATH;
+            break;
+
+        case 2:
+            // from has lower, to has lower and upper.
+            result |= zone_LevelOverlap(
+                zone_GetLowerLevel(from),
+                zone_GetUpperLevel(to)
+            ) ? LOWER_TO_UPPER : NO_PATH;
+            break;
+
+        case 3:
+            result |= zone_LevelOverlap(
+                zone_GetUpperLevel(from),
+                zone_GetLowerLevel(to)
+            ) ? UPPER_TO_LOWER : NO_PATH;
+            result |= zone_LevelOverlap(
+                zone_GetLowerLevel(from),
+                zone_GetUpperLevel(to)
+            ) ? LOWER_TO_UPPER : NO_PATH;
+            result |= zone_LevelOverlap(
+                zone_GetUpperLevel(from),
+                zone_GetUpperLevel(to)
+            ) ? UPPER_TO_UPPER : NO_PATH;
+            break;
+        default:
+            break;
+    }
+
+    if (result == NO_PATH) {
+        dprintf(
+            "\t%d -> %d: test case %d failed\n",
+            (int)from->z_ZoneID,
+            (int)to->z_ZoneID,
+            (int)test
+        );
+    }
+
+    return result;
 }
