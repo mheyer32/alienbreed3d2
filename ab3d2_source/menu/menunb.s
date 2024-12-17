@@ -934,12 +934,22 @@ mnu_waitmenu:;out: d0=Selection number
 				bsr.w	mnu_docursor
 				CALLGRAF WaitTOF				; wait a bit to give the BlitTask more time
 				CALLGRAF WaitTOF
-				btst		#CIAB_GAMEPORT1,$bfe001+ciapra
-				beq		.cd32
-				btst		#0,_custom+joy1dat
+				
+				jsr		_ReadJoy1
+
+				move.l #KeyMap_vb,a5
+				moveq #0,d7
+				
+				move.b	forward_key,d7
+				tst.b		(a5,d7.w)
 				bne		.up
-				btst		#0,_custom+joy1dat+1
+				move.b	backward_key,d7
+				tst.b		(a5,d7.w)
 				bne		.down
+				move.b	fire_key,d7
+				tst.b		(a5,d7.w)
+				bne		.cd32
+.keys:
 				jsr		key_readkey
 				tst.w	d0
 				beq.s	.w8key
