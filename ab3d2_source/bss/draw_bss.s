@@ -109,6 +109,7 @@ draw_DownStrip_w:				ds.w	1
 draw_WhichDoing_b:				ds.b	1
 draw_InUpperZone_b:				ds.b	1
 Draw_DoUpper_b:					ds.b	1
+Draw_SkipZoneLevel_b:				ds.b	1
 
 		DCLC Draw_ForceSimpleWalls_b,	ds.b,	1
 		DCLC Draw_ForceZoneSkip_b,		ds.b,	1
