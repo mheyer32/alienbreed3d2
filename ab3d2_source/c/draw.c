@@ -3,7 +3,7 @@
 
 /* We need to know the number of message lines to display in 2/3 planar */
 #include "message.h"
-
+#include "multiplayer.h"
 #include <SDI_compiler.h>
 #include <cybergraphics/cybergraphics.h>
 #include <graphics/gfx.h>
@@ -11,15 +11,11 @@
 #include <proto/cybergraphics.h>
 #include <proto/exec.h>
 #include <proto/graphics.h>
-
 #include <string.h>
 
 /**
  * TODO - dynamically allocate chunky buffers for RTG along with the main display.
  */
-
-#define MULTIPLAYER_SLAVE  ((BYTE)'s')
-#define MULTIPLAYER_MASTER ((BYTE)'m')
 
 #define VID_FAST_BUFFER_SIZE (SCREEN_WIDTH * SCREEN_HEIGHT + 4095)
 #define PLANESIZE (SCREEN_WIDTH / 8 * SCREEN_HEIGHT)
@@ -40,7 +36,6 @@ extern UWORD draw_DisplayEnergyCount_w;
 extern UWORD draw_DisplayAmmoCount_w;
 extern UWORD draw_LastDisplayAmmoCount_w;
 extern UWORD draw_LastDisplayEnergyCount_w;
-extern BYTE  Plr_MultiplayerType_b;
 extern UBYTE Plr1_TmpGunSelected_b;
 extern UBYTE Plr2_TmpGunSelected_b;
 extern UWORD Plr1_Weapons_vb[DRAW_NUM_WEAPON_SLOTS];

@@ -28,31 +28,6 @@
 /* Maximum number of zones. Once this is fully working, rededine as LVL_EXPANDED_MAX_ZONE_COUNT */
 #define LVL_MAX_ZONE_COUNT 256
 
-
-/*
- * These structures are managed by the assembler side and the alignment constraints are to preven the compiler
- * from padding them further for alignment purposes. It does not mean that the structures themselves are only
- * aligned to a 2 byte boundary,
- */
-typedef struct {
-    /* Note that we have separate named fields here, but we regard the struct as equivalent to UWORD[]*/
-    UWORD ic_Health;
-    UWORD ic_JetpackFuel;
-    UWORD ic_AmmoCounts[NUM_BULLET_DEFS];
-} ASM_ALIGN(sizeof(WORD)) InventoryConsumables;
-
-typedef struct {
-    /* Note that we have separate named fields here, but we regard the struct as equivalent to UWORD[]*/
-    UWORD ii_Shield;
-    UWORD ii_Jetpack;
-    UWORD ii_Weapons[NUM_GUN_DEFS];
-} ASM_ALIGN(sizeof(WORD))  InventoryItems;
-
-typedef struct {
-    InventoryConsumables inv_Consumables;
-    InventoryItems       inv_Items;
-} ASM_ALIGN(sizeof(WORD))  Inventory;
-
 typedef struct {
     LONG o_XPos;
     LONG o_ZPos;
@@ -63,5 +38,7 @@ typedef struct {
     UBYTE o_SeePlayer;
 } ObjBase;
 
+#include "math25d.h"
 #include "zone.h"
+#include "player.h"
 #endif // DEFS_H

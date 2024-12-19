@@ -1,5 +1,12 @@
+
+draw_Root_Zone_w:
+                dc.w 0
+
 Draw_Zone_Graph:
 				DEV_ZDBG ZDbg_Init
+
+				move.l	Lvl_ListOfGraphRoomsPtr_l,a0
+				move.w	(a0),draw_Root_Zone_w
 
 				move.l	Zone_EndOfListPtr_l,a0
 ; move.w #-1,(a0)
@@ -64,7 +71,7 @@ Draw_Zone_Graph:
 				move.l	a0,-(a7)
                 move.l  a2,a0
 
-				move.l	ZoneT_Roof_l(a0),SplitHeight
+				move.l	ZoneT_Roof_l(a0),Zone_SplitHeight_l
 				move.l	a0,draw_BackupRoomPtr_l
 
 				move.l	Lvl_ZoneGraphAddsPtr_l,a0
@@ -176,10 +183,15 @@ Draw_Zone_Graph:
 				cmp.w	d1,d0
 				bge		.skip_not_visible
 
+				move.w  ZoneT_ID_w(a1),d0
+				cmp.w   draw_Root_Zone_w,d0
+                seq     Draw_InRootZone_b
+
 				move.l	Plr_YOff_l,d0
-				cmp.l	SplitHeight,d0
+				cmp.l	Zone_SplitHeight_l,d0
 				blt		.lower_zone_first
-;Plr_XOff_l
+
+.ready_upper:
 				move.l	Draw_CurrentZonePtr_l+4,a0
 				cmp.l	Lvl_GraphicsPtr_l,a0
 				beq.s	.lower_zone_only
@@ -192,6 +204,10 @@ Draw_Zone_Graph:
 
 				move.l	#CurrentPointBrights_vl+4,Draw_PointBrightsPtr_l
 				bsr		draw_RenderCurrentZone
+
+				; Do we skip drawing the underside?
+				;tst.b   Draw_InRootZone_b
+				;bne     .ready_next
 
 				; Room does not have an upper zone
 .lower_zone_only:
@@ -227,6 +243,7 @@ Draw_Zone_Graph:
 				bra		.ready_next
 
 .lower_zone_first:
+
 				move.l	Draw_CurrentZonePtr_l,a0
 				clr.b	Draw_DoUpper_b
 				move.l	#CurrentPointBrights_vl,Draw_PointBrightsPtr_l
@@ -291,6 +308,7 @@ Draw_Zone_Graph:
 				DEV_ZDBG ZDbg_Done
 
 				rts
+
 
 draw_RenderCurrentZone:
 				move.w	(a0)+,d0

@@ -1,6 +1,7 @@
 #ifndef MATH_25D_H
 #define MATH_25D_H
 
+#include <exec/types.h>
 #include "asm_align.h"
 
 /**
@@ -26,7 +27,14 @@ typedef struct {
     WORD v_X;
     WORD v_Y;
     WORD v_Z;
-} ASM_ALIGN(sizeof(LONG)) Vec3W;
+} ASM_ALIGN(sizeof(WORD)) Vec3W;
+
+typedef struct {
+    LONG v_X;
+    LONG v_Y;
+    LONG v_Z;
+} ASM_ALIGN(sizeof(LONG)) Vec3L;
+
 
 #define SINTAB_SIZE 8192
 

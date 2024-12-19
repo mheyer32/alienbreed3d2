@@ -1,6 +1,6 @@
 #include "system.h"
 #include "zone.h"
-#include "math25d.h"
+#include "multiplayer.h"
 #include <proto/exec.h>
 #include <stdio.h>
 
@@ -494,9 +494,11 @@ void Zone_FreeEdgePVS() {
     }
 }
 
+// The Player position data are long algined word values
 #define POS_X 0
 #define POS_Z 4
 extern WORD Plr1_Position_vl[];
+extern WORD Plr2_Position_vl[];
 
 #define DIR_COS 0
 #define DIR_SIN 1
@@ -529,8 +531,13 @@ void Zone_UpdateVectors() {
     // Forwards vector is      z: DIR_COS, x: DIR_SIN
     // Perpendicular vector is z: DIR_SIN, x: -DIR_COS
     //dputs("Zone_UpdateVectors()");
-    zone_ViewPoint.v_X   = Plr1_Position_vl[POS_X];
-    zone_ViewPoint.v_Z   = Plr1_Position_vl[POS_Z];
+    if (Plr_MultiplayerType_b == MULTIPLAYER_SLAVE) {
+        zone_ViewPoint.v_X   = Plr2_Position_vl[POS_X];
+        zone_ViewPoint.v_Z   = Plr2_Position_vl[POS_Z];
+    } else {
+        zone_ViewPoint.v_X   = Plr1_Position_vl[POS_X];
+        zone_ViewPoint.v_Z   = Plr1_Position_vl[POS_Z];
+    }
     zone_PerpDir.v_X     = -Vis_CosVal_w;
     zone_PerpDir.v_Z     = Vis_SinVal_w;
 
