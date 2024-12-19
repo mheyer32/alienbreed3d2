@@ -134,6 +134,8 @@ Plr1_ObsInLine_vb:			ds.b	MAX_OBJS_IN_LINE_COUNT
 ; Long data
 Plr2_Data:
 Plr2_ObjectPtr_l:			ds.l	1
+
+		DCLC Plr2_Position_vl
 Plr2_XOff_l:				ds.l	1
 Plr2_YOff_l:				ds.l	1
 Plr2_ZOff_l:				ds.l	1

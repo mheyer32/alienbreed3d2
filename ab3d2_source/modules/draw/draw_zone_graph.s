@@ -185,7 +185,7 @@ Draw_Zone_Graph:
 
 				move.w  ZoneT_ID_w(a1),d0
 				cmp.w   draw_Root_Zone_w,d0
-                seq     Draw_SkipZoneLevel_b
+                seq     Draw_InRootZone_b
 
 				move.l	Plr_YOff_l,d0
 				cmp.l	Zone_SplitHeight_l,d0
@@ -206,7 +206,7 @@ Draw_Zone_Graph:
 				bsr		draw_RenderCurrentZone
 
 				; Do we skip drawing the underside?
-				;tst.b   Draw_SkipZoneLevel_b
+				;tst.b   Draw_InRootZone_b
 				;bne     .ready_next
 
 				; Room does not have an upper zone
