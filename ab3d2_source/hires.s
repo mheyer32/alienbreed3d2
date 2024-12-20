@@ -1176,7 +1176,7 @@ okwat:
 				bsr		Plr1_Control
 
 				move.l	Plr1_ZonePtr_l,a0
-				move.l	ZoneT_Roof_l(a0),SplitHeight
+				move.l	ZoneT_Roof_l(a0),Zone_SplitHeight_l
 				move.w	Plr1_TmpXOff_l,THISPLRxoff
 				move.w	Plr1_TmpZOff_l,THISPLRzoff
 
@@ -1309,7 +1309,7 @@ NotOnePlayer:
 				bsr		Plr1_Control
 				bsr		Plr2_Control
 				move.l	Plr1_ZonePtr_l,a0
-				move.l	ZoneT_Roof_l(a0),SplitHeight
+				move.l	ZoneT_Roof_l(a0),Zone_SplitHeight_l
 				move.w	Plr1_TmpXOff_l,THISPLRxoff
 				move.w	Plr1_TmpZOff_l,THISPLRzoff
 
@@ -1425,7 +1425,7 @@ ASlaveShouldWaitOnHisMaster:
 				move.w	Plr2_TmpXOff_l,THISPLRxoff
 				move.w	Plr2_TmpZOff_l,THISPLRzoff
 				move.l	Plr2_ZonePtr_l,a0
-				move.l	ZoneT_Roof_l(a0),SplitHeight
+				move.l	ZoneT_Roof_l(a0),Zone_SplitHeight_l
 
 donetalking:
 				move.l	#Zone_BrightTable_vl,a1
@@ -3351,7 +3351,7 @@ nowaterfull:
 Lvl_CompactMapPtr_l:			dc.l	0
 Lvl_BigMapPtr_l:				dc.l	0
 Draw_CurrentZonePtr_l:			dc.l	0,0
-SplitHeight:					dc.l	0
+Zone_SplitHeight_l:				dc.l	0
 draw_WallID_w:					dc.w	0
 SMALLIT:						dc.w	0
 draw_GouraudFlatsSelected_b:	dc.w	0
