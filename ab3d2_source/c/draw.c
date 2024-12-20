@@ -4,6 +4,7 @@
 #include <proto/cybergraphics.h>
 #include <proto/exec.h>
 #include <proto/graphics.h>
+
 #include <string.h>
 
 #include "defs.h"

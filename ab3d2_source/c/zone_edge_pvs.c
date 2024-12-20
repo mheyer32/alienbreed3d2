@@ -480,7 +480,6 @@ void Zone_InitEdgePVS() {
     ULONG ticks = (ULONG)(end.u64 - start.u64);
     dprintf("Built PVS dataset, took %lu EClock ticks\n", ticks);
     #endif
-
 }
 
 /**

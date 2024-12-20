@@ -41,5 +41,6 @@ typedef struct {
 
 #include "math25d.h"
 #include "zone.h"
+#include "zone_door.h"
 #include "player.h"
 #endif // DEFS_H
