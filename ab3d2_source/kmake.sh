@@ -6,8 +6,6 @@ make clean
 make FLAVOR=release CPU=040 BUILD=c
 make FLAVOR=dev CPU=040 BUILD=c
 
-
-
 cp tkg_release_040 ../../../miscdrive/karlos-tkg/Game/bin/tkg
 cp tkg_dev_040 ../../../miscdrive/karlos-tkg/Game/bin/tkg_dev
 

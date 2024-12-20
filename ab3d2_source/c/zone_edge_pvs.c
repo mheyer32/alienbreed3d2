@@ -1,8 +1,8 @@
+#include <stdio.h>
+#include <proto/exec.h>
+#include "defs.h"
 #include "system.h"
 #include "zone.h"
-#include "multiplayer.h"
-#include <proto/exec.h>
-#include <stdio.h>
 
 extern Vec2W const* Lvl_PointsPtr_l;
 extern WORD Lvl_NumPoints_w;

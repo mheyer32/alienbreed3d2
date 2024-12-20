@@ -1,10 +1,3 @@
-#include "draw.h"
-#include "system.h"
-
-/* We need to know the number of message lines to display in 2/3 planar */
-#include "message.h"
-#include "multiplayer.h"
-#include <SDI_compiler.h>
 #include <cybergraphics/cybergraphics.h>
 #include <graphics/gfx.h>
 #include <intuition/intuition.h>
@@ -12,6 +5,13 @@
 #include <proto/exec.h>
 #include <proto/graphics.h>
 #include <string.h>
+
+#include "defs.h"
+#include "draw.h"
+#include "system.h"
+
+/* We need to know the number of message lines to display in 2/3 planar */
+#include "message.h"
 
 /**
  * TODO - dynamically allocate chunky buffers for RTG along with the main display.

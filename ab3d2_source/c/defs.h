@@ -2,6 +2,7 @@
 #define DEFS_H
 
 #include <exec/types.h>
+#include <SDI_compiler.h>
 #include "asm_align.h"
 
 /**
