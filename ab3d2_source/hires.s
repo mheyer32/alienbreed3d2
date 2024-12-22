@@ -827,7 +827,15 @@ CLRDAM:
 
 .big
 ***************************************************************
-
+;hack to allow the game to start in 1x2 pixel mode in AGA screenmode when set in the prefs.cfg
+;should probably test if we are using RTG and skip if true.
+				tst	Vid_DoubleHeight_b
+				beq	.skipDH
+				st		LASTDH
+				bsr	startCopper
+				CALLC	vid_SetupDoubleheightCopperlist
+.skipDH:
+**************************************************************
 game_main_loop:
 				move.w	#%110000000000,_custom+potgo
 
@@ -2150,6 +2158,7 @@ SetupRenderbufferSize:
 
 .big
 ***************************************************************
+startCopper:
 				; FIXME dowe need to clamp here again?
 				cmp.w	#100,Vid_LetterBoxMarginHeight_w
 				blt.s	.wideScreenOk

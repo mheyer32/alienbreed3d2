@@ -67,6 +67,7 @@ void game_ApplyPreferences(void)
         Vid_BrightnessOffset_w  = Prefs_BrightnessOffset_RTG_w;
         Vid_GammaLevel_b        = Prefs_GammaLevel_RTG_b;
     } else {
+		Vid_DoubleHeight_b      = Prefs_PixelMode_b;
         Vid_ContrastAdjust_w    = Prefs_ContrastAdjust_AGA_w;
         Vid_BrightnessOffset_w  = Prefs_BrightnessOffset_AGA_w;
         Vid_GammaLevel_b        = Prefs_GammaLevel_AGA_b;
