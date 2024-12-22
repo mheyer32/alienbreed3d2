@@ -37,6 +37,11 @@ extern ZDoor* Lvl_DoorDataPtr_l;
  */
 extern WORD Zone_DoorList_vw[LVL_MAX_DOOR_ZONES];
 
+/**
+ * Bitmap of zones, where a set bit indicates the corresponding zone has a door.
+ */
+extern UBYTE Zone_DoorMap_vb[];
+
 void Zone_InitDoorList(void);
 
 /**

@@ -27,6 +27,19 @@ zone_FinalOrderTableBarrier_w:	ds.w	1 		; deliniates end of table
 		DCLC Zone_DoorList_vw,  ds.w,    LVL_MAX_DOOR_ZONES
 		DCLC Zone_LiftList_vw,  ds.w,    LVL_MAX_LIFT_ZONES
 
+		; Bitmap of the zones that contain doors. Since there are only 16 doors, except for very small levels,
+		; most zones will not be a door. When we are processing the full level's per-zone PVS, we are going to
+		; be querying if any given zone is a door with monotonous regularity. When a zone is not a door, which
+		; is expected to be the most common case, we will be doing an exaustive check across the door list.
+		; This bitmap prevents this by allowing us to test first if a zone is a door, before we then look up
+		; which one it is.
+		DCLC Zone_DoorMap_vb,   ds.b,    LVL_MAX_ZONE_COUNT/8
+
+		; As aboce, for lift zones
+		DCLC Zone_LiftMap_vb,   ds.b,    LVL_MAX_ZONE_COUNT/8
+
+			align 4
+
 		DCLC Zone_PVSList_vw,   ds.w,    LVL_MAX_ZONE_COUNT ; worst case sizes. We don't expect all zones visible
 		DCLC Zone_PVSMask_vb,   ds.b,    LVL_MAX_ZONE_COUNT
 			align 4

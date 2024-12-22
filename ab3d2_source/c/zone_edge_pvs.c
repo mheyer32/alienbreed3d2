@@ -50,6 +50,8 @@ static char buffer[256]; // just for debugging
 
 /**
  * Return the (unterminated) count of the number of PVS entries for the given zone.
+ *
+ * TODO - collect extra facts - are there any doors or lifts in the PVS set?
  */
 static WORD zone_CountPVS(Zone const* zonePtr)
 {
