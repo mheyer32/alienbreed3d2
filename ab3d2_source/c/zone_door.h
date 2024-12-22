@@ -1,6 +1,9 @@
 #ifndef ZONE_DOOR_H
 #define ZONE_DOOR_H
 
+#define LVL_MAX_DOOR_ZONES 16
+#define NOT_A_DOOR -1
+
 /**
  * TODO - Figure out the nameless fields
  */
@@ -26,6 +29,19 @@ typedef struct {
     UWORD zdr_Word18;// 36, 2
 }  ASM_ALIGN(sizeof(WORD)) ZDoor;
 
+
 extern ZDoor* Lvl_DoorDataPtr_l;
+
+/**
+ * List of the ZoneID for each door. Any door not associated to a zone is assigned ID -1.
+ */
+extern WORD Zone_DoorList_vw[LVL_MAX_DOOR_ZONES];
+
+void Zone_InitDoorList(void);
+
+/**
+ * Get the Door ID for the given ZoneID. Returns NOT_A_DOOR if the zone is not a door.
+ */
+WORD Zone_GetDoorID(WORD zoneID);
 
 #endif // ZONE_DOOR_H

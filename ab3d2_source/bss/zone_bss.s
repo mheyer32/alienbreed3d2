@@ -16,12 +16,19 @@ zone_FinalOrderTableBarrier_w:	ds.w	1 		; deliniates end of table
 		DCLC Zone_VisJoins_w,	ds.w,	1 		; The nuber of visible joins in the current zone
 		DCLC Zone_TotJoins_w,	ds.w,	1 		; The total number joins in the current zone
 		DCLC Zone_VisJoinMask_w,	ds.w,	1 		; Bitmap of the visible joining edges
-		;DCLC Zone_EdgeClipIndexes_vw, ds.w, 2
 
+		; For the shared edges in a zone, space to hold the indexes of the start/end points to add to the
+		; subset of points that need to be rotated. This is because the original code does not apply clips
+		; to the current zone, only the immediately adjacent and beyond. This allows us to determine our
+		; own clip extents to the root zone's shared edges.
 		DCLC Zone_EdgePointIndexes_vw, ds.w, 32
 
-		DCLC Zone_PVSList_vw,   ds.w,    512
-		DCLC Zone_PVSMask_vb,   ds.b,    512
+		; For each of the doors and lifts, the Zone ID for each (or -1 if not associated)
+		DCLC Zone_DoorList_vw,  ds.w,    LVL_MAX_DOOR_ZONES
+		DCLC Zone_LiftList_vw,  ds.w,    LVL_MAX_LIFT_ZONES
+
+		DCLC Zone_PVSList_vw,   ds.w,    LVL_MAX_ZONE_COUNT ; worst case sizes. We don't expect all zones visible
+		DCLC Zone_PVSMask_vb,   ds.b,    LVL_MAX_ZONE_COUNT
 			align 4
 
 

@@ -525,6 +525,12 @@ LVL_EXPANDED_MAX_ZONE_COUNT EQU 512
 ; Maximum number of zones. Once this is fully working, redefine as LVL_EXPANDED_MAX_ZONE_COUNT
 LVL_MAX_ZONE_COUNT EQU 256
 
+; Maximum number of door zones.
+LVL_MAX_DOOR_ZONES EQU 16
+
+; Maximum number of lift zones.
+LVL_MAX_LIFT_ZONES EQU 16
+
 ;
 ; LEVEL DATA FILES
 ;
@@ -603,9 +609,9 @@ LVL_MAX_ZONE_COUNT EQU 256
 		UWORD ZDoorT_OpenDuration_w		;  8, 2
 		UWORD ZDoorT_OpeningSoundFX_w	; 10, 2
 		UWORD ZDoorT_ClosingSoundFX_w	; 12, 2
-		UWORD ZDoorT_OpenedSoundFX_w		; 14, 2
-		UWORD ZDoorT_ClosedSoundFX_w		; 16, 2
-		UWORD ZDoorT_Word9_w				; 18, 2 - something X coordinate related
+		UWORD ZDoorT_OpenedSoundFX_w	; 14, 2
+		UWORD ZDoorT_ClosedSoundFX_w	; 16, 2
+		UWORD ZDoorT_Word9_w			; 18, 2 - something X coordinate related
 		UWORD ZDoorT_Word10_w			; 20, 2 - something Z coordinate related
 		UWORD ZDoorT_Word11_w			; 22, 2
 		UWORD ZDoorT_Word12_w			; 24, 2

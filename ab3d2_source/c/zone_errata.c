@@ -1,5 +1,6 @@
 #include "system.h"
 #include "zone.h"
+#include "zone_inline.h"
 #include <proto/exec.h>
 #include <stdio.h>
 
@@ -16,7 +17,8 @@
  * that match the given errata list, the corresponding entry in the list will be set to
  * ZONE_ID_REMOVED_MANUAL. The list is terminated by ZONE_ID_LIST_END.
  */
-static __inline WORD* zone_GetCurrentPVSBuffer() {
+static inline WORD* zone_GetCurrentPVSBuffer()
+{
     return (WORD*)Sys_GetTemporaryWorkspace();
 }
 
@@ -25,7 +27,8 @@ static __inline WORD* zone_GetCurrentPVSBuffer() {
  * of the zones in the PVS via connected edges. This will exclude any zones that are disconnected
  * as a consequence of explicit removal of one or more entries.
  */
-static __inline WORD* zone_GetVisitedPVSBuffer() {
+static inline WORD* zone_GetVisitedPVSBuffer()
+{
     return ((WORD*)Sys_GetTemporaryWorkspace()) + 1024;
 }
 
@@ -35,7 +38,8 @@ static __inline WORD* zone_GetVisitedPVSBuffer() {
  * termonated by a ZONE_ID_LIST_END value. Any matches from the PVSRecord data are replaced
  * with ZONE_ID_REMOVED_MANUAL in the current PVS buffer.
  */
-void zone_InitCurrentPVS(Zone const* zonePtr, WORD const* removeListPtr) {
+void zone_InitCurrentPVS(Zone const* zonePtr, WORD const* removeListPtr)
+{
     ZPVSRecord const* zonePVSPtr = zonePtr->z_PotVisibleZoneList;
     WORD* pvsCurrentZonePtr      = zone_GetCurrentPVSBuffer();
     WORD  zoneID;
@@ -49,7 +53,7 @@ void zone_InitCurrentPVS(Zone const* zonePtr, WORD const* removeListPtr) {
 
         ++zonePVSPtr;
         WORD const* removePtr = removeListPtr;
-        while (removePtr && zone_IsValidZoneID(*removePtr)) {
+        while (removePtr && Zone_IsValidZoneID(*removePtr)) {
             if (*removePtr++ == zoneID) {
                 zoneID = ZONE_ID_REMOVED_MANUAL;
                 //dputchar('*');
@@ -74,7 +78,8 @@ void zone_InitCurrentPVS(Zone const* zonePtr, WORD const* removeListPtr) {
 /**
  * Checks if the provided Zone ID is in the current PVS list or not.
  */
-BOOL zone_CheckInCurrentPVSList(WORD zoneID) {
+BOOL zone_CheckInCurrentPVSList(WORD zoneID)
+{
     WORD const* pvsCurrentZonePtr = zone_GetCurrentPVSBuffer();
     WORD nextZoneID;
 
@@ -100,7 +105,8 @@ BOOL zone_CheckInCurrentPVSList(WORD zoneID) {
  * the visited list which is not yet terminated by ZONE_ID_LIST_END and only needs to be
  * tested as far as the most recently added value.
  */
-BOOL zone_CheckIsNotInVisitedPVSList(WORD zoneID, WORD const* endPtr) {
+BOOL zone_CheckIsNotInVisitedPVSList(WORD zoneID, WORD const* endPtr)
+{
     WORD* visitedPVSPtr = zone_GetVisitedPVSBuffer();
 
     int runaway = PVS_TRAVERSE_LIMIT;
@@ -124,8 +130,9 @@ BOOL zone_CheckIsNotInVisitedPVSList(WORD zoneID, WORD const* endPtr) {
  * For an input zone ID that is valid, returns either the same ID or ZONE_ID_REMOVED_AUTO if the ID
  * is not in the visited list.
  */
-WORD zone_GetVisitedZoneID(WORD zoneID) {
-    if (zone_IsValidZoneID(zoneID)) {
+WORD zone_GetVisitedZoneID(WORD zoneID)
+{
+    if (Zone_IsValidZoneID(zoneID)) {
         WORD const* visitedPVSPtr = zone_GetVisitedPVSBuffer();
         WORD visitedZoneID;
         while ( (visitedZoneID = *visitedPVSPtr++) != ZONE_ID_LIST_END ) {
@@ -142,7 +149,8 @@ WORD zone_GetVisitedZoneID(WORD zoneID) {
  * Travrses the set of connected zones via their explicit edge relationships in order to build
  * the list of zones in the original PVS that are still form a connected set.
  */
-void zone_BuildVisitedPVS(Zone* zonePtr) {
+void zone_BuildVisitedPVS(Zone* zonePtr)
+{
     WORD* visitedPVSPtr  = zone_GetVisitedPVSBuffer();
     WORD  nextZoneID;
 
@@ -153,7 +161,7 @@ void zone_BuildVisitedPVS(Zone* zonePtr) {
     WORD* nextPVSPtr = visitedPVSPtr;
     do {
         // Get the edge lists for the current zone and
-        WORD const* edgeIndexPtr = zone_GetEdgeList(zonePtr);
+        WORD const* edgeIndexPtr = Zone_GetEdgeList(zonePtr);
         WORD edgeID;
         WORD zonesAdded;
         int runaway = PVS_TRAVERSE_LIMIT;
@@ -167,14 +175,14 @@ void zone_BuildVisitedPVS(Zone* zonePtr) {
 
             // This loop may add multiple zones to the visited list, but we need to keep track of the first
             // that was added
-            while (zone_IsValidEdgeID( (edgeID = *edgeIndexPtr++) ) && runaway2-- > 0) {
+            while (Zone_IsValidEdgeID( (edgeID = *edgeIndexPtr++) ) && runaway2-- > 0) {
 
                 //dprintf("%d", (int)edgeID);
 
                 // If the edge joins a zone, e_JoinZoneID says which one, otherwhise it's negative.
                 WORD joinZoneID = Lvl_ZoneEdgePtr_l[edgeID].e_JoinZoneID;
                 if (
-                    zone_IsValidZoneID(joinZoneID) &&
+                    Zone_IsValidZoneID(joinZoneID) &&
                     zone_CheckIsNotInVisitedPVSList(joinZoneID, visitedPVSPtr) &&
                     zone_CheckInCurrentPVSList(joinZoneID)
                 ) {
@@ -200,7 +208,7 @@ void zone_BuildVisitedPVS(Zone* zonePtr) {
 
         zonePtr = NULL;
         nextZoneID = *nextPVSPtr++;
-        if (zone_IsValidZoneID(nextZoneID)) {
+        if (Zone_IsValidZoneID(nextZoneID)) {
             zonePtr = Lvl_ZonePtrsPtr_l[nextZoneID];
         }
 
@@ -214,7 +222,8 @@ void zone_BuildVisitedPVS(Zone* zonePtr) {
  * actual PVSRecord array for the zone by collapsing out the entries that were not in the amended
  * set of zones.
  */
-void zone_RebuildCurrentPVS(Zone* zonePtr) {
+void zone_RebuildCurrentPVS(Zone* zonePtr)
+{
     //dprintf("Rebuilding Current PVS for Zone %d: ", zonePtr->z_ZoneID);
     WORD* pvsCurrentZonePtr = zone_GetCurrentPVSBuffer();
     WORD nextZoneID;
@@ -252,16 +261,17 @@ void zone_RebuildCurrentPVS(Zone* zonePtr) {
  * ZONE_ID_LIST_END pair.
  *
  */
-void Zone_ApplyPVSErrata(REG(a0, WORD const* zonePVSErrataPtr)) {
+void Zone_ApplyPVSErrata(REG(a0, WORD const* zonePVSErrataPtr))
+{
     if (zonePVSErrataPtr) {
         dputs("Zone_ApplyPVSErrata()...");
         WORD numZones = 0;
         WORD zoneID;
-        while (zone_IsValidZoneID(zoneID = *zonePVSErrataPtr++)) {
+        while (Zone_IsValidZoneID(zoneID = *zonePVSErrataPtr++)) {
             Zone* zonePtr = Lvl_ZonePtrsPtr_l[zoneID];
             //dprintf("\tZone %d [%p]: ", (int)zoneID, zonePtr);
             WORD const* removeListPtr = zonePVSErrataPtr;
-            while (zone_IsValidZoneID( (zoneID = *zonePVSErrataPtr++) )) {
+            while (Zone_IsValidZoneID( (zoneID = *zonePVSErrataPtr++) )) {
                 //dprintf("%d, ", (int)zoneID);
             }
             //dputchar('\n');
