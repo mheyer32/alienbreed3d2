@@ -5966,6 +5966,15 @@ VBlankInterrupt:
 				beq.s	.nodec
 				subq.l	#1,timer
 .nodec:
+
+				tst.l	button				; used by menu system as delay
+				beq.s	.nodec1
+				subq.l	#1,button
+.nodec1:
+				tst.l	button1				; used by menu system as delay
+				beq.s	.nodec2
+				subq.l	#1,button1
+.nodec2:
 				SAVEREGS
 				bsr.s	.routine
 
