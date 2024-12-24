@@ -61,8 +61,8 @@ static UBYTE Prefs_OrderZoneSensitivity = 4;
 void game_ApplyPreferences(void)
 {
     Vid_FullScreenTemp_b        = Vid_FullScreen_b = Prefs_FullScreen_b;
-    if (Vid_isRTG) {
         Vid_DoubleHeight_b      = Prefs_PixelMode_b;
+    if (Vid_isRTG) {
         Vid_ContrastAdjust_w    = Prefs_ContrastAdjust_RTG_w;
         Vid_BrightnessOffset_w  = Prefs_BrightnessOffset_RTG_w;
         Vid_GammaLevel_b        = Prefs_GammaLevel_RTG_b;
