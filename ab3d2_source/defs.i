@@ -615,12 +615,12 @@ LVL_MAX_LIFT_ZONES EQU 16
 		UWORD ZDoorT_Word10_w			; 20, 2 - something Z coordinate related
 		UWORD ZDoorT_Word11_w			; 22, 2
 		UWORD ZDoorT_Word12_w			; 24, 2
-		UWORD ZDoorT_Long_l				; 26, 4
+		UWORD ZDoorT_GraphicsPtrOffset_l; 26, 4 - offset from Lvl_GraphicsPtr_l
 		UWORD ZDoorT_ZoneID_w			; 30, 2
 		UWORD ZDoorT_Word16_w			; 32, 2
-		UWORD ZDoorT_Word17_w			; 34, 2
-		UWORD ZDoorT_Word18_w			; 36, 2
-		LABEL ZDoorT_SizeOf_l			; 38,
+		UBYTE ZDoorT_RaiseCondition_b	; 34, 1
+		UBYTE ZDoorT_LowerCondition_b   ; 35, 1
+		LABEL ZDoorT_SizeOf_l			; 36
 
 ; For two player victory messages
 GAME_DM_VICTORY_MESSAGE_LENGTH EQU 80

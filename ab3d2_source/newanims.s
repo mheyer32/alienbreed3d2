@@ -1243,6 +1243,10 @@ doadoor:
 				move.w	#0,Anim_DoorAndLiftLocks_l
 				rts
 
+				; TODO - The door structures are not uniformly large. I think there is conditionally
+				; included data, including but probably not limited to, the set of adjoining walls that
+				; are raised and lowered with the door.
+
 notalldoorsdone:
 				move.w	(a0)+,d1				; 2: top of door movement.
 				move.w	(a0)+,anim_OpeningSpeed_w	; 4:
@@ -1288,6 +1292,7 @@ notalldoorsdone:
 				move.w	2(a0),d2					; 24:
 				cmp.w	d3,d0
 				sle		anim_DoorClosed_b
+
 				bgt.s	nolower
 
 				tst.w	d2
@@ -1391,23 +1396,24 @@ NotGoBackUp:
 				btst	d2,d5
 				beq.s	satisfied
 
-				move.w	(a0)+,d5
+				move.w	(a0)+,d5 ; 38
 
 dothesimplething:
 				move.l	Lvl_ZoneEdgePtr_l,a3
 
 simplecheck:
-				move.w	(a0)+,d5
-				blt		nomoredoorwalls
+                ; List of walls from this point?
+				move.w	(a0)+,d5              ; 38 + n[2] edge ID
+				blt		nomoredoorwalls       ; < 0 terminated
 
-				asl.w	#4,d5
-				lea		(a3,d5.w),a4
-				move.w	#0,14(a4)
-				move.l	(a0)+,a1
+				asl.w	#4,d5                 ; Each edge entry is 16 bytex
+				lea		(a3,d5.w),a4          ; EdgeT struct
+				move.w	#0,EdgeT_Flags_w(a4)  ; Clear flags
+				move.l	(a0)+,a1              ; 38 + n[2 + 4]
 				add.l	Lvl_GraphicsPtr_l,a1
-				move.l	(a0)+,a2
+				move.l	(a0)+,a2              ; 38 + n[2 + 4 + 4]
 				adda.w	d0,a2
-				move.w	a2,12(a1);was move.l	a2,10(a1)
+				move.w	a2,12(a1)             ; was move.l	a2,10(a1)
 				move.l	d3,24(a1)
 				bra.s	simplecheck
 
