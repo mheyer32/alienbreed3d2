@@ -4,13 +4,20 @@
 #define LVL_MAX_DOOR_ZONES 16
 #define NOT_A_DOOR -1
 
-// typedef enum {
-//
-// } DoorRaise;
-//
-// typedef enum {
-//
-// } DoorLower;
+typedef enum {
+    DOOR_RAISE_PLAYER_USE   = 0,
+    DOOR_RAISE_PLAYER_TOUCH = 1,
+    DOOR_RAISE_BULLET_TOUCH = 2,
+    DOOR_RAISE_ALIEN_TOUCH  = 3,
+    DOOR_RAISE_ON_TIMEOUT   = 4,
+    DOOR_RAISE_NEVER        = 5,
+} ASM_ALIGN(sizeof(UBYTE)) DoorRaise;
+
+
+typedef enum {
+    DOOR_LOWER_ON_TIMEOUT = 0,
+    DOOR_LOWER_NEVER      = 1,
+} ASM_ALIGN(sizeof(UBYTE)) DoorLower;
 
 /**
  */
@@ -36,20 +43,24 @@ typedef struct {
 }  ASM_ALIGN(sizeof(WORD)) ZDoor;
 
 /**
- * TODO - Figure this out
+ * TODO - Figure this out. There are two of these records per raise wall
  */
 typedef struct {
-    WORD  zdw_Word0;//  0, 2
-    WORD  zdw_Word1;//  2, 2
-    WORD  zdw_Word2;//  4, 2
-    WORD  zdw_Word3;//  6, 2
-    WORD  zdw_Word4;//  8, 2
-    WORD  zdw_Word5;//  10, 2
-    WORD  zdw_Word6;//  12, 2
-    WORD  zdw_Word7;//  14, 2
-    WORD  zdw_Word8;//  16, 2
-    WORD  zdw_Word9;//  18, 2
+    WORD  zdw_EdgeID;         //  0, 2
+    LONG  zdw_GraphicsOffset; //  2, 4
+    LONG  zdw_Long1;          //  6, 4 - Something to do with the vertical texture displacement?
 } ASM_ALIGN(sizeof(WORD)) ZDoorWall;
+
+/**
+ * Data stream: The Door definition, is followed by 2N ZDoorWall records, followed by a -1 word
+ * that represents the end of the door wall list.
+ *
+ * The door list itself is terminated with the magic number 999
+ *
+ * [{ ZDoor, ZDoorWall[N*2], -1 }, { ZDoor, ZDoorWall[N*2], -1 }..., 999]
+ */
+
+
 
 extern ZDoor* Lvl_DoorDataPtr_l;
 
