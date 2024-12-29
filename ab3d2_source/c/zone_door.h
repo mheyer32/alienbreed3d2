@@ -3,6 +3,8 @@
 
 #define LVL_MAX_DOOR_ZONES 16
 #define NOT_A_DOOR -1
+#define END_OF_DOOR_LIST 999
+#define END_OF_DOOR_WALL_LIST -1
 
 typedef enum {
     DOOR_RAISE_PLAYER_USE   = 0,
@@ -60,9 +62,16 @@ typedef struct {
  * [{ ZDoor, ZDoorWall[N*2], -1 }, { ZDoor, ZDoorWall[N*2], -1 }..., 999]
  */
 
+/**
+ * Simple structure for read-only door data stream navigation
+ */
+typedef union {
+    WORD      const* marker;
+    ZDoor     const* door;
+    ZDoorWall const* wall;
+} DoorDataPtr;
 
-
-extern ZDoor* Lvl_DoorDataPtr_l;
+extern WORD* Lvl_DoorDataPtr_l;
 
 /**
  * List of the ZoneID for each door. Any door not associated to a zone is assigned ID -1.
