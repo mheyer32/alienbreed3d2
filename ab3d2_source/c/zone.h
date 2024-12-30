@@ -116,6 +116,8 @@ typedef struct {
  * Structure for the per-edge PVS data header:
  *
  * [Zone ID][Num Edges][Num PVS][EdgeID 0]...[EdgeID N][PVS List 0] ... [PVS List N]
+ *
+ * TODO - Add offsets for door/lift masks
  */
 typedef struct {
     WORD zep_ZoneID;

@@ -9,6 +9,13 @@
 extern Vec2W const* Lvl_PointsPtr_l;
 extern WORD Lvl_NumPoints_w;
 
+typedef struct {
+    WORD  numZones;
+    WORD  numJoins;
+    BOOL  hasDoor;
+    BOOL  hasLift;
+} PVSCount;
+
 /**
  * Data structure used to keep track of key information during the recursive evaluation of
  * the per-edge PVS data for a zone. This data is accessed by recursive code, limiting the
@@ -49,20 +56,6 @@ static struct {
 static char buffer[256]; // just for debugging
 
 /**
- * Return the (unterminated) count of the number of PVS entries for the given zone.
- *
- * TODO - collect extra facts - are there any doors or lifts in the PVS set?
- */
-static WORD zone_CountPVS(Zone const* zonePtr)
-{
-    ZPVSRecord const* pvsPtr = &zonePtr->z_PotVisibleZoneList[0];
-    while (Zone_IsValidZoneID(pvsPtr->pvs_ZoneID)) {
-        ++pvsPtr;
-    }
-    return (WORD)(pvsPtr - &zonePtr->z_PotVisibleZoneList[0]);
-}
-
-/**
  * Copy the IDs of the Zone's ZPVSRecord set to a buffer of just the IDs, terminated with
  * ZONE_ID_LIST_END. Returns the address of the end of the list.
  */
@@ -101,6 +94,29 @@ static WORD zone_CountJoiningEdges(Zone const* zonePtr)
     return numEdges;
 }
 
+
+/**
+ * Gathers key facts about the PVS of the specic Zone
+ *
+ *     Number of zones in the PVS
+ *     Number of joining edges
+ *     Whether the PVS contains a door
+ *     Whether the PVS contaisn a lift
+ */
+static void zone_CountPVS(Zone const* zonePtr, PVSCount* pvsCountPtr)
+{
+    ZPVSRecord const* pvsPtr = &zonePtr->z_PotVisibleZoneList[0];
+    pvsCountPtr->hasDoor = FALSE;
+    pvsCountPtr->hasLift = FALSE;
+    while (Zone_IsValidZoneID(pvsPtr->pvs_ZoneID)) {
+        if (!pvsCountPtr->hasDoor && Zone_GetDoorID(pvsPtr->pvs_ZoneID) >= 0) {
+            pvsCountPtr->hasDoor = TRUE;
+        }
+        ++pvsPtr;
+    }
+    pvsCountPtr->numZones = (WORD)(pvsPtr - &zonePtr->z_PotVisibleZoneList[0]);
+    pvsCountPtr->numJoins = zone_CountJoiningEdges(zonePtr);
+}
 /**
  * Calculates the allocation data size for the per-edge PVS data, returning the total allocation
  * size, including the base pointer requirements.
@@ -111,19 +127,22 @@ static ULONG zone_CalcEdgePVSDataSize(WORD* infoTupleBufferPtr)
 {
     /* Begin with the assumption we need as many pointers as zones */
     ULONG totalSize = Lvl_NumZones_w * sizeof(ZEdgePVSHeader*);
-
+    PVSCount pvsCount;
     for (WORD zoneID = 0, *infoTuplePtr = infoTupleBufferPtr; zoneID < Lvl_NumZones_w; ++zoneID) {
         Zone const* zonePtr = Lvl_ZonePtrsPtr_l[zoneID];
-        WORD joinCount      = zone_CountJoiningEdges(zonePtr);
-        WORD pvsSize        = zone_CountPVS(zonePtr);
-        *infoTuplePtr++     = pvsSize;
-        *infoTuplePtr++     = joinCount;
+        zone_CountPVS(zonePtr, &pvsCount);
+        *infoTuplePtr++     = pvsCount.numZones;
+        *infoTuplePtr++     = pvsCount.numJoins;
 
         // The size of ZEdgePVSDataSet includes one edge id entry already...
         ULONG dataSize   = sizeof(ZEdgePVSHeader) - sizeof(ZEdgeInfo) +
-            (ULONG)joinCount * (sizeof(ZEdgeInfo) + (ULONG)pvsSize);
+            (ULONG)pvsCount.numJoins * (sizeof(ZEdgeInfo) + (ULONG)pvsCount.numZones);
 
-        // Ensure that the data remains aligned to a word bounary.
+        if (pvsCount.hasDoor) {
+            dataSize += pvsCount.numZones * pvsCount.numJoins * sizeof(UWORD);
+        }
+
+        // Ensure that the data remains aligned to a word boundary.
         dataSize = Sys_Round2(dataSize);
 
         *infoTuplePtr++ = (WORD)dataSize;
