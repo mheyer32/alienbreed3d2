@@ -1,5 +1,6 @@
 #ifdef ZONE_DEBUG
 #include "system.h"
+#include "zone_inline.h"
 #include "zone_debug.h"
 #include "message.h"
 #include <stdio.h>
@@ -270,7 +271,7 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
         (int)zonePtr->z_EdgeListOffset
     );
     // ExitList is an address offset prior to the zone
-    WORD const* zList = zone_GetEdgeList(zonePtr);
+    WORD const* zList = Zone_GetEdgeList(zonePtr);
 
     do {
         int edge = (int)*zList;
