@@ -274,8 +274,9 @@ Prefs_CustomOptionsBuffer_vb:
 		DCLC Prefs_ShowMessages_b,			dc.b,	255
 		DCLC Prefs_NoAutoAim_b,				dc.b,	0
 		DCLC Prefs_DisplayFPS_b,			dc.b,	0
-		DCLC Prefs_CrossHairColour_b,		dc.b,	1
+		DCLC Prefs_ShowWeapon_b,		dc.b,	1
 		DCLC Prefs_PlayMusic_b,				dc.b,	255
+		DCLC Prefs_CrossHairColour_b,		dc.b,	1
 
                 align 4
 _Prefs_PersistedEnd::
@@ -548,7 +549,7 @@ customOptions:
 ; copy current setting over to menu
 				move.l	#Prefs_CustomOptionsBuffer_vb,a0
 				move.l	#optionLines+17,a1
-				moveq	#4,d1 ; number of options
+				moveq	#5,d1 ; number of options
 .copyOpts:
 				move.b	(a0)+,d0
 
@@ -596,19 +597,20 @@ customOptions:
 				bra	.w8
 .co5:
 				cmp.w	#4,d0
-				not.b   Prefs_DisplayFPS_b
 				bne.s	.co6
+				not.b   Prefs_DisplayFPS_b
 				;opt5
 				bra	.w8
 .co6:
 				cmp.w	#5,d0
-				not.b    Prefs_PlayMusic_b
 				bne.s	.co7
+				not.b    Prefs_ShowWeapon_b
 				;opt6
 				bra	.w8
 .co7:
 				cmp.w	#6,d0
 				bne.s	.co8
+				not.b    Prefs_PlayMusic_b
 				;opt7
 				bra	.w8
 .co8:

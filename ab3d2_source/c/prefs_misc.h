@@ -38,6 +38,12 @@
         CFG_PARAM_TYPE_BOOL_INV,
         CFG_VAR_TYPE_UBYTE
     },
+	{
+        "misc.show_weapon_model",
+        &Prefs_ShowWeapon_b,
+        CFG_PARAM_TYPE_BOOL_INV,
+        CFG_VAR_TYPE_UBYTE
+    },
     {
         "misc.oz_sensitivity",
         &Prefs_OrderZoneSensitivity,

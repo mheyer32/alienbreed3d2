@@ -38,6 +38,7 @@ extern UBYTE Prefs_AlwaysRun_b;
 extern UBYTE Prefs_NoAutoAim_b;
 extern UBYTE Prefs_CrossHairColour_b;
 extern UBYTE Prefs_ShowMessages_b;
+extern UBYTE Prefs_ShowWeapon_b;
 
 extern UBYTE Draw_MapTransparent_b;
 extern UWORD Draw_MapZoomLevel_w;
