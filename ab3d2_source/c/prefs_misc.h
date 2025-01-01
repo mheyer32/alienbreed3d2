@@ -41,7 +41,7 @@
 	{
         "misc.show_weapon_model",
         &Prefs_ShowWeapon_b,
-        CFG_PARAM_TYPE_BOOL_INV,
+        CFG_PARAM_TYPE_BOOL,
         CFG_VAR_TYPE_UBYTE
     },
     {
