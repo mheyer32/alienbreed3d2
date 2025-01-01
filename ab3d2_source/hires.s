@@ -1714,7 +1714,7 @@ IWasPlayer1:
 *******************************************************************************
 ;	add a check here for rendering player weapon object 
 				tst.b	Prefs_ShowWeapon_b
-				bne.s	.showWeapon
+				beq.s	.showWeapon
 				move.l	Plr1_ObjectPtr_l,a0
 				FREE_OBJ_2	a0,ENT_NEXT_2 ; weapon in hand
 .showWeapon
@@ -1828,7 +1828,7 @@ drawplayer2:
 *******************************************************************************
 ;	add a check here for rendering player weapon object 
 				tst.b	Prefs_ShowWeapon_b
-				bne.s	.showWeapon
+				beq.s	.showWeapon
 				move.l	Plr1_ObjectPtr_l,a0
 				FREE_OBJ_2	a0,ENT_NEXT_2 ; weapon in hand
 .showWeapon

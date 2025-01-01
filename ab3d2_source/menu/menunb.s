@@ -1812,7 +1812,7 @@ optionLines:				;12345678901234567890
 				dc.b	'  SHOW MESSAGES     ',1;OFF  ',1
 				dc.b	'  NO AUTO AIM       ',1;OFF  ',1
 				dc.b	'  SHOW FPS          ',1
-				dc.b	'  SHOW WEAPON     ',1
+				dc.b	'  HIDE WEAPON       ',1
 				dc.b	'  OPTION 7          ',1
 				dc.b	'  OPTION 8          ',1
 				dc.b	'     MAIN  MENU     ',0
