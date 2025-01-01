@@ -274,7 +274,7 @@ Prefs_CustomOptionsBuffer_vb:
 		DCLC Prefs_ShowMessages_b,			dc.b,	255
 		DCLC Prefs_NoAutoAim_b,				dc.b,	0
 		DCLC Prefs_DisplayFPS_b,			dc.b,	0
-		DCLC Prefs_ShowWeapon_b,		dc.b,	1
+		DCLC Prefs_ShowWeapon_b,			dc.b,	0
 		DCLC Prefs_PlayMusic_b,				dc.b,	255
 		DCLC Prefs_CrossHairColour_b,		dc.b,	1
 
