@@ -1870,15 +1870,15 @@ nodrawp2:
 				clr.b	plr2_Teleported_b
 
 .notplr2:
-				tst.b Plr1_Mouse_b
-				beq.s	.no_croshair
+				;tst.b Plr1_Mouse_b
+				;beq.s	.no_croshair
 
-				tst.b Prefs_NoAutoAim_b
-				beq.s	.no_croshair
+				;tst.b Prefs_NoAutoAim_b
+				;beq.s	.no_croshair
 
 				jsr	Draw_Crosshair
 
-.no_croshair
+;.no_croshair
 				CALLC		Sys_EvalFPS
 
 				DEV_SAVE	d0/d1/a0/a1
