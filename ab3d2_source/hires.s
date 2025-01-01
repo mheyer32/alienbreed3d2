@@ -1825,6 +1825,14 @@ drawplayer2:
 				neg.w	Vis_SinVal_w
 
 .nolookback:
+*******************************************************************************
+;	add a check here for rendering player weapon object 
+				tst.b	Prefs_ShowWeapon_b
+				bne.s	.showWeapon
+				move.l	Plr1_ObjectPtr_l,a0
+				FREE_OBJ_2	a0,ENT_NEXT_2 ; weapon in hand
+.showWeapon
+*******************************************************************************
 				jsr		Zone_OrderZones
 				jsr		objmoveanim
 
