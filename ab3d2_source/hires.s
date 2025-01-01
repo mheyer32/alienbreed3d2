@@ -1711,6 +1711,14 @@ IWasPlayer1:
 				neg.w	Vis_SinVal_w
 
 .nolookback:
+*******************************************************************************
+;	add a check here for rendering player weapon object 
+				tst.b	Prefs_ShowWeapon_b
+				beq.s	.showWeapon
+				move.l	Plr1_ObjectPtr_l,a0
+				FREE_OBJ_2	a0,ENT_NEXT_2 ; weapon in hand
+.showWeapon
+*******************************************************************************
 				jsr		Zone_OrderZones
 				jsr		objmoveanim
 
@@ -1817,6 +1825,14 @@ drawplayer2:
 				neg.w	Vis_SinVal_w
 
 .nolookback:
+*******************************************************************************
+;	add a check here for rendering player weapon object 
+				tst.b	Prefs_ShowWeapon_b
+				beq.s	.showWeapon
+				move.l	Plr1_ObjectPtr_l,a0
+				FREE_OBJ_2	a0,ENT_NEXT_2 ; weapon in hand
+.showWeapon
+*******************************************************************************
 				jsr		Zone_OrderZones
 				jsr		objmoveanim
 
@@ -1854,15 +1870,15 @@ nodrawp2:
 				clr.b	plr2_Teleported_b
 
 .notplr2:
-				tst.b Plr1_Mouse_b
-				beq.s	.no_croshair
+				;tst.b Plr1_Mouse_b
+				;beq.s	.no_croshair
 
-				tst.b Prefs_NoAutoAim_b
-				beq.s	.no_croshair
+				;tst.b Prefs_NoAutoAim_b
+				;beq.s	.no_croshair
 
 				jsr	Draw_Crosshair
 
-.no_croshair
+;.no_croshair
 				CALLC		Sys_EvalFPS
 
 				DEV_SAVE	d0/d1/a0/a1
