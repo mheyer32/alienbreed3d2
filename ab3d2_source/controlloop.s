@@ -443,7 +443,7 @@ game_ReadMainMenu:
 .nosave:
 ***************************************************************
 				cmp.w	#7,d0
-				bne		playgame
+				bne.s		.quitgame
 				bsr		game_WaitForMenuKey
 
 				bsr		customOptions
@@ -452,6 +452,16 @@ game_ReadMainMenu:
 				bsr		game_OpenMenu
 
 				bsr		game_WaitForMenuKey
+				bra		.rdlop
+.quitgame
+***************************************************************
+				cmp.w	#8,d0
+				bne		.noquitgame
+				; stolen from the quit key 
+				st		Game_ShouldQuit_b
+				move.l	mnu_mainstack,a7
+				bra		Game_Quit
+.noquitgame
 				bra		.rdlop
 ***************************************************************
 
