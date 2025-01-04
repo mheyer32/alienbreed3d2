@@ -1682,7 +1682,7 @@ mnu_MYMAINMENU:
 				dc.l	mnu_MYMAINMENUTEXT
 				dc.w	0,40
 				dc.w	20
-				dc.w	8
+				dc.w	9
 				dc.l	0,0
 				dc.l	0,0
 				dc.l	0,0
@@ -1705,7 +1705,7 @@ mnu_CURRENTLEVELLINE:
 				dc.b	'   LOAD  POSITION   ',1
 				dc.b	'   SAVE  POSITION   ',1
 				dc.b	'   CUSTOM OPTIONS   ',1
-				dc.b	'                    ',1
+				dc.b	'        EXIT        ',1
 				dc.b	'                    ',0
 
 				EVEN
