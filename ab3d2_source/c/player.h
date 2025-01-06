@@ -121,7 +121,36 @@ typedef struct {
 
 } ASM_ALIGN(sizeof(WORD))  Player;
 
-extern Player player1;
-extern Player player2;
+#define MULTIPLAYER_SLAVE  ((BYTE)'s')
+#define MULTIPLAYER_MASTER ((BYTE)'m')
+
+extern BYTE  Plr_MultiplayerType_b;
+extern Player Plr1_Data;
+extern Player Plr2_Data;
+
+/**
+ * Returns a reference to the local Player
+ */
+inline Player* Player_GetLocal(void)
+{
+    if (Plr_MultiplayerType_b == MULTIPLAYER_SLAVE) {
+        return &Plr2_Data;
+    }
+    return &Plr1_Data;
+}
+
+/**
+ * Returns a reference to the remote player. If not in a two player game, returns NULL.
+ */
+inline Player* Player_GetRemote(void)
+{
+    if (Plr_MultiplayerType_b == MULTIPLAYER_SLAVE) {
+        return &Plr1_Data;
+    }
+    else if (Plr_MultiplayerType_b == MULTIPLAYER_MASTER) {
+        return &Plr2_Data;
+    }
+    return NULL;
+}
 
 #endif // PLAYER_H
