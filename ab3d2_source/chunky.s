@@ -145,20 +145,28 @@ Vid_ConvertC2P:
 				tst.b	Vid_DoubleHeight_b
 				bne		.doubleheightSmallscreen
 
-				moveq.l	#0,d0					; x
-				move.w	Vid_LetterBoxMarginHeight_w,d1				; y, height of black border top/bottom
-				move.l	#SMALL_WIDTH,d2			; width
-				move.l	#SMALL_HEIGHT,d3		; height
-				sub.w	d1,d3					; top letterbox
-				sub.w	d1,d3					; bottom letterbox: d3: number of lines
-				move.l	#SCREEN_WIDTH,d4			; chunkymod
-				move.l	#SCREEN_WIDTH/8,d5		; bpl rowmod
-				move.l	#(SCREEN_WIDTH/8)*256,d6	; bplsize
+				move.l	#SCREEN_WIDTH,d0
+				move.l	#SMALL_HEIGHT,d1
+
+
+ 				;move.w	Vid_LetterBoxMarginHeight_w,d1				; y, height of black border top/bottom
+; 				move.l	#SMALL_WIDTH,d2			; width
+; 				move.l	#SMALL_HEIGHT,d3		; height
+; 				sub.w	d1,d3					; top letterbox
+; 				sub.w	d1,d3					; bottom letterbox: d3: number of lines
+; 				move.l	#SCREEN_WIDTH,d4			; chunkymod
+; 				move.l	#SCREEN_WIDTH/8,d5		; bpl rowmod
+; 				move.l	#(SCREEN_WIDTH/8)*256,d6	; bplsize
+
 				move.l	Vid_FastBufferPtr_l,a0
 				move.l	Vid_DrawScreenPtr_l,a1
-				add.l	#(SCREEN_WIDTH/8)*20+(64/8),a1 ; top of regular small screen
+				add.w #8,a1
+				;add.l	#(SCREEN_WIDTH/8)*20+(64/8),a1 ; top of regular small screen
 														; c2p_rect will apply d1 offset ontop
-				jsr		c2p_rect
+                jsr     small_c2p1x1_8_c5_030_2_init
+
+                jsr     small_c2p1x1_8_c5_030_2
+				;jsr		c2p_rect
 
 				rts
 

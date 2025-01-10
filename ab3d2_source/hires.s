@@ -1712,7 +1712,7 @@ IWasPlayer1:
 
 .nolookback:
 *******************************************************************************
-;	add a check here for rendering player weapon object 
+;	add a check here for rendering player weapon object
 				tst.b	Prefs_ShowWeapon_b
 				beq.s	.showWeapon
 				move.l	Plr1_ObjectPtr_l,a0
@@ -1826,7 +1826,7 @@ drawplayer2:
 
 .nolookback:
 *******************************************************************************
-;	add a check here for rendering player weapon object 
+;	add a check here for rendering player weapon object
 				tst.b	Prefs_ShowWeapon_b
 				beq.s	.showWeapon
 				move.l	Plr1_ObjectPtr_l,a0
@@ -8366,10 +8366,11 @@ welldone:
 
 				IFND OPT060
 				IFND OPT040
-				include "c2p1x1_8_c5_030_2.s"
+				include "modules/c2p/c2p1x1_8_c5_030_2.s"
 				ENDC
 				ENDC
-				include	"c2p1x1_8_c5_040.s"
-				include	"c2p_rect.s"
-				include	"c2p2x1_8_c5_gen.s"
+				include	"modules/c2p/c2p1x1_8_c5_040.s"
+				include	"modules/c2p/c2p_rect.s"
+				include	"modules/c2p/c2p2x1_8_c5_gen.s"
 
+				include "modules/c2p/small_c2p1x1_8_c5_030_2.s"
