@@ -145,8 +145,15 @@ Vid_ConvertC2P:
 				tst.b	Vid_DoubleHeight_b
 				bne		.doubleheightSmallscreen
 
-				move.l	#SCREEN_WIDTH,d0
-				move.l	#SMALL_HEIGHT,d1
+				;move.l	#SMALL_WIDTH,d0
+				;move.l	#SMALL_HEIGHT,d1
+                clr.l   d3
+
+				move.w	#SMALL_WIDTH,d0
+				;move.w	Vid_LetterBoxMarginHeight_w,d3	; height of black border top/bottom
+				move.w	#SMALL_HEIGHT,d1
+				;sub.w	d3,d1					; top letterbox
+				;sub.w	d3,d1					; bottom letterbox: d1: number of lines
 
 
  				;move.w	Vid_LetterBoxMarginHeight_w,d1				; y, height of black border top/bottom
@@ -160,9 +167,7 @@ Vid_ConvertC2P:
 
 				move.l	Vid_FastBufferPtr_l,a0
 				move.l	Vid_DrawScreenPtr_l,a1
-				add.w #8,a1
-				;add.l	#(SCREEN_WIDTH/8)*20+(64/8),a1 ; top of regular small screen
-														; c2p_rect will apply d1 offset ontop
+				add.l	#(SCREEN_WIDTH/8)*20+(64/8),a1 ; top of regular small screen
                 jsr     small_c2p1x1_8_c5_030_2_init
 
                 jsr     small_c2p1x1_8_c5_030_2
