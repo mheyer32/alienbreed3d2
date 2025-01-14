@@ -12,40 +12,36 @@ VID_BRIGHT_ADJ_MAX	EQU	5120
 
 				align 4
 
-_Vid_InitC2P::
-Vid_InitC2P:
-;				move.l	#c2p1x1_8_c5_030_2_init,Vid_ChunkyFS1x1InitPtr_l
-;				move.l	#c2p1x1_8_c5_030_2,Vid_ChunkyFS1x1ConvPtr_l
+;_C2P_Init::
+;C2P_Init:
+;				IFND OPT060
+;				IFND OPT040
+;
+;				; Generic build
+;				; Runtime detection which C2P routines to use
+;				tst.b	Sys_Move16_b ; if set, we have an 040 or 060
+;				beq.s	.use_030
+;
+;				; Opt for Kalm's 040/060 C2P routines
+;				move.l	#c2p1x1_8_c5_040_init,Vid_C2PSetParamsPtr_l
+;				move.l	#c2p1x1_8_c5_040,Vid_C2PConvertPtr_l
 ;				rts
-
-				IFND OPT060
-				IFND OPT040
-
-				; Generic build
-				; Runtime detection which C2P routines to use
-				tst.b	Sys_Move16_b ; if set, we have an 040 or 060
-				beq.s	.use_030
-
-				; Opt for Kalm's 040/060 C2P routines
-				move.l	#c2p1x1_8_c5_040_init,Vid_ChunkyFS1x1InitPtr_l
-				move.l	#c2p1x1_8_c5_040,Vid_ChunkyFS1x1ConvPtr_l
-				rts
-
-.use_030:
-				; Otherwise use the v2 030 C2P routine
-				move.l	#c2p1x1_8_c5_030_2_init,Vid_ChunkyFS1x1InitPtr_l
-				move.l	#c2p1x1_8_c5_030_2,Vid_ChunkyFS1x1ConvPtr_l
-
-				ELSE ; OPT040
-				move.l	#c2p1x1_8_c5_040_init,Vid_ChunkyFS1x1InitPtr_l
-				move.l	#c2p1x1_8_c5_040,Vid_ChunkyFS1x1ConvPtr_l
-				ENDC
-				ELSE ; OPT060
-				move.l	#c2p1x1_8_c5_040_init,Vid_ChunkyFS1x1InitPtr_l
-				move.l	#c2p1x1_8_c5_040,Vid_ChunkyFS1x1ConvPtr_l
-				ENDC
-
-				rts
+;
+;.use_030:
+;				; Otherwise use the v2 030 C2P routine
+;				move.l	#c2p1x1_8_c5_030_2_init,Vid_C2PSetParamsPtr_l
+;				move.l	#c2p1x1_8_c5_030_2,Vid_C2PConvertPtr_l
+;
+;				ELSE ; OPT040
+;				move.l	#c2p1x1_8_c5_040_init,Vid_C2PSetParamsPtr_l
+;				move.l	#c2p1x1_8_c5_040,Vid_C2PConvertPtr_l
+;				ENDC
+;				ELSE ; OPT060
+;				move.l	#c2p1x1_8_c5_040_init,Vid_C2PSetParamsPtr_l
+;				move.l	#c2p1x1_8_c5_040,Vid_C2PConvertPtr_l
+;				ENDC
+;
+;				rts
 
 				;
 ; a5 contains keyboard state. No regs clobbered.

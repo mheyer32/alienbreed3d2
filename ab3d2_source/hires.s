@@ -84,7 +84,7 @@ QUIT_KEY                equ RAWKEY_DOT ; for days when I have no numberpad
 				include "data/tables_data.s"
 				include "data/text_data.s"
 				include "data/game_data.s"
-                		include "data/vid_data.s"
+				include "data/vid_data.s"
 
 				section .text,code
 
@@ -1900,7 +1900,7 @@ nodrawp2:
 .no_update_progress:
 				CALLC Vid_Present
 				ELSE
-				jsr Vid_ConvertC2P
+				jsr C2P_Convert
 				ENDIF
 
 				;CALLDEV	MarkChunkyDone
@@ -1921,6 +1921,8 @@ nodrawp2:
 				blt.s	.clamped
 
 				add.w	#2,Vid_LetterBoxMarginHeight_w
+				st		C2P_NeedsSetParam_b
+
 				CALLC	Draw_ResetGameDisplay
 
 .clamped:
@@ -1932,7 +1934,7 @@ nodrawp2:
 				ble.s	.nobigscr
 
 				sub.w	#2,Vid_LetterBoxMarginHeight_w
-
+				st		C2P_NeedsSetParam_b
 .nobigscr:
 				; TODO - Come back to the resolution cycle once the double width issues are fixed
 
@@ -1969,6 +1971,7 @@ nodrawp2:
 				move.w	#0,d1
 
 				not.b	Vid_DoubleHeight_b
+				st		C2P_NeedsInit_b
 
 				; Check renderbuffer setup variables and clear screen
 				bsr		SetupRenderbufferSize
@@ -2246,7 +2249,9 @@ SAVELETTER:		dc.b	'd',0
 				include "modules/draw/draw_map.s"
 
 				include "screensetup.s"
-				include	"chunky.s"
+;				include	"chunky.s"
+
+				include "modules/c2p/c2p.s"
 
 				include	"pauseopts.s"
 
@@ -8364,13 +8369,13 @@ welldone:
 
 				cnop	0,4
 
-				IFND OPT060
-				IFND OPT040
-				include "modules/c2p/c2p1x1_8_c5_030_2.s"
-				ENDC
-				ENDC
-				include	"modules/c2p/c2p1x1_8_c5_040.s"
-				include	"modules/c2p/c2p_rect.s"
-				include	"modules/c2p/c2p2x1_8_c5_gen.s"
-
-				include "modules/c2p/small_c2p1x1_8_c5_030_2.s"
+;				IFND OPT060
+;				IFND OPT040
+;				include "modules/c2p/c2p1x1_8_c5_030_2.s"
+;				ENDC
+;				ENDC
+;				include	"modules/c2p/c2p1x1_8_c5_040.s"
+;				include	"modules/c2p/c2p_rect.s"
+;				include	"modules/c2p/c2p2x1_8_c5_gen.s"
+;
+;				include "modules/c2p/small_c2p1x1_8_c5_030_2.s"

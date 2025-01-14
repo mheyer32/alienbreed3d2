@@ -1,20 +1,7 @@
-; TODO - Define C2P pointers for 2/3 size and use Kalms
-				; a0 src chunky ptr
-				; a1 dst chipmem ptr
-				; d0 number of pixels per line
-				; d1 number of lines
-				; d2 src modulo (offset from last pixel of previous line to start of next line)
-				; d3 dst modulo (offset in byte from last pixel to first pixel)
-				; d4 !=0 use doublewidth
-				; d5 !=0 use teleport effect
 
-				; HACK - This is a temporary fix until the root cause of the wall texture
-				; perspective issues are properly understood.
 
-FS_C2P_HEIGHT equ FS_HEIGHT-FS_HEIGHT_C2P_DIFF
-
-_Vid_ConvertC2P::
-Vid_ConvertC2P:
+_C2P_Convert::
+C2P_Convert:
 				tst.b	d5
 				beq.s	.noteleffect
 
@@ -49,7 +36,7 @@ Vid_ConvertC2P:
 
 				move.l	a2,-(sp)
 
-				move.l	Vid_ChunkyFS1x1InitPtr_l,a2
+				move.l	Vid_C2PSetParamsPtr_l,a2
 				jsr		(a2)
 
 				; scroffsy only accounts for the Y offset in the destination buffer
@@ -57,7 +44,7 @@ Vid_ConvertC2P:
 				mulu.w	#SCREEN_WIDTH,d3
 				lea		(a0,d3.w),a0
 				move.l	Vid_DrawScreenPtr_l,a1
-				move.l	Vid_ChunkyFS1x1ConvPtr_l,a2
+				move.l	Vid_C2PConvertPtr_l,a2
 				jsr		(a2)
 
 				move.l	(sp)+,a2
