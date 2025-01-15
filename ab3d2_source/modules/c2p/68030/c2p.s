@@ -1,4 +1,4 @@
-; Common 68030 C2P logic. This code is based on Kalms
+; Common 68030 C2P logic. This code is based on Kalms optimised 030 C2P
 
 ;
 ; 2000-04-17
