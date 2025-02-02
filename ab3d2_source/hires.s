@@ -64,6 +64,8 @@ PLR_SINGLE				equ 'n' ; Single player
 ;QUIT_KEY				equ RAWKEY_NUM_ASTERISK
 QUIT_KEY                equ RAWKEY_DOT ; for days when I have no numberpad
 
+
+
 ; ZERO-INITIALISED DATA
 				include "bss/system_bss.s"
 				include "bss/io_bss.s"
@@ -1861,13 +1863,20 @@ nodrawp2:
 				beq.s	.nomap
 				bsr		DoTheMapWotNastyCharlesIsForcingMeToDo
 
-.nomap
+.nomap:
+				;move.b	plr1_Teleported_b,d5
+				;clr.b	plr1_Teleported_b
+				;cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
+				;bne.s	.notplr2
+				;move.b	plr2_Teleported_b,d5
+				;clr.b	plr2_Teleported_b
+
 				move.b	plr1_Teleported_b,d5
+				or.b	plr2_Teleported_b,d5
+				move.b	d5,C2P_Teleporting_b
+				or.b	d5,C2P_NeedsInit_b ; trigger reinit
 				clr.b	plr1_Teleported_b
-				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
-				bne.s	.notplr2
-				move.b	plr2_Teleported_b,d5
-				clr.b	plr2_Teleported_b
+				clr.b	plr1_Teleported_b
 
 .notplr2:
 				;tst.b Plr1_Mouse_b

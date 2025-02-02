@@ -1,4 +1,27 @@
-; Common 68040 C2P logic. This code is based on Kalms optimised 030 C2P
+; Common 68040 C2P logic. This code is based on Kalms optimised 040 C2P
+
+				section .data,data
+				align 4
+
+c2p_SetParams040Ptrs_vl:
+				dc.l	c2p_SetParamsSmall1x1Opt040		; 0000
+				dc.l	c2p_SetParamsSmall1x2Opt040		; 0001
+				dc.l	c2p_SetParamsNull				; 0010
+				dc.l	c2p_SetParamsNull				; 0011
+				dc.l	c2p_SetParamsFull1x1Opt040		; 0100
+				dc.l	c2p_SetParamsFull1x2Opt040		; 0101
+				dc.l	c2p_SetParamsNull				; 0110
+				dc.l	c2p_SetParamsNull				; 0111
+
+c2p_Convert040Ptrs_vl:
+				dc.l	c2p_ConvertSmall1x1Opt040		; 0000
+				dc.l	c2p_ConvertSmall1x2Opt040		; 0001
+				dc.l	c2p_ConvertNull					; 0010
+				dc.l	c2p_ConvertNull					; 0011
+				dc.l	c2p_ConvertFull1x1Opt040		; 0100
+				dc.l	c2p_ConvertFull1x2Opt040		; 0101
+				dc.l	c2p_ConvertNull					; 0110
+				dc.l	c2p_ConvertNull					; 0111
 
 				section	.text,code
 

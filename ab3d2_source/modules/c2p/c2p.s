@@ -2,79 +2,88 @@
 ; Main C2P entry points
 ;
 
-
 FS_C2P_HEIGHT equ FS_HEIGHT-FS_HEIGHT_C2P_DIFF
 
-; Table structure for C2P callbacks
+				IFND OPT060
+				IFND OPT040
+CPU_ALL
+				ENDC
+				ENDC
 
-; Bit#   3                2                   1                  0
-; < 040+ / 030 > | < Full / Small > | < Double Width > | < Double Height >
+				IFD CPU_ALL
+				include "modules/c2p/68030/routines.s"
+				include "modules/c2p/akiko/routines.s"
+				ENDC
+
+				include "modules/c2p/68040/routines.s"
+				include "modules/c2p/teleport_fx/routines.s"
 
 				section .data,data
 				align 4
 
-c2p_SetParamsPtrs_vl:
-				; Only include 030 code for the generic target
-				IFND OPT060
-				IFND OPT040
-
-				dc.l	c2p_SetParamsSmall1x1Opt030		; 0000
-				dc.l	c2p_SetParamsSmall1x2Opt030		; 0001
-				dc.l	c2p_SetParamsNull				; 0010
-				dc.l	c2p_SetParamsNull				; 0011
-				dc.l	c2p_SetParamsFull1x1Opt030		; 0100
-				dc.l	c2p_SetParamsFull1x2Opt030		; 0101
-				dc.l	c2p_SetParamsNull				; 0110
-				dc.l	c2p_SetParamsNull				; 0111
-
+				; Table Pointer Table...
+c2p_SetParamsPtrs_vl:								; Akiko:030:Teleport
+				dc.l c2p_SetParams040Ptrs_vl		; 000
+				dc.l c2p_SetParamsTeleFxPtrs_vl		; 001
+				IFD CPU_ALL
+				dc.l c2p_SetParams030Ptrs_vl		; 010
+				dc.l c2p_SetParamsTeleFxPtrs_vl		; 011
+				dc.l c2p_SetParamsAkikoPtrs_vl		; 100
+				dc.l c2p_SetParamsTeleFxPtrs_vl		; 101
+				dc.l c2p_SetParamsAkikoPtrs_vl		; 110
+				dc.l c2p_SetParamsTeleFxPtrs_vl		; 111
 				ENDC
-				ENDC
-
-				dc.l	c2p_SetParamsSmall1x1Opt040		; 1000
-				dc.l	c2p_SetParamsSmall1x2Opt040		; 1001
-				dc.l	c2p_SetParamsNull				; 1010
-				dc.l	c2p_SetParamsNull				; 1011
-				dc.l	c2p_SetParamsFull1x1Opt040		; 1100
-				dc.l	c2p_SetParamsFull1x2Opt040		; 1101
-				dc.l	c2p_SetParamsNull				; 1110
-				dc.l	c2p_SetParamsNull				; 1111
 
 c2p_ConvertPtrs_vl:
-				IFND OPT060
-				IFND OPT040
-
-				; Only include 030 code for the generic target
-				dc.l	c2p_ConvertSmall1x1Opt030		; 0000
-				dc.l	c2p_ConvertSmall1x2Opt030		; 0001
-				dc.l	c2p_ConvertNull					; 0010
-				dc.l	c2p_ConvertNull					; 0011
-				dc.l	c2p_ConvertFull1x1Opt030		; 0100
-				dc.l	c2p_ConvertFull1x2Opt030		; 0101
-				dc.l	c2p_ConvertNull					; 0110
-				dc.l	c2p_ConvertNull					; 0111
-
+				dc.l c2p_Convert040Ptrs_vl			; 000
+				dc.l c2p_ConvertTeleFxPtrs_vl		; 001
+				IFD CPU_ALL
+				dc.l c2p_Convert030Ptrs_vl			; 010
+				dc.l c2p_ConvertTeleFxPtrs_vl		; 011
+				dc.l c2p_ConvertAkikoPtrs_vl		; 100 ; Choosing Akiko > 040, lol
+				dc.l c2p_ConvertTeleFxPtrs_vl		; 101
+				dc.l c2p_ConvertAkikoPtrs_vl		; 110
+				dc.l c2p_ConvertTeleFxPtrs_vl		; 111
 				ENDC
-				ENDC
-
-				dc.l	c2p_ConvertSmall1x1Opt040		; 1000
-				dc.l	c2p_ConvertSmall1x2Opt040		; 1001
-				dc.l	c2p_ConvertNull					; 1010
-				dc.l	c2p_ConvertNull					; 1011
-				dc.l	c2p_ConvertFull1x1Opt040		; 1100
-				dc.l	c2p_ConvertFull1x2Opt040		; 1101
-				dc.l	c2p_ConvertNull					; 1110
-				dc.l	c2p_ConvertNull					; 1111
 
 				section .text,code
+				align 4
 
 c2p_SetParamsNull:
 c2p_ConvertNull:
 				rts
 
-
 ; Main C2P Initialisation
 	DCLC C2P_Init
 				moveq	#0,d1
+
+				; Check if we are teleporting
+				move.b	C2P_Teleporting_b,d1
+				andi.b	#1,d1
+
+				IFD CPU_ALL
+
+				; CPU Class
+				move.b	Sys_Move16_b,d0
+; 				not.b	d0    ; We want to set the 030 flag, 040 is default.
+				and.b	#2,d0
+				or.b	d0,d1
+
+				;TODO - Akiko
+				;move.b Sys_HaveAkiko,d0
+				;andi.b	#4.d0
+				;or.b	d0,d1
+
+				ENDC
+
+				; d1 now contains the index for the device tuned code
+				; TODO - get pointer. Is a1 OK?
+
+				move.l	#c2p_SetParamsPtrs_vl,a0
+				move.l	#c2p_ConvertPtrs_vl,a1
+				move.l	(a0,d1.w*4),a0 ; a0 now points at device tuned SetParams table
+				move.l	(a1,d1.w*4),a1 ; a1 now points at device tuned Convert table
+
 				move.b	Vid_DoubleHeight_b,d1
 				andi.b	#1,d1
 				move.b	Vid_DoubleWidth_b,d0
@@ -84,22 +93,9 @@ c2p_ConvertNull:
 				andi.b	#4,d0
 				or.b	d0,d1
 
-				; Only perform CPU check in the generic target, else use 040+ always
-				IFND OPT060
-				IFND OPT040
-
-				move.b	Sys_Move16_b,d0
-				andi.b	#8,d0
-				or.b	d0,d1
-
-				ENDC
-				ENDC
-
 				; d1 should now contain all the bits needed to select the variant
-				move.l	#c2p_SetParamsPtrs_vl,a0
 				move.l	(a0,d1.w*4),Vid_C2PSetParamsPtr_l
-				move.l	#c2p_ConvertPtrs_vl,a0
-				move.l	(a0,d1.w*4),Vid_C2PConvertPtr_l
+				move.l	(a1,d1.w*4),Vid_C2PConvertPtr_l
 				st		C2P_NeedsSetParam_b
 				clr.b	C2P_NeedsInit_b
 				rts
@@ -126,29 +122,10 @@ c2p_ConvertNull:
 				jsr	(a0)
 				rts
 
-				IFND OPT060
-				IFND OPT040
-
-				include "modules/c2p/68030/c2p.s"
-
-				ENDC
-				ENDC
-
-				include "modules/c2p/68040/c2p.s"
-
 C2P_NeedsInit_b:
 				dc.b	1	; Options that need the whole C2P to be reinit should set this
 C2P_NeedsSetParam_b:
 				dc.b	1	; Options that only need params resetting should set this
+C2P_Teleporting_b:
+				dc.b	0
 
-MODUL:			dc.w	0
-HTC:			dc.w	0
-WTC:			dc.w	0
-SCRMOD:			dc.w	0
-
-Game_TeleportFrame_w:
-				dc.w	0
-
-SCREENPTRFLIG:	dc.l	0
-
-STARTSHIM:		dc.l	0
