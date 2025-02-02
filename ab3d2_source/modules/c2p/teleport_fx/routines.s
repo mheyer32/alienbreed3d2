@@ -58,14 +58,14 @@ c2p_ConvertFull1xTeleFx:
 				sub.w	d7,d1				; top letterbox
 				sub.w	d7,d1				; bottom letterbox: d1: number of lines
 				move.w	d1,HTC
-				move.w	#(SCREEN_WIDTH-FS_WIDTH),MODUL ; modulo chunky
-				move.w	#(SCREEN_WIDTH-FS_WIDTH)/8,SCRMOD ; modulo chipmem
+				move.w	#(SCREEN_WIDTH-FS_WIDTH),c2p_ChunkyModulus_w ; modulo chunky
+				move.w	#(SCREEN_WIDTH-FS_WIDTH)/8,c2p_PlaneModulus_w ; modulo chipmem
 				move.l	Vid_FastBufferPtr_l,a0
 				move.w	#SCREEN_WIDTH,d3
 				mulu.w	d7,d3
 				lea		(a0,d3.w),a0			; offset for top letterbox in renderbuffer
 				move.l	Vid_DrawScreenPtr_l,a1
-				move.w	#(SCREEN_WIDTH/8),d3
+				move.w	#C2P_BPL_ROWBYTES,d3
 				mulu.w	d7,d3					; offset for top letterbox in screenbuffer
 				lea		(a1,d3.w),a1
 
@@ -78,8 +78,8 @@ c2p_ConvertSmall1xTeleFx:
 				sub.w	d7,d1					; top letterbox
 				sub.w	d7,d1					; bottom letterbox: d1: number of lines
 				move.w	d1,HTC
-				move.w	#(SCREEN_WIDTH-SMALL_WIDTH),MODUL ; modulo chunky
-				move.w	#(SCREEN_WIDTH-SMALL_WIDTH)/8,SCRMOD ; modulo chipmem
+				move.w	#(SCREEN_WIDTH-SMALL_WIDTH),c2p_ChunkyModulus_w ; modulo chunky
+				move.w	#(SCREEN_WIDTH-SMALL_WIDTH)/8,c2p_PlaneModulus_w ; modulo chipmem
 				move.l	Vid_FastBufferPtr_l,a0
 				move.w	#SCREEN_WIDTH,d3
 				mulu.w	d7,d3
@@ -97,15 +97,15 @@ startchunkytel:
 				asl.w	#8,d5
 				asl.w	#2,d5
 				add.w	d5,a6
-				move.l	a6,STARTSHIM
+				move.l	a6,c2p_StartShim_l
 				movem.l	.Const(pc),d5-d7
 				move.l	a1,a2
 				adda.w	WTC,a2
 				addq	#1,a2					; end of line to convert
 
-				lea		2*40*256(a1),a3			Plane3
-				lea		2*40*256(a3),a4			Plane5
-				lea		2*40*256(a4),a5			Plane7
+				lea		2*C2P_BPL_SIZE(a1),a3;			Plane3
+				lea		2*C2P_BPL_SIZE(a3),a4;			Plane5
+				lea		2*C2P_BPL_SIZE(a4),a5;			Plane7
 
 				bra.s	.BPPLoop
 
@@ -181,9 +181,9 @@ startchunkytel:
 ; d0 = ..a6..c6..e6..g6 a6b6c6d6e6f6g6h6 b6a4d6c4f6e4h6g4 a4b4c4d4e4f4g4h4
 ; d1 = ..a7..c7..e7..g7 a7b7c7d7e7f7g7h7 b7a5d7c5f7e5h7g5 a5b5c5d5e5f5g5h5
 
-				move.b	d1,40*256(a4)			; 12 plane 6
+				move.b	d1,C2P_BPL_SIZE(a4)			; 12 plane 6
 				swap	d1						;  4
-				move.b	d1,40*256(a5)			; 12 plane 8
+				move.b	d1,C2P_BPL_SIZE(a5)			; 12 plane 8
 				move.b	d0,(a4)+				;  8 plane 5
 				swap	d0						;  4
 				move.b	d0,(a5)+				;  8 plane 7
@@ -209,9 +209,9 @@ startchunkytel:
 				lsr.l	#1,d1					; 10	;448
 ; d2 = ..a2..c2..e2..g2 a2b2c2d2e2f2g2h2 b2a0d2c0f2e0h2g0 a0b0c0d0e0f0g0h0
 ; d1 = ..a3..c3..e3..g3 a3b3c3d3e3f3g3h3 b3a1d3c1f3e1h3g1 a1b1c1d1e1f1g1h1
-				move.b	d1,40*256(a1)			; 12 plane 2
+				move.b	d1,C2P_BPL_SIZE(a1)			; 12 plane 2
 				swap	d1						;  4
-				move.b	d1,40*256(a3)			;  8 plane 4
+				move.b	d1,C2P_BPL_SIZE(a3)			;  8 plane 4
 				move.b	d2,(a1)+				;  8 plane 1
 				swap	d2						;  4
 				move.b	d2,(a3)+				;  8 plane 3 ;126 bytws
@@ -219,19 +219,19 @@ startchunkytel:
 				bne		.BPPLoop				; 10
 
 				move.l	a6,d0
-				sub.l	STARTSHIM,d0
+				sub.l	c2p_StartShim_l,d0
 				and.l	#255*2,d0
-				add.l	STARTSHIM,d0
+				add.l	c2p_StartShim_l,d0
 				move.l	d0,a6
 
-				move.w	SCRMOD,d0
+				move.w	c2p_PlaneModulus_w,d0
 				add.w	d0,a1
 				add.w	d0,a3
 				add.w	d0,a4
 				add.w	d0,a5
 				move.w	WTC,d0
 				lea		1(a1,d0.w),a2
-				add.w	MODUL,a0
+				add.w	c2p_ChunkyModulus_w,a0
 				subq.w	#1,HTC
 				bge		.BPPLoop
 
@@ -249,14 +249,12 @@ startchunkytel:
 
 
 				align 4
-MODUL:			dc.w	0
+c2p_ChunkyModulus_w:			dc.w	0
 HTC:			dc.w	0
 WTC:			dc.w	0
-SCRMOD:			dc.w	0
-STARTSHIM:		dc.l	0
-
-Game_TeleportFrame_w:
-				dc.w	0
+c2p_PlaneModulus_w:			dc.w	0
+c2p_StartShim_l:		dc.l	0
+Game_TeleportFrame_w:	dc.w	0
 
 
 

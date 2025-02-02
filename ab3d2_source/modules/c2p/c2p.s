@@ -4,6 +4,12 @@
 
 FS_C2P_HEIGHT equ FS_HEIGHT-FS_HEIGHT_C2P_DIFF
 
+; Regular C2P modes will only be 320x256 for now
+C2P_BPL_WIDTH		equ SCREEN_WIDTH
+C2P_BPL_HEIGHT		equ 256
+C2P_BPL_ROWBYTES	equ SCREEN_WIDTH/8
+C2P_BPL_SIZE		equ C2P_BPL_ROWBYTES*C2P_BPL_HEIGHT
+
 				IFND OPT060
 				IFND OPT040
 CPU_ALL
@@ -129,3 +135,4 @@ C2P_NeedsSetParam_b:
 C2P_Teleporting_b:
 				dc.b	0
 
+				even

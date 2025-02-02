@@ -2120,6 +2120,7 @@ zzzz:
 ;				 bra end	; immediately return to main menu for testing
 
 				bne.s	noexit
+
 				add.w	#2,Game_TeleportFrame_w
 				cmp.w	#9,Game_TeleportFrame_w
 				blt		noexit
