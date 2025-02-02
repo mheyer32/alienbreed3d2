@@ -3,22 +3,22 @@
 				section .data,data
 				align 4
 c2p_SetParamsTeleFxPtrs_vl:
-				dc.l	c2p_SetParamsTeleFx	; 000
-				dc.l	c2p_SetParamsTeleFx	; 001
-				dc.l	c2p_SetParamsNull	; 010
-				dc.l	c2p_SetParamsNull	; 011
-				dc.l	c2p_SetParamsTeleFx	; 100
-				dc.l	c2p_SetParamsTeleFx	; 101
-				dc.l	c2p_SetParamsNull	; 110
-				dc.l	c2p_SetParamsNull	; 111
+				dc.l	c2p_SetParamsTeleFx			; 000
+				dc.l	c2p_SetParamsTeleFx			; 001
+				dc.l	c2p_SetParamsNull			; 010
+				dc.l	c2p_SetParamsNull			; 011
+				dc.l	c2p_SetParamsTeleFxFull		; 100
+				dc.l	c2p_SetParamsTeleFxFull		; 101
+				dc.l	c2p_SetParamsNull			; 110
+				dc.l	c2p_SetParamsNull			; 111
 
 c2p_ConvertTeleFxPtrs_vl:
-				dc.l	c2p_ConvertSmall1xTeleFx	; 000
-				dc.l	c2p_ConvertSmall1xTeleFx	; 001
+				dc.l	c2p_Convert1xTeleFx			; 000
+				dc.l	c2p_Convert1xTeleFx			; 001
 				dc.l	c2p_ConvertNull				; 010
 				dc.l	c2p_ConvertNull				; 011
-				dc.l	c2p_ConvertFull1xTeleFx		; 100
-				dc.l	c2p_ConvertFull1xTeleFx		; 101
+				dc.l	c2p_Convert1xTeleFx			; 100
+				dc.l	c2p_Convert1xTeleFx			; 101
 				dc.l	c2p_ConvertNull				; 110
 				dc.l	c2p_ConvertNull				; 111
 
@@ -26,6 +26,38 @@ c2p_ConvertTeleFxPtrs_vl:
 
 c2p_SetParamsTeleFx:
 				move.w	#7,Game_TeleportFrame_w				; Start a number of teleporter frames
+				move.w	#(C2P_BPL_SMALL_ROWBYTES)-1,c2p_WTC_w	; width in chipmem?
+				move.w	Vid_LetterBoxMarginHeight_w,d7
+				move.l	#SMALL_HEIGHT-1,d1		; height of area to convert
+				sub.w	d7,d1					; top letterbox
+				sub.w	d7,d1					; bottom letterbox: d1: number of lines
+				move.w	d1,c2p_HTC_Init_w
+				move.w	#(SCREEN_WIDTH-SMALL_WIDTH),c2p_ChunkyModulus_w ; modulo chunky
+				move.w	#(SCREEN_WIDTH-SMALL_WIDTH)/8,c2p_PlaneModulus_w ; modulo chipmem
+				move.w	#SCREEN_WIDTH,d3
+				mulu.w	d7,d3
+				move.w	d3,c2p_ChunkyOffset_w
+				move.w	#C2P_BPL_ROWBYTES,d3
+				mulu.w	d7,d3					; offset for top letterbox in screenbuffer
+				add.w	#(C2P_BPL_ROWBYTES)*20+(64/8),d3; top left corner of small render window in chipmem
+				move.w	d3,c2p_PlanarOffset_w
+				rts
+
+c2p_SetParamsTeleFxFull:
+				move.w	#7,Game_TeleportFrame_w				; Start a number of teleporter frames
+				move.w	#(FS_WIDTH/8)-1,c2p_WTC_w		; width in chipmem?
+				move.w	Vid_LetterBoxMarginHeight_w,d7
+				move.l	#FS_C2P_HEIGHT-1,d1	; height of area to convert
+				sub.w	d7,d1				; top letterbox
+				sub.w	d7,d1				; bottom letterbox: d1: number of lines
+				move.w	d1,c2p_HTC_Init_w
+				clr.l	c2p_ChunkyModulus_w ; // clears both
+				move.w	#SCREEN_WIDTH,d3
+				mulu.w	d7,d3
+				move.w	d3,c2p_ChunkyOffset_w
+				move.w	#C2P_BPL_ROWBYTES,d3
+				mulu.w	d7,d3					; offset for top letterbox in screenbuffer
+				move.w	d3,c2p_PlanarOffset_w
 				rts
 
 ; a0 src chunky ptr
@@ -50,45 +82,13 @@ c2p_SetParamsTeleFx:
 ;256 colour / 8 bitplane
 
 
-c2p_ConvertFull1xTeleFx:
-				move.w	#(FS_WIDTH/8)-1,WTC		; width in chipmem?
-				move.w	Vid_LetterBoxMarginHeight_w,d7
-
-				move.l	#FS_C2P_HEIGHT-1,d1	; height of area to convert
-				sub.w	d7,d1				; top letterbox
-				sub.w	d7,d1				; bottom letterbox: d1: number of lines
-				move.w	d1,HTC
-				move.w	#(SCREEN_WIDTH-FS_WIDTH),c2p_ChunkyModulus_w ; modulo chunky
-				move.w	#(SCREEN_WIDTH-FS_WIDTH)/8,c2p_PlaneModulus_w ; modulo chipmem
+c2p_Convert1xTeleFx:
+				move.w	c2p_HTC_Init_w,c2p_HTC_w
 				move.l	Vid_FastBufferPtr_l,a0
-				move.w	#SCREEN_WIDTH,d3
-				mulu.w	d7,d3
-				lea		(a0,d3.w),a0			; offset for top letterbox in renderbuffer
 				move.l	Vid_DrawScreenPtr_l,a1
-				move.w	#C2P_BPL_ROWBYTES,d3
-				mulu.w	d7,d3					; offset for top letterbox in screenbuffer
-				lea		(a1,d3.w),a1
+				add.w	c2p_ChunkyOffset_w,a0
+				add.w	c2p_PlanarOffset_w,a1
 
-				bra		startchunkytel
-
-c2p_ConvertSmall1xTeleFx:
-				move.w	#(SMALL_WIDTH/8)-1,WTC	; width in chipmem?
-				move.w	Vid_LetterBoxMarginHeight_w,d7
-				move.l	#SMALL_HEIGHT-1,d1		; height of area to convert
-				sub.w	d7,d1					; top letterbox
-				sub.w	d7,d1					; bottom letterbox: d1: number of lines
-				move.w	d1,HTC
-				move.w	#(SCREEN_WIDTH-SMALL_WIDTH),c2p_ChunkyModulus_w ; modulo chunky
-				move.w	#(SCREEN_WIDTH-SMALL_WIDTH)/8,c2p_PlaneModulus_w ; modulo chipmem
-				move.l	Vid_FastBufferPtr_l,a0
-				move.w	#SCREEN_WIDTH,d3
-				mulu.w	d7,d3
-				lea		(a0,d3.w),a0			; offset for top letterbox in renderbuffer
-				move.l	Vid_DrawScreenPtr_l,a1
-				move.w	#(SCREEN_WIDTH/8),d3
-				mulu.w	d7,d3					; offset for top letterbox in screenbuffer
-				lea		(a1,d3.w),a1
-				add.l	#(SCREEN_WIDTH/8)*20+(64/8),a1; top left corner of small render window in chipmem
 
 startchunkytel:
 				movem.l	d2-d7/a2-a6,-(a7)
@@ -100,7 +100,7 @@ startchunkytel:
 				move.l	a6,c2p_StartShim_l
 				movem.l	.Const(pc),d5-d7
 				move.l	a1,a2
-				adda.w	WTC,a2
+				adda.w	c2p_WTC_w,a2
 				addq	#1,a2					; end of line to convert
 
 				lea		2*C2P_BPL_SIZE(a1),a3;			Plane3
@@ -109,9 +109,8 @@ startchunkytel:
 
 				bra.s	.BPPLoop
 
+				align	4
 .Const			dc.l	$0f0f0f0f,$55555555,$3333cccc
-				Cnop	0,4
-
 
 .BPPLoop:
 				move.w	(a6)+,d0
@@ -229,10 +228,10 @@ startchunkytel:
 				add.w	d0,a3
 				add.w	d0,a4
 				add.w	d0,a5
-				move.w	WTC,d0
+				move.w	c2p_WTC_w,d0
 				lea		1(a1,d0.w),a2
 				add.w	c2p_ChunkyModulus_w,a0
-				subq.w	#1,HTC
+				subq.w	#1,c2p_HTC_w
 				bge		.BPPLoop
 
 				; Frame countdown
@@ -246,15 +245,16 @@ startchunkytel:
 				movem.l	(a7)+,d2-d7/a2-a6
 				rts
 
-
-
 				align 4
-c2p_ChunkyModulus_w:			dc.w	0
-HTC:			dc.w	0
-WTC:			dc.w	0
+c2p_StartShim_l:			dc.l	0
+c2p_ChunkyOffset_w:			dc.w	0
+c2p_PlanarOffset_w:			dc.w	0
+c2p_HTC_Init_w:				dc.w	0
+c2p_HTC_w:					dc.w	0
+c2p_WTC_w:					dc.w	0
+c2p_ChunkyModulus_w:		dc.w	0
 c2p_PlaneModulus_w:			dc.w	0
-c2p_StartShim_l:		dc.l	0
-Game_TeleportFrame_w:	dc.w	0
+Game_TeleportFrame_w:		dc.w	0
 
 
 

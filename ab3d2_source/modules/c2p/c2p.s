@@ -5,10 +5,12 @@
 FS_C2P_HEIGHT equ FS_HEIGHT-FS_HEIGHT_C2P_DIFF
 
 ; Regular C2P modes will only be 320x256 for now
-C2P_BPL_WIDTH		equ SCREEN_WIDTH
-C2P_BPL_HEIGHT		equ 256
-C2P_BPL_ROWBYTES	equ SCREEN_WIDTH/8
-C2P_BPL_SIZE		equ C2P_BPL_ROWBYTES*C2P_BPL_HEIGHT
+C2P_BPL_WIDTH			equ SCREEN_WIDTH
+C2P_BPL_HEIGHT			equ 256
+C2P_BPL_ROWBYTES		equ SCREEN_WIDTH/8
+C2P_BPL_SIZE			equ C2P_BPL_ROWBYTES*C2P_BPL_HEIGHT
+
+C2P_BPL_SMALL_ROWBYTES	equ SMALL_WIDTH/8
 
 				IFND OPT060
 				IFND OPT040
@@ -71,7 +73,7 @@ c2p_ConvertNull:
 
 				; CPU Class
 				move.b	Sys_Move16_b,d0
-; 				not.b	d0    ; We want to set the 030 flag, 040 is default.
+ 				not.b	d0    ; We want to set the 030 flag, 040+ is default.
 				and.b	#2,d0
 				or.b	d0,d1
 
@@ -81,6 +83,8 @@ c2p_ConvertNull:
 				;or.b	d0,d1
 
 				ENDC
+
+;				move.w	d1,C2P_Family_w
 
 				; d1 now contains the index for the device tuned code
 				; TODO - get pointer. Is a1 OK?
@@ -99,11 +103,16 @@ c2p_ConvertNull:
 				andi.b	#4,d0
 				or.b	d0,d1
 
+;				move.w	d1,C2P_Mode_w
+
 				; d1 should now contain all the bits needed to select the variant
 				move.l	(a0,d1.w*4),Vid_C2PSetParamsPtr_l
 				move.l	(a1,d1.w*4),Vid_C2PConvertPtr_l
 				st		C2P_NeedsSetParam_b
 				clr.b	C2P_NeedsInit_b
+
+;				CALLC	C2P_DebugInit
+
 				rts
 
 
@@ -127,6 +136,11 @@ c2p_ConvertNull:
 				move.l	Vid_C2PConvertPtr_l,a0
 				jsr	(a0)
 				rts
+
+;	DCLC C2P_Family_w
+;				dc.w	0
+;	DCLC C2P_Mode_w
+;				dc.w	0
 
 C2P_NeedsInit_b:
 				dc.b	1	; Options that need the whole C2P to be reinit should set this

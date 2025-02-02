@@ -546,3 +546,12 @@ void Vid_Present()
         Msg_Tick();
     }
 }
+
+/*
+extern UWORD C2P_Family_w;
+extern UWORD C2P_Mode_w;
+
+void C2P_DebugInit(void) {
+    printf("C2P_Init: Family %4X, Mode: %4X\n", (unsigned)C2P_Family_w, (unsigned)C2P_Mode_w);
+}
+*/
