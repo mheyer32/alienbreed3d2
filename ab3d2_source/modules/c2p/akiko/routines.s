@@ -2,6 +2,7 @@
 				section .data,data
 				align 4
 
+; TODO - SetParams should set up the pointers and counters needed
 c2p_SetParamsAkikoPtrs_vl:
 				dc.l	c2p_SetParamsNull	; 000
 				dc.l	c2p_SetParamsNull	; 001
@@ -22,19 +23,22 @@ c2p_ConvertAkikoPtrs_vl:
 				dc.l	c2p_ConvertNull					; 110
 				dc.l	c2p_ConvertNull					; 111
 
-
 c2p_ConvertFull1x1OptAkiko:
 				movem.l	d1-d7/a2/a3/a4/a6,-(sp)
+
+				tst.b	Sys_Move16_b
+				bne.s	.no_cacr_set
 
 				move.l	_SysBase,a6
 				jsr		_LVODisable(a6)
 				jsr		_LVOSuperState(a6)
 
-				;movec	cacr,d0
-				;move.l	d0,-(sp)
-				;bclr.l	#13,d0 ; disable write allocation
-				;movec	d0,cacr
+				movec	cacr,d0
+				move.l	d0,-(sp)
+				bclr.l	#13,d0 ; disable write allocation
+				movec	d0,cacr
 
+.no_cacr_set:
 				move.l	Vid_FastBufferPtr_l,a0
 				move.l	Vid_DrawScreenPtr_l,a1
 				move.l	#$00B80038,a2
@@ -91,11 +95,16 @@ c2p_ConvertFull1x1OptAkiko:
 				move.l  a3,a1
 				dbra    d0,.loop
 
-				;move.l	(sp)+,d0
-				;movec	d0,cacr
+				tst.b	Sys_Move16_b
+				bne.s	.no_cacr_restore
+
+				move.l	(sp)+,d0
+				movec	d0,cacr
 
 				jsr		_LVOUserState(a6)
 				jsr		_LVOEnable(a6)
+
+.no_cacr_restore:
 				movem.l (sp)+,d1-d7/a2/a3/a4/a6
 				rts
 

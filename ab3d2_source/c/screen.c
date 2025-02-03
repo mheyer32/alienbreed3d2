@@ -547,11 +547,32 @@ void Vid_Present()
     }
 }
 
-
+#include <stdio.h>
 extern UWORD C2P_Family_w;
 extern UWORD C2P_Mode_w;
 
+char const* c2p_Families[] = {
+    "040/060",
+    "030",
+    "Akiko"
+};
+
+char const* c2p_Modes[] = {
+    "1x1 2/3",
+    "1x2 2/3",
+    "2x1 2/3",
+    "2x2 2/3",
+    "1x1 Full",
+    "1x2 Full",
+    "2x1 Full",
+    "2x2 Full",
+};
+
 void C2P_DebugInit(void) {
-    printf("C2P_Init: Family %4X, Mode: %4X\n", (unsigned)C2P_Family_w, (unsigned)C2P_Mode_w);
+    if (C2P_Family_w & 1) {
+        printf("C2P Family TeleFx, Mode: %s\n", c2p_Modes[C2P_Mode_w]);
+    } else {
+        printf("C2P Family %s, Mode: %s\n", c2p_Families[C2P_Family_w >> 1], c2p_Modes[C2P_Mode_w]);
+    }
 }
 
