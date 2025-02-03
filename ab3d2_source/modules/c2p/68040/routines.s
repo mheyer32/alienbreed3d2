@@ -59,7 +59,7 @@ c2p_ConvertFull1x2Opt040:
 				moveq.l	#0,d0					; x
 				move.w	Vid_LetterBoxMarginHeight_w,d1				; y, height of black border top/bottom
 				move.l	#FS_WIDTH,d2			; width
-				move.l	#FS_C2P_HEIGHT/2,d3		; height
+				move.l	#C2P_FS_HEIGHT/2,d3		; height
 				sub.w	d1,d3					; top letterbox
 				sub.w	d1,d3					; bottom letterbox: d3: number of lines
 				ble		.nothing

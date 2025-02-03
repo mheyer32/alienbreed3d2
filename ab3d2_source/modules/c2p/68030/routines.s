@@ -3,25 +3,25 @@
 				section .data,data
 				align 4
 
-c2p_SetParams030Ptrs_vl:
-				dc.l	c2p_SetParamsSmall1x1Opt030		; 0000
-				dc.l	c2p_SetParamsSmall1x2Opt030		; 0001
-				dc.l	c2p_SetParamsNull				; 0010
-				dc.l	c2p_SetParamsNull				; 0011
-				dc.l	c2p_SetParamsFull1x1Opt030		; 0100
-				dc.l	c2p_SetParamsFull1x2Opt030		; 0101
-				dc.l	c2p_SetParamsNull				; 0110
-				dc.l	c2p_SetParamsNull				; 0111
+c2p_SetParams030Ptrs_vl:								; FS:DW:DH
+				dc.l	c2p_SetParamsSmall1x1Opt030		; 000
+				dc.l	c2p_SetParamsSmall1x2Opt030		; 001
+				dc.l	c2p_SetParamsNull				; 010 TODO 2x1
+				dc.l	c2p_SetParamsNull				; 011 TODO 2x2
+				dc.l	c2p_SetParamsFull1x1Opt030		; 100
+				dc.l	c2p_SetParamsFull1x2Opt030		; 101
+				dc.l	c2p_SetParamsNull				; 110 TODO 2x1
+				dc.l	c2p_SetParamsNull				; 111 TODO 2x2
 
 c2p_Convert030Ptrs_vl:
-				dc.l	c2p_ConvertSmall1x1Opt030		; 0000
-				dc.l	c2p_ConvertSmall1x2Opt030		; 0001
-				dc.l	c2p_ConvertNull					; 0010
-				dc.l	c2p_ConvertNull					; 0011
-				dc.l	c2p_ConvertFull1x1Opt030		; 0100
-				dc.l	c2p_ConvertFull1x2Opt030		; 0101
-				dc.l	c2p_ConvertNull					; 0110
-				dc.l	c2p_ConvertNull					; 0111
+				dc.l	c2p_ConvertSmall1x1Opt030		; 000
+				dc.l	c2p_ConvertSmall1x2Opt030		; 001
+				dc.l	c2p_ConvertNull					; 010 TODO 2x1
+				dc.l	c2p_ConvertNull					; 011 TODO 2x2
+				dc.l	c2p_ConvertFull1x1Opt030		; 100
+				dc.l	c2p_ConvertFull1x2Opt030		; 101
+				dc.l	c2p_ConvertNull					; 110 TODO 2x1
+				dc.l	c2p_ConvertNull					; 111 TODO 2x2
 
 ;
 ; 2000-04-17
@@ -37,19 +37,19 @@ c2p_Convert030Ptrs_vl:
 ;
 
 				IFND	BPLX
-BPLX			EQU	320
+BPLX			EQU		C2P_BPL_WIDTH
 				ENDC
 				IFND	BPLY
-BPLY			EQU	256
+BPLY			EQU		C2P_BPL_HEIGHT
 				ENDC
 				IFND	BPLSIZE
-BPLSIZE			EQU	BPLX*BPLY/8
+BPLSIZE			EQU		BPLX*BPLY/8
 				ENDC
 				IFND	CHUNKYXMAX
-CHUNKYXMAX 		EQU	BPLX
+CHUNKYXMAX 		EQU		BPLX
 				ENDC
 				IFND	CHUNKYYMAX
-CHUNKYYMAX 		EQU	BPLY
+CHUNKYYMAX 		EQU		C2P_FS_HEIGHT
 				ENDC
 
 

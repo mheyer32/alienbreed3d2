@@ -2,7 +2,7 @@
 ; Main C2P entry points
 ;
 
-FS_C2P_HEIGHT equ FS_HEIGHT-FS_HEIGHT_C2P_DIFF
+C2P_FS_HEIGHT equ FS_HEIGHT-FS_HEIGHT_C2P_DIFF
 
 ; Regular C2P modes will only be 320x256 for now
 C2P_BPL_WIDTH			equ SCREEN_WIDTH
@@ -30,28 +30,28 @@ CPU_ALL
 				align 4
 
 				; Table Pointer Table...
-c2p_SetParamsPtrs_vl:								; Akiko:030:Teleport
-				dc.l c2p_SetParams040Ptrs_vl		; 000
-				dc.l c2p_SetParamsTeleFxPtrs_vl		; 001
+c2p_SetParamsPtrs_vl:									; Akiko:030:Teleport
+				dc.l	c2p_SetParams040Ptrs_vl			; 000
+				dc.l	c2p_SetParamsTeleFxPtrs_vl		; 001
 				IFD CPU_ALL
-				dc.l c2p_SetParams030Ptrs_vl		; 010
-				dc.l c2p_SetParamsTeleFxPtrs_vl		; 011
-				dc.l c2p_SetParamsAkikoPtrs_vl		; 100
-				dc.l c2p_SetParamsTeleFxPtrs_vl		; 101
-				dc.l c2p_SetParamsAkikoPtrs_vl		; 110
-				dc.l c2p_SetParamsTeleFxPtrs_vl		; 111
+				dc.l	c2p_SetParams030Ptrs_vl			; 010
+				dc.l	c2p_SetParamsTeleFxPtrs_vl		; 011
+				dc.l	c2p_SetParamsAkikoPtrs_vl		; 100
+				dc.l	c2p_SetParamsTeleFxPtrs_vl		; 101
+				dc.l	c2p_SetParamsAkikoPtrs_vl		; 110
+				dc.l	c2p_SetParamsTeleFxPtrs_vl		; 111
 				ENDC
 
 c2p_ConvertPtrs_vl:
-				dc.l c2p_Convert040Ptrs_vl			; 000
-				dc.l c2p_ConvertTeleFxPtrs_vl		; 001
+				dc.l	c2p_Convert040Ptrs_vl			; 000
+				dc.l	c2p_ConvertTeleFxPtrs_vl		; 001
 				IFD CPU_ALL
-				dc.l c2p_Convert030Ptrs_vl			; 010
-				dc.l c2p_ConvertTeleFxPtrs_vl		; 011
-				dc.l c2p_ConvertAkikoPtrs_vl		; 100 ; Choosing Akiko > 040, lol
-				dc.l c2p_ConvertTeleFxPtrs_vl		; 101
-				dc.l c2p_ConvertAkikoPtrs_vl		; 110
-				dc.l c2p_ConvertTeleFxPtrs_vl		; 111
+				dc.l	c2p_Convert030Ptrs_vl			; 010
+				dc.l	c2p_ConvertTeleFxPtrs_vl		; 011
+				dc.l	c2p_ConvertAkikoPtrs_vl			; 100 ; Choosing Akiko > 040, lol
+				dc.l	c2p_ConvertTeleFxPtrs_vl		; 101
+				dc.l	c2p_ConvertAkikoPtrs_vl			; 110
+				dc.l	c2p_ConvertTeleFxPtrs_vl		; 111
 				ENDC
 
 				section .text,code
@@ -78,13 +78,14 @@ c2p_ConvertNull:
 				or.b	d0,d1
 
 				;TODO - Akiko
-				;move.b Sys_HaveAkiko,d0
-				;andi.b	#4.d0
-				;or.b	d0,d1
+				move.b	Sys_C2P_Akiko_b,d0 ; Akiko detected
+				and.b	C2P_UseAkiko_b,d0  ; Akiko preferred
+				andi.b	#4,d0
+				or.b	d0,d1
 
 				ENDC
 
-;				move.w	d1,C2P_Family_w
+				move.w	d1,C2P_Family_w
 
 				; d1 now contains the index for the device tuned code
 				; TODO - get pointer. Is a1 OK?
@@ -103,7 +104,7 @@ c2p_ConvertNull:
 				andi.b	#4,d0
 				or.b	d0,d1
 
-;				move.w	d1,C2P_Mode_w
+				move.w	d1,C2P_Mode_w
 
 				; d1 should now contain all the bits needed to select the variant
 				move.l	(a0,d1.w*4),Vid_C2PSetParamsPtr_l
@@ -111,7 +112,7 @@ c2p_ConvertNull:
 				st		C2P_NeedsSetParam_b
 				clr.b	C2P_NeedsInit_b
 
-;				CALLC	C2P_DebugInit
+				CALLC	C2P_DebugInit
 
 				rts
 
@@ -128,19 +129,22 @@ c2p_ConvertNull:
 				beq.s	.no_set_param
 
 				move.l	Vid_C2PSetParamsPtr_l,a0
-				jsr	(a0)
+				jsr		(a0)
 
 				clr.b	C2P_NeedsSetParam_b
 
 .no_set_param:
 				move.l	Vid_C2PConvertPtr_l,a0
-				jsr	(a0)
+				jsr		(a0)
 				rts
 
-;	DCLC C2P_Family_w
-;				dc.w	0
-;	DCLC C2P_Mode_w
-;				dc.w	0
+	DCLC C2P_Family_w
+				dc.w	0
+	DCLC C2P_Mode_w
+				dc.w	0
+
+	DCLC C2P_UseAkiko_b
+				dc.b	0	; Preferences Override
 
 C2P_NeedsInit_b:
 				dc.b	1	; Options that need the whole C2P to be reinit should set this

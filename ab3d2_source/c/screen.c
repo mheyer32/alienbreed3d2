@@ -485,7 +485,7 @@ void Vid_Present()
         );
         if (bmHandle) {
             if (Vid_FullScreen_b) {
-                WORD height     = FS_C2P_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
+                WORD height     = C2P_FS_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
                 const BYTE *src = Vid_FastBufferPtr_l + SCREEN_WIDTH * Vid_LetterBoxMarginHeight_w;
                 BYTE *dst       = bmPixelData + bmBytesPerRow * Vid_LetterBoxMarginHeight_w;
 
@@ -547,11 +547,11 @@ void Vid_Present()
     }
 }
 
-/*
+
 extern UWORD C2P_Family_w;
 extern UWORD C2P_Mode_w;
 
 void C2P_DebugInit(void) {
     printf("C2P_Init: Family %4X, Mode: %4X\n", (unsigned)C2P_Family_w, (unsigned)C2P_Mode_w);
 }
-*/
+

@@ -47,7 +47,7 @@ c2p_SetParamsTeleFxFull:
 				move.w	#7,Game_TeleportFrame_w				; Start a number of teleporter frames
 				move.w	#(FS_WIDTH/8)-1,c2p_WTC_w		; width in chipmem?
 				move.w	Vid_LetterBoxMarginHeight_w,d7
-				move.l	#FS_C2P_HEIGHT-1,d1	; height of area to convert
+				move.l	#C2P_FS_HEIGHT-1,d1	; height of area to convert
 				sub.w	d7,d1				; top letterbox
 				sub.w	d7,d1				; bottom letterbox: d1: number of lines
 				move.w	d1,c2p_HTC_Init_w

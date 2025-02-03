@@ -16,7 +16,7 @@ c2p_SetParamsFull1x1Opt030:
 c2p_SetParamsFull1x2Opt030:
 				move.l	d2,-(sp)
 				move.w	#FS_WIDTH,d0
-				move.w	#FS_C2P_HEIGHT,d1
+				move.w	#C2P_FS_HEIGHT,d1
 				move.w	Vid_LetterBoxMarginHeight_w,d2	; height of black border top/bottom
 				sub.w	d2,d1							; top letterbox
 				sub.w	d2,d1							; bottom letterbox: d1: number of lines

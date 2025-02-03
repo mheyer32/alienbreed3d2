@@ -35,7 +35,7 @@ c2p_SetParamsFull1x1Opt040:
 				move.l	d2,-(sp)
 
 				move.w	#SCREEN_WIDTH,d0
-				move.w	#FS_C2P_HEIGHT,d1
+				move.w	#C2P_FS_HEIGHT,d1
 				move.w	Vid_LetterBoxMarginHeight_w,d2
 				sub.w	d2,d1	; top letterbox
 				sub.w	d2,d1	; bottom letterbox: d1: number of lines

@@ -30,6 +30,10 @@
 
 #define INTUITIONNAME "intuition.library"
 
+#define AKIKO_IDENT_ADDR ((volatile UWORD *)0x00B80002)
+#define AKIKO_C2P_ADDR   (volatile ULONG *)0x00B80038
+#define AKIKO_IDENT      0xCAFE
+
 extern struct TimeRequest sys_TimerRequest;
 extern struct EClockVal Sys_FrameTimeECV_q[2];
 extern ULONG Sys_ECVToMsFactor_l;
@@ -41,9 +45,9 @@ extern UWORD Sys_FPSFracAvg_w;
 extern UBYTE Sys_Move16_b;
 extern UBYTE Vid_FullScreenTemp_b;
 extern UBYTE Sys_CPU_68060_b;
+extern UBYTE Sys_C2P_Akiko_b;
 extern UBYTE Prefs_DisplayFPS_b;
 extern APTR sys_OldWindowPtr;
-
 extern struct EClockVal _Sys_FrameTimeECV_q[2];
 
 extern UWORD Vis_AngPos_w;
@@ -207,6 +211,7 @@ void Sys_CloseLibs(void)
     CLOSELIB(CyberGfxBase);
 }
 
+#include <stdio.h>
 BOOL sys_InitHardware()
 {
     LOCAL_SYSBASE();
@@ -229,6 +234,13 @@ BOOL sys_InitHardware()
     allocPotBits = AllocPotBits(0b110000000000);
 
     serper = 31;  // 19200 baud, 8 bits, no parity
+
+    // Akiko detection.
+    LOCAL_GFX();
+    Sys_C2P_Akiko_b = (
+        GfxBase->LibNode.lib_Version >= 40 &&
+        AKIKO_IDENT == *AKIKO_IDENT_ADDR
+    ) ? 0xFF : 0;
 
     return TRUE;
 
