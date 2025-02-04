@@ -247,8 +247,6 @@ startchunkytel:
 
 				align 4
 c2p_StartShim_l:			dc.l	0
-c2p_ChunkyOffset_w:			dc.w	0
-c2p_PlanarOffset_w:			dc.w	0
 c2p_HTC_Init_w:				dc.w	0
 c2p_HTC_w:					dc.w	0
 c2p_WTC_w:					dc.w	0

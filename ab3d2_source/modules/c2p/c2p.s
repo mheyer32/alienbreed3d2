@@ -77,7 +77,6 @@ c2p_ConvertNull:
 				and.b	#2,d0
 				or.b	d0,d1
 
-				;TODO - Akiko
 				move.b	Sys_C2P_Akiko_b,d0 ; Akiko detected
 				and.b	C2P_UseAkiko_b,d0  ; Akiko preferred
 				andi.b	#4,d0
@@ -142,6 +141,10 @@ c2p_ConvertNull:
 				dc.w	0
 	DCLC C2P_Mode_w
 				dc.w	0
+
+c2p_ChunkyOffset_w:			dc.w	0 ; contains the offset into the chunky buffer to start at
+c2p_PlanarOffset_w:			dc.w	0 ; contains the offset into the planar buffer to start at
+
 
 	DCLC C2P_UseAkiko_b
 				dc.b	0	; Preferences Override

@@ -72,4 +72,5 @@
         CFG_PARAM_TYPE_BOOL,
         CFG_VAR_TYPE_UBYTE
     },
+
 #endif // PREFS_VID_H
