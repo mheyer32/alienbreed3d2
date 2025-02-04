@@ -39,7 +39,7 @@ c2p_SetParamsTeleFx:
 				move.w	d3,c2p_ChunkyOffset_w
 				move.w	#C2P_BPL_ROWBYTES,d3
 				mulu.w	d7,d3					; offset for top letterbox in screenbuffer
-				add.w	#(C2P_BPL_ROWBYTES)*20+(64/8),d3; top left corner of small render window in chipmem
+				add.w	#C2P_SMALL_BPL_OFFSET,d3; top left corner of small render window in chipmem
 				move.w	d3,c2p_PlanarOffset_w
 				rts
 
