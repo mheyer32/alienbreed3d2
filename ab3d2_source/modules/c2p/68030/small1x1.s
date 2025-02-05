@@ -54,7 +54,7 @@ c2p_ConvertSmall1x1Opt030:
 
 				addq.l	#4,a2
 				move.l	a1,-(sp)
-				move.l	#(((SMALL_WIDTH/32)<<16)|(SMALL_WIDTH/32)),-(sp)
+				move.l	#((C2P_SMALL_WIDTH_LONGS<<16)|C2P_SMALL_WIDTH_LONGS),-(sp)
 				move.l	#$f0f0f0f0,d6
 								; Pixels read
 				move.l	(a0)+,d2 ; R: 4
@@ -174,16 +174,16 @@ c2p_ConvertSmall1x1Opt030:
 				subq.w 	#1,2(sp)
 				bne 	.done_output_modulus_x1
 
-				adda.w #((FS_WIDTH-SMALL_WIDTH)/8),a1  ; destination plane modulus
-				move.w #(SMALL_WIDTH/32),2(sp)
+				adda.w #C2P_SMALL_MOD_BYTES,a1  ; destination plane modulus
+				move.w #C2P_SMALL_WIDTH_LONGS,2(sp)
 
 .done_output_modulus_x1:
 .start1:
 				subq.w #1,(sp)
 				bne .done_input_modulus_x1
 
-				move.w #(SMALL_WIDTH/32),(sp)     ; reset
-				adda.w #(FS_WIDTH-SMALL_WIDTH),a0 ; add modulus
+				move.w #C2P_SMALL_WIDTH_LONGS,(sp)     ; reset
+				adda.w #C2P_SMALL_MOD_PIXELS,a0 ; add modulus
 
 .done_input_modulus_x1:
 				move.l	#$33333333,d5
@@ -248,7 +248,7 @@ c2p_ConvertSmall1x1Opt030:
 
 				add.w	#4,sp ; modulus counter pair
 				move.l	(sp)+,a1
-				move.w	#(SMALL_WIDTH/32),-(sp)
+				move.w	#C2P_SMALL_WIDTH_LONGS,-(sp)
 
 				add.l	#BPLSIZE*4,a1
 
@@ -336,8 +336,8 @@ c2p_ConvertSmall1x1Opt030:
 				subq.w	#1,(sp)
 				bne 	.done_output_modulus_x2
 
-				adda.w	#((FS_WIDTH-SMALL_WIDTH)/8),a1  ; destination plane modulus
-				move.w	#(SMALL_WIDTH/32),(sp)
+				adda.w	#C2P_SMALL_MOD_BYTES,a1  ; destination plane modulus
+				move.w	#C2P_SMALL_WIDTH_LONGS,(sp)
 
 .done_output_modulus_x2:
 .start2:

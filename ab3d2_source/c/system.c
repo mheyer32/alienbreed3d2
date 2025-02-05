@@ -220,6 +220,9 @@ BOOL sys_InitHardware()
     Sys_Move16_b    = (SysBase->AttnFlags & (AFF_68040|AFF_68060)) ? 0xFF : 0;
     Sys_CPU_68060_b = (SysBase->AttnFlags & AFF_68060) ? 0xFF : 0;
 
+    // Detect if we have an 030. Assume not, if we already detected Move16.
+    Sys_CPU_68060_b = Sys_Move16_b ? 0 : ((SysBase->AttnFlags & AFF_68030) ? 0xFF : 0);
+
     if (AllocMiscResource(MR_SERIALPORT, AppName)) {
         goto fail;
     }
