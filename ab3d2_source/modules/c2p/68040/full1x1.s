@@ -43,7 +43,7 @@ c2p_SetParamsFull1x1Opt040:
 				move.l	d2,c2p1x1_8_c5_040_bfroffs
 				lsr.l	#3,d2
 				move.l	d2,c2p1x1_8_c5_040_scroffs
-				move.l	#(SCREEN_WIDTH/8)*256,d2
+				move.l	#C2P_BPL_SIZE,d2
 				mulu.w	d0,d1
 				move.l	d1,c2p1x1_8_c5_040_pixels
 				move.l	d2,d0

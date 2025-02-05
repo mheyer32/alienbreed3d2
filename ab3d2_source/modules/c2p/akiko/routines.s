@@ -32,20 +32,13 @@ c2p_SetParamsSmall1x1Akiko:
 				move.w	Vid_LetterBoxMarginHeight_w,d7
 				move.l	#SMALL_HEIGHT-1,d1		; height of area to convert
 				sub.w	d7,d1					; top letterbox
-				sub.w	d7,d1					; bottom letterbox: d1: number of lines
-				move.w	d1,c2p_AkikoSize_w		; line count - 1
-				move.w	#SCREEN_WIDTH,d3
-				mulu.w	d7,d3
-				move.w	d3,c2p_ChunkyOffset_w
-				move.w	#C2P_BPL_ROWBYTES,d3
-				mulu.w	d7,d3					; offset for top letterbox in screenbuffer
-				add.w	#C2P_SMALL_BPL_OFFSET,d3
-				move.w	d3,c2p_PlanarOffset_w
-				rts
+				bra.s	c2p_SetParamsSmallCommon
 
 c2p_SetParamsSmall1x2Akiko:
 				move.w	Vid_LetterBoxMarginHeight_w,d7
 				move.l	#(SMALL_HEIGHT/2)-1,d1	; height of area to convert
+
+c2p_SetParamsSmallCommon:
 				sub.w	d7,d1					; top letterbox
 				move.w	d1,c2p_AkikoSize_w		; line count - 1
 				move.w	#SCREEN_WIDTH,d3
@@ -56,20 +49,6 @@ c2p_SetParamsSmall1x2Akiko:
 				add.w	#C2P_SMALL_BPL_OFFSET,d3
 				move.w	d3,c2p_PlanarOffset_w
 				rts
-
-c2p_SetParamsFull1x2Akiko:
-				move.w	Vid_LetterBoxMarginHeight_w,d7
-				move.l	#(C2P_FS_HEIGHT/2)-1,d1	; height of area to convert
-				sub.w	d7,d1					; top letterbox
-				move.w	d1,c2p_AkikoSize_w		; line count - 1
-				move.w	#SCREEN_WIDTH,d3
-				mulu.w	d7,d3
-				move.w	d3,c2p_ChunkyOffset_w
-				move.w	#C2P_BPL_ROWBYTES,d3
-				mulu.w	d7,d3					; offset for top letterbox in screenbuffer
-				move.w	d3,c2p_PlanarOffset_w
-				rts
-
 
 c2p_SetParamsFull1x1Akiko:
 				move.w	Vid_LetterBoxMarginHeight_w,d7
@@ -79,6 +58,15 @@ c2p_SetParamsFull1x1Akiko:
 				mulu.w	#(SCREEN_WIDTH/32),d1
 				subi.w	#1,d1
 				move.w	d1,c2p_AkikoSize_w		; size in 32-pixel spans
+				bra.s	c2p_SetParamsFullCommon
+
+c2p_SetParamsFull1x2Akiko:
+				move.w	Vid_LetterBoxMarginHeight_w,d7
+				move.l	#(C2P_FS_HEIGHT/2)-1,d1	; height of area to convert
+				sub.w	d7,d1					; top letterbox
+				move.w	d1,c2p_AkikoSize_w		; line count - 1
+
+c2p_SetParamsFullCommon:
 				move.w	#SCREEN_WIDTH,d3
 				mulu.w	d7,d3
 				move.w	d3,c2p_ChunkyOffset_w

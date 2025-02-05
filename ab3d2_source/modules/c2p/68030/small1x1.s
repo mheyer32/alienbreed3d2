@@ -25,7 +25,7 @@ c2p_SetParamsSmall1x2Opt030:
 				mulu.w	#SCREEN_WIDTH,d2
 				move.l	d2,c2p1x1_8_c5_030_2_bfroffs	; Buffer (chunky) offset
 				lsr.l	#3,d2
-				add.l	#(SCREEN_WIDTH/8)*20+(64/8),d2 ; top of regular small screen
+				add.l	#C2P_SMALL_BPL_OFFSET,d2 ; top of regular small screen
 				move.l	d2,c2p1x1_8_c5_030_2_scroffs
 				move.l  d1,d2
 				mulu.w	d0,d1
