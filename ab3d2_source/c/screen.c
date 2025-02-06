@@ -547,6 +547,7 @@ void Vid_Present()
     }
 }
 
+/*
 #include <stdio.h>
 extern UWORD C2P_Family_w;
 extern UWORD C2P_Mode_w;
@@ -575,4 +576,4 @@ void C2P_DebugInit(void) {
         printf("C2P Family %s, Mode: %s\n", c2p_Families[C2P_Family_w >> 1], c2p_Modes[C2P_Mode_w]);
     }
 }
-
+*/
