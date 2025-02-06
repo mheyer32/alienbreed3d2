@@ -2121,9 +2121,15 @@ zzzz:
 
 				bne.s	noexit
 
-				add.w	#2,Game_TeleportFrame_w
-				cmp.w	#9,Game_TeleportFrame_w
-				blt		noexit
+				; Now we are in the exit zone
+
+				; This is a hacky way to do the teleport fx, but it doesn't work
+				; now that it's handled by a trigger event. We'll come back to this
+				; and find a better way to do it.
+
+				;add.w	#2,Game_TeleportFrame_w
+				;cmp.w	#9,Game_TeleportFrame_w
+				;blt		noexit
 
 				jmp		endlevel
 noexit:
