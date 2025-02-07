@@ -77,8 +77,10 @@ draw_PolyTopTab_vw:				ds.w	SCREEN_WIDTH*8
 draw_PartBuffer_vw: 			ds.w	4*32
 draw_PartBufferEnd:
 
-_Draw_CurrentZone_w::
-Draw_CurrentZone_w:				ds.w	1 ; public
+	DCLC Draw_CurrentZone_w,	ds.w,	1
+	DCLC Draw_ZoneClipL_w,		ds.w,	1
+	DCLC Draw_ZoneClipR_w,		ds.w,	1
+
 draw_SortIt_w:					ds.w	1
 draw_ObjectBright_w:			ds.w	1
 draw_ObjectAng_w:				ds.w	1
@@ -98,28 +100,21 @@ draw_Left_w:					ds.w	1
 draw_Right_w:					ds.w	1
 draw_DownStrip_w:				ds.w	1
 
-
 ; Border Ammo/Energy
-_draw_DisplayEnergyCount_w::
-draw_DisplayEnergyCount_w:      ds.w	1
-
-_draw_DisplayAmmoCount_w::
-draw_DisplayAmmoCount_w:	    ds.w	1
-
-_draw_LastDisplayEnergyCount_w::
-draw_LastDisplayEnergyCount_w:	ds.w	1
-
-_draw_LastDisplayAmmoCount_w::
-draw_LastDisplayAmmoCount_w:	ds.w	1
+		DCLC draw_DisplayEnergyCount_w,		ds.w,	1
+		DCLC draw_DisplayAmmoCount_w,		ds.w,	1
+		DCLC draw_LastDisplayEnergyCount_w,	ds.w,	1
+		DCLC draw_LastDisplayAmmoCount_w,	ds.w,	1
 
 draw_WhichDoing_b:				ds.b	1
 draw_InUpperZone_b:				ds.b	1
 Draw_DoUpper_b:					ds.b	1
-_Draw_ForceSimpleWalls_b::
-Draw_ForceSimpleWalls_b:		ds.b	1
+Draw_InRootZone_b:				ds.b	1
+
+		DCLC Draw_ForceSimpleWalls_b,	ds.b,	1
+		DCLC Draw_ForceZoneSkip_b,		ds.b,	1
 
 		; Are we generating glyph data?
 		IFD	GEN_GLYPH_DATA
-_draw_GlyphSpacing_vb::
-draw_GlyphSpacing_vb:			ds.b    256
+		DCLC draw_GlyphSpacing_vb,		ds.b,	256
 		ENDC

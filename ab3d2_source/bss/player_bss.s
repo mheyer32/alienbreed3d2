@@ -18,6 +18,7 @@
 Plr1_Data:
 Plr1_ObjectPtr_l:			ds.l	1
 
+		DCLC Plr1_Position_vl
 Plr1_XOff_l:				ds.l	1 ; sometimes accessed as w - todo understand real size
 Plr1_YOff_l:				ds.l	1
 Plr1_ZOff_l:				ds.l	1 ; sometimes accessed as w - todo understand real size
@@ -25,7 +26,6 @@ Plr1_ZonePtr_l:				ds.l	1
 Plr1_Height_l:				ds.l	1
 Plr1_AimSpeed_l:			ds.l	1
 
-_Plr1_Position_vl::
 Plr1_SnapXOff_l:			ds.l	1
 Plr1_SnapYOff_l:			ds.l	1
 Plr1_SnapYVel_l:			ds.l	1
@@ -40,7 +40,7 @@ Plr1_TmpZOff_l:				ds.l	1 ; suspect 16:16
 Plr1_TmpYOff_l:				ds.l	1
 
 ; Private fields
-plr1_ListOfGraphRoomsPtr_l:	ds.l	1 ; hires.s
+Plr1_PotVisibleZoneListPtr_l:	ds.l	1 ; hires.s
 plr1_PointsToRotatePtr_l:	ds.l	1 ; hires.s
 plr1_BobbleY_l:				ds.l	1 ; hires.s
 plr1_TmpHeight_l:			ds.l	1 ; hires.s
@@ -52,10 +52,12 @@ plr1_DefaultEnemyFlags_l:	ds.l	1
 
 ; Word data
 Plr1_Energy_w:				ds.w	1
-_Plr1_Direction_vw::
+
+		DCLC Plr1_Direction_vw
 Plr1_CosVal_w:				ds.w	1
 Plr1_SinVal_w:				ds.w	1
 Plr1_AngPos_w:				ds.w	1
+
 _Plr1_Zone::
 Plr1_Zone_w:				ds.w	1
 Plr1_FloorSpd_w:			ds.w	1
@@ -75,8 +77,7 @@ Plr1_AmmoCounts_vw:			ds.w	20
 Plr1_Shield_w:				ds.w	1
 Plr1_Jetpack_w:				ds.w	1
 
-_Plr1_Weapons_vb::
-Plr1_Weapons_vb:			ds.w	10 ; todo - convert to bytes or bitfield
+		DCLC Plr1_Weapons_vb,	ds.w,	10 ; todo - convert to bytes or bitfield
 
 Plr1_GunFrame_w:			ds.w	1
 Plr1_NoiseVol_w:			ds.w	1
@@ -109,8 +110,8 @@ Plr1_Used_b:				ds.b	1
 Plr1_TmpClicked_b:			ds.b	1
 Plr1_TmpSpcTap_b:			ds.b	1
 
-_Plr1_TmpGunSelected_b::
-Plr1_TmpGunSelected_b:		ds.b	1
+		DCLC Plr1_TmpGunSelected_b,	ds.b,	1
+
 Plr1_TmpFire_b:				ds.b	1
 
 ; Private fields
@@ -133,6 +134,8 @@ Plr1_ObsInLine_vb:			ds.b	MAX_OBJS_IN_LINE_COUNT
 ; Long data
 Plr2_Data:
 Plr2_ObjectPtr_l:			ds.l	1
+
+		DCLC Plr2_Position_vl
 Plr2_XOff_l:				ds.l	1
 Plr2_YOff_l:				ds.l	1
 Plr2_ZOff_l:				ds.l	1
@@ -153,7 +156,7 @@ Plr2_TmpZOff_l:				ds.l	1
 Plr2_TmpYOff_l:				ds.l	1
 
 ; Private fields
-plr2_ListOfGraphRoomsPtr_l: ds.l 	1 ; hires.s
+Plr2_PotVisibleZoneListPtr_l: ds.l 	1 ; hires.s
 plr2_PointsToRotatePtr_l:	ds.l 	1 ; hires.s
 plr2_BobbleY_l:				ds.l	1 ; hires.s
 plr2_TmpHeight_l:			ds.l	1 ; hires.s

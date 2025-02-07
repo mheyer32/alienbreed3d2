@@ -61,8 +61,10 @@ PLR_MASTER				equ 'm' ; two player master
 PLR_SLAVE				equ 's' ; two player slave
 PLR_SINGLE				equ 'n' ; Single player
 
-QUIT_KEY				equ RAWKEY_NUM_ASTERISK
-;QUIT_KEY                equ RAWKEY_COMMA ; for days when I have no numberpad
+;QUIT_KEY				equ RAWKEY_NUM_ASTERISK
+QUIT_KEY                equ RAWKEY_DOT ; for days when I have no numberpad
+
+
 
 ; ZERO-INITIALISED DATA
 				include "bss/system_bss.s"
@@ -84,7 +86,7 @@ QUIT_KEY				equ RAWKEY_NUM_ASTERISK
 				include "data/tables_data.s"
 				include "data/text_data.s"
 				include "data/game_data.s"
-                		include "data/vid_data.s"
+				include "data/vid_data.s"
 
 				section .text,code
 
@@ -367,13 +369,24 @@ noload:
 				lea		4(a2,d0.w*4),a2
 				move.l	a2,PointBrightsPtr_l
 
-				move.w	TLBT_NumZones_w(a1),d0
+				move.w	TLBT_NumZones_w(a1),d0 ; actually 1 less than the zone count, because reasons.
 				addq	#1,d0
+
+				move.w  d0,Lvl_NumZones_w
+
+
 				muls	#80,d0 ; todo - is 80 a fixed length points per zone (e.g. 10x 32-bit x/y pairs) value?
 				add.l	d0,a2
 				move.l	a2,Lvl_ZoneBorderPointsPtr_l
 
+				; todo - Determine the number of edges. This is probably
+				; (TLBT_ObjectDataOffset_l - TLBT_FloorLineOffset_l) / EdgeT_SizeOf_l
 				move.l	TLBT_FloorLineOffset_l(a1),a2
+
+				move.l  TLBT_ObjectDataOffset_l(a1),d0
+				sub.l	a2,d0
+				move.l	d0,Lvl_EdgeCount_l
+
 				add.l	a4,a2
 				move.l	a2,Lvl_ZoneEdgePtr_l
 
@@ -450,12 +463,12 @@ noload:
 				tst.w	(a3) ; PVST_Zone_w
 				blt.s	.no_more_this_zone
 
-				tst.w	PVST_Dist_w(a3)
+				tst.w	PVST_ClipID_w(a3)
 				blt.s	.this_one_null
 
 				move.l	d0,d1
 				asr.l	#1,d1
-				move.w	d1,PVST_Dist_w(a3) ; value poked back in
+				move.w	d1,PVST_ClipID_w(a3) ; value poked back in
 
 .find_next_clip:
 				cmp.w	#-2,(a2,d0.l)
@@ -476,6 +489,23 @@ noload:
 
 				lea		(a2,d0.l),a2
 				move.l	a2,Lvl_ConnectTablePtr_l
+
+				IFD BUILD_WITH_C
+				movem.l	d0/d1/a0/a1,-(sp)
+
+				DEV_CHECK_SET SKIP_PVS_AMEND,.done_errata
+
+				tst.l	Lvl_ErrataPtr_l
+				beq.s	.done_errata
+
+				move.l	Lvl_ErrataPtr_l,a0
+				CALLC	Zone_ApplyPVSErrata
+
+.done_errata:
+				CALLC	Zone_InitEdgePVS
+
+				movem.l	(sp)+,d0/d1/a0/a1
+				ENDC
 
 .noclips:
 				clr.b	Plr1_StoodInTop_b
@@ -799,7 +829,15 @@ CLRDAM:
 
 .big
 ***************************************************************
-
+;hack to allow the game to start in 1x2 pixel mode in AGA screenmode when set in the prefs.cfg
+;should probably test if we are using RTG and skip if true.
+				tst	Vid_DoubleHeight_b
+				beq	.skipDH
+				st		LASTDH
+				bsr	startCopper
+				CALLC	vid_SetupDoubleheightCopperlist
+.skipDH:
+**************************************************************
 game_main_loop:
 				move.w	#%110000000000,_custom+potgo
 
@@ -988,7 +1026,7 @@ nofadedownhc:
 
 .nopause:
 				move.l	Vid_VBLCountLast_l,d2
-				add.l	Vid_FPSLimit_l,d2
+				add.w	Sys_FPSLimit_w,d2
 
 .waitvbl:
 				move.l	Vid_VBLCount_l,d3
@@ -1148,7 +1186,7 @@ okwat:
 				bsr		Plr1_Control
 
 				move.l	Plr1_ZonePtr_l,a0
-				move.l	ZoneT_Roof_l(a0),SplitHeight
+				move.l	ZoneT_Roof_l(a0),Zone_SplitHeight_l
 				move.w	Plr1_TmpXOff_l,THISPLRxoff
 				move.w	Plr1_TmpZOff_l,THISPLRzoff
 
@@ -1281,7 +1319,7 @@ NotOnePlayer:
 				bsr		Plr1_Control
 				bsr		Plr2_Control
 				move.l	Plr1_ZonePtr_l,a0
-				move.l	ZoneT_Roof_l(a0),SplitHeight
+				move.l	ZoneT_Roof_l(a0),Zone_SplitHeight_l
 				move.w	Plr1_TmpXOff_l,THISPLRxoff
 				move.w	Plr1_TmpZOff_l,THISPLRzoff
 
@@ -1397,17 +1435,17 @@ ASlaveShouldWaitOnHisMaster:
 				move.w	Plr2_TmpXOff_l,THISPLRxoff
 				move.w	Plr2_TmpZOff_l,THISPLRzoff
 				move.l	Plr2_ZonePtr_l,a0
-				move.l	ZoneT_Roof_l(a0),SplitHeight
+				move.l	ZoneT_Roof_l(a0),Zone_SplitHeight_l
 
 donetalking:
 				move.l	#Zone_BrightTable_vl,a1
 				move.l	Lvl_ZonePtrsPtr_l,a2
-				move.l	plr2_ListOfGraphRoomsPtr_l,a0
+				move.l	Plr2_PotVisibleZoneListPtr_l,a0
 ; move.l plr2_PointsToRotatePtr_l,a5
 				move.l	a0,a5
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	doallz
-				move.l	plr1_ListOfGraphRoomsPtr_l,a0
+				move.l	Plr1_PotVisibleZoneListPtr_l,a0
 ; move.l plr1_PointsToRotatePtr_l,a5
 				move.l	a0,a5
 
@@ -1654,10 +1692,10 @@ IWasPlayer1:
 				move.l	Plr1_XOff_l,Plr_XOff_l
 				move.l	Plr1_YOff_l,Plr_YOff_l
 				move.l	Plr1_ZOff_l,Plr_ZOff_l
-				move.w	Plr1_AngPos_w,angpos
-				move.w	Plr1_CosVal_w,Temp_CosVal_w
-				move.w	Plr1_SinVal_w,Temp_SinVal_w
-				move.l	plr1_ListOfGraphRoomsPtr_l,Lvl_ListOfGraphRoomsPtr_l
+				move.w	Plr1_AngPos_w,Vis_AngPos_w
+				move.w	Plr1_CosVal_w,Vis_CosVal_w
+				move.w	Plr1_SinVal_w,Vis_SinVal_w
+				move.l	Plr1_PotVisibleZoneListPtr_l,Lvl_ListOfGraphRoomsPtr_l
 				move.l	plr1_PointsToRotatePtr_l,PointsToRotatePtr_l
 				move.b	Plr1_Echo_b,PLREcho
 				move.l	Plr1_ZonePtr_l,ZonePtr_l
@@ -1669,14 +1707,20 @@ IWasPlayer1:
 				beq.s	.nolookback
 
 				move.l	Plr1_ObjectPtr_l,a0
+				FREE_OBJ_2	a0,ENT_NEXT_2 ; weapon in hand
+				eor.w	#SINE_SIZE,Vis_AngPos_w
+				neg.w	Vis_CosVal_w					; view direction 180deg
+				neg.w	Vis_SinVal_w
 
-				FREE_OBJ_2	a0,ENT_NEXT_2
-
-				eor.w	#SINE_SIZE,angpos
-				neg.w	Temp_CosVal_w					; view direction 180deg
-				neg.w	Temp_SinVal_w
 .nolookback:
-
+*******************************************************************************
+;	add a check here for rendering player weapon object
+				tst.b	Prefs_ShowWeapon_b
+				beq.s	.showWeapon
+				move.l	Plr1_ObjectPtr_l,a0
+				FREE_OBJ_2	a0,ENT_NEXT_2 ; weapon in hand
+.showWeapon
+*******************************************************************************
 				jsr		Zone_OrderZones
 				jsr		objmoveanim
 
@@ -1761,10 +1805,10 @@ drawplayer2:
 				move.l	Plr2_XOff_l,Plr_XOff_l
 				move.l	Plr2_YOff_l,Plr_YOff_l
 				move.l	Plr2_ZOff_l,Plr_ZOff_l
-				move.w	Plr2_AngPos_w,angpos
-				move.w	Plr2_CosVal_w,Temp_CosVal_w
-				move.w	Plr2_SinVal_w,Temp_SinVal_w
-				move.l	plr2_ListOfGraphRoomsPtr_l,Lvl_ListOfGraphRoomsPtr_l
+				move.w	Plr2_AngPos_w,Vis_AngPos_w
+				move.w	Plr2_CosVal_w,Vis_CosVal_w
+				move.w	Plr2_SinVal_w,Vis_SinVal_w
+				move.l	Plr2_PotVisibleZoneListPtr_l,Lvl_ListOfGraphRoomsPtr_l
 				move.l	plr2_PointsToRotatePtr_l,PointsToRotatePtr_l
 				move.b	Plr2_Echo_b,PLREcho
 				move.l	Plr2_ZonePtr_l,ZonePtr_l
@@ -1778,11 +1822,19 @@ drawplayer2:
 
 				FREE_OBJ_2	a0,ENT_NEXT_2
 
-				eor.w	#SINE_SIZE,angpos
-				neg.w	Temp_CosVal_w
-				neg.w	Temp_SinVal_w
+				eor.w	#SINE_SIZE,Vis_AngPos_w
+				neg.w	Vis_CosVal_w
+				neg.w	Vis_SinVal_w
 
 .nolookback:
+*******************************************************************************
+;	add a check here for rendering player weapon object
+				tst.b	Prefs_ShowWeapon_b
+				beq.s	.showWeapon
+				move.l	Plr1_ObjectPtr_l,a0
+				FREE_OBJ_2	a0,ENT_NEXT_2 ; weapon in hand
+.showWeapon
+*******************************************************************************
 				jsr		Zone_OrderZones
 				jsr		objmoveanim
 
@@ -1811,24 +1863,31 @@ nodrawp2:
 				beq.s	.nomap
 				bsr		DoTheMapWotNastyCharlesIsForcingMeToDo
 
-.nomap
+.nomap:
+				;move.b	plr1_Teleported_b,d5
+				;clr.b	plr1_Teleported_b
+				;cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
+				;bne.s	.notplr2
+				;move.b	plr2_Teleported_b,d5
+				;clr.b	plr2_Teleported_b
+
 				move.b	plr1_Teleported_b,d5
+				or.b	plr2_Teleported_b,d5
+				move.b	d5,C2P_Teleporting_b
+				or.b	d5,C2P_NeedsInit_b ; trigger reinit
 				clr.b	plr1_Teleported_b
-				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
-				bne.s	.notplr2
-				move.b	plr2_Teleported_b,d5
-				clr.b	plr2_Teleported_b
+				clr.b	plr1_Teleported_b
 
 .notplr2:
-				tst.b Plr1_Mouse_b
-				beq.s	.no_croshair
+				;tst.b Plr1_Mouse_b
+				;beq.s	.no_croshair
 
-				tst.b Prefs_NoAutoAim_b
-				beq.s	.no_croshair
+				;tst.b Prefs_NoAutoAim_b
+				;beq.s	.no_croshair
 
 				jsr	Draw_Crosshair
 
-.no_croshair
+;.no_croshair
 				CALLC		Sys_EvalFPS
 
 				DEV_SAVE	d0/d1/a0/a1
@@ -1850,7 +1909,7 @@ nodrawp2:
 .no_update_progress:
 				CALLC Vid_Present
 				ELSE
-				jsr Vid_ConvertC2P
+				jsr C2P_Convert
 				ENDIF
 
 				;CALLDEV	MarkChunkyDone
@@ -1871,6 +1930,8 @@ nodrawp2:
 				blt.s	.clamped
 
 				add.w	#2,Vid_LetterBoxMarginHeight_w
+				st		C2P_NeedsSetParam_b
+
 				CALLC	Draw_ResetGameDisplay
 
 .clamped:
@@ -1882,7 +1943,7 @@ nodrawp2:
 				ble.s	.nobigscr
 
 				sub.w	#2,Vid_LetterBoxMarginHeight_w
-
+				st		C2P_NeedsSetParam_b
 .nobigscr:
 				; TODO - Come back to the resolution cycle once the double width issues are fixed
 
@@ -1919,6 +1980,7 @@ nodrawp2:
 				move.w	#0,d1
 
 				not.b	Vid_DoubleHeight_b
+				st		C2P_NeedsInit_b
 
 				; Check renderbuffer setup variables and clear screen
 				bsr		SetupRenderbufferSize
@@ -2058,9 +2120,16 @@ zzzz:
 ;				 bra end	; immediately return to main menu for testing
 
 				bne.s	noexit
-				add.w	#2,Game_TeleportFrame_w
-				cmp.w	#9,Game_TeleportFrame_w
-				blt		noexit
+
+				; Now we are in the exit zone
+
+				; This is a hacky way to do the teleport fx, but it doesn't work
+				; now that it's handled by a trigger event. We'll come back to this
+				; and find a better way to do it.
+
+				;add.w	#2,Game_TeleportFrame_w
+				;cmp.w	#9,Game_TeleportFrame_w
+				;blt		noexit
 
 				jmp		endlevel
 noexit:
@@ -2124,6 +2193,7 @@ SetupRenderbufferSize:
 
 .big
 ***************************************************************
+startCopper:
 				; FIXME dowe need to clamp here again?
 				cmp.w	#100,Vid_LetterBoxMarginHeight_w
 				blt.s	.wideScreenOk
@@ -2195,7 +2265,9 @@ SAVELETTER:		dc.b	'd',0
 				include "modules/draw/draw_map.s"
 
 				include "screensetup.s"
-				include	"chunky.s"
+;				include	"chunky.s"
+
+				include "modules/c2p/c2p.s"
 
 				include	"pauseopts.s"
 
@@ -2769,7 +2841,8 @@ Path:
 endpath:
 pathpt:			dc.l	Path
 
-
+; TODO - Consolidate with Plr2_Control and move into a single function that takes a pointer
+;        to the player state
 Plr1_Control:
 ; Take a snapshot of everything.
 				move.l	Plr1_XOff_l,d2
@@ -2794,33 +2867,33 @@ Plr1_Control:
 				add.w	#COSINE_OFS,d0
 				AMOD_A	d0
 				move.w	(a1,d0.w),Plr1_CosVal_w
-
 				move.l	Plr1_TmpYOff_l,d0
 				move.w	plr1_TmpBobble_w,d1
 				move.w	(a1,d1.w),d1
 				move.w	d1,d3
 				ble.s	.notnegative
+
 				neg.w	d1
+
 .notnegative:
 				add.w	#16384,d1
 				asr.w	#4,d1
-
 				tst.b	Plr1_Ducked_b
 				bne.s	.notdouble
+
 				tst.b	Plr1_Squished_b
 				bne.s	.notdouble
+
 				add.w	d1,d1
 .notdouble:
 				ext.l	d1
-
 				move.l	d1,plr1_BobbleY_l
-
 				move.l	Plr1_Height_l,d4
 				sub.l	d1,d4
 				add.l	d1,d0
-
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.otherwob
+
 				asr.w	#6,d3
 				ext.l	d3
 				move.l	d3,xwobble
@@ -2835,36 +2908,35 @@ Plr1_Control:
 				asr.w	#6,d2					; 6 was 7 AL
 				neg.w	d2
 				move.w	d2,xwobzoff
-.otherwob:
 
+.otherwob:
 				move.l	d0,Plr1_YOff_l
 				move.l	d0,newy
 				move.l	d0,oldy
-
 				move.l	d4,thingheight
 				move.l	#40*256,StepUpVal
 				tst.b	Plr1_Squished_b
 				bne.s	.smallstep
+
 				tst.b	Plr1_Ducked_b
 				beq.s	.okbigstep
+
 .smallstep:
 				move.l	#10*256,StepUpVal
+
 .okbigstep:
-
 				move.l	#$1000000,StepDownVal
-
 				move.l	Plr1_ZonePtr_l,a0
 				move.w	ZoneT_TelZone_w(a0),d0
 				blt		.noteleport
 
 				move.w	ZoneT_TelX_w(a0),newx
 				move.w	ZoneT_TelZ_w(a0),newz
-
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	(a0),CollId
-
 				move.l	#%111111111111111111,Obj_CollideFlags_l
 				jsr		Obj_DoCollision
+
 				tst.b	hitwall
 				beq.s	.teleport
 
@@ -2873,9 +2945,7 @@ Plr1_Control:
 				bra		.noteleport
 
 .teleport:
-
 				st		plr1_Teleported_b
-
 				move.l	Plr1_ZonePtr_l,a0
 				move.w	ZoneT_TelZone_w(a0),d0
 				move.w	ZoneT_TelX_w(a0),Plr1_XOff_l
@@ -2904,31 +2974,31 @@ Plr1_Control:
 				bra		.cantmove
 
 .noteleport:
-
 				move.l	Plr1_ZonePtr_l,Obj_ZonePtr_l
 				move.w	#%100000000,wallflags
 				move.b	Plr1_StoodInTop_b,StoodInTop
-
 				move.l	#%1011111110111000011,Obj_CollideFlags_l
 				move.l	Plr1_ObjectPtr_l,a0
 				move.w	(a0),CollId
-
 				jsr		Obj_DoCollision
+
 				tst.b	hitwall
 				beq.s	.nothitanything
+
 				move.w	oldx,Plr1_XOff_l
 				move.w	oldz,Plr1_ZOff_l
 				move.l	Plr1_XOff_l,Plr1_SnapXOff_l
 				move.l	Plr1_ZOff_l,Plr1_SnapZOff_l
 				bra		.cantmove
-.nothitanything:
 
+.nothitanything:
 				move.w	#40,Obj_ExtLen_w
 				move.b	#0,Obj_AwayFromWall_b
 
 				clr.b	exitfirst
 				clr.b	Obj_WallBounce_b
 				bsr		MoveObject
+
 				move.b	StoodInTop,Plr1_StoodInTop_b
 				move.l	Obj_ZonePtr_l,Plr1_ZonePtr_l
 				move.w	newx,Plr1_XOff_l
@@ -2943,21 +3013,17 @@ Plr1_Control:
 				beq.s	notintop
 
 				move.l	ZoneT_UpperFloor_l(a0),d0
-notintop:
 
-				adda.w	#ZoneT_Points_w,a0
+notintop:
+				adda.w	#ZoneT_Points_w,a0 ; a0 = &ZoneT.ZoneT_Points_w
 				sub.l	Plr1_Height_l,d0
 				move.l	d0,Plr1_SnapTYOff_l
 				move.w	Plr1_TmpAngPos_w,tmpangpos
-
-; move.l (a0),a0		; jump to viewpoint list
-* A0 is pointing at a pointer to list of points to rotate
-				move.w	(a0)+,d1
+				move.w	(a0)+,d1 ; after move, a0 = &ZoneT.ZoneT_DrawBackdrop_b
 				ext.l	d1
 				add.l	Plr1_ZonePtr_l,d1
 				move.l	d1,plr1_PointsToRotatePtr_l
-				tst.b	(a0)+
-				;sne		DRAWNGRAPHTOP
+				tst.b	(a0)+ ; after move, a0 = &ZoneT.ZoneT_Echo_b
 				beq.s	nobackgraphics
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
@@ -2966,12 +3032,9 @@ notintop:
 				jsr		Draw_SkyBackdrop
 
 nobackgraphics:
-				move.b	(a0)+,Plr1_Echo_b
-
-				adda.w	#10,a0
-				move.l	a0,plr1_ListOfGraphRoomsPtr_l
-
-*************************************************
+				move.b	(a0)+,Plr1_Echo_b ; after move, a0 = &ZoneT.ZoneT_TelZone_w
+				adda.w	#10,a0 ; a0 = &ZoneT_PotVisibleZoneList_vw
+				move.l	a0,Plr1_PotVisibleZoneListPtr_l
 				rts
 
 ;DRAWNGRAPHTOP:	dc.w	0
@@ -2980,10 +3043,8 @@ nobackgraphics:
 Plr2_Control:
 ; Take a snapshot of everything.
 				move.l	Plr2_XOff_l,d2
-
 				move.l	d2,oldx
 				move.l	Plr2_ZOff_l,d3
-
 				move.l	d3,oldz
 				move.l	Plr2_TmpXOff_l,d0
 				move.l	d0,Plr2_XOff_l
@@ -2991,46 +3052,41 @@ Plr2_Control:
 				move.l	Plr2_TmpZOff_l,d1
 				move.l	d1,newz
 				move.l	d1,Plr2_ZOff_l
-
 				move.l	plr2_TmpHeight_l,Plr2_Height_l
-
 				sub.l	d2,d0
 				sub.l	d3,d1
 				move.l	d0,xdiff
 				move.l	d1,zdiff
 				move.w	Plr2_TmpAngPos_w,d0
 				move.w	d0,Plr2_AngPos_w
-
 				move.l	#SinCosTable_vw,a1
 				move.w	(a1,d0.w),Plr2_SinVal_w
 				add.w	#COSINE_OFS,d0
 				AMOD_A	d0
 				move.w	(a1,d0.w),Plr2_CosVal_w
-
 				move.l	Plr2_TmpYOff_l,d0
 				move.w	plr2_TmpBobble_w,d1
 				move.w	(a1,d1.w),d1
 				move.w	d1,d3
 				ble.s	.notnegative
+
 				neg.w	d1
+
 .notnegative:
 				add.w	#16384,d1
 				asr.w	#4,d1
-
 				tst.b	Plr2_Ducked_b
 				bne.s	.notdouble
 				tst.b	Plr2_Squished_b
 				bne.s	.notdouble
 				add.w	d1,d1
+
 .notdouble:
 				ext.l	d1
-
 				move.l	d1,plr2_BobbleY_l
-
 				move.l	Plr2_Height_l,d4
 				sub.l	d1,d4
 				add.l	d1,d0
-
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				bne.s	.otherwob
 				asr.w	#6,d3
@@ -3052,30 +3108,30 @@ Plr2_Control:
 				move.l	d0,Plr2_YOff_l
 				move.l	d0,newy
 				move.l	d0,oldy
-
 				move.l	d4,thingheight
 				move.l	#40*256,StepUpVal
 				tst.b	Plr2_Squished_b
 				bne.s	.smallstep
+
 				tst.b	Plr2_Ducked_b
 				beq.s	.okbigstep
+
 .smallstep:
 				move.l	#10*256,StepUpVal
+
 .okbigstep:
-
 				move.l	#$1000000,StepDownVal
-
 				move.l	Plr2_ZonePtr_l,a0
 				move.w	ZoneT_TelZone_w(a0),d0
 				blt		.noteleport
 
 				move.w	ZoneT_TelX_w(a0),newx
 				move.w	ZoneT_TelZ_w(a0),newz
-;				move.w	Plr2_ObjectPtr_l,a0 ; 0xABADCAFE - word size - is this a bug?
 				move.l	Plr2_ObjectPtr_l,a0
 				move.w	(a0),CollId
 				move.l	#%111111111111111111,Obj_CollideFlags_l
 				jsr		Obj_DoCollision
+
 				tst.b	hitwall
 				beq.s	.teleport
 
@@ -3085,7 +3141,6 @@ Plr2_Control:
 
 .teleport:
 				st		plr2_Teleported_b
-
 				move.l	Plr2_ZonePtr_l,a0
 				move.w	ZoneT_TelZone_w(a0),d0
 				move.w	ZoneT_TelX_w(a0),Plr2_XOff_l
@@ -3114,31 +3169,30 @@ Plr2_Control:
 				bra		.cantmove
 
 .noteleport:
-
 				move.l	Plr2_ZonePtr_l,Obj_ZonePtr_l
 				move.w	#%100000000000,wallflags
 				move.b	Plr2_StoodInTop_b,StoodInTop
-
 				move.l	#%1011111010111100011,Obj_CollideFlags_l
 				move.l	Plr2_ObjectPtr_l,a0
 				move.w	(a0),CollId
-
 				jsr		Obj_DoCollision
+
 				tst.b	hitwall
 				beq.s	.nothitanything
+
 				move.w	oldx,Plr2_XOff_l
 				move.w	oldz,Plr2_ZOff_l
 				move.l	Plr2_XOff_l,Plr2_SnapXOff_l
 				move.l	Plr2_ZOff_l,Plr2_SnapZOff_l
 				bra		.cantmove
-.nothitanything:
 
+.nothitanything:
 				move.w	#40,Obj_ExtLen_w
 				move.b	#0,Obj_AwayFromWall_b
-
 				clr.b	exitfirst
 				clr.b	Obj_WallBounce_b
 				bsr		MoveObject
+
 				move.b	StoodInTop,Plr2_StoodInTop_b
 				move.l	Obj_ZonePtr_l,Plr2_ZonePtr_l
 				move.w	newx,Plr2_XOff_l
@@ -3147,42 +3201,33 @@ Plr2_Control:
 				move.l	Plr2_ZOff_l,Plr2_SnapZOff_l
 
 .cantmove:
-
 				move.l	Plr2_ZonePtr_l,a0
-
 				move.l	ZoneT_Floor_l(a0),d0
 				tst.b	Plr2_StoodInTop_b
 				beq.s	.notintop
 				move.l	ZoneT_UpperFloor_l(a0),d0
-.notintop:
 
+.notintop:
 				adda.w	#ZoneT_Points_w,a0
 				sub.l	Plr2_Height_l,d0
 				move.l	d0,Plr2_SnapTYOff_l
 				move.w	Plr2_TmpAngPos_w,tmpangpos
-
-; move.l (a0),a0		; jump to viewpoint list
-* A0 is pointing at a pointer to list of points to rotate
 				move.w	(a0)+,d1
 				ext.l	d1
 				add.l	Plr2_ZonePtr_l,d1
 				move.l	d1,plr2_PointsToRotatePtr_l
 				tst.b	(a0)+
-				;sne		DRAWNGRAPHTOP
 				beq.s	.nobackgraphics
+
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				bne.s	.nobackgraphics
 
 				jsr		Draw_SkyBackdrop
 
 .nobackgraphics:
-
 				move.b	(a0)+,Plr2_Echo_b
-
 				adda.w	#10,a0
-				move.l	a0,plr2_ListOfGraphRoomsPtr_l
-
-*****************************************************
+				move.l	a0,Plr2_PotVisibleZoneListPtr_l
 				rts
 
 
@@ -3195,17 +3240,17 @@ DONTDOGUN:
 DrawDisplay:
 				clr.b	fillscrnwater
 
-				; bignsine is 16kb = 8192 words for 4pi (720deg)
+				; bigsine is 16kb = 8192 words for 4pi (720deg)
 				; --> 4096 words per 2pi
 				; --> 1024 words = 2048byte per 90deg
 
 				move.l	#SinCosTable_vw,a0
-				move.w	angpos,d0
+				move.w	Vis_AngPos_w,d0
 				move.w	(a0,d0.w),d6
 				adda.w	#COSINE_OFS,a0				; +90 deg?
 				move.w	(a0,d0.w),d7
-				move.w	d6,Temp_SinVal_w
-				move.w	d7,Temp_CosVal_w
+				move.w	d6,Vis_SinVal_w
+				move.w	d7,Vis_CosVal_w
 
 				move.l	Plr_YOff_l,d0
 				asr.l	#8,d0					; Plr_YOff_l >> 8
@@ -3351,8 +3396,8 @@ nowaterfull:
 				align 4
 Lvl_CompactMapPtr_l:			dc.l	0
 Lvl_BigMapPtr_l:				dc.l	0
-ThisRoomToDraw:					dc.l	0,0
-SplitHeight:					dc.l	0
+Draw_CurrentZonePtr_l:			dc.l	0,0
+Zone_SplitHeight_l:				dc.l	0
 draw_WallID_w:					dc.w	0
 SMALLIT:						dc.w	0
 draw_GouraudFlatsSelected_b:	dc.w	0
@@ -3370,598 +3415,18 @@ noturn:
 
 lrs:			dc.w	0
 
-_angpos::
-angpos:			dc.w	0 ; Yaw
+		DCLC Vis_AngPos_w,	dc.w,	0 ; Yaw
+
 mang:			dc.w	0
 Sys_OldMouseY:	dc.w	0
 xmouse:			dc.w	0
-_Sys_MouseY::
-Sys_MouseY:		dc.w	0 ; Pitch?
+
+		DCLC Sys_MouseY,	dc.w,	0 ; Pitch?
 
 MAPON:			dc.w	$0
 draw_RenderMap_b:		dc.w	0
 
-RotateLevelPts:	;		Does					this rotate ALL points in the level EVERY frame?
-
-				tst.b	draw_RenderMap_b
-				beq		ONLYTHELONELY			; When REALMAP is on, we apparently need to transform all level points,
-										; otherwise only the visible subset
-
-				; Rotate all level points
-				move.w	Temp_SinVal_w,d6
-				swap	d6
-				move.w	Temp_CosVal_w,d6
-
-				move.l	Lvl_PointsPtr_l,a3
-				move.l	#Rotated_vl,a1				; stores only 2x800 points
-				move.l	#OnScreen_vl,a2
-				move.w	Plr_XOff_l,d4
-				;asr.w	#1,d4
-				move.w	Plr_ZOff_l,d5
-				;asr.w	#1,d5
-
-; move.w #$c40,$dff106
-; move.w #$f00,$dff180
-
-				move.w	Lvl_NumPoints_w,d7
-
-				tst.b	Vid_FullScreen_b
-				bne		BIGALL
-
-				; rotate all level points, small screen
-pointrotlop2:
-				move.w	(a3)+,d0
-;*				asr.w	#1,d0
-				sub.w	d4,d0
-				move.w	d0,d2					; view X
-
-				move.w	(a3)+,d1
-;*				asr.w	#1,d1
-				sub.w	d5,d1					; view Z
-
-				muls	d6,d2					; x' = (cos*viewX)<<16
-				swap	d6
-				move.w	d1,d3
-				muls	d6,d3					; z' = (sin*viewZ) << 16
-
-				sub.l	d3,d2					; x' =  (cos*viewX - sin*viewZ) << 16
-
- ; add.l d2,d2
- ; swap d2
- ; ext.l d2
- ; asl.l #7,d2   ; (x'*2 >> 16) << 7 == x' << 8
-
-				asr.l	#8,d2					; x' = int(2*x') << 8
-
-				add.l	xwobble,d2
-				move.l	d2,(a1)+				; store rotated x'
-
-				muls	d6,d0
-				swap	d6
-				muls	d6,d1
-				add.l	d0,d1
-
- ; asl.l #1,d1
- ; swap d1
- ; ext.l d1       ; (z' >> 16) * 2 == z' >> 15
-
-				asr.l	#8,d1					;
-				asr.l	#7,d1					; z' = int(z') * 2
-
-				move.l	d1,(a1)+				; store rotated z'
-
-				tst.l	d1
-				bgt.s	ptnotbehind
-				tst.l	d2
-				bgt.s	onrightsomewhere
-				move.w	#0,d2
-				bra		putin
-onrightsomewhere:
-				move.w	Vid_RightX_w,d2
-				bra		putin
-ptnotbehind:
-				divs.w	d1,d2					; x / z perspective projection
-				add.w	Vid_CentreX_w,d2
-putin:
-				move.w	d2,(a2)+				; store to OnScreen_vl
-
-				dbra	d7,pointrotlop2
-outofpointrot:
-				rts
-
-
-BIGALL:
-
-pointrotlop2B:
-				move.w	(a3)+,d0				; x
-				sub.w	d4,d0					; x/2 - Plr_XOff_l
-				move.w	d0,d2					; x = x/2 -Plr_XOff_l
-
-				move.w	(a3)+,d1				; z
-				sub.w	d5,d1					; z = z/2 - Plr_ZOff_l
-
-				muls.w	d6,d2					; x*cos<<16
-				swap	d6
-				move.w	d1,d3
-				muls.w	d6,d3					; z*sin<<16
-				sub.l	d3,d2					; x' = (x * cos - z *sin)<<16
-; add.l d2,d2
-; swap d2
-; ext.l d2
-; asl.l #7,d2    ; integer part times 256
-
-				asr.l	#8,d2
-
-				add.l	xwobble,d2				; could the wobble be a shake or some underwater effect?
-				move.l	d2,(a1)+				; store x'<<16
-
-				muls	d6,d0					; x * sin<<16
-				swap	d6
-				muls	d6,d1					; z * cos <<16
-				add.l	d0,d1					; z' = (x*sin + z*sin)<<16
-
-				; 0xABADCAFE
-				; Use 3/5 rather than 2/3 here for 320 wide - z' * 2 * 3/5 -> z' * 6/5
-				; Shift d1 to get 2 extra input bits for our scale by 3/5 approximation
-				lsl.l	#2,d1
-				swap	d1
-				muls	#1229,d1 ; 1229/2048 = 0.600097
-				asr.l	#8,d1
-				asr.l	#4,d1    ; z' * 6/5
-
-				move.l	d1,(a1)+	; this stores the rotated points, but why does it factor in the scale factor
-									; for the screen? Or is storing in view space with aspect ratio applied actually
-									; convenient?
-									; WOuld here a good opportunity to factor in Vid_DoubleWidth_b?
-
-				tst.l	d1
-				bgt.s	ptnotbehindB
-				tst.l	d2
-				bgt.s	onrightsomewhereB
-				moveq.l	#0,d2
-				bra		putinB
-
-onrightsomewhereB:
-				move.w	Vid_RightX_w,d2
-				bra		putinB
-ptnotbehindB:
-				divs.w	d1,d2
-				add.w	Vid_CentreX_w,d2
-putinB:
-				move.w	d2,(a2)+				; store fully projected X
-
-				dbra	d7,pointrotlop2B
-				rts
-
-
-				; This only rotates a subset of the points, with indices pointed to at PointsToRotatePtr_l
-ONLYTHELONELY:
-				move.w	Temp_SinVal_w,d6
-				swap	d6
-				move.w	Temp_CosVal_w,d6
-
-				move.l	PointsToRotatePtr_l,a0	; -1 terminated array of point indices to rotate
-				move.l	Lvl_PointsPtr_l,a3
-				move.l	#Rotated_vl,a1
-				move.l	#OnScreen_vl,a2
-				move.w	Plr_XOff_l,d4
-				move.w	Plr_ZOff_l,d5
-
-; move.w #$c40,$dff106
-; move.w #$f00,$dff180
-
-				tst.b	Vid_FullScreen_b
-				bne		BIGLONELY
-
-pointrotlop:
-				move.w	(a0)+,d7
-				blt		outofpointrot
-
-				move.w	(a3,d7*4),d0
-				sub.w	d4,d0
-
-				move.w	d0,d2
-				move.w	2(a3,d7*4),d1
-
-				sub.w	d5,d1
-				muls	d6,d2
-				swap	d6
-
-				move.w	d1,d3
-				muls	d6,d3
-				sub.l	d3,d2
-
-;				add.l	d2,d2
-;				swap	d2
-;				ext.l	d2
-;				asl.l	#7,d2
-
-				asr.l	#8,d2					; x' = int(2*x') << 8
-
-				add.l	xwobble,d2
-				move.l	d2,(a1,d7*8)
-
-				muls	d6,d0
-				swap	d6
-				muls	d6,d1
-				add.l	d0,d1
-
-;				asl.l #1,d1
-;				swap d1
-;				ext.l d1       ; (z' >> 16) * 2 == z' >> 15
-
-				asr.l	#8,d1					;
-				asr.l	#7,d1					; z' = int(z') * 2
-
-				move.l	d1,4(a1,d7*8)
-
-				tst.w	d1
-				bgt.s	.ptnotbehind
-				tst.w	d2
-				bgt.s	.onrightsomewhere
-				move.w	#0,d2
-				bra		.putin
-
-.onrightsomewhere:
-				move.w	Vid_RightX_w,d2
-				bra		.putin
-
-.ptnotbehind:
-				divs	d1,d2
-				add.w	Vid_CentreX_w,d2
-.putin:
-				move.w	d2,(a2,d7*2)
-
-				bra		pointrotlop
-
-; move.w #$c40,$dff106
-; move.w #$ff0,$dff180
-
-				rts
-
-BIGLONELY:
-
-.pointrotlop:
-				move.w	(a0)+,d7
-				blt.s	.outofpointrot
-
-				move.w	(a3,d7*4),d0
-				sub.w	d4,d0
-				move.w	d0,d2
-
-				move.w	2(a3,d7*4),d1
-				sub.w	d5,d1
-				muls	d6,d2
-
-				swap	d6
-				move.w	d1,d3
-				muls	d6,d3
-				sub.l	d3,d2
-
-;				add.l	d2,d2
-;				swap	d2
-;				ext.l	d2
-;				asl.l	#7,d2
-
-				asr.l	#8,d2					; x' = int(2*x') << 8
-
-				add.l	xwobble,d2
-				move.l	d2,(a1,d7*8)
-
-				muls	d6,d0
-				swap	d6
-				muls	d6,d1
-				add.l	d0,d1
-
-				; 0xABADCAFE
-				; Use 3/5 rather than 2/3 here for 320 wide - z' * 2 * 3/5 -> z' * 6/5
-				; Shift d1 to get 2 extra input bits for our scale by 3/5 approximation
-				lsl.l	#2,d1
-				swap	d1
-				muls	#1229,d1 ; 1229/2048 = 0.600097
-				asr.l	#8,d1
-				asr.l	#4,d1    ; z' * 6/5
-
-				move.l	d1,4(a1,d7*8)
-
-				tst.w	d1
-				bgt.s	.ptnotbehind
-				tst.w	d2
-				bgt.s	.onrightsomewhere
-				move.w	#0,d2
-				bra		.putin
-
-.onrightsomewhere:
-				move.w	Vid_RightX_w,d2
-				bra		.putin
-
-.ptnotbehind:
-
-				divs	d1,d2
-				add.w	Vid_CentreX_w,d2
-.putin:
-				move.w	d2,(a2,d7*2)			; this means the a2 array will also be sparsely written to,
-										; but then again doesn't need reindeexing the input indices.
-										; maybe it is worthwhile investigating if its possible to re-index
-										; and write in a packed manner
-
-				bra		.pointrotlop
-
-.outofpointrot:
-; move.w #$c40,$dff106
-; move.w #$ff0,$dff180
-
-				rts
-
-CalcPLR1InLine:
-				move.w	Plr1_SinVal_w,d5
-				move.w	Plr1_CosVal_w,d6
-				move.l	Lvl_ObjectDataPtr_l,a4
-				move.l	Lvl_ObjectPointsPtr_l,a0
-				move.w	Lvl_NumObjectPoints_w,d7
-				move.l	#Plr1_ObsInLine_vb,a2
-				move.l	#Plr1_ObjectDistances_vw,a3
-
-.objpointrotlop:
-
-				cmp.b	#OBJ_TYPE_AUX,ObjT_TypeID_b(a4)
-				beq.s	.itaux
-
-				move.w	(a0),d0
-				sub.w	Plr1_XOff_l,d0
-				move.w	4(a0),d1
-				addq	#8,a0
-
-				tst.w	ObjT_ZoneID_w(a4)
-				blt		.noworkout
-
-				moveq	#0,d2
-				move.b	ObjT_TypeID_b(a4),d2
-
-				sub.w	Plr1_ZOff_l,d1
-				move.w	d0,d2
-				muls	d6,d2
-				move.w	d1,d3
-				muls	d5,d3
-				sub.l	d3,d2
-				add.l	d2,d2
-
-				bgt.s	.okh
-				neg.l	d2
-.okh:
-				swap	d2
-
-				muls	d5,d0
-				muls	d6,d1
-				add.l	d0,d1
-				asl.l	#2,d1
-				swap	d1
-				moveq	#0,d3
-
-				tst.w	d1
-				ble.s	.notinline
-				asr.w	#1,d2
-				cmp.w	#80,d2
-				bgt.s	.notinline
-
-				st		d3
-.notinline:
-				move.b	d3,(a2)+
-				move.w	d1,(a3)+
-				NEXT_OBJ	a4
-				dbra	d7,.objpointrotlop
-
-				rts
-
-.itaux:
-				NEXT_OBJ	a4
-				bra		.objpointrotlop
-
-.noworkout:
-				move.b	#0,(a2)+
-				move.w	#0,(a3)+
-				NEXT_OBJ	a4
-				dbra	d7,.objpointrotlop
-				rts
-
-CalcPLR2InLine:
-				move.w	Plr2_SinVal_w,d5
-				move.w	Plr2_CosVal_w,d6
-				move.l	Lvl_ObjectDataPtr_l,a4
-				move.l	Lvl_ObjectPointsPtr_l,a0
-				move.w	Lvl_NumObjectPoints_w,d7
-				move.l	#Plr2_ObsInLine_vb,a2
-				move.l	#Plr2_ObjectDistances_vw,a3
-
-.objpointrotlop:
-				cmp.b	#OBJ_TYPE_AUX,ObjT_TypeID_b(a4)
-				beq.s	.itaux
-
-				move.w	(a0),d0
-				sub.w	Plr2_XOff_l,d0
-				move.w	4(a0),d1
-				addq	#8,a0
-
-				tst.w	ObjT_ZoneID_w(a4)
-				blt		.noworkout
-
-				moveq	#0,d2
-				move.b	ObjT_TypeID_b(a4),d2
-
-				sub.w	Plr2_ZOff_l,d1
-				move.w	d0,d2
-				muls	d6,d2
-				move.w	d1,d3
-				muls	d5,d3
-				sub.l	d3,d2
-				add.l	d2,d2
-
-				bgt.s	.okh
-				neg.l	d2
-.okh:
-				swap	d2
-
-				muls	d5,d0
-				muls	d6,d1
-				add.l	d0,d1
-				asl.l	#2,d1
-				swap	d1
-				moveq	#0,d3
-
-				tst.w	d1
-				ble.s	.notinline
-				asr.w	#1,d2
-				cmp.w	(a6),d2
-				bgt.s	.notinline
-
-				st		d3
-
-.notinline:
-				move.b	d3,(a2)+
-				move.w	d1,(a3)+
-				NEXT_OBJ	a4
-				dbra	d7,.objpointrotlop
-
-				rts
-
-.itaux:
-				NEXT_OBJ	a4
-				bra		.objpointrotlop
-
-.noworkout:
-				move.w	#0,(a3)+
-				move.b	#0,(a2)+
-				NEXT_OBJ	a4
-				dbra	d7,.objpointrotlop
-
-				rts
-
-
-RotateObjectPts:
-				move.w	Temp_SinVal_w,d5				; fetch sine of rotation
-				move.w	Temp_CosVal_w,d6				; cosine
-
-				move.l	Lvl_ObjectDataPtr_l,a4
-				move.l	Lvl_ObjectPointsPtr_l,a0
-				move.w	Lvl_NumObjectPoints_w,d7
-				move.l	#ObjRotated_vl,a1
-
-				tst.b	Vid_FullScreen_b
-				bne		RotateObjectPtsFullScreen
-
-
-.objpointrotlop:
-				cmp.b	#OBJ_TYPE_AUX,ObjT_TypeID_b(a4)
-				beq.s	.itaux
-
-				move.w	(a0),d0					; x of object point
-				sub.w	Plr_XOff_l,d0					; viewX = X - cam X
-				move.w	4(a0),d1				; z of object point
-				addq	#8,a0					; next point? or next object?
-
-				tst.w	ObjT_ZoneID_w(a4)		; Lvl_ObjectDataPtr_l
-				blt		.noworkout
-
-				sub.w	Plr_ZOff_l,d1					; viewZ = Z - cam Z
-
-				move.w	d0,d2
-				muls	d6,d2					; cosx = viewX * (cos << 16)
-				move.w	d1,d3					;
-				muls	d5,d3					; sinz = viewZ * (sin << 16)
-
-				sub.l	d3,d2					;  x' = cosx - sinz
-				add.l	d2,d2					; x'*2
-				swap	d2						; x' >> 16
-				move.w	d2,(a1)+				; finished rotated x'
-
-				muls	d5,d0					; sinx = viewX * sin <<16
-				muls	d6,d1					; cosz = viewZ * cos << 16
-				add.l	d0,d1					; z' = sinx + cosz
-				add.l	d1,d1					; *2
-				swap	d1						; >> 16
-; ext.l d1
-; divs #3,d1
-				moveq	#0,d3					;FIMXE: why?
-
-				move.w	d1,(a1)+				; finished rotated z'
-
-				ext.l	d2						; whats the wobble about?
-				asl.l	#7,d2
-				add.l	xwobble,d2
-				move.l	d2,(a1)+				; no clue
-
-				dbra	d7,.objpointrotlop
-
-				rts
-
-.itaux:
-				NEXT_OBJ	a4
-				bra		.objpointrotlop
-
-.noworkout:
-				clr.l	(a1)+
-				clr.l	(a1)+
-				NEXT_OBJ	a4
-				dbra	d7,.objpointrotlop
-				rts
-
-RotateObjectPtsFullScreen:
-
-.objpointrotlop:
-				cmp.b	#OBJ_TYPE_AUX,ObjT_TypeID_b(a4)
-				beq.s	.itaux
-
-				move.w	(a0),d0
-				sub.w	Plr_XOff_l,d0
-				move.w	4(a0),d1
-				addq	#8,a0
-
-				tst.w	ObjT_ZoneID_w(a4)
-				blt		.noworkout
-
-				sub.w	Plr_ZOff_l,d1
-				move.w	d0,d2
-				muls	d6,d2      ; pOEP
-				move.w	d1,d3
-				muls	d5,d3      ; pOEP
-				sub.l	d3,d2
-                muls	d5,d0      ; pOEP
-				add.l	d2,d2
-				swap	d2         ; pOEP
-				move.w	d2,(a1)+
-				muls	d6,d1      ; pOEP
-				add.l	d0,d1
-				asl.l	#2,d1
-				swap	d1         ; pOEP
-				ext.l	d1
-
-				;divs	#3,d1
-				muls    #85,d1     ; pOEP
-				move.l  xwobble,d3
-				asr.l   #8,d1 ; 85/256 approximation of division by 3
-
-				move.w	d1,(a1)+
-				ext.l	d2
-				asl.l	#7,d2
-				add.l	d3,d2
-				move.l	d2,(a1)+
-				sub.l	d3,d2
-				NEXT_OBJ	a4
-				dbra	d7,.objpointrotlop
-
-				rts
-
-.itaux:
-				NEXT_OBJ	a4
-
-				bra		.objpointrotlop
-
-.noworkout:
-				clr.l	(a1)+
-				clr.l	(a1)+
-				NEXT_OBJ	a4
-				dbra	d7,.objpointrotlop
-				rts
+				include "modules/transform.s"
 
 Game_Running_b:	dc.w	0						; does main game run?
 
@@ -5710,7 +5175,7 @@ drawit:			dc.w	0
 * For test purposes, give it
 * a3 = point to screen
 * d0= z distance away
-* and Temp_SinVal_w+Temp_CosVal_w must be set up.
+* and Vis_SinVal_w+Vis_CosVal_w must be set up.
 ***************************
 
 
@@ -5806,9 +5271,9 @@ pastfloorbright:
 				; as function of the player view direction
 				; d0 = distance of line to viewer along Z axis
 				move.l	d0,d1					; distance of line to viewer along Z axis
-				muls	Temp_CosVal_w,d1				; cos * dist
+				muls	Vis_CosVal_w,d1				; cos * dist
 				move.l	d0,d2
-				muls	Temp_SinVal_w,d2				;
+				muls	Vis_SinVal_w,d2				;
 				neg.l	d2						; -sin * width
 				asr.l	#2,d2
 				asr.l	#2,d1
@@ -6518,8 +5983,6 @@ COUNTSPACE:		ds.b	160
 _Vid_VBLCount_l::
 Vid_VBLCount_l:		dc.l	0
 Vid_VBLCountLast_l:	dc.l	0
-_Vid_FPSLimit_l::   ; todo - this only ranges 0-5, so a byte is more than enough
-Vid_FPSLimit_l:		dc.l	0
 
 OtherInter:
 				move.w	#$0010,$dff000+intreq
@@ -6540,6 +6003,15 @@ VBlankInterrupt:
 				beq.s	.nodec
 				subq.l	#1,timer
 .nodec:
+
+				tst.l	button				; used by menu system as delay
+				beq.s	.nodec1
+				subq.l	#1,button
+.nodec1:
+				tst.l	button1				; used by menu system as delay
+				beq.s	.nodec2
+				subq.l	#1,button1
+.nodec2:
 				SAVEREGS
 				bsr.s	.routine
 
@@ -8696,7 +8168,7 @@ Lvl_WalkLinksPtr_l:	dc.l	0
 Lvl_FlyLinksPtr_l:	dc.l	0
 					dc.l	0
 Vid_CentreX_w:		dc.w	SMALL_WIDTH/2
-Vid_RightX_w:		dc.w	SMALL_WIDTH
+		DCLC Vid_RightX_w, dc.w, SMALL_WIDTH
 
 
 ******************************************
@@ -8775,7 +8247,7 @@ closeeverything:
 				jsr		Res_FreeLevelData
 				jsr		Res_ReleaseScreenMemory
 ;
-;				move.l	_MiscResourceBase,d0
+;				move.l	_MiscBase,d0
 ;				beq.s	.noMiscResourceBase
 ;				move.l	d0,a6
 ;				; FIXME: would need to check if we actually allocated them successfully
@@ -8784,7 +8256,7 @@ closeeverything:
 ;				move.l	#MR_SERIALBITS,d0
 ;				jsr		_LVOFreeMiscResource(a6)
 ;
-;				clr.l	_MiscResourceBase		; Resource library doesn't have a 'close'?
+;				clr.l	_MiscBase		; Resource library doesn't have a 'close'?
 ;
 ;.noMiscResourceBase
 ;
@@ -8913,12 +8385,13 @@ welldone:
 
 				cnop	0,4
 
-				IFND OPT060
-				IFND OPT040
-				include "c2p1x1_8_c5_030_2.s"
-				ENDC
-				ENDC
-				include	"c2p1x1_8_c5_040.s"
-				include	"c2p_rect.s"
-				include	"c2p2x1_8_c5_gen.s"
-
+;				IFND OPT060
+;				IFND OPT040
+;				include "modules/c2p/c2p1x1_8_c5_030_2.s"
+;				ENDC
+;				ENDC
+;				include	"modules/c2p/c2p1x1_8_c5_040.s"
+;				include	"modules/c2p/c2p_rect.s"
+;				include	"modules/c2p/c2p2x1_8_c5_gen.s"
+;
+;				include "modules/c2p/small_c2p1x1_8_c5_030_2.s"

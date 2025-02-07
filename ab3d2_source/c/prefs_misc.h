@@ -2,6 +2,13 @@
 #define PREFS_MISC_H
 
     {
+        "misc.show_fps",
+        &Prefs_DisplayFPS_b,
+        CFG_PARAM_TYPE_BOOL,
+        CFG_VAR_TYPE_UBYTE
+    },
+
+    {
         "misc.original_mouse",
         &Prefs_OriginalMouse_b,
         CFG_PARAM_TYPE_BOOL,
@@ -31,11 +38,23 @@
         CFG_PARAM_TYPE_BOOL_INV,
         CFG_VAR_TYPE_UBYTE
     },
+	{
+        "misc.show_weapon_model",
+        &Prefs_ShowWeapon_b,
+        CFG_PARAM_TYPE_BOOL,
+        CFG_VAR_TYPE_UBYTE
+    },
     {
         "misc.oz_sensitivity",
         &Prefs_OrderZoneSensitivity,
         CFG_PARAM_TYPE_INT,
         CFG_VAR_TYPE_UBYTE
+    },
+    {
+        "misc.edge_pvs_fov",
+        &Zone_PVSFieldOfView,
+        CFG_PARAM_TYPE_INT,
+        CFG_VAR_TYPE_WORD
     },
     {
         "map.transparent",

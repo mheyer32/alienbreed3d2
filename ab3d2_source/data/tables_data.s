@@ -6,7 +6,8 @@
 MAX_ONE_OVER_N	EQU	511
 
 ; sine/cosine << 15, contains two full cycles (720 degrees) over 8192 entries
-SinCosTable_vw:		incbin	"bigsine"
+		DCLC SinCosTable_vw
+				incbin	"bigsine"
 
 ; the size of one complete cycle - not the actual size of the table
 SINE_SIZE		EQU 4096

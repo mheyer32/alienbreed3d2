@@ -329,7 +329,7 @@ ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
 		UWORD ZoneT_Unused_w            ; 30, 2 so this is the unused half
 		UWORD ZoneT_EdgeListOffset_w	; 32, 2 Offset relative to ZoneT instance
 		UWORD ZoneT_Points_w			; 34, 2
-		UBYTE ZoneT_Back_b				; 36, 1 unused
+		UBYTE ZoneT_DrawBackdrop_b		; 36, 1 Draw background?
 		UBYTE ZoneT_Echo_b				; 37, 1
 		UWORD ZoneT_TelZone_w			; 38, 2
 		UWORD ZoneT_TelX_w				; 40, 2
@@ -355,7 +355,7 @@ ENT_NEXT_2	EQU	(EntT_SizeOf_l*2)	; entity two after current
 
 	STRUCTURE PVST,0
 		WORD  PVST_Zone_w ; 0
-		WORD  PVST_Dist_w ; 2
+		WORD  PVST_ClipID_w ; 2
 		WORD  PVST_Word_2 ; 4 TODO
 		WORD  PVST_Word_3 ; 6 TODO
 		LABEL PVST_SizeOf_l 8
@@ -522,7 +522,7 @@ LVLT_MESSAGE_COUNT  EQU 10
 ; Maximum number of zones. Note that the game doesn't yet support this limit fully.
 LVL_EXPANDED_MAX_ZONE_COUNT EQU 512
 
-; Maximum number of zones. Once this is fully working, rededine as LVL_EXPANDED_MAX_ZONE_COUNT
+; Maximum number of zones. Once this is fully working, redefine as LVL_EXPANDED_MAX_ZONE_COUNT
 LVL_MAX_ZONE_COUNT EQU 256
 
 ;
@@ -555,7 +555,6 @@ LVL_MAX_ZONE_COUNT EQU 256
 	; twolev.graph.bin data header
 	STRUCTURE TLGT,0
 		; Offset values
-
 		ULONG TLGT_DoorDataOffset_l			; 0
 		ULONG TLGT_LiftDataOffset_l			; 4
 		ULONG TLGT_SwitchDataOffset_l		; 8
@@ -594,6 +593,24 @@ LVL_MAX_ZONE_COUNT EQU 256
 		LABEL LvlT_ControlPointCoords_vw	; 54 ?
 
 		LABEL LvlT_SizeOf_l
+
+    ; Object Data Definition
+	STRUCTURE DoorT,0
+		UWORD DoorT_Bottom_w			;  0, 2
+		UWORD DoorT_Top_w				;  2, 2
+		UWORD DoorT_OpeningSpeed_w		;  4, 2
+		UWORD DoorT_ClosingSpeed_w		;  6, 2
+		UWORD DoorT_OpenDuration_w		;  8, 2
+		UWORD DoorT_OpeningSoundFX_w	; 10, 2
+		UWORD DoorT_ClosingSoundFX_w	; 12, 2
+		UWORD DoorT_OpenedSoundFX_w		; 14, 2
+		UWORD DoorT_ClosedSoundFX_w		; 16, 2
+		UWORD DoorT_Word9_w				; 18, 2 - something X coordinate related
+		UWORD DoorT_Word10_w			; 20, 2 - something Z coordinate related
+		UWORD DoorT_Word11_w			; 22, 2
+		UWORD DoorT_Word12_w			; 24, 2
+		UWORD DoorT_Long_w				; 26, 4
+		UWORD DoorT_ZoneID_w			; 30, 2 - Is this the zone ID the door is attached to?
 
 ; For two player victory messages
 GAME_DM_VICTORY_MESSAGE_LENGTH EQU 80

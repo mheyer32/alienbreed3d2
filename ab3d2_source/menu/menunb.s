@@ -930,19 +930,35 @@ mnu_waitmenu:;out: d0=Selection number
 .skip:
 .w8key:
 				tst.b	Game_ShouldQuit_b
-				bne.b	.exit_game
+				bne	.exit_game
 				bsr.w	mnu_docursor
 				CALLGRAF WaitTOF				; wait a bit to give the BlitTask more time
 				CALLGRAF WaitTOF
+				
+				jsr		_ReadJoy1
+
+				move.l #KeyMap_vb,a5
+				moveq #0,d7
+				
+				move.b	forward_key,d7
+				tst.b		(a5,d7.w)
+				bne		.up
+				move.b	backward_key,d7
+				tst.b		(a5,d7.w)
+				bne		.down
+				move.b	fire_key,d7
+				tst.b		(a5,d7.w)
+				bne		.cd32
+.keys:
 				jsr		key_readkey
 				tst.w	d0
 				beq.s	.w8key
 				cmp.b	#69,d0
 				beq.s	.exit
 				cmp.b	#77,d0					; Down Arrow
-				beq.s	.down
+				beq	.down
 				cmp.b	#76,d0
-				beq.s	.up
+				beq	.up
 				cmp.b	#68,d0
 				beq.s	.quit
 				cmp.b	#64,d0
@@ -977,7 +993,15 @@ mnu_waitmenu:;out: d0=Selection number
 .sliderl:
 				moveq.l	#42,d1
 				bra.s	.cpcont
-
+.cd32:
+				clr.b	Plr1_Keys_b
+				clr.b	Plr1_Path_b
+				clr.b	Plr1_Mouse_b
+				st		Plr1_Joystick_b
+				clr.b	Plr2_Keys_b
+				clr.b	Plr2_Path_b
+				clr.b	Plr2_Mouse_b
+				st		Plr2_Joystick_b
 .quit:
 				moveq.l	#0,d1
 
@@ -1658,7 +1682,7 @@ mnu_MYMAINMENU:
 				dc.l	mnu_MYMAINMENUTEXT
 				dc.w	0,40
 				dc.w	20
-				dc.w	8
+				dc.w	9
 				dc.l	0,0
 				dc.l	0,0
 				dc.l	0,0
@@ -1681,7 +1705,7 @@ mnu_CURRENTLEVELLINE:
 				dc.b	'   LOAD  POSITION   ',1
 				dc.b	'   SAVE  POSITION   ',1
 				dc.b	'   CUSTOM OPTIONS   ',1
-				dc.b	'                    ',1
+				dc.b	'        EXIT        ',1
 				dc.b	'                    ',0
 
 				EVEN
@@ -1787,8 +1811,8 @@ optionLines:				;12345678901234567890
 				dc.b	'  ALWAYS RUN        ',1;OFF  ',1
 				dc.b	'  SHOW MESSAGES     ',1;OFF  ',1
 				dc.b	'  NO AUTO AIM       ',1;OFF  ',1
-				dc.b	'  OPTION 5          ',1
-				dc.b	'  OPTION 6          ',1
+				dc.b	'  SHOW FPS          ',1
+				dc.b	'  HIDE WEAPON       ',1
 				dc.b	'  OPTION 7          ',1
 				dc.b	'  OPTION 8          ',1
 				dc.b	'     MAIN  MENU     ',0

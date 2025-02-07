@@ -64,10 +64,10 @@ WORD Vid_ScreenWidth;
 ULONG Vid_ScreenMode;
 BOOL Vid_isRTG;
 
-extern void Vid_InitC2P(void);
+extern void C2P_Init(void);
 
 void Vid_Present();
-void Vid_ConvertC2P();
+void C2P_Convert();
 void Vid_CloseMainScreen();
 
 void Vid_OpenMainScreen(void)
@@ -77,7 +77,7 @@ void Vid_OpenMainScreen(void)
     LOCAL_GFX();
 
     if (!Vid_isRTG) {
-        CallAsm(&Vid_InitC2P);
+        CallAsm(&C2P_Init);
         for (int i = 0; i < 2; ++i) {
             if (!(rasters[i] = AllocRaster(SCREEN_WIDTH, SCREEN_HEIGHT * 8 + 1))) {
                 Sys_FatalError("AllocRaster failed");
@@ -485,7 +485,7 @@ void Vid_Present()
         );
         if (bmHandle) {
             if (Vid_FullScreen_b) {
-                WORD height     = FS_C2P_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
+                WORD height     = C2P_FS_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
                 const BYTE *src = Vid_FastBufferPtr_l + SCREEN_WIDTH * Vid_LetterBoxMarginHeight_w;
                 BYTE *dst       = bmPixelData + bmBytesPerRow * Vid_LetterBoxMarginHeight_w;
 
@@ -524,7 +524,7 @@ void Vid_Present()
         }
 #endif
     } else {
-        CallAsm(&Vid_ConvertC2P);
+        CallAsm(&C2P_Convert);
         if (!Vid_FullScreen_b && Msg_Enabled() && Msg_SmallScreenNeedsRedraw()) {
             PLANEPTR planes[3] = {
                 Draw_FastRamPlanePtr,
@@ -546,3 +546,34 @@ void Vid_Present()
         Msg_Tick();
     }
 }
+
+/*
+#include <stdio.h>
+extern UWORD C2P_Family_w;
+extern UWORD C2P_Mode_w;
+
+char const* c2p_Families[] = {
+    "040/060",
+    "030",
+    "Akiko"
+};
+
+char const* c2p_Modes[] = {
+    "1x1 2/3",
+    "1x2 2/3",
+    "2x1 2/3",
+    "2x2 2/3",
+    "1x1 Full",
+    "1x2 Full",
+    "2x1 Full",
+    "2x2 Full",
+};
+
+void C2P_DebugInit(void) {
+    if (C2P_Family_w & 1) {
+        printf("C2P Family TeleFx, Mode: %s\n", c2p_Modes[C2P_Mode_w]);
+    } else {
+        printf("C2P Family %s, Mode: %s\n", c2p_Families[C2P_Family_w >> 1], c2p_Modes[C2P_Mode_w]);
+    }
+}
+*/

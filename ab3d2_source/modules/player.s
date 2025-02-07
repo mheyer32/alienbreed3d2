@@ -82,7 +82,7 @@ plr_MouseControl:
 				move.l	(a7)+,a0
 				move.l	#SinCosTable_vw,a1
 				move.w	PlrT_SnapAngSpd_w(a0),d1
-				move.w	angpos,d0
+				move.w	Vis_AngPos_w,d0
 				AMOD_A	d0
 				move.w	d0,PlrT_SnapAngPos_w(a0)
 				move.w	(a1,d0.w),PlrT_SnapSinVal_w(a0)
@@ -394,6 +394,7 @@ plr_KeyboardControl:
 
 				st		lastscr
 				not.b	Vid_FullScreenTemp_b
+				st		C2P_NeedsInit_b
 
 				bra.s	.notswapscr2
 
@@ -405,14 +406,14 @@ plr_KeyboardControl:
 				beq.s	.noframelimit
 
 				clr.b	RAWKEY_F7(a5)
-				cmp.l	#5,Vid_FPSLimit_l
+				cmp.w	#5,Sys_FPSLimit_w
 				beq.s	.resetfpslimit
 
-				addq.l	#1,Vid_FPSLimit_l
+				addq.w	#1,Sys_FPSLimit_w
 				bra.s	.noframelimit
 
 .resetfpslimit:
-				clr.l	Vid_FPSLimit_l
+				clr.w	Sys_FPSLimit_w
 
 .noframelimit:
 				tst.b   RAWKEY_NUM_DOT(a5)
@@ -468,6 +469,7 @@ plr_KeyboardControl:
 				DEV_CHECK_KEY	RAWKEY_B,SKIP_LIGHTING
 				DEV_CHECK_KEY	RAWKEY_H,SKIP_OVERLAY
 				DEV_CHECK_KEY	RAWKEY_COMMA,ZONE_TRACE
+				DEV_CHECK_KEY	RAWKEY_LSQR_BRKT,SKIP_EDGE_PVS
 
 				; change the default floor gouraud state based on the lighting toggle
 				; todo - fix floor rendering when goraud is disabled, it's seriously glitched

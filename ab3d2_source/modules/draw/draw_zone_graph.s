@@ -1,10 +1,18 @@
+
+draw_Root_Zone_w:
+                dc.w 0
+
 Draw_Zone_Graph:
 				DEV_ZDBG ZDbg_Init
+
+				move.l	Lvl_ListOfGraphRoomsPtr_l,a0
+				move.w	(a0),draw_Root_Zone_w
 
 				move.l	Zone_EndOfListPtr_l,a0
 ; move.w #-1,(a0)
 
 ; move.l #Zone_FinalOrderTable_vw,a0
+
 
 ; 0xABADCAFE - This is where we process the visible zones and their content
 .subroomloop:
@@ -12,17 +20,58 @@ Draw_Zone_Graph:
 				move.w	-(a0),d7
 				blt		.done_all_zones
 
-				IFD	ZONE_DEBUG
 				move.w	d7,Draw_CurrentZone_w
+
+				IFD BUILD_WITH_C
+
+				clr.w	Draw_ZoneClipL_w;
+				move.w	Vid_RightX_w,Draw_ZoneClipR_w
+
+				DEV_CHECK_SET SKIP_EDGE_PVS,.no_edge_clip
+
+				move.l a0,-(sp)
+				CALLC Zone_SetupEdgeClipping
+				move.l (sp)+,a0
+
+				tst.b	Draw_ForceZoneSkip_b
+				bne .subroomloop
+
+				; Unreliable
+				;beq		.skip_short_circuit
+
+				;move.l #Zone_FinalOrderTable_vw,a0
+				;move.w (a0),d7
+				;move.w d7,Draw_CurrentZone_w
+
+;.skip_short_circuit:
+
+
+.no_edge_clip:
+				ELSE
+				clr.w	Draw_ZoneClipL_w;
+				move.w	Vid_RightX_w,Draw_ZoneClipR_w
 				ENDIF
 
 				DEV_ZDBG ZDbg_First
 
-				move.l	a0,-(a7)
+				move.l	Lvl_ZonePtrsPtr_l,a2
+				move.l	(a2,d7.w*4),a2
 
-				move.l	Lvl_ZonePtrsPtr_l,a0
-				move.l	(a0,d7.w*4),a0
-				move.l	ZoneT_Roof_l(a0),SplitHeight
+				DEV_CHECK_SET SKIP_EDGE_PVS,.no_edge_pvs
+
+				; 0xABADCAFE - Quick Hack version of edge vis. If the zone is not tagged visible, skip
+				tst.w   ZoneT_Unused_w(a2)
+				bne		.no_edge_pvs
+
+				DEV_ZDBG ZDbg_SkipEdge
+
+				bra     .subroomloop
+
+.no_edge_pvs:
+				move.l	a0,-(a7)
+                move.l  a2,a0
+
+				move.l	ZoneT_Roof_l(a0),Zone_SplitHeight_l
 				move.l	a0,draw_BackupRoomPtr_l
 
 				move.l	Lvl_ZoneGraphAddsPtr_l,a0
@@ -31,29 +80,34 @@ Draw_Zone_Graph:
 
 				add.l	Lvl_GraphicsPtr_l,a0
 				add.l	Lvl_GraphicsPtr_l,a2
-				move.l	a2,ThisRoomToDraw+4
-				move.l	a0,ThisRoomToDraw
+				move.l	a2,Draw_CurrentZonePtr_l+4
+				move.l	a0,Draw_CurrentZonePtr_l
 
 				move.l	Lvl_ListOfGraphRoomsPtr_l,a1
 
 .finditit:
-				tst.w	(a1)
+				tst.w	(a1) ; PVST_Zone_w
 				blt		.nomoretodoatall
 
-				cmp.w	(a1),d7
+				cmp.w	(a1),d7 ; PVST_Zone_w
 				beq		.done_find
 
-				adda.w	#8,a1
+				adda.w	#PVST_SizeOf_l,a1
 				bra		.finditit
 
 .done_find:
 				move.l	a1,-(a7)
 
-				; First, initialise the clips to the extreme left/right of the view and refines
-				move.w	#0,Draw_LeftClip_w
-				move.w	Vid_RightX_w,Draw_RightClip_w
+				; First, initialise the clips to the extreme left/right of the view and refine
+				;move.w	#0,Draw_LeftClip_w
+				;move.w	Vid_RightX_w,Draw_RightClip_w
+
+				; Set the initial clip extents.
+				move.w	Draw_ZoneClipL_w,Draw_LeftClip_w
+				move.w	Draw_ZoneClipR_w,Draw_RightClip_w
+
 				moveq	#0,d7
-				move.w	2(a1),d7
+				move.w	PVST_ClipID_w(a1),d7
 				blt.s	.done_right_clip
 
 				move.l	Lvl_ClipsPtr_l,a0
@@ -86,16 +140,42 @@ Draw_Zone_Graph:
 				bra		.right_clip
 
 .done_right_clip:
+				; TODO - Validate that the computed clips are always between the zone limits
 
 				; 0xABADCAFE - sign extensions and comparisons. Check these
 				move.w	Draw_LeftClip_w,d0
-				ext.l	d0
+
+				; Check if left out of bounds, i.e. beyond the right limit
+				;cmp.w	Draw_ZoneClipR_w,d0
+				;ble		.skip_not_visible
+
+				; Clamp against left limit
+				;cmp.w	Draw_ZoneClipL_w,d0
+				;ble		.pass_left
+
+				;move.w	Draw_ZoneClipL_w,d0
+				;move.w	d0,Draw_LeftClip_w
+
+.pass_left:
+				ext.l	d0 ; why?
 				move.l	d0,Draw_LeftClip_l
 
-				cmp.w	Vid_RightX_w,d0
-				bge		.skip_not_visible
+;				cmp.w	Vid_RightX_w,d0
+;				bge		.skip_not_visible
 
+				; Check if right out of bounds, i.e. beyond the left limit
 				move.w	Draw_RightClip_w,d1
+				;cmp.w 	Draw_ZoneClipL_w,d1
+				;bge 	.skip_not_visible
+
+				; Clamp against zone right clip
+				;cmp.w	Draw_ZoneClipR_w,d1
+				;bge     .pass_right
+
+				;move.w	Draw_ZoneClipR_w,d1
+				;move.w	d1,Draw_RightClip_w
+
+.pass_right:
 				ext.l	d1
 				move.l	d1,Draw_RightClip_l
 				blt		.skip_not_visible
@@ -103,11 +183,16 @@ Draw_Zone_Graph:
 				cmp.w	d1,d0
 				bge		.skip_not_visible
 
+				move.w  ZoneT_ID_w(a1),d0
+				cmp.w   draw_Root_Zone_w,d0
+                seq     Draw_InRootZone_b
+
 				move.l	Plr_YOff_l,d0
-				cmp.l	SplitHeight,d0
+				cmp.l	Zone_SplitHeight_l,d0
 				blt		.lower_zone_first
-;Plr_XOff_l
-				move.l	ThisRoomToDraw+4,a0
+
+.ready_upper:
+				move.l	Draw_CurrentZonePtr_l+4,a0
 				cmp.l	Lvl_GraphicsPtr_l,a0
 				beq.s	.lower_zone_only
 
@@ -120,9 +205,13 @@ Draw_Zone_Graph:
 				move.l	#CurrentPointBrights_vl+4,Draw_PointBrightsPtr_l
 				bsr		draw_RenderCurrentZone
 
+				; Do we skip drawing the underside?
+				;tst.b   Draw_InRootZone_b
+				;bne     .ready_next
+
 				; Room does not have an upper zone
 .lower_zone_only:
-				move.l	ThisRoomToDraw,a0
+				move.l	Draw_CurrentZonePtr_l,a0
 				clr.b	Draw_DoUpper_b
 				move.l	#CurrentPointBrights_vl,Draw_PointBrightsPtr_l
 
@@ -154,7 +243,8 @@ Draw_Zone_Graph:
 				bra		.ready_next
 
 .lower_zone_first:
-				move.l	ThisRoomToDraw,a0
+
+				move.l	Draw_CurrentZonePtr_l,a0
 				clr.b	Draw_DoUpper_b
 				move.l	#CurrentPointBrights_vl,Draw_PointBrightsPtr_l
 				move.l	draw_BackupRoomPtr_l,a1
@@ -180,7 +270,7 @@ Draw_Zone_Graph:
 
 .lzf_below_water_first:
 				bsr		draw_RenderCurrentZone
-				move.l	ThisRoomToDraw+4,a0
+				move.l	Draw_CurrentZonePtr_l+4,a0
 				cmp.l	Lvl_GraphicsPtr_l,a0
 				beq.s	.noupperroom2
 
@@ -202,7 +292,7 @@ Draw_Zone_Graph:
 
 .ready_next:
 				move.l	(a7)+,a1
-				move.l	ThisRoomToDraw,a0
+				move.l	Draw_CurrentZonePtr_l,a0
 				move.w	(a0),d7
 
 				adda.w	#8,a1
@@ -218,6 +308,7 @@ Draw_Zone_Graph:
 				DEV_ZDBG ZDbg_Done
 
 				rts
+
 
 draw_RenderCurrentZone:
 				move.w	(a0)+,d0

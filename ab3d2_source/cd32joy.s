@@ -95,6 +95,44 @@ _ReadJoy1
 
 				move.l	#KeyMap_vb,a5
 				moveq	#0,d5
+
+				tst.b		Game_Running_b
+				bne.s		.inGame
+
+				move.b	forward_key,d5
+				move.l	d0,d1
+				and.l	#JPF_JOY_UP,d0
+				;sne		(a5,d5.w)
+				beq.s		.up
+				tst.l		button
+				bne.s	.upup;down
+				st			(a5,d5.w)
+				move.l	#15,button
+				bra.s		.down
+.up
+				;clr	(a5,d5.w)
+				move.l	#0,button
+.upup
+				clr	(a5,d5.w)
+.down
+				move.b	backward_key,d5
+				move.l	d1,d0
+				and.l	#JPF_JOY_DOWN,d0
+				;sne		(a5,d5.w)
+				beq.s		.up1
+				tst.l		button1
+				bne.s	.upup1;down
+				st			(a5,d5.w)
+				move.l	#15,button1
+				bra.s		.down1
+.up1
+				;clr	(a5,d5.w)
+				move.l	#0,button1
+.upup1
+				clr	(a5,d5.w)
+.down1
+				bra.s	.morebuttons
+.inGame
 				move.b	forward_key,d5
 				move.l	d0,d1
 				and.l	#JPF_JOY_UP,d0
@@ -103,6 +141,7 @@ _ReadJoy1
 				move.l	d1,d0
 				and.l	#JPF_JOY_DOWN,d0
 				sne		(a5,d5.w)
+.morebuttons:
 				move.b	turn_left_key,d5
 				move.l	d1,d0
 				and.l	#JPF_JOY_LEFT,d0
@@ -277,6 +316,44 @@ _ReadJoy2
 
 				move.l	#KeyMap_vb,a5
 				moveq	#0,d5
+
+				tst.b		Game_Running_b
+				bne.s		.inGame
+
+				move.b	forward_key,d5
+				move.l	d0,d1
+				and.l	#JPF_JOY_UP,d0
+				;sne		(a5,d5.w)
+				beq.s		.up
+				tst.l		button
+				bne.s	.upup;down
+				st			(a5,d5.w)
+				move.l	#15,button
+				bra.s		.down
+.up
+				;clr	(a5,d5.w)
+				move.l	#0,button
+.upup
+				clr	(a5,d5.w)
+.down
+				move.b	backward_key,d5
+				move.l	d1,d0
+				and.l	#JPF_JOY_DOWN,d0
+				;sne		(a5,d5.w)
+				beq.s		.up1
+				tst.l		button1
+				bne.s	.upup1;down
+				st			(a5,d5.w)
+				move.l	#15,button1
+				bra.s		.down1
+.up1
+				;clr	(a5,d5.w)
+				move.l	#0,button1
+.upup1
+				clr	(a5,d5.w)
+.down1
+				bra.s	.morebuttons
+.inGame
 				move.b	forward_key,d5
 				move.l	d0,d1
 				and.l	#JPF_JOY_UP,d0
@@ -285,6 +362,7 @@ _ReadJoy2
 				move.l	d1,d0
 				and.l	#JPF_JOY_DOWN,d0
 				sne		(a5,d5.w)
+.morebuttons:
 				move.b	turn_left_key,d5
 				move.l	d1,d0
 				and.l	#JPF_JOY_LEFT,d0
@@ -418,7 +496,8 @@ _ReadJoy2
 ; dc.l JPF_JOY_DOWN            Down
 ; dc.l JPF_JOY_LEFT            Left
 ; dc.l JPF_JOY_RIGHT           Right
-
+button:			dc.l	0
+button1:		dc.l	0
 _LowBase
 				dc.l	0
 

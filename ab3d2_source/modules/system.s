@@ -305,6 +305,8 @@ Sys_EvalFPS:
 ;*
 ;******************************************************************************
 Sys_ShowFPS:
+				rts
+
 				movem.l		a2/a3/a6,-(sp)
 				move.w		#0,.fps_Length_w
 				lea			.fps_Template_vb,a0
@@ -315,8 +317,8 @@ Sys_ShowFPS:
 
 				move.l		Vid_MainScreen_l,a1
 				lea			sc_RastPort(a1),a1
-				move.l		#8,d1
-				clr.l		d0
+				move.l		#0,d1
+				move.l		#0,d0
 				CALLGRAF 	Move
 
 				move.w		.fps_Length_w(pc),d0
@@ -328,9 +330,9 @@ Sys_ShowFPS:
 				rts
 
 .fps_Template_vb:
-				dc.b		"%2d.%d",0
+				dc.b		"%2d.%d #%d",0
 .fps_CharBuffer_vb:
-				ds.b		16
+				ds.b		32
 
 				align 2
 .fps_Length_w:
@@ -436,7 +438,7 @@ Sys_ReadMouse:
 				asl.w	#2,d0
 				sub.w	.prevX,d0
 				add.w	d0,.prevX
-				add.w	d0,angpos
+				add.w	d0,Vis_AngPos_w
 				move.w	#0,lrs
 				rts
 
@@ -548,7 +550,7 @@ sys_OpenLibs:
 				lea.l		MiscResourceName,a1
 				CALLEXEC 	OpenResource
 
-				move.l		d0,_MiscResourceBase
+				move.l		d0,_MiscBase
                 beq.s	   	.fail
 
 				; Potgo Resource
@@ -556,7 +558,7 @@ sys_OpenLibs:
 				lea.l		PotgoResourceName,a1
 				CALLEXEC 	OpenResource
 
-				move.l		d0,_PotgoResourceBase
+				move.l		d0,_PotgoBase
 				beq.s   	.fail
 
 				; Timer Device

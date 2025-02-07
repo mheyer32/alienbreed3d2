@@ -66,4 +66,11 @@
         CFG_VAR_TYPE_UBYTE
     },
 
+    {
+        "vid.prefer_akiko",
+        &C2P_UseAkiko_b,
+        CFG_PARAM_TYPE_BOOL,
+        CFG_VAR_TYPE_UBYTE
+    },
+
 #endif // PREFS_VID_H
