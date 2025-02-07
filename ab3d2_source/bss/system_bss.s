@@ -54,7 +54,11 @@ sys_ErrorHeight_b:						ds.w	1			; Also signals that an error occured
 			align 4
 		DCLC sys_TimerRequest,			ds.b,	IOTV_SIZE	; TimeRequest structure
 
-			align 4
 		DCLC Sys_Move16_b,				ds.b,	1 		; Set if we have move16 available (060. 040)
 		DCLC Sys_FPU_b,					ds.b,	1 		; Set if we have FPU available
-		DCLC Sys_CPU_68060_b,			ds.b,	1		; set if we have a 68060 specifically
+		DCLC Sys_CPU_68060_b,			ds.b,	1		; Set if we have a 68060 specifically
+		DCLC Sys_C2P_Akiko_b,			ds.b,	1		; Set if we have Akiko available
+		DCLC Sys_CPU_68030_b,			ds.b,	1		; Set if we have 68030 specifically
+
+			align 4
+
