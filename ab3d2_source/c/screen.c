@@ -177,6 +177,7 @@ void Vid_OpenMainScreen(void)
         struct ViewPort *vp = ViewPortAddress(Vid_MainWindow_l);
         VideoControlTags(vp->ColorMap, VTAG_USERCLIP_SET, 1, VTAG_END_CM, 0);
 
+        // FIXME: should retrieve the actual modulo from the screen
         const LONG RepeatLineModulo = -SCREEN_WIDTH / 8 - 8;
         const LONG SkipLineModulo = SCREEN_WIDTH / 8 - 8;
 
@@ -192,26 +193,26 @@ void Vid_OpenMainScreen(void)
             Sys_FatalError("Could not allocate memory for fullscreen copperlist");
         }
 
-
         // HACK: The prototype for CINIT (UCopperListInit) says it accepts the number
         // of copper instructions as an UWORD, but KS3.1 actually expects an ULONG!
-        volatile ULONG CopperListLength = 116 * 6 + 4;
-        CINIT(doubleHeightCopList, CopperListLength);  // 232 modulos
+        volatile ULONG CopperListLength = 9;
+        CINIT(doubleHeightCopList, CopperListLength);
 
-        int line;
-        for (line = 0; line < 232;) {
-            CWAIT(doubleHeightCopList, line, 0);
-            CMOVE(doubleHeightCopList, bpl1mod, RepeatLineModulo);
-            CMOVE(doubleHeightCopList, bpl2mod, RepeatLineModulo);
-            ++line;
-            CWAIT(doubleHeightCopList, line, 0);
-            CMOVE(doubleHeightCopList, bpl1mod, SkipLineModulo);
-            CMOVE(doubleHeightCopList, bpl2mod, SkipLineModulo);
-            ++line;
-        }
-        CWAIT(doubleHeightCopList, line, 0);
+         CWAIT(doubleHeightCopList, 0, 0);
+        // repeat odd lines
+        CMOVE(doubleHeightCopList, bpl1mod, RepeatLineModulo);
+        // skip even lines
+        CMOVE(doubleHeightCopList, bpl2mod, SkipLineModulo);
+        // BSCAN2 | BPAGEM | BLP32
+        CMOVE(doubleHeightCopList, custom.fmode, 0x4003);
+
+        // set back to normal modulo at start of HUD
+        CWAIT(doubleHeightCopList, 232, 0);
+        // BPAGEM | BLP32
+        CMOVE(doubleHeightCopList, custom.fmode, 0x0003);
         CMOVE(doubleHeightCopList, bpl1mod, -8);
         CMOVE(doubleHeightCopList, bpl2mod, -8);
+
         CEND(doubleHeightCopList);
 #pragma GCC diagnostic pop
     }
