@@ -64,10 +64,10 @@ WORD Vid_ScreenWidth;
 ULONG Vid_ScreenMode;
 BOOL Vid_isRTG;
 
-extern void Vid_InitC2P(void);
+extern void C2P_Init(void);
 
 void Vid_Present();
-void Vid_ConvertC2P();
+void C2P_Convert();
 void Vid_CloseMainScreen();
 
 void Vid_OpenMainScreen(void)
@@ -77,7 +77,7 @@ void Vid_OpenMainScreen(void)
     LOCAL_GFX();
 
     if (!Vid_isRTG) {
-        CallAsm(&Vid_InitC2P);
+        CallAsm(&C2P_Init);
         for (int i = 0; i < 2; ++i) {
             if (!(rasters[i] = AllocRaster(SCREEN_WIDTH, SCREEN_HEIGHT * 8 + 1))) {
                 Sys_FatalError("AllocRaster failed");
@@ -173,47 +173,16 @@ void Vid_OpenMainScreen(void)
         Sys_FatalError("Could not open window");
     }
 
-	if (!Vid_isRTG) {
+    if (!Vid_isRTG) {
         struct ViewPort *vp = ViewPortAddress(Vid_MainWindow_l);
         VideoControlTags(vp->ColorMap, VTAG_USERCLIP_SET, 1, VTAG_END_CM, 0);
 
-        const LONG RepeatLineModulo = -SCREEN_WIDTH / 8 - 8;
-        const LONG SkipLineModulo = SCREEN_WIDTH / 8 - 8;
-
-// There is a problem with the NDK. custom.h defines all custom chip registers
-// as volatile, but CMove takes a non-volatile pointer, resulting in
-// "error: initialization discards 'volatile' qualifier from pointer target type "
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
         // FreeVPortCopLists/CloseScreen assumes UCopList's are allocated with AllocMem
         // See note in Vid_CloseMainScreen
-        doubleHeightCopList = AllocMem(sizeof(*doubleHeightCopList), MEMF_PUBLIC|MEMF_CLEAR);
+        doubleHeightCopList = AllocMem(sizeof(*doubleHeightCopList), MEMF_PUBLIC | MEMF_CLEAR);
         if (!doubleHeightCopList) {
             Sys_FatalError("Could not allocate memory for fullscreen copperlist");
         }
-
-
-        // HACK: The prototype for CINIT (UCopperListInit) says it accepts the number
-        // of copper instructions as an UWORD, but KS3.1 actually expects an ULONG!
-        volatile ULONG CopperListLength = 116 * 6 + 4;
-        CINIT(doubleHeightCopList, CopperListLength);  // 232 modulos
-
-        int line;
-        for (line = 0; line < 232;) {
-            CWAIT(doubleHeightCopList, line, 0);
-            CMOVE(doubleHeightCopList, bpl1mod, RepeatLineModulo);
-            CMOVE(doubleHeightCopList, bpl2mod, RepeatLineModulo);
-            ++line;
-            CWAIT(doubleHeightCopList, line, 0);
-            CMOVE(doubleHeightCopList, bpl1mod, SkipLineModulo);
-            CMOVE(doubleHeightCopList, bpl2mod, SkipLineModulo);
-            ++line;
-        }
-        CWAIT(doubleHeightCopList, line, 0);
-        CMOVE(doubleHeightCopList, bpl1mod, -8);
-        CMOVE(doubleHeightCopList, bpl2mod, -8);
-        CEND(doubleHeightCopList);
-#pragma GCC diagnostic pop
     }
 
     SetAPen(&Vid_MainScreen_l->RastPort, 255);
@@ -233,7 +202,7 @@ void Vid_CloseMainScreen()
         //
         // To get rid of a CINIT'ed pointer (which has to be AllocMem'ed ) we have to use
         // either FreeVPortCopLists or CloseScreen.
-        viewPort->UCopIns = doubleHeightCopList;
+        viewPort->UCopIns   = doubleHeightCopList;
         doubleHeightCopList = NULL;
 
         CloseWindow(Vid_MainWindow_l);
@@ -267,8 +236,52 @@ void Vid_CloseMainScreen()
 
 void vid_SetupDoubleheightCopperlist(void)
 {
+    if (Vid_isRTG) {
+        return;
+    }
+
     LOCAL_SYSBASE();
     LOCAL_INTUITION();
+
+    // Modulos are hardcoded for 320x256 as we are allocating the bitmap ourselves.
+    const LONG RepeatLineModulo = -SCREEN_WIDTH / 8 - 8;
+    const LONG SkipLineModulo   = SCREEN_WIDTH / 8 - 8;
+
+// There is a problem with the NDK. custom.h defines all custom chip registers
+// as volatile, but CMove takes a non-volatile pointer, resulting in
+// "error: initialization discards 'volatile' qualifier from pointer target type "
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
+
+    WORD startLine = Vid_LetterBoxMarginHeight_w + (Vid_FullScreen_b ? 0 : SMALL_YPOS);
+    WORD endLine   = -Vid_LetterBoxMarginHeight_w + (Vid_FullScreen_b ? C2P_FS_HEIGHT : SMALL_YPOS + SMALL_HEIGHT);
+
+    startLine = startLine & ~1;
+    endLine   = (endLine + 1) & ~1;
+
+    // HACK: The prototype for CINIT (UCopperListInit) says it accepts the number
+    // of copper instructions as an UWORD, but KS3.1 actually expects an ULONG!
+    volatile ULONG CopperListLength = 9;
+    CINIT(doubleHeightCopList, CopperListLength);
+
+    CWAIT(doubleHeightCopList, startLine, 0);
+    // repeat odd lines
+    CMOVE(doubleHeightCopList, custom.bpl1mod, RepeatLineModulo);
+    // skip even lines
+    CMOVE(doubleHeightCopList, custom.bpl2mod, SkipLineModulo);
+    // BSCAN2 | BPAGEM | BLP32
+    CMOVE(doubleHeightCopList, custom.fmode, 0x4003);
+
+    // set back to normal modulo at start of HUD
+    CWAIT(doubleHeightCopList, endLine, 0);
+    // BPAGEM | BLP32
+    CMOVE(doubleHeightCopList, custom.fmode, 0x0003);
+    CMOVE(doubleHeightCopList, custom.bpl1mod, -8);
+    CMOVE(doubleHeightCopList, custom.bpl2mod, -8);
+
+    CEND(doubleHeightCopList);
+
+#pragma GCC diagnostic pop
 
     struct ViewPort *vp = ViewPortAddress(Vid_MainWindow_l);
     Forbid();
@@ -485,7 +498,7 @@ void Vid_Present()
         );
         if (bmHandle) {
             if (Vid_FullScreen_b) {
-                WORD height     = FS_C2P_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
+                WORD height     = C2P_FS_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
                 const BYTE *src = Vid_FastBufferPtr_l + SCREEN_WIDTH * Vid_LetterBoxMarginHeight_w;
                 BYTE *dst       = bmPixelData + bmBytesPerRow * Vid_LetterBoxMarginHeight_w;
 
@@ -524,7 +537,7 @@ void Vid_Present()
         }
 #endif
     } else {
-        CallAsm(&Vid_ConvertC2P);
+        CallAsm(&C2P_Convert);
         if (!Vid_FullScreen_b && Msg_Enabled() && Msg_SmallScreenNeedsRedraw()) {
             PLANEPTR planes[3] = {
                 Draw_FastRamPlanePtr,
@@ -546,3 +559,34 @@ void Vid_Present()
         Msg_Tick();
     }
 }
+
+/*
+#include <stdio.h>
+extern UWORD C2P_Family_w;
+extern UWORD C2P_Mode_w;
+
+char const* c2p_Families[] = {
+    "040/060",
+    "030",
+    "Akiko"
+};
+
+char const* c2p_Modes[] = {
+    "1x1 2/3",
+    "1x2 2/3",
+    "2x1 2/3",
+    "2x2 2/3",
+    "1x1 Full",
+    "1x2 Full",
+    "2x1 Full",
+    "2x2 Full",
+};
+
+void C2P_DebugInit(void) {
+    if (C2P_Family_w & 1) {
+        printf("C2P Family TeleFx, Mode: %s\n", c2p_Modes[C2P_Mode_w]);
+    } else {
+        printf("C2P Family %s, Mode: %s\n", c2p_Families[C2P_Family_w >> 1], c2p_Modes[C2P_Mode_w]);
+    }
+}
+*/

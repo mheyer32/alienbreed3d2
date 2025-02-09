@@ -394,6 +394,7 @@ plr_KeyboardControl:
 
 				st		lastscr
 				not.b	Vid_FullScreenTemp_b
+				st		C2P_NeedsInit_b
 
 				bra.s	.notswapscr2
 

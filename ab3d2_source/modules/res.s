@@ -121,9 +121,9 @@ Res_FreeObjects:
 
 ; d2 = number of pointers-1, a2=list
 res_FreeList:
-				move.l	(a2)+,a1
-				CALLEXEC FreeVec
-				dbf		d2,res_FreeList
+				RES_FREEPTR (a2)
+				add.w		#4,a2
+				dbf			d2,res_FreeList
 				rts
 
 ; *****************************************************************************
@@ -409,16 +409,18 @@ Res_FreeLevelData:
 				moveq	#NUM_WALL_TEXTURES-1,d2
 				move.l	#Draw_LevelWallTexturePtrs_vl,a2
 
-.free_wall_overrides:
-				move.l	(a2),a1 ; TODO - is this broken?
-				beq.s	.done_this_wall
+				bsr		res_FreeList
 
-				CALLEXEC FreeVec
-
-.done_this_wall:
-				clr.l	(a2)+
-				dbra	d2,.free_wall_overrides
-
+;.free_wall_overrides:
+;				move.l	(a2),a1 ; TODO - is this broken?
+;				beq.s	.done_this_wall
+;
+;				CALLEXEC FreeVec
+;
+;.done_this_wall:
+;				clr.l	(a2)+
+;				dbra	d2,.free_wall_overrides
+;
 				movem.l	(sp)+,d2/a2
 
 .free_other:
@@ -427,6 +429,7 @@ Res_FreeLevelData:
 				RES_FREEPTR Lvl_GraphicsPtr_l
 				RES_FREEPTR Lvl_ClipsPtr_l
 				RES_FREEPTR Lvl_MusicPtr_l
+				RES_FREEPTR Lvl_DataPtr_l
 
 				IFD BUILD_WITH_C
 				; Edge PVS is managed by C code

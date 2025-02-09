@@ -64,6 +64,8 @@ PLR_SINGLE				equ 'n' ; Single player
 ;QUIT_KEY				equ RAWKEY_NUM_ASTERISK
 QUIT_KEY                equ RAWKEY_DOT ; for days when I have no numberpad
 
+
+
 ; ZERO-INITIALISED DATA
 				include "bss/system_bss.s"
 				include "bss/io_bss.s"
@@ -84,7 +86,7 @@ QUIT_KEY                equ RAWKEY_DOT ; for days when I have no numberpad
 				include "data/tables_data.s"
 				include "data/text_data.s"
 				include "data/game_data.s"
-                		include "data/vid_data.s"
+				include "data/vid_data.s"
 
 				section .text,code
 
@@ -827,7 +829,15 @@ CLRDAM:
 
 .big
 ***************************************************************
-
+;hack to allow the game to start in 1x2 pixel mode in AGA screenmode when set in the prefs.cfg
+;should probably test if we are using RTG and skip if true.
+				tst	Vid_DoubleHeight_b
+				beq	.skipDH
+				st		LASTDH
+				bsr	startCopper
+				CALLC	vid_SetupDoubleheightCopperlist
+.skipDH:
+**************************************************************
 game_main_loop:
 				move.w	#%110000000000,_custom+potgo
 
@@ -933,6 +943,7 @@ game_main_loop:
 				move.b	Vid_FullScreenTemp_b,Vid_FullScreen_b
 
 				bsr		SetupRenderbufferSize
+				CALLC	vid_SetupDoubleheightCopperlist
 
 .noFullscreenSwitch:
 				move.l	#KeyMap_vb,a5
@@ -1703,6 +1714,14 @@ IWasPlayer1:
 				neg.w	Vis_SinVal_w
 
 .nolookback:
+*******************************************************************************
+;	add a check here for rendering player weapon object
+				tst.b	Prefs_ShowWeapon_b
+				beq.s	.showWeapon
+				move.l	Plr1_ObjectPtr_l,a0
+				FREE_OBJ_2	a0,ENT_NEXT_2 ; weapon in hand
+.showWeapon
+*******************************************************************************
 				jsr		Zone_OrderZones
 				jsr		objmoveanim
 
@@ -1809,6 +1828,14 @@ drawplayer2:
 				neg.w	Vis_SinVal_w
 
 .nolookback:
+*******************************************************************************
+;	add a check here for rendering player weapon object
+				tst.b	Prefs_ShowWeapon_b
+				beq.s	.showWeapon
+				move.l	Plr1_ObjectPtr_l,a0
+				FREE_OBJ_2	a0,ENT_NEXT_2 ; weapon in hand
+.showWeapon
+*******************************************************************************
 				jsr		Zone_OrderZones
 				jsr		objmoveanim
 
@@ -1837,24 +1864,31 @@ nodrawp2:
 				beq.s	.nomap
 				bsr		DoTheMapWotNastyCharlesIsForcingMeToDo
 
-.nomap
+.nomap:
+				;move.b	plr1_Teleported_b,d5
+				;clr.b	plr1_Teleported_b
+				;cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
+				;bne.s	.notplr2
+				;move.b	plr2_Teleported_b,d5
+				;clr.b	plr2_Teleported_b
+
 				move.b	plr1_Teleported_b,d5
+				or.b	plr2_Teleported_b,d5
+				move.b	d5,C2P_Teleporting_b
+				or.b	d5,C2P_NeedsInit_b ; trigger reinit
 				clr.b	plr1_Teleported_b
-				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
-				bne.s	.notplr2
-				move.b	plr2_Teleported_b,d5
-				clr.b	plr2_Teleported_b
+				clr.b	plr1_Teleported_b
 
 .notplr2:
-				tst.b Plr1_Mouse_b
-				beq.s	.no_croshair
+				;tst.b Plr1_Mouse_b
+				;beq.s	.no_croshair
 
-				tst.b Prefs_NoAutoAim_b
-				beq.s	.no_croshair
+				;tst.b Prefs_NoAutoAim_b
+				;beq.s	.no_croshair
 
 				jsr	Draw_Crosshair
 
-.no_croshair
+;.no_croshair
 				CALLC		Sys_EvalFPS
 
 				DEV_SAVE	d0/d1/a0/a1
@@ -1876,7 +1910,7 @@ nodrawp2:
 .no_update_progress:
 				CALLC Vid_Present
 				ELSE
-				jsr Vid_ConvertC2P
+				jsr C2P_Convert
 				ENDIF
 
 				;CALLDEV	MarkChunkyDone
@@ -1897,8 +1931,10 @@ nodrawp2:
 				blt.s	.clamped
 
 				add.w	#2,Vid_LetterBoxMarginHeight_w
-				CALLC	Draw_ResetGameDisplay
+				st		C2P_NeedsSetParam_b
 
+				CALLC	Draw_ResetGameDisplay
+				CALLC	vid_SetupDoubleheightCopperlist
 .clamped:
 .nosmallscr:
 				tst.b	RAWKEY_NUM_PLUS(a5)		; Increase vertical view size
@@ -1908,7 +1944,8 @@ nodrawp2:
 				ble.s	.nobigscr
 
 				sub.w	#2,Vid_LetterBoxMarginHeight_w
-
+				st		C2P_NeedsSetParam_b
+				CALLC	vid_SetupDoubleheightCopperlist
 .nobigscr:
 				; TODO - Come back to the resolution cycle once the double width issues are fixed
 
@@ -1945,6 +1982,7 @@ nodrawp2:
 				move.w	#0,d1
 
 				not.b	Vid_DoubleHeight_b
+				st		C2P_NeedsInit_b
 
 				; Check renderbuffer setup variables and clear screen
 				bsr		SetupRenderbufferSize
@@ -2084,9 +2122,16 @@ zzzz:
 ;				 bra end	; immediately return to main menu for testing
 
 				bne.s	noexit
-				add.w	#2,Game_TeleportFrame_w
-				cmp.w	#9,Game_TeleportFrame_w
-				blt		noexit
+
+				; Now we are in the exit zone
+
+				; This is a hacky way to do the teleport fx, but it doesn't work
+				; now that it's handled by a trigger event. We'll come back to this
+				; and find a better way to do it.
+
+				;add.w	#2,Game_TeleportFrame_w
+				;cmp.w	#9,Game_TeleportFrame_w
+				;blt		noexit
 
 				jmp		endlevel
 noexit:
@@ -2150,6 +2195,7 @@ SetupRenderbufferSize:
 
 .big
 ***************************************************************
+startCopper:
 				; FIXME dowe need to clamp here again?
 				cmp.w	#100,Vid_LetterBoxMarginHeight_w
 				blt.s	.wideScreenOk
@@ -2221,7 +2267,9 @@ SAVELETTER:		dc.b	'd',0
 				include "modules/draw/draw_map.s"
 
 				include "screensetup.s"
-				include	"chunky.s"
+;				include	"chunky.s"
+
+				include "modules/c2p/c2p.s"
 
 				include	"pauseopts.s"
 
@@ -5957,6 +6005,15 @@ VBlankInterrupt:
 				beq.s	.nodec
 				subq.l	#1,timer
 .nodec:
+
+				tst.l	button				; used by menu system as delay
+				beq.s	.nodec1
+				subq.l	#1,button
+.nodec1:
+				tst.l	button1				; used by menu system as delay
+				beq.s	.nodec2
+				subq.l	#1,button1
+.nodec2:
 				SAVEREGS
 				bsr.s	.routine
 
@@ -8330,12 +8387,13 @@ welldone:
 
 				cnop	0,4
 
-				IFND OPT060
-				IFND OPT040
-				include "c2p1x1_8_c5_030_2.s"
-				ENDC
-				ENDC
-				include	"c2p1x1_8_c5_040.s"
-				include	"c2p_rect.s"
-				include	"c2p2x1_8_c5_gen.s"
-
+;				IFND OPT060
+;				IFND OPT040
+;				include "modules/c2p/c2p1x1_8_c5_030_2.s"
+;				ENDC
+;				ENDC
+;				include	"modules/c2p/c2p1x1_8_c5_040.s"
+;				include	"modules/c2p/c2p_rect.s"
+;				include	"modules/c2p/c2p2x1_8_c5_gen.s"
+;
+;				include "modules/c2p/small_c2p1x1_8_c5_030_2.s"

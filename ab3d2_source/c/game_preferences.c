@@ -32,12 +32,14 @@ extern UBYTE Prefs_GammaLevel_RTG_b;
 extern UWORD Vid_ContrastAdjust_w;
 extern UWORD Vid_BrightnessOffset_w;
 extern UBYTE Vid_GammaLevel_b;
+extern UBYTE C2P_UseAkiko_b;
 
 extern UBYTE Prefs_OriginalMouse_b;
 extern UBYTE Prefs_AlwaysRun_b;
 extern UBYTE Prefs_NoAutoAim_b;
 extern UBYTE Prefs_CrossHairColour_b;
 extern UBYTE Prefs_ShowMessages_b;
+extern UBYTE Prefs_ShowWeapon_b;
 
 extern UBYTE Draw_MapTransparent_b;
 extern UWORD Draw_MapZoomLevel_w;
@@ -61,8 +63,8 @@ static UBYTE Prefs_OrderZoneSensitivity = 4;
 void game_ApplyPreferences(void)
 {
     Vid_FullScreenTemp_b        = Vid_FullScreen_b = Prefs_FullScreen_b;
-    if (Vid_isRTG) {
         Vid_DoubleHeight_b      = Prefs_PixelMode_b;
+    if (Vid_isRTG) {
         Vid_ContrastAdjust_w    = Prefs_ContrastAdjust_RTG_w;
         Vid_BrightnessOffset_w  = Prefs_BrightnessOffset_RTG_w;
         Vid_GammaLevel_b        = Prefs_GammaLevel_RTG_b;
