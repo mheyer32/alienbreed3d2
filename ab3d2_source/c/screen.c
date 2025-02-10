@@ -560,18 +560,22 @@ void Vid_Present()
     }
 }
 
-/*
+#ifdef DEV
 #include <stdio.h>
 extern UWORD C2P_Family_w;
 extern UWORD C2P_Mode_w;
+extern UBYTE C2P_AkikoMirror_b;
+extern UBYTE C2P_AkikoCACR_b;
+extern UBYTE Sys_CPU_68030_b;
 
-char const* c2p_Families[] = {
+
+static char const* c2p_Families[] = {
     "040/060",
     "030",
     "Akiko"
 };
 
-char const* c2p_Modes[] = {
+static char const* c2p_Modes[] = {
     "1x1 2/3",
     "1x2 2/3",
     "2x1 2/3",
@@ -582,11 +586,21 @@ char const* c2p_Modes[] = {
     "2x2 Full",
 };
 
+static char const* on  = "On";
+static char const* off = "Off";
+
 void C2P_DebugInit(void) {
     if (C2P_Family_w & 1) {
         printf("C2P Family TeleFx, Mode: %s\n", c2p_Modes[C2P_Mode_w]);
     } else {
         printf("C2P Family %s, Mode: %s\n", c2p_Families[C2P_Family_w >> 1], c2p_Modes[C2P_Mode_w]);
+        if (C2P_Family_w == 4) {
+            printf(
+                "\t030 Fix: %s\n\tMirror: %s\n",
+                Sys_CPU_68030_b ? (C2P_AkikoCACR_b ? on : off) : "N/A",
+                C2P_AkikoMirror_b ? on : off
+            );
+        }
     }
 }
-*/
+#endif
