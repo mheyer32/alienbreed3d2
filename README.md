@@ -14,6 +14,7 @@ A summary of the changes are listed below:
 - RTG cards are supported, provided there is a compatible 256-colour 320x240 or 320x256 screenmode configured.
     - Native chipset is still required as the menus are still rendered in Chip RAM using the blitter.
     - Confirmed working on AGA and ECS systems.
+- Akiko support for systems with hardware C2P (CD32, MiniMig SiDi, etc).
 - Player settings and bindings are persisted on exit.
 - Player statistics are persisted on exit.
     - This is primarily to support expanded modding by tracking metrics such as things killed, things collected, times killed etc.
@@ -84,7 +85,8 @@ The Custom Options menu provides the following additional options:
 - Original Mouse:
     - Uses the original Team17 release mouse behaviour, with Right Mouse to move forwards.
 - Always run.
-- Disable Auto Aim
+- Show FPS.
+- Disable Auto Aim:
     - Disables the use of automatic aiming for projectile weapons
     - When in use, a crosshair is shown that can have it's colour changed between a number of high visibility options, or removed.
 
@@ -161,43 +163,33 @@ The currently maintained and buildable source code is located within the `ab3d2_
 
 A standard GNU make compatible Makefile is included. This can be used with Bebbo's cross compiler suite for Linux. See: https://github.com/bebbo/amiga-gcc for details on installation.
 
-There are multiple targets that can be built.
+There are multiple targets that can be built, controlled by passing `FLAVOUR` and `CPU` parameters to `make`:
 
-| Build | Description | CPU Target | Recipe |
+| FLAVOR | Description | CPU | Recipe |
 |------|-------------|-----|---------|
-|Release | Release, no debug, stripped | 68020+ | make rel |
-|||68040| make rel040 |
-|||68060| make rel060 | 
-|Test|Release mode, full debug, unstripped | 68020+ | make test
-|||68040| make test040 |
-|||68060| make test060 |
-| Developer | Developer mode, full debug, unstripped | 68020+ | make dev |
-|||68040| make dev040 |
-|||68060| make dev060 |
-
-Each recipe produces two binaries:
-
-- Pure assembler build:
-    - AGA only
-    - Generall lags behind the mixed assembler/C build featurewise.
-- Mixed assembler/C build:
-    - AGA and RTG.
-    - Older chipsets are supported in RGB mode.
-
-The pure assembler build is under review and may be dropped in future versions. There is generally no performance benefit over the mixed assembler/C builds.
+|release | Release, no debug, stripped | 68020+ | make FLAVOR=release CPU=030 |
+|||68040| make FLAVOR=release CPU=040 |
+|||68060| make FLAVOR=release CPU=060 | 
+|test|Release mode, full debug, unstripped | 68020+ | make FLAVOR=test CPU=030 |
+|||68040| make FLAVOR=test CPU=040 |
+|||68060| make FLAVOR=test CPU=060 |
+| dev | Developer mode, full debug, unstripped | 68020+ | make FLAVOR=dev CPU-030 |
+|||68040| make FLAVOR=dev CPU=040 |
+|||68060| make FLAVOR=dev CPU=060 |
 
 
-### Tuning
+### CPU Tuning
 
-Theere are three main CPU tuning options:
+There are three main CPU tuning options:
 
-- 68020+
-    - Runs on any 68020 or higher CPU, intended for 68030/50MHz.
-    - This build may still make use of optimised routines for specific CPUs, e.g. C2P for 030 or 040/060.
-- 68040
+- 030
+    - Runs on any 68020 or higher CPU, tuned for 68030/50MHz.
+    - This build may still make use of optimised routines for specific CPUs, e.g. C2P for 030 or 040/060 or Akiko.
+- 040
     - Specifically excludes routines optimised for slower CPUs and any runtime indirections used to select them.
     - May contain 68040-specific optimisations, e.g. cache aware, move16, etc.
-- 68060
+    - Does not contain versions of code optimised for earlier CPUs or Akiko.
+- 060
     - Specifically excludes routines optimised for slower CPUs and runtime indirections used to select them.
     - May contain 68060-specific optimisations, e.g. cache aware, move16 and code rewritten for fast multiplication, zero cycle branches, superscalar execution, etc.
 
