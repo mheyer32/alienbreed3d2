@@ -943,6 +943,7 @@ game_main_loop:
 				move.b	Vid_FullScreenTemp_b,Vid_FullScreen_b
 
 				bsr		SetupRenderbufferSize
+				CALLC	vid_SetupDoubleheightCopperlist
 
 .noFullscreenSwitch:
 				move.l	#KeyMap_vb,a5
@@ -1933,7 +1934,7 @@ nodrawp2:
 				st		C2P_NeedsSetParam_b
 
 				CALLC	Draw_ResetGameDisplay
-
+				CALLC	vid_SetupDoubleheightCopperlist
 .clamped:
 .nosmallscr:
 				tst.b	RAWKEY_NUM_PLUS(a5)		; Increase vertical view size
@@ -1944,6 +1945,7 @@ nodrawp2:
 
 				sub.w	#2,Vid_LetterBoxMarginHeight_w
 				st		C2P_NeedsSetParam_b
+				CALLC	vid_SetupDoubleheightCopperlist
 .nobigscr:
 				; TODO - Come back to the resolution cycle once the double width issues are fixed
 
