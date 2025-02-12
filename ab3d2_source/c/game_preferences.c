@@ -33,6 +33,8 @@ extern UWORD Vid_ContrastAdjust_w;
 extern UWORD Vid_BrightnessOffset_w;
 extern UBYTE Vid_GammaLevel_b;
 extern UBYTE C2P_UseAkiko_b;
+extern UBYTE C2P_AkikoMirror_b;
+extern UBYTE C2P_AkikoCACR_b;
 
 extern UBYTE Prefs_OriginalMouse_b;
 extern UBYTE Prefs_AlwaysRun_b;

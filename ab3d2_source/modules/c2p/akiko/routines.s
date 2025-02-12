@@ -9,9 +9,22 @@ AKIKO_READ_REG		EQU $00B80038
 
 C2P_BPL_WIDTH_LONGS	equ (SCREEN_WIDTH/32)
 
+; SET_AKREGS read,write
+AK_SET_REGS		MACRO
+				move.l	#AKIKO_READ_REG,\1
+				move.l	\1,\2
+				tst.b	C2P_AkikoMirror_b
+				beq.s	.skip_mirror\@
+
+				; Use the mirror for writes
+				add.w	#(AKIKO_WRITE_REG-AKIKO_READ_REG),\2
+.skip_mirror\@:
+				ENDM
+
 CACR_SET		MACRO
 				; CACR - Disable WA on 030
-				tst.b	Sys_CPU_68030_b
+				move.b	Sys_CPU_68030_b,d0
+				and.b	C2P_AkikoCACR_b,d0
 				beq.s	.skip_cacr\@
 
  				move.l	_SysBase,a6
@@ -29,7 +42,8 @@ CACR_SET		MACRO
 
 CACR_RESET		MACRO
 				; CACR Restore
-				tst.b	Sys_CPU_68030_b
+				move.b	Sys_CPU_68030_b,d1
+				and.b	C2P_AkikoCACR_b,d1
 				beq.s	.skip_cacr_2\@
 
 				move.l  (sp)+,d1
@@ -39,7 +53,6 @@ CACR_RESET		MACRO
 				jsr _LVOEnable(a6)
 
 .skip_cacr_2\@:
-
 				ENDM
 
 ; TODO - SetParams should set up the pointers and counters needed
@@ -118,8 +131,11 @@ c2p_ConvertFull1x1OptAkiko:
 				add.w	c2p_ChunkyOffset_w,a0
 				move.l	Vid_DrawScreenPtr_l,a1
 				add.w	c2p_PlanarOffset_w,a1
-				move.l	#AKIKO_WRITE_REG,a2
-				move.l	#AKIKO_READ_REG,a5
+				;move.l	#AKIKO_WRITE_REG,a2
+				;move.l	#AKIKO_READ_REG,a5
+
+				AK_SET_REGS	a5,a2
+
 				move.l	a1,a3
 
 				CACR_SET
@@ -187,8 +203,11 @@ c2p_ConvertFull1x2OptAkiko:
 				add.w	c2p_ChunkyOffset_w,a0
 				move.l	Vid_DrawScreenPtr_l,a1
 				add.w	c2p_PlanarOffset_w,a1
-				move.l	#AKIKO_WRITE_REG,a2
-				move.l	#AKIKO_READ_REG,a5
+				;move.l	#AKIKO_WRITE_REG,a2
+				;move.l	#AKIKO_READ_REG,a5
+
+				AK_SET_REGS	a5,a2
+
 				move.l	a1,a3
 
 				CACR_SET
@@ -265,8 +284,11 @@ c2p_ConvertSmall1x1OptAkiko:
 				add.w	c2p_ChunkyOffset_w,a0
 				move.l	Vid_DrawScreenPtr_l,a1
 				add.w	c2p_PlanarOffset_w,a1
-				move.l	#AKIKO_WRITE_REG,a2
-				move.l	#AKIKO_READ_REG,a5
+				;move.l	#AKIKO_WRITE_REG,a2
+				;move.l	#AKIKO_READ_REG,a5
+
+				AK_SET_REGS	a5,a2
+
 				move.l	a1,a3
 
 				CACR_SET
@@ -343,8 +365,11 @@ c2p_ConvertSmall1x2OptAkiko:
 				add.w	c2p_ChunkyOffset_w,a0
 				move.l	Vid_DrawScreenPtr_l,a1
 				add.w	c2p_PlanarOffset_w,a1
-				move.l	#AKIKO_WRITE_REG,a2
-				move.l	#AKIKO_READ_REG,a5
+				;move.l	#AKIKO_WRITE_REG,a2
+				;move.l	#AKIKO_READ_REG,a5
+
+				AK_SET_REGS	a5,a2
+
 				move.l	a1,a3
 
 				CACR_SET
@@ -419,3 +444,5 @@ c2p_ConvertSmall1x2OptAkiko:
 c2p_AkikoSize_w:
 				dc.w 0
 
+		DCLC C2P_AkikoMirror_b,			dc.b,	0
+		DCLC C2P_AkikoCACR_b,			dc.b,	0
