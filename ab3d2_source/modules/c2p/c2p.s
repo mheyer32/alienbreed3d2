@@ -156,9 +156,10 @@ c2p_ConvertNull:
 c2p_ChunkyOffset_w:			dc.w	0 ; contains the offset into the chunky buffer to start at
 c2p_PlanarOffset_w:			dc.w	0 ; contains the offset into the planar buffer to start at
 
-
-	DCLC C2P_UseAkiko_b
-				dc.b	0	; Preferences Override
+	; These properties are manipulated via C preferences, so keep them in all builds.
+	DCLC C2P_UseAkiko_b,	dc.b,	0
+	DCLC C2P_AkikoMirror_b,	dc.b,	0
+	DCLC C2P_AkikoCACR_b,	dc.b,	0
 
 C2P_NeedsInit_b:
 				dc.b	1	; Options that need the whole C2P to be reinit should set this
