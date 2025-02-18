@@ -87,7 +87,9 @@ c2p_ConvertNull:
 
 				ENDC
 
-				;move.w	d1,C2P_Family_w ; debugging
+				IFD		DEV
+				move.w	d1,C2P_Family_w ; debugging
+				ENDC
 
 				; d1 now contains the index for the device tuned code
 				; TODO - get pointer. Is a1 OK?
@@ -106,7 +108,9 @@ c2p_ConvertNull:
 				andi.b	#4,d0
 				or.b	d0,d1
 
-				;move.w	d1,C2P_Mode_w ; debugging
+				IFD		DEV
+				move.w	d1,C2P_Mode_w ; debugging
+				ENDC
 
 				; d1 should now contain all the bits needed to select the variant
 				move.l	(a0,d1.w*4),Vid_C2PSetParamsPtr_l
@@ -114,7 +118,9 @@ c2p_ConvertNull:
 				st		C2P_NeedsSetParam_b
 				clr.b	C2P_NeedsInit_b
 
-				;CALLC	C2P_DebugInit
+				IFD DEV
+				CALLC	C2P_DebugInit
+				ENDC
 
 				rts
 
@@ -140,10 +146,12 @@ c2p_ConvertNull:
 				jsr		(a0)
 				rts
 
-;	DCLC C2P_Family_w
-;				dc.w	0
-;	DCLC C2P_Mode_w
-;				dc.w	0
+				IFD DEV
+	DCLC C2P_Family_w
+				dc.w	0
+	DCLC C2P_Mode_w
+				dc.w	0
+				ENDC
 
 c2p_ChunkyOffset_w:			dc.w	0 ; contains the offset into the chunky buffer to start at
 c2p_PlanarOffset_w:			dc.w	0 ; contains the offset into the planar buffer to start at

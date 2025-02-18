@@ -34,14 +34,21 @@ vid.fullscreen             true
 vid.pixel1x2               false
 vid.vert_margin            0
 vid.frame_skip             0
+vid.prefer_akiko           false
+vid.akiko_mirror           false
+vid.akiko_030_fix          false
 gfx.simple_walls           false
 gfx.reduced_quality        false
 gfx.disable_dynamic_lights false
+misc.show_fps              true
 misc.original_mouse        false
 misc.always_run            false
 misc.disable_auto_aim      false
 misc.crosshair_colour      0
 misc.disable_messages      false
+misc.show_weapon_model     false
+misc.oz_sensitivity        4
+misc.edge_pvs_fov          1800
 map.transparent            false
 map.zoom                   3
 ```
@@ -78,3 +85,28 @@ Valid names for key bindings are:
 - L? (Left unmarked key on UK keyboard)
 - R? (Right unmarked key on UK keyboard)
 
+### Advanced options
+
+The following options can only be set by editing the file manually. Of these only the Akiko settings should be modified 
+
+- vid.prefer_akiko
+    - Boolean.
+    - When enabled, Akiko is preferred over CPU if the device is detected on 020/030 systems.
+
+- vid.akiko_mirror
+    - Boolean.
+    - When enabled, mirror registers are used for Akiko write and read. This may help address issues with C2P on some systems.
+
+- vid.akiko_030_fix
+    - Boolean.
+    - When enabled, attempts to disable the Write Allocation of the 68030 DataCache (if a 68030 is detected) during conversion. This may help address issues with C2P on some 68030 systems. This option is considered risky as it disables interrupts for the duration of C2P.
+
+- misc.oz_sensitivity
+    - Integer.
+    - Defines how sensitive the engine is to changes of player position when evaluating the order in which the visible parts of the map should be drawn.
+    - Higher values may improve peformance at the expense of occasional geometry glitches.
+
+- misc.edge_pvs_fov
+    - Sets the field of view used in early culling of zones in the PVS.
+    - Units are 2048 per right angle.
+    - Value should be even.
