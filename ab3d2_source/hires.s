@@ -6,7 +6,7 @@
 				opt		o+
 
 				xref	_custom
-				xref	_ciaa
+				xref	_ciaaather than having to wait for the displayed image scan out to be completed, you just select
 				xref	_Vid_Present
 
 ;*************************************************
@@ -61,8 +61,8 @@ PLR_MASTER				equ 'm' ; two player master
 PLR_SLAVE				equ 's' ; two player slave
 PLR_SINGLE				equ 'n' ; Single player
 
-QUIT_KEY				equ RAWKEY_NUM_ASTERISK
-;QUIT_KEY				equ RAWKEY_DOT ; for days when I have no numberpad
+;QUIT_KEY				equ RAWKEY_NUM_ASTERISK
+QUIT_KEY				equ RAWKEY_DOT ; for days when I have no numberpad
 
 
 
@@ -1080,7 +1080,7 @@ waitmaster:
 
 				move.l	Vid_DisplayMsgPort_l,a0
 				move.l	a0,a3
-				CALLEXEC WaitPort				; wait for when the old image has been displayed
+				;CALLEXEC WaitPort				; wait for when the old image has been displayed
 .clrMsgPort:
 				move.l	a3,a0
 				CALLEXEC GetMsg					; clear message port
