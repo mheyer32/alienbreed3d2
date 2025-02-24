@@ -444,5 +444,3 @@ c2p_ConvertSmall1x2OptAkiko:
 c2p_AkikoSize_w:
 				dc.w 0
 
-		DCLC C2P_AkikoMirror_b,			dc.b,	0
-		DCLC C2P_AkikoCACR_b,			dc.b,	0
