@@ -40,6 +40,11 @@ enum {
 #define EDGE_TRAVERSE_LIMIT 16
 
 /**
+ * Remember: height values are inverted - smaller values are higher than larger ones.
+ */
+#define DISABLED_HEIGHT 5000
+
+/**
  * This structure contains information about a potentially visible zone. A list of these
  * is appended to each Zone structure in the loaded data. The final record has pvs_ZoneID
  * set to -1.
@@ -111,6 +116,8 @@ typedef struct {
  * Structure for the per-edge PVS data header:
  *
  * [Zone ID][Num Edges][Num PVS][EdgeID 0]...[EdgeID N][PVS List 0] ... [PVS List N]
+ *
+ * TODO - Add offsets for door/lift masks
  */
 typedef struct {
     WORD zep_ZoneID;
@@ -119,6 +126,14 @@ typedef struct {
     ZEdgeInfo zep_EdgeInfoList[1];
     //WORD zep_EdgeIDList[1]; // zep_EdgeCount in length, followed by zep_EdgeCount sets of data
 } ASM_ALIGN(sizeof(WORD)) ZEdgePVSHeader;
+
+/**
+ * Utility tuple that represents the floor/roof pair, for convenience.
+ */
+typedef struct {
+    LONG zlp_Floor;
+    LONG zlp_Roof;
+} ASM_ALIGN(sizeof(WORD)) Zone_LevelPair;
 
 /**
  * Zone PVS Errata
@@ -148,43 +163,6 @@ extern ZEdge* Lvl_ZoneEdgePtr_l;
  * Number of zones defined in the loaded level
  */
 extern WORD Lvl_NumZones_w;
-
-/**
- *  Check if a Zone ID is valid. Must be between 0 and Lvl_NumZones_w-1
- */
-static inline BOOL zone_IsValidZoneID(WORD id) {
-    return id >= 0 && id < Lvl_NumZones_w;
-}
-
-/**
- *  Check if am Edge ID is valid.
- *
- *  TODO find and expose the maximum edge ID for proper range checking
- */
-static inline BOOL zone_IsValidEdgeID(WORD id) {
-    return id >= 0;
-}
-
-/**
- * Obtain the address of the list of edges for the current zone. This is obtained by
- * adding the (negative) z_EdgeListOffset to the Zone address.
- */
-static inline WORD const* zone_GetEdgeList(Zone const* zonePtr) {
-    return (WORD const*)(((BYTE const*)zonePtr) + zonePtr->z_EdgeListOffset);
-}
-
-static inline WORD const* zone_GetPointIndexList(Zone const* zonePtr) {
-    return (WORD const*)(((BYTE const*)zonePtr) + zonePtr->z_Points);
-}
-
-
-/**
- * Returns the address of the start of the actual EdgePVSList. This immediately follows the
- * ZEdgePVSHeader.zep_EdgeIDList array, which is zep_EdgeCount elements long.
- */
-static inline UBYTE* zone_GetEdgePVSListBase(ZEdgePVSHeader const* zepPtr) {
-    return (UBYTE*)(&zepPtr->zep_EdgeInfoList[zepPtr->zep_EdgeCount]);
-}
 
 extern ZEdgePVSHeader** Lvl_ZEdgePVSHeaderPtrsPtr_l;
 
