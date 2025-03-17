@@ -821,7 +821,8 @@ wateranimlop:
 				bgt.s	waternotattop
 
 				move.l	d1,d3
-				move.w	#128,d4
+				;move.w	#128,d4
+				neg.w	d4
 				bra		waterdone
 
 waternotattop:
@@ -829,7 +830,8 @@ waternotattop:
 				blt.s	waterdone
 
 				move.l	d2,d3
-				move.w	#-128,d4
+				;move.w	#-128,d4
+				neg.w	d4
 
 waterdone:
 				move.l	d3,(a0)+
