@@ -1026,18 +1026,26 @@ nofadedownhc:
 				st		Game_Running_b
 
 .nopause:
-				move.l	Vid_VBLCountLast_l,d2
-				add.w	Sys_FPSLimit_w,d2
+				clr.l	d2
+				move.w	Sys_FPSLimit_w,d2
+				bmi.s	.no_vbl
+
+				;move.l	Vid_VBLCountLast_l,d2
+				add.l	Vid_VBLCountLast_l,d2
+				;add.w	Sys_FPSLimit_w,d2
 
 .waitvbl:
-				move.l	Vid_VBLCount_l,d3
-				cmp.l	d2,d3
-				bhi.s	.skipWaitTOF
+				;move.l	Vid_VBLCount_l,d3
+				;cmp.l	d2,d3
+				cmp.l	Vid_VBLCount_l,d2
+				blt.s	.skipWaitTOF
 				CALLGRAF	WaitTOF
 				bra.s	.waitvbl
 
 .skipWaitTOF:
-				move.l	d3,Vid_VBLCountLast_l
+				move.l	Vid_VBLCount_l,Vid_VBLCountLast_l
+.no_vbl:
+				;move.l	d3,Vid_VBLCountLast_l
 
 ; Swap screen bitmaps
 				move.l	Vid_DrawScreenPtr_l,d0
@@ -1080,7 +1088,7 @@ waitmaster:
 
 				move.l	Vid_DisplayMsgPort_l,a0
 				move.l	a0,a3
-				;CALLEXEC WaitPort				; wait for when the old image has been displayed
+				CALLEXEC WaitPort				; wait for when the old image has been displayed
 .clrMsgPort:
 				move.l	a3,a0
 				CALLEXEC GetMsg					; clear message port

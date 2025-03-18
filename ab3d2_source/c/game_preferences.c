@@ -76,7 +76,7 @@ void game_ApplyPreferences(void)
         Vid_GammaLevel_b        = Prefs_GammaLevel_AGA_b;
     }
     Draw_ForceSimpleWalls_b     = Prefs_SimpleLighting_b;
-    Sys_FPSLimit_w              = Prefs_FPSLimit_b;
+    Sys_FPSLimit_w              = (BYTE)Prefs_FPSLimit_b;
     Vid_LetterBoxMarginHeight_w = Prefs_VertMargin_b;
     Anim_LightingEnabled_b      = Prefs_DynamicLights_b;
     Draw_GoodRender_b           = Prefs_RenderQuality_b;

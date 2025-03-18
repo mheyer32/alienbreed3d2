@@ -413,7 +413,8 @@ plr_KeyboardControl:
 				bra.s	.noframelimit
 
 .resetfpslimit:
-				clr.w	Sys_FPSLimit_w
+				;clr.w	Sys_FPSLimit_w
+				move.w	#-1,Sys_FPSLimit_w
 
 .noframelimit:
 				tst.b   RAWKEY_NUM_DOT(a5)
