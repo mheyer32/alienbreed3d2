@@ -63,7 +63,7 @@
         "vid.frame_skip",
         &Prefs_FPSLimit_b,
         CFG_PARAM_TYPE_INT,
-        CFG_VAR_TYPE_UBYTE
+        CFG_VAR_TYPE_BYTE
     },
 
     {
