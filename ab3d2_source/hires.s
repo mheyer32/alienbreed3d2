@@ -6,7 +6,7 @@
 				opt		o+
 
 				xref	_custom
-				xref	_ciaaather than having to wait for the displayed image scan out to be completed, you just select
+				xref	_ciaa
 				xref	_Vid_Present
 
 ;*************************************************
@@ -61,9 +61,8 @@ PLR_MASTER				equ 'm' ; two player master
 PLR_SLAVE				equ 's' ; two player slave
 PLR_SINGLE				equ 'n' ; Single player
 
-;QUIT_KEY				equ RAWKEY_NUM_ASTERISK
-QUIT_KEY				equ RAWKEY_DOT ; for days when I have no numberpad
-
+QUIT_KEY				equ RAWKEY_NUM_ASTERISK
+;QUIT_KEY				equ RAWKEY_DOT ; for days when I have no numberpad
 
 
 ; ZERO-INITIALISED DATA
@@ -7556,6 +7555,14 @@ PLREcho:		dc.w	0
 
 LEFTOFFSET:		dc.l	0
 RIGHTOFFSET:	dc.l	0
+
+; TODO - this is a replacement hook
+Aud_PlaySound:
+				SAVEREGS
+				bsr MakeSomeNoise
+				GETREGS
+				rts
+
 
 MakeSomeNoise:
 
