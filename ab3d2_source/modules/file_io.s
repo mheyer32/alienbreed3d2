@@ -30,7 +30,10 @@ IO_QueueFile:
 				; d0=Ptr to dest. of addr
 				; d1=ptr to dest. of len.
 				; typeofmem=type of memory
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				; todo - just the minimum regs
+				SAVEREGS
+
 				move.l	io_EndOfQueue_l,a1
 				move.l	d0,(a1)+
 				move.l	d1,(a1)+
@@ -41,7 +44,9 @@ IO_QueueFile:
 				move.b	(a0)+,(a1)+
 				dbra	d0,.copy_name
 				add.l	#100,io_EndOfQueue_l
-				movem.l	(a7)+,d0-d7/a0-a6
+
+				GETREGS
+
 				rts
 
 IO_FlushQueue:
@@ -94,7 +99,7 @@ IO_FlushQueue:
 				move.b	(a4)+,(a3)+
 				dbra	d0,.volume_name_loop
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
 
 				CALLC	mnu_setscreen
 
@@ -104,7 +109,7 @@ IO_FlushQueue:
 				moveq	#1,d0 ; Fade out
 				CALLC	mnu_clearscreen
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 				tst.b	Game_ShouldQuit_b
 				beq		.no_quit
@@ -185,7 +190,9 @@ io_LoadAndUnpackFile:
 				; Load a file in and unpack it if necessary.
 				; Pointer to name in a0
 				; Returns address in d0 and length in d1
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
+
 				bra.s	io_LoadCommon
 
 ; Load an optional file, i.e. one that might not exist.
@@ -194,7 +201,8 @@ IO_LoadFileOptional:
 				SERPRINTF <"IO_LoadFileOptional %s",13,10>,a0
 				ENDC
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				move.l	a0,d1
 				move.l	a0,a5			; Save filename in a5 for error reporting
 				move.l	#MODE_OLDFILE,d2
@@ -203,7 +211,7 @@ IO_LoadFileOptional:
 				move.l	d0,IO_DOSFileHandle_l
 				bne.s	io_LoadCommon
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 				clr.l	d0 ; null address
 				clr.l	d1 ; zero length
@@ -219,7 +227,8 @@ IO_LoadFile:
 				SERPRINTF <"IO_LoadFile %s",13,10>,a0
 				ENDC
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				move.l	a0,d1
 				move.l	a0,a5			; Save filename in a5 for error reporting
 				move.l	#MODE_OLDFILE,d2
@@ -267,7 +276,8 @@ io_LoadCommon:
 				ENDC
 
 ; Not a packed file so just return now.
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				move.l	io_BlockStart_l,d0
 				move.l	io_BlockLength_l,d1
 				rts
@@ -348,7 +358,8 @@ io_LoadSample:
 				SERPRINTF <"LOAD-DONE",13,10>
 				ENDC
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				move.l	.sample_position_l,d0
 				move.l	.sample_size_l,d1
 				rts
@@ -388,7 +399,8 @@ io_HandlePacked:
 				SERPRINTF <"LOAD-DONE",13,10>
 				ENDC
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				move.l	.unpacked_start_l,d0
 				move.l	.unpacked_length_l,d1
 				rts

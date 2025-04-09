@@ -1156,7 +1156,7 @@ okwat:
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne		NotOnePlayer
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
 
 				moveq	#0,d0
 				move.b	plr_GunSelected_b,d0
@@ -1167,7 +1167,8 @@ okwat:
 				move.l	#Plr1_AmmoCounts_vw,a6
 				move.w	(a6,d0.w*2),d0
 				move.w	d0,draw_DisplayAmmoCount_w
-				movem.l	(a7)+,d0-d7/a0-a6
+
+				GETREGS
 
 				move.w	Plr1_Health_w,draw_DisplayEnergyCount_w
 
@@ -1219,7 +1220,7 @@ NotOnePlayer:
 				move.w	Plr1_Health_w,draw_DisplayEnergyCount_w
 ; change this back
 *********************************
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
 
 				moveq	#0,d0
 				move.b	plr_GunSelected_b,d0
@@ -1230,7 +1231,8 @@ NotOnePlayer:
 				move.l	#Plr1_AmmoCounts_vw,a6
 				move.w	(a6,d0.w*2),d0
 				move.w	d0,draw_DisplayAmmoCount_w
-				movem.l	(a7)+,d0-d7/a0-a6
+
+				GETREGS
 
 				jsr		SENDFIRST
 
@@ -1339,7 +1341,7 @@ ASlaveShouldWaitOnHisMaster:
 				tst.b	RAWKEY_P(a5)
 				sne		Game_SlavePaused_b
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
 
 				moveq	#0,d0
 				move.b	plr_GunSelected_b,d0
@@ -1350,7 +1352,8 @@ ASlaveShouldWaitOnHisMaster:
 				move.l	#Plr2_AmmoCounts_vw,a6
 				move.w	(a6,d0.w*2),d0
 				move.w	d0,draw_DisplayAmmoCount_w
-				movem.l	(a7)+,d0-d7/a0-a6
+
+				GETREGS
 
 				move.w	Plr2_Health_w,draw_DisplayEnergyCount_w
 
@@ -2344,7 +2347,9 @@ Plr1_Use:
 				add.w	d0,Plr1_SnapAngSpd_w
 				move.l	#7*2116,hitcol
 				sub.w	d2,Plr1_Health_w
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
+
 				move.w	#$fffa,IDNUM
 				move.w	#19,Aud_SampleNum_w
 				clr.b	notifplaying
@@ -2353,7 +2358,7 @@ Plr1_Use:
 				move.w	#60,Aud_NoiseVol_w
 				jsr		MakeSomeNoise
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 .notbeenshot:
 				move.b	#0,EntT_DamageTaken_b(a0)
@@ -2611,7 +2616,9 @@ Plr2_Use:
 				add.w	d0,Plr2_SnapAngSpd_w
 				move.l	#7*2116,hitcol
 				sub.w	d2,Plr2_Health_w
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
+
 				move.w	#19,Aud_SampleNum_w
 				clr.b	notifplaying
 				move.w	#$fffa,IDNUM
@@ -2620,7 +2627,7 @@ Plr2_Use:
 				move.w	#60,Aud_NoiseVol_w
 				jsr		MakeSomeNoise
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 .notbeenshot:
 				move.b	#0,EntT_DamageTaken_b(a0)
@@ -5996,7 +6003,9 @@ Vid_VBLCountLast_l:	dc.l	0
 
 OtherInter:
 				move.w	#$0010,$dff000+intreq
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
+
 				bra		justshake
 
 				align	4
@@ -6040,7 +6049,8 @@ VBlankInterrupt:
 				tst.b	Game_Running_b
 				bne		dosomething
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				bra		JUSTSOUNDS
 
 				moveq	#0,d0					; VERTB interrupt needs to return Z flag set
@@ -6150,7 +6160,8 @@ NOSIDES2:
 				move.b	5(a6,d1.w),d0
 				beq.s	.nosoundmake
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				subq	#1,d0
 				move.w	d0,Aud_SampleNum_w
 				clr.b	notifplaying
@@ -6162,7 +6173,7 @@ NOSIDES2:
 				move.l	(a1),Aud_NoiseX_w
 				jsr		MakeSomeNoise
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 .nosoundmake:
 				move.b	6(a6,d1.w),d0
@@ -6244,7 +6255,8 @@ SAVESAVE:		dc.w	0
 
 dosomething:
 				addq.w	#1,Anim_FramesToDraw_w
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
 
 				bsr		DOALLANIMS
 
@@ -6883,7 +6895,7 @@ JUSTSOUNDS:
 
 ; move.w #$f,$dff000+dmacon
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 				moveq	#0,d0					; VERTB interrupt needs to return Z flag set
 				rts
@@ -7270,7 +7282,7 @@ notoffendsamp4:
 				move.l	a0,pos1RIGHT
 				move.l	a1,pos3RIGHT
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 				move.w	#$820f,$dff000+dmacon
 
@@ -7456,9 +7468,7 @@ nnul3:
 				clr.w	LEFTCHANDATA+32+4
 
 chan3still:
-
-
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 				moveq	#0,d0					; VERTB interrupt needs to return Z flag set
 				rts
