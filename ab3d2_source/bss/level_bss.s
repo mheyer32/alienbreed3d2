@@ -40,8 +40,9 @@ Lvl_ZoneGraphAddsPtr_l:			ds.l	1
 
 		DCLC Lvl_ZonePtrsPtr_l,	ds.l,	1	; Zone* pZone = LvlDataPtr_l[Lvl_ZonePtrsPtr_l[zone_id]]
 
-Lvl_LiftDataPtr_l:				ds.l	1
-Lvl_DoorDataPtr_l:				ds.l	1
+		DCLC Lvl_LiftDataPtr_l,	ds.l,	1
+		DCLC Lvl_DoorDataPtr_l,	ds.l,	1
+
 Lvl_SwitchDataPtr_l:			ds.l	1
 Lvl_ControlPointCoordsPtr_l:	ds.l	1
 Lvl_GraphicsPtr_l:				ds.l	1

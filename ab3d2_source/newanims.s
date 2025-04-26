@@ -1251,6 +1251,10 @@ doadoor:
 				move.w	#0,Anim_DoorAndLiftLocks_l
 				rts
 
+				; TODO - The door structures are not uniformly large. I think there is conditionally
+				; included data, including but probably not limited to, the set of adjoining walls that
+				; are raised and lowered with the door.
+
 notalldoorsdone:
 				move.w	(a0)+,d1				; 2: top of door movement.
 				move.w	(a0)+,anim_OpeningSpeed_w	; 4:
@@ -1287,7 +1291,7 @@ notalldoorsdone:
 				move.w	d4,Aud_NoiseZ_w
 				move.w	(a0),d3						; 22:
 				move.w	2(a0),d2					; 24:
-				move.w	8(a0),d7					; 30:
+				move.w	8(a0),d7					; 30: Zone ID
 				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d7.w*4),a1
 				move.b	ZoneT_Echo_b(a1),PlayEcho
@@ -1296,6 +1300,7 @@ notalldoorsdone:
 				move.w	2(a0),d2					; 24:
 				cmp.w	d3,d0
 				sle		anim_DoorClosed_b
+
 				bgt.s	nolower
 
 				tst.w	d2
@@ -1365,7 +1370,7 @@ NOTMOVING:
 				;asl.l	#8,d3
 
 				move.l	Lvl_ZonePtrsPtr_l,a1
-				move.w	(a0)+,d5					; 30:
+				move.w	(a0)+,d5					; 30: Zone ID
 				move.l	(a1,d5.w*4),a1
 				move.l	d3,6(a1)
 				neg.w	d0
@@ -1388,36 +1393,37 @@ NOTMOVING:
 				move.w	#-16,d7
 				move.w	#$8000,d1
 				move.w	(a0)+,d2				; 32:
-				move.w	(a0)+,d5				; 34:
+				move.w	(a0)+,d5				; 34: Conditions UBYTE[2]
 				bra		backfromtst
 
 NotGoBackUp:
-				move.w	(a0)+,d2				; 36: conditions
+				move.w	(a0)+,d2				; 32 - bit number?
 ; and.w Conditions,d2
 				move.w	anim_ThisDoor_w,d2
 				move.w	Anim_DoorAndLiftLocks_l,d5
 				btst	d2,d5
 				beq.s	satisfied
 
-				move.w	(a0)+,d5
+				move.w	(a0)+,d5 ; 34 : Conditions UBYTE[2]
 
 dothesimplething:
 				move.l	Lvl_ZoneEdgePtr_l,a3
 
 simplecheck:
-				move.w	(a0)+,d5
-				blt		nomoredoorwalls
+                ; List of walls from this point?
+				move.w	(a0)+,d5              ; 36
+				blt		nomoredoorwalls       ; -1 terminated wall data, else Edge ID
 
-				asl.w	#4,d5
-				lea		(a3,d5.w),a4
-				move.w	#0,14(a4)
-				move.l	(a0)+,a1
+				asl.w	#4,d5                 ; Each edge entry is 16 bytes
+				lea		(a3,d5.w),a4          ; EdgeT struct
+				move.w	#0,EdgeT_Flags_w(a4)  ; Clear flags
+				move.l	(a0)+,a1              ; Graphics Offset
 				add.l	Lvl_GraphicsPtr_l,a1
-				move.l	(a0)+,a2
+				move.l	(a0)+,a2              ; 38 + n[2 + 4 + 4]
 				adda.w	d0,a2
-				move.w	a2,12(a1);was move.l	a2,10(a1)
+				move.w	a2,12(a1)             ; was move.l	a2,10(a1)
 				move.l	d3,24(a1)
-				bra.s	simplecheck
+				bra.s	simplecheck           ; repeat until all done
 
 				bra		nomoredoorwalls
 
