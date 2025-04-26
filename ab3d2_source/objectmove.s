@@ -1252,7 +1252,8 @@ Facedir:		dc.w	0
 				even
 
 CanItBeSeenAng:
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				move.w	Facedir,d0
 				move.l	#SinCosTable_vw,a0
 				add.w	d0,a0
@@ -1268,7 +1269,8 @@ CanItBeSeenAng:
 				bgt.s	ItMightBeSeen
 
 				clr.b	CanSee
-				movem.l	(a7)+,d0-d7/a0-a6
+
+				GETREGS
 				rts
 
 ItMightBeSeen:
@@ -1297,11 +1299,13 @@ insameroom:
 				eor.b	d0,d1
 				bne		outlist
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				rts
 
 CanItBeSeen:
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				move.l	Obj_ToZonePtr_l,a1
 				move.w	(a1),d0
 				move.l	Obj_FromZonePtr_l,a0
@@ -1506,7 +1510,8 @@ GotIn:
 				eor.b	d2,d3
 				bne		outlist
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				rts
 
 clipstocheck:	dc.l	0
@@ -1514,11 +1519,14 @@ donessomething:	dc.w	0
 
 outlist:
 				clr.b	CanSee
-				movem.l	(a7)+,d0-d7/a0-a6
+
+				GETREGS
+
 				rts
 
 FindCollisionPt:
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				move.w	Targetx,d0
 				move.w	Targetz,d1
 				sub.w	Viewerx,d0
@@ -1622,7 +1630,8 @@ FindCollisionPt:
 				move.l	d5,Targety
 
 foundpt:
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				rts
 
 GetRand:
@@ -1862,11 +1871,14 @@ FindCloseRoom:
 				add.w	oldz,d0
 				move.w	d1,newx
 				move.w	d0,newz
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
+
 				clr.b	Obj_WallBounce_b
 				jsr		MoveObject
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				move.l	#Obj_RoomPath_vw,a2
 				move.l	#possclose,a3
 				move.w	ObjT_ZoneID_w(a0),(a3)+
@@ -1882,11 +1894,14 @@ putinmore:
 				sub.w	zd,d1
 				move.w	d0,newx
 				move.w	d1,newz
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
+
 				clr.b	Obj_WallBounce_b
 				jsr		MoveObject
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				move.l	#Obj_RoomPath_vw,a2
 
 putinmore2:

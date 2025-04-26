@@ -443,3 +443,4 @@ c2p_ConvertSmall1x2OptAkiko:
 
 c2p_AkikoSize_w:
 				dc.w 0
+

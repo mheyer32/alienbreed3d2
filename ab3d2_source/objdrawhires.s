@@ -183,7 +183,8 @@ Draw_Objects:
 
 draw_Object:
 				DEV_INC.w	DrawObjectCallCount
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
 
 				move.l	Lvl_ObjectDataPtr_l,a0
 				move.l	#ObjRotated_vl,a1
@@ -202,7 +203,8 @@ draw_Object:
 				DEV_CHECK_SET	SKIP_POLYGON_MODELS,.done
 				bsr		draw_PolygonModel
 .done:
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				rts
 
 draw_bitmap_glare:
@@ -554,7 +556,8 @@ draw_right_side_glare:
 				move.w	(a7)+,d4
 				dbra	d3,draw_right_side_glare
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				rts
 
 draw_Bitmap:
@@ -1005,7 +1008,8 @@ draw_right_side:
 				dbra	d3,draw_right_side
 
 object_behind:
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				rts
 
 draw_bitmap_additive:
@@ -1106,7 +1110,7 @@ draw_bitmap_lighted:
 
 ; Make up lighting values
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
 
 				bsr		draw_ResetAngleBrights
 
@@ -1291,7 +1295,8 @@ INMIDDLE:
 				move.l	4(a1,d1.w*8),(a3)+
 				dbra	d0,.make_pals_loop
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				move.l	#draw_Pals_vl,a4
 				clr.w	d0
 
@@ -1442,11 +1447,13 @@ draw_CalcBrightRings:
 				move.w	oldz,newz
 				sub.w	d2,newx
 				add.w	d1,newz
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
 
 				jsr		HeadTowardsAng
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				move.w	AngRet,d1
 				neg.w	d1
 				AMOD_I	d1
@@ -1611,11 +1618,13 @@ draw_CalcBrightsInZone:
 
 				move.w	(a3,d0.w*4),newx
 				move.w	2(a3,d0.w*4),newz
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
 
 				jsr		HeadTowardsAng
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				move.w	AngRet,d1
 				neg.w	d1
 				AMOD_I	d1
@@ -1703,7 +1712,7 @@ draw_PolygonModel:
 				move.w	#FS_HEIGHT/2,draw_PolygonCentreY_w
 
 .okinfront:
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
 
 				DEV_INC.w VisibleModelCount
 
@@ -1812,7 +1821,8 @@ BOTPART:
 				addq	#1,a1
 				dbra	d7,MYacross
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				move.w	(a0),d2
 				move.w	d1,d3
 				asr.w	#7,d3
@@ -2214,7 +2224,8 @@ doapoly:
 				move.w	(a1)+,draw_PreHoles_b
 				move.w	12(a1,d7.w*4),draw_PreGouraud_b
 				move.l	#draw_2DPointsProjected_vl,a3
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
 
 ; * Check for any of these points behind...
 
@@ -2251,14 +2262,16 @@ checkbeh:
 				ble.s	.notbeh
 
 .guard_clip:
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				bra		polybehind
 
 .notbeh:
 				addq	#4,a1
 				dbra	d7,checkbeh
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				move.w	(a1),d0
 				move.w	4(a1),d1
 				move.w	8(a1),d2

@@ -112,7 +112,8 @@ anim_BrightenPoints:
 				tst.w	d0
 				bgt		darken_points
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d3.w*4),a0
 				move.l	#CurrentPointBrights_vl,a2
@@ -278,7 +279,8 @@ room_point_loop:
 				bra		bright_points
 
 bright_all:
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				rts
 
 
@@ -295,7 +297,8 @@ Anim_BrightenPointsAngle:
 				rts
 
 .dolight:
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				move.l	#SinCosTable_vw,a0
 				lea		(a0,d4.w),a6
 				move.l	Lvl_ZonePtrsPtr_l,a0
@@ -506,11 +509,13 @@ behind_point:
 				bra		bright_points_A
 
 bright_all_A:
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				rts
 
 darken_points:
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				move.l	Lvl_ZonePtrsPtr_l,a0
 				move.l	(a0,d3.w*4),a0
 				move.l	#CurrentPointBrights_vl,a2
@@ -546,7 +551,8 @@ dark_points:
 				bra.s	dark_points
 
 dark_all:
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				rts
 
 Flash:
@@ -821,7 +827,8 @@ wateranimlop:
 				bgt.s	waternotattop
 
 				move.l	d1,d3
-				move.w	#128,d4
+				;move.w	#128,d4
+				neg.w	d4
 				bra		waterdone
 
 waternotattop:
@@ -829,7 +836,8 @@ waternotattop:
 				blt.s	waterdone
 
 				move.l	d2,d3
-				move.w	#-128,d4
+				;move.w	#-128,d4
+				neg.w	d4
 
 waterdone:
 				move.l	d3,(a0)+
@@ -1848,7 +1856,8 @@ JUMPBULLET:
 ;				cmp.w	#4,EntT_Timer2_w(a0)
 ;				bne.s	.nowhoosh
 ;
-;				movem.l	d0-d7/a0-a6,-(a7)
+;				SAVEREGS
+;
 ;				move.l	#ObjRotated_vl,a1
 ;				move.w	(a0),d0
 ;				lea		(a1,d0.w*8),a1
@@ -1860,7 +1869,7 @@ JUMPBULLET:
 ;				move.w	(a0),IDNUM
 ;				jsr		MakeSomeNoise
 ;
-;				movem.l	(a7)+,d0-d7/a0-a6
+;				GETREGS
 ;
 ;.nowhoosh:
 ;
@@ -2149,10 +2158,11 @@ notdoneanim:
 				move.w	d0,Aud_SampleNum_w
 				move.w	d1,IDNUM
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				jsr		MakeSomeNoise
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 .nohitnoise:
 				move.l	BulT_ExplosiveForce_l(a6),d0
@@ -2163,9 +2173,11 @@ notdoneanim:
 				move.w	4(a0),Viewery
 				move.b	ShotT_InUpperZone_b(a0),ViewerTop
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				bsr		ComputeBlast
-				movem.l	(a7)+,d0-d7/a0-a6
+
+				GETREGS
 
 .noexplosion:
 .nohitroof:
@@ -2216,10 +2228,11 @@ notdoneanim:
 				move.w	d0,Aud_SampleNum_w
 				move.w	d1,IDNUM
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				jsr		MakeSomeNoise
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 .nohitnoise2:
 				moveq	#0,d0
@@ -2231,10 +2244,11 @@ notdoneanim:
 				move.w	newz,Viewerz
 				move.b	ShotT_InUpperZone_b(a0),ViewerTop
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				bsr		ComputeBlast
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 .noexplosion2:
 .nohitfloor:
@@ -2401,9 +2415,11 @@ nomovebul:
 				move.w	d0,Aud_SampleNum_w
 				move.w	d1,IDNUM
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				jsr		MakeSomeNoise
-				movem.l	(a7)+,d0-d7/a0-a6
+
+				GETREGS
 
 .nohitnoise:
 				move.l	BulT_ExplosiveForce_l(a6),d0
@@ -2413,10 +2429,12 @@ nomovebul:
 				move.w	newz,Viewerz
 				move.w	4(a0),Viewery
 				move.b	ShotT_InUpperZone_b(a0),ViewerTop
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
+
 				bsr		ComputeBlast
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 .noexplosion:
 ; bra doneshot
@@ -2615,10 +2633,11 @@ notasplut:
 				move.w	d0,Aud_SampleNum_w
 				move.w	d1,IDNUM
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				jsr		MakeSomeNoise
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 .nohitnoise3:
 				move.l	BulT_ExplosiveForce_l(a6),d0
@@ -2628,10 +2647,11 @@ notasplut:
 				move.w	newx,Viewerx
 				move.w	newz,Viewerz
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				bsr		ComputeBlast
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 .noexplosion3:
 				bra		.hitnasty
