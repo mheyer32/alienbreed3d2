@@ -463,7 +463,8 @@ StillHere:
 				rts
 
 .worry_about:
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				move.w	ObjT_ZoneID_w(a0),d2
 				move.l	Lvl_ZonePtrsPtr_l,a5
 				move.l	(a5,d2.w*4),d0
@@ -474,7 +475,7 @@ StillHere:
 				move.w	4(a1,d0.w*8),newz
 				jsr		AI_LookForPlayer1
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 Decoration:
 				move.w	ObjT_ZoneID_w(a0),d0
@@ -637,7 +638,8 @@ Plr1_CollectItem:
 				move.w	ODefT_SFX_w(a3),d0
 				blt.s	.nosoundmake
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				move.w	d0,Aud_SampleNum_w
 				clr.b	notifplaying
 				move.w	(a0),IDNUM
@@ -647,7 +649,8 @@ Plr1_CollectItem:
 				lea		(a1,d0.w*8),a1
 				move.l	(a1),Aud_NoiseX_w
 				jsr		MakeSomeNoise
-				movem.l	(a7)+,d0-d7/a0-a6
+
+				GETREGS
 
 .nosoundmake:
 				moveq	#1,d0 ; we collected the item
@@ -696,7 +699,8 @@ Plr2_CollectItem:
 				move.w	ODefT_SFX_w(a3),d0
 				blt.s	.nosoundmake
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				move.w	d0,Aud_SampleNum_w
 				clr.b	notifplaying
 				move.w	(a0),IDNUM
@@ -707,7 +711,8 @@ Plr2_CollectItem:
 				move.l	(a1),Aud_NoiseX_w
 				move.b	#0,PlayEcho
 				jsr		MakeSomeNoise
-				movem.l	(a7)+,d0-d7/a0-a6
+
+				GETREGS
 
 .nosoundmake:
 				moveq	#1,d0 ; we collected the item
@@ -1076,7 +1081,8 @@ SHOOTPLAYER1:
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
 				move.l	Obj_ZonePtr_l,-(a7)
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
 
 .again:
 				jsr		MoveObject
@@ -1100,7 +1106,9 @@ SHOOTPLAYER1:
 
 .nofurther:
 				move.l	Obj_ZonePtr_l,backupZonePtr_l
-				movem.l	(a7)+,d0-d7/a0-a6
+
+				GETREGS
+
 				move.l	(a7)+,Obj_ZonePtr_l
 				move.l	Plr_ShotDataPtr_l,a0
 				move.w	#NUM_PLR_SHOT_DATA-1,d1
@@ -1328,7 +1336,8 @@ SHOOTPLAYER2:
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
 				move.l	Obj_ZonePtr_l,-(a7)
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
 
 .again:
 				jsr		MoveObject
@@ -1352,7 +1361,9 @@ SHOOTPLAYER2:
 
 .nofurther:
 				move.l	Obj_ZonePtr_l,backupZonePtr_l
-				movem.l	(a7)+,d0-d7/a0-a6
+
+				GETREGS
+
 				move.l	(a7)+,Obj_ZonePtr_l
 				move.l	AI_AlienShotDataPtr_l,a0
 				move.w	#NUM_ALIEN_SHOT_DATA-1,d1

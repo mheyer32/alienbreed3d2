@@ -413,7 +413,8 @@ plr_KeyboardControl:
 				bra.s	.noframelimit
 
 .resetfpslimit:
-				clr.w	Sys_FPSLimit_w
+				;clr.w	Sys_FPSLimit_w
+				move.w	#-1,Sys_FPSLimit_w
 
 .noframelimit:
 				tst.b   RAWKEY_NUM_DOT(a5)
@@ -954,7 +955,8 @@ plr_Fall:
 				cmp.l	plr_OldHeight_l,d0
 				blt.s	.no_splash_fx
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				move.w	#6,Aud_SampleNum_w ; todo define a constant for this
 				move.w	#0,Aud_NoiseX_w
 				move.w	#100,Aud_NoiseZ_w
@@ -963,7 +965,7 @@ plr_Fall:
 				clr.b	notifplaying
 				jsr		MakeSomeNoise
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 .no_splash_fx:
 				st		Plr_Decelerate_b
@@ -1005,7 +1007,8 @@ plr_Fall:
 ;*
 ;******************************************************************************
 plr_DoFootstepFX:
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				move.l	PlrT_ZonePtr_l(a0),a1
 				move.w	ZoneT_FloorNoise_w(a1),d0
 				move.l	ZoneT_Water_l(a1),d1
@@ -1045,5 +1048,6 @@ plr_DoFootstepFX:
 				jsr		MakeSomeNoise
 
 .no_foot_sound:
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				rts

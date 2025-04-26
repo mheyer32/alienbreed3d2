@@ -294,7 +294,8 @@ Plr1_Shot:
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
 				move.l	Plr1_ZonePtr_l,Obj_ZonePtr_l
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
 
 .again:
 				jsr		MoveObject
@@ -316,7 +317,8 @@ Plr1_Shot:
 				bra		.again
 
 .nofurther:
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				move.l	Plr_ShotDataPtr_l,a0
 				move.w	#NUM_PLR_SHOT_DATA-1,d1
 
@@ -624,7 +626,8 @@ Plr2_Shot:
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
 				move.l	Plr2_ZonePtr_l,Obj_ZonePtr_l
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
 
 .again:
 				jsr		MoveObject
@@ -646,7 +649,8 @@ Plr2_Shot:
 				bra		.again
 
 .nofurther:
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				move.l	Plr_ShotDataPtr_l,a0
 				move.w	#NUM_PLR_SHOT_DATA-1,d1
 
@@ -875,7 +879,8 @@ plr1_HitscanFailed:
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
 				move.l	Plr1_ZonePtr_l,Obj_ZonePtr_l
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
 
 .again:
 				jsr		MoveObject
@@ -897,7 +902,7 @@ plr1_HitscanFailed:
 
 .nofurther:
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 				move.l	Plr_ShotDataPtr_l,a0
 				move.w	#NUM_PLR_SHOT_DATA-1,d1
@@ -1016,7 +1021,8 @@ plr2_HitscanFailed:
 				move.l	#$1000000,StepDownVal
 				move.l	#0,thingheight
 				move.l	Plr2_ZonePtr_l,Obj_ZonePtr_l
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
 
 .again:
 				jsr		MoveObject
@@ -1039,7 +1045,7 @@ plr2_HitscanFailed:
 				bra		.again
 
 .nofurther:
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 				move.l	Plr_ShotDataPtr_l,a0
 				move.w	#NUM_PLR_SHOT_DATA-1,d1

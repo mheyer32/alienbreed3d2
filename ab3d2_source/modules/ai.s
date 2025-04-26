@@ -64,7 +64,8 @@ ai_DoTakeDamage:
 				move.w	EntT_ZoneID_w(a0),EntT_ZoneID_w+ENT_PREV(a0)
 
 .no_copy_in:
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				move.w	Plr1_XOff_l,newx
 				move.w	Plr1_ZOff_l,newz
 				move.w	(a0),d1
@@ -79,7 +80,9 @@ ai_DoTakeDamage:
 				move.w	AngRet,d0
 				add.w	ai_AnimFacing_w,d0
 				move.w	d0,EntT_CurrentAngle_w(a0)
-				movem.l	(a7)+,d0-d7/a0-a6
+
+				GETREGS
+
 				rts
 
 ai_DoDie:
@@ -896,7 +899,8 @@ ai_AttackWithHitScan:
 .no_damage:
 				jsr		ai_DoAttackAnim
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				move.w	Plr1_XOff_l,newx
 				move.w	Plr1_ZOff_l,newz
 				move.w	(a0),d1
@@ -908,7 +912,8 @@ ai_AttackWithHitScan:
 				move.w	#20,speed
 				jsr		HeadTowardsAng
 				move.w	AngRet,EntT_CurrentAngle_w(a0)
-				movem.l	(a7)+,d0-d7/a0-a6
+
+				GETREGS
 
 				bsr		ai_StorePlayerPosition
 
@@ -1040,7 +1045,8 @@ ai_AttackWithProjectile:
 .no_damage:
 				jsr		ai_DoAttackAnim
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				move.w	Plr1_XOff_l,newx
 				move.w	Plr1_ZOff_l,newz
 				move.w	(a0),d1
@@ -1052,14 +1058,15 @@ ai_AttackWithProjectile:
 				move.w	#20,speed
 				jsr		HeadTowardsAng
 				move.w	AngRet,EntT_CurrentAngle_w(a0)
-				movem.l	(a7)+,d0-d7/a0-a6
+
+				GETREGS
 
 				bsr		ai_StorePlayerPosition
 
 				tst.b	ai_DoAction_b
 				beq.s	.no_shooty_thang
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
 
 				move.w	(a0),d1
 				move.l	Lvl_ObjectPointsPtr_l,a1
@@ -1068,7 +1075,8 @@ ai_AttackWithProjectile:
 				move.b	ShotT_InUpperZone_b(a0),SHOTINTOP
 
 				jsr		FireAtPlayer1
-				movem.l	(a7)+,d0-d7/a0-a6
+
+				GETREGS
 
 .no_shooty_thang:
 				move.w	(a0),d1
@@ -1774,7 +1782,8 @@ ai_CheckDamage:
 				cmp.b	#1,d2
 				ble		.noexplode
 
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				sub.l	Lvl_ObjectPointsPtr_l,a1
 				add.l	#ObjRotated_vl,a1
 				move.l	(a1),Aud_NoiseX_w
@@ -1787,8 +1796,10 @@ ai_CheckDamage:
 				move.b	ALIENECHO,PlayEcho
 				jsr		MakeSomeNoise
 
-				movem.l	(a7)+,d0-d7/a0-a6
-				movem.l	d0-d7/a0-a6,-(a7)
+				GETREGS
+				; TODO - just adjust the pointer, this is silly
+				SAVEREGS
+
 				move.w	#0,d0
 				asr.w	#2,d2
 				tst.w	d2
@@ -1800,7 +1811,8 @@ ai_CheckDamage:
 				move.w	#31,d3
 				jsr		Anim_ExplodeIntoBits
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
+
 				cmp.b	#40,d2
 				blt		.noexplode
 
@@ -1809,7 +1821,8 @@ ai_CheckDamage:
 				rts
 
 .noexplode:
-				movem.l	d0-d7/a0-a6,-(a7)
+				SAVEREGS
+
 				sub.l	Lvl_ObjectPointsPtr_l,a1
 				add.l	#ObjRotated_vl,a1
 				move.l	(a1),Aud_NoiseX_w
@@ -1821,7 +1834,8 @@ ai_CheckDamage:
 				move.w	(a0),IDNUM
 				move.b	ALIENECHO,PlayEcho
 				jsr		MakeSomeNoise
-				movem.l	(a7)+,d0-d7/a0-a6
+
+				GETREGS
 
 				move.w	#25,EntT_Timer3_w(a0)
 				move.w	ObjT_ZoneID_w(a0),EntT_ZoneID_w(a0)
@@ -1829,7 +1843,9 @@ ai_CheckDamage:
 
 .not_dead_yet:
 				clr.b	EntT_DamageTaken_b(a0)
-				movem.l	d0-d7/a0-a6,-(a7)
+
+				SAVEREGS
+
 				sub.l	Lvl_ObjectPointsPtr_l,a1
 				add.l	#ObjRotated_vl,a1
 				move.l	(a1),Aud_NoiseX_w
@@ -1842,7 +1858,7 @@ ai_CheckDamage:
 				move.b	ALIENECHO,PlayEcho
 				jsr		MakeSomeNoise
 
-				movem.l	(a7)+,d0-d7/a0-a6
+				GETREGS
 
 .noscream:
 				rts

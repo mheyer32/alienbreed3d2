@@ -13,7 +13,7 @@ extern UBYTE Prefs_FullScreen_b;
 extern UBYTE Prefs_PixelMode_b;
 extern UBYTE Prefs_VertMargin_b;
 extern UBYTE Prefs_SimpleLighting_b;
-extern UBYTE Prefs_FPSLimit_b;
+extern BYTE  Prefs_FPSLimit_b;
 extern UBYTE Prefs_DynamicLights_b;
 extern UBYTE Prefs_RenderQuality_b;
 extern UBYTE Vid_FullScreenTemp_b;
@@ -417,7 +417,7 @@ void Cfg_WritePreferencesFile(char const* file) {
         Prefs_FullScreen_b     = Vid_FullScreen_b;
         Prefs_PixelMode_b      = Vid_DoubleHeight_b;
         Prefs_SimpleLighting_b = Draw_ForceSimpleWalls_b;
-        Prefs_FPSLimit_b       = (UBYTE)Sys_FPSLimit_w;
+        Prefs_FPSLimit_b       = (BYTE)Sys_FPSLimit_w;
         Prefs_VertMargin_b     = (UBYTE)Vid_LetterBoxMarginHeight_w;
         Prefs_DynamicLights_b  = Anim_LightingEnabled_b;
         Prefs_RenderQuality_b  = Draw_GoodRender_b;
