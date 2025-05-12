@@ -67,6 +67,7 @@ void zone_DumpDoor(ZDoor const* door, int doorIndex)
  */
 void Zone_InitDoorList()
 {
+    dprintf("Zone_InitDoorList()\n");
     for (WORD i = 0; i < Lvl_NumZones_w/8; ++i) {
         Zone_DoorMap_vb[i] = 0;
     }

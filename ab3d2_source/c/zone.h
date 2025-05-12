@@ -123,9 +123,22 @@ typedef struct {
     WORD zep_ZoneID;
     WORD zep_ListSize;
     WORD zep_EdgeCount;
+
+    /**
+     * Varying length data here:
+     *
+     * ZEdgeInfo zep_EdgeInfoList[zep_EdgeCount]
+     *
+     * Followed by zep_EdgeCount sets of data.
+     */
     ZEdgeInfo zep_EdgeInfoList[1];
-    //WORD zep_EdgeIDList[1]; // zep_EdgeCount in length, followed by zep_EdgeCount sets of data
 } ASM_ALIGN(sizeof(WORD)) ZEdgePVSHeader;
+
+/**
+ * Simple typedefs to give more meaningful names to the masks used for doors and lifts.
+ */
+typedef UWORD ZDoorListMask;
+typedef UWORD ZLiftListMask;
 
 /**
  * Utility tuple that represents the floor/roof pair, for convenience.

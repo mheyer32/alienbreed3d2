@@ -9,11 +9,14 @@
 extern Vec2W const* Lvl_PointsPtr_l;
 extern WORD Lvl_NumPoints_w;
 
+/**
+ * Statistics tuple for a the PVS of a single Zone.
+ */
 typedef struct {
     WORD  numZones;
     WORD  numJoins;
-    BOOL  hasDoor;
-    BOOL  hasLift;
+    BOOL  hasDoor; // TODO - make this the complete mask of door zones in the PVS
+    BOOL  hasLift; // TODO - make this the complete mask of lift zones in the PVS.
 } PVSCount;
 
 /**
@@ -72,7 +75,11 @@ static WORD* zone_MakePVSZoneIDList(Zone const* zonePtr, WORD* bufferPtr)
 
 
 /**
- * Return the number of joining edges for the current zone.
+ * Return the number of joining edges for the given zone. An edge is considered joining
+ * when:
+ *   The edge ID is valid.
+ *   The adjoining zone ID of the edge is valid.
+ *   The zone heights contain an overlap.
  */
 static WORD zone_CountJoiningEdges(Zone const* zonePtr)
 {
@@ -96,7 +103,7 @@ static WORD zone_CountJoiningEdges(Zone const* zonePtr)
 
 
 /**
- * Gathers key facts about the PVS of the specic Zone
+ * Gathers key facts about the PVS of the specic Zone:
  *
  *     Number of zones in the PVS
  *     Number of joining edges
@@ -117,6 +124,8 @@ static void zone_CountPVS(Zone const* zonePtr, PVSCount* pvsCountPtr)
     pvsCountPtr->numZones = (WORD)(pvsPtr - &zonePtr->z_PotVisibleZoneList[0]);
     pvsCountPtr->numJoins = zone_CountJoiningEdges(zonePtr);
 }
+
+
 /**
  * Calculates the allocation data size for the per-edge PVS data, returning the total allocation
  * size, including the base pointer requirements.
@@ -134,12 +143,22 @@ static ULONG zone_CalcEdgePVSDataSize(WORD* infoTupleBufferPtr)
         *infoTuplePtr++     = pvsCount.numZones;
         *infoTuplePtr++     = pvsCount.numJoins;
 
+        // Calculate the size for the current Zone data, including the header
+
         // The size of ZEdgePVSDataSet includes one edge id entry already...
         ULONG dataSize   = sizeof(ZEdgePVSHeader) - sizeof(ZEdgeInfo) +
-            (ULONG)pvsCount.numJoins * (sizeof(ZEdgeInfo) + (ULONG)pvsCount.numZones);
+            // ... add the size of zep_EdgeInfoList[zep_EdgeCount]
+            (ULONG)pvsCount.numJoins * (sizeof(ZEdgeInfo) +
 
+            // ... and a byte per zone for the mask.
+            // TODO - mabye use a bitmap?
+            (ULONG)pvsCount.numZones);
+
+        // If there are doors, we need a ZDoorListMask per zone/join combination for the
+        // mask structure.
+        // TODO - decide how we are storing this exactly.
         if (pvsCount.hasDoor) {
-            dataSize += pvsCount.numZones * pvsCount.numJoins * sizeof(UWORD);
+            dataSize += pvsCount.numZones * pvsCount.numJoins * sizeof(ZDoorListMask);
         }
 
         // Ensure that the data remains aligned to a word boundary.
