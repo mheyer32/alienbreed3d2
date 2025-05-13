@@ -9,15 +9,20 @@
 extern Vec2W const* Lvl_PointsPtr_l;
 extern WORD Lvl_NumPoints_w;
 
+static char buffer[256]; // just for debugging
+
 /**
- * Statistics tuple for a the PVS of a single Zone.
+ * Temporary statistics structure used when determining the data size required for the EdgePVS Data.
  */
 typedef struct {
-    WORD  numZones;
-    WORD  numJoins;
-    BOOL  hasDoor; // TODO - make this the complete mask of door zones in the PVS
-    BOOL  hasLift; // TODO - make this the complete mask of lift zones in the PVS.
-} PVSCount;
+    WORD  numZones; // How many zones there are in the the PVS
+    WORD  numJoins; // How many joining edges there are from the root of the PVS
+    UWORD features; // Features present in the PVS, eg. doors, lifts, etc
+    UWORD dataSize; // Required data size for allocation
+} ZPVSCount;
+
+#define PVSCF_DOOR 1
+#define PVSCF_LIFT 2
 
 /**
  * Data structure used to keep track of key information during the recursive evaluation of
@@ -56,7 +61,6 @@ static struct {
     Vec2W zre_ViewPoint2;
 } Zone_EdgePVSState;
 
-static char buffer[256]; // just for debugging
 
 /**
  * Copy the IDs of the Zone's ZPVSRecord set to a buffer of just the IDs, terminated with
@@ -103,78 +107,63 @@ static WORD zone_CountJoiningEdges(Zone const* zonePtr)
 
 
 /**
- * Gathers key facts about the PVS of the specic Zone:
+ * Gathers key facts about the PVS of the specific Zone:
  *
  *     Number of zones in the PVS
  *     Number of joining edges
  *     Whether the PVS contains a door
  *     Whether the PVS contaisn a lift
+ *     Total required datasize for the per-edge data
  */
-static void zone_CountPVS(Zone const* zonePtr, PVSCount* pvsCountPtr)
+static void zone_CountPVS(Zone const* zonePtr, ZPVSCount* pvsCountPtr)
 {
     ZPVSRecord const* pvsPtr = &zonePtr->z_PotVisibleZoneList[0];
-    pvsCountPtr->hasDoor = FALSE;
-    pvsCountPtr->hasLift = FALSE;
+    pvsCountPtr->features = 0;
     while (Zone_IsValidZoneID(pvsPtr->pvs_ZoneID)) {
-        if (!pvsCountPtr->hasDoor && Zone_GetDoorID(pvsPtr->pvs_ZoneID) >= 0) {
-            pvsCountPtr->hasDoor = TRUE;
+        if (!(pvsCountPtr->features & PVSCF_DOOR) && Zone_GetDoorID(pvsPtr->pvs_ZoneID) >= 0) {
+            pvsCountPtr->features |= PVSCF_DOOR;
         }
         ++pvsPtr;
     }
     pvsCountPtr->numZones = (WORD)(pvsPtr - &zonePtr->z_PotVisibleZoneList[0]);
     pvsCountPtr->numJoins = zone_CountJoiningEdges(zonePtr);
+
+    // The size of ZEdgePVSDataSet includes one edge id entry already...
+    ULONG dataSize = sizeof(ZEdgePVSHeader) - sizeof(ZEdgeInfo) +
+
+        // For each joining edge, we have a header, plus the zone mask as a minimum requirement
+        (ULONG)pvsCountPtr->numJoins * (
+            sizeof(ZEdgeInfo) + (ULONG)pvsCountPtr->numZones // The zone mask is 1 byte per zone, so use the count
+        );
+
+    // We may need additional memory for features that require masks, e.g. doors, lifts etc.
+    if (pvsCountPtr->features & PVSCF_DOOR) {
+        dataSize += pvsCountPtr->numZones * pvsCountPtr->numJoins * sizeof(ZDoorListMask);
+    }
+    // TODO - Same again for lifts
+
+    // TODO - maybe assert() dataSize fits a UWORD, using blind faith here
+
+    // Ensure that the data remains aligned to a word boundary.
+    pvsCountPtr->dataSize = (UWORD)Sys_Round2(dataSize);
 }
 
 
 /**
  * Calculates the allocation data size for the per-edge PVS data, returning the total allocation
  * size, including the base pointer requirements.
- * The infoTupleBufferPtr points to a buffer that is populated with the edge count and PVS length
- * pairs for each of the Zones.
+ *
+ * This fills the pvsCountBufferPtr with the per-zone facts as it goes. We need that later.
  */
-static ULONG zone_CalcEdgePVSDataSize(WORD* infoTupleBufferPtr)
+static ULONG zone_CalcEdgePVSDataSize(ZPVSCount* pvsCountBufferPtr)
 {
     /* Begin with the assumption we need as many pointers as zones */
     ULONG totalSize = Lvl_NumZones_w * sizeof(ZEdgePVSHeader*);
-    PVSCount pvsCount;
-    for (WORD zoneID = 0, *infoTuplePtr = infoTupleBufferPtr; zoneID < Lvl_NumZones_w; ++zoneID) {
+    for (WORD zoneID = 0; zoneID < Lvl_NumZones_w; ++zoneID) {
         Zone const* zonePtr = Lvl_ZonePtrsPtr_l[zoneID];
-        zone_CountPVS(zonePtr, &pvsCount);
-        *infoTuplePtr++     = pvsCount.numZones;
-        *infoTuplePtr++     = pvsCount.numJoins;
-
-        // Calculate the size for the current Zone data, including the header
-
-        // The size of ZEdgePVSDataSet includes one edge id entry already...
-        ULONG dataSize   = sizeof(ZEdgePVSHeader) - sizeof(ZEdgeInfo) +
-            // ... add the size of zep_EdgeInfoList[zep_EdgeCount]
-            (ULONG)pvsCount.numJoins * (sizeof(ZEdgeInfo) +
-
-            // ... and a byte per zone for the mask.
-            // TODO - mabye use a bitmap?
-            (ULONG)pvsCount.numZones);
-
-        // If there are doors, we need a ZDoorListMask per zone/join combination for the
-        // mask structure.
-        // TODO - decide how we are storing this exactly.
-        if (pvsCount.hasDoor) {
-            dataSize += pvsCount.numZones * pvsCount.numJoins * sizeof(ZDoorListMask);
-        }
-
-        // Ensure that the data remains aligned to a word boundary.
-        dataSize = Sys_Round2(dataSize);
-
-        *infoTuplePtr++ = (WORD)dataSize;
-
-        // dprintf(
-        //     "Zone %d JE:%d PS: %d S:%u\n",
-        //     (int)zoneID,
-        //     (int)joinCount,
-        //     (int)pvsSize,
-        //     dataSize
-        // );
-
-        totalSize += dataSize;
+        zone_CountPVS(zonePtr, pvsCountBufferPtr);
+        totalSize += pvsCountBufferPtr->dataSize;
+        ++pvsCountBufferPtr;
     }
     return totalSize;
 }
@@ -182,12 +171,11 @@ static ULONG zone_CalcEdgePVSDataSize(WORD* infoTupleBufferPtr)
 
 /**
  * Calculates the required memory for the Edge PVS data and allocates it. In the process of
- * calculating the size, populates an array of PVS Size / Connecting Edge Count pairs, the
- * location of which is passed in.
+ * calculating the size.
  */
-static ZEdgePVSHeader** zone_AllocEdgePVS(WORD* infoTupleBufferPtr)
+static ZEdgePVSHeader** zone_AllocEdgePVS(ZPVSCount* pvsCountBufferPtr)
 {
-    ULONG totalSize = zone_CalcEdgePVSDataSize(infoTupleBufferPtr);
+    ULONG totalSize = zone_CalcEdgePVSDataSize(pvsCountBufferPtr);
 
     dprintf(
         "zone_AllocEdgePVS() Processed %d Zones, Size: %u\n",
@@ -206,25 +194,20 @@ static ZEdgePVSHeader** zone_AllocEdgePVS(WORD* infoTupleBufferPtr)
  * Builds up the pointer table with the location for each ZEdgePVSHeader and populates
  * the ZEdgePVSHeader structure fields.
  */
-static void zone_FillZEdgePVSHeaders(ZEdgePVSHeader* currentEdgePVSPtr, WORD const* infoTuplePtr)
+static void zone_FillZEdgePVSHeaders(ZEdgePVSHeader* currentEdgePVSPtr, ZPVSCount const* pvsCountBufferPtr)
 {
     // First Pass - build the ZEdgePVSHeader data and populate the edge indexes.
     for (WORD zoneID = 0; zoneID < Lvl_NumZones_w; ++zoneID) {
         currentEdgePVSPtr->zep_ZoneID    = zoneID;
-        currentEdgePVSPtr->zep_ListSize  = *infoTuplePtr++;
-        currentEdgePVSPtr->zep_EdgeCount = *infoTuplePtr++;
+        currentEdgePVSPtr->zep_ListSize  = pvsCountBufferPtr->numZones;
+        currentEdgePVSPtr->zep_EdgeCount = pvsCountBufferPtr->numJoins;
+
+        // TODO - calculate these for use later
+        currentEdgePVSPtr->zep_ZoneMaskOffset = 0;
+        currentEdgePVSPtr->zep_DoorMaskOffset = 0;
+        currentEdgePVSPtr->zep_LiftMaskOffset = 0;
+
         Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID]  = currentEdgePVSPtr;
-
-        ULONG dataSize = *infoTuplePtr++;
-
-        // dprintf(
-        //     "%p [%u] %d %d %d {",
-        //     currentEdgePVSPtr,
-        //     dataSize,
-        //     (int)currentEdgePVSPtr->zep_ZoneID,
-        //     (int)currentEdgePVSPtr->zep_ListSize,
-        //     (int)currentEdgePVSPtr->zep_EdgeCount
-        // );
 
         Zone const* zonePtr   = Lvl_ZonePtrsPtr_l[zoneID];
         WORD const* zEdgeList = Zone_GetEdgeList(zonePtr);
@@ -244,11 +227,10 @@ static void zone_FillZEdgePVSHeaders(ZEdgePVSHeader* currentEdgePVSPtr, WORD con
                 if (crossing != NO_PATH) {
                     currentEdgePVSPtr->zep_EdgeInfoList[edgeIndex++].zei_EdgeID = edgeID;
                 }
-                //dprintf("%d ", (int)edgeID);
             }
         }
-        //dputs("}");
-        currentEdgePVSPtr = (ZEdgePVSHeader*)((UBYTE*)currentEdgePVSPtr + dataSize);
+        currentEdgePVSPtr = (ZEdgePVSHeader*)((UBYTE*)currentEdgePVSPtr + pvsCountBufferPtr->dataSize);
+        ++pvsCountBufferPtr;
     }
 }
 
@@ -309,7 +291,6 @@ static void zone_RecurseEdgePVS(WORD indexInPVS)
         // < 0 facing towards, > 0 facing away, 0 colinear with
         // Only visit the adjoining zone if it's strictly facing
         // TODO - include colinear?
-
         // TODO - Other tests - what about impassible height differences?
 
         // Test both ends of the edge.
@@ -342,13 +323,6 @@ static void zone_FillZEdgePVSListData()
 
         ZEdgePVSHeader* currentEdgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
         Zone_EdgePVSState.zre_EdgePVSList = Zone_GetEdgePVSListBase(currentEdgePVSPtr);
-
-        // dprintf(
-        //     "Zone: %d [Joins: %d, List Size: %d]\n",
-        //     (int)zoneID,
-        //     (int)currentEdgePVSPtr->zep_EdgeCount,
-        //     (int)currentEdgePVSPtr->zep_ListSize
-        // );
 
         // For each edge, calculate the centre point as a viewpoint, then enter the zone
         // In the entered zone explore each front facing edge and descend depth first
@@ -422,14 +396,6 @@ static void zone_FillEdgePointIndexes(void)
             end.v_Z = edgePtr->e_Pos.v_Z + edgePtr->e_Len.v_Z;
             edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID = zone_GetPointIndex(&edgePtr->e_Pos);
             edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID   = zone_GetPointIndex(&end);
-
-            // dprintf(
-            //     "Zone #%d, Edge #%d, start #%d, end #%d\n",
-            //     (int)(zoneID),
-            //     (int)(edgePVSPtr->zep_EdgeInfoList[i].zei_EdgeID),
-            //     (int)(edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID),
-            //     (int)(edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID)
-            // );
         }
     }
 }
@@ -487,15 +453,15 @@ void Zone_InitEdgePVS()
     dprintf("Zone_InitEdgePVS() need %u bytes for info buffer\n", infoTupleBufferSize);
 
     // Store the per zone list size / edge count ready for the second step.
-    WORD* infoTupleBufferPtr = (WORD*)Sys_GetTemporaryWorkspace();
+    ZPVSCount* pvsCountBufferPtr = (ZPVSCount*)Sys_GetTemporaryWorkspace();
 
     // Allocate the space for the pointer table and the data.
-    Lvl_ZEdgePVSHeaderPtrsPtr_l = zone_AllocEdgePVS(infoTupleBufferPtr);
+    Lvl_ZEdgePVSHeaderPtrsPtr_l = zone_AllocEdgePVS(pvsCountBufferPtr);
 
     // Fill in the ZEdgePVS Header Structures
     zone_FillZEdgePVSHeaders(
         Zone_ZEdgePVSHeaderBase(Lvl_ZEdgePVSHeaderPtrsPtr_l),
-        infoTupleBufferPtr
+        pvsCountBufferPtr
     );
 
     // Fill in the ZEdgePVS body list data
@@ -576,6 +542,7 @@ void Zone_UpdateVectors()
     WORD fovAngle        = Vis_AngPos_w - (Zone_PVSFieldOfView >> 1);
     zone_LeftFOVDir.v_X  = sinw(fovAngle);
     zone_LeftFOVDir.v_Z  = cosw(fovAngle);
+
     fovAngle += Zone_PVSFieldOfView;
     zone_RightFOVDir.v_X = sinw(fovAngle);
     zone_RightFOVDir.v_Z = cosw(fovAngle);

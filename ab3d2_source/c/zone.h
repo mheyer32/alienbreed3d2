@@ -117,12 +117,15 @@ typedef struct {
  *
  * [Zone ID][Num Edges][Num PVS][EdgeID 0]...[EdgeID N][PVS List 0] ... [PVS List N]
  *
- * TODO - Add offsets for door/lift masks
  */
 typedef struct {
     WORD zep_ZoneID;
     WORD zep_ListSize;
     WORD zep_EdgeCount;
+
+    WORD zep_ZoneMaskOffset; // Offset in structure to the Zone Mask
+    WORD zep_DoorMaskOffset; // Offset in structure to the Door Mask (0 if no doors in the set)
+    WORD zep_LiftMaskOffset; // Offset in structure to the Lift Mask (0 if no lifts in the set)
 
     /**
      * Varying length data here:
