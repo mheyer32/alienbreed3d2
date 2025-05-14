@@ -50,6 +50,11 @@ static struct {
     UBYTE* zre_EdgePVSList;
 
     /**
+     * Pointer to the specific door list mask under evaluation, if there is one.
+     */
+    ZDoorListMask* zre_DoorMaskList;
+
+    /**
      * Recursion depth tracker.
      */
     LONG zre_RecursionDepth;
@@ -298,6 +303,16 @@ static WORD zone_GetIndexInPVSList(WORD zoneID)
     return ZONE_ID_LIST_END;
 }
 
+static ZDoorListMask zone_GetInitialDoorMask(WORD zoneID)
+{
+    WORD doorIndex = Zone_GetDoorID(zoneID);
+    if (doorIndex != NOT_A_DOOR) {
+        return 1 << doorIndex;
+    }
+    return 0;
+}
+
+
 /**
  * Recurses zones using the index position in the PVS. This is so that we only need to calculate this
  * once per visit as the code is already a looping frenzy!
@@ -305,7 +320,7 @@ static WORD zone_GetIndexInPVSList(WORD zoneID)
  * We only enter adjoining zones that are on edges facing the viewpoint, construcing our PVS subset
  * as we go.
  */
-static void zone_RecurseEdgePVS(WORD indexInPVS)
+static void zone_RecurseEdgePVS(WORD indexInPVS, ZDoorListMask doorMask)
 {
     ++Zone_EdgePVSState.zre_RecursionDepth;
 
@@ -313,6 +328,11 @@ static void zone_RecurseEdgePVS(WORD indexInPVS)
     Zone_EdgePVSState.zre_EdgePVSList[indexInPVS] = 0xFF;
 
     WORD zoneID = Zone_EdgePVSState.zre_FullPVSListPtr[indexInPVS];
+
+    if (Zone_EdgePVSState.zre_DoorMaskList) {
+        doorMask |= zone_GetInitialDoorMask(zoneID);
+        Zone_EdgePVSState.zre_DoorMaskList[indexInPVS] = doorMask;
+    }
 
     // Get the list of known joining edges for this zone.
     ZEdgePVSHeader* currentEdgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
@@ -346,7 +366,7 @@ static void zone_RecurseEdgePVS(WORD indexInPVS)
             Zone_SideOfEdge(edgePtr, &Zone_EdgePVSState.zre_ViewPoint1) < 0 ||
             Zone_SideOfEdge(edgePtr, &Zone_EdgePVSState.zre_ViewPoint2) < 0
         ) {
-            zone_RecurseEdgePVS(indexInPVS);
+            zone_RecurseEdgePVS(indexInPVS, doorMask);
         }
     }
     --Zone_EdgePVSState.zre_RecursionDepth;
@@ -369,13 +389,23 @@ static void zone_FillZEdgePVSListData()
             Zone_EdgePVSState.zre_FullPVSListPtr
         );
 
-        ZEdgePVSHeader* currentEdgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
-        Zone_EdgePVSState.zre_EdgePVSList = Zone_GetEdgePVSListBase(currentEdgePVSPtr);
+        ZEdgePVSHeader* currentEdgePVSPtr  = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
+
+        // Can never be null
+        Zone_EdgePVSState.zre_EdgePVSList  = Zone_GetEdgePVSListBase(currentEdgePVSPtr);
+
+        // Note, might be null
+        Zone_EdgePVSState.zre_DoorMaskList = Zone_GetEdgePVSLiftListBase(currentEdgePVSPtr);
+
 
         // For each edge, calculate the centre point as a viewpoint, then enter the zone
         // In the entered zone explore each front facing edge and descend depth first
         // Need to mark each distinct visited zone as "potentially visible"
 
+
+        ZDoorListMask doorMask = zone_GetInitialDoorMask(zoneID);
+
+        // Walk the set of shared edges
         for (WORD edgeNum = 0; edgeNum < currentEdgePVSPtr->zep_EdgeCount; ++edgeNum) {
             ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[currentEdgePVSPtr->zep_EdgeInfoList[edgeNum].zei_EdgeID];
 
@@ -395,6 +425,10 @@ static void zone_FillZEdgePVSListData()
             // Mark the root zone as already visited
             Zone_EdgePVSState.zre_EdgePVSList[0] = 0xFF;
 
+            // Set the root zone door mask, if relevant
+            if (Zone_EdgePVSState.zre_DoorMaskList) {
+                Zone_EdgePVSState.zre_DoorMaskList[0] = doorMask;
+            }
             // Mark the rest as clear. They will be set true for every zone we enter during
             // the recursion.
             // TODO - why is mem fill not working here?
@@ -404,7 +438,7 @@ static void zone_FillZEdgePVSListData()
 
             WORD indexInPVS = zone_GetIndexInPVSList(edgePtr->e_JoinZoneID);
             if (indexInPVS > ZONE_ID_LIST_END) {
-                zone_RecurseEdgePVS(indexInPVS);
+                zone_RecurseEdgePVS(indexInPVS, doorMask);
             }
             Zone_EdgePVSState.zre_EdgePVSList += currentEdgePVSPtr->zep_ListSize;
         }
