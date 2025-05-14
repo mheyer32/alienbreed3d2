@@ -2,6 +2,7 @@
 #define ZONE_INLINE_H
 
 #include "zone.h"
+#include "zone_door.h"
 
 /**
  *  Check if a Zone ID is valid. Must be between 0 and Lvl_NumZones_w-1
@@ -19,6 +20,14 @@ static inline BOOL Zone_IsValidZoneID(WORD id)
 static inline BOOL Zone_IsValidEdgeID(WORD id)
 {
     return id >= 0;
+}
+
+/**
+ * Checks if a Zone is a door or not. This relies on the bitmap lookup.
+ */
+static inline BOOL Zone_IsDoor(WORD zoneID)
+{
+    return Zone_IsValidZoneID(zoneID) && ( Zone_DoorMap_vb[zoneID >> 3] & (1 << (zoneID & 7)) );
 }
 
 /**
@@ -42,9 +51,33 @@ static inline WORD const* Zone_GetPointIndexList(Zone const* zonePtr)
  */
 static inline UBYTE* Zone_GetEdgePVSListBase(ZEdgePVSHeader const* zepPtr)
 {
-    return (UBYTE*)(&zepPtr->zep_EdgeInfoList[zepPtr->zep_EdgeCount]);
+    //return (UBYTE*)(&zepPtr->zep_EdgeInfoList[zepPtr->zep_EdgeCount]);
+    return ((UBYTE*)zepPtr) + zepPtr->zep_ZoneMaskOffset;
 }
 
+/**
+ * Returns the address of the start of the Door Mask List. This will return null if the PVS doesn't
+ * contain a door.
+ */
+static inline ZDoorListMask* Zone_GetEdgePVSDoorListBase(ZEdgePVSHeader const* zepPtr)
+{
+    if (zepPtr->zep_DoorMaskOffset) {
+        return (ZDoorListMask*)(((UBYTE*)zepPtr) + zepPtr->zep_DoorMaskOffset);
+    }
+    return NULL;
+}
+
+/**
+ * Returns the address of the start of the Lift Mask List. This will return null if the PVS doesn't
+ * contain a lift.
+ */
+static inline ZLiftListMask* Zone_GetEdgePVSLiftListBase(ZEdgePVSHeader const* zepPtr)
+{
+    if (zepPtr->zep_LiftMaskOffset) {
+        return (ZLiftListMask*)(((UBYTE*)zepPtr) + zepPtr->zep_LiftMaskOffset);
+    }
+    return NULL;
+}
 /**
  * Returns which side of an edge a coordinate is on.
  *
@@ -126,5 +159,7 @@ static inline BOOL zone_LevelOverlap(Zone_LevelPair const* z1, Zone_LevelPair co
     // I think this is sufficient?
     return TRUE;
 }
+
+
 
 #endif // ZONE_INLINE_H

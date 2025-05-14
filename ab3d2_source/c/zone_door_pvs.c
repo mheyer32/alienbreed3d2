@@ -80,7 +80,7 @@ void Zone_InitDoorList()
         WORD zoneID = doorDataPtr.door->zdr_ZoneID;
         if (Zone_IsValidZoneID(zoneID)) {
             //zone_DumpDoor(doorDataPtr.door, doorIndex);
-            dprintf("Door %2d => Zone %3d\n", (int)doorIndex, (int)zoneID);
+            //dprintf("Door %2d => Zone %3d\n", (int)doorIndex, (int)zoneID);
             Zone_DoorList_vw[doorIndex++] = zoneID;
             Zone_DoorMap_vb[zoneID >> 3] |= (1 << (zoneID & 7));
         }
@@ -97,12 +97,10 @@ void Zone_InitDoorList()
  */
 WORD Zone_GetDoorID(WORD zoneID)
 {
-    if (Zone_IsValidZoneID(zoneID)) {
-        if ( Zone_DoorMap_vb[zoneID >> 3] & (1 << (zoneID & 7)) ) {
-            for (WORD i = 0; i < LVL_MAX_DOOR_ZONES; ++i) {
-                if (zoneID == Zone_DoorList_vw[i]) {
-                    return i;
-                }
+    if (Zone_IsDoor(zoneID)) {
+        for (WORD i = 0; i < LVL_MAX_DOOR_ZONES; ++i) {
+            if (zoneID == Zone_DoorList_vw[i]) {
+                return i;
             }
         }
     }

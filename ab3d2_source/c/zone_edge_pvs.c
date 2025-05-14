@@ -120,7 +120,7 @@ static void zone_CountPVS(Zone const* zonePtr, ZPVSCount* pvsCountPtr)
     ZPVSRecord const* pvsPtr = &zonePtr->z_PotVisibleZoneList[0];
     pvsCountPtr->features = 0;
     while (Zone_IsValidZoneID(pvsPtr->pvs_ZoneID)) {
-        if (!(pvsCountPtr->features & PVSCF_DOOR) && Zone_GetDoorID(pvsPtr->pvs_ZoneID) >= 0) {
+        if (!(pvsCountPtr->features & PVSCF_DOOR) && Zone_IsDoor(pvsPtr->pvs_ZoneID)) {
             pvsCountPtr->features |= PVSCF_DOOR;
         }
         ++pvsPtr;
@@ -146,6 +146,16 @@ static void zone_CountPVS(Zone const* zonePtr, ZPVSCount* pvsCountPtr)
 
     // Ensure that the data remains aligned to a word boundary.
     pvsCountPtr->dataSize = (UWORD)Sys_Round2(dataSize);
+
+//     dprintf(
+//         "Zone %d ZPVSCount { numZones:%d, numJoins:%d, features:0x%04X, dataSize:%d }\n",
+//         (int)zonePtr->z_ZoneID,
+//         (int)pvsCountPtr->numZones,
+//         (int)pvsCountPtr->numJoins,
+//         (unsigned)pvsCountPtr->features,
+//         (int)pvsCountPtr->dataSize
+//     );
+
 }
 
 
@@ -191,6 +201,28 @@ static ZEdgePVSHeader** zone_AllocEdgePVS(ZPVSCount* pvsCountBufferPtr)
 }
 
 /**
+ * Calculate the offset fields for a given ZEdgePVSHeader once the size/edges/features are known
+ */
+static void zone_CalcZEdgePVSHeaderOffsets(ZEdgePVSHeader* currentEdgePVSPtr, UWORD features)
+{
+    // First the offset to the edge mask. This immediately follows the the array of ZEdgeInfo
+    size_t offset = (sizeof(ZEdgePVSHeader) - sizeof(ZEdgeInfo)) +
+        currentEdgePVSPtr->zep_EdgeCount * sizeof(ZEdgeInfo);
+
+    currentEdgePVSPtr->zep_ZoneMaskOffset = (UWORD)offset;
+
+    // If there are doors, comes after the edge mask. As the edge mask is byte based, the offset
+    // is subject to rounding before we get to the doors.
+    if (features & PVSCF_DOOR) {
+        offset += Sys_Round2(currentEdgePVSPtr->zep_ListSize * currentEdgePVSPtr->zep_EdgeCount);
+        currentEdgePVSPtr->zep_DoorMaskOffset = offset;
+    }
+
+    // TODO lifts
+    currentEdgePVSPtr->zep_LiftMaskOffset = 0;
+}
+
+/**
  * Builds up the pointer table with the location for each ZEdgePVSHeader and populates
  * the ZEdgePVSHeader structure fields.
  */
@@ -198,14 +230,12 @@ static void zone_FillZEdgePVSHeaders(ZEdgePVSHeader* currentEdgePVSPtr, ZPVSCoun
 {
     // First Pass - build the ZEdgePVSHeader data and populate the edge indexes.
     for (WORD zoneID = 0; zoneID < Lvl_NumZones_w; ++zoneID) {
+
         currentEdgePVSPtr->zep_ZoneID    = zoneID;
         currentEdgePVSPtr->zep_ListSize  = pvsCountBufferPtr->numZones;
         currentEdgePVSPtr->zep_EdgeCount = pvsCountBufferPtr->numJoins;
 
-        // TODO - calculate these for use later
-        currentEdgePVSPtr->zep_ZoneMaskOffset = 0;
-        currentEdgePVSPtr->zep_DoorMaskOffset = 0;
-        currentEdgePVSPtr->zep_LiftMaskOffset = 0;
+        zone_CalcZEdgePVSHeaderOffsets(currentEdgePVSPtr, pvsCountBufferPtr->features);
 
         Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID]  = currentEdgePVSPtr;
 
@@ -229,6 +259,24 @@ static void zone_FillZEdgePVSHeaders(ZEdgePVSHeader* currentEdgePVSPtr, ZPVSCoun
                 }
             }
         }
+/*
+        dprintf(
+            "ZEdgePVSHeader {\n"
+            "\tzep_ZoneID: %d,\n"
+            "\tzep_ListSize: %d,\n"
+            "\tzep_EdgeCount: %d,\n"
+            "\tzep_ZoneMaskOffset: %d\n"
+            "\tzep_DoorMaskOffset: %d\n"
+            "\tzep_LiftMaskOffset: %d\n"
+            "}\n",
+            (int)currentEdgePVSPtr->zep_ZoneID,
+            (int)currentEdgePVSPtr->zep_ListSize,
+            (int)currentEdgePVSPtr->zep_EdgeCount,
+            (int)currentEdgePVSPtr->zep_ZoneMaskOffset,
+            (int)currentEdgePVSPtr->zep_DoorMaskOffset,
+            (int)currentEdgePVSPtr->zep_LiftMaskOffset
+        );
+*/
         currentEdgePVSPtr = (ZEdgePVSHeader*)((UBYTE*)currentEdgePVSPtr + pvsCountBufferPtr->dataSize);
         ++pvsCountBufferPtr;
     }
