@@ -58,6 +58,8 @@ void zone_DumpDoor(ZDoor const* door, int doorIndex)
     );
 }
 
+WORD zone_NumDoorDefs = 0;
+
 /**
  * Initialise the compact door list array. The level contains a fixed number of door definitions but not
  * all doors are assigned to a valid zone since it is not necessary to use all available doors.
@@ -80,7 +82,7 @@ void Zone_InitDoorList()
         WORD zoneID = doorDataPtr.door->zdr_ZoneID;
         if (Zone_IsValidZoneID(zoneID)) {
             //zone_DumpDoor(doorDataPtr.door, doorIndex);
-            //dprintf("Door %2d => Zone %3d\n", (int)doorIndex, (int)zoneID);
+            dprintf("Door %2d => Zone %3d\n", (int)doorIndex, (int)zoneID);
             Zone_DoorList_vw[doorIndex++] = zoneID;
             Zone_DoorMap_vb[zoneID >> 3] |= (1 << (zoneID & 7));
         }
@@ -88,6 +90,12 @@ void Zone_InitDoorList()
         while (*doorDataPtr.marker++ != END_OF_DOOR_WALL_LIST) {
             // skip over the wall data for the moment
         }
+    }
+
+    zone_NumDoorDefs = doorIndex;
+
+    while (doorIndex < LVL_MAX_DOOR_ZONES) {
+        Zone_DoorList_vw[doorIndex++] = ZONE_ID_LIST_END;
     }
 }
 
@@ -98,7 +106,7 @@ void Zone_InitDoorList()
 WORD Zone_GetDoorID(WORD zoneID)
 {
     if (Zone_IsDoor(zoneID)) {
-        for (WORD i = 0; i < LVL_MAX_DOOR_ZONES; ++i) {
+        for (WORD i = 0; i < zone_NumDoorDefs; ++i) {
             if (zoneID == Zone_DoorList_vw[i]) {
                 return i;
             }

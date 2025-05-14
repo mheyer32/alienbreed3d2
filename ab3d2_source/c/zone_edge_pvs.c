@@ -440,6 +440,29 @@ static void zone_FillZEdgePVSListData()
             if (indexInPVS > ZONE_ID_LIST_END) {
                 zone_RecurseEdgePVS(indexInPVS, doorMask);
             }
+
+            dprintf(
+                "Zone %d Edge %d {\n",
+                (int)zoneID,
+                (int)edgeNum
+            );
+            for (WORD i = 0; i < currentEdgePVSPtr->zep_ListSize; ++i) {
+                if (Zone_EdgePVSState.zre_EdgePVSList[i]) {
+                    WORD mask = Zone_EdgePVSState.zre_DoorMaskList[i];
+                    for (WORD j=0; j < 16; ++j) {
+                        buffer[j] = (mask & (1 << j)) ? '1' : '0';
+                    }
+                    buffer[16] = 0;
+                    dprintf(
+                        "\t%3d: %s\n",
+                        (int)Zone_EdgePVSState.zre_FullPVSListPtr[i],
+                        buffer
+                    );
+                }
+            }
+
+            dputs("\n");
+
             Zone_EdgePVSState.zre_EdgePVSList += currentEdgePVSPtr->zep_ListSize;
         }
     }
