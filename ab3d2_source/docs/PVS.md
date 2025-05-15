@@ -55,10 +55,6 @@ Invariably, these issues and limitations tend to result in overdraw, where a mor
 ![Example](img/overdraw_1.png)
 ![Example](img/overdraw_2.png)
 
-
-
-
-
 ## Improvements
 
 Various algorithmic modifications have been made to try and improve the performance:
@@ -95,13 +91,14 @@ Facing the T-junction, no clips are applied to the adjoining zone, resulting in 
 
 ![View](img/clip.png)
 
-
 To address this case, we identify the indexes coordinates of the immediately joining edges in the Point data during the Edge PVS processing and ensure they are added to the transformation buffer.
 
 This allows the horizontal extent of the current Zone's shared edge with an adjoing zone to be found post transformation. These are then used to refine the clip extents for the adjacent zone, reducing overdraw in cases where the adjoining zone is larger than the edge.
 
 This mechanism was improved one further step by considering the the complete extent for any immediate shared edges that are visible simultaneously. Without this, the clipping could only be applied when a single shared edge was visible.
 
-### Per Edge Door Mask
+### Per Edge Door Mask (Work In Progress)
 
-TODO
+When considering the PVS, Zones defined as doors are considered as open. Consequently whatever is behind them is drawn first, then the closed wall of the door is drawn over them. For doors that are far away, this may only represent a minor degree of overdraw. However, approaching the door results in an ever larger area being drawn and then overdrawn, resulting in highly conspicuous drops in performance. 
+
+To address this, as part of the per-edge PVS data that is computed on level loading we determine which PVS lists contain one or more doors. For those that do, we also include, per-edge, an entry for each Zone in the PVS that indicates which doors must be open for the corresponding Zone to be considered visible. This entry is a bitmask, with each bit representing one of the (currently 16) possible doors.
