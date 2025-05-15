@@ -913,7 +913,7 @@ ZoneCrossing Zone_DetermineCrossing(Zone const* from, Zone const* to)
 
     if (result == NO_PATH) {
         dprintf(
-            "\t%d -> %d: test case %d failed\n",
+            "\t%d -> %d: No Zone Crossing. Case %d failed\n",
             (int)from->z_ZoneID,
             (int)to->z_ZoneID,
             (int)test
