@@ -15,7 +15,7 @@ Notes:
 
 While Zones are required to be convex, it is permitted to have adjacent edges that are completely colinear, i.e. their points fall in a straight line.
 
-What the player thinks of as a "room" may have a more complex, concave shape, such as the left-centre area adjacent Door A in the above map. Neither the engine or the editor has any such concept of a room. Rather this is just a space defined by a set of adjacent Zones that have been given consistent graphical styling.
+What the user thinks of as a "room" may have a more complex, concave shape, such as the left-centre area adjacent Door A in the above map. Neither the engine or the editor has any such concept of a room. Rather this is just a space defined by a set of adjacent Zones that have been given consistent graphical styling.
 
 A Level may have up to 256 Zones defined by up to 800 points (values subject to change). 
 
@@ -26,11 +26,17 @@ It is not possible to see the entire map from any one location. When a map is bu
 - The PVS also contains the indexes of the Points those Zones are defiend from which allows the runtime to transform and project only the points that matter.
 - Information about the edge through which a Zone is seen in is also stored. This allows the renderer to "clip" the maximum rendering extents at runtime.
 
-At runtime, the engine takes note of which Zone the player is in and is then able to test and render only the subset of Zones that are in that Zone's PVS. This saves a lot of computational effort.
+At runtime, the engine takes note of which Zone the observer is in and is then able to test and render only the subset of Zones that are in that Zone's PVS. This saves a lot of computational effort.
 
 ## Rendering
 
-Rendering is very simple. Zones are sorted by their centre weighted distance from the observer and are then rendered from the furthest to the nearest, ensuring that rendering is restricted to any clips that are relevant.
+Rendering is very simple. Zones are sorted by their centre weighted distance from the observer and are then rendered from the furthest to the nearest, ensuring that rendering is restricted to any clips that are relevant. Rendering a Zone draws all of the front facing surfaces and any objects it contains.
+
+The solution aims to ensure that:
+
+- Only the Zones in front of, or partially in front of the observer are drawn.
+- Each Zone is drawn exactly once.
+- Drawing is clipped to the visible width of the edge it is visible through.
 
 The net result is somewhere between a BSP (Convex spaces, precomputed PVS) and Portal renderer.
 
@@ -44,7 +50,14 @@ There are some issues and defects with the original solution:
     - Glitches can be reduced performance or spurious overdraw events.
 - The state of Doors and Lift zones are not taken into consideration.
 
-Invariably, these issues and limitations tend to result in overdraw, where a more distant Zone is rendered, only to be completely drawn over.
+Invariably, these issues and limitations tend to result in overdraw, where a more distant Zone is rendered, only to be completely drawn over. Examples are shown below:
+
+![Example](img/overdraw_1.png)
+![Example](img/overdraw_2.png)
+
+
+
+
 
 ## Improvements
 
@@ -74,9 +87,18 @@ At runtime, we start with the assumption that only the current zone is visible. 
 
 ### Adjacent Zone Clips Enhancement
 
-During the rendering pass, clips are applied to every Zone that is more than one hop away from the Root. The data to drive that is generated during map building. The Zones immediately adjacent the current Zone do not have these data available. Consequently, the immediately adjacent zones are always rendered with the clip extents set to maximum width.
+During the rendering pass, clips are applied to every Zone that is more than one hop away from the Root. The data to drive that is generated during map building. The Zones immediately adjacent the current Zone do not have these data available. Consequently, the immediately adjacent zones are always rendered with the clip extents set to maximum width. This results in an overdraw case shown below:
 
-To address this, during the Edge PVS processing, we identify the indexes coordinates of the immediately joining edges in the Point data and ensure they are added to the transformation buffer. This allows the horizontal extent of the current Zone's shared edge with an adjoing zone to be found post transformation. These are then used to refine the clip extents for the adjacent zone, reducing overdraw in cases where the adjoining zone is larger than the edge.
+![Map](img/clip_map.png)
+
+Facing the T-junction, no clips are applied to the adjoining zone, resulting in the full horizontal extent being used. With wall rendering disabled, we can see the impact this has on drawing:
+
+![View](img/clip.png)
+
+
+To address this case, we identify the indexes coordinates of the immediately joining edges in the Point data during the Edge PVS processing and ensure they are added to the transformation buffer.
+
+This allows the horizontal extent of the current Zone's shared edge with an adjoing zone to be found post transformation. These are then used to refine the clip extents for the adjacent zone, reducing overdraw in cases where the adjoining zone is larger than the edge.
 
 This mechanism was improved one further step by considering the the complete extent for any immediate shared edges that are visible simultaneously. Without this, the clipping could only be applied when a single shared edge was visible.
 
