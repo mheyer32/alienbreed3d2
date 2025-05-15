@@ -451,6 +451,7 @@ static void zone_FillZEdgePVSListData()
             }
 
             if (Zone_EdgePVSState.zre_DoorMaskList) {
+/*
 #if defined(ZONE_DEBUG)
                 char const* doorIDNames = "0123456789ABCDEF";
                 dprintf(
@@ -474,6 +475,7 @@ static void zone_FillZEdgePVSListData()
                 }
                 dputs("}\n");
 #endif
+*/
                 Zone_EdgePVSState.zre_DoorMaskList += currentEdgePVSPtr->zep_ListSize;
             }
             Zone_EdgePVSState.zre_EdgePVSList += currentEdgePVSPtr->zep_ListSize;
@@ -684,10 +686,17 @@ void zone_ClearEdgePVSBuffer(WORD size)
     }
 }
 
-void zone_MergeEdgePVS(UBYTE const* data, WORD size)
+void zone_MergeEdgePVS(UBYTE const* zoneMaskPtr, ZDoorListMask const* doorListMaskPtr, WORD size)
 {
-    for (WORD i = 1; i < size; ++i) {
-        Zone_PVSMask_vb[i] |= data[i];
+    if (doorListMaskPtr) {
+        // TODO : Check as (doorListMaskPtr[i] & Zone_GlobalDoorMask_w) == doorListMaskPtr[i]
+        for (WORD i = 1; i < size; ++i) {
+            Zone_PVSMask_vb[i] |= doorListMaskPtr[i] ? 0 : zoneMaskPtr[i];
+        }
+    } else {
+        for (WORD i = 1; i < size; ++i) {
+            Zone_PVSMask_vb[i] |= zoneMaskPtr[i];
+        }
     }
 }
 
@@ -715,19 +724,21 @@ void Zone_CheckVisibleEdges(void)
 
     ZEdgePVSHeader const* edgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
     UBYTE const* edgePVSListPtr = Zone_GetEdgePVSListBase(edgePVSPtr);
+    ZDoorListMask const* doorListMaskPtr = Zone_GetEdgePVSDoorListBase(edgePVSPtr);
     Vec2W endPoint;
     WORD  startFlags;
     WORD  endFlags;
-    WORD  numVisible = 0;
+    WORD  numVisible   = 0;
     WORD  edgeID;
-    UWORD visJoinMask = 0;
+    UWORD visJoinMask  = 0;
+    WORD  doorListStep = doorListMaskPtr ? edgePVSPtr->zep_ListSize : 0;
 
     Zone_UpdateVectors();
     zone_ClearEdgePVSBuffer(edgePVSPtr->zep_ListSize);
 
     WORD* edgePointIndex = &Zone_EdgePointIndexes_vw[0];
 
-    for (WORD i = 0; i < edgePVSPtr->zep_EdgeCount; ++i, edgePVSListPtr += edgePVSPtr->zep_ListSize) {
+    for (WORD i = 0; i < edgePVSPtr->zep_EdgeCount; ++i, edgePVSListPtr += edgePVSPtr->zep_ListSize, doorListMaskPtr += doorListStep) {
 
         edgeID = edgePVSPtr->zep_EdgeInfoList[i].zei_EdgeID;
 
@@ -754,7 +765,7 @@ void Zone_CheckVisibleEdges(void)
         if (startFlags == (BIT_FRONT|BIT_LEFT|BIT_RIGHT)) {
             visJoinMask |= 1 << i;
             ++numVisible;
-            zone_MergeEdgePVS(edgePVSListPtr, edgePVSPtr->zep_ListSize);
+            zone_MergeEdgePVS(edgePVSListPtr, doorListMaskPtr, edgePVSPtr->zep_ListSize);
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID;
             continue;
@@ -784,7 +795,7 @@ void Zone_CheckVisibleEdges(void)
         if (endFlags == (BIT_FRONT|BIT_LEFT|BIT_RIGHT)) {
             visJoinMask |= 1 << i;
             ++numVisible;
-            zone_MergeEdgePVS(edgePVSListPtr,  edgePVSPtr->zep_ListSize);
+            zone_MergeEdgePVS(edgePVSListPtr, doorListMaskPtr, edgePVSPtr->zep_ListSize);
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID;
             continue;
@@ -798,7 +809,7 @@ void Zone_CheckVisibleEdges(void)
             visJoinMask |= 1 << i;
             //dprintf("\tSpan. Start: %d End: %d\n", (int)startFlags, (int)endFlags);
             ++numVisible;
-            zone_MergeEdgePVS(edgePVSListPtr, edgePVSPtr->zep_ListSize);
+            zone_MergeEdgePVS(edgePVSListPtr, doorListMaskPtr, edgePVSPtr->zep_ListSize);
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID;
             continue;
