@@ -28,11 +28,11 @@ INTERMEDIATE_DIR = $(BUILD_DIR)/$(CPU)/$(FLAVOR)
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(INTERMEDIATE_DIR)/hires.o
 
-OBJS +=$(SRCS:$(SRC_DIR)/%.c=$(INTERMEDIATE_DIR)/%.o) 
+OBJS +=$(SRCS:$(SRC_DIR)/%.c=$(INTERMEDIATE_DIR)/%.o)
 
 #- DCD32VER
-CFLAGS += -noixemul
-LFLAGS += -noixemul 
+CFLAGS += --std=c99 -noixemul
+LFLAGS += -noixemul
 
 #Allow 040 + instructions to be emitted in runtime detection cases
 AFLAGS = -Fhunk -m68060 -linedebug -chklabels -align -L listing.txt -Dmnu_nocode=1 -DUSE_16X16_TEXEL_MULS
@@ -68,7 +68,7 @@ AFLAGS += -DBUILD_WITH_C
 #Use gcc for linking the C build
 $(TARGETNAME): $(OBJS)
 	$(info Linking $@)
-	$(LINK) $(LFLAGS) $(OBJS) -o $@ 
+	$(LINK) $(LFLAGS) $(OBJS) -o $@
 	$(info ========================================================)
 
 
@@ -90,7 +90,7 @@ $(INTERMEDIATE_DIR)/%.o: $(SRC_DIR)/%.c Makefile
 	$(info >>> build $@ from $<)
 	@mkdir -p $(@D)
 	@$(CC) $(CFLAGS) -c $< -o $@
-	
+
 $(INTERMEDIATE_DIR)/%.o: $(SRC_DIR)/%.s Makefile
 	$(info >>> build $@ from $<)
 	@mkdir -p $(@D)

@@ -58,7 +58,10 @@ void zone_DumpDoor(ZDoor const* door, int doorIndex)
     );
 }
 
-WORD zone_NumDoorDefs = 0;
+/**
+ * Number of doors in the level
+ */
+static WORD zone_NumDoorDefs = 0;
 
 /**
  * Initialise the compact door list array. The level contains a fixed number of door definitions but not
@@ -66,6 +69,8 @@ WORD zone_NumDoorDefs = 0;
  *
  * Note that the door data doesn't contain any gaps, so if a level defines only 3 doors, no matter which
  * letter number is assigned, the indexes of the 3 doors will always be 0, 1, 2.
+ *
+ * We construct the list and also set the zone_NumDoorDefs
  */
 void Zone_InitDoorList()
 {
@@ -92,8 +97,10 @@ void Zone_InitDoorList()
         }
     }
 
+    // Record the actual door count
     zone_NumDoorDefs = doorIndex;
 
+    // Make sure the rest of the list is initialised with
     while (doorIndex < LVL_MAX_DOOR_ZONES) {
         Zone_DoorList_vw[doorIndex++] = ZONE_ID_LIST_END;
     }
@@ -101,7 +108,7 @@ void Zone_InitDoorList()
 
 /**
  * Returns the Door Index for a given zone. Uses the door map to quickly eliminate all the zones that are
- * not doors, before matching.
+ * not doors, before attempting to match one of the entries. Nothing clever, just a linear search.
  */
 WORD Zone_GetDoorID(WORD zoneID)
 {

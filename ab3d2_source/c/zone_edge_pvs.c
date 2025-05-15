@@ -214,13 +214,15 @@ static void zone_CalcZEdgePVSHeaderOffsets(ZEdgePVSHeader* currentEdgePVSPtr, UW
     size_t offset = (sizeof(ZEdgePVSHeader) - sizeof(ZEdgeInfo)) +
         currentEdgePVSPtr->zep_EdgeCount * sizeof(ZEdgeInfo);
 
-    currentEdgePVSPtr->zep_ZoneMaskOffset = (UWORD)offset;
+    currentEdgePVSPtr->zep_ZoneMaskOffset = (WORD)offset;
 
     // If there are doors, comes after the edge mask. As the edge mask is byte based, the offset
     // is subject to rounding before we get to the doors.
     if (features & PVSCF_DOOR) {
         offset += Sys_Round2(currentEdgePVSPtr->zep_ListSize * currentEdgePVSPtr->zep_EdgeCount);
-        currentEdgePVSPtr->zep_DoorMaskOffset = offset;
+        currentEdgePVSPtr->zep_DoorMaskOffset = (WORD)offset;
+    } else {
+        currentEdgePVSPtr->zep_DoorMaskOffset = 0;
     }
 
     // TODO lifts
@@ -395,8 +397,15 @@ static void zone_FillZEdgePVSListData()
         Zone_EdgePVSState.zre_EdgePVSList  = Zone_GetEdgePVSListBase(currentEdgePVSPtr);
 
         // Note, might be null
-        Zone_EdgePVSState.zre_DoorMaskList = Zone_GetEdgePVSLiftListBase(currentEdgePVSPtr);
+        Zone_EdgePVSState.zre_DoorMaskList = Zone_GetEdgePVSDoorListBase(currentEdgePVSPtr);
 
+
+        if (currentEdgePVSPtr->zep_EdgeCount > 10) {
+            dprintf(
+                "Error: Zone %d reports %d edges, skip\n", (int)zoneID, (int)currentEdgePVSPtr->zep_EdgeCount
+            );
+            continue;
+        }
 
         // For each edge, calculate the centre point as a viewpoint, then enter the zone
         // In the entered zone explore each front facing edge and descend depth first
@@ -441,28 +450,32 @@ static void zone_FillZEdgePVSListData()
                 zone_RecurseEdgePVS(indexInPVS, doorMask);
             }
 
-            dprintf(
-                "Zone %d Edge %d {\n",
-                (int)zoneID,
-                (int)edgeNum
-            );
-            for (WORD i = 0; i < currentEdgePVSPtr->zep_ListSize; ++i) {
-                if (Zone_EdgePVSState.zre_EdgePVSList[i]) {
-                    WORD mask = Zone_EdgePVSState.zre_DoorMaskList[i];
-                    for (WORD j=0; j < 16; ++j) {
-                        buffer[j] = (mask & (1 << j)) ? '1' : '0';
+            if (Zone_EdgePVSState.zre_DoorMaskList) {
+#if defined(ZONE_DEBUG)
+                char const* doorIDNames = "0123456789ABCDEF";
+                dprintf(
+                    "Zone %d Edge %d {\n",
+                    (int)zoneID,
+                    (int)edgeNum
+                );
+                for (WORD i = 0; i < currentEdgePVSPtr->zep_ListSize; ++i) {
+                    if (Zone_EdgePVSState.zre_EdgePVSList[i]) {
+                        WORD mask = Zone_EdgePVSState.zre_DoorMaskList[i];
+                        for (WORD j = 0; j < 16; ++j) {
+                            buffer[j] = (mask & (1 << j)) ? doorIDNames[j] : '-';
+                        }
+                        buffer[16] = 0;
+                        dprintf(
+                            "\t%3d: %s\n",
+                            (int)Zone_EdgePVSState.zre_FullPVSListPtr[i],
+                            buffer
+                        );
                     }
-                    buffer[16] = 0;
-                    dprintf(
-                        "\t%3d: %s\n",
-                        (int)Zone_EdgePVSState.zre_FullPVSListPtr[i],
-                        buffer
-                    );
                 }
+                dputs("}\n");
+#endif
+                Zone_EdgePVSState.zre_DoorMaskList += currentEdgePVSPtr->zep_ListSize;
             }
-
-            dputs("\n");
-
             Zone_EdgePVSState.zre_EdgePVSList += currentEdgePVSPtr->zep_ListSize;
         }
     }
