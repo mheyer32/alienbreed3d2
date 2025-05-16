@@ -54,8 +54,7 @@ There are some issues and defects with the original solution:
 
 Invariably, these issues and limitations tend to result in overdraw, where a more distant Zone is rendered, only to be completely drawn over. Examples are shown below:
 
-![Example](img/overdraw_1.png)
-![Example](img/overdraw_2.png)
+<img src="img/overdraw_1.png" alt="Render result" width="400"/> <img src="img/overdraw_2.png" alt="Hidden overdraw" width="400"/>
 
 ## Improvements
 
@@ -85,9 +84,32 @@ See also:
 
 ### PVS Errata
 
-The first attempt to address overdraw issues targeted the problem cases resulting from bugs in the map creation that led to spurious zones. This mechanism uses a manually created file that contains lists of Zones that contain inclusions in their PVS lists that are never truly visible and should be removed. These files are converted from a JSON file that is user edited. Identification of these issues involves testing the level in the developer build to identify problem cases.
+The first attempt to address overdraw issues targeted the problem cases resulting from bugs in the map creation that led to spurious zones.
 
-At runtime, any loaded errata data is applied to the corresponding PVS data by cutting out entries and moving down the remainder.
+<img src="img/pvs_errata_case.png" alt="Render result" width="400"/>
+
+In the illustrated example above, the shaded zones represent the PVS computed ahead of time by the level editor for the Zone with the green border. It is intuitive from inspection that the Zones shaded in red cannot be seen from anywhere in the Zone. As the bug exists in the editor, it is not clear the underlying cause but it could be due to a faulty ray intersection. The blue arrow reprents a hypothetical ray from the Zone that intersects all of the logically connected Zones to the pair that should be excluded, but should have been terminated when it hit the outer wall of the last green shaded Zone.
+
+Whatever the cause for inclusion, at runtime, there are certain player positions and orientations in the Zone that result in the large red area being rendered, only to be immediately overdrawn by the outer wall.
+
+The mechanism to address this uses a manually created file that contains lists of Zones that contain inclusions in their PVS lists that are never truly visible and should be removed. These files are converted from a user-edited JSON file:
+
+```JSON
+{
+    "ZonePVSErrata": {
+    	"4": [ 17 ],
+    	"5": [ 181 ],
+    	"34": [ 37 ],
+        "36": [ 31 ],
+        "37": [ 34, 45, 46, 47, 248 ],
+        "38": [ 30, 31 ],
+        "40": [ 248 ]
+    }
+}
+```
+The structure of the JSON is a simple key-value set of source Zone ID mapped to an array of target Zone IDs that should be removed from the source Zone's PVS. During level load, any errata data is loaded and applied to the PVS data before entering the main game loop.
+
+Identification of where these issues occur invovles testing the level in the developer build where wall rendering can be enabled/disabled, revealing the floor/ceiling areas of any zones that are being rendered. 
 
 ### Per Edge PVS
 
@@ -103,11 +125,10 @@ At runtime, we start with the assumption that only the current zone is visible. 
 
 During the rendering pass, clips are applied to every Zone that is more than one hop away from the Root. The data to drive that is generated during map building. The Zones immediately adjacent the current Zone do not have these data available. Consequently, the immediately adjacent zones are always rendered with the clip extents set to maximum width. This results in an overdraw case shown below:
 
-![Map](img/clip_map.png)
+<img src="img/clip_map.png" alt="Clip Map" width="320"/> <img src="img/clip.png" alt="Render result" width="400"/>
+
 
 Facing the T-junction, no clips are applied to the adjoining zone, resulting in the full horizontal extent being used. With wall rendering disabled, we can see the impact this has on drawing:
-
-![View](img/clip.png)
 
 To address this case, we identify the indexes coordinates of the immediately joining edges in the Point data during the Edge PVS processing and ensure they are added to the transformation buffer.
 
