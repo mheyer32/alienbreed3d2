@@ -111,6 +111,10 @@ The structure of the JSON is a simple key-value set of source Zone ID mapped to 
 
 Identification of where these issues occur invovles testing the level in the developer build where wall rendering can be enabled/disabled, revealing the floor/ceiling areas of any zones that are being rendered. 
 
+See also:
+- [game_preferences.c](../c/zone_errata.c)
+
+
 ### Per Edge PVS
 
 The PVS Errata mechanism is rather laborious and doesn't deal with other classes of bugs that can manifest at runtime. For example, the visibility of indirectly connected zones can change depending on the orientation of the player, resulting in significant overdraw that is not correctable via the Errata method.
@@ -120,6 +124,9 @@ To address this, a new load-time mechanism has been added. This visits every Zon
 The algorithm steps out of each shared edge and then examines the shared edges of the Zone it entered, making note of those that are still front facing from the perspective of the root Zone. This process recurses, marking the subset of the PVS that can be seen from each edge of the Zone.
 
 At runtime, we start with the assumption that only the current zone is visible. Next the player's orientation and field of view is used to determine which shared edges in the current Zone are visible. The zones in the PVS are then tagged as visible or not by checking the per-edge data that was calculated. During the render stage, only the zones from the PVS that were tagged are drawn.
+
+See also:
+- [zone_edge_pvs.c](../c/zone_edge_pvs.c)
 
 ### Adjacent Zone Clips Enhancement
 
@@ -141,3 +148,7 @@ This mechanism was improved one further step by considering the the complete ext
 When considering the PVS, Zones defined as doors are considered as open. Consequently whatever is behind them is drawn first, then the closed wall of the door is drawn over them. For doors that are far away, this may only represent a minor degree of overdraw. However, approaching the door results in an ever larger area being drawn and then overdrawn, resulting in highly conspicuous drops in performance. 
 
 To address this, as part of the per-edge PVS data that is computed on level loading we determine which PVS lists contain one or more doors. For those that do, we also include, per-edge, an entry for each Zone in the PVS that indicates which doors must be open for the corresponding Zone to be considered visible. This entry is a bitmask, with each bit representing one of the (currently 16) possible doors.
+
+See also:
+- [zone_edge_pvs.c](../c/zone_edge_pvs.c)
+- [zone_door_pvs.c](../c/zone_door_pvs.c)
