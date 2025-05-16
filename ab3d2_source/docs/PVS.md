@@ -71,7 +71,17 @@ It is also the case that small changes in the player position do not result in a
 
 To address this, a positon mask is defined. This acts to quantise the player's position to a coarser granularity. This granularity is controlled by a preferences setting, `misc.oz_sensitivity`. This is a value from 0-7 which represents how many of the lower bits of the player's X/Z coordinates should be discarded.
 
-See: Zone_MovementMask_l, Prefs_OrderZoneSensitivity
+| Identifier | Type | Managed By | Notes |
+|----------|-------------|:------:|---|
+| Prefs_OrderZoneSensitivity | var | C | User-definable preferences setting |
+| Zone_MovementMask_l | var | C | Mask constructed from the setting |
+| zone_LastPosition_vw | var | Asm | Previous masked player X/Z position |
+| Zone_OrderZones | function | Asm | Main entry point for Zone sorting |
+
+See also:
+
+- [orderzones.s](../orderzones.s)
+- [game_preferences.c](../c/game_preferences.c#L87)
 
 ### PVS Errata
 
