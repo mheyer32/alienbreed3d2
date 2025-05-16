@@ -1,4 +1,4 @@
-# Potentially Visible Set Rendering
+# Development / Potentially Visible Set Rendering
 
 ## Map Structure Overview
 
@@ -26,15 +26,15 @@ It is not possible to see the entire map from any one location. When a map is bu
 - The PVS also contains the indexes of the Points those Zones are defiend from which allows the runtime to transform and project only the points that matter.
 - Information about the edge through which a Zone is seen in is also stored. This allows the renderer to "clip" the maximum rendering extents at runtime.
 
-At runtime, the engine takes note of which Zone the observer is in and is then able to test and render only the subset of Zones that are in that Zone's PVS. This saves a lot of computational effort.
+At runtime, the engine takes note of which Zone the player is in and is then able to test and render only the subset of Zones that are in that Zone's PVS. This saves a lot of computational effort.
 
 ## Rendering
 
-Rendering is very simple. Zones are sorted by their centre weighted distance from the observer and are then rendered from the furthest to the nearest, ensuring that rendering is restricted to any clips that are relevant. Rendering a Zone draws all of the front facing surfaces and any objects it contains.
+Rendering is very simple. Zones are sorted by their centre weighted distance from the player and are then rendered from the furthest to the nearest, ensuring that rendering is restricted to any clips that are relevant. Rendering a Zone draws all of the front facing surfaces and any objects it contains.
 
 The solution aims to ensure that:
 
-- Only the Zones in front of, or partially in front of the observer are drawn.
+- Only the Zones in front of, or partially in front of the player are drawn.
 - Each Zone is drawn exactly once.
 - Drawing is clipped to the visible width of the edge it is visible through.
 
@@ -45,10 +45,12 @@ The net result is somewhere between a BSP (Convex spaces, precomputed PVS) and P
 There are some issues and defects with the original solution:
 
 - The PVS determination does not seem to take into account that adjacent Zones can be disconnected due to non-overlapping height ranges.
-- The PVS list for a Zone may contain entries that are spatially connected but not visibly connected.
-- Runtime application of PVS has to test every Zone in the PVS for rendering. These tests are not comletely reliable and frequently glitch.
-    - Glitches can be reduced performance or spurious overdraw events.
+- The PVS list for a Zone may contain entries that are logically connected but not visibly connected.
+- Runtime application of PVS has to test every Zone in the PVS for rendering.
+    - These tests are not comletely reliable and frequently glitch.
+    - Glitches can reduce performance and/or cause visible corruption.
 - The state of Doors and Lift zones are not taken into consideration.
+    - This results in significant performance dips when facing door zones.
 
 Invariably, these issues and limitations tend to result in overdraw, where a more distant Zone is rendered, only to be completely drawn over. Examples are shown below:
 
@@ -61,9 +63,15 @@ Various algorithmic modifications have been made to try and improve the performa
 
 ### Zone Order Reduction
 
-Originally, the PVS set for the observer's Zone was sorted on every single frame, regardless of whether or not the observer has moved, which is the only means by which the relative order can change. Moreover, small movements of the observer very rarely affect the outcome of ordering except in rare edge cases.
+Originally, the PVS set for the player's Zone was unconditionally sorted on every single frame, regardless of whether or not the player has changed position, which is the only trigger by which the relative order can change.
 
-To address this, a positon mask is defined. This acts to quantise the observer position to a coarser granularity. Zone ordering is only performed when the quantised position changes or the observer changes zone.
+To address this, a snapshot of the player's X/Z coordinate pair is taken each frame and compared to the previous value. If the value has not changed, there is no need to reorder the zones.
+
+It is also the case that small changes in the player position do not result in a change to Zone ordering in the vast majority of cases. When the player is moving through a Zone, most of the reordering calls will have no effect and are therefore wasted effort.
+
+To address this, a positon mask is defined. This acts to quantise the player's position to a coarser granularity. This granularity is controlled by a preferences setting, `misc.oz_sensitivity`. This is a value from 0-7 which represents how many of the lower bits of the player's X/Z coordinates should be discarded.
+
+See: Zone_MovementMask_l, Prefs_OrderZoneSensitivity
 
 ### PVS Errata
 
@@ -73,13 +81,13 @@ At runtime, any loaded errata data is applied to the corresponding PVS data by c
 
 ### Per Edge PVS
 
-The PVS Errata mechanism is rather laborious and doesn't deal with other classes of bugs that can manifest at runtime. For example, the visibility of indirectly connected zones can change depending on the orientation of the observer, resulting in significant overdraw that is not correctable via the Errata method.
+The PVS Errata mechanism is rather laborious and doesn't deal with other classes of bugs that can manifest at runtime. For example, the visibility of indirectly connected zones can change depending on the orientation of the player, resulting in significant overdraw that is not correctable via the Errata method.
 
 To address this, a new load-time mechanism has been added. This visits every Zone in the map and then examines the PVS from the perspective of each of the Zone's joining edges. Generally, where a Zone has more than one shared edge, only a subset of the Zone's PVS will ever be visible via that edge.
 
 The algorithm steps out of each shared edge and then examines the shared edges of the Zone it entered, making note of those that are still front facing from the perspective of the root Zone. This process recurses, marking the subset of the PVS that can be seen from each edge of the Zone.
 
-At runtime, we start with the assumption that only the current zone is visible. Next the observer's orientation and field of view is used to determine which shared edges in the current Zone are visible. The zones in the PVS are then tagged as visible or not by checking the per-edge data that was calculated. During the render stage, only the zones from the PVS that were tagged are drawn.
+At runtime, we start with the assumption that only the current zone is visible. Next the player's orientation and field of view is used to determine which shared edges in the current Zone are visible. The zones in the PVS are then tagged as visible or not by checking the per-edge data that was calculated. During the render stage, only the zones from the PVS that were tagged are drawn.
 
 ### Adjacent Zone Clips Enhancement
 
