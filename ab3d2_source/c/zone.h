@@ -152,6 +152,27 @@ typedef struct {
 } ASM_ALIGN(sizeof(WORD)) Zone_LevelPair;
 
 /**
+ * Enumerations of truthy visibility types
+ *
+ * [type:3][id:5]
+ *
+ * ID is 5 bits to permit expansion of door/lift count.
+ */
+enum {
+    ZVIS_ID_BITS   = 5,
+    ZVIS_TYPE_BITS = 3,
+    ZVIS_ID_MASK   = (1 << ZVIS_ID_BITS) - 1,
+    ZVIS_TYPE_MASK = ((1 << ZVIS_TYPE_BITS) - 1) << ZVIS_ID_BITS,
+
+    // Visibility types
+    ZVIS_NONE    = 0,                 // Not visible at all
+    ZVIS_COND    = 1 << ZVIS_ID_BITS, // Regular zone, may be obscured by doors or lifts
+    ZVIS_DOOR    = 2 << ZVIS_ID_BITS, // Door zone, may be obscured by self or other. Door ID ZVIS_ID_BITS
+    ZVIS_LIFT    = 3 << ZVIS_ID_BITS, // Lift zone, may be obscured by self or other. Lift ID ZVIS_ID_BITS
+    ZVIS_DIRECT  = 4 << ZVIS_ID_BITS, // Regular zone, direct line of sight
+};
+
+/**
  * Zone PVS Errata
  *
  * The errata is a stream of words that are varying length lists that each begin with the
