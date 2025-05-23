@@ -57,7 +57,9 @@ static struct {
     /**
      * Recursion depth tracker.
      */
-    LONG zre_RecursionDepth;
+    WORD zre_RecursionDepth;
+    WORD zre_MaxRecursionDepth;
+    LONG zre_OperationCount;
 
     /**
      * These are the start and end coordinates of the edge for which the PVS is being evaluated.
@@ -65,9 +67,6 @@ static struct {
     Vec2W zre_ViewPoint1;
     Vec2W zre_ViewPoint2;
 
-#if defined(ZONE_DEBUG)
-    BOOL  zre_DebugMode;
-#endif
 } Zone_EdgePVSState;
 
 
@@ -328,23 +327,14 @@ static ZDoorListMask zone_GetInitialDoorMask(WORD zoneID)
  */
 static void zone_RecurseEdgePVS(WORD indexInPVS, ZDoorListMask doorMask)
 {
-    ++Zone_EdgePVSState.zre_RecursionDepth;
-
+    if (++Zone_EdgePVSState.zre_RecursionDepth > Zone_EdgePVSState.zre_MaxRecursionDepth) {
+        Zone_EdgePVSState.zre_MaxRecursionDepth = Zone_EdgePVSState.zre_RecursionDepth;
+    }
+    ++Zone_EdgePVSState.zre_OperationCount;
 
     WORD zoneID = Zone_EdgePVSState.zre_FullPVSListPtr[indexInPVS];
 
-#if defined(ZONE_DEBUG)
-        // Debug hall of mirrows in Level A Zone 28
-        if (Zone_EdgePVSState.zre_DebugMode) {
-            dprintf(
-                "\t\t%*d: PVS[%d] => Zone ID: %d\n",
-                (int)(Zone_EdgePVSState.zre_RecursionDepth << 2),
-                (int)Zone_EdgePVSState.zre_RecursionDepth,
-                (int)indexInPVS,
-                (int)zoneID
-            );
-        }
-#endif
+    WORD visType = ZVIS_DIRECT;
 
     // Mark as visited and thus visible in the PVS
     Zone_EdgePVSState.zre_EdgePVSList[indexInPVS] = ZVIS_DIRECT;
@@ -353,26 +343,15 @@ static void zone_RecurseEdgePVS(WORD indexInPVS, ZDoorListMask doorMask)
         ZDoorListMask myDoorMask = zone_GetInitialDoorMask(zoneID);
         if (myDoorMask) {
             doorMask |= myDoorMask;
-            Zone_EdgePVSState.zre_EdgePVSList[indexInPVS] = ZVIS_DOOR;
+            visType = ZVIS_DOOR;
         } else if (doorMask) {
-            Zone_EdgePVSState.zre_EdgePVSList[indexInPVS] = ZVIS_COND;
+            visType = ZVIS_COND;
         }
 
         Zone_EdgePVSState.zre_DoorMaskList[indexInPVS] = doorMask;
-
-#if defined(ZONE_DEBUG)
-        // Debug hall of mirrows in Level A Zone 28
-        if (Zone_EdgePVSState.zre_DebugMode) {
-            dprintf(
-                "\t\t%*d: Setting Door Mask to: 0x%04X\n",
-                (int)(Zone_EdgePVSState.zre_RecursionDepth << 2),
-                (int)Zone_EdgePVSState.zre_RecursionDepth,
-                (unsigned)Zone_EdgePVSState.zre_DoorMaskList[indexInPVS]
-            );
-        }
-#endif
-
     }
+
+    Zone_EdgePVSState.zre_EdgePVSList[indexInPVS] = visType;
 
     // Get the list of known joining edges for this zone.
     ZEdgePVSHeader* currentEdgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
@@ -382,57 +361,23 @@ static void zone_RecurseEdgePVS(WORD indexInPVS, ZDoorListMask doorMask)
 
         WORD nextZoneID = edgePtr->e_JoinZoneID;
 
-#if defined(ZONE_DEBUG)
-            // Debug hall of mirrows in Level A Zone 28
-            if (Zone_EdgePVSState.zre_DebugMode) {
-                dprintf(
-                    "\t\t%*d: Checking Join %d [Leading to Zone %d]\n",
-                    (int)(Zone_EdgePVSState.zre_RecursionDepth << 2),
-                    (int)Zone_EdgePVSState.zre_RecursionDepth,
-                    (int)edgeNum,
-                    (int)nextZoneID
-                );
-            }
-#endif
-
-
         // Get the index position of the adjoining zone in the PVS list
         indexInPVS = zone_GetIndexInPVSList(nextZoneID);
 
         // Is the adjoining zone not in the PVS list? Skip.
         if (indexInPVS == ZONE_ID_LIST_END) {
-#if defined(ZONE_DEBUG)
-            // Debug hall of mirrows in Level A Zone 28
-            if (Zone_EdgePVSState.zre_DebugMode) {
-                dprintf(
-                    "\t\t%*d: Completed\n",
-                    (int)(Zone_EdgePVSState.zre_RecursionDepth << 2),
-                    (int)Zone_EdgePVSState.zre_RecursionDepth
-                );
-            }
-#endif
             continue;
         }
 
+        WORD nextVis = Zone_EdgePVSState.zre_EdgePVSList[indexInPVS];
         // Have we visited this zone already?
-
-        // TODO - if our visibility is direct and the target is conditional
-        //        be prepared to override it.
-
-        if (Zone_EdgePVSState.zre_EdgePVSList[indexInPVS]) {
-
-#if defined(ZONE_DEBUG)
-            // Debug hall of mirrows in Level A Zone 28
-            if (Zone_EdgePVSState.zre_DebugMode) {
-                dprintf(
-                    "\t\t%*d: Skipping - Already visited Zone %d\n",
-                    (int)(Zone_EdgePVSState.zre_RecursionDepth << 2),
-                    (int)Zone_EdgePVSState.zre_RecursionDepth,
-                    (int)nextZoneID
-                );
-            }
-#endif
-
+        // This is an MVP version of visibility upgrade.
+        if (nextVis >= ZVIS_DOOR) {
+            // Can't upgrade visibility because the zone is either a door/lift or already directly visible.
+            // A door or lift zone can always be obscured, even when in a direct line of sight.
+            continue;
+        } else if (nextVis > ZVIS_NONE && visType < ZVIS_DIRECT) {
+            // Can't upgrade visibility because our visibilty isn't a better class
             continue;
         }
 
@@ -447,30 +392,9 @@ static void zone_RecurseEdgePVS(WORD indexInPVS, ZDoorListMask doorMask)
             Zone_SideOfEdge(edgePtr, &Zone_EdgePVSState.zre_ViewPoint1) < 0 ||
             Zone_SideOfEdge(edgePtr, &Zone_EdgePVSState.zre_ViewPoint2) < 0
         ) {
-#if defined(ZONE_DEBUG)
-            // Debug hall of mirrows in Level A Zone 28
-            if (Zone_EdgePVSState.zre_DebugMode) {
-                dprintf(
-                    "\t\t%*d: Edge is facing, preparing to descend\n",
-                    (int)(Zone_EdgePVSState.zre_RecursionDepth << 2),
-                    (int)Zone_EdgePVSState.zre_RecursionDepth
-                );
-            }
-#endif
             zone_RecurseEdgePVS(indexInPVS, doorMask);
         }
     }
-
-#if defined(ZONE_DEBUG)
-    // Debug hall of mirrows in Level A Zone 28
-    if (Zone_EdgePVSState.zre_DebugMode) {
-        dprintf(
-            "\t\t%*d: All done here\n",
-            (int)(Zone_EdgePVSState.zre_RecursionDepth << 2),
-            (int)Zone_EdgePVSState.zre_RecursionDepth
-        );
-    }
-#endif
 
     --Zone_EdgePVSState.zre_RecursionDepth;
 }
@@ -481,18 +405,13 @@ static void zone_RecurseEdgePVS(WORD indexInPVS, ZDoorListMask doorMask)
  */
 static void zone_FillZEdgePVSListData()
 {
-    Zone_EdgePVSState.zre_FullPVSListPtr = (WORD*)Sys_GetTemporaryWorkspace();
-    Zone_EdgePVSState.zre_RecursionDepth = 0;
+    Zone_EdgePVSState.zre_FullPVSListPtr    = (WORD*)Sys_GetTemporaryWorkspace();
+    Zone_EdgePVSState.zre_RecursionDepth    = 0;
+    Zone_EdgePVSState.zre_MaxRecursionDepth = 0;
+    Zone_EdgePVSState.zre_OperationCount    = 0;
     for (WORD zoneID = 0; zoneID < Lvl_NumZones_w; ++zoneID) {
 
         Zone_EdgePVSState.zre_rootZonePtr    = Lvl_ZonePtrsPtr_l[zoneID];
-
-#if defined(ZONE_DEBUG)
-        // Debug hall of mirrows in Level A Zone 28
-        if ((Zone_EdgePVSState.zre_DebugMode = (zoneID == 28))) {
-            dprintf("zone_FillZEdgePVSListData() Zone 28:\n");
-        }
-#endif
 
         // Fill the buffer with the list of zones in the PVS for our zone
         zone_MakePVSZoneIDList(
@@ -508,8 +427,6 @@ static void zone_FillZEdgePVSListData()
         // Note, might be null
         Zone_EdgePVSState.zre_DoorMaskList = Zone_GetEdgePVSDoorListBase(currentEdgePVSPtr);
 
-
-
         if (currentEdgePVSPtr->zep_EdgeCount > 10) {
             dprintf(
                 "Error: Zone %d reports %d edges, skip\n", (int)zoneID, (int)currentEdgePVSPtr->zep_EdgeCount
@@ -521,15 +438,7 @@ static void zone_FillZEdgePVSListData()
         // In the entered zone explore each front facing edge and descend depth first
         // Need to mark each distinct visited zone as "potentially visible"
 
-
         ZDoorListMask doorMask = zone_GetInitialDoorMask(zoneID);
-
-#if defined(ZONE_DEBUG)
-        // Debug hall of mirrows in Level A Zone 28
-        if (Zone_EdgePVSState.zre_DebugMode) {
-            dprintf("\tInitial Door Mask: 0x%04X\n", (unsigned)doorMask);
-        }
-#endif
 
         // Walk the set of shared edges
         for (WORD edgeNum = 0; edgeNum < currentEdgePVSPtr->zep_EdgeCount; ++edgeNum) {
@@ -551,14 +460,6 @@ static void zone_FillZEdgePVSListData()
             // Mark the root zone as already visited
             Zone_EdgePVSState.zre_EdgePVSList[0] = ZVIS_DIRECT;
 
-#if defined(ZONE_DEBUG)
-            // Debug hall of mirrows in Level A Zone 28
-            if (Zone_EdgePVSState.zre_DebugMode) {
-                dprintf("\tProcessing Join %d: doorMask 0x%04X\n", (int)edgeNum, (unsigned)doorMask);
-            }
-#endif
-
-
             // Set the root zone door mask, if relevant
             if (Zone_EdgePVSState.zre_DoorMaskList) {
                 Zone_EdgePVSState.zre_DoorMaskList[0] = doorMask;
@@ -571,7 +472,6 @@ static void zone_FillZEdgePVSListData()
             }
 
             WORD indexInPVS = zone_GetIndexInPVSList(edgePtr->e_JoinZoneID);
-
 
             if (indexInPVS > ZONE_ID_LIST_END) {
                 zone_RecurseEdgePVS(indexInPVS, doorMask);
@@ -608,6 +508,11 @@ static void zone_FillZEdgePVSListData()
             Zone_EdgePVSState.zre_EdgePVSList += currentEdgePVSPtr->zep_ListSize;
         }
     }
+    dprintf(
+        "Edge List Data generated. Max Depth %d, Max Operations %d\n",
+        (int)Zone_EdgePVSState.zre_MaxRecursionDepth,
+        (int)Zone_EdgePVSState.zre_OperationCount
+    );
 }
 
 /**
