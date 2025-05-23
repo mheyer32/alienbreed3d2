@@ -27,6 +27,14 @@ zone_FinalOrderTableBarrier_w:	ds.w	1 		; deliniates end of table
 		DCLC Zone_DoorList_vw,  ds.w,    LVL_MAX_DOOR_ZONES
 		DCLC Zone_LiftList_vw,  ds.w,    LVL_MAX_LIFT_ZONES
 
+		; The immediate global door state. This is updated during game logic when doors open and close.
+		; The state may change unexpectedly as the logic runs in an interrupts
+		DCLC Zone_CurrentDoorState_w,	ds.w,	1
+
+		; A snapshot of the Zone_CurrentDoorState_w taken at the beginning of rendering each frame.
+		; This value will be used by the Edge PVS visibility at runtime
+		DCLC Zone_RenderDoorState_w,	ds.w,	1
+
 		; Bitmap of the zones that contain doors. Since there are only 16 doors, except for very small levels,
 		; most zones will not be a door. When we are processing the full level's per-zone PVS, we are going to
 		; be querying if any given zone is a door with monotonous regularity. When a zone is not a door, which
