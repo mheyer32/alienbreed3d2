@@ -272,6 +272,13 @@ Dev_PrintStats:
 				;move.l		#24,d0
 				;bsr			Dev_PrintF
 
+				; Door mask
+				lea			Zone_RenderDoorState_w,a1
+				lea			.dev_ss_door_mask_vb,a0
+				move.l		#24,d0
+				bsr			Dev_PrintF
+
+
 				; Shaded walls
 				;lea			dev_VisibleShadedWalls_w,a1
 				;lea			.dev_ss_stats_wall_shaded_vb,a0
@@ -388,6 +395,9 @@ Dev_PrintStats:
  				dc.b		"off",0
 .dev_bool_on_vb:
 				dc.b		"on",0
+
+.dev_ss_door_mask_vb:
+				dc.b "DM: %04X",0
 
 				align 4
 

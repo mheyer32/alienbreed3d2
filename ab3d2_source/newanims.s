@@ -1233,16 +1233,14 @@ rlift3:
 				move.w	#$0,d1
 				bra		backfromlift
 
-
-
 				even
 DoorRoutine:
-				move.l	#anim_DoorHeightTable_vw,a6
+				move.l	#anim_DoorOpenTimers_vw,a6
 				move.l	Lvl_DoorDataPtr_l,a0
 				move.w	#-1,anim_ThisDoor_w
 
 doadoor:
-				add.w	#1,anim_ThisDoor_w
+				add.w	#1,anim_ThisDoor_w      ; Door index
 				move.w	(a0)+,d0				; 0: bottom of door movement
 				cmp.w	#999,d0
 				bne		notalldoorsdone
@@ -1305,6 +1303,7 @@ notalldoorsdone:
 
 				tst.w	d2
 				beq.s	.nonoise
+
 				move.w	#50,Aud_NoiseVol_w
 				move.w	anim_ClosedSoundFX_w,Aud_SampleNum_w
 				blt.s	.nonoise
@@ -1346,6 +1345,24 @@ nolower:
 				moveq	#0,d2
 noraise:
 NOTMOVING:
+
+				; Update the door state bitmap for the zone visibility logic
+				; We only care about the fully closed state, anything open/ing has to be
+				; considered see through
+				move.w  Zone_CurrentDoorState_w,d6
+				move.w  anim_ThisDoor_w,d7
+				tst.b   anim_DoorClosed_b
+				bne.s   .clear_door_state
+
+				bset    d7,d6
+				bra.s   .done_door_state
+
+.clear_door_state:
+				bclr    d7,d6
+
+.done_door_state:
+                move.w  d6,Zone_CurrentDoorState_w
+
 				sub.w	d3,d0
 				cmp.w	#15*16,d0
 				sge		d6

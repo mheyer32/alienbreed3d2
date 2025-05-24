@@ -9,6 +9,9 @@
 extern Vec2W const* Lvl_PointsPtr_l;
 extern WORD Lvl_NumPoints_w;
 
+extern ZDoorListMask Zone_CurrentDoorState_w;
+extern ZDoorListMask Zone_RenderDoorState_w;
+
 static char buffer[256]; // just for debugging
 
 /**
@@ -621,6 +624,10 @@ void Zone_InitEdgePVS()
 
     zone_FillEdgePointIndexes();
 
+    // Assume doors closed on level start
+    Zone_CurrentDoorState_w =
+    Zone_RenderDoorState_w = 0;
+
     #if defined(ZONE_DEBUG)
     //zone_DumpPerEdgePVS();
     Sys_MarkTime(&end.ev);
@@ -710,6 +717,7 @@ extern UBYTE Zone_PVSMask_vb[];
 
 extern ZPVSRecord* Lvl_ListOfGraphRoomsPtr_l;
 
+
 void zone_ClearEdgePVSBuffer(WORD size)
 {
     Zone_PVSMask_vb[0] = 0xFF;
@@ -721,9 +729,11 @@ void zone_ClearEdgePVSBuffer(WORD size)
 void zone_MergeEdgePVS(UBYTE const* zoneMaskPtr, ZDoorListMask const* doorListMaskPtr, WORD size)
 {
     if (doorListMaskPtr) {
-        // TODO : Check as (doorListMaskPtr[i] & Zone_GlobalDoorMask_w) == doorListMaskPtr[i]
+        ZDoorListMask mask = Zone_RenderDoorState_w;
         for (WORD i = 1; i < size; ++i) {
-            Zone_PVSMask_vb[i] |= doorListMaskPtr[i] ? 0 : zoneMaskPtr[i];
+            Zone_PVSMask_vb[i] |= (
+                (doorListMaskPtr[i] & mask) == doorListMaskPtr[i]
+            ) ? zoneMaskPtr[i] : 0;
         }
     } else {
         for (WORD i = 1; i < size; ++i) {
@@ -767,6 +777,9 @@ void Zone_CheckVisibleEdges(void)
 
     Zone_UpdateVectors();
     zone_ClearEdgePVSBuffer(edgePVSPtr->zep_ListSize);
+
+    // Snapshot the door state to prevent interrupt changes messing with us.
+    Zone_RenderDoorState_w = Zone_CurrentDoorState_w;
 
     WORD* edgePointIndex = &Zone_EdgePointIndexes_vw[0];
 
