@@ -1,11 +1,31 @@
+#include <stdio.h>
+#include <proto/exec.h>
+#include "defs.h"
 #include "system.h"
 #include "zone.h"
-#include "multiplayer.h"
-#include <proto/exec.h>
-#include <stdio.h>
+#include "zone_door.h"
+#include "zone_inline.h"
 
 extern Vec2W const* Lvl_PointsPtr_l;
 extern WORD Lvl_NumPoints_w;
+
+extern ZDoorListMask Zone_CurrentDoorState_w;
+extern ZDoorListMask Zone_RenderDoorState_w;
+
+static char buffer[256]; // just for debugging
+
+/**
+ * Temporary statistics structure used when determining the data size required for the EdgePVS Data.
+ */
+typedef struct {
+    WORD  numZones; // How many zones there are in the the PVS
+    WORD  numJoins; // How many joining edges there are from the root of the PVS
+    UWORD features; // Features present in the PVS, eg. doors, lifts, etc
+    UWORD dataSize; // Required data size for allocation
+} ZPVSCount;
+
+#define PVSCF_DOOR 1
+#define PVSCF_LIFT 2
 
 /**
  * Data structure used to keep track of key information during the recursive evaluation of
@@ -33,54 +53,34 @@ static struct {
     UBYTE* zre_EdgePVSList;
 
     /**
+     * Pointer to the specific door list mask under evaluation, if there is one.
+     */
+    ZDoorListMask* zre_DoorMaskList;
+
+    /**
      * Recursion depth tracker.
      */
-    LONG zre_RecursionDepth;
+    WORD zre_RecursionDepth;
+    WORD zre_MaxRecursionDepth;
+    LONG zre_OperationCount;
 
     /**
      * These are the start and end coordinates of the edge for which the PVS is being evaluated.
      */
     Vec2W zre_ViewPoint1;
     Vec2W zre_ViewPoint2;
+
 } Zone_EdgePVSState;
 
-static char buffer[256]; // just for debugging
-
-/**
- * Returns which side of an edge a coordinate is on.
- *
- * For a vector AB and a point P:
- *
- *   d = (B.x - A.x) * (P.z - A.z) - (B.z - A.z) * (P.x - A.x)
- *
- * For our ZEdge structure, the B - A terms are given by the e_XLen and e_ZLen members.
- *
- * Where d is 0, P is on the line of AB. Positive values are one one side, negative the other.
- *
- */
-static inline int zone_SideOfEdge(ZEdge const* edgePtr, Vec2W const* coordPtr) {
-    return (int)edgePtr->e_Len.v_X * (int)(coordPtr->v_Z - edgePtr->e_Pos.v_Z) -
-           (int)edgePtr->e_Len.v_Z * (int)(coordPtr->v_X - edgePtr->e_Pos.v_X);
-}
-
-/**
- * Return the (unterminated) count of the number of PVS entries for the given zone.
- */
-static WORD zone_CountPVS(Zone const* zonePtr) {
-    ZPVSRecord const* pvsPtr = &zonePtr->z_PotVisibleZoneList[0];
-    while (zone_IsValidZoneID(pvsPtr->pvs_ZoneID)) {
-        ++pvsPtr;
-    }
-    return (WORD)(pvsPtr - &zonePtr->z_PotVisibleZoneList[0]);
-}
 
 /**
  * Copy the IDs of the Zone's ZPVSRecord set to a buffer of just the IDs, terminated with
  * ZONE_ID_LIST_END. Returns the address of the end of the list.
  */
-static WORD* zone_MakePVSZoneIDList(Zone const* zonePtr, WORD* bufferPtr) {
+static WORD* zone_MakePVSZoneIDList(Zone const* zonePtr, WORD* bufferPtr)
+{
     ZPVSRecord const* pvsPtr = &zonePtr->z_PotVisibleZoneList[0];
-    while (zone_IsValidZoneID(pvsPtr->pvs_ZoneID)) {
+    while (Zone_IsValidZoneID(pvsPtr->pvs_ZoneID)) {
         *bufferPtr++ = pvsPtr->pvs_ZoneID;
         ++pvsPtr;
     }
@@ -90,15 +90,20 @@ static WORD* zone_MakePVSZoneIDList(Zone const* zonePtr, WORD* bufferPtr) {
 
 
 /**
- * Return the number of joining edges for the current zone.
+ * Return the number of joining edges for the given zone. An edge is considered joining
+ * when:
+ *   The edge ID is valid.
+ *   The adjoining zone ID of the edge is valid.
+ *   The zone heights contain an overlap.
  */
-static WORD zone_CountJoiningEdges(Zone const* zonePtr) {
+static WORD zone_CountJoiningEdges(Zone const* zonePtr)
+{
     WORD numEdges = 0;
-    WORD const* zEdgeList = zone_GetEdgeList(zonePtr);
+    WORD const* zEdgeList = Zone_GetEdgeList(zonePtr);
     WORD edgeID;
-    while (zone_IsValidEdgeID( (edgeID = *zEdgeList++) )) {
+    while (Zone_IsValidEdgeID( (edgeID = *zEdgeList++) )) {
         WORD nextZoneID;
-        if (zone_IsValidZoneID( (nextZoneID = Lvl_ZoneEdgePtr_l[edgeID].e_JoinZoneID)) ) {
+        if (Zone_IsValidZoneID( (nextZoneID = Lvl_ZoneEdgePtr_l[edgeID].e_JoinZoneID)) ) {
             ZoneCrossing crossing = Zone_DetermineCrossing(
                 zonePtr,
                 Lvl_ZonePtrsPtr_l[nextZoneID]
@@ -111,61 +116,87 @@ static WORD zone_CountJoiningEdges(Zone const* zonePtr) {
     return numEdges;
 }
 
+
+/**
+ * Gathers key facts about the PVS of the specific Zone:
+ *
+ *     Number of zones in the PVS
+ *     Number of joining edges
+ *     Whether the PVS contains a door
+ *     Whether the PVS contaisn a lift
+ *     Total required datasize for the per-edge data
+ */
+static void zone_CountPVS(Zone const* zonePtr, ZPVSCount* pvsCountPtr)
+{
+    ZPVSRecord const* pvsPtr = &zonePtr->z_PotVisibleZoneList[0];
+    pvsCountPtr->features = 0;
+    while (Zone_IsValidZoneID(pvsPtr->pvs_ZoneID)) {
+        if (!(pvsCountPtr->features & PVSCF_DOOR) && Zone_IsDoor(pvsPtr->pvs_ZoneID)) {
+            pvsCountPtr->features |= PVSCF_DOOR;
+        }
+        ++pvsPtr;
+    }
+    pvsCountPtr->numZones = (WORD)(pvsPtr - &zonePtr->z_PotVisibleZoneList[0]);
+    pvsCountPtr->numJoins = zone_CountJoiningEdges(zonePtr);
+
+    // The size of ZEdgePVSDataSet includes one edge id entry already...
+    ULONG dataSize = sizeof(ZEdgePVSHeader) - sizeof(ZEdgeInfo) +
+
+        // For each joining edge, we have a header, plus the zone mask as a minimum requirement
+        (ULONG)pvsCountPtr->numJoins * (
+            sizeof(ZEdgeInfo) + (ULONG)pvsCountPtr->numZones // The zone mask is 1 byte per zone, so use the count
+        );
+
+    // We may need additional memory for features that require masks, e.g. doors, lifts etc.
+    if (pvsCountPtr->features & PVSCF_DOOR) {
+        dataSize += pvsCountPtr->numZones * pvsCountPtr->numJoins * sizeof(ZDoorListMask);
+    }
+    // TODO - Same again for lifts
+
+    // TODO - maybe assert() dataSize fits a UWORD, using blind faith here
+
+    // Ensure that the data remains aligned to a word boundary.
+    pvsCountPtr->dataSize = (UWORD)Sys_Round2(dataSize);
+
+//     dprintf(
+//         "Zone %d ZPVSCount { numZones:%d, numJoins:%d, features:0x%04X, dataSize:%d }\n",
+//         (int)zonePtr->z_ZoneID,
+//         (int)pvsCountPtr->numZones,
+//         (int)pvsCountPtr->numJoins,
+//         (unsigned)pvsCountPtr->features,
+//         (int)pvsCountPtr->dataSize
+//     );
+
+}
+
+
 /**
  * Calculates the allocation data size for the per-edge PVS data, returning the total allocation
  * size, including the base pointer requirements.
- * The infoTupleBufferPtr points to a buffer that is populated with the edge count and PVS length
- * pairs for each of the Zones.
+ *
+ * This fills the pvsCountBufferPtr with the per-zone facts as it goes. We need that later.
  */
-static ULONG zone_CalcEdgePVSDataSize(WORD* infoTupleBufferPtr) {
+static ULONG zone_CalcEdgePVSDataSize(ZPVSCount* pvsCountBufferPtr)
+{
     /* Begin with the assumption we need as many pointers as zones */
     ULONG totalSize = Lvl_NumZones_w * sizeof(ZEdgePVSHeader*);
-
-    for (WORD zoneID = 0, *infoTuplePtr = infoTupleBufferPtr; zoneID < Lvl_NumZones_w; ++zoneID) {
+    for (WORD zoneID = 0; zoneID < Lvl_NumZones_w; ++zoneID) {
         Zone const* zonePtr = Lvl_ZonePtrsPtr_l[zoneID];
-        WORD joinCount      = zone_CountJoiningEdges(zonePtr);
-        WORD pvsSize        = zone_CountPVS(zonePtr);
-        *infoTuplePtr++     = pvsSize;
-        *infoTuplePtr++     = joinCount;
-
-        // The size of ZEdgePVSDataSet includes one edge id entry already...
-        ULONG dataSize   = sizeof(ZEdgePVSHeader) - sizeof(ZEdgeInfo) +
-            (ULONG)joinCount * (sizeof(ZEdgeInfo) + (ULONG)pvsSize);
-
-        // Ensure that the data remains aligned to a word bounary.
-        dataSize = Sys_Round2(dataSize);
-
-        *infoTuplePtr++ = (WORD)dataSize;
-
-        // dprintf(
-        //     "Zone %d JE:%d PS: %d S:%u\n",
-        //     (int)zoneID,
-        //     (int)joinCount,
-        //     (int)pvsSize,
-        //     dataSize
-        // );
-
-        totalSize += dataSize;
+        zone_CountPVS(zonePtr, pvsCountBufferPtr);
+        totalSize += pvsCountBufferPtr->dataSize;
+        ++pvsCountBufferPtr;
     }
     return totalSize;
 }
 
-/**
- * Returns the address of the zeroth ZEdgePVSHeader in the set.
- */
-static inline ZEdgePVSHeader* zone_ZEdgePVSHeaderBase(void const* basePtr) {
-    return (ZEdgePVSHeader*)(
-        ((UBYTE*)basePtr) + Lvl_NumZones_w * sizeof(ZEdgePVSHeader*)
-    );
-}
 
 /**
  * Calculates the required memory for the Edge PVS data and allocates it. In the process of
- * calculating the size, populates an array of PVS Size / Connecting Edge Count pairs, the
- * location of which is passed in.
+ * calculating the size.
  */
-static ZEdgePVSHeader** zone_AllocEdgePVS(WORD* infoTupleBufferPtr) {
-    ULONG totalSize = zone_CalcEdgePVSDataSize(infoTupleBufferPtr);
+static ZEdgePVSHeader** zone_AllocEdgePVS(ZPVSCount* pvsCountBufferPtr)
+{
+    ULONG totalSize = zone_CalcEdgePVSDataSize(pvsCountBufferPtr);
 
     dprintf(
         "zone_AllocEdgePVS() Processed %d Zones, Size: %u\n",
@@ -181,38 +212,55 @@ static ZEdgePVSHeader** zone_AllocEdgePVS(WORD* infoTupleBufferPtr) {
 }
 
 /**
+ * Calculate the offset fields for a given ZEdgePVSHeader once the size/edges/features are known
+ */
+static void zone_CalcZEdgePVSHeaderOffsets(ZEdgePVSHeader* currentEdgePVSPtr, UWORD features)
+{
+    // First the offset to the edge mask. This immediately follows the the array of ZEdgeInfo
+    size_t offset = (sizeof(ZEdgePVSHeader) - sizeof(ZEdgeInfo)) +
+        currentEdgePVSPtr->zep_EdgeCount * sizeof(ZEdgeInfo);
+
+    currentEdgePVSPtr->zep_ZoneMaskOffset = (WORD)offset;
+
+    // If there are doors, comes after the edge mask. As the edge mask is byte based, the offset
+    // is subject to rounding before we get to the doors.
+    if (features & PVSCF_DOOR) {
+        offset += Sys_Round2(currentEdgePVSPtr->zep_ListSize * currentEdgePVSPtr->zep_EdgeCount);
+        currentEdgePVSPtr->zep_DoorMaskOffset = (WORD)offset;
+    } else {
+        currentEdgePVSPtr->zep_DoorMaskOffset = 0;
+    }
+
+    // TODO lifts
+    currentEdgePVSPtr->zep_LiftMaskOffset = 0;
+}
+
+/**
  * Builds up the pointer table with the location for each ZEdgePVSHeader and populates
  * the ZEdgePVSHeader structure fields.
  */
-static void zone_FillZEdgePVSHeaders(ZEdgePVSHeader* currentEdgePVSPtr, WORD const* infoTuplePtr) {
-
+static void zone_FillZEdgePVSHeaders(ZEdgePVSHeader* currentEdgePVSPtr, ZPVSCount const* pvsCountBufferPtr)
+{
     // First Pass - build the ZEdgePVSHeader data and populate the edge indexes.
     for (WORD zoneID = 0; zoneID < Lvl_NumZones_w; ++zoneID) {
+
         currentEdgePVSPtr->zep_ZoneID    = zoneID;
-        currentEdgePVSPtr->zep_ListSize  = *infoTuplePtr++;
-        currentEdgePVSPtr->zep_EdgeCount = *infoTuplePtr++;
+        currentEdgePVSPtr->zep_ListSize  = pvsCountBufferPtr->numZones;
+        currentEdgePVSPtr->zep_EdgeCount = pvsCountBufferPtr->numJoins;
+
+        zone_CalcZEdgePVSHeaderOffsets(currentEdgePVSPtr, pvsCountBufferPtr->features);
+
         Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID]  = currentEdgePVSPtr;
 
-        ULONG dataSize = *infoTuplePtr++;
-
-        // dprintf(
-        //     "%p [%u] %d %d %d {",
-        //     currentEdgePVSPtr,
-        //     dataSize,
-        //     (int)currentEdgePVSPtr->zep_ZoneID,
-        //     (int)currentEdgePVSPtr->zep_ListSize,
-        //     (int)currentEdgePVSPtr->zep_EdgeCount
-        // );
-
         Zone const* zonePtr   = Lvl_ZonePtrsPtr_l[zoneID];
-        WORD const* zEdgeList = zone_GetEdgeList(zonePtr);
+        WORD const* zEdgeList = Zone_GetEdgeList(zonePtr);
 
         // Byte addressible offset from the beginning of the ZEdgePVSDataSet structure to the list data
         WORD edgeIndex  = 0;
         WORD edgeID;
         WORD nextZoneID;
-        while (zone_IsValidEdgeID( (edgeID = *zEdgeList++) )) {
-            if (zone_IsValidZoneID( (nextZoneID = Lvl_ZoneEdgePtr_l[edgeID].e_JoinZoneID)) ) {
+        while (Zone_IsValidEdgeID( (edgeID = *zEdgeList++) )) {
+            if (Zone_IsValidZoneID( (nextZoneID = Lvl_ZoneEdgePtr_l[edgeID].e_JoinZoneID)) ) {
 
                 ZoneCrossing crossing = Zone_DetermineCrossing(
                     zonePtr,
@@ -222,11 +270,28 @@ static void zone_FillZEdgePVSHeaders(ZEdgePVSHeader* currentEdgePVSPtr, WORD con
                 if (crossing != NO_PATH) {
                     currentEdgePVSPtr->zep_EdgeInfoList[edgeIndex++].zei_EdgeID = edgeID;
                 }
-                //dprintf("%d ", (int)edgeID);
             }
         }
-        //dputs("}");
-        currentEdgePVSPtr = (ZEdgePVSHeader*)((UBYTE*)currentEdgePVSPtr + dataSize);
+/*
+        dprintf(
+            "ZEdgePVSHeader {\n"
+            "\tzep_ZoneID: %d,\n"
+            "\tzep_ListSize: %d,\n"
+            "\tzep_EdgeCount: %d,\n"
+            "\tzep_ZoneMaskOffset: %d\n"
+            "\tzep_DoorMaskOffset: %d\n"
+            "\tzep_LiftMaskOffset: %d\n"
+            "}\n",
+            (int)currentEdgePVSPtr->zep_ZoneID,
+            (int)currentEdgePVSPtr->zep_ListSize,
+            (int)currentEdgePVSPtr->zep_EdgeCount,
+            (int)currentEdgePVSPtr->zep_ZoneMaskOffset,
+            (int)currentEdgePVSPtr->zep_DoorMaskOffset,
+            (int)currentEdgePVSPtr->zep_LiftMaskOffset
+        );
+*/
+        currentEdgePVSPtr = (ZEdgePVSHeader*)((UBYTE*)currentEdgePVSPtr + pvsCountBufferPtr->dataSize);
+        ++pvsCountBufferPtr;
     }
 }
 
@@ -234,9 +299,10 @@ static void zone_FillZEdgePVSHeaders(ZEdgePVSHeader* currentEdgePVSPtr, WORD con
  * Utility method to determine the index position of a zone ID in the zre_FullPVSListPtr.
  * Returns ZONE_ID_LIST_END if the zoneID is not found in the list.
  */
-static WORD zone_GetIndexInPVSList(WORD zoneID) {
+static WORD zone_GetIndexInPVSList(WORD zoneID)
+{
     WORD *nextIDPtr = Zone_EdgePVSState.zre_FullPVSListPtr;
-    while (zone_IsValidZoneID(*nextIDPtr) ) {
+    while (Zone_IsValidZoneID(*nextIDPtr) ) {
         if (zoneID == *nextIDPtr) {
             return nextIDPtr - Zone_EdgePVSState.zre_FullPVSListPtr;
         }
@@ -245,6 +311,16 @@ static WORD zone_GetIndexInPVSList(WORD zoneID) {
     return ZONE_ID_LIST_END;
 }
 
+static ZDoorListMask zone_GetInitialDoorMask(WORD zoneID)
+{
+    WORD doorIndex = Zone_GetDoorID(zoneID);
+    if (doorIndex != NOT_A_DOOR) {
+        return 1 << doorIndex;
+    }
+    return 0;
+}
+
+
 /**
  * Recurses zones using the index position in the PVS. This is so that we only need to calculate this
  * once per visit as the code is already a looping frenzy!
@@ -252,13 +328,33 @@ static WORD zone_GetIndexInPVSList(WORD zoneID) {
  * We only enter adjoining zones that are on edges facing the viewpoint, construcing our PVS subset
  * as we go.
  */
-static void zone_RecurseEdgePVS(WORD indexInPVS) {
-    ++Zone_EdgePVSState.zre_RecursionDepth;
-
-    // Mark as visited and thus visible in the PVS
-    Zone_EdgePVSState.zre_EdgePVSList[indexInPVS] = 0xFF;
+static void zone_RecurseEdgePVS(WORD indexInPVS, ZDoorListMask doorMask)
+{
+    if (++Zone_EdgePVSState.zre_RecursionDepth > Zone_EdgePVSState.zre_MaxRecursionDepth) {
+        Zone_EdgePVSState.zre_MaxRecursionDepth = Zone_EdgePVSState.zre_RecursionDepth;
+    }
+    ++Zone_EdgePVSState.zre_OperationCount;
 
     WORD zoneID = Zone_EdgePVSState.zre_FullPVSListPtr[indexInPVS];
+
+    WORD visType = ZVIS_DIRECT;
+
+    // Mark as visited and thus visible in the PVS
+    Zone_EdgePVSState.zre_EdgePVSList[indexInPVS] = ZVIS_DIRECT;
+
+    if (Zone_EdgePVSState.zre_DoorMaskList) {
+        ZDoorListMask myDoorMask = zone_GetInitialDoorMask(zoneID);
+        if (myDoorMask) {
+            doorMask |= myDoorMask;
+            visType = ZVIS_DOOR;
+        } else if (doorMask) {
+            visType = ZVIS_COND;
+        }
+
+        Zone_EdgePVSState.zre_DoorMaskList[indexInPVS] = doorMask;
+    }
+
+    Zone_EdgePVSState.zre_EdgePVSList[indexInPVS] = visType;
 
     // Get the list of known joining edges for this zone.
     ZEdgePVSHeader* currentEdgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
@@ -276,8 +372,15 @@ static void zone_RecurseEdgePVS(WORD indexInPVS) {
             continue;
         }
 
-        // Have we visited this zone already? Skip.
-        if (Zone_EdgePVSState.zre_EdgePVSList[indexInPVS]) {
+        WORD nextVis = Zone_EdgePVSState.zre_EdgePVSList[indexInPVS];
+        // Have we visited this zone already?
+        // This is an MVP version of visibility upgrade.
+        if (nextVis >= ZVIS_DOOR) {
+            // Can't upgrade visibility because the zone is either a door/lift or already directly visible.
+            // A door or lift zone can always be obscured, even when in a direct line of sight.
+            continue;
+        } else if (nextVis > ZVIS_NONE && visType < ZVIS_DIRECT) {
+            // Can't upgrade visibility because our visibilty isn't a better class
             continue;
         }
 
@@ -285,17 +388,17 @@ static void zone_RecurseEdgePVS(WORD indexInPVS) {
         // < 0 facing towards, > 0 facing away, 0 colinear with
         // Only visit the adjoining zone if it's strictly facing
         // TODO - include colinear?
-
         // TODO - Other tests - what about impassible height differences?
 
         // Test both ends of the edge.
         if (
-            zone_SideOfEdge(edgePtr, &Zone_EdgePVSState.zre_ViewPoint1) < 0 ||
-            zone_SideOfEdge(edgePtr, &Zone_EdgePVSState.zre_ViewPoint2) < 0
+            Zone_SideOfEdge(edgePtr, &Zone_EdgePVSState.zre_ViewPoint1) < 0 ||
+            Zone_SideOfEdge(edgePtr, &Zone_EdgePVSState.zre_ViewPoint2) < 0
         ) {
-            zone_RecurseEdgePVS(indexInPVS);
+            zone_RecurseEdgePVS(indexInPVS, doorMask);
         }
     }
+
     --Zone_EdgePVSState.zre_RecursionDepth;
 }
 
@@ -303,10 +406,14 @@ static void zone_RecurseEdgePVS(WORD indexInPVS) {
  * Populate the per-edge PVS data. This uses a recursive mechanism to grind through the
  * existing zone graph data.
  */
-static void zone_FillZEdgePVSListData() {
-    Zone_EdgePVSState.zre_FullPVSListPtr = (WORD*)Sys_GetTemporaryWorkspace();
-    Zone_EdgePVSState.zre_RecursionDepth = 0;
+static void zone_FillZEdgePVSListData()
+{
+    Zone_EdgePVSState.zre_FullPVSListPtr    = (WORD*)Sys_GetTemporaryWorkspace();
+    Zone_EdgePVSState.zre_RecursionDepth    = 0;
+    Zone_EdgePVSState.zre_MaxRecursionDepth = 0;
+    Zone_EdgePVSState.zre_OperationCount    = 0;
     for (WORD zoneID = 0; zoneID < Lvl_NumZones_w; ++zoneID) {
+
         Zone_EdgePVSState.zre_rootZonePtr    = Lvl_ZonePtrsPtr_l[zoneID];
 
         // Fill the buffer with the list of zones in the PVS for our zone
@@ -315,20 +422,28 @@ static void zone_FillZEdgePVSListData() {
             Zone_EdgePVSState.zre_FullPVSListPtr
         );
 
-        ZEdgePVSHeader* currentEdgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
-        Zone_EdgePVSState.zre_EdgePVSList = zone_GetEdgePVSListBase(currentEdgePVSPtr);
+        ZEdgePVSHeader* currentEdgePVSPtr  = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
 
-        // dprintf(
-        //     "Zone: %d [Joins: %d, List Size: %d]\n",
-        //     (int)zoneID,
-        //     (int)currentEdgePVSPtr->zep_EdgeCount,
-        //     (int)currentEdgePVSPtr->zep_ListSize
-        // );
+        // Can never be null
+        Zone_EdgePVSState.zre_EdgePVSList  = Zone_GetEdgePVSListBase(currentEdgePVSPtr);
+
+        // Note, might be null
+        Zone_EdgePVSState.zre_DoorMaskList = Zone_GetEdgePVSDoorListBase(currentEdgePVSPtr);
+
+        if (currentEdgePVSPtr->zep_EdgeCount > 10) {
+            dprintf(
+                "Error: Zone %d reports %d edges, skip\n", (int)zoneID, (int)currentEdgePVSPtr->zep_EdgeCount
+            );
+            continue;
+        }
 
         // For each edge, calculate the centre point as a viewpoint, then enter the zone
         // In the entered zone explore each front facing edge and descend depth first
         // Need to mark each distinct visited zone as "potentially visible"
 
+        ZDoorListMask doorMask = zone_GetInitialDoorMask(zoneID);
+
+        // Walk the set of shared edges
         for (WORD edgeNum = 0; edgeNum < currentEdgePVSPtr->zep_EdgeCount; ++edgeNum) {
             ZEdge const* edgePtr = &Lvl_ZoneEdgePtr_l[currentEdgePVSPtr->zep_EdgeInfoList[edgeNum].zei_EdgeID];
 
@@ -346,8 +461,12 @@ static void zone_FillZEdgePVSListData() {
             // );
 
             // Mark the root zone as already visited
-            Zone_EdgePVSState.zre_EdgePVSList[0] = 0xFF;
+            Zone_EdgePVSState.zre_EdgePVSList[0] = ZVIS_DIRECT;
 
+            // Set the root zone door mask, if relevant
+            if (Zone_EdgePVSState.zre_DoorMaskList) {
+                Zone_EdgePVSState.zre_DoorMaskList[0] = doorMask;
+            }
             // Mark the rest as clear. They will be set true for every zone we enter during
             // the recursion.
             // TODO - why is mem fill not working here?
@@ -356,19 +475,55 @@ static void zone_FillZEdgePVSListData() {
             }
 
             WORD indexInPVS = zone_GetIndexInPVSList(edgePtr->e_JoinZoneID);
+
             if (indexInPVS > ZONE_ID_LIST_END) {
-                zone_RecurseEdgePVS(indexInPVS);
+                zone_RecurseEdgePVS(indexInPVS, doorMask);
+            }
+
+            if (Zone_EdgePVSState.zre_DoorMaskList) {
+/*
+#if defined(ZONE_DEBUG)
+                char const* doorIDNames = "0123456789ABCDEF";
+                dprintf(
+                    "Zone %d Edge %d {\n",
+                    (int)zoneID,
+                    (int)edgeNum
+                );
+                for (WORD i = 0; i < currentEdgePVSPtr->zep_ListSize; ++i) {
+                    if (Zone_EdgePVSState.zre_EdgePVSList[i]) {
+                        WORD mask = Zone_EdgePVSState.zre_DoorMaskList[i];
+                        for (WORD j = 0; j < 16; ++j) {
+                            buffer[j] = (mask & (1 << j)) ? doorIDNames[j] : '-';
+                        }
+                        buffer[16] = 0;
+                        dprintf(
+                            "\t%3d: %s\n",
+                            (int)Zone_EdgePVSState.zre_FullPVSListPtr[i],
+                            buffer
+                        );
+                    }
+                }
+                dputs("}\n");
+#endif
+*/
+                Zone_EdgePVSState.zre_DoorMaskList += currentEdgePVSPtr->zep_ListSize;
             }
             Zone_EdgePVSState.zre_EdgePVSList += currentEdgePVSPtr->zep_ListSize;
         }
     }
+    dprintf(
+        "Edge List Data generated. Max Depth %d, Max Operations %d\n",
+        (int)Zone_EdgePVSState.zre_MaxRecursionDepth,
+        (int)Zone_EdgePVSState.zre_OperationCount
+    );
 }
 
 /**
  * Accepts a coordinate and attempts to locate it in the set of points in the level. Returns the index of
  * the point, if found, or -1 if not. Does the matching by considering the points as pure longwords.
  */
-static WORD zone_GetPointIndex(Vec2W const* p) {
+static WORD zone_GetPointIndex(Vec2W const* p)
+{
     ULONG const* pointPtr = (ULONG const*)Lvl_PointsPtr_l;
     ULONG match = *((ULONG const*)p);
     for (WORD i = 0; i < Lvl_NumPoints_w; ++i) {
@@ -385,7 +540,8 @@ static WORD zone_GetPointIndex(Vec2W const* p) {
  * post-transformation screen space horizontal extent. This in turn allows us to address the fairly frequent
  * edge case that we are looking through a single edge that is going to go unclipped.
  */
-static void zone_FillEdgePointIndexes(void) {
+static void zone_FillEdgePointIndexes(void)
+{
     Vec2W end;
     for (WORD zoneID = 0; zoneID < Lvl_NumZones_w; ++zoneID) {
         ZEdgePVSHeader* edgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
@@ -395,14 +551,6 @@ static void zone_FillEdgePointIndexes(void) {
             end.v_Z = edgePtr->e_Pos.v_Z + edgePtr->e_Len.v_Z;
             edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID = zone_GetPointIndex(&edgePtr->e_Pos);
             edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID   = zone_GetPointIndex(&end);
-
-            // dprintf(
-            //     "Zone #%d, Edge #%d, start #%d, end #%d\n",
-            //     (int)(zoneID),
-            //     (int)(edgePVSPtr->zep_EdgeInfoList[i].zei_EdgeID),
-            //     (int)(edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID),
-            //     (int)(edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID)
-            // );
         }
     }
 }
@@ -411,7 +559,8 @@ static void zone_FillEdgePointIndexes(void) {
 /**
  * Utility function for dumping the per edge PVS data
  */
-static void zone_DumpPerEdgePVS(void) {
+static void zone_DumpPerEdgePVS(void)
+{
     for (WORD zoneID = 0; zoneID < Lvl_NumZones_w; ++zoneID) {
         ZEdgePVSHeader const* edgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
         printf(
@@ -420,7 +569,7 @@ static void zone_DumpPerEdgePVS(void) {
             (int)edgePVSPtr->zep_EdgeCount,
             (int)edgePVSPtr->zep_ListSize
         );
-        UBYTE* edgePVSListPtr = zone_GetEdgePVSListBase(edgePVSPtr);
+        UBYTE* edgePVSListPtr = Zone_GetEdgePVSListBase(edgePVSPtr);
         for (WORD edgeNum = 0; edgeNum < edgePVSPtr->zep_EdgeCount; ++edgeNum) {
             printf("\tEdge: #%d ", edgeNum);
 
@@ -438,8 +587,8 @@ static void zone_DumpPerEdgePVS(void) {
 /**
  * Allocates and initialises the per-edge PVS data.
  */
-void Zone_InitEdgePVS() {
-
+void Zone_InitEdgePVS()
+{
     #if defined(ZONE_DEBUG)
     union {
         struct EClockVal ev;
@@ -452,26 +601,32 @@ void Zone_InitEdgePVS() {
     Sys_MarkTime(&start.ev);
     #endif
 
+    Zone_InitDoorList();
+
     ULONG infoTupleBufferSize = (ULONG)Lvl_NumZones_w * 3 * sizeof(WORD);
 
     dprintf("Zone_InitEdgePVS() need %u bytes for info buffer\n", infoTupleBufferSize);
 
     // Store the per zone list size / edge count ready for the second step.
-    WORD* infoTupleBufferPtr = (WORD*)Sys_GetTemporaryWorkspace();
+    ZPVSCount* pvsCountBufferPtr = (ZPVSCount*)Sys_GetTemporaryWorkspace();
 
     // Allocate the space for the pointer table and the data.
-    Lvl_ZEdgePVSHeaderPtrsPtr_l = zone_AllocEdgePVS(infoTupleBufferPtr);
+    Lvl_ZEdgePVSHeaderPtrsPtr_l = zone_AllocEdgePVS(pvsCountBufferPtr);
 
     // Fill in the ZEdgePVS Header Structures
     zone_FillZEdgePVSHeaders(
-        zone_ZEdgePVSHeaderBase(Lvl_ZEdgePVSHeaderPtrsPtr_l),
-        infoTupleBufferPtr
+        Zone_ZEdgePVSHeaderBase(Lvl_ZEdgePVSHeaderPtrsPtr_l),
+        pvsCountBufferPtr
     );
 
     // Fill in the ZEdgePVS body list data
     zone_FillZEdgePVSListData();
 
     zone_FillEdgePointIndexes();
+
+    // Assume doors closed on level start
+    Zone_CurrentDoorState_w =
+    Zone_RenderDoorState_w = 0;
 
     #if defined(ZONE_DEBUG)
     //zone_DumpPerEdgePVS();
@@ -480,13 +635,13 @@ void Zone_InitEdgePVS() {
     ULONG ticks = (ULONG)(end.u64 - start.u64);
     dprintf("Built PVS dataset, took %lu EClock ticks\n", ticks);
     #endif
-
 }
 
 /**
  * Frees up the data
  */
-void Zone_FreeEdgePVS() {
+void Zone_FreeEdgePVS()
+{
     if (Lvl_ZEdgePVSHeaderPtrsPtr_l) {
         FreeVec(Lvl_ZEdgePVSHeaderPtrsPtr_l);
         Lvl_ZEdgePVSHeaderPtrsPtr_l = NULL;
@@ -527,7 +682,8 @@ extern WORD Vis_CosVal_w;
 extern WORD Vis_SinVal_w;
 extern WORD Vis_AngPos_w;
 
-void Zone_UpdateVectors() {
+void Zone_UpdateVectors()
+{
     // Forwards vector is      z: DIR_COS, x: DIR_SIN
     // Perpendicular vector is z: DIR_SIN, x: -DIR_COS
     //dputs("Zone_UpdateVectors()");
@@ -545,6 +701,7 @@ void Zone_UpdateVectors() {
     WORD fovAngle        = Vis_AngPos_w - (Zone_PVSFieldOfView >> 1);
     zone_LeftFOVDir.v_X  = sinw(fovAngle);
     zone_LeftFOVDir.v_Z  = cosw(fovAngle);
+
     fovAngle += Zone_PVSFieldOfView;
     zone_RightFOVDir.v_X = sinw(fovAngle);
     zone_RightFOVDir.v_Z = cosw(fovAngle);
@@ -555,26 +712,38 @@ void Zone_UpdateVectors() {
 #define BIT_RIGHT 4
 
 extern LONG Sys_FrameNumber_l;
-
 extern WORD  Zone_PVSList_vw[];
 extern UBYTE Zone_PVSMask_vb[];
 
 extern ZPVSRecord* Lvl_ListOfGraphRoomsPtr_l;
 
-void zone_ClearEdgePVSBuffer(WORD size) {
+
+void zone_ClearEdgePVSBuffer(WORD size)
+{
     Zone_PVSMask_vb[0] = 0xFF;
     for (WORD i = 1; i < size; ++i) {
         Zone_PVSMask_vb[i] = 0;
     }
 }
 
-void zone_MergeEdgePVS(UBYTE const* data, WORD size) {
-    for (WORD i = 1; i < size; ++i) {
-        Zone_PVSMask_vb[i] |= data[i];
+void zone_MergeEdgePVS(UBYTE const* zoneMaskPtr, ZDoorListMask const* doorListMaskPtr, WORD size)
+{
+    if (doorListMaskPtr) {
+        ZDoorListMask mask = Zone_RenderDoorState_w;
+        for (WORD i = 1; i < size; ++i) {
+            Zone_PVSMask_vb[i] |= (
+                (doorListMaskPtr[i] & mask) == doorListMaskPtr[i]
+            ) ? zoneMaskPtr[i] : 0;
+        }
+    } else {
+        for (WORD i = 1; i < size; ++i) {
+            Zone_PVSMask_vb[i] |= zoneMaskPtr[i];
+        }
     }
 }
 
-void zone_MarkVisibleViaEdges(WORD size) {
+void zone_MarkVisibleViaEdges(WORD size)
+{
     WORD zoneID = Lvl_ListOfGraphRoomsPtr_l->pvs_ZoneID;
     zone_MakePVSZoneIDList(Lvl_ZonePtrsPtr_l[zoneID], &Zone_PVSList_vw[0]);
 
@@ -589,27 +758,32 @@ void zone_MarkVisibleViaEdges(WORD size) {
 
 // -1 terminated buffer of edge point indexes that must be transformed
 extern WORD Zone_EdgePointIndexes_vw[];
-
 extern UWORD Zone_VisJoinMask_w;
 
-void Zone_CheckVisibleEdges(void) {
+void Zone_CheckVisibleEdges(void)
+{
     WORD zoneID = Lvl_ListOfGraphRoomsPtr_l->pvs_ZoneID;
 
     ZEdgePVSHeader const* edgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
-    UBYTE const* edgePVSListPtr = zone_GetEdgePVSListBase(edgePVSPtr);
+    UBYTE const* edgePVSListPtr = Zone_GetEdgePVSListBase(edgePVSPtr);
+    ZDoorListMask const* doorListMaskPtr = Zone_GetEdgePVSDoorListBase(edgePVSPtr);
     Vec2W endPoint;
     WORD  startFlags;
     WORD  endFlags;
-    WORD  numVisible = 0;
+    WORD  numVisible   = 0;
     WORD  edgeID;
-    UWORD visJoinMask = 0;
+    UWORD visJoinMask  = 0;
+    WORD  doorListStep = doorListMaskPtr ? edgePVSPtr->zep_ListSize : 0;
 
     Zone_UpdateVectors();
     zone_ClearEdgePVSBuffer(edgePVSPtr->zep_ListSize);
 
+    // Snapshot the door state to prevent interrupt changes messing with us.
+    Zone_RenderDoorState_w = Zone_CurrentDoorState_w;
+
     WORD* edgePointIndex = &Zone_EdgePointIndexes_vw[0];
 
-    for (WORD i = 0; i < edgePVSPtr->zep_EdgeCount; ++i, edgePVSListPtr += edgePVSPtr->zep_ListSize) {
+    for (WORD i = 0; i < edgePVSPtr->zep_EdgeCount; ++i, edgePVSListPtr += edgePVSPtr->zep_ListSize, doorListMaskPtr += doorListStep) {
 
         edgeID = edgePVSPtr->zep_EdgeInfoList[i].zei_EdgeID;
 
@@ -636,7 +810,7 @@ void Zone_CheckVisibleEdges(void) {
         if (startFlags == (BIT_FRONT|BIT_LEFT|BIT_RIGHT)) {
             visJoinMask |= 1 << i;
             ++numVisible;
-            zone_MergeEdgePVS(edgePVSListPtr, edgePVSPtr->zep_ListSize);
+            zone_MergeEdgePVS(edgePVSListPtr, doorListMaskPtr, edgePVSPtr->zep_ListSize);
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID;
             continue;
@@ -666,7 +840,7 @@ void Zone_CheckVisibleEdges(void) {
         if (endFlags == (BIT_FRONT|BIT_LEFT|BIT_RIGHT)) {
             visJoinMask |= 1 << i;
             ++numVisible;
-            zone_MergeEdgePVS(edgePVSListPtr,  edgePVSPtr->zep_ListSize);
+            zone_MergeEdgePVS(edgePVSListPtr, doorListMaskPtr, edgePVSPtr->zep_ListSize);
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID;
             continue;
@@ -680,7 +854,7 @@ void Zone_CheckVisibleEdges(void) {
             visJoinMask |= 1 << i;
             //dprintf("\tSpan. Start: %d End: %d\n", (int)startFlags, (int)endFlags);
             ++numVisible;
-            zone_MergeEdgePVS(edgePVSListPtr, edgePVSPtr->zep_ListSize);
+            zone_MergeEdgePVS(edgePVSListPtr, doorListMaskPtr, edgePVSPtr->zep_ListSize);
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_StartPointID;
             *edgePointIndex++ = edgePVSPtr->zep_EdgeInfoList[i].zei_EndPointID;
             continue;
@@ -701,10 +875,12 @@ extern WORD Draw_CurrentZone_w;
 extern WORD OnScreen_vl[];
 extern WORD Vid_RightX_w;
 extern UBYTE Draw_ForceZoneSkip_b;
+
 /**
  * Called from within the sub room loop in assembler.
  */
-void Zone_SetupEdgeClipping(void) {
+void Zone_SetupEdgeClipping(void)
+{
     // If we have one visible join and we are not in the root zone, lookup and set the single edge
     // clip extents.
     Draw_ZoneClipL_w = 0;
@@ -744,70 +920,8 @@ void Zone_SetupEdgeClipping(void) {
     }
 }
 
-/**
- * Remember: height values are inverted - smaller values are higher than larger ones.
- */
-#define DISABLED_HEIGHT 5000
-
-/**
- * Returns the canonical height of a level as reported in the editor. It is unclear if there are
- * variations in the lower 8 bits at runtime, so we define this function to return a straight
- * word value havine discarded the lower 8 bits.
- *
- * TODO - figure out if the shift is really necessary and remove if not
- */
-static inline WORD heightOf(LONG level) {
-    return (level >> 8);
-}
-
-/**
- * Test if a Zone has an upper level.
- */
-static inline BOOL zone_HasUpper(Zone const* zone) {
-    WORD floor = heightOf(zone->z_UpperFloor);
-    return floor < DISABLED_HEIGHT && floor > heightOf(zone->z_UpperRoof);
-}
-
-/**
- * Utility tuple that represents the floor/roof pair, for convenience.
- */
-typedef struct {
-    LONG zlp_Floor;
-    LONG zlp_Roof;
-} ASM_ALIGN(sizeof(WORD)) Zone_LevelPair;
-
-static inline Zone_LevelPair const* zone_GetLowerLevel(Zone const* zone) {
-    return (Zone_LevelPair const*)&zone->z_Floor;
-}
-
-static inline Zone_LevelPair const* zone_GetUpperLevel(Zone const* zone) {
-    return (Zone_LevelPair const*)&zone->z_UpperFloor;
-}
-
-/**
- * Check if there is any overlap between given pair of Zone_LevelPair
- *
- * Remember: height values are inverted - smaller values are higher than larger ones.
- */
-static inline BOOL zone_LevelOverlap(Zone_LevelPair const* z1, Zone_LevelPair const* z2) {
-    WORD floor = heightOf(z2->zlp_Floor);
-    WORD roof  = heightOf(z1->zlp_Roof);
-    if (roof >= floor) {
-        return FALSE;
-    }
-
-    floor = heightOf(z1->zlp_Floor);
-    roof  = heightOf(z2->zlp_Roof);
-    if (roof >= floor) {
-        return FALSE;
-    }
-
-    // I think this is sufficient?
-    return TRUE;
-}
-
-
-ZoneCrossing Zone_DetermineCrossing(Zone const* from, Zone const* to) {
+ZoneCrossing Zone_DetermineCrossing(Zone const* from, Zone const* to)
+{
 
     ZoneCrossing result = zone_LevelOverlap(
         zone_GetLowerLevel(from),
@@ -848,13 +962,14 @@ ZoneCrossing Zone_DetermineCrossing(Zone const* from, Zone const* to) {
                 zone_GetUpperLevel(to)
             ) ? UPPER_TO_UPPER : NO_PATH;
             break;
+
         default:
             break;
     }
 
     if (result == NO_PATH) {
         dprintf(
-            "\t%d -> %d: test case %d failed\n",
+            "\t%d -> %d: No Zone Crossing. Case %d failed\n",
             (int)from->z_ZoneID,
             (int)to->z_ZoneID,
             (int)test

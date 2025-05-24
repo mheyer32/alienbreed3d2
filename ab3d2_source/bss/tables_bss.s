@@ -39,7 +39,7 @@ LeftBrightTable_vw:			ds.w	512*2
 RightBrightTable_vw:		ds.w	512*2
 
 anim_LiftHeightTable_vw:	ds.w	40 ; newanims.s
-anim_DoorHeightTable_vw:	ds.w	40 ; newanims.s
+anim_DoorOpenTimers_vw:	ds.w	40 ; newanims.s
 
 Obj_RoomPath_vw:			ds.w	100 ; objmove.s
 
