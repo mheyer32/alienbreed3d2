@@ -143,11 +143,15 @@ This allows the horizontal extent of the current Zone's shared edge with an adjo
 
 This mechanism was improved one further step by considering the the complete extent for any immediate shared edges that are visible simultaneously. Without this, the clipping could only be applied when a single shared edge was visible.
 
-### Per Edge Door Mask (Work In Progress)
+### Per Edge Door Mask
 
 When considering the PVS, Zones defined as doors are considered as open. Consequently whatever is behind them is drawn first, then the closed wall of the door is drawn over them. For doors that are far away, this may only represent a minor degree of overdraw. However, approaching the door results in an ever larger area being drawn and then overdrawn, resulting in highly conspicuous drops in performance. 
 
-To address this, as part of the per-edge PVS data that is computed on level loading we determine which PVS lists contain one or more doors. For those that do, we also include, per-edge, an entry for each Zone in the PVS that indicates which doors must be open for the corresponding Zone to be considered visible. This entry is a bitmask, with each bit representing one of the (currently 16) possible doors.
+To address this, as part of the per-edge PVS data that is computed on level loading we determine which PVS lists contain one or more doors. For those that do, we also include an entry for each Zone in the PVS that indicates which doors must be open for the corresponding Zone to be considered visible. This entry is a bitmask, with each bit representing one of the (currently 16) possible doors.
+
+During traversal out from an edge, we begin with an empty mask. For each Zone that we recurse through, if the zone is a door, we set the corresponding door index bit in the mask. These accumulate as we enter deeper parts of the tree, indicating that these zones may require multiple doors to be open for the corresponding zone to be visible.
+
+This mechanism introduces a challenge to the previously simple method of marking aleady visited zones as seen, since there are now implied levels of visibility. During traversal, for every zone that was seen that had a non-empty doormask, if the current zone/edge combination we are starting from has no obstructions, we will revisit those zones to ensure their visibility is updated. 
 
 See also:
 - [zone_edge_pvs.c](../c/zone_edge_pvs.c)
