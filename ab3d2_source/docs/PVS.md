@@ -109,7 +109,11 @@ The mechanism to address this uses a manually created file that contains lists o
 ```
 The structure of the JSON is a simple key-value set of source Zone ID mapped to an array of target Zone IDs that should be removed from the source Zone's PVS. During level load, any errata data is loaded and applied to the PVS data before entering the main game loop.
 
-Identification of where these issues occur invovles testing the level in the developer build where wall rendering can be enabled/disabled, revealing the floor/ceiling areas of any zones that are being rendered. 
+The compiled representation of the JSON is a simple stream of 16-bit words comprising varying length lists. The first word is the Zone ID the errata list applies to. This is immediately followed by a list of one or more words containinng the IDs of zones in the PVS that should be removed. This list is terminated by a ZONE_ID_LIST_END value. The overall errata data is then also terminated by ZONE_ID_LIST_END.
+
+At level load time, the compiled errata are loaded and the operations in it are applied. When a Zone ID is removed from the PVS, the entries above it are collapsed down to maintain a compact data structure.
+
+Identification of where issues occur for use with the errata mechanism invovles testing the level in the developer build where wall rendering can be enabled/disabled, revealing the floor/ceiling areas of any zones that are being rendered. 
 
 See also:
 - [game_preferences.c](../c/zone_errata.c)
@@ -124,6 +128,13 @@ To address this, a new load-time mechanism has been added. This visits every Zon
 The algorithm steps out of each shared edge and then examines the shared edges of the Zone it entered, making note of those that are still front facing from the perspective of the root Zone. This process recurses, marking the subset of the PVS that can be seen from each edge of the Zone.
 
 At runtime, we start with the assumption that only the current zone is visible. Next the player's orientation and field of view is used to determine which shared edges in the current Zone are visible. The zones in the PVS are then tagged as visible or not by checking the per-edge data that was calculated. During the render stage, only the zones from the PVS that were tagged are drawn.
+
+| Identifier | Type | Managed By | Notes |
+|----------|-------------|:------:|---|
+| Zone_PVSFieldOfView | var | C | User-definable preferences setting for fine tuning |
+| Zone_EdgePVSState | struct | C | Tracks state while performing the edge traversal |
+| ZEdgePVSHeader | struct | C | Generated result for an edge traversal |
+
 
 See also:
 - [zone_edge_pvs.c](../c/zone_edge_pvs.c)
