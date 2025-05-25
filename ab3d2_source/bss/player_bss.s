@@ -15,7 +15,7 @@
 ; READY PLAYER ONE !
 
 ; Long data
-Plr1_Data:
+		DCLC Plr1_Data
 Plr1_ObjectPtr_l:			ds.l	1
 
 		DCLC Plr1_Position_vl
@@ -132,7 +132,8 @@ Plr1_ObsInLine_vb:			ds.b	MAX_OBJS_IN_LINE_COUNT
 
 			align 4
 ; Long data
-Plr2_Data:
+		DCLC Plr2_Data
+
 Plr2_ObjectPtr_l:			ds.l	1
 
 		DCLC Plr2_Position_vl

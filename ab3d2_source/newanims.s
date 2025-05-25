@@ -1233,16 +1233,14 @@ rlift3:
 				move.w	#$0,d1
 				bra		backfromlift
 
-
-
 				even
 DoorRoutine:
-				move.l	#anim_DoorHeightTable_vw,a6
+				move.l	#anim_DoorOpenTimers_vw,a6
 				move.l	Lvl_DoorDataPtr_l,a0
 				move.w	#-1,anim_ThisDoor_w
 
 doadoor:
-				add.w	#1,anim_ThisDoor_w
+				add.w	#1,anim_ThisDoor_w      ; Door index
 				move.w	(a0)+,d0				; 0: bottom of door movement
 				cmp.w	#999,d0
 				bne		notalldoorsdone
@@ -1250,6 +1248,10 @@ doadoor:
 				move.w	#999,(a6)
 				move.w	#0,Anim_DoorAndLiftLocks_l
 				rts
+
+				; TODO - The door structures are not uniformly large. I think there is conditionally
+				; included data, including but probably not limited to, the set of adjoining walls that
+				; are raised and lowered with the door.
 
 notalldoorsdone:
 				move.w	(a0)+,d1				; 2: top of door movement.
@@ -1287,7 +1289,7 @@ notalldoorsdone:
 				move.w	d4,Aud_NoiseZ_w
 				move.w	(a0),d3						; 22:
 				move.w	2(a0),d2					; 24:
-				move.w	8(a0),d7					; 30:
+				move.w	8(a0),d7					; 30: Zone ID
 				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d7.w*4),a1
 				move.b	ZoneT_Echo_b(a1),PlayEcho
@@ -1296,10 +1298,12 @@ notalldoorsdone:
 				move.w	2(a0),d2					; 24:
 				cmp.w	d3,d0
 				sle		anim_DoorClosed_b
+
 				bgt.s	nolower
 
 				tst.w	d2
 				beq.s	.nonoise
+
 				move.w	#50,Aud_NoiseVol_w
 				move.w	anim_ClosedSoundFX_w,Aud_SampleNum_w
 				blt.s	.nonoise
@@ -1341,6 +1345,24 @@ nolower:
 				moveq	#0,d2
 noraise:
 NOTMOVING:
+
+				; Update the door state bitmap for the zone visibility logic
+				; We only care about the fully closed state, anything open/ing has to be
+				; considered see through
+				move.w  Zone_CurrentDoorState_w,d6
+				move.w  anim_ThisDoor_w,d7
+				tst.b   anim_DoorClosed_b
+				bne.s   .clear_door_state
+
+				bset    d7,d6
+				bra.s   .done_door_state
+
+.clear_door_state:
+				bclr    d7,d6
+
+.done_door_state:
+                move.w  d6,Zone_CurrentDoorState_w
+
 				sub.w	d3,d0
 				cmp.w	#15*16,d0
 				sge		d6
@@ -1365,7 +1387,7 @@ NOTMOVING:
 				;asl.l	#8,d3
 
 				move.l	Lvl_ZonePtrsPtr_l,a1
-				move.w	(a0)+,d5					; 30:
+				move.w	(a0)+,d5					; 30: Zone ID
 				move.l	(a1,d5.w*4),a1
 				move.l	d3,6(a1)
 				neg.w	d0
@@ -1388,36 +1410,37 @@ NOTMOVING:
 				move.w	#-16,d7
 				move.w	#$8000,d1
 				move.w	(a0)+,d2				; 32:
-				move.w	(a0)+,d5				; 34:
+				move.w	(a0)+,d5				; 34: Conditions UBYTE[2]
 				bra		backfromtst
 
 NotGoBackUp:
-				move.w	(a0)+,d2				; 36: conditions
+				move.w	(a0)+,d2				; 32 - bit number?
 ; and.w Conditions,d2
 				move.w	anim_ThisDoor_w,d2
 				move.w	Anim_DoorAndLiftLocks_l,d5
 				btst	d2,d5
 				beq.s	satisfied
 
-				move.w	(a0)+,d5
+				move.w	(a0)+,d5 ; 34 : Conditions UBYTE[2]
 
 dothesimplething:
 				move.l	Lvl_ZoneEdgePtr_l,a3
 
 simplecheck:
-				move.w	(a0)+,d5
-				blt		nomoredoorwalls
+                ; List of walls from this point?
+				move.w	(a0)+,d5              ; 36
+				blt		nomoredoorwalls       ; -1 terminated wall data, else Edge ID
 
-				asl.w	#4,d5
-				lea		(a3,d5.w),a4
-				move.w	#0,14(a4)
-				move.l	(a0)+,a1
+				asl.w	#4,d5                 ; Each edge entry is 16 bytes
+				lea		(a3,d5.w),a4          ; EdgeT struct
+				move.w	#0,EdgeT_Flags_w(a4)  ; Clear flags
+				move.l	(a0)+,a1              ; Graphics Offset
 				add.l	Lvl_GraphicsPtr_l,a1
-				move.l	(a0)+,a2
+				move.l	(a0)+,a2              ; 38 + n[2 + 4 + 4]
 				adda.w	d0,a2
-				move.w	a2,12(a1);was move.l	a2,10(a1)
+				move.w	a2,12(a1)             ; was move.l	a2,10(a1)
 				move.l	d3,24(a1)
-				bra.s	simplecheck
+				bra.s	simplecheck           ; repeat until all done
 
 				bra		nomoredoorwalls
 

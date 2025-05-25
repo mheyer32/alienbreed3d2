@@ -40,6 +40,11 @@ enum {
 #define EDGE_TRAVERSE_LIMIT 16
 
 /**
+ * Remember: height values are inverted - smaller values are higher than larger ones.
+ */
+#define DISABLED_HEIGHT 5000
+
+/**
  * This structure contains information about a potentially visible zone. A list of these
  * is appended to each Zone structure in the loaded data. The final record has pvs_ZoneID
  * set to -1.
@@ -111,14 +116,61 @@ typedef struct {
  * Structure for the per-edge PVS data header:
  *
  * [Zone ID][Num Edges][Num PVS][EdgeID 0]...[EdgeID N][PVS List 0] ... [PVS List N]
+ *
  */
 typedef struct {
     WORD zep_ZoneID;
     WORD zep_ListSize;
     WORD zep_EdgeCount;
+
+    WORD zep_ZoneMaskOffset; // Offset in structure to the Zone Mask
+    WORD zep_DoorMaskOffset; // Offset in structure to the Door Mask (0 if no doors in the set)
+    WORD zep_LiftMaskOffset; // Offset in structure to the Lift Mask (0 if no lifts in the set)
+
+    /**
+     * Varying length data here:
+     *
+     * ZEdgeInfo zep_EdgeInfoList[zep_EdgeCount]
+     *
+     * Followed by zep_EdgeCount sets of data.
+     */
     ZEdgeInfo zep_EdgeInfoList[1];
-    //WORD zep_EdgeIDList[1]; // zep_EdgeCount in length, followed by zep_EdgeCount sets of data
 } ASM_ALIGN(sizeof(WORD)) ZEdgePVSHeader;
+
+/**
+ * Simple typedefs to give more meaningful names to the masks used for doors and lifts.
+ */
+typedef UWORD ZDoorListMask;
+typedef UWORD ZLiftListMask;
+
+/**
+ * Utility tuple that represents the floor/roof pair, for convenience.
+ */
+typedef struct {
+    LONG zlp_Floor;
+    LONG zlp_Roof;
+} ASM_ALIGN(sizeof(WORD)) Zone_LevelPair;
+
+/**
+ * Enumerations of truthy visibility types
+ *
+ * [type:3][id:5]
+ *
+ * ID is 5 bits to permit expansion of door/lift count.
+ */
+enum {
+    ZVIS_ID_BITS   = 5,
+    ZVIS_TYPE_BITS = 3,
+    ZVIS_ID_MASK   = (1 << ZVIS_ID_BITS) - 1,
+    ZVIS_TYPE_MASK = ((1 << ZVIS_TYPE_BITS) - 1) << ZVIS_ID_BITS,
+
+    // Visibility types
+    ZVIS_NONE    = 0,                 // Not visible at all
+    ZVIS_COND    = 1 << ZVIS_ID_BITS, // Regular zone, may be obscured by doors or lifts
+    ZVIS_DOOR    = 2 << ZVIS_ID_BITS, // Door zone, may be obscured by self or other. Door ID ZVIS_ID_BITS
+    ZVIS_LIFT    = 3 << ZVIS_ID_BITS, // Lift zone, may be obscured by self or other. Lift ID ZVIS_ID_BITS
+    ZVIS_DIRECT  = 4 << ZVIS_ID_BITS, // Regular zone, direct line of sight
+};
 
 /**
  * Zone PVS Errata
@@ -148,43 +200,6 @@ extern ZEdge* Lvl_ZoneEdgePtr_l;
  * Number of zones defined in the loaded level
  */
 extern WORD Lvl_NumZones_w;
-
-/**
- *  Check if a Zone ID is valid. Must be between 0 and Lvl_NumZones_w-1
- */
-static inline BOOL zone_IsValidZoneID(WORD id) {
-    return id >= 0 && id < Lvl_NumZones_w;
-}
-
-/**
- *  Check if am Edge ID is valid.
- *
- *  TODO find and expose the maximum edge ID for proper range checking
- */
-static inline BOOL zone_IsValidEdgeID(WORD id) {
-    return id >= 0;
-}
-
-/**
- * Obtain the address of the list of edges for the current zone. This is obtained by
- * adding the (negative) z_EdgeListOffset to the Zone address.
- */
-static inline WORD const* zone_GetEdgeList(Zone const* zonePtr) {
-    return (WORD const*)(((BYTE const*)zonePtr) + zonePtr->z_EdgeListOffset);
-}
-
-static inline WORD const* zone_GetPointIndexList(Zone const* zonePtr) {
-    return (WORD const*)(((BYTE const*)zonePtr) + zonePtr->z_Points);
-}
-
-
-/**
- * Returns the address of the start of the actual EdgePVSList. This immediately follows the
- * ZEdgePVSHeader.zep_EdgeIDList array, which is zep_EdgeCount elements long.
- */
-static inline UBYTE* zone_GetEdgePVSListBase(ZEdgePVSHeader const* zepPtr) {
-    return (UBYTE*)(&zepPtr->zep_EdgeInfoList[zepPtr->zep_EdgeCount]);
-}
 
 extern ZEdgePVSHeader** Lvl_ZEdgePVSHeaderPtrsPtr_l;
 

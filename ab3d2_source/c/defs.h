@@ -2,6 +2,7 @@
 #define DEFS_H
 
 #include <exec/types.h>
+#include <SDI_compiler.h>
 #include "asm_align.h"
 
 /**
@@ -40,5 +41,6 @@ typedef struct {
 
 #include "math25d.h"
 #include "zone.h"
+#include "zone_door.h"
 #include "player.h"
 #endif // DEFS_H
