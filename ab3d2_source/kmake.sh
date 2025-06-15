@@ -12,6 +12,6 @@ cp tkg_dev_040 ../../../miscdrive/karlos-tkg/Game/bin/tkg_dev
 #make FLAVOR=release CPU=030 BUILD=c
 #make FLAVOR=dev CPU=030 BUILD=c
 
-cp tkg_release_030 ../../../miscdrive/karlos-tkg/Game/bin/tkg
-cp tkg_dev_030 ../../../miscdrive/karlos-tkg/Game/bin/tkg_dev
+#cp tkg_release_030 ../../../miscdrive/karlos-tkg/Game/bin/tkg
+#cp tkg_dev_030 ../../../miscdrive/karlos-tkg/Game/bin/tkg_dev
 

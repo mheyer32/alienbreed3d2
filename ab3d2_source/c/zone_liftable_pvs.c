@@ -3,58 +3,58 @@
 #include "defs.h"
 #include "system.h"
 #include "zone.h"
-#include "zone_door.h"
+#include "zone_liftable.h"
 #include "zone_inline.h"
 
-void zone_DumpDoor(ZDoor const* door, int doorIndex)
+void zone_DumpDoor(ZLiftable const* door, int doorIndex)
 {
     dprintf(
         "Door #%d d @%p [%d] {\n"
-        "\tzdr_Bottom = %d\n"        //  0, 2
-        "\tzdr_Top = %d\n"           //  2, 2
-        "\tzdr_OpeningSpeed = %d\n"  //  4, 2
-        "\tzdr_ClosingSpeed = %d\n"  //  6, 2
-        "\tzdr_OpenDuration = %d\n", //  8, 2
+        "\tzl_Bottom = %d\n"        //  0, 2
+        "\tzl_Top = %d\n"           //  2, 2
+        "\tzl_OpeningSpeed = %d\n"  //  4, 2
+        "\tzl_ClosingSpeed = %d\n"  //  6, 2
+        "\tzl_OpenDuration = %d\n", //  8, 2
         doorIndex,
         door,
-        (int)sizeof(ZDoor),
-        (int)door->zdr_Bottom,
-        (int)door->zdr_Top,
-        (int)door->zdr_OpeningSpeed,
-        (int)door->zdr_ClosingSpeed,
-        (int)door->zdr_OpenDuration
+        (int)sizeof(ZLiftable),
+        (int)door->zl_Bottom,
+        (int)door->zl_Top,
+        (int)door->zl_OpeningSpeed,
+        (int)door->zl_ClosingSpeed,
+        (int)door->zl_OpenDuration
     );
     dprintf(
-        "\tzdr_OpeningSoundFX = %d\n" // 10, 2
-        "\tzdr_ClosingSoundFX = %d\n" // 12, 2
-        "\tzdr_OpenedSoundFX = %d\n"  // 14, 2
-        "\tzdr_ClosedSoundFX = %d\n", // 16, 2
-        (int)door->zdr_OpeningSoundFX,
-        (int)door->zdr_ClosingSoundFX,
-        (int)door->zdr_OpenedSoundFX,
-        (int)door->zdr_ClosedSoundFX
+        "\tzl_OpeningSoundFX = %d\n" // 10, 2
+        "\tzl_ClosingSoundFX = %d\n" // 12, 2
+        "\tzl_OpenedSoundFX = %d\n"  // 14, 2
+        "\tzl_ClosedSoundFX = %d\n", // 16, 2
+        (int)door->zl_OpeningSoundFX,
+        (int)door->zl_ClosingSoundFX,
+        (int)door->zl_OpenedSoundFX,
+        (int)door->zl_ClosedSoundFX
     );
     dprintf(
-        "\tzdr_Word9  = %d\n"  // 18, 2 - something X coordinate related
-        "\tzdr_Word10 = %d\n" // 20, 2 - something Z coordinate related
-        "\tzdr_Word11 = %d [0x%04X]\n" // 22, 2
-        "\tzdr_Word12 = %d [0x%04X]\n" // 24, 2
-        "\tzdr_GraphicsOffset = %d\n",  // 26, 4
-        (int)door->zdr_Word9,
-        (int)door->zdr_Word10,
-        (int)door->zdr_Word11, (unsigned)door->zdr_Word11,
-        (int)door->zdr_Word12, (unsigned)door->zdr_Word12,
-        (int)door->zdr_GraphicsOffset
+        "\tzl_Word9  = %d\n"  // 18, 2 - something X coordinate related
+        "\tzl_Word10 = %d\n" // 20, 2 - something Z coordinate related
+        "\tzl_Word11 = %d [0x%04X]\n" // 22, 2
+        "\tzl_Word12 = %d [0x%04X]\n" // 24, 2
+        "\tzl_GraphicsOffset = %d\n",  // 26, 4
+        (int)door->zl_Word9,
+        (int)door->zl_Word10,
+        (int)door->zl_Word11, (unsigned)door->zl_Word11,
+        (int)door->zl_Word12, (unsigned)door->zl_Word12,
+        (int)door->zl_GraphicsOffset
     );
     dprintf(
-        "\tzdr_ZoneID = %d\n"  // 30, 2
-        "\tzdr_Word16 = %d [0x%04X]\n"  // 32, 2
-        "\tzdr_RaiseConidtion = %d\n"  // 34, 2
-        "\tzdr_LowerCondition = %d\n}\n", // 36, 2
-        (int)door->zdr_ZoneID,
-        (int)door->zdr_Word16, (unsigned)door->zdr_Word16,
-        (int)door->zdr_RaiseCondition,// 34, 1
-        (int)door->zdr_LowerCondition// 35, 1
+        "\tzl_ZoneID = %d\n"  // 30, 2
+        "\tzl_Word16 = %d [0x%04X]\n"  // 32, 2
+        "\tzl_RaiseConidtion = %d\n"  // 34, 2
+        "\tzl_LowerCondition = %d\n}\n", // 36, 2
+        (int)door->zl_ZoneID,
+        (int)door->zl_Word16, (unsigned)door->zl_Word16,
+        (int)door->zl_RaiseCondition,// 34, 1
+        (int)door->zl_LowerCondition// 35, 1
     );
 }
 
@@ -84,7 +84,7 @@ void Zone_InitDoorList()
 
     WORD doorIndex = 0;
     while (*doorDataPtr.marker != END_OF_DOOR_LIST && doorIndex < LVL_MAX_DOOR_ZONES) {
-        WORD zoneID = doorDataPtr.door->zdr_ZoneID;
+        WORD zoneID = doorDataPtr.door->zl_ZoneID;
         if (Zone_IsValidZoneID(zoneID)) {
             //zone_DumpDoor(doorDataPtr.door, doorIndex);
             dprintf("Door %2d => Zone %3d\n", (int)doorIndex, (int)zoneID);

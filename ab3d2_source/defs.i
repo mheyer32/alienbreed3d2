@@ -601,26 +601,26 @@ LVL_MAX_LIFT_ZONES EQU 16
 		LABEL LvlT_SizeOf_l
 
     ; Door Data Structure
-	STRUCTURE ZDoorT,0
-		UWORD ZDoorT_Bottom_w			;  0, 2
-		UWORD ZDoorT_Top_w				;  2, 2
-		UWORD ZDoorT_OpeningSpeed_w		;  4, 2
-		UWORD ZDoorT_ClosingSpeed_w		;  6, 2
-		UWORD ZDoorT_OpenDuration_w		;  8, 2
-		UWORD ZDoorT_OpeningSoundFX_w	; 10, 2
-		UWORD ZDoorT_ClosingSoundFX_w	; 12, 2
-		UWORD ZDoorT_OpenedSoundFX_w	; 14, 2
-		UWORD ZDoorT_ClosedSoundFX_w	; 16, 2
-		UWORD ZDoorT_Word9_w			; 18, 2 - something X coordinate related
-		UWORD ZDoorT_Word10_w			; 20, 2 - something Z coordinate related
-		UWORD ZDoorT_Word11_w			; 22, 2
-		UWORD ZDoorT_Word12_w			; 24, 2
-		UWORD ZDoorT_GraphicsPtrOffset_l; 26, 4 - offset from Lvl_GraphicsPtr_l
-		UWORD ZDoorT_ZoneID_w			; 30, 2
-		UWORD ZDoorT_Word16_w			; 32, 2
-		UBYTE ZDoorT_RaiseCondition_b	; 34, 1
-		UBYTE ZDoorT_LowerCondition_b   ; 35, 1
-		LABEL ZDoorT_SizeOf_l			; 36
+	STRUCTURE ZLiftableT,0
+		UWORD ZLiftableT_Bottom_w			;  0, 2
+		UWORD ZLiftableT_Top_w				;  2, 2
+		UWORD ZLiftableT_OpeningSpeed_w		;  4, 2
+		UWORD ZLiftableT_ClosingSpeed_w		;  6, 2
+		UWORD ZLiftableT_OpenDuration_w		;  8, 2
+		UWORD ZLiftableT_OpeningSoundFX_w	; 10, 2
+		UWORD ZLiftableT_ClosingSoundFX_w	; 12, 2
+		UWORD ZLiftableT_OpenedSoundFX_w	; 14, 2
+		UWORD ZLiftableT_ClosedSoundFX_w	; 16, 2
+		UWORD ZLiftableT_Word9_w			; 18, 2 - something X coordinate related
+		UWORD ZLiftableT_Word10_w			; 20, 2 - something Z coordinate related
+		UWORD ZLiftableT_Word11_w			; 22, 2
+		UWORD ZLiftableT_Word12_w			; 24, 2
+		UWORD ZLiftableT_GraphicsPtrOffset_l; 26, 4 - offset from Lvl_GraphicsPtr_l
+		UWORD ZLiftableT_ZoneID_w			; 30, 2
+		UWORD ZLiftableT_Word16_w			; 32, 2
+		UBYTE ZLiftableT_RaiseCondition_b	; 34, 1
+		UBYTE ZLiftableT_LowerCondition_b   ; 35, 1
+		LABEL ZLiftableT_SizeOf_l			; 36
 
 ; For two player victory messages
 GAME_DM_VICTORY_MESSAGE_LENGTH EQU 80
