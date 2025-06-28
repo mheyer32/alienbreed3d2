@@ -867,13 +867,13 @@ okzone:
 				rts
 
 LiftRoutine:
-				move.w	#-1,anim_ThisDoor_w
+				move.w	#-1,anim_CurrentLiftable_w
 				move.l	Lvl_LiftDataPtr_l,a0
 				move.l	#anim_LiftHeightTable_vw,a6
 
 doalift:
-				add.w	#1,anim_ThisDoor_w
-				move.w	(a0)+,d0				; bottom of lift movement
+				add.w	#1,anim_CurrentLiftable_w
+				move.w	(a0)+,d0						; 0 bottom of lift movement
 				cmp.w	#999,d0
 				bne		notallliftsdone
 
@@ -884,21 +884,21 @@ doalift:
 				rts
 
 notallliftsdone:
-				move.w	(a0)+,d1				; top of lift movement.
-				move.w	(a0)+,anim_OpeningSpeed_w
+				move.w	(a0)+,d1						; 2 top of lift movement.
+				move.w	(a0)+,anim_OpeningSpeed_w		; 4
 				neg.w	anim_OpeningSpeed_w
-				move.w	(a0)+,anim_ClosingSpeed_w
-				move.w	(a0)+,anim_OpenDuration_w
-				move.w	(a0)+,anim_OpeningSoundFX_w
-				move.w	(a0)+,anim_ClosingSoundFX_w
-				move.w	(a0)+,anim_OpenedSoundFX_w
-				move.w	(a0)+,anim_ClosedSoundFX_w
+				move.w	(a0)+,anim_ClosingSpeed_w		; 6
+				move.w	(a0)+,anim_OpenDuration_w		; 8
+				move.w	(a0)+,anim_OpeningSoundFX_w		; 10
+				move.w	(a0)+,anim_ClosingSoundFX_w		; 12
+				move.w	(a0)+,anim_OpenedSoundFX_w		; 14
+				move.w	(a0)+,anim_ClosedSoundFX_w		; 16
 				subq.w	#1,anim_OpeningSoundFX_w
 				subq.w	#1,anim_ClosingSoundFX_w
 				subq.w	#1,anim_OpenedSoundFX_w
 				subq.w	#1,anim_ClosedSoundFX_w
-				move.w	(a0)+,d2
-				move.w	(a0)+,d3
+				move.w	(a0)+,d2						; 18
+				move.w	(a0)+,d3						; 20
 				sub.w	Plr1_TmpXOff_l,d2
 				sub.w	Plr1_TmpZOff_l,d3
 				move.w	Vis_CosVal_w,d4
@@ -1021,7 +1021,7 @@ notallliftsdone:
 				move.w	(a0)+,d2				; conditions
 ; and.w Conditions,d2
 ; cmp.w -2(a0),d2
-				move.w	anim_ThisDoor_w,d2
+				move.w	anim_CurrentLiftable_w,d2
 				move.w	anim_LiftOnlyLocks_w,d5
 				btst	d2,d5
 				beq.s	.satisfied
@@ -1237,10 +1237,10 @@ rlift3:
 DoorRoutine:
 				move.l	#anim_DoorOpenTimers_vw,a6
 				move.l	Lvl_DoorDataPtr_l,a0
-				move.w	#-1,anim_ThisDoor_w
+				move.w	#-1,anim_CurrentLiftable_w
 
 doadoor:
-				add.w	#1,anim_ThisDoor_w      ; Door index
+				add.w	#1,anim_CurrentLiftable_w      ; Door index
 				move.w	(a0)+,d0				; 0: bottom of door movement
 				cmp.w	#999,d0
 				bne		notalldoorsdone
@@ -1350,7 +1350,7 @@ NOTMOVING:
 				; We only care about the fully closed state, anything open/ing has to be
 				; considered see through
 				move.w  Zone_CurrentDoorState_w,d6
-				move.w  anim_ThisDoor_w,d7
+				move.w  anim_CurrentLiftable_w,d7
 				tst.b   anim_DoorClosed_b
 				bne.s   .clear_door_state
 
@@ -1416,7 +1416,7 @@ NOTMOVING:
 NotGoBackUp:
 				move.w	(a0)+,d2				; 32 - bit number?
 ; and.w Conditions,d2
-				move.w	anim_ThisDoor_w,d2
+				move.w	anim_CurrentLiftable_w,d2
 				move.w	Anim_DoorAndLiftLocks_l,d5
 				btst	d2,d5
 				beq.s	satisfied

@@ -24,7 +24,7 @@ anim_OddEven_w:			ds.w	1
 anim_FloorMoveSpeed_w:	ds.w	1
 Anim_BrightTable_vw:	ds.w	20
 Anim_Timer_w:			ds.w	1
-anim_ThisDoor_w:		ds.w	1
+anim_CurrentLiftable_w:		ds.w	1
 anim_OpeningSpeed_w:	ds.w	1
 anim_ClosingSpeed_w:	ds.w	1
 anim_OpenDuration_w:	ds.w	1

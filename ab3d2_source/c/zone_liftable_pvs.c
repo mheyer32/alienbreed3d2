@@ -6,33 +6,34 @@
 #include "zone_liftable.h"
 #include "zone_inline.h"
 
-void zone_DumpDoor(ZLiftable const* door, int doorIndex)
+void zone_DumpLiftable(ZLiftable const* liftable, int index, char const* type)
 {
     dprintf(
-        "Door #%d d @%p [%d] {\n"
+        "%s #%d d @%p [%d] {\n"
         "\tzl_Bottom = %d\n"        //  0, 2
         "\tzl_Top = %d\n"           //  2, 2
         "\tzl_OpeningSpeed = %d\n"  //  4, 2
         "\tzl_ClosingSpeed = %d\n"  //  6, 2
         "\tzl_OpenDuration = %d\n", //  8, 2
-        doorIndex,
-        door,
+        type,
+        index,
+        liftable,
         (int)sizeof(ZLiftable),
-        (int)door->zl_Bottom,
-        (int)door->zl_Top,
-        (int)door->zl_OpeningSpeed,
-        (int)door->zl_ClosingSpeed,
-        (int)door->zl_OpenDuration
+        (int)liftable->zl_Bottom,
+        (int)liftable->zl_Top,
+        (int)liftable->zl_OpeningSpeed,
+        (int)liftable->zl_ClosingSpeed,
+        (int)liftable->zl_OpenDuration
     );
     dprintf(
         "\tzl_OpeningSoundFX = %d\n" // 10, 2
         "\tzl_ClosingSoundFX = %d\n" // 12, 2
         "\tzl_OpenedSoundFX = %d\n"  // 14, 2
         "\tzl_ClosedSoundFX = %d\n", // 16, 2
-        (int)door->zl_OpeningSoundFX,
-        (int)door->zl_ClosingSoundFX,
-        (int)door->zl_OpenedSoundFX,
-        (int)door->zl_ClosedSoundFX
+        (int)liftable->zl_OpeningSoundFX,
+        (int)liftable->zl_ClosingSoundFX,
+        (int)liftable->zl_OpenedSoundFX,
+        (int)liftable->zl_ClosedSoundFX
     );
     dprintf(
         "\tzl_Word9  = %d\n"  // 18, 2 - something X coordinate related
@@ -40,21 +41,21 @@ void zone_DumpDoor(ZLiftable const* door, int doorIndex)
         "\tzl_Word11 = %d [0x%04X]\n" // 22, 2
         "\tzl_Word12 = %d [0x%04X]\n" // 24, 2
         "\tzl_GraphicsOffset = %d\n",  // 26, 4
-        (int)door->zl_Word9,
-        (int)door->zl_Word10,
-        (int)door->zl_Word11, (unsigned)door->zl_Word11,
-        (int)door->zl_Word12, (unsigned)door->zl_Word12,
-        (int)door->zl_GraphicsOffset
+        (int)liftable->zl_Word9,
+        (int)liftable->zl_Word10,
+        (int)liftable->zl_Word11, (unsigned)liftable->zl_Word11,
+        (int)liftable->zl_Word12, (unsigned)liftable->zl_Word12,
+        (int)liftable->zl_GraphicsOffset
     );
     dprintf(
         "\tzl_ZoneID = %d\n"  // 30, 2
         "\tzl_Word16 = %d [0x%04X]\n"  // 32, 2
         "\tzl_RaiseConidtion = %d\n"  // 34, 2
         "\tzl_LowerCondition = %d\n}\n", // 36, 2
-        (int)door->zl_ZoneID,
-        (int)door->zl_Word16, (unsigned)door->zl_Word16,
-        (int)door->zl_RaiseCondition,// 34, 1
-        (int)door->zl_LowerCondition// 35, 1
+        (int)liftable->zl_ZoneID,
+        (int)liftable->zl_Word16, (unsigned)liftable->zl_Word16,
+        (int)liftable->zl_RaiseCondition,// 34, 1
+        (int)liftable->zl_LowerCondition// 35, 1
     );
 }
 
@@ -86,7 +87,7 @@ void Zone_InitDoorList()
     while (*doorDataPtr.marker != END_OF_DOOR_LIST && doorIndex < LVL_MAX_DOOR_ZONES) {
         WORD zoneID = doorDataPtr.door->zl_ZoneID;
         if (Zone_IsValidZoneID(zoneID)) {
-            //zone_DumpDoor(doorDataPtr.door, doorIndex);
+            //zone_DumpLiftable(doorDataPtr.door, doorIndex, "Door");
             dprintf("Door %2d => Zone %3d\n", (int)doorIndex, (int)zoneID);
             Zone_DoorList_vw[doorIndex++] = zoneID;
             Zone_DoorMap_vb[zoneID >> 3] |= (1 << (zoneID & 7));
