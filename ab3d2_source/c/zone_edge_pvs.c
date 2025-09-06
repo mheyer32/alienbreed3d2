@@ -3,7 +3,7 @@
 #include "defs.h"
 #include "system.h"
 #include "zone.h"
-#include "zone_door.h"
+#include "zone_liftable.h"
 #include "zone_inline.h"
 
 extern Vec2W const* Lvl_PointsPtr_l;

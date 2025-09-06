@@ -2,7 +2,7 @@
 #define ZONE_INLINE_H
 
 #include "zone.h"
-#include "zone_door.h"
+#include "zone_liftable.h"
 
 /**
  *  Check if a Zone ID is valid. Must be between 0 and Lvl_NumZones_w-1
