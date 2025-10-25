@@ -85,6 +85,11 @@ build-%:
 clean:
 	rm -f *.o
 	rm -rf $(BUILD_DIR)
+	./bumprev.py
+
+bump:
+	./bumprev.py --revision
+
 
 $(INTERMEDIATE_DIR)/%.o: $(SRC_DIR)/%.c Makefile
 	$(info >>> build $@ from $<)
