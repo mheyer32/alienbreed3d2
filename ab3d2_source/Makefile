@@ -71,8 +71,12 @@ $(TARGETNAME): $(OBJS)
 	$(LINK) $(LFLAGS) $(OBJS) -o $@
 	$(info ========================================================)
 
+.PHONY: bump_build
 
-all: $(foreach F,$(FLAVORS),$(foreach C,$(CPUS),build-$(F)-$(C)))
+bump_build:
+	./bumprev.py --build
+
+all:	bump_build $(foreach F,$(FLAVORS),$(foreach C,$(CPUS),build-$(F)-$(C)))
 
 build-%:
 	$(eval FLAVOR := $(strip $(word 1,$(subst -, ,$*))))
@@ -85,6 +89,11 @@ build-%:
 clean:
 	rm -f *.o
 	rm -rf $(BUILD_DIR)
+	./bumprev.py
+
+bump:
+	./bumprev.py --revision
+
 
 $(INTERMEDIATE_DIR)/%.o: $(SRC_DIR)/%.c Makefile
 	$(info >>> build $@ from $<)

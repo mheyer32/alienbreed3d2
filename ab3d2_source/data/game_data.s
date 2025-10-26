@@ -26,3 +26,6 @@ game_ProgressFile_vb:			dc.b	"ab3:gamea.stats",0
 			ENDC
 
 Game_SavedGamesName_vb:			dc.b	"ab3:boot.dat",0
+
+game_Version_vb:
+                                include "data/version.i"
