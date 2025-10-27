@@ -934,12 +934,14 @@ mnu_waitmenu:;out: d0=Selection number
 				bsr.w	mnu_docursor
 				CALLGRAF WaitTOF				; wait a bit to give the BlitTask more time
 				CALLGRAF WaitTOF
-				
+
 				jsr		_ReadJoy1
 
 				move.l #KeyMap_vb,a5
 				moveq #0,d7
-				
+; TODO - there is a bug here when using up and down keys other than the arrows.
+; TODO - fix hardcoded RAWKEY values
+
 				move.b	forward_key,d7
 				tst.b		(a5,d7.w)
 				bne		.up
