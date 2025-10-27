@@ -943,34 +943,52 @@ mnu_waitmenu:;out: d0=Selection number
 ; TODO - fix hardcoded RAWKEY values
 
 				move.b	forward_key,d7
-				tst.b		(a5,d7.w)
+				move.b	(a5,d7.w),d0
+				clr.b   (a5,d7.w)
+				tst.b   d0
 				bne		.up
+
 				move.b	backward_key,d7
-				tst.b		(a5,d7.w)
+				move.b	(a5,d7.w),d0
+				clr.b   (a5,d7.w)
+				tst.b   d0
 				bne		.down
+
 				move.b	fire_key,d7
-				tst.b		(a5,d7.w)
+				move.b	(a5,d7.w),d0
+				clr.b   (a5,d7.w)
+				tst.b   d0
 				bne		.cd32
 .keys:
 				jsr		key_readkey
+
 				tst.w	d0
 				beq.s	.w8key
-				cmp.b	#69,d0
+
+				cmp.b	#RAWKEY_ESC,d0
 				beq.s	.exit
-				cmp.b	#77,d0					; Down Arrow
+
+				cmp.b	#RAWKEY_DOWN,d0					; Down Arrow
 				beq	.down
-				cmp.b	#76,d0
+
+				cmp.b	#RAWKEY_UP,d0
 				beq	.up
-				cmp.b	#68,d0
+
+				cmp.b	#RAWKEY_ENTER,d0
 				beq.s	.quit
-				cmp.b	#64,d0
+
+				cmp.b	#RAWKEY_SPACEBAR,d0
 				beq.s	.quit
-				cmp.b	#78,d0
+
+				cmp.b	#RAWKEY_RIGHT,d0
 				beq.s	.sliderr
-				cmp.b	#79,d0
+
+				cmp.b	#RAWKEY_LEFT,d0
 				beq.s	.sliderl
+
 				cmp.b	#QUIT_KEY,d0
 				beq.s	.exit_game
+
 				move.l	#mnu_errcursanim,mnu_frameptr
 				bra.w	.loop
 
