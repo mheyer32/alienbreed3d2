@@ -64,6 +64,8 @@ WORD Vid_ScreenWidth;
 ULONG Vid_ScreenMode;
 BOOL Vid_isRTG;
 
+WORD SMALL_YPOS = 20;
+
 extern void C2P_Init(void);
 
 void Vid_Present();
@@ -151,6 +153,13 @@ void Vid_OpenMainScreen(void)
         struct DimensionInfo dimInfo;
         if (GetDisplayInfoData(NULL, &dimInfo, sizeof(dimInfo), DTAG_DIMS, Vid_ScreenMode)) {
             Vid_ScreenHeight = dimInfo.Nominal.MaxY + 1 - dimInfo.Nominal.MinY;
+        }
+
+        if (Vid_ScreenHeight < SCREEN_HEIGHT) {
+            SMALL_YPOS -= (SCREEN_HEIGHT - Vid_ScreenHeight) >> 1;
+            if (SMALL_YPOS < 0) {
+                SMALL_YPOS = 0;
+            }
         }
     }
 

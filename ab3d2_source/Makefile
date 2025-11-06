@@ -76,7 +76,9 @@ $(TARGETNAME): $(OBJS)
 bump_build:
 	./bumprev.py --build
 
-all:	bump_build $(foreach F,$(FLAVORS),$(foreach C,$(CPUS),build-$(F)-$(C)))
+new:	bump_build $(foreach F,$(FLAVORS),$(foreach C,$(CPUS),build-$(F)-$(C)))
+
+all:	$(foreach F,$(FLAVORS),$(foreach C,$(CPUS),build-$(F)-$(C)))
 
 build-%:
 	$(eval FLAVOR := $(strip $(word 1,$(subst -, ,$*))))
