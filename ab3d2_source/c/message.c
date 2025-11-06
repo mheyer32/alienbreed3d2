@@ -315,7 +315,7 @@ void Msg_RenderSmallScreenRTG(UBYTE* bmBaseAddr, ULONG bmBytesPerRow) {
         HUD_BORDER_WIDTH,
         yPos,
         SCREEN_WIDTH - HUD_BORDER_WIDTH - 1,
-        SCREEN_HEIGHT - HUD_BORDER_WIDTH - 8
+        Vid_ScreenHeight - HUD_BORDER_WIDTH - 8
     );
 
     do {
