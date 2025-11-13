@@ -3514,7 +3514,7 @@ wevewon:
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.nonextlev
-				add.w	#1,Game_MaxLevelNumber_w
+				add.w	#1,Game_LevelCounter_w
 				st		Game_FinishedLevel_b
 
 .nonextlev:
@@ -3533,10 +3533,14 @@ playwelldone:
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	wevelost
-				cmp.w	#16,Game_MaxLevelNumber_w
+
+				; TODO - end intermission for beating the game
+				cmp.w	#NUM_LEVELS,Game_LevelCounter_w
 				bne.s	wevelost
 
-				jmp		ENDGAMESCROLL
+				; back to the start for now :(
+				clr.w   Game_LevelCounter_w
+				;jmp		ENDGAMESCROLL
 
 wevelost:
 				; disable Audio DMA

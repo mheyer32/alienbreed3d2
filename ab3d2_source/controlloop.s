@@ -352,7 +352,7 @@ Plr_InitSlave:
 
 game_ReadMainMenu:
 				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
-				move.w	Game_MaxLevelNumber_w,d0
+				move.w	Game_LevelCounter_w,d0
 				move.l	#mnu_CURRENTLEVELLINE,a1
 				muls	#40,d0
 				move.l	GLF_DatabasePtr_l,a0
@@ -481,7 +481,7 @@ levelMenu:
 				not.b	LOADEXT
 				bsr		DEFGAME
 				GETREGS
-				move	d0,Game_MaxLevelNumber_w
+				move	d0,Game_LevelCounter_w
 
 				rts
 
@@ -500,8 +500,8 @@ levelMenu2:
 				add	#8,d0
 				bsr	DEFGAME
 				GETREGS
-				move	d0,Game_MaxLevelNumber_w
-				add	#8,Game_MaxLevelNumber_w
+				move	d0,Game_LevelCounter_w
+				add	#8,Game_LevelCounter_w
 
 .levelSelectDone
 				rts
@@ -531,7 +531,7 @@ DEFGAME:
 
 				move.l	#Plr_Health_w,a1
 				move.l	#Plr_Shield_w,a2
-				move.w	(a0)+,Game_MaxLevelNumber_w
+				move.w	(a0)+,Game_LevelCounter_w
 
 				REPT	11
 				move.l	(a0)+,(a1)+
@@ -636,7 +636,7 @@ customOptions:
 				rts
 ***************************************************************
 playgame:
-				move.w	Game_MaxLevelNumber_w,Game_LevelNumber_w
+				move.w	Game_LevelCounter_w,Game_LevelNumber_w
 				rts
 
 Game_ShouldQuit_b:		dc.w	0
@@ -669,7 +669,7 @@ game_MasterMenu:
 
 				move.w	game_LevelSelected_w,d0
 				add.w	#1,d0
-				cmp.w	Game_MaxLevelNumber_w,d0
+				cmp.w	Game_LevelCounter_w,d0
 				blt		.nowrap
 				moveq	#0,d0
 .nowrap:
@@ -824,7 +824,7 @@ newdum:
 				rts
 
 DEFAULTGAME:
-				move.w	#0,Game_MaxLevelNumber_w
+				move.w	#0,Game_LevelCounter_w
 
 				move.l	#Plr_Health_w,a0
 				move.l	#Plr_Shield_w,a1
@@ -970,7 +970,7 @@ CHANGECONTROLS2:
 **************************************************
 
 
-Game_MaxLevelNumber_w:		dc.w	0
+Game_LevelCounter_w:		dc.w	0
 
 
 game_WaitForMenuKey:
@@ -1121,7 +1121,7 @@ game_LoadPosition:
 ; 0xABADCAFE - This is where the inventory is loaded from the saved game slot
 .load_player_inventory:
 				move.l	#Plr_Health_w,a1
-				move.w	(a0)+,Game_MaxLevelNumber_w
+				move.w	(a0)+,Game_LevelCounter_w
 
 				REPT	11
 				move.l	(a0)+,(a1)+
@@ -1133,7 +1133,7 @@ game_LoadPosition:
 				move.l  #Plr_Health_w,a0
 				CALLC   Game_ApplyInventoryLimits
 
-				move.w	Game_MaxLevelNumber_w,d0
+				move.w	Game_LevelCounter_w,d0
 				move.l	#mnu_CURRENTLEVELLINE,a1
 				muls	#40,d0
 				move.l	GLF_DatabasePtr_l,a0
@@ -1193,7 +1193,7 @@ game_SavePosition:
 				muls	#2+(22*2)+(12*2),d0
 				add.l	d0,a0
 				move.l	#Plr_Health_w,a1
-				move.w	Game_MaxLevelNumber_w,(a0)+
+				move.w	Game_LevelCounter_w,(a0)+
 
 				REPT	11
 				move.l	(a1)+,(a0)+
