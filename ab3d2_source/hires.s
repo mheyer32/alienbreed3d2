@@ -2237,14 +2237,8 @@ SAVELETTER:		dc.b	'd',0
 				even
 
 				include "modules/draw/draw_map.s"
-
-				include "screensetup.s"
-;				include	"chunky.s"
-
 				include "modules/c2p/c2p.s"
-
 				include	"pauseopts.s"
-
 				include "modules/dev_inst.s"
 
 
