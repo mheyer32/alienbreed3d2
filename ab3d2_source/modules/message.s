@@ -7,14 +7,4 @@
 ; *
 ; *****************************************************************************
 
-				IFND BUILD_WITH_C
-				align 4
 
-Msg_Init:
-Msg_PushLine:
-Msg_PushLineDedupLast:
-Msg_PullLast:
-Msg_RenderFullsccreenBuffer:
-				rts
-
-				ENDIF

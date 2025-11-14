@@ -73,11 +73,7 @@ Plr_Initialise:
 plr_MouseControl:
 				move.l	a0,-(a7)
 
-				IFND BUILD_WITH_C
-				bsr		Sys_ReadMouse
-				ELSE
 				CALLC	Sys_ReadMouse
-				ENDIF
 
 				move.l	(a7)+,a0
 				move.l	#SinCosTable_vw,a1

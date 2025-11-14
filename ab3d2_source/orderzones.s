@@ -9,9 +9,7 @@ zone_LastPosition_vw: ; basically a short coordinate pair
 				dc.l	-1
 
 Zone_OrderZones:
-				IFD BUILD_WITH_C
 				CALLC Zone_CheckVisibleEdges
-				ENDIF
 
 				move.w	Plr_XOff_l,d0
 				swap	d0
