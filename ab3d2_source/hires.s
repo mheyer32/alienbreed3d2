@@ -186,9 +186,6 @@ _startup:
 				; Include even in C version for assembly helpers
 				include		"modules/system.s"
 				include		"modules/message.s"
-				include		"modules/game/game_properties.s"
-				include		"modules/game/game_preferences.s"
-				include		"modules/game/game_progress.s"
 				include		"modules/level.s"
 
 				IFD MEMTRACK

@@ -64,7 +64,6 @@ else
 	CFLAGS += -m68020-60 -mtune=68030
 endif
 
-AFLAGS += -DBUILD_WITH_C
 #Use gcc for linking the C build
 $(TARGETNAME): $(OBJS)
 	$(info Linking $@)
