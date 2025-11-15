@@ -185,7 +185,6 @@ _startup:
 
 				; Include even in C version for assembly helpers
 				include		"modules/system.s"
-				include		"modules/message.s"
 				include		"modules/level.s"
 
 				IFD MEMTRACK
