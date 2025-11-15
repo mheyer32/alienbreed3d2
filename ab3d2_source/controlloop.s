@@ -458,7 +458,7 @@ game_ReadMainMenu:
 ***************************************************************
 				cmp.w	#8,d0
 				bne		.noquitgame
-				; stolen from the quit key 
+				; stolen from the quit key
 				st		Game_ShouldQuit_b
 				move.l	mnu_mainstack,a7
 				bra		Game_Quit
@@ -810,11 +810,6 @@ TWOPLAYER:
 				; ASM build only
 				move.w	#127,draw_DisplayEnergyCount_w
 				move.w	#0,draw_DisplayAmmoCount_w
-
-				IFND BUILD_WITH_C
-				jsr		Draw_BorderEnergyBar
-				jsr		Draw_BorderAmmoBar
-				ENDIF
 
 				move.b	#0,Plr1_GunSelected_b
 				move.b	#0,Plr2_GunSelected_b

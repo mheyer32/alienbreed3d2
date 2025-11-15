@@ -14,11 +14,7 @@
 ; To workaround this, make it so that C build will add dos.library to the auto-open list by
 ; just referencing, but not providing _DOSBase
 
-						IFD BUILD_WITH_C
 							xref _DOSBase
-						ELSE
-_DOSBase:					ds.l	1
-						ENDIF
 _GfxBase::					ds.l	1
 _IntuitionBase::			ds.l	1
 _MiscBase::                 ds.l	1

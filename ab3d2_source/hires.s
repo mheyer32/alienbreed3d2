@@ -147,20 +147,6 @@ _startup:
 				clr.b	Plr2_Joystick_b
 				ENDC
 
-				IFND	BUILD_WITH_C
-				; allocate chunky render buffer in fastmem
-				move.l	#MEMF_ANY|MEMF_CLEAR,d1
-				move.l	#VID_FAST_BUFFER_SIZE,d0
-				CALLEXEC AllocVec ; Note: Can't use Sys_AllocVec yet
-				move.l	d0,Vid_FastBufferAllocPtr_l
-				;align to 16byte for best C2P perf
-				moveq.l	#15,d1
-				add.l	d1,d0
-				moveq	#-16,d1					; $F0
-				and.l	d1,d0
-				move.l	d0,Vid_FastBufferPtr_l
-				ENDIF
-
 				; Setup constant table
 				move.l	#ConstantTable_vl,a0
 				moveq	#1,d0
@@ -199,10 +185,6 @@ _startup:
 
 				; Include even in C version for assembly helpers
 				include		"modules/system.s"
-				include		"modules/message.s"
-				include		"modules/game/game_properties.s"
-				include		"modules/game/game_preferences.s"
-				include		"modules/game/game_progress.s"
 				include		"modules/level.s"
 
 				IFD MEMTRACK
@@ -489,7 +471,6 @@ noload:
 				lea		(a2,d0.l),a2
 				move.l	a2,Lvl_ConnectTablePtr_l
 
-				IFD BUILD_WITH_C
 				movem.l	d0/d1/a0/a1,-(sp)
 
 				DEV_CHECK_SET SKIP_PVS_AMEND,.done_errata
@@ -504,7 +485,6 @@ noload:
 				CALLC	Zone_InitEdgePVS
 
 				movem.l	(sp)+,d0/d1/a0/a1
-				ENDC
 
 .noclips:
 				clr.b	Plr1_StoodInTop_b
@@ -535,11 +515,9 @@ noload:
 				; FIXME: reimplement level blurb
 ; move.l #Blurbfield,$dff080
 
-				IFD BUILD_WITH_C
 				;tst.w	_Vid_isRTG
 				;bne.s	.skipChangeScreen
 				bra.s .skipChangeScreen
-				ENDIF
 
 				IFNE	DISPLAYMSGPORT_HACK
 				;empty Vid_DisplayMsgPort_l and set Vid_ScreenBufferIndex_w to 0
@@ -1071,10 +1049,9 @@ waitmaster:
 
 *****************************************************************
 
-				IFD BUILD_WITH_C
 				tst.w	_Vid_isRTG
 				bne		.screenSwapDone
-				ENDIF
+
 				; Flip screens
 
 				; Wait on prior frame to be displayed.
@@ -1735,12 +1712,6 @@ IWasPlayer1:
 				jsr		Zone_OrderZones
 				jsr		objmoveanim
 
-				; ASM build only
-				IFND BUILD_WITH_C
-				jsr		Draw_BorderEnergyBar
-				jsr		Draw_BorderAmmoBar
-				ENDIF
-
 ;********************************************
 ;************* Do reflection ****************
 ;
@@ -1849,12 +1820,6 @@ drawplayer2:
 				jsr		Zone_OrderZones
 				jsr		objmoveanim
 
-				; ASM build only
-				IFND BUILD_WITH_C
-				jsr		Draw_BorderEnergyBar
-				jsr		Draw_BorderAmmoBar
-				ENDIF
-
 				move.w	Vid_LetterBoxMarginHeight_w,d0
 				move.w	#0,Draw_LeftClip_w
 				move.w	Vid_RightX_w,Draw_RightClip_w
@@ -1912,16 +1877,12 @@ nodrawp2:
 				CALLC		Vid_LoadMainPalette
 
 .no_palette_update:
-				IFD BUILD_WITH_C
 				tst.l		Game_ProgressSignal_l
 				beq.s		.no_update_progress
 				CALLC		Game_UpdatePlayerProgress
 
 .no_update_progress:
 				CALLC Vid_Present
-				ELSE
-				jsr C2P_Convert
-				ENDIF
 
 				;CALLDEV	MarkChunkyDone
 
@@ -2275,14 +2236,8 @@ SAVELETTER:		dc.b	'd',0
 				even
 
 				include "modules/draw/draw_map.s"
-
-				include "screensetup.s"
-;				include	"chunky.s"
-
 				include "modules/c2p/c2p.s"
-
 				include	"pauseopts.s"
-
 				include "modules/dev_inst.s"
 
 
@@ -3481,11 +3436,6 @@ endlevel:
 				; Record the failure
 				STATS_DIED
 
-				; ASM build only
-				IFND BUILD_WITH_C
-				jsr		Draw_BorderEnergyBar
-				ENDIF
-
 				move.l	#gameover,mt_data
 				st		UseAllChannels
 				clr.b	reachedend
@@ -3507,10 +3457,6 @@ wevewon:
 
 				; Disable audio DMA
 				move.w	#$f,$dff000+dmacon
-
-				IFND BUILD_WITH_C
-				jsr		Draw_BorderEnergyBar
-                ENDIF
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.nonextlev
@@ -8303,10 +8249,8 @@ closeeverything:
 ;
 ;				move.l	#0,d0					; FIXME indicate failure
 
-				IFD BUILD_WITH_C
 				tst.w	_Vid_isRTG
 				bne.s	.skipClear
-				ENDIF
 
 				IFNE	DISPLAYMSGPORT_HACK
 				;empty Vid_DisplayMsgPort_l and set Vid_ScreenBufferIndex_w to 0
