@@ -87,164 +87,12 @@ mnu_copycredz:
 				dbra	d0,.loop
 				rts
 
-				IFND BUILD_WITH_C
-; Input: d0 = fade?
-mnu_clearscreen:
-				; Note: mnu_clearscreen is called on exit even if the menu isn't active
-				; So exit out early if that's the case.
-				tst.l	MenuScreen
-				beq		.noScreen
-				tst.b	d0
-				beq		.fade_done
-				bsr.w	mnu_fadeout
-
-.fade_done:
-				clr.l	main_vblint				; prevent VBL kicking off new blits
-				WAITBLIT
-				CALLGRAF WaitTOF
-				move.l	MenuWindow,d0
-				beq.s	.noWindow
-				move.l	d0,a0
-				CALLINT	CloseWindow				; FIXME: may have to clear the Window's event queue first
-				clr.l	MenuWindow
-
-.noWindow:
-				move.l	MenuScreen,d0
-				beq.s	.noScreen
-				move.l	d0,a0
-				CALLINT	CloseScreen
-				clr.l	MenuScreen
-
-.noScreen:
-				rts
-
-mnu_setscreen:
-				lea		Bitmap,a0
-				moveq.l	#8,d0
-				move.l	#SCREEN_WIDTH,d1
-				move.l	#SCREEN_HEIGHT,d2
-				CALLGRAF InitBitMap
-
-				lea		Bitmap+bm_Planes,a0		; provide "fake" bitplane pointers such that
-				move.w	#7,d0					; opening the screen/window will not overwrite
-
-.setPlane:
-				move.l	#mnu_morescreen,(a0)+	; the hardcoded background pattern
-				dbra	d0,.setPlane
-
-				sub.l	a0,a0
-				lea		ScreenTags,a1
-				CALLINT	OpenScreenTagList
-				move.l	d0,MenuScreen
-				; need a window to be able to clear out mouse pointer
-				; may later also serve as IDCMP input source
-				sub.l	a0,a0
-				lea		WindowTags,a1
-				move.l	d0,WTagScreenPtr-WindowTags(a1) ; WA_CustomScreen
-				CALLINT	OpenWindowTagList
-				move.l	d0,MenuWindow
-				move.l	d0,a0
-				lea		emptySprite,a1
-				moveq	#1,d0
-				moveq	#16,d1
-				move.l	d0,d2
-				move.l	d0,d3
-				CALLINT	SetPointer
-
-				; we open the Window pixel size to prevent it from clearing
-				; the screen immediately. This resizes the window to fullscreen.
-				; FIXME: doesn't work. When first input is received, the window clear happens.
-				; But opening the window pixel sized already did the trick...
-				;move.l	MenuWindow,a0
-				;clr.l	d0
-				;move.l	d0,d1
-				;move.l	#SCREEN_WIDTH,d2
-				;move.l	#SCREEN_HEIGHT,d3
-				;CALLINT ChangeWindowBox
-
-				CALLC	mnu_init
-				clr.w	mnu_fadefactor
-				bsr.w	mnu_fade
-
-				move.l	#mnu_vblint,main_vblint
-				bsr.w	mnu_fadein
-				rts
-				ENDIF
-
 _mnu_vblint::
 mnu_vblint:		CALLC	mnu_movescreen
 				CALLC	mnu_dofire
 				bsr.w	mnu_animcursor
 				bsr.w	mnu_plot
 				rts
-
-				IFND	BUILD_WITH_C
-mnu_init:
-				bsr.w	mnu_initrnd				; Uses palette buffer
-				bsr.w	mnu_createpalette
-
-				; copy menu background (2bitplanes) a second time underneath (for scrolling meny background)
-				; At the same time, this "moves" the second plane one screen downwards
-				lea		mnu_background,a0
-				lea		mnu_background+40*SCREEN_HEIGHT,a1
-				lea		mnu_screen,a2
-				lea		40*SCREEN_HEIGHT*1(a2),a3
-				lea		40*SCREEN_HEIGHT*2(a2),a4
-				lea		40*SCREEN_HEIGHT*3(a2),a5
-				move.w	#40*SCREEN_HEIGHT/4-1,d1			; one screen worth in longwords
-
-.fsloop:
-				move.l	(a0)+,d0
-				move.l	d0,(a2)+
-				move.l	d0,(a3)+
-				move.l	(a1)+,d0
-				move.l	d0,(a4)+
-				move.l	d0,(a5)+
-				dbra	d1,.fsloop
-;-------------------------------------------------------------- Clear screen --
-				lea		mnu_morescreen,a0
-				move.l	#40*SCREEN_HEIGHT*3/16-1,d0
-				moveq.l	#0,d1
-
-.clrloop:
-				REPT	4
-				move.l	d1,(a0)+
-				ENDR
-				dbra	d0,.clrloop
-				bsr.w	mnu_cls
-
-;--------------------------------------------------------------- Set bplptrs --
-
-				move.l	MenuScreen,a1
-				lea		sc_ViewPort(a1),a1
-				move.l	a1,a0
-				move.l	vp_RasInfo(a1),a1
-				move.l	ri_BitMap(a1),a1
-				lea		bm_Planes(a1),a1
-
-				move.l	#mnu_screen,d0
-				moveq.l	#0,d1
-				bsr.w	.setbplptrs
-				move.l	#mnu_screen+40*SCREEN_HEIGHT*2,d0
-				moveq.l	#0,d1
-				bsr.w	.setbplptrs
-				move.l	#mnu_morescreen,d0
-				moveq.l	#5,d1
-				bsr.s	.setbplptrs
-
-				; This makes Intuition re-evaluate the bitmap pointers
-				; viewport still in a0
-				CALLGRAF ScrollVPort
-
-				rts
-
-.setbplptrs:
-				move.l	d0,(a1)+
-				add.l	#40*SCREEN_HEIGHT,d0
-				dbra	d1,.setbplptrs
-				rts
-
-				ENDIF
 
 _mnu_initrnd::
 mnu_initrnd:
@@ -298,195 +146,6 @@ mnu_initrnd:
 				dbra	d0,.loop
 				rts
 
-				IFND BUILD_WITH_C
-
-				; scroll first two bitplanes
-mnu_movescreen:
-				move.l	MenuScreen,a1
-				lea		sc_ViewPort(a1),a1
-				move.l	a1,a0
-				move.l	vp_RasInfo(a1),a1
-				move.l	ri_BitMap(a1),a1
-				lea		bm_Planes(a1),a1
-				move.w	mnu_screenpos,d0
-				and.w	#$ff,d0
-				mulu	#40,d0
-				add.l	#mnu_screen,d0
-				moveq.l	#1,d1
-
-.loop:
-				move.l	d0,(a1)+
-				add.l	#40*256*2,d0
-				dbra	d1,.loop
-
-				addq.w	#1,mnu_screenpos
-
-				; This makes Intuition re-evaluate the bitmap pointers
-				; viewport still in a0
-				CALLGRAF ScrollVPort
-
-				rts
-
-				; Stitch a 24bit palette together such that the background
-mnu_createpalette:
-				lea		mnu_backpal,a0
-				lea		mnu_firepal,a1
-				lea		mnu_fontpal,a2
-				lea		mnu_palette+256*4,a3
-				move.w	#255,d0
-
-.loop:
-				move.w	d0,d1
-				and.w	#$e0,d1
-				beq.s	.next
-				lsr.w	#5,d1
-				move.l	(a2,d1.w*4),-(a3)
-				bra.s	.cont
-
-.next:
-				move.w	d0,d1
-				and.w	#$1c,d1
-				beq.s	.next1
-				lsr.w	#2,d1
-				move.w	d0,d2
-				and.w	#$3,d2
-				moveq	#0,d3
-				move.b	3(a1,d1.w*4),d3
-				moveq	#0,d4
-				move.b	3(a1,d2.w*4),d4
-				add.w	d4,d3
-				cmp.w	#255,d3
-				ble.s	.okmax1
-				move.b	#255,d3
-
-.okmax1:
-				move.b	d3,-(a3)
-				moveq	#0,d3
-				move.b	2(a1,d1.w*4),d3
-				muls	#3,d3
-				asr.w	#2,d3
-				moveq	#0,d4
-				move.b	2(a1,d2.w*4),d4
-				add.w	d4,d3
-				cmp.w	#255,d3
-				ble.s	.okmax2
-
-				move.b	#255,d3
-
-.okmax2:
-				move.b	d3,-(a3)
-				moveq	#0,d3
-				move.b	1(a1,d1.w*4),d3
-				moveq	#0,d4
-				move.b	1(a1,d2.w*4),d4
-				add.w	d4,d3
-				cmp.w	#255,d3
-				ble.s	.okmax3
-
-				move.b	#255,d3
-
-.okmax3:
-				move.w	d3,-(a3)
-
-;		move.l	(a1,d1.w*4),-(a3)
-				bra.s	.cont
-.next1:
-				move.w	d0,d1
-				and.w	#$3,d1
-				move.l	(a0,d1.w*4),-(a3)
-
-.cont:
-				dbra	d0,.loop
-				rts
-
-mnu_fadespeed	equ		16
-
-_mnu_fadein::
-mnu_fadein:
-				clr.w	mnu_fadefactor
-				moveq.l	#256/mnu_fadespeed-1,d0
-.loop:
-				move.l	d0,-(a7)
-
-				; Ramp up at discreet steps
-				CALLGRAF WaitTOF
-				bsr.w	mnu_fade
-
-				add.w	#mnu_fadespeed,mnu_fadefactor
-				move.l	(a7)+,d0
-				dbra	d0,.loop
-
-				; One pass to make sure we're hitting the RGB * 1.0 case
-				move.w	#255,mnu_fadefactor
-				CALLGRAF WaitTOF
-				bsr.w	mnu_fade
-
-				rts
-
-_mnu_fadeout::
-mnu_fadeout:
-				move.w	#256,mnu_fadefactor
-				moveq.l	#256/mnu_fadespeed-1,d0
-.loop:
-				move.l	d0,-(a7)
-
-				; Ramp down at discreet steps
-				CALLGRAF WaitTOF
-				bsr.w	mnu_fade
-
-				sub.w	#mnu_fadespeed,mnu_fadefactor
-				move.l	(a7)+,d0
-				dbra	d0,.loop
-
-				; One pass to make sure we're hitting the RGB * 0.0 case
-				clr.w	mnu_fadefactor
-				CALLGRAF WaitTOF
-				bsr.w	mnu_fade
-				rts
-
-_mnu_fadefactor::
-mnu_fadefactor:
-				dc.w	0
-
-mnu_fade:
-				lea		mnu_palette,a2
-				move.w	mnu_fadefactor,d3
-				sub.l	#256*4*3+2+2+4+4,a7		; reserve stack for 256 color entries + numColors + firstColor
-				move.l	a7,a1
-				move.l	a7,a0
-				move.w	#256,(a0)+				; number of entries
-				move.w	#0,(a0)+				; start index
-				move.w	#256-1,d0
-
-.setCol:
-				move.l	(a2)+,d1
-				move.l	d1,d2
-				andi.l	#$00FF0000,d2
-				swap	d2
-				mulu.w	d3,d2					; bits 16-23 end up in 24-31
-				swap	d2
-				move.l	d2,(a0)+
-				move.l	d1,d2
-				andi.l	#$0000FF00,d2
-				mulu.w	d3,d2
-				lsl.l	#8,d2					; shift up to 24-31
-				move.l	d2,(a0)+				; this has some stuff in lower word, butt hey'll be discarded
-				andi.l	#$000000FF,d1
-				mulu.w	d3,d1
-				swap	d1
-				move.l	d1,(a0)+				; same here
-				dbra	d0,.setCol
-
-				clr.l	(a0)					; terminate list
-				move.l	MenuScreen,a0
-				lea		sc_ViewPort(a0),a0
-				CALLGRAF LoadRGB32				; a1 still points to start of palette
-
-				add.l	#256*4*3+2+2+4+4,a7		;restore stack
-				rts
-				ENDIF
-
-
 mnu_printxy:;in:a0,d0,d1=Text ptr,XPos,YPos (XPos in words YPos in pixels)
 				lea		mnu_font,a3
 				lea		mnu_font+176*40,a4
@@ -536,35 +195,6 @@ mnu_printxy:;in:a0,d0,d1=Text ptr,XPos,YPos (XPos in words YPos in pixels)
 .exit:
 				rts
 
-				IFND BUILD_WITH_C
-
-mnu_dofire:
-				btst.b	#0,main_counter+3
-				beq.s	.noskip
-				rts
-
-.noskip:
-				move.w	_custom+vhposr,d0
-				add.w	d0,mnu_rnd
-
-				tst.b	mnu_bltbusy
-				beq.s	.blitAgain
-				rts
-
-.blitAgain:
-				lea		mnu_sourceptrs,a0		; rotate fire bitplanes
-				move.l	(a0),d0
-				move.l	4(a0),(a0)
-				move.l	8(a0),4(a0)
-				move.l	d0,8(a0)
-				st.b	mnu_bltbusy
-				lea		BltNode,a1
-				; FIMXE: can I call this from a VBL interrupt?
-				CALLGRAF QBSBlit
-				rts
-
-				ENDIF
-
 _getrnd::
 getrnd:
 				moveq.l	#0,d0
@@ -588,87 +218,6 @@ mnu_bltbusy:
 
 mnu_speed		equ		1
 mnu_size		equ		256
-
-				IFND BUILD_WITH_C
-
-mnu_subtract:
-				dc.l	0
-mnu_count:
-				dc.w	0
-
-				cnop	0,4
-
-mnu_pass1:
-				bsr.w	getrnd
-				clr.l	mnu_subtract
-				move.w	mnu_count,d0
-				addq.w	#1,mnu_count
-				and.w	#$3,d0
-				beq.s	.l1
-				cmp.w	#1,d0
-				bne.s	.normal
-				move.l	#-2,mnu_subtract
-				move.l	#$fff80000,bltcon0(a0)	; D=A+BC
-				bra.s	.cont
-.l1:
-				move.l	#$1ff80000,bltcon0(a0)	; D=A+BC
-				bra.s	.cont
-.normal:
-				move.l	#$0ff80000,bltcon0(a0)	; D=A+BC
-.cont:
-				move.l	#$ffffffff,bltafwm(a0)	; Masks A
-				move.l	#$00000000,bltcmod(a0)	; CB modulo
-				move.l	#$00000000,bltamod(a0)	; AD modulo
-				move.l	#mnu_morescreen+mnu_speed*40,bltcpt(a0) ; Source C
-				move.l	mnu_rndptr,bltbpt(a0)	; Source B
-				move.l	mnu_sourceptrs,d0
-				sub.l	mnu_subtract,d0
-				move.l	d0,bltapt(a0)			; Source A
-				move.l	#mnu_morescreen,bltdpt(a0) ; Dest D
-				move.w	#(mnu_size-mnu_speed)*64+20,bltsize(a0) ; Size and trigger
-				; continue with next pass
-				move.l	#mnu_pass2,bn_function(a1)
-				moveq.l	#1,d0
-				rts
-
-				cnop	0,4
-mnu_pass2:
-				bsr.w	getrnd
-				move.l	#mnu_morescreen+40*256+mnu_speed*40,bltcpt(a0) ; Source C
-				move.l	mnu_rndptr,bltbpt(a0)	; Source B
-				move.l	mnu_sourceptrs+4,d0
-				sub.l	mnu_subtract,d0
-				move.l	d0,bltapt(a0)			; Source A
-				move.l	#mnu_morescreen+40*256,bltdpt(a0) ; Dest D
-				move.w	#(mnu_size-mnu_speed)*64+20,bltsize(a0) ; Size and trigger
-				; continue with next pass
-				move.l	#mnu_pass3,bn_function(a1)
-				moveq.l	#1,d0
-				rts
-
-				cnop	0,4
-mnu_pass3:
-				bsr.w	getrnd
-				move.l	#mnu_morescreen+40*256*2+mnu_speed*40,bltcpt(a0) ; Source C
-				move.l	mnu_rndptr,bltbpt(a0)	; Source B
-				move.l	mnu_sourceptrs+8,d0
-				sub.l	mnu_subtract,d0
-				move.l	d0,bltapt(a0)			; Source A
-				move.l	#mnu_morescreen+40*256*2,bltdpt(a0) ; Dest D
-				move.w	#(mnu_size-mnu_speed)*64+20,bltsize(a0) ; Size and trigger
-
-				move.l	#mnu_pass4,bn_function(a1)
-				moveq.l	#1,d0
-				rts
-
-				cnop	0,4
-mnu_pass4:
-				move.l	#mnu_pass1,bn_function(a1) ; restore first pass ptr
-				clr.b	mnu_bltbusy
-				moveq.l	#0,d0					; this was the last pass
-				rts
-
-				ENDIF
 
 				cnop	0,4
 mnu_cls:
@@ -934,41 +483,61 @@ mnu_waitmenu:;out: d0=Selection number
 				bsr.w	mnu_docursor
 				CALLGRAF WaitTOF				; wait a bit to give the BlitTask more time
 				CALLGRAF WaitTOF
-				
+
 				jsr		_ReadJoy1
 
 				move.l #KeyMap_vb,a5
 				moveq #0,d7
-				
+; TODO - there is a bug here when using up and down keys other than the arrows.
+; TODO - fix hardcoded RAWKEY values
+
 				move.b	forward_key,d7
-				tst.b		(a5,d7.w)
+				move.b	(a5,d7.w),d0
+				clr.b   (a5,d7.w)
+				tst.b   d0
 				bne		.up
+
 				move.b	backward_key,d7
-				tst.b		(a5,d7.w)
+				move.b	(a5,d7.w),d0
+				clr.b   (a5,d7.w)
+				tst.b   d0
 				bne		.down
+
 				move.b	fire_key,d7
-				tst.b		(a5,d7.w)
+				move.b	(a5,d7.w),d0
+				clr.b   (a5,d7.w)
+				tst.b   d0
 				bne		.cd32
 .keys:
 				jsr		key_readkey
+
 				tst.w	d0
 				beq.s	.w8key
-				cmp.b	#69,d0
+
+				cmp.b	#RAWKEY_ESC,d0
 				beq.s	.exit
-				cmp.b	#77,d0					; Down Arrow
+
+				cmp.b	#RAWKEY_DOWN,d0					; Down Arrow
 				beq	.down
-				cmp.b	#76,d0
+
+				cmp.b	#RAWKEY_UP,d0
 				beq	.up
-				cmp.b	#68,d0
+
+				cmp.b	#RAWKEY_ENTER,d0
 				beq.s	.quit
-				cmp.b	#64,d0
+
+				cmp.b	#RAWKEY_SPACEBAR,d0
 				beq.s	.quit
-				cmp.b	#78,d0
+
+				cmp.b	#RAWKEY_RIGHT,d0
 				beq.s	.sliderr
-				cmp.b	#79,d0
+
+				cmp.b	#RAWKEY_LEFT,d0
 				beq.s	.sliderl
+
 				cmp.b	#QUIT_KEY,d0
 				beq.s	.exit_game
+
 				move.l	#mnu_errcursanim,mnu_frameptr
 				bra.w	.loop
 
@@ -2320,17 +1889,6 @@ main_vbrbase:
 				dc.l	0
 timer:
 				dc.l	0
-
-				IFND BUILD_WITH_C
-BltNode:
-				dc.l	0						; bn_n
-				dc.l	mnu_pass1				; bn_function
-				dc.b	0						; bn_stat
-				dc.b	0						; bn_dummy
-				dc.w	0						; bn_blitsize
-				dc.w	0						; bn_beamsync
-				dc.l	0						; bn_cleanup
-				ENDIF
 
 Bitmap:
 				dc.w	SCREEN_WIDTH/8					; bm_BytesPerRow

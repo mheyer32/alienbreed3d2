@@ -22,8 +22,6 @@ Draw_Zone_Graph:
 
 				move.w	d7,Draw_CurrentZone_w
 
-				IFD BUILD_WITH_C
-
 				clr.w	Draw_ZoneClipL_w;
 				move.w	Vid_RightX_w,Draw_ZoneClipR_w
 
@@ -47,11 +45,6 @@ Draw_Zone_Graph:
 
 
 .no_edge_clip:
-				ELSE
-				clr.w	Draw_ZoneClipL_w;
-				move.w	Vid_RightX_w,Draw_ZoneClipR_w
-				ENDIF
-
 				DEV_ZDBG ZDbg_First
 
 				move.l	Lvl_ZonePtrsPtr_l,a2

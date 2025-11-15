@@ -64,7 +64,6 @@ else
 	CFLAGS += -m68020-60 -mtune=68030
 endif
 
-AFLAGS += -DBUILD_WITH_C
 #Use gcc for linking the C build
 $(TARGETNAME): $(OBJS)
 	$(info Linking $@)
@@ -76,7 +75,9 @@ $(TARGETNAME): $(OBJS)
 bump_build:
 	./bumprev.py --build
 
-all:	bump_build $(foreach F,$(FLAVORS),$(foreach C,$(CPUS),build-$(F)-$(C)))
+new:	bump_build $(foreach F,$(FLAVORS),$(foreach C,$(CPUS),build-$(F)-$(C)))
+
+all:	$(foreach F,$(FLAVORS),$(foreach C,$(CPUS),build-$(F)-$(C)))
 
 build-%:
 	$(eval FLAVOR := $(strip $(word 1,$(subst -, ,$*))))

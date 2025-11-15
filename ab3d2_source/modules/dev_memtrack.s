@@ -83,11 +83,8 @@ Mem_TrackDone:
 				bsr		mem_PrintLibNodes
 				rts
 
-				IFD		BUILD_WITH_C
 				xref	__stext
-				ELSE
-__stext=_startup
-				ENDC
+
 mem_TrackAlloc:
 				move.l	d0,-(sp)
 				move.l	mem_ThisTask_l,d0

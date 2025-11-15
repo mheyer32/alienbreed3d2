@@ -348,12 +348,8 @@ CEND			MACRO ; \1 UCopList*
 				ENDM
 
 CALLC			MACRO
-				IFD BUILD_WITH_C
 				xref _\1
 				jsr _\1
-				ELSE
-				jsr \1
-				ENDC
 				ENDM
 
 ; Game macros
@@ -382,9 +378,6 @@ SET_MEM_BIT		MACRO
 				bset.b	#(\1&7),\2+3-(\1>>3)
 				ENDM
 
-
-				IFD BUILD_WITH_C
-
 				; Begin a level
 				; Trashes d0/a0
 
@@ -410,24 +403,6 @@ STATS_KILL		MACRO
 				move.l	#1,Game_ProgressSignal_l
 				SET_MEM_BIT	GAME_EVENTBIT_KILL,Game_ProgressSignal_l
 				ENDM
-
-				ELSE
-
-				; At this time, there are no game progress for asm-only build
-
-STATS_PLAY		MACRO
-                ENDM
-
-STATS_WON		MACRO
-                ENDM
-
-STATS_DIED		MACRO
-                ENDM
-
-STATS_KILL		MACRO
-                ENDM
-
-				ENDC
 
 				; Macro for defining identifier labels that are both ASM and C accessible
 DCLC			MACRO
