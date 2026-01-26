@@ -4,6 +4,27 @@ This repo contains a compileable version of the Alien Breed 3D II source.
 It produces executables that can run the original game data or mods created with the
 original/compatible tooling.
 
+## Quickstart
+
+This is the project repository for the game engine. If you just want to play the original game on your Amiga, please download the [Aminet Release](https//aminet.net/package/game/shoot/AB3D2_TKG):
+
+- Does not depend on any original game disks or WHDL installations.
+- Contains the complete original game with the latest stable binaries from this repository.
+- Includes versions optimised for 68030, 68040 and 68060 processors.
+- Just extract the archive wherever you like and run from the icon. The CPU selection and assigns are all handled automatically.
+
+Occasional engine-only updates are released to a different [Aminet Patch](https://aminet.net/package/game/patch/AB3D2_TKG_Rebuilt). Make sure you check the version before assuming it's more recent than the most recent full release.
+
+## Rebuilt, Redux, etc.
+
+- **Rebuilt** is the informal name given to the game engine builds that this repository produces.
+- **Redux** is the name (formerly Karlos TKG) for a reimagined modification of the game, that requires the _Rebuilt_ engine, hosted [here](https://github.com/0xABADCAFE/karlos-tkg).
+
+_Rebuilt_ will run the original release and custom modifications of the game with no significant _behavioural_ changes, except:
+
+- Damage from dangerous floors is only inflicted when in contact with the floor or swimming in water in contact with it.
+- Automatic aiming can be disabled for projectile weapons.
+
 ## Changes
 
 A summary of the changes are listed below:
