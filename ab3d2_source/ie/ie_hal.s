@@ -18,6 +18,7 @@ ie_init:
 	bsr	ie_input_init
 	bsr	ie_audio_init
 	bsr	ie_res_init
+	bsr	ie_res_bootstrap_assets
 	rts
 
 ie_wait_vblank:

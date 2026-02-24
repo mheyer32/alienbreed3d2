@@ -26,6 +26,7 @@ match mixed assembly/C callsites.
   - `IO_LoadFileOptional` returns per-load heap allocations from the same range.
 - `ie_res.s`: resource helper wrappers.
   - `ie_res_init` clears SFX table and initializes queue state.
+  - `ie_res_bootstrap_assets` tries default palette/MOD candidate filenames at startup.
   - `ie_res_load_palette_file` loads a palette file and activates it via `ie_palette_set_texture_ptr`.
   - `ie_res_load_sfx_file` loads a sample file and registers it in `Aud_SampleList_vl`.
 - `ie_present.s`: indexed chunky -> RGBA LUT conversion + Mode7 upscale submit.
