@@ -23,6 +23,10 @@
 	xdef _ie_res_set_sfx_filename_table
 	xdef ie_res_load_game_db_file
 	xdef _ie_res_load_game_db_file
+	xdef Res_LoadObjects
+	xdef _Res_LoadObjects
+	xdef Res_FreeObjects
+	xdef _Res_FreeObjects
 	xdef Res_LoadSoundFx
 	xdef _Res_LoadSoundFx
 	xdef Res_LoadFloorsAndTextures
@@ -47,6 +51,10 @@
 	xdef Draw_GlobalFloorTexturesPtr_l
 	xdef Draw_FloorTexturesPtr_l
 	xdef Draw_TextureMapsPtr_l
+	xdef Draw_ObjectPtrs_vl
+	xdef Draw_PolyObjects_vl
+	xdef Draw_BackdropImagePtr_l
+	xdef Lvl_IntroTextPtr_l
 	xdef Draw_GlobalWallTexturePtrs_vl
 	xdef Draw_WallTexturePtrs_vl
 	xdef Draw_LevelFloorTexturesPtr_l
@@ -84,10 +92,15 @@
 
 RES_NUM_SFX	equ	59
 NUM_WALL_TEXTURES	equ	16
+NUM_OBJECT_DEFS	equ	30
+DRAW_MAX_OBJECTS	equ	38
+DRAW_MAX_POLY_OBJECTS	equ	40
 ; Offsets generated from defs.i via a tiny include-based probe assembly.
+IE_GLFT_OBJGFXNAMES_OFF	equ	$02C0
 IE_GLFT_SFXFILENAMES_OFF	equ	$0A40
 IE_GLFT_FLOORFILENAME_OFF	equ	$1940
 IE_GLFT_TEXTUREFILENAME_OFF	equ	$1980
+IE_GLFT_VECTORNAMES_OFF	equ	$13FE0
 IE_GLFT_WALLGFXNAMES_OFF	equ	$14760
 IE_GLFT_LEVELMUSIC_OFF	equ	$14CC0
 
@@ -121,6 +134,8 @@ _ie_res_bootstrap_assets:
 	bsr		Res_PatchSoundFx
 	bsr		Res_LoadFloorsAndTextures
 	bsr		Res_LoadWallTextures
+	bsr		Res_LoadObjects
+	bsr		Res_LoadLevelData
 .done_bootstrap:
 	rts
 
@@ -129,6 +144,85 @@ _ie_res_bootstrap_assets:
 ie_res_set_sfx_filename_table:
 _ie_res_set_sfx_filename_table:
 	move.l	a0,ie_res_sfx_filename_table_ptr
+	rts
+
+; Legacy object/vector resource compatibility.
+Res_LoadObjects:
+_Res_LoadObjects:
+	move.l	GLF_DatabasePtr_l,a6
+	tst.l	a6
+	beq		.no_obj_db
+
+	; Reset object pointer table.
+	lea		Draw_ObjectPtrs_vl,a1
+	move.w	#(DRAW_MAX_OBJECTS*4)-1,d7
+.clr_obj_ptrs:
+	clr.l	(a1)+
+	dbra	d7,.clr_obj_ptrs
+
+	; Load object WAD/PTR/256PAL triplets from GLF object names.
+	move.l	a6,a0
+	adda.l	#IE_GLFT_OBJGFXNAMES_OFF,a0
+	lea		Draw_ObjectPtrs_vl,a1
+	moveq	#NUM_OBJECT_DEFS-1,d7
+.obj_loop:
+	tst.b	(a0)
+	beq.s	.next_obj
+	lea		ie_res_ext_wad,a2
+	move.l	a1,d0
+	bsr		ie_res_queue_name_with_ext
+	lea		ie_res_ext_ptr,a2
+	move.l	a1,d0
+	addq.l	#4,d0
+	bsr		ie_res_queue_name_with_ext
+	lea		ie_res_ext_256pal,a2
+	move.l	a1,d0
+	add.l	#12,d0
+	bsr		ie_res_queue_name_with_ext
+.next_obj:
+	adda.w	#64,a0
+	adda.w	#16,a1
+	dbra	d7,.obj_loop
+
+	; Load vector object files.
+	move.l	a6,a0
+	adda.l	#IE_GLFT_VECTORNAMES_OFF,a0
+	lea		Draw_PolyObjects_vl,a1
+	moveq	#NUM_OBJECT_DEFS-1,d7
+.vec_loop:
+	tst.b	(a0)
+	beq.s	.next_vec
+	move.l	a1,d0
+	moveq	#0,d1
+	bsr		IO_QueueFile
+.next_vec:
+	adda.w	#64,a0
+	addq.l	#4,a1
+	dbra	d7,.vec_loop
+
+	moveq	#1,d0
+	rts
+.no_obj_db:
+	moveq	#0,d0
+	rts
+
+Res_FreeObjects:
+_Res_FreeObjects:
+	clr.l	GLF_DatabasePtr_l
+	clr.l	ie_res_sfx_filename_table_ptr
+	clr.l	Lvl_IntroTextPtr_l
+	clr.l	Draw_BackdropImagePtr_l
+	lea		Draw_ObjectPtrs_vl,a1
+	move.w	#(DRAW_MAX_OBJECTS*4)-1,d7
+.clr_obj_free:
+	clr.l	(a1)+
+	dbra	d7,.clr_obj_free
+	lea		Draw_PolyObjects_vl,a1
+	move.w	#DRAW_MAX_POLY_OBJECTS-1,d7
+.clr_poly_free:
+	clr.l	(a1)+
+	dbra	d7,.clr_poly_free
+	moveq	#1,d0
 	rts
 
 ; Load a GLF database file and bind GLF_DatabasePtr_l + SFX table pointer.
@@ -506,6 +600,36 @@ _Res_ReleaseScreenMemory:
 	moveq	#1,d0
 	rts
 
+; Queue a file using a 64-byte GLF name entry + extension suffix.
+; in:
+;   a0 = GLF entry ptr (NUL-terminated basename)
+;   a2 = extension string ptr (includes leading '.')
+;   d0 = destination pointer slot address
+ie_res_queue_name_with_ext:
+	move.l	d0,a4
+	move.l	a0,a3
+	lea		ie_res_obj_name_vb,a1
+	move.w	#158,d6
+.copy_name:
+	move.b	(a3)+,d1
+	beq.s	.copy_ext
+	move.b	d1,(a1)+
+	dbra	d6,.copy_name
+	bra.s	.term_name
+.copy_ext:
+	move.b	(a2)+,d1
+	move.b	d1,(a1)+
+	bne.s	.copy_ext
+	bra.s	.queue_name
+.term_name:
+	clr.b	(a1)
+.queue_name:
+	lea		ie_res_obj_name_vb,a0
+	move.l	a4,d0
+	moveq	#0,d1
+	bsr		IO_QueueFile
+	rts
+
 ; Build "<texture_path>.pal" (or replace existing extension) into ie_res_pal_name_vb.
 ; in: a0 -> source path (NUL-terminated)
 ie_res_build_pal_filename:
@@ -669,6 +793,14 @@ Draw_FloorTexturesPtr_l:
 	dc.l	0
 Draw_TextureMapsPtr_l:
 	dc.l	0
+Draw_ObjectPtrs_vl:
+	dcb.l	DRAW_MAX_OBJECTS*4,0
+Draw_PolyObjects_vl:
+	dcb.l	DRAW_MAX_POLY_OBJECTS,0
+Draw_BackdropImagePtr_l:
+	dc.l	0
+Lvl_IntroTextPtr_l:
+	dc.l	0
 Draw_GlobalWallTexturePtrs_vl:
 	dcb.l	NUM_WALL_TEXTURES,0
 Draw_WallTexturePtrs_vl:
@@ -743,3 +875,12 @@ ie_res_hex_digits:
 
 ie_res_pal_name_vb:
 	dcb.b	256,0
+ie_res_obj_name_vb:
+	dcb.b	160,0
+ie_res_ext_wad:
+	dc.b	".WAD",0
+ie_res_ext_ptr:
+	dc.b	".PTR",0
+ie_res_ext_256pal:
+	dc.b	".256PAL",0
+	even
