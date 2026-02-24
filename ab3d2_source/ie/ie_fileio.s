@@ -149,25 +149,39 @@ _IO_LoadFile:
 	rts
 
 IO_LoadFileOptional:
-_IO_LoadFileOptional:
+	_IO_LoadFileOptional:
 	move.l	a0,d0
 	bsr		ie_fopen
 	tst.l	d0
 	beq.s	.fail
 
-	move.l	ie_file_data_ptr,d1
-	tst.l	d1
-	beq.s	.fail_close
-
+	; Read into current heap pointer.
+	move.l	io_heap_ptr,d1
 	moveq	#1,d0
 	bsr		ie_fread
+	move.l	d0,d6
 	move.l	d1,io_last_status
 	tst.l	d1
 	bne.s	.fail_close
 
+	; Advance heap by aligned length, with bounds check.
+	move.l	d6,d0
+	addq.l	#3,d0
+	andi.l	#$FFFFFFFC,d0
+	move.l	io_heap_ptr,d1
+	add.l	d0,d1
+	cmp.l	#IO_HEAP_LIMIT,d1
+	bhi.s	.fail_close
+
 	moveq	#1,d0
 	bsr		ie_fclose
-	move.l	ie_file_data_ptr,d0
+	move.l	io_heap_ptr,d0
+	move.l	d6,d1
+	move.l	io_heap_ptr,d2
+	add.l	d1,d2
+	addq.l	#3,d2
+	andi.l	#$FFFFFFFC,d2
+	move.l	d2,io_heap_ptr
 	rts
 
 .fail_close:

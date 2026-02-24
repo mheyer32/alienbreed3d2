@@ -22,6 +22,7 @@ match mixed assembly/C callsites.
 - `ie_fileio.s`: file I/O bridge + `IO_LoadFile` / `IO_LoadFileOptional` compatibility wrappers.
   - Adds `IO_InitQueue` / `IO_QueueFile` / `IO_FlushQueue` immediate-mode compatibility.
   - Uses static high-RAM bump allocation for queued file loads (`0x700000` .. `0xFE0000`).
+  - `IO_LoadFileOptional` returns per-load heap allocations from the same range.
 - `ie_present.s`: indexed chunky -> RGBA LUT conversion + Mode7 upscale submit.
   - Includes `ie_palette_upload_12bit` to convert 256-entry `0x0RGB` palettes to RGBA8888 LUT.
   - Includes `ie_palette_upload_rgb8` and `Vid_LoadMainPalette` compatibility entrypoint.
