@@ -44,18 +44,20 @@ Game_FinishedLevel_b:
 Game_Start:
 				move.l	a7,sys_RecoveryStack	; Save stack pointer for Sys_FatalError
 
-				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
-				CALLC	Vid_OpenMainScreen
+					move.b	#PLR_SINGLE,Plr_MultiplayerType_b
+					CALLC	Vid_OpenMainScreen
 
-				move.l	#GLF_DatabaseName_vb,a0
-				jsr		IO_LoadFile
-				move.l	d0,GLF_DatabasePtr_l
+					move.l	#GLF_DatabaseName_vb,a0
+					jsr		IO_LoadFile
+					move.l	d0,GLF_DatabasePtr_l
 
-				move.l	#Game_StoryFile_vb,a0
-				jsr		IO_LoadFile
-				move.l	d0,Lvl_IntroTextPtr_l
+					move.l	#Game_StoryFile_vb,a0
+					jsr		IO_LoadFile
+					move.l	d0,Lvl_IntroTextPtr_l
 
-				jsr		_InitLowLevel
+					IFND	IS_IE
+					jsr		_InitLowLevel
+					ENDC
 
 				;jsr		mnu_start	; For some reason this doesn't work
 										; Shows the wrong menu
@@ -86,7 +88,7 @@ Game_Start:
 
 
 ***********************************************
-				jsr		IO_FlushQueue
+					jsr		IO_FlushQueue
 ***********************************************
 
 				jsr		Res_PatchSoundFx
@@ -103,10 +105,14 @@ Game_Start:
 
 				jsr		game_SetMenuLevelNames
 
-				bsr		DEFAULTGAME
+					bsr		DEFAULTGAME
+					IFD		IS_IE
+					move.w	Game_LevelCounter_w,Game_LevelNumber_w
+					bra		game_DoneMenu
+					ENDC
 
 game_BackToMenu:
-				CALLC	Sys_ClearKeyboard
+					CALLC	Sys_ClearKeyboard
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	game_BackToSlave
@@ -169,11 +175,11 @@ game_DoneMenu:
 *************************************
 				jsr		IO_InitQueue
 
-				CALLC	Draw_ResetGameDisplay
+					CALLC	Draw_ResetGameDisplay
 
 *************************************
 
-				jsr		Game_Begin
+					jsr		Game_Begin
 
 *************************************
 
@@ -212,7 +218,9 @@ Game_Quit:
 				jsr		Res_FreeFloorsAndTextures
 				jsr		Res_FreeObjects
 
+				IFND	IS_IE
 				jsr		_CloseLowLevel
+				ENDC
 
 				move.l	#0,d0
 
@@ -1228,7 +1236,7 @@ FADEAMOUNT:		dc.w	0
 FADEVAL:		dc.w	0
 
 Game_StoryFile_vb:
-				dc.b	'ab3:includes/TEXT_FILE'
+				dc.b	'ab3:includes/TEXT_FILE',0
 
 				even
 

@@ -69,12 +69,12 @@ _Sys_FreeVec:
 ; a0=dest, d0=value, d1=size_in_bytes
 Sys_MemFillLong:
 _Sys_MemFillLong:
-	lsr.w	#2,d1
-	subq.w	#1,d1
-	bmi.s	.fill_done
+	lsr.l	#2,d1
+	beq.s	.fill_done
 .fill_loop:
 	move.l	d0,(a0)+
-	dbra	d1,.fill_loop
+	subq.l	#1,d1
+	bne.s	.fill_loop
 .fill_done:
 	rts
 

@@ -618,7 +618,9 @@ scaledownlop:
 				; TODO - check music is enabled
 
 				st		CHANNELDATA
+				IFND	IS_IE
 				jsr		mt_init
+				ENDC
 
 *********************************
 
@@ -1886,7 +1888,7 @@ nodrawp2:
 				CALLC		Game_UpdatePlayerProgress
 
 .no_update_progress:
-				CALLC Vid_Present
+					CALLC Vid_Present
 
 				;CALLDEV	MarkChunkyDone
 
@@ -2080,7 +2082,6 @@ plr1only:
 plr2quit:
 				st		Game_SlaveQuit_b
 noend:
-
 				tst.b	Game_MasterQuit_b
 				beq.s	.noquit
 				tst.b	Game_SlaveQuit_b
@@ -2113,7 +2114,6 @@ zzzz:
 
 				jmp		endlevel
 noexit:
-
 				tst.w Plr1_Health_w
 				bgt nnoend1
 				jmp endlevel

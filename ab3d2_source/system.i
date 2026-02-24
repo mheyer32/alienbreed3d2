@@ -55,7 +55,7 @@
 				include	workbench/startup.i
 
 				IFD		IS_IE
-FAKE_LIB_BASE	equ		$090000
+FAKE_LIB_BASE	equ		$6F0000
 				ENDC
 
 CALLEXEC		MACRO

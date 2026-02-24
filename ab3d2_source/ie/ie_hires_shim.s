@@ -35,6 +35,7 @@
 	xdef _mnu_clearscreen
 	xdef _mnu_movescreen
 	xdef _mnu_dofire
+	xdef _Game_FinishedLevel_b
 
 	xdef _SysBase
 	xdef _DOSBase
@@ -65,7 +66,7 @@ PALETTE_BASE	equ	$073000
 SCRATCH_BASE	equ	$22C000
 FRAMEBUF_BASE	equ	$100000
 PIXELS_320x240	equ	76800
-FAKE_LIB_BASE	equ	$090000
+FAKE_LIB_BASE	equ	$6F0000
 FAKE_VEC_BYTES	equ	$0800
 
 _Sys_Init:
@@ -301,6 +302,7 @@ _mnu_dofire:
 	rts
 
 _Game_LevelWon:
+	st		_Game_FinishedLevel_b
 	rts
 
 _Game_CheckInventoryLimits:
@@ -352,3 +354,6 @@ ie_mouse_relative_ok:
 	dc.l	0
 ie_mouse_last_abs_y:
 	dc.l	0
+
+_Game_FinishedLevel_b:
+	dc.w	0

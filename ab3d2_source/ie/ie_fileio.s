@@ -188,11 +188,11 @@ ie_fread_try_path:
 ie_build_prefixed_path:
 	move.l	a1,a3
 	move.w	#510,d7
-	copy_prefix_loop:
+.copy_prefix_loop:
 	move.b	(a2)+,d1
 	beq.s	.copy_src_start
 	move.b	d1,(a3)+
-	dbra	d7,copy_prefix_loop
+	dbra	d7,.copy_prefix_loop
 	clr.b	(a3)
 	moveq	#0,d0
 	rts

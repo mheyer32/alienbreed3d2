@@ -62,17 +62,17 @@ IO_QueueFile:
 				rts
 
 IO_FlushQueue:
-				IFD		IS_IE
-				move.l	#Sys_Workspace_vl,a2
-				moveq	#0,d6					; tried+failed
+					IFD		IS_IE
+					move.l	#Sys_Workspace_vl,a2
+					moveq	#0,d6					; tried+failed
 .do_flush_ie:
-				move.l	a2,d0
-				cmp.l	io_EndOfQueue_l,d0
-					bge		.loaded_all
-				tst.l	(a2)
-				beq.s	.next_ie
-				lea		12(a2),a0				; ptr to name
-				move.l	a0,a5
+					move.l	a2,d0
+					cmp.l	io_EndOfQueue_l,d0
+					bge.s	.done_ie
+					tst.l	(a2)
+					beq.s	.next_ie
+					lea		12(a2),a0				; ptr to name
+					move.l	a0,a5
 				bsr		io_ie_load_to_heap
 				tst.l	d0
 				beq.s	.load_failed_ie
@@ -89,10 +89,25 @@ IO_FlushQueue:
 .load_failed_ie:
 				st		d6
 .next_ie:
-				add.l	#100,a2
-				bra.s	.do_flush_ie
-				ENDC
-				bsr		io_FlushPass
+					add.l	#100,a2
+					bra.s	.do_flush_ie
+.done_ie:
+					tst.b	d6
+					beq		.loaded_all
+					move.l	#Sys_Workspace_vl,a2
+.find_failed_ie:
+					move.l	a2,d0
+					cmp.l	io_EndOfQueue_l,d0
+					bge		.loaded_all
+					tst.l	(a2)
+					bne.s	.report_failed_ie
+					add.l	#100,a2
+					bra.s	.find_failed_ie
+.report_failed_ie:
+					lea		12(a2),a5
+					bra		io_LoadFailure
+					ENDC
+					bsr		io_FlushPass
 
 .retry:
 				tst.b	LOADEXT
@@ -251,8 +266,7 @@ IO_LoadFileOptional:
 				beq.s	.optional_fail_ie
 				move.l	d0,io_BlockStart_l
 				move.l	d1,io_BlockLength_l
-				bsr		io_PostProcessLoaded
-				rts
+				bra		io_PostProcessLoaded
 .optional_fail_ie:
 				GETREGS
 				clr.l	d0
@@ -299,8 +313,7 @@ IO_LoadFile:
 				beq		io_LoadFailure
 				move.l	d0,io_BlockStart_l
 				move.l	d1,io_BlockLength_l
-				bsr		io_PostProcessLoaded
-				rts
+				bra		io_PostProcessLoaded
 				ENDC
 				move.l	#MODE_OLDFILE,d2
 				CALLDOS	Open
@@ -492,18 +505,22 @@ io_HandlePacked:
 ; in: a0 -> filename (possibly "VOL:path")
 ; out: d0=ptr (or 0 on fail), d1=len
 io_ie_load_to_heap:
-				movem.l	d2-d7/a1-a6,-(a7)
-				bsr		io_ie_normalize_name
-				move.l	io_ie_heap_ptr,d0
-				move.l	d0,d2
-				move.l	a0,FILE_IO_NAME
-				move.l	d2,FILE_IO_DATA
-				move.l	#1,FILE_IO_CTRL
-				move.l	FILE_IO_STATUS,d6
-				tst.l	d6
-				bne.s	.fail
-				move.l	FILE_IO_LEN,d1
-				move.l	d1,d3
+					movem.l	d2-d7/a1-a6,-(a7)
+					move.l	io_ie_heap_ptr,d0
+					tst.l	d0
+					bne.s	.have_heap
+					move.l	#IO_IE_HEAP_BASE,d0
+					move.l	d0,io_ie_heap_ptr
+.have_heap:
+					move.l	d0,d2
+					move.l	a0,FILE_IO_NAME
+					move.l	d2,FILE_IO_DATA
+					move.l	#1,FILE_IO_CTRL
+					move.l	FILE_IO_STATUS,d6
+					tst.l	d6
+					bne.s	.fail
+					move.l	FILE_IO_LEN,d1
+					move.l	d1,d3
 				addq.l	#3,d3
 				andi.l	#$FFFFFFFC,d3
 				move.l	d2,d4
@@ -515,10 +532,10 @@ io_ie_load_to_heap:
 				movem.l	(a7)+,d2-d7/a1-a6
 				rts
 .fail:
-				clr.l	d0
-				clr.l	d1
-				movem.l	(a7)+,d2-d7/a1-a6
-				rts
+					clr.l	d0
+					clr.l	d1
+					movem.l	(a7)+,d2-d7/a1-a6
+					rts
 
 ; Normalize Amiga-style path into io_ie_path_vb and return a0=normalized ptr.
 io_ie_normalize_name:

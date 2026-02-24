@@ -298,6 +298,7 @@ Res_LoadLevelData:
 				lsl.w	#6,d1
 				move.l	GLF_DatabasePtr_l,a0
 				lea		GLFT_LevelMusic_l(a0),a0
+				adda.w	d1,a0
 
 				move.l	#MEMF_CHIP,IO_MemType_l
 				jsr		IO_LoadFile
