@@ -90,6 +90,44 @@ SYS_ALERT_Y_SPACE=12
 ; Input: a0 = format, a1 = arguments (for RawDoFmt).
 ; Warning: Can only be called from the main game loop (Game_Start and later)
 _Sys_FatalError:: ; C callable version
+				IFD		IS_IE
+				lea		4(sp),a1	; var args (ignored on IE)
+				; Fall through
+Sys_FatalError:
+				; Minimal IE fatal handling: restore recovery stack if set and quit.
+				move.l	sys_RecoveryStack,d0
+				beq.s	.no_recover_ie
+				move.l	d0,a7
+.no_recover_ie:
+				bra		Game_Quit
+
+; Show alert (if any) prepared by Sys_FatalError
+_Sys_DisplayError::
+Sys_DisplayError:
+				rts
+
+; Like exec/AllocVec on classic builds; static high-RAM bump allocator on IE.
+; in: d0=size, d1=flags (ignored)
+; out: d0=ptr or 0 on failure
+Sys_AllocVec:
+				move.l	d0,d2
+				addq.l	#3,d2
+				andi.l	#$FFFFFFFC,d2
+				move.l	ie_sys_heap_ptr,d0
+				move.l	d0,d3
+				add.l	d2,d3
+				cmp.l	#$00FE0000,d3
+				bhi.s	.fail_ie
+				move.l	d3,ie_sys_heap_ptr
+				rts
+.fail_ie:
+				clr.l	d0
+				rts
+
+ie_sys_heap_ptr:
+				dc.l	$00C00000
+
+				ELSE
 				lea		4(sp),a1	; var args
 				; Fall through
 Sys_FatalError:
@@ -149,3 +187,4 @@ Sys_AllocVec:
 				bra		Sys_FatalError
 .errorfmt:		dc.b	'Allocation failed. %ld bytes requested, flags=$%lx',0
 				even
+				ENDC
