@@ -176,12 +176,16 @@ _startup:
 .startup_fail:
 				CALLC	Sys_Done
 
-				IFD MEMTRACK
-				bsr	 Mem_TrackDone
-				ENDC
+					IFD MEMTRACK
+					bsr	 Mem_TrackDone
+					ENDC
 
-				movem.l	(sp)+,d1-a6
-				rts
+					movem.l	(sp)+,d1-a6
+					IFD		IS_IE
+.ie_exit_hang:
+					bra.s	.ie_exit_hang
+					ENDC
+					rts
 
 				; Include even in C version for assembly helpers
 				include		"modules/system.s"
@@ -2061,6 +2065,9 @@ plr1only:
 .allobsdone:
 
 				move.l	#KeyMap_vb,a5
+				IFD		IS_IE
+				bra.s	noend
+				ENDC
 				tst.b	RAWKEY_ESC(a5)
 				beq.s	noend
 

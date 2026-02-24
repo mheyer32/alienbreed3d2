@@ -43,6 +43,8 @@
 	xdef _ciaa
 
 	xref _Vid_FastBufferPtr_l
+	xref _Vid_Screen1Ptr_l
+	xref _Vid_Screen2Ptr_l
 	xref _Vid_DrawScreenPtr_l
 	xref _Vid_DisplayScreenPtr_l
 	xref _Vid_ScreenBuffers_vl
@@ -50,6 +52,7 @@
 	xref _Vid_LetterBoxMarginHeight_w
 	xref _Vid_UpdatePalette_b
 	xref _Sys_MouseY
+	xref _Sys_FPSLimit_w
 	xref _KeyMap_vb
 	xref _draw_Palette_vw
 	xref _Vid_GammaIncTables_vb
@@ -69,10 +72,14 @@ _Sys_Init:
 	move.l	#FAKE_LIB_BASE,_DOSBase
 	move.l	#FAKE_LIB_BASE,_SysBase
 	bsr		ie_init_fake_lib_vectors
+	move.w	#-1,_Sys_FPSLimit_w
+	bsr		_Vid_OpenMainScreen
+	bsr		_Sys_ClearKeyboard
 	moveq	#1,d0
 	rts
 
 _Sys_Done:
+	bsr		_Vid_CloseMainScreen
 	rts
 
 _Sys_ClearKeyboard:
@@ -124,6 +131,8 @@ _Vid_OpenMainScreen:
 	move.l	#1,$F0000
 	move.l	#0,$F0004
 	move.l	#CHUNKY_BASE,_Vid_FastBufferPtr_l
+	move.l	#CHUNKY_BASE,_Vid_Screen1Ptr_l
+	move.l	#CHUNKY_BASE,_Vid_Screen2Ptr_l
 	move.l	#CHUNKY_BASE,_Vid_DrawScreenPtr_l
 	move.l	#CHUNKY_BASE,_Vid_DisplayScreenPtr_l
 	move.l	#CHUNKY_BASE,_Vid_ScreenBuffers_vl
@@ -145,6 +154,9 @@ _Vid_OpenMainScreen:
 	rts
 
 _Vid_CloseMainScreen:
+	IFD		IS_IE
+	rts
+	ENDC
 	move.l	#0,$F0000
 	rts
 
@@ -229,6 +241,9 @@ _Vid_Present:
 	clr.b	_Vid_UpdatePalette_b
 	bsr		_Vid_LoadMainPalette
 .no_pal:
+	move.l	_Vid_DrawScreenPtr_l,a0
+	tst.l	a0
+	bne.s	.have_src
 	move.l	_Vid_FastBufferPtr_l,a0
 	tst.l	a0
 	bne.s	.have_src
