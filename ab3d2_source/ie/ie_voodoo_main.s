@@ -2,11 +2,30 @@
 
 	org $1000
 
+	xdef start
+
 start:
-	; Video init remains required for present path/compositor.
+	; Enable IE video/compositor path.
 	move.l	#1,$F0000
 	move.l	#0,$F0004
 
-	; TODO: initialize Voodoo MMIO state and submit test geometry.
+	; Enable Voodoo engine.
+	move.l	#1,$F4004
+
+	bsr	ie_init
+
 main_loop:
+	bsr	ie_poll_input
+
+	; Temporary Voodoo frame loop: clear + swap.
+	move.l	#0,$F4124
+	move.l	#1,$F4128
+
+	bsr	ie_wait_vblank
 	bra.s	main_loop
+
+	include "ie_hal.s"
+	include "ie_input.s"
+	include "ie_audio.s"
+	include "ie_fileio.s"
+	include "ie_present.s"

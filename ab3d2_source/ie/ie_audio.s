@@ -1,4 +1,7 @@
-; ie_audio.s - Intuition Engine audio bridge stubs (WIP)
+; ie_audio.s - Intuition Engine audio bridge
+; Calling convention (current WIP):
+;   ie_mod_start: d0=mod_ptr, d1=mod_len, d2=ctrl (0 => start)
+;   ie_play_sfx:  d0=sfx_ptr, d1=sfx_len, d2=ctrl (0 => start), d3=channel 0-3
 
 	xdef ie_audio_init
 	xdef ie_mod_start
@@ -8,9 +11,25 @@ ie_audio_init:
 	rts
 
 ie_mod_start:
-	; TODO: stage MOD ptr/len and write start control at 0xF0BC0 region
+	move.l	d0,$F0BC0
+	move.l	d1,$F0BC4
+	tst.l	d2
+	bne.s	.write_ctrl
+	moveq	#1,d2
+.write_ctrl:
+	move.l	d2,$F0BC8
 	rts
 
 ie_play_sfx:
-	; TODO: choose SFX channel (0xF2380 stride 0x10) and write ptr/len/ctrl
+	andi.l	#3,d3
+	lsl.l	#4,d3
+	move.l	#$F2380,a0
+	adda.l	d3,a0
+	move.l	d0,(a0)
+	move.l	d1,4(a0)
+	tst.l	d2
+	bne.s	.sfx_write_ctrl
+	moveq	#1,d2
+.sfx_write_ctrl:
+	move.l	d2,8(a0)
 	rts
