@@ -205,6 +205,7 @@ dontusestats:
 				bra		game_BackToMenu
 
 Game_Quit:
+				move.l	#'QUIT',Game_QuitMarker_l
 				moveq	#0,d0 ; No fading
 				CALLC	mnu_clearscreen ; Maybe No-op
 
@@ -225,6 +226,8 @@ Game_Quit:
 				move.l	#0,d0
 
 				rts
+
+Game_QuitMarker_l:		dc.l	0
 
 ; PREFERENCES (TODO - SHIP OUT):
 

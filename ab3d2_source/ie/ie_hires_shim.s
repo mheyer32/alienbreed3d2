@@ -181,10 +181,10 @@ _Vid_LoadMainPalette:
 	lea		_Vid_GammaIncTables_vb,a5
 	adda.l	d6,a5
 .pal_loop_init:
-	move.w	#0,d7
-.pal_loop:
+	move.w	#255,d7
+.pal8_loop:
 	moveq	#0,d0
-	move.w	0(a3,d7.w),d0
+	move.b	(a3)+,d0
 	bsr		ie_palette_apply_channel
 	moveq	#0,d4
 	move.b	d0,d4
@@ -193,7 +193,7 @@ _Vid_LoadMainPalette:
 	lsl.l	#8,d4
 
 	moveq	#0,d0
-	move.w	512(a3,d7.w),d0
+	move.b	(a3)+,d0
 	bsr		ie_palette_apply_channel
 	moveq	#0,d5
 	move.b	d0,d5
@@ -202,7 +202,7 @@ _Vid_LoadMainPalette:
 	or.l	d5,d4
 
 	moveq	#0,d0
-	move.w	1024(a3,d7.w),d0
+	move.b	(a3)+,d0
 	bsr		ie_palette_apply_channel
 	moveq	#0,d5
 	move.b	d0,d5
@@ -211,9 +211,7 @@ _Vid_LoadMainPalette:
 
 	ori.l	#$000000FF,d4
 	move.l	d4,(a1)+
-	addq.w	#2,d7
-	cmpi.w	#512,d7
-	bne.s	.pal_loop
+	dbra	d7,.pal8_loop
 	rts
 
 ie_palette_apply_channel:
