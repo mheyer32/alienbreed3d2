@@ -12,6 +12,9 @@ match mixed assembly/C callsites.
   - Runs a Game_Start-style sequence: screen open, queue init, explicit GLF DB load attempt, legacy `Res_*` load chain, queue flush, story/backdrop loads, level music handoff to `mt_init`.
   - Explicit DB load includes in-module path variants (`ab3:includes/...`, `media/includes/...`) before generic probe fallback.
   - Falls back to `ie_res_bootstrap_assets` when explicit DB load fails.
+  - Adds `ie_game_shutdown` and `Game_Quit` compatibility teardown (resource free + `mt_end` + screen close).
+  - Tracks bootstrap progress and soft-failure bits via `ie_game_bootstrap_state_l` and `ie_game_last_error_l`.
+  - Adds candidate fallback tables for story/backdrop blobs (`ab3:` + `media/` + `../media/` variants).
   - Saves `sys_RecoveryStack` from current SP for fatal-error recovery compatibility.
 - `ie_hal.s`: core IE loop routines + compatibility entrypoints (`Vid_Present`, `Sys_WaitVBL`, `Sys_EvalFPS`, `Sys_FrameLap`).
   - Adds `Vid_OpenMainScreen` / `Vid_CloseMainScreen` and low-level init/close stubs (`_InitLowLevel`, `_CloseLowLevel`) for legacy outer-loop compatibility.
