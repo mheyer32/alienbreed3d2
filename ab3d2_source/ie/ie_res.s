@@ -61,6 +61,7 @@
 	xdef Draw_WallTexturePtrs_vl
 	xdef Draw_LevelFloorTexturesPtr_l
 	xdef Draw_LevelWallTexturePtrs_vl
+	xdef Zone_BackdropDisable_vb
 	xdef Lvl_WalkLinksPtr_l
 	xdef Lvl_FlyLinksPtr_l
 	xdef Lvl_MusicPtr_l
@@ -98,6 +99,7 @@ NUM_WALL_TEXTURES	equ	16
 NUM_OBJECT_DEFS	equ	30
 DRAW_MAX_OBJECTS	equ	38
 DRAW_MAX_POLY_OBJECTS	equ	40
+ZONE_BACKDROP_DISABLE_SIZE	equ	64
 ; Offsets generated from defs.i via a tiny include-based probe assembly.
 IE_GLFT_OBJGFXNAMES_OFF	equ	$02C0
 IE_GLFT_SFXFILENAMES_OFF	equ	$0A40
@@ -107,6 +109,8 @@ IE_GLFT_VECTORNAMES_OFF	equ	$13FE0
 IE_GLFT_WALLGFXNAMES_OFF	equ	$14760
 IE_GLFT_LEVELMUSIC_OFF	equ	$14CC0
 
+	even
+
 ; Initialize resource helper state.
 ie_res_init:
 _ie_res_init:
@@ -114,6 +118,7 @@ _ie_res_init:
 	bsr		ie_sfx_clear_samples
 	clr.l	GLF_DatabasePtr_l
 	clr.l	ie_res_sfx_filename_table_ptr
+	bsr		Lvl_InitLevelMods
 	rts
 
 ; Attempt a larger default bootstrap pass so IE bring-up has real assets
@@ -587,6 +592,7 @@ _Res_FreeLevelData:
 	clr.l	Lvl_ClipsPtr_l
 	clr.l	Lvl_ModPropertiesPtr_l
 	clr.l	Lvl_ErrataPtr_l
+	bsr		Lvl_InitLevelMods
 	clr.l	Draw_LevelFloorTexturesPtr_l
 	move.l	Draw_GlobalFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
 	lea		Draw_GlobalWallTexturePtrs_vl,a2
@@ -608,6 +614,27 @@ _Res_ReleaseScreenMemory:
 
 Lvl_InitLevelMods:
 _Lvl_InitLevelMods:
+	tst.l	Lvl_ModPropertiesPtr_l
+	beq		.clear_backdrop
+
+	; Copy backdrop disable table from mod-properties payload.
+	move.l	Lvl_ModPropertiesPtr_l,a0
+	lea		Zone_BackdropDisable_vb,a1
+	move.w	#(ZONE_BACKDROP_DISABLE_SIZE/16)-1,d0
+.copy_backdrop:
+	move.l	(a0)+,(a1)+
+	move.l	(a0)+,(a1)+
+	move.l	(a0)+,(a1)+
+	move.l	(a0)+,(a1)+
+	dbra	d0,.copy_backdrop
+	rts
+
+.clear_backdrop:
+	lea		Zone_BackdropDisable_vb,a0
+	move.w	#(ZONE_BACKDROP_DISABLE_SIZE/4)-1,d0
+.clear_loop:
+	clr.l	(a0)+
+	dbra	d0,.clear_loop
 	rts
 
 ; Queue a file using a 64-byte GLF name entry + extension suffix.
@@ -819,6 +846,8 @@ Draw_LevelFloorTexturesPtr_l:
 	dc.l	0
 Draw_LevelWallTexturePtrs_vl:
 	dcb.l	NUM_WALL_TEXTURES,0
+Zone_BackdropDisable_vb:
+	dcb.b	ZONE_BACKDROP_DISABLE_SIZE,0
 
 Lvl_WalkLinksPtr_l:
 	dc.l	0

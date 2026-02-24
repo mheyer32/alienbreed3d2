@@ -33,9 +33,13 @@ ie_fopen:
 	move.l	d0,a0
 	clr.l	ie_file_name_ptr
 	clr.l	ie_file_name_alt_ptr
+	clr.l	ie_file_name_media_ptr
+	clr.l	ie_file_name_media_alt_ptr
+	clr.l	ie_file_name_parent_media_ptr
+	clr.l	ie_file_name_parent_media_alt_ptr
 	moveq	#0,d0
 	tst.l	a0
-	beq.s	.fail
+	beq		.fail
 	; Convert Amiga-style "VOL:path" to host path form by stripping
 	; the first volume/device prefix and normalizing backslashes.
 	move.l	a0,a2
@@ -71,11 +75,53 @@ ie_fopen:
 	clr.b	(a3)
 .finish_copy:
 	tst.b	ie_file_path_vb
-	beq.s	.fail
+	beq		.fail
 	lea		ie_file_path_vb,a1
 	move.l	a1,ie_file_name_ptr
 	lea		ie_file_path_lower_vb,a1
 	move.l	a1,ie_file_name_alt_ptr
+
+	; Build media/ and ../media/ prefixed fallback paths.
+	lea		ie_file_path_vb,a0
+	lea		ie_file_path_media_vb,a1
+	lea		ie_prefix_media_vb,a2
+	bsr		ie_build_prefixed_path
+	tst.l	d0
+	beq.s	.no_media_primary
+	lea		ie_file_path_media_vb,a1
+	move.l	a1,ie_file_name_media_ptr
+.no_media_primary:
+
+	lea		ie_file_path_lower_vb,a0
+	lea		ie_file_path_media_lower_vb,a1
+	lea		ie_prefix_media_vb,a2
+	bsr		ie_build_prefixed_path
+	tst.l	d0
+	beq.s	.no_media_alt
+	lea		ie_file_path_media_lower_vb,a1
+	move.l	a1,ie_file_name_media_alt_ptr
+.no_media_alt:
+
+	lea		ie_file_path_vb,a0
+	lea		ie_file_path_parent_media_vb,a1
+	lea		ie_prefix_parent_media_vb,a2
+	bsr		ie_build_prefixed_path
+	tst.l	d0
+	beq.s	.no_parent_media_primary
+	lea		ie_file_path_parent_media_vb,a1
+	move.l	a1,ie_file_name_parent_media_ptr
+.no_parent_media_primary:
+
+	lea		ie_file_path_lower_vb,a0
+	lea		ie_file_path_parent_media_lower_vb,a1
+	lea		ie_prefix_parent_media_vb,a2
+	bsr		ie_build_prefixed_path
+	tst.l	d0
+	beq.s	.no_parent_media_alt
+	lea		ie_file_path_parent_media_lower_vb,a1
+	move.l	a1,ie_file_name_parent_media_alt_ptr
+.no_parent_media_alt:
+
 	moveq	#1,d0
 .fail:
 	rts
@@ -83,30 +129,85 @@ ie_fopen:
 ie_fread:
 	; Validate simple single-handle contract.
 	cmpi.l	#1,d0
-	bne.s	.bad_handle
+	bne		ie_fread_bad_handle
 
 	move.l	d1,d3
-	move.l	ie_file_name_ptr,$F2200
-	move.l	d3,$F2204
-	move.l	#1,$F220C
-	move.l	$F2214,d0
-	move.l	$F2210,d1
+	move.l	ie_file_name_ptr,a0
+	bsr		ie_fread_try_path
 	tst.l	d1
-	beq.s	.read_ok
-	; Retry with lowercase-normalized path for case-sensitive hosts.
+	beq		.read_ok
+
+	; Retry with lowercase and media-prefixed fallbacks for host FS variance.
 	move.l	ie_file_name_alt_ptr,a0
+	bsr		ie_fread_try_path
+	tst.l	d1
+	beq		.read_ok
+
+	move.l	ie_file_name_media_ptr,a0
+	bsr		ie_fread_try_path
+	tst.l	d1
+	beq		.read_ok
+
+	move.l	ie_file_name_media_alt_ptr,a0
+	bsr		ie_fread_try_path
+	tst.l	d1
+	beq		.read_ok
+
+	move.l	ie_file_name_parent_media_ptr,a0
+	bsr		ie_fread_try_path
+	tst.l	d1
+	beq		.read_ok
+
+	move.l	ie_file_name_parent_media_alt_ptr,a0
+	bsr		ie_fread_try_path
+	tst.l	d1
+	beq		.read_ok
+
+.read_ok:
+	rts
+
+ie_fread_try_path:
+	; in: a0=path ptr, d3=dst ptr
+	; out: d0=len, d1=status
 	tst.l	a0
-	beq.s	.read_ok
-	cmp.l	ie_file_name_ptr,a0
-	beq.s	.read_ok
+	beq.s	.bad_try
 	move.l	a0,$F2200
 	move.l	d3,$F2204
 	move.l	#1,$F220C
 	move.l	$F2214,d0
 	move.l	$F2210,d1
-.read_ok:
 	rts
-.bad_handle:
+.bad_try:
+	moveq	#0,d0
+	moveq	#1,d1
+	rts
+
+; Build prefixed fallback path.
+; in: a0=source path, a1=dest buffer, a2=prefix string
+; out: d0=1 success, 0 failure
+ie_build_prefixed_path:
+	move.l	a1,a3
+	move.w	#510,d7
+	copy_prefix_loop:
+	move.b	(a2)+,d1
+	beq.s	.copy_src_start
+	move.b	d1,(a3)+
+	dbra	d7,copy_prefix_loop
+	clr.b	(a3)
+	moveq	#0,d0
+	rts
+.copy_src_start:
+	move.b	(a0)+,d1
+	move.b	d1,(a3)+
+	beq.s	.done_prefixed
+	dbra	d7,.copy_src_start
+	clr.b	(a3)
+	moveq	#0,d0
+	rts
+.done_prefixed:
+	moveq	#1,d0
+	rts
+ie_fread_bad_handle:
 	moveq	#0,d0
 	moveq	#1,d1
 	rts
@@ -257,6 +358,14 @@ ie_file_name_ptr:
 	dc.l	0
 ie_file_name_alt_ptr:
 	dc.l	0
+ie_file_name_media_ptr:
+	dc.l	0
+ie_file_name_media_alt_ptr:
+	dc.l	0
+ie_file_name_parent_media_ptr:
+	dc.l	0
+ie_file_name_parent_media_alt_ptr:
+	dc.l	0
 ie_file_data_ptr:
 	dc.l	$700000
 ie_file_data_len:
@@ -284,3 +393,16 @@ ie_file_path_vb:
 	dcb.b	512,0
 ie_file_path_lower_vb:
 	dcb.b	512,0
+ie_file_path_media_vb:
+	dcb.b	512,0
+ie_file_path_media_lower_vb:
+	dcb.b	512,0
+ie_file_path_parent_media_vb:
+	dcb.b	512,0
+ie_file_path_parent_media_lower_vb:
+	dcb.b	512,0
+
+ie_prefix_media_vb:
+	dc.b	"media/",0
+ie_prefix_parent_media_vb:
+	dc.b	"../media/",0

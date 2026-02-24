@@ -16,6 +16,7 @@
 	xdef Sys_EClockRate
 	xdef Zone_FreeEdgePVS
 	xdef _Zone_FreeEdgePVS
+	xdef sys_RecoveryStack
 	xdef Sys_Workspace_vl
 	xdef ie_mem_heap_ptr
 
@@ -32,6 +33,7 @@ MEM_HEAP_LIMIT	equ	$FE0000
 
 ie_mem_init:
 	move.l	#MEM_HEAP_BASE,ie_mem_heap_ptr
+	move.l	#0,sys_RecoveryStack
 	clr.l	ie_last_error_fmt_ptr
 	clr.l	ie_clock_hi
 	clr.l	ie_clock_lo
@@ -81,6 +83,11 @@ _Sys_MemFillLong:
 Sys_FatalError:
 _Sys_FatalError:
 	move.l	a0,ie_last_error_fmt_ptr
+	move.l	sys_RecoveryStack,d0
+	tst.l	d0
+	beq.s	.no_recover_stack
+	move.l	d0,a7
+.no_recover_stack:
 	rts
 
 Sys_Init:
@@ -152,3 +159,6 @@ Sys_EClockRate:
 ; Compatibility workspace (4KB for queue/temp usage).
 Sys_Workspace_vl:
 	dcb.l	1024,0
+
+sys_RecoveryStack:
+	dc.l	0
