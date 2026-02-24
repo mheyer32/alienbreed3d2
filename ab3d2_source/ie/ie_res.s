@@ -21,20 +21,29 @@
 	xdef _ie_res_load_sfx_table_60
 	xdef ie_res_set_sfx_filename_table
 	xdef _ie_res_set_sfx_filename_table
+	xdef ie_res_load_game_db_file
+	xdef _ie_res_load_game_db_file
 	xdef Res_LoadSoundFx
 	xdef _Res_LoadSoundFx
 	xdef Res_PatchSoundFx
 	xdef _Res_PatchSoundFx
 	xdef Res_FreeSoundFx
 	xdef _Res_FreeSoundFx
+	xdef GLF_DatabasePtr_l
 
 RES_NUM_SFX	equ	59
+; Derived from defs.i:
+;   GLFT_LevelNames_l = 16*40
+;   GLFT_ObjGfxNames_l = 30*64
+;   GLFT_SFXFilenames_l starts immediately after these blocks.
+IE_GLFT_SFXFILENAMES_OFF	equ	$0A00
 
 ; Initialize resource helper state.
 ie_res_init:
 _ie_res_init:
 	bsr		IO_InitQueue
 	bsr		ie_sfx_clear_samples
+	clr.l	GLF_DatabasePtr_l
 	clr.l	ie_res_sfx_filename_table_ptr
 	rts
 
@@ -49,6 +58,15 @@ _ie_res_bootstrap_assets:
 	; 2) MOD music: optional, starts playback if load succeeds.
 	lea		ie_mod_candidates,a0
 	bsr		ie_res_try_mod_candidates
+
+	; 3) Optional game database. If found, auto-bind and load SFX table.
+	lea		ie_game_db_candidates,a0
+	bsr		ie_res_try_game_db_candidates
+	tst.l	d0
+	beq.s	.done_bootstrap
+	bsr		Res_LoadSoundFx
+	bsr		Res_PatchSoundFx
+.done_bootstrap:
 	rts
 
 ; Configure external SFX filename table pointer used by Res_LoadSoundFx.
@@ -56,6 +74,24 @@ _ie_res_bootstrap_assets:
 ie_res_set_sfx_filename_table:
 _ie_res_set_sfx_filename_table:
 	move.l	a0,ie_res_sfx_filename_table_ptr
+	rts
+
+; Load a GLF database file and bind GLF_DatabasePtr_l + SFX table pointer.
+; in: a0 -> filename
+; out: d0 = 1 on success, 0 on failure
+ie_res_load_game_db_file:
+_ie_res_load_game_db_file:
+	bsr		IO_LoadFileOptional	; d0=ptr, d1=len
+	tst.l	d0
+	beq.s	.fail_game_db
+	move.l	d0,GLF_DatabasePtr_l
+	move.l	d0,a1
+	adda.l	#IE_GLFT_SFXFILENAMES_OFF,a1
+	move.l	a1,ie_res_sfx_filename_table_ptr
+	moveq	#1,d0
+	rts
+.fail_game_db:
+	moveq	#0,d0
 	rts
 
 ; Load RGB8 palette file and set as active texture palette source.
@@ -235,6 +271,21 @@ ie_res_try_mod_candidates:
 	moveq	#0,d0
 	rts
 
+ie_res_try_game_db_candidates:
+	move.l	a0,a2
+.next_gdb:
+	move.l	(a2)+,a1
+	beq.s	.done_gdb
+	move.l	a1,a0
+	bsr		ie_res_load_game_db_file
+	tst.l	d0
+	beq.s	.next_gdb
+	moveq	#1,d0
+	rts
+.done_gdb:
+	moveq	#0,d0
+	rts
+
 ; Default asset candidates (all optional).
 ie_palette_candidates:
 	dc.l	ie_pal_name0
@@ -246,6 +297,12 @@ ie_mod_candidates:
 	dc.l	ie_mod_name0
 	dc.l	ie_mod_name1
 	dc.l	ie_mod_name2
+	dc.l	0
+
+ie_game_db_candidates:
+	dc.l	ie_game_db_name0
+	dc.l	ie_game_db_name1
+	dc.l	ie_game_db_name2
 	dc.l	0
 
 ie_pal_name0:
@@ -264,5 +321,16 @@ ie_mod_name2:
 	dc.b	"title.mod",0
 	even
 
+ie_game_db_name0:
+	dc.b	"AB3:includes/test.lnk",0
+ie_game_db_name1:
+	dc.b	"includes/test.lnk",0
+ie_game_db_name2:
+	dc.b	"test.lnk",0
+	even
+
 ie_res_sfx_filename_table_ptr:
+	dc.l	0
+
+GLF_DatabasePtr_l:
 	dc.l	0

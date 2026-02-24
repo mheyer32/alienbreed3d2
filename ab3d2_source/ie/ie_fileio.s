@@ -28,10 +28,39 @@
 	xdef ie_file_name_ptr
 
 ie_fopen:
-	move.l	d0,ie_file_name_ptr
+	move.l	d0,a0
+	clr.l	ie_file_name_ptr
 	moveq	#0,d0
-	tst.l	ie_file_name_ptr
+	tst.l	a0
 	beq.s	.fail
+	; Convert Amiga-style "VOL:path" to host path form by stripping
+	; the first volume/device prefix and normalizing backslashes.
+	move.l	a0,a2
+.find_colon:
+	move.b	(a0)+,d1
+	beq.s	.copy_name
+	cmpi.b	#':',d1
+	bne.s	.find_colon
+	move.l	a0,a2
+.copy_name:
+	move.l	a2,a0
+	lea		ie_file_path_vb,a1
+	move.w	#510,d7
+.copy_loop:
+	move.b	(a0)+,d1
+	cmpi.b	#92,d1
+	bne.s	.store_char
+	moveq	#47,d1
+.store_char:
+	move.b	d1,(a1)+
+	beq.s	.finish_copy
+	dbra	d7,.copy_loop
+	clr.b	(a1)
+.finish_copy:
+	tst.b	ie_file_path_vb
+	beq.s	.fail
+	lea		ie_file_path_vb,a1
+	move.l	a1,ie_file_name_ptr
 	moveq	#1,d0
 .fail:
 	rts
@@ -213,3 +242,7 @@ IO_HEAP_LIMIT	equ	$FE0000
 ; Compatibility scratch buffer name used by resource loader code.
 io_Buffer_vb:
 	dcb.b	256,0
+
+; Internal normalized path staging buffer.
+ie_file_path_vb:
+	dcb.b	512,0
