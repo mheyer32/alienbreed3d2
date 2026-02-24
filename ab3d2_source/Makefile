@@ -20,6 +20,10 @@ FLAVOR ?=dev
 CPU ?=060
 
 TARGETNAME = tkg_$(FLAVOR)_$(CPU)
+IE_TARGET ?= ab3d2_ie68.ie68
+IE_VOODOO_TARGET ?= ab3d2_ie68_voodoo.ie68
+IE_ENTRY ?= ie/ie_main.s
+IE_VOODOO_ENTRY ?= ie/ie_voodoo_main.s
 
 SRC_DIR = c
 BUILD_DIR ?= _build
@@ -40,6 +44,12 @@ AFLAGS += -I../ \
 		  -I$(PREFIX)/m68k-amigaos/ndk-include \
 		  -I../media \
 		  -I../media/includes
+
+IE_AFLAGS = -m68020 -devpac -chklabels -align -Dmnu_nocode=1 -DUSE_16X16_TEXEL_MULS
+IE_AFLAGS += -I../ \
+		     -I$(PREFIX)/m68k-amigaos/ndk-include \
+		     -I../media \
+		     -I../media/includes
 
 #AFLAGS += -DMEMTRACK = 1
 
@@ -71,9 +81,26 @@ $(TARGETNAME): $(OBJS)
 	$(info ========================================================)
 
 .PHONY: bump_build
+.PHONY: ie68 ie68_voodoo
 
 bump_build:
 	./bumprev.py --build
+
+ie68:
+	@if [ ! -f "$(IE_ENTRY)" ]; then \
+		echo "Missing $(IE_ENTRY). Add IE port assembly sources first."; \
+		exit 1; \
+	fi
+	$(info Assembling $(IE_TARGET) from $(IE_ENTRY))
+	@$(ASS) $(IE_AFLAGS) -DIFD=1 -DIS_IE=1 -Fbin $(IE_ENTRY) -o $(IE_TARGET)
+
+ie68_voodoo:
+	@if [ ! -f "$(IE_VOODOO_ENTRY)" ]; then \
+		echo "Missing $(IE_VOODOO_ENTRY). Add IE voodoo entry assembly first."; \
+		exit 1; \
+	fi
+	$(info Assembling $(IE_VOODOO_TARGET) from $(IE_VOODOO_ENTRY))
+	@$(ASS) $(IE_AFLAGS) -DIFD=1 -DIS_IE=1 -DIE_VOODOO=1 -Fbin $(IE_VOODOO_ENTRY) -o $(IE_VOODOO_TARGET)
 
 new:	bump_build $(foreach F,$(FLAVORS),$(foreach C,$(CPUS),build-$(F)-$(C)))
 

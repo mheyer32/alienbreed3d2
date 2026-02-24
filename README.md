@@ -214,6 +214,24 @@ There are three main CPU tuning options:
     - Specifically excludes routines optimised for slower CPUs and runtime indirections used to select them.
     - May contain 68060-specific optimisations, e.g. cache aware, move16 and code rewritten for fast multiplication, zero cycle branches, superscalar execution, etc.
 
+## Intuition Engine Port (WIP)
+
+An in-progress bare-metal Intuition Engine target is planned in parallel with the AmigaOS builds.
+
+- Port profile:
+  - Version 1: software renderer retained, Amiga HAL replaced with IE MMIO HAL.
+  - Version 2: optional Voodoo triangle submission path.
+- Build targets (from `ab3d2_source/`):
+  - `make ie68`
+  - `make ie68_voodoo`
+- Current status:
+  - Targets exist and validate expected entry files.
+  - Port entry sources are expected at:
+    - `ab3d2_source/ie/ie_main.s`
+    - `ab3d2_source/ie/ie_voodoo_main.s`
+
+See [docs/ie_port.md](docs/ie_port.md) for MMIO register map, memory layout, and implementation notes.
+
 
 ### Release
 
@@ -273,5 +291,4 @@ There are MANY ways this game can be improved:
    * The current code mixes code and data willy-nilly, all in one object file.
       * Using multiple object files and XREF/XDEF may be cleaner.
       * Remove old, unused commented-out cruft (in progress). 
-
 
