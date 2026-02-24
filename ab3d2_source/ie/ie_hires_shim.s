@@ -60,6 +60,10 @@
 	xref _Vid_ContrastAdjust_w
 	xref _Vid_BrightnessOffset_w
 	xref _Vid_GammaLevel_b
+	IFD		IE_VOODOO
+	xref ie_voodoo_init
+	xref ie_voodoo_render_frame
+	ENDC
 
 CHUNKY_BASE	equ	$060000
 PALETTE_BASE	equ	$073000
@@ -131,6 +135,9 @@ _Sys_ReadMouse:
 _Vid_OpenMainScreen:
 	move.l	#1,$F0000
 	move.l	#0,$F0004
+	IFD		IE_VOODOO
+	bsr		ie_voodoo_init
+	ENDC
 	move.l	#CHUNKY_BASE,_Vid_FastBufferPtr_l
 	move.l	#CHUNKY_BASE,_Vid_Screen1Ptr_l
 	move.l	#CHUNKY_BASE,_Vid_Screen2Ptr_l
@@ -236,6 +243,10 @@ ie_palette_apply_channel:
 	rts
 
 _Vid_Present:
+	IFD		IE_VOODOO
+	bsr		ie_voodoo_render_frame
+	rts
+	ENDC
 	; Apply deferred palette uploads from legacy path.
 	tst.b	_Vid_UpdatePalette_b
 	beq.s	.no_pal

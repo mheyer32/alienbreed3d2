@@ -97,12 +97,20 @@ ie68_bootstrap:
 	@$(ASS) $(IE_AFLAGS) -DIFD=1 -DIS_IE=1 -Fbin $(IE_ENTRY) -o $(IE_TARGET)
 
 ie68_voodoo:
-	@if [ ! -f "$(IE_VOODOO_ENTRY)" ]; then \
-		echo "Missing $(IE_VOODOO_ENTRY). Add IE voodoo entry assembly first."; \
-		exit 1; \
-	fi
-	$(info Assembling $(IE_VOODOO_TARGET) from $(IE_VOODOO_ENTRY))
-	@$(ASS) $(IE_AFLAGS) -DIFD=1 -DIS_IE=1 -DIE_VOODOO=1 -Fbin $(IE_VOODOO_ENTRY) -o $(IE_VOODOO_TARGET)
+	$(info Assembling full Voodoo renderer IE build from hires.s + IE shim)
+	@mkdir -p $(BUILD_DIR)
+	@PREFIX=$$(./getprefix.sh "$(CC)"); \
+	$(ASS) -m68020 -chklabels -align -maxerrors=200 \
+		-Dmnu_nocode=1 -DUSE_16X16_TEXEL_MULS -DIFD=1 -DIS_IE=1 -DIE_VOODOO=1 \
+		-I../ -I$$PREFIX/m68k-amigaos/ndk-include -I../media -I../media/includes \
+		-Fhunk hires.s -o $(BUILD_DIR)/ie_voodoo_hires.o
+	@$(ASS) -m68020 -chklabels -align -maxerrors=200 \
+		-DIFD=1 -DIS_IE=1 -DIE_VOODOO=1 -Fhunk ie/ie_hires_shim.s -o $(BUILD_DIR)/ie_voodoo_hires_shim.o
+	@$(ASS) -m68020 -chklabels -align -maxerrors=200 \
+		-DIFD=1 -DIS_IE=1 -DIE_VOODOO=1 -Fhunk ie/ie_voodoo_render.s -o $(BUILD_DIR)/ie_voodoo_render.o
+	@/opt/amiga/bin/vlink -b rawbin1 -Ttext 0x1000 \
+		-N .bsschip .bss -N .datachip .data \
+		-o $(IE_VOODOO_TARGET) $(BUILD_DIR)/ie_voodoo_hires.o $(BUILD_DIR)/ie_voodoo_hires_shim.o $(BUILD_DIR)/ie_voodoo_render.o
 
 ie68_sw:
 	$(info Assembling full software renderer IE build from hires.s + IE shim)
