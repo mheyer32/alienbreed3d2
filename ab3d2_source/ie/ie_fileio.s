@@ -24,12 +24,15 @@
 	xdef _IO_FlushQueue
 	xdef IO_MemType_l
 	xdef io_Buffer_vb
+	xdef io_ObjectName_vb
+	xdef io_FileExtPointer_l
 	xdef io_last_status
 	xdef ie_file_name_ptr
 
 ie_fopen:
 	move.l	d0,a0
 	clr.l	ie_file_name_ptr
+	clr.l	ie_file_name_alt_ptr
 	moveq	#0,d0
 	tst.l	a0
 	beq.s	.fail
@@ -45,6 +48,7 @@ ie_fopen:
 .copy_name:
 	move.l	a2,a0
 	lea		ie_file_path_vb,a1
+	lea		ie_file_path_lower_vb,a3
 	move.w	#510,d7
 .copy_loop:
 	move.b	(a0)+,d1
@@ -53,14 +57,25 @@ ie_fopen:
 	moveq	#47,d1
 .store_char:
 	move.b	d1,(a1)+
+	move.b	d1,d2
+	cmpi.b	#'A',d2
+	blt.s	.store_lower
+	cmpi.b	#'Z',d2
+	bgt.s	.store_lower
+	addi.b	#32,d2
+.store_lower:
+	move.b	d2,(a3)+
 	beq.s	.finish_copy
 	dbra	d7,.copy_loop
 	clr.b	(a1)
+	clr.b	(a3)
 .finish_copy:
 	tst.b	ie_file_path_vb
 	beq.s	.fail
 	lea		ie_file_path_vb,a1
 	move.l	a1,ie_file_name_ptr
+	lea		ie_file_path_lower_vb,a1
+	move.l	a1,ie_file_name_alt_ptr
 	moveq	#1,d0
 .fail:
 	rts
@@ -70,11 +85,26 @@ ie_fread:
 	cmpi.l	#1,d0
 	bne.s	.bad_handle
 
+	move.l	d1,d3
 	move.l	ie_file_name_ptr,$F2200
-	move.l	d1,$F2204
+	move.l	d3,$F2204
 	move.l	#1,$F220C
 	move.l	$F2214,d0
 	move.l	$F2210,d1
+	tst.l	d1
+	beq.s	.read_ok
+	; Retry with lowercase-normalized path for case-sensitive hosts.
+	move.l	ie_file_name_alt_ptr,a0
+	tst.l	a0
+	beq.s	.read_ok
+	cmp.l	ie_file_name_ptr,a0
+	beq.s	.read_ok
+	move.l	a0,$F2200
+	move.l	d3,$F2204
+	move.l	#1,$F220C
+	move.l	$F2214,d0
+	move.l	$F2210,d1
+.read_ok:
 	rts
 .bad_handle:
 	moveq	#0,d0
@@ -225,6 +255,8 @@ IO_LoadFileOptional:
 
 ie_file_name_ptr:
 	dc.l	0
+ie_file_name_alt_ptr:
+	dc.l	0
 ie_file_data_ptr:
 	dc.l	$700000
 ie_file_data_len:
@@ -242,7 +274,13 @@ IO_HEAP_LIMIT	equ	$FE0000
 ; Compatibility scratch buffer name used by resource loader code.
 io_Buffer_vb:
 	dcb.b	256,0
+io_ObjectName_vb:
+	dcb.b	160,0
+io_FileExtPointer_l:
+	dc.l	0
 
 ; Internal normalized path staging buffer.
 ie_file_path_vb:
+	dcb.b	512,0
+ie_file_path_lower_vb:
 	dcb.b	512,0

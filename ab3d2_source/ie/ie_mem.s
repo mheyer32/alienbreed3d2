@@ -14,6 +14,8 @@
 	xdef Sys_MarkTime
 	xdef Sys_TimeDiff
 	xdef Sys_EClockRate
+	xdef Zone_FreeEdgePVS
+	xdef _Zone_FreeEdgePVS
 	xdef Sys_Workspace_vl
 	xdef ie_mem_heap_ptr
 
@@ -102,6 +104,10 @@ Sys_ShowFPS:
 
 Sys_DisplayError:
 _Sys_DisplayError:
+	rts
+
+Zone_FreeEdgePVS:
+_Zone_FreeEdgePVS:
 	rts
 
 ; a0=dest EClockVal*

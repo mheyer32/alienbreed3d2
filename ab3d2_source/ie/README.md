@@ -7,6 +7,7 @@ match mixed assembly/C callsites.
 - `ie_main.s`: VideoChip path bootstrap.
 - `ie_voodoo_main.s`: Voodoo path bootstrap (kept separate; software path is primary).
 - `ie_hal.s`: core IE loop routines + compatibility entrypoints (`Vid_Present`, `Sys_WaitVBL`, `Sys_EvalFPS`, `Sys_FrameLap`).
+  - Adds `Vid_OpenMainScreen` / `Vid_CloseMainScreen` and low-level init/close stubs (`_InitLowLevel`, `_CloseLowLevel`) for legacy outer-loop compatibility.
 - `ie_input.s`: keyboard/mouse bridge.
   - Exposes `KeyMap_vb` and `Sys_ReadMouse`/`Sys_MouseY` compatibility symbols.
   - Includes explicit `ie_scancode_to_rawkey` translation map (identity default, override-ready).
@@ -20,11 +21,14 @@ match mixed assembly/C callsites.
   - Allocation: `Sys_AllocVec`, `Sys_FreeVec`, `Sys_MemFillLong`, `Sys_Workspace_vl`.
   - System stubs: `Sys_Init`, `Sys_Done`, `Sys_OpenLibs`, `Sys_CloseLibs`, `Sys_ShowFPS`, `Sys_DisplayError`.
   - Timing stubs: `Sys_MarkTime`, `Sys_TimeDiff`, `Sys_EClockRate`.
+  - Adds `Zone_FreeEdgePVS` compatibility stub for legacy level teardown paths.
 - `ie_fileio.s`: file I/O bridge + `IO_LoadFile` / `IO_LoadFileOptional` compatibility wrappers.
   - Adds `IO_InitQueue` / `IO_QueueFile` / `IO_FlushQueue` immediate-mode compatibility.
   - Uses static high-RAM bump allocation for queued file loads (`0x700000` .. `0xFE0000`).
   - `IO_LoadFileOptional` returns per-load heap allocations from the same range.
   - `ie_fopen` normalizes Amiga-style paths (`VOL:name/path`) to host-friendly relative paths by stripping volume prefix.
+  - `ie_fread` retries failed loads with a lowercase-normalized path for case-sensitive host filesystems.
+  - Exports `io_ObjectName_vb` / `io_FileExtPointer_l` compatibility scratch symbols used by legacy resource code.
 - `ie_res.s`: resource helper wrappers.
   - `ie_res_init` clears SFX table and initializes queue state.
   - `ie_res_bootstrap_assets` tries default palette/MOD candidate filenames at startup.
@@ -32,7 +36,7 @@ match mixed assembly/C callsites.
   - `ie_res_load_palette_file` loads a palette file and activates it via `ie_palette_set_texture_ptr`.
   - `ie_res_load_sfx_file` loads a sample file and registers it in `Aud_SampleList_vl`.
   - `ie_res_load_sfx_table_ex` supports explicit table stride; wrappers cover 64-byte and AB3D2 GLF 60-byte filename entries.
-  - Adds `Res_LoadObjects` / `Res_FreeObjects` / `Res_LoadSoundFx` / `Res_LoadFloorsAndTextures` / `Res_LoadWallTextures` / `Res_LoadLevelData` / `Res_FreeFloorsAndTextures` / `Res_FreeWallTextures` / `Res_FreeLevelData` / `Res_ReleaseScreenMemory` / `Res_PatchSoundFx` / `Res_FreeSoundFx` compatibility entrypoints and `ie_res_set_sfx_filename_table` / `ie_res_load_game_db_file` for GLF table binding.
+  - Adds `Res_LoadObjects` / `Res_FreeObjects` / `Res_LoadSoundFx` / `Res_LoadFloorsAndTextures` / `Res_LoadWallTextures` / `Res_LoadLevelData` / `Res_FreeFloorsAndTextures` / `Res_FreeWallTextures` / `Res_FreeLevelData` / `Res_ReleaseScreenMemory` / `Res_PatchSoundFx` / `Res_FreeSoundFx` plus `Lvl_InitLevelMods` compatibility entrypoints and `ie_res_set_sfx_filename_table` / `ie_res_load_game_db_file` for GLF table binding.
   - Uses assembler-derived GLF offsets (from `defs.i`) for SFX/floor/texture/wall filename tables.
   - Exports legacy level filename/pointer symbols (`Lvl_*`) plus wall/floor pointer tables so existing game resource callsites can link against IE layer symbols.
 - `ie_present.s`: indexed chunky -> RGBA LUT conversion + Mode7 upscale submit.

@@ -43,6 +43,8 @@
 	xdef _Res_FreeLevelData
 	xdef Res_ReleaseScreenMemory
 	xdef _Res_ReleaseScreenMemory
+	xdef Lvl_InitLevelMods
+	xdef _Lvl_InitLevelMods
 	xdef Res_PatchSoundFx
 	xdef _Res_PatchSoundFx
 	xdef Res_FreeSoundFx
@@ -89,6 +91,7 @@
 	xdef Lvl_ErrataFilenameX_vb
 	xref mt_data
 	xref mt_size
+	xref Zone_FreeEdgePVS
 
 RES_NUM_SFX	equ	59
 NUM_WALL_TEXTURES	equ	16
@@ -549,6 +552,8 @@ _Res_LoadLevelData:
 	bsr		IO_LoadFileOptional
 	move.l	d0,Lvl_ErrataPtr_l
 
+	bsr		Lvl_InitLevelMods
+
 	; Optional per-wall texture overrides.
 	lea		Draw_GlobalWallTexturePtrs_vl,a2
 	lea		Draw_LevelWallTexturePtrs_vl,a3
@@ -592,12 +597,17 @@ _Res_FreeLevelData:
 	move.l	(a2)+,(a4)+
 	clr.l	(a3)+
 	dbra	d2,.clear_wall_refs
+	bsr		Zone_FreeEdgePVS
 	moveq	#1,d0
 	rts
 
 Res_ReleaseScreenMemory:
 _Res_ReleaseScreenMemory:
 	moveq	#1,d0
+	rts
+
+Lvl_InitLevelMods:
+_Lvl_InitLevelMods:
 	rts
 
 ; Queue a file using a 64-byte GLF name entry + extension suffix.
@@ -878,9 +888,9 @@ ie_res_pal_name_vb:
 ie_res_obj_name_vb:
 	dcb.b	160,0
 ie_res_ext_wad:
-	dc.b	".WAD",0
+	dc.b	".wad",0
 ie_res_ext_ptr:
-	dc.b	".PTR",0
+	dc.b	".ptr",0
 ie_res_ext_256pal:
-	dc.b	".256PAL",0
+	dc.b	".256pal",0
 	even
