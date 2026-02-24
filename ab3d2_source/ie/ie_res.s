@@ -27,6 +27,18 @@
 	xdef _Res_LoadSoundFx
 	xdef Res_LoadFloorsAndTextures
 	xdef _Res_LoadFloorsAndTextures
+	xdef Res_FreeFloorsAndTextures
+	xdef _Res_FreeFloorsAndTextures
+	xdef Res_LoadWallTextures
+	xdef _Res_LoadWallTextures
+	xdef Res_FreeWallTextures
+	xdef _Res_FreeWallTextures
+	xdef Res_LoadLevelData
+	xdef _Res_LoadLevelData
+	xdef Res_FreeLevelData
+	xdef _Res_FreeLevelData
+	xdef Res_ReleaseScreenMemory
+	xdef _Res_ReleaseScreenMemory
 	xdef Res_PatchSoundFx
 	xdef _Res_PatchSoundFx
 	xdef Res_FreeSoundFx
@@ -35,15 +47,49 @@
 	xdef Draw_GlobalFloorTexturesPtr_l
 	xdef Draw_FloorTexturesPtr_l
 	xdef Draw_TextureMapsPtr_l
+	xdef Draw_GlobalWallTexturePtrs_vl
+	xdef Draw_WallTexturePtrs_vl
+	xdef Draw_LevelFloorTexturesPtr_l
+	xdef Draw_LevelWallTexturePtrs_vl
+	xdef Lvl_WalkLinksPtr_l
+	xdef Lvl_FlyLinksPtr_l
+	xdef Lvl_MusicPtr_l
+	xdef Lvl_MusicLen_l
+	xdef Lvl_DataPtr_l
+	xdef Lvl_GraphicsPtr_l
+	xdef Lvl_ClipsPtr_l
+	xdef Lvl_ModPropertiesPtr_l
+	xdef Lvl_ErrataPtr_l
+	xdef Lvl_BinFilename_vb
+	xdef Lvl_BinFilenameX_vb
+	xdef Lvl_GfxFilename_vb
+	xdef Lvl_GfxFilenameX_vb
+	xdef Lvl_ClipsFilename_vb
+	xdef Lvl_ClipsFilenameX_vb
+	xdef Lvl_MapFilename_vb
+	xdef Lvl_MapFilenameX_vb
+	xdef Lvl_FlyMapFilename_vb
+	xdef Lvl_FlyMapFilenameX_vb
+	xdef Lvl_FloorFilename_vb
+	xdef Lvl_FloorFilenameX_vb
+	xdef Lvl_WallFilename_vb
+	xdef Lvl_WallFilenameX_vb
+	xdef Lvl_WallFilenameN_vb
+	xdef Lvl_ModPropsFilename_vb
+	xdef Lvl_ModPropsFilenameX_vb
+	xdef Lvl_ErrataFilename_vb
+	xdef Lvl_ErrataFilenameX_vb
+	xref mt_data
+	xref mt_size
 
 RES_NUM_SFX	equ	59
-; Derived from defs.i:
-;   GLFT_LevelNames_l = 16*40
-;   GLFT_ObjGfxNames_l = 30*64
-;   GLFT_SFXFilenames_l starts immediately after these blocks.
-IE_GLFT_SFXFILENAMES_OFF	equ	$0A00
-IE_GLFT_FLOORFILENAME_OFF	equ	$1900
-IE_GLFT_TEXTUREFILENAME_OFF	equ	$1940
+NUM_WALL_TEXTURES	equ	16
+; Offsets generated from defs.i via a tiny include-based probe assembly.
+IE_GLFT_SFXFILENAMES_OFF	equ	$0A40
+IE_GLFT_FLOORFILENAME_OFF	equ	$1940
+IE_GLFT_TEXTUREFILENAME_OFF	equ	$1980
+IE_GLFT_WALLGFXNAMES_OFF	equ	$14760
+IE_GLFT_LEVELMUSIC_OFF	equ	$14CC0
 
 ; Initialize resource helper state.
 ie_res_init:
@@ -74,6 +120,7 @@ _ie_res_bootstrap_assets:
 	bsr		Res_LoadSoundFx
 	bsr		Res_PatchSoundFx
 	bsr		Res_LoadFloorsAndTextures
+	bsr		Res_LoadWallTextures
 .done_bootstrap:
 	rts
 
@@ -276,6 +323,189 @@ _Res_LoadFloorsAndTextures:
 	moveq	#0,d0
 	rts
 
+Res_FreeFloorsAndTextures:
+_Res_FreeFloorsAndTextures:
+	clr.l	Draw_GlobalFloorTexturesPtr_l
+	clr.l	Draw_TextureMapsPtr_l
+	clr.l	Draw_TexturePalettePtr_l
+	clr.l	Draw_LevelFloorTexturesPtr_l
+	clr.l	Draw_FloorTexturesPtr_l
+	moveq	#1,d0
+	rts
+
+; Legacy wall texture compatibility.
+; Loads GLFT_WallGFXNames_l list into Draw_GlobalWallTexturePtrs_vl and mirrors
+; active pointers into Draw_WallTexturePtrs_vl.
+Res_LoadWallTextures:
+_Res_LoadWallTextures:
+	move.l	GLF_DatabasePtr_l,a3
+	tst.l	a3
+	beq.s	.no_wall_db
+	adda.l	#IE_GLFT_WALLGFXNAMES_OFF,a3
+	lea		Draw_GlobalWallTexturePtrs_vl,a4
+	lea		Draw_WallTexturePtrs_vl,a5
+	moveq	#NUM_WALL_TEXTURES-1,d7
+
+.load_wall_loop:
+	clr.l	(a4)
+	clr.l	(a5)
+	tst.b	(a3)
+	beq.s	.next_wall
+	move.l	a3,a0
+	move.l	a4,d0
+	moveq	#0,d1
+	bsr		IO_QueueFile
+	move.l	(a4),(a5)
+.next_wall:
+	addq.l	#4,a4
+	addq.l	#4,a5
+	adda.w	#64,a3
+	dbra	d7,.load_wall_loop
+	moveq	#1,d0
+	rts
+
+.no_wall_db:
+	moveq	#0,d0
+	rts
+
+Res_FreeWallTextures:
+_Res_FreeWallTextures:
+	lea		Draw_GlobalWallTexturePtrs_vl,a2
+	lea		Draw_LevelWallTexturePtrs_vl,a3
+	lea		Draw_WallTexturePtrs_vl,a4
+	moveq	#NUM_WALL_TEXTURES-1,d2
+.clear_walls:
+	clr.l	(a2)+
+	clr.l	(a3)+
+	clr.l	(a4)+
+	dbra	d2,.clear_walls
+	moveq	#1,d0
+	rts
+
+; Legacy level data loading compatibility.
+; Loads core level files and optional per-level overrides.
+Res_LoadLevelData:
+_Res_LoadLevelData:
+	; Required level files.
+	lea		Lvl_MapFilename_vb,a0
+	bsr		IO_LoadFile
+	move.l	d0,Lvl_WalkLinksPtr_l
+
+	lea		Lvl_FlyMapFilename_vb,a0
+	bsr		IO_LoadFile
+	move.l	d0,Lvl_FlyLinksPtr_l
+
+	; Per-level music filename from GLF database table (optional).
+	move.l	GLF_DatabasePtr_l,a0
+	tst.l	a0
+	beq.s	.no_level_music
+	moveq	#0,d1
+	move.b	Lvl_BinFilenameX_vb,d1
+	sub.b	#'a',d1
+	bcc.s	.music_nonneg
+	moveq	#0,d1
+.music_nonneg:
+	cmpi.b	#15,d1
+	bls.s	.music_idx_ok
+	moveq	#0,d1
+.music_idx_ok:
+	lsl.w	#6,d1
+	adda.l	#IE_GLFT_LEVELMUSIC_OFF,a0
+	adda.w	d1,a0
+	bsr		IO_LoadFile
+	move.l	d0,Lvl_MusicPtr_l
+	move.l	d1,Lvl_MusicLen_l
+	move.l	d0,mt_data
+	move.l	d1,mt_size
+	bra.s	.have_level_music
+.no_level_music:
+	clr.l	Lvl_MusicPtr_l
+	clr.l	Lvl_MusicLen_l
+	clr.l	mt_data
+	clr.l	mt_size
+.have_level_music:
+
+	lea		Lvl_BinFilename_vb,a0
+	bsr		IO_LoadFile
+	move.l	d0,Lvl_DataPtr_l
+
+	lea		Lvl_GfxFilename_vb,a0
+	bsr		IO_LoadFile
+	move.l	d0,Lvl_GraphicsPtr_l
+
+	lea		Lvl_ClipsFilename_vb,a0
+	bsr		IO_LoadFile
+	move.l	d0,Lvl_ClipsPtr_l
+
+	; Optional level floor override.
+	move.l	Draw_GlobalFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
+	lea		Lvl_FloorFilename_vb,a0
+	bsr		IO_LoadFileOptional
+	move.l	d0,Draw_LevelFloorTexturesPtr_l
+	beq.s	.no_floor_override
+	move.l	d0,Draw_FloorTexturesPtr_l
+.no_floor_override:
+
+	; Optional level properties/errata.
+	lea		Lvl_ModPropsFilename_vb,a0
+	bsr		IO_LoadFileOptional
+	move.l	d0,Lvl_ModPropertiesPtr_l
+
+	lea		Lvl_ErrataFilename_vb,a0
+	bsr		IO_LoadFileOptional
+	move.l	d0,Lvl_ErrataPtr_l
+
+	; Optional per-wall texture overrides.
+	lea		Draw_GlobalWallTexturePtrs_vl,a2
+	lea		Draw_LevelWallTexturePtrs_vl,a3
+	lea		Draw_WallTexturePtrs_vl,a4
+	lea		ie_res_hex_digits,a5
+	moveq	#NUM_WALL_TEXTURES-1,d2
+.do_wall_override:
+	move.l	(a2)+,(a4)
+	move.b	(a5)+,Lvl_WallFilenameN_vb
+	lea		Lvl_WallFilename_vb,a0
+	bsr		IO_LoadFileOptional
+	move.l	d0,(a3)+
+	beq.s	.no_this_wall_override
+	move.l	d0,(a4)
+.no_this_wall_override:
+	addq.l	#4,a4
+	dbra	d2,.do_wall_override
+
+	moveq	#1,d0
+	rts
+
+; IE static heap has no per-object free; clear pointers and restore defaults.
+Res_FreeLevelData:
+_Res_FreeLevelData:
+	clr.l	Lvl_WalkLinksPtr_l
+	clr.l	Lvl_FlyLinksPtr_l
+	clr.l	Lvl_MusicPtr_l
+	clr.l	Lvl_MusicLen_l
+	clr.l	Lvl_DataPtr_l
+	clr.l	Lvl_GraphicsPtr_l
+	clr.l	Lvl_ClipsPtr_l
+	clr.l	Lvl_ModPropertiesPtr_l
+	clr.l	Lvl_ErrataPtr_l
+	clr.l	Draw_LevelFloorTexturesPtr_l
+	move.l	Draw_GlobalFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
+	lea		Draw_GlobalWallTexturePtrs_vl,a2
+	lea		Draw_LevelWallTexturePtrs_vl,a3
+	lea		Draw_WallTexturePtrs_vl,a4
+	moveq	#NUM_WALL_TEXTURES-1,d2
+.clear_wall_refs:
+	move.l	(a2)+,(a4)+
+	clr.l	(a3)+
+	dbra	d2,.clear_wall_refs
+	moveq	#1,d0
+	rts
+
+Res_ReleaseScreenMemory:
+_Res_ReleaseScreenMemory:
+	moveq	#1,d0
+	rts
+
 ; Build "<texture_path>.pal" (or replace existing extension) into ie_res_pal_name_vb.
 ; in: a0 -> source path (NUL-terminated)
 ie_res_build_pal_filename:
@@ -439,6 +669,77 @@ Draw_FloorTexturesPtr_l:
 	dc.l	0
 Draw_TextureMapsPtr_l:
 	dc.l	0
+Draw_GlobalWallTexturePtrs_vl:
+	dcb.l	NUM_WALL_TEXTURES,0
+Draw_WallTexturePtrs_vl:
+	dcb.l	NUM_WALL_TEXTURES,0
+Draw_LevelFloorTexturesPtr_l:
+	dc.l	0
+Draw_LevelWallTexturePtrs_vl:
+	dcb.l	NUM_WALL_TEXTURES,0
+
+Lvl_WalkLinksPtr_l:
+	dc.l	0
+Lvl_FlyLinksPtr_l:
+	dc.l	0
+Lvl_MusicPtr_l:
+	dc.l	0
+Lvl_MusicLen_l:
+	dc.l	0
+Lvl_DataPtr_l:
+	dc.l	0
+Lvl_GraphicsPtr_l:
+	dc.l	0
+Lvl_ClipsPtr_l:
+	dc.l	0
+Lvl_ModPropertiesPtr_l:
+	dc.l	0
+Lvl_ErrataPtr_l:
+	dc.l	0
+
+; Level filenames (copied from data/level_data.s layout for compatibility).
+Lvl_BinFilename_vb:
+	dc.b	"ab3:levels/level_"
+Lvl_BinFilenameX_vb:
+	dc.b	"a/twolev.bin",0
+Lvl_GfxFilename_vb:
+	dc.b	"ab3:levels/level_"
+Lvl_GfxFilenameX_vb:
+	dc.b	"a/twolev.graph.bin",0
+Lvl_ClipsFilename_vb:
+	dc.b	"ab3:levels/level_"
+Lvl_ClipsFilenameX_vb:
+	dc.b	"a/twolev.clips",0
+Lvl_MapFilename_vb:
+	dc.b	"ab3:levels/level_"
+Lvl_MapFilenameX_vb:
+	dc.b	"a/twolev.map",0
+Lvl_FlyMapFilename_vb:
+	dc.b	"ab3:levels/level_"
+Lvl_FlyMapFilenameX_vb:
+	dc.b	"a/twolev.flymap",0
+Lvl_FloorFilename_vb:
+	dc.b	"ab3:levels/level_"
+Lvl_FloorFilenameX_vb:
+	dc.b	"a/floortile",0
+Lvl_WallFilename_vb:
+	dc.b	"ab3:levels/level_"
+Lvl_WallFilenameX_vb:
+	dc.b	"a/wall_"
+Lvl_WallFilenameN_vb:
+	dc.b	"0.256wad",0
+Lvl_ModPropsFilename_vb:
+	dc.b	"ab3:levels/level_"
+Lvl_ModPropsFilenameX_vb:
+	dc.b	"a/properties.dat",0
+Lvl_ErrataFilename_vb:
+	dc.b	"ab3:levels/level_"
+Lvl_ErrataFilenameX_vb:
+	dc.b	"a/errata.dat",0
+	even
+
+ie_res_hex_digits:
+	dc.b	"0123456789ABCDEF"
 
 ie_res_pal_name_vb:
 	dcb.b	256,0

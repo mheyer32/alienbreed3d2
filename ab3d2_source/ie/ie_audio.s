@@ -26,6 +26,8 @@
 	xdef _MakeSomeNoise
 	xdef ie_mod_data_ptr
 	xdef ie_mod_data_len
+	xdef mt_data
+	xdef mt_size
 	xdef ie_sfx_ptr
 	xdef ie_sfx_len
 	xdef ie_sfx_ctrl
@@ -114,6 +116,11 @@ mt_init:
 _mt_init:
 	move.l	ie_mod_data_ptr,d0
 	move.l	ie_mod_data_len,d1
+	tst.l	d0
+	bne.s	.have_mod_payload
+	move.l	mt_data,d0
+	move.l	mt_size,d1
+.have_mod_payload:
 	moveq	#1,d2
 	bsr	ie_mod_start
 	rts
@@ -192,6 +199,12 @@ _MakeSomeNoise:
 ie_mod_data_ptr:
 	dc.l	0
 ie_mod_data_len:
+	dc.l	0
+; Legacy ProTracker payload symbols used by old game code.
+; IE mt_init prefers ie_mod_data_{ptr,len}, then falls back to these.
+mt_data:
+	dc.l	0
+mt_size:
 	dc.l	0
 
 ie_sfx_ptr:
