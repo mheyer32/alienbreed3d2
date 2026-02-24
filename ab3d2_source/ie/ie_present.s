@@ -8,6 +8,7 @@
 
 	xdef ie_present_frame
 	xdef ie_palette_init
+	xdef ie_palette_upload_12bit
 
 CHUNKY_BASE	equ	$060000
 PALETTE_BASE	equ	$073000
@@ -34,6 +35,53 @@ ie_palette_init:
 	addq.l	#1,d0
 	cmpi.l	#256,d0
 	bne.s	.pal_loop
+	rts
+
+; ie_palette_upload_12bit
+; in: a0 -> 256 x 16-bit palette entries (Amiga format 0x0RGB, 4 bits/channel)
+; out: writes converted RGBA8888 LUT to PALETTE_BASE
+ie_palette_upload_12bit:
+	move.l	#PALETTE_BASE,a1
+	move.w	#255,d7
+
+.pal12_loop:
+	move.w	(a0)+,d0
+
+	; R nibble -> 8-bit in d1
+	move.w	d0,d1
+	lsr.w	#8,d1
+	andi.w	#$000F,d1
+	move.w	d1,d2
+	lsl.w	#4,d1
+	or.w	d2,d1
+
+	; G nibble -> 8-bit in d3
+	move.w	d0,d3
+	lsr.w	#4,d3
+	andi.w	#$000F,d3
+	move.w	d3,d2
+	lsl.w	#4,d3
+	or.w	d2,d3
+
+	; B nibble -> 8-bit in d4
+	move.w	d0,d4
+	andi.w	#$000F,d4
+	move.w	d4,d2
+	lsl.w	#4,d4
+	or.w	d2,d4
+
+	; Pack RGBA = (R<<24)|(G<<16)|(B<<8)|0xFF
+	moveq	#0,d5
+	move.b	d1,d5
+	lsl.l	#8,d5
+	move.b	d3,d5
+	lsl.l	#8,d5
+	move.b	d4,d5
+	lsl.l	#8,d5
+	ori.l	#$000000FF,d5
+	move.l	d5,(a1)+
+
+	dbra	d7,.pal12_loop
 	rts
 
 ie_present_frame:

@@ -3,7 +3,10 @@
 	xdef ie_input_init
 	xdef ie_poll_keyboard
 	xdef ie_poll_mouse
+	xdef Sys_ReadMouse
+	xdef Sys_MouseY
 	xdef ie_keymap
+	xdef KeyMap_vb
 	xdef ie_mouse_dx
 	xdef ie_mouse_dy
 	xdef ie_mouse_buttons
@@ -71,7 +74,16 @@ ie_poll_mouse:
 	move.l	d2,ie_mouse_buttons
 	rts
 
+; Compatibility shim for existing game control code.
+; Updates Sys_MouseY as an accumulated axis from IE mouse deltas.
+Sys_ReadMouse:
+	bsr	ie_poll_mouse
+	move.w	ie_mouse_dy,d0
+	add.w	d0,Sys_MouseY
+	rts
+
 ie_keymap:
+KeyMap_vb:
 	dcb.b	256,0
 
 ie_mouse_dx:
@@ -86,3 +98,6 @@ ie_mouse_last_abs_x:
 	dc.l	0
 ie_mouse_last_abs_y:
 	dc.l	0
+
+Sys_MouseY:
+	dc.w	0

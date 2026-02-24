@@ -6,6 +6,8 @@ This directory contains the in-progress Intuition Engine assembly port layer.
 - `ie_voodoo_main.s`: Voodoo path bootstrap with clear + triangle + swap loop.
 - `ie_hal.s`: placeholder HAL routines to be filled during porting.
 - `ie_input.s`: keyboard/mouse bridge stubs.
+  - Exposes `KeyMap_vb` and `Sys_ReadMouse`/`Sys_MouseY` compatibility symbols.
 - `ie_audio.s`: MOD/SFX bridge stubs.
 - `ie_fileio.s`: file I/O bridge stubs.
 - `ie_present.s`: indexed chunky -> RGBA LUT conversion + Mode7 upscale submit.
+  - Includes `ie_palette_upload_12bit` to convert 256-entry `0x0RGB` palettes to RGBA8888 LUT.
