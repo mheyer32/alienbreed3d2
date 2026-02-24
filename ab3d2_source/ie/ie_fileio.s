@@ -64,7 +64,7 @@ ie_set_file_buffer:
 ; Legacy queue API compatibility.
 ; On IE we do immediate loads in IO_QueueFile using a static bump allocator.
 IO_InitQueue:
-	move.l	#IO_HEAP_BASE,io_heap_ptr
+	move.l	ie_mem_heap_ptr,io_heap_ptr
 	clr.l	io_last_status
 	rts
 

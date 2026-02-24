@@ -9,6 +9,7 @@ start:
 	move.l	#1,$F0000
 	move.l	#0,$F0004
 
+	bsr	ie_mem_init
 	bsr	ie_init
 
 main_loop:
@@ -21,5 +22,6 @@ main_loop:
 	include "ie_hal.s"
 	include "ie_input.s"
 	include "ie_audio.s"
+	include "ie_mem.s"
 	include "ie_fileio.s"
 	include "ie_present.s"
