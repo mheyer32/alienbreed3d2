@@ -10,6 +10,7 @@ This directory contains the in-progress Intuition Engine assembly port layer.
   - Includes explicit `ie_scancode_to_rawkey` translation map (identity default, override-ready).
   - Exposes `Sys_ClearKeyboard` compatibility routine.
 - `ie_audio.s`: exports legacy `mt_init`/`mt_music`/`mt_end` and `Aud_PlaySound`/`MakeSomeNoise` wrappers over IE MOD/SFX MMIO.
+  - `MakeSomeNoise` now resolves `Aud_SampleNum_w` through `Aud_SampleList_vl` and packs volume/channel into IE SFX control.
 - `ie_audio.s`: MOD/SFX bridge stubs.
 - `ie_fileio.s`: file I/O bridge stubs.
 - `ie_present.s`: indexed chunky -> RGBA LUT conversion + Mode7 upscale submit.

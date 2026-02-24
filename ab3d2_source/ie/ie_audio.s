@@ -18,6 +18,15 @@
 	xdef ie_sfx_len
 	xdef ie_sfx_ctrl
 	xdef ie_sfx_channel
+	xdef ie_next_sfx_channel
+	xdef Aud_SampleList_vl
+	xdef Aud_SampleNum_w
+	xdef Aud_NoiseVol_w
+	xdef Aud_ChannelPick_b
+	xdef Aud_NoiseX_w
+	xdef Aud_NoiseZ_w
+	xdef IDNUM
+	xdef notifplaying
 
 ie_audio_init:
 	rts
@@ -77,11 +86,45 @@ Aud_PlaySound:
 	rts
 
 MakeSomeNoise:
-	move.l	ie_sfx_ptr,d0
-	move.l	ie_sfx_len,d1
-	move.l	ie_sfx_ctrl,d2
+	; Resolve sample ptr/len from legacy sample table by sample id.
+	moveq	#0,d5
+	move.w	Aud_SampleNum_w,d5
+	lsl.l	#3,d5
+	lea		Aud_SampleList_vl,a3
+	move.l	0(a3,d5.l),d0
+	move.l	4(a3,d5.l),d1
+
+	; Volume: clamp to 0..255 and pack in ctrl high byte.
+	moveq	#0,d4
+	move.w	Aud_NoiseVol_w,d4
+	tst.l	d4
+	bge.s	.vol_nonneg
+	moveq	#0,d4
+.vol_nonneg:
+	cmpi.l	#255,d4
+	ble.s	.vol_ok
+	move.l	#255,d4
+.vol_ok:
+	move.l	d4,d2
+	lsl.l	#8,d2
+	ori.l	#1,d2
+
+	; Channel pick:
+	;   0 -> round-robin 0..3
+	;   n -> map to (n-1)&3
 	moveq	#0,d3
-	move.b	ie_sfx_channel,d3
+	move.w	Aud_ChannelPick_b,d3
+	andi.l	#$FF,d3
+	beq.s	.round_robin
+	subq.l	#1,d3
+	andi.l	#3,d3
+	bra.s	.have_channel
+.round_robin:
+	moveq	#0,d3
+	move.b	ie_next_sfx_channel,d3
+	andi.l	#3,d3
+	addq.b	#1,ie_next_sfx_channel
+.have_channel:
 	bsr	ie_play_sfx
 	rts
 
@@ -101,3 +144,28 @@ ie_sfx_channel:
 	dc.b	0
 	dc.b	0
 	dc.b	0
+ie_next_sfx_channel:
+	dc.b	0
+	dc.b	0
+	dc.b	0
+	dc.b	0
+
+; Legacy audio state symbols used by existing game code.
+Aud_SampleNum_w:
+	dc.w	0
+Aud_NoiseX_w:
+	dc.w	0
+Aud_NoiseZ_w:
+	dc.w	0
+Aud_NoiseVol_w:
+	dc.w	0
+Aud_ChannelPick_b:
+	dc.w	0
+IDNUM:
+	dc.w	0
+notifplaying:
+	dc.b	0
+	dc.b	0
+
+Aud_SampleList_vl:
+	dcb.l	128,0
