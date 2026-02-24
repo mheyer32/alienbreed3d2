@@ -9,6 +9,7 @@ This directory contains the in-progress Intuition Engine assembly port layer.
   - Exposes `KeyMap_vb` and `Sys_ReadMouse`/`Sys_MouseY` compatibility symbols.
   - Includes explicit `ie_scancode_to_rawkey` translation map (identity default, override-ready).
   - Exposes `Sys_ClearKeyboard` compatibility routine.
+- `ie_audio.s`: exports legacy `mt_init`/`mt_music`/`mt_end` and `Aud_PlaySound`/`MakeSomeNoise` wrappers over IE MOD/SFX MMIO.
 - `ie_audio.s`: MOD/SFX bridge stubs.
 - `ie_fileio.s`: file I/O bridge stubs.
 - `ie_present.s`: indexed chunky -> RGBA LUT conversion + Mode7 upscale submit.
