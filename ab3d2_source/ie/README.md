@@ -13,6 +13,7 @@ match mixed assembly/C callsites.
   - Exposes `Sys_ClearKeyboard` compatibility routine.
 - `ie_audio.s`: legacy `mt_init`/`mt_music`/`mt_end` and `Aud_PlaySound`/`MakeSomeNoise` wrappers over IE MOD/SFX MMIO.
   - `MakeSomeNoise` now resolves `Aud_SampleNum_w` through `Aud_SampleList_vl` and packs volume/channel into IE SFX control.
+  - Accepts SFX table entries as either `{ptr,len}` or patched `{ptr,end_ptr}` format.
   - Adds `ie_sfx_set_sample` / `ie_sfx_get_sample` / `ie_sfx_clear_samples` helpers for managing the 64-entry SFX table.
 - `ie_mem.s`: static-memory/system compatibility layer.
   - Allocation: `Sys_AllocVec`, `Sys_FreeVec`, `Sys_MemFillLong`, `Sys_Workspace_vl`.

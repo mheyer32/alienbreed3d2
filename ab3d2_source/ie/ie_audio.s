@@ -11,10 +11,15 @@
 	xdef ie_sfx_get_sample
 	xdef ie_sfx_clear_samples
 	xdef mt_init
+	xdef _mt_init
 	xdef mt_music
+	xdef _mt_music
 	xdef mt_end
+	xdef _mt_end
 	xdef Aud_PlaySound
+	xdef _Aud_PlaySound
 	xdef MakeSomeNoise
+	xdef _MakeSomeNoise
 	xdef ie_mod_data_ptr
 	xdef ie_mod_data_len
 	xdef ie_sfx_ptr
@@ -98,6 +103,7 @@ ie_play_sfx:
 ; Legacy music entrypoints (ProTracker API compatibility).
 ; mt_init starts playback from configured ie_mod_data_{ptr,len}.
 mt_init:
+_mt_init:
 	move.l	ie_mod_data_ptr,d0
 	move.l	ie_mod_data_len,d1
 	moveq	#1,d2
@@ -106,19 +112,23 @@ mt_init:
 
 ; IE MOD playback is autonomous; no per-frame tick is required.
 mt_music:
+_mt_music:
 	rts
 
 ; Stop MOD playback.
 mt_end:
+_mt_end:
 	move.l	#2,$F0BC8
 	rts
 
 ; Compatibility wrappers for legacy SFX call sites.
 Aud_PlaySound:
+_Aud_PlaySound:
 	bsr	MakeSomeNoise
 	rts
 
 MakeSomeNoise:
+_MakeSomeNoise:
 	; Resolve sample ptr/len from legacy sample table by sample id.
 	moveq	#0,d5
 	move.w	Aud_SampleNum_w,d5
@@ -126,6 +136,16 @@ MakeSomeNoise:
 	lea		Aud_SampleList_vl,a3
 	move.l	0(a3,d5.l),d0
 	move.l	4(a3,d5.l),d1
+
+	; Accept both table encodings:
+	;   1) {ptr, len}
+	;   2) {ptr, end_ptr} after Res_PatchSoundFx
+	; If second field is above ptr, treat as end_ptr and convert to len.
+	move.l	d1,d6
+	sub.l	d0,d6
+	bcs.s	.keep_len
+	move.l	d6,d1
+.keep_len:
 
 	; Volume: clamp to 0..255 and pack in ctrl high byte.
 	moveq	#0,d4
