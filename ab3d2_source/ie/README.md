@@ -6,6 +6,10 @@ match mixed assembly/C callsites.
 
 - `ie_main.s`: VideoChip path bootstrap.
 - `ie_voodoo_main.s`: Voodoo path bootstrap (kept separate; software path is primary).
+- `ie_game.s`: higher-level bootstrap compatibility glue.
+  - Applies level-letter filename selection from `Game_LevelNumber_w`.
+  - Runs queue init/flush + resource bootstrap, loads story/backdrop assets, and promotes loaded level music into `mt_init`.
+  - Saves `sys_RecoveryStack` from current SP for fatal-error recovery compatibility.
 - `ie_hal.s`: core IE loop routines + compatibility entrypoints (`Vid_Present`, `Sys_WaitVBL`, `Sys_EvalFPS`, `Sys_FrameLap`).
   - Adds `Vid_OpenMainScreen` / `Vid_CloseMainScreen` and low-level init/close stubs (`_InitLowLevel`, `_CloseLowLevel`) for legacy outer-loop compatibility.
 - `ie_input.s`: keyboard/mouse bridge.
@@ -41,6 +45,7 @@ match mixed assembly/C callsites.
   - `Lvl_InitLevelMods` now mirrors legacy behavior: updates `Zone_BackdropDisable_vb` from level properties when present, otherwise clears it.
   - Object resource extension probes use lowercase (`.wad`, `.ptr`, `.256pal`) to match host assets.
   - Uses assembler-derived GLF offsets (from `defs.i`) for SFX/floor/texture/wall filename tables.
+  - Expands GLF DB probe candidates to include `media/includes/...` variants used by this repo layout.
   - Exports legacy level filename/pointer symbols (`Lvl_*`) plus wall/floor pointer tables so existing game resource callsites can link against IE layer symbols.
 - `ie_present.s`: indexed chunky -> RGBA LUT conversion + Mode7 upscale submit.
   - Includes `ie_palette_upload_12bit` to convert 256-entry `0x0RGB` palettes to RGBA8888 LUT.

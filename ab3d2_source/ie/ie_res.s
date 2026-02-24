@@ -792,6 +792,10 @@ ie_game_db_candidates:
 	dc.l	ie_game_db_name0
 	dc.l	ie_game_db_name1
 	dc.l	ie_game_db_name2
+	dc.l	ie_game_db_name3
+	dc.l	ie_game_db_name4
+	dc.l	ie_game_db_name5
+	dc.l	ie_game_db_name6
 	dc.l	0
 
 ie_pal_name0:
@@ -816,6 +820,14 @@ ie_game_db_name1:
 	dc.b	"includes/test.lnk",0
 ie_game_db_name2:
 	dc.b	"test.lnk",0
+ie_game_db_name3:
+	dc.b	"media/includes/test.lnk",0
+ie_game_db_name4:
+	dc.b	"../media/includes/test.lnk",0
+ie_game_db_name5:
+	dc.b	"media/includes/TEST.LNK",0
+ie_game_db_name6:
+	dc.b	"media/includes/cheesy.lnk",0
 	even
 
 ie_res_sfx_filename_table_ptr:
