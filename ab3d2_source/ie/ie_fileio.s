@@ -14,6 +14,11 @@
 	xdef ie_set_file_buffer
 	xdef IO_LoadFile
 	xdef IO_LoadFileOptional
+	xdef IO_InitQueue
+	xdef IO_QueueFile
+	xdef IO_FlushQueue
+	xdef IO_MemType_l
+	xdef io_Buffer_vb
 	xdef io_last_status
 	xdef ie_file_name_ptr
 
@@ -54,6 +59,75 @@ ie_fclose:
 ie_set_file_buffer:
 	move.l	d0,ie_file_data_ptr
 	move.l	d1,ie_file_data_len
+	rts
+
+; Legacy queue API compatibility.
+; On IE we do immediate loads in IO_QueueFile using a static bump allocator.
+IO_InitQueue:
+	move.l	#IO_HEAP_BASE,io_heap_ptr
+	clr.l	io_last_status
+	rts
+
+; On entry:
+;   a0 = filename pointer
+;   d0 = pointer to destination address slot (uint32*)
+;   d1 = pointer to destination length slot (uint32* or 0)
+IO_QueueFile:
+	move.l	d0,a2
+	move.l	d1,a3
+
+	; Open file by name.
+	move.l	a0,d0
+	bsr		ie_fopen
+	tst.l	d0
+	beq		queue_fail
+
+	; Read directly into current heap pointer.
+	move.l	io_heap_ptr,d1
+	moveq	#1,d0
+	bsr		ie_fread				; d0=len, d1=status
+	move.l	d0,d6
+	move.l	d1,d7
+
+	; Close handle regardless of read status.
+	moveq	#1,d0
+	bsr		ie_fclose
+
+	tst.l	d7
+	bne		queue_fail
+
+	; Ensure 4-byte alignment advance and heap bounds.
+	move.l	d6,d0
+	addq.l	#3,d0
+	andi.l	#$FFFFFFFC,d0
+	move.l	io_heap_ptr,d1
+	add.l	d0,d1
+	cmp.l	#IO_HEAP_LIMIT,d1
+	bhi		queue_fail
+
+	; Publish outputs.
+	move.l	io_heap_ptr,d0
+	move.l	d0,(a2)
+	tst.l	a3
+	beq.s	.no_len_store
+	move.l	d6,(a3)
+.no_len_store:
+	move.l	d1,io_heap_ptr
+	clr.l	io_last_status
+	rts
+
+queue_fail:
+	clr.l	(a2)
+	tst.l	a3
+	beq.s	.no_len_fail
+	clr.l	(a3)
+.no_len_fail:
+	moveq	#1,d0
+	move.l	d0,io_last_status
+	rts
+
+IO_FlushQueue:
+	; Immediate mode: queue is already processed.
 	rts
 
 IO_LoadFile:
@@ -104,3 +178,14 @@ ie_file_data_len:
 	dc.l	$00100000
 io_last_status:
 	dc.l	0
+io_heap_ptr:
+	dc.l	IO_HEAP_BASE
+IO_MemType_l:
+	dc.l	0
+
+IO_HEAP_BASE	equ	$700000
+IO_HEAP_LIMIT	equ	$FE0000
+
+; Compatibility scratch buffer name used by resource loader code.
+io_Buffer_vb:
+	dcb.b	256,0
