@@ -71,3 +71,6 @@ match mixed assembly/C callsites.
 - `ie_compat.s`: software-path compatibility shims for legacy C/OS symbols needed during incremental renderer lift.
   - Provides menu/message/inventory/zone/palette helper entrypoints as safe no-op/boolean shims.
   - Provides `_Vid_isRTG=1` plus dummy `_custom`/`_ciaa` register-space backing.
+- `ie_hires_shim.s`: compatibility shim used by the full `hires.s` software-renderer build.
+  - Supplies unresolved legacy C/OS hooks and IE-backed `Vid_OpenMainScreen`/`Vid_Present`.
+  - Used by `make ie68` (`hires.s` + `ie_hires_shim.s` linked to raw `.ie68`).

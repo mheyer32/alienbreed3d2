@@ -65,11 +65,11 @@ Under `ab3d2_source/ie/`:
 From `ab3d2_source/`:
 
 - `make ie68`
+- `make ie68_bootstrap`
 - `make ie68_voodoo`
 
-These currently expect:
+Current wiring:
 
-- `ie/ie_main.s`
-- `ie/ie_voodoo_main.s`
-
-If missing, Make exits with a clear error until the assembly entry files are added.
+- `ie68`: full software-renderer build (`hires.s` + `ie/ie_hires_shim.s`, linked to raw `.ie68`)
+- `ie68_bootstrap`: lightweight standalone IE bootstrap (`ie/ie_main.s`)
+- `ie68_voodoo`: Voodoo bootstrap path (`ie/ie_voodoo_main.s`)

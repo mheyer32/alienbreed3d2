@@ -223,12 +223,12 @@ An in-progress bare-metal Intuition Engine target is planned in parallel with th
   - Version 2: optional Voodoo triangle submission path.
 - Build targets (from `ab3d2_source/`):
   - `make ie68`
+  - `make ie68_bootstrap` (legacy minimal IE bootstrap path)
   - `make ie68_voodoo`
 - Current status:
-  - Targets exist and validate expected entry files.
-  - Port entry sources are expected at:
-    - `ab3d2_source/ie/ie_main.s`
-    - `ab3d2_source/ie/ie_voodoo_main.s`
+  - `ie68` now builds the full software-renderer path from `hires.s` plus IE shim glue.
+  - `ie68_bootstrap` keeps the smaller standalone IE bootstrap (`ie/ie_main.s`).
+  - Voodoo remains a separate WIP entry path (`ie/ie_voodoo_main.s`).
 
 See [docs/ie_port.md](docs/ie_port.md) for MMIO register map, memory layout, and implementation notes.
 
@@ -291,4 +291,3 @@ There are MANY ways this game can be improved:
    * The current code mixes code and data willy-nilly, all in one object file.
       * Using multiple object files and XREF/XDEF may be cleaner.
       * Remove old, unused commented-out cruft (in progress). 
-

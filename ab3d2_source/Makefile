@@ -81,12 +81,14 @@ $(TARGETNAME): $(OBJS)
 	$(info ========================================================)
 
 .PHONY: bump_build
-.PHONY: ie68 ie68_voodoo
+.PHONY: ie68 ie68_voodoo ie68_sw ie68_bootstrap
 
 bump_build:
 	./bumprev.py --build
 
-ie68:
+ie68: ie68_sw
+
+ie68_bootstrap:
 	@if [ ! -f "$(IE_ENTRY)" ]; then \
 		echo "Missing $(IE_ENTRY). Add IE port assembly sources first."; \
 		exit 1; \
@@ -101,6 +103,20 @@ ie68_voodoo:
 	fi
 	$(info Assembling $(IE_VOODOO_TARGET) from $(IE_VOODOO_ENTRY))
 	@$(ASS) $(IE_AFLAGS) -DIFD=1 -DIS_IE=1 -DIE_VOODOO=1 -Fbin $(IE_VOODOO_ENTRY) -o $(IE_VOODOO_TARGET)
+
+ie68_sw:
+	$(info Assembling full software renderer IE build from hires.s + IE shim)
+	@mkdir -p $(BUILD_DIR)
+	@PREFIX=$$(./getprefix.sh "$(CC)"); \
+	$(ASS) -m68020 -chklabels -align -maxerrors=200 \
+		-Dmnu_nocode=1 -DUSE_16X16_TEXEL_MULS -DIFD=1 -DIS_IE=1 \
+		-I../ -I$$PREFIX/m68k-amigaos/ndk-include -I../media -I../media/includes \
+		-Fhunk hires.s -o $(BUILD_DIR)/ie_hires.o
+	@$(ASS) -m68020 -chklabels -align -maxerrors=200 \
+		-DIFD=1 -DIS_IE=1 -Fhunk ie/ie_hires_shim.s -o $(BUILD_DIR)/ie_hires_shim.o
+	@/opt/amiga/bin/vlink -b rawbin1 -Ttext 0 \
+		-N .bsschip .bss -N .datachip .data \
+		-o $(IE_TARGET) $(BUILD_DIR)/ie_hires.o $(BUILD_DIR)/ie_hires_shim.o
 
 new:	bump_build $(foreach F,$(FLAVORS),$(foreach C,$(CPUS),build-$(F)-$(C)))
 
