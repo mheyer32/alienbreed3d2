@@ -31,7 +31,10 @@ FILE_IO_LEN			EQU $00F2214
 
 IO_InitQueue:
 				IFD		IS_IE
+				tst.l	io_ie_heap_ptr
+				bne.s	.ie_heap_ready
 				move.l	#IO_IE_HEAP_BASE,io_ie_heap_ptr
+.ie_heap_ready:
 				ENDC
 				move.l	#Sys_Workspace_vl,io_EndOfQueue_l
 				rts

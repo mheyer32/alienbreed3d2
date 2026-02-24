@@ -230,7 +230,13 @@ ie_set_file_buffer:
 ; On IE we do immediate loads in IO_QueueFile using a static bump allocator.
 IO_InitQueue:
 _IO_InitQueue:
+	tst.l	io_heap_ptr
+	bne.s	.heap_ready
 	move.l	ie_mem_heap_ptr,io_heap_ptr
+	tst.l	io_heap_ptr
+	bne.s	.heap_ready
+	move.l	#IO_HEAP_BASE,io_heap_ptr
+.heap_ready:
 	clr.l	io_last_status
 	rts
 
