@@ -7,6 +7,13 @@
 	xdef Sys_FatalError
 	xdef Sys_Init
 	xdef Sys_Done
+	xdef Sys_OpenLibs
+	xdef Sys_CloseLibs
+	xdef Sys_ShowFPS
+	xdef Sys_DisplayError
+	xdef Sys_MarkTime
+	xdef Sys_TimeDiff
+	xdef Sys_EClockRate
 	xdef Sys_Workspace_vl
 	xdef ie_mem_heap_ptr
 
@@ -16,6 +23,7 @@
 	xdef _Sys_FatalError
 	xdef _Sys_Init
 	xdef _Sys_Done
+	xdef _Sys_DisplayError
 
 MEM_HEAP_BASE	equ	$C00000
 MEM_HEAP_LIMIT	equ	$FE0000
@@ -23,6 +31,9 @@ MEM_HEAP_LIMIT	equ	$FE0000
 ie_mem_init:
 	move.l	#MEM_HEAP_BASE,ie_mem_heap_ptr
 	clr.l	ie_last_error_fmt_ptr
+	clr.l	ie_clock_hi
+	clr.l	ie_clock_lo
+	move.l	#60000,Sys_EClockRate
 	rts
 
 ; d0=size, d1=flags (ignored)
@@ -79,10 +90,58 @@ Sys_Done:
 _Sys_Done:
 	rts
 
+Sys_OpenLibs:
+	moveq	#1,d0
+	rts
+
+Sys_CloseLibs:
+	rts
+
+Sys_ShowFPS:
+	rts
+
+Sys_DisplayError:
+_Sys_DisplayError:
+	rts
+
+; a0=dest EClockVal*
+; returns d0=Sys_EClockRate
+Sys_MarkTime:
+	add.l	#1000,ie_clock_lo
+	bcc.s	.no_carry
+	addq.l	#1,ie_clock_hi
+.no_carry:
+	tst.l	a0
+	beq.s	.no_store
+	move.l	ie_clock_hi,(a0)
+	move.l	ie_clock_lo,4(a0)
+.no_store:
+	move.l	Sys_EClockRate,d0
+	rts
+
+; a0=start EClockVal*, a1=end EClockVal*
+; return uint64 diff in d0:d1 (high:low)
+Sys_TimeDiff:
+	move.l	(a1),d0
+	move.l	4(a1),d1
+	move.l	4(a0),d3
+	sub.l	d3,d1
+	bcc.s	.no_borrow
+	subq.l	#1,d0
+.no_borrow:
+	sub.l	(a0),d0
+	rts
+
 ie_mem_heap_ptr:
 	dc.l	MEM_HEAP_BASE
 ie_last_error_fmt_ptr:
 	dc.l	0
+ie_clock_hi:
+	dc.l	0
+ie_clock_lo:
+	dc.l	0
+Sys_EClockRate:
+	dc.l	60000
 
 ; Compatibility workspace (4KB for queue/temp usage).
 Sys_Workspace_vl:
