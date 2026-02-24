@@ -6,6 +6,7 @@
 	xdef ie_present
 
 ie_init:
+	bsr	ie_palette_init
 	bsr	ie_input_init
 	bsr	ie_audio_init
 	rts

@@ -7,6 +7,7 @@
 ;   fb       @ 0x100000 (640x480, 4 bytes/pixel)
 
 	xdef ie_present_frame
+	xdef ie_palette_init
 
 CHUNKY_BASE	equ	$060000
 PALETTE_BASE	equ	$073000
@@ -14,6 +15,26 @@ SCRATCH_BASE	equ	$22C000
 FRAMEBUF_BASE	equ	$100000
 
 PIXELS_320x240	equ	76800
+
+ie_palette_init:
+	; Build a default grayscale RGBA LUT at 0x073000.
+	; Game palette loading will overwrite this later.
+	move.l	#PALETTE_BASE,a0
+	moveq	#0,d0
+
+.pal_loop:
+	move.l	d0,d1
+	lsl.l	#8,d1
+	or.l	d0,d1
+	lsl.l	#8,d1
+	or.l	d0,d1
+	lsl.l	#8,d1
+	or.l	#$FF,d1
+	move.l	d1,(a0)+
+	addq.l	#1,d0
+	cmpi.l	#256,d0
+	bne.s	.pal_loop
+	rts
 
 ie_present_frame:
 	; 1) Convert indexed chunky buffer -> RGBA scratch using LUT.
