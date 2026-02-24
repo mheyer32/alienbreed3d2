@@ -1,15 +1,30 @@
-; ie_game.s - higher-level game bootstrap compatibility glue
+; ie_game.s - higher-level game/bootstrap compatibility glue
 
 	xdef ie_game_bootstrap
 	xdef ie_set_level_letter_from_game
+	xdef game_SetMenuLevelNames
+	xdef _game_SetMenuLevelNames
+	xdef DEFAULTGAME
+	xdef _DEFAULTGAME
+	xdef Game_Start
+	xdef _Game_Start
 	xdef Game_LevelNumber_w
 	xdef Game_StoryFile_vb
+	xdef GLF_DatabaseName_vb
 	xdef draw_BackdropImageName_vb
 
+	xref Vid_OpenMainScreen
 	xref ie_res_bootstrap_assets
+	xref ie_res_load_game_db_file
 	xref IO_InitQueue
 	xref IO_FlushQueue
 	xref IO_LoadFileOptional
+	xref Res_LoadSoundFx
+	xref Res_PatchSoundFx
+	xref Res_LoadFloorsAndTextures
+	xref Res_LoadWallTextures
+	xref Res_LoadObjects
+	xref Res_LoadLevelData
 	xref Lvl_IntroTextPtr_l
 	xref Draw_BackdropImagePtr_l
 	xref Lvl_MusicPtr_l
@@ -32,14 +47,38 @@ ie_game_bootstrap:
 	; Keep a recovery SP like original Game_Start for fatal-error paths.
 	move.l	a7,sys_RecoveryStack
 
-	; Mirror the original SETPLAYERS filename-letter update.
-	bsr		ie_set_level_letter_from_game
+	; Keep explicit screen init behavior compatible with original control flow.
+	bsr		Vid_OpenMainScreen
 
+	; Equivalent to DEFAULTGAME + game_SetMenuLevelNames in the original flow.
+	bsr		DEFAULTGAME
+	bsr		game_SetMenuLevelNames
+
+	; Queue setup before bulk resource operations.
 	bsr		IO_InitQueue
-	; Resource bootstrap handles GLF DB probing and compatibility loads.
+
+	; Try explicit DB paths first (mirrors original Game_Start intent), then fallback.
+	bsr		ie_try_load_database_paths
+	tst.l	d0
+	beq		.fallback_bootstrap
+
+	; Explicit DB load succeeded: run the same compatibility resource sequence
+	; used by the control loop, then flush queued loads.
+	bsr		Res_LoadSoundFx
+	bsr		Res_PatchSoundFx
+	bsr		Res_LoadWallTextures
+	bsr		Res_LoadFloorsAndTextures
+	bsr		Res_LoadObjects
+	bsr		Res_LoadLevelData
+	bsr		IO_FlushQueue
+	bra		.post_resources
+
+.fallback_bootstrap:
+	; Candidate-based bootstrap path (includes DB probe + resource load).
 	bsr		ie_res_bootstrap_assets
 	bsr		IO_FlushQueue
 
+.post_resources:
 	; Optional story text blob used by menu/intro paths.
 	lea		Game_StoryFile_vb,a0
 	bsr		IO_LoadFileOptional
@@ -58,6 +97,50 @@ ie_game_bootstrap:
 	bsr		ie_mod_set_data
 	bsr		mt_init
 .done:
+	rts
+
+; Try a compact set of DB path variants before falling back to generic probe.
+; out: d0=1 success, 0 failure
+ie_try_load_database_paths:
+	lea		GLF_DatabaseName_vb,a0
+	bsr		ie_res_load_game_db_file
+	tst.l	d0
+	bne.s	.ok
+	lea		ie_db_name1,a0
+	bsr		ie_res_load_game_db_file
+	tst.l	d0
+	bne.s	.ok
+	lea		ie_db_name2,a0
+	bsr		ie_res_load_game_db_file
+	tst.l	d0
+	bne.s	.ok
+	lea		ie_db_name3,a0
+	bsr		ie_res_load_game_db_file
+	tst.l	d0
+	bne.s	.ok
+	moveq	#0,d0
+	rts
+.ok:
+	moveq	#1,d0
+	rts
+
+; Compatibility entrypoint so old Game_Start symbols can resolve when linking
+; incremental parts of the original game flow.
+Game_Start:
+_Game_Start:
+	bsr		ie_game_bootstrap
+	moveq	#0,d0
+	rts
+
+DEFAULTGAME:
+_DEFAULTGAME:
+	; Default to first level unless already configured elsewhere.
+	move.w	#0,Game_LevelNumber_w
+	rts
+
+game_SetMenuLevelNames:
+_game_SetMenuLevelNames:
+	bsr		ie_set_level_letter_from_game
 	rts
 
 ie_set_level_letter_from_game:
@@ -87,10 +170,22 @@ Game_LevelNumber_w:
 	dc.w	0
 	dc.w	0
 
+GLF_DatabaseName_vb:
+	dc.b	"ab3:includes/test.lnk",0
+	even
+
 Game_StoryFile_vb:
 	dc.b	"ab3:includes/text_file",0
 	even
 
 draw_BackdropImageName_vb:
 	dc.b	"ab3:includes/rawbackpacked",0
+	even
+
+ie_db_name1:
+	dc.b	"media/includes/test.lnk",0
+ie_db_name2:
+	dc.b	"media/includes/TEST.LNK",0
+ie_db_name3:
+	dc.b	"../media/includes/test.lnk",0
 	even

@@ -8,7 +8,10 @@ match mixed assembly/C callsites.
 - `ie_voodoo_main.s`: Voodoo path bootstrap (kept separate; software path is primary).
 - `ie_game.s`: higher-level bootstrap compatibility glue.
   - Applies level-letter filename selection from `Game_LevelNumber_w`.
-  - Runs queue init/flush + resource bootstrap, loads story/backdrop assets, and promotes loaded level music into `mt_init`.
+  - Exposes compatibility entrypoints: `Game_Start`, `DEFAULTGAME`, `game_SetMenuLevelNames`.
+  - Runs a Game_Start-style sequence: screen open, queue init, explicit GLF DB load attempt, legacy `Res_*` load chain, queue flush, story/backdrop loads, level music handoff to `mt_init`.
+  - Explicit DB load includes in-module path variants (`ab3:includes/...`, `media/includes/...`) before generic probe fallback.
+  - Falls back to `ie_res_bootstrap_assets` when explicit DB load fails.
   - Saves `sys_RecoveryStack` from current SP for fatal-error recovery compatibility.
 - `ie_hal.s`: core IE loop routines + compatibility entrypoints (`Vid_Present`, `Sys_WaitVBL`, `Sys_EvalFPS`, `Sys_FrameLap`).
   - Adds `Vid_OpenMainScreen` / `Vid_CloseMainScreen` and low-level init/close stubs (`_InitLowLevel`, `_CloseLowLevel`) for legacy outer-loop compatibility.
