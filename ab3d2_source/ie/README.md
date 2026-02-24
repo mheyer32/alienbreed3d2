@@ -1,6 +1,8 @@
 # IE Assembly Port (WIP)
 
 This directory contains the in-progress Intuition Engine assembly port layer.
+Most compatibility routines export both plain and underscore-prefixed symbols to
+match mixed assembly/C callsites.
 
 - `ie_main.s`: VideoChip path bootstrap.
 - `ie_voodoo_main.s`: Voodoo path bootstrap (kept separate; software path is primary).

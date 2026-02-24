@@ -13,10 +13,15 @@
 	xdef ie_fclose
 	xdef ie_set_file_buffer
 	xdef IO_LoadFile
+	xdef _IO_LoadFile
 	xdef IO_LoadFileOptional
+	xdef _IO_LoadFileOptional
 	xdef IO_InitQueue
+	xdef _IO_InitQueue
 	xdef IO_QueueFile
+	xdef _IO_QueueFile
 	xdef IO_FlushQueue
+	xdef _IO_FlushQueue
 	xdef IO_MemType_l
 	xdef io_Buffer_vb
 	xdef io_last_status
@@ -64,6 +69,7 @@ ie_set_file_buffer:
 ; Legacy queue API compatibility.
 ; On IE we do immediate loads in IO_QueueFile using a static bump allocator.
 IO_InitQueue:
+_IO_InitQueue:
 	move.l	ie_mem_heap_ptr,io_heap_ptr
 	clr.l	io_last_status
 	rts
@@ -73,6 +79,7 @@ IO_InitQueue:
 ;   d0 = pointer to destination address slot (uint32*)
 ;   d1 = pointer to destination length slot (uint32* or 0)
 IO_QueueFile:
+_IO_QueueFile:
 	move.l	d0,a2
 	move.l	d1,a3
 
@@ -127,10 +134,12 @@ queue_fail:
 	rts
 
 IO_FlushQueue:
+_IO_FlushQueue:
 	; Immediate mode: queue is already processed.
 	rts
 
 IO_LoadFile:
+_IO_LoadFile:
 	bsr.s	IO_LoadFileOptional
 	tst.l	d0
 	bne		.ok
@@ -140,6 +149,7 @@ IO_LoadFile:
 	rts
 
 IO_LoadFileOptional:
+_IO_LoadFileOptional:
 	move.l	a0,d0
 	bsr		ie_fopen
 	tst.l	d0

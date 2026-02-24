@@ -5,9 +5,13 @@
 	xdef ie_poll_input
 	xdef ie_present
 	xdef Vid_Present
+	xdef _Vid_Present
 	xdef Sys_WaitVBL
+	xdef _Sys_WaitVBL
 	xdef Sys_EvalFPS
+	xdef _Sys_EvalFPS
 	xdef Sys_FrameLap
+	xdef _Sys_FrameLap
 
 ie_init:
 	bsr	ie_palette_init
@@ -39,16 +43,20 @@ ie_present:
 
 ; Legacy-compatible entrypoints used by existing game code.
 Vid_Present:
+_Vid_Present:
 	bsr	ie_present_frame
 	rts
 
 Sys_WaitVBL:
+_Sys_WaitVBL:
 	bsr	ie_wait_vblank
 	rts
 
 ; FPS accounting is emulator-side for now.
 Sys_EvalFPS:
+_Sys_EvalFPS:
 	rts
 
 Sys_FrameLap:
+_Sys_FrameLap:
 	rts

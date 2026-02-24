@@ -14,6 +14,7 @@
 	xdef ie_palette_poll_update
 	xdef ie_palette_mark_dirty
 	xdef Vid_LoadMainPalette
+	xdef _Vid_LoadMainPalette
 	xdef Vid_UpdatePalette_b
 	xdef Draw_TexturePalettePtr_l
 
@@ -140,6 +141,7 @@ ie_palette_poll_update:
 ; Compatibility entrypoint for existing game-side call sites.
 ; Uses the configured RGB8 source pointer when available.
 Vid_LoadMainPalette:
+_Vid_LoadMainPalette:
 	move.l	ie_palette_rgb8_ptr,a0
 	tst.l	a0
 	bne.s	.have_src
