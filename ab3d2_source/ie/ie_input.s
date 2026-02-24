@@ -4,6 +4,7 @@
 	xdef ie_poll_keyboard
 	xdef ie_poll_mouse
 	xdef Sys_ReadMouse
+	xdef Sys_ClearKeyboard
 	xdef Sys_MouseY
 	xdef ie_keymap
 	xdef KeyMap_vb
@@ -95,6 +96,14 @@ Sys_ReadMouse:
 	bsr	ie_poll_mouse
 	move.w	ie_mouse_dy,d0
 	add.w	d0,Sys_MouseY
+	rts
+
+Sys_ClearKeyboard:
+	lea	KeyMap_vb,a0
+	move.w	#255,d0
+.clear_loop:
+	clr.b	(a0)+
+	dbra	d0,.clear_loop
 	rts
 
 ie_keymap:
