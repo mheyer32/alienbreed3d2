@@ -7,9 +7,13 @@
 	xdef ie_mod_start
 	xdef ie_play_sfx
 	xdef ie_mod_set_data
+	xdef _ie_mod_set_data
 	xdef ie_sfx_set_sample
+	xdef _ie_sfx_set_sample
 	xdef ie_sfx_get_sample
+	xdef _ie_sfx_get_sample
 	xdef ie_sfx_clear_samples
+	xdef _ie_sfx_clear_samples
 	xdef mt_init
 	xdef _mt_init
 	xdef mt_music
@@ -42,6 +46,7 @@ ie_audio_init:
 ; Configure default MOD payload source for mt_init compatibility.
 ; in: d0=mod_ptr, d1=mod_len
 ie_mod_set_data:
+_ie_mod_set_data:
 	move.l	d0,ie_mod_data_ptr
 	move.l	d1,ie_mod_data_len
 	rts
@@ -49,6 +54,7 @@ ie_mod_set_data:
 ; Register one SFX sample in legacy Aud_SampleList_vl.
 ; in: d0=sample_index (0..63), d1=ptr, d2=len
 ie_sfx_set_sample:
+_ie_sfx_set_sample:
 	andi.l	#$3F,d0
 	lsl.l	#3,d0
 	lea		Aud_SampleList_vl,a0
@@ -60,6 +66,7 @@ ie_sfx_set_sample:
 ; in: d0=sample_index (0..63)
 ; out: d1=ptr, d2=len
 ie_sfx_get_sample:
+_ie_sfx_get_sample:
 	andi.l	#$3F,d0
 	lsl.l	#3,d0
 	lea		Aud_SampleList_vl,a0
@@ -69,6 +76,7 @@ ie_sfx_get_sample:
 
 ; Clear the first 64 legacy SFX entries (ptr/len pairs).
 ie_sfx_clear_samples:
+_ie_sfx_clear_samples:
 	lea		Aud_SampleList_vl,a0
 	move.w	#127,d7
 .clr_samples:

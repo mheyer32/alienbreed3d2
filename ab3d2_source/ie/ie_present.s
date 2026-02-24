@@ -11,6 +11,8 @@
 	xdef ie_palette_upload_12bit
 	xdef ie_palette_upload_rgb8
 	xdef ie_palette_set_rgb8_ptr
+	xdef ie_palette_set_texture_ptr
+	xdef _ie_palette_set_texture_ptr
 	xdef ie_palette_poll_update
 	xdef ie_palette_mark_dirty
 	xdef Vid_LoadMainPalette
@@ -124,6 +126,14 @@ ie_palette_upload_rgb8:
 ; in: a0 -> RGB triplet palette source (768 bytes)
 ie_palette_set_rgb8_ptr:
 	move.l	a0,ie_palette_rgb8_ptr
+	rts
+
+; Set Draw_TexturePalettePtr_l and request a palette refresh.
+; in: a0 -> RGB8 palette table (768 bytes)
+ie_palette_set_texture_ptr:
+_ie_palette_set_texture_ptr:
+	move.l	a0,Draw_TexturePalettePtr_l
+	st		Vid_UpdatePalette_b
 	rts
 
 ie_palette_mark_dirty:

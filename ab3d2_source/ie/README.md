@@ -15,6 +15,7 @@ match mixed assembly/C callsites.
   - `MakeSomeNoise` now resolves `Aud_SampleNum_w` through `Aud_SampleList_vl` and packs volume/channel into IE SFX control.
   - Accepts SFX table entries as either `{ptr,len}` or patched `{ptr,end_ptr}` format.
   - Adds `ie_sfx_set_sample` / `ie_sfx_get_sample` / `ie_sfx_clear_samples` helpers for managing the 64-entry SFX table.
+  - Helper APIs also export underscore-prefixed aliases for C/ASM interop.
 - `ie_mem.s`: static-memory/system compatibility layer.
   - Allocation: `Sys_AllocVec`, `Sys_FreeVec`, `Sys_MemFillLong`, `Sys_Workspace_vl`.
   - System stubs: `Sys_Init`, `Sys_Done`, `Sys_OpenLibs`, `Sys_CloseLibs`, `Sys_ShowFPS`, `Sys_DisplayError`.
@@ -28,3 +29,4 @@ match mixed assembly/C callsites.
   - Includes `ie_palette_upload_rgb8` and `Vid_LoadMainPalette` compatibility entrypoint.
   - Exposes `Vid_UpdatePalette_b` and `Draw_TexturePalettePtr_l` compatibility symbols.
   - `ie_palette_poll_update` applies palette reload when `Vid_UpdatePalette_b` is set.
+  - `ie_palette_set_texture_ptr` updates `Draw_TexturePalettePtr_l` and marks palette dirty.
