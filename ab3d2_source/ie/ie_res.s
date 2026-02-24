@@ -25,11 +25,16 @@
 	xdef _ie_res_load_game_db_file
 	xdef Res_LoadSoundFx
 	xdef _Res_LoadSoundFx
+	xdef Res_LoadFloorsAndTextures
+	xdef _Res_LoadFloorsAndTextures
 	xdef Res_PatchSoundFx
 	xdef _Res_PatchSoundFx
 	xdef Res_FreeSoundFx
 	xdef _Res_FreeSoundFx
 	xdef GLF_DatabasePtr_l
+	xdef Draw_GlobalFloorTexturesPtr_l
+	xdef Draw_FloorTexturesPtr_l
+	xdef Draw_TextureMapsPtr_l
 
 RES_NUM_SFX	equ	59
 ; Derived from defs.i:
@@ -37,6 +42,8 @@ RES_NUM_SFX	equ	59
 ;   GLFT_ObjGfxNames_l = 30*64
 ;   GLFT_SFXFilenames_l starts immediately after these blocks.
 IE_GLFT_SFXFILENAMES_OFF	equ	$0A00
+IE_GLFT_FLOORFILENAME_OFF	equ	$1900
+IE_GLFT_TEXTUREFILENAME_OFF	equ	$1940
 
 ; Initialize resource helper state.
 ie_res_init:
@@ -66,6 +73,7 @@ _ie_res_bootstrap_assets:
 	beq.s	.done_bootstrap
 	bsr		Res_LoadSoundFx
 	bsr		Res_PatchSoundFx
+	bsr		Res_LoadFloorsAndTextures
 .done_bootstrap:
 	rts
 
@@ -222,6 +230,96 @@ _Res_LoadSoundFx:
 	moveq	#0,d0
 	rts
 
+; Legacy texture/floor resource compatibility.
+; Loads:
+;   GLFT_FloorFilename_l   -> Draw_GlobalFloorTexturesPtr_l
+;   GLFT_TextureFilename_l -> Draw_TextureMapsPtr_l
+; and derives a .pal path for Draw_TexturePalettePtr_l.
+Res_LoadFloorsAndTextures:
+_Res_LoadFloorsAndTextures:
+	move.l	GLF_DatabasePtr_l,a3
+	tst.l	a3
+	beq.s	.no_db
+
+	; Global floor textures.
+	move.l	a3,a0
+	adda.l	#IE_GLFT_FLOORFILENAME_OFF,a0
+	move.l	#Draw_GlobalFloorTexturesPtr_l,d0
+	moveq	#0,d1
+	bsr		IO_QueueFile
+
+	; Mirror runtime floor pointer to global set (same behavior as AB3D2).
+	move.l	Draw_GlobalFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
+
+	; Texture maps.
+	move.l	a3,a0
+	adda.l	#IE_GLFT_TEXTUREFILENAME_OFF,a0
+	move.l	#Draw_TextureMapsPtr_l,d0
+	moveq	#0,d1
+	bsr		IO_QueueFile
+
+	; Build palette filename from texture filename and load it.
+	move.l	a3,a0
+	adda.l	#IE_GLFT_TEXTUREFILENAME_OFF,a0
+	bsr		ie_res_build_pal_filename
+	lea		ie_res_pal_name_vb,a0
+	move.l	#Draw_TexturePalettePtr_l,d0
+	moveq	#0,d1
+	bsr		IO_QueueFile
+	tst.l	Draw_TexturePalettePtr_l
+	beq.s	.no_db
+	bsr		ie_palette_mark_dirty
+	moveq	#1,d0
+	rts
+
+.no_db:
+	moveq	#0,d0
+	rts
+
+; Build "<texture_path>.pal" (or replace existing extension) into ie_res_pal_name_vb.
+; in: a0 -> source path (NUL-terminated)
+ie_res_build_pal_filename:
+	lea		ie_res_pal_name_vb,a1
+	move.l	a1,a2				; start
+	move.l	a1,a3				; last '.' position (or start)
+	move.w	#254,d7
+.copy_tex:
+	move.b	(a0)+,d1
+	beq.s	.done_copy_tex
+	cmpi.b	#'/',d1
+	beq.s	.reset_dot
+	cmpi.b	#92,d1
+	beq.s	.reset_dot
+	cmpi.b	#':',d1
+	beq.s	.reset_dot
+	cmpi.b	#'.',d1
+	bne.s	.store_tex_char
+	move.l	a1,a3
+.store_tex_char:
+	move.b	d1,(a1)+
+	dbra	d7,.copy_tex
+	bra.s	.force_term
+.reset_dot:
+	move.b	d1,(a1)+
+	move.l	a1,a3
+	dbra	d7,.copy_tex
+	bra.s	.force_term
+.done_copy_tex:
+	; If we saw a dot after the last separator, replace extension from there.
+	cmp.l	a3,a2
+	beq.s	.append_dot
+	move.l	a3,a1
+.append_dot:
+	move.b	#'.',(a1)+
+	move.b	#'p',(a1)+
+	move.b	#'a',(a1)+
+	move.b	#'l',(a1)+
+	clr.b	(a1)
+	rts
+.force_term:
+	clr.b	(a1)
+	rts
+
 ; Convert loaded SFX table from {ptr,len} to {ptr,end_ptr} in place.
 Res_PatchSoundFx:
 _Res_PatchSoundFx:
@@ -334,3 +432,13 @@ ie_res_sfx_filename_table_ptr:
 
 GLF_DatabasePtr_l:
 	dc.l	0
+
+Draw_GlobalFloorTexturesPtr_l:
+	dc.l	0
+Draw_FloorTexturesPtr_l:
+	dc.l	0
+Draw_TextureMapsPtr_l:
+	dc.l	0
+
+ie_res_pal_name_vb:
+	dcb.b	256,0
