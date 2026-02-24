@@ -36,6 +36,30 @@ Sys_MemFillLong:
 ;******************************************************************************
 _Sys_CopyMemMove16:
 Sys_CopyMemMove16:
+				IFD		IS_IE
+				; IE target runs on 68020 path: provide a portable fallback copy.
+				; in: a0=src, a1=dst, d0=size bytes
+				move.l		d0,d1
+				beq.s		.copy_done_ie
+				lsr.l		#2,d1
+				beq.s		.copy_tail_ie
+				subq.l		#1,d1
+.copy_longs_ie:
+				move.l		(a0)+,(a1)+
+				dbra		d1,.copy_longs_ie
+				move.l		d0,d1
+				andi.l		#3,d1
+.copy_tail_ie:
+				beq.s		.copy_done_ie
+				subq.l		#1,d1
+.copy_bytes_ie:
+				move.b		(a0)+,(a1)+
+				dbra		d1,.copy_bytes_ie
+.copy_done_ie:
+				rts
+				ENDC
+				IFND	IS_IE
+
 				; round the source. Is this actually needed?
 				exg			a0,d0
 				add.l		#15,d0
@@ -58,6 +82,7 @@ Sys_CopyMemMove16:
 				move16		(a0)+,(a1)+
 				dbra		d0,.copy_loop ; assume have less than 4MB
 				rts
+				ENDC
 
 SYS_ALERT_Y_SPACE=12
 
