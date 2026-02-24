@@ -114,7 +114,7 @@ ie68_sw:
 		-Fhunk hires.s -o $(BUILD_DIR)/ie_hires.o
 	@$(ASS) -m68020 -chklabels -align -maxerrors=200 \
 		-DIFD=1 -DIS_IE=1 -Fhunk ie/ie_hires_shim.s -o $(BUILD_DIR)/ie_hires_shim.o
-	@/opt/amiga/bin/vlink -b rawbin1 -Ttext 0 \
+	@/opt/amiga/bin/vlink -b rawbin1 -Ttext 0x1000 \
 		-N .bsschip .bss -N .datachip .data \
 		-o $(IE_TARGET) $(BUILD_DIR)/ie_hires.o $(BUILD_DIR)/ie_hires_shim.o
 
