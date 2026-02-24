@@ -93,6 +93,7 @@
 	xref mt_data
 	xref mt_size
 	xref Zone_FreeEdgePVS
+	xref ie_palette_set_texture_ptr_12bit
 
 RES_NUM_SFX	equ	59
 NUM_WALL_TEXTURES	equ	16
@@ -260,7 +261,13 @@ _ie_res_load_palette_file:
 	tst.l	d0
 	beq.s	.fail
 	move.l	d0,a0
+	cmpi.l	#512,d1
+	beq.s	.pal_12bit
 	bsr		ie_palette_set_texture_ptr
+	moveq	#1,d0
+	rts
+.pal_12bit:
+	bsr		ie_palette_set_texture_ptr_12bit
 	moveq	#1,d0
 	rts
 .fail:

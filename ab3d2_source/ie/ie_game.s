@@ -21,6 +21,7 @@
 	xdef Game_StoryFile_vb
 	xdef GLF_DatabaseName_vb
 	xdef draw_BackdropImageName_vb
+	xdef draw_TitlePaletteName_vb
 
 	xref Vid_OpenMainScreen
 	xref Vid_CloseMainScreen
@@ -42,8 +43,15 @@
 	xref Res_FreeSoundFx
 	xref Lvl_IntroTextPtr_l
 	xref Draw_BackdropImagePtr_l
+	xref ie_palette_set_texture_ptr
+	xref ie_palette_set_texture_ptr_12bit
 	xref Lvl_MusicPtr_l
 	xref Lvl_MusicLen_l
+	xref MakeSomeNoise
+	xref Aud_SampleList_vl
+	xref Aud_SampleNum_w
+	xref Aud_NoiseVol_w
+	xref Aud_ChannelPick_b
 	xref ie_mod_set_data
 	xref mt_init
 	xref mt_end
@@ -69,6 +77,9 @@ IE_GAME_BOOT_STAGE_STORY		equ	6
 IE_GAME_BOOT_STAGE_BACKDROP	equ	7
 IE_GAME_BOOT_STAGE_MUSIC		equ	8
 IE_GAME_BOOT_STAGE_DONE		equ	9
+IE_CHUNKY_BASE				equ	$060000
+BACKDROP_SIZE_320x240		equ	76800
+IE_SFX_SLOT_COUNT			equ	64
 
 ie_game_bootstrap:
 	tst.b	ie_game_bootstrap_done_b
@@ -125,6 +136,7 @@ ie_game_bootstrap:
 	; Optional backdrop image used by menu/background paths.
 	move.l	#IE_GAME_BOOT_STAGE_BACKDROP,ie_game_bootstrap_state_l
 	bsr		ie_load_backdrop_blob
+	bsr		ie_load_title_palette
 
 	; If level music was loaded by Res_LoadLevelData, make it active.
 	move.l	#IE_GAME_BOOT_STAGE_MUSIC,ie_game_bootstrap_state_l
@@ -134,6 +146,7 @@ ie_game_bootstrap:
 	beq.s	.done
 	bsr		ie_mod_set_data
 	bsr		mt_init
+	bsr		ie_try_boot_sfx
 
 .done:
 	move.l	#IE_GAME_BOOT_STAGE_DONE,ie_game_bootstrap_state_l
@@ -156,6 +169,7 @@ ie_game_frame:
 	bra.s	.halt_loop
 
 .check_finished:
+	bsr		ie_game_draw_backdrop
 	tst.b	Game_FinishedLevel_b
 	beq.s	.done_frame
 	clr.b	Game_FinishedLevel_b
@@ -182,6 +196,7 @@ ie_game_frame:
 	beq.s	.done_frame
 	bsr		ie_mod_set_data
 	bsr		mt_init
+	bsr		ie_try_boot_sfx
 
 .done_frame:
 	rts
@@ -254,6 +269,82 @@ ie_load_backdrop_blob:
 	ori.l	#$20,ie_game_last_error_l
 	rts
 
+ie_load_title_palette:
+	lea		ie_title_palette_candidates,a2
+.pal_try:
+	move.l	(a2)+,a0
+	beq.s	.pal_fail
+	bsr		IO_LoadFileOptional
+	tst.l	d0
+	beq.s	.pal_try
+	move.l	d0,a0
+	cmpi.l	#512,d1
+	beq.s	.pal_12bit
+	bsr		ie_palette_set_texture_ptr
+	rts
+.pal_12bit:
+	bsr		ie_palette_set_texture_ptr_12bit
+	rts
+.pal_fail:
+	ori.l	#$40,ie_game_last_error_l
+	rts
+
+ie_try_boot_sfx:
+	; Fire first available sample at startup so audio path is exercised when data exists.
+	tst.b	ie_game_boot_sfx_done_b
+	bne.s	.done_boot_sfx
+	lea		Aud_SampleList_vl,a0
+	moveq	#0,d6
+	moveq	#IE_SFX_SLOT_COUNT-1,d7
+.find_sample:
+	move.l	(a0)+,d0
+	move.l	(a0)+,d1
+	tst.l	d0
+	beq.s	.next_sample
+	tst.l	d1
+	bne.s	.have_sample
+.next_sample:
+	addq.w	#1,d6
+	dbra	d7,.find_sample
+	ori.l	#$80,ie_game_last_error_l
+	bra.s	.done_boot_sfx
+.have_sample:
+	move.w	d6,Aud_SampleNum_w
+	move.w	#128,Aud_NoiseVol_w
+	move.w	#0,Aud_ChannelPick_b
+	bsr		MakeSomeNoise
+	st		ie_game_boot_sfx_done_b
+.done_boot_sfx:
+	rts
+
+ie_game_draw_backdrop:
+	move.l	Draw_BackdropImagePtr_l,a0
+	tst.l	a0
+	beq.s	.no_backdrop
+	move.l	#IE_CHUNKY_BASE,a1
+	move.l	#BACKDROP_SIZE_320x240/4-1,d7
+.copy_backdrop:
+	move.l	(a0)+,(a1)+
+	dbra	d7,.copy_backdrop
+	bra.s	.done_draw
+.no_backdrop:
+	; Visible fallback pattern so present path is verifiable without backdrop assets.
+	move.l	#IE_CHUNKY_BASE,a0
+	move.l	ie_game_fallback_phase_l,d0
+	move.w	#239,d6
+.fallback_y:
+	move.l	d0,d1
+	move.w	#319,d7
+.fallback_x:
+	move.b	d1,(a0)+
+	addq.b	#1,d1
+	dbra	d7,.fallback_x
+	addq.l	#1,d0
+	dbra	d6,.fallback_y
+	addq.l	#1,ie_game_fallback_phase_l
+.done_draw:
+	rts
+
 ; Compatibility entrypoint so old Game_Start symbols can resolve when linking
 ; incremental parts of the original game flow.
 Game_Start:
@@ -308,6 +399,13 @@ ie_game_last_error_l:
 	dc.l	0
 ie_game_bootstrap_done_b:
 	dc.b	0
+ie_game_boot_sfx_done_b:
+	dc.b	0
+	dc.b	0
+	dc.b	0
+	dc.b	0
+ie_game_fallback_phase_l:
+	dc.l	0
 
 Game_ShouldQuit_b:
 	dc.b	0
@@ -332,6 +430,9 @@ Game_StoryFile_vb:
 draw_BackdropImageName_vb:
 	dc.b	"ab3:includes/rawbackpacked",0
 	even
+draw_TitlePaletteName_vb:
+	dc.b	"ab3:includes/titlescrnpal",0
+	even
 
 ie_db_name1:
 	dc.b	"media/includes/test.lnk",0
@@ -348,9 +449,16 @@ ie_story_candidates:
 	dc.l	0
 
 ie_backdrop_candidates:
+	dc.l	ie_backdrop_name0
 	dc.l	draw_BackdropImageName_vb
 	dc.l	ie_backdrop_name1
 	dc.l	ie_backdrop_name2
+	dc.l	0
+
+ie_title_palette_candidates:
+	dc.l	draw_TitlePaletteName_vb
+	dc.l	ie_titlepal_name1
+	dc.l	ie_titlepal_name2
 	dc.l	0
 
 ie_story_name1:
@@ -363,4 +471,11 @@ ie_backdrop_name1:
 	dc.b	"media/includes/rawbackpacked",0
 ie_backdrop_name2:
 	dc.b	"../media/includes/rawbackpacked",0
+	even
+ie_backdrop_name0:
+	dc.b	"media/includes/rawback",0
+ie_titlepal_name1:
+	dc.b	"media/includes/titlescrnpal",0
+ie_titlepal_name2:
+	dc.b	"../media/includes/titlescrnpal",0
 	even

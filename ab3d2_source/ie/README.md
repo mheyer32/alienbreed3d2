@@ -15,6 +15,11 @@ match mixed assembly/C callsites.
   - Adds `ie_game_shutdown` and `Game_Quit` compatibility teardown (resource free + `mt_end` + screen close).
   - Adds `ie_game_frame` runtime hook (wired into `ie_main` loop) to process `Game_ShouldQuit_b` and `Game_FinishedLevel_b` compatibility flow.
   - Guards bootstrap re-entry via `ie_game_bootstrap_done_b` so repeated init paths do not duplicate resource loading.
+  - `ie_game_frame` performs direct backdrop blit into chunky buffer each frame when a backdrop is loaded.
+  - If no backdrop loads, it now renders a deterministic fallback chunky pattern so the present path is visibly testable.
+  - Adds title palette load candidates (`titlescrnpal`) and applies via `ie_palette_set_texture_ptr`.
+  - Treats 512-byte title palettes as Amiga 12-bit (`0x0RGB`) and routes them through 12-bit palette conversion.
+  - Tries one startup SFX trigger using the first populated sample slot (instead of hardcoded slot 0).
   - Tracks bootstrap progress and soft-failure bits via `ie_game_bootstrap_state_l` and `ie_game_last_error_l`.
   - Adds candidate fallback tables for story/backdrop blobs (`ab3:` + `media/` + `../media/` variants).
   - Saves `sys_RecoveryStack` from current SP for fatal-error recovery compatibility.
@@ -58,6 +63,7 @@ match mixed assembly/C callsites.
 - `ie_present.s`: indexed chunky -> RGBA LUT conversion + Mode7 upscale submit.
   - Includes `ie_palette_upload_12bit` to convert 256-entry `0x0RGB` palettes to RGBA8888 LUT.
   - Includes `ie_palette_upload_rgb8` and `Vid_LoadMainPalette` compatibility entrypoint.
+  - Tracks palette source format (`RGB8` vs `12-bit`) and dispatches conversion accordingly in `Vid_LoadMainPalette`.
   - Exposes `Vid_UpdatePalette_b` and `Draw_TexturePalettePtr_l` compatibility symbols.
   - `ie_palette_poll_update` applies palette reload when `Vid_UpdatePalette_b` is set.
   - `ie_palette_set_texture_ptr` updates `Draw_TexturePalettePtr_l` and marks palette dirty.

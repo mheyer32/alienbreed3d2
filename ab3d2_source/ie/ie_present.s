@@ -12,6 +12,8 @@
 	xdef ie_palette_upload_rgb8
 	xdef ie_palette_set_rgb8_ptr
 	xdef ie_palette_set_texture_ptr
+	xdef ie_palette_set_texture_ptr_12bit
+	xdef _ie_palette_set_texture_ptr_12bit
 	xdef _ie_palette_set_texture_ptr
 	xdef ie_palette_poll_update
 	xdef ie_palette_mark_dirty
@@ -26,6 +28,8 @@ SCRATCH_BASE	equ	$22C000
 FRAMEBUF_BASE	equ	$100000
 
 PIXELS_320x240	equ	76800
+IE_PALFMT_RGB8	equ	1
+IE_PALFMT_12BIT	equ	2
 
 ie_palette_init:
 	; Build a default grayscale RGBA LUT at 0x073000.
@@ -126,6 +130,7 @@ ie_palette_upload_rgb8:
 ; in: a0 -> RGB triplet palette source (768 bytes)
 ie_palette_set_rgb8_ptr:
 	move.l	a0,ie_palette_rgb8_ptr
+	move.w	#IE_PALFMT_RGB8,ie_palette_source_format_w
 	rts
 
 ; Set Draw_TexturePalettePtr_l and request a palette refresh.
@@ -133,6 +138,16 @@ ie_palette_set_rgb8_ptr:
 ie_palette_set_texture_ptr:
 _ie_palette_set_texture_ptr:
 	move.l	a0,Draw_TexturePalettePtr_l
+	move.w	#IE_PALFMT_RGB8,ie_palette_source_format_w
+	st		Vid_UpdatePalette_b
+	rts
+
+; Set Draw_TexturePalettePtr_l as 12-bit Amiga palette source.
+; in: a0 -> 256 x 16-bit entries (512 bytes)
+ie_palette_set_texture_ptr_12bit:
+_ie_palette_set_texture_ptr_12bit:
+	move.l	a0,Draw_TexturePalettePtr_l
+	move.w	#IE_PALFMT_12BIT,ie_palette_source_format_w
 	st		Vid_UpdatePalette_b
 	rts
 
@@ -161,12 +176,12 @@ _Vid_LoadMainPalette:
 	bsr		ie_palette_init
 	rts
 .have_src:
-	tst.l	a0
-	beq.s	.no_src_fallback
+	cmpi.w	#IE_PALFMT_12BIT,ie_palette_source_format_w
+	beq.s	.load_12bit
 	bsr		ie_palette_upload_rgb8
 	rts
-.no_src_fallback:
-	bsr		ie_palette_init
+.load_12bit:
+	bsr		ie_palette_upload_12bit
 	rts
 
 ie_present_frame:
@@ -205,6 +220,9 @@ ie_present_frame:
 
 ie_palette_rgb8_ptr:
 	dc.l	0
+ie_palette_source_format_w:
+	dc.w	IE_PALFMT_RGB8
+	dc.w	0
 
 Vid_UpdatePalette_b:
 	dc.b	0
