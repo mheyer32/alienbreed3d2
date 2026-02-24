@@ -1,6 +1,7 @@
 ; ie_game.s - higher-level game/bootstrap compatibility glue
 
 	xdef ie_game_bootstrap
+	xdef ie_game_frame
 	xdef ie_game_shutdown
 	xdef _ie_game_shutdown
 	xdef ie_set_level_letter_from_game
@@ -14,6 +15,8 @@
 	xdef _Game_Quit
 	xdef ie_game_bootstrap_state_l
 	xdef ie_game_last_error_l
+	xdef Game_ShouldQuit_b
+	xdef Game_FinishedLevel_b
 	xdef Game_LevelNumber_w
 	xdef Game_StoryFile_vb
 	xdef GLF_DatabaseName_vb
@@ -68,6 +71,9 @@ IE_GAME_BOOT_STAGE_MUSIC		equ	8
 IE_GAME_BOOT_STAGE_DONE		equ	9
 
 ie_game_bootstrap:
+	tst.b	ie_game_bootstrap_done_b
+	bne		.already_bootstrapped
+
 	move.l	#IE_GAME_BOOT_STAGE_START,ie_game_bootstrap_state_l
 	clr.l	ie_game_last_error_l
 
@@ -131,6 +137,53 @@ ie_game_bootstrap:
 
 .done:
 	move.l	#IE_GAME_BOOT_STAGE_DONE,ie_game_bootstrap_state_l
+	st		ie_game_bootstrap_done_b
+	rts
+
+.already_bootstrapped:
+	rts
+
+ie_game_frame:
+	; Basic compatibility frame hook:
+	; - honor Game_ShouldQuit_b
+	; - process level-complete reload path
+	tst.b	Game_ShouldQuit_b
+	beq.s	.check_finished
+	bsr		ie_game_shutdown
+	; Keep game halted after shutdown.
+	move.l	#0,$F0000
+.halt_loop:
+	bra.s	.halt_loop
+
+.check_finished:
+	tst.b	Game_FinishedLevel_b
+	beq.s	.done_frame
+	clr.b	Game_FinishedLevel_b
+
+	; Advance to next level (0..15 wrap) and refresh level resources.
+	move.w	Game_LevelNumber_w,d0
+	addq.w	#1,d0
+	cmpi.w	#16,d0
+	blt.s	.level_ok
+	moveq	#0,d0
+.level_ok:
+	move.w	d0,Game_LevelNumber_w
+	bsr		game_SetMenuLevelNames
+
+	bsr		Res_FreeLevelData
+	bsr		IO_InitQueue
+	bsr		Res_LoadLevelData
+	bsr		IO_FlushQueue
+
+	; Rebind music from the newly loaded level.
+	move.l	Lvl_MusicPtr_l,d0
+	move.l	Lvl_MusicLen_l,d1
+	tst.l	d0
+	beq.s	.done_frame
+	bsr		ie_mod_set_data
+	bsr		mt_init
+
+.done_frame:
 	rts
 
 ie_game_shutdown:
@@ -143,6 +196,7 @@ _ie_game_shutdown:
 	bsr		Res_FreeSoundFx
 	bsr		mt_end
 	bsr		Vid_CloseMainScreen
+	clr.b	ie_game_bootstrap_done_b
 	rts
 
 ; Try a compact set of DB path variants before falling back to generic probe.
@@ -252,6 +306,16 @@ ie_game_bootstrap_state_l:
 	dc.l	0
 ie_game_last_error_l:
 	dc.l	0
+ie_game_bootstrap_done_b:
+	dc.b	0
+
+Game_ShouldQuit_b:
+	dc.b	0
+Game_FinishedLevel_b:
+	dc.b	0
+	dc.b	0
+	dc.b	0
+	even
 
 Game_LevelNumber_w:
 	dc.w	0

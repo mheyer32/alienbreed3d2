@@ -13,6 +13,7 @@ start:
 	bsr	ie_init
 
 main_loop:
+	bsr	ie_game_frame
 	bsr	ie_poll_input
 	bsr	ie_palette_poll_update
 	bsr	ie_present

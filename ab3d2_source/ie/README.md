@@ -13,6 +13,8 @@ match mixed assembly/C callsites.
   - Explicit DB load includes in-module path variants (`ab3:includes/...`, `media/includes/...`) before generic probe fallback.
   - Falls back to `ie_res_bootstrap_assets` when explicit DB load fails.
   - Adds `ie_game_shutdown` and `Game_Quit` compatibility teardown (resource free + `mt_end` + screen close).
+  - Adds `ie_game_frame` runtime hook (wired into `ie_main` loop) to process `Game_ShouldQuit_b` and `Game_FinishedLevel_b` compatibility flow.
+  - Guards bootstrap re-entry via `ie_game_bootstrap_done_b` so repeated init paths do not duplicate resource loading.
   - Tracks bootstrap progress and soft-failure bits via `ie_game_bootstrap_state_l` and `ie_game_last_error_l`.
   - Adds candidate fallback tables for story/backdrop blobs (`ab3:` + `media/` + `../media/` variants).
   - Saves `sys_RecoveryStack` from current SP for fatal-error recovery compatibility.
