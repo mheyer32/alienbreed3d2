@@ -13,6 +13,8 @@
 	xdef ie_mouse_relative_ok
 
 ie_input_init:
+	bsr	ie_init_scancode_map
+
 	; Enable relative mouse mode for FPS look.
 	move.l	#1,$F074C
 	move.l	$F074C,d0
@@ -28,10 +30,18 @@ ie_input_init:
 	clr.l	ie_mouse_dx
 	clr.l	ie_mouse_dy
 	clr.l	ie_mouse_buttons
+
+	; Clear key state map.
+	lea	KeyMap_vb,a0
+	move.w	#255,d0
+.clear_keys:
+	clr.b	(a0)+
+	dbra	d0,.clear_keys
 	rts
 
 ie_poll_keyboard:
 	lea	ie_keymap,a0
+	lea	ie_scancode_to_rawkey,a1
 .drain:
 	move.l	$F0744,d0
 	andi.l	#1,d0
@@ -40,12 +50,17 @@ ie_poll_keyboard:
 	move.l	$F0740,d0
 	move.l	d0,d1
 	andi.l	#$7F,d1
+	moveq	#0,d2
+	move.b	0(a1,d1.w),d2
+	; 0xFF in map means "ignore this scancode".
+	cmpi.b	#$FF,d2
+	beq.s	.drain
 	btst	#7,d0
 	bne.s	.release
-	move.b	#$FF,0(a0,d1.w)
+	move.b	#$FF,0(a0,d2.w)
 	bra.s	.drain
 .release:
-	clr.b	0(a0,d1.w)
+	clr.b	0(a0,d2.w)
 	bra.s	.drain
 .done:
 	rts
@@ -101,3 +116,24 @@ ie_mouse_last_abs_y:
 
 Sys_MouseY:
 	dc.w	0
+
+; Initialize scancode->RAWKEY map.
+; Default is identity (ST set mostly matches RAWKEY indices), with optional
+; per-key overrides patched after the identity pass.
+ie_init_scancode_map:
+	lea	ie_scancode_to_rawkey,a0
+	moveq	#0,d0
+	move.w	#127,d7
+.id_loop:
+	move.b	d0,(a0)+
+	addq.b	#1,d0
+	dbra	d7,.id_loop
+
+	; Example override slots (expand as differences are identified):
+	; unmapped/ignored example:
+	; move.b #$FF,ie_scancode_to_rawkey+<scan>
+
+	rts
+
+ie_scancode_to_rawkey:
+	dcb.b	128,0

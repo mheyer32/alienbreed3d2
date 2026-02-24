@@ -7,6 +7,7 @@ This directory contains the in-progress Intuition Engine assembly port layer.
 - `ie_hal.s`: placeholder HAL routines to be filled during porting.
 - `ie_input.s`: keyboard/mouse bridge stubs.
   - Exposes `KeyMap_vb` and `Sys_ReadMouse`/`Sys_MouseY` compatibility symbols.
+  - Includes explicit `ie_scancode_to_rawkey` translation map (identity default, override-ready).
 - `ie_audio.s`: MOD/SFX bridge stubs.
 - `ie_fileio.s`: file I/O bridge stubs.
 - `ie_present.s`: indexed chunky -> RGBA LUT conversion + Mode7 upscale submit.
