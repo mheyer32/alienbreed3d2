@@ -29,6 +29,8 @@ match mixed assembly/C callsites.
   - `ie_res_bootstrap_assets` tries default palette/MOD candidate filenames at startup.
   - `ie_res_load_palette_file` loads a palette file and activates it via `ie_palette_set_texture_ptr`.
   - `ie_res_load_sfx_file` loads a sample file and registers it in `Aud_SampleList_vl`.
+  - `ie_res_load_sfx_table_ex` supports explicit table stride; wrappers cover 64-byte and AB3D2 GLF 60-byte filename entries.
+  - Adds `Res_LoadSoundFx` / `Res_PatchSoundFx` / `Res_FreeSoundFx` compatibility entrypoints and `ie_res_set_sfx_filename_table` for GLF table binding.
 - `ie_present.s`: indexed chunky -> RGBA LUT conversion + Mode7 upscale submit.
   - Includes `ie_palette_upload_12bit` to convert 256-entry `0x0RGB` palettes to RGBA8888 LUT.
   - Includes `ie_palette_upload_rgb8` and `Vid_LoadMainPalette` compatibility entrypoint.
