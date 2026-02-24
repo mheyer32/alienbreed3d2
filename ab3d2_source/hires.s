@@ -618,9 +618,7 @@ scaledownlop:
 				; TODO - check music is enabled
 
 				st		CHANNELDATA
-				IFND	IS_IE
 				jsr		mt_init
-				ENDC
 
 *********************************
 

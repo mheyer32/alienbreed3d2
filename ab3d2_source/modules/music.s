@@ -1,3 +1,28 @@
+				IFD		IS_IE
+
+mt_init:
+				move.l	mt_data,d0
+				move.l	mt_size,d1
+				move.l	d0,$F0BC0
+				move.l	d1,$F0BC4
+				move.l	#1,$F0BC8
+				st		reachedend
+				rts
+
+mt_end:
+				move.l	#2,$F0BC8
+				rts
+
+mt_music:
+				st		reachedend
+				rts
+
+reachedend:		dc.b	0
+				align	4
+mt_data:		dc.l	0
+mt_size:		dc.l	0
+
+				ELSE
 
 mt_init:
 				move.l	mt_data,a0
@@ -506,3 +531,6 @@ mt_voice4:		ds.w	10
 
 ;/* End of File */
 mt_data:		dc.l	0
+mt_size:		dc.l	0
+
+				ENDC
