@@ -11,3 +11,4 @@ This directory contains the in-progress Intuition Engine assembly port layer.
 - `ie_fileio.s`: file I/O bridge stubs.
 - `ie_present.s`: indexed chunky -> RGBA LUT conversion + Mode7 upscale submit.
   - Includes `ie_palette_upload_12bit` to convert 256-entry `0x0RGB` palettes to RGBA8888 LUT.
+  - Includes `ie_palette_upload_rgb8` and `Vid_LoadMainPalette` compatibility entrypoint.

@@ -9,6 +9,9 @@
 	xdef ie_present_frame
 	xdef ie_palette_init
 	xdef ie_palette_upload_12bit
+	xdef ie_palette_upload_rgb8
+	xdef ie_palette_set_rgb8_ptr
+	xdef Vid_LoadMainPalette
 
 CHUNKY_BASE	equ	$060000
 PALETTE_BASE	equ	$073000
@@ -84,6 +87,52 @@ ie_palette_upload_12bit:
 	dbra	d7,.pal12_loop
 	rts
 
+; ie_palette_upload_rgb8
+; in: a0 -> 256 RGB entries, packed as 768 bytes: R,G,B,R,G,B,...
+; out: writes converted RGBA8888 LUT to PALETTE_BASE
+ie_palette_upload_rgb8:
+	move.l	#PALETTE_BASE,a1
+	move.w	#255,d7
+
+.pal8_loop:
+	moveq	#0,d1
+	moveq	#0,d3
+	moveq	#0,d4
+	move.b	(a0)+,d1	; R
+	move.b	(a0)+,d3	; G
+	move.b	(a0)+,d4	; B
+
+	moveq	#0,d5
+	move.b	d1,d5
+	lsl.l	#8,d5
+	move.b	d3,d5
+	lsl.l	#8,d5
+	move.b	d4,d5
+	lsl.l	#8,d5
+	ori.l	#$000000FF,d5
+	move.l	d5,(a1)+
+
+	dbra	d7,.pal8_loop
+	rts
+
+; ie_palette_set_rgb8_ptr
+; in: a0 -> RGB triplet palette source (768 bytes)
+ie_palette_set_rgb8_ptr:
+	move.l	a0,ie_palette_rgb8_ptr
+	rts
+
+; Compatibility entrypoint for existing game-side call sites.
+; Uses the configured RGB8 source pointer when available.
+Vid_LoadMainPalette:
+	move.l	ie_palette_rgb8_ptr,a0
+	tst.l	a0
+	beq.s	.no_src
+	bsr	ie_palette_upload_rgb8
+	rts
+.no_src:
+	bsr	ie_palette_init
+	rts
+
 ie_present_frame:
 	; 1) Convert indexed chunky buffer -> RGBA scratch using LUT.
 	move.l	#CHUNKY_BASE,a0
@@ -117,3 +166,6 @@ ie_present_frame:
 	move.l	#255,$F0074		; TEX_H mask
 	move.l	#1,$F001C		; BLT_CTRL start
 	rts
+
+ie_palette_rgb8_ptr:
+	dc.l	0
