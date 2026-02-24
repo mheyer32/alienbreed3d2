@@ -29,7 +29,7 @@ ie_palette_init:
 	lsl.l	#8,d1
 	or.l	d0,d1
 	lsl.l	#8,d1
-	or.l	#$FF,d1
+	ori.l	#$FF,d1
 	move.l	d1,(a0)+
 	addq.l	#1,d0
 	cmpi.l	#256,d0
