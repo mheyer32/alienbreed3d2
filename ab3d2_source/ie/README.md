@@ -24,6 +24,10 @@ match mixed assembly/C callsites.
   - Adds `IO_InitQueue` / `IO_QueueFile` / `IO_FlushQueue` immediate-mode compatibility.
   - Uses static high-RAM bump allocation for queued file loads (`0x700000` .. `0xFE0000`).
   - `IO_LoadFileOptional` returns per-load heap allocations from the same range.
+- `ie_res.s`: resource helper wrappers.
+  - `ie_res_init` clears SFX table and initializes queue state.
+  - `ie_res_load_palette_file` loads a palette file and activates it via `ie_palette_set_texture_ptr`.
+  - `ie_res_load_sfx_file` loads a sample file and registers it in `Aud_SampleList_vl`.
 - `ie_present.s`: indexed chunky -> RGBA LUT conversion + Mode7 upscale submit.
   - Includes `ie_palette_upload_12bit` to convert 256-entry `0x0RGB` palettes to RGBA8888 LUT.
   - Includes `ie_palette_upload_rgb8` and `Vid_LoadMainPalette` compatibility entrypoint.

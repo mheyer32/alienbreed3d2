@@ -24,4 +24,5 @@ main_loop:
 	include "ie_audio.s"
 	include "ie_mem.s"
 	include "ie_fileio.s"
+	include "ie_res.s"
 	include "ie_present.s"

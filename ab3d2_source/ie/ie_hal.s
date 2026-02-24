@@ -17,6 +17,7 @@ ie_init:
 	bsr	ie_palette_init
 	bsr	ie_input_init
 	bsr	ie_audio_init
+	bsr	ie_res_init
 	rts
 
 ie_wait_vblank:
