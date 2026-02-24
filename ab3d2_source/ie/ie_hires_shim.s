@@ -51,6 +51,11 @@
 	xref _Vid_UpdatePalette_b
 	xref _Sys_MouseY
 	xref _KeyMap_vb
+	xref _draw_Palette_vw
+	xref _Vid_GammaIncTables_vb
+	xref _Vid_ContrastAdjust_w
+	xref _Vid_BrightnessOffset_w
+	xref _Vid_GammaLevel_b
 
 CHUNKY_BASE	equ	$060000
 PALETTE_BASE	equ	$073000
@@ -71,6 +76,18 @@ _Sys_Done:
 	rts
 
 _Sys_ClearKeyboard:
+	lea		_KeyMap_vb,a0
+	move.w	#255,d0
+.clear_keys:
+	clr.b	(a0)+
+	dbra	d0,.clear_keys
+.drain_queue:
+	move.l	$F0744,d1
+	andi.l	#1,d1
+	beq.s	.done
+	move.l	$F0740,d1
+	bra.s	.drain_queue
+.done:
 	rts
 
 _Sys_MarkTime:
@@ -133,19 +150,76 @@ _Vid_CloseMainScreen:
 
 _Vid_LoadMainPalette:
 	move.l	#PALETTE_BASE,a1
+	lea		_draw_Palette_vw,a3
+	suba.l	a5,a5
+	moveq	#0,d6
+	move.b	_Vid_GammaLevel_b,d6
+	beq.s	.pal_loop_init
+	subq.l	#1,d6
+	andi.l	#7,d6
+	lsl.l	#8,d6
+	lea		_Vid_GammaIncTables_vb,a5
+	adda.l	d6,a5
+.pal_loop_init:
+	move.w	#0,d7
+.pal_loop:
 	moveq	#0,d0
-.gray_loop:
-	move.l	d0,d1
-	lsl.l	#8,d1
-	or.l	d0,d1
-	lsl.l	#8,d1
-	or.l	d0,d1
-	lsl.l	#8,d1
-	ori.l	#$FF,d1
-	move.l	d1,(a1)+
-	addq.l	#1,d0
-	cmpi.l	#256,d0
-	bne.s	.gray_loop
+	move.w	0(a3,d7.w),d0
+	bsr		ie_palette_apply_channel
+	moveq	#0,d4
+	move.b	d0,d4
+	lsl.l	#8,d4
+	lsl.l	#8,d4
+	lsl.l	#8,d4
+
+	moveq	#0,d0
+	move.w	512(a3,d7.w),d0
+	bsr		ie_palette_apply_channel
+	moveq	#0,d5
+	move.b	d0,d5
+	lsl.l	#8,d5
+	lsl.l	#8,d5
+	or.l	d5,d4
+
+	moveq	#0,d0
+	move.w	1024(a3,d7.w),d0
+	bsr		ie_palette_apply_channel
+	moveq	#0,d5
+	move.b	d0,d5
+	lsl.l	#8,d5
+	or.l	d5,d4
+
+	ori.l	#$000000FF,d4
+	move.l	d4,(a1)+
+	addq.w	#2,d7
+	cmpi.w	#512,d7
+	bne.s	.pal_loop
+	rts
+
+ie_palette_apply_channel:
+	moveq	#0,d1
+	move.w	d0,d1
+	tst.l	a5
+	beq.s	.linear
+	moveq	#0,d0
+	move.b	0(a5,d1.w),d0
+	bra.s	.adjust
+.linear:
+	move.l	d1,d0
+.adjust:
+	mulu.w	_Vid_ContrastAdjust_w,d0
+	move.w	_Vid_BrightnessOffset_w,d1
+	ext.l	d1
+	add.l	d1,d0
+	bpl.s	.clamp_hi
+	clr.l	d0
+	rts
+.clamp_hi:
+	cmpi.l	#65535,d0
+	bls.s	.done
+	move.l	#65535,d0
+.done:
+	lsr.l	#8,d0
 	rts
 
 _Vid_Present:

@@ -13,6 +13,15 @@
 ;       that seems better than crashing.
 
 IO_MAX_FILENAME_LEN	EQU 79
+					IFD		IS_IE
+IO_IE_HEAP_BASE		EQU $00700000
+IO_IE_HEAP_LIMIT	EQU $00FE0000
+FILE_IO_NAME		EQU $00F2200
+FILE_IO_DATA		EQU $00F2204
+FILE_IO_CTRL		EQU $00F220C
+FILE_IO_STATUS		EQU $00F2210
+FILE_IO_LEN			EQU $00F2214
+					ENDC
 
 ; *****************************************************************************
 ; *
@@ -21,6 +30,9 @@ IO_MAX_FILENAME_LEN	EQU 79
 ; *****************************************************************************
 
 IO_InitQueue:
+				IFD		IS_IE
+				move.l	#IO_IE_HEAP_BASE,io_ie_heap_ptr
+				ENDC
 				move.l	#Sys_Workspace_vl,io_EndOfQueue_l
 				rts
 
@@ -50,6 +62,36 @@ IO_QueueFile:
 				rts
 
 IO_FlushQueue:
+				IFD		IS_IE
+				move.l	#Sys_Workspace_vl,a2
+				moveq	#0,d6					; tried+failed
+.do_flush_ie:
+				move.l	a2,d0
+				cmp.l	io_EndOfQueue_l,d0
+					bge		.loaded_all
+				tst.l	(a2)
+				beq.s	.next_ie
+				lea		12(a2),a0				; ptr to name
+				move.l	a0,a5
+				bsr		io_ie_load_to_heap
+				tst.l	d0
+				beq.s	.load_failed_ie
+				move.l	d0,a3
+				move.l	(a2),a4
+				move.l	a3,(a4)
+				move.l	4(a2),d0
+				beq.s	.no_len_store_ie
+				move.l	d0,a4
+				move.l	d1,(a4)
+.no_len_store_ie:
+				clr.l	(a2)
+				bra.s	.next_ie
+.load_failed_ie:
+				st		d6
+.next_ie:
+				add.l	#100,a2
+				bra.s	.do_flush_ie
+				ENDC
 				bsr		io_FlushPass
 
 .retry:
@@ -169,6 +211,10 @@ io_FlushPass:
 				rts
 
 io_TryToOpen:
+				IFD		IS_IE
+				moveq	#1,d0
+				rts
+				ENDC
 				movem.l	d1-d7/a0-a6,-(a7)
 				IFD MEMTRACK
 				SERPRINTF <"io_TryToOpen %s",13,10>,a0
@@ -193,10 +239,26 @@ io_LoadAndUnpackFile:
 
 				SAVEREGS
 
-				bra.s	io_LoadCommon
+					bra		io_LoadCommon
 
 ; Load an optional file, i.e. one that might not exist.
 IO_LoadFileOptional:
+				IFD		IS_IE
+				SAVEREGS
+				move.l	a0,a5
+				bsr		io_ie_load_to_heap
+				tst.l	d0
+				beq.s	.optional_fail_ie
+				move.l	d0,io_BlockStart_l
+				move.l	d1,io_BlockLength_l
+				bsr		io_PostProcessLoaded
+				rts
+.optional_fail_ie:
+				GETREGS
+				clr.l	d0
+				clr.l	d1
+				rts
+				ENDC
 				IFD MEMTRACK
 				SERPRINTF <"IO_LoadFileOptional %s",13,10>,a0
 				ENDC
@@ -231,6 +293,15 @@ IO_LoadFile:
 
 				move.l	a0,d1
 				move.l	a0,a5			; Save filename in a5 for error reporting
+				IFD		IS_IE
+				bsr		io_ie_load_to_heap
+				tst.l	d0
+				beq		io_LoadFailure
+				move.l	d0,io_BlockStart_l
+				move.l	d1,io_BlockLength_l
+				bsr		io_PostProcessLoaded
+				rts
+				ENDC
 				move.l	#MODE_OLDFILE,d2
 				CALLDOS	Open
 
@@ -238,6 +309,15 @@ IO_LoadFile:
 				beq		io_LoadFailure
 
 io_LoadCommon:
+				IFD		IS_IE
+				move.l	a5,a0
+				bsr		io_ie_load_to_heap
+				tst.l	d0
+				beq		io_LoadFailure
+				move.l	d0,io_BlockStart_l
+				move.l	d1,io_BlockLength_l
+				bra		io_PostProcessLoaded
+				ENDC
 				lea		io_FileInfoBlock_vb,a5
 				move.l	IO_DOSFileHandle_l,d1
 				move.l	a5,d2
@@ -258,6 +338,8 @@ io_LoadCommon:
 				move.l	IO_DOSFileHandle_l,d1
 				CALLDOS	Close
 
+io_PostProcessLoaded:
+				move.l	io_BlockLength_l,d3
 				move.l	io_BlockStart_l,a0
 				clr.l	(a0,d3.l)		; clear last 8 bytes
 				clr.l	4(a0,d3.l)
@@ -373,15 +455,15 @@ io_LoadSample:
 
 io_HandlePacked:
 				move.l	4(a0),d0				; length of unpacked file.
-				move.l	d0,.unpacked_length_l
+					move.l	d0,io_unpacked_length_l
 				move.l	IO_MemType_l,d1
 				jsr		Sys_AllocVec
 
-				move.l	d0,.unpacked_start_l
+					move.l	d0,io_unpacked_start_l
 				move.l	io_BlockStart_l,d0
 				moveq	#0,d1
-				move.l	.unpacked_start_l,a0
-				move.l	#.unlha_temp_buffer_vl,a1
+					move.l	io_unpacked_start_l,a0
+					move.l	#io_unlha_temp_buffer_vl,a1
 				lea		$0,a2
 				jsr		unLHA
 
@@ -389,8 +471,8 @@ io_HandlePacked:
 				move.l	d1,a1
 				CALLEXEC FreeVec
 
-				move.l	.unpacked_start_l,d0
-				move.l	.unpacked_length_l,d1
+					move.l	io_unpacked_start_l,d0
+					move.l	io_unpacked_length_l,d1
 				move.l	d0,a0
 				cmp.l	#'CSFX',(a0)
 				beq		io_LoadSample
@@ -401,17 +483,81 @@ io_HandlePacked:
 
 				GETREGS
 
-				move.l	.unpacked_start_l,d0
-				move.l	.unpacked_length_l,d1
+					move.l	io_unpacked_start_l,d0
+					move.l	io_unpacked_length_l,d1
 				rts
 
+					IFD		IS_IE
+; IE MMIO file load helper.
+; in: a0 -> filename (possibly "VOL:path")
+; out: d0=ptr (or 0 on fail), d1=len
+io_ie_load_to_heap:
+				movem.l	d2-d7/a1-a6,-(a7)
+				bsr		io_ie_normalize_name
+				move.l	io_ie_heap_ptr,d0
+				move.l	d0,d2
+				move.l	a0,FILE_IO_NAME
+				move.l	d2,FILE_IO_DATA
+				move.l	#1,FILE_IO_CTRL
+				move.l	FILE_IO_STATUS,d6
+				tst.l	d6
+				bne.s	.fail
+				move.l	FILE_IO_LEN,d1
+				move.l	d1,d3
+				addq.l	#3,d3
+				andi.l	#$FFFFFFFC,d3
+				move.l	d2,d4
+				add.l	d3,d4
+				cmp.l	#IO_IE_HEAP_LIMIT,d4
+				bhi.s	.fail
+				move.l	d4,io_ie_heap_ptr
+				move.l	d2,d0
+				movem.l	(a7)+,d2-d7/a1-a6
+				rts
+.fail:
+				clr.l	d0
+				clr.l	d1
+				movem.l	(a7)+,d2-d7/a1-a6
+				rts
+
+; Normalize Amiga-style path into io_ie_path_vb and return a0=normalized ptr.
+io_ie_normalize_name:
+				move.l	a0,a1
+.find_colon:
+				move.b	(a1)+,d0
+				beq.s	.copy_start
+				cmpi.b	#':',d0
+				bne.s	.find_colon
+				move.l	a1,a0
+.copy_start:
+				lea		io_ie_path_vb,a1
+				move.w	#IO_MAX_FILENAME_LEN,d7
+.copy_loop:
+				move.b	(a0)+,d0
+				cmpi.b	#92,d0
+				bne.s	.store
+				moveq	#47,d0
+.store:
+				move.b	d0,(a1)+
+				beq.s	.done
+				dbra	d7,.copy_loop
+				clr.b	(a1)
+.done:
+				lea		io_ie_path_vb,a0
+				rts
+					ENDC
+
 				CNOP 0, 4
-.unpacked_start_l:	dc.l	0
-.unpacked_length_l:	dc.l	0
+io_unpacked_start_l:	dc.l	0
+io_unpacked_length_l:	dc.l	0
 
 				section .bss,bss
-.unlha_temp_buffer_vl:
+io_unlha_temp_buffer_vl:
 				ds.l	4096		; unLHA wants 16kb
+					IFD		IS_IE
+io_ie_heap_ptr:	ds.l 1
+io_ie_path_vb:	ds.b 160
+					ENDC
 
 				section .text,code
 _unLHA::
