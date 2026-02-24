@@ -16,3 +16,5 @@ This directory contains the in-progress Intuition Engine assembly port layer.
 - `ie_present.s`: indexed chunky -> RGBA LUT conversion + Mode7 upscale submit.
   - Includes `ie_palette_upload_12bit` to convert 256-entry `0x0RGB` palettes to RGBA8888 LUT.
   - Includes `ie_palette_upload_rgb8` and `Vid_LoadMainPalette` compatibility entrypoint.
+  - Exposes `Vid_UpdatePalette_b` and `Draw_TexturePalettePtr_l` compatibility symbols.
+  - `ie_palette_poll_update` applies palette reload when `Vid_UpdatePalette_b` is set.

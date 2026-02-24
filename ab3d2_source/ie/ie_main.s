@@ -13,6 +13,7 @@ start:
 
 main_loop:
 	bsr	ie_poll_input
+	bsr	ie_palette_poll_update
 	bsr	ie_present
 	bsr	ie_wait_vblank
 	bra.s	main_loop

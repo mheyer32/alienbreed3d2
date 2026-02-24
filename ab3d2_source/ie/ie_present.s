@@ -11,7 +11,11 @@
 	xdef ie_palette_upload_12bit
 	xdef ie_palette_upload_rgb8
 	xdef ie_palette_set_rgb8_ptr
+	xdef ie_palette_poll_update
+	xdef ie_palette_mark_dirty
 	xdef Vid_LoadMainPalette
+	xdef Vid_UpdatePalette_b
+	xdef Draw_TexturePalettePtr_l
 
 CHUNKY_BASE	equ	$060000
 PALETTE_BASE	equ	$073000
@@ -121,16 +125,36 @@ ie_palette_set_rgb8_ptr:
 	move.l	a0,ie_palette_rgb8_ptr
 	rts
 
+ie_palette_mark_dirty:
+	st		Vid_UpdatePalette_b
+	rts
+
+ie_palette_poll_update:
+	tst.b	Vid_UpdatePalette_b
+	beq.s	.no_update
+	clr.b	Vid_UpdatePalette_b
+	bsr		Vid_LoadMainPalette
+.no_update:
+	rts
+
 ; Compatibility entrypoint for existing game-side call sites.
 ; Uses the configured RGB8 source pointer when available.
 Vid_LoadMainPalette:
 	move.l	ie_palette_rgb8_ptr,a0
 	tst.l	a0
-	beq.s	.no_src
-	bsr	ie_palette_upload_rgb8
+	bne.s	.have_src
+	move.l	Draw_TexturePalettePtr_l,a0
+	tst.l	a0
+	bne.s	.have_src
+	bsr		ie_palette_init
 	rts
-.no_src:
-	bsr	ie_palette_init
+.have_src:
+	tst.l	a0
+	beq.s	.no_src_fallback
+	bsr		ie_palette_upload_rgb8
+	rts
+.no_src_fallback:
+	bsr		ie_palette_init
 	rts
 
 ie_present_frame:
@@ -168,4 +192,13 @@ ie_present_frame:
 	rts
 
 ie_palette_rgb8_ptr:
+	dc.l	0
+
+Vid_UpdatePalette_b:
+	dc.b	0
+	dc.b	0
+	dc.b	0
+	dc.b	0
+
+Draw_TexturePalettePtr_l:
 	dc.l	0
