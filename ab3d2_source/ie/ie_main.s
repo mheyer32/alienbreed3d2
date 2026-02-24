@@ -28,3 +28,4 @@ main_loop:
 	include "ie_res.s"
 	include "ie_game.s"
 	include "ie_present.s"
+	include "ie_compat.s"

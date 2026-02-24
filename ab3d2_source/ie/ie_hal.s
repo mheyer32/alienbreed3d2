@@ -21,6 +21,13 @@
 	xdef _CloseLowLevel
 	xdef __CloseLowLevel
 
+	xref Vid_FastBufferPtr_l
+	xref Vid_DrawScreenPtr_l
+	xref Vid_DisplayScreenPtr_l
+	xref Vid_ScreenBuffers_vl
+	xref Vid_ScreenBufferIndex_w
+	xref Vid_LetterBoxMarginHeight_w
+
 ie_init:
 	bsr	ie_palette_init
 	bsr	ie_input_init
@@ -62,6 +69,14 @@ _Vid_OpenMainScreen:
 	; Ensure video path is enabled and in 640x480 mode.
 	move.l	#1,$F0000
 	move.l	#0,$F0004
+	; Mirror classic RTG state variables to a single 320x240 chunky buffer.
+	move.l	#$060000,Vid_FastBufferPtr_l
+	move.l	#$060000,Vid_DrawScreenPtr_l
+	move.l	#$060000,Vid_DisplayScreenPtr_l
+	move.l	#$060000,Vid_ScreenBuffers_vl
+	move.l	#$060000,Vid_ScreenBuffers_vl+4
+	clr.w	Vid_ScreenBufferIndex_w
+	clr.w	Vid_LetterBoxMarginHeight_w
 	moveq	#1,d0
 	rts
 

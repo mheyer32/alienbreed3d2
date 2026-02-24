@@ -67,3 +67,7 @@ match mixed assembly/C callsites.
   - Exposes `Vid_UpdatePalette_b` and `Draw_TexturePalettePtr_l` compatibility symbols.
   - `ie_palette_poll_update` applies palette reload when `Vid_UpdatePalette_b` is set.
   - `ie_palette_set_texture_ptr` updates `Draw_TexturePalettePtr_l` and marks palette dirty.
+  - Exposes legacy screen-pointer state (`Vid_FastBufferPtr_l`, `Vid_DrawScreenPtr_l`, `Vid_DisplayScreenPtr_l`, `Vid_ScreenBuffers_vl`, `Vid_ScreenBufferIndex_w`, `Vid_LetterBoxMarginHeight_w`) mapped to the IE chunky buffer.
+- `ie_compat.s`: software-path compatibility shims for legacy C/OS symbols needed during incremental renderer lift.
+  - Provides menu/message/inventory/zone/palette helper entrypoints as safe no-op/boolean shims.
+  - Provides `_Vid_isRTG=1` plus dummy `_custom`/`_ciaa` register-space backing.

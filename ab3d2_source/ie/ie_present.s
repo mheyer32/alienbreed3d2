@@ -21,6 +21,18 @@
 	xdef _Vid_LoadMainPalette
 	xdef Vid_UpdatePalette_b
 	xdef Draw_TexturePalettePtr_l
+	xdef _Vid_FastBufferPtr_l
+	xdef Vid_FastBufferPtr_l
+	xdef _Vid_DrawScreenPtr_l
+	xdef Vid_DrawScreenPtr_l
+	xdef _Vid_DisplayScreenPtr_l
+	xdef Vid_DisplayScreenPtr_l
+	xdef _Vid_ScreenBuffers_vl
+	xdef Vid_ScreenBuffers_vl
+	xdef _Vid_ScreenBufferIndex_w
+	xdef Vid_ScreenBufferIndex_w
+	xdef _Vid_LetterBoxMarginHeight_w
+	xdef Vid_LetterBoxMarginHeight_w
 
 CHUNKY_BASE	equ	$060000
 PALETTE_BASE	equ	$073000
@@ -232,3 +244,30 @@ Vid_UpdatePalette_b:
 
 Draw_TexturePalettePtr_l:
 	dc.l	0
+
+_Vid_FastBufferPtr_l:
+Vid_FastBufferPtr_l:
+	dc.l	CHUNKY_BASE
+
+_Vid_DrawScreenPtr_l:
+Vid_DrawScreenPtr_l:
+	dc.l	CHUNKY_BASE
+
+_Vid_DisplayScreenPtr_l:
+Vid_DisplayScreenPtr_l:
+	dc.l	CHUNKY_BASE
+
+_Vid_ScreenBuffers_vl:
+Vid_ScreenBuffers_vl:
+	dc.l	CHUNKY_BASE
+	dc.l	CHUNKY_BASE
+
+_Vid_ScreenBufferIndex_w:
+Vid_ScreenBufferIndex_w:
+	dc.w	0
+	dc.w	0
+
+_Vid_LetterBoxMarginHeight_w:
+Vid_LetterBoxMarginHeight_w:
+	dc.w	0
+	dc.w	0
