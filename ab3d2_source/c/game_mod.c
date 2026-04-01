@@ -94,7 +94,7 @@ BOOL gmod_ParseAchievements(GMF_ChunkHeader const* pChunkHeader, GMF_Data* pGMFD
 
 static UWORD const* gmod_GetRewardCarry(GMod_Reward const* pReward)
 {
-    if (pReward->rwrd_CarryOffset >= 8) {
+    if (pReward->rwrd_CarryOffset >= sizeof(GMF_ChunkHeader)) {
         return (UWORD const*) (
             ((UBYTE const*)pReward) + pReward->rwrd_CarryOffset
         );
@@ -104,7 +104,7 @@ static UWORD const* gmod_GetRewardCarry(GMod_Reward const* pReward)
 
 static UWORD const* gmod_GetRewardImmediate(GMod_Reward const* pReward)
 {
-    if (pReward->rwrd_ImmediateOffset >= 8) {
+    if (pReward->rwrd_ImmediateOffset >= sizeof(GMF_ChunkHeader)) {
         return (UWORD const*) (
             ((UBYTE const*)pReward) + pReward->rwrd_ImmediateOffset
         );

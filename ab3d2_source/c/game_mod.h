@@ -53,12 +53,41 @@ typedef struct {
 } ASM_ALIGN(sizeof(ULONG)) GMod_Achievement;
 
 /**
+ * GMod_WeaponAdjustment
+ *
+ * Defines a behavioural adjustment for a weapon.
+ */
+typedef struct {
+    UWORD wa_SlotID;
+    WORD  wa_XOffset;
+    WORD  wa_YOffset;
+    WORD  wa_Recoil;
+    WORD  wa_Spray;
+    UWORD wa_BurstLimit;
+    UWORD wa_CoolDown;
+    UWORD wa_Flags;
+} ASM_ALIGN(sizeof(UWORD)) GMod_WeaponAdjustment;
+
+/**
+ * GMod_WeaponAdjustment.wa_Flags
+ */
+#define WAF_NO_RUN            0x0001
+#define WAF_NO_CROUCH         0x0002
+#define WAF_NO_FLY            0x0004
+#define WAF_NO_FIRE_SUBMERGED 0x0008
+
+/**
  * GMod_LoadFile()
  *
  * Attempts to load the Game Modification File.
  */
 extern GMF_Data* GMod_LoadFile(void);
 
+/**
+ * GMod_ApplyReward()
+ *
+ * Applies the reward definition to the inventory limits and carry.
+ */
 extern void GMod_ApplyReward(
     GMod_Reward const* pReward,
     InventoryConsumables* pInventoryLimits,
