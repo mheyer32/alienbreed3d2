@@ -3,6 +3,7 @@
 #include "zone_inline.h"
 #include <proto/exec.h>
 #include <stdio.h>
+#include "devmode.h"
 
 /**
  * zone_errata.c

@@ -5,6 +5,7 @@
 #include "zone.h"
 #include "zone_liftable.h"
 #include "zone_inline.h"
+#include "devmode.h"
 
 extern Vec2W const* Lvl_PointsPtr_l;
 extern WORD Lvl_NumPoints_w;
