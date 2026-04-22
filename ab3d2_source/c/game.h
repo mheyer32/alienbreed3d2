@@ -20,7 +20,7 @@
 #define GAME_EVENTBIT_LEVEL_START 2
 #define GAME_EVENTBIT_ADD_INVENTORY 3
 
-//TODO Integrage new mod code
+//TODO Integrate new mod code
 
 /**
  * Achievement definition
