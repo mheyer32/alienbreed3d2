@@ -4,9 +4,9 @@
 
 Please read the [Data Format](./DataFormat.md) document for further information on the file structure.
 
-The Game Modification File is the binary encoded represntation of the data defined in the [RSON Source](../source/GameModification.md).
+The Player Progression File stores key statistics pertaining to the progress that a player has made overall, as distinct from regular game saves that include only the level and inventory.
 
-Unlike other files described here, the Player Progression File is a binary asset created by the game on exit and has no corresponding source format. The file contains key statistics about the player's current progess in the game. Note that is separate to the game save slots.
+Unlike other files described here, the Player Progression File is a binary asset created by the game on exit and has no corresponding source format.
 
 ## Chunks
 
@@ -24,13 +24,11 @@ The Inventory Limits Chunk has the same format as the [Default Inventory Limits 
 
 | Offset In Chunk | Content | Type | Notes |
 | :---- | :---- | :---- |  :---- |
-| 0 | **Ident** | `char[4]` | `INVL` |
-| 4 | **Length** | `uint32` |
-| 8 | Max Health | `int16` |
-| 10 | Max Fuel | `int16` |
-| 12 | Max Ammo [0] | `int16` |
-| ... | ... | ... | ... |
-| 48 | Max Ammo [19] | `int16` |
+| 0 | **Ident** | `char[4]` | "INVL" |
+| 4 | **Length** | `uint32` | |
+| 8 | Max Health | `int16` | |
+| 10 | Max Fuel | `int16` | |
+| 12 | Max Ammo | `int16[20]` | One for each defined Ammo type |
 
 ### Counters Chunk
 
@@ -38,36 +36,21 @@ The Counters Chunk contains sets of counters that are updated by the game and us
 
 | Offset In Chunk | Content | Type | Notes |
 | :---- | :---- | :--- | :---- |
-| 0 | **Ident** | `char[4]` | `CTRS` |
+| 0 | **Ident** | `char[4]` | "CTRS" |
 | 4 | **Length** | `uint32` | |
 | 8 | Level Count | `uint16` | Contains the total number of defined levels (Default 16) |
 | 10 | Ammo Count | `uint16` | Contains the total number defined Ammo classes (Default 20) |
 | 12 | Alien Count | `uint16` | Contains the total number of Alien classes (Default 20) |
 | 14 | Reserved | `uint16` | 0x0000 |
-| 16 | Level Best Time [0] | `uint32` | Best completion time for the level, in centiseconds |
-| ... | ... | ... | ... |
-| 76 | Level Best Time [15] | `uint32` | |
-| 80 | Level Play Count [0] | `uint16` | Number of times the level has been attempted |
-| ... | ... | ... | ... |
-| 110| Level Play Count [15] | `uint16` | |
-| 112 | Level Won Count [0] | `uint16` | Number of times the level has been beaten |
-| ... | ... | ... | ... |
-| 142 | Level Won Count [15] | `uint16` | |
-| 144 | Level Fail Count [0] | `uint16` | Number of times the level has been lost (player died) |
-| ... | ... | ... | ... |
-| 174 | Level Fail Count [15] | `uint16` | |
-| 176 | Level Improved Count [0] | `uint16` | Number of times the level best time has been improved |
-| ... | ... | ... | ... |
-| 206 | Level Time Improved Count [15] | `uint16` | |
-| 208 | Alien Kill Count [0] | `uint16` | Number of kills of this alien class |
-| ... | ... | ... | ... |
-| 246 | Alien Kill Count [19] | `uint16` | |
-| 248 | Health Collected | `uint32` | Total count of health collected |
-| 252 | Fuel Collected | `uint32 `| Total count of fuel collected |
-| 256 | Ammo Collected [0] | `uint32` | Total count of this ammo class collected |
-| ... | ... | ... | ... |
-| 332 | Ammo Collected [19] | `uint32` | |
-
+| 16 | Level Best Time | `uint32[16]` | Best completion time for each level, in centiseconds |
+| 80 | Level Play Count | `uint16[16]` | Number of attempts for each level |
+| 112 | Level Won Count | `uint16[16]` | Number of times completed for each level |
+| 144 | Level Fail Count | `uint16[16]` | Number of times player died for each level |
+| 176 | Level Improved Count | `uint16[16]` | Number of times the level best time has been improved for each level |
+| 208 | Alien Kill Count | `uint16[20]` | Number of Alien kills for each Alien class |
+| 248 | Health Collected | `uint32` | Total count of Health collected |
+| 252 | Fuel Collected | `uint32` | Total count of Fuel collected |
+| 256 | Ammo Collected | `uint32[20]` | Total count of ammunition collected for each Ammo class |
 
 ### Achievements Chunk
 
@@ -75,20 +58,39 @@ The Achievements Chunk contains a set of time/id pairs for the Achievements that
 
 | Offset In Chunk | Content | Type | Notes |
 | :---- | :---- | :--- | :---- |
-| 0 | **Ident** | `char[4]` | `CTRS` |
-| 4 | **Length** | `uint32` | |
-| 8 | Achievement [0] Date | `uint16` | Date awarded |
-| 10 | Achievement [0] ID | `uint16` | ID (index in the Achievements data) |
-| ... | ... | ... | ... |
+| 0 | **Ident** | `char[4]` | `ACHD` |
+| 4 | **Length** | `uint32` | This will be 8 for an initially empty list |
+| - | Record [0] | struct {| Structure of ... |
+| 8 | - Date Awarded | `uint16` | 11:5 Format |
+| 10 | - Achievement ID | `uint16` | ID (index in the Achievements data) |
+| - | | } |
+| ... | ... | ... | Structure repeated per completed Achievement |
+
 
 The Date Awarded is a compact 11:5 format:
 
-- 11-bit month count, since an epoch of 2022-01
+- 11-bit zero-indexed month count, since the AmigaDOS epoch of 1978-01-01 00:00:00
 - 5-bit day of month, 1-31
 
-For example, a Date Awarded of 2026-04-22 would be encoded as 1654:
+For example, a Date Awarded of 2026-04-24 would be encoded as follows:
 
-- Convert Years to months: 2026 - 2022 = 4 years => 48 months to Jan 2026
-- Count to April: 48 + 3 => 51 months
-- Shift into upper 11 bits: 51 << 5 => 1632
-- Combine with day of month: 1632 | 22 => 1654
+- Months:
+    - Convert Year (2026) to months since epoch: 2026 - 1978 = 48, 48 * 12 = 576
+    - Convert ordinal month (4) number to zero-indexed: 4 - 1 = 3
+    - Add to months count: 576 + 3 = 579
+    - Shift into upper 11 bits: 579 << 5 => 18528
+- Days:
+    - OR combine ordinal day of month: 18528 | 24 = 18522
+
+To convert this value back to Year, Month and Day for presentation:
+
+- Year:
+    - Extract the high 11-bit month count: 18552 >> 5 = 579
+    - Divide by 12 to get the Year count: 579/12 = 48, remainder 3
+    - Add the Epoch Year: 48 + 1978 = 2026
+- Month:
+    - Take the remainder from the Year division and add 1 to convert to ordinal month: 3 + 1 = 4
+- Day:
+    - Extract the low 5-bit day count: 18552 & 31 = 24
+
+The Date and Achievement ID fields are packaged together as a fully date-sortable 32-bit integer.

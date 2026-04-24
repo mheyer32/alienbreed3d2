@@ -6,7 +6,7 @@ This document describes the binary format used to define the behavioural modific
 
 ## Overview
 
-The format is inspired by IFF and comprises a chunk based layout. A file contains a header section, followed by one or more Chunks. Each Chunk has a short form header that identifies the type of data in the Chunk and the total length of the Chunk in bytes, including the short form header.
+The format is inspired by IFF and comprises a chunk based layout. A file contains a header section, followed by one or more Chunks. Each Chunk has a short-form header that identifies the type of data in the Chunk and the total length of the Chunk in bytes, including the short-form header.
 
 - All chunks are aligned to 32-bit offsets.
 
@@ -18,25 +18,19 @@ The general structure of the file is shown in the table below. The first 20 byte
 
 This is immediately followed by one or more Chunks.
 
-
-| Offset | Content |
-| :---- | :---- |
-| 0 | **Ident** `char[4]` |
-| 4 | **Subformat** `char[4]` |
-| 8 | **Requires** `uint16[2]` Major.Minor |
-| 12 | **Version** `uint16[2]` Major.Minor |
-| 16 | **Description Offset** `uint32`, offset in string heap chunk |
-| 20 | **Chunk \[0\] Ident** `char[4]` |
-| 24 | **Chunk \[0\] Length** `uint32`, always a multiple of 4 |
-| 28 | **Chunk \[0\] Data** varying, tail padded to 4 byte boundary |
-| x \+ 0 | **Chunk \[1\] Ident** `char[4]` |
-| x \+ 4 | **Chunk \[1\] Length** `uint32`, always a multiple of 4 |
-| x \+ 8 | **Chunk \[1\] Data** varying, tail padded to 4 byte boundary |
-| ... | ... |
-| N \+ 0 | **Chunk \[N\] Ident** `char[4]` |
-| N \+ 4 | **Chunk \[N\] Length** `uint32`, always a multiple of 4 |
-| N \+ 8 | **Chunk \[N\] Data** varying, tail padded to 4 byte boundary |
-
+| Offset | Content | Type | Notes |
+| :---- | :---- | :---- | :---- |
+| 0 | **Ident** | `char[4]` | "TKGD" |
+| 4 | **Subformat** | `char[4]` | Depends on file |
+| 8 | Requires | `uint16[2]` | Major.Minor version of game required |
+| 12 | Version | `uint16[2]` | Major.Minor version of this asset |
+| 16 | Description Offset | `uint32` | Offset in String Heap Chunk |
+| - | Chunk [0] | struct { | Structure of ... |
+| 20 | - Ident | `char[4]` | |
+| 24 | - Length | `uint32` | Always a multiple of 4 |
+| 28 | - Data | `uint8[...]` | Varying data, tail padded to 4-byte boundary |
+| - | | } | |
+| ... | ... | ... | Additional Chunks |
 ## Common Chunks
 
 Depending on the Subformat, various Chunk types are defined that are documented in their repsective pages. The following Chunk types are universal.
@@ -45,17 +39,15 @@ Depending on the Subformat, various Chunk types are defined that are documented 
 
 The Index Chunk contains a list of all of the Chunks in the file, complete with their Ident and Offset relative to the start of the file. While not mandatory, if the Index chunk is present, the convention is that it must be the first Chunk after the header, thereby having a fixed loction to facilitate locating the resources in the file more easily.
 
-| Offset In Chunk | Content |
-| :---- | :---- |
-| 0 | **Ident** `"INDX"` |
-| 4 | **Length** `uint32` |
-| 8 | **Chunk \[0\] Ident** `char[4]` |
-| 12 | **Chunk \[0\] Offset** `uint32` |
-| 16 | **Chunk \[1\] Ident** `char[4]` |
-| 20 | **Chunk \[1\] Offset** `uint32` |
-| ... | ... |
-| N \+ 0 | **Chunk \[N\] Ident** `char[4]` |
-| N \+ 8 | **Chunk \[N\] Offset** `uint32` |
+| Offset In Chunk | Content | Type | Notes |
+| :---- | :---- | :---- | :---- |
+| 0 | **Ident** | `char[4]` | "INDX" |
+| 4 | **Length** | `uint32` | |
+| - | Record [0] | struct { | Structure of ... |
+| 8 | - Ident | `char[4]` | |
+| 12 | - Offset | `uint32` | Relative to start of file |
+| - | | } | |
+| ... | ... | ... | Structure repeated |
 
 Notes:
 
@@ -67,13 +59,13 @@ Notes:
 
 The String Chunk contains all of the unique strings that are encountered, which are then referenced by offset in other locations. This includes the Description string from the Header. Since this is a mandatory field, it follows that all valid files contain the String Chunk. By convention, the String Chunk should be the last chunk in the file.
 
-The Chunk comprises of each distinct string that was parsed out of the source asset, placed sequentially with a null termination byte. No alignment is enforced on the start address of a sting. If length of all the null terminated strings combined is not a multiple of 4, additional null bytes are added at the end as padding.
+The chunk data comprises of each distinct string that was parsed out of the source asset, placed sequentially with a null termination byte. No alignment is enforced on the start address of a sting. If length of all the null terminated strings combined is not a multiple of 4, additional null bytes are added at the end as padding.
 
-| Offset In Chunk | Content |
-| :---- | :---- |
-| 0 | **Ident** `"STRH"` |
-| 4 | **Length** `uint32` |
-| 8 | **Data** `char[]` |
+| Offset In Chunk | Content | Type | Notes
+| :---- | :---- | :---- | :---- |
+| 0 | **Ident** | `char[4]` | "STRH" |
+| 4 | **Length** | `uint32` | |
+| 8 | Data | `char[...]` | Catenated sequence of null-terminated strings |
 
 Notes:
 
