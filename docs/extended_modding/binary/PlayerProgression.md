@@ -25,7 +25,7 @@ The Inventory Limits Chunk has the same format as the [Default Inventory Limits 
 | Offset In Chunk | Content | Type | Notes |
 | :---- | :---- | :---- |  :---- |
 | 0 | **Ident** | `char[4]` | "INVL" |
-| 4 | **Length** | `uint32` | |
+| 4 | **Length** | `uint32` | Size of complete chunk. Fixed length: 52 |
 | 8 | Max Health | `int16` | |
 | 10 | Max Fuel | `int16` | |
 | 12 | Max Ammo | `int16[20]` | One for each defined Ammo type |
@@ -37,7 +37,7 @@ The Counters Chunk contains sets of counters that are updated by the game and us
 | Offset In Chunk | Content | Type | Notes |
 | :---- | :---- | :--- | :---- |
 | 0 | **Ident** | `char[4]` | "CTRS" |
-| 4 | **Length** | `uint32` | |
+| 4 | **Length** | `uint32` | Size of complete chunk. Fixed Length: 336 |
 | 8 | Level Count | `uint16` | Contains the total number of defined levels (Default 16) |
 | 10 | Ammo Count | `uint16` | Contains the total number defined Ammo classes (Default 20) |
 | 12 | Alien Count | `uint16` | Contains the total number of Alien classes (Default 20) |
@@ -59,38 +59,41 @@ The Achievements Chunk contains a set of time/id pairs for the Achievements that
 | Offset In Chunk | Content | Type | Notes |
 | :---- | :---- | :--- | :---- |
 | 0 | **Ident** | `char[4]` | `ACHD` |
-| 4 | **Length** | `uint32` | This will be 8 for an initially empty list |
-| - | Record [0] | struct {| Structure of ... |
-| 8 | - Date Awarded | `uint16` | 11:5 Format |
+| 4 | **Length** | `uint32` | Size of complete chunk. (Length - 8) / 4 gives record count |
+| - | Record [0] | struct {| |
+| 8 | - Date Awarded | `uint16` | Custom Date Format |
 | 10 | - Achievement ID | `uint16` | ID (index in the Achievements data) |
 | - | | } |
 | ... | ... | ... | Structure repeated per completed Achievement |
 
 
-The Date Awarded is a compact 11:5 format:
+The Date Awarded is a compact 11:5 _MonthsSinceEpoch_:_DayOfMonth_ format:
 
 - 11-bit zero-indexed month count, since the AmigaDOS epoch of 1978-01-01 00:00:00
+    - This provides approximately 170 years of range since the epoch.
+
 - 5-bit day of month, 1-31
+- Date = (12 * (**_Year_** - 1978) + **_Month_** - 1) << 5 | **_Day_**
 
-For example, a Date Awarded of 2026-04-24 would be encoded as follows:
 
-- Months:
-    - Convert Year (2026) to months since epoch: 2026 - 1978 = 48, 48 * 12 = 576
-    - Convert ordinal month (4) number to zero-indexed: 4 - 1 = 3
-    - Add to months count: 576 + 3 = 579
-    - Shift into upper 11 bits: 579 << 5 => 18528
+**Date Conversion Example**
+
+A date of **2026-04-24** would be encoded as follows:
+
+- Calculate Months Fo:
+    - 12 * (**_2026_** - 1978) + **_4_** - 1 = 579
+    - 579 << 5 => 18528
 - Days:
-    - OR combine ordinal day of month: 18528 | 24 = 18522
+    - 18528 | **_24_** = 18552
 
-To convert this value back to Year, Month and Day for presentation:
+To decode, the reverse steps are taken:
 
-- Year:
-    - Extract the high 11-bit month count: 18552 >> 5 = 579
-    - Divide by 12 to get the Year count: 579/12 = 48, remainder 3
-    - Add the Epoch Year: 48 + 1978 = 2026
-- Month:
-    - Take the remainder from the Year division and add 1 to convert to ordinal month: 3 + 1 = 4
 - Day:
-    - Extract the low 5-bit day count: 18552 & 31 = 24
+    - 18552 & 31 = **_24_**
+- Month:
+    - ((18552 >> 5) % 12) + 1 = **_4_**
+- Year:
+    - ((18522 >> 5) / 12) + 1978 = **_2026_**
+
 
 The Date and Achievement ID fields are packaged together as a fully date-sortable 32-bit integer.

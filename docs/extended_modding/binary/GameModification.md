@@ -27,7 +27,7 @@ The Inventory Limits Chunk contains the binary encoded limits defined in the sou
 | Offset In Chunk | Content | Type | Notes |
 | :---- | :---- | :---- | :---- |
 | 0 | **Ident** | `char[4]` | "INVL" |
-| 4 | **Length** | `uint32` | |
+| 4 | **Length** | `uint32` | Size of complete chunk. Fixed size: 52 |
 | 8 | Max Health | `int16` | |
 | 10 | Max Fuel | `int16` | |
 | 12 | Max Ammo | `int16[20]` | One for each defined Ammo class |
@@ -46,7 +46,7 @@ The Special Ammo Bonuses Chunk contains the binary encoded values defined in the
 | Offset In Chunk | Content | Type | Notes |
 | :---- | :---- | :---- | :---- |
 | 0 | **Ident** | `char[4]` | "SPAB" |
-| 4 | **Length** | `uint32` | (Length - 8) / 8 gives record count |
+| 4 | **Length** | `uint32` | Size of complete chunk. (Length - 8) / 8 gives record count |
 | - | Record [0] | struct { | Structure of ... |
 | 8 | - Reserved | `uint16` | Reserved for expansion |
 | 10 | - Ammo Type ID | `uint16` | Defined Ammo Class |
@@ -67,8 +67,8 @@ The Weapon Adjusment Chunk contains the binary encoded data defined in the  [Wea
 | Offset In Chunk | Content | Type | Notes |
 | :---- | :---- | :---- | :---- |
 | 0 | **Ident** | `char[4]` | "WADJ" |
-| 4 | **Length** | `uint32` | (Length - 8) / 16 gives record count |
-| - | Record [0] | struct { | Structure of ... |
+| 4 | **Length** | `uint32` | Size of complete chunk. (Length - 8) / 16 gives record count |
+| - | Record [0] | struct { | |
 | 8 | - Slot ID | `uint16` | Which weapon slot the adjustment is for |
 | 10 | - XOffset | `int16` | |
 | 12 | - YOffset | `int16` | |
@@ -98,8 +98,8 @@ The Achievenents Chunk contanns the binary encoded achievement data defined in t
 | Offset In Chunk | Content | Type | Notes |
 | :---- | :---- | :---- | :---- |
 | 0 | **Ident** | `char[4]` | "ACHV" |
-| 4 | **Length** | `uint32` | (Length - 8) / 16 gives record count |
-| - | Record [0] | struct { | Structure of ... |
+| 4 | **Length** | `uint32` | Size of complete chunk. (Length - 8) / 16 gives record count |
+| - | Record [0] | struct { | |
 | 8 | - Description Offset | `uint32` | Offset into String Chunk |
 | 12 | - Reward Offset | `uint32` | Offset into Reward Chunk, 0 if no Reward |
 | 16 | - Rule Type ID | `uint16` | |
@@ -121,8 +121,8 @@ The Rewards Chunk contains the binary encoded representation of every defined Re
 | Offset In Chunk | Content | Type | Notes |
 | :---- | :---- | :---- | :---- |
 | 0 | **Ident** | `char[4]` | "RWRD" |
-| 4 | **Length** | `uint32` | |
-| - | Record [0] | struct { | Structure of ... |
+| 4 | **Length** | `uint32` | Size of complete chunk |
+| - | Record [0] | struct { | |
 | 8 | - Description Offset | `uint32` | Offset into String Chunk |
 | 12 | - Carry Offset | `uint16` | Offset from start of this Reward definition, 0 if no Carry Limit update |
 | 14 | - Immediate Offset | `uint16` | Offset from start of this Reward definition, 0 if no Immediate update |
@@ -130,7 +130,7 @@ The Rewards Chunk contains the binary encoded representation of every defined Re
 | x | - Carry Termination | `uint16` | 0xFFFF, Ommitted if no Carry Limit update |
 | x \+ 2 | Immediate Data | `uint16[...]` | Ommitted if no Immediate update |
 | y | Definition Termination | `uint16` | 0xFFFF |
-| y \+ 2 | Pad | `char[2]` | Only when the the definition size is not a multiple of 4 |
+| y \+ 2 | Pad (Optional) | `char[2]` | Only when the the definition size is not a multiple of 4 |
 | - | | } | |
 | ... | ... | ... | Structure repeated per defined Reward |
 
@@ -140,8 +140,8 @@ The Carry and Immediate Data are varying length arrays of `(u)int16` which is wh
 | :---- | :---- | :---- | :---- |
 | 0 | Health Add | `int16` | |
 | 2 | Fuel Add | `int16` | |
-| 4 | Ammo ID | `uint16[N]` | Per Ammunition class included |
-| 6 | Ammo ID Add | `int16[N]` | Per Ammunition class included |
+| 4 | Ammo ID | `uint16[...]` | Per Ammunition class included |
+| n | Ammo ID Add | `int16[...]` | Per Ammunition class included |
 
 Notes:
 

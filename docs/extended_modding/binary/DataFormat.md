@@ -25,7 +25,7 @@ This is immediately followed by one or more Chunks.
 | 8 | Requires | `uint16[2]` | Major.Minor version of game required |
 | 12 | Version | `uint16[2]` | Major.Minor version of this asset |
 | 16 | Description Offset | `uint32` | Offset in String Heap Chunk |
-| - | Chunk [0] | struct { | Structure of ... |
+| - | Chunk [0] | struct { | |
 | 20 | - Ident | `char[4]` | |
 | 24 | - Length | `uint32` | Always a multiple of 4 |
 | 28 | - Data | `uint8[...]` | Varying data, tail padded to 4-byte boundary |
@@ -42,8 +42,8 @@ The Index Chunk contains a list of all of the Chunks in the file, complete with 
 | Offset In Chunk | Content | Type | Notes |
 | :---- | :---- | :---- | :---- |
 | 0 | **Ident** | `char[4]` | "INDX" |
-| 4 | **Length** | `uint32` | |
-| - | Record [0] | struct { | Structure of ... |
+| 4 | **Length** | `uint32` | Size of complete chunk. (Length - 8) / 8 gives record count |
+| - | Record [0] | struct { | |
 | 8 | - Ident | `char[4]` | |
 | 12 | - Offset | `uint32` | Relative to start of file |
 | - | | } | |
@@ -64,7 +64,7 @@ The chunk data comprises of each distinct string that was parsed out of the sour
 | Offset In Chunk | Content | Type | Notes
 | :---- | :---- | :---- | :---- |
 | 0 | **Ident** | `char[4]` | "STRH" |
-| 4 | **Length** | `uint32` | |
+| 4 | **Length** | `uint32` | Size of complete chunk |
 | 8 | Data | `char[...]` | Catenated sequence of null-terminated strings |
 
 Notes:
