@@ -2,6 +2,7 @@
 #   define _TKG_GMF_H_
 
 #include "defs.h"
+#include <stddef.h>
 
 /**
  * Game Modification h_SubFormat

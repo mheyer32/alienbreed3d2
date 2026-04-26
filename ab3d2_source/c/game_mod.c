@@ -4,6 +4,17 @@
 
 extern char const game_PropertiesFile[];
 
+#if defined(DEV)
+static char const* aRuleNames[] = {
+    "KillCount",      // 0
+    "GroupKillCount", // 1
+    "ZoneFound",      // 2
+    "TimeImproved",   // 3
+    "PlayerDied",     // 4
+    "Collected",      // 5
+};
+#endif
+
 /**
  * gmod_ResolveReward()
  *
@@ -67,9 +78,10 @@ BOOL gmod_ParseAchievements(GMF_ChunkHeader const* pChunkHeader, GMF_Data* pGMFD
         pAchievement->achv_Description = GMF_ResolveString(pAchievement->achv_Description, pGMFData);
         if (pAchievement->achv_Reward != NULL) {
             dprintf(
-                "\t\tResolving ACHV %d [Rule %d] [Name %s]\n\t\t\tReward [%p + %zu] ",
+                "\t\tResolving ACHV %d [Rule %d %s] [Name %s]\n\t\t\tReward [%p + %zu] ",
                 i,
                 (int)pAchievement->achv_RuleType,
+                aRuleNames[pAchievement->achv_RuleType],
                 pAchievement->achv_Description,
                 pRewardChunk,
                 (size_t)pAchievement->achv_Reward
@@ -80,9 +92,10 @@ BOOL gmod_ParseAchievements(GMF_ChunkHeader const* pChunkHeader, GMF_Data* pGMFD
             dputs(pReward->rwrd_Description);
         } else {
             dprintf(
-                "\t\tResolving ACHV %d [Rule %d] [Name %s]\n",
+                "\t\tResolving ACHV %d [Rule %d %s] [Name %s]\n",
                 i,
                 (int)pAchievement->achv_RuleType,
+                aRuleNames[pAchievement->achv_RuleType],
                 pAchievement->achv_Description
             );
         }
@@ -140,7 +153,7 @@ static GMF_Header const gmod_Header = {
 
 GMF_Data* GMod_LoadFile()
 {
-    return GMF_LoadFile(game_PropertiesFile, &gmod_Header, gmod_Parsers);
+    return GMF_LoadFile("ab3:Includes/custom_game.props", &gmod_Header, gmod_Parsers);
 }
 
 void GMod_ApplyReward(

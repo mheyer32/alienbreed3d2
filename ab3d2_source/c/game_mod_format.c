@@ -54,7 +54,13 @@ static BOOL gmf_ReadFile(
 
     do {
         if (!filename || !pGMFData) {
-            dprintf("Invalid parameters %p %p\n", filename, pGMFData);
+            dprintf("Invalid parameters %s %p\n", filename, pGMFData);
+            break;
+        }
+
+        hGamePropsFH = Open(filename, MODE_OLDFILE);
+        if (DOSFALSE == hGamePropsFH) {
+            dprintf("Unable to open %s for reading\n", filename);
             break;
         }
 
@@ -63,7 +69,7 @@ static BOOL gmf_ReadFile(
             io_FileInfoBlock.fib_DirEntryType >= 0 ||
             io_FileInfoBlock.fib_Size < (LONG)MIN_GMF_SIZE
         ) {
-            dprintf("Inalid modification file %s\n", filename);
+            dprintf("Invalid modification file %s\n", filename);
             break;
         }
 
@@ -88,6 +94,7 @@ static BOOL gmf_ReadFile(
         pGMFData->gmd_IndexSize = 0;
         pGMFData->gmd_Strings   = NULL;
         bResult = TRUE;
+        dputs("\tSuccess");
 
     } while (FALSE);
 
