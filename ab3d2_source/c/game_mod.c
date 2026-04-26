@@ -15,6 +15,21 @@ static char const* aRuleNames[] = {
 };
 #endif
 
+static GMF_Data* gmod_Data = NULL;
+
+/**
+ * TODO
+ *
+ * Define new structure that has the direct references to the data we need.
+ */
+struct {
+    GMod_Achievement const* GMod_aAchievements;
+    ULONG GMod_NumAchievements;
+} GMod_Properties = {
+    .GMod_aAchievements   = NULL,
+    .GMod_NumAchievements = 0
+};
+
 /**
  * gmod_ResolveReward()
  *
@@ -132,29 +147,6 @@ static inline UWORD gmod_addSaturated(UWORD a, UWORD b, UWORD limit)
 }
 
 
-/**
- * Zero terminated list of custom parser functions for specific idents
- */
-static GMF_ParserEntry gmod_Parsers[] = {
-    { IDENT_SPAB, gmod_ParseSpecialAmmoBonuses },
-    { IDENT_ACHV, gmod_ParseAchievements },
-    { 0, NULL },
-};
-
-/**
- * Main Game Modification File, GMOD
- */
-static GMF_Header const gmod_Header = {
-    .h_Ident.id_Value     = IDENT_TKGD,
-    .h_SubFormat.id_Value = IDENT_GMOD,
-    .h_Version            = {TKG_VERSION, TKG_REVISION}
-};
-
-
-GMF_Data* GMod_LoadFile()
-{
-    return GMF_LoadFile("ab3:Includes/custom_game.props", &gmod_Header, gmod_Parsers);
-}
 
 void GMod_ApplyReward(
     GMod_Reward const* pReward,
@@ -205,5 +197,39 @@ void GMod_ApplyReward(
                 pInventoryLimits->ic_AmmoCounts[slot]
             );
         }
+    }
+}
+
+/**
+ * Zero terminated list of custom parser functions for specific idents
+ */
+static GMF_ParserEntry gmod_Parsers[] = {
+    { IDENT_SPAB, gmod_ParseSpecialAmmoBonuses },
+    { IDENT_ACHV, gmod_ParseAchievements },
+    { 0, NULL },
+};
+
+/**
+ * Main Game Modification File, GMOD
+ */
+static GMF_Header const gmod_Header = {
+    .h_Ident.id_Value     = IDENT_TKGD,
+    .h_SubFormat.id_Value = IDENT_GMOD,
+    .h_Version            = {TKG_VERSION, TKG_REVISION}
+};
+
+
+void GMod_Init()
+{
+    gmod_Data = GMF_LoadFile("ab3:Includes/custom_game.props", &gmod_Header, gmod_Parsers);
+
+    // Assign pointers to frequently accessed members to GMod_Properties fields here.
+}
+
+void GMod_Done()
+{
+    if (gmod_Data) {
+        GMF_Free(gmod_Data);
+        gmod_Data = NULL;
     }
 }

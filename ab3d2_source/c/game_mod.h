@@ -77,11 +77,18 @@ typedef struct {
 #define WAF_NO_FIRE_SUBMERGED 0x0008
 
 /**
- * GMod_LoadFile()
+ * GMod_Init()
  *
- * Attempts to load the Game Modification File.
+ * Attempts to load the Game Modification File and apply the settings
  */
-extern GMF_Data* GMod_LoadFile(void);
+extern void GMod_Init(void);
+
+/**
+ * GMod_Done()
+ *
+ * Releases any resources acquired by GMod_Init()
+ */
+extern void GMod_Done(void);
 
 /**
  * GMod_ApplyReward()
