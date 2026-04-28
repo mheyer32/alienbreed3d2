@@ -93,7 +93,7 @@ The data in the Weapon Adjustment node serves as the game default values for the
 
 ### Achievements
 
-The Achievenents Chunk contanns the binary encoded achievement data defined in the [Achievements](../source/GameModification.md#achievements) node.
+The Achievenents Chunk contains the binary encoded achievement data defined in the [Achievements](../source/GameModification.md#achievements) node.
 
 | Offset In Chunk | Content | Type | Notes |
 | :---- | :---- | :---- | :---- |

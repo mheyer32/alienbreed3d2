@@ -76,6 +76,15 @@ typedef struct {
 #define WAF_NO_FLY            0x0004
 #define WAF_NO_FIRE_SUBMERGED 0x0008
 
+typedef struct {
+    GMF_Data const*         gmp_Data;
+    UBYTE*                  gmp_Buffers;
+    GMod_Achievement const* gmp_Achievements;
+    ULONG                   gmp_NumAchievements;
+    UBYTE*                  gmp_AchievedBitmap;
+    UWORD*                  gmp_AchievedDate;
+} GMod_State;
+
 /**
  * GMod_Init()
  *

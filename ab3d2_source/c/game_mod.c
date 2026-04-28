@@ -20,32 +20,28 @@ static char const* aRuleNames[] = {
  * TODO
  *
  * Define new structure that has the direct references to the data we need.
+ *
+ * This should only contain the loaded state, i.e. the location and counts of data
+ * loaded in via chunks.
+ *
+ * The Player Progression structure should be updated with the the rest.
  */
 struct {
-    GMF_Data const* gmp_Data;
-    UBYTE*          gmp_Buffers;
+    GMF_Data const* gmp_Loaded;
     GMod_Achievement const* gmp_Achievements;
     ULONG  gmp_NumAchievements;
-    UBYTE* gmp_AchievedBitmap;
-    UWORD* gmp_AchievedDate;
 
 } GMod_Properties = {
-    .gmp_Data            = NULL,
-    .gmp_Buffers         = NULL,
+    .gmp_Loaded          = NULL,
     .gmp_Achievements    = NULL,
-    .gmp_NumAchievements = 0,
-    .gmp_AchievedBitmap  = NULL,
-    .gmp_AchievedDate    = NULL
+    .gmp_NumAchievements = 0
 };
 
 static void gmod_ResetProperties()
 {
-    GMod_Properties.gmp_Data            = NULL;
-    GMod_Properties.gmp_Buffers         = NULL;
+    GMod_Properties.gmp_Loaded          = NULL;
     GMod_Properties.gmp_Achievements    = NULL;
     GMod_Properties.gmp_NumAchievements = 0;
-    GMod_Properties.gmp_AchievedBitmap  = NULL;
-    GMod_Properties.gmp_AchievedDate    = NULL;
 }
 
 /**
@@ -246,36 +242,13 @@ static GMF_Header const gmod_Header = {
 
 void GMod_Init()
 {
-    GMod_Properties.gmp_Data = GMF_LoadFile("ab3:Includes/custom_game.props", &gmod_Header, gmod_Parsers);
-
-    /* Round up the achievement count to the nearest 8 */
-    ULONG roundBufferCount = (GMod_Properties.gmp_NumAchievements + 7) & ~7;
-
-    /* Calculate the size needed for a single allocation */
-    ULONG allocSize = (roundBufferCount * sizeof(UWORD)) + (roundBufferCount >> 8);
-    GMod_Properties.gmp_Buffers = (UBYTE*)AllocVec(allocSize, MEMF_ANY|MEMF_CLEAR);
-    GMod_Properties.gmp_AchievedDate   = (UWORD*)GMod_Properties.gmp_Buffers;
-    GMod_Properties.gmp_AchievedBitmap = (UBYTE*)(GMod_Properties.gmp_AchievedDate + roundBufferCount);
-    printf(
-        "gmp_Buffers %p\n"
-        "gmp_NumAchievements %d [rounded %d]\n"
-        "gmp_AchievedDate %p\n"
-        "gmp_AchievedBitmap %p\n",
-        GMod_Properties.gmp_Buffers,
-        (int)GMod_Properties.gmp_NumAchievements,
-        (int)roundBufferCount,
-        GMod_Properties.gmp_AchievedDate,
-        GMod_Properties.gmp_AchievedBitmap
-    );
+    GMod_Properties.gmp_Loaded = GMF_LoadFile("ab3:Includes/custom_game.props", &gmod_Header, gmod_Parsers);
 }
 
 void GMod_Done()
 {
-    if (GMod_Properties.gmp_Data) {
-        GMF_Free(GMod_Properties.gmp_Data);
-    }
-    if (GMod_Properties.gmp_Buffers) {
-        FreeVec((void*)GMod_Properties.gmp_Buffers);
+    if (GMod_Properties.gmp_Loaded) {
+        GMF_Free(GMod_Properties.gmp_Loaded);
     }
     gmod_ResetProperties();
 }
