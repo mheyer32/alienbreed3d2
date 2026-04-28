@@ -234,7 +234,7 @@ GMF_Data* GMF_LoadFile(
  *
  * Releases a GMF_Data instance and any associated data.
  */
-void GMF_Free(GMF_Data* pGMFData)
+void GMF_Free(GMF_Data const* pGMFData)
 {
     dputs("GMF_Free()");
     if (pGMFData) {

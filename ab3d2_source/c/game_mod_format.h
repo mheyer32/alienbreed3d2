@@ -165,7 +165,7 @@ extern GMF_Data* GMF_LoadFile(
  *
  * Releases a GMF_Data instance and any associated data.
  */
-extern void GMF_Free(GMF_Data* pGMFData);
+extern void GMF_Free(GMF_Data const* pGMFData);
 
 
 #endif /* _TKG_GMF_H_ */

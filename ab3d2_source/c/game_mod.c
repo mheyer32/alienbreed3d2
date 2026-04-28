@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "game_mod.h"
 #include "devmode.h"
+#include <proto/exec.h>
 
 extern char const game_PropertiesFile[];
 
@@ -15,20 +16,37 @@ static char const* aRuleNames[] = {
 };
 #endif
 
-static GMF_Data* gmod_Data = NULL;
-
 /**
  * TODO
  *
  * Define new structure that has the direct references to the data we need.
  */
 struct {
-    GMod_Achievement const* GMod_aAchievements;
-    ULONG GMod_NumAchievements;
+    GMF_Data const* gmp_Data;
+    UBYTE*          gmp_Buffers;
+    GMod_Achievement const* gmp_Achievements;
+    ULONG  gmp_NumAchievements;
+    UBYTE* gmp_AchievedBitmap;
+    UWORD* gmp_AchievedDate;
+
 } GMod_Properties = {
-    .GMod_aAchievements   = NULL,
-    .GMod_NumAchievements = 0
+    .gmp_Data            = NULL,
+    .gmp_Buffers         = NULL,
+    .gmp_Achievements    = NULL,
+    .gmp_NumAchievements = 0,
+    .gmp_AchievedBitmap  = NULL,
+    .gmp_AchievedDate    = NULL
 };
+
+static void gmod_ResetProperties()
+{
+    GMod_Properties.gmp_Data            = NULL;
+    GMod_Properties.gmp_Buffers         = NULL;
+    GMod_Properties.gmp_Achievements    = NULL;
+    GMod_Properties.gmp_NumAchievements = 0;
+    GMod_Properties.gmp_AchievedBitmap  = NULL;
+    GMod_Properties.gmp_AchievedDate    = NULL;
+}
 
 /**
  * gmod_ResolveReward()
@@ -45,6 +63,8 @@ static GMod_Reward* gmod_ResolveReward(GMod_Reward const* pReward, GMF_ChunkHead
  * gmod_ParseSpecialAmmoBonuses()
  *
  * Parser for the Special Ammo Bonuses Chunk
+ *
+ * Parser is only called if the chunk exists, so assumptions about the pointer are safe.
  */
 BOOL gmod_ParseSpecialAmmoBonuses(GMF_ChunkHeader const* pChunkHeader, GMF_Data* pGMFData)
 {
@@ -76,7 +96,9 @@ BOOL gmod_ParseSpecialAmmoBonuses(GMF_ChunkHeader const* pChunkHeader, GMF_Data*
 /**
  * gmod_ParseAchievements()
  *
- * Parser for the Special Ammo Bonuses Chunk
+ * Parser for the Achievements Chunk
+ *
+ * Parser is only called if the chunk exists, so assumptions about the pointer are safe.
  */
 BOOL gmod_ParseAchievements(GMF_ChunkHeader const* pChunkHeader, GMF_Data* pGMFData)
 {
@@ -87,7 +109,10 @@ BOOL gmod_ParseAchievements(GMF_ChunkHeader const* pChunkHeader, GMF_Data* pGMFD
     GMF_ChunkHeader const* pRewardChunk = GMF_LocateChunk(pGMFData, IDENT_RWRD);
     GMod_Achievement*      pAchievement = (GMod_Achievement*)GMF_ChunkData(pChunkHeader);
 
-    int iNumEntries = pChunkHeader->ch_Length / sizeof(GMod_Achievement);
+    int iNumEntries = (pChunkHeader->ch_Length - sizeof(GMF_ChunkHeader)) / sizeof(GMod_Achievement);
+
+    GMod_Properties.gmp_Achievements    = pAchievement;
+    GMod_Properties.gmp_NumAchievements = (ULONG)iNumEntries;
 
     for (int i = 0; i < iNumEntries; ++i) {
         pAchievement->achv_Description = GMF_ResolveString(pAchievement->achv_Description, pGMFData);
@@ -221,15 +246,36 @@ static GMF_Header const gmod_Header = {
 
 void GMod_Init()
 {
-    gmod_Data = GMF_LoadFile("ab3:Includes/custom_game.props", &gmod_Header, gmod_Parsers);
+    GMod_Properties.gmp_Data = GMF_LoadFile("ab3:Includes/custom_game.props", &gmod_Header, gmod_Parsers);
 
-    // Assign pointers to frequently accessed members to GMod_Properties fields here.
+    /* Round up the achievement count to the nearest 8 */
+    ULONG roundBufferCount = (GMod_Properties.gmp_NumAchievements + 7) & ~7;
+
+    /* Calculate the size needed for a single allocation */
+    ULONG allocSize = (roundBufferCount * sizeof(UWORD)) + (roundBufferCount >> 8);
+    GMod_Properties.gmp_Buffers = (UBYTE*)AllocVec(allocSize, MEMF_ANY|MEMF_CLEAR);
+    GMod_Properties.gmp_AchievedDate   = (UWORD*)GMod_Properties.gmp_Buffers;
+    GMod_Properties.gmp_AchievedBitmap = (UBYTE*)(GMod_Properties.gmp_AchievedDate + roundBufferCount);
+    printf(
+        "gmp_Buffers %p\n"
+        "gmp_NumAchievements %d [rounded %d]\n"
+        "gmp_AchievedDate %p\n"
+        "gmp_AchievedBitmap %p\n",
+        GMod_Properties.gmp_Buffers,
+        (int)GMod_Properties.gmp_NumAchievements,
+        (int)roundBufferCount,
+        GMod_Properties.gmp_AchievedDate,
+        GMod_Properties.gmp_AchievedBitmap
+    );
 }
 
 void GMod_Done()
 {
-    if (gmod_Data) {
-        GMF_Free(gmod_Data);
-        gmod_Data = NULL;
+    if (GMod_Properties.gmp_Data) {
+        GMF_Free(GMod_Properties.gmp_Data);
     }
+    if (GMod_Properties.gmp_Buffers) {
+        FreeVec((void*)GMod_Properties.gmp_Buffers);
+    }
+    gmod_ResetProperties();
 }
