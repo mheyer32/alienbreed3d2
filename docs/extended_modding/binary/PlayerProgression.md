@@ -14,9 +14,14 @@ The following Chunks are included:
 
 - [Index](./DataFormat.md#index-chunk)
 - Inventory Limits
+- Weapon Adjustments
 - Counters
-- Achievements
+- Achieved
 - [String](./DataFormat.md#string-chunk)
+
+### Header
+
+The header ident for this file is `GPRG`.
 
 ### Inventory Limits Chunk
 
@@ -29,6 +34,26 @@ The Inventory Limits Chunk has the same format as the [Default Inventory Limits 
 | 8 | Max Health | `int16` | |
 | 10 | Max Fuel | `int16` | |
 | 12 | Max Ammo | `int16[20]` | One for each defined Ammo type |
+
+### Weapon Adjustment
+
+The Weapon Adjusment Chunk has the same format as the [Default Weapon Adjustment](../GameModification.md#weaponadjustment) and contains the _active_ set of modifications for the Player, taking into account the impact of any specific alterations so far.
+
+| Offset In Chunk | Content | Type | Notes |
+| :---- | :---- | :---- | :---- |
+| 0 | **Ident** | `char[4]` | "WADJ" |
+| 4 | **Length** | `uint32` | Size of complete chunk. (Length - 8) / 16 gives record count |
+| - | Record [0] | struct { | |
+| 8 | - Slot ID | `uint16` | Which weapon slot the adjustment is for |
+| 10 | - XOffset | `int16` | |
+| 12 | - YOffset | `int16` | |
+| 14 | - Recoil | `int16` | |
+| 16 | - Spray | `int16` | |
+| 18 | - Burst Limit | `uint16` | Zero implies no limit |
+| 20 | - Cooldown | `uint16` | Zero implies no cooldown |
+| 22 | - Flags | `uint16` | Flags |
+| - | | } |
+| ... | ... | ... | Structure repeated per defined Weapon Adjustment |
 
 ### Counters Chunk
 
@@ -52,9 +77,9 @@ The Counters Chunk contains sets of counters that are updated by the game and us
 | 252 | Fuel Collected | `uint32` | Total count of Fuel collected |
 | 256 | Ammo Collected | `uint32[20]` | Total count of ammunition collected for each Ammo class |
 
-### Achievements Chunk
+### Achieved Chunk
 
-The Achievements Chunk contains a set of time/id pairs for the Achievements that have been awarded to the player.
+The Achieved Chunk contains a set of time/id pairs for the Achievements that have been awarded to the player.
 
 | Offset In Chunk | Content | Type | Notes |
 | :---- | :---- | :--- | :---- |

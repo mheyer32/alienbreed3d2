@@ -2,6 +2,7 @@
 #include "game_mod.h"
 #include "devmode.h"
 #include <proto/exec.h>
+#include "system.h"
 
 extern char const game_PropertiesFile[];
 
@@ -16,33 +17,10 @@ static char const* aRuleNames[] = {
 };
 #endif
 
-/**
- * TODO
- *
- * Define new structure that has the direct references to the data we need.
- *
- * This should only contain the loaded state, i.e. the location and counts of data
- * loaded in via chunks.
- *
- * The Player Progression structure should be updated with the the rest.
- */
-struct {
-    GMF_Data const* gmp_Loaded;
-    GMod_Achievement const* gmp_Achievements;
-    ULONG  gmp_NumAchievements;
 
-} GMod_Properties = {
-    .gmp_Loaded          = NULL,
-    .gmp_Achievements    = NULL,
-    .gmp_NumAchievements = 0
-};
 
-static void gmod_ResetProperties()
-{
-    GMod_Properties.gmp_Loaded          = NULL;
-    GMod_Properties.gmp_Achievements    = NULL;
-    GMod_Properties.gmp_NumAchievements = 0;
-}
+extern GMod_DefaultProperties GMod_Defaults; // Defined in BSS
+
 
 /**
  * gmod_ResolveReward()
@@ -106,9 +84,6 @@ BOOL gmod_ParseAchievements(GMF_ChunkHeader const* pChunkHeader, GMF_Data* pGMFD
     GMod_Achievement*      pAchievement = (GMod_Achievement*)GMF_ChunkData(pChunkHeader);
 
     int iNumEntries = (pChunkHeader->ch_Length - sizeof(GMF_ChunkHeader)) / sizeof(GMod_Achievement);
-
-    GMod_Properties.gmp_Achievements    = pAchievement;
-    GMod_Properties.gmp_NumAchievements = (ULONG)iNumEntries;
 
     for (int i = 0; i < iNumEntries; ++i) {
         pAchievement->achv_Description = GMF_ResolveString(pAchievement->achv_Description, pGMFData);
@@ -239,16 +214,77 @@ static GMF_Header const gmod_Header = {
     .h_Version            = {TKG_VERSION, TKG_REVISION}
 };
 
+// typedef struct {
+//     GMF_Data const*                 gmod_Loaded;
+//     InventoryConsumables const*     gmod_DefinedInventoryLimits;
+//     GMod_SpecialAmmoBonus const*    gmod_DefinedSpecialAmmoBonuses;
+//     GMod_WeaponAdjustment const*    gmod_DefinedWeaponAdjustments;
+//     GMod_Achievement const*         gmod_DefinedAchievements;
+//     ULONG                           gmod_NumDefinedSpecialAmmoBonuses;
+//     ULONG                           gmod_NumDefinedWeaponAdjustments;
+//     ULONG                           gmod_NumDefinedAchievements;
+// } GMod_DefaultProperties;
 
 void GMod_Init()
 {
-    GMod_Properties.gmp_Loaded = GMF_LoadFile("ab3:Includes/custom_game.props", &gmod_Header, gmod_Parsers);
+    // Paranoia
+    Sys_MemFillLong(&GMod_Defaults, 0, sizeof(GMod_DefaultProperties)/sizeof(LONG));
+
+    GMod_Defaults.gmod_Loaded = GMF_LoadFile("ab3:Includes/custom_game.props", &gmod_Header, gmod_Parsers);
+
+    if (NULL == GMod_Defaults.gmod_Loaded) {
+        dputs("No game modification properties loaded");
+        return;
+    }
+
+    GMF_ChunkHeader const* pChunk;
+
+    // Inventory limits (size is fixed)
+    if ( (pChunk = GMF_LocateChunk(GMod_Defaults.gmod_Loaded, IDENT_INVL)) ) {
+        // Fixed size
+        GMod_Defaults.gmod_DefinedInventoryLimits = (InventoryConsumables const*)GMF_ChunkData(pChunk);
+    }
+
+    // Special Ammo Bonuses
+    if ( (pChunk = GMF_LocateChunk(GMod_Defaults.gmod_Loaded, IDENT_SPAB)) ) {
+        GMod_Defaults.gmod_DefinedSpecialAmmoBonuses    = (GMod_SpecialAmmoBonus const*)GMF_ChunkData(pChunk);
+        GMod_Defaults.gmod_NumDefinedSpecialAmmoBonuses = GMF_ChunkRecordCount(pChunk, GMod_SpecialAmmoBonus);
+    }
+
+    // Weapon Adjustments
+    if ( (pChunk = GMF_LocateChunk(GMod_Defaults.gmod_Loaded, IDENT_WADJ)) ) {
+        GMod_Defaults.gmod_DefinedWeaponAdjustments    = (GMod_WeaponAdjustment const*)GMF_ChunkData(pChunk);
+        GMod_Defaults.gmod_NumDefinedWeaponAdjustments = GMF_ChunkRecordCount(pChunk, GMod_WeaponAdjustment);
+    }
+
+    // Achievements
+    if ( (pChunk = GMF_LocateChunk(GMod_Defaults.gmod_Loaded, IDENT_ACHV)) ) {
+        GMod_Defaults.gmod_DefinedAchievements         = (GMod_Achievement const*)GMF_ChunkData(pChunk);
+        GMod_Defaults.gmod_NumDefinedAchievements      = GMF_ChunkRecordCount(pChunk, GMod_Achievement);
+    }
+    dprintf(
+        "GMod_Init()\n"
+        "\tgmod_Loaded:                    %p\n"
+        "\tgmod_DefinedInventoryLimits:    %p\n"
+        "\tgmod_DefinedSpecialAmmoBonuses: %p %lu\n"
+        "\tgmod_DefinedWeaponAdjustments:  %p %lu\n"
+        "\tgmod_DefinedAchievements:       %p %lu\n",
+        GMod_Defaults.gmod_Loaded,
+        GMod_Defaults.gmod_DefinedInventoryLimits,
+        GMod_Defaults.gmod_DefinedSpecialAmmoBonuses,
+        GMod_Defaults.gmod_NumDefinedSpecialAmmoBonuses,
+        GMod_Defaults.gmod_DefinedWeaponAdjustments,
+        GMod_Defaults.gmod_NumDefinedWeaponAdjustments,
+        GMod_Defaults.gmod_DefinedAchievements,
+        GMod_Defaults.gmod_NumDefinedAchievements
+    );
 }
 
 void GMod_Done()
 {
-    if (GMod_Properties.gmp_Loaded) {
-        GMF_Free(GMod_Properties.gmp_Loaded);
+    if (GMod_Defaults.gmod_Loaded) {
+        GMF_Free(GMod_Defaults.gmod_Loaded);
     }
-    gmod_ResetProperties();
+    // Paranoia
+    Sys_MemFillLong(&GMod_Defaults, 0, sizeof(GMod_DefaultProperties)/sizeof(LONG));
 }

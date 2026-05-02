@@ -167,5 +167,9 @@ extern GMF_Data* GMF_LoadFile(
  */
 extern void GMF_Free(GMF_Data const* pGMFData);
 
+/**
+ * Quick and dirty macro to get the count of fixed size records from a chunk
+ */
+#define GMF_ChunkRecordCount(pChunk, type) (ULONG)((pChunk->ch_Length - sizeof(GMF_ChunkHeader))/sizeof(type))
 
 #endif /* _TKG_GMF_H_ */

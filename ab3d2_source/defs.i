@@ -445,6 +445,7 @@ MAX_ACHIEVEMENTS EQU 128
 		STRUCT InvT_Items,(InvIT_SizeOf_l)			; 24
 		LABEL InvT_SizeOf_l							; 68
 
+    ; TODO - this needs to be replaced
 	; Custom game properties
 	STRUCTURE GModT,0
 		; Default inventory limits
@@ -453,6 +454,8 @@ MAX_ACHIEVEMENTS EQU 128
 		UWORD     GModT_AchievementSize             ; 2
 		LABEL GModT_SizeOf_l						; 48
 
+
+    ; TODO - this needs to be replaced
 	; Game statistics
 	STRUCTURE GStatT,0
 		; Progressed inventory limits

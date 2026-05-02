@@ -1,17 +1,14 @@
 #ifndef _TKG_GMOD_H_
 #   define _TKG_GMOD_H_
 
-#include "defs.h"
-#include "game_mod_format.h"
+#include "game_mod_common.h"
 
 /*
  * These structures are managed by the assembler side and the alignment constraints are to preven the compiler
  * from padding them further for alignment purposes. It does not mean that the structures themselves are only
  * aligned to a 2 byte boundary,
  */
-
 enum {
-    IDENT_INVL = 0x494E564C,
     IDENT_SPAB = 0x53504142,
     IDENT_RWRD = 0x52575244,
     IDENT_ACHV = 0x41434856,
@@ -27,7 +24,7 @@ typedef struct {
     UWORD       rwrd_CarryOffset;
     UWORD       rwrd_ImmediateOffset;
     UWORD       rwrd_RewardData[1];
-} ASM_ALIGN(sizeof(ULONG)) GMod_Reward;
+} ASM_ALIGN(sizeof(ULONG)) GMod_Reward; // Header only
 
 /**
  * GMod_SpecialAmmoBonus
@@ -38,7 +35,7 @@ typedef struct {
     UWORD              spab_Index;
     UWORD              spab_AmmoID;
     GMod_Reward const* spab_Reward;
-} ASM_ALIGN(sizeof(ULONG)) GMod_SpecialAmmoBonus;
+} ASM_ALIGN(sizeof(ULONG)) GMod_SpecialAmmoBonus; // 8 bytes
 
 /**
  * GMod_Achievement
@@ -50,23 +47,7 @@ typedef struct {
     GMod_Reward const* achv_Reward;
     UWORD              achv_RuleType;
     UWORD              achv_Params[3];
-} ASM_ALIGN(sizeof(ULONG)) GMod_Achievement;
-
-/**
- * GMod_WeaponAdjustment
- *
- * Defines a behavioural adjustment for a weapon.
- */
-typedef struct {
-    UWORD wa_SlotID;
-    WORD  wa_XOffset;
-    WORD  wa_YOffset;
-    WORD  wa_Recoil;
-    WORD  wa_Spray;
-    UWORD wa_BurstLimit;
-    UWORD wa_CoolDown;
-    UWORD wa_Flags;
-} ASM_ALIGN(sizeof(UWORD)) GMod_WeaponAdjustment;
+} ASM_ALIGN(sizeof(ULONG)) GMod_Achievement; // 16 bytes
 
 /**
  * GMod_WeaponAdjustment.wa_Flags
@@ -76,14 +57,22 @@ typedef struct {
 #define WAF_NO_FLY            0x0004
 #define WAF_NO_FIRE_SUBMERGED 0x0008
 
+/**
+ * Default definitions for the game modification. The pointers here will be initialised with either the
+ * data from the loaded mod, some global definition, or NULL.
+ *
+ * Some data are not fixed size. Those include a corresponding counter.
+ */
 typedef struct {
-    GMF_Data const*         gmp_Data;
-    UBYTE*                  gmp_Buffers;
-    GMod_Achievement const* gmp_Achievements;
-    ULONG                   gmp_NumAchievements;
-    UBYTE*                  gmp_AchievedBitmap;
-    UWORD*                  gmp_AchievedDate;
-} GMod_State;
+    GMF_Data const*                 gmod_Loaded;
+    InventoryConsumables const*     gmod_DefinedInventoryLimits;
+    GMod_SpecialAmmoBonus const*    gmod_DefinedSpecialAmmoBonuses;
+    GMod_WeaponAdjustment const*    gmod_DefinedWeaponAdjustments;
+    GMod_Achievement const*         gmod_DefinedAchievements;
+    ULONG                           gmod_NumDefinedSpecialAmmoBonuses;
+    ULONG                           gmod_NumDefinedWeaponAdjustments;
+    ULONG                           gmod_NumDefinedAchievements;
+} GMod_DefaultProperties;
 
 /**
  * GMod_Init()

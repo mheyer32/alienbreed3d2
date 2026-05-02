@@ -5,6 +5,10 @@
 
 			align 4
 
+; Game modification defaults
+_GMod_Defaults::
+Game_Defaults_vl:   ds.l    16; sizeof(GMod_DefaultProperties)/sizeof(ULONG)
+
 _Game_ProgressSignal::
 Game_ProgressSignal_l:			ds.l 1 ; cleared at the start of every frame and checked at the end
 
