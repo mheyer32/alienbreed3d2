@@ -17,8 +17,6 @@ static char const* aRuleNames[] = {
 };
 #endif
 
-
-
 extern GMod_DefaultProperties GMod_Defaults; // Defined in BSS
 
 
@@ -142,8 +140,6 @@ static inline UWORD gmod_addSaturated(UWORD a, UWORD b, UWORD limit)
     return (sum < a || sum < b || sum > limit) ? limit : sum;
 }
 
-
-
 void GMod_ApplyReward(
     GMod_Reward const* pReward,
     InventoryConsumables* pInventoryLimits,
@@ -214,16 +210,16 @@ static GMF_Header const gmod_Header = {
     .h_Version            = {TKG_VERSION, TKG_REVISION}
 };
 
-// typedef struct {
-//     GMF_Data const*                 gmod_Loaded;
-//     InventoryConsumables const*     gmod_DefinedInventoryLimits;
-//     GMod_SpecialAmmoBonus const*    gmod_DefinedSpecialAmmoBonuses;
-//     GMod_WeaponAdjustment const*    gmod_DefinedWeaponAdjustments;
-//     GMod_Achievement const*         gmod_DefinedAchievements;
-//     ULONG                           gmod_NumDefinedSpecialAmmoBonuses;
-//     ULONG                           gmod_NumDefinedWeaponAdjustments;
-//     ULONG                           gmod_NumDefinedAchievements;
-// } GMod_DefaultProperties;
+/**
+ * Player Progression File, GPRG
+ */
+static GMF_Header const gprg_Header = {
+    .h_Ident.id_Value     = IDENT_TKGD,
+    .h_SubFormat.id_Value = IDENT_GPRG,
+    .h_Version            = {TKG_VERSION, TKG_REVISION}
+};
+
+
 
 void GMod_Init()
 {

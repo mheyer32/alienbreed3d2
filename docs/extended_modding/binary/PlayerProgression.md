@@ -16,7 +16,7 @@ The following Chunks are included:
 - Inventory Limits
 - Weapon Adjustments
 - Counters
-- Achieved
+- Unlocked
 - [String](./DataFormat.md#string-chunk)
 
 ### Header
@@ -77,13 +77,13 @@ The Counters Chunk contains sets of counters that are updated by the game and us
 | 252 | Fuel Collected | `uint32` | Total count of Fuel collected |
 | 256 | Ammo Collected | `uint32[20]` | Total count of ammunition collected for each Ammo class |
 
-### Achieved Chunk
+### Unlocked Chunk
 
-The Achieved Chunk contains a set of time/id pairs for the Achievements that have been awarded to the player.
+The Unlocked Chunk contains a set of time/id pairs for the Achievements that have been awarded to the player.
 
 | Offset In Chunk | Content | Type | Notes |
 | :---- | :---- | :--- | :---- |
-| 0 | **Ident** | `char[4]` | `ACHD` |
+| 0 | **Ident** | `char[4]` | `UNLK` |
 | 4 | **Length** | `uint32` | Size of complete chunk. (Length - 8) / 4 gives record count |
 | - | Record [0] | struct {| |
 | 8 | - Date Awarded | `uint16` | Custom Date Format |

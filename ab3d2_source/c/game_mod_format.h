@@ -1,24 +1,25 @@
 #ifndef _TKG_GMF_H_
 #   define _TKG_GMF_H_
 
+/**
+ * This header defines the structures and base methods for loading and decoding the game modification files:
+ *
+ * - Main Game Modification (GMOD)
+ * - Level Modification (LMOD)
+ * - Progression (GPRG)
+ */
 #include "defs.h"
 #include <stddef.h>
-
-/**
- * Game Modification h_SubFormat
- *
- * This header defines the principle structures used for the extensible modification format.
- */
-
 /**
  * Standard Ident values
  */
 enum {
-    IDENT_TKGD = 0x544b4744,
-    IDENT_GMOD = 0x474d4f44,
-    IDENT_LMOD = 0x4C4D4F44,
-    IDENT_INDX = 0x494e4458,
-    IDENT_STRH = 0x53545248,
+    IDENT_TKGD = 0x544b4744,    // Main header Ident
+    IDENT_GMOD = 0x474d4f44,    // Subformat Game Modification Data
+    IDENT_LMOD = 0x4C4D4F44,    // Subformat Level Modification Data
+    IDENT_GPRG = 0x47505247,    // Subformat Progression Data
+    IDENT_INDX = 0x494e4458,    // Index Chunk
+    IDENT_STRH = 0x53545248,    // String Chunk
 };
 
 /**

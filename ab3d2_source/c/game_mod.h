@@ -1,35 +1,67 @@
 #ifndef _TKG_GMOD_H_
 #   define _TKG_GMOD_H_
 
-#include "game_mod_common.h"
-
-/*
- * These structures are managed by the assembler side and the alignment constraints are to preven the compiler
- * from padding them further for alignment purposes. It does not mean that the structures themselves are only
- * aligned to a 2 byte boundary,
- */
-enum {
-    IDENT_SPAB = 0x53504142,
-    IDENT_RWRD = 0x52575244,
-    IDENT_ACHV = 0x41434856,
-};
+#include "game_mod_format.h"
 
 /**
- * GMod_Reward
+ * Import InventoryConsumables, needed for GMod_InventoryLimits Limits
+ */
+#include "inventory.h"
+
+/**********************************************************************************************************************/
+
+/**
+ * GMod_InventoryLimits
+ *
+ * Defines limits on the Inventory carry. Alias of existing InventoryConsumables.
+ *
+ * Used in:
+ *     - Main Game Modification (initial defaults)
+ *     - Player Progression (current limits)
+ */
+typedef InventoryConsumables GMod_InventoryLimits;
+
+/**********************************************************************************************************************/
+
+/**
+ * Additional Chunk Idents
+ */
+enum {
+    IDENT_INVL = 0x494E564C,    // Inventory Limits (used in: GMOD, GPRG)
+    IDENT_WADJ = 0x5741444A,    // Weapon adjustments (used in: GMOD, GPRG)
+    IDENT_SPAB = 0x53504142,    // Special Ammo Bonuses (used in: GMOD)
+    IDENT_RWRD = 0x52575244,    // Rewards (used in: GMOD)
+    IDENT_ACHV = 0x41434856,    // Achievements (used in: GMOD)
+    IDENT_CTRS = 0x5741444A,    // Counters (used in: GPRG)
+    IDENT_UNLK = 0x554E4C4B,    // Unlocked (used in: GPRG)
+};
+
+/**********************************************************************************************************************/
+
+/**
+ * GMod_Reward (header structure only)
  *
  * Defines a reward structure, which applied modifications to player items and carry limits.
+ *
+ * Used in:
+ *     - Main Game Modification
  */
 typedef struct {
     char const* rwrd_Description;
     UWORD       rwrd_CarryOffset;
     UWORD       rwrd_ImmediateOffset;
-    UWORD       rwrd_RewardData[1];
-} ASM_ALIGN(sizeof(ULONG)) GMod_Reward; // Header only
+    UWORD       rwrd_RewardData[1];     // Beware: varying length data here.
+} ASM_ALIGN(sizeof(ULONG)) GMod_Reward;
+
+/**********************************************************************************************************************/
 
 /**
  * GMod_SpecialAmmoBonus
  *
  * Defines rewards associated with collecting of special ammo types.
+ *
+ * Used in:
+ *     - Main Game Modification
  */
 typedef struct {
     UWORD              spab_Index;
@@ -37,10 +69,15 @@ typedef struct {
     GMod_Reward const* spab_Reward;
 } ASM_ALIGN(sizeof(ULONG)) GMod_SpecialAmmoBonus; // 8 bytes
 
+/**********************************************************************************************************************/
+
 /**
  * GMod_Achievement
  *
  * Defines rewards associated with collecting of special ammo types.
+ *
+ * Used in:
+ *     - Main Game Modification
  */
 typedef struct {
     char const*        achv_Description;
@@ -49,13 +86,111 @@ typedef struct {
     UWORD              achv_Params[3];
 } ASM_ALIGN(sizeof(ULONG)) GMod_Achievement; // 16 bytes
 
+/**********************************************************************************************************************/
+
 /**
- * GMod_WeaponAdjustment.wa_Flags
+ * GMod_WeaponAdjustment
+ *
+ * Defines a behavioural adjustment for a weapon.
+ *
+ * Used in:
+ *     - Main Game Modification (initial defaults)
+ *     - Player Progression (current values)
+ */
+typedef struct {
+    UWORD wadj_SlotID;
+    WORD  wadj_XOffset;
+    WORD  wadj_YOffset;
+    WORD  wadj_Recoil;
+    WORD  wadj_Spray;
+    UWORD wadj_BurstLimit;
+    UWORD wadj_CoolDown;
+    UWORD wadj_Flags;
+} ASM_ALIGN(sizeof(UWORD)) GMod_WeaponAdjustment; // 16 bytes
+
+/**
+ * GMod_WeaponAdjustment.wadj_Flags
  */
 #define WAF_NO_RUN            0x0001
 #define WAF_NO_CROUCH         0x0002
 #define WAF_NO_FLY            0x0004
 #define WAF_NO_FIRE_SUBMERGED 0x0008
+
+/**********************************************************************************************************************/
+
+/**
+ * GMod_ProgressCounters
+ *
+ * Contains progress statistics.
+ *
+ * Used in:
+ *     - Player Progression
+ */
+typedef struct {
+    /**
+     * Record the expected counts of data which will help if this is ever expanded.
+     */
+    UWORD prgc_LevelCount;       // NUM_LEVELS
+    UWORD prgc_AmmoDefCount;     // NUM_BULLET_DEFS
+    UWORD prgc_AlienDefCount;    // NUM_ALIEN_DEFS
+    UWORD prgc_Reserved;
+
+    /** The best elapsed time so far for each level. Only level completion counts */
+    ULONG prgc_LevelBestTimes[NUM_LEVELS];
+
+    /** Total number of times the player has attempted a level */
+    UWORD prgc_LevelPlayCounts[NUM_LEVELS];
+
+    /** Total number of times the player has beaten a level */
+    UWORD prgc_LevelWonCounts[NUM_LEVELS];
+
+    /** Total number of times the player failed a level */
+    UWORD prgc_LevelFailCounts[NUM_LEVELS];
+
+    /** The number of times so far the player has bested their previous time record */
+    UWORD prgc_LevelImprovedTimeCounts[NUM_LEVELS];
+
+    /** Total number of times the player has killed each class of alien */
+    UWORD prgc_AlienKills[NUM_ALIEN_DEFS];
+
+    /** The following totals fields are defined in the same order as for InventoryConsumables, but are 32-bit */
+
+    /** Total health collected */
+    ULONG prgc_TotalHealthCollected;
+
+    /** Total fuel collected */
+    ULONG prgc_TotalFuelCollected;
+
+    /** Total ammo collected, per ammo class */
+    ULONG prgc_TotalAmmoFound[NUM_BULLET_DEFS];
+} ASM_ALIGN(sizeof(ULONG)) GMod_ProgressCounters;
+
+/**********************************************************************************************************************/
+
+/**
+ * 11:5 Bitfields < Months since AmigaDOS Epoch 1978-01-01>:< Calendar Day Of Month (1-31) >
+ * 0 is regarded as "not defined"
+ */
+typedef UWORD ShortDate;
+
+typedef struct {
+    ShortDate gpc_Awarded; // Date Awarded
+    UWORD     gpc_ID;       // Index of Achievement
+} ASM_ALIGN(sizeof(UWORD)) GMod_Unlocked;
+
+/**
+ * GMod_ProgressAchieved
+ *
+ * Lists the date and ID of unlocked Achievements
+ *
+ * Used in:
+ *     - Player Progression
+ */
+typedef struct {
+    GMod_Unlocked unlk_Record[1]; // varying count
+} ASM_ALIGN(sizeof(ULONG)) GMod_ProgressUnlocked;
+
+/**********************************************************************************************************************/
 
 /**
  * Default definitions for the game modification. The pointers here will be initialised with either the
@@ -64,8 +199,9 @@ typedef struct {
  * Some data are not fixed size. Those include a corresponding counter.
  */
 typedef struct {
+    /** Loaded file data */
     GMF_Data const*                 gmod_Loaded;
-    InventoryConsumables const*     gmod_DefinedInventoryLimits;
+    GMod_InventoryLimits const*     gmod_DefinedInventoryLimits;
     GMod_SpecialAmmoBonus const*    gmod_DefinedSpecialAmmoBonuses;
     GMod_WeaponAdjustment const*    gmod_DefinedWeaponAdjustments;
     GMod_Achievement const*         gmod_DefinedAchievements;
@@ -73,6 +209,25 @@ typedef struct {
     ULONG                           gmod_NumDefinedWeaponAdjustments;
     ULONG                           gmod_NumDefinedAchievements;
 } GMod_DefaultProperties;
+
+/**********************************************************************************************************************/
+
+/**
+ * Note: This is the runtime representation of player progression.
+ */
+typedef struct {
+    GMod_InventoryLimits  pprg_InventoryLimits;
+    GMod_WeaponAdjustment pprg_WeaponAdjustments[NUM_GUN_DEFS];
+    GMod_ProgressCounters prg_Counters;
+
+    /** Bitmap of already unlocked achievements, for quick testing via tst.b */
+    UBYTE* pprg_UnlockedMap;
+
+    /** Dynamically allocated, count matches GMod_DefaultProperties.gmod_NumDefinedAchievements */
+    ShortDate* pprg_Unlocked;
+} GMod_PlayerProgression;
+
+extern GMod_PlayerProgression gmod_PlayerProgression; // In BSS
 
 /**
  * GMod_Init()
@@ -91,11 +246,11 @@ extern void GMod_Done(void);
 /**
  * GMod_ApplyReward()
  *
- * Applies the reward definition to the inventory limits and carry.
+ * Applies the reward definition to the inventory limits and current carry.
  */
 extern void GMod_ApplyReward(
-    GMod_Reward const* pReward,
-    InventoryConsumables* pInventoryLimits,
+    GMod_Reward const*    pReward,
+    GMod_InventoryLimits* pInventoryLimits,
     InventoryConsumables* pInventoryConsumables
 );
 
