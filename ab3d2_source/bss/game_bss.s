@@ -9,6 +9,9 @@
 _GMod_Defaults::
 Game_Defaults_vl:   ds.l    16; sizeof(GMod_DefaultProperties)/sizeof(ULONG)
 
+_GMod_Progress::
+GMod_Progress:      ds.l    140
+
 _Game_ProgressSignal::
 Game_ProgressSignal_l:			ds.l 1 ; cleared at the start of every frame and checked at the end
 

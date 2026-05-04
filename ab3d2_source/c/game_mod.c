@@ -19,6 +19,7 @@ static char const* aRuleNames[] = {
 
 extern GMod_DefaultProperties GMod_Defaults; // Defined in BSS
 
+/**********************************************************************************************************************/
 
 /**
  * gmod_ResolveReward()
@@ -192,6 +193,7 @@ void GMod_ApplyReward(
     }
 }
 
+/**********************************************************************************************************************/
 /**
  * Zero terminated list of custom parser functions for specific idents
  */
@@ -219,26 +221,129 @@ static GMF_Header const gprg_Header = {
     .h_Version            = {TKG_VERSION, TKG_REVISION}
 };
 
+/**********************************************************************************************************************/
 
-
-void GMod_Init()
+/**
+ * Set the engine defaults for GMod_Progress
+ */
+static void gmod_SetEngineDefaults()
 {
-    // Paranoia
-    Sys_MemFillLong(&GMod_Defaults, 0, sizeof(GMod_DefaultProperties)/sizeof(LONG));
+    // Set the initial inventory limits to the engine defaults
+    GMod_Progress.pprg_InventoryLimits.ic_Health      = INVENTORY_DEFAULT_HEALTH_LIMIT;
+    GMod_Progress.pprg_InventoryLimits.ic_JetpackFuel = INVENTORY_DEFAULT_FUEL_LIMIT;
+    for (WORD i = 0; i < NUM_BULLET_DEFS; ++i) {
+        GMod_Progress.pprg_InventoryLimits.ic_AmmoCounts[i] = INVENTORY_DEFAULT_AMMO_LIMIT;
+    }
 
+    dputs("Set engine default inventory limits");
+}
+
+/**********************************************************************************************************************/
+
+static inline UWORD clamp(UWORD val, UWORD max)
+{
+    return val < max ? val : max;
+}
+
+/**
+ * Helper function, sets the active inventory limits according to some source. Caller bears responsibility
+ * for ensuring source is valid.
+ */
+static void gmod_SetInventoryLimitsFrom(GMod_InventoryLimits const* pSource)
+{
+    GMod_Progress.pprg_InventoryLimits.ic_Health = clamp(
+        pSource->ic_Health,
+        INVENTORY_UNCAPPED_LIMIT
+    );
+    GMod_Progress.pprg_InventoryLimits.ic_JetpackFuel = clamp(
+        pSource->ic_JetpackFuel,
+        INVENTORY_UNCAPPED_LIMIT
+    );
+    for (WORD i = 0; i < NUM_BULLET_DEFS; ++i) {
+        GMod_Progress.pprg_InventoryLimits.ic_AmmoCounts[i] = clamp(
+            pSource->ic_AmmoCounts[i],
+            INVENTORY_UNCAPPED_LIMIT
+        );
+    }
+}
+
+static void gmod_SetWeaponAdjustmentsFrom(GMod_WeaponAdjustment const* pSource, ULONG iNum)
+{
+    while (iNum--) {
+        UWORD slotID = pSource->wadj_SlotID;
+        // TODO - when we add these for real, this is where to sanity check the field rather than just
+        // copying
+        CopyMem(
+            pSource,
+            &GMod_Progress.pprg_WeaponAdjustments[slotID],
+            sizeof(GMod_WeaponAdjustment)
+        );
+        ++pSource;
+    }
+}
+
+/**********************************************************************************************************************/
+
+/**
+ * Set the mod defined defaults for GMod_Progress
+ */
+static void gmod_SetModDefaults(void)
+{
+    // If we have defined limits, apply those.
+    if (GMod_Defaults.gmod_DefinedInventoryLimits) {
+        gmod_SetInventoryLimitsFrom(GMod_Defaults.gmod_DefinedInventoryLimits);
+        dputs("Set modification default inventory limits");
+    }
+
+    // If we have weapon adjustments, apply those
+    if (GMod_Defaults.gmod_DefinedWeaponAdjustments && GMod_Defaults.gmod_NumDefinedWeaponAdjustments > 0) {
+        gmod_SetWeaponAdjustmentsFrom(
+            GMod_Defaults.gmod_DefinedWeaponAdjustments,
+            GMod_Defaults.gmod_NumDefinedWeaponAdjustments
+        );
+        dputs("Set modification default weapon adjustments");
+    }
+
+    // Allocate the dynamic achievements data here.
+    if (GMod_Defaults.gmod_DefinedAchievements && GMod_Defaults.gmod_NumDefinedAchievements > 0) {
+        ULONG allocSize =
+            (GMod_Defaults.gmod_NumDefinedAchievements * sizeof(ShortDate)) + // Unlock Date buffer
+            ((GMod_Defaults.gmod_NumDefinedAchievements + 7) >> 3);           // Bitmap
+        UWORD* pData = (UWORD*)AllocVec(allocSize, MEMF_ANY|MEMF_CLEAR);
+        if (pData) {
+            dprintf("Allocated %lu bytes for achievement unlock tracking", allocSize);
+            GMod_Progress.pprg_Unlocked    = pData;
+            GMod_Progress.pprg_UnlockedMap = (UBYTE*)(&pData[GMod_Defaults.gmod_NumDefinedAchievements]);
+        } else {
+            dprintf("WARNING: Failed to allocate %lu bytes for achievement tracking!", allocSize);
+            // As a precaution set these to null. They only point at resources that we manage via a different
+            // pointer
+            GMod_Defaults.gmod_DefinedAchievements = NULL;
+            GMod_Defaults.gmod_NumDefinedAchievements = 0;
+            GMod_Progress.pprg_Unlocked = NULL;
+            GMod_Progress.pprg_UnlockedMap = NULL;
+        }
+    }
+}
+
+/**********************************************************************************************************************/
+
+/**
+ * Load and apply any the defaults defined by the game modification.
+ */
+static BOOL gmod_LoadModDefaults(void)
+{
     GMod_Defaults.gmod_Loaded = GMF_LoadFile("ab3:Includes/custom_game.props", &gmod_Header, gmod_Parsers);
-
     if (NULL == GMod_Defaults.gmod_Loaded) {
         dputs("No game modification properties loaded");
-        return;
+        return FALSE;
     }
 
     GMF_ChunkHeader const* pChunk;
-
     // Inventory limits (size is fixed)
     if ( (pChunk = GMF_LocateChunk(GMod_Defaults.gmod_Loaded, IDENT_INVL)) ) {
         // Fixed size
-        GMod_Defaults.gmod_DefinedInventoryLimits = (InventoryConsumables const*)GMF_ChunkData(pChunk);
+        GMod_Defaults.gmod_DefinedInventoryLimits = (GMod_InventoryLimits const*)GMF_ChunkData(pChunk);
     }
 
     // Special Ammo Bonuses
@@ -274,6 +379,81 @@ void GMod_Init()
         GMod_Defaults.gmod_DefinedAchievements,
         GMod_Defaults.gmod_NumDefinedAchievements
     );
+    gmod_SetModDefaults();
+    return TRUE;
+}
+
+/**********************************************************************************************************************/
+
+static void gmod_LoadPlayerProgress(void)
+{
+    GMF_Data const* pLoaded = GMF_LoadFile("ab3:progress.stats", &gprg_Header, NULL);
+    if (pLoaded) {
+        GMF_ChunkHeader const* pChunk;
+
+        // Current Inventory Limits
+        if ( (pChunk = GMF_LocateChunk(pLoaded, IDENT_INVL)) ) {
+            // Fixed size
+            gmod_SetInventoryLimitsFrom(
+                (GMod_InventoryLimits const *)GMF_ChunkData(pChunk)
+            );
+            dputs("Set progress inventory limits");
+        }
+
+        // Current Weapon Adjustments
+        if ( (pChunk = GMF_LocateChunk(pLoaded, IDENT_WADJ)) ) {
+            ULONG numAdjustments = GMF_ChunkRecordCount(pChunk, GMod_WeaponAdjustment);
+            if (numAdjustments > 0) {
+                gmod_SetWeaponAdjustmentsFrom(
+                    (GMod_WeaponAdjustment const *)GMF_ChunkData(pChunk),
+                    numAdjustments
+                );
+                dputs("Set progress weapon adjustments");
+            }
+        }
+
+        // Current unlocked achievements
+        if (
+            GMod_Defaults.gmod_DefinedAchievements &&
+            GMod_Progress.pprg_Unlocked &&
+            (pChunk = GMF_LocateChunk(pLoaded, IDENT_UNLK))
+        ) {
+            ULONG numUnlocked = GMF_ChunkRecordCount(pChunk, GMod_Unlocked);
+            GMod_Unlocked const* pUnlocked = (GMod_Unlocked const *)GMF_ChunkData(pChunk);
+            while (numUnlocked--) {
+                // Sanity check here.
+                if (pUnlocked->gpc_ID < GMod_Defaults.gmod_NumDefinedAchievements) {
+                    GMod_Progress.pprg_Unlocked[pUnlocked->gpc_ID] = pUnlocked->gpc_Awarded;
+                } else {
+                    dprintf("Unrecognised achievement ID %d\n", (int)pUnlocked->gpc_ID);
+                }
+            }
+            dputs("Set progress unlocks");
+        }
+
+        // We're done here. Free the temporary.
+        FreeVec((void*)pLoaded);
+    }
+}
+
+static void gmod_SavePlayerProgress(void)
+{
+    dputs("gmod_SavePlayerProgress() is not yet implemented.");
+}
+
+/**********************************************************************************************************************/
+
+void GMod_Init()
+{
+    // Game defaults must be set, no matter what.
+    gmod_SetEngineDefaults();
+
+    // If the module defaults can't be loaded, player progress isn't usable.
+    if (FALSE == gmod_LoadModDefaults()) {
+        return;
+    }
+
+    gmod_LoadPlayerProgress();
 }
 
 void GMod_Done()
@@ -281,6 +461,7 @@ void GMod_Done()
     if (GMod_Defaults.gmod_Loaded) {
         GMF_Free(GMod_Defaults.gmod_Loaded);
     }
-    // Paranoia
-    Sys_MemFillLong(&GMod_Defaults, 0, sizeof(GMod_DefaultProperties)/sizeof(LONG));
+    if (GMod_Progress.pprg_Unlocked) {
+        FreeVec(GMod_Progress.pprg_Unlocked);
+    }
 }

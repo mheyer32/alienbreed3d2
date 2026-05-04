@@ -27,5 +27,12 @@ typedef struct {
     InventoryItems       inv_Items;
 } ASM_ALIGN(sizeof(WORD))  Inventory;
 
+/**
+ * Unmodified default limits
+ */
+#define INVENTORY_DEFAULT_AMMO_LIMIT 10000
+#define INVENTORY_DEFAULT_HEALTH_LIMIT 10000
+#define INVENTORY_DEFAULT_FUEL_LIMIT 250
+#define INVENTORY_UNCAPPED_LIMIT 32000
 
 #endif // INVENTORY_H

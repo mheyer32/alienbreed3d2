@@ -173,11 +173,6 @@ typedef struct {
  */
 typedef UWORD ShortDate;
 
-typedef struct {
-    ShortDate gpc_Awarded; // Date Awarded
-    UWORD     gpc_ID;       // Index of Achievement
-} ASM_ALIGN(sizeof(UWORD)) GMod_Unlocked;
-
 /**
  * GMod_ProgressAchieved
  *
@@ -187,8 +182,10 @@ typedef struct {
  *     - Player Progression
  */
 typedef struct {
-    GMod_Unlocked unlk_Record[1]; // varying count
-} ASM_ALIGN(sizeof(ULONG)) GMod_ProgressUnlocked;
+    ShortDate gpc_Awarded; // Date Awarded
+    UWORD     gpc_ID;       // Index of Achievement
+} ASM_ALIGN(sizeof(UWORD)) GMod_Unlocked;
+
 
 /**********************************************************************************************************************/
 
@@ -216,18 +213,18 @@ typedef struct {
  * Note: This is the runtime representation of player progression.
  */
 typedef struct {
-    GMod_InventoryLimits  pprg_InventoryLimits;
-    GMod_WeaponAdjustment pprg_WeaponAdjustments[NUM_GUN_DEFS];
-    GMod_ProgressCounters prg_Counters;
-
-    /** Bitmap of already unlocked achievements, for quick testing via tst.b */
-    UBYTE* pprg_UnlockedMap;
+    GMod_InventoryLimits    pprg_InventoryLimits;
+    GMod_WeaponAdjustment   pprg_WeaponAdjustments[NUM_GUN_DEFS];
+    GMod_ProgressCounters   pprg_Counters;
 
     /** Dynamically allocated, count matches GMod_DefaultProperties.gmod_NumDefinedAchievements */
     ShortDate* pprg_Unlocked;
+
+    /** Bitmap of already unlocked achievements, for quick testing via tst.b */
+    UBYTE*     pprg_UnlockedMap;
 } GMod_PlayerProgression;
 
-extern GMod_PlayerProgression gmod_PlayerProgression; // In BSS
+extern GMod_PlayerProgression GMod_Progress; // In BSS
 
 /**
  * GMod_Init()

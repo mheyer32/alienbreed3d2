@@ -241,6 +241,6 @@ void GMF_Free(GMF_Data const* pGMFData)
         if (pGMFData->gmd_Data) {
             FreeVec(pGMFData->gmd_Data);
         }
-        FreeVec(pGMFData);
+        FreeVec((void*)pGMFData);
     }
 }
