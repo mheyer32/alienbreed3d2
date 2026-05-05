@@ -207,6 +207,8 @@ typedef struct {
     ULONG                           gmod_NumDefinedAchievements;
 } GMod_DefaultProperties;
 
+extern GMod_DefaultProperties GMod_Defaults; // Defined in BSS
+
 /**********************************************************************************************************************/
 
 /**
@@ -226,6 +228,8 @@ typedef struct {
 
 extern GMod_PlayerProgression GMod_Progress; // In BSS
 
+/**********************************************************************************************************************/
+
 /**
  * GMod_Init()
  *
@@ -233,12 +237,35 @@ extern GMod_PlayerProgression GMod_Progress; // In BSS
  */
 extern void GMod_Init(void);
 
+/**********************************************************************************************************************/
+
 /**
  * GMod_Done()
  *
  * Releases any resources acquired by GMod_Init()
  */
 extern void GMod_Done(void);
+
+/**********************************************************************************************************************/
+
+/**
+ * GMod_LoadModDefaults()
+ *
+ * Attempts to load the defaults for the current game modification, if any.
+ * Returns true if a viable modification file was found and processed correctly.
+ */
+extern BOOL GMod_LoadModDefaults(void);
+
+/**********************************************************************************************************************/
+
+/**
+ * GMod_LoadPlayerProgress()
+ *
+ * Attempts to load the the progress for the current player, updating the current modification limits accordingly.
+ */
+extern void GMod_LoadPlayerProgress(void);
+
+/**********************************************************************************************************************/
 
 /**
  * GMod_ApplyReward()
