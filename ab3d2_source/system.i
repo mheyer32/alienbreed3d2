@@ -54,28 +54,14 @@
 
 				include	workbench/startup.i
 
-				IFD		IS_IE
-FAKE_LIB_BASE	equ		$6F0000
-				ENDC
-
 CALLEXEC		MACRO
-				IFD		IS_IE
-				move.l	#FAKE_LIB_BASE,a6
-				jsr		_LVO\1(a6)
-				ELSE
 				move.l	4.w,a6
 				jsr		_LVO\1(a6)
-				ENDC
 				ENDM
 
 CALLINT			MACRO
-				IFD		IS_IE
-				move.l	#FAKE_LIB_BASE,a6
-				jsr		_LVO\1(a6)
-				ELSE
 				move.l	_IntuitionBase,a6
 				jsr		_LVO\1(a6)
-				ENDC
 				ENDM
 
 INTNAME			MACRO
@@ -83,13 +69,8 @@ INTNAME			MACRO
 				ENDM
 
 CALLGRAF		MACRO
-				IFD		IS_IE
-				move.l	#FAKE_LIB_BASE,a6
-				jsr		_LVO\1(a6)
-				ELSE
 				move.l	_GfxBase,a6
 				jsr		_LVO\1(a6)
-				ENDC
 				ENDM
 
 GRAFNAME		MACRO
@@ -97,31 +78,16 @@ GRAFNAME		MACRO
 				ENDM
 
 CALLDOS			MACRO
-				IFD		IS_IE
-				move.l	#FAKE_LIB_BASE,a6
-				jsr		_LVO\1(a6)
-				ELSE
 				move.l	_DOSBase,a6
 				jsr		_LVO\1(a6)
-				ENDC
 				ENDM
 
 CALLMISC		MACRO
-				IFD		IS_IE
-				move.l	#FAKE_LIB_BASE,a6
-				jsr		_LVO\1(a6)
-				ELSE
 				move.l	_MiscBase,a6
 				jsr		_LVO\1(a6)
-				ENDC
 				ENDM
 
 CALLPOTGO		MACRO
-				IFD		IS_IE
-				move.l	#FAKE_LIB_BASE,a6
-				jsr		_LVO\1(a6)
-				ELSE
 				move.l	_PotgoBase,a6
 				jsr		_LVO\1(a6)
-				ENDC
 				ENDM

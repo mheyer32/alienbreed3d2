@@ -36,30 +36,6 @@ Sys_MemFillLong:
 ;******************************************************************************
 _Sys_CopyMemMove16:
 Sys_CopyMemMove16:
-				IFD		IS_IE
-				; IE target runs on 68020 path: provide a portable fallback copy.
-				; in: a0=src, a1=dst, d0=size bytes
-				move.l		d0,d1
-				beq.s		.copy_done_ie
-				lsr.l		#2,d1
-				beq.s		.copy_tail_ie
-				subq.l		#1,d1
-.copy_longs_ie:
-				move.l		(a0)+,(a1)+
-				dbra		d1,.copy_longs_ie
-				move.l		d0,d1
-				andi.l		#3,d1
-.copy_tail_ie:
-				beq.s		.copy_done_ie
-				subq.l		#1,d1
-.copy_bytes_ie:
-				move.b		(a0)+,(a1)+
-				dbra		d1,.copy_bytes_ie
-.copy_done_ie:
-				rts
-				ENDC
-				IFND	IS_IE
-
 				; round the source. Is this actually needed?
 				exg			a0,d0
 				add.l		#15,d0
@@ -82,7 +58,6 @@ Sys_CopyMemMove16:
 				move16		(a0)+,(a1)+
 				dbra		d0,.copy_loop ; assume have less than 4MB
 				rts
-				ENDC
 
 SYS_ALERT_Y_SPACE=12
 
@@ -90,44 +65,6 @@ SYS_ALERT_Y_SPACE=12
 ; Input: a0 = format, a1 = arguments (for RawDoFmt).
 ; Warning: Can only be called from the main game loop (Game_Start and later)
 _Sys_FatalError:: ; C callable version
-				IFD		IS_IE
-				lea		4(sp),a1	; var args (ignored on IE)
-				; Fall through
-Sys_FatalError:
-				; Minimal IE fatal handling: restore recovery stack if set and quit.
-				move.l	sys_RecoveryStack,d0
-				beq.s	.no_recover_ie
-				move.l	d0,a7
-.no_recover_ie:
-				bra		Game_Quit
-
-; Show alert (if any) prepared by Sys_FatalError
-_Sys_DisplayError::
-Sys_DisplayError:
-				rts
-
-; Like exec/AllocVec on classic builds; static high-RAM bump allocator on IE.
-; in: d0=size, d1=flags (ignored)
-; out: d0=ptr or 0 on failure
-Sys_AllocVec:
-				move.l	d0,d2
-				addq.l	#3,d2
-				andi.l	#$FFFFFFFC,d2
-				move.l	ie_sys_heap_ptr,d0
-				move.l	d0,d3
-				add.l	d2,d3
-				cmp.l	#$00FE0000,d3
-				bhi.s	.fail_ie
-				move.l	d3,ie_sys_heap_ptr
-				rts
-.fail_ie:
-				clr.l	d0
-				rts
-
-ie_sys_heap_ptr:
-				dc.l	$00C00000
-
-				ELSE
 				lea		4(sp),a1	; var args
 				; Fall through
 Sys_FatalError:
@@ -187,4 +124,3 @@ Sys_AllocVec:
 				bra		Sys_FatalError
 .errorfmt:		dc.b	'Allocation failed. %ld bytes requested, flags=$%lx',0
 				even
-				ENDC

@@ -1,76 +1,86 @@
-# IE Assembly Port (WIP)
+# IE Native Port
 
-This directory contains the in-progress Intuition Engine assembly port layer.
-Most compatibility routines export both plain and underscore-prefixed symbols to
-match mixed assembly/C callsites.
+This directory contains the Intuition Engine support layer for the
+software-rendered `hires.s` build. The target is selected with `IS_IE` and is
+kept separate from the Amiga-specific code wherever possible.
 
-- `ie_main.s`: VideoChip path bootstrap.
-- `ie_voodoo_main.s`: Voodoo path bootstrap (kept separate; software path is primary).
-- `ie_game.s`: higher-level bootstrap compatibility glue.
-  - Applies level-letter filename selection from `Game_LevelNumber_w`.
-  - Exposes compatibility entrypoints: `Game_Start`, `DEFAULTGAME`, `game_SetMenuLevelNames`.
-  - Runs a Game_Start-style sequence: screen open, queue init, explicit GLF DB load attempt, legacy `Res_*` load chain, queue flush, story/backdrop loads, level music handoff to `mt_init`.
-  - Explicit DB load includes in-module path variants (`ab3:includes/...`, `media/includes/...`) before generic probe fallback.
-  - Falls back to `ie_res_bootstrap_assets` when explicit DB load fails.
-  - Adds `ie_game_shutdown` and `Game_Quit` compatibility teardown (resource free + `mt_end` + screen close).
-  - Adds `ie_game_frame` runtime hook (wired into `ie_main` loop) to process `Game_ShouldQuit_b` and `Game_FinishedLevel_b` compatibility flow.
-  - Guards bootstrap re-entry via `ie_game_bootstrap_done_b` so repeated init paths do not duplicate resource loading.
-  - `ie_game_frame` performs direct backdrop blit into chunky buffer each frame when a backdrop is loaded.
-  - If no backdrop loads, it now renders a deterministic fallback chunky pattern so the present path is visibly testable.
-  - Adds title palette load candidates (`titlescrnpal`) and applies via `ie_palette_set_texture_ptr`.
-  - Treats 512-byte title palettes as Amiga 12-bit (`0x0RGB`) and routes them through 12-bit palette conversion.
-  - Tries one startup SFX trigger using the first populated sample slot (instead of hardcoded slot 0).
-  - Tracks bootstrap progress and soft-failure bits via `ie_game_bootstrap_state_l` and `ie_game_last_error_l`.
-  - Adds candidate fallback tables for story/backdrop blobs (`ab3:` + `media/` + `../media/` variants).
-  - Saves `sys_RecoveryStack` from current SP for fatal-error recovery compatibility.
-- `ie_hal.s`: core IE loop routines + compatibility entrypoints (`Vid_Present`, `Sys_WaitVBL`, `Sys_EvalFPS`, `Sys_FrameLap`).
-  - Adds `Vid_OpenMainScreen` / `Vid_CloseMainScreen` and low-level init/close stubs (`_InitLowLevel`, `_CloseLowLevel`) for legacy outer-loop compatibility.
-- `ie_input.s`: keyboard/mouse bridge.
-  - Exposes `KeyMap_vb` and `Sys_ReadMouse`/`Sys_MouseY` compatibility symbols.
-  - Includes explicit `ie_scancode_to_rawkey` translation map (identity default, override-ready).
-  - Exposes `Sys_ClearKeyboard` compatibility routine.
-- `ie_audio.s`: legacy `mt_init`/`mt_music`/`mt_end` and `Aud_PlaySound`/`MakeSomeNoise` wrappers over IE MOD/SFX MMIO.
-  - `MakeSomeNoise` now resolves `Aud_SampleNum_w` through `Aud_SampleList_vl` and packs volume/channel into IE SFX control.
-  - Accepts SFX table entries as either `{ptr,len}` or patched `{ptr,end_ptr}` format.
-  - Adds `ie_sfx_set_sample` / `ie_sfx_get_sample` / `ie_sfx_clear_samples` helpers for managing the 64-entry SFX table.
-  - Helper APIs also export underscore-prefixed aliases for C/ASM interop.
-- `ie_mem.s`: static-memory/system compatibility layer.
-  - Allocation: `Sys_AllocVec`, `Sys_FreeVec`, `Sys_MemFillLong`, `Sys_Workspace_vl`.
-  - System stubs: `Sys_Init`, `Sys_Done`, `Sys_OpenLibs`, `Sys_CloseLibs`, `Sys_ShowFPS`, `Sys_DisplayError`.
-  - Timing stubs: `Sys_MarkTime`, `Sys_TimeDiff`, `Sys_EClockRate`.
-  - Adds `Zone_FreeEdgePVS` compatibility stub for legacy level teardown paths.
-  - Adds `sys_RecoveryStack` compatibility storage and uses it in `Sys_FatalError`.
-- `ie_fileio.s`: file I/O bridge + `IO_LoadFile` / `IO_LoadFileOptional` compatibility wrappers.
-  - Adds `IO_InitQueue` / `IO_QueueFile` / `IO_FlushQueue` immediate-mode compatibility.
-  - Uses static high-RAM bump allocation for queued file loads (`0x700000` .. `0xFE0000`).
-  - `IO_LoadFileOptional` returns per-load heap allocations from the same range.
-  - `ie_fopen` normalizes Amiga-style paths (`VOL:name/path`) to host-friendly relative paths by stripping volume prefix.
-  - `ie_fread` retries failed loads across lowercase plus `media/` and `../media/` prefixed fallbacks for case-sensitive/working-dir variance.
-  - Exports `io_ObjectName_vb` / `io_FileExtPointer_l` compatibility scratch symbols used by legacy resource code.
-- `ie_res.s`: resource helper wrappers.
-  - `ie_res_init` clears SFX table and initializes queue state.
-  - `ie_res_bootstrap_assets` tries default palette/MOD candidate filenames at startup.
-  - `ie_res_bootstrap_assets` also probes optional GLF database candidates (`test.lnk`) and, when found, auto-loads legacy object/sound/texture/wall/level resources for the compatibility path.
-  - `ie_res_load_palette_file` loads a palette file and activates it via `ie_palette_set_texture_ptr`.
-  - `ie_res_load_sfx_file` loads a sample file and registers it in `Aud_SampleList_vl`.
-  - `ie_res_load_sfx_table_ex` supports explicit table stride; wrappers cover 64-byte and AB3D2 GLF 60-byte filename entries.
-  - Adds `Res_LoadObjects` / `Res_FreeObjects` / `Res_LoadSoundFx` / `Res_LoadFloorsAndTextures` / `Res_LoadWallTextures` / `Res_LoadLevelData` / `Res_FreeFloorsAndTextures` / `Res_FreeWallTextures` / `Res_FreeLevelData` / `Res_ReleaseScreenMemory` / `Res_PatchSoundFx` / `Res_FreeSoundFx` plus `Lvl_InitLevelMods` compatibility entrypoints and `ie_res_set_sfx_filename_table` / `ie_res_load_game_db_file` for GLF table binding.
-  - `Lvl_InitLevelMods` now mirrors legacy behavior: updates `Zone_BackdropDisable_vb` from level properties when present, otherwise clears it.
-  - Object resource extension probes use lowercase (`.wad`, `.ptr`, `.256pal`) to match host assets.
-  - Uses assembler-derived GLF offsets (from `defs.i`) for SFX/floor/texture/wall filename tables.
-  - Expands GLF DB probe candidates to include `media/includes/...` variants used by this repo layout.
-  - Exports legacy level filename/pointer symbols (`Lvl_*`) plus wall/floor pointer tables so existing game resource callsites can link against IE layer symbols.
-- `ie_present.s`: indexed chunky -> RGBA LUT conversion + Mode7 upscale submit.
-  - Includes `ie_palette_upload_12bit` to convert 256-entry `0x0RGB` palettes to RGBA8888 LUT.
-  - Includes `ie_palette_upload_rgb8` and `Vid_LoadMainPalette` compatibility entrypoint.
-  - Tracks palette source format (`RGB8` vs `12-bit`) and dispatches conversion accordingly in `Vid_LoadMainPalette`.
-  - Exposes `Vid_UpdatePalette_b` and `Draw_TexturePalettePtr_l` compatibility symbols.
-  - `ie_palette_poll_update` applies palette reload when `Vid_UpdatePalette_b` is set.
-  - `ie_palette_set_texture_ptr` updates `Draw_TexturePalettePtr_l` and marks palette dirty.
-  - Exposes legacy screen-pointer state (`Vid_FastBufferPtr_l`, `Vid_DrawScreenPtr_l`, `Vid_DisplayScreenPtr_l`, `Vid_ScreenBuffers_vl`, `Vid_ScreenBufferIndex_w`, `Vid_LetterBoxMarginHeight_w`) mapped to the IE chunky buffer.
-- `ie_compat.s`: software-path compatibility shims for legacy C/OS symbols needed during incremental renderer lift.
-  - Provides menu/message/inventory/zone/palette helper entrypoints as safe no-op/boolean shims.
-  - Provides `_Vid_isRTG=1` plus dummy `_custom`/`_ciaa` register-space backing.
-- `ie_hires_shim.s`: compatibility shim used by the full `hires.s` software-renderer build.
-  - Supplies unresolved legacy C/OS hooks and IE-backed `Vid_OpenMainScreen`/`Vid_Present`.
-  - Used by `make ie68` (`hires.s` + `ie_hires_shim.s` linked to raw `.ie68`).
+Build with:
+
+```sh
+make ie68
+```
+
+The build assembles `hires.s` and `ie/ie_hires_platform.s`, then links them into
+`ab3d2_ie68.ie68`. The generated map is written under `_build/`; diagnostic
+symbols are generated as `diag_symbols.lua` and copied to `ie/diag_symbols.lua`.
+Those generated files are ignored by git.
+
+- `ie_hires_platform.s`: IE platform implementation linked beside `hires.s`.
+  It supplies the legacy system, video, input, audio, menu, message, and zone
+  compatibility entrypoints the game expects and presents the chunky 320x240
+  CLUT8 framebuffer through IE.
+- `system.i`: IE replacement for the top-level `system.i` include.
+- `build.mk`: IE-specific `make ie68` target included by the top-level
+  Makefile.
+- `controlloop.s`: IE game startup and outer-loop flow included by `hires.s`
+  when `IS_IE` is set.
+- `ie_file_io_runtime.i`: IE file loader selected by `hires.s` when `IS_IE` is
+  set. It loads through IE file I/O MMIO and preserves the upstream file I/O
+  entrypoints expected by the game.
+- `ie_music.i`: legacy `mt_*` music entrypoints backed by IE audio hardware.
+  The current IE build starts `media/includes/At_Dooms_Gate_E1M1.sid` through
+  the SID player instead of playing the ProTracker module.
+- `ie_system.i`: fallback constants and structure offsets used by `system.i`
+  when Amiga NDK include files are not present.
+- `ie_system_runtime.i`: IE runtime system helpers selected by `hires.s` when
+  `IS_IE` is set.
+- `pauseopts.s`: IE pause-loop handling included by `hires.s` when `IS_IE` is
+  set.
+- `diag_symbols.txt`: symbol names exported from the link map into the generated
+  Lua table used by IEScript diagnostics.
+- `tools/normalize_media.sh`: prepares the local `media/` layout described in
+  `MEDIA_LAYOUT.md`.
+
+## Input
+
+`ie_poll_input` reads IE keyboard and mouse MMIO directly. It updates the
+game's existing `KeyMap_vb` raw-key table, accumulates mouse Y movement into
+`_Sys_MouseY`, and mirrors mouse buttons into the fake custom/CIA state used by
+the existing AB3D2 mouse-control path. IE does not emulate Amiga input devices
+for this port.
+
+The game calls `ie_poll_input` from the frame/wait paths and immediately before
+`plr_KeyboardControl` reads `KeyMap_vb`.
+
+## Media
+
+Run the binary from `ab3d2_source` so runtime file loads resolve against the
+expected `media/` tree. The current SID music override requires:
+
+```text
+media/includes/At_Dooms_Gate_E1M1.sid
+```
+
+Use `ie/tools/normalize_media.sh .` to prepare the local tree from extracted
+media files.
+
+## Boundaries
+
+The IE target does not require an AmigaOS runtime and must not rely on Paula,
+CIA, Exec, Intuition, or real custom-chip MMIO. Compatibility symbols in
+`ie_hires_platform.s` exist to satisfy the original game code while routing
+behavior to IE hardware services.
+
+## Upstream Touches
+
+The IE port keeps platform code under `ie/`. The remaining changes outside this
+directory are limited to build wiring and `IS_IE` callsite guards where
+`hires.s` directly touches Amiga hardware or selects platform-specific include
+files.
+
+- `Makefile`: includes `ie/build.mk` so the IE target can be built without
+  putting IE build logic in the upstream Makefile.
+- `hires.s`: selects IE-specific include files; guards Paula, CIA, custom-chip,
+  CD32, and serial accesses; polls IE input during waits; routes SFX through IE;
+  enables the combined keyboard and mouse control path used by the IE build; and
+  ignores exit-zone `0` so an unset exit zone does not end a level immediately.

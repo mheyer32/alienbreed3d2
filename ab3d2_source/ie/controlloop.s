@@ -44,6 +44,15 @@ Game_FinishedLevel_b:
 Game_Start:
 				move.l	a7,sys_RecoveryStack	; Save stack pointer for Sys_FatalError
 
+				st		Plr1_Keys_b
+				clr.b	Plr1_Path_b
+				st		Plr1_Mouse_b
+				clr.b	Plr1_Joystick_b
+				clr.b	Plr2_Keys_b
+				clr.b	Plr2_Path_b
+				clr.b	Plr2_Mouse_b
+				clr.b	Plr2_Joystick_b
+
 				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				CALLC	Vid_OpenMainScreen
 
@@ -55,15 +64,19 @@ Game_Start:
 				jsr		IO_LoadFile
 				move.l	d0,Lvl_IntroTextPtr_l
 
+				IFND	IS_IE
 				jsr		_InitLowLevel
+				ENDC
 
 				;jsr		mnu_start	; For some reason this doesn't work
 										; Shows the wrong menu
 
+				IFND	IS_IE
 				jsr		mnu_copycredz
 
 				CALLC	mnu_setscreen
 				move.l	a7,mnu_mainstack	; not sure if this is the right thing or even in use...
+				ENDC
 
 				jsr		IO_InitQueue
 
@@ -76,10 +89,12 @@ Game_Start:
 				jsr		Res_LoadFloorsAndTextures
 				jsr		Res_LoadObjects
 
+				IFND	IS_IE
 				move.l	#draw_BackdropImageName_vb,a0
 				move.l	#Draw_BackdropImagePtr_l,d0
 				move.l	#0,d1
 				jsr		IO_QueueFile
+				ENDC
 
 ; jsr _StopPlayer
 ; jsr _RemPlayer
@@ -104,6 +119,10 @@ Game_Start:
 				jsr		game_SetMenuLevelNames
 
 				bsr		DEFAULTGAME
+				IFD		IS_IE
+				move.w	Game_LevelCounter_w,Game_LevelNumber_w
+				bra		game_DoneMenu
+				ENDC
 
 game_BackToMenu:
 				CALLC	Sys_ClearKeyboard
@@ -130,8 +149,10 @@ game_DoneMenu:
 				tst.b	Game_ShouldQuit_b
 				bne		Game_Quit
 
+				IFND	IS_IE
 				moveq	#1,d0 ; Fade out
 				CALLC	mnu_clearscreen
+				ENDC
 
 				;	bsr		game_WaitForMenuKey
 
@@ -194,13 +215,19 @@ game_DoneMenu:
 				ENDR
 
 dontusestats:
+				IFD		IS_IE
+				bra		Game_Quit
+				ENDC
+
 				CALLC	mnu_setscreen
 
 				bra		game_BackToMenu
 
 Game_Quit:
+				IFND	IS_IE
 				moveq	#0,d0 ; No fading
 				CALLC	mnu_clearscreen ; Maybe No-op
+				ENDC
 
 				move.l	Lvl_DataPtr_l,a1
 				CALLEXEC FreeVec
@@ -212,11 +239,14 @@ Game_Quit:
 				jsr		Res_FreeFloorsAndTextures
 				jsr		Res_FreeObjects
 
+				IFND	IS_IE
 				jsr		_CloseLowLevel
+				ENDC
 
 				move.l	#0,d0
 
 				rts
+
 
 ; PREFERENCES (TODO - SHIP OUT):
 
@@ -973,11 +1003,16 @@ game_WaitForMenuKey:
 
 				move.l	#KeyMap_vb,a5
 .wait_loop:
+				IFD		IS_IE
+				jsr		ie_wait_vblank
+				jsr		ie_poll_input
+				ELSE
 				; Should this yield a bit?
 				;moveq	#1,d1
 				;CALLDOS Delay
 				btst	#7,$bfe001 ; cia
 				beq.s	.wait_loop
+				ENDC
 
 				IFEQ	CD32VER
 				tst.b	RAWKEY_SPACEBAR(a5)
@@ -990,6 +1025,7 @@ game_WaitForMenuKey:
 				bne.s	.wait_loop
 				ENDC
 
+				IFND	IS_IE
 				btst	#1,_custom+joy1dat
 				sne		d0
 				btst	#1,_custom+joy1dat+1
@@ -1005,6 +1041,7 @@ game_WaitForMenuKey:
 				bne.s	.wait_loop
 				tst.b	d3
 				bne.s	.wait_loop
+				ENDC
 
 				movem.l	(a7)+,d0/d1/d2/d3
 				rts
@@ -1228,7 +1265,7 @@ FADEAMOUNT:		dc.w	0
 FADEVAL:		dc.w	0
 
 Game_StoryFile_vb:
-				dc.b	'ab3:includes/TEXT_FILE'
+				dc.b	'ab3:includes/TEXT_FILE',0
 
 				even
 

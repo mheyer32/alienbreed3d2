@@ -1,4 +1,8 @@
+				IFD		IS_IE
+				include	"ie/system.i"
+				ELSE
 				include	"system.i"
+				ENDC
 				include	"macros.i"
 				include	"defs.i"
 				include "modules/rawkey_macros.i"
@@ -8,6 +12,15 @@
 				xref	_custom
 				xref	_ciaa
 				xref	_Vid_Present
+				IFD		IS_IE
+				xref	ie_poll_input
+				xref	ie_MakeSomeNoise
+				xdef	Aud_SampleNum_w
+				xdef	Aud_SampleList_vl
+				xdef	Aud_NoiseVol_w
+				xdef	Aud_ChannelPick_b
+				ENDC
+				xdef	lastpressed
 
 ;*************************************************
 ;* Stuff to do to get a C2P version:
@@ -176,19 +189,19 @@ _startup:
 .startup_fail:
 				CALLC	Sys_Done
 
-					IFD MEMTRACK
-					bsr	 Mem_TrackDone
-					ENDC
+				IFD MEMTRACK
+				bsr	 Mem_TrackDone
+				ENDC
 
-					movem.l	(sp)+,d1-a6
-					IFD		IS_IE
-.ie_exit_hang:
-					bra.s	.ie_exit_hang
-					ENDC
-					rts
+				movem.l	(sp)+,d1-a6
+				rts
 
 				; Include even in C version for assembly helpers
+				IFD		IS_IE
+				include		"ie/ie_system_runtime.i"
+				ELSE
 				include		"modules/system.s"
+				ENDC
 				include		"modules/level.s"
 
 				IFD MEMTRACK
@@ -285,7 +298,9 @@ Game_Begin:
 ;				move.w	#$0020,_custom+intreq
 ;				dbra	d1,.fdup
 
+				IFND	IS_IE
 				move.l	#_custom,a6
+				ENDC
 				jsr		SETPLAYERS
 
 				jsr		Res_LoadLevelData
@@ -511,10 +526,12 @@ noload:
 				move.l	#Aud_EmptyBufferEnd,Samp2endRIGHT
 				move.l	#Aud_EmptyBufferEnd,Samp3endRIGHT
 
+				IFND	IS_IE
 				bset.b	#1,$bfe001
 
 				; clear audio modulation settings
 				move.w	#$00ff,_custom+adkcon
+				ENDC
 
 				; FIXME: reimplement level blurb
 ; move.l #Blurbfield,$dff080
@@ -548,7 +565,8 @@ noload:
 				jsr		Plr_Initialise
 ; bsr initobjpos
 
-				; setup audio channels
+				IFND	IS_IE
+				; setup Paula audio channels.
 				move.l	#$dff000,a6
 
 				move.l	#Aud_Null1_vw,$dff0a0
@@ -598,6 +616,7 @@ scaledownlop:
 				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_AUDIO,dmacon(a6)
 
 				move.w	#$0,potgo(a6)
+				ENDC
 				move.w	#0,Conditions
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
@@ -820,7 +839,9 @@ CLRDAM:
 .skipDH:
 **************************************************************
 game_main_loop:
+				IFND	IS_IE
 				move.w	#%110000000000,_custom+potgo
+				ENDC
 
 				cmp.b	#PLR_MASTER,Plr_MultiplayerType_b
 				bne		.notmess
@@ -910,8 +931,10 @@ game_main_loop:
 
 				FREE_OBJ	a0
 .notmess2:
+				IFND	IS_IE
 				;FIXME: should use _LVOWritePotgo here!
 				move.w	#%110000000000,_custom+potgo ; POTGO -start Potentiometer reading
+				ENDC
 													; FIXME: shouldn't this be in a regular interrupt, like VBL?
 
 				move.b	MAPON,draw_RenderMap_b
@@ -936,6 +959,9 @@ game_main_loop:
 				clr.b	Game_Running_b
 
 .waitrel:
+				IFD		IS_IE
+				jsr		ie_poll_input
+				ENDC
 				tst.b	Plr1_Joystick_b
 				beq.s	.NOJOY
 				jsr		_ReadJoy1
@@ -974,6 +1000,9 @@ nofadedownhc:
 
 				move.l	#KeyMap_vb,a5
 .waitrel:
+				IFD		IS_IE
+				jsr		ie_poll_input
+				ENDC
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq.s	.RE2
 				tst.b	Plr1_Joystick_b
@@ -1886,7 +1915,7 @@ nodrawp2:
 				CALLC		Game_UpdatePlayerProgress
 
 .no_update_progress:
-					CALLC Vid_Present
+				CALLC Vid_Present
 
 				;CALLDEV	MarkChunkyDone
 
@@ -2065,9 +2094,6 @@ plr1only:
 .allobsdone:
 
 				move.l	#KeyMap_vb,a5
-				IFD		IS_IE
-				bra.s	noend
-				ENDC
 				tst.b	RAWKEY_ESC(a5)
 				beq.s	noend
 
@@ -2080,6 +2106,7 @@ plr1only:
 plr2quit:
 				st		Game_SlaveQuit_b
 noend:
+
 				tst.b	Game_MasterQuit_b
 				beq.s	.noquit
 				tst.b	Game_SlaveQuit_b
@@ -2092,6 +2119,10 @@ noend:
 				move.l	Plr1_ZonePtr_l,a0
 				move.w	(a0),d0
 
+				IFD		IS_IE
+				tst.w	Lvl_ExitZoneID_w
+				beq.s	noexit
+				ENDC
 				cmp.w	Lvl_ExitZoneID_w,d0
 
 ; change this for quick exit, charlie
@@ -2112,6 +2143,7 @@ zzzz:
 
 				jmp		endlevel
 noexit:
+
 				tst.w Plr1_Health_w
 				bgt nnoend1
 				jmp endlevel
@@ -2242,7 +2274,11 @@ SAVELETTER:		dc.b	'd',0
 
 				include "modules/draw/draw_map.s"
 				include "modules/c2p/c2p.s"
+				IFD		IS_IE
+				include	"ie/pauseopts.s"
+				ELSE
 				include	"pauseopts.s"
+				ENDC
 				include "modules/dev_inst.s"
 
 
@@ -3460,8 +3496,10 @@ wevewon:
 				; Record the victory
 				STATS_WON
 
+				IFND	IS_IE
 				; Disable audio DMA
 				move.w	#$f,$dff000+dmacon
+				ENDC
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				bne.s	.nonextlev
@@ -3494,8 +3532,10 @@ playwelldone:
 				;jmp		ENDGAMESCROLL
 
 wevelost:
+				IFND	IS_IE
 				; disable Audio DMA
 				move.w	#$f,$dff000+dmacon
+				ENDC
 
 				jmp		closeeverything
 
@@ -3547,7 +3587,9 @@ ENDGAMESCROLL:
 ; include "endscroll.s"
 
 ***********************************
+				IFND	IS_IE
 				include	"cd32joy.s"
+				ENDC
 
 *************************************
 * Set left and right clip values
@@ -5857,6 +5899,9 @@ dispco:
 
 ; todo - this is only used from the menu code
 key_readkey:
+				IFD		IS_IE
+				jsr		ie_poll_input
+				ENDC
 				moveq	#0,d0
 				move.b	lastpressed,d0
 				move.b	#0,lastpressed
@@ -6322,6 +6367,7 @@ pastster:
 				st		CHANNELDATA
 				;*******************************
 
+				IFND	IS_IE
 				move.w	#$f,$dff000+dmacon
 				move.l	#Aud_Null1_vw,$dff0a0
 				move.w	#100,$dff0a4 ; size
@@ -6342,6 +6388,7 @@ pastster:
 				move.w	#100,$dff0d4 ; size
 				move.w	#443,$dff0d6 ; period
 				move.w	#63,$dff0d8  ; volume
+				ENDC
 
 				move.l	#Aud_EmptyBuffer_vl,pos0LEFT
 				move.l	#Aud_EmptyBuffer_vl,pos1LEFT
@@ -6598,7 +6645,11 @@ nostartalan:
 
 
 				tst.b	READCONTROLS
+				IFD		IS_IE
+				bra.s	.readcontrols_enabled
+				ENDC
 				beq		nocontrols
+.readcontrols_enabled:
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq		control2
@@ -6674,6 +6725,12 @@ nostartalan:
 				bra		nocontrols
 
 .propercontrol:
+				IFD		IS_IE
+				jsr		ie_poll_input
+				bsr		Plr1_MouseControl
+				bsr		Plr1_KeyboardControl
+				bra		nocontrols
+				ENDC
 
 				tst.b	Plr1_Mouse_b
 				beq.s	.plr1_no_mouse
@@ -6822,7 +6879,9 @@ noturnoff3:
 				and.w	#$fffe,d0
 *********************
 
+				IFND	IS_IE
 				move.w	d0,dmacon(a6)
+				ENDC
 
 nomuckabout:
 
@@ -6836,6 +6895,11 @@ firenotpressed2
 dointer
 
 JUSTSOUNDS:
+				IFD		IS_IE
+				GETREGS
+				moveq	#0,d0
+				rts
+				ENDC
 				tst.b	dosounds
 				beq.s	.notthing
 
@@ -7248,6 +7312,9 @@ notoffendsamp4:
 ***********************************
 
 fourchannel:
+				IFD		IS_IE
+				rts
+				ENDC
 				move.l	#$dff000,a6
 
 				tst.b	LEFTCHANDATA
@@ -7520,6 +7587,9 @@ Aud_PlaySound:
 
 
 MakeSomeNoise:
+				IFD		IS_IE
+				jmp		ie_MakeSomeNoise
+				ENDC
 
 ; move.w #$10,$dff000+intena
 
@@ -8061,9 +8131,17 @@ FOUNDACHAN:
 				rts
 
 				include	"modules/res.s"
+				IFD		IS_IE
+				include	"ie/ie_file_io_runtime.i"
+				ELSE
 				include	"modules/file_io.s"
+				ENDC
 				include "modules/vid.s"
+				IFD		IS_IE
+				include	"ie/controlloop.s"
+				ELSE
 				include	"controlloop.s"
+				ENDC
 
 
 saveinters:
@@ -8339,7 +8417,11 @@ STOPTIMER:
 				st		oktodisplay
 				rts
 
+				IFD		IS_IE
+				include "ie/ie_music.i"
+				ELSE
 				include "modules/music.s"
+				ENDC
 
 UseAllChannels:		dc.w	0
 ;CHEATPTR:			dc.l	0
@@ -8361,7 +8443,9 @@ welldone:
 
 				section .text,code
 				cnop	0,4
+				IFND	IS_IE
 				include	"serial_nightmare.s"
+				ENDC
 
 				cnop	0,4
 
