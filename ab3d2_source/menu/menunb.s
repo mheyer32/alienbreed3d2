@@ -435,11 +435,13 @@ mnu_openmenu:;in:a0=Ptr to menu
 				move.l	a0,-(a7)
 				move.l	#0,mnu_printdelay
 				bsr.w	mnu_cls
+				IFND	IS_IE
 				move.l	#35,timer
 
-.w8a:
+	.w8a:
 				tst.l	timer
 				bne.s	.w8a
+				ENDC
 				move.l	(a7)+,a0
 				move.l	a0,-(a7)
 				move.w	(a0),d0
@@ -503,12 +505,14 @@ mnu_waitmenu:;out: d0=Selection number
 				tst.b   d0
 				bne		.down
 
+				IFND	IS_IE
 				move.b	fire_key,d7
 				move.b	(a5,d7.w),d0
 				clr.b   (a5,d7.w)
 				tst.b   d0
 				bne		.cd32
-.keys:
+				ENDC
+	.keys:
 				jsr		key_readkey
 
 				tst.w	d0

@@ -77,4 +77,3 @@ drawwallPACK2:
 				addx.w	d2,d4
 				dbra	d6,drawwalldimPACK2
 				rts
-

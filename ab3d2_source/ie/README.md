@@ -13,6 +13,7 @@ make ie68
 The build assembles `hires.s` and `ie/ie_hires_platform.s`, then links them into
 `ab3d2_ie68.ie68`. The generated map is written under `_build/`; diagnostic
 symbols are generated as `diag_symbols.lua` and copied to `ie/diag_symbols.lua`.
+The IE menu art is converted into CLUT8 build artifacts under `_build/ie_menu/`.
 Those generated files are ignored by git.
 
 - `ie_hires_platform.s`: IE platform implementation linked beside `hires.s`.
@@ -21,7 +22,7 @@ Those generated files are ignored by git.
   CLUT8 framebuffer through IE.
 - `system.i`: IE replacement for the top-level `system.i` include.
 - `build.mk`: IE-specific `make ie68` target included by the top-level
-  Makefile.
+  Makefile. It also runs the IE menu asset converter before assembly.
 - `controlloop.s`: IE game startup and outer-loop flow included by `hires.s`
   when `IS_IE` is set.
 - `ie_file_io_runtime.i`: IE file loader selected by `hires.s` when `IS_IE` is
@@ -40,6 +41,8 @@ Those generated files are ignored by git.
   Lua table used by IEScript diagnostics.
 - `tools/normalize_media.sh`: prepares the local `media/` layout described in
   `MEDIA_LAYOUT.md`.
+- `tools/convert_menu_assets.py`: converts the original planar menu art and
+  palettes into IE CLUT8 build artifacts consumed by `ie_hires_platform.s`.
 
 ## Input
 
@@ -51,6 +54,17 @@ for this port.
 
 The game calls `ie_poll_input` from the frame/wait paths and immediately before
 `plr_KeyboardControl` reads `KeyMap_vb`.
+
+## Menus
+
+The IE build keeps the existing AB3D2 menu state machine and option data, but
+does not use the Amiga screen/blitter path. `make ie68` converts the original
+planar menu assets to CLUT8, and `ie_hires_platform.s` renders the menu's
+planar text/cursor/fire buffers into the IE 320x240 CLUT8 framebuffer.
+
+The upstream menu-code guards are limited to `IS_IE`: IE skips the old
+VBlank-timer startup delay and does not treat the gameplay fire key as menu
+activation. Enter, Space, and left mouse still activate menu items.
 
 ## Media
 
@@ -84,3 +98,6 @@ files.
   CD32, and serial accesses; polls IE input during waits; routes SFX through IE;
   enables the combined keyboard and mouse control path used by the IE build; and
   ignores exit-zone `0` so an unset exit zone does not end a level immediately.
+- `menu/menunb.s`: skips the old VBlank-timer delay under `IS_IE` and avoids
+  using gameplay fire-key state as menu activation; the IE menu presenter
+  updates frames through the `WaitTOF` path instead.

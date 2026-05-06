@@ -3,13 +3,23 @@ IE_MAP ?= $(BUILD_DIR)/ie68.map
 IE_SYMBOLS ?= diag_symbols.lua
 IE_DIAG_SYMBOLS_FILE ?= ie/diag_symbols.txt
 IE_DIAG_SYMBOL_NAMES = $(shell cat $(IE_DIAG_SYMBOLS_FILE) 2>/dev/null)
+IE_MENU_BUILD_DIR ?= $(BUILD_DIR)/ie_menu
+IE_UNPACKED_MEDIA_DIR ?= $(BUILD_DIR)/ie_unpacked/media
 VLINK ?= $(shell command -v vlink 2>/dev/null || printf /opt/amiga/bin/vlink)
 
 .PHONY: ie68 ie68_sw
 
 ie68: ie68_sw
 
-ie68_sw:
+$(IE_MENU_BUILD_DIR)/menu_assets.stamp: menu/back2.raw menu/credits_only.raw menu/font16x16.raw2 menu/back.pal menu/firepal.pal2 menu/font16x16.pal2 ie/tools/convert_menu_assets.py
+	$(info Converting IE menu assets)
+	@python3 ie/tools/convert_menu_assets.py --source menu --out $(IE_MENU_BUILD_DIR)
+
+$(IE_UNPACKED_MEDIA_DIR)/.stamp: ie/tools/unpack_sb_assets.py
+	$(info Unpacking IE runtime media assets)
+	@python3 ie/tools/unpack_sb_assets.py --source ../media --out $(IE_UNPACKED_MEDIA_DIR)
+
+ie68_sw: $(IE_MENU_BUILD_DIR)/menu_assets.stamp $(IE_UNPACKED_MEDIA_DIR)/.stamp
 	$(info Assembling full software renderer IE build from hires.s + IE platform)
 	@mkdir -p $(BUILD_DIR)
 	@PREFIX=$$(./getprefix.sh "$(CC)"); \

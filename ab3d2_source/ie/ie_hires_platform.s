@@ -46,6 +46,8 @@
 	xdef button
 	xdef button1
 	xdef ie_next_sfx_channel
+	xdef ie_menu_active
+	xdef ie_menu_last_buttons
 
 	xdef _SysBase
 	xdef _DOSBase
@@ -87,12 +89,20 @@
 	xref _Vid_ContrastAdjust_w
 	xref _Vid_BrightnessOffset_w
 	xref _Vid_GammaLevel_b
+	xref _mnu_bltbusy
+	xref _mnu_background
+	xref _mnu_screen
+	xref _mnu_morescreen
 
 CHUNKY_BASE	equ	$100000
 CHUNKY_BACK_BASE	equ	$113000
 PRESENT_BASE	equ	$126000
 SCREEN_WIDTH	equ	320
 SCREEN_HEIGHT	equ	240
+MENU_ROW_BYTES	equ	40
+MENU_PLANE_HEIGHT	equ	256
+MENU_PLANESIZE	equ	MENU_ROW_BYTES*MENU_PLANE_HEIGHT
+MENU_FRAME_BYTES	equ	SCREEN_WIDTH*SCREEN_HEIGHT
 SMALL_WIDTH	equ	192
 SMALL_HEIGHT	equ	160
 SMALL_XPOS	equ	64
@@ -186,6 +196,7 @@ _Sys_ReadMouse:
 	rts
 
 ie_poll_mouse:
+	move.l	d2,-(sp)
 	tst.l	ie_mouse_relative_ok
 	beq.s	.abs_mode
 	move.l	$F0734,d0
@@ -198,17 +209,25 @@ ie_poll_mouse:
 	move.l	d1,d0
 .apply_dy:
 	add.w	d0,_Sys_MouseY
-	move.l	$F0738,d0
+	bsr		ie_read_mouse_buttons
+	tst.l	ie_menu_active
+	beq.s	.not_menu_buttons
 	move.l	d0,d1
-	andi.l	#7,d1
-	bne.s	.buttons_ready
-	swap	d0
-	lsr.l	#8,d0
-	andi.l	#7,d0
-	bra.s	.buttons_apply
-.buttons_ready:
-	move.l	d1,d0
-.buttons_apply:
+	move.l	ie_menu_last_buttons,d2
+	eor.l	d2,d1
+	move.l	d0,ie_menu_last_buttons
+	btst	#0,d1
+	beq.s	.no_menu_left_edge
+	btst	#0,d0
+	beq.s	.no_menu_left_edge
+	move.b	#$44,lastpressed
+.no_menu_left_edge:
+	btst	#1,d1
+	beq.s	.not_menu_buttons
+	btst	#1,d0
+	beq.s	.not_menu_buttons
+	move.b	#$45,lastpressed
+.not_menu_buttons:
 	bset	#2,_custom+POTINP
 	btst	#1,d0
 	beq.s	.no_right_button
@@ -219,6 +238,7 @@ ie_poll_mouse:
 	beq.s	.no_left_button
 	bclr	#CIAB_GAMEPORT0,_ciaa+CIAPRA
 .no_left_button:
+	move.l	(sp)+,d2
 	rts
 
 _Vid_OpenMainScreen:
@@ -440,10 +460,54 @@ _Game_ApplyInventoryLimits:
 _Zone_InitEdgePVS:
 _Zone_ApplyPVSErrata:
 _Zone_FreeEdgePVS:
+	rts
+
 _mnu_setscreen:
+	movem.l	d0-d7/a0-a6,-(sp)
+	move.l	#1,ie_menu_active
+	clr.b	lastpressed
+	lea		_KeyMap_vb,a0
+	move.w	#255,d0
+.clear_menu_keys:
+	clr.b	(a0)+
+	dbra	d0,.clear_menu_keys
+	bsr		ie_read_mouse_buttons
+	move.l	d0,ie_menu_last_buttons
+	move.l	#1,VIDEO_CTRL
+	move.l	#MODE_320x240,VIDEO_MODE
+	move.l	#1,VIDEO_COLOR_MODE
+	move.l	#CHUNKY_BASE,VIDEO_FB_BASE
+	bsr		ie_menu_upload_palette
+	bsr		ie_menu_copy_background
+	movem.l	(sp)+,d0-d7/a0-a6
+	moveq	#1,d0
+	rts
+
 _mnu_clearscreen:
+	movem.l	d0-d1/a0,-(sp)
+	clr.l	ie_menu_active
+	bsr		_Vid_LoadMainPalette
+	bsr		_Draw_ResetGameDisplay
+	movem.l	(sp)+,d0-d1/a0
+	rts
+
 _mnu_movescreen:
+	tst.l	ie_menu_active
+	beq.s	.no_menu_render
+	bsr		ie_menu_render_frame
+.no_menu_render:
+	rts
+
 _mnu_dofire:
+	movem.l	d0-d1/a0,-(sp)
+	lea		_mnu_morescreen,a0
+	moveq	#0,d0
+	move.w	#((MENU_PLANESIZE*3)/4)-1,d1
+.clear_fire:
+	move.l	d0,(a0)+
+	dbra	d1,.clear_fire
+	clr.b	_mnu_bltbusy
+	movem.l	(sp)+,d0-d1/a0
 	rts
 
 _ReadJoy1:
@@ -460,6 +524,19 @@ _Game_LevelWon:
 
 _Game_CheckInventoryLimits:
 	moveq	#1,d0
+	rts
+
+ie_read_mouse_buttons:
+	move.l	$F0738,d0
+	move.l	d0,d1
+	andi.l	#7,d1
+	bne.s	.buttons_ready
+	swap	d0
+	lsr.l	#8,d0
+	andi.l	#7,d0
+	rts
+.buttons_ready:
+	move.l	d1,d0
 	rts
 
 ie_poll_keyboard:
@@ -650,3 +727,135 @@ ie_last_modifiers:
 
 _Game_FinishedLevel_b:
 	dc.w	0
+ie_menu_active:
+	dc.l	0
+ie_menu_last_buttons:
+	dc.l	0
+	cnop	0,4
+
+ie_menu_upload_palette:
+	lea		ie_menu_palette,a0
+	moveq	#0,d0
+	move.l	d0,VIDEO_PAL_INDEX
+	move.w	#255,d7
+.pal_loop:
+	move.l	(a0)+,VIDEO_PAL_DATA
+	dbra	d7,.pal_loop
+	rts
+
+ie_menu_copy_background:
+	lea		_mnu_background,a0
+	lea		_mnu_screen,a1
+	move.w	#(MENU_PLANESIZE/4)-1,d7
+.copy_plane0:
+	move.l	(a0)+,(a1)+
+	dbra	d7,.copy_plane0
+	lea		_mnu_background,a0
+	lea		_mnu_screen+MENU_PLANESIZE,a1
+	move.w	#(MENU_PLANESIZE/4)-1,d7
+.copy_plane0_dup:
+	move.l	(a0)+,(a1)+
+	dbra	d7,.copy_plane0_dup
+	lea		_mnu_background+MENU_PLANESIZE,a0
+	lea		_mnu_screen+(2*MENU_PLANESIZE),a1
+	move.w	#(MENU_PLANESIZE/4)-1,d7
+.copy_plane1:
+	move.l	(a0)+,(a1)+
+	dbra	d7,.copy_plane1
+	lea		_mnu_background+MENU_PLANESIZE,a0
+	lea		_mnu_screen+(3*MENU_PLANESIZE),a1
+	move.w	#(MENU_PLANESIZE/4)-1,d7
+.copy_plane1_dup:
+	move.l	(a0)+,(a1)+
+	dbra	d7,.copy_plane1_dup
+	rts
+
+ie_menu_render_frame:
+	movem.l	d0-d7/a0-a6,-(sp)
+	lea		_mnu_screen,a0
+	lea		_mnu_screen+(2*MENU_PLANESIZE),a1
+	lea		_mnu_morescreen,a3
+	lea		MENU_PLANESIZE(a3),a4
+	lea		MENU_PLANESIZE(a4),a5
+	lea		MENU_PLANESIZE(a5),a6
+	lea		(4*MENU_PLANESIZE)(a3),a2
+	move.l	a2,ie_menu_plane6_ptr_l
+	lea		(5*MENU_PLANESIZE)(a3),a2
+	move.l	a2,ie_menu_plane7_ptr_l
+	lea		CHUNKY_BASE,a2
+	move.w	#SCREEN_HEIGHT-1,d7
+.row_loop:
+	move.w	#MENU_ROW_BYTES-1,d6
+.byte_loop:
+	moveq	#7,d3
+	moveq	#-128,d1
+.bit_loop:
+	moveq	#0,d0
+	move.b	(a0),d2
+	and.b	d1,d2
+	beq.s	.no_p0
+	or.b	#1,d0
+.no_p0:
+	move.b	(a1),d2
+	and.b	d1,d2
+	beq.s	.no_p1
+	or.b	#2,d0
+.no_p1:
+	move.b	(a3),d2
+	and.b	d1,d2
+	beq.s	.no_p2
+	or.b	#4,d0
+.no_p2:
+	move.b	(a4),d2
+	and.b	d1,d2
+	beq.s	.no_p3
+	or.b	#8,d0
+.no_p3:
+	move.b	(a5),d2
+	and.b	d1,d2
+	beq.s	.no_p4
+	or.b	#16,d0
+.no_p4:
+	move.b	(a6),d2
+	and.b	d1,d2
+	beq.s	.no_p5
+	or.b	#32,d0
+.no_p5:
+	move.l	ie_menu_plane6_ptr_l,a6
+	move.b	(a6),d2
+	and.b	d1,d2
+	beq.s	.no_p6
+	or.b	#64,d0
+.no_p6:
+	move.l	ie_menu_plane7_ptr_l,a6
+	move.b	(a6),d2
+	and.b	d1,d2
+	beq.s	.no_p7
+	or.b	#128,d0
+.no_p7:
+	move.b	d0,(a2)+
+	lsr.b	#1,d1
+	dbra	d3,.bit_loop
+	addq.l	#1,a0
+	addq.l	#1,a1
+	addq.l	#1,a3
+	addq.l	#1,a4
+	addq.l	#1,a5
+	move.l	ie_menu_plane6_ptr_l,a6
+	addq.l	#1,a6
+	move.l	a6,ie_menu_plane6_ptr_l
+	move.l	ie_menu_plane7_ptr_l,a6
+	addq.l	#1,a6
+	move.l	a6,ie_menu_plane7_ptr_l
+	dbra	d6,.byte_loop
+	dbra	d7,.row_loop
+	movem.l	(sp)+,d0-d7/a0-a6
+	rts
+
+ie_menu_palette:
+	incbin	"_build/ie_menu/menu_palette_rgb32.bin"
+	cnop	0,4
+ie_menu_plane6_ptr_l:
+	dc.l	0
+ie_menu_plane7_ptr_l:
+	dc.l	0

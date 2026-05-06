@@ -42,7 +42,10 @@ Game_FinishedLevel_b:
 				align	4
 
 Game_Start:
+				move.l	#1,ie_game_stage
 				move.l	a7,sys_RecoveryStack	; Save stack pointer for Sys_FatalError
+				move.l	a7,mnu_mainstack
+				clr.b	Game_ShouldQuit_b
 
 				st		Plr1_Keys_b
 				clr.b	Plr1_Path_b
@@ -55,14 +58,17 @@ Game_Start:
 
 				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				CALLC	Vid_OpenMainScreen
+				move.l	#2,ie_game_stage
 
 				move.l	#GLF_DatabaseName_vb,a0
 				jsr		IO_LoadFile
 				move.l	d0,GLF_DatabasePtr_l
+				move.l	#3,ie_game_stage
 
 				move.l	#Game_StoryFile_vb,a0
 				jsr		IO_LoadFile
 				move.l	d0,Lvl_IntroTextPtr_l
+				move.l	#4,ie_game_stage
 
 				IFND	IS_IE
 				jsr		_InitLowLevel
@@ -73,10 +79,9 @@ Game_Start:
 
 				IFND	IS_IE
 				jsr		mnu_copycredz
-
 				CALLC	mnu_setscreen
-				move.l	a7,mnu_mainstack	; not sure if this is the right thing or even in use...
 				ENDC
+				move.l	#5,ie_game_stage
 
 				jsr		IO_InitQueue
 
@@ -85,9 +90,13 @@ Game_Start:
 				;bsr		FADEUPTITLE
 
 				jsr		Res_LoadSoundFx
+				move.l	#6,ie_game_stage
 				jsr		Res_LoadWallTextures
+				move.l	#7,ie_game_stage
 				jsr		Res_LoadFloorsAndTextures
+				move.l	#8,ie_game_stage
 				jsr		Res_LoadObjects
+				move.l	#9,ie_game_stage
 
 				IFND	IS_IE
 				move.l	#draw_BackdropImageName_vb,a0
@@ -102,9 +111,11 @@ Game_Start:
 
 ***********************************************
 				jsr		IO_FlushQueue
+				move.l	#10,ie_game_stage
 ***********************************************
 
 				jsr		Res_PatchSoundFx
+				move.l	#11,ie_game_stage
 
 				;move.w	#23,FADEAMOUNT
 				;bsr		FADEDOWNTITLE
@@ -117,14 +128,13 @@ Game_Start:
 				ENDC
 
 				jsr		game_SetMenuLevelNames
+				move.l	#12,ie_game_stage
 
 				bsr		DEFAULTGAME
-				IFD		IS_IE
-				move.w	Game_LevelCounter_w,Game_LevelNumber_w
-				bra		game_DoneMenu
-				ENDC
+				move.l	#13,ie_game_stage
 
 game_BackToMenu:
+				move.l	#14,ie_game_stage
 				CALLC	Sys_ClearKeyboard
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
@@ -134,6 +144,7 @@ game_BackToMenu:
 				beq.s	game_BackToMaster
 
 				bsr		game_ReadMainMenu
+				move.l	#15,ie_game_stage
 
 				bra		game_DoneMenu
 
@@ -146,13 +157,12 @@ game_BackToSlave:
 				bsr		game_SlaveMenu
 
 game_DoneMenu:
+				move.l	#16,ie_game_stage
 				tst.b	Game_ShouldQuit_b
 				bne		Game_Quit
 
-				IFND	IS_IE
 				moveq	#1,d0 ; Fade out
 				CALLC	mnu_clearscreen
-				ENDC
 
 				;	bsr		game_WaitForMenuKey
 
@@ -215,19 +225,15 @@ game_DoneMenu:
 				ENDR
 
 dontusestats:
-				IFD		IS_IE
-				bra		Game_Quit
-				ENDC
-
 				CALLC	mnu_setscreen
 
 				bra		game_BackToMenu
 
 Game_Quit:
-				IFND	IS_IE
+				move.l	ie_game_stage,ie_game_quit_from_stage
+				move.l	#99,ie_game_stage
 				moveq	#0,d0 ; No fading
 				CALLC	mnu_clearscreen ; Maybe No-op
-				ENDC
 
 				move.l	Lvl_DataPtr_l,a1
 				CALLEXEC FreeVec
@@ -245,7 +251,18 @@ Game_Quit:
 
 				move.l	#0,d0
 
+				IFD		IS_IE
+.hold_ie:
+				jsr		ie_wait_vblank
+				bra.s	.hold_ie
+				ENDC
 				rts
+
+				cnop	0,4
+ie_game_stage:
+				dc.l	0
+ie_game_quit_from_stage:
+				dc.l	0
 
 
 ; PREFERENCES (TODO - SHIP OUT):
@@ -381,6 +398,7 @@ Plr_InitSlave:
 ********************************************************
 
 game_ReadMainMenu:
+				move.l	#20,ie_game_stage
 				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				move.w	Game_LevelCounter_w,d0
 				move.l	#mnu_CURRENTLEVELLINE,a1
@@ -394,10 +412,17 @@ game_ReadMainMenu:
 
 				lea		mnu_MYMAINMENU,a0
 				bsr		game_OpenMenu
+				move.l	#21,ie_game_stage
 
 .rdlop:
 				lea		mnu_MYMAINMENU,a0
+				move.l	#22,ie_game_stage
+				IFD		IS_IE
+				bsr		ie_menu_wait_select
+				ELSE
 				bsr		game_CheckMenu
+				ENDC
+				move.l	#23,ie_game_stage
 
 ***************************************************************
 				tst.w	d0
@@ -1082,6 +1107,9 @@ game_SetMenuLevelNames:
 game_OpenMenu:
 .redraw:
 				move.l	a0,-(a7)
+				IFD		IS_IE
+				CALLC	mnu_setscreen
+				ENDC
 				jsr		mnu_openmenu			; Open new menu
 
 				move.l	(a7)+,a0
@@ -1104,6 +1132,94 @@ game_CheckMenu:
 				move.w	d2,mnu_currentsel
 				move.w	d2,d0					; option number
 				rts
+
+ie_menu_wait_select:
+				move.b	#0,lastpressed
+				addq.l	#1,ie_menu_wait_enter_count
+				clr.l	ie_menu_wait_last_key
+				clr.l	ie_menu_wait_return_value
+
+.loop:
+				addq.l	#1,ie_menu_wait_loop_count
+				bsr.w	mnu_docursor
+				jsr		_ie_wait_tof
+				move.l	#KeyMap_vb,a5
+				moveq	#0,d7
+				move.b	forward_key,d7
+				move.b	(a5,d7.w),d0
+				clr.b	(a5,d7.w)
+				tst.b	d0
+				bne.s	.up
+				move.b	backward_key,d7
+				move.b	(a5,d7.w),d0
+				clr.b	(a5,d7.w)
+				tst.b	d0
+				bne.s	.down
+				move.b	#RAWKEY_ENTER,d7
+				move.b	(a5,d7.w),d0
+				clr.b	(a5,d7.w)
+				tst.b	d0
+				bne.s	.select
+				move.b	#RAWKEY_SPACEBAR,d7
+				move.b	(a5,d7.w),d0
+				clr.b	(a5,d7.w)
+				tst.b	d0
+				bne.s	.select
+				jsr		key_readkey
+				move.l	d0,ie_menu_wait_last_key
+				tst.w	d0
+				beq.s	.loop
+
+				cmp.b	#RAWKEY_DOWN,d0
+				beq.s	.down
+				cmp.b	#RAWKEY_S,d0
+				beq.s	.down
+				cmp.b	#RAWKEY_UP,d0
+				beq.s	.up
+				cmp.b	#RAWKEY_W,d0
+				beq.s	.up
+				cmp.b	#RAWKEY_ENTER,d0
+				beq.s	.select
+				cmp.b	#RAWKEY_SPACEBAR,d0
+				beq.s	.select
+				cmp.b	#RAWKEY_ESC,d0
+				beq.s	.exit
+				bra.w	.loop
+
+.down:
+				addq.w	#1,mnu_row
+				bra.w	.loop
+
+.up:
+				subq.w	#1,mnu_row
+				bra.w	.loop
+
+.exit:
+				move.w	mnu_items,d0
+				subq.w	#1,d0
+				move.l	d0,ie_menu_wait_return_value
+				rts
+
+.select:
+				move.w	mnu_row,d0
+				divu	mnu_items,d0
+				swap.w	d0
+				and.l	#$ffff,d0
+				move.l	d0,ie_menu_wait_return_value
+				move.l	d0,ie_menu_wait_selected_value
+				rts
+
+				cnop	0,4
+ie_menu_wait_enter_count:
+				dc.l	0
+ie_menu_wait_loop_count:
+				dc.l	0
+ie_menu_wait_last_key:
+				dc.l	0
+ie_menu_wait_return_value:
+				dc.l	0
+ie_menu_wait_selected_value:
+				dc.l	0
 
 game_SavedGameSlotPtr_l:	dc.l	0
 game_SavedGameSlotSize_l:	dc.l	0
@@ -1273,3 +1389,17 @@ Lvl_IntroTextPtr_l:
 				dc.l	0
 
 				include	"menu/menunb.s"
+
+				xdef	_ie_wait_tof
+				xref	ie_wait_vblank
+
+_ie_wait_tof:
+				jsr		ie_wait_vblank
+				tst.l	timer
+				beq.s	.timer_done
+				subq.l	#1,timer
+.timer_done:
+				addq.l	#1,counter
+				addq.l	#1,main_counter
+				jsr		mnu_vblint
+				rts
