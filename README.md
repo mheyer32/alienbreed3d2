@@ -216,21 +216,41 @@ There are three main CPU tuning options:
 
 ## Intuition Engine Port (WIP)
 
-An in-progress bare-metal Intuition Engine target is planned in parallel with the AmigaOS builds.
+Intuition Engine is a fantasy computer that never existed. The AB3D2 IE target is a
+bare-metal M68K port of the game to that machine: the original AmigaOS, custom-chip
+and device assumptions are replaced with IE MMIO services while retaining the
+software-rendered game path.
 
-- Port profile:
-  - Version 1: software renderer retained, Amiga HAL replaced with IE MMIO HAL.
-  - Version 2: optional Voodoo triangle submission path.
-- Build targets (from `ab3d2_source/`):
-  - `make ie68`
-  - `make ie68_bootstrap` (legacy minimal IE bootstrap path)
-  - `make ie68_voodoo`
-- Current status:
-  - `ie68` now builds the full software-renderer path from `hires.s` plus IE shim glue.
-  - `ie68_bootstrap` keeps the smaller standalone IE bootstrap (`ie/ie_main.s`).
-  - Voodoo remains a separate WIP entry path (`ie/ie_voodoo_main.s`).
+The current IE build uses:
 
-See [docs/ie_port.md](docs/ie_port.md) for MMIO register map, memory layout, and implementation notes.
+- M68K execution on Intuition Engine's fantasy-computer hardware.
+- The full software renderer from `hires.s` linked with IE platform glue.
+- The native AB3D2 menu flow, rendered from converted CLUT8 menu assets.
+- IE keyboard and mouse MMIO for menu and game input.
+- IE file loading, video presentation and audio/SID playback support.
+
+Relevant Intuition Engine hardware includes CPU personalities for IE64, IE32, M68K,
+Z80, 6502 and x86; display hardware such as IEVideoChip, VGA, ULA, TED video,
+ANTIC/GTIA, Voodoo, compositor, copper, blitter and SNES-style Mode 7 scaling and
+rotation; and audio/playback hardware for SoundChip, AY/YM/PSG, SN76489,
+SID/MultiSID, POKEY/SAP, TED, AHX/THX, MOD, WAV and AROS Paula-style DMA.
+
+Build from `ab3d2_source/`:
+
+```bash
+make ie68
+```
+
+The output is `ab3d2_ie68.ie68`. Run it with Intuition Engine from the
+`ab3d2_source/` working directory so the expected media tree is available.
+
+Intuition Engine links:
+
+- https://github.com/IntuitionAmiga/IntuitionEngine
+- https://www.youtube.com/@intuitionamiga
+
+See [docs/ie_port.md](docs/ie_port.md) for MMIO register map, memory layout and
+implementation notes.
 
 
 ### Release
