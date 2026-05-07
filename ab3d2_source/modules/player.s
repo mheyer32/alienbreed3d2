@@ -13,6 +13,9 @@
 ; Plr1_Data->ObjectPtr_l + EntT_SizeOf_l == Plr2_Data->ObjectPtr_l
 ; Plr2_Data->ObjectPtr_l + EntT_SizeOf_l == player weapon entity
 ;
+				IFD		IS_IE
+				xref	ie_mouse_delta_x_w
+				ENDC
 
 ;******************************************************************************
 ;*
@@ -76,6 +79,13 @@ plr_MouseControl:
 				CALLC	Sys_ReadMouse
 
 				move.l	(a7)+,a0
+				IFD		IS_IE
+				move.w	ie_mouse_delta_x_w,d0
+				beq.s	.no_ie_mouse_x
+				asl.w	#2,d0
+				add.w	d0,PlrT_SnapAngSpd_w(a0)
+.no_ie_mouse_x:
+				ENDC
 				move.l	#SinCosTable_vw,a1
 				move.w	PlrT_SnapAngSpd_w(a0),d1
 				move.w	Vis_AngPos_w,d0
@@ -161,12 +171,20 @@ plr_MouseControl:
 				beq.s	.notQuake
 				move.b	forward_key,d7
 .notQuake
+				IFD		IS_IE
+				btst	#2,_custom+potinp		; right button
+				ELSE
 				btst	#2,$dff000+potinp		; right button
+				ENDC
 				seq		(a5,d7.w)
 
 				; The left mouse button triggers the fire key
 				move.b	fire_key,d7
+				IFD		IS_IE
+				btst	#CIAB_GAMEPORT0,_ciaa+ciapra ; left button
+				ELSE
 				btst	#CIAB_GAMEPORT0,$bfe001+ciapra ; left button
+				ENDC
 				seq		(a5,d7.w)
 
 				rts
@@ -726,7 +744,6 @@ plr_KeyboardControl:
 				add.l	d1,d7
 				tst.b	Plr_Decelerate_b
 				beq.s	.no_control_possible
-
 				add.l	d6,PlrT_SnapXSpdVal_l(a0)
 				add.l	d7,PlrT_SnapZSpdVal_l(a0)
 
@@ -806,7 +823,7 @@ plr_Fall:
 				bgt		.above_ground
 				beq.s	.on_ground
 
-				st		Plr_Decelerate_b
+				move.b	#$ff,Plr_Decelerate_b
 
 				; we are under the ground.
 
@@ -832,7 +849,7 @@ plr_Fall:
 				add.b	d3,EntT_DamageTaken_b(a4)
 
 .skip_damage:
-				st		Plr_Decelerate_b
+				move.b	#$ff,Plr_Decelerate_b
 				move.w	#0,plr_FallDamage_w
 				move.w	Plr_AddToBobble_w,d3
 				move.w	d3,d4
@@ -895,7 +912,7 @@ plr_Fall:
 				move.w	#250,PlrT_JetpackFuel_w(a0)
 
 .have_jetpack_fuel:
-				st		Plr_Decelerate_b
+				move.b	#$ff,Plr_Decelerate_b
 				move.l	#-128,plr_JumpSpeed_l
 				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
@@ -917,7 +934,7 @@ plr_Fall:
 				cmp.l	#16*64,d3
 				bgt.s	.nonearmove
 
-				st		Plr_Decelerate_b
+				move.b	#$ff,Plr_Decelerate_b
 
 .nonearmove:
 ; need to fall down (possibly).
@@ -964,7 +981,7 @@ plr_Fall:
 				GETREGS
 
 .no_splash_fx:
-				st		Plr_Decelerate_b
+				move.b	#$ff,Plr_Decelerate_b
 				move.w	#0,plr_FallDamage_w
 				cmp.l	#512,d2
 				blt.s	.proceed

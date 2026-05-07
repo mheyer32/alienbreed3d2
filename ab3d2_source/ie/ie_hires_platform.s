@@ -48,6 +48,7 @@
 	xdef ie_next_sfx_channel
 	xdef ie_menu_active
 	xdef ie_menu_last_buttons
+	xdef ie_mouse_delta_x_w
 
 	xdef _SysBase
 	xdef _DOSBase
@@ -80,6 +81,9 @@
 	xref _Sys_FPSLimit_w
 	xref _KeyMap_vb
 	xref lastpressed
+	xref _VBlankInterrupt
+	xref forward_key
+	xref backward_key
 	xref _draw_Palette_vw
 	xref Aud_SampleNum_w
 	xref Aud_SampleList_vl
@@ -97,6 +101,7 @@
 CHUNKY_BASE	equ	$100000
 CHUNKY_BACK_BASE	equ	$113000
 PRESENT_BASE	equ	$126000
+PRESENT_BACK_BASE	equ	$139000
 SCREEN_WIDTH	equ	320
 SCREEN_HEIGHT	equ	240
 MENU_ROW_BYTES	equ	40
@@ -116,11 +121,14 @@ VIDEO_COLOR_MODE	equ	$F0080
 VIDEO_FB_BASE	equ	$F0084
 FAKE_LIB_BASE	equ	$6F0000
 FAKE_VEC_BYTES	equ	$0800
+FAKE_LVO_WAITTOF	equ	-270
 EDGE_POINT_ID_LIST_END	equ	-4
 IE_SCANCODE_NONE	equ	$FF
 RAWKEY_CTRL	equ	$63
 RAWKEY_LSHIFT	equ	$60
 RAWKEY_LALT	equ	$64
+RAWKEY_UP	equ	$4C
+RAWKEY_DOWN	equ	$4D
 IE_MOD_SHIFT	equ	0
 IE_MOD_CTRL	equ	1
 IE_MOD_ALT	equ	2
@@ -171,6 +179,22 @@ ie_wait_vblank:
 	bsr		ie_poll_input
 	rts
 
+ie_wait_tof:
+	bsr		ie_poll_input
+	bsr		ie_run_vblank
+	rts
+
+ie_run_vblank:
+	tst.w	ie_vblank_busy_w
+	bne.s	.done
+	st		ie_vblank_busy_w
+	movem.l	d0-d7/a0-a6,-(sp)
+	jsr		_VBlankInterrupt
+	movem.l	(sp)+,d0-d7/a0-a6
+	clr.w	ie_vblank_busy_w
+.done:
+	rts
+
 ie_poll_input:
 	bsr		ie_poll_keyboard
 	bsr		ie_poll_mouse
@@ -191,12 +215,14 @@ _Sys_EvalFPS:
 	rts
 
 _Sys_ReadMouse:
-	bsr		ie_poll_keyboard
-	bsr		ie_poll_mouse
+	; The IE game control path calls ie_poll_input immediately before
+	; Plr*_MouseControl. Polling again here consumes the same mouse delta
+	; before the player code can use it.
 	rts
 
 ie_poll_mouse:
-	move.l	d2,-(sp)
+	movem.l	d2-d4/a0,-(sp)
+	bsr		ie_poll_mouse_x
 	tst.l	ie_mouse_relative_ok
 	beq.s	.abs_mode
 	move.l	$F0734,d0
@@ -238,7 +264,26 @@ ie_poll_mouse:
 	beq.s	.no_left_button
 	bclr	#CIAB_GAMEPORT0,_ciaa+CIAPRA
 .no_left_button:
-	move.l	(sp)+,d2
+	movem.l	(sp)+,d2-d4/a0
+	rts
+
+ie_poll_mouse_x:
+	clr.w	ie_mouse_delta_x_w
+	tst.l	ie_menu_active
+	bne.s	.done
+	tst.l	ie_mouse_relative_ok
+	beq.s	.abs_mode
+	move.l	$F0730,d0
+	bra.s	.have_dx
+.abs_mode:
+	move.l	$F0730,d0
+	move.l	d0,d1
+	sub.l	ie_mouse_last_abs_x,d1
+	move.l	d0,ie_mouse_last_abs_x
+	move.l	d1,d0
+.have_dx:
+	move.w	d0,ie_mouse_delta_x_w
+.done:
 	rts
 
 _Vid_OpenMainScreen:
@@ -256,6 +301,7 @@ _Vid_OpenMainScreen:
 	clr.w	_Vid_ScreenBufferIndex_w
 	clr.w	_Vid_LetterBoxMarginHeight_w
 	clr.l	ie_mouse_relative_ok
+	move.l	$F0730,ie_mouse_last_abs_x
 	move.l	$F0734,ie_mouse_last_abs_y
 	bsr		_Vid_LoadMainPalette
 	moveq	#1,d0
@@ -351,7 +397,6 @@ _Vid_Present:
 	tst.b	_Vid_FullScreen_b
 	bne.s	.present_full
 	bsr		ie_present_small
-	move.l	#PRESENT_BASE,VIDEO_FB_BASE
 	rts
 .present_full:
 	move.l	a0,VIDEO_FB_BASE
@@ -375,6 +420,12 @@ _Draw_ResetGameDisplay:
 .clear_present:
 	move.l	d0,(a0)+
 	dbra	d1,.clear_present
+	lea		PRESENT_BACK_BASE,a0
+	move.w	#((SCREEN_WIDTH*SCREEN_HEIGHT/4)-1),d1
+.clear_present_back:
+	move.l	d0,(a0)+
+	dbra	d1,.clear_present_back
+	clr.w	ie_present_index_w
 	move.l	#PRESENT_BASE,VIDEO_FB_BASE
 	movem.l	(sp)+,d0-d1/a0
 	rts
@@ -384,12 +435,17 @@ _Draw_ResetGameDisplay:
 ie_present_small:
 	movem.l	d0-d2/a0-a2,-(sp)
 	lea		PRESENT_BASE,a1
+	tst.w	ie_present_index_w
+	beq.s	.have_target
+	lea		PRESENT_BACK_BASE,a1
+.have_target:
+	move.l	a1,a2
 	moveq	#0,d0
 	move.w	#((SCREEN_WIDTH*SCREEN_HEIGHT/4)-1),d1
 .clear_present:
 	move.l	d0,(a1)+
 	dbra	d1,.clear_present
-	lea		PRESENT_BASE+(SMALL_YPOS*SCREEN_WIDTH)+SMALL_XPOS,a1
+	lea		(SMALL_YPOS*SCREEN_WIDTH)+SMALL_XPOS(a2),a1
 	move.w	#(SMALL_HEIGHT-1),d2
 .copy_row:
 	move.w	#(SMALL_WIDTH/4-1),d1
@@ -399,6 +455,8 @@ ie_present_small:
 	adda.w	#(SCREEN_WIDTH-SMALL_WIDTH),a0
 	adda.w	#(SCREEN_WIDTH-SMALL_WIDTH),a1
 	dbra	d2,.copy_row
+	move.l	a2,VIDEO_FB_BASE
+	eori.w	#1,ie_present_index_w
 	movem.l	(sp)+,d0-d2/a0-a2
 	rts
 
@@ -541,7 +599,6 @@ ie_read_mouse_buttons:
 
 ie_poll_keyboard:
 	lea		_KeyMap_vb,a0
-.drain:
 	move.l	$F0744,d0
 	andi.l	#1,d0
 	beq.s	.done
@@ -560,15 +617,16 @@ ie_poll_keyboard:
 	lea		ie_scancode_to_rawkey,a1
 	move.b	0(a1,d1.w),d1
 	cmpi.b	#IE_SCANCODE_NONE,d1
-	beq.s	.drain
+	beq.s	.done
 	btst	#7,d0
 	bne.s	.release
 	move.b	#$FF,0(a0,d1.w)
+	bsr		ie_keyboard_apply_alias_press
 	move.b	d1,lastpressed
-	bra.s	.drain
+	bra.s	.done
 .release:
 	clr.b	0(a0,d1.w)
-	bra.s	.drain
+	bsr		ie_keyboard_apply_alias_release
 .done:
 	move.l	$F0748,d0
 	move.l	d0,d2
@@ -612,6 +670,40 @@ ie_poll_keyboard:
 .mod_alt_done:
 	rts
 
+ie_keyboard_apply_alias_press:
+	cmpi.b	#RAWKEY_UP,d1
+	beq.s	.press_forward
+	cmpi.b	#RAWKEY_DOWN,d1
+	beq.s	.press_backward
+	rts
+.press_forward:
+	moveq	#0,d2
+	move.b	forward_key,d2
+	move.b	#$FF,0(a0,d2.w)
+	rts
+.press_backward:
+	moveq	#0,d2
+	move.b	backward_key,d2
+	move.b	#$FF,0(a0,d2.w)
+	rts
+
+ie_keyboard_apply_alias_release:
+	cmpi.b	#RAWKEY_UP,d1
+	beq.s	.release_forward
+	cmpi.b	#RAWKEY_DOWN,d1
+	beq.s	.release_backward
+	rts
+.release_forward:
+	moveq	#0,d2
+	move.b	forward_key,d2
+	clr.b	0(a0,d2.w)
+	rts
+.release_backward:
+	moveq	#0,d2
+	move.b	backward_key,d2
+	clr.b	0(a0,d2.w)
+	rts
+
 ie_scancode_to_rawkey:
 	dc.b	IE_SCANCODE_NONE,$45,$01,$02,$03,$04,$05,$06
 	dc.b	$07,$08,$09,$0A,$0B,$0C,$41,$42
@@ -622,9 +714,9 @@ ie_scancode_to_rawkey:
 	dc.b	$35,$36,$37,$38,$39,$3A,$61,IE_SCANCODE_NONE
 	dc.b	IE_SCANCODE_NONE,$40,$62,$50,$51,$52,$53,$54
 	dc.b	$55,$56,$57,$58,$59,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE
-	dc.b	IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE
 	dc.b	$4C,IE_SCANCODE_NONE,IE_SCANCODE_NONE,$4F,IE_SCANCODE_NONE,$4E,IE_SCANCODE_NONE,IE_SCANCODE_NONE
 	dc.b	$4D,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE
+	dc.b	IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE
 	dc.b	IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,$5F
 	dc.b	IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE
 	dc.b	IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE,IE_SCANCODE_NONE
@@ -697,6 +789,9 @@ ie_init_fake_lib_vectors:
 .fill_rts:
 	move.w	#$4E75,(a0)+
 	dbra	d7,.fill_rts
+	lea		FAKE_LIB_BASE+FAKE_LVO_WAITTOF,a0
+	move.w	#$4EF9,(a0)+
+	move.l	#ie_wait_tof,(a0)
 	rts
 
 _SysBase:
@@ -720,6 +815,17 @@ ie_next_sfx_channel:
 
 ie_mouse_relative_ok:
 	dc.l	0
+ie_mouse_last_abs_x:
+	dc.l	0
+ie_mouse_delta_x_w:
+	dc.w	0
+	dc.w	0
+ie_present_index_w:
+	dc.w	0
+	dc.w	0
+ie_vblank_busy_w:
+	dc.w	0
+	dc.w	0
 ie_mouse_last_abs_y:
 	dc.l	0
 ie_last_modifiers:
@@ -778,6 +884,7 @@ ie_menu_render_frame:
 	lea		MENU_PLANESIZE(a3),a4
 	lea		MENU_PLANESIZE(a4),a5
 	lea		MENU_PLANESIZE(a5),a6
+	move.l	a6,ie_menu_plane5_ptr_l
 	lea		(4*MENU_PLANESIZE)(a3),a2
 	move.l	a2,ie_menu_plane6_ptr_l
 	lea		(5*MENU_PLANESIZE)(a3),a2
@@ -816,6 +923,7 @@ ie_menu_render_frame:
 	beq.s	.no_p4
 	or.b	#16,d0
 .no_p4:
+	move.l	ie_menu_plane5_ptr_l,a6
 	move.b	(a6),d2
 	and.b	d1,d2
 	beq.s	.no_p5
@@ -841,6 +949,9 @@ ie_menu_render_frame:
 	addq.l	#1,a3
 	addq.l	#1,a4
 	addq.l	#1,a5
+	move.l	ie_menu_plane5_ptr_l,a6
+	addq.l	#1,a6
+	move.l	a6,ie_menu_plane5_ptr_l
 	move.l	ie_menu_plane6_ptr_l,a6
 	addq.l	#1,a6
 	move.l	a6,ie_menu_plane6_ptr_l
@@ -855,6 +966,8 @@ ie_menu_render_frame:
 ie_menu_palette:
 	incbin	"_build/ie_menu/menu_palette_rgb32.bin"
 	cnop	0,4
+ie_menu_plane5_ptr_l:
+	dc.l	0
 ie_menu_plane6_ptr_l:
 	dc.l	0
 ie_menu_plane7_ptr_l:

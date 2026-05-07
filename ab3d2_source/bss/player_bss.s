@@ -260,6 +260,11 @@ plr_FallDamage_w:				ds.w	1 ; fall.s
 _Plr_MultiplayerType_b::
 Plr_MultiplayerType_b:			ds.b	1	; CHAR enum - m(aster), s(lave), n(either)
 Plr_Decelerate_b:				ds.b	1
+				IFD		IS_IE
+				even
+READCONTROLS:					ds.w	1
+Game_Running_b:					ds.w	1
+				ENDC
 
 ; Byte fields
 ; Private

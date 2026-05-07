@@ -21,6 +21,9 @@
 				xdef	Aud_ChannelPick_b
 				ENDC
 				xdef	lastpressed
+				IFD		IS_IE
+				xdef	Game_Running_b
+				ENDC
 
 ;*************************************************
 ;* Stuff to do to get a C2P version:
@@ -675,7 +678,11 @@ NOCLTXT:
 
 ********************************************
 
+				IFD		IS_IE
+				move.b	#$ff,Game_Running_b
+				ELSE
 				st		Game_Running_b
+				ENDC
 				st		dosounds
 
 				jsr		AI_InitAlienWorkspace
@@ -956,6 +963,10 @@ game_main_loop:
 				bne		.nopause
 				tst.b	RAWKEY_P(a5)
 				beq.s	.nopause
+				IFD		IS_IE
+				cmp.b	#$ff,RAWKEY_P(a5)
+				bne.s	.nopause
+				ENDC
 				clr.b	Game_Running_b
 
 .waitrel:
@@ -972,7 +983,11 @@ game_main_loop:
 
 				bsr		Game_Pause
 
+				IFD		IS_IE
+				move.b	#$ff,Game_Running_b
+				ELSE
 				st		Game_Running_b
+				ENDC
 .nopause:
 
 ; FIXME: "player is hit" color handling missing
@@ -987,7 +1002,11 @@ game_main_loop:
 nofadedownhc:
 				;bsr		Vid_LoadMainPalette		; should only reload the palatte when hit
 
+				IFD		IS_IE
+				move.b	#$ff,READCONTROLS
+				ELSE
 				st		READCONTROLS
+				ENDC
 				move.l	#$dff000,a6
 
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
@@ -1033,12 +1052,20 @@ nofadedownhc:
 .masfirst:
 				clr.b	Game_SlavePaused_b
 				clr.b	Game_MasterPaused_b
+				IFD		IS_IE
+				move.b	#$ff,Game_Running_b
+				ELSE
 				st		Game_Running_b
+				ENDC
 
 .nopause:
 				clr.l	d2
 				move.w	Sys_FPSLimit_w,d2
+				IFD		IS_IE
+				bmi.s	.ie_wait_vbl_once
+				ELSE
 				bmi.s	.no_vbl
+				ENDC
 
 				;move.l	Vid_VBLCountLast_l,d2
 				add.l	Vid_VBLCountLast_l,d2
@@ -1049,11 +1076,21 @@ nofadedownhc:
 				;cmp.l	d2,d3
 				cmp.l	Vid_VBLCount_l,d2
 				blt.s	.skipWaitTOF
+				IFD		IS_IE
+				move.b	#$ff,Game_Running_b
+				ENDC
 				CALLGRAF	WaitTOF
 				bra.s	.waitvbl
 
 .skipWaitTOF:
 				move.l	Vid_VBLCount_l,Vid_VBLCountLast_l
+				bra.s	.no_vbl
+				IFD		IS_IE
+.ie_wait_vbl_once:
+				move.b	#$ff,Game_Running_b
+				CALLGRAF	WaitTOF
+				move.l	Vid_VBLCount_l,Vid_VBLCountLast_l
+				ENDC
 .no_vbl:
 				;move.l	d3,Vid_VBLCountLast_l
 
@@ -2291,7 +2328,9 @@ Lvl_ExitZoneID_w:		dc.w	0
 ***************************************************************************
 
 
+				IFND	IS_IE
 READCONTROLS:	dc.w	0
+				ENDC
 
 tstststst:		dc.w	0
 
@@ -3440,7 +3479,9 @@ draw_RenderMap_b:		dc.w	0
 
 				include "modules/transform.s"
 
+				IFND	IS_IE
 Game_Running_b:	dc.w	0						; does main game run?
+				ENDC
 
 endlevel:
 ; 	_break #0

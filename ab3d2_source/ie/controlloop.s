@@ -31,6 +31,12 @@
 ;12. Reload title screen
 ;13. goto 6
 
+				xdef	turn_left_key
+				xdef	turn_right_key
+				xdef	forward_key
+				xdef	backward_key
+				xdef	ie_game_stage
+
 
 				align 4
 OPTSPRADDR:
@@ -951,7 +957,11 @@ CHANGECONTROLS:
 
 *********************************************
 				move.l	#mnu_buttonanim,mnu_frameptr
+				IFD		IS_IE
+				jsr		ie_menu_getrawvalue
+				ELSE
 				jsr		mnu_getrawvalue
+				ENDC
 				move.l	#mnu_cursanim,mnu_frameptr
 ***********************************************
 
@@ -997,7 +1007,11 @@ CHANGECONTROLS2:
 
 **********************************************
 				move.l	#mnu_buttonanim,mnu_frameptr
+				IFD		IS_IE
+				jsr		ie_menu_getrawvalue
+				ELSE
 				jsr		mnu_getrawvalue
+				ENDC
 				move.l	#mnu_cursanim,mnu_frameptr
 ***********************************************
 
@@ -1122,7 +1136,11 @@ game_CheckMenu:
 				move.l	a0,-(a7)
 				jsr		mnu_update
 
+				IFD		IS_IE
+				bsr		ie_menu_wait_select
+				ELSE
 				jsr		mnu_waitmenu			; Wait for option
+				ENDC
 
 				move.l	(a7)+,a0
 				moveq.l	#0,d2
@@ -1135,12 +1153,9 @@ game_CheckMenu:
 
 ie_menu_wait_select:
 				move.b	#0,lastpressed
-				addq.l	#1,ie_menu_wait_enter_count
-				clr.l	ie_menu_wait_last_key
-				clr.l	ie_menu_wait_return_value
 
 .loop:
-				addq.l	#1,ie_menu_wait_loop_count
+				bsr.w	ie_menu_clear_old_cursor
 				bsr.w	mnu_docursor
 				jsr		_ie_wait_tof
 				move.l	#KeyMap_vb,a5
@@ -1166,7 +1181,6 @@ ie_menu_wait_select:
 				tst.b	d0
 				bne.s	.select
 				jsr		key_readkey
-				move.l	d0,ie_menu_wait_last_key
 				tst.w	d0
 				beq.s	.loop
 
@@ -1197,7 +1211,6 @@ ie_menu_wait_select:
 .exit:
 				move.w	mnu_items,d0
 				subq.w	#1,d0
-				move.l	d0,ie_menu_wait_return_value
 				rts
 
 .select:
@@ -1205,22 +1218,36 @@ ie_menu_wait_select:
 				divu	mnu_items,d0
 				swap.w	d0
 				and.l	#$ffff,d0
-				move.l	d0,ie_menu_wait_return_value
-				move.l	d0,ie_menu_wait_selected_value
+				rts
+
+ie_menu_getrawvalue:
+				move.b	#0,lastpressed
+
+.loop:
+				bsr.w	ie_menu_clear_old_cursor
+				bsr.w	mnu_docursor
+				jsr		_ie_wait_tof
+				jsr		key_readkey
+				tst.w	d0
+				beq.s	.loop
+				rts
+
+ie_menu_clear_old_cursor:
+				moveq.l	#0,d1
+				move.w	mnu_oldrow,d1
+				cmp.w	mnu_row,d1
+				beq.s	.done
+				divu	mnu_items,d1
+				swap.w	d1
+				mulu	mnu_spread,d1
+				add.w	mnu_cury,d1
+				move.w	mnu_curx,d0
+				lea		mnu_cleararrow,a0
+				bsr.w	mnu_printxy
+.done:
 				rts
 
 				cnop	0,4
-ie_menu_wait_enter_count:
-				dc.l	0
-ie_menu_wait_loop_count:
-				dc.l	0
-ie_menu_wait_last_key:
-				dc.l	0
-ie_menu_wait_return_value:
-				dc.l	0
-ie_menu_wait_selected_value:
-				dc.l	0
-
 game_SavedGameSlotPtr_l:	dc.l	0
 game_SavedGameSlotSize_l:	dc.l	0
 
