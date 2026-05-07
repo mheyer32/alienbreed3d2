@@ -1153,33 +1153,38 @@ game_CheckMenu:
 
 ie_menu_wait_select:
 				move.b	#0,lastpressed
+				clr.w	ie_menu_repeat_wait_w
 
 .loop:
 				bsr.w	ie_menu_clear_old_cursor
 				bsr.w	mnu_docursor
 				jsr		_ie_wait_tof
+				tst.w	ie_menu_repeat_wait_w
+				beq.s	.repeat_ready
+				subq.w	#1,ie_menu_repeat_wait_w
+.repeat_ready:
 				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 				move.b	forward_key,d7
 				move.b	(a5,d7.w),d0
 				clr.b	(a5,d7.w)
 				tst.b	d0
-				bne.s	.up
+				bne.w	.up_keymap
 				move.b	backward_key,d7
 				move.b	(a5,d7.w),d0
 				clr.b	(a5,d7.w)
 				tst.b	d0
-				bne.s	.down
+				bne.w	.down_keymap
 				move.b	#RAWKEY_ENTER,d7
 				move.b	(a5,d7.w),d0
 				clr.b	(a5,d7.w)
 				tst.b	d0
-				bne.s	.select
+				bne.w	.select
 				move.b	#RAWKEY_SPACEBAR,d7
 				move.b	(a5,d7.w),d0
 				clr.b	(a5,d7.w)
 				tst.b	d0
-				bne.s	.select
+				bne.w	.select
 				jsr		key_readkey
 				tst.w	d0
 				beq.s	.loop
@@ -1200,11 +1205,21 @@ ie_menu_wait_select:
 				beq.s	.exit
 				bra.w	.loop
 
+.down_keymap:
+				move.b	#0,lastpressed
 .down:
+				tst.w	ie_menu_repeat_wait_w
+				bne.w	.loop
+				move.w	#6,ie_menu_repeat_wait_w
 				addq.w	#1,mnu_row
 				bra.w	.loop
 
+.up_keymap:
+				move.b	#0,lastpressed
 .up:
+				tst.w	ie_menu_repeat_wait_w
+				bne.w	.loop
+				move.w	#6,ie_menu_repeat_wait_w
 				subq.w	#1,mnu_row
 				bra.w	.loop
 
@@ -1248,6 +1263,7 @@ ie_menu_clear_old_cursor:
 				rts
 
 				cnop	0,4
+ie_menu_repeat_wait_w:	dc.w	0
 game_SavedGameSlotPtr_l:	dc.l	0
 game_SavedGameSlotSize_l:	dc.l	0
 

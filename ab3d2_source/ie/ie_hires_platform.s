@@ -31,6 +31,7 @@
 	xdef _Zone_SetupEdgeClipping
 	xdef _Zone_CheckVisibleEdges
 	xdef _Zone_FreeEdgePVS
+	xdef ie_clear_presented_source
 	xdef _mnu_setscreen
 	xdef _mnu_clearscreen
 	xdef _mnu_movescreen
@@ -397,6 +398,7 @@ _Vid_Present:
 	tst.b	_Vid_FullScreen_b
 	bne.s	.present_full
 	bsr		ie_present_small
+	bsr		ie_clear_presented_source
 	rts
 .present_full:
 	move.l	a0,VIDEO_FB_BASE
@@ -458,6 +460,25 @@ ie_present_small:
 	move.l	a2,VIDEO_FB_BASE
 	eori.w	#1,ie_present_index_w
 	movem.l	(sp)+,d0-d2/a0-a2
+	rts
+
+ie_clear_presented_source:
+	movem.l	d0-d2/a0,-(sp)
+	move.l	_Vid_FastBufferPtr_l,a0
+	tst.l	a0
+	bne.s	.have_fb
+	move.l	#CHUNKY_BASE,a0
+.have_fb:
+	moveq	#0,d0
+	move.w	#(SMALL_HEIGHT-1),d2
+.row:
+	move.w	#(SMALL_WIDTH/4-1),d1
+.long:
+	move.l	d0,(a0)+
+	dbra	d1,.long
+	adda.w	#(SCREEN_WIDTH-SMALL_WIDTH),a0
+	dbra	d2,.row
+	movem.l	(sp)+,d0-d2/a0
 	rts
 
 _Zone_SetupEdgeClipping:
