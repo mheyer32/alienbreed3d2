@@ -107,6 +107,12 @@
 	xref _mnu_screen
 	xref _mnu_morescreen
 
+MOUSE_X	equ	$F0730
+MOUSE_Y	equ	$F0734
+MOUSE_BUTTONS	equ	$F0738
+MOUSE_CTRL	equ	$F074C
+MOUSE_DX	equ	$F0754
+MOUSE_DY	equ	$F0758
 CHUNKY_BASE	equ	$100000
 CHUNKY_BACK_BASE	equ	$113000
 PRESENT_BASE	equ	$126000
@@ -252,10 +258,10 @@ ie_poll_mouse:
 	bsr		ie_poll_mouse_x
 	tst.l	ie_mouse_relative_ok
 	beq.s	.abs_mode
-	move.l	$F0734,d0
+	move.l	MOUSE_DY,d0
 	bra.s	.apply_dy
 .abs_mode:
-	move.l	$F0734,d0
+	move.l	MOUSE_Y,d0
 	move.l	d0,d1
 	sub.l	ie_mouse_last_abs_y,d1
 	move.l	d0,ie_mouse_last_abs_y
@@ -298,15 +304,15 @@ ie_poll_mouse_x:
 	tst.l	ie_menu_active
 	beq.s	.not_menu
 	clr.w	ie_mouse_delta_x_w
-	move.l	$F0730,ie_mouse_last_abs_x
+	move.l	MOUSE_X,ie_mouse_last_abs_x
 	bra.s	.done
 .not_menu:
 	tst.l	ie_mouse_relative_ok
 	beq.s	.abs_mode
-	move.l	$F0730,d0
+	move.l	MOUSE_DX,d0
 	bra.s	.have_dx
 .abs_mode:
-	move.l	$F0730,d0
+	move.l	MOUSE_X,d0
 	move.l	d0,d1
 	sub.l	ie_mouse_last_abs_x,d1
 	move.l	d0,ie_mouse_last_abs_x
@@ -335,9 +341,10 @@ _Vid_OpenMainScreen:
 	move.w	#SCREEN_WIDTH,_Vid_RightX_w
 	clr.b	_Vid_DoubleHeight_b
 	clr.b	_Vid_DoubleWidth_b
-	clr.l	ie_mouse_relative_ok
-	move.l	$F0730,ie_mouse_last_abs_x
-	move.l	$F0734,ie_mouse_last_abs_y
+	move.l	#1,ie_mouse_relative_ok
+	move.l	#1,MOUSE_CTRL
+	move.l	MOUSE_X,ie_mouse_last_abs_x
+	move.l	MOUSE_Y,ie_mouse_last_abs_y
 	bsr		_Vid_LoadMainPalette
 	moveq	#1,d0
 	rts
@@ -449,6 +456,8 @@ _Vid_Present:
 _Draw_ResetGameDisplay:
 	movem.l	d0-d1/a0,-(sp)
 	clr.l	ie_menu_active
+	move.l	#1,ie_mouse_relative_ok
+	move.l	#1,MOUSE_CTRL
 	st		_Vid_FullScreen_b
 	st		_Vid_FullScreenTemp_b
 	move.w	#SCREEN_WIDTH,_Vid_RightX_w
@@ -603,6 +612,8 @@ _Zone_FreeEdgePVS:
 
 _Game_LevelBegin:
 	clr.l	ie_menu_active
+	move.l	#1,ie_mouse_relative_ok
+	move.l	#1,MOUSE_CTRL
 	st		_Vid_FullScreen_b
 	st		_Vid_FullScreenTemp_b
 	move.w	#SCREEN_WIDTH,_Vid_RightX_w
@@ -613,6 +624,8 @@ _Game_LevelBegin:
 _mnu_setscreen:
 	movem.l	d0-d7/a0-a6,-(sp)
 	move.l	#1,ie_menu_active
+	clr.l	ie_mouse_relative_ok
+	clr.l	MOUSE_CTRL
 	clr.b	lastpressed
 	lea		_KeyMap_vb,a0
 	move.w	#255,d0
@@ -635,6 +648,8 @@ _mnu_setscreen:
 _mnu_clearscreen:
 	movem.l	d0-d1/a0,-(sp)
 	clr.l	ie_menu_active
+	move.l	#1,ie_mouse_relative_ok
+	move.l	#1,MOUSE_CTRL
 	bsr		_Vid_LoadMainPalette
 	bsr		_Draw_ResetGameDisplay
 	movem.l	(sp)+,d0-d1/a0
@@ -676,7 +691,7 @@ _Game_CheckInventoryLimits:
 	rts
 
 ie_read_mouse_buttons:
-	move.l	$F0738,d0
+	move.l	MOUSE_BUTTONS,d0
 	move.l	d0,d1
 	andi.l	#7,d1
 	bne.s	.buttons_ready

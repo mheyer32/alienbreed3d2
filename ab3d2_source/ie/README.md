@@ -130,12 +130,15 @@ Input:
 
 | Register | Address | Use |
 |----------|---------|-----|
-| Mouse X | `0xF0730` | Absolute X sampled and converted to delta |
-| Mouse Y | `0xF0734` | Absolute Y sampled and converted to delta |
+| Mouse X | `0xF0730` | Absolute X for menu compatibility |
+| Mouse Y | `0xF0734` | Absolute Y for menu compatibility |
 | Mouse buttons | `0xF0738` | Left/right button state |
 | Scan code | `0xF0740` | Keyboard queue data |
 | Scan status | `0xF0744` | Keyboard queue status, bit `0` means data available |
 | Modifiers | `0xF0748` | Shift/Ctrl/Alt state |
+| Mouse control | `0xF074C` | Bit `0` requests captured relative mouse mode |
+| Mouse DX | `0xF0754` | Signed accumulated relative X delta, clears on read |
+| Mouse DY | `0xF0758` | Signed accumulated relative Y delta, clears on read |
 
 File I/O:
 
@@ -186,11 +189,15 @@ at `../IntuitionEngine/bin/IntuitionEngine`.
 ## Input And Menus
 
 `ie_poll_input` reads IE keyboard and mouse MMIO directly. It updates AB3D2's
-existing raw-key table (`KeyMap_vb`), accumulates mouse Y into `_Sys_MouseY`,
-accumulates gameplay mouse X in `ie_mouse_delta_x_w` until player control
-applies it to `Vis_AngPos_w`, and mirrors buttons into the fake custom/CIA
-state expected by the original mouse-control code. Menu input tracks absolute
-mouse X without accumulating gameplay turn deltas.
+existing raw-key table (`KeyMap_vb`), enables IE captured relative mouse mode
+for gameplay, accumulates `MOUSE_DY` into `_Sys_MouseY`, accumulates gameplay
+`MOUSE_DX` in `ie_mouse_delta_x_w` until player control applies it to
+`Vis_AngPos_w`, and mirrors buttons into the fake custom/CIA state expected by
+the original mouse-control code. Menus disable captured mode and keep using
+absolute mouse coordinates, so menu movement and clicks remain compatible with
+existing IE scripts. In desktop IE builds, press `Ctrl+Alt` during captured
+gameplay to release the host mouse so window controls are reachable; left-click
+inside the IE window to recapture while gameplay still requests relative mode.
 
 The native AB3D2 menu flow is retained. The Amiga menu blitter/screen path is
 replaced by converted CLUT8 menu assets and IE framebuffer rendering. Enter,
