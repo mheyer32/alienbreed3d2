@@ -35,9 +35,10 @@ first launch. Do not run it from a read-only disk image or any location where
 the executable cannot create files beside itself.
 
 Keep the extracted `ab3d2_source/_build` directory beside the executable after
-first launch; the runtime uses it for game media. If that directory is deleted,
-the runtime recreates it from the bundled asset pack on the next launch. If the
-executable is moved, assets are expected beside the executable in its new
+first launch; the runtime uses it for game media and saved progress. If that
+directory is deleted, the runtime recreates it from the bundled asset pack on
+the next launch and saved progress stored there is lost. If the executable is
+moved, assets and saved progress are expected beside the executable in its new
 location.
 
 On Linux, the binary may need executable permission:

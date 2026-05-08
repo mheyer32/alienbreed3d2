@@ -1399,18 +1399,10 @@ game_SavePosition:
 				move.l	(a1)+,(a0)+
 				ENDR
 
-				move.l	#Game_SavedGamesName_vb,d1
-				move.l	#MODE_NEWFILE,d2
-				CALLDOS	Open
-				move.l	d0,IO_DOSFileHandle_l
-
-				move.l	game_SavedGameSlotPtr_l,d2
-				move.l	IO_DOSFileHandle_l,d1
-				move.l	game_SavedGameSlotSize_l,d3
-				CALLDOS	Write
-
-				move.l	IO_DOSFileHandle_l,d1
-				CALLDOS	Close
+				move.l	#Game_SavedGamesName_vb,a0
+				move.l	game_SavedGameSlotPtr_l,d0
+				move.l	game_SavedGameSlotSize_l,d1
+				bsr		io_ie_write_buffer
 
 ;				move.l	#200,d1
 ;				CALLDOS	Delay

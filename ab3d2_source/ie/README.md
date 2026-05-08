@@ -166,8 +166,9 @@ File I/O:
 | Register | Address | Use |
 |----------|---------|-----|
 | `FILE_IO_NAME` | `0xF2200` | Pointer to NUL-terminated path |
-| `FILE_IO_DATA` | `0xF2204` | Destination pointer |
-| `FILE_IO_CTRL` | `0xF220C` | Command; `1` loads file |
+| `FILE_IO_DATA` | `0xF2204` | Read destination or write source pointer |
+| `FILE_IO_DATA_LEN` | `0xF2208` | Write byte length |
+| `FILE_IO_CTRL` | `0xF220C` | Command; `1` loads file, `2` writes file |
 | `FILE_IO_STATUS` | `0xF2210` | Zero on success |
 | `FILE_IO_LEN` | `0xF2214` | Loaded byte length |
 
@@ -278,6 +279,13 @@ The IE `mt_init` implementation loads the current level MOD from the GLF
 If no level MOD is available, SID-enabled builds fall back to
 `ie/at_dooms_gate_e1m1.sid` through IE SID playback; default non-SID builds
 treat missing level music as no music.
+
+IE save/load uses the same host file-I/O path. The game keeps the original
+`boot.dat` save format; loading reads the active profile `boot.dat`, and saving
+writes the modified save-slot buffer back through `FILE_IO_CTRL=2`. For Redux
+profiles this persists under the selected `_build/ie_media/.../boot.dat` tree.
+Packaged runtime builds store progress in the extracted
+`ab3d2_source/_build/ie_media/redux-high/boot.dat` tree beside the executable.
 
 ## Redux Diagnostics
 

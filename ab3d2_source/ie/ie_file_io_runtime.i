@@ -19,6 +19,7 @@ IO_IE_HEAP_LIMIT	EQU $00FE0000
 IO_IE_HEAP_PTR		EQU $003FFF00
 FILE_IO_NAME		EQU $00F2200
 FILE_IO_DATA		EQU $00F2204
+FILE_IO_DATA_LEN	EQU $00F2208
 FILE_IO_CTRL		EQU $00F220C
 FILE_IO_STATUS		EQU $00F2210
 FILE_IO_LEN			EQU $00F2214
@@ -667,6 +668,62 @@ io_ie_load_to_heap:
 					clr.l	d0
 					clr.l	d1
 					movem.l	(a7)+,d2-d7/a1-a6
+					rts
+
+; IE MMIO file write helper.
+; in: a0 -> filename (possibly "VOL:path"), d0 -> data, d1 = length
+; out: d0 = 0 on success, nonzero on failure
+io_ie_write_buffer:
+					movem.l	d2-d7/a1-a6,-(a7)
+					move.l	d0,d2
+					move.l	d1,d3
+					bsr		io_ie_normalize_name
+					bsr		io_ie_make_repo_root_build_path
+					tst.l	d0
+					beq.s	.try_parent_media_write_ie
+					bsr		.write_candidate_ie
+					tst.l	d0
+					beq.s	.done_write_ie
+.try_parent_media_write_ie:
+					bsr		io_ie_make_parent_media_path
+					tst.l	d0
+					beq.s	.try_normal_write_ie
+					bsr		.write_candidate_ie
+					tst.l	d0
+					beq.s	.done_write_ie
+.try_normal_write_ie:
+					lea		io_ie_path_vb,a0
+					move.l	a0,d0
+					bsr		.write_candidate_ie
+					tst.l	d0
+					beq.s	.done_write_ie
+					bsr		io_ie_make_repo_root_ie_path
+					tst.l	d0
+					beq.s	.try_unpacked_write_ie
+					bsr		.write_candidate_ie
+					tst.l	d0
+					beq.s	.done_write_ie
+.try_unpacked_write_ie:
+					bsr		io_ie_make_unpacked_media_path
+					tst.l	d0
+					beq.s	.fail_write_ie
+					bsr		.write_candidate_ie
+					tst.l	d0
+					beq.s	.done_write_ie
+.fail_write_ie:
+					moveq	#1,d0
+					movem.l	(a7)+,d2-d7/a1-a6
+					rts
+.done_write_ie:
+					moveq	#0,d0
+					movem.l	(a7)+,d2-d7/a1-a6
+					rts
+.write_candidate_ie:
+					move.l	d0,FILE_IO_NAME
+					move.l	d2,FILE_IO_DATA
+					move.l	d3,FILE_IO_DATA_LEN
+					move.l	#2,FILE_IO_CTRL
+					move.l	FILE_IO_STATUS,d0
 					rts
 
 io_ie_make_unpacked_media_path:

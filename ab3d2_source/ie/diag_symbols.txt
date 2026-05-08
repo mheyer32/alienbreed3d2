@@ -106,6 +106,7 @@ Rotated_vl
 _KeyMap_vb
 _Sys_MouseY
 ie_poll_input
+io_ie_write_buffer
 plr_MouseControl
 plr_KeyboardControl
 lastpressed
