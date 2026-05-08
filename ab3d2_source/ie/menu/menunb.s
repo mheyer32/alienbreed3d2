@@ -65,6 +65,9 @@ mnu_viewcredz:
 				bsr.w	mnu_copycredz
 
 .w8key:
+				IFD		IS_IE
+				jsr		_ie_wait_tof
+				ENDC
 				jsr		key_readkey
 				cmp.l	#50*10,counter
 				beq.s	.exit

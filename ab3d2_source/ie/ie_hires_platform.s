@@ -213,7 +213,7 @@ ie_wait_vblank:
 	rts
 
 ie_wait_tof:
-	bsr		ie_poll_input
+	bsr		ie_wait_vblank
 	bsr		ie_run_vblank
 	rts
 
@@ -623,6 +623,8 @@ _Game_LevelBegin:
 
 _mnu_setscreen:
 	movem.l	d0-d7/a0-a6,-(sp)
+	tst.l	ie_menu_active
+	bne.s	.already_active
 	move.l	#1,ie_menu_active
 	clr.l	ie_mouse_relative_ok
 	clr.l	MOUSE_CTRL
@@ -641,12 +643,23 @@ _mnu_setscreen:
 	bsr		ie_menu_upload_palette
 	bsr		ie_menu_copy_background
 	bsr		ie_menu_render_frame
+	bsr		ie_menu_fade_in
+	bra.s	.done
+.already_active:
+	clr.l	ie_mouse_relative_ok
+	clr.l	MOUSE_CTRL
+	bsr		ie_menu_upload_palette
+.done:
 	movem.l	(sp)+,d0-d7/a0-a6
 	moveq	#1,d0
 	rts
 
 _mnu_clearscreen:
 	movem.l	d0-d1/a0,-(sp)
+	tst.l	ie_menu_active
+	beq.s	.no_fade
+	bsr		ie_menu_fade_out
+.no_fade:
 	clr.l	ie_menu_active
 	move.l	#1,ie_mouse_relative_ok
 	move.l	#1,MOUSE_CTRL
@@ -663,15 +676,42 @@ _mnu_movescreen:
 	rts
 
 _mnu_dofire:
-	movem.l	d0-d1/a0,-(sp)
+	movem.l	d0-d2/a0-a1,-(sp)
+	addq.w	#1,ie_menu_fire_phase_w
+	move.w	ie_menu_fire_phase_w,d0
+	andi.w	#$000F,d0
+	mulu.w	#MENU_ROW_BYTES,d0
 	lea		_mnu_morescreen,a0
-	moveq	#0,d0
-	move.w	#((MENU_PLANESIZE*3)/4)-1,d1
-.clear_fire:
-	move.l	d0,(a0)+
-	dbra	d1,.clear_fire
+	lea		_mnu_morescreen+(3*MENU_PLANESIZE),a1
+	adda.l	d0,a1
+	move.w	#(SCREEN_HEIGHT*MENU_ROW_BYTES)-1,d2
+.copy_fire0:
+	move.b	(a1)+,(a0)+
+	dbra	d2,.copy_fire0
+	move.w	ie_menu_fire_phase_w,d0
+	addq.w	#5,d0
+	andi.w	#$000F,d0
+	mulu.w	#MENU_ROW_BYTES,d0
+	lea		_mnu_morescreen+MENU_PLANESIZE,a0
+	lea		_mnu_morescreen+(4*MENU_PLANESIZE),a1
+	adda.l	d0,a1
+	move.w	#(SCREEN_HEIGHT*MENU_ROW_BYTES)-1,d2
+.copy_fire1:
+	move.b	(a1)+,(a0)+
+	dbra	d2,.copy_fire1
+	move.w	ie_menu_fire_phase_w,d0
+	addi.w	#10,d0
+	andi.w	#$000F,d0
+	mulu.w	#MENU_ROW_BYTES,d0
+	lea		_mnu_morescreen+(2*MENU_PLANESIZE),a0
+	lea		_mnu_morescreen+(5*MENU_PLANESIZE),a1
+	adda.l	d0,a1
+	move.w	#(SCREEN_HEIGHT*MENU_ROW_BYTES)-1,d2
+.copy_fire2:
+	move.b	(a1)+,(a0)+
+	dbra	d2,.copy_fire2
 	clr.b	_mnu_bltbusy
-	movem.l	(sp)+,d0-d1/a0
+	movem.l	(sp)+,d0-d2/a0-a1
 	rts
 
 _ReadJoy1:
@@ -948,19 +988,89 @@ ie_menu_active:
 	dc.l	0
 ie_menu_last_buttons:
 	dc.l	0
+ie_menu_scroll_w:
+	dc.w	0
+ie_menu_fire_phase_w:
+	dc.w	0
 	cnop	0,4
 
 ie_menu_upload_palette:
+	move.w	#256,d0
+	bra		ie_menu_upload_palette_fade
+
+ie_menu_fade_in:
+	movem.l	d0/d6-d7,-(sp)
+	moveq	#0,d6
+	moveq	#15,d7
+.fade_loop:
+	move.w	d6,d0
+	bsr		ie_menu_upload_palette_fade
+	bsr		ie_wait_tof
+	addi.w	#16,d6
+	dbra	d7,.fade_loop
+	move.w	#256,d0
+	bsr		ie_menu_upload_palette_fade
+	bsr		ie_wait_tof
+	movem.l	(sp)+,d0/d6-d7
+	rts
+
+ie_menu_fade_out:
+	movem.l	d0/d6-d7,-(sp)
+	move.w	#256,d6
+	moveq	#15,d7
+.fade_loop:
+	move.w	d6,d0
+	bsr		ie_menu_upload_palette_fade
+	bsr		ie_wait_tof
+	subi.w	#16,d6
+	dbra	d7,.fade_loop
+	moveq	#0,d0
+	bsr		ie_menu_upload_palette_fade
+	bsr		ie_wait_tof
+	movem.l	(sp)+,d0/d6-d7
+	rts
+
+ie_menu_upload_palette_fade:
+	movem.l	d0-d7/a0,-(sp)
+	move.w	d0,d5
 	lea		ie_menu_palette,a0
 	moveq	#0,d0
 	move.l	d0,VIDEO_PAL_INDEX
 	move.w	#255,d7
 .pal_loop:
-	move.l	(a0)+,VIDEO_PAL_DATA
+	move.l	(a0)+,d4
+	moveq	#0,d1
+	move.l	d4,d1
+	lsr.l	#8,d1
+	lsr.l	#8,d1
+	andi.w	#$00FF,d1
+	mulu.w	d5,d1
+	lsr.l	#8,d1
+	lsl.l	#8,d1
+	lsl.l	#8,d1
+	move.l	d1,d6
+	moveq	#0,d1
+	move.l	d4,d1
+	lsr.l	#8,d1
+	andi.w	#$00FF,d1
+	mulu.w	d5,d1
+	lsr.l	#8,d1
+	lsl.l	#8,d1
+	or.l	d1,d6
+	moveq	#0,d1
+	move.l	d4,d1
+	andi.w	#$00FF,d1
+	mulu.w	d5,d1
+	lsr.l	#8,d1
+	or.l	d1,d6
+	move.l	d6,VIDEO_PAL_DATA
 	dbra	d7,.pal_loop
+	movem.l	(sp)+,d0-d7/a0
 	rts
 
 ie_menu_copy_background:
+	clr.w	ie_menu_scroll_w
+	clr.w	ie_menu_fire_phase_w
 	lea		_mnu_background,a0
 	lea		_mnu_screen,a1
 	move.w	#(MENU_PLANESIZE/4)-1,d7
@@ -991,6 +1101,13 @@ ie_menu_render_frame:
 	movem.l	d0-d7/a0-a6,-(sp)
 	lea		_mnu_screen,a0
 	lea		_mnu_screen+(2*MENU_PLANESIZE),a1
+	moveq	#0,d0
+	move.w	ie_menu_scroll_w,d0
+	andi.w	#$00FF,d0
+	mulu.w	#MENU_ROW_BYTES,d0
+	adda.l	d0,a0
+	adda.l	d0,a1
+	addq.w	#1,ie_menu_scroll_w
 	lea		_mnu_morescreen,a3
 	lea		MENU_PLANESIZE(a3),a4
 	lea		MENU_PLANESIZE(a4),a5

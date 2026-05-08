@@ -95,7 +95,8 @@ AB3D2 pixel/double-height mode toggle.
 
 The packaged runtime is the Karlos-TKG-High profile. It is separate from the
 raw `.ie68` artifacts used by developers with an external Intuition Engine
-binary.
+binary. Menus use the IE renderer but retain the original AB3D2 moving
+background, palette fades, fire-colour text effect, and credits screen.
 
 ## Links
 

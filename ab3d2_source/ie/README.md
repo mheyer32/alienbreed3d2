@@ -222,11 +222,14 @@ gameplay to release the host mouse so window controls are reachable; left-click
 inside the IE window to recapture while gameplay still requests relative mode.
 
 The native AB3D2 menu flow is retained. The Amiga menu blitter/screen path is
-replaced by converted CLUT8 menu assets and IE framebuffer rendering. Enter,
-Space, and left mouse activate menu items; cursor-key menu movement is debounced
-in the IE menu wait loop. Choosing Exit Game requests the Intuition Engine
-ProgramExecutor hard-reset operation, so the game returns through the same
-reset-to-BASIC path as the IE F10 hotkey.
+replaced by converted CLUT8 menu assets and IE framebuffer rendering. The IE
+menu renderer recreates the original moving background, palette fades,
+fire-colour text effect, and credits screen by updating the legacy menu
+bitplanes before presenting them through IE video MMIO. Enter, Space, and left
+mouse activate menu items; cursor-key menu movement is debounced in the IE menu
+wait loop. Choosing Exit Game requests the Intuition Engine ProgramExecutor
+hard-reset operation, so the game returns through the same reset-to-BASIC path
+as the IE F10 hotkey.
 
 Intuition Engine reserves host function keys for runtime tools: F8 toggles the
 Lua REPL overlay, F9 toggles the machine monitor, F10 hard-resets the runtime,
@@ -353,7 +356,8 @@ disk. `.gitignore` intentionally remains byte-identical to upstream.
   guards for IE platform glue, Amiga custom-chip/Paula/CIA paths, IE input,
   menu, file I/O, music, presentation, pause, and exit-zone behavior.
 - `ab3d2_source/menu/menunb.s`: under `IS_IE`, uses the IE key-read path and
-  skips Amiga timer/fire-button wait logic that depends on custom hardware.
+  skips Amiga fire-button wait logic that depends on custom hardware while
+  retaining the menu credits wait loop through the IE WaitTOF path.
 - `ab3d2_source/modules/player.s`: under `IS_IE`, applies accumulated mouse X
   to `Vis_AngPos_w`, reads fake custom/CIA button state, disables viewport-size
   switching, and gates emulator-sensitive byte writes.

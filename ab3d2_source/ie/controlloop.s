@@ -476,7 +476,8 @@ game_ReadMainMenu:
 				cmp.w	#4,d0
 				bne		.nocred
 
-				;jsr		mnu_viewcredz
+				CALLC	Sys_ClearKeyboard
+				jsr		mnu_viewcredz
 				lea		mnu_MYMAINMENU,a0
 				bsr		game_OpenMenu
 
