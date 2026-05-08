@@ -1431,7 +1431,7 @@ Game_StoryFile_vb:
 Lvl_IntroTextPtr_l:
 				dc.l	0
 
-				include	"menu/menunb.s"
+				include	"ie/menu/menunb.s"
 
 				xdef	_ie_wait_tof
 				xref	ie_wait_vblank

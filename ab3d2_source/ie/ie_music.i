@@ -15,11 +15,6 @@ ie_LoadLevelMusic:
 mt_init:
 				move.l	#2,$F0BC8
 				move.l	#2,$F0E28
-				IFD		IE_DISABLE_SID_MUSIC
-				st		reachedend
-				rts
-				ENDC
-				IFND	IE_DISABLE_SID_MUSIC
 				move.l	mt_data,d0
 				bne.s	.have_level_music
 				bsr		ie_LoadLevelMusic
@@ -35,6 +30,7 @@ mt_init:
 				clr.b	reachedend
 				rts
 .try_sid_fallback:
+				IFD		IE_ENABLE_SID_MUSIC
 				lea		ie_sid_music_name,a0
 				jsr		IO_LoadFileOptional
 				tst.l	d0
@@ -43,10 +39,12 @@ mt_init:
 				move.l	d1,$F0E24
 				move.l	d1,mt_size
 				move.l	#5,$F0E28
+				clr.b	reachedend
+				rts
+				ENDC
 .done:
 				st		reachedend
 				rts
-				ENDC
 
 mt_end:
 				move.l	#2,$F0E28
@@ -62,8 +60,8 @@ reachedend:		dc.b	0
 mt_data:		dc.l	0
 mt_size:		dc.l	0
 
-				IFND	IE_DISABLE_SID_MUSIC
+				IFD		IE_ENABLE_SID_MUSIC
 ie_sid_music_name:
-				dc.b	'media/includes/At_Dooms_Gate_E1M1.sid',0
+				dc.b	'ie/at_dooms_gate_e1m1.sid',0
 				even
 				ENDC

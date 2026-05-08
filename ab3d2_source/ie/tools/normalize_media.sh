@@ -57,9 +57,9 @@ move_if_present "$root/includes/title.mod" "$includes/title.mod"
 move_if_present "$root/Includes/title.mod" "$includes/title.mod"
 move_if_present "$root/title.mod" "$includes/title.mod"
 
-move_if_present "$root/includes/At_Dooms_Gate_E1M1.sid" "$includes/At_Dooms_Gate_E1M1.sid"
-move_if_present "$root/Includes/At_Dooms_Gate_E1M1.sid" "$includes/At_Dooms_Gate_E1M1.sid"
-move_if_present "$root/At_Dooms_Gate_E1M1.sid" "$includes/At_Dooms_Gate_E1M1.sid"
+move_if_present "$root/includes/At_Dooms_Gate_E1M1.sid" "$root/ie/at_dooms_gate_e1m1.sid"
+move_if_present "$root/Includes/At_Dooms_Gate_E1M1.sid" "$root/ie/at_dooms_gate_e1m1.sid"
+move_if_present "$root/At_Dooms_Gate_E1M1.sid" "$root/ie/at_dooms_gate_e1m1.sid"
 
 move_if_present "$root/includes/test.lnk" "$includes/test.lnk"
 move_if_present "$root/Includes/test.lnk" "$includes/test.lnk"

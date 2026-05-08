@@ -441,20 +441,6 @@ io_PostProcessLoaded:
 				rts
 
 io_LoadFailure:	; a5 = filename
-				IFD		IS_IE
-				movem.l	d0-d1/a0-a1,-(a7)
-				move.l	a5,a0
-				lea		io_ie_failed_name_vb,a1
-				move.w	#IO_MAX_FILENAME_LEN,d1
-.copy_failed_name_ie:
-				move.b	(a0)+,d0
-				move.b	d0,(a1)+
-				beq.s	.failed_name_done_ie
-				dbra	d1,.copy_failed_name_ie
-				clr.b	(a1)
-.failed_name_done_ie:
-				movem.l	(a7)+,d0-d1/a0-a1
-				ENDC
 				move.l	a5,-(a7)
 				move.l	a7,a1
 				lea		.errfmt(pc),a0
@@ -559,23 +545,6 @@ io_HandlePacked:
 					move.l	io_unpacked_start_l,a0
 					move.l	#io_unlha_temp_buffer_vl,a1
 				IFD		IS_IE
-				move.l	io_BlockStart_l,io_ie_unpack_block_l
-				lea		io_ie_path_vb,a3
-				lea		io_ie_unpack_path_vb,a4
-				move.w	#IO_MAX_FILENAME_LEN,d3
-.copy_unpack_path_ie:
-				move.b	(a3)+,d4
-				move.b	d4,(a4)+
-				beq.s	.unpack_path_done_ie
-				dbra	d3,.copy_unpack_path_ie
-				clr.b	(a4)
-.unpack_path_done_ie:
-				move.l	io_BlockStart_l,a3
-				move.l	(a3),io_ie_unpack_head_l
-				move.l	4(a3),io_ie_unpack_len_l
-				move.l	8(a3),io_ie_unpack_stored_l
-				ENDC
-				IFD		IS_IE
 				lea		io_unlha_large_workspace_vb,a2
 				ELSE
 				lea		$0,a2
@@ -635,30 +604,16 @@ io_ie_load_to_heap:
 					move.l	d0,IO_IE_HEAP_PTR
 .have_heap:
 					move.l	d0,d2
-					IFD		IE_MEDIA_REDUX_HIGH
-					bsr		io_ie_make_repo_root_profile_path
+					bsr		io_ie_make_repo_root_build_path
 					tst.l	d0
-					beq.s	.try_profile_normal_ie
+					beq.s	.try_parent_media_ie
 					move.l	d2,FILE_IO_DATA
 					move.l	d0,FILE_IO_NAME
 					move.l	#1,FILE_IO_CTRL
 					move.l	FILE_IO_STATUS,d6
 					tst.l	d6
-					beq.s	.loaded_ie
-.try_profile_normal_ie:
-					ENDC
-					IFD		IE_MEDIA_REDUX_LOW
-					bsr		io_ie_make_repo_root_profile_path
-					tst.l	d0
-					beq.s	.try_profile_normal_ie
-					move.l	d2,FILE_IO_DATA
-					move.l	d0,FILE_IO_NAME
-					move.l	#1,FILE_IO_CTRL
-					move.l	FILE_IO_STATUS,d6
-					tst.l	d6
-					beq.s	.loaded_ie
-.try_profile_normal_ie:
-					ENDC
+					beq		.loaded_ie
+.try_parent_media_ie:
 					bsr		io_ie_make_parent_media_path
 					tst.l	d0
 					beq.s	.try_normal_ie
@@ -676,6 +631,16 @@ io_ie_load_to_heap:
 					move.l	FILE_IO_STATUS,d6
 					tst.l	d6
 					beq.s	.loaded_ie
+					bsr		io_ie_make_repo_root_ie_path
+					tst.l	d0
+					beq.s	.try_unpacked_ie
+					move.l	d2,FILE_IO_DATA
+					move.l	d0,FILE_IO_NAME
+					move.l	#1,FILE_IO_CTRL
+					move.l	FILE_IO_STATUS,d6
+					tst.l	d6
+					beq.s	.loaded_ie
+.try_unpacked_ie:
 					bsr		io_ie_make_unpacked_media_path
 					tst.l	d0
 					beq.s	.fail
@@ -777,24 +742,24 @@ io_ie_make_parent_media_path:
 				clr.l	d0
 				rts
 
-io_ie_make_repo_root_profile_path:
+io_ie_make_repo_root_build_path:
 				lea		io_ie_path_vb,a0
 				cmpi.b	#'_',(a0)
-				bne.s	.no_profile_alt
+				bne.s	.no_build_alt
 				cmpi.b	#'b',1(a0)
-				bne.s	.no_profile_alt
+				bne.s	.no_build_alt
 				cmpi.b	#'u',2(a0)
-				bne.s	.no_profile_alt
+				bne.s	.no_build_alt
 				cmpi.b	#'i',3(a0)
-				bne.s	.no_profile_alt
+				bne.s	.no_build_alt
 				cmpi.b	#'l',4(a0)
-				bne.s	.no_profile_alt
+				bne.s	.no_build_alt
 				cmpi.b	#'d',5(a0)
-				bne.s	.no_profile_alt
+				bne.s	.no_build_alt
 				cmpi.b	#'/',6(a0)
-				bne.s	.no_profile_alt
+				bne.s	.no_build_alt
 				lea		io_ie_alt_path_vb,a1
-				lea		.ie_source_prefix(pc),a2
+				lea		io_ie_source_prefix(pc),a2
 .copy_profile_prefix:
 				move.b	(a2)+,d0
 				beq.s	.copy_profile_path
@@ -812,12 +777,43 @@ io_ie_make_repo_root_profile_path:
 				lea		io_ie_alt_path_vb,a0
 				move.l	a0,d0
 				rts
-.no_profile_alt:
+.no_build_alt:
 				clr.l	d0
 				rts
-.ie_source_prefix:
+io_ie_source_prefix:
 				dc.b	'ab3d2_source/',0
 				even
+
+io_ie_make_repo_root_ie_path:
+				lea		io_ie_path_vb,a0
+				cmpi.b	#'i',(a0)
+				bne.s	.no_ie_alt
+				cmpi.b	#'e',1(a0)
+				bne.s	.no_ie_alt
+				cmpi.b	#'/',2(a0)
+				bne.s	.no_ie_alt
+				lea		io_ie_alt_path_vb,a1
+				lea		io_ie_source_prefix(pc),a2
+.copy_ie_prefix:
+				move.b	(a2)+,d0
+				beq.s	.copy_ie_path
+				move.b	d0,(a1)+
+				bra.s	.copy_ie_prefix
+.copy_ie_path:
+				move.w	#IO_MAX_FILENAME_LEN,d7
+.copy_ie_alt:
+				move.b	(a0)+,d0
+				move.b	d0,(a1)+
+				beq.s	.done_ie_alt
+				dbra	d7,.copy_ie_alt
+				clr.b	(a1)
+.done_ie_alt:
+				lea		io_ie_alt_path_vb,a0
+				move.l	a0,d0
+				rts
+.no_ie_alt:
+				clr.l	d0
+				rts
 
 ; Normalize Amiga-style path into io_ie_path_vb and return a0=normalized ptr.
 io_ie_normalize_name:
@@ -849,7 +845,7 @@ io_ie_normalize_name:
 				tst.b	io_ie_volume_is_sfx_b
 				beq.s	.not_sfx_path
 				lea		.ie_sfx_prefix(pc),a2
-				bra.s	.copy_selected_prefix
+				bra		.copy_selected_prefix
 .not_sfx_path:
 				cmpi.b	#'s',(a0)
 				bne.s	.not_samples_path
@@ -868,8 +864,15 @@ io_ie_normalize_name:
 				cmpi.b	#'/',7(a0)
 				bne.s	.not_samples_path
 				lea		.ie_sfx_prefix(pc),a2
-				bra.s	.copy_selected_prefix
+				bra		.copy_selected_prefix
 .not_samples_path:
+				cmpi.b	#'i',(a0)
+				bne.s	.not_ie_path
+				cmpi.b	#'e',1(a0)
+				bne.s	.not_ie_path
+				cmpi.b	#'/',2(a0)
+				beq.s	.media_prefix_done
+.not_ie_path:
 				cmpi.b	#'m',(a0)
 				bne.s	.use_media_prefix
 				cmpi.b	#'e',1(a0)
@@ -934,30 +937,7 @@ io_ie_normalize_name:
 .done:
 				lea		io_ie_path_vb,a0
 				rts
-.ie_media_prefix:
-				IFD		IE_MEDIA_REDUX_HIGH
-				dc.b	'_build/ie_media/redux-high/',0
-				ENDC
-				IFD		IE_MEDIA_REDUX_LOW
-				dc.b	'_build/ie_media/redux-low/',0
-				ENDC
-				IFND	IE_MEDIA_REDUX_HIGH
-				IFND	IE_MEDIA_REDUX_LOW
-				dc.b	'media/',0
-				ENDC
-				ENDC
-.ie_sfx_prefix:
-				IFD		IE_MEDIA_REDUX_HIGH
-				dc.b	'_build/ie_media/redux-high/soundfx/',0
-				ENDC
-				IFD		IE_MEDIA_REDUX_LOW
-				dc.b	'_build/ie_media/redux-low/soundfx/',0
-				ENDC
-				IFND	IE_MEDIA_REDUX_HIGH
-				IFND	IE_MEDIA_REDUX_LOW
-				dc.b	'media/ab3dsfx/',0
-				ENDC
-				ENDC
+				include	"media_profile.i"
 .ie_levels_prefix:
 				dc.b	'levels_editor_uncompressed/',0
 				even
@@ -977,14 +957,8 @@ io_unlha_large_workspace_vb:
 io_ie_path_vb:	ds.b 160
 io_ie_alt_path_vb:	ds.b 164
 io_ie_unpacked_path_vb:	ds.b 180
-io_ie_failed_name_vb:	ds.b 160
-io_ie_unpack_path_vb:	ds.b 160
 io_ie_volume_is_sfx_b:	ds.b 1
 				align 4
-io_ie_unpack_block_l:	ds.l 1
-io_ie_unpack_head_l:	ds.l 1
-io_ie_unpack_len_l:	ds.l 1
-io_ie_unpack_stored_l:	ds.l 1
 					ENDC
 
 				section .text,code

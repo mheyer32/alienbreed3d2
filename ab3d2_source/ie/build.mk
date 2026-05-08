@@ -5,24 +5,38 @@ IE_DIAG_SYMBOLS_FILE ?= ie/diag_symbols.txt
 IE_DIAG_SYMBOL_NAMES = $(shell cat $(IE_DIAG_SYMBOLS_FILE) 2>/dev/null)
 IE_MENU_BUILD_DIR ?= $(BUILD_DIR)/ie_menu
 IE_UNPACKED_MEDIA_DIR ?= $(BUILD_DIR)/ie_unpacked/media
+IE_HIRES_SOURCE ?= ie/hires.s
+IE_ENABLE_SID_MUSIC ?= 0
 MEDIA_PROFILE ?= original
 IE_MEDIA_PROFILE_DIR ?= $(BUILD_DIR)/ie_media/$(MEDIA_PROFILE)
 IE_PROFILE_BUILD_DIR ?= $(BUILD_DIR)/ie/$(MEDIA_PROFILE)
+IE_MEDIA_PROFILE_INCLUDE ?= $(IE_PROFILE_BUILD_DIR)/media_profile.i
 VLINK ?= $(shell command -v vlink 2>/dev/null || printf /opt/amiga/bin/vlink)
 
 IE_PROFILE_DEFS :=
 IE_PROFILE_INCLUDES :=
 IE_MEDIA_PROFILE_STAMP :=
+IE_MEDIA_ROOT := media/
+IE_SOUND_ROOT := media/ab3dsfx/
+
+ifeq ($(IE_ENABLE_SID_MUSIC),1)
+IE_PROFILE_DEFS += -DIE_ENABLE_SID_MUSIC=1
+else ifeq ($(IE_ENABLE_SID_MUSIC),0)
+else
+$(error Unsupported IE_ENABLE_SID_MUSIC=$(IE_ENABLE_SID_MUSIC); use 0 or 1)
+endif
 
 ifeq ($(MEDIA_PROFILE),original)
 else ifeq ($(MEDIA_PROFILE),redux-high)
-IE_PROFILE_DEFS += -DIE_MEDIA_REDUX_HIGH=1
 IE_PROFILE_INCLUDES += -I$(IE_MEDIA_PROFILE_DIR)/includes
 IE_MEDIA_PROFILE_STAMP := $(IE_MEDIA_PROFILE_DIR)/.stamp
+IE_MEDIA_ROOT := _build/ie_media/redux-high/
+IE_SOUND_ROOT := _build/ie_media/redux-high/soundfx/
 else ifeq ($(MEDIA_PROFILE),redux-low)
-IE_PROFILE_DEFS += -DIE_MEDIA_REDUX_LOW=1
 IE_PROFILE_INCLUDES += -I$(IE_MEDIA_PROFILE_DIR)/includes
 IE_MEDIA_PROFILE_STAMP := $(IE_MEDIA_PROFILE_DIR)/.stamp
+IE_MEDIA_ROOT := _build/ie_media/redux-low/
+IE_SOUND_ROOT := _build/ie_media/redux-low/soundfx/
 else
 $(error Unsupported MEDIA_PROFILE=$(MEDIA_PROFILE); use original, redux-high, or redux-low)
 endif
@@ -56,13 +70,19 @@ $(BUILD_DIR)/ie_media/redux-low/.stamp: ie/tools/prepare_media_profile.py
 	@touch $@
 
 ie68_sw: $(IE_MENU_BUILD_DIR)/menu_assets.stamp $(IE_UNPACKED_MEDIA_DIR)/.stamp $(IE_MEDIA_PROFILE_STAMP)
-	$(info Assembling full software renderer IE build from hires.s + IE platform)
+	$(info Assembling full software renderer IE build from IE-local hires.s + IE platform)
 	@mkdir -p $(BUILD_DIR) $(IE_PROFILE_BUILD_DIR)
+	@printf '%s\n' \
+		'.ie_media_prefix:' \
+		"				dc.b	'$(IE_MEDIA_ROOT)',0" \
+		'.ie_sfx_prefix:' \
+		"				dc.b	'$(IE_SOUND_ROOT)',0" \
+		> $(IE_MEDIA_PROFILE_INCLUDE)
 	@PREFIX=$$(./getprefix.sh "$(CC)"); \
 	$(ASS) -m68020 -chklabels -align -maxerrors=200 \
 		-Dmnu_nocode=1 -DUSE_16X16_TEXEL_MULS -DIFD=1 -DIS_IE=1 $(IE_PROFILE_DEFS) \
-		$(IE_PROFILE_INCLUDES) -I../ -I$$PREFIX/m68k-amigaos/ndk-include -I../media -I../media/includes \
-		-Fhunk hires.s -o $(IE_PROFILE_BUILD_DIR)/ie_hires.o
+		$(IE_PROFILE_INCLUDES) -I$(IE_PROFILE_BUILD_DIR) -I. -I../ -I$$PREFIX/m68k-amigaos/ndk-include -I../media -I../media/includes \
+		-Fhunk $(IE_HIRES_SOURCE) -o $(IE_PROFILE_BUILD_DIR)/ie_hires.o
 	@$(ASS) -m68020 -chklabels -align -maxerrors=200 \
 		-DIFD=1 -DIS_IE=1 $(IE_PROFILE_DEFS) -Fhunk ie/ie_hires_platform.s -o $(IE_PROFILE_BUILD_DIR)/ie_hires_platform.o
 	@$(VLINK) -M -b rawbin1 -Ttext 0x1000 \

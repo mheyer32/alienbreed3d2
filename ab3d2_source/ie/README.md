@@ -31,6 +31,18 @@ make ie68-redux-high
 make ie68-redux-low
 ```
 
+SID music fallback is disabled by default so the IE build has functional parity
+with the Amiga build. To opt into the IE SID fallback:
+
+```sh
+make ie68 IE_ENABLE_SID_MUSIC=1
+```
+
+With `IE_ENABLE_SID_MUSIC=0`, IE still plays the level ProTracker MOD music
+when the GLF database provides one, but missing level music is treated as no
+music. With `IE_ENABLE_SID_MUSIC=1`, missing level MOD music falls back to
+`ie/at_dooms_gate_e1m1.sid`.
+
 The Redux targets require the Redux data checkout at `karlos-tkg-main/` in the
 `alienbreed3d2` repository root. The expected data root is
 `karlos-tkg-main/Game`, and the build prepares the selected profile under
@@ -156,7 +168,6 @@ media/
   includes/
     main.256pal
     test.lnk
-    At_Dooms_Gate_E1M1.sid
     title.mod
     *.wad
     *.ptr
@@ -165,6 +176,8 @@ media/
     level_a/
     level_b/
     ...
+ie/
+  at_dooms_gate_e1m1.sid
 ```
 
 Prepare the original media tree from extracted media with:
@@ -176,7 +189,7 @@ ie/tools/normalize_media.sh .
 The IE `mt_init` implementation loads the current level MOD from the GLF
 `LevelMusic` entry with the IE file loader and starts it through IE MOD MMIO.
 If no level MOD is available, it falls back to
-`media/includes/At_Dooms_Gate_E1M1.sid` through IE SID playback.
+`ie/at_dooms_gate_e1m1.sid` through IE SID playback.
 
 ## Redux Diagnostics
 

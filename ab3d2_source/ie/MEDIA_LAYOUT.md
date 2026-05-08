@@ -13,7 +13,6 @@ These paths must resolve exactly from the process working directory:
 media/
   includes/
     main.256pal
-    At_Dooms_Gate_E1M1.sid
     title.mod  (legacy ProTracker file, not played by the current SID override)
     test.lnk
     *.wad
@@ -24,6 +23,8 @@ media/
     level_a/
     level_b/
     ...
+ie/
+  at_dooms_gate_e1m1.sid
 ```
 
 To prepare that layout from an extracted local media tree, run from
