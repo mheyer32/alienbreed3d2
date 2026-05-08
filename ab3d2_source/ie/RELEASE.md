@@ -95,3 +95,10 @@ AB3D2 pixel/double-height mode toggle.
 The packaged runtime is the Karlos-TKG-High profile. It is separate from the
 raw `.ie68` artifacts used by developers with an external Intuition Engine
 binary.
+
+## Links
+
+- GitHub: https://github.com/IntuitionAmiga
+- YouTube: https://youtube.com/@IntuitionAmiga
+- Intuition Subsynth: Turn your Raspberry Pi into a headless Pro-Audio synthesizer!
+  https://intuitionsubsynth.com
