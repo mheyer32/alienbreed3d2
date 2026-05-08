@@ -15,6 +15,8 @@
 ;
 				IFD		IS_IE
 				xref	ie_mouse_delta_x_w
+				xref	ie_mouse_left_key_down_b
+				xref	ie_mouse_right_key_down_b
 				ENDC
 
 ;******************************************************************************
@@ -82,8 +84,9 @@ plr_MouseControl:
 				IFD		IS_IE
 				move.w	ie_mouse_delta_x_w,d0
 				beq.s	.no_ie_mouse_x
+				clr.w	ie_mouse_delta_x_w
 				asl.w	#2,d0
-				add.w	d0,PlrT_SnapAngSpd_w(a0)
+				add.w	d0,Vis_AngPos_w
 .no_ie_mouse_x:
 				ENDC
 				move.l	#SinCosTable_vw,a1
@@ -173,19 +176,39 @@ plr_MouseControl:
 .notQuake
 				IFD		IS_IE
 				btst	#2,_custom+potinp		; right button
+				beq.s	.ie_right_button_down
+				tst.b	ie_mouse_right_key_down_b
+				beq.s	.ie_right_button_done
+				clr.b	ie_mouse_right_key_down_b
+				clr.b	(a5,d7.w)
+				bra.s	.ie_right_button_done
+.ie_right_button_down:
+				st		ie_mouse_right_key_down_b
+				st		(a5,d7.w)
+.ie_right_button_done:
 				ELSE
 				btst	#2,$dff000+potinp		; right button
-				ENDC
 				seq		(a5,d7.w)
+				ENDC
 
 				; The left mouse button triggers the fire key
 				move.b	fire_key,d7
 				IFD		IS_IE
 				btst	#CIAB_GAMEPORT0,_ciaa+ciapra ; left button
+				beq.s	.ie_left_button_down
+				tst.b	ie_mouse_left_key_down_b
+				beq.s	.ie_left_button_done
+				clr.b	ie_mouse_left_key_down_b
+				clr.b	(a5,d7.w)
+				bra.s	.ie_left_button_done
+.ie_left_button_down:
+				st		ie_mouse_left_key_down_b
+				st		(a5,d7.w)
+.ie_left_button_done:
 				ELSE
 				btst	#CIAB_GAMEPORT0,$bfe001+ciapra ; left button
-				ENDC
 				seq		(a5,d7.w)
+				ENDC
 
 				rts
 
@@ -400,6 +423,9 @@ plr_KeyboardControl:
 				dbra	d1,.pickweap
 
 .go:
+				IFD		IS_IE
+				bra.s	.notswapscr2
+				ENDC
 				tst.b	IE_KEY_SCREEN_SIZE(a5)
 				beq.s	.notswapscr
 

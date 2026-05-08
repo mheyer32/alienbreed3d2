@@ -53,6 +53,8 @@
 	xdef ie_menu_active
 	xdef ie_menu_last_buttons
 	xdef ie_mouse_delta_x_w
+	xdef ie_mouse_left_key_down_b
+	xdef ie_mouse_right_key_down_b
 
 	xdef _SysBase
 	xdef _DOSBase
@@ -68,8 +70,11 @@
 	xref _Vid_ScreenBuffers_vl
 	xref _Vid_ScreenBufferIndex_w
 	xref _Vid_LetterBoxMarginHeight_w
+	xref _Vid_DoubleHeight_b
+	xref _Vid_DoubleWidth_b
 	xref _Vid_UpdatePalette_b
 	xref _Vid_FullScreen_b
+	xref _Vid_FullScreenTemp_b
 	xref _Vid_RightX_w
 	xref _Lvl_ListOfGraphRoomsPtr_l
 	xref _Lvl_ZonePtrsPtr_l
@@ -105,24 +110,42 @@
 CHUNKY_BASE	equ	$100000
 CHUNKY_BACK_BASE	equ	$113000
 PRESENT_BASE	equ	$126000
-PRESENT_BACK_BASE	equ	$139000
+SCALE_BASE	equ	$240000
+SCALE_BACK_BASE	equ	$28B000
 SCREEN_WIDTH	equ	320
 SCREEN_HEIGHT	equ	240
+DISPLAY_WIDTH	equ	640
+DISPLAY_HEIGHT	equ	480
 MENU_ROW_BYTES	equ	40
 MENU_PLANE_HEIGHT	equ	256
 MENU_PLANESIZE	equ	MENU_ROW_BYTES*MENU_PLANE_HEIGHT
 MENU_FRAME_BYTES	equ	SCREEN_WIDTH*SCREEN_HEIGHT
+PRESENT_FRAME_BYTES	equ	DISPLAY_WIDTH*DISPLAY_HEIGHT
 SMALL_WIDTH	equ	192
 SMALL_HEIGHT	equ	160
 SMALL_XPOS	equ	64
 SMALL_YPOS	equ	20
+MODE_640x480	equ	$00
 MODE_320x240	equ	$05
 VIDEO_CTRL	equ	$F0000
 VIDEO_MODE	equ	$F0004
+BLT_CTRL	equ	$F001C
+BLT_OP	equ	$F0020
+BLT_SRC	equ	$F0024
+BLT_DST	equ	$F0028
+BLT_WIDTH	equ	$F002C
+BLT_HEIGHT	equ	$F0030
+BLT_SRC_STRIDE	equ	$F0034
+BLT_DST_STRIDE	equ	$F0038
+BLT_COLOR	equ	$F003C
 VIDEO_PAL_INDEX	equ	$F0078
 VIDEO_PAL_DATA	equ	$F007C
 VIDEO_COLOR_MODE	equ	$F0080
 VIDEO_FB_BASE	equ	$F0084
+BLT_FLAGS	equ	$F0488
+BLT_OP_SCALE	equ	7
+BLT_FLAGS_BPP_CLUT8	equ	1
+BLT_SCALE_640x480	equ	(DISPLAY_HEIGHT<<16)|DISPLAY_WIDTH
 FAKE_LIB_BASE	equ	$6F0000
 FAKE_VEC_BYTES	equ	$0800
 FAKE_LVO_WAITTOF	equ	-270
@@ -272,9 +295,12 @@ ie_poll_mouse:
 	rts
 
 ie_poll_mouse_x:
-	clr.w	ie_mouse_delta_x_w
 	tst.l	ie_menu_active
-	bne.s	.done
+	beq.s	.not_menu
+	clr.w	ie_mouse_delta_x_w
+	move.l	$F0730,ie_mouse_last_abs_x
+	bra.s	.done
+.not_menu:
 	tst.l	ie_mouse_relative_ok
 	beq.s	.abs_mode
 	move.l	$F0730,d0
@@ -286,15 +312,15 @@ ie_poll_mouse_x:
 	move.l	d0,ie_mouse_last_abs_x
 	move.l	d1,d0
 .have_dx:
-	move.w	d0,ie_mouse_delta_x_w
+	add.w	d0,ie_mouse_delta_x_w
 .done:
 	rts
 
 _Vid_OpenMainScreen:
 	move.l	#1,VIDEO_CTRL
-	move.l	#MODE_320x240,VIDEO_MODE
+	move.l	#MODE_640x480,VIDEO_MODE
 	move.l	#1,VIDEO_COLOR_MODE
-	move.l	#CHUNKY_BASE,VIDEO_FB_BASE
+	move.l	#SCALE_BASE,VIDEO_FB_BASE
 	move.l	#CHUNKY_BASE,_Vid_FastBufferPtr_l
 	move.l	#CHUNKY_BASE,_Vid_Screen1Ptr_l
 	move.l	#CHUNKY_BACK_BASE,_Vid_Screen2Ptr_l
@@ -304,6 +330,11 @@ _Vid_OpenMainScreen:
 	move.l	#CHUNKY_BACK_BASE,_Vid_ScreenBuffers_vl+4
 	clr.w	_Vid_ScreenBufferIndex_w
 	clr.w	_Vid_LetterBoxMarginHeight_w
+	st		_Vid_FullScreen_b
+	st		_Vid_FullScreenTemp_b
+	move.w	#SCREEN_WIDTH,_Vid_RightX_w
+	clr.b	_Vid_DoubleHeight_b
+	clr.b	_Vid_DoubleWidth_b
 	clr.l	ie_mouse_relative_ok
 	move.l	$F0730,ie_mouse_last_abs_x
 	move.l	$F0734,ie_mouse_last_abs_y
@@ -398,17 +429,31 @@ _Vid_Present:
 	bne.s	.have_fb
 	move.l	#CHUNKY_BASE,a0
 .have_fb:
+	tst.l	ie_menu_active
+	bne.s	.mode_ready
+	st		_Vid_FullScreen_b
+	st		_Vid_FullScreenTemp_b
+	move.w	#SCREEN_WIDTH,_Vid_RightX_w
+	clr.b	_Vid_DoubleHeight_b
+	clr.b	_Vid_DoubleWidth_b
+.mode_ready:
 	tst.b	_Vid_FullScreen_b
 	bne.s	.present_full
 	bsr		ie_present_small
 	bsr		ie_clear_presented_source
 	rts
 .present_full:
-	move.l	a0,VIDEO_FB_BASE
+	bsr		ie_scale_to_display
 	rts
 
 _Draw_ResetGameDisplay:
 	movem.l	d0-d1/a0,-(sp)
+	clr.l	ie_menu_active
+	st		_Vid_FullScreen_b
+	st		_Vid_FullScreenTemp_b
+	move.w	#SCREEN_WIDTH,_Vid_RightX_w
+	clr.b	_Vid_DoubleHeight_b
+	clr.b	_Vid_DoubleWidth_b
 	lea		CHUNKY_BASE,a0
 	moveq	#0,d0
 	move.w	#((SCREEN_WIDTH*SCREEN_HEIGHT/4)-1),d1
@@ -425,13 +470,8 @@ _Draw_ResetGameDisplay:
 .clear_present:
 	move.l	d0,(a0)+
 	dbra	d1,.clear_present
-	lea		PRESENT_BACK_BASE,a0
-	move.w	#((SCREEN_WIDTH*SCREEN_HEIGHT/4)-1),d1
-.clear_present_back:
-	move.l	d0,(a0)+
-	dbra	d1,.clear_present_back
 	clr.w	ie_present_index_w
-	move.l	#PRESENT_BASE,VIDEO_FB_BASE
+	move.l	#SCALE_BASE,VIDEO_FB_BASE
 	movem.l	(sp)+,d0-d1/a0
 	rts
 
@@ -440,10 +480,6 @@ _Draw_ResetGameDisplay:
 ie_present_small:
 	movem.l	d0-d2/a0-a2,-(sp)
 	lea		PRESENT_BASE,a1
-	tst.w	ie_present_index_w
-	beq.s	.have_target
-	lea		PRESENT_BACK_BASE,a1
-.have_target:
 	move.l	a1,a2
 	moveq	#0,d0
 	move.w	#((SCREEN_WIDTH*SCREEN_HEIGHT/4)-1),d1
@@ -460,9 +496,31 @@ ie_present_small:
 	adda.w	#(SCREEN_WIDTH-SMALL_WIDTH),a0
 	adda.w	#(SCREEN_WIDTH-SMALL_WIDTH),a1
 	dbra	d2,.copy_row
-	move.l	a2,VIDEO_FB_BASE
-	eori.w	#1,ie_present_index_w
+	move.l	a2,a0
+	bsr		ie_scale_to_display
 	movem.l	(sp)+,d0-d2/a0-a2
+	rts
+
+ie_scale_to_display:
+	movem.l	d0/a1,-(sp)
+	lea		SCALE_BASE,a1
+	tst.w	ie_present_index_w
+	beq.s	.have_target
+	lea		SCALE_BACK_BASE,a1
+.have_target:
+	move.l	#BLT_OP_SCALE,BLT_OP
+	move.l	a0,BLT_SRC
+	move.l	a1,BLT_DST
+	move.l	#SCREEN_WIDTH,BLT_WIDTH
+	move.l	#SCREEN_HEIGHT,BLT_HEIGHT
+	move.l	#SCREEN_WIDTH,BLT_SRC_STRIDE
+	move.l	#DISPLAY_WIDTH,BLT_DST_STRIDE
+	move.l	#BLT_SCALE_640x480,BLT_COLOR
+	move.l	#BLT_FLAGS_BPP_CLUT8,BLT_FLAGS
+	move.l	#1,BLT_CTRL
+	move.l	a1,VIDEO_FB_BASE
+	eori.w	#1,ie_present_index_w
+	movem.l	(sp)+,d0/a1
 	rts
 
 ie_clear_presented_source:
@@ -534,7 +592,6 @@ _vid_SetupDoubleheightCopperlist:
 _Msg_Init:
 _Msg_PushLine:
 _Msg_PushLineDedupLast:
-_Game_LevelBegin:
 _Game_LevelFailed:
 _Game_UpdatePlayerProgress:
 _Game_AddToInventory:
@@ -542,6 +599,15 @@ _Game_ApplyInventoryLimits:
 _Zone_InitEdgePVS:
 _Zone_ApplyPVSErrata:
 _Zone_FreeEdgePVS:
+	rts
+
+_Game_LevelBegin:
+	clr.l	ie_menu_active
+	st		_Vid_FullScreen_b
+	st		_Vid_FullScreenTemp_b
+	move.w	#SCREEN_WIDTH,_Vid_RightX_w
+	clr.b	_Vid_DoubleHeight_b
+	clr.b	_Vid_DoubleWidth_b
 	rts
 
 _mnu_setscreen:
@@ -556,11 +622,12 @@ _mnu_setscreen:
 	bsr		ie_read_mouse_buttons
 	move.l	d0,ie_menu_last_buttons
 	move.l	#1,VIDEO_CTRL
-	move.l	#MODE_320x240,VIDEO_MODE
+	move.l	#MODE_640x480,VIDEO_MODE
 	move.l	#1,VIDEO_COLOR_MODE
-	move.l	#CHUNKY_BASE,VIDEO_FB_BASE
+	move.l	#SCALE_BASE,VIDEO_FB_BASE
 	bsr		ie_menu_upload_palette
 	bsr		ie_menu_copy_background
+	bsr		ie_menu_render_frame
 	movem.l	(sp)+,d0-d7/a0-a6
 	moveq	#1,d0
 	rts
@@ -854,6 +921,11 @@ ie_mouse_last_abs_y:
 	dc.l	0
 ie_last_modifiers:
 	dc.l	0
+ie_mouse_left_key_down_b:
+	dc.b	0
+ie_mouse_right_key_down_b:
+	dc.b	0
+	dc.w	0
 
 _Game_FinishedLevel_b:
 	dc.w	0
@@ -984,6 +1056,8 @@ ie_menu_render_frame:
 	move.l	a6,ie_menu_plane7_ptr_l
 	dbra	d6,.byte_loop
 	dbra	d7,.row_loop
+	lea		CHUNKY_BASE,a0
+	bsr		ie_scale_to_display
 	movem.l	(sp)+,d0-d7/a0-a6
 	rts
 

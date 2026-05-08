@@ -86,15 +86,21 @@ The current IE software-renderer path uses these fixed addresses:
 | `0x001000` | Raw `.ie68` code/data link address |
 | `0x100000` | Main 320x240 CLUT8 chunky framebuffer (`CHUNKY_BASE`) |
 | `0x113000` | Secondary 320x240 CLUT8 framebuffer (`CHUNKY_BACK_BASE`) |
-| `0x126000` | Presented 320x240 CLUT8 framebuffer (`PRESENT_BASE`) |
-| `0x139000` | Secondary presented framebuffer (`PRESENT_BACK_BASE`) |
+| `0x126000` | 320x240 CLUT8 staging framebuffer for small viewport presentation (`PRESENT_BASE`) |
+| `0x240000` | Primary 640x480 CLUT8 scaled presentation framebuffer (`SCALE_BASE`) |
+| `0x28B000` | Secondary 640x480 CLUT8 scaled presentation framebuffer (`SCALE_BACK_BASE`) |
 | `0x3FFF00` | IE file-loader heap pointer |
 | `0x6F0000` | Fake library/vector base for compatibility entrypoints |
 | `0x700000` | IE file-loader heap base |
 | `0xFE0000` | IE file-loader heap limit |
 
-The game viewport is currently presented as a 192x160 region at `(64,20)` inside
-the 320x240 IE framebuffer. The full menu uses the 320x240 framebuffer.
+The renderer and converted menu assets remain 320x240 CLUT8 internally. IE
+opens a 640x480 CLUT8 display and uses the VideoChip scale blitter to present
+that 320x240 source at exactly 2x. Menus fill the display, and gameplay forces
+the AB3D2 fullscreen viewport by default so the in-game view also fills the IE
+display. The scaled presentation buffers are placed outside the active
+VideoChip front-buffer span so `VIDEO_FB_BASE` presents the bus-backed CLUT8
+pixels written by the scale blitter.
 
 ## MMIO
 
@@ -103,12 +109,22 @@ Video:
 | Register | Address | Use |
 |----------|---------|-----|
 | `VIDEO_CTRL` | `0xF0000` | Enable video |
-| `VIDEO_MODE` | `0xF0004` | Set mode `0x05` for 320x240 |
+| `VIDEO_MODE` | `0xF0004` | Set mode `0x00` for 640x480 |
 | `VIDEO_STATUS` | `0xF0008` | VBlank polling, bit `1` |
+| `BLT_CTRL` | `0xF001C` | Start scale blit |
+| `BLT_OP` | `0xF0020` | `BLT_OP_SCALE` (`7`) for presentation |
+| `BLT_SRC` | `0xF0024` | 320x240 CLUT8 source buffer |
+| `BLT_DST` | `0xF0028` | 640x480 CLUT8 scaled presentation buffer |
+| `BLT_WIDTH` | `0xF002C` | Source width (`320`) |
+| `BLT_HEIGHT` | `0xF0030` | Source height (`240`) |
+| `BLT_SRC_STRIDE` | `0xF0034` | Source row bytes (`320`) |
+| `BLT_DST_STRIDE` | `0xF0038` | Destination row bytes (`640`) |
+| `BLT_COLOR` | `0xF003C` | Packed destination size `(480 << 16) | 640` |
 | `VIDEO_PAL_INDEX` | `0xF0078` | Palette index |
 | `VIDEO_PAL_DATA` | `0xF007C` | Palette RGBA data |
 | `VIDEO_COLOR_MODE` | `0xF0080` | CLUT8 mode (`1`) |
-| `VIDEO_FB_BASE` | `0xF0084` | Active framebuffer base pointer |
+| `VIDEO_FB_BASE` | `0xF0084` | Active scaled presentation framebuffer pointer |
+| `BLT_FLAGS` | `0xF0488` | CLUT8 BPP selector (`1`) |
 
 Input:
 
@@ -144,31 +160,44 @@ Audio:
 | `0xF0E28` | SID control (`1` start, `2` stop/reset, `4` loop; IE writes `5`) |
 | `0xF0E80+` | IE SFX/sample playback path used by the platform layer |
 
+Runtime control:
+
+| Register | Address | Use |
+|----------|---------|-----|
+| `EXEC_CTRL` | `0xF2324` | ProgramExecutor control; IE writes `EXEC_OP_HARD_RESET` (`5`) when the game exits |
+
 ## Rendering And Presentation
 
 The IE path keeps AB3D2's 8-bit chunky software renderer. `ie_hires_platform.s`
-opens a 320x240 CLUT8 IE video mode, uploads palettes through IE video MMIO, and
-presents either:
+opens a 640x480 CLUT8 IE video mode, uploads palettes through IE video MMIO, and
+uses `BLT_OP_SCALE` to present either:
 
-- the full 320x240 source buffer for menus/fullscreen paths; or
-- the 192x160 game viewport copied into the 320x240 presentation buffer.
+- the full 320x240 source buffer for menus/fullscreen gameplay paths; or
+- the 192x160 game viewport copied into a 320x240 staging buffer.
 
 After presenting the small viewport, the source viewport region is cleared so
-old rows do not smear when the view moves. Floors and ceilings are drawn by the
-legacy flat renderer in `hires.s`; the IE build avoids relying on an unreliable
-`st drawit` memory flag write in that path.
+old rows do not smear when the view moves. The v1 IE path forces gameplay into
+AB3D2 fullscreen mode, so the small-viewport path is retained as compatibility
+coverage for older viewport states.
+
+Build and script verification should use the freshly built local engine binary
+at `../IntuitionEngine/bin/IntuitionEngine`.
 
 ## Input And Menus
 
 `ie_poll_input` reads IE keyboard and mouse MMIO directly. It updates AB3D2's
 existing raw-key table (`KeyMap_vb`), accumulates mouse Y into `_Sys_MouseY`,
-stores mouse X in `ie_mouse_delta_x_w`, and mirrors buttons into the fake
-custom/CIA state expected by the original mouse-control code.
+accumulates gameplay mouse X in `ie_mouse_delta_x_w` until player control
+applies it to `Vis_AngPos_w`, and mirrors buttons into the fake custom/CIA
+state expected by the original mouse-control code. Menu input tracks absolute
+mouse X without accumulating gameplay turn deltas.
 
 The native AB3D2 menu flow is retained. The Amiga menu blitter/screen path is
 replaced by converted CLUT8 menu assets and IE framebuffer rendering. Enter,
 Space, and left mouse activate menu items; cursor-key menu movement is debounced
-in the IE menu wait loop.
+in the IE menu wait loop. Choosing Exit Game requests the Intuition Engine
+ProgramExecutor hard-reset operation, so the game returns through the same
+reset-to-BASIC path as the IE F10 hotkey.
 
 Intuition Engine reserves host function keys for runtime tools: F8 toggles the
 Lua REPL overlay, F9 toggles the machine monitor, F10 hard-resets the runtime,
@@ -178,9 +207,10 @@ uses replacement keys for the conflicting fixed in-game AB3D2 controls:
 | Amiga key | IE key | Game action |
 |-----------|--------|-------------|
 | F9 | Backtick | Toggle pixel/double-height mode |
-| F10 | Delete | Toggle 2/3/fullscreen-size game viewport |
 
-Other fixed AB3D2 in-game keys keep their normal raw-key behavior in IE.
+The upstream viewport-size key is disabled in IE because the port forces the
+AB3D2 fullscreen viewport for 640x480 scaled presentation. Other fixed AB3D2
+in-game keys keep their normal raw-key behavior in IE.
 
 ## Media
 
@@ -281,12 +311,12 @@ disk. `.gitignore` intentionally remains byte-identical to upstream.
   control/runtime flags used by IE input and emulator-sensitive byte writes.
 - `ab3d2_source/hires.s`: contains `IS_IE` include selection and callsite
   guards for IE platform glue, Amiga custom-chip/Paula/CIA paths, IE input,
-  menu, file I/O, music, presentation, pause, exit-zone behavior, and the gated
-  `drawit` word-access workaround.
+  menu, file I/O, music, presentation, pause, and exit-zone behavior.
 - `ab3d2_source/menu/menunb.s`: under `IS_IE`, uses the IE key-read path and
   skips Amiga timer/fire-button wait logic that depends on custom hardware.
-- `ab3d2_source/modules/player.s`: under `IS_IE`, reads IE mouse deltas and
-  fake custom/CIA button state, and gates emulator-sensitive byte writes.
+- `ab3d2_source/modules/player.s`: under `IS_IE`, applies accumulated mouse X
+  to `Vis_AngPos_w`, reads fake custom/CIA button state, disables viewport-size
+  switching, and gates emulator-sensitive byte writes.
 - `ab3d2_source/modules/res.s`: under `IS_IE`, does not load level MODs through
   the upstream Paula-specific `MEMF_CHIP` path. IE level music is loaded
   optionally by `ie_music.i` and played through IE MOD MMIO instead.

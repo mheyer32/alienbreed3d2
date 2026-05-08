@@ -46,12 +46,13 @@ endif
 ie68: ie68_sw
 
 ie68-all:
-	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=0 IE_TARGET=ab3d2_ie68.ie68 IE_MAP=$(BUILD_DIR)/ie68.map
+	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=0 IE_TARGET=ab3d2_ie68.ie68 IE_MAP=$(BUILD_DIR)/ie68.map IE_SYMBOLS=$(BUILD_DIR)/diag_symbols_ie68.lua
 	$(MAKE) ie68-sid
 	$(MAKE) ie68-redux-high
 	$(MAKE) ie68-redux-high-sid
 	$(MAKE) ie68-redux-low
 	$(MAKE) ie68-redux-low-sid
+	@cp $(BUILD_DIR)/diag_symbols_ie68.lua ie/diag_symbols.lua
 
 ie68-sid:
 	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=1 IE_TARGET=ab3d2_ie68_sid.ie68 IE_MAP=$(BUILD_DIR)/ie68_sid.map

@@ -37,6 +37,11 @@
 				xdef	backward_key
 				xdef	ie_game_stage
 
+				IFD		IS_IE
+EXEC_CTRL			equ		$F2324
+EXEC_OP_HARD_RESET	equ		5
+				ENDC
+
 
 				align 4
 OPTSPRADDR:
@@ -236,6 +241,12 @@ dontusestats:
 				bra		game_BackToMenu
 
 Game_Quit:
+				IFD		IS_IE
+				move.l	#EXEC_OP_HARD_RESET,EXEC_CTRL
+.wait_for_ie_reset:
+				bra.s	.wait_for_ie_reset
+				ENDC
+
 				move.l	ie_game_stage,ie_game_quit_from_stage
 				move.l	#99,ie_game_stage
 				moveq	#0,d0 ; No fading
@@ -257,11 +268,6 @@ Game_Quit:
 
 				move.l	#0,d0
 
-				IFD		IS_IE
-.hold_ie:
-				jsr		ie_wait_vblank
-				bra.s	.hold_ie
-				ENDC
 				rts
 
 				cnop	0,4
@@ -302,7 +308,7 @@ centre_view_key:	dc.b	RAWKEY_SEMICOLON
 next_weapon_key:	dc.b	RAWKEY_BSLASH
 spare_key:          dc.b    0
 
-		DCLC Prefs_FullScreen_b,	dc.b,	0
+		DCLC Prefs_FullScreen_b,	dc.b,	255
 		DCLC Prefs_PixelMode_b,		dc.b,	0
 		DCLC Prefs_VertMargin_b,	dc.b,	0
 		DCLC Prefs_SimpleLighting_b,dc.b,	0

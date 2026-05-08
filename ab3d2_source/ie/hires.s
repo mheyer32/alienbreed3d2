@@ -753,11 +753,22 @@ doneinner:
 nomorezones:
 
 NOALLWALLS:
+				IFD		IS_IE
+				move.w	#FS_WIDTH/2,Vid_CentreX_w
+				move.w	#FS_WIDTH,Vid_RightX_w
+				move.w	#FS_HEIGHT,Vid_BottomY_w
+				move.w	#FS_HEIGHT/2,TOTHEMIDDLE
+				st		Vid_FullScreen_b
+				st		Vid_FullScreenTemp_b
+				clr.b	Vid_DoubleHeight_b
+				clr.b	Vid_DoubleWidth_b
+				ELSE
 				move.w	#SMALL_WIDTH/2,Vid_CentreX_w
 				move.w	#SMALL_WIDTH,Vid_RightX_w
 				move.w	#SMALL_HEIGHT,Vid_BottomY_w
 				move.w	#SMALL_HEIGHT/2,TOTHEMIDDLE
 				clr.b	Vid_FullScreen_b
+				ENDC
 				CALLC	Draw_ResetGameDisplay
 
 				st		Plr1_Weapons_vb+1
@@ -3951,11 +3962,7 @@ lineclipped:
 				beq		lineflat				; if line is flat, skip
 
 				bgt		lineonright
-				IFD		IS_IE
-				move.w	#1,drawit
-				ELSE
 				st		drawit
-				ENDC
 				move.l	#LeftSideTable_vw,a3
 
 				; switch points to make line sloped downwards
@@ -4039,11 +4046,7 @@ lineclipped:
 
 			; Is this "drawing" right line into a buffer, storing the X values into a3
 lineonright:
-				IFD		IS_IE
-				move.w	#1,drawit
-				ELSE
 				st		drawit
-				ENDC
 
 				lea		(a3,d1*2),a3			;right line entry start
 
@@ -4257,11 +4260,7 @@ lineclippedGOUR:
 
 linenotflatGOUR:
 				bgt		lineonrightGOUR
-				IFD		IS_IE
-				move.w	#1,drawit
-				ELSE
 				st		drawit
-				ENDC
 				move.l	#LeftSideTable_vw,a3
 				exg		d1,d3
 				exg		d0,d2
@@ -4381,11 +4380,7 @@ linenotflatGOUR:
 				bra		lineflatGOUR
 
 lineonrightGOUR:
-				IFD		IS_IE
-				move.w	#1,drawit
-				ELSE
 				st		drawit
-				ENDC
 
 				lea		(a3,d1*2),a3			; left side entry
 
@@ -4632,11 +4627,7 @@ val				SET		val+1
 
 				; Walk the stored lines and draw them
 pastscale:
-				IFD		IS_IE
-				tst.w	drawit(pc)
-				ELSE
 				tst.b	drawit(pc)
-				ENDC
 				beq		dontdrawfloor
 
 				tst.b	Vid_DoubleHeight_b
