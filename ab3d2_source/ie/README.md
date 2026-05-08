@@ -29,7 +29,21 @@ From `ab3d2_source/`:
 make ie68
 make ie68-redux-high
 make ie68-redux-low
+make ie68-all
 ```
+
+The six IE `.ie68` binaries are committed as playable artifacts so users can
+download the repository and run them without first setting up the Amiga build
+toolchain:
+
+| Binary | Profile | SID fallback |
+|--------|---------|--------------|
+| `ab3d2_ie68.ie68` | Original | No |
+| `ab3d2_ie68_sid.ie68` | Original | Yes |
+| `ab3d2_ie68_redux_high.ie68` | Redux high | No |
+| `ab3d2_ie68_redux_high_sid.ie68` | Redux high | Yes |
+| `ab3d2_ie68_redux_low.ie68` | Redux low | No |
+| `ab3d2_ie68_redux_low_sid.ie68` | Redux low | Yes |
 
 SID music fallback is disabled by default so the IE build has functional parity
 with the Amiga build. To opt into the IE SID fallback:
@@ -156,6 +170,18 @@ replaced by converted CLUT8 menu assets and IE framebuffer rendering. Enter,
 Space, and left mouse activate menu items; cursor-key menu movement is debounced
 in the IE menu wait loop.
 
+Intuition Engine reserves host function keys for runtime tools: F8 toggles the
+Lua REPL overlay, F9 toggles the machine monitor, F10 hard-resets the runtime,
+F11 toggles fullscreen, and F12 toggles the status bar. The IE build therefore
+uses replacement keys for the conflicting fixed in-game AB3D2 controls:
+
+| Amiga key | IE key | Game action |
+|-----------|--------|-------------|
+| F9 | Backtick | Toggle pixel/double-height mode |
+| F10 | Delete | Toggle 2/3/fullscreen-size game viewport |
+
+Other fixed AB3D2 in-game keys keep their normal raw-key behavior in IE.
+
 ## Media
 
 Run from `ab3d2_source/`. Intuition Engine's `--media` argument does not
@@ -220,6 +246,8 @@ assumptions.
 Key IE files:
 
 - `build.mk`: IE build targets and generated diagnostics.
+- `ie_keymap.i`: IE-only replacement keys for fixed AB3D2 controls that collide
+  with IE host shortcuts.
 - `ie_hires_platform.s`: video, input, audio, menu, system, fake-library,
   message, and zone compatibility entrypoints.
 - `controlloop.s`: IE startup/menu/game outer-loop flow selected by `IS_IE`.
@@ -241,9 +269,8 @@ Key IE files:
 
 The port keeps IE-specific code under `ab3d2_source/ie/` where possible. These
 files are shared with upstream `mheyer32/alienbreed3d2` and currently differ on
-disk:
+disk. `.gitignore` intentionally remains byte-identical to upstream.
 
-- `.gitignore`: ignores generated IE binaries and build artifacts.
 - `README.md`: documents the IE port at the repository root.
 - `ab3d2_source/Makefile`: includes `ie/build.mk`. The IE targets themselves
   live in that IE-only make fragment.

@@ -41,15 +41,32 @@ else
 $(error Unsupported MEDIA_PROFILE=$(MEDIA_PROFILE); use original, redux-high, or redux-low)
 endif
 
-.PHONY: ie68 ie68_sw ie68-redux-high ie68-redux-low
+.PHONY: ie68 ie68_sw ie68-all ie68-sid ie68-redux-high ie68-redux-high-sid ie68-redux-low ie68-redux-low-sid
 
 ie68: ie68_sw
 
+ie68-all:
+	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=0 IE_TARGET=ab3d2_ie68.ie68 IE_MAP=$(BUILD_DIR)/ie68.map
+	$(MAKE) ie68-sid
+	$(MAKE) ie68-redux-high
+	$(MAKE) ie68-redux-high-sid
+	$(MAKE) ie68-redux-low
+	$(MAKE) ie68-redux-low-sid
+
+ie68-sid:
+	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=1 IE_TARGET=ab3d2_ie68_sid.ie68 IE_MAP=$(BUILD_DIR)/ie68_sid.map
+
 ie68-redux-high:
-	$(MAKE) ie68 MEDIA_PROFILE=redux-high IE_TARGET=ab3d2_ie68_redux_high.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_high.map
+	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=0 MEDIA_PROFILE=redux-high IE_TARGET=ab3d2_ie68_redux_high.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_high.map
+
+ie68-redux-high-sid:
+	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=1 MEDIA_PROFILE=redux-high IE_TARGET=ab3d2_ie68_redux_high_sid.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_high_sid.map
 
 ie68-redux-low:
-	$(MAKE) ie68 MEDIA_PROFILE=redux-low IE_TARGET=ab3d2_ie68_redux_low.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_low.map
+	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=0 MEDIA_PROFILE=redux-low IE_TARGET=ab3d2_ie68_redux_low.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_low.map
+
+ie68-redux-low-sid:
+	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=1 MEDIA_PROFILE=redux-low IE_TARGET=ab3d2_ie68_redux_low_sid.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_low_sid.map
 
 $(IE_MENU_BUILD_DIR)/menu_assets.stamp: menu/back2.raw menu/credits_only.raw menu/font16x16.raw2 menu/back.pal menu/firepal.pal2 menu/font16x16.pal2 ie/tools/convert_menu_assets.py
 	$(info Converting IE menu assets)

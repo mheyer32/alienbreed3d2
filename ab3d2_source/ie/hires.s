@@ -6,6 +6,7 @@
 				include	"macros.i"
 				include	"defs.i"
 				include "modules/rawkey_macros.i"
+				include "ie/ie_keymap.i"
 				include "modules/dev_macros.i"
 				opt		o+
 
@@ -2013,9 +2014,9 @@ nodrawp2:
 ;.skip_copperlist:
 ;.skip_resolution_cycle:
 
-				tst.b	RAWKEY_F9(a5)
+				tst.b	IE_KEY_PIXEL_MODE(a5)
 				beq		.skip_double_height
-				clr.b	RAWKEY_F9(a5)
+				clr.b	IE_KEY_PIXEL_MODE(a5)
 				tst.b	LASTDH
 				bne		.not_double_height
 				st		LASTDH

@@ -400,7 +400,7 @@ plr_KeyboardControl:
 				dbra	d1,.pickweap
 
 .go:
-				tst.b	RAWKEY_F10(a5)
+				tst.b	IE_KEY_SCREEN_SIZE(a5)
 				beq.s	.notswapscr
 
 				tst.b	lastscr
