@@ -1845,6 +1845,11 @@ BOTPART:
 *****************************************************************
 
 				move.w	(a3)+,draw_NumPoints_w
+				IFD		IS_IE
+				beq		no_more_parts
+				cmp.w	#DRAW_MAX_POLY_POINTS,draw_NumPoints_w
+				bhi		no_more_parts
+				ENDC
 				move.w	(a3)+,d6				; num_frames
 				move.l	a3,draw_PointerTablePtr_l
 				lea		(a3,d6.w*4),a3

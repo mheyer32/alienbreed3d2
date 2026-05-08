@@ -635,6 +635,30 @@ io_ie_load_to_heap:
 					move.l	d0,IO_IE_HEAP_PTR
 .have_heap:
 					move.l	d0,d2
+					IFD		IE_MEDIA_REDUX_HIGH
+					bsr		io_ie_make_repo_root_profile_path
+					tst.l	d0
+					beq.s	.try_profile_normal_ie
+					move.l	d2,FILE_IO_DATA
+					move.l	d0,FILE_IO_NAME
+					move.l	#1,FILE_IO_CTRL
+					move.l	FILE_IO_STATUS,d6
+					tst.l	d6
+					beq.s	.loaded_ie
+.try_profile_normal_ie:
+					ENDC
+					IFD		IE_MEDIA_REDUX_LOW
+					bsr		io_ie_make_repo_root_profile_path
+					tst.l	d0
+					beq.s	.try_profile_normal_ie
+					move.l	d2,FILE_IO_DATA
+					move.l	d0,FILE_IO_NAME
+					move.l	#1,FILE_IO_CTRL
+					move.l	FILE_IO_STATUS,d6
+					tst.l	d6
+					beq.s	.loaded_ie
+.try_profile_normal_ie:
+					ENDC
 					bsr		io_ie_make_parent_media_path
 					tst.l	d0
 					beq.s	.try_normal_ie
@@ -753,6 +777,48 @@ io_ie_make_parent_media_path:
 				clr.l	d0
 				rts
 
+io_ie_make_repo_root_profile_path:
+				lea		io_ie_path_vb,a0
+				cmpi.b	#'_',(a0)
+				bne.s	.no_profile_alt
+				cmpi.b	#'b',1(a0)
+				bne.s	.no_profile_alt
+				cmpi.b	#'u',2(a0)
+				bne.s	.no_profile_alt
+				cmpi.b	#'i',3(a0)
+				bne.s	.no_profile_alt
+				cmpi.b	#'l',4(a0)
+				bne.s	.no_profile_alt
+				cmpi.b	#'d',5(a0)
+				bne.s	.no_profile_alt
+				cmpi.b	#'/',6(a0)
+				bne.s	.no_profile_alt
+				lea		io_ie_alt_path_vb,a1
+				lea		.ie_source_prefix(pc),a2
+.copy_profile_prefix:
+				move.b	(a2)+,d0
+				beq.s	.copy_profile_path
+				move.b	d0,(a1)+
+				bra.s	.copy_profile_prefix
+.copy_profile_path:
+				move.w	#IO_MAX_FILENAME_LEN,d7
+.copy_profile_alt:
+				move.b	(a0)+,d0
+				move.b	d0,(a1)+
+				beq.s	.done_profile_alt
+				dbra	d7,.copy_profile_alt
+				clr.b	(a1)
+.done_profile_alt:
+				lea		io_ie_alt_path_vb,a0
+				move.l	a0,d0
+				rts
+.no_profile_alt:
+				clr.l	d0
+				rts
+.ie_source_prefix:
+				dc.b	'ab3d2_source/',0
+				even
+
 ; Normalize Amiga-style path into io_ie_path_vb and return a0=normalized ptr.
 io_ie_normalize_name:
 				move.l	a0,a1
@@ -869,9 +935,29 @@ io_ie_normalize_name:
 				lea		io_ie_path_vb,a0
 				rts
 .ie_media_prefix:
+				IFD		IE_MEDIA_REDUX_HIGH
+				dc.b	'_build/ie_media/redux-high/',0
+				ENDC
+				IFD		IE_MEDIA_REDUX_LOW
+				dc.b	'_build/ie_media/redux-low/',0
+				ENDC
+				IFND	IE_MEDIA_REDUX_HIGH
+				IFND	IE_MEDIA_REDUX_LOW
 				dc.b	'media/',0
+				ENDC
+				ENDC
 .ie_sfx_prefix:
+				IFD		IE_MEDIA_REDUX_HIGH
+				dc.b	'_build/ie_media/redux-high/soundfx/',0
+				ENDC
+				IFD		IE_MEDIA_REDUX_LOW
+				dc.b	'_build/ie_media/redux-low/soundfx/',0
+				ENDC
+				IFND	IE_MEDIA_REDUX_HIGH
+				IFND	IE_MEDIA_REDUX_LOW
 				dc.b	'media/ab3dsfx/',0
+				ENDC
+				ENDC
 .ie_levels_prefix:
 				dc.b	'levels_editor_uncompressed/',0
 				even

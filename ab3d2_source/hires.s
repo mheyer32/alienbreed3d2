@@ -3968,7 +3968,11 @@ lineclipped:
 				beq		lineflat				; if line is flat, skip
 
 				bgt		lineonright
+				IFD		IS_IE
 				move.w	#1,drawit
+				ELSE
+				st		drawit
+				ENDC
 				move.l	#LeftSideTable_vw,a3
 
 				; switch points to make line sloped downwards
@@ -4052,7 +4056,11 @@ lineclipped:
 
 			; Is this "drawing" right line into a buffer, storing the X values into a3
 lineonright:
+				IFD		IS_IE
 				move.w	#1,drawit
+				ELSE
+				st		drawit
+				ENDC
 
 				lea		(a3,d1*2),a3			;right line entry start
 
@@ -4266,7 +4274,11 @@ lineclippedGOUR:
 
 linenotflatGOUR:
 				bgt		lineonrightGOUR
+				IFD		IS_IE
 				move.w	#1,drawit
+				ELSE
+				st		drawit
+				ENDC
 				move.l	#LeftSideTable_vw,a3
 				exg		d1,d3
 				exg		d0,d2
@@ -4386,7 +4398,11 @@ linenotflatGOUR:
 				bra		lineflatGOUR
 
 lineonrightGOUR:
+				IFD		IS_IE
 				move.w	#1,drawit
+				ELSE
+				st		drawit
+				ENDC
 
 				lea		(a3,d1*2),a3			; left side entry
 
@@ -4633,7 +4649,11 @@ val				SET		val+1
 
 				; Walk the stored lines and draw them
 pastscale:
+				IFD		IS_IE
 				tst.w	drawit(pc)
+				ELSE
+				tst.b	drawit(pc)
+				ENDC
 				beq		dontdrawfloor
 
 				tst.b	Vid_DoubleHeight_b

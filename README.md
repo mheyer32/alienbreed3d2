@@ -216,42 +216,8 @@ There are three main CPU tuning options:
 
 ## Intuition Engine Port (WIP)
 
-Intuition Engine is a fantasy computer that never existed. The AB3D2 IE target is a
-bare-metal M68K port of the game to that machine: the original AmigaOS, custom-chip
-and device assumptions are replaced with IE MMIO services while retaining the
-software-rendered game path.
-
-The current IE build uses:
-
-- M68K execution on Intuition Engine's fantasy-computer hardware.
-- The full software renderer from `hires.s` linked with IE platform glue.
-- The native AB3D2 menu flow, rendered from converted CLUT8 menu assets.
-- IE keyboard and mouse MMIO for menu and game input.
-- IE file loading, video presentation and audio/SID playback support.
-
-Relevant Intuition Engine hardware includes CPU personalities for IE64, IE32, M68K,
-Z80, 6502 and x86; display hardware such as IEVideoChip, VGA, ULA, TED video,
-ANTIC/GTIA, Voodoo, compositor, copper, blitter and SNES-style Mode 7 scaling and
-rotation; and audio/playback hardware for SoundChip, AY/YM/PSG, SN76489,
-SID/MultiSID, POKEY/SAP, TED, AHX/THX, MOD, WAV and AROS Paula-style DMA.
-
-Build from `ab3d2_source/`:
-
-```bash
-make ie68
-```
-
-The output is `ab3d2_ie68.ie68`. Run it with Intuition Engine from the
-`ab3d2_source/` working directory so the expected media tree is available.
-
-Intuition Engine links:
-
-- https://github.com/IntuitionAmiga/IntuitionEngine
-- https://www.youtube.com/@intuitionamiga
-
-See [docs/ie_port.md](docs/ie_port.md) for MMIO register map, memory layout and
-implementation notes.
-
+See [ab3d2_source/ie/README.md](ab3d2_source/ie/README.md) for IE build
+targets, Redux media-profile setup and implementation notes.
 
 ### Release
 
@@ -311,3 +277,5 @@ There are MANY ways this game can be improved:
    * The current code mixes code and data willy-nilly, all in one object file.
       * Using multiple object files and XREF/XDEF may be cleaner.
       * Remove old, unused commented-out cruft (in progress). 
+
+

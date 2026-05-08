@@ -12,6 +12,7 @@
 	xdef _Vid_OpenMainScreen
 	xdef _Vid_CloseMainScreen
 	xdef _Vid_LoadMainPalette
+	xdef ie_palette_apply_channel
 	xdef _Vid_Present
 	xdef _Draw_LineOfText
 	xdef _Draw_ResetGameDisplay
@@ -38,6 +39,8 @@
 	xdef _mnu_dofire
 	xdef _Game_FinishedLevel_b
 	xdef ie_wait_vblank
+	xdef ie_wait_tof
+	xdef ie_run_vblank
 	xdef ie_poll_input
 	xdef ie_MakeSomeNoise
 	xdef _ReadJoy1

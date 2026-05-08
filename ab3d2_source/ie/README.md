@@ -1,103 +1,254 @@
 # IE Native Port
 
 This directory contains the Intuition Engine support layer for the
-software-rendered `hires.s` build. The target is selected with `IS_IE` and is
-kept separate from the Amiga-specific code wherever possible.
+software-rendered `hires.s` build. The target is selected with `IS_IE` and runs
+AB3D2 as a raw M68K program on IE rather than through AmigaOS, Exec, Intuition,
+Paula, CIA, or real Amiga custom-chip MMIO.
 
-Build with:
+## Scope
+
+- Target: full software-renderer build from `ab3d2_source/hires.s`.
+- Platform layer: `ab3d2_source/ie/ie_hires_platform.s`.
+- Binary format: raw `.ie68` linked at `0x001000`.
+- Build target: `make ie68` from `ab3d2_source/`.
+- Redux convenience targets: `make ie68-redux-high` and
+  `make ie68-redux-low` from `ab3d2_source/`.
+- Default output: `ab3d2_source/ab3d2_ie68.ie68`.
+- Runtime cwd: run Intuition Engine from `ab3d2_source/` so raw file I/O sees
+  the expected media tree.
+
+The IE build keeps the AB3D2 software renderer and menu state machine. The
+Amiga screen, blitter, input, file, music, SFX, and compatibility entrypoints
+that the original code expects are satisfied by IE-specific glue.
+
+## Build
+
+From `ab3d2_source/`:
 
 ```sh
 make ie68
+make ie68-redux-high
+make ie68-redux-low
 ```
 
-The build assembles `hires.s` and `ie/ie_hires_platform.s`, then links them into
-`ab3d2_ie68.ie68`. The generated map is written under `_build/`; diagnostic
-symbols are generated as `diag_symbols.lua` and copied to `ie/diag_symbols.lua`.
-The IE menu art is converted into CLUT8 build artifacts under `_build/ie_menu/`.
-Those generated files are ignored by git.
+The Redux targets require the Redux data checkout at `karlos-tkg-main/` in the
+`alienbreed3d2` repository root. The expected data root is
+`karlos-tkg-main/Game`, and the build prepares the selected profile under
+`ab3d2_source/_build/ie_media/`.
 
-- `ie_hires_platform.s`: IE platform implementation linked beside `hires.s`.
-  It supplies the legacy system, video, input, audio, menu, message, and zone
-  compatibility entrypoints the game expects and presents the chunky 320x240
-  CLUT8 framebuffer through IE.
-- `system.i`: IE replacement for the top-level `system.i` include.
-- `build.mk`: IE-specific `make ie68` target included by the top-level
-  Makefile. It also runs the IE menu asset converter before assembly.
-- `controlloop.s`: IE game startup and outer-loop flow included by `hires.s`
-  when `IS_IE` is set.
-- `ie_file_io_runtime.i`: IE file loader selected by `hires.s` when `IS_IE` is
-  set. It loads through IE file I/O MMIO and preserves the upstream file I/O
-  entrypoints expected by the game.
-- `ie_music.i`: legacy `mt_*` music entrypoints backed by IE audio hardware.
-  The current IE build starts `media/includes/At_Dooms_Gate_E1M1.sid` through
-  the SID player instead of playing the ProTracker module.
-- `ie_system.i`: fallback constants and structure offsets used by `system.i`
-  when Amiga NDK include files are not present.
-- `ie_system_runtime.i`: IE runtime system helpers selected by `hires.s` when
-  `IS_IE` is set.
-- `pauseopts.s`: IE pause-loop handling included by `hires.s` when `IS_IE` is
-  set.
-- `diag_symbols.txt`: symbol names exported from the link map into the generated
-  Lua table used by IEScript diagnostics.
-- `tools/normalize_media.sh`: prepares the local `media/` layout described in
-  `MEDIA_LAYOUT.md`.
-- `tools/convert_menu_assets.py`: converts the original planar menu art and
-  palettes into IE CLUT8 build artifacts consumed by `ie_hires_platform.s`.
+The IE make fragment:
 
-## Input
+- converts original planar menu art into CLUT8 artifacts under
+  `_build/ie_menu/`;
+- unpacks runtime media into `_build/ie_unpacked/media/`;
+- prepares Redux profile media under `_build/ie_media/` when requested;
+- assembles `hires.s` with `-DIS_IE=1`;
+- assembles `ie/ie_hires_platform.s`;
+- links the selected `.ie68` target;
+- writes the selected map file under `_build/`;
+- generates `diag_symbols.lua` and copies it to `ie/diag_symbols.lua`.
 
-`ie_poll_input` reads IE keyboard and mouse MMIO directly. It updates the
-game's existing `KeyMap_vb` raw-key table, accumulates mouse Y movement into
-`_Sys_MouseY`, and mirrors mouse buttons into the fake custom/CIA state used by
-the existing AB3D2 mouse-control path. IE does not emulate Amiga input devices
-for this port.
+Generated `_build/` files and `diag_symbols.lua` are build artifacts, not
+source.
 
-The game calls `ie_poll_input` from the frame/wait paths and immediately before
-`plr_KeyboardControl` reads `KeyMap_vb`.
+## Memory
 
-## Menus
+The current IE software-renderer path uses these fixed addresses:
 
-The IE build keeps the existing AB3D2 menu state machine and option data, but
-does not use the Amiga screen/blitter path. `make ie68` converts the original
-planar menu assets to CLUT8, and `ie_hires_platform.s` renders the menu's
-planar text/cursor/fire buffers into the IE 320x240 CLUT8 framebuffer.
+| Address | Use |
+|---------|-----|
+| `0x001000` | Raw `.ie68` code/data link address |
+| `0x100000` | Main 320x240 CLUT8 chunky framebuffer (`CHUNKY_BASE`) |
+| `0x113000` | Secondary 320x240 CLUT8 framebuffer (`CHUNKY_BACK_BASE`) |
+| `0x126000` | Presented 320x240 CLUT8 framebuffer (`PRESENT_BASE`) |
+| `0x139000` | Secondary presented framebuffer (`PRESENT_BACK_BASE`) |
+| `0x3FFF00` | IE file-loader heap pointer |
+| `0x6F0000` | Fake library/vector base for compatibility entrypoints |
+| `0x700000` | IE file-loader heap base |
+| `0xFE0000` | IE file-loader heap limit |
 
-The upstream menu-code guards are limited to `IS_IE`: IE skips the old
-VBlank-timer startup delay and does not treat the gameplay fire key as menu
-activation. Enter, Space, and left mouse still activate menu items.
+The game viewport is currently presented as a 192x160 region at `(64,20)` inside
+the 320x240 IE framebuffer. The full menu uses the 320x240 framebuffer.
+
+## MMIO
+
+Video:
+
+| Register | Address | Use |
+|----------|---------|-----|
+| `VIDEO_CTRL` | `0xF0000` | Enable video |
+| `VIDEO_MODE` | `0xF0004` | Set mode `0x05` for 320x240 |
+| `VIDEO_STATUS` | `0xF0008` | VBlank polling, bit `1` |
+| `VIDEO_PAL_INDEX` | `0xF0078` | Palette index |
+| `VIDEO_PAL_DATA` | `0xF007C` | Palette RGBA data |
+| `VIDEO_COLOR_MODE` | `0xF0080` | CLUT8 mode (`1`) |
+| `VIDEO_FB_BASE` | `0xF0084` | Active framebuffer base pointer |
+
+Input:
+
+| Register | Address | Use |
+|----------|---------|-----|
+| Mouse X | `0xF0730` | Absolute X sampled and converted to delta |
+| Mouse Y | `0xF0734` | Absolute Y sampled and converted to delta |
+| Mouse buttons | `0xF0738` | Left/right button state |
+| Scan code | `0xF0740` | Keyboard queue data |
+| Scan status | `0xF0744` | Keyboard queue status, bit `0` means data available |
+| Modifiers | `0xF0748` | Shift/Ctrl/Alt state |
+
+File I/O:
+
+| Register | Address | Use |
+|----------|---------|-----|
+| `FILE_IO_NAME` | `0xF2200` | Pointer to NUL-terminated path |
+| `FILE_IO_DATA` | `0xF2204` | Destination pointer |
+| `FILE_IO_CTRL` | `0xF220C` | Command; `1` loads file |
+| `FILE_IO_STATUS` | `0xF2210` | Zero on success |
+| `FILE_IO_LEN` | `0xF2214` | Loaded byte length |
+
+Audio:
+
+| Register | Use |
+|----------|-----|
+| `0xF0BC0` | MOD file pointer |
+| `0xF0BC4` | MOD file length |
+| `0xF0BC8` | MOD control (`1` start, `2` stop/reset, `4` loop; IE writes `5`) |
+| `0xF0BCC` | MOD status |
+| `0xF0E20` | SID file pointer |
+| `0xF0E24` | SID file length |
+| `0xF0E28` | SID control (`1` start, `2` stop/reset, `4` loop; IE writes `5`) |
+| `0xF0E80+` | IE SFX/sample playback path used by the platform layer |
+
+## Rendering And Presentation
+
+The IE path keeps AB3D2's 8-bit chunky software renderer. `ie_hires_platform.s`
+opens a 320x240 CLUT8 IE video mode, uploads palettes through IE video MMIO, and
+presents either:
+
+- the full 320x240 source buffer for menus/fullscreen paths; or
+- the 192x160 game viewport copied into the 320x240 presentation buffer.
+
+After presenting the small viewport, the source viewport region is cleared so
+old rows do not smear when the view moves. Floors and ceilings are drawn by the
+legacy flat renderer in `hires.s`; the IE build avoids relying on an unreliable
+`st drawit` memory flag write in that path.
+
+## Input And Menus
+
+`ie_poll_input` reads IE keyboard and mouse MMIO directly. It updates AB3D2's
+existing raw-key table (`KeyMap_vb`), accumulates mouse Y into `_Sys_MouseY`,
+stores mouse X in `ie_mouse_delta_x_w`, and mirrors buttons into the fake
+custom/CIA state expected by the original mouse-control code.
+
+The native AB3D2 menu flow is retained. The Amiga menu blitter/screen path is
+replaced by converted CLUT8 menu assets and IE framebuffer rendering. Enter,
+Space, and left mouse activate menu items; cursor-key menu movement is debounced
+in the IE menu wait loop.
 
 ## Media
 
-Run the binary from `ab3d2_source` so runtime file loads resolve against the
-expected `media/` tree. The current SID music override requires:
+Run from `ab3d2_source/`. Intuition Engine's `--media` argument does not
+currently re-root the raw file-I/O MMIO loads used by this port.
+
+Expected original-profile paths include:
 
 ```text
-media/includes/At_Dooms_Gate_E1M1.sid
+media/
+  includes/
+    main.256pal
+    test.lnk
+    At_Dooms_Gate_E1M1.sid
+    title.mod
+    *.wad
+    *.ptr
+    *.256pal
+  levels/
+    level_a/
+    level_b/
+    ...
 ```
 
-Use `ie/tools/normalize_media.sh .` to prepare the local tree from extracted
-media files.
+Prepare the original media tree from extracted media with:
 
-## Boundaries
+```sh
+ie/tools/normalize_media.sh .
+```
 
-The IE target does not require an AmigaOS runtime and must not rely on Paula,
-CIA, Exec, Intuition, or real custom-chip MMIO. Compatibility symbols in
-`ie_hires_platform.s` exist to satisfy the original game code while routing
-behavior to IE hardware services.
+The IE `mt_init` implementation loads the current level MOD from the GLF
+`LevelMusic` entry with the IE file loader and starts it through IE MOD MMIO.
+If no level MOD is available, it falls back to
+`media/includes/At_Dooms_Gate_E1M1.sid` through IE SID playback.
 
-## Upstream Touches
+## Redux Diagnostics
 
-The IE port keeps platform code under `ie/`. The remaining changes outside this
-directory are limited to build wiring and `IS_IE` callsite guards where
-`hires.s` directly touches Amiga hardware or selects platform-specific include
-files.
+The Redux-focused IEScript diagnostics avoid IE function-key mappings by using
+scripted scancodes and direct memory writes to dev flags. The shared Lua helper
+is `ie/diag_redux_common.lua`; local `ie/diag_redux_*.ies` scripts can use it to
+drive gameplay, sample renderer/audio state and dump framebuffer histograms.
+Build the desired profile first, then run the scripts from `ab3d2_source`:
 
-- `Makefile`: includes `ie/build.mk` so the IE target can be built without
-  putting IE build logic in the upstream Makefile.
-- `hires.s`: selects IE-specific include files; guards Paula, CIA, custom-chip,
-  CD32, and serial accesses; polls IE input during waits; routes SFX through IE;
-  enables the combined keyboard and mouse control path used by the IE build; and
-  ignores exit-zone `0` so an unset exit zone does not end a level immediately.
-- `menu/menunb.s`: skips the old VBlank-timer delay under `IS_IE` and avoids
-  using gameplay fire-key state as menu activation; the IE menu presenter
-  updates frames through the `WaitTOF` path instead.
+```sh
+make ie68-redux-high
+```
+
+Expected diagnostic coverage includes path resolution, render pointers, palette
+and texture hashes, lighting/debug flags, wall-brightness scratch values,
+framebuffer histograms, freeze/progress sampling, and MOD/SID playback
+registers. The local Redux scripts default to `ab3d2_ie68_redux_high.ie68`. If
+the IEScript host predefines `IE_TARGET` or `TARGET`, that value is loaded
+instead.
+
+## Source Boundaries
+
+IE-specific platform code belongs under `ab3d2_source/ie/` wherever possible.
+Non-IE source touches should remain limited to build wiring, `IS_IE` include
+selection, and unavoidable callsite guards around Amiga-specific hardware or OS
+assumptions.
+
+Key IE files:
+
+- `build.mk`: IE build targets and generated diagnostics.
+- `ie_hires_platform.s`: video, input, audio, menu, system, fake-library,
+  message, and zone compatibility entrypoints.
+- `controlloop.s`: IE startup/menu/game outer-loop flow selected by `IS_IE`.
+- `ie_file_io_runtime.i`: IE raw file loader and media path normalization.
+- `ie_music.i`: legacy `mt_*` entrypoints backed by IE MOD MMIO with SID
+  fallback.
+- `MEDIA_LAYOUT.md`: focused media-tree notes.
+- `tools/normalize_media.sh`: prepares the original local media layout.
+- `tools/convert_menu_assets.py`: converts original planar menu art and
+  palettes into IE CLUT8 build artifacts.
+- `tools/prepare_media_profile.py`: prepares Redux high/low media profiles.
+
+## Intuition Engine Links
+
+- https://github.com/IntuitionAmiga/IntuitionEngine
+- https://www.youtube.com/@intuitionamiga
+
+## Shared Source Differences From Upstream
+
+The port keeps IE-specific code under `ab3d2_source/ie/` where possible. These
+files are shared with upstream `mheyer32/alienbreed3d2` and currently differ on
+disk:
+
+- `.gitignore`: ignores generated IE binaries and build artifacts.
+- `README.md`: documents the IE port at the repository root.
+- `ab3d2_source/Makefile`: includes `ie/build.mk`. The IE targets themselves
+  live in that IE-only make fragment.
+- `ab3d2_source/bss/draw_bss.s`: under `IS_IE`, raises
+  `DRAW_MAX_POLY_POINTS` and associated scratch buffers so IE object clipping
+  cannot overrun the original 250-point allocation.
+- `ab3d2_source/bss/player_bss.s`: under `IS_IE`, aligns and widens selected
+  control/runtime flags used by IE input and emulator-sensitive byte writes.
+- `ab3d2_source/hires.s`: contains `IS_IE` include selection and callsite
+  guards for IE platform glue, Amiga custom-chip/Paula/CIA paths, IE input,
+  menu, file I/O, music, presentation, pause, exit-zone behavior, and the gated
+  `drawit` word-access workaround.
+- `ab3d2_source/menu/menunb.s`: under `IS_IE`, uses the IE key-read path and
+  skips Amiga timer/fire-button wait logic that depends on custom hardware.
+- `ab3d2_source/modules/player.s`: under `IS_IE`, reads IE mouse deltas and
+  fake custom/CIA button state, and gates emulator-sensitive byte writes.
+- `ab3d2_source/modules/res.s`: under `IS_IE`, does not load level MODs through
+  the upstream Paula-specific `MEMF_CHIP` path. IE level music is loaded
+  optionally by `ie_music.i` and played through IE MOD MMIO instead.
+- `ab3d2_source/objdrawhires.s`: under `IS_IE`, guards zero or oversized object
+  polygon point counts before clipping/drawing.

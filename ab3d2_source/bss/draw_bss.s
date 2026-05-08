@@ -10,6 +10,11 @@
 
 DRAW_MAX_POLY_OBJECTS=40
 DRAW_MAX_OBJECTS=38
+				IFD		IS_IE
+DRAW_MAX_POLY_POINTS=1024
+				ELSE
+DRAW_MAX_POLY_POINTS=250
+				ENDC
 
 draw_DepthTable_vl:			ds.l	80
 draw_DepthTableEnd:
@@ -29,8 +34,8 @@ draw_StartOfObjPtr_l:			ds.l	1
 Draw_PolyObjects_vl:			ds.l	DRAW_MAX_POLY_OBJECTS
 
 ; FIMXE: screenconv stores word sized points, why are they using ds.l here?
-draw_2DPointsProjected_vl:		ds.l	250*2	; projected 2D points in screenspace
-draw_3DPointsRotated_vl:		ds.l	250*3	; rotated 3D points in X/Z plane (y pointing up)
+draw_2DPointsProjected_vl:		ds.l	DRAW_MAX_POLY_POINTS*2	; projected 2D points in screenspace
+draw_3DPointsRotated_vl:		ds.l	DRAW_MAX_POLY_POINTS*3	; rotated 3D points in X/Z plane (y pointing up)
 
 Draw_WallTexturePtrs_vl:		ds.l	NUM_WALL_TEXTURES
 Draw_ObjectPtrs_vl:				ds.l	DRAW_MAX_OBJECTS*4
@@ -65,7 +70,7 @@ draw_PointAngPtr_l:				ds.l	1
 
 toppt_l:						ds.l	1
 midobj_l:						ds.l	1
-boxbrights_vw:					ds.w	250
+boxbrights_vw:					ds.w	DRAW_MAX_POLY_POINTS
 ;boxang:							ds.w	1
 
 								ds.w	SCREEN_WIDTH*4; draw_PolyBotTab_vw has negative offsets
