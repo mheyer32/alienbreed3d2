@@ -14,8 +14,8 @@ Paula, CIA, or real Amiga custom-chip MMIO.
 - Redux convenience targets: `make ie68-redux-high` and
   `make ie68-redux-low` from `ab3d2_source/`.
 - Default output: `ab3d2_source/ab3d2_ie68.ie68`.
-- Runtime cwd: run Intuition Engine from `ab3d2_source/` so raw file I/O sees
-  the expected media tree.
+- Raw `.ie68` runtime cwd: run Intuition Engine from `ab3d2_source/` so raw
+  file I/O sees the expected media tree.
 
 The IE build keeps the AB3D2 software renderer and menu state machine. The
 Amiga screen, blitter, input, file, music, SFX, and compatibility entrypoints
@@ -32,9 +32,9 @@ make ie68-redux-low
 make ie68-all
 ```
 
-The six IE `.ie68` binaries are committed as playable artifacts so users can
-download the repository and run them without first setting up the Amiga build
-toolchain:
+The six IE `.ie68` binaries are committed in `ab3d2_source/` as playable
+artifacts so users can download the repository and run them without first
+setting up the Amiga build toolchain:
 
 | Binary | Profile | SID fallback |
 |--------|---------|--------------|
@@ -44,6 +44,25 @@ toolchain:
 | `ab3d2_ie68_redux_high_sid.ie68` | Redux high | Yes |
 | `ab3d2_ie68_redux_low.ie68` | Redux low | No |
 | `ab3d2_ie68_redux_low_sid.ie68` | Redux low | Yes |
+
+The `ie/` directory also contains six platform-specific packaged runtime
+binaries named `IntuitionEngine-AB3D2-Karlos-TKG-High-*`. These are special
+distributions, not `.ie68` ROMs: each one bundles Intuition Engine, the
+Karlos-TKG-High AB3D2 IE68 program, and the Karlos-TKG-High asset pack. On
+first launch, the packaged runtime extracts its bundled `_build` asset tree
+beside the executable if it is not already present, switches the runtime base
+to that executable directory, then runs the bundled game. These packaged
+runtimes do not require the original `media/` tree or a `karlos-tkg-main/`
+checkout at runtime.
+
+| Binary | Host |
+|--------|------|
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-darwin-amd64` | macOS Intel |
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-darwin-arm64` | macOS Apple Silicon |
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-linux-amd64` | Linux x86-64 |
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-linux-arm64` | Linux ARM64 |
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-windows-amd64.exe` | Windows x86-64 |
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-windows-arm64.exe` | Windows ARM64 |
 
 SID music fallback is disabled by default so the IE build has functional parity
 with the Amiga build. To opt into the IE SID fallback:
@@ -60,7 +79,9 @@ music. With `IE_ENABLE_SID_MUSIC=1`, missing level MOD music falls back to
 The Redux targets require the Redux data checkout at `karlos-tkg-main/` in the
 `alienbreed3d2` repository root. The expected data root is
 `karlos-tkg-main/Game`, and the build prepares the selected profile under
-`ab3d2_source/_build/ie_media/`.
+`ab3d2_source/_build/ie_media/`. This requirement applies to building the raw
+Redux `.ie68` artifacts; the packaged runtime binaries already contain the
+prepared Karlos-TKG-High program and assets.
 
 The IE make fragment:
 
@@ -221,8 +242,11 @@ in-game keys keep their normal raw-key behavior in IE.
 
 ## Media
 
-Run from `ab3d2_source/`. Intuition Engine's `--media` argument does not
-currently re-root the raw file-I/O MMIO loads used by this port.
+For raw `.ie68` runs with an external Intuition Engine binary, run from
+`ab3d2_source/`. Intuition Engine's `--media` argument does not currently
+re-root the raw file-I/O MMIO loads used by this port. The packaged
+`IntuitionEngine-AB3D2-Karlos-TKG-High-*` runtimes are different: they extract
+their prepared assets beside the executable and run relative to that directory.
 
 Expected original-profile paths include:
 
@@ -251,8 +275,9 @@ ie/tools/normalize_media.sh .
 
 The IE `mt_init` implementation loads the current level MOD from the GLF
 `LevelMusic` entry with the IE file loader and starts it through IE MOD MMIO.
-If no level MOD is available, it falls back to
-`ie/at_dooms_gate_e1m1.sid` through IE SID playback.
+If no level MOD is available, SID-enabled builds fall back to
+`ie/at_dooms_gate_e1m1.sid` through IE SID playback; default non-SID builds
+treat missing level music as no music.
 
 ## Redux Diagnostics
 
