@@ -1,10 +1,37 @@
 #include <stdio.h>
 #include "game_mod.h"
+#include "system.h"
 #include "devmode.h"
 #include <proto/exec.h>
-#include "system.h"
+#include <proto/dos.h>
+#include <proto/utility.h>
 
 
+// reset at level start and incremented by the interrupt
+volatile ULONG GMod_Ticks  = 0;
+
+// Current ShortDate
+ShortDate GMod_Date = 0;
+
+#define EPOCH_YEAR 1978
+#define TICK_MASK 0x1FF
+
+/**
+ * Calculates the current date as a ShortDate (11:5 months_since_epoch:calendar_day_of_month) for achievements recording.
+ */
+void GMod_CalculateDate(void)
+{
+    if (0 == GMod_Date || 0 == (GMod_Ticks & TICK_MASK)) {
+        static struct DateStamp oDateStamp = { 0 };
+        static struct ClockData oClockData = { 0 };
+        DateStamp(&oDateStamp);
+
+        // Since the ShortDate only has day granularity we can just use coarse seconds time here.
+        Amiga2Date(oDateStamp.ds_Days * 86400, &oClockData);
+        UWORD months = ((oClockData.year - EPOCH_YEAR) * 12) + oClockData.month - 1;
+        GMod_Date = months << 5 | (oClockData.mday & 0x1F);
+    }
+}
 
 /**********************************************************************************************************************/
 
