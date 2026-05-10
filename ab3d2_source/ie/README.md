@@ -15,7 +15,7 @@ Paula, CIA, or real Amiga custom-chip MMIO.
 - Redux convenience targets: `make ie68-redux-high` and
   `make ie68-redux-low` from `ab3d2_source/`.
 - Default output: `ab3d2_source/ab3d2_ie68.ie68`.
-- Overdrive output: `ab3d2_source/ab3d2_ie68_overdrive.ie68`.
+- Overdrive output: `ab3d2_source/ab3d2_ie68_redux_high_overdrive.ie68`.
 - Raw `.ie68` runtime cwd: run Intuition Engine from `ab3d2_source/` so raw
   file I/O sees the expected media tree.
 
@@ -42,7 +42,7 @@ Amiga build toolchain:
 | Binary | Profile | SID fallback |
 |--------|---------|--------------|
 | `ab3d2_ie68.ie68` | Original | No |
-| `ab3d2_ie68_overdrive.ie68` | Redux high Overdrive | No |
+| `ab3d2_ie68_redux_high_overdrive.ie68` | Redux high Overdrive | No |
 | `ab3d2_ie68_sid.ie68` | Original | Yes |
 | `ab3d2_ie68_redux_high.ie68` | Redux high | No |
 | `ab3d2_ie68_redux_high_sid.ie68` | Redux high | Yes |
@@ -139,7 +139,7 @@ pixels written by the scale blitter.
 
 The Overdrive build is selected with `make ie68-overdrive`, which defines
 `IE_OVERDRIVE=1`, selects `MEDIA_PROFILE=redux-high`, and produces
-`ab3d2_ie68_overdrive.ie68`. It keeps the renderer, menus, gameplay drawing,
+`ab3d2_ie68_redux_high_overdrive.ie68`. It keeps the renderer, menus, gameplay drawing,
 palettes, sprites, and bullets at the existing 320x240 CLUT8 resolution, loads
 the Karlos-TKG-High asset profile, then uses `BLT_OP_SCALE` to stretch the full
 source framebuffer to a 1920x1080 CLUT8 presentation buffer. This first

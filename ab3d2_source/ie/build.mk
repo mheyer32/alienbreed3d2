@@ -67,7 +67,7 @@ ie68-sid:
 	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=1 IE_TARGET=ab3d2_ie68_sid.ie68 IE_MAP=$(BUILD_DIR)/ie68_sid.map
 
 ie68-overdrive:
-	$(MAKE) ie68 IE_OVERDRIVE=1 IE_ENABLE_SID_MUSIC=0 MEDIA_PROFILE=redux-high IE_TARGET=ab3d2_ie68_overdrive.ie68 IE_MAP=$(BUILD_DIR)/ie68_overdrive.map IE_SYMBOLS=$(BUILD_DIR)/diag_symbols_ie68_overdrive.lua
+	$(MAKE) ie68 IE_OVERDRIVE=1 IE_ENABLE_SID_MUSIC=0 MEDIA_PROFILE=redux-high IE_TARGET=ab3d2_ie68_redux_high_overdrive.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_high_overdrive.map IE_SYMBOLS=$(BUILD_DIR)/diag_symbols_ie68_redux_high_overdrive.lua
 
 ie68-redux-high:
 	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=0 MEDIA_PROFILE=redux-high IE_TARGET=ab3d2_ie68_redux_high.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_high.map
