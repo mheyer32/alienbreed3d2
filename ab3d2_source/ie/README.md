@@ -121,12 +121,13 @@ The current IE software-renderer path uses these fixed addresses:
 | `0x126000` | 320x240 CLUT8 staging framebuffer for small viewport presentation (`PRESENT_BASE`) |
 | `0x240000` | Primary 640x480 CLUT8 scaled presentation framebuffer for normal IE builds (`SCALE_BASE`) |
 | `0x28B000` | Secondary 640x480 CLUT8 scaled presentation framebuffer for normal IE builds (`SCALE_BACK_BASE`) |
-| `0x3FFF00` | IE file-loader heap pointer |
 | `0x6F0000` | Fake library/vector base for compatibility entrypoints |
-| `0x700000` | IE file-loader heap base |
+| `0x00C00000` | IE file-loader heap base (`ie_sys_heap_ptr` initial value) |
 | `0xFE0000` | IE file-loader heap limit |
 | `0x02000000` | Primary 1920x1080 CLUT8 high presentation framebuffer for Overdrive builds (`SCALE_BASE`) |
 | `0x02200000` | Secondary 1920x1080 CLUT8 high presentation framebuffer for Overdrive builds (`SCALE_BACK_BASE`) |
+| `0x02800000` | IE menu background/work buffer (`_mnu_screen`) |
+| `0x02840000` | IE menu 8-plane work buffer (`_mnu_morescreen`) |
 
 The renderer and converted menu assets remain 320x240 CLUT8 internally. IE
 opens a 640x480 CLUT8 display and uses the VideoChip scale blitter to present
@@ -148,6 +149,11 @@ runtime that supports `MODE_1920x1080` (`0x06`) and high bus-backed CLUT8
 framebuffers large enough for two `1920 * 1080` buffers. It is presentation
 upscaling only, not native 1080p rendering, Mode 7, Copper, Voodoo, side HUD
 columns, bottom bars, transition effects, or debug overlays.
+
+Overdrive clears the selected 1920x1080 CLUT8 presentation buffer before each
+scale blit. Keep this clear in place: the scaled source is still a 320x240
+software-rendered frame, and stale high-buffer pixels can otherwise show up as
+missing small sprites or corrupted projectile edges.
 
 ## MMIO
 
@@ -257,6 +263,10 @@ wait loop. Choosing Exit Game requests the Intuition Engine ProgramExecutor
 hard-reset operation, so the game returns through the same reset-to-BASIC path
 as the IE F10 hotkey.
 
+The large menu work buffers are absolute high-memory symbols in IE builds, not
+`.bsschip` allocations. This keeps `_mnu_screen` and `_mnu_morescreen` away
+from the low-memory audio and runtime scratch areas.
+
 Intuition Engine reserves host function keys for runtime tools: F8 toggles the
 Lua REPL overlay, F9 toggles the machine monitor, F10 hard-resets the runtime,
 F11 toggles fullscreen, and F12 toggles the status bar. The IE build therefore
@@ -269,6 +279,13 @@ uses replacement keys for the conflicting fixed in-game AB3D2 controls:
 The upstream viewport-size key is disabled in IE because the port forces the
 AB3D2 fullscreen viewport for scaled presentation. Other fixed AB3D2 in-game
 keys keep their normal raw-key behavior in IE.
+
+IE supplies small platform implementations for game services that are C-backed
+in the Amiga/RTG path. `_Game_AddToInventory` updates the assembler inventory
+layout directly: shield, jetpack, and weapon item words are ORed into the
+player inventory, while health, fuel, and ammo words are saturated-added. Weapon
+pickup, ammo pickup, weapon cycling, and number-key weapon selection depend on
+this routine doing real work rather than acting as a stub.
 
 ## Media
 
@@ -348,7 +365,7 @@ Key IE files:
 - `ie_keymap.i`: IE-only replacement keys for fixed AB3D2 controls that collide
   with IE host shortcuts.
 - `ie_hires_platform.s`: video, input, audio, menu, system, fake-library,
-  message, and zone compatibility entrypoints.
+  message, inventory, and zone compatibility entrypoints.
 - `controlloop.s`: IE startup/menu/game outer-loop flow selected by `IS_IE`.
 - `ie_file_io_runtime.i`: IE raw file loader and media path normalization.
 - `ie_music.i`: legacy `mt_*` entrypoints backed by IE MOD MMIO with SID
