@@ -1948,12 +1948,21 @@ mnu_background:
 
 				section	.bsschip,bss_c
 
+				IFD	IS_IE
+				xdef	_mnu_screen
+				xdef	_mnu_morescreen
+_mnu_screen		equ	$02800000
+mnu_screen		equ	_mnu_screen
+_mnu_morescreen	equ	$02840000
+mnu_morescreen	equ	_mnu_morescreen
+				ELSE
 _mnu_screen::
 mnu_screen:		ds.b	2*40*512				; 4 color background,. 320x512 pixels
 
 _mnu_morescreen::
 mnu_morescreen:
 				ds.b	8*40*SCREEN_HEIGHT				; 8 bitplanes 320x256 pixels
+				ENDC
 
 				align	8				; align for fetch mode 3
 
