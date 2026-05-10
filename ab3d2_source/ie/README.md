@@ -11,9 +11,11 @@ Paula, CIA, or real Amiga custom-chip MMIO.
 - Platform layer: `ab3d2_source/ie/ie_hires_platform.s`.
 - Binary format: raw `.ie68` linked at `0x001000`.
 - Build target: `make ie68` from `ab3d2_source/`.
+- Overdrive build target: `make ie68-overdrive` from `ab3d2_source/`.
 - Redux convenience targets: `make ie68-redux-high` and
   `make ie68-redux-low` from `ab3d2_source/`.
 - Default output: `ab3d2_source/ab3d2_ie68.ie68`.
+- Overdrive output: `ab3d2_source/ab3d2_ie68_overdrive.ie68`.
 - Raw `.ie68` runtime cwd: run Intuition Engine from `ab3d2_source/` so raw
   file I/O sees the expected media tree.
 
@@ -27,33 +29,36 @@ From `ab3d2_source/`:
 
 ```sh
 make ie68
+make ie68-overdrive
 make ie68-redux-high
 make ie68-redux-low
 make ie68-all
 ```
 
-The six IE `.ie68` binaries are committed in `ab3d2_source/` as playable
-artifacts so users can download the repository and run them without first
-setting up the Amiga build toolchain:
+The IE `.ie68` binaries are committed in `ab3d2_source/` as playable artifacts
+so users can download the repository and run them without first setting up the
+Amiga build toolchain:
 
 | Binary | Profile | SID fallback |
 |--------|---------|--------------|
 | `ab3d2_ie68.ie68` | Original | No |
+| `ab3d2_ie68_overdrive.ie68` | Redux high Overdrive | No |
 | `ab3d2_ie68_sid.ie68` | Original | Yes |
 | `ab3d2_ie68_redux_high.ie68` | Redux high | No |
 | `ab3d2_ie68_redux_high_sid.ie68` | Redux high | Yes |
 | `ab3d2_ie68_redux_low.ie68` | Redux low | No |
 | `ab3d2_ie68_redux_low_sid.ie68` | Redux low | Yes |
 
-The `ie/` directory also contains six platform-specific packaged runtime
-binaries named `IntuitionEngine-AB3D2-Karlos-TKG-High-*`. These are special
-distributions, not `.ie68` ROMs: each one bundles Intuition Engine, the
-Karlos-TKG-High AB3D2 IE68 program, and the Karlos-TKG-High asset pack. On
-first launch, the packaged runtime extracts its bundled `_build` asset tree
-beside the executable if it is not already present, switches the runtime base
-to that executable directory, then runs the bundled game. These packaged
-runtimes do not require the original `media/` tree or a `karlos-tkg-main/`
-checkout at runtime.
+The `ie/` directory also contains platform-specific packaged runtime binaries
+named `IntuitionEngine-AB3D2-Karlos-TKG-High-*` and
+`IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-*`. These are special
+distributions, not `.ie68` ROMs: each one bundles Intuition Engine, the selected
+Karlos-TKG-High AB3D2 IE68 program, and the Karlos-TKG-High asset pack. On first
+launch, the packaged runtime extracts its bundled `_build` asset tree beside
+the executable if it is not already present, switches the runtime base to that
+executable directory, then runs the bundled game. These packaged runtimes do
+not require the original `media/` tree or a `karlos-tkg-main/` checkout at
+runtime.
 
 | Binary | Host |
 |--------|------|
@@ -63,6 +68,12 @@ checkout at runtime.
 | `IntuitionEngine-AB3D2-Karlos-TKG-High-linux-arm64` | Linux ARM64 |
 | `IntuitionEngine-AB3D2-Karlos-TKG-High-windows-amd64.exe` | Windows x86-64 |
 | `IntuitionEngine-AB3D2-Karlos-TKG-High-windows-arm64.exe` | Windows ARM64 |
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-darwin-amd64` | macOS Intel |
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-darwin-arm64` | macOS Apple Silicon |
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-linux-amd64` | Linux x86-64 |
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-linux-arm64` | Linux ARM64 |
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-windows-amd64.exe` | Windows x86-64 |
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-windows-arm64.exe` | Windows ARM64 |
 
 SID music fallback is disabled by default so the IE build has functional parity
 with the Amiga build. To opt into the IE SID fallback:
@@ -76,12 +87,12 @@ when the GLF database provides one, but missing level music is treated as no
 music. With `IE_ENABLE_SID_MUSIC=1`, missing level MOD music falls back to
 `ie/at_dooms_gate_e1m1.sid`.
 
-The Redux targets require the Redux data checkout at `karlos-tkg-main/` in the
-`alienbreed3d2` repository root. The expected data root is
-`karlos-tkg-main/Game`, and the build prepares the selected profile under
-`ab3d2_source/_build/ie_media/`. This requirement applies to building the raw
-Redux `.ie68` artifacts; the packaged runtime binaries already contain the
-prepared Karlos-TKG-High program and assets.
+The Redux and Overdrive targets require the Redux data checkout at
+`karlos-tkg-main/` in the `alienbreed3d2` repository root. The expected data
+root is `karlos-tkg-main/Game`, and the build prepares the selected profile
+under `ab3d2_source/_build/ie_media/`. This requirement applies to building the
+raw Redux and Overdrive `.ie68` artifacts; the packaged runtime binaries
+already contain the prepared Karlos-TKG-High program and assets.
 
 The IE make fragment:
 
@@ -108,12 +119,14 @@ The current IE software-renderer path uses these fixed addresses:
 | `0x100000` | Main 320x240 CLUT8 chunky framebuffer (`CHUNKY_BASE`) |
 | `0x113000` | Secondary 320x240 CLUT8 framebuffer (`CHUNKY_BACK_BASE`) |
 | `0x126000` | 320x240 CLUT8 staging framebuffer for small viewport presentation (`PRESENT_BASE`) |
-| `0x240000` | Primary 640x480 CLUT8 scaled presentation framebuffer (`SCALE_BASE`) |
-| `0x28B000` | Secondary 640x480 CLUT8 scaled presentation framebuffer (`SCALE_BACK_BASE`) |
+| `0x240000` | Primary 640x480 CLUT8 scaled presentation framebuffer for normal IE builds (`SCALE_BASE`) |
+| `0x28B000` | Secondary 640x480 CLUT8 scaled presentation framebuffer for normal IE builds (`SCALE_BACK_BASE`) |
 | `0x3FFF00` | IE file-loader heap pointer |
 | `0x6F0000` | Fake library/vector base for compatibility entrypoints |
 | `0x700000` | IE file-loader heap base |
 | `0xFE0000` | IE file-loader heap limit |
+| `0x02000000` | Primary 1920x1080 CLUT8 high presentation framebuffer for Overdrive builds (`SCALE_BASE`) |
+| `0x02200000` | Secondary 1920x1080 CLUT8 high presentation framebuffer for Overdrive builds (`SCALE_BACK_BASE`) |
 
 The renderer and converted menu assets remain 320x240 CLUT8 internally. IE
 opens a 640x480 CLUT8 display and uses the VideoChip scale blitter to present
@@ -123,6 +136,19 @@ display. The scaled presentation buffers are placed outside the active
 VideoChip front-buffer span so `VIDEO_FB_BASE` presents the bus-backed CLUT8
 pixels written by the scale blitter.
 
+The Overdrive build is selected with `make ie68-overdrive`, which defines
+`IE_OVERDRIVE=1`, selects `MEDIA_PROFILE=redux-high`, and produces
+`ab3d2_ie68_overdrive.ie68`. It keeps the renderer, menus, gameplay drawing,
+palettes, sprites, and bullets at the existing 320x240 CLUT8 resolution, loads
+the Karlos-TKG-High asset profile, then uses `BLT_OP_SCALE` to stretch the full
+source framebuffer to a 1920x1080 CLUT8 presentation buffer. This first
+Overdrive build intentionally uses every output pixel, so it does not preserve
+the original aspect ratio with letterboxing or pillarboxing. It requires an IE
+runtime that supports `MODE_1920x1080` (`0x06`) and high bus-backed CLUT8
+framebuffers large enough for two `1920 * 1080` buffers. It is presentation
+upscaling only, not native 1080p rendering, Mode 7, Copper, Voodoo, side HUD
+columns, bottom bars, transition effects, or debug overlays.
+
 ## MMIO
 
 Video:
@@ -130,17 +156,17 @@ Video:
 | Register | Address | Use |
 |----------|---------|-----|
 | `VIDEO_CTRL` | `0xF0000` | Enable video |
-| `VIDEO_MODE` | `0xF0004` | Set mode `0x00` for 640x480 |
+| `VIDEO_MODE` | `0xF0004` | Set mode `0x00` for 640x480, or `0x06` for Overdrive 1920x1080 |
 | `VIDEO_STATUS` | `0xF0008` | VBlank polling, bit `1` |
 | `BLT_CTRL` | `0xF001C` | Start scale blit |
 | `BLT_OP` | `0xF0020` | `BLT_OP_SCALE` (`7`) for presentation |
 | `BLT_SRC` | `0xF0024` | 320x240 CLUT8 source buffer |
-| `BLT_DST` | `0xF0028` | 640x480 CLUT8 scaled presentation buffer |
+| `BLT_DST` | `0xF0028` | Scaled CLUT8 presentation buffer |
 | `BLT_WIDTH` | `0xF002C` | Source width (`320`) |
 | `BLT_HEIGHT` | `0xF0030` | Source height (`240`) |
 | `BLT_SRC_STRIDE` | `0xF0034` | Source row bytes (`320`) |
-| `BLT_DST_STRIDE` | `0xF0038` | Destination row bytes (`640`) |
-| `BLT_COLOR` | `0xF003C` | Packed destination size `(480 << 16) | 640` |
+| `BLT_DST_STRIDE` | `0xF0038` | Destination row bytes (`640`, or `1920` in Overdrive) |
+| `BLT_COLOR` | `0xF003C` | Packed destination size `(480 << 16) | 640`, or `(1080 << 16) | 1920` in Overdrive |
 | `VIDEO_PAL_INDEX` | `0xF0078` | Palette index |
 | `VIDEO_PAL_DATA` | `0xF007C` | Palette RGBA data |
 | `VIDEO_COLOR_MODE` | `0xF0080` | CLUT8 mode (`1`) |
@@ -194,8 +220,8 @@ Runtime control:
 ## Rendering And Presentation
 
 The IE path keeps AB3D2's 8-bit chunky software renderer. `ie_hires_platform.s`
-opens a 640x480 CLUT8 IE video mode, uploads palettes through IE video MMIO, and
-uses `BLT_OP_SCALE` to present either:
+opens a CLUT8 IE video mode, uploads palettes through IE video MMIO, and uses
+`BLT_OP_SCALE` to present either:
 
 - the full 320x240 source buffer for menus/fullscreen gameplay paths; or
 - the 192x160 game viewport copied into a 320x240 staging buffer.
@@ -241,8 +267,8 @@ uses replacement keys for the conflicting fixed in-game AB3D2 controls:
 | F9 | Backtick | Toggle pixel/double-height mode |
 
 The upstream viewport-size key is disabled in IE because the port forces the
-AB3D2 fullscreen viewport for 640x480 scaled presentation. Other fixed AB3D2
-in-game keys keep their normal raw-key behavior in IE.
+AB3D2 fullscreen viewport for scaled presentation. Other fixed AB3D2 in-game
+keys keep their normal raw-key behavior in IE.
 
 ## Media
 

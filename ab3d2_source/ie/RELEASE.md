@@ -1,7 +1,7 @@
 # AB3D2 Intuition Engine Packaged Runtime
 
 This directory contains platform-specific packaged builds of Alien Breed 3D II
-for Intuition Engine:
+for Intuition Engine. The standard Karlos-TKG-High builds are:
 
 | Binary | Host |
 |--------|------|
@@ -12,12 +12,28 @@ for Intuition Engine:
 | `IntuitionEngine-AB3D2-Karlos-TKG-High-windows-amd64.exe` | Windows x86-64 |
 | `IntuitionEngine-AB3D2-Karlos-TKG-High-windows-arm64.exe` | Windows ARM64 |
 
+The Overdrive Karlos-TKG-High builds are:
+
+| Binary | Host |
+|--------|------|
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-darwin-amd64` | macOS Intel |
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-darwin-arm64` | macOS Apple Silicon |
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-linux-amd64` | Linux x86-64 |
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-linux-arm64` | Linux ARM64 |
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-windows-amd64.exe` | Windows x86-64 |
+| `IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-windows-arm64.exe` | Windows ARM64 |
+
 These are self-contained runtime distributions, not `.ie68` ROM files. Each
 binary bundles:
 
 - Intuition Engine;
-- the Karlos-TKG-High AB3D2 IE68 program;
+- the selected Karlos-TKG-High AB3D2 IE68 program;
 - the prepared Karlos-TKG-High asset pack.
+
+The Overdrive binaries bundle the Overdrive IE68 program, start fullscreen, and
+present the existing 320x240 CLUT8 renderer as a full-frame 1920x1080 stretch.
+They use the same prepared Karlos-TKG-High asset pack as the standard packaged
+runtimes.
 
 On first launch, the runtime extracts its bundled `ab3d2_source/_build` asset
 tree beside the executable if it is not already present, switches the runtime
@@ -48,6 +64,13 @@ chmod +x ./IntuitionEngine-AB3D2-Karlos-TKG-High-linux-amd64
 ./IntuitionEngine-AB3D2-Karlos-TKG-High-linux-amd64
 ```
 
+For Overdrive on Linux, use the matching Overdrive binary name, for example:
+
+```sh
+chmod +x ./IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-linux-amd64
+./IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-linux-amd64
+```
+
 Use the matching macOS or Linux binary for your CPU architecture. On Windows,
 run the matching `.exe`.
 
@@ -64,9 +87,10 @@ xattr -d com.apple.quarantine ./IntuitionEngine-AB3D2-Karlos-TKG-High-darwin-arm
 ./IntuitionEngine-AB3D2-Karlos-TKG-High-darwin-arm64
 ```
 
-Use `darwin-amd64` instead of `darwin-arm64` on Intel Macs. Removing quarantine
-is a local trust override; do it only for binaries obtained from a trusted
-source.
+Use `darwin-amd64` instead of `darwin-arm64` on Intel Macs, and insert
+`-Overdrive` in the filename when running an Overdrive package. Removing
+quarantine is a local trust override; do it only for binaries obtained from a
+trusted source.
 
 ## Input
 
@@ -93,8 +117,8 @@ AB3D2 pixel/double-height mode toggle.
 
 ## Notes
 
-The packaged runtime is the Karlos-TKG-High profile. It is separate from the
-raw `.ie68` artifacts used by developers with an external Intuition Engine
+The packaged runtimes use the Karlos-TKG-High profile. They are separate from
+the raw `.ie68` artifacts used by developers with an external Intuition Engine
 binary. Menus use the IE renderer but retain the original AB3D2 moving
 background, palette fades, fire-colour text effect, and credits screen.
 

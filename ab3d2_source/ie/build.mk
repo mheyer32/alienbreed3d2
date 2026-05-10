@@ -7,6 +7,7 @@ IE_MENU_BUILD_DIR ?= $(BUILD_DIR)/ie_menu
 IE_UNPACKED_MEDIA_DIR ?= $(BUILD_DIR)/ie_unpacked/media
 IE_HIRES_SOURCE ?= ie/hires.s
 IE_ENABLE_SID_MUSIC ?= 0
+IE_OVERDRIVE ?= 0
 MEDIA_PROFILE ?= original
 IE_MEDIA_PROFILE_DIR ?= $(BUILD_DIR)/ie_media/$(MEDIA_PROFILE)
 IE_PROFILE_BUILD_DIR ?= $(BUILD_DIR)/ie/$(MEDIA_PROFILE)
@@ -26,6 +27,13 @@ else
 $(error Unsupported IE_ENABLE_SID_MUSIC=$(IE_ENABLE_SID_MUSIC); use 0 or 1)
 endif
 
+ifeq ($(IE_OVERDRIVE),1)
+IE_PROFILE_DEFS += -DIE_OVERDRIVE=1
+else ifeq ($(IE_OVERDRIVE),0)
+else
+$(error Unsupported IE_OVERDRIVE=$(IE_OVERDRIVE); use 0 or 1)
+endif
+
 ifeq ($(MEDIA_PROFILE),original)
 else ifeq ($(MEDIA_PROFILE),redux-high)
 IE_PROFILE_INCLUDES += -I$(IE_MEDIA_PROFILE_DIR)/includes
@@ -41,13 +49,14 @@ else
 $(error Unsupported MEDIA_PROFILE=$(MEDIA_PROFILE); use original, redux-high, or redux-low)
 endif
 
-.PHONY: ie68 ie68_sw ie68-all ie68-sid ie68-redux-high ie68-redux-high-sid ie68-redux-low ie68-redux-low-sid
+.PHONY: ie68 ie68_sw ie68-all ie68-sid ie68-overdrive ie68-redux-high ie68-redux-high-sid ie68-redux-low ie68-redux-low-sid
 
 ie68: ie68_sw
 
 ie68-all:
 	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=0 IE_TARGET=ab3d2_ie68.ie68 IE_MAP=$(BUILD_DIR)/ie68.map IE_SYMBOLS=$(BUILD_DIR)/diag_symbols_ie68.lua
 	$(MAKE) ie68-sid
+	$(MAKE) ie68-overdrive
 	$(MAKE) ie68-redux-high
 	$(MAKE) ie68-redux-high-sid
 	$(MAKE) ie68-redux-low
@@ -56,6 +65,9 @@ ie68-all:
 
 ie68-sid:
 	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=1 IE_TARGET=ab3d2_ie68_sid.ie68 IE_MAP=$(BUILD_DIR)/ie68_sid.map
+
+ie68-overdrive:
+	$(MAKE) ie68 IE_OVERDRIVE=1 IE_ENABLE_SID_MUSIC=0 MEDIA_PROFILE=redux-high IE_TARGET=ab3d2_ie68_overdrive.ie68 IE_MAP=$(BUILD_DIR)/ie68_overdrive.map IE_SYMBOLS=$(BUILD_DIR)/diag_symbols_ie68_overdrive.lua
 
 ie68-redux-high:
 	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=0 MEDIA_PROFILE=redux-high IE_TARGET=ab3d2_ie68_redux_high.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_high.map
