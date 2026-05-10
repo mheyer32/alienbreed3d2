@@ -830,11 +830,34 @@ _Msg_PushLine:
 _Msg_PushLineDedupLast:
 _Game_LevelFailed:
 _Game_UpdatePlayerProgress:
-_Game_AddToInventory:
 _Game_ApplyInventoryLimits:
 _Zone_InitEdgePVS:
 _Zone_ApplyPVSErrata:
 _Zone_FreeEdgePVS:
+	rts
+
+_Game_AddToInventory:
+	movem.l	d0-d1/d7/a0-a3,-(sp)
+	lea		44(a0),a3
+	moveq	#11,d7
+.items_loop:
+	move.w	(a2)+,d0
+	or.w	d0,(a3)+
+	dbra	d7,.items_loop
+	moveq	#21,d7
+.consumables_loop:
+	move.w	(a1)+,d0
+	beq.s	.next_consumable
+	move.w	(a0),d1
+	add.w	d0,d1
+	bcc.s	.store_consumable
+	moveq	#-1,d1
+.store_consumable:
+	move.w	d1,(a0)
+.next_consumable:
+	addq.l	#2,a0
+	dbra	d7,.consumables_loop
+	movem.l	(sp)+,d0-d1/d7/a0-a3
 	rts
 
 _Game_LevelBegin:
