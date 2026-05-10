@@ -1,6 +1,8 @@
 #ifndef DRAW_INLINE_H
 #define DRAW_INLINE_H
 
+#include "screen.h"
+
 /**
  * Reset the counters used to determine if the HUD has changed.
  */
@@ -13,11 +15,11 @@ static __inline void draw_ResetHUDCounters(void)
 }
 
 static __inline WORD draw_ScreenXPos(WORD xPos) {
-    return xPos >= 0 ? xPos : Vid_ScreenWidth + xPos;
+    return xPos >= 0 ? xPos : Vid_LogicalWidth() + xPos;
 }
 
 static __inline WORD draw_ScreenYPos(WORD yPos) {
-    return yPos >= 0 ? yPos : Vid_ScreenHeight + yPos;
+    return yPos >= 0 ? yPos : Vid_VisibleBottom() + yPos + Vid_BorderReclaimShift_w;
 }
 
 static __inline UWORD draw_PackItemSlots(const UWORD* itemSlots) {

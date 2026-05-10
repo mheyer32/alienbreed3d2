@@ -88,6 +88,8 @@ extern void Msg_RenderSmallScreenRTG(UBYTE* bmBaseAddr, ULONG bmBytesPerRow);
  */
 extern void Msg_RenderSmallScreenPlanar(UBYTE* plane);
 
+extern UWORD Msg_SmallScreenTextPlaneSize(void);
+
 extern BOOL Msg_SmallScreenNeedsRedraw(void);
 
 extern void Msg_Tick(void);

@@ -410,15 +410,12 @@ void Sys_ShowFPS()
         return;
     }
 
-    extern WORD Vid_ScreenHeight;
-    extern WORD Sys_FPSLimit_w;
-
     char text[16];
     char* outPtr = text;
 
     RawDoFmt("%2d.%d %d ", &Sys_FPSIntAvg_w, (void (*)()) & PutChProc, &outPtr);
     LOCAL_GFX();
-    Move(&Vid_MainScreen_l->RastPort, 192, Vid_ScreenHeight - 13);
+    Move(&Vid_MainScreen_l->RastPort, 192, Vid_VisibleBottom() - 13);
     Text(&Vid_MainScreen_l->RastPort, text, outPtr - text - 1);
 }
 
