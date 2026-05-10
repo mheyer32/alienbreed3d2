@@ -94,13 +94,13 @@ c2p_SetParamsSmallCommon:
 				move.w	d3,c2p_ChunkyOffset_w
 				move.w	#C2P_BPL_ROWBYTES,d3
 				mulu.w	d7,d3					; offset for top letterbox in screenbuffer
-				add.w	#C2P_SMALL_BPL_OFFSET,d3
+				add.w	Vid_SmallRenderTopOffset_w,d3
 				move.w	d3,c2p_PlanarOffset_w
 				rts
 
 c2p_SetParamsFull1x1Akiko:
 				move.w	Vid_LetterBoxMarginHeight_w,d7
-				move.l	#C2P_FS_HEIGHT,d1		; height of area to convert
+				move.w	Vid_FullscreenRenderHeight_w,d1	; height of area to convert
 				sub.w	d7,d1					; top letterbox
 				sub.w	d7,d1					; bottom letterbox: d1: number of lines
 				mulu.w	#C2P_BPL_WIDTH_LONGS,d1
@@ -110,7 +110,9 @@ c2p_SetParamsFull1x1Akiko:
 
 c2p_SetParamsFull1x2Akiko:
 				move.w	Vid_LetterBoxMarginHeight_w,d7
-				move.l	#(C2P_FS_HEIGHT/2)-1,d1	; height of area to convert
+				move.w	Vid_FullscreenRenderHeight_w,d1	; height of area to convert
+				lsr.w	#1,d1
+				subq.w	#1,d1
 				sub.w	d7,d1					; top letterbox
 				move.w	d1,c2p_AkikoSize_w		; line count - 1
 

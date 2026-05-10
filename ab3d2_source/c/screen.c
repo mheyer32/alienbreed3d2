@@ -8,6 +8,7 @@
 #include <graphics/copper.h>
 #include <graphics/gfx.h>
 #include <graphics/gfxmacros.h>
+#include <graphics/displayinfo.h>
 #include <graphics/videocontrol.h>
 #include <graphics/view.h>
 
@@ -60,11 +61,16 @@ extern void Draw_UpdateBorder_Planar(void);
 
 WORD Vid_ScreenHeight;
 WORD Vid_ScreenWidth;
+WORD Vid_VisibleHeight_w;
+
+WORD Vid_BorderReclaimShift_w;
+static WORD vid_RequestedScreenHeight_w;
+static UWORD vid_RequestedOverscanType_w = OSCAN_TEXT;
 
 ULONG Vid_ScreenMode;
 BOOL Vid_isRTG;
 
-WORD SMALL_YPOS = 20;
+WORD SMALL_YPOS = SMALL_YPOS_DEFAULT;
 
 extern void C2P_Init(void);
 
@@ -72,8 +78,82 @@ void Vid_Present();
 void C2P_Convert();
 void Vid_CloseMainScreen();
 
+static void vid_UpdateFullscreenRenderHeight(void)
+{
+    WORD h = Vid_VisibleHeight_w;
+    if (Vid_BorderReclaimShift_w > 0 && h > VID_BORDER_CHROME_LINES_BELOW_FS) {
+        h -= VID_BORDER_CHROME_LINES_BELOW_FS;
+    }
+    Vid_FullscreenRenderHeight_w = h;
+}
+
+static void vid_UpdateDisplayLayout(void)
+{
+    WORD h = Vid_ScreenHeight;
+
+    if (h < 0) {
+        h = 0;
+    } else if (h > (WORD)SCREEN_HEIGHT) {
+        h = SCREEN_HEIGHT;
+    }
+
+    Vid_VisibleHeight_w = h;
+    Vid_BorderReclaimShift_w = VID_FS_LEGACY_MESSAGE_STRIP_LINES;
+    Vid_SmallRenderTopOffset_w = SMALL_YPOS * (SCREEN_WIDTH / 8) + (SMALL_XPOS / 8);
+    vid_UpdateFullscreenRenderHeight();
+}
+
+static WORD vid_RectHeight(const struct Rectangle *rect)
+{
+    return rect->MaxY + 1 - rect->MinY;
+}
+
+static WORD vid_QueryOverscanHeight(ULONG modeID, UWORD overscanType)
+{
+    struct Rectangle rect;
+    if (QueryOverscan(modeID, &rect, overscanType)) {
+        WORD h = vid_RectHeight(&rect);
+        if (h >= 160 && h <= (WORD)SCREEN_HEIGHT) {
+            return h;
+        }
+    }
+    return 0;
+}
+
+static WORD vid_ResolveVisibleHeight(void)
+{
+    struct DimensionInfo dimInfo;
+    WORD h = vid_QueryOverscanHeight(Vid_ScreenMode, vid_RequestedOverscanType_w);
+
+    if (!h && GetDisplayInfoData(NULL, &dimInfo, sizeof(dimInfo), DTAG_DIMS, Vid_ScreenMode)) {
+        h = vid_RectHeight(&dimInfo.Nominal);
+        if (h < 160 || h > (WORD)SCREEN_HEIGHT) {
+            h = 0;
+        }
+
+        if (dimInfo.StdOScan.MinY <= dimInfo.StdOScan.MaxY) {
+            WORD stdH = vid_RectHeight(&dimInfo.StdOScan);
+            if (stdH >= 160 && stdH <= (WORD)SCREEN_HEIGHT && (!h || stdH < h)) {
+                h = stdH;
+            }
+        }
+    }
+
+    if (!h && vid_RequestedScreenHeight_w >= 160 && vid_RequestedScreenHeight_w <= (WORD)SCREEN_HEIGHT) {
+        h = vid_RequestedScreenHeight_w;
+    }
+
+    return h ? h : (WORD)SCREEN_HEIGHT;
+}
+
 void Vid_OpenMainScreen(void)
 {
+    Vid_VisibleHeight_w = 0;
+    Vid_BorderReclaimShift_w = 0;
+    Vid_FullscreenRenderHeight_w = 0;
+    Vid_SmallRenderTopOffset_w = 0;
+    SMALL_YPOS = SMALL_YPOS_DEFAULT;
+
     LOCAL_SYSBASE();
     LOCAL_INTUITION();
     LOCAL_GFX();
@@ -116,7 +196,14 @@ void Vid_OpenMainScreen(void)
         }
 
         Vid_ScreenWidth = SCREEN_WIDTH;
-        Vid_ScreenHeight = SCREEN_HEIGHT;
+        Vid_ScreenHeight = vid_ResolveVisibleHeight();
+        if (Vid_ScreenHeight < SCREEN_HEIGHT) {
+            SMALL_YPOS -= (SCREEN_HEIGHT - Vid_ScreenHeight) >> 1;
+            if (SMALL_YPOS < 0) {
+                SMALL_YPOS = 0;
+            }
+        }
+        vid_UpdateDisplayLayout();
 
         Vid_DisplayMsgPort_l = CreateMsgPort();
 
@@ -148,12 +235,7 @@ void Vid_OpenMainScreen(void)
 //        GetDisplayInfoData(NULL, &nameInfo, sizeof(nameInfo), DTAG_NAME, Vid_ScreenMode);
 
         Vid_ScreenWidth = SCREEN_WIDTH;
-        Vid_ScreenHeight = SCREEN_HEIGHT;
-
-        struct DimensionInfo dimInfo;
-        if (GetDisplayInfoData(NULL, &dimInfo, sizeof(dimInfo), DTAG_DIMS, Vid_ScreenMode)) {
-            Vid_ScreenHeight = dimInfo.Nominal.MaxY + 1 - dimInfo.Nominal.MinY;
-        }
+        Vid_ScreenHeight = vid_ResolveVisibleHeight();
 
         if (Vid_ScreenHeight < SCREEN_HEIGHT) {
             SMALL_YPOS -= (SCREEN_HEIGHT - Vid_ScreenHeight) >> 1;
@@ -161,6 +243,7 @@ void Vid_OpenMainScreen(void)
                 SMALL_YPOS = 0;
             }
         }
+        vid_UpdateDisplayLayout();
     }
 
     if (!(Vid_MainWindow_l = OpenWindowTags(
@@ -252,6 +335,15 @@ void vid_SetupDoubleheightCopperlist(void)
     LOCAL_SYSBASE();
     LOCAL_INTUITION();
 
+    struct ViewPort *vp = ViewPortAddress(Vid_MainWindow_l);
+    if (!Vid_DoubleHeight_b) {
+        Forbid();
+        vp->UCopIns = NULL;
+        Permit();
+        RethinkDisplay();
+        return;
+    }
+
     // Modulos are hardcoded for 320x256 as we are allocating the bitmap ourselves.
     const LONG RepeatLineModulo = -SCREEN_WIDTH / 8 - 8;
     const LONG SkipLineModulo   = SCREEN_WIDTH / 8 - 8;
@@ -262,11 +354,20 @@ void vid_SetupDoubleheightCopperlist(void)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
 
-    WORD startLine = Vid_LetterBoxMarginHeight_w + (Vid_FullScreen_b ? 0 : SMALL_YPOS);
-    WORD endLine   = -Vid_LetterBoxMarginHeight_w + (Vid_FullScreen_b ? C2P_FS_HEIGHT : SMALL_YPOS + SMALL_HEIGHT);
+    WORD renderHeight = Vid_FullScreen_b ? Vid_FullscreenRenderHeight_w : SMALL_HEIGHT;
+    WORD topLine      = Vid_FullScreen_b ? 0 : SMALL_YPOS;
+    WORD activeHeight;
+    WORD startLine;
+    WORD endLine;
 
-    startLine = startLine & ~1;
-    endLine   = (endLine + 1) & ~1;
+    renderHeight &= ~1;
+    activeHeight = renderHeight - Vid_LetterBoxMarginHeight_w * 2;
+    if (activeHeight < 0) {
+        activeHeight = 0;
+    }
+
+    startLine = topLine + (Vid_LetterBoxMarginHeight_w & ~1);
+    endLine   = startLine + activeHeight;
 
     // HACK: The prototype for CINIT (UCopperListInit) says it accepts the number
     // of copper instructions as an UWORD, but KS3.1 actually expects an ULONG!
@@ -292,9 +393,8 @@ void vid_SetupDoubleheightCopperlist(void)
 
 #pragma GCC diagnostic pop
 
-    struct ViewPort *vp = ViewPortAddress(Vid_MainWindow_l);
     Forbid();
-    vp->UCopIns = (Vid_DoubleHeight_b ? doubleHeightCopList : NULL);
+    vp->UCopIns = doubleHeightCopList;
     Permit();
     RethinkDisplay();
 }
@@ -360,6 +460,9 @@ ULONG GetScreenMode()
     //    mydisplaymode3.dm_DimensionInfo.Header.DisplayID = 0xFFFFFFFC;
     //    mydisplaymode4.dm_DimensionInfo.Header.DisplayID = 0xFFFFFFFB;
 
+    vid_RequestedScreenHeight_w = 0;
+    vid_RequestedOverscanType_w = OSCAN_TEXT;
+
     NewList(&mydisplaylist);
     //    AddTail(&mydisplaylist, (struct Node *)&mydisplaymode);
     //    AddTail(&mydisplaylist, (struct Node *)&mydisplaymode2);
@@ -397,15 +500,25 @@ ULONG GetScreenMode()
                     ASLSM_InitialDisplayID, rc,
                     ASLSM_MinWidth, SCREEN_WIDTH,
                     ASLSM_MaxWidth, SCREEN_WIDTH,
-                    ASLSM_MinHeight, 240,
+                    ASLSM_MinHeight, 200,
+                    ASLSM_MaxHeight, SCREEN_HEIGHT,
                     ASLSM_MinDepth, 8,
                     ASLSM_MaxDepth, 8,
+                    ASLSM_DoOverscanType, TRUE,
+                    ASLSM_InitialOverscanType, vid_RequestedOverscanType_w,
                     ASLSM_PropertyFlags, 0,
                     ASLSM_PropertyMask, propertymask,
                     ASLSM_CustomSMList, (int)&mydisplaylist,
                     TAG_DONE
                 )) {
                     rc = req->sm_DisplayID;
+                    vid_RequestedOverscanType_w = req->sm_OverscanType;
+                    WORD osH = vid_QueryOverscanHeight(rc, vid_RequestedOverscanType_w);
+                    if (osH) {
+                        vid_RequestedScreenHeight_w = osH;
+                    } else if (req->sm_DisplayHeight >= 200 && req->sm_DisplayHeight <= SCREEN_HEIGHT) {
+                        vid_RequestedScreenHeight_w = req->sm_DisplayHeight;
+                    }
                 } else {
                     rc = INVALID_ID;
                 }
@@ -507,7 +620,37 @@ void Vid_Present()
         );
         if (bmHandle) {
             if (Vid_FullScreen_b) {
-                WORD height     = C2P_FS_HEIGHT - Vid_LetterBoxMarginHeight_w * 2;
+                /*
+                 * C2P historically copies C2P_FS_HEIGHT rows; the engine renders through FS_HEIGHT. RTG copies chunky
+                 * RAM directly — use FS_HEIGHT when the bitmap fits so the strip is visible. Prefer bmHeight when the
+                 * mode nominal height is wrong (e.g. 320×240). Shift HUD/border chrome when reclaiming that strip.
+                 */
+                WORD letterboxTotal = (WORD)(Vid_LetterBoxMarginHeight_w * 2);
+                WORD renderAreaH    = Vid_FullscreenRenderHeight_w;
+                if (bmHeight > 0 && bmHeight < (ULONG)(UWORD)renderAreaH) {
+                    renderAreaH = (WORD)bmHeight;
+                }
+
+                WORD maxLines = renderAreaH - letterboxTotal;
+                if (maxLines < 0) {
+                    maxLines = 0;
+                }
+
+                WORD baseRows = C2P_FS_HEIGHT - letterboxTotal;
+                WORD fullRows = FS_HEIGHT - letterboxTotal;
+
+                WORD height = baseRows;
+                if (maxLines < height) {
+                    height = maxLines;
+                } else if (
+                    VID_FS_LEGACY_MESSAGE_STRIP_LINES > 0 &&
+                    maxLines >= fullRows &&
+                    fullRows > baseRows &&
+                    Vid_BorderReclaimShift_w > 0
+                ) {
+                    height = fullRows;
+                }
+
                 const BYTE *src = Vid_FastBufferPtr_l + SCREEN_WIDTH * Vid_LetterBoxMarginHeight_w;
                 BYTE *dst       = bmPixelData + bmBytesPerRow * Vid_LetterBoxMarginHeight_w;
 
