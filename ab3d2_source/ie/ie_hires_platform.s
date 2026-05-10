@@ -553,6 +553,9 @@ ie_scale_to_display:
 	beq.s	.have_target
 	lea		SCALE_BACK_BASE,a1
 .have_target:
+	IFD		IE_OVERDRIVE
+	bsr		ie_overdrive_clear_clut_frame
+	ENDC
 	move.l	#BLT_OP_SCALE,BLT_OP
 	move.l	a0,BLT_SRC
 	move.l	a1,BLT_DST
@@ -567,6 +570,26 @@ ie_scale_to_display:
 	eori.w	#1,ie_present_index_w
 	movem.l	(sp)+,d0/a1
 	rts
+
+	IFD		IE_OVERDRIVE
+ie_overdrive_clear_clut_frame:
+	movem.l	d0-d2/a0,-(sp)
+	move.l	a1,a0
+	moveq	#0,d0
+	moveq	#6,d2
+.clear_64k_chunks:
+	move.w	#$FFFF,d1
+.clear_64k_loop:
+	move.l	d0,(a0)+
+	dbra	d1,.clear_64k_loop
+	dbra	d2,.clear_64k_chunks
+	move.w	#59647,d1
+.clear_tail:
+	move.l	d0,(a0)+
+	dbra	d1,.clear_tail
+	movem.l	(sp)+,d0-d2/a0
+	rts
+	ENDC
 
 ie_clear_presented_source:
 	movem.l	d0-d2/a0,-(sp)
