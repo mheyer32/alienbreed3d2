@@ -14,10 +14,12 @@ Paula, CIA, or real Amiga custom-chip MMIO.
 - Overdrive build target: `make ie68-overdrive` from `ab3d2_source/`.
 - Redux convenience targets: `make ie68-redux-high` and
   `make ie68-redux-low` from `ab3d2_source/`.
-- Default output: `ab3d2_source/ab3d2_ie68.ie68`.
-- Overdrive output: `ab3d2_source/ab3d2_ie68_redux_high_overdrive.ie68`.
+- Default output: `ab3d2_source/ie/bin/ab3d2_ie68.ie68`.
+- Overdrive output: `ab3d2_source/ie/bin/ab3d2_ie68_redux_high_overdrive.ie68`.
 - Raw `.ie68` runtime cwd: run Intuition Engine from `ab3d2_source/` so raw
   file I/O sees the expected media tree.
+- End-user run instructions for the packaged runtime binaries live in
+  `ab3d2_source/ie/RELEASE.md`.
 
 The IE build keeps the AB3D2 software renderer and menu state machine. The
 Amiga screen, blitter, input, file, music, SFX, and compatibility entrypoints
@@ -28,37 +30,119 @@ that the original code expects are satisfied by IE-specific glue.
 From `ab3d2_source/`:
 
 ```sh
-make ie68
-make ie68-overdrive
-make ie68-redux-high
-make ie68-redux-low
-make ie68-all
+make ie68               # original profile, no SID fallback
+make ie68-sid           # original profile, SID fallback
+make ie68-overdrive     # Redux high + Overdrive 1920x1080 presentation
+make ie68-redux-high    # Redux high profile, no SID fallback
+make ie68-redux-high-sid
+make ie68-redux-low     # Redux low profile, no SID fallback
+make ie68-redux-low-sid
+make ie68-all           # build every variant above
 ```
 
-The IE `.ie68` binaries are committed in `ab3d2_source/` as playable artifacts
-so users can download the repository and run them without first setting up the
-Amiga build toolchain:
+Each target writes its `.ie68` artifact under `ab3d2_source/ie/bin/`. The map
+file goes under `ab3d2_source/_build/` (per-variant filenames). After each
+link step the diagnostic symbol file `$(IE_SYMBOLS)` is generated from the map
+and copied to `ab3d2_source/ie/diag_symbols.lua`.
+
+### Build flags
+
+| Flag | Values | Effect |
+|------|--------|--------|
+| `IE_ENABLE_SID_MUSIC` | `0` (default), `1` | Selects whether missing level MOD music falls back to `ie/at_dooms_gate_e1m1.sid`. |
+| `IE_OVERDRIVE` | `0` (default), `1` | Selects 1920x1080 Overdrive presentation path. The `ie68-overdrive` convenience target pairs it with `MEDIA_PROFILE=redux-high`. |
+| `MEDIA_PROFILE` | `original` (default), `redux-high`, `redux-low` | Selects which prepared media tree the build links against. |
+
+With `IE_ENABLE_SID_MUSIC=0`, IE still plays the level ProTracker MOD music
+when the GLF database provides one, but missing level music is treated as no
+music. With `IE_ENABLE_SID_MUSIC=1`, missing level MOD music falls back to
+`ie/at_dooms_gate_e1m1.sid`.
+
+### Output overrides
+
+The build fragment exposes path overrides for callers that need to relocate
+artifacts:
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `IE_BIN_DIR` | `ie/bin` | Directory the `.ie68` artifact is written to. |
+| `IE_TARGET` | `$(IE_BIN_DIR)/ab3d2_ie68.ie68` | Full path of the linked `.ie68` artifact. Each variant target overrides this. |
+| `IE_MAP` | `$(BUILD_DIR)/ie68.map` | vlink map output path. |
+| `IE_SYMBOLS` | `diag_symbols.lua` | Generated Lua diagnostic symbol file (copied to `ie/diag_symbols.lua` after the link step). |
+| `IE_DIAG_SYMBOLS_FILE` | `ie/diag_symbols.txt` | Plain-text list of symbol names extracted from the map into `IE_SYMBOLS`. |
+| `IE_HIRES_SOURCE` | `ie/hires.s` | `hires.s` source variant assembled for the IE link. |
+| `BUILD_DIR` | `_build` | Root directory for generated files. |
+
+### Redux/Overdrive prerequisites
+
+The Redux and Overdrive targets require the Redux data checkout at
+`karlos-tkg-main/` in the `alienbreed3d2` repository root. The expected data
+root is `karlos-tkg-main/Game`, and the build prepares the selected profile
+under `ab3d2_source/_build/ie_media/`. This requirement applies to building the
+raw Redux and Overdrive `.ie68` artifacts; the packaged runtime binaries
+already contain the prepared Karlos-TKG-High program and assets.
+
+### Pipeline overview
+
+The IE make fragment:
+
+- converts original planar menu art into CLUT8 artifacts under
+  `_build/ie_menu/`;
+- unpacks runtime media into `_build/ie_unpacked/media/`;
+- prepares Redux profile media under `_build/ie_media/<profile>/` when
+  requested (stamp file: `_build/ie_media/<profile>/.stamp`);
+- writes the selected media-profile include (`media_profile.i`) under
+  `_build/ie/<profile>/`;
+- assembles `hires.s` with `-DIS_IE=1`;
+- assembles `ie/ie_hires_platform.s`;
+- links the selected `.ie68` target into `$(IE_TARGET)`;
+- writes the selected map file under `_build/` (path: `$(IE_MAP)`);
+- generates `$(IE_SYMBOLS)` from the map by extracting the symbol names listed
+  in `$(IE_DIAG_SYMBOLS_FILE)`, and copies the result to
+  `ie/diag_symbols.lua`.
+
+Generated `_build/` files and `diag_symbols.lua` are build artifacts, not
+source.
+
+## Distribution
+
+Two kinds of pre-built artifact ship for users who do not want to set up the
+Amiga toolchain.
+
+### Committed `.ie68` artifacts
+
+Pre-built `.ie68` binaries are committed in this repository so users can clone
+and run them through an external Intuition Engine binary without first building
+the Amiga code. Fresh local builds emit to `ab3d2_source/ie/bin/`.
 
 | Binary | Profile | SID fallback |
 |--------|---------|--------------|
 | `ab3d2_ie68.ie68` | Original | No |
-| `ab3d2_ie68_redux_high_overdrive.ie68` | Redux high Overdrive | No |
 | `ab3d2_ie68_sid.ie68` | Original | Yes |
 | `ab3d2_ie68_redux_high.ie68` | Redux high | No |
 | `ab3d2_ie68_redux_high_sid.ie68` | Redux high | Yes |
+| `ab3d2_ie68_redux_high_overdrive.ie68` | Redux high Overdrive | No |
 | `ab3d2_ie68_redux_low.ie68` | Redux low | No |
 | `ab3d2_ie68_redux_low_sid.ie68` | Redux low | Yes |
 
-The `ie/` directory also contains platform-specific packaged runtime binaries
-named `IntuitionEngine-AB3D2-Karlos-TKG-High-*` and
-`IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-*`. These are special
-distributions, not `.ie68` ROMs: each one bundles Intuition Engine, the selected
-Karlos-TKG-High AB3D2 IE68 program, and the Karlos-TKG-High asset pack. On first
-launch, the packaged runtime extracts its bundled `_build` asset tree beside
-the executable if it is not already present, switches the runtime base to that
-executable directory, then runs the bundled game. These packaged runtimes do
-not require the original `media/` tree or a `karlos-tkg-main/` checkout at
-runtime.
+### Packaged runtime binaries
+
+Twelve platform-specific packaged runtime binaries named
+`IntuitionEngine-AB3D2-Karlos-TKG-High-*` and
+`IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-*` are distributed in
+`IntuitionEngine-AB3D2-Karlos-TKG-High.zip` (~450 MB) hosted at:
+
+<https://drive.google.com/file/d/1Jg4A1V_HLtTfFQ3Z1ATE_b2JtkBvMVjv/view>
+
+The zip is not committed to this repository because of its size. These are
+not `.ie68` ROMs: each binary bundles Intuition Engine, the selected
+Karlos-TKG-High AB3D2 IE68 program, and the Karlos-TKG-High asset pack. On
+first launch, the packaged runtime extracts its bundled `_build` asset tree
+beside the executable if it is not already present, uses the executable's
+folder as its working directory, then runs the bundled game. These packaged
+runtimes do not require the original `media/` tree or a `karlos-tkg-main/`
+checkout at runtime. End-user instructions for these binaries live in
+`ab3d2_source/ie/RELEASE.md`.
 
 | Binary | Host |
 |--------|------|
@@ -74,40 +158,6 @@ runtime.
 | `IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-linux-arm64` | Linux ARM64 |
 | `IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-windows-amd64.exe` | Windows x86-64 |
 | `IntuitionEngine-AB3D2-Karlos-TKG-High-Overdrive-windows-arm64.exe` | Windows ARM64 |
-
-SID music fallback is disabled by default so the IE build has functional parity
-with the Amiga build. To opt into the IE SID fallback:
-
-```sh
-make ie68 IE_ENABLE_SID_MUSIC=1
-```
-
-With `IE_ENABLE_SID_MUSIC=0`, IE still plays the level ProTracker MOD music
-when the GLF database provides one, but missing level music is treated as no
-music. With `IE_ENABLE_SID_MUSIC=1`, missing level MOD music falls back to
-`ie/at_dooms_gate_e1m1.sid`.
-
-The Redux and Overdrive targets require the Redux data checkout at
-`karlos-tkg-main/` in the `alienbreed3d2` repository root. The expected data
-root is `karlos-tkg-main/Game`, and the build prepares the selected profile
-under `ab3d2_source/_build/ie_media/`. This requirement applies to building the
-raw Redux and Overdrive `.ie68` artifacts; the packaged runtime binaries
-already contain the prepared Karlos-TKG-High program and assets.
-
-The IE make fragment:
-
-- converts original planar menu art into CLUT8 artifacts under
-  `_build/ie_menu/`;
-- unpacks runtime media into `_build/ie_unpacked/media/`;
-- prepares Redux profile media under `_build/ie_media/` when requested;
-- assembles `hires.s` with `-DIS_IE=1`;
-- assembles `ie/ie_hires_platform.s`;
-- links the selected `.ie68` target;
-- writes the selected map file under `_build/`;
-- generates `diag_symbols.lua` and copies it to `ie/diag_symbols.lua`.
-
-Generated `_build/` files and `diag_symbols.lua` are build artifacts, not
-source.
 
 ## Memory
 
@@ -139,16 +189,15 @@ pixels written by the scale blitter.
 
 The Overdrive build is selected with `make ie68-overdrive`, which defines
 `IE_OVERDRIVE=1`, selects `MEDIA_PROFILE=redux-high`, and produces
-`ab3d2_ie68_redux_high_overdrive.ie68`. It keeps the renderer, menus, gameplay drawing,
-palettes, sprites, and bullets at the existing 320x240 CLUT8 resolution, loads
-the Karlos-TKG-High asset profile, then uses `BLT_OP_SCALE` to stretch the full
-source framebuffer to a 1920x1080 CLUT8 presentation buffer. This first
-Overdrive build intentionally uses every output pixel, so it does not preserve
-the original aspect ratio with letterboxing or pillarboxing. It requires an IE
-runtime that supports `MODE_1920x1080` (`0x06`) and high bus-backed CLUT8
-framebuffers large enough for two `1920 * 1080` buffers. It is presentation
-upscaling only, not native 1080p rendering, Mode 7, Copper, Voodoo, side HUD
-columns, bottom bars, transition effects, or debug overlays.
+`ab3d2_ie68_redux_high_overdrive.ie68` under `ie/bin/`. It keeps the renderer,
+menus, gameplay drawing, palettes, sprites, and bullets at the existing 320x240
+CLUT8 resolution, loads the Karlos-TKG-High asset profile, then uses
+`BLT_OP_SCALE` to stretch the full source framebuffer to a 1920x1080 CLUT8
+presentation buffer. The Overdrive path intentionally uses every output pixel,
+so it does not preserve the original aspect ratio with letterboxing or
+pillarboxing. It requires an IE runtime that supports `MODE_1920x1080` (`0x06`)
+and high bus-backed CLUT8 framebuffers large enough for two `1920 * 1080`
+buffers. It is presentation upscaling only, not native 1080p rendering.
 
 Overdrive clears the selected 1920x1080 CLUT8 presentation buffer before each
 scale blit. Keep this clear in place: the scaled source is still a 320x240
@@ -277,15 +326,21 @@ uses replacement keys for the conflicting fixed in-game AB3D2 controls:
 | F9 | Backtick | Toggle pixel/double-height mode |
 
 The upstream viewport-size key is disabled in IE because the port forces the
-AB3D2 fullscreen viewport for scaled presentation. Other fixed AB3D2 in-game
-keys keep their normal raw-key behavior in IE.
+AB3D2 fullscreen viewport for scaled presentation. `IE_KEY_SCREEN_SIZE` is
+still defined in `ie/ie_keymap.i` (mapped to `RAWKEY_DEL`) but the consumer in
+`ie/modules/player.s` is bypassed under `IS_IE`, so the binding is effectively
+dead. Other fixed AB3D2 in-game keys keep their normal raw-key behavior in IE.
 
 IE supplies small platform implementations for game services that are C-backed
-in the Amiga/RTG path. `_Game_AddToInventory` updates the assembler inventory
-layout directly: shield, jetpack, and weapon item words are ORed into the
-player inventory, while health, fuel, and ammo words are saturated-added. Weapon
-pickup, ammo pickup, weapon cycling, and number-key weapon selection depend on
-this routine doing real work rather than acting as a stub.
+in the Amiga/RTG path. `_Game_AddToInventory`
+(`ie/ie_hires_platform.s:862-884`) updates the assembler inventory layout
+directly. It walks twelve item words at offset 44 of the player struct
+supplied via `a0` and ORs them with the corresponding source words from `a2`
+(shield, jetpack, weapon-class item flags). It then walks twenty-two
+consumable words from offset 0 of the player struct against `a1` and applies
+saturated 16-bit add (health, fuel, ammo). Weapon pickup, ammo pickup, weapon
+cycling, and number-key weapon selection depend on this routine doing real
+work rather than acting as a stub.
 
 ## Media
 
@@ -328,8 +383,16 @@ treat missing level music as no music.
 
 IE save/load uses the same host file-I/O path. The game keeps the original
 `boot.dat` save format; loading reads the active profile `boot.dat`, and saving
-writes the modified save-slot buffer back through `FILE_IO_CTRL=2`. For Redux
-profiles this persists under the selected `_build/ie_media/.../boot.dat` tree.
+writes the modified save-slot buffer back through `FILE_IO_CTRL=2`. The
+on-disk save path follows the active media root:
+
+- Original profile: `media/boot.dat` under the working directory
+  (`ab3d2_source/media/boot.dat` for raw `.ie68` runs).
+- Redux high: `_build/ie_media/redux-high/boot.dat` under the working
+  directory.
+- Redux low: `_build/ie_media/redux-low/boot.dat` under the working
+  directory.
+
 Packaged runtime builds store progress in the extracted
 `ab3d2_source/_build/ie_media/redux-high/boot.dat` tree beside the executable.
 

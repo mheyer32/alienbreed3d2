@@ -1,4 +1,5 @@
-IE_TARGET ?= ab3d2_ie68.ie68
+IE_BIN_DIR ?= ie/bin
+IE_TARGET ?= $(IE_BIN_DIR)/ab3d2_ie68.ie68
 IE_MAP ?= $(BUILD_DIR)/ie68.map
 IE_SYMBOLS ?= diag_symbols.lua
 IE_DIAG_SYMBOLS_FILE ?= ie/diag_symbols.txt
@@ -54,7 +55,7 @@ endif
 ie68: ie68_sw
 
 ie68-all:
-	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=0 IE_TARGET=ab3d2_ie68.ie68 IE_MAP=$(BUILD_DIR)/ie68.map IE_SYMBOLS=$(BUILD_DIR)/diag_symbols_ie68.lua
+	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=0 IE_TARGET=$(IE_BIN_DIR)/ab3d2_ie68.ie68 IE_MAP=$(BUILD_DIR)/ie68.map IE_SYMBOLS=$(BUILD_DIR)/diag_symbols_ie68.lua
 	$(MAKE) ie68-sid
 	$(MAKE) ie68-overdrive
 	$(MAKE) ie68-redux-high
@@ -64,22 +65,22 @@ ie68-all:
 	@cp $(BUILD_DIR)/diag_symbols_ie68.lua ie/diag_symbols.lua
 
 ie68-sid:
-	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=1 IE_TARGET=ab3d2_ie68_sid.ie68 IE_MAP=$(BUILD_DIR)/ie68_sid.map
+	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=1 IE_TARGET=$(IE_BIN_DIR)/ab3d2_ie68_sid.ie68 IE_MAP=$(BUILD_DIR)/ie68_sid.map
 
 ie68-overdrive:
-	$(MAKE) ie68 IE_OVERDRIVE=1 IE_ENABLE_SID_MUSIC=0 MEDIA_PROFILE=redux-high IE_TARGET=ab3d2_ie68_redux_high_overdrive.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_high_overdrive.map IE_SYMBOLS=$(BUILD_DIR)/diag_symbols_ie68_redux_high_overdrive.lua
+	$(MAKE) ie68 IE_OVERDRIVE=1 IE_ENABLE_SID_MUSIC=0 MEDIA_PROFILE=redux-high IE_TARGET=$(IE_BIN_DIR)/ab3d2_ie68_redux_high_overdrive.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_high_overdrive.map IE_SYMBOLS=$(BUILD_DIR)/diag_symbols_ie68_redux_high_overdrive.lua
 
 ie68-redux-high:
-	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=0 MEDIA_PROFILE=redux-high IE_TARGET=ab3d2_ie68_redux_high.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_high.map
+	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=0 MEDIA_PROFILE=redux-high IE_TARGET=$(IE_BIN_DIR)/ab3d2_ie68_redux_high.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_high.map
 
 ie68-redux-high-sid:
-	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=1 MEDIA_PROFILE=redux-high IE_TARGET=ab3d2_ie68_redux_high_sid.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_high_sid.map
+	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=1 MEDIA_PROFILE=redux-high IE_TARGET=$(IE_BIN_DIR)/ab3d2_ie68_redux_high_sid.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_high_sid.map
 
 ie68-redux-low:
-	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=0 MEDIA_PROFILE=redux-low IE_TARGET=ab3d2_ie68_redux_low.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_low.map
+	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=0 MEDIA_PROFILE=redux-low IE_TARGET=$(IE_BIN_DIR)/ab3d2_ie68_redux_low.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_low.map
 
 ie68-redux-low-sid:
-	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=1 MEDIA_PROFILE=redux-low IE_TARGET=ab3d2_ie68_redux_low_sid.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_low_sid.map
+	$(MAKE) ie68 IE_ENABLE_SID_MUSIC=1 MEDIA_PROFILE=redux-low IE_TARGET=$(IE_BIN_DIR)/ab3d2_ie68_redux_low_sid.ie68 IE_MAP=$(BUILD_DIR)/ie68_redux_low_sid.map
 
 $(IE_MENU_BUILD_DIR)/menu_assets.stamp: menu/back2.raw menu/credits_only.raw menu/font16x16.raw2 menu/back.pal menu/firepal.pal2 menu/font16x16.pal2 ie/tools/convert_menu_assets.py
 	$(info Converting IE menu assets)
@@ -101,7 +102,7 @@ $(BUILD_DIR)/ie_media/redux-low/.stamp: ie/tools/prepare_media_profile.py
 
 ie68_sw: $(IE_MENU_BUILD_DIR)/menu_assets.stamp $(IE_UNPACKED_MEDIA_DIR)/.stamp $(IE_MEDIA_PROFILE_STAMP)
 	$(info Assembling full software renderer IE build from IE-local hires.s + IE platform)
-	@mkdir -p $(BUILD_DIR) $(IE_PROFILE_BUILD_DIR)
+	@mkdir -p $(BUILD_DIR) $(IE_PROFILE_BUILD_DIR) $(dir $(IE_TARGET))
 	@printf '%s\n' \
 		'.ie_media_prefix:' \
 		"				dc.b	'$(IE_MEDIA_ROOT)',0" \
