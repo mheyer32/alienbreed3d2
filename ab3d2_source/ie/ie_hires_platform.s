@@ -106,6 +106,14 @@
 	xref _mnu_background
 	xref _mnu_screen
 	xref _mnu_morescreen
+	xref _draw_BorderChars_vb
+	xref _draw_DisplayAmmoCount_w
+	xref _draw_DisplayEnergyCount_w
+	xref _Plr_MultiplayerType_b
+	xref _Plr1_Weapons_vb
+	xref _Plr2_Weapons_vb
+	xref _Plr1_TmpGunSelected_b
+	xref _Plr2_TmpGunSelected_b
 
 MOUSE_X	equ	$F0730
 MOUSE_Y	equ	$F0734
@@ -141,6 +149,16 @@ SMALL_WIDTH	equ	192
 SMALL_HEIGHT	equ	160
 SMALL_XPOS	equ	64
 SMALL_YPOS	equ	20
+IE_HUD_COUNTER_H	equ	7
+IE_HUD_SLOT_W		equ	8
+IE_HUD_SLOT_H		equ	5
+IE_HUD_AMMO_X		equ	160
+IE_HUD_COUNTER_Y	equ	222
+IE_HUD_ENERGY_X		equ	272
+IE_HUD_SLOTS_X		equ	24
+IE_HUD_SLOTS_Y		equ	224
+IE_HUD_DIGIT_BYTES	equ	8*7*10
+IE_HUD_SLOT_BYTES	equ	8*5*10
 MODE_640x480	equ	$00
 MODE_320x240	equ	$05
 MODE_1920x1080	equ	$06
@@ -362,6 +380,7 @@ _Vid_OpenMainScreen:
 	move.l	MOUSE_X,ie_mouse_last_abs_x
 	move.l	MOUSE_Y,ie_mouse_last_abs_y
 	bsr		_Vid_LoadMainPalette
+	bsr		ie_hud_init
 	moveq	#1,d0
 	rts
 
@@ -459,6 +478,7 @@ _Vid_Present:
 	move.w	#SCREEN_WIDTH,_Vid_RightX_w
 	clr.b	_Vid_DoubleHeight_b
 	clr.b	_Vid_DoubleWidth_b
+	bsr		ie_draw_game_hud
 .mode_ready:
 	tst.b	_Vid_FullScreen_b
 	bne.s	.present_full
@@ -565,6 +585,197 @@ ie_clear_presented_source:
 	adda.w	#(SCREEN_WIDTH-SMALL_WIDTH),a0
 	dbra	d2,.row
 	movem.l	(sp)+,d0-d2/a0
+	rts
+
+ie_hud_init:
+	movem.l	d0-d1/a0-a1,-(sp)
+	lea		_draw_BorderChars_vb+(15*8*10),a0
+	lea		ie_hud_digits_warn,a1
+	moveq	#8,d0
+	moveq	#7,d1
+	bsr		ie_hud_convert_group
+	lea		_draw_BorderChars_vb+(15*8*10)+(7*8*10),a0
+	lea		ie_hud_digits_good,a1
+	moveq	#8,d0
+	moveq	#7,d1
+	bsr		ie_hud_convert_group
+	lea		_draw_BorderChars_vb,a0
+	lea		ie_hud_slots_unavailable,a1
+	moveq	#8,d0
+	moveq	#5,d1
+	bsr		ie_hud_convert_group
+	lea		_draw_BorderChars_vb+(5*10*8),a0
+	lea		ie_hud_slots_found,a1
+	moveq	#8,d0
+	moveq	#5,d1
+	bsr		ie_hud_convert_group
+	lea		_draw_BorderChars_vb+(5*10*8*2),a0
+	lea		ie_hud_slots_selected,a1
+	moveq	#8,d0
+	moveq	#5,d1
+	bsr		ie_hud_convert_group
+	movem.l	(sp)+,d0-d1/a0-a1
+	rts
+
+; Convert the 8-plane border glyph layout used by the C RTG HUD into
+; contiguous chunky CLUT8 glyphs, one digit/slot after another.
+ie_hud_convert_group:
+	movem.l	d2-d7/a0-a6,-(sp)
+	moveq	#0,d7
+.digit_loop:
+	lea		0(a0,d7.w),a2
+	move.w	d1,d6
+	subq.w	#1,d6
+.row_loop:
+	moveq	#7,d5
+.pixel_loop:
+	moveq	#0,d4
+	moveq	#0,d3
+	moveq	#1,d2
+.plane_loop:
+	move.b	0(a2,d3.w),d0
+	btst	d5,d0
+	beq.s	.plane_clear
+	or.b	d2,d4
+.plane_clear:
+	lsl.w	#1,d2
+	addq.w	#1,d3
+	adda.w	#9,a2
+	cmp.w	#8,d3
+	blt.s	.plane_loop
+	suba.l	#72,a2
+	move.b	d4,(a1)+
+	dbra	d5,.pixel_loop
+	adda.l	#80,a2
+	dbra	d6,.row_loop
+	addq.w	#1,d7
+	cmp.w	#10,d7
+	blt.s	.digit_loop
+	movem.l	(sp)+,d2-d7/a0-a6
+	rts
+
+ie_draw_game_hud:
+	movem.l	d0-d7/a0-a6,-(sp)
+	move.l	_Vid_FastBufferPtr_l,a6
+	tst.l	a6
+	bne.s	.have_fb
+	move.l	#CHUNKY_BASE,a6
+.have_fb:
+	bsr		ie_hud_draw_slots
+	move.w	_draw_DisplayAmmoCount_w,d0
+	move.w	#IE_HUD_AMMO_X,d1
+	bsr		ie_hud_draw_counter
+	move.w	_draw_DisplayEnergyCount_w,d0
+	move.w	#IE_HUD_ENERGY_X,d1
+	bsr		ie_hud_draw_counter
+	movem.l	(sp)+,d0-d7/a0-a6
+	rts
+
+ie_hud_draw_slots:
+	move.b	_Plr_MultiplayerType_b,d0
+	cmp.b	#'s',d0
+	beq.s	.player2
+	lea		_Plr1_Weapons_vb,a4
+	moveq	#0,d6
+	move.b	_Plr1_TmpGunSelected_b,d6
+	bra.s	.have_player
+.player2:
+	lea		_Plr2_Weapons_vb,a4
+	moveq	#0,d6
+	move.b	_Plr2_TmpGunSelected_b,d6
+.have_player:
+	moveq	#0,d7
+.slot_loop:
+	lea		ie_hud_slots_unavailable,a2
+	cmp.w	d7,d6
+	beq.s	.selected
+	tst.w	0(a4,d7.w*2)
+	beq.s	.have_glyph
+	lea		ie_hud_slots_found,a2
+	bra.s	.have_glyph
+.selected:
+	lea		ie_hud_slots_selected,a2
+.have_glyph:
+	move.w	d7,d0
+	mulu.w	#IE_HUD_SLOT_BYTES/10,d0
+	adda.l	d0,a2
+	move.w	d7,d0
+	mulu.w	#IE_HUD_SLOT_W,d0
+	addi.w	#IE_HUD_SLOTS_X,d0
+	move.w	d0,d1
+	move.w	#IE_HUD_SLOTS_Y,d2
+	move.w	#IE_HUD_SLOT_W,d3
+	move.w	#IE_HUD_SLOT_H,d4
+	bsr		ie_hud_draw_glyph
+	addq.w	#1,d7
+	cmp.w	#10,d7
+	blt.s	.slot_loop
+	rts
+
+ie_hud_draw_counter:
+	cmpi.w	#999,d0
+	bls.s	.count_ok
+	move.w	#999,d0
+.count_ok:
+	lea		ie_hud_digits_warn,a3
+	cmpi.w	#9,d0
+	bls.s	.have_digit_group
+	lea		ie_hud_digits_good,a3
+.have_digit_group:
+	moveq	#0,d4
+	move.w	d0,d4
+	divu.w	#100,d4
+	move.w	d4,d5
+	swap	d4
+	move.w	d4,d0
+	moveq	#0,d4
+	move.w	d0,d4
+	divu.w	#10,d4
+	move.w	d4,d6
+	swap	d4
+	move.w	d4,d7
+
+	move.w	d5,d0
+	move.w	d1,d5
+	bsr		ie_hud_draw_counter_digit
+	move.w	d6,d0
+	move.w	d5,d1
+	addq.w	#8,d1
+	bsr		ie_hud_draw_counter_digit
+	move.w	d7,d0
+	move.w	d5,d1
+	addi.w	#16,d1
+	bsr		ie_hud_draw_counter_digit
+	rts
+
+ie_hud_draw_counter_digit:
+	lea		0(a3),a2
+	mulu.w	#IE_HUD_DIGIT_BYTES/10,d0
+	adda.l	d0,a2
+	move.w	#IE_HUD_COUNTER_Y,d2
+	move.w	#8,d3
+	move.w	#IE_HUD_COUNTER_H,d4
+
+ie_hud_draw_glyph:
+	movem.l	d0-d7/a0-a2,-(sp)
+	move.l	a6,a0
+	moveq	#0,d0
+	move.w	d2,d0
+	mulu.w	#SCREEN_WIDTH,d0
+	adda.l	d0,a0
+	adda.w	d1,a0
+	move.w	d4,d7
+	subq.w	#1,d7
+.row:
+	move.w	d3,d6
+	subq.w	#1,d6
+	move.l	a0,a1
+.pixel:
+	move.b	(a2)+,(a1)+
+	dbra	d6,.pixel
+	adda.w	#SCREEN_WIDTH,a0
+	dbra	d7,.row
+	movem.l	(sp)+,d0-d7/a0-a2
 	rts
 
 _Zone_SetupEdgeClipping:
@@ -1218,3 +1429,14 @@ ie_menu_plane6_ptr_l:
 	dc.l	0
 ie_menu_plane7_ptr_l:
 	dc.l	0
+	cnop	0,4
+ie_hud_digits_warn:
+	ds.b	IE_HUD_DIGIT_BYTES
+ie_hud_digits_good:
+	ds.b	IE_HUD_DIGIT_BYTES
+ie_hud_slots_unavailable:
+	ds.b	IE_HUD_SLOT_BYTES
+ie_hud_slots_found:
+	ds.b	IE_HUD_SLOT_BYTES
+ie_hud_slots_selected:
+	ds.b	IE_HUD_SLOT_BYTES
