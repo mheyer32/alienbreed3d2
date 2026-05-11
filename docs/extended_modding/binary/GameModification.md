@@ -103,16 +103,96 @@ The Achievenents Chunk contains the binary encoded achievement data defined in t
 | 8 | - Description Offset | `uint32` | Offset into String Chunk |
 | 12 | - Reward Offset | `uint32` | Offset into Reward Chunk, 0 if no Reward |
 | 16 | - Rule Type ID | `uint16` | |
-| 18 | - Rule Parameters | `uint16[3]` | |
+| 18 | - Reserved | `uint16` | Set to Zero |
+| 20 | - Rule Parameters | `uint8[12]` | Actual interpretation depends on Rule Type ID |
 | - | | } |
 | ... | ... | ... | Structure repeated per defined Achievement |
 
 Notes:
 
-- Each Achievement record is 16 bytes and the order is important.
+- Each Achievement record is 32 bytes and the order is important:
+    - 12 bytes are reserved for the rule parameters to permit more complex rules in future.
+    - Actual interpretation varies according to the rule type.
+- The Reserved field is reserved for runtime tagging of the loaded data and must be set to zero in the file.
 - The Player Progression file tracks which Achievements have been completed.
 - Reordering and regrouping of the Achievements in the source data is permitted provided that their individual Order fields are updated to ensure that the original order is preserved on sorting.
 - After loading, the Achievement Chunk is parsed to update the Description and Reward Offsets to their respective locations in memory.
+
+The following Rule Types are enumerated:
+
+| ID | Rule Type |
+| :--- | :--- |
+| 0x0000 | KillCount |
+| 0x0001 | GroupKillCount |
+| 0x0002 | ZoneFound |
+| 0x0003 | TimeImproved |
+| 0x0004 | PlayerDied |
+| 0x0005 | Collected |
+
+
+#### Achievement Rule: KillCount
+
+The `KillCount` rule is checked whenever an alien is killed by the player. This rule defines the following parameters:
+
+| Offset In Record | Content | Type | Notes |
+| :---- | :---- | :---- | :---- |
+| 8 | Rule Type ID | `uint16` | 0x0000 |
+| 10 | Reserved | `uint16` | 0x0000 |
+| 12 | Count | `uint32` | |
+| 16 | Alien ID | `uint16` | |
+
+
+#### Achievement Rule: GroupKillCount
+
+| Offset In Record | Content | Type | Notes |
+| :---- | :---- | :---- | :---- |
+| 8 | Rule Type ID | `uint16` | 0x0001 |
+| 10 | Reserved | `uint16` | 0x0000 |
+| 12 | Count | `uint32` | |
+| 16 | Alien Mask | `uint32` | Bitmask of each Alien Type ID the rule applies to |
+
+
+#### Achievement Rule: ZoneFound
+
+| Offset In Record | Content | Type | Notes |
+| :---- | :---- | :---- | :---- |
+| 8 | Rule Type ID | `uint16` | 0x0002 |
+| 10 | Reserved | `uint16` | 0x0000 |
+| 12 | Level Number | `uint16` | |
+| 16 | Zone ID | `uint16` | |
+
+
+#### Achievement Rule: TimeImproved
+
+| Offset In Record | Content | Type | Notes |
+| :---- | :---- | :---- | :---- |
+| 8 | Rule Type ID | `uint16` | 0x0000 |
+| 10 | Reserved | `uint16` | 0x0003 |
+| 12 | Count | `uint32` | |
+| 16 | Overall | `uint16` | |
+| 18 | Level Mask | `uint16[1]` | Room for future expansion |
+
+Note that the current game is limited to 16 levels and as such only requires uint16 mask. Since this may increase in future, the mask is placed last to allow for growth.
+
+
+#### Achievement Rule: PlayerDied
+
+| Offset In Record | Content | Type | Notes |
+| :---- | :---- | :---- | :---- |
+| 8 | Rule Type ID | `uint16` | 0x0004 |
+| 10 | Reserved | `uint16` | 0x0000 |
+| 12 | Count | `uint32` | |
+| 16 | Level Mask | `uint16[1]` | Room for future expansion |
+
+
+#### Achievement Rule: Collected
+
+| Offset In Record | Content | Type | Notes |
+| :---- | :---- | :---- | :---- |
+| 8 | Rule Type ID | `uint16` | 0x0005 |
+| 10 | Reserved | `uint16` | 0x0000 |
+| 12 | Count | `uint32` | |
+| 16 | Consumable ID | `uint16` | Index position within InventoryConsumables structure |
 
 ### Rewards
 
