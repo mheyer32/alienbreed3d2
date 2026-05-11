@@ -41,12 +41,13 @@ extern GMod_PlayerProgression GMod_Progress; // In BSS
  * }
  *
  */
-static BOOL game_AchievementRuleStuffCollected(Achievement const* achievement)
+static BOOL game_AchievementRuleStuffCollected(GMod_Achievement const* achievement)
 {
-    ULONG totalCount = *(ULONG const*)&(achievement->ac_RuleParams[0]);
-    UWORD consumable = *(UWORD const*)&(achievement->ac_RuleParams[sizeof(ULONG)]);
-    ULONG *consumables = &GMod_Progress.pprg_Counters.prgc_TotalHealthCollected;
-    return consumables[consumable] >= totalCount;
+    return FALSE;
+//     ULONG totalCount = *(ULONG const*)&(achievement->ac_RuleParams[0]);
+//     UWORD consumable = *(UWORD const*)&(achievement->ac_RuleParams[sizeof(ULONG)]);
+//     ULONG *consumables = &GMod_Progress.pprg_Counters.prgc_TotalHealthCollected;
+//     return consumables[consumable] >= totalCount;
 }
 
 /**********************************************************************************************************************/

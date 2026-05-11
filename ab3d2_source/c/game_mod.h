@@ -83,8 +83,34 @@ typedef struct {
     char const*        achv_Description;
     GMod_Reward const* achv_Reward;
     UWORD              achv_RuleType;
-    UWORD              achv_Params[3];
-} ASM_ALIGN(sizeof(ULONG)) GMod_Achievement; // 16 bytes
+    UWORD              achv_EventMask;  // Must be zero in file.
+    union {
+        UBYTE          bytes[20]; // Varies depending on rule type
+
+        // Structure mappings
+        struct {
+            ULONG uCount;
+            UWORD uAlienType;
+        } ASM_ALIGN(sizeof(UWORD)) oKillCount;
+
+        struct {
+            ULONG uCount;
+            ULONG uAlienMask;
+        } ASM_ALIGN(sizeof(UWORD)) oGroupKillCount;
+
+        struct {
+            UWORD uLevel;
+            UWORD uZoneID;
+        } ASM_ALIGN(sizeof(UWORD)) oZoneFound;
+
+        struct {
+            ULONG uCount;
+            UWORD bOverall;
+            UWORD uMask;
+        } ASM_ALIGN(sizeof(UWORD)) oMaskedLevelCount;
+
+    } achv_Param;
+} ASM_ALIGN(sizeof(ULONG)) GMod_Achievement; // 32 bytes
 
 /**********************************************************************************************************************/
 

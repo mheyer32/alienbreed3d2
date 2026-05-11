@@ -104,14 +104,14 @@ The Achievenents Chunk contains the binary encoded achievement data defined in t
 | 12 | - Reward Offset | `uint32` | Offset into Reward Chunk, 0 if no Reward |
 | 16 | - Rule Type ID | `uint16` | |
 | 18 | - Reserved | `uint16` | Set to Zero |
-| 20 | - Rule Parameters | `uint8[12]` | Actual interpretation depends on Rule Type ID |
+| 20 | - Rule Parameters | `uint8[20]` | Actual interpretation depends on Rule Type ID |
 | - | | } |
 | ... | ... | ... | Structure repeated per defined Achievement |
 
 Notes:
 
 - Each Achievement record is 32 bytes and the order is important:
-    - 12 bytes are reserved for the rule parameters to permit more complex rules in future.
+    - 20 bytes are reserved for the rule parameters to permit more complex rules in future.
     - Actual interpretation varies according to the rule type.
 - The Reserved field is reserved for runtime tagging of the loaded data and must be set to zero in the file.
 - The Player Progression file tracks which Achievements have been completed.
@@ -182,7 +182,8 @@ Note that the current game is limited to 16 levels and as such only requires uin
 | 8 | Rule Type ID | `uint16` | 0x0004 |
 | 10 | Reserved | `uint16` | 0x0000 |
 | 12 | Count | `uint32` | |
-| 16 | Level Mask | `uint16[1]` | Room for future expansion |
+| 16 | Overall | `uint16` | |
+| 18 | Level Mask | `uint16[1]` | Room for future expansion |
 
 
 #### Achievement Rule: Collected
