@@ -6,7 +6,6 @@
 #include <proto/dos.h>
 #include <proto/utility.h>
 
-
 // reset at level start and incremented by the interrupt
 volatile ULONG GMod_Ticks  = 0;
 
@@ -15,6 +14,44 @@ ShortDate GMod_Date = 0;
 
 #define EPOCH_YEAR 1978
 #define TICK_MASK 0x1FF
+
+/**********************************************************************************************************************/
+
+/**
+typedef struct {
+    GMod_InventoryLimits    pprg_InventoryLimits;
+    GMod_WeaponAdjustment   pprg_WeaponAdjustments[NUM_GUN_DEFS];
+    GMod_ProgressCounters   pprg_Counters;
+
+    ShortDate* pprg_Unlocked;
+
+    UBYTE*     pprg_UnlockedMap;
+} GMod_PlayerProgression;
+
+extern GMod_PlayerProgression GMod_Progress; // In BSS
+
+*/
+
+/**
+ * Achievement test total quantity of something collected
+ *
+ * params {
+ *     ULONG totalCount;
+ *     UWORD consumable; // 0 == health, 1 == fuel, 2... = ammo class 0 ....
+ * }
+ *
+ */
+static BOOL game_AchievementRuleStuffCollected(Achievement const* achievement)
+{
+    ULONG totalCount = *(ULONG const*)&(achievement->ac_RuleParams[0]);
+    UWORD consumable = *(UWORD const*)&(achievement->ac_RuleParams[sizeof(ULONG)]);
+    ULONG *consumables = &GMod_Progress.pprg_Counters.prgc_TotalHealthCollected;
+    return consumables[consumable] >= totalCount;
+}
+
+/**********************************************************************************************************************/
+
+
 
 /**
  * Calculates the current date as a ShortDate (11:5 months_since_epoch:calendar_day_of_month) for achievements recording.
