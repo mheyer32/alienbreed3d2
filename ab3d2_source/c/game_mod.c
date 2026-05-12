@@ -6,6 +6,9 @@
 #include <proto/dos.h>
 #include <proto/utility.h>
 
+extern UWORD Plr1_Zone;
+extern UWORD Game_LevelNumber;
+
 // reset at level start and incremented by the interrupt
 volatile ULONG GMod_Ticks  = 0;
 
@@ -32,22 +35,113 @@ extern GMod_PlayerProgression GMod_Progress; // In BSS
 
 */
 
-/**
- * Achievement test total quantity of something collected
- *
- * params {
- *     ULONG totalCount;
- *     UWORD consumable; // 0 == health, 1 == fuel, 2... = ammo class 0 ....
- * }
- *
- */
-static BOOL game_AchievementRuleStuffCollected(GMod_Achievement const* achievement)
+
+
+static BOOL gmod_TestRuleKillCount(GMod_Achievement const* pAchievement)
 {
+    UWORD uAlienTypeId = pAchievement->achv_Param.oKillCount.uAlienType;
+
+#ifdef PARANOID
+    if (uAlienTypeId >= NUM_ALIEN_DEFS) {
+        return FALSE;
+    }
+#endif
+
+    return GMod_Progress.pprg_Counters.prgc_AlienKills[uAlienTypeId] >= pAchievement->achv_Param.oKillCount.uCount;
+}
+
+static BOOL gmod_TestRuleGroupKillCount(GMod_Achievement const* pAchievement)
+{
+    ULONG uEnemyMask = pAchievement->achv_Param.oGroupKillCount.uAlienMask;
+    ULONG uCount     = pAchievement->achv_Param.oGroupKillCount.uCount;
+    ULONG uTotal     = 0;
+    for (UWORD uAlienTypeId = 0; uAlienTypeId < NUM_ALIEN_DEFS; ++uAlienTypeId) {
+        if (uEnemyMask & (1 << uAlienTypeId)) {
+            uTotal += GMod_Progress.pprg_Counters.prgc_AlienKills[uAlienTypeId];
+        }
+        if (uTotal >= uCount) {
+            return TRUE;
+        }
+    }
     return FALSE;
-//     ULONG totalCount = *(ULONG const*)&(achievement->ac_RuleParams[0]);
-//     UWORD consumable = *(UWORD const*)&(achievement->ac_RuleParams[sizeof(ULONG)]);
-//     ULONG *consumables = &GMod_Progress.pprg_Counters.prgc_TotalHealthCollected;
-//     return consumables[consumable] >= totalCount;
+}
+
+static BOOL gmod_TestRuleZoneFound(GMod_Achievement const* pAchievement)
+{
+    return Game_LevelNumber == pAchievement->achv_Param.oZoneFound.uLevel
+        && Plr1_Zone == pAchievement->achv_Param.oZoneFound.uZoneID;
+}
+
+static BOOL gmod_TestRuleLevelTimeImproved(GMod_Achievement const* pAchievement)
+{
+    ULONG uCountLimit = pAchievement->achv_Param.oMaskedLevelCount.uCount;
+    UWORD uLevelMask  = pAchievement->achv_Param.oMaskedLevelCount.uLevelMask;
+
+    if (pAchievement->achv_Param.oMaskedLevelCount.bOverall) {
+        // The combined times improved count across all inclued levels
+        ULONG uCount = 0;
+        for (UWORD uLevelNum = 0; uLevelNum < NUM_LEVELS; ++uLevelNum) {
+            if (uLevelMask & (1 << uLevelNum)) {
+                uCount += GMod_Progress.pprg_Counters.prgc_LevelImprovedTimeCounts[uLevelNum];
+                if (uCount >= uCountLimit) {
+                    return TRUE;
+                }
+            }
+        }
+    } else {
+        // The times improved for any of the included levels
+        for (UWORD uLevelNum = 0; uLevelNum < NUM_LEVELS; ++uLevelNum) {
+            if (uLevelMask & (1 << uLevelNum)) {
+                if (GMod_Progress.pprg_Counters.prgc_LevelImprovedTimeCounts[uLevelNum] >= uCountLimit) {
+                    return TRUE;
+                }
+            }
+        }
+    }
+    return FALSE;
+}
+
+static BOOL gmod_TestRulePlayerDied(GMod_Achievement const* pAchievement)
+{
+    ULONG uCountLimit = pAchievement->achv_Param.oMaskedLevelCount.uCount;
+    UWORD uLevelMask  = pAchievement->achv_Param.oMaskedLevelCount.uLevelMask;
+
+    if (pAchievement->achv_Param.oMaskedLevelCount.bOverall) {
+        // The combined number of times the player died across all inclued levels
+        ULONG uCount = 0;
+        for (UWORD uLevelNum = 0; uLevelNum < NUM_LEVELS; ++uLevelNum) {
+            if (uLevelMask & (1 << uLevelNum)) {
+                uCount += GMod_Progress.pprg_Counters.prgc_LevelFailCounts[uLevelNum];
+                if (uCount >= uCountLimit) {
+                    return TRUE;
+                }
+            }
+        }
+    } else {
+        // The number of times the player died for any of the included levels
+        for (UWORD uLevelNum = 0; uLevelNum < NUM_LEVELS; ++uLevelNum) {
+            if (uLevelMask & (1 << uLevelNum)) {
+                if (GMod_Progress.pprg_Counters.prgc_LevelFailCounts[uLevelNum] >= uCountLimit) {
+                    return TRUE;
+                }
+            }
+        }
+    }
+    return FALSE;
+}
+
+static BOOL gmod_TestRuleStuffCollected(GMod_Achievement const* pAchievement)
+{
+    ULONG const* pConsumables = &GMod_Progress.pprg_Counters.prgc_TotalHealthCollected;
+    UWORD consumableId = pAchievement->achv_Param.oCollected.uConsumable;
+
+#ifdef PARANOID
+    if (consumableId >= INVENTORY_SLOTS) {
+        return FALSE;
+    }
+#endif
+
+    return pConsumables[consumableId] >= pAchievement->achv_Param.oCollected.uCount;
 }
 
 /**********************************************************************************************************************/

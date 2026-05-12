@@ -98,27 +98,32 @@ typedef struct {
 
         // Structure mappings
         struct {
+            // AR_KILL_COUNT
             ULONG uCount;
             UWORD uAlienType;
         } ASM_ALIGN(sizeof(UWORD)) oKillCount;
 
         struct {
+            // AR_GROUP_KILL_COUNT
             ULONG uCount;
             ULONG uAlienMask;
         } ASM_ALIGN(sizeof(UWORD)) oGroupKillCount;
 
         struct {
+            // AR_ZONE_FOUND
             UWORD uLevel;
             UWORD uZoneID;
         } ASM_ALIGN(sizeof(UWORD)) oZoneFound;
 
         struct {
-            ULONG uCount;
+            // AR_TIME_IMPROVED | AR_PLAYER_DIED
+            ULONG uCount; // The count is ULONG since it can be compared to the sum of multiple 16-bit counters
             UWORD bOverall;
             UWORD uLevelMask;
         } ASM_ALIGN(sizeof(UWORD)) oMaskedLevelCount;
 
         struct {
+            // AR_COLLECTED
             ULONG uCount;
             UWORD uConsumable;
         } ASM_ALIGN(sizeof(UWORD)) oCollected;
@@ -190,8 +195,10 @@ typedef struct {
     /** The number of times so far the player has bested their previous time record */
     UWORD prgc_LevelImprovedTimeCounts[NUM_LEVELS];
 
+    /** Bigger counters from here on */
+
     /** Total number of times the player has killed each class of alien */
-    UWORD prgc_AlienKills[NUM_ALIEN_DEFS];
+    ULONG prgc_AlienKills[NUM_ALIEN_DEFS];
 
     /** The following totals fields are defined in the same order as for InventoryConsumables, but are 32-bit */
 

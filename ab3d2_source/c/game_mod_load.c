@@ -101,7 +101,7 @@ BOOL gmod_ParseAchievements(GMF_ChunkHeader const* pChunkHeader, GMF_Data* pGMFD
                 pRewardChunk,
                 (size_t)pAchievement->achv_Reward
             );
-            GMod_Reward* pReward   = gmod_ResolveReward(pAchievement->achv_Reward, pRewardChunk);
+            GMod_Reward* pReward      = gmod_ResolveReward(pAchievement->achv_Reward, pRewardChunk);
             pReward->rwrd_Description = GMF_ResolveString(pReward->rwrd_Description, pGMFData);
             pAchievement->achv_Reward = pReward;
             dputs(pReward->rwrd_Description);
@@ -114,6 +114,7 @@ BOOL gmod_ParseAchievements(GMF_ChunkHeader const* pChunkHeader, GMF_Data* pGMFD
                 pAchievement->achv_Description
             );
         }
+        // Verbose
         switch (pAchievement->achv_RuleType) {
             case AR_KILL_COUNT:
                 dprintf(

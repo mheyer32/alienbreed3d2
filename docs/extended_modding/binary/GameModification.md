@@ -159,7 +159,7 @@ The `KillCount` rule is checked whenever an alien is killed by the player. This 
 | 8 | Rule Type ID | `uint16` | 0x0002 |
 | 10 | Reserved | `uint16` | 0x0000 |
 | 12 | Level Number | `uint16` | |
-| 16 | Zone ID | `uint16` | |
+| 14 | Zone ID | `uint16` | |
 
 
 #### Achievement Rule: TimeImproved

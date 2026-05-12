@@ -35,4 +35,6 @@ typedef struct {
 #define INVENTORY_DEFAULT_FUEL_LIMIT 250
 #define INVENTORY_UNCAPPED_LIMIT 32000
 
+#define INVENTORY_SLOTS (sizeof(InventoryConsumables)/sizeof(UWORD))
+
 #endif // INVENTORY_H
