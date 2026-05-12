@@ -71,6 +71,15 @@ typedef struct {
 
 /**********************************************************************************************************************/
 
+enum {
+    AR_KILL_COUNT       = 0,
+    AR_GROUP_KILL_COUNT = 1,
+    AR_ZONE_FOUND       = 2,
+    AR_TIME_IMPROVED    = 3,
+    AR_PLAYER_DIED      = 4,
+    AR_COLLECTED        = 5
+};
+
 /**
  * GMod_Achievement
  *
@@ -106,8 +115,13 @@ typedef struct {
         struct {
             ULONG uCount;
             UWORD bOverall;
-            UWORD uMask;
+            UWORD uLevelMask;
         } ASM_ALIGN(sizeof(UWORD)) oMaskedLevelCount;
+
+        struct {
+            ULONG uCount;
+            UWORD uConsumable;
+        } ASM_ALIGN(sizeof(UWORD)) oCollected;
 
     } achv_Param;
 } ASM_ALIGN(sizeof(ULONG)) GMod_Achievement; // 32 bytes

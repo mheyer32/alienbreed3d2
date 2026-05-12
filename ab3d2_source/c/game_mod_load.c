@@ -114,6 +114,60 @@ BOOL gmod_ParseAchievements(GMF_ChunkHeader const* pChunkHeader, GMF_Data* pGMFD
                 pAchievement->achv_Description
             );
         }
+        switch (pAchievement->achv_RuleType) {
+            case AR_KILL_COUNT:
+                dprintf(
+                    "\t\t\t{ uCount: %lu, uAlienType: %d }\n",
+                    pAchievement->achv_Param.oKillCount.uCount,
+                    (int)pAchievement->achv_Param.oKillCount.uAlienType
+                );
+                break;
+
+            case AR_GROUP_KILL_COUNT:
+                dprintf(
+                    "\t\t\t{ uCount: %lu, uAlienMask: 0x%08X }\n",
+                    pAchievement->achv_Param.oGroupKillCount.uCount,
+                    pAchievement->achv_Param.oGroupKillCount.uAlienMask
+                );
+                break;
+
+            case AR_ZONE_FOUND:
+                dprintf(
+                    "\t\t\t{ uLevel: %d, uZoneID: %d }\n",
+                    (int)pAchievement->achv_Param.oZoneFound.uLevel,
+                    (int)pAchievement->achv_Param.oZoneFound.uZoneID
+                );
+                break;
+
+            case AR_TIME_IMPROVED:
+                dprintf(
+                    "\t\t\t{ uCount: %d, bOverall: %d, uLevelMask: 0x%04X }\n",
+                    pAchievement->achv_Param.oMaskedLevelCount.uCount,
+                    (int)pAchievement->achv_Param.oMaskedLevelCount.bOverall,
+                    pAchievement->achv_Param.oMaskedLevelCount.uLevelMask
+                );
+                break;
+
+            case AR_PLAYER_DIED:
+                dprintf(
+                    "\t\t\t{ uCount: %d, bOverall: %d, uLevelMask: 0x%04X }\n",
+                    pAchievement->achv_Param.oMaskedLevelCount.uCount,
+                    (int)pAchievement->achv_Param.oMaskedLevelCount.bOverall,
+                    pAchievement->achv_Param.oMaskedLevelCount.uLevelMask
+                );
+                break;
+
+            case AR_COLLECTED:
+                dprintf(
+                    "\t\t\t{ uCount: %lu, uConsumable: %d }\n",
+                    pAchievement->achv_Param.oCollected.uCount,
+                    pAchievement->achv_Param.oCollected.uConsumable
+                );
+                break;
+
+            default:
+                break;
+        }
         ++pAchievement;
     }
 
