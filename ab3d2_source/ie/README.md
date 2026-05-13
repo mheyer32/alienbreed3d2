@@ -433,7 +433,6 @@ Key IE files:
 - `ie_file_io_runtime.i`: IE raw file loader and media path normalization.
 - `ie_music.i`: legacy `mt_*` entrypoints backed by IE MOD MMIO with SID
   fallback.
-- `MEDIA_LAYOUT.md`: focused media-tree notes.
 - `tools/normalize_media.sh`: prepares the original local media layout.
 - `tools/convert_menu_assets.py`: converts original planar menu art and
   palettes into IE CLUT8 build artifacts.
