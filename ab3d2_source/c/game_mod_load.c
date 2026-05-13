@@ -3,6 +3,7 @@
 #include "devmode.h"
 #include <proto/exec.h>
 #include "system.h"
+#include "game.h"
 
 /**
  * game_mod_load.c
@@ -23,6 +24,19 @@ static char const* aRuleNames[] = {
     "Collected",      // 5
 };
 #endif
+
+/**
+ * For every rule type, there are game event signal bits that should be set before we bother wasting
+ * time checking achievements.
+ */
+static UWORD gmod_AchievementRuleSignalMask[] = {
+    1 << GAME_EVENTBIT_KILL,
+    1 << GAME_EVENTBIT_KILL,
+    1 << GAME_EVENTBIT_ZONE_CHANGE,
+    1 << GAME_EVENTBIT_LEVEL_START,
+    1 << GAME_EVENTBIT_LEVEL_START,
+    1 << GAME_EVENTBIT_ADD_INVENTORY,
+};
 
 /**********************************************************************************************************************/
 
@@ -114,6 +128,10 @@ BOOL gmod_ParseAchievements(GMF_ChunkHeader const* pChunkHeader, GMF_Data* pGMFD
                 pAchievement->achv_Description
             );
         }
+
+        // Set the event signal mask from the rule type.
+        pAchievement->achv_EventMask = gmod_AchievementRuleSignalMask[pAchievement->achv_RuleType];
+
         // Verbose
         switch (pAchievement->achv_RuleType) {
             case AR_KILL_COUNT:
