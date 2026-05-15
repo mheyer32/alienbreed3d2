@@ -412,6 +412,9 @@ void GMod_LoadPlayerProgress(void)
                 // Sanity check here.
                 if (pUnlocked->gpc_ID < GMod_Defaults.gmod_NumDefinedAchievements) {
                     GMod_Progress.pprg_Unlocked[pUnlocked->gpc_ID] = pUnlocked->gpc_Awarded;
+                    UWORD byte = pUnlocked->gpc_ID >> 3;
+                    UBYTE bit  = (1 << (pUnlocked->gpc_ID  & 7));
+                    GMod_Progress.pprg_UnlockedMap[byte] |= bit;
                 } else {
                     dprintf("Unrecognised achievement ID %d\n", (int)pUnlocked->gpc_ID);
                 }

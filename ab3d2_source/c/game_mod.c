@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "game.h"
 #include "game_mod.h"
 #include "system.h"
 #include "message.h"
@@ -6,10 +7,17 @@
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include <proto/utility.h>
+#include <devices/timer.h>
+#include <proto/timer.h>
 
 extern ULONG Game_ProgressSignal; // signal to check progress
 extern UWORD Game_LevelNumber;
 extern UWORD Plr1_Zone;
+
+extern char  game_BestLevelTimeBuffer[];
+
+static struct timeval game_LevelBegin = { {0}, {0} };
+static struct timeval game_LevelEnd   = { {0}, {0} };
 
 // reset at level start and incremented by the interrupt
 volatile ULONG GMod_Ticks  = 0;
@@ -20,25 +28,8 @@ ShortDate GMod_Date = 0;
 #define EPOCH_YEAR 1978
 #define TICK_MASK 0x1FF
 
-extern Inventory                Plr1_Inventory;
-extern Inventory                Plr2_Inventory;
-
-/**********************************************************************************************************************/
-
-/**
-typedef struct {
-    GMod_InventoryLimits    pprg_InventoryLimits;
-    GMod_WeaponAdjustment   pprg_WeaponAdjustments[NUM_GUN_DEFS];
-    GMod_ProgressCounters   pprg_Counters;
-
-    ShortDate* pprg_Unlocked;
-
-    UBYTE*     pprg_UnlockedMap;
-} GMod_PlayerProgression;
-
-extern GMod_PlayerProgression GMod_Progress; // In BSS
-
-*/
+extern Inventory Plr1_Inventory;
+extern Inventory Plr2_Inventory;
 
 /**********************************************************************************************************************/
 
@@ -360,4 +351,83 @@ void GMod_UpdateProgress(void)
         }
     }
     Game_ProgressSignal = 0;
+}
+
+/**********************************************************************************************************************/
+
+/**
+ * @todo - this should probably just be shared with the one in system.c.
+ */
+static void SAVEDS PutChProc(REG(d0, char c), REG(a3, char** out))
+{
+    **out = c;
+    ++(*out);
+}
+
+/**
+ * Called whe level begins. Set the level event bit and trigger the status update to capture any
+ * pesky level events.
+ *
+ * If we have played the level before, we show the currently recorded best time for the level.
+ */
+void GMod_LevelBegin(void)
+{
+    GetSysTime(&game_LevelBegin);
+    ++GMod_Progress.pprg_Counters.prgc_LevelPlayCounts[Game_LevelNumber];
+
+    if (GMod_Progress.pprg_Counters.prgc_LevelBestTimes[Game_LevelNumber]) {
+        ULONG time = GMod_Progress.pprg_Counters.prgc_LevelBestTimes[Game_LevelNumber];
+
+        char* outPtr = game_BestLevelTimeBuffer;
+
+        UWORD data[5] = { 0, 0, 0, 0, 0 };
+
+        data[4]  = time % 100; time /= 100;
+        data[3]  = time % 60;  time /= 60;
+        data[2]  = time % 60;  time /= 60;
+        data[1]  = time;
+        data[0]  = (UWORD)('A' + Game_LevelNumber);
+
+        RawDoFmt(
+            "Level %c: Best %dh %02dm %02d.%02ds",
+            &data,
+            (void (*)()) & PutChProc,
+            &outPtr
+        );
+
+        Msg_PushLine(game_BestLevelTimeBuffer, MSG_TAG_OPTIONS|(outPtr - game_BestLevelTimeBuffer));
+    }
+
+    Game_ProgressSignal |= (1 << GAME_EVENTBIT_LEVEL_START);
+    GMod_UpdateProgress();
+}
+
+/**
+ * Called when the level is completed sucessfully
+ *
+ * Capture the end time and calculate the level duration. If the duration is better than any existing one
+ * for this level, update it and increment the corresponding improved time counter for the level.
+ */
+void GMod_LevelWon(void)
+{
+    GetSysTime(&game_LevelEnd);
+    SubTime(&game_LevelEnd, &game_LevelBegin);
+    ++GMod_Progress.pprg_Counters.prgc_LevelWonCounts[Game_LevelNumber];
+    ULONG elapsedCentis = (game_LevelEnd.tv_sec * 100) + (game_LevelEnd.tv_usec/10000);
+    if (0 == GMod_Progress.pprg_Counters.prgc_LevelBestTimes[Game_LevelNumber]) {
+        GMod_Progress.pprg_Counters.prgc_LevelBestTimes[Game_LevelNumber] = elapsedCentis;
+    } else if (elapsedCentis < GMod_Progress.pprg_Counters.prgc_LevelBestTimes[Game_LevelNumber]) {
+        GMod_Progress.pprg_Counters.prgc_LevelBestTimes[Game_LevelNumber] = elapsedCentis;
+        ++GMod_Progress.pprg_Counters.prgc_LevelImprovedTimeCounts[Game_LevelNumber];
+    }
+}
+
+
+/**
+ * Called when the level fails. Maybe there's a point to recording how long it took before that happened
+ * for a sort of anti-achievement.
+ */
+void GMod_LevelFailed(void)
+{
+    ++GMod_Progress.pprg_Counters.prgc_LevelFailCounts[Game_LevelNumber];
 }
