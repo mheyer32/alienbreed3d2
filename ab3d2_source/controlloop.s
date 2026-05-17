@@ -1126,7 +1126,7 @@ game_LoadPosition:
 				ENDR
 
 				move.l  #Plr_Health_w,a0
-				CALLC   Game_ApplyInventoryLimits
+				CALLC   GMod_RawApplyInventoryLimits
 
 				move.w	Game_LevelCounter_w,d0
 				move.l	#mnu_CURRENTLEVELLINE,a1

@@ -81,7 +81,7 @@ static UWORD const* gmod_GetRewardImmediate(GMod_Reward const* pReward)
 /**
  * Reward helper function. Performs a saturated addition.
  */
-static inline UWORD gmod_addSaturated(UWORD a, UWORD b, UWORD limit)
+static inline UWORD gmod_AddSaturated(UWORD a, UWORD b, UWORD limit)
 {
     UWORD sum = a + b;
     return (sum < a || sum < b || sum > limit) ? limit : sum;
@@ -116,12 +116,12 @@ void GMod_ApplyReward(
      */
     pRewardData = gmod_GetRewardImmediate(pReward);
     if (pRewardData) {
-        pInventoryConsumables->ic_Health = gmod_addSaturated(
+        pInventoryConsumables->ic_Health = gmod_AddSaturated(
             pInventoryConsumables->ic_Health,
             *pRewardData++,
             pInventoryLimits->ic_Health
         );
-        pInventoryConsumables->ic_JetpackFuel = gmod_addSaturated(
+        pInventoryConsumables->ic_JetpackFuel = gmod_AddSaturated(
             pInventoryConsumables->ic_JetpackFuel,
             *pRewardData++,
             pInventoryLimits->ic_JetpackFuel
@@ -132,7 +132,7 @@ void GMod_ApplyReward(
          */
         while (*pRewardData != 0xFFFF) {
             UWORD slot = *pRewardData++;
-            pInventoryConsumables->ic_AmmoCounts[slot] = gmod_addSaturated(
+            pInventoryConsumables->ic_AmmoCounts[slot] = gmod_AddSaturated(
                 pInventoryConsumables->ic_AmmoCounts[slot],
                 *pRewardData++,
                 pInventoryLimits->ic_AmmoCounts[slot]
@@ -430,4 +430,126 @@ void GMod_LevelWon(void)
 void GMod_LevelFailed(void)
 {
     ++GMod_Progress.pprg_Counters.prgc_LevelFailCounts[Game_LevelNumber];
+}
+
+/**
+ * Called from assembler.
+ *
+ * Check if an item can be collected based on the player's Inventory state. This is a bit more complicated since
+ * items which give absolutely nothing are considered collectable too, e.g. the message markers.
+ */
+BOOL GMod_RawCheckInventoryLimits(
+    REG(a0, const UWORD* restrict pInventoryTarget),
+    REG(a1, const UWORD* restrict pSourceConsumables),
+    REG(a2, const UWORD* restrict pSourceItems)
+)
+{
+    // Test consumables first. Most items give one or more consumables.
+    UWORD const * restrict pLimit = &GMod_Progress.pprg_InventoryLimits.ic_Health;
+    UWORD uGivesAnything = 0;
+    for (UWORD n = 0; n < sizeof(InventoryConsumables)/sizeof(UWORD); ++n) {
+        UWORD uSource = *pSourceConsumables++;
+        uGivesAnything += uSource;
+        if (uSource > 0 && *pInventoryTarget < pLimit[n]) {
+            return TRUE;
+        }
+        ++pInventoryTarget;
+    }
+
+    // Now check the items. By now, pInventoryTarget must point at the .inv_Items section of the Inventory.
+    // The current ii_Shield property isn't used and is the zeroth index, so just skip over it.
+    ++pInventoryTarget;
+    ++pSourceItems;
+
+    extern BYTE  Plr_MultiplayerType_b;
+    if (Plr_MultiplayerType_b == GAME_MODE_SINGLE_PLAYER) {
+        /**
+         * In single player, we can just early out if any item is given, even if we won't get ammo.
+         */
+        for (UWORD n = 0; n < (sizeof(InventoryItems)/sizeof(UWORD) - 1); ++n) {
+            if (*pSourceItems++) {
+                return TRUE;
+            }
+        }
+    } else {
+        /**
+         * In multiplayer, don't collect items you have already, unless your ammo is not saturated.
+         */
+        for (UWORD n = 0; n < (sizeof(InventoryItems)/sizeof(UWORD) - 1); ++n) {
+            UWORD uSource = *pSourceItems++;
+            uGivesAnything |= uSource;
+            UWORD pTarget = *pInventoryTarget++;
+            if (uSource && !pTarget) {
+                return TRUE;
+            }
+        }
+    }
+
+    /**
+     * If we arrive here, nothing was awarded. Totally empty items are removed by collection, triggering other
+     * behaviours instead.
+     */
+
+    return 0 == uGivesAnything;
+}
+
+
+/**
+ * Called from assembler.
+ *
+ * Add to the player Inventory, respecting the limits set by the modification in GMod_Progress.
+ *
+ * A0/A1 are volatile
+ *
+ */
+void GMod_RawAddToInventory(
+    REG(a0, UWORD* restrict pInventoryTarget),         /* Invetory* */
+    REG(a1, const UWORD* restrict pSourceConsumables), /* InventoryConsumables const* */
+    REG(a2, const UWORD* restrict pSourceItems)        /* InventoryItems const* */
+)
+{
+    ULONG* restrict pTotalCollected = &GMod_Progress.pprg_Counters.prgc_TotalHealthCollected;
+    UWORD const* restrict pLimit    = &GMod_Progress.pprg_InventoryLimits.ic_Health;
+
+    /* First Add all the consumables */
+    for (UWORD n = 0; n < sizeof(InventoryConsumables)/sizeof(UWORD); ++n) {
+        /**
+         * For achievements, we need to track the amount actually collected, which might be less than the object
+         * normally carries,
+         */
+        UWORD prevInv = *pInventoryTarget;
+        *pInventoryTarget = gmod_AddSaturated(
+            prevInv,
+            pSourceConsumables[n],
+            pLimit[n]
+        );
+        /**
+         * Add the actual amount given to the collected total for progression.
+         * These are intentionally defined in the same order but are ULONG sized.
+         */
+        pTotalCollected[n] += (*pInventoryTarget++ - prevInv);
+    }
+
+    /* Add all the items */
+    for (UWORD n = 0; n < sizeof(InventoryItems)/sizeof(UWORD); ++n) {
+        *pInventoryTarget++ |= pSourceItems[n];
+    }
+
+    Game_ProgressSignal |= (1 << GAME_EVENTBIT_ADD_INVENTORY);
+}
+
+/**
+ * Called from assembler.
+ *
+ * Cap the inventory to the currently defined limits
+ *
+ */
+void GMod_RawApplyInventoryLimits(REG(a0, UWORD* pInventoryTarget))
+{
+    UWORD const * restrict pLimit = &GMod_Progress.pprg_InventoryLimits.ic_Health;
+    for (UWORD n = 0; n < sizeof(InventoryConsumables)/sizeof(UWORD); ++n) {
+        if (pInventoryTarget[n] > pLimit[n]) {
+            pInventoryTarget[n] = pLimit[n];
+        }
+    }
 }

@@ -382,25 +382,29 @@ SET_MEM_BIT		MACRO
 				; Trashes d0/a0
 
 STATS_PLAY		MACRO
-                CALLC   Game_LevelBegin
+                CALLC   GMod_LevelBegin
 				ENDM
 
 STATS_WON		MACRO
-                CALLC   Game_LevelWon
+                CALLC   GMod_LevelWon
 				ENDM
 
 				; Died
 				; Trashes d0/a0
 STATS_DIED		MACRO
-                CALLC   Game_LevelFailed
+                CALLC   GMod_LevelFailed
 				ENDM
 
 				; Trashes a1
 				; Expects EntT_Type_b in d0
 STATS_KILL		MACRO
+
+
+				; TODO GMOD_Progress + offset to counter
+
 				move.l  #game_PlayerProgression+GStatT_AlienKills_vw,a1
 				add.w   #1,(a1,d0.w*2)
-				move.l	#1,Game_ProgressSignal_l
+				;move.l	#1,Game_ProgressSignal_l ; why was I doing this?
 				SET_MEM_BIT	GAME_EVENTBIT_KILL,Game_ProgressSignal_l
 				ENDM
 

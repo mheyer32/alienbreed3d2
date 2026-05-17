@@ -15,9 +15,9 @@ extern void game_FreeAchievementsData();
  */
 void Game_Init(void) {
     GMod_Init();
-    game_LoadModProperties();
+    //game_LoadModProperties();
     game_LoadPreferences();
-    game_LoadPlayerProgression();
+    //game_LoadPlayerProgression();
 }
 
 /**
@@ -26,8 +26,8 @@ void Game_Init(void) {
  * Persist progress and prefs, then free up any loaded stuff
  */
 void Game_Done(void) {
-    game_SavePlayerProgression();
+    //game_SavePlayerProgression();
     game_SavePreferences();
-    game_FreeAchievementsData();
+    //game_FreeAchievementsData();
     GMod_Done();
 }

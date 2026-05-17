@@ -3,18 +3,18 @@
 
 		IFD OPT060
 
-		dc.b	0,"$VER: tkg 1.1 (13.05.2026) 68060 development build #0, commit:7a45675",0
+		dc.b	0,"$VER: tkg 1.1 (15.05.2026) 68060 development build #0, commit:5c7c82d",0
 
 		ENDC
 		IFD OPT040
 
-		dc.b	0,"$VER: tkg 1.1 (13.05.2026) 68040 development build #0, commit:7a45675",0
+		dc.b	0,"$VER: tkg 1.1 (15.05.2026) 68040 development build #0, commit:5c7c82d",0
 
 		ENDC
 		IFND OPT060
 			IFND OPT040
 
-		dc.b	0,"$VER: tkg 1.1 (13.05.2026) 68030+ development build #0, commit:7a45675",0
+		dc.b	0,"$VER: tkg 1.1 (15.05.2026) 68030+ development build #0, commit:5c7c82d",0
 
 			ENDC
 		ENDC
@@ -23,18 +23,18 @@
 
 		IFD OPT060
 
-		dc.b	0,"$VER: tkg 1.1 (13.05.2026) 68060 build #0, commit:7a45675",0
+		dc.b	0,"$VER: tkg 1.1 (15.05.2026) 68060 build #0, commit:5c7c82d",0
 
 		ENDC
 		IFD OPT040
 
-		dc.b	0,"$VER: tkg 1.1 (13.05.2026) 68040 build #0, commit:7a45675",0
+		dc.b	0,"$VER: tkg 1.1 (15.05.2026) 68040 build #0, commit:5c7c82d",0
 
 		ENDC
 		IFND OPT060
 			IFND OPT040
 
-		dc.b	0,"$VER: tkg 1.1 (13.05.2026) 68030+ build #0, commit:7a45675",0
+		dc.b	0,"$VER: tkg 1.1 (15.05.2026) 68030+ build #0, commit:5c7c82d",0
 
 			ENDC
 		ENDC
