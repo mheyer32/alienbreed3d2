@@ -47,19 +47,48 @@ MAX_ACHIEVEMENTS EQU 128
 		LABEL	WAdjT_SizeOf_l			; 16
 
 	; Progress Counters: see game_mod.h / GMod_ProgressCounters
-	STRUCTURE	GPCT,0
+	STRUCTURE	PrgcT,0
+		UWORD 	PrgcT_LevelCount_w		; 0, 2
+		UWORD 	PrgcT_AmmoDefCount_w	; 2, 2
+		UWORD 	PrgcT_AlienDefCount_w	; 4, 2
+		UWORD 	PrgcT_Reserved_w		; 6, 2
 
-		LABEL	GPCT_SizeOf_l
+		ULONG	PrgcT_LevelBestTimes_vl				; 8, 64 ULONG[NUM_LEVELS]
+		PADDING (NUM_LEVELS*4)-4
 
-    ; TODO - this needs to be replaced
-	; Custom game properties
-	STRUCTURE GModT,0
-		; Default inventory limits
-		STRUCTURE GModT_MaxInv,(InvCT_SizeOf_l)		; 44
-		UWORD     GModT_NumAchievements             ; 2
-		UWORD     GModT_AchievementSize             ; 2
-		LABEL GModT_SizeOf_l						; 48
+		UWORD	PrgcT_LevelPlayCounts_vw 			; 72, 32 UWORD[NUM_LEVELS]
+		PADDING (NUM_LEVELS*2)-2
 
+		UWORD	PrgcT_LevelWonCounts_vw				; 104, 32 UWORD[NUM_LEVELS]
+		PADDING (NUM_LEVELS*2)-2
+
+		UWORD	PrgcT_LevelFailCounts_vw 			; 136, 32 UWORD[NUM_LEVELS]
+		PADDING (NUM_LEVELS*2)-2
+
+		UWORD	PrgcT_LevelImprovedTimeCounts_vw	; 168, 32 UWORD[NUM_LEVELS]
+		PADDING (NUM_LEVELS*2)-2
+
+		ULONG	PrgcT_AlienKills_vl					; 200, 80 ULONG[NUM_ALIEN_DEFS]
+		PADDING (NUM_ALIEN_DEFS*4)-4
+
+		ULONG	PrgcT_TotalHealthCollected_l		; 280, 4
+		ULONG	PrgcT_TotalFuelCollected_l			; 284, 4
+
+		ULONG	PrgcT_TotalAmmoFound_vl				; 288, 80 ULONG[NUM_BULLET_DEFS]
+		PADDING (NUM_BULLET_DEFS*4)-4
+
+		LABEL	PrgcT_SizeOf_l						; 368
+
+	STRUCTURE PPrgT,0
+		STRUCTURE	PPrgT_InventoryLimits,(InvCT_SizeOf_l)					; 0, 44
+		STRUCTURE	PPrgT_WeaponAdjustments,(WAdjT_SizeOf_l*NUM_GUN_DEFS)	; 44, 160
+		STRUCTURE	PPrgT_Counters,(PrgcT_SizeOf_l)							; 204, 368
+		ULONG		PPrgT_UnlockedPtr_l										; 572, 4
+		ULONG		Pprg_UnlockedMapPtr_l									; 576, 4
+
+		LABEL		PPrgT_SizeOf_l											; 580
+
+	; DEPRECATED	;
     ; TODO - this needs to be replaced
 	; Game statistics
 	STRUCTURE GStatT,0
