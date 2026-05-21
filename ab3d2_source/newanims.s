@@ -769,6 +769,7 @@ objmoveanim:
 				cmp.w   Plr1_Zone_w,d0
                 beq.s   .not_changed
 
+                ; TODO - set a mask of already visited zones so we aren't triggering this one all the time.
                 SET_MEM_BIT	GAME_EVENTBIT_ZONE_CHANGE,Game_ProgressSignal_l
 
 .not_changed:

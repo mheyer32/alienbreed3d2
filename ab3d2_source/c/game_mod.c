@@ -223,6 +223,11 @@ static BOOL gmod_TestRuleGroupKillCount(GMod_Achievement const* pAchievement)
     ULONG uCount     = pAchievement->achv_Param.oGroupKillCount.uCount;
     ULONG uTotal     = 0;
     for (UWORD uAlienTypeId = 0; uAlienTypeId < NUM_ALIEN_DEFS; ++uAlienTypeId) {
+// 		dprintf(
+// 			"\tAlien %d kills %d\n",
+// 			(int)uAlienTypeId,
+// 			(int)GMod_Progress.pprg_Counters.prgc_AlienKills[uAlienTypeId]
+// 		);
         if (uEnemyMask & (1 << uAlienTypeId)) {
             uTotal += GMod_Progress.pprg_Counters.prgc_AlienKills[uAlienTypeId];
         }
@@ -327,14 +332,16 @@ static TestRuleFunction gmod_TestRules[] = {
  */
 void GMod_UpdateProgress(void)
 {
+	dprintf("Prog Signal 0x%08X\n", Game_ProgressSignal);
     GMod_Achievement const* pAchievement = GMod_Defaults.gmod_DefinedAchievements;
     UWORD uNumAchievements = (UWORD)GMod_Defaults.gmod_NumDefinedAchievements;
     for (UWORD id = 0; id < uNumAchievements; ++id, ++pAchievement) {
-        /** Early out on any achiecvements where the rule mask doesn't intersect with the event signal */
+        /** Early out on any achievements where the rule mask doesn't intersect with the event signal */
         if (
             !(Game_ProgressSignal & pAchievement->achv_EventMask) ||
             gmod_CheckAchieved(id)
         ) {
+//			dprintf("Skipping achievement %d\n", (int)id);
             continue;
         }
 

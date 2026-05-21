@@ -375,7 +375,7 @@ FREE_ENT_2		MACRO
 
 ; Set a bit in memory
 SET_MEM_BIT		MACRO
-				bset.b	#(\1&7),\2+3-(\1>>3)
+				bset.b	#(\1&7),(\2)+3-((\1)>>3)
 				ENDM
 
 				; Begin a level
@@ -398,7 +398,9 @@ STATS_DIED		MACRO
 				; Trashes a1
 				; Expects EntT_Type_b in d0
 STATS_KILL		MACRO
-				move.l  #GMod_Progress+PPrgT_Counters+PrgcT_AlienKills_vl,a1
+				;move.l  #GMod_Progress+PPrgT_Counters+PrgcT_AlienKills_vl,a1
+				move.l  #GMod_Progress+404,a1
+
 				add.l   #1,(a1,d0.w*4)
 				SET_MEM_BIT	GAME_EVENTBIT_KILL,Game_ProgressSignal_l
 				ENDM
