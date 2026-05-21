@@ -323,7 +323,7 @@ static TestRuleFunction gmod_TestRules[] = {
 };
 
 /**
- * Called each frame wheb Game_ProgressSignal is non-zero.
+ * Called each frame when Game_ProgressSignal is non-zero.
  */
 void GMod_UpdateProgress(void)
 {

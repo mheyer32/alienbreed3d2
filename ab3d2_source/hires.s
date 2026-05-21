@@ -1879,8 +1879,7 @@ nodrawp2:
 .no_palette_update:
 				tst.l		Game_ProgressSignal_l
 				beq.s		.no_update_progress
-				CALLC		Game_UpdatePlayerProgress
-
+				CALLC		GMod_UpdateProgress
 .no_update_progress:
 				CALLC Vid_Present
 

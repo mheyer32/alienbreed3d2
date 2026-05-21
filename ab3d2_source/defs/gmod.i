@@ -84,7 +84,7 @@ MAX_ACHIEVEMENTS EQU 128
 		STRUCTURE	PPrgT_WeaponAdjustments,(WAdjT_SizeOf_l*NUM_GUN_DEFS)	; 44, 160
 		STRUCTURE	PPrgT_Counters,(PrgcT_SizeOf_l)							; 204, 368
 		ULONG		PPrgT_UnlockedPtr_l										; 572, 4
-		ULONG		Pprg_UnlockedMapPtr_l									; 576, 4
+		ULONG		PPrg_UnlockedMapPtr_l									; 576, 4
 
 		LABEL		PPrgT_SizeOf_l											; 580
 

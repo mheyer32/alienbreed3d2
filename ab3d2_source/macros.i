@@ -398,13 +398,8 @@ STATS_DIED		MACRO
 				; Trashes a1
 				; Expects EntT_Type_b in d0
 STATS_KILL		MACRO
-
-
-				; TODO GMOD_Progress + offset to counter
-
-				move.l  #game_PlayerProgression+GStatT_AlienKills_vw,a1
-				add.w   #1,(a1,d0.w*2)
-				;move.l	#1,Game_ProgressSignal_l ; why was I doing this?
+				move.l  #GMod_Progress+PPrgT_Counters+PrgcT_AlienKills_vl,a1
+				add.l   #1,(a1,d0.w*4)
 				SET_MEM_BIT	GAME_EVENTBIT_KILL,Game_ProgressSignal_l
 				ENDM
 
