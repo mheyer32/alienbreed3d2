@@ -395,13 +395,9 @@ STATS_DIED		MACRO
                 CALLC   GMod_LevelFailed
 				ENDM
 
-				; Trashes a1
 				; Expects EntT_Type_b in d0
 STATS_KILL		MACRO
-				;move.l  #GMod_Progress+PPrgT_Counters+PrgcT_AlienKills_vl,a1
-				move.l  #GMod_Progress+404,a1
-
-				add.l   #1,(a1,d0.w*4)
+				addq.l		#1,(GMod_Progress+PPrgT_Counters+PrgcT_AlienKills_vl,d0.w*4)
 				SET_MEM_BIT	GAME_EVENTBIT_KILL,Game_ProgressSignal_l
 				ENDM
 
@@ -410,3 +406,4 @@ DCLC			MACRO
 _\1::
 \1: \2 \3 \4
 				ENDM
+

@@ -762,16 +762,26 @@ BACKSFX:
 
 
 objmoveanim:
-                move.w  Plr1_Zone_w,d0
-				move.l	Plr1_ZonePtr_l,a0
-				move.w	(a0),Plr1_Zone_w
+                ;move.w  Plr1_Zone_w,d0
+				;move.l	Plr1_ZonePtr_l,a0
+				;move.w	(a0),Plr1_Zone_w
 
+				;cmp.w   Plr1_Zone_w,d0
+                ;beq.s   .not_changed
+
+				;SET_MEM_BIT	GAME_EVENTBIT_ZONE_CHANGE,Game_ProgressSignal_l
+
+				move.l  Plr1_ZonePtr_l,a0
+				move.w  (a0),d0
 				cmp.w   Plr1_Zone_w,d0
-                beq.s   .not_changed
+				beq.s   .not_changed
 
-                ; TODO - set a mask of already visited zones so we aren't triggering this one all the time.
-                SET_MEM_BIT	GAME_EVENTBIT_ZONE_CHANGE,Game_ProgressSignal_l
+				; Zone changed. Only set the event bit if this is the first visit.
+				move.w  d0,Plr1_Zone_w
+				tas     (Zone_Visited_vb,d0.w) ; better hope this is in fast ram.
+				bne.s   .not_changed
 
+				SET_MEM_BIT GAME_EVENTBIT_ZONE_CHANGE,Game_ProgressSignal_l
 .not_changed:
 				move.l	Plr2_ZonePtr_l,a0
 				move.w	(a0),Plr2_Zone_w

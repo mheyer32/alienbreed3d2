@@ -80,13 +80,13 @@ MAX_ACHIEVEMENTS EQU 128
 		LABEL	PrgcT_SizeOf_l						; 368
 
 	STRUCTURE PPrgT,0
-		STRUCTURE	PPrgT_InventoryLimits,(InvCT_SizeOf_l)					; 0, 44
-		STRUCTURE	PPrgT_WeaponAdjustments,(WAdjT_SizeOf_l*NUM_GUN_DEFS)	; 44, 160
-		STRUCTURE	PPrgT_Counters,(PrgcT_SizeOf_l)							; 204, 368
-		ULONG		PPrgT_UnlockedPtr_l										; 572, 4
-		ULONG		PPrg_UnlockedMapPtr_l									; 576, 4
+		STRUCT	PPrgT_InventoryLimits,(InvCT_SizeOf_l)					; 0, 44
+		STRUCT	PPrgT_WeaponAdjustments,(WAdjT_SizeOf_l*NUM_GUN_DEFS)	; 44, 160
+		STRUCT	PPrgT_Counters,(PrgcT_SizeOf_l)							; 204, 368
+		ULONG	PPrgT_UnlockedPtr_l										; 572, 4
+		ULONG	PPrg_UnlockedMapPtr_l									; 576, 4
 
-		LABEL		PPrgT_SizeOf_l											; 580
+		LABEL	PPrgT_SizeOf_l											; 580
 
 	; DEPRECATED	;
     ; TODO - this needs to be replaced
