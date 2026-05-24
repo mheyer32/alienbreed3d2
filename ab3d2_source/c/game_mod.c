@@ -158,6 +158,11 @@ static void gmod_SetEngineDefaults()
         GMod_Progress.pprg_InventoryLimits.ic_AmmoCounts[i] = INVENTORY_DEFAULT_AMMO_LIMIT;
     }
 
+    // A slot ID of 0xFFFF means there is no defined adjustment.
+    for (WORD i = 0; i < NUM_GUN_DEFS; ++i) {
+        GMod_Progress.pprg_WeaponAdjustments[i].wadj_SlotID = 0xFFFF;
+    }
+
     dputs("Set engine default inventory limits");
 }
 
@@ -176,6 +181,8 @@ void GMod_Init()
 
 void GMod_Done()
 {
+    GMod_SavePlayerProgress();
+
     if (GMod_Defaults.gmod_Loaded) {
         GMF_Free(GMod_Defaults.gmod_Loaded);
     }

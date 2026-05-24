@@ -325,4 +325,11 @@ extern void GMod_ApplyReward(
     InventoryConsumables* pInventoryConsumables
 );
 
+/**
+ * GMod_SavePlayerProgress()
+ *
+ * Attempts to save the the progress for the current player on exit.
+ */
+extern void GMod_SavePlayerProgress(void);
+
 #endif

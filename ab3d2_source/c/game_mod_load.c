@@ -400,6 +400,16 @@ void GMod_LoadPlayerProgress(void)
             }
         }
 
+        // Counters
+        if ( (pChunk = GMF_LocateChunk(pLoaded, IDENT_CTRS)) ) {
+            CopyMem(
+                GMF_ChunkData(pChunk),
+                &GMod_Progress.pprg_Counters,
+                sizeof(GMod_ProgressCounters)
+            );
+            dputs("Set progress counters");
+        }
+
         // Current unlocked achievements
         if (
             GMod_Defaults.gmod_DefinedAchievements &&
@@ -426,9 +436,3 @@ void GMod_LoadPlayerProgress(void)
         FreeVec((void*)pLoaded);
     }
 }
-
-static void gmod_SavePlayerProgress(void)
-{
-    dputs("gmod_SavePlayerProgress() is not yet implemented.");
-}
-
