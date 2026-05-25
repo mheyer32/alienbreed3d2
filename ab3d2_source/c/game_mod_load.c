@@ -352,7 +352,7 @@ BOOL GMod_LoadModDefaults(void)
         GMod_Defaults.gmod_NumDefinedAchievements      = GMF_ChunkRecordCount(pChunk, GMod_Achievement);
     }
     dprintf(
-        "GMod_Init()\n"
+        "GMod_LoadModDefaults()\n"
         "\tgmod_Loaded:                    %p\n"
         "\tgmod_DefinedInventoryLimits:    %p\n"
         "\tgmod_DefinedSpecialAmmoBonuses: %p %lu\n"

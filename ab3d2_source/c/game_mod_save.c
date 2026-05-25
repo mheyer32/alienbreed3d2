@@ -9,8 +9,8 @@ static ULONG gmod_CountActiveAdjustments()
 {
     ULONG uCount = 0;
     GMod_WeaponAdjustment const* pAdjustment = GMod_Progress.pprg_WeaponAdjustments;
-    for(UWORD i = 0; i < NUM_GUN_DEFS; ++i) {
-        if (pAdjustment->wadj_SlotID != 0xFFFF) {
+    for (UWORD i = 0; i < NUM_GUN_DEFS; ++i) {
+        if (pAdjustment[i].wadj_SlotID != 0xFFFF) {
             ++uCount;
         }
     }
@@ -29,6 +29,11 @@ static ULONG gmod_CountAchievementUnlocks()
     dprintf("\tGot %u Unlocks\n", uCount);
     return uCount;
 }
+
+/** Description for string chunk */
+char const sSaveDesc[8] = {
+    'P','l','y','r','P','r','g', 0
+};
 
 static ULONG gmod_CalculateProgressSaveSize()
 {
@@ -51,6 +56,12 @@ static ULONG gmod_CalculateProgressSaveSize()
         uTotalSize += Sys_Round4(sizeof(GMF_ChunkHeader) + (uNumUnlocks * sizeof(GMod_Unlocked)));
         ++uIndexCount;
     }
+
+    // Add the size of the index chunk
+    uTotalSize += Sys_Round4(sizeof(GMF_ChunkHeader) + uIndexCount * sizeof(GMF_IndexEntry));
+
+    // Single string chunk
+    uTotalSize += Sys_Round4(sizeof(GMF_ChunkHeader) + sizeof(sSaveDesc));
 
     return uTotalSize;
 }

@@ -216,14 +216,14 @@ static void gmod_MarkAchieved(UWORD id)
         GMod_Progress.pprg_UnlockedMap[byte] |= bit;
         GMod_Progress.pprg_Unlocked[id] = GMod_Date;
     }
-
-    int iDay   = GMod_Date & 0x1F;
+/*
+    int iDay    = GMod_Date & 0x1F;
     int iMonths = GMod_Date >> 5;
-
-    int iMonth = (iMonths % 12) + 1;
-    int iYear  = (iMonths / 12) + 1978;
+    int iMonth  = (iMonths % 12) + 1;
+    int iYear   = (iMonths / 12) + 1978;
 
     dprintf("Achieved %d on 0x%04X [%d-%d-%d]\n", (int)id, (unsigned)GMod_Date, iYear, iMonth, iDay);
+*/
 }
 
 static BOOL gmod_TestRuleKillCount(GMod_Achievement const* pAchievement)
