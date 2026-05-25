@@ -28,6 +28,10 @@ ShortDate GMod_Date = 0;
 #define EPOCH_YEAR 1978
 #define TICK_MASK 0x1FF
 
+// If the current short date evaluates to 0, we have a problem with the RTC.
+// So instead we substitute 0x42A1 which represents 2022-06-01, the date the recompilable build was announced.
+#define GAME_EPOCH_SHORTDATE 0x42A1
+
 extern Inventory Plr1_Inventory;
 extern Inventory Plr2_Inventory;
 
@@ -47,6 +51,9 @@ void GMod_CalculateDate(void)
         Amiga2Date(oDateStamp.ds_Days * 86400, &oClockData);
         UWORD months = ((oClockData.year - EPOCH_YEAR) * 12) + oClockData.month - 1;
         GMod_Date = months << 5 | (oClockData.mday & 0x1F);
+        if (!GMod_Date) {
+            GMod_Date = GAME_EPOCH_SHORTDATE;
+        }
     }
 }
 
@@ -209,6 +216,14 @@ static void gmod_MarkAchieved(UWORD id)
         GMod_Progress.pprg_UnlockedMap[byte] |= bit;
         GMod_Progress.pprg_Unlocked[id] = GMod_Date;
     }
+
+    int iDay   = GMod_Date & 0x1F;
+    int iMonths = GMod_Date >> 5;
+
+    int iMonth = (iMonths % 12) + 1;
+    int iYear  = (iMonths / 12) + 1978;
+
+    dprintf("Achieved %d on 0x%04X [%d-%d-%d]\n", (int)id, (unsigned)GMod_Date, iYear, iMonth, iDay);
 }
 
 static BOOL gmod_TestRuleKillCount(GMod_Achievement const* pAchievement)
@@ -387,6 +402,7 @@ void GMod_LevelBegin(void)
     GetSysTime(&game_LevelBegin);
     ++GMod_Progress.pprg_Counters.prgc_LevelPlayCounts[Game_LevelNumber];
 
+    // Report best level time, if there is one.
     if (GMod_Progress.pprg_Counters.prgc_LevelBestTimes[Game_LevelNumber]) {
         ULONG time = GMod_Progress.pprg_Counters.prgc_LevelBestTimes[Game_LevelNumber];
 
@@ -408,9 +424,10 @@ void GMod_LevelBegin(void)
         );
 
         Msg_PushLine(game_BestLevelTimeBuffer, MSG_TAG_OPTIONS|(outPtr - game_BestLevelTimeBuffer));
-
     }
 
+    // Initialise the progress data.
+    GMod_CalculateDate();
     Game_ProgressSignal |= (1 << GAME_EVENTBIT_LEVEL_START);
     GMod_UpdateProgress();
 }

@@ -299,7 +299,7 @@ static void gmod_SetModDefaults(void)
             ((GMod_Defaults.gmod_NumDefinedAchievements + 7) >> 3);           // Bitmap
         UWORD* pData = (UWORD*)AllocVec(allocSize, MEMF_ANY|MEMF_CLEAR);
         if (pData) {
-            dprintf("Allocated %lu bytes for achievement unlock tracking", allocSize);
+            dprintf("Allocated %lu bytes for achievement unlock tracking\n", allocSize);
             GMod_Progress.pprg_Unlocked    = pData;
             GMod_Progress.pprg_UnlockedMap = (UBYTE*)(&pData[GMod_Defaults.gmod_NumDefinedAchievements]);
         } else {
