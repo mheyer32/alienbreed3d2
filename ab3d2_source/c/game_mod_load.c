@@ -213,9 +213,10 @@ static GMF_Header const gmod_Header = {
 };
 
 /**
- * Player Progression File, GPRG
+ * Player Progression File, GPRG.
+ * Also referenced from the save code.
  */
-static GMF_Header const gprg_Header = {
+GMF_Header const gprg_Header = {
     .h_Ident.id_Value     = IDENT_TKGD,
     .h_SubFormat.id_Value = IDENT_GPRG,
     .h_Version            = {TKG_VERSION, TKG_REVISION}
