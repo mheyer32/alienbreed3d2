@@ -16,7 +16,7 @@ static UWORD gmod_CountActiveAdjustments()
             ++uCount;
         }
     }
-    dprintf("\tGot %u Weapon Adjustments\n", (unsigned)uCount);
+//    dprintf("\tGot %u Weapon Adjustments\n", (unsigned)uCount);
     return uCount;
 }
 
@@ -28,7 +28,7 @@ static UWORD gmod_CountAchievementUnlocks()
             ++uCount;
         }
     }
-    dprintf("\tGot %u Unlocks\n", uCount);
+//    dprintf("\tGot %u Unlocks\n", uCount);
     return uCount;
 }
 
@@ -102,6 +102,9 @@ static UBYTE* gmod_makeProgressHeader(UBYTE* pBuffer)
         sizeof(GMF_Header)
     );
     GMF_Header* pHeader = (GMF_Header*)pBuffer;
+
+    // The version required is at least the version saved from.
+    pHeader->h_RequiresVersion = pHeader->h_Version;
     pHeader->h_Description.do_Offset = sizeof(GMF_ChunkHeader);
     return pBuffer + sizeof(GMF_Header);
 }
@@ -145,11 +148,11 @@ static UBYTE* gmod_MakeIndexChunk(UBYTE* pBuffer, GMod_SaveInfo const* pSaveInfo
         ++pIndex;
     }
 
-    dprintf(
-        "expected size %u, computed size %u\n",
-        pSaveInfo->uTotalSize,
-        uOffset
-    );
+//     dprintf(
+//         "expected size %u, computed size %u\n",
+//         pSaveInfo->uTotalSize,
+//         uOffset
+//     );
 
     return pBuffer + pSaveInfo->uIndexChunkSize;
 }
@@ -231,8 +234,6 @@ static UBYTE* gmod_MakeStringChunk(UBYTE* pBuffer, GMod_SaveInfo const* pSaveInf
 
 void GMod_SavePlayerProgress(void)
 {
-    dputs("GMod_SavePlayerProgress() is not yet implemented.");
-
     // First work out the required total buffer size:
     // 1. Basic Header
     // 2. Index Chunk with references to each chunk.
@@ -300,7 +301,7 @@ void GMod_SavePlayerProgress(void)
         pBuffer = gmod_MakeStringChunk(pBuffer, pSaveInfo);
     }
 
-    BPTR gameProgressFH = Open("ab3:progress.save.stats", MODE_NEWFILE);
+    BPTR gameProgressFH = Open("ab3:progress.stats", MODE_NEWFILE);
     if (DOSFALSE != gameProgressFH) {
         Write(gameProgressFH, pBufferBase, pSaveInfo->uTotalSize);
         Close(gameProgressFH);

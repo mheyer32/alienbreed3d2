@@ -78,7 +78,7 @@ BOOL gmod_ParseSpecialAmmoBonuses(GMF_ChunkHeader const* pChunkHeader, GMF_Data*
             GMod_Reward* pReward   = gmod_ResolveReward(pSPAB->spab_Reward, pRewardChunk);
             pReward->rwrd_Description = GMF_ResolveString(pReward->rwrd_Description, pGMFData);
             pSPAB->spab_Reward     = pReward;
-            dputs(pReward->rwrd_Description);
+//            dputs(pReward->rwrd_Description);
         }
         ++pSPAB;
     }
@@ -237,7 +237,7 @@ static inline UWORD clamp(UWORD val, UWORD max)
  */
 static void gmod_SetInventoryLimitsFrom(GMod_InventoryLimits const* pSource)
 {
-    dputs("\tgmod_SetInventoryLimitsFrom()");
+//    dputs("\tgmod_SetInventoryLimitsFrom()");
     GMod_Progress.pprg_InventoryLimits.ic_Health = clamp(
         pSource->ic_Health,
         INVENTORY_UNCAPPED_LIMIT
@@ -260,7 +260,7 @@ static void gmod_SetInventoryLimitsFrom(GMod_InventoryLimits const* pSource)
  */
 static void gmod_SetWeaponAdjustmentsFrom(GMod_WeaponAdjustment const* pSource, ULONG iNum)
 {
-    dputs("\tgmod_SetWeaponAdjustmentsFrom()");
+//    dputs("\tgmod_SetWeaponAdjustmentsFrom()");
     while (iNum--) {
         UWORD slotID = pSource->wadj_SlotID;
         // TODO - when we add these for real, this is where to sanity check the field rather than just
@@ -281,11 +281,11 @@ static void gmod_SetWeaponAdjustmentsFrom(GMod_WeaponAdjustment const* pSource, 
  */
 static void gmod_SetModDefaults(void)
 {
-    dputs("\tgmod_SetModDefaults()");
+//    dputs("\tgmod_SetModDefaults()");
     // If we have defined limits, apply those.
     if (GMod_Defaults.gmod_DefinedInventoryLimits) {
         gmod_SetInventoryLimitsFrom(GMod_Defaults.gmod_DefinedInventoryLimits);
-        dputs("Set modification default inventory limits");
+        //dputs("Set modification default inventory limits");
     }
 
     // If we have weapon adjustments, apply those
@@ -294,7 +294,7 @@ static void gmod_SetModDefaults(void)
             GMod_Defaults.gmod_DefinedWeaponAdjustments,
             GMod_Defaults.gmod_NumDefinedWeaponAdjustments
         );
-        dputs("Set modification default weapon adjustments");
+        //dputs("Set modification default weapon adjustments");
     }
 
     // Allocate the dynamic achievements data here.
@@ -304,7 +304,7 @@ static void gmod_SetModDefaults(void)
             ((GMod_Defaults.gmod_NumDefinedAchievements + 7) >> 3);           // Bitmap
         UWORD* pData = (UWORD*)AllocVec(allocSize, MEMF_ANY|MEMF_CLEAR);
         if (pData) {
-            dprintf("Allocated %lu bytes for achievement unlock tracking\n", allocSize);
+            //dprintf("Allocated %lu bytes for achievement unlock tracking\n", allocSize);
             GMod_Progress.pprg_Unlocked    = pData;
             GMod_Progress.pprg_UnlockedMap = (UBYTE*)(&pData[GMod_Defaults.gmod_NumDefinedAchievements]);
         } else {
@@ -384,7 +384,7 @@ void GMod_LoadPlayerProgress(void)
     dputs("GMod_LoadPlayerProgress()");
     GMF_Data const* pLoaded = GMF_LoadFile("ab3:progress.stats", &gprg_Header, NULL);
     if (pLoaded) {
-        dputs("Loaded Player Progress...");
+        //dputs("Loaded Player Progress...");
         GMF_ChunkHeader const* pChunk;
 
         // Current Inventory Limits
@@ -393,7 +393,7 @@ void GMod_LoadPlayerProgress(void)
             gmod_SetInventoryLimitsFrom(
                 (GMod_InventoryLimits const *)GMF_ChunkData(pChunk)
             );
-            dputs("Set progress inventory limits");
+            //dputs("Set progress inventory limits");
         } else {
             dputs("Failed to locate INVL chunk");
         }
@@ -406,7 +406,7 @@ void GMod_LoadPlayerProgress(void)
                     (GMod_WeaponAdjustment const *)GMF_ChunkData(pChunk),
                     numAdjustments
                 );
-                dputs("Set progress weapon adjustments");
+                //dputs("Set progress weapon adjustments");
             }
         } else {
             dputs("Failed to locate WADJ chunk");
@@ -419,7 +419,7 @@ void GMod_LoadPlayerProgress(void)
                 &GMod_Progress.pprg_Counters,
                 sizeof(GMod_ProgressCounters)
             );
-            dputs("Set progress counters");
+            //dputs("Set progress counters");
         } else {
             dputs("Failed to locate CTRS chunk");
         }
@@ -443,7 +443,7 @@ void GMod_LoadPlayerProgress(void)
                     dprintf("Unrecognised achievement ID %d\n", (int)pUnlocked->gpc_ID);
                 }
             }
-            dputs("Set progress unlocks");
+            //dputs("Set progress unlocks");
         } else {
             dputs("Failed to locate UNLK chunk");
         }

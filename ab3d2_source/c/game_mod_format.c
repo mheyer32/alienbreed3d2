@@ -22,7 +22,7 @@ static BOOL gmf_CheckData(
     GMF_Data* pGMFData,
     GMF_Header const* pAgainst
 ) {
-    dputs("\tgmf_CheckData()");
+    //dputs("\tgmf_CheckData()");
 
     if (!pGMFData || !pAgainst || !pGMFData->gmd_Data) {
         return FALSE;
@@ -172,11 +172,17 @@ GMF_ChunkHeader const* GMF_LocateChunk(
     GMF_Data const* pGMFData,
     ULONG iIdentValue
 ) {
+    //dprintf("GMF_LocateChunk(%p, 0x%08X) [Index Size %u]\n", pGMFData, iIdentValue, (int)pGMFData->gmd_IndexSize);
     for (ULONG i = 0; i < pGMFData->gmd_IndexSize; ++i) {
+
+        //dprintf("\t%u: 0x%08X\n", i, pGMFData->gmd_Index[i].ie_Ident.id_Value);
+
         if (pGMFData->gmd_Index[i].ie_Ident.id_Value == iIdentValue) {
+            //dputs("\tMatched!");
             return (GMF_ChunkHeader const *)pGMFData->gmd_Index[i].ie_Offset.do_ByteAddress;
         }
     }
+    //dputs("\tNo matches.");
     return NULL;
 }
 
@@ -209,6 +215,7 @@ GMF_Data* GMF_LoadFile(
             !gmf_ProcessDefaultChunks(pGMFData)
         ) {
             FreeVec(pGMFData);
+            pGMFData = NULL;
             break;
         }
 
