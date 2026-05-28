@@ -60,21 +60,21 @@ static GMod_Reward* gmod_ResolveReward(GMod_Reward const* pReward, GMF_ChunkHead
  */
 BOOL gmod_ParseSpecialAmmoBonuses(GMF_ChunkHeader const* pChunkHeader, GMF_Data* pGMFData)
 {
-    dprintf(
-        "\tgmod_ParseSpecialAmmoBonuses() %.*s\n",
-        4, pChunkHeader->ch_Ident.id_Text
-    );
+//     dprintf(
+//         "\tgmod_ParseSpecialAmmoBonuses() %.*s\n",
+//         4, pChunkHeader->ch_Ident.id_Text
+//     );
     GMF_ChunkHeader const* pRewardChunk = GMF_LocateChunk(pGMFData, IDENT_RWRD);
     GMod_SpecialAmmoBonus* pSPAB = (GMod_SpecialAmmoBonus*)GMF_ChunkData(pChunkHeader);
     while (pSPAB->spab_Index != 0xFFFF) {
         if (pSPAB->spab_Reward != NULL) {
-            dprintf(
-                "\t\tResolving SPAB %d [%d]\n\t\t\tReward [%p + %zu] ",
-                (int)pSPAB->spab_Index,
-                (int)pSPAB->spab_AmmoID,
-                pRewardChunk,
-                (size_t)pSPAB->spab_Reward
-            );
+//             dprintf(
+//                 "\t\tResolving SPAB %d [%d]\n\t\t\tReward [%p + %zu] ",
+//                 (int)pSPAB->spab_Index,
+//                 (int)pSPAB->spab_AmmoID,
+//                 pRewardChunk,
+//                 (size_t)pSPAB->spab_Reward
+//             );
             GMod_Reward* pReward   = gmod_ResolveReward(pSPAB->spab_Reward, pRewardChunk);
             pReward->rwrd_Description = GMF_ResolveString(pReward->rwrd_Description, pGMFData);
             pSPAB->spab_Reward     = pReward;
@@ -94,10 +94,10 @@ BOOL gmod_ParseSpecialAmmoBonuses(GMF_ChunkHeader const* pChunkHeader, GMF_Data*
  */
 BOOL gmod_ParseAchievements(GMF_ChunkHeader const* pChunkHeader, GMF_Data* pGMFData)
 {
-    dprintf(
-        "\tgmod_ParseAchievements() %.*s\n",
-        4, pChunkHeader->ch_Ident.id_Text
-    );
+//     dprintf(
+//         "\tgmod_ParseAchievements() %.*s\n",
+//         4, pChunkHeader->ch_Ident.id_Text
+//     );
     GMF_ChunkHeader const* pRewardChunk = GMF_LocateChunk(pGMFData, IDENT_RWRD);
     GMod_Achievement*      pAchievement = (GMod_Achievement*)GMF_ChunkData(pChunkHeader);
 
@@ -106,20 +106,20 @@ BOOL gmod_ParseAchievements(GMF_ChunkHeader const* pChunkHeader, GMF_Data* pGMFD
     for (int i = 0; i < iNumEntries; ++i) {
         pAchievement->achv_Description = GMF_ResolveString(pAchievement->achv_Description, pGMFData);
         if (pAchievement->achv_Reward != NULL) {
-            dprintf(
-                "\t\tResolving ACHV %d [Rule %d %s] [Name %s]\n\t\t\tReward [%p + %zu] ",
-                i,
-                (int)pAchievement->achv_RuleType,
-                aRuleNames[pAchievement->achv_RuleType],
-                pAchievement->achv_Description,
-                pRewardChunk,
-                (size_t)pAchievement->achv_Reward
-            );
+//             dprintf(
+//                 "\t\tResolving ACHV %d [Rule %d %s] [Name %s]\n\t\t\tReward [%p + %zu] ",
+//                 i,
+//                 (int)pAchievement->achv_RuleType,
+//                 aRuleNames[pAchievement->achv_RuleType],
+//                 pAchievement->achv_Description,
+//                 pRewardChunk,
+//                 (size_t)pAchievement->achv_Reward
+//             );
             GMod_Reward* pReward      = gmod_ResolveReward(pAchievement->achv_Reward, pRewardChunk);
             pReward->rwrd_Description = GMF_ResolveString(pReward->rwrd_Description, pGMFData);
             pAchievement->achv_Reward = pReward;
-            dputs(pReward->rwrd_Description);
-        } else {
+            //dputs(pReward->rwrd_Description);
+        } /*else {
             dprintf(
                 "\t\tResolving ACHV %d [Rule %d %s] [Name %s]\n",
                 i,
@@ -127,11 +127,11 @@ BOOL gmod_ParseAchievements(GMF_ChunkHeader const* pChunkHeader, GMF_Data* pGMFD
                 aRuleNames[pAchievement->achv_RuleType],
                 pAchievement->achv_Description
             );
-        }
+        }*/
 
         // Set the event signal mask from the rule type.
         pAchievement->achv_EventMask = gmod_AchievementRuleSignalMask[pAchievement->achv_RuleType];
-
+/*
         // Verbose
         switch (pAchievement->achv_RuleType) {
             case AR_KILL_COUNT:
@@ -187,6 +187,7 @@ BOOL gmod_ParseAchievements(GMF_ChunkHeader const* pChunkHeader, GMF_Data* pGMFD
             default:
                 break;
         }
+*/
         ++pAchievement;
     }
 
@@ -236,6 +237,7 @@ static inline UWORD clamp(UWORD val, UWORD max)
  */
 static void gmod_SetInventoryLimitsFrom(GMod_InventoryLimits const* pSource)
 {
+    dputs("\tgmod_SetInventoryLimitsFrom()");
     GMod_Progress.pprg_InventoryLimits.ic_Health = clamp(
         pSource->ic_Health,
         INVENTORY_UNCAPPED_LIMIT
@@ -258,6 +260,7 @@ static void gmod_SetInventoryLimitsFrom(GMod_InventoryLimits const* pSource)
  */
 static void gmod_SetWeaponAdjustmentsFrom(GMod_WeaponAdjustment const* pSource, ULONG iNum)
 {
+    dputs("\tgmod_SetWeaponAdjustmentsFrom()");
     while (iNum--) {
         UWORD slotID = pSource->wadj_SlotID;
         // TODO - when we add these for real, this is where to sanity check the field rather than just
@@ -278,6 +281,7 @@ static void gmod_SetWeaponAdjustmentsFrom(GMod_WeaponAdjustment const* pSource, 
  */
 static void gmod_SetModDefaults(void)
 {
+    dputs("\tgmod_SetModDefaults()");
     // If we have defined limits, apply those.
     if (GMod_Defaults.gmod_DefinedInventoryLimits) {
         gmod_SetInventoryLimitsFrom(GMod_Defaults.gmod_DefinedInventoryLimits);
@@ -322,6 +326,7 @@ static void gmod_SetModDefaults(void)
  */
 BOOL GMod_LoadModDefaults(void)
 {
+    dputs("GMod_LoadModDefaults()");
     GMod_Defaults.gmod_Loaded = GMF_LoadFile("ab3:Includes/custom_game.props", &gmod_Header, gmod_Parsers);
     if (NULL == GMod_Defaults.gmod_Loaded) {
         dputs("No game modification properties loaded");
@@ -352,22 +357,22 @@ BOOL GMod_LoadModDefaults(void)
         GMod_Defaults.gmod_DefinedAchievements         = (GMod_Achievement const*)GMF_ChunkData(pChunk);
         GMod_Defaults.gmod_NumDefinedAchievements      = GMF_ChunkRecordCount(pChunk, GMod_Achievement);
     }
-    dprintf(
-        "GMod_LoadModDefaults()\n"
-        "\tgmod_Loaded:                    %p\n"
-        "\tgmod_DefinedInventoryLimits:    %p\n"
-        "\tgmod_DefinedSpecialAmmoBonuses: %p %lu\n"
-        "\tgmod_DefinedWeaponAdjustments:  %p %lu\n"
-        "\tgmod_DefinedAchievements:       %p %lu\n",
-        GMod_Defaults.gmod_Loaded,
-        GMod_Defaults.gmod_DefinedInventoryLimits,
-        GMod_Defaults.gmod_DefinedSpecialAmmoBonuses,
-        GMod_Defaults.gmod_NumDefinedSpecialAmmoBonuses,
-        GMod_Defaults.gmod_DefinedWeaponAdjustments,
-        GMod_Defaults.gmod_NumDefinedWeaponAdjustments,
-        GMod_Defaults.gmod_DefinedAchievements,
-        GMod_Defaults.gmod_NumDefinedAchievements
-    );
+//     dprintf(
+//         "GMod_LoadModDefaults()\n"
+//         "\tgmod_Loaded:                    %p\n"
+//         "\tgmod_DefinedInventoryLimits:    %p\n"
+//         "\tgmod_DefinedSpecialAmmoBonuses: %p %lu\n"
+//         "\tgmod_DefinedWeaponAdjustments:  %p %lu\n"
+//         "\tgmod_DefinedAchievements:       %p %lu\n",
+//         GMod_Defaults.gmod_Loaded,
+//         GMod_Defaults.gmod_DefinedInventoryLimits,
+//         GMod_Defaults.gmod_DefinedSpecialAmmoBonuses,
+//         GMod_Defaults.gmod_NumDefinedSpecialAmmoBonuses,
+//         GMod_Defaults.gmod_DefinedWeaponAdjustments,
+//         GMod_Defaults.gmod_NumDefinedWeaponAdjustments,
+//         GMod_Defaults.gmod_DefinedAchievements,
+//         GMod_Defaults.gmod_NumDefinedAchievements
+//     );
     gmod_SetModDefaults();
     return TRUE;
 }
@@ -376,8 +381,10 @@ BOOL GMod_LoadModDefaults(void)
 
 void GMod_LoadPlayerProgress(void)
 {
+    dputs("GMod_LoadPlayerProgress()");
     GMF_Data const* pLoaded = GMF_LoadFile("ab3:progress.stats", &gprg_Header, NULL);
     if (pLoaded) {
+        dputs("Loaded Player Progress...");
         GMF_ChunkHeader const* pChunk;
 
         // Current Inventory Limits
@@ -387,6 +394,8 @@ void GMod_LoadPlayerProgress(void)
                 (GMod_InventoryLimits const *)GMF_ChunkData(pChunk)
             );
             dputs("Set progress inventory limits");
+        } else {
+            dputs("Failed to locate INVL chunk");
         }
 
         // Current Weapon Adjustments
@@ -399,6 +408,8 @@ void GMod_LoadPlayerProgress(void)
                 );
                 dputs("Set progress weapon adjustments");
             }
+        } else {
+            dputs("Failed to locate WADJ chunk");
         }
 
         // Counters
@@ -409,6 +420,8 @@ void GMod_LoadPlayerProgress(void)
                 sizeof(GMod_ProgressCounters)
             );
             dputs("Set progress counters");
+        } else {
+            dputs("Failed to locate CTRS chunk");
         }
 
         // Current unlocked achievements
@@ -431,9 +444,13 @@ void GMod_LoadPlayerProgress(void)
                 }
             }
             dputs("Set progress unlocks");
+        } else {
+            dputs("Failed to locate UNLK chunk");
         }
 
         // We're done here. Free the temporary.
         FreeVec((void*)pLoaded);
+    } else {
+        dputs("Failed to process player progress");
     }
 }

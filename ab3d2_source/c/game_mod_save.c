@@ -96,7 +96,11 @@ static void gmod_CalculateProgressSaveSize(GMod_SaveInfo* restrict pSaveInfo)
 static UBYTE* gmod_makeProgressHeader(UBYTE* pBuffer)
 {
     extern GMF_Header const gprg_Header;
-    CopyMem(&gprg_Header, pBuffer, sizeof(GMF_Header));
+    CopyMem(
+        &gprg_Header,
+        pBuffer,
+        sizeof(GMF_Header)
+    );
     GMF_Header* pHeader = (GMF_Header*)pBuffer;
     pHeader->h_Description.do_Offset = sizeof(GMF_ChunkHeader);
     return pBuffer + sizeof(GMF_Header);
@@ -193,7 +197,7 @@ static UBYTE* gmod_MakeWeaponAdjustmentsChunk(UBYTE* pBuffer, GMod_SaveInfo cons
             ++pSave;
         }
     }
-    return pBuffer + pSaveInfo->uInventoryLimitChunkSize;
+    return pBuffer + pSaveInfo->uWeaponAdjustmentsChunkSize;
 }
 
 static UBYTE* gmod_MakeUnlocksChunk(UBYTE* pBuffer, GMod_SaveInfo const* pSaveInfo)
@@ -241,31 +245,30 @@ void GMod_SavePlayerProgress(void)
 
     gmod_CalculateProgressSaveSize(pSaveInfo);
 
-    dprintf(
-        "uTotalSize %u\n"
-        "uIndexChunkSize %u\n"
-        "uInventoryLimitChunkSize %u\n"
-        "uProgressCountersChunkSize %u\n"
-        "uWeaponAdjustmentsChunkSize %u\n"
-        "uUnlocksChunkSize %u\n"
-        "uStringChunkSize %u\n"
-        "uIndexCount %u\n"
-        "uNumWeaponAdjustments %u\n"
-        "uNumUnlocks %u\n",
-        (unsigned)pSaveInfo->uTotalSize,
-        (unsigned)pSaveInfo->uIndexChunkSize,
-        (unsigned)pSaveInfo->uInventoryLimitChunkSize,
-        (unsigned)pSaveInfo->uProgressCountersChunkSize,
-        (unsigned)pSaveInfo->uWeaponAdjustmentsChunkSize,
-        (unsigned)pSaveInfo->uUnlocksChunkSize,
-        (unsigned)pSaveInfo->uStringChunkSize,
-        (unsigned)pSaveInfo->uIndexCount,
-        (unsigned)pSaveInfo->uNumWeaponAdjustments,
-        (unsigned)pSaveInfo->uNumUnlocks
-    );
+//     dprintf(
+//         "uTotalSize %u\n"
+//         "uIndexChunkSize %u\n"
+//         "uInventoryLimitChunkSize %u\n"
+//         "uProgressCountersChunkSize %u\n"
+//         "uWeaponAdjustmentsChunkSize %u\n"
+//         "uUnlocksChunkSize %u\n"
+//         "uStringChunkSize %u\n"
+//         "uIndexCount %u\n"
+//         "uNumWeaponAdjustments %u\n"
+//         "uNumUnlocks %u\n",
+//         (unsigned)pSaveInfo->uTotalSize,
+//         (unsigned)pSaveInfo->uIndexChunkSize,
+//         (unsigned)pSaveInfo->uInventoryLimitChunkSize,
+//         (unsigned)pSaveInfo->uProgressCountersChunkSize,
+//         (unsigned)pSaveInfo->uWeaponAdjustmentsChunkSize,
+//         (unsigned)pSaveInfo->uUnlocksChunkSize,
+//         (unsigned)pSaveInfo->uStringChunkSize,
+//         (unsigned)pSaveInfo->uIndexCount,
+//         (unsigned)pSaveInfo->uNumWeaponAdjustments,
+//         (unsigned)pSaveInfo->uNumUnlocks
+//     );
 
     UBYTE* pBufferBase = (UBYTE*)AllocVec(pSaveInfo->uTotalSize, MEMF_ANY|MEMF_CLEAR);
-
 
     if (!pBufferBase) {
         dprintf("Couldn't allocate %u bytes for progress save buffer\n", pSaveInfo->uTotalSize);
@@ -297,7 +300,7 @@ void GMod_SavePlayerProgress(void)
         pBuffer = gmod_MakeStringChunk(pBuffer, pSaveInfo);
     }
 
-    BPTR gameProgressFH = Open("ab3:progress.save.stats", MODE_READWRITE);
+    BPTR gameProgressFH = Open("ab3:progress.save.stats", MODE_NEWFILE);
     if (DOSFALSE != gameProgressFH) {
         Write(gameProgressFH, pBufferBase, pSaveInfo->uTotalSize);
         Close(gameProgressFH);

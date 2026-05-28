@@ -32,7 +32,7 @@ enum {
     IDENT_SPAB = 0x53504142,    // Special Ammo Bonuses (used in: GMOD)
     IDENT_RWRD = 0x52575244,    // Rewards (used in: GMOD)
     IDENT_ACHV = 0x41434856,    // Achievements (used in: GMOD)
-    IDENT_CTRS = 0x5741444A,    // Counters (used in: GPRG)
+    IDENT_CTRS = 0x43545253,    // Counters (used in: GPRG)
     IDENT_UNLK = 0x554E4C4B,    // Unlocked (used in: GPRG)
 };
 
