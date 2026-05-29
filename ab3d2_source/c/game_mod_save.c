@@ -16,7 +16,6 @@ static UWORD gmod_CountActiveAdjustments()
             ++uCount;
         }
     }
-//    dprintf("\tGot %u Weapon Adjustments\n", (unsigned)uCount);
     return uCount;
 }
 
@@ -28,7 +27,6 @@ static UWORD gmod_CountAchievementUnlocks()
             ++uCount;
         }
     }
-//    dprintf("\tGot %u Unlocks\n", uCount);
     return uCount;
 }
 
@@ -147,12 +145,6 @@ static UBYTE* gmod_MakeIndexChunk(UBYTE* pBuffer, GMod_SaveInfo const* pSaveInfo
         uOffset += pSaveInfo->uStringChunkSize;
         ++pIndex;
     }
-
-//     dprintf(
-//         "expected size %u, computed size %u\n",
-//         pSaveInfo->uTotalSize,
-//         uOffset
-//     );
 
     return pBuffer + pSaveInfo->uIndexChunkSize;
 }

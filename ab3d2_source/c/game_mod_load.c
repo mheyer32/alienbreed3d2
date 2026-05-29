@@ -235,9 +235,8 @@ static inline UWORD clamp(UWORD val, UWORD max)
  * Helper function, sets the active inventory limits according to some source. Caller bears responsibility
  * for ensuring source is valid.
  */
-static void gmod_SetInventoryLimitsFrom(GMod_InventoryLimits const* pSource)
+static void gmod_SetInventoryLimitsFrom(GMod_InventoryLimits const* restrict pSource)
 {
-//    dputs("\tgmod_SetInventoryLimitsFrom()");
     GMod_Progress.pprg_InventoryLimits.ic_Health = clamp(
         pSource->ic_Health,
         INVENTORY_UNCAPPED_LIMIT
@@ -260,7 +259,6 @@ static void gmod_SetInventoryLimitsFrom(GMod_InventoryLimits const* pSource)
  */
 static void gmod_SetWeaponAdjustmentsFrom(GMod_WeaponAdjustment const* pSource, ULONG iNum)
 {
-//    dputs("\tgmod_SetWeaponAdjustmentsFrom()");
     while (iNum--) {
         UWORD slotID = pSource->wadj_SlotID;
         // TODO - when we add these for real, this is where to sanity check the field rather than just
@@ -281,7 +279,6 @@ static void gmod_SetWeaponAdjustmentsFrom(GMod_WeaponAdjustment const* pSource, 
  */
 static void gmod_SetModDefaults(void)
 {
-//    dputs("\tgmod_SetModDefaults()");
     // If we have defined limits, apply those.
     if (GMod_Defaults.gmod_DefinedInventoryLimits) {
         gmod_SetInventoryLimitsFrom(GMod_Defaults.gmod_DefinedInventoryLimits);
@@ -294,7 +291,6 @@ static void gmod_SetModDefaults(void)
             GMod_Defaults.gmod_DefinedWeaponAdjustments,
             GMod_Defaults.gmod_NumDefinedWeaponAdjustments
         );
-        //dputs("Set modification default weapon adjustments");
     }
 
     // Allocate the dynamic achievements data here.
@@ -384,7 +380,6 @@ void GMod_LoadPlayerProgress(void)
     dputs("GMod_LoadPlayerProgress()");
     GMF_Data const* pLoaded = GMF_LoadFile("ab3:progress.stats", &gprg_Header, NULL);
     if (pLoaded) {
-        //dputs("Loaded Player Progress...");
         GMF_ChunkHeader const* pChunk;
 
         // Current Inventory Limits
@@ -393,9 +388,6 @@ void GMod_LoadPlayerProgress(void)
             gmod_SetInventoryLimitsFrom(
                 (GMod_InventoryLimits const *)GMF_ChunkData(pChunk)
             );
-            //dputs("Set progress inventory limits");
-        } else {
-            dputs("Failed to locate INVL chunk");
         }
 
         // Current Weapon Adjustments
@@ -406,10 +398,7 @@ void GMod_LoadPlayerProgress(void)
                     (GMod_WeaponAdjustment const *)GMF_ChunkData(pChunk),
                     numAdjustments
                 );
-                //dputs("Set progress weapon adjustments");
             }
-        } else {
-            dputs("Failed to locate WADJ chunk");
         }
 
         // Counters
@@ -419,9 +408,6 @@ void GMod_LoadPlayerProgress(void)
                 &GMod_Progress.pprg_Counters,
                 sizeof(GMod_ProgressCounters)
             );
-            //dputs("Set progress counters");
-        } else {
-            dputs("Failed to locate CTRS chunk");
         }
 
         // Current unlocked achievements
@@ -431,10 +417,12 @@ void GMod_LoadPlayerProgress(void)
             (pChunk = GMF_LocateChunk(pLoaded, IDENT_UNLK))
         ) {
             ULONG numUnlocked = GMF_ChunkRecordCount(pChunk, GMod_Unlocked);
-            GMod_Unlocked const* pUnlocked = (GMod_Unlocked const *)GMF_ChunkData(pChunk);
+            GMod_Unlocked const* restrict pUnlocked = (GMod_Unlocked const *)GMF_ChunkData(pChunk);
             while (numUnlocked--) {
                 // Sanity check here.
                 if (pUnlocked->gpc_ID < GMod_Defaults.gmod_NumDefinedAchievements) {
+                    //dprintf("Unlocked %d [0x%04X]\n", (int)pUnlocked->gpc_ID, (unsigned)pUnlocked->gpc_Awarded);
+
                     GMod_Progress.pprg_Unlocked[pUnlocked->gpc_ID] = pUnlocked->gpc_Awarded;
                     UWORD byte = pUnlocked->gpc_ID >> 3;
                     UBYTE bit  = (1 << (pUnlocked->gpc_ID  & 7));
@@ -442,10 +430,8 @@ void GMod_LoadPlayerProgress(void)
                 } else {
                     dprintf("Unrecognised achievement ID %d\n", (int)pUnlocked->gpc_ID);
                 }
+                ++pUnlocked;
             }
-            //dputs("Set progress unlocks");
-        } else {
-            dputs("Failed to locate UNLK chunk");
         }
 
         // We're done here. Free the temporary.

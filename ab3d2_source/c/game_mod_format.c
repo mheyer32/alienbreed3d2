@@ -22,13 +22,10 @@ static BOOL gmf_CheckData(
     GMF_Data* pGMFData,
     GMF_Header const* pAgainst
 ) {
-    //dputs("\tgmf_CheckData()");
-
     if (!pGMFData || !pAgainst || !pGMFData->gmd_Data) {
         return FALSE;
     }
     GMF_Header const* pFrom = (GMF_Header const*)pGMFData->gmd_Data;
-
     return
         pAgainst->h_Ident.id_Value     == pFrom->h_Ident.id_Value &&
         pAgainst->h_SubFormat.id_Value == pFrom->h_SubFormat.id_Value &&
@@ -49,9 +46,6 @@ static BOOL gmf_ReadFile(
 ) {
     BPTR    hGamePropsFH = DOSFALSE;
     BOOL    bResult = FALSE;
-
-    dputs("\tgmf_ReadFile()");
-
     do {
         if (!filename || !pGMFData) {
             dprintf("Invalid parameters %s %p\n", filename, pGMFData);
@@ -94,8 +88,6 @@ static BOOL gmf_ReadFile(
         pGMFData->gmd_IndexSize = 0;
         pGMFData->gmd_Strings   = NULL;
         bResult = TRUE;
-        dputs("\tSuccess");
-
     } while (FALSE);
 
     if (hGamePropsFH != DOSFALSE) {
@@ -112,7 +104,6 @@ static BOOL gmf_ReadFile(
  */
 static BOOL gmf_ProcessDefaultChunks(GMF_Data* pGMFData)
 {
-    dputs("\tgmf_ProcessDefaultChunks()");
     GMF_ChunkHeader const* pIndexHeader = (GMF_ChunkHeader const*)(pGMFData->gmd_Data + sizeof(GMF_Header));
     if (
         pIndexHeader->ch_Ident.id_Value != IDENT_INDX ||
@@ -174,15 +165,11 @@ GMF_ChunkHeader const* GMF_LocateChunk(
 ) {
     //dprintf("GMF_LocateChunk(%p, 0x%08X) [Index Size %u]\n", pGMFData, iIdentValue, (int)pGMFData->gmd_IndexSize);
     for (ULONG i = 0; i < pGMFData->gmd_IndexSize; ++i) {
-
-        //dprintf("\t%u: 0x%08X\n", i, pGMFData->gmd_Index[i].ie_Ident.id_Value);
-
         if (pGMFData->gmd_Index[i].ie_Ident.id_Value == iIdentValue) {
-            //dputs("\tMatched!");
             return (GMF_ChunkHeader const *)pGMFData->gmd_Index[i].ie_Offset.do_ByteAddress;
         }
     }
-    //dputs("\tNo matches.");
+    dprintf("GMF_LocateChunk() Failed to load chunk ident 0x%08X\n", iIdentValue);
     return NULL;
 }
 
@@ -197,8 +184,6 @@ GMF_Data* GMF_LoadFile(
     GMF_Header const* pCheckHeader,
     GMF_ParserEntry const* pCustomParsers
 ) {
-    dputs("GMF_LoadFile()");
-
     GMF_Data* pGMFData = NULL;
     do {
         if (!filename || !pCheckHeader) {
@@ -207,6 +192,7 @@ GMF_Data* GMF_LoadFile(
         }
         pGMFData = (GMF_Data*)AllocVec(sizeof(GMF_Data), MEMF_ANY|MEMF_CLEAR);
         if (!pGMFData) {
+            dprintf("Failed to allocate %u bytes of memory for GMF_Data\n", sizeof(GMF_Data));
             break;
         }
         if (
@@ -243,7 +229,6 @@ GMF_Data* GMF_LoadFile(
  */
 void GMF_Free(GMF_Data const* pGMFData)
 {
-    dputs("GMF_Free()");
     if (pGMFData) {
         if (pGMFData->gmd_Data) {
             FreeVec(pGMFData->gmd_Data);
