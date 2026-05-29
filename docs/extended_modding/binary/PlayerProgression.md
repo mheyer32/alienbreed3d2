@@ -6,7 +6,7 @@ Please read the [Data Format](./DataFormat.md) document for further information 
 
 The Player Progression File stores key statistics pertaining to the progress that a player has made overall, as distinct from regular game saves that include only the level and inventory.
 
-Unlike other files described here, the Player Progression File is a binary asset created by the game on exit and has no corresponding source format.
+Unlike other files described here, the Player Progression File is a binary asset created by the game on exit and has no corresponding source format. The file is saved as `progress.tkgd` in the main game directory.
 
 ## Chunks
 

@@ -226,7 +226,7 @@ static void gmod_MarkAchieved(UWORD id)
 */
 }
 
-static BOOL gmod_TestRuleKillCount(GMod_Achievement const* pAchievement)
+static BOOL gmod_TestRuleKillCount(GMod_Achievement const* restrict pAchievement)
 {
     UWORD uAlienTypeId = pAchievement->achv_Param.oKillCount.uAlienType;
 
@@ -239,11 +239,11 @@ static BOOL gmod_TestRuleKillCount(GMod_Achievement const* pAchievement)
     return GMod_Progress.pprg_Counters.prgc_AlienKills[uAlienTypeId] >= pAchievement->achv_Param.oKillCount.uCount;
 }
 
-static BOOL gmod_TestRuleGroupKillCount(GMod_Achievement const* pAchievement)
+static BOOL gmod_TestRuleGroupKillCount(GMod_Achievement const* restrict pAchievement)
 {
-    ULONG uEnemyMask = pAchievement->achv_Param.oGroupKillCount.uAlienMask;
-    ULONG uCount     = pAchievement->achv_Param.oGroupKillCount.uCount;
-    ULONG uTotal     = 0;
+    ULONG const uEnemyMask = pAchievement->achv_Param.oGroupKillCount.uAlienMask;
+    ULONG const uCount     = pAchievement->achv_Param.oGroupKillCount.uCount;
+    ULONG uTotal = 0;
     for (UWORD uAlienTypeId = 0; uAlienTypeId < NUM_ALIEN_DEFS; ++uAlienTypeId) {
         if (uEnemyMask & (1 << uAlienTypeId)) {
             uTotal += GMod_Progress.pprg_Counters.prgc_AlienKills[uAlienTypeId];
@@ -255,16 +255,16 @@ static BOOL gmod_TestRuleGroupKillCount(GMod_Achievement const* pAchievement)
     return FALSE;
 }
 
-static BOOL gmod_TestRuleZoneFound(GMod_Achievement const* pAchievement)
+static BOOL gmod_TestRuleZoneFound(GMod_Achievement const* restrict pAchievement)
 {
     return Game_LevelNumber == pAchievement->achv_Param.oZoneFound.uLevel
         && Plr1_Zone == pAchievement->achv_Param.oZoneFound.uZoneID;
 }
 
-static BOOL gmod_TestRuleLevelTimeImproved(GMod_Achievement const* pAchievement)
+static BOOL gmod_TestRuleLevelTimeImproved(GMod_Achievement const* restrict pAchievement)
 {
-    ULONG uCountLimit = pAchievement->achv_Param.oMaskedLevelCount.uCount;
-    UWORD uLevelMask  = pAchievement->achv_Param.oMaskedLevelCount.uLevelMask;
+    ULONG const uCountLimit = pAchievement->achv_Param.oMaskedLevelCount.uCount;
+    UWORD const uLevelMask  = pAchievement->achv_Param.oMaskedLevelCount.uLevelMask;
 
     if (pAchievement->achv_Param.oMaskedLevelCount.bOverall) {
         // The combined times improved count across all inclued levels
@@ -290,10 +290,10 @@ static BOOL gmod_TestRuleLevelTimeImproved(GMod_Achievement const* pAchievement)
     return FALSE;
 }
 
-static BOOL gmod_TestRulePlayerDied(GMod_Achievement const* pAchievement)
+static BOOL gmod_TestRulePlayerDied(GMod_Achievement const* restrict pAchievement)
 {
-    ULONG uCountLimit = pAchievement->achv_Param.oMaskedLevelCount.uCount;
-    UWORD uLevelMask  = pAchievement->achv_Param.oMaskedLevelCount.uLevelMask;
+    ULONG const uCountLimit = pAchievement->achv_Param.oMaskedLevelCount.uCount;
+    UWORD const uLevelMask  = pAchievement->achv_Param.oMaskedLevelCount.uLevelMask;
 
     if (pAchievement->achv_Param.oMaskedLevelCount.bOverall) {
         // The combined number of times the player died across all inclued levels
@@ -319,7 +319,7 @@ static BOOL gmod_TestRulePlayerDied(GMod_Achievement const* pAchievement)
     return FALSE;
 }
 
-static BOOL gmod_TestRuleStuffCollected(GMod_Achievement const* pAchievement)
+static BOOL gmod_TestRuleStuffCollected(GMod_Achievement const* restrict pAchievement)
 {
     ULONG const* pConsumables = &GMod_Progress.pprg_Counters.prgc_TotalHealthCollected;
     UWORD consumableId = pAchievement->achv_Param.oCollected.uConsumable;

@@ -1,6 +1,6 @@
 [Back To Overview](../README.md)
 
-# Modification Binary Format
+# TKGD Binary Format
 
 This document describes the binary format used to define the behavioural modification asset files used by the TKG engine.
 

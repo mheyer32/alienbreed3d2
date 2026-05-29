@@ -12,7 +12,8 @@
  *
  */
 
-extern char const game_PropertiesFile[];
+extern char const GMod_PropertiesFile[];
+extern char const GMod_ProgressFile[];
 
 #if defined(DEV)
 static char const* aRuleNames[] = {
@@ -323,7 +324,7 @@ static void gmod_SetModDefaults(void)
 BOOL GMod_LoadModDefaults(void)
 {
     dputs("GMod_LoadModDefaults()");
-    GMod_Defaults.gmod_Loaded = GMF_LoadFile("ab3:Includes/custom_game.props", &gmod_Header, gmod_Parsers);
+    GMod_Defaults.gmod_Loaded = GMF_LoadFile(GMod_PropertiesFile, &gmod_Header, gmod_Parsers);
     if (NULL == GMod_Defaults.gmod_Loaded) {
         dputs("No game modification properties loaded");
         return FALSE;
@@ -378,7 +379,7 @@ BOOL GMod_LoadModDefaults(void)
 void GMod_LoadPlayerProgress(void)
 {
     dputs("GMod_LoadPlayerProgress()");
-    GMF_Data const* pLoaded = GMF_LoadFile("ab3:progress.stats", &gprg_Header, NULL);
+    GMF_Data const* pLoaded = GMF_LoadFile(GMod_ProgressFile, &gprg_Header, NULL);
     if (pLoaded) {
         GMF_ChunkHeader const* pChunk;
 
@@ -439,4 +440,10 @@ void GMod_LoadPlayerProgress(void)
     } else {
         dputs("Failed to process player progress");
     }
+}
+
+/**********************************************************************************************************************/
+
+void GMod_LoadLevelModifications(void)
+{
 }

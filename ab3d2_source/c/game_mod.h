@@ -230,7 +230,9 @@ typedef UWORD ShortDate;
  */
 typedef struct {
     ShortDate gpc_Awarded; // Date Awarded
-    UWORD     gpc_ID;       // Index of Achievement
+    UWORD     gpc_ID;      // Index of the Achievement
+    //UWORD     gpc_Level;   // Which level the achievemnt was awarded in
+    //UWORD     gpc_Reserved;
 } ASM_ALIGN(sizeof(UWORD)) GMod_Unlocked;
 
 

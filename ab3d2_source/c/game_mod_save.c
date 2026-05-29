@@ -7,6 +7,9 @@
 #include "system.h"
 #include "game.h"
 
+extern char const GMod_PropertiesFile[];
+extern char const GMod_ProgressFile[];
+
 static UWORD gmod_CountActiveAdjustments()
 {
     UWORD uCount = 0;
@@ -31,7 +34,7 @@ static UWORD gmod_CountAchievementUnlocks()
 }
 
 /** Description for string chunk */
-char const sSaveDesc[8] = {
+static char const sSaveDesc[8] = {
     'P','l','y','r','P','r','g', 0
 };
 
@@ -91,7 +94,7 @@ static void gmod_CalculateProgressSaveSize(GMod_SaveInfo* restrict pSaveInfo)
     pSaveInfo->uTotalSize += pSaveInfo->uIndexChunkSize;
 }
 
-static UBYTE* gmod_makeProgressHeader(UBYTE* pBuffer)
+static UBYTE* gmod_MakeProgressHeader(UBYTE* pBuffer)
 {
     extern GMF_Header const gprg_Header;
     CopyMem(
@@ -269,7 +272,7 @@ void GMod_SavePlayerProgress(void)
     }
 
     // Add the header.
-    UBYTE* pBuffer = gmod_makeProgressHeader(pBufferBase);
+    UBYTE* pBuffer = gmod_MakeProgressHeader(pBufferBase);
 
     pBuffer = gmod_MakeIndexChunk(pBuffer, pSaveInfo);
 
@@ -293,7 +296,7 @@ void GMod_SavePlayerProgress(void)
         pBuffer = gmod_MakeStringChunk(pBuffer, pSaveInfo);
     }
 
-    BPTR gameProgressFH = Open("ab3:progress.stats", MODE_NEWFILE);
+    BPTR gameProgressFH = Open(GMod_ProgressFile, MODE_NEWFILE);
     if (DOSFALSE != gameProgressFH) {
         Write(gameProgressFH, pBufferBase, pSaveInfo->uTotalSize);
         Close(gameProgressFH);
