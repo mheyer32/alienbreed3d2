@@ -343,6 +343,9 @@ void Draw_ResetGameDisplay()
         );
         if (bmHandle) {
             UBYTE *bmBasePtr = bmBaseAddress;
+            for (ULONG y = 0; y < bmHeight; ++y) {
+                memset(bmBasePtr + bmBytesPerRow * y, 0, bmBytesPerRow);
+            }
 
             /* draw_Border: chunky decode of draw_BorderPacked_vb (refreshed above). */
             WORD height = Vid_LogicalHeight();

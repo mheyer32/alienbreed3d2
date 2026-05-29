@@ -40,8 +40,6 @@
     #define SHOW_TITLE_STATE 1
 #endif
 
-#define TEXT_PLANE_SIZE (MSG_MAX_LINES_SMALL + 1) * (DRAW_MSG_CHAR_H + DRAW_TEXT_Y_SPACING) * (SCREEN_WIDTH / 8)
-
 extern UWORD draw_Palette_vw[3 * 256];
 extern ULONG Vid_LoadRGB32Struct_vl[3 * 256 + 2];
 
@@ -169,6 +167,7 @@ void Vid_OpenMainScreen(void)
             PLANEPTR ptr = (PLANEPTR)(((ULONG)rasters[i] + 7) & ~7);
             for (int p = 0; p < 8; ++p) {
                 bitmaps[i].Planes[p] = ptr;
+                BltClear(ptr, SCREEN_WIDTH * SCREEN_HEIGHT / 8, 0x1);
                 ptr += SCREEN_WIDTH * SCREEN_HEIGHT / 8;
             }
         }
@@ -691,6 +690,7 @@ void Vid_Present()
     } else {
         CallAsm(&C2P_Convert);
         if (!Vid_FullScreen_b && Msg_Enabled() && Msg_SmallScreenNeedsRedraw()) {
+            UWORD planeSize = Msg_SmallScreenTextPlaneSize();
             PLANEPTR planes[3] = {
                 Draw_FastRamPlanePtr,
                 &Vid_Screen1Ptr_l[PLANE_OFFSET(DRAW_TEXT_PLANE_NUM) + DRAW_TEXT_SMALL_PLANE_OFFSET ],
@@ -702,7 +702,9 @@ void Vid_Present()
             Draw_RepairTextPlaneBorders();
 
             for (UWORD p = 1; p < 3; ++p) {;
-                CopyMemQuick(planes[0], planes[p], TEXT_PLANE_SIZE);
+                if (planeSize) {
+                    CopyMemQuick(planes[0], planes[p], planeSize);
+                }
             }
         }
         Draw_UpdateBorder_Planar();
