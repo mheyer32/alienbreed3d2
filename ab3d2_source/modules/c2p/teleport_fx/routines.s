@@ -39,7 +39,7 @@ c2p_SetParamsTeleFx:
 				move.w	d3,c2p_ChunkyOffset_w
 				move.w	#C2P_BPL_ROWBYTES,d3
 				mulu.w	d7,d3					; offset for top letterbox in screenbuffer
-				add.w	#C2P_SMALL_BPL_OFFSET,d3; top left corner of small render window in chipmem
+				add.w	Vid_SmallRenderTopOffset_w,d3; top left corner of small render window in chipmem
 				move.w	d3,c2p_PlanarOffset_w
 				rts
 
@@ -47,7 +47,8 @@ c2p_SetParamsTeleFxFull:
 				move.w	#7,Game_TeleportFrame_w				; Start a number of teleporter frames
 				move.w	#(FS_WIDTH/8)-1,c2p_WTC_w		; width in chipmem?
 				move.w	Vid_LetterBoxMarginHeight_w,d7
-				move.l	#C2P_FS_HEIGHT-1,d1	; height of area to convert
+				move.w	Vid_FullscreenRenderHeight_w,d1	; height of area to convert
+				subq.w	#1,d1
 				sub.w	d7,d1				; top letterbox
 				sub.w	d7,d1				; bottom letterbox: d1: number of lines
 				move.w	d1,c2p_HTC_Init_w

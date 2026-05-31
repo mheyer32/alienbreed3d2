@@ -53,6 +53,10 @@ Vid_ScreenBufferIndex_w:		ds.w	1	; Index (0/1) of current screen buffer displaye
 
 _Vid_LetterBoxMarginHeight_w::
 Vid_LetterBoxMarginHeight_w:	ds.w	1	; Letter box rendering, height of black border
+_Vid_FullscreenRenderHeight_w::
+Vid_FullscreenRenderHeight_w:	ds.w	1	; Fullscreen C2P/render height before user letterboxing
+_Vid_SmallRenderTopOffset_w::
+Vid_SmallRenderTopOffset_w:		ds.w	1	; Planar row offset of the small render window
 
 _Vid_FullScreen_b::
 Vid_FullScreen_b:				ds.b	1
