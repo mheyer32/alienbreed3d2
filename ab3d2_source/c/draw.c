@@ -111,6 +111,10 @@ static void draw_ConvertBorderDigitsToChunky(UBYTE* chunkyPtr, const UBYTE *plan
 static void draw_ReorderBorderDigits(UBYTE* toPlanarPtr, const UBYTE *planarBasePtr, UWORD width, UWORD height);
 static void draw_ChunkyGlyph(UBYTE *drawPtr, UWORD drawSpan, UBYTE charCode, UBYTE pen);
 
+static void draw_LoadChunkyBorderFromPacked(void);
+static void draw_CopyPlanarBorderForVisibleHeight(PLANEPTR dst, PLANEPTR src);
+static WORD draw_GetShiftedBorderCrop(WORD visibleHeight, WORD *dstY);
+
 static void draw_UpdateCounter_RTG(
     APTR bmBaseAddress,
     ULONG bmBytesPerRow,
@@ -171,15 +175,7 @@ BOOL Draw_Init()
     void (*border_convert)(UBYTE* to, const UBYTE *from, UWORD width, UWORD height);
 
     if (Vid_isRTG) {
-        BitPlanes planes;
-        unLHA(Vid_FastBufferPtr_l, draw_BorderPacked_vb, 0, Sys_GetTemporaryWorkspace(), NULL);
-
-        for (int p = 0; p < SCREEN_DEPTH; ++p) {
-            planes[p] = Vid_FastBufferPtr_l + PLANESIZE * p;
-        };
-
-        /* The image we have has a fixed size */
-        draw_PlanarToChunky(draw_Border, planes, SCREEN_WIDTH * SCREEN_HEIGHT);
+        draw_LoadChunkyBorderFromPacked();
 
         border_convert = draw_ConvertBorderDigitsToChunky;
     } else {
@@ -320,8 +316,9 @@ void Draw_ResetGameDisplay()
     /* Retrigger the counters */
     draw_ResetHUDCounters();
     if (!Vid_isRTG) {
-        unLHA(Vid_Screen1Ptr_l, draw_BorderPacked_vb, 0, Sys_GetTemporaryWorkspace(), NULL);
-        unLHA(Vid_Screen2Ptr_l, draw_BorderPacked_vb, 0, Sys_GetTemporaryWorkspace(), NULL);
+        unLHA(Vid_FastBufferPtr_l, draw_BorderPacked_vb, 0, Sys_GetTemporaryWorkspace(), NULL);
+        draw_CopyPlanarBorderForVisibleHeight(Vid_Screen1Ptr_l, Vid_FastBufferPtr_l);
+        draw_CopyPlanarBorderForVisibleHeight(Vid_Screen2Ptr_l, Vid_FastBufferPtr_l);
         Draw_UpdateBorder_Planar();
         if (!Vid_FullScreen_b) {
             draw_ConfigureTextPlane();
@@ -329,21 +326,53 @@ void Draw_ResetGameDisplay()
     } else {
         LOCAL_CYBERGFX();
 
+        draw_LoadChunkyBorderFromPacked();
+
         Sys_MemFillLong(Vid_FastBufferPtr_l, 0, (SCREEN_WIDTH * SCREEN_HEIGHT) >> 2);
 
         ULONG bmBytesPerRow;
+        ULONG bmHeight = 0;
         APTR bmBaseAddress;
 
         APTR bmHandle = LockBitMapTags(
             Vid_MainScreen_l->ViewPort.RasInfo->BitMap,
             LBMI_BYTESPERROW, (ULONG)&bmBytesPerRow,
             LBMI_BASEADDRESS, (ULONG)&bmBaseAddress,
+            LBMI_HEIGHT, (ULONG)&bmHeight,
             TAG_DONE
         );
         if (bmHandle) {
-            const UBYTE *src = draw_Border;
-            WORD height = Vid_ScreenHeight < SCREEN_HEIGHT ? Vid_ScreenHeight : SCREEN_HEIGHT;
-            src += (SCREEN_HEIGHT - height) * SCREEN_WIDTH;
+            UBYTE *bmBasePtr = bmBaseAddress;
+            for (ULONG y = 0; y < bmHeight; ++y) {
+                memset(bmBasePtr + bmBytesPerRow * y, 0, bmBytesPerRow);
+            }
+
+            /* draw_Border: chunky decode of draw_BorderPacked_vb (refreshed above). */
+            WORD height = Vid_LogicalHeight();
+            if (bmHeight > 0 && bmHeight < (ULONG)(UWORD)height) {
+                height = (WORD)bmHeight;
+            }
+
+            WORD dstY = 0;
+            WORD srcY = draw_GetShiftedBorderCrop(height, &dstY);
+
+            if (srcY < 0) {
+                WORD clearLines = -srcY;
+                UBYTE *clearPtr = bmBasePtr;
+                if (clearLines > height) {
+                    clearLines = height;
+                }
+                for (WORD y = 0; y < clearLines; ++y) {
+                    memset(clearPtr, 0, SCREEN_WIDTH);
+                    clearPtr += bmBytesPerRow;
+                }
+                dstY   = clearLines;
+                height -= clearLines;
+                srcY   = 0;
+            }
+
+            const UBYTE *src = draw_Border + (ULONG)SCREEN_WIDTH * (ULONG)(UWORD)srcY;
+            bmBaseAddress = bmBasePtr + bmBytesPerRow * (ULONG)(UWORD)dstY;
 
             if (bmBytesPerRow == SCREEN_WIDTH) {
                 COPY(src, bmBaseAddress, SCREEN_WIDTH * height);
@@ -354,7 +383,7 @@ void Draw_ResetGameDisplay()
                     src += SCREEN_WIDTH;
                 }
             }
-            Draw_UpdateBorder_RTG(bmBaseAddress, bmBytesPerRow);
+            Draw_UpdateBorder_RTG(bmBasePtr, bmBytesPerRow);
             UnLockBitMap(bmHandle);
         }
     }
@@ -664,10 +693,6 @@ static void draw_UpdateItems_RTG(
 
 /**********************************************************************************************************************/
 
-/**
- * Called during Vid_Present on the RTG codepath to update the border within the main bitmap lock. Also called when
- * resizing the display.
- */
 void Draw_UpdateBorder_RTG(APTR bmBaseAddress, ULONG bmBytesPerRow)
 {
     INIT_ITEMS();
@@ -1037,6 +1062,60 @@ static void draw_PlanarToChunky(UBYTE *chunkyPtr, const PLANEPTR *planePtrs, ULO
         for (UWORD p = 0; p < 8; ++p) {
             pptr[p]++;
         }
+    }
+}
+
+/**
+ * Unpack draw_BorderPacked_vb into Vid_FastBufferPtr_l as planar, then build draw_Border chunky (RTG border source).
+ * Mirrors planar Draw_ResetGameDisplay which loads screens from the same packed data.
+ */
+static void draw_LoadChunkyBorderFromPacked(void)
+{
+    BitPlanes planes;
+
+    unLHA(Vid_FastBufferPtr_l, draw_BorderPacked_vb, 0, Sys_GetTemporaryWorkspace(), NULL);
+
+    for (int p = 0; p < SCREEN_DEPTH; ++p) {
+        planes[p] = Vid_FastBufferPtr_l + PLANESIZE * p;
+    }
+
+    draw_PlanarToChunky(draw_Border, planes, SCREEN_WIDTH * SCREEN_HEIGHT);
+}
+
+static WORD draw_GetShiftedBorderCrop(WORD visibleHeight, WORD *dstY)
+{
+    *dstY = 0;
+    return SCREEN_HEIGHT - visibleHeight - Vid_BorderReclaimShift_w;
+}
+
+static void draw_CopyPlanarBorderForVisibleHeight(PLANEPTR dst, PLANEPTR src)
+{
+    const UWORD bytesPerRow = SCREEN_WIDTH / 8;
+    WORD height = Vid_LogicalHeight();
+    WORD dstY = 0;
+    WORD srcY = draw_GetShiftedBorderCrop(height, &dstY);
+
+    if (srcY < 0) {
+        WORD clearLines = -srcY;
+        if (clearLines > height) {
+            clearLines = height;
+        }
+
+        for (UWORD p = 0; p < SCREEN_DEPTH; ++p) {
+            memset(dst + PLANE_OFFSET(p), 0, bytesPerRow * clearLines);
+        }
+
+        dstY   = clearLines;
+        height -= clearLines;
+        srcY   = 0;
+    }
+
+    for (UWORD p = 0; p < SCREEN_DEPTH; ++p) {
+        CopyMem(
+            src + PLANE_OFFSET(p) + (ULONG)bytesPerRow * (ULONG)(UWORD)srcY,
+            dst + PLANE_OFFSET(p) + (ULONG)bytesPerRow * (ULONG)(UWORD)dstY,
+            (ULONG)bytesPerRow * (ULONG)(UWORD)height
+        );
     }
 }
 
