@@ -13,6 +13,7 @@
  */
 
 extern char const GMod_PropertiesFile[];
+extern char const LMod_PropertiesFile[];
 extern char const GMod_ProgressFile[];
 
 #if defined(DEV)
@@ -211,6 +212,15 @@ static GMF_ParserEntry gmod_Parsers[] = {
 static GMF_Header const gmod_Header = {
     .h_Ident.id_Value     = IDENT_TKGD,
     .h_SubFormat.id_Value = IDENT_GMOD,
+    .h_Version            = {TKG_VERSION, TKG_REVISION}
+};
+
+/**
+ * Level Modification File, LMOD
+ */
+static GMF_Header const lmod_Header = {
+    .h_Ident.id_Value     = IDENT_TKGD,
+    .h_SubFormat.id_Value = IDENT_LMOD,
     .h_Version            = {TKG_VERSION, TKG_REVISION}
 };
 
@@ -444,6 +454,21 @@ void GMod_LoadPlayerProgress(void)
 
 /**********************************************************************************************************************/
 
-void GMod_LoadLevelModifications(void)
+void LMod_LoadModificationData(void)
 {
+    dputs("LMod_LoadModificationData()");
+    LMod_Properties.lmod_Loaded = GMF_LoadFile(LMod_PropertiesFile, &lmod_Header, NULL);
+    if (NULL == LMod_Properties.lmod_Loaded) {
+        dputs("No level modification properties loaded");
+        return;
+    }
+}
+
+void LMod_FreeModificationData(void)
+{
+    dputs("LMod_FreeModificationData()");
+    if (LMod_Properties.lmod_Loaded) {
+        FreeVec((void*)LMod_Properties.lmod_Loaded);
+        LMod_Properties.lmod_Loaded = NULL;
+    }
 }

@@ -12,6 +12,9 @@
 			DCLC GMod_Progress, ds.b, PPrgT_SizeOf_l
 
 			align 4
+			DCLC LMod_Properties, ds.b, LModT_SizeOf_l
+
+			align 4
 _Game_ProgressSignal::
 Game_ProgressSignal_l:			ds.l 1 ; cleared at the start of every frame and checked at the end
 

@@ -261,23 +261,15 @@ extern GMod_DefaultProperties GMod_Defaults; // Defined in BSS
 /**********************************************************************************************************************/
 
 /**
- * Note: This is the runtime representation of player progression.
+ * GMod_ApplyReward()
+ *
+ * Applies the reward definition to the inventory limits and current carry.
  */
-typedef struct {
-    GMod_InventoryLimits    pprg_InventoryLimits;
-    GMod_WeaponAdjustment   pprg_WeaponAdjustments[NUM_GUN_DEFS];
-    GMod_ProgressCounters   pprg_Counters;
-
-    /** Dynamically allocated, count matches GMod_DefaultProperties.gmod_NumDefinedAchievements */
-    ShortDate* pprg_Unlocked;
-
-    /** Bitmap of already unlocked achievements, for quick testing via tst.b */
-    UBYTE*     pprg_UnlockedMap;
-} GMod_PlayerProgression;
-
-extern GMod_PlayerProgression GMod_Progress; // In BSS
-
-/**********************************************************************************************************************/
+extern void GMod_ApplyReward(
+    GMod_Reward const*    pReward,
+    GMod_InventoryLimits* pInventoryLimits,
+    InventoryConsumables* pInventoryConsumables
+);
 
 /**
  * GMod_Init()
@@ -307,6 +299,25 @@ extern BOOL GMod_LoadModDefaults(void);
 
 /**********************************************************************************************************************/
 
+// TODO - consider separate progress.h ?
+
+/**
+ * Note: This is the runtime representation of player progression.
+ */
+typedef struct {
+    GMod_InventoryLimits    pprg_InventoryLimits;
+    GMod_WeaponAdjustment   pprg_WeaponAdjustments[NUM_GUN_DEFS];
+    GMod_ProgressCounters   pprg_Counters;
+
+    /** Dynamically allocated, count matches GMod_DefaultProperties.gmod_NumDefinedAchievements */
+    ShortDate* pprg_Unlocked;
+
+    /** Bitmap of already unlocked achievements, for quick testing via tst.b */
+    UBYTE*     pprg_UnlockedMap;
+} GMod_PlayerProgression;
+
+extern GMod_PlayerProgression GMod_Progress; // In BSS
+
 /**
  * GMod_LoadPlayerProgress()
  *
@@ -314,24 +325,37 @@ extern BOOL GMod_LoadModDefaults(void);
  */
 extern void GMod_LoadPlayerProgress(void);
 
-/**********************************************************************************************************************/
-
-/**
- * GMod_ApplyReward()
- *
- * Applies the reward definition to the inventory limits and current carry.
- */
-extern void GMod_ApplyReward(
-    GMod_Reward const*    pReward,
-    GMod_InventoryLimits* pInventoryLimits,
-    InventoryConsumables* pInventoryConsumables
-);
-
 /**
  * GMod_SavePlayerProgress()
  *
  * Attempts to save the the progress for the current player on exit.
  */
 extern void GMod_SavePlayerProgress(void);
+
+/**********************************************************************************************************************/
+
+// TODO - consider a separate level_mod.h ?
+
+typedef struct {
+    GMF_Data const* lmod_Loaded;
+    WORD const* lmod_PVSErrata;
+
+} LMod_LevelProperties;
+
+extern LMod_LevelProperties LMod_Properties;
+
+/**
+ * LMod_LoadModificationData
+ *
+ * Attempts to load the modification data for the current level.
+ */
+extern void LMod_LoadModificationData(void);
+
+/**
+ * LMod_FreeModificationData
+ *
+ * Releases the loaded data for the current level.
+ */
+extern void LMod_FreeModificationData(void);
 
 #endif

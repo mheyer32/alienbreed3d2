@@ -1,4 +1,7 @@
 				align 4
+
+; TODO - This will likely be totally replaced by LMod_LoadModificationData()
+
 ; Initialises the level mods data
 ; For now, this is just the sky backdrop override data
 Lvl_InitLevelMods:

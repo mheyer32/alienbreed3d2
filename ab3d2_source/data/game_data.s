@@ -7,11 +7,19 @@
 			dc.b "ab3:includes/game_mod.tkgd",0
 	DCLC	GMod_ProgressFile
 			dc.b "ab3:progress.tkgd",0
+
+	DCLC	LMod_PropertiesFile
+			dc.b "ab3:levels/level_" ; string fallthrough
+
+LMod_PropertiesFileX:
+			dc.b	'a/level_mod.tkgd',0
+
 	DCLC	game_PreferencesFile
 			dc.b	"ab3:prefs.cfg",0
 
-Game_SavedGamesName_vb:			dc.b	"ab3:boot.dat",0
+Game_SavedGamesName_vb:
+			dc.b "ab3:boot.dat",0
 
 game_Version_vb:
-                                include "data/version.i"
+			include "data/version.i"
 

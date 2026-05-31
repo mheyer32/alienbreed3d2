@@ -93,6 +93,12 @@ MAX_ACHIEVEMENTS EQU 128
 
 		; TODO GPrefsT
 
+	; Level Modification
+	; See: c/game_mod.h LMod_Properties
+	STRUCTURE LModT,0
+		LONG	LModT_PVSErrataPtr_l									; 0,4
+		LABEL	LModT_SizeOf_l
+
 GAME_EVENTBIT_KILL EQU 0
 GAME_EVENTBIT_ZONE_CHANGE EQU 1
 GAME_EVENTBIT_LEVEL_START EQU 2

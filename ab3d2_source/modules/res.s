@@ -337,14 +337,18 @@ Res_LoadLevelData:
 				move.l	#Lvl_ModPropsFilename_vb,a0
 				jsr		IO_LoadFileOptional
 
+				; TODO - we are removing this once LMod_LoadModificationData is done
 				move.l  d0,Lvl_ModPropertiesPtr_l
-
 				move.l	#MEMF_ANY,IO_MemType_l
 				move.l  #Lvl_ErrataFilename_vb,a0
-
 				jsr     IO_LoadFileOptional
 
 				move.l  d0,Lvl_ErrataPtr_l
+
+				movem.l d0/d1/a0/a1,-(sp)
+				CALLC	LMod_LoadModificationData
+				movem.l (sp)+,d0/d1/a0/a1
+
 
 				jsr		Lvl_InitLevelMods
 
@@ -431,9 +435,10 @@ Res_FreeLevelData:
 				RES_FREEPTR Lvl_MusicPtr_l
 				RES_FREEPTR Lvl_DataPtr_l
 
-				; Edge PVS is managed by C code
+				; Resources managed in C
 				movem.l d0/d1/a0/a1,-(sp)
 				CALLC Zone_FreeEdgePVS
+				CALLC LMod_FreeModificationData
 				movem.l (sp)+,d0/d1/a0/a1
 
 				rts
