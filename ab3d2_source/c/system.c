@@ -415,7 +415,8 @@ void Sys_ShowFPS()
 
     RawDoFmt("%2d.%d %d ", &Sys_FPSIntAvg_w, (void (*)()) & PutChProc, &outPtr);
     LOCAL_GFX();
-    Move(&Vid_MainScreen_l->RastPort, 192, Vid_VisibleBottom() - 13);
+    //Move(&Vid_MainScreen_l->RastPort, 192, Vid_VisibleBottom() - 13);
+    Move(&Vid_MainScreen_l->RastPort, 192, Vid_ScreenHeight - 5); // Need to use bottom border height here
     Text(&Vid_MainScreen_l->RastPort, text, outPtr - text - 1);
 }
 
