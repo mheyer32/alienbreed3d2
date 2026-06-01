@@ -48,6 +48,10 @@ FS_WIDTH				equ		SCREEN_WIDTH
 SMALL_WIDTH				equ		192
 SMALL_HEIGHT			equ		160
 
+FS_MAX_MARGIN			equ 80
+SS_MAX_MARGIN			equ 60
+
+
 VID_FAST_BUFFER_SIZE	equ		SCREEN_WIDTH*SCREEN_HEIGHT+15		; screen size plus alignment
 
 maxscrdiv				equ		8
@@ -1890,12 +1894,14 @@ nodrawp2:
 				tst.b	RAWKEY_NUM_MINUS(a5)	; Decrease vertical view size
 				beq		.nosmallscr
 
+				; TODO - these need to be dislay size aware
+
 				; clamp wide screen
-				move.w	#100,d0					; maximum in fullscreen mode
+				move.w	#FS_MAX_MARGIN,d0					; maximum in fullscreen mode
 				tst.b	Vid_FullScreen_b
 				bne.s	.isFullscreen
 
-				move.w	#60,d0					; maximum in small screen mode
+				move.w	#SS_MAX_MARGIN,d0					; maximum in small screen mode
 
 .isFullscreen:
 				cmp.w	Vid_LetterBoxMarginHeight_w,d0
