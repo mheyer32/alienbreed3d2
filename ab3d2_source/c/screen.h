@@ -10,6 +10,9 @@
 
 #define HUD_BORDER_WIDTH 16
 
+#define FS_MAX_MARGIN 80
+#define SS_MAX_MARGIN 60
+
 /**
  * Define GFX_LONG_ALIGNED if you expect to perform 32-bit access vram/chip only
  */
