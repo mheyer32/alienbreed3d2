@@ -459,9 +459,13 @@ void LMod_LoadModificationData(void)
     dputs("LMod_LoadModificationData()");
     LMod_Properties.lmod_Loaded = GMF_LoadFile(LMod_PropertiesFile, &lmod_Header, NULL);
     if (NULL == LMod_Properties.lmod_Loaded) {
+        LMod_Properties.lmod_PVSErrata = NULL;
         dputs("No level modification properties loaded");
         return;
     }
+    GMF_ChunkHeader const* pChunk = GMF_LocateChunk(LMod_Properties.lmod_Loaded, IDENT_PVSD);
+    LMod_Properties.lmod_PVSErrata = pChunk ? GMF_ChunkData(pChunk) : NULL;
+    dprintf("PVS Errata %p\n", LMod_Properties.lmod_PVSErrata);
 }
 
 void LMod_FreeModificationData(void)
@@ -469,6 +473,7 @@ void LMod_FreeModificationData(void)
     dputs("LMod_FreeModificationData()");
     if (LMod_Properties.lmod_Loaded) {
         FreeVec((void*)LMod_Properties.lmod_Loaded);
-        LMod_Properties.lmod_Loaded = NULL;
     }
+    LMod_Properties.lmod_Loaded = NULL;
+    LMod_Properties.lmod_PVSErrata = NULL;
 }

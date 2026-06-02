@@ -477,10 +477,15 @@ noload:
 				;        Once the LMod_LoadModificationData() is wired in.
 				DEV_CHECK_SET SKIP_PVS_AMEND,.done_errata
 
-				tst.l	Lvl_ErrataPtr_l
+				;tst.l	Lvl_ErrataPtr_l
+				;beq.s	.done_errata
+
+				;move.l	Lvl_ErrataPtr_l,a0
+
+				tst	LMod_Properties+LModT_PVSErrataPtr_l
 				beq.s	.done_errata
 
-				move.l	Lvl_ErrataPtr_l,a0
+				move.l LMod_Properties+LModT_PVSErrataPtr_l,a0
 
 				; Permanently deletes zones in the errata list before we do edge analysis.
 				CALLC	Zone_ApplyPVSErrata

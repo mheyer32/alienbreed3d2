@@ -96,7 +96,8 @@ MAX_ACHIEVEMENTS EQU 128
 	; Level Modification
 	; See: c/game_mod.h LMod_Properties
 	STRUCTURE LModT,0
-		LONG	LModT_PVSErrataPtr_l									; 0,4
+		ULONG	LModT_LoadedPtr_l										; 0,4
+		ULONG	LModT_PVSErrataPtr_l									; 4,4
 		LABEL	LModT_SizeOf_l
 
 GAME_EVENTBIT_KILL EQU 0

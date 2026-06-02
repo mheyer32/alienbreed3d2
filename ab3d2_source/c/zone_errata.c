@@ -265,7 +265,7 @@ void zone_RebuildCurrentPVS(Zone* zonePtr)
 void Zone_ApplyPVSErrata(REG(a0, WORD const* zonePVSErrataPtr))
 {
     if (zonePVSErrataPtr) {
-        dputs("Zone_ApplyPVSErrata()...");
+        dprintf("Zone_ApplyPVSErrata(%p)...\n", zonePVSErrataPtr);
         WORD numZones = 0;
         WORD zoneID;
         while (Zone_IsValidZoneID(zoneID = *zonePVSErrataPtr++)) {
