@@ -446,14 +446,12 @@ Dev_DrawGraph:
 				; Now draw it...
 				move.l	Vid_FastBufferPtr_l,a0
 
-				; In fullscreen, we need to make a small adjustment
-				IFNE	FS_HEIGHT_C2P_DIFF
-				moveq	#FS_HEIGHT_C2P_DIFF,d2
-				and.b	Vid_FullScreen_b,d2
-				ENDC
-
 				move.w	Vid_BottomY_w,d0
-				sub.w	d2,d0
+				tst.b	Vid_FullScreen_b
+				beq.s	.done_bottom
+
+				move.w	Vid_FullscreenRenderHeight_w,d0
+.done_bottom:
 
 				sub.w	Vid_LetterBoxMarginHeight_w,d0
 				mulu.w	#SCREEN_WIDTH,d0
