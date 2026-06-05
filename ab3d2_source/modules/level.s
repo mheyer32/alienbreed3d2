@@ -1,5 +1,7 @@
+; DEPRECATED
 				align 4
 
+; DEPRECATED
 ; TODO - This will likely be totally replaced by LMod_LoadModificationData()
 
 ; Initialises the level mods data
@@ -10,6 +12,7 @@ Lvl_InitLevelMods:
 				beq.s	Lvl_ClearBackdropDisable
 				bra.s	Lvl_FillBackdropDisable
 
+; DEPRECATED
 ; Clears out the Zone_BackdropDisable_vb data
 ; Preserves registers
 Lvl_ClearBackdropDisable:
@@ -22,7 +25,7 @@ Lvl_ClearBackdropDisable:
 				movem.l		(sp)+,d0/d1/a0
 				rts
 
-
+; DEPRECATED
 ; Fills the Zone_BackdropDisable_vb data from the loaded properties data
 ; Preserves registers
 Lvl_FillBackdropDisable:
@@ -44,6 +47,7 @@ Lvl_FillBackdropDisable:
 
 				IFD DEV
 
+; DEPRECATED
 ; In devmode, we can dump the current sky disable table to ram disk
 ; We do this so that we can quicky edit the data in the game and incorporate later
 Lvl_DumpBackdropDisableData:

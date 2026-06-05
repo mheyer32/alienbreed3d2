@@ -333,10 +333,12 @@ Res_LoadLevelData:
 				move.l	Draw_LevelFloorTexturesPtr_l,Draw_FloorTexturesPtr_l
 
 .done_floor_override:
+				; DEPRECATED
 				move.l	#MEMF_ANY,IO_MemType_l
 				move.l	#Lvl_ModPropsFilename_vb,a0
 				jsr		IO_LoadFileOptional
 
+				; DEPRECATED
 				; TODO - we are removing this once LMod_LoadModificationData is done
 				move.l  d0,Lvl_ModPropertiesPtr_l
 				move.l	#MEMF_ANY,IO_MemType_l
@@ -387,12 +389,14 @@ Res_LoadLevelData:
 				align 4
 
 Res_FreeLevelData:
+				; DEPRECATED
 				tst.l    Lvl_ErrataPtr_l
 				beq.s   .done_level_errata
 
 				RES_FREEPTR Lvl_ErrataPtr_l
 
 .done_level_errata:
+				; DEPRECATED
 				tst.l   Lvl_ModPropertiesPtr_l
 				beq.s   .done_level_properties
 

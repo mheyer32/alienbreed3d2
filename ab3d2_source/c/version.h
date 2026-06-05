@@ -2,5 +2,5 @@
 #   define TKG_VERSION 1
 #   define TKG_REVISION 2
 #   define TKG_BUILD 2
-#   define TKG_HASH "269be6d"
+#   define TKG_HASH "640fc6d"
 #endif
