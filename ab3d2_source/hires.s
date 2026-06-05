@@ -29,7 +29,7 @@
 
 CD32VER					equ		0
 
-FS_HEIGHT_HACK			equ		1 ; 0xABADCAFE - Fullscreen height hack, set non-zero to enable
+FS_HEIGHT_HACK			equ		0 ; 0xABADCAFE - Fullscreen height hack, set non-zero to enable
 DISPLAYMSGPORT_HACK		equ		1 ; AL - Level restart freeze hack, set non-zero to enable
 SCREEN_TITLEBAR_HACK	equ		1 ; AL - Stop title bar interactions hack, set non-zero to enable
 
@@ -37,13 +37,12 @@ SCREEN_WIDTH			equ		320
 SCREEN_HEIGHT			equ		256
 
 	IFNE	FS_HEIGHT_HACK
-FS_HEIGHT				equ		SCREEN_HEIGHT-16
 FS_HEIGHT_C2P_DIFF		equ		8
 	ELSE
-FS_HEIGHT				equ		SCREEN_HEIGHT-24
 FS_HEIGHT_C2P_DIFF		equ		0
 	ENDC
 
+FS_HEIGHT				equ		SCREEN_HEIGHT-16
 FS_WIDTH				equ		SCREEN_WIDTH
 SMALL_WIDTH				equ		192
 SMALL_HEIGHT			equ		160
@@ -2190,8 +2189,10 @@ startCopper:
 				move.w	d0,Vid_RightX_w
 				lsr.w	#1,d0
 				move.w	d0,Vid_CentreX_w
+
 				move.w	#FS_HEIGHT,Vid_BottomY_w
 				move.w	#FS_HEIGHT/2,TOTHEMIDDLE
+
 				bra.s	.wipeScreen
 
 .setupSmallScreen:
