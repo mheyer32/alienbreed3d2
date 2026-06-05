@@ -29,7 +29,7 @@
 
 CD32VER					equ		0
 
-FS_HEIGHT_HACK			equ		1 ; 0xABADCAFE - Fullscreen height hack, set non-zero to enable
+FS_HEIGHT_HACK			equ		0 ; 0xABADCAFE - Fullscreen height hack, set non-zero to enable
 DISPLAYMSGPORT_HACK		equ		1 ; AL - Level restart freeze hack, set non-zero to enable
 SCREEN_TITLEBAR_HACK	equ		1 ; AL - Stop title bar interactions hack, set non-zero to enable
 
@@ -37,16 +37,19 @@ SCREEN_WIDTH			equ		320
 SCREEN_HEIGHT			equ		256
 
 	IFNE	FS_HEIGHT_HACK
-FS_HEIGHT				equ		SCREEN_HEIGHT-16
 FS_HEIGHT_C2P_DIFF		equ		8
 	ELSE
-FS_HEIGHT				equ		SCREEN_HEIGHT-24
 FS_HEIGHT_C2P_DIFF		equ		0
 	ENDC
 
+FS_HEIGHT				equ		SCREEN_HEIGHT-16
 FS_WIDTH				equ		SCREEN_WIDTH
 SMALL_WIDTH				equ		192
 SMALL_HEIGHT			equ		160
+
+FS_MAX_MARGIN			equ 80
+SS_MAX_MARGIN			equ 60
+
 
 VID_FAST_BUFFER_SIZE	equ		SCREEN_WIDTH*SCREEN_HEIGHT+15		; screen size plus alignment
 
@@ -1898,12 +1901,14 @@ nodrawp2:
 				tst.b	RAWKEY_NUM_MINUS(a5)	; Decrease vertical view size
 				beq		.nosmallscr
 
+				; TODO - these need to be dislay size aware
+
 				; clamp wide screen
-				move.w	#100,d0					; maximum in fullscreen mode
+				move.w	#FS_MAX_MARGIN,d0					; maximum in fullscreen mode
 				tst.b	Vid_FullScreen_b
 				bne.s	.isFullscreen
 
-				move.w	#60,d0					; maximum in small screen mode
+				move.w	#SS_MAX_MARGIN,d0					; maximum in small screen mode
 
 .isFullscreen:
 				cmp.w	Vid_LetterBoxMarginHeight_w,d0
@@ -2192,8 +2197,10 @@ startCopper:
 				move.w	d0,Vid_RightX_w
 				lsr.w	#1,d0
 				move.w	d0,Vid_CentreX_w
+
 				move.w	#FS_HEIGHT,Vid_BottomY_w
 				move.w	#FS_HEIGHT/2,TOTHEMIDDLE
+
 				bra.s	.wipeScreen
 
 .setupSmallScreen:
