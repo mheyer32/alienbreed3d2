@@ -48,12 +48,6 @@ Lvl_ControlPointCoordsPtr_l:	ds.l	1
 Lvl_GraphicsPtr_l:				ds.l	1
 
 		DCLC Lvl_ClipsPtr_l,	ds.l,	1	; Indexes into point data
-
-; TODO - Remove these in favour of the new level mod structure
-; For custom properties and/or errata
-;Lvl_ModPropertiesPtr_l:         ds.l    1
-;Lvl_ErrataPtr_l:                ds.l    1
-
 		DCLC Lvl_EdgeCount_l,	ds.l,	1
 
 ; Word aligned data

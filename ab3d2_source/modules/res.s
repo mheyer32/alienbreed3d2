@@ -389,20 +389,6 @@ Res_LoadLevelData:
 				align 4
 
 Res_FreeLevelData:
-				; DEPRECATED
-				;tst.l    Lvl_ErrataPtr_l
-				;beq.s   .done_level_errata
-
-				;RES_FREEPTR Lvl_ErrataPtr_l
-
-.done_level_errata:
-				; DEPRECATED
-				;tst.l   Lvl_ModPropertiesPtr_l
-				;beq.s   .done_level_properties
-
-				;RES_FREEPTR Lvl_ModPropertiesPtr_l
-
-.done_level_properties:
 				; check for and free any custom floor overrides
 				tst.l   Draw_LevelFloorTexturesPtr_l
 				beq.s   .done_floor_overrides
@@ -419,16 +405,6 @@ Res_FreeLevelData:
 
 				bsr		res_FreeList
 
-;.free_wall_overrides:
-;				move.l	(a2),a1 ; TODO - is this broken?
-;				beq.s	.done_this_wall
-;
-;				CALLEXEC FreeVec
-;
-;.done_this_wall:
-;				clr.l	(a2)+
-;				dbra	d2,.free_wall_overrides
-;
 				movem.l	(sp)+,d2/a2
 
 .free_other:
