@@ -334,18 +334,18 @@ Res_LoadLevelData:
 
 .done_floor_override:
 				; DEPRECATED
-				move.l	#MEMF_ANY,IO_MemType_l
-				move.l	#Lvl_ModPropsFilename_vb,a0
-				jsr		IO_LoadFileOptional
+				;move.l	#MEMF_ANY,IO_MemType_l
+				;move.l	#Lvl_ModPropsFilename_vb,a0
+				;jsr		IO_LoadFileOptional
 
 				; DEPRECATED
 				; TODO - we are removing this once LMod_LoadModificationData is done
-				move.l  d0,Lvl_ModPropertiesPtr_l
-				move.l	#MEMF_ANY,IO_MemType_l
-				move.l  #Lvl_ErrataFilename_vb,a0
-				jsr     IO_LoadFileOptional
+				;move.l  d0,Lvl_ModPropertiesPtr_l
+				;move.l	#MEMF_ANY,IO_MemType_l
+				;move.l  #Lvl_ErrataFilename_vb,a0
+				;jsr     IO_LoadFileOptional
 
-				move.l  d0,Lvl_ErrataPtr_l
+				;move.l  d0,Lvl_ErrataPtr_l
 
 				movem.l d0/d1/a0/a1,-(sp)
 				CALLC	LMod_LoadModificationData
@@ -390,17 +390,17 @@ Res_LoadLevelData:
 
 Res_FreeLevelData:
 				; DEPRECATED
-				tst.l    Lvl_ErrataPtr_l
-				beq.s   .done_level_errata
+				;tst.l    Lvl_ErrataPtr_l
+				;beq.s   .done_level_errata
 
-				RES_FREEPTR Lvl_ErrataPtr_l
+				;RES_FREEPTR Lvl_ErrataPtr_l
 
 .done_level_errata:
 				; DEPRECATED
-				tst.l   Lvl_ModPropertiesPtr_l
-				beq.s   .done_level_properties
+				;tst.l   Lvl_ModPropertiesPtr_l
+				;beq.s   .done_level_properties
 
-				RES_FREEPTR Lvl_ModPropertiesPtr_l
+				;RES_FREEPTR Lvl_ModPropertiesPtr_l
 
 .done_level_properties:
 				; check for and free any custom floor overrides

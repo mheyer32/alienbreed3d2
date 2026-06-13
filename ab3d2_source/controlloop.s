@@ -309,7 +309,7 @@ SETPLAYERS:
 				move.b	d0,Lvl_FloorFilenameX_vb
 				move.b	d0,Lvl_WallFilenameX_vb
 				;move.b	d0,Lvl_ModPropsFilenameX_vb
-				move.b	d0,Lvl_ErrataFilenameX_vb
+				;move.b	d0,Lvl_ErrataFilenameX_vb
 				move.b	d0,LMod_PropertiesFileX
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b

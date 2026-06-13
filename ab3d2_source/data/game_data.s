@@ -8,12 +8,6 @@
 	DCLC	GMod_ProgressFile
 			dc.b "ab3:progress.tkgd",0
 
-	DCLC	LMod_PropertiesFile
-			dc.b "ab3:levels/level_" ; string fallthrough
-
-LMod_PropertiesFileX:
-			dc.b	'a/level_mod.tkgd',0
-
 	DCLC	game_PreferencesFile
 			dc.b	"ab3:prefs.cfg",0
 
