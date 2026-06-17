@@ -9,6 +9,8 @@
 Lvl_InitLevelMods:
 
 
+			IFD DEV
+
 				; fall through
 ; DEPRECATED
 ; Clears out the Zone_BackdropDisable_vb data
@@ -22,6 +24,7 @@ Lvl_ClearBackdropDisable:
 
 				movem.l		(sp)+,d0/d1/a0
 				rts
+			ENDC
 
 ; DEPRECATED
 ; Fills the Zone_BackdropDisable_vb data from the loaded properties data

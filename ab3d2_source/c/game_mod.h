@@ -34,7 +34,7 @@ enum {
     IDENT_ACHV = 0x41434856,    // Achievements (used in: GMOD)
     IDENT_CTRS = 0x43545253,    // Counters (used in: GPRG)
     IDENT_UNLK = 0x554E4C4B,    // Unlocked (used in: GPRG)
-    IDENT_PVSD = 0x50565344,    // PVS Deletions (used in LMOD)
+    //IDENT_PVSD = 0x50565344,    // PVS Deletions (used in LMOD)
 };
 
 /**********************************************************************************************************************/
@@ -335,28 +335,6 @@ extern void GMod_SavePlayerProgress(void);
 
 /**********************************************************************************************************************/
 
-// TODO - consider a separate level_mod.h ?
 
-typedef struct {
-    GMF_Data const* lmod_Loaded;
-    WORD const* lmod_PVSErrata;
-
-} LMod_LevelProperties;
-
-extern LMod_LevelProperties LMod_Properties;
-
-/**
- * LMod_LoadModificationData
- *
- * Attempts to load the modification data for the current level.
- */
-extern void LMod_LoadModificationData(void);
-
-/**
- * LMod_FreeModificationData
- *
- * Releases the loaded data for the current level.
- */
-extern void LMod_FreeModificationData(void);
 
 #endif

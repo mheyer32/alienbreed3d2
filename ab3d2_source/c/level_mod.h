@@ -20,12 +20,32 @@ typedef struct {
 } ASM_ALIGN(sizeof(WORD)) LevelMessage;
 
 enum {
-    IDENT_PVSD = 0x50565345,
+    IDENT_PVSD = 0x50565344,
     IDENT_BCKD = 0x424B4444,
     IDENT_ZMSG = 0x5A4D5347,
     IDENT_OMSG = 0x4F4D5347,
 };
 
-extern GMF_Data* LMod_LoadFile(char const* filename);
+typedef struct {
+    GMF_Data const* lmod_Loaded;
+    WORD const* lmod_PVSErrata;
+
+} LMod_LevelProperties;
+
+extern LMod_LevelProperties LMod_Properties;
+
+/**
+ * LMod_LoadModificationData
+ *
+ * Attempts to load the modification data for the current level.
+ */
+extern void LMod_LoadModificationData(void);
+
+/**
+ * LMod_FreeModificationData
+ *
+ * Releases the loaded data for the current level.
+ */
+extern void LMod_FreeModificationData(void);
 
 #endif

@@ -55,9 +55,11 @@ zone_FinalOrderTableBarrier_w:	ds.w	1 		; deliniates end of table
 
 ; Bitmask
 EDGE_POINT_ID_LIST_END EQU -4
-ZONE_BACKDROP_DISABLE_SIZE  EQU LVL_EXPANDED_MAX_ZONE_COUNT/8
 
-Zone_BackdropDisable_vb:		ds.b	ZONE_BACKDROP_DISABLE_SIZE
+			IFD DEV
+ZONE_BACKDROP_DISABLE_SIZE  EQU LVL_EXPANDED_MAX_ZONE_COUNT/8
+		DCLC Zone_BackdropDisable_vb,		ds.b,	ZONE_BACKDROP_DISABLE_SIZE
+			ENDC
 
 			align 4
 		DCLC Zone_Visited_vb,	ds.b,	LVL_MAX_ZONE_COUNT

@@ -13,7 +13,6 @@
  */
 
 extern char const GMod_PropertiesFile[];
-extern char const LMod_PropertiesFile[];
 extern char const GMod_ProgressFile[];
 
 #if defined(DEV)
@@ -215,14 +214,6 @@ static GMF_Header const gmod_Header = {
     .h_Version            = {TKG_VERSION, TKG_REVISION}
 };
 
-/**
- * Level Modification File, LMOD
- */
-static GMF_Header const lmod_Header = {
-    .h_Ident.id_Value     = IDENT_TKGD,
-    .h_SubFormat.id_Value = IDENT_LMOD,
-    .h_Version            = {TKG_VERSION, TKG_REVISION}
-};
 
 /**
  * Player Progression File, GPRG.
@@ -452,28 +443,3 @@ void GMod_LoadPlayerProgress(void)
     }
 }
 
-/**********************************************************************************************************************/
-
-void LMod_LoadModificationData(void)
-{
-    dputs("LMod_LoadModificationData()");
-    LMod_Properties.lmod_Loaded = GMF_LoadFile(LMod_PropertiesFile, &lmod_Header, NULL);
-    if (NULL == LMod_Properties.lmod_Loaded) {
-        LMod_Properties.lmod_PVSErrata = NULL;
-        dputs("No level modification properties loaded");
-        return;
-    }
-    GMF_ChunkHeader const* pChunk = GMF_LocateChunk(LMod_Properties.lmod_Loaded, IDENT_PVSD);
-    LMod_Properties.lmod_PVSErrata = pChunk ? GMF_ChunkData(pChunk) : NULL;
-    dprintf("PVS Errata %p\n", LMod_Properties.lmod_PVSErrata);
-}
-
-void LMod_FreeModificationData(void)
-{
-    dputs("LMod_FreeModificationData()");
-    if (LMod_Properties.lmod_Loaded) {
-        FreeVec((void*)LMod_Properties.lmod_Loaded);
-    }
-    LMod_Properties.lmod_Loaded = NULL;
-    LMod_Properties.lmod_PVSErrata = NULL;
-}

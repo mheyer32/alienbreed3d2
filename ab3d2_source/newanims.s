@@ -2720,7 +2720,7 @@ Draw_SkyBackdrop:
 
 				; Bail if the zone is tagged as having no sky
 				; Don't use Plr1_Zone_w as it changes on interrupt
-
+			IFD DEV
 				move.l  Lvl_ListOfGraphRoomsPtr_l,a5
                 move.w  PVST_Zone_w(a5),d5
 				lea		Zone_BackdropDisable_vb,a5
@@ -2731,7 +2731,7 @@ Draw_SkyBackdrop:
 
 				btst.b  d3,(a5) ; d3 is applied modulo 8, test the bit
 				bne.b	sky_early_exit
-
+			ENDC
 				move.l	a0,-(a7)
 				move.w	tmpangpos,d5
 				and.w	#4095,d5
