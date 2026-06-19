@@ -172,7 +172,7 @@ enum {
  * ZONE_ID_LIST_END pair.
  *
  */
-void Zone_ApplyPVSErrata(REG(a0, WORD const* zonePVSErrataPtr));
+void Zone_ApplyErrata(void);
 void Zone_InitEdgePVS(void);
 void Zone_FreeEdgePVS(void);
 

@@ -57,7 +57,7 @@ void LMod_LoadModificationData(void)
     dprintf("PVS Errata %p\n", LMod_Properties.lmod_PVSErrata);
 
     pChunk = GMF_LocateChunk(LMod_Properties.lmod_Loaded, IDENT_BCKD);
-
+    LMod_Properties.lmod_BCKDErrata = pChunk ? GMF_ChunkData(pChunk) : NULL;
 }
 
 void LMod_FreeModificationData(void)
@@ -68,4 +68,5 @@ void LMod_FreeModificationData(void)
     }
     LMod_Properties.lmod_Loaded = NULL;
     LMod_Properties.lmod_PVSErrata = NULL;
+    LMod_Properties.lmod_BCKDErrata = NULL;
 }

@@ -21,7 +21,7 @@ typedef struct {
 
 enum {
     IDENT_PVSD = 0x50565344,
-    IDENT_BCKD = 0x424B4444,
+    IDENT_BCKD = 0x42434B44,
     IDENT_ZMSG = 0x5A4D5347,
     IDENT_OMSG = 0x4F4D5347,
 };
@@ -29,7 +29,7 @@ enum {
 typedef struct {
     GMF_Data const* lmod_Loaded;
     WORD const* lmod_PVSErrata;
-
+    WORD const* lmod_BCKDErrata;
 } LMod_LevelProperties;
 
 extern LMod_LevelProperties LMod_Properties;
