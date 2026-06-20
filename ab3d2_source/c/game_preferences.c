@@ -65,7 +65,7 @@ static UBYTE Prefs_OrderZoneSensitivity = 4;
 void game_ApplyPreferences(void)
 {
     Vid_FullScreenTemp_b        = Vid_FullScreen_b = Prefs_FullScreen_b;
-        Vid_DoubleHeight_b      = Prefs_PixelMode_b;
+    Vid_DoubleHeight_b          = Prefs_PixelMode_b;
     if (Vid_isRTG) {
         Vid_ContrastAdjust_w    = Prefs_ContrastAdjust_RTG_w;
         Vid_BrightnessOffset_w  = Prefs_BrightnessOffset_RTG_w;
@@ -77,6 +77,17 @@ void game_ApplyPreferences(void)
     }
     Draw_ForceSimpleWalls_b     = Prefs_SimpleLighting_b;
     Sys_FPSLimit_w              = Prefs_FPSLimit_b;
+
+    if (Vid_FullScreen_b) {
+        if (Prefs_VertMargin_b > FS_MAX_MARGIN) {
+            Prefs_VertMargin_b = FS_MAX_MARGIN;
+        }
+    } else {
+        if (Prefs_VertMargin_b > SS_MAX_MARGIN) {
+            Prefs_VertMargin_b = SS_MAX_MARGIN;
+        }
+    }
+
     Vid_LetterBoxMarginHeight_w = Prefs_VertMargin_b;
     Anim_LightingEnabled_b      = Prefs_DynamicLights_b;
     Draw_GoodRender_b           = Prefs_RenderQuality_b;
@@ -148,10 +159,10 @@ enum Cfg_VarType {
  * Links a parameter name tod the address of the target and defines the expected text file and target types
  */
 typedef struct {
-    char const *p_name; // The parameter name
-    void       *v_data; // The in-memory location of the value to read/write
-    UWORD      p_type;  // Cfg_ParamType, or the bit number for a flag based VarType
-    UWORD      v_type;  // Cfg_VarType
+    char const * cfg_NamePtr;    // The parameter name
+    void       * cfg_ValuePtr;   // The in-memory location of the value to read/write
+    UWORD        cfg_ParamType;  // Cfg_ParamType, or the bit number for a flag based VarType
+    UWORD        cfg_VarType;    // Cfg_VarType
 } Cfg_Setting;
 
 static char const* s_true  = "true";
@@ -248,8 +259,8 @@ static inline int clamp(int value, int min, int max) {
  * Sets a UBYTE configurartion option
  */
 static void cfg_SetUByte(Cfg_Setting const* option, char const* param) {
-    *((UBYTE*)option->v_data) = clamp(
-        cfg_parsers[option->p_type](param),
+    *((UBYTE*)option->cfg_ValuePtr) = clamp(
+        cfg_parsers[option->cfg_ParamType](param),
         0,
         255
     );
@@ -259,8 +270,8 @@ static void cfg_SetUByte(Cfg_Setting const* option, char const* param) {
  * Sets a BYTE configurartion option
  */
 static void cfg_SetByte(Cfg_Setting const* option, char const* param) {
-    *((BYTE*)option->v_data) = clamp(
-        cfg_parsers[option->p_type](param),
+    *((BYTE*)option->cfg_ValuePtr) = clamp(
+        cfg_parsers[option->cfg_ParamType](param),
         -128,
         127
     );
@@ -270,8 +281,8 @@ static void cfg_SetByte(Cfg_Setting const* option, char const* param) {
  * Sets a UWORD configurartion option
  */
 static void cfg_SetUWord(Cfg_Setting const* option, char const* param) {
-    *((UWORD*)option->v_data) = clamp(
-        cfg_parsers[option->p_type](param),
+    *((UWORD*)option->cfg_ValuePtr) = clamp(
+        cfg_parsers[option->cfg_ParamType](param),
         0,
         65535
     );
@@ -281,8 +292,8 @@ static void cfg_SetUWord(Cfg_Setting const* option, char const* param) {
  * Sets a WORD configurartion option
  */
 static void cfg_SetWord(Cfg_Setting const* option, char const* param) {
-    *((WORD*)option->v_data) = clamp(
-        cfg_parsers[option->p_type](param),
+    *((WORD*)option->cfg_ValuePtr) = clamp(
+        cfg_parsers[option->cfg_ParamType](param),
         -32768,
         32767
     );
@@ -292,12 +303,12 @@ static void cfg_SetWord(Cfg_Setting const* option, char const* param) {
  * Sets a LONG (or ULONG) configurartion option
  */
 static void cfg_SetLong(Cfg_Setting const* option, char const* param) {
-    *((LONG*)option->v_data) = cfg_parsers[option->p_type](param);
+    *((LONG*)option->cfg_ValuePtr) = cfg_parsers[option->cfg_ParamType](param);
 }
 
 static void cfg_SetUByteBit(Cfg_Setting const* option, char const* param) {
-    UBYTE* p = (UBYTE*)option->v_data;
-    UBYTE  v = 1 << (option->p_type & 7);
+    UBYTE* p = (UBYTE*)option->cfg_ValuePtr;
+    UBYTE  v = 1 << (option->cfg_ParamType & 7);
     if (cfg_ParseBool(param)) {
         *p |= v;
     } else {
@@ -306,8 +317,8 @@ static void cfg_SetUByteBit(Cfg_Setting const* option, char const* param) {
 }
 
 static void cfg_SetUWordBit(Cfg_Setting const* option, char const* param) {
-    UWORD* p = (UWORD*)option->v_data;
-    UWORD  v = 1 << (option->p_type & 15);
+    UWORD* p = (UWORD*)option->cfg_ValuePtr;
+    UWORD  v = 1 << (option->cfg_ParamType & 15);
     if (cfg_ParseBool(param)) {
         *p |= v;
     } else {
@@ -316,8 +327,8 @@ static void cfg_SetUWordBit(Cfg_Setting const* option, char const* param) {
 }
 
 static void cfg_SetULongBit(Cfg_Setting const* option, char const* param) {
-    ULONG* p = (ULONG*)option->v_data;
-    ULONG  v = 1 << (option->p_type & 31);
+    ULONG* p = (ULONG*)option->cfg_ValuePtr;
+    ULONG  v = 1 << (option->cfg_ParamType & 31);
     if (cfg_ParseBool(param)) {
         *p |= v;
     } else {
@@ -368,8 +379,8 @@ static char const* cfg_ExtractString(FILE* fp) {
  */
 void cfg_ProcessSettings(char const* name, FILE* fp) {
     for (unsigned int i = 0; i < sizeof(cfg_options) / sizeof(Cfg_Setting); ++i) {
-        if (0 == strcmp(name, cfg_options[i].p_name)) {
-            cfg_setters[cfg_options[i].v_type](
+        if (0 == strcmp(name, cfg_options[i].cfg_NamePtr)) {
+            cfg_setters[cfg_options[i].cfg_VarType](
                 &cfg_options[i],
                 cfg_ExtractString(fp)
             );
@@ -434,43 +445,43 @@ void Cfg_WritePreferencesFile(char const* file) {
 
         for (unsigned int i = 0; i < sizeof(cfg_options) / sizeof(Cfg_Setting); ++i) {
             LONG val = 0;
-            UWORD type = cfg_options[i].p_type;
-            switch (cfg_options[i].v_type) {
+            UWORD type = cfg_options[i].cfg_ParamType;
+            switch (cfg_options[i].cfg_VarType) {
                 case CFG_VAR_TYPE_UBYTE:
-                    val = *((UBYTE*)cfg_options[i].v_data);
+                    val = *((UBYTE*)cfg_options[i].cfg_ValuePtr);
                     break;
 
                 case CFG_VAR_TYPE_BYTE:
-                    val = *((BYTE*)cfg_options[i].v_data);
+                    val = *((BYTE*)cfg_options[i].cfg_ValuePtr);
                     break;
 
                 case CFG_VAR_TYPE_UWORD:
-                    val = *((UWORD*)cfg_options[i].v_data);
+                    val = *((UWORD*)cfg_options[i].cfg_ValuePtr);
                     break;
 
                 case CFG_VAR_TYPE_WORD:
-                    val = *((WORD*)cfg_options[i].v_data);
+                    val = *((WORD*)cfg_options[i].cfg_ValuePtr);
                     break;
 
                 case CFG_VAR_TYPE_ULONG:
                 case CFG_VAR_TYPE_LONG:
-                    val = *((LONG*)cfg_options[i].v_data);
+                    val = *((LONG*)cfg_options[i].cfg_ValuePtr);
                     break;
 
                 case CFG_VAR_TYPE_UBYTE_BIT:
-                    val = *((UBYTE*)cfg_options[i].v_data);
+                    val = *((UBYTE*)cfg_options[i].cfg_ValuePtr);
                     val &= 1 << (type & 7);
                     type = CFG_PARAM_TYPE_BOOL;
                     break;
 
                 case CFG_VAR_TYPE_UWORD_BIT:
-                    val = *((UWORD*)cfg_options[i].v_data);
+                    val = *((UWORD*)cfg_options[i].cfg_ValuePtr);
                     val &= 1 << (type & 15);
                     type = CFG_PARAM_TYPE_BOOL;
                     break;
 
                 case CFG_VAR_TYPE_ULONG_BIT:
-                    val = *((LONG*)cfg_options[i].v_data);
+                    val = *((LONG*)cfg_options[i].cfg_ValuePtr);
                     val &= 1 << (type & 31);
                     type = CFG_PARAM_TYPE_BOOL;
                     break;
@@ -484,15 +495,15 @@ void Cfg_WritePreferencesFile(char const* file) {
                     val = (~val) & 0xFF;
 
                 case CFG_PARAM_TYPE_BOOL:
-                    fprintf(fp, "%-26s %s\n", cfg_options[i].p_name, (val ? s_true : s_false));
+                    fprintf(fp, "%-26s %s\n", cfg_options[i].cfg_NamePtr, (val ? s_true : s_false));
                     break;
 
                 case CFG_PARAM_TYPE_KEY:
-                    fprintf(fp, "%-26s %s\n", cfg_options[i].p_name, cfg_GetKeyName(val));
+                    fprintf(fp, "%-26s %s\n", cfg_options[i].cfg_NamePtr, cfg_GetKeyName(val));
                     break;
 
                 default:
-                    fprintf(fp, "%-26s %d\n", cfg_options[i].p_name, val);
+                    fprintf(fp, "%-26s %d\n", cfg_options[i].cfg_NamePtr, val);
                     break;
             }
 

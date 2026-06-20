@@ -59,7 +59,9 @@ c2p_ConvertFull1x2Opt040:
 				moveq.l	#0,d0							; x
 				move.w	Vid_LetterBoxMarginHeight_w,d1	; y, height of black border top/bottom
 				move.l	#FS_WIDTH,d2					; width
-				move.l	#C2P_FS_HEIGHT/2,d3				; height
+				moveq.l	#0,d3
+				move.w	Vid_FullscreenRenderHeight_w,d3	; height
+				lsr.w	#1,d3
 				sub.w	d1,d3							; top letterbox
 				ble		.nothing
 
@@ -91,7 +93,7 @@ c2p_ConvertSmall1x1Opt040:
 				move.l	#C2P_BPL_SIZE,d6				; bplsize
 				move.l	Vid_FastBufferPtr_l,a0
 				move.l	Vid_DrawScreenPtr_l,a1
-				add.l	#C2P_SMALL_BPL_OFFSET,a1		; top of regular small screen
+				add.w	Vid_SmallRenderTopOffset_w,a1	; top of current small screen
 														; c2p_rect will apply d1 offset ontop
 				bsr		c2p_rect
 
@@ -116,7 +118,7 @@ c2p_ConvertSmall1x2Opt040:
 				move.l	#C2P_BPL_SIZE,d6				; bplsize
 				move.l	Vid_FastBufferPtr_l,a0
 				move.l	Vid_DrawScreenPtr_l,a1
-				add.l	#C2P_SMALL_BPL_OFFSET,a1 ; top of regular small screen
+				add.w	Vid_SmallRenderTopOffset_w,a1 ; top of current small screen
 														; c2p_rect will apply d1 offset ontop
 				bsr		c2p_rect
 .nothing:

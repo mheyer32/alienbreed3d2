@@ -561,7 +561,7 @@ Plr1_CollectItem:
 				; a0 contains player 1 inventory
 				; a1 contains object consumables
 				; a2 contains object items
-				CALLC	Game_CheckInventoryLimits
+				CALLC	GMod_RawCheckInventoryLimits
 
 				move.l	a3,a0 ; restore object pointer
 				tst.w	d0
@@ -626,7 +626,8 @@ Plr1_CollectItem:
 				lea		Plr1_Invetory_vw,a0
 				move.l	obj_ConsumablePtr_l,a1
 				move.l	obj_ItemsPtr_l,a2
-				CALLC	Game_AddToInventory
+
+				CALLC	GMod_RawAddToInventory
 
 				move.l	a3,a0 ; restore object pointer
 				move.l	GLF_DatabasePtr_l,a3
@@ -674,7 +675,7 @@ Plr2_CollectItem:
 				; a0 contains player 1 inventory
 				; a1 contains object consumables
 				; a2 contains object items
-				CALLC	Game_CheckInventoryLimits
+				CALLC	GMod_RawCheckInventoryLimits
 
 				move.l	a3,a0 ; restore object pointer
 				tst.w	d0
@@ -686,7 +687,8 @@ Plr2_CollectItem:
 				lea		Plr2_Invetory_vw,a0
 				move.l	obj_ConsumablePtr_l,a1
 				move.l	obj_ItemsPtr_l,a2
-				CALLC	Game_AddToInventory
+
+				CALLC	GMod_RawAddToInventory
 
 				move.l	a3,a0 ; restore object pointer
 				move.l	GLF_DatabasePtr_l,a3

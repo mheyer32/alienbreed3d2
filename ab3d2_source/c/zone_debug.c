@@ -3,6 +3,7 @@
 #include "zone_inline.h"
 #include "zone_debug.h"
 #include "message.h"
+#include "devmode.h"
 #include <stdio.h>
 
 extern WORD Plr1_Zone;
@@ -39,7 +40,7 @@ static void ZDbg_ShowRegs(void)
         for (int i = 0; i < 8; ++i) {
             UWORD *regw = ((UWORD*)&reg[i])+1;
             UBYTE *regb = ((UBYTE*)&reg[i])+3;
-            printf(
+            dprintf(
                 "\t\td%d: 0x%08X | %10u .l | %+11d .l | %5u .w | %+6d .w | %3u .b | %+4d .b |\n",
                 i, (unsigned)reg[i], (unsigned)reg[i], (int)reg[i],
                 (unsigned)*regw,
@@ -50,12 +51,12 @@ static void ZDbg_ShowRegs(void)
         }
         reg = ((ULONG*)(Dev_RegStatePtr_l))+8;
         for (int i = 0; i < 7; ++i) {
-            printf(
+            dprintf(
                 "\t\ta%d: 0x%08X\n",
                 i, (unsigned)reg[i]
             );
         }
-        printf(
+        dprintf(
             "\t\ta7: 0x%08X\n\n",
             (unsigned)Dev_RegStatePtr_l
         );
@@ -85,7 +86,7 @@ void ZDbg_Init(void)
     );
 
     for (WORD i = 0; i < (Zone_VisJoins_w << 1); ++i) {
-        printf(
+        dprintf(
             "%d: IDX:%d, Rot: {%d, %d}, OSV:%d\n",
             (int)i,
             (int)Zone_EdgePointIndexes_vw[i],
@@ -97,7 +98,7 @@ void ZDbg_Init(void)
 
 
     // if (1 == Zone_VisJoins_w) {
-    //     printf(
+    //     dprintf(
     //         "\tVis Edge: ID: {L:%d, R:%d}, OS:{L:%d, R:%d}, ZC:{L:%d, R:%d}, DC:{L:%d, R:%d}\n",
     //         (int)Zone_EdgeClipIndexes_vw[0], (int)Zone_EdgeClipIndexes_vw[1],
     //         (int)OnScreen_vl[Zone_EdgeClipIndexes_vw[0]],(int)OnScreen_vl[Zone_EdgeClipIndexes_vw[1]],
@@ -120,7 +121,7 @@ void ZDbg_Init(void)
 
     // puts("Point data (index, level, rotated, onscreen)");
     // for (WORD i = 0; i < 20; ++i) {
-    //     printf(
+    //     dprintf(
     //         "\t%3d: {%6d, %6d} => {%6d, %6d} : %6d\n",
     //         (int)i,
     //         (int)Lvl_PointsPtr_l[i].v_X,
@@ -148,7 +149,7 @@ void ZDbg_Enter(void)
     if (!(zdbg_TraceFlags & ZDBG_TRACE_RUNNING)) {
         return;
     }
-    printf(
+    dprintf(
         "\nDECISION: PASS ZONE %3d [L:%d/%d R:%d/%d]\n",
         (int)Draw_CurrentZone_w,
         Draw_LeftClip_l,
@@ -163,7 +164,7 @@ void ZDbg_Skip(void)
     if (!(zdbg_TraceFlags & ZDBG_TRACE_RUNNING)) {
         return;
     }
-    printf(
+    dprintf(
         "\nDECISION: SKIP ZONE %3d [L:%d/%d R:%d/%d]\n",
         (int)Draw_CurrentZone_w,
         Draw_LeftClip_l,
@@ -178,7 +179,7 @@ void ZDbg_SkipEdge(void)
     if (!(zdbg_TraceFlags & ZDBG_TRACE_RUNNING)) {
         return;
     }
-    printf(
+    dprintf(
         "\nDECISION: SKIP ZONE %3d (Edge PVS)\n",
         (int)Draw_CurrentZone_w
     );
@@ -189,7 +190,7 @@ void ZDbg_Done(void)
     if (!(zdbg_TraceFlags & ZDBG_TRACE_RUNNING)) {
         return;
     }
-    puts("\tEnd trace");
+    dputs("\tEnd trace");
     zdbg_TraceFlags &= ~ZDBG_TRACE_RUNNING;
     Dev_DebugFlags_l &= ~DEV_ZONE_TRACE;
     Msg_PushLine("Dumped PVS trace...", MSG_TAG_OTHER|20);
@@ -200,7 +201,7 @@ void ZDbg_LeftClip(void)
     if (!(zdbg_TraceFlags & ZDBG_TRACE_RUNNING)) {
         return;
     }
-    printf(
+    dprintf(
         "\tLeft Clip: %d [L:%d/%d R:%d/%d]\n",
         (int)SetClipStage_w,
         (int)Draw_LeftClip_w,
@@ -215,7 +216,7 @@ void ZDbg_RightClip(void)
     if (!(zdbg_TraceFlags & ZDBG_TRACE_RUNNING)) {
         return;
     }
-    printf(
+    dprintf(
         "\tRight Clip: %d [L:%d/%d R:%d/%d]\n",
         (int)SetClipStage_w,
         (int)Draw_LeftClip_w,
@@ -228,7 +229,7 @@ void ZDbg_RightClip(void)
 
 
 void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
-    printf(
+    dprintf(
         "Zone %d {\n"
         "\tHeights: [LF:%d LC:%d UF:%d UC:%d WL:%d]\n",
         (int)zonePtr->z_ZoneID,
@@ -244,7 +245,7 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
     ZPVSRecord const* p = zonePtr->z_PotVisibleZoneList;
 
     if (zdbg_TraceFlags & ZDBG_TRACE_LIST_PVS) {
-        puts(
+        dputs(
             "\tPVS Zones:\n"
             "\t\t| ID  | Clip   | ...... | ...... | EdgeVis |\n"
             "\t\t+-----+--------+--------+--------+---------+"
@@ -252,7 +253,7 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
         int zone;
         do {
             zone = (int)p->pvs_ZoneID;
-            printf(
+            dprintf(
                 "\t\t| %3d | %6d | %6d | %6d | %6d |\n",
                 zone,
                 (int)(p->pvs_ClipID >= 0 ? Lvl_ClipsPtr_l[p->pvs_ClipID] : -1 ),
@@ -264,7 +265,7 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
         } while (zone > -1);
     }
 
-    printf(
+    dprintf(
         "\n\tEdge List: (Offset: %d)\n"
         "\t\t| Idx |  XPos  |  ZPos  |  XLen  |  ZLen  | JZn | ...... | ... | ... | Flag |\n"
         "\t\t+-----+--------+--------+--------+--------+-----+--------+-----+-----+------+\n",
@@ -277,22 +278,22 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
         int edge = (int)*zList;
         if (edge >= 0) {
             ZEdge* edgePtr = Lvl_ZoneEdgePtr_l + edge;
-            printf(
+            dprintf(
                 "\t\t| %3d | %6d | %6d | %6d | %6d | %3d | %6d | %3d | %3d | %04X |\n",
                 edge,
                 (int)edgePtr->e_Pos.v_X,     (int)edgePtr->e_Pos.v_Z,
                 (int)edgePtr->e_Len.v_X,     (int)edgePtr->e_Len.v_Z,
-                (int)edgePtr->e_JoinZoneID, (int)edgePtr->e_Word_5,
-                (int)edgePtr->e_Byte_12,  (int)edgePtr->e_Byte_13,
+                (int)edgePtr->e_JoinZoneID,  (int)edgePtr->e_Word_5,
+                (int)edgePtr->e_Byte_12,     (int)edgePtr->e_Byte_13,
                 (int)edgePtr->e_Flags
             );
         } else {
-            printf(
+            dprintf(
                 "\t\t+(%3d)+--------+--------+--------+--------+-----+--------+-----+-----+------+\n",
                 edge
             );
         }
     } while (++zList < ((WORD*)zonePtr));
-    puts("}\n");
+    dputs("}\n");
 }
 #endif // ZONE_DEBUG

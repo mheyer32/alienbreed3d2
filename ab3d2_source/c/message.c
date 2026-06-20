@@ -2,9 +2,12 @@
 #include "message.h"
 #include "draw.h"
 
+#include <string.h>
+
 #define MSG_LINE_BUFFER_EXP 3
 #define MSG_LINE_BUFFER_SIZE (1 << MSG_LINE_BUFFER_EXP)
 #define MSG_LINE_BUFFER_MASK (MSG_LINE_BUFFER_SIZE - 1)
+#define MSG_SMALL_LINE_STEP (DRAW_MSG_CHAR_H + DRAW_TEXT_Y_SPACING)
 
 #define MSG_LENGTH_MASK 0x3FFF
 #define MSG_TAG_SHIFT 14
@@ -98,6 +101,71 @@ static __inline WORD msg_NextLineNumber(WORD lineNumber)
         return (lineNumber + 1) & MSG_LINE_BUFFER_MASK;
     }
     return (lineNumber < MSG_MAX_LINES_SMALL) ? lineNumber + 1 : 0;
+}
+
+static __inline WORD msg_SmallScreenTextTop(void)
+{
+    return SMALL_HEIGHT + SMALL_YPOS + DRAW_TEXT_MARGIN;
+}
+
+static __inline WORD msg_SmallScreenTextBottom(void)
+{
+    return Vid_VisibleBottom() - HUD_BORDER_WIDTH - 8;
+}
+
+static UWORD msg_SmallScreenVisibleLineCount(void)
+{
+    WORD top = msg_SmallScreenTextTop();
+    WORD bottom = msg_SmallScreenTextBottom();
+    WORD lines;
+
+    if (bottom < top + DRAW_MSG_CHAR_H - 1) {
+        return 0;
+    }
+
+    lines = ((bottom - top + 1 - DRAW_MSG_CHAR_H) / MSG_SMALL_LINE_STEP) + 1;
+    if (lines > MSG_MAX_LINES_SMALL + 1) {
+        lines = MSG_MAX_LINES_SMALL + 1;
+    }
+
+    return lines;
+}
+
+static UWORD msg_SmallScreenVisibleTextHeight(void)
+{
+    WORD top = msg_SmallScreenTextTop();
+    WORD bottom = msg_SmallScreenTextBottom();
+    WORD height = bottom + 1 - top;
+    WORD maxHeight = (MSG_MAX_LINES_SMALL + 1) * MSG_SMALL_LINE_STEP;
+
+    if (height < 0) {
+        return 0;
+    }
+    if (height > maxHeight) {
+        height = maxHeight;
+    }
+
+    return height;
+}
+
+static UWORD msg_SmallScreenBufferedLineCount(WORD firstLine)
+{
+    WORD nextLine = firstLine;
+    UWORD lines = 0;
+
+    do {
+        if (NULL != msg_Buffer.lineTextPtrs[nextLine]) {
+            ++lines;
+        }
+        nextLine = msg_NextLineNumber(nextLine);
+    } while (nextLine != firstLine);
+
+    return lines;
+}
+
+UWORD Msg_SmallScreenTextPlaneSize(void)
+{
+    return msg_SmallScreenVisibleTextHeight() * (SCREEN_WIDTH / 8);
 }
 
 /**
@@ -306,31 +374,46 @@ void Msg_RenderSmallScreenRTG(UBYTE* bmBaseAddr, ULONG bmBytesPerRow) {
     /* Small screen rendering is direct to the bitmap */
     WORD  lastLine = msg_NextLineNumber(msg_Buffer.lineNumber);
     WORD  nextLine = lastLine;
-    UWORD yPos     = SMALL_HEIGHT + SMALL_YPOS + DRAW_TEXT_MARGIN;
+    UWORD yPos     = msg_SmallScreenTextTop();
+    UWORD maxLines = msg_SmallScreenVisibleLineCount();
+    UWORD skipLines;
 
     msg_Buffer.linesVis = 0;
 
     /* Clear out the text area */
-    Draw_ClearRect(
-        HUD_BORDER_WIDTH,
-        yPos,
-        SCREEN_WIDTH - HUD_BORDER_WIDTH - 1,
-        Vid_ScreenHeight - HUD_BORDER_WIDTH - 8
-    );
+    if (msg_SmallScreenTextBottom() >= yPos) {
+        Draw_ClearRect(
+            HUD_BORDER_WIDTH,
+            yPos,
+            SCREEN_WIDTH - HUD_BORDER_WIDTH - 1,
+            msg_SmallScreenTextBottom()
+        );
+    }
+
+    skipLines = msg_SmallScreenBufferedLineCount(lastLine);
+    if (skipLines > maxLines) {
+        skipLines -= maxLines;
+    } else {
+        skipLines = 0;
+    }
 
     do {
         if (NULL != msg_Buffer.lineTextPtrs[nextLine]) {
-            Draw_ChunkyTextProp(
-                bmBaseAddr,
-                bmBytesPerRow,
-                msg_Buffer.lineLengths[nextLine] & MSG_LENGTH_MASK,
-                msg_Buffer.lineTextPtrs[nextLine],
-                DRAW_TEXT_MARGIN + HUD_BORDER_WIDTH,
-                yPos,
-                msg_TagPens[msg_Buffer.lineLengths[nextLine] >> MSG_TAG_SHIFT]
-            );
-            yPos += DRAW_MSG_CHAR_H + DRAW_TEXT_Y_SPACING;
-            ++msg_Buffer.linesVis;
+            if (skipLines) {
+                --skipLines;
+            } else if (msg_Buffer.linesVis < maxLines) {
+                Draw_ChunkyTextProp(
+                    bmBaseAddr,
+                    bmBytesPerRow,
+                    msg_Buffer.lineLengths[nextLine] & MSG_LENGTH_MASK,
+                    msg_Buffer.lineTextPtrs[nextLine],
+                    DRAW_TEXT_MARGIN + HUD_BORDER_WIDTH,
+                    yPos,
+                    msg_TagPens[msg_Buffer.lineLengths[nextLine] >> MSG_TAG_SHIFT]
+                );
+                yPos += MSG_SMALL_LINE_STEP;
+                ++msg_Buffer.linesVis;
+            }
         }
         nextLine = msg_NextLineNumber(nextLine);
     } while (nextLine != lastLine);
@@ -345,21 +428,39 @@ void Msg_RenderSmallScreenPlanar(UBYTE* plane) {
     WORD  lastLine = msg_NextLineNumber(msg_Buffer.lineNumber);
     WORD  nextLine = lastLine;
     UWORD yPos = 0;
+    UWORD maxLines = msg_SmallScreenVisibleLineCount();
+    UWORD skipLines;
+    UWORD planeSize = Msg_SmallScreenTextPlaneSize();
+
     msg_Buffer.linesVis = 0;
 
     /** clear out the text area */
-    Sys_MemFillLong(plane, 0, SCREEN_WIDTH * 4);
+    if (planeSize) {
+        memset(plane, 0, planeSize);
+    }
+
+    skipLines = msg_SmallScreenBufferedLineCount(lastLine);
+    if (skipLines > maxLines) {
+        skipLines -= maxLines;
+    } else {
+        skipLines = 0;
+    }
+
     do {
         if (NULL != msg_Buffer.lineTextPtrs[nextLine]) {
-            Draw_PlanarTextProp(
-                plane,
-                msg_Buffer.lineLengths[nextLine] & MSG_LENGTH_MASK,
-                msg_Buffer.lineTextPtrs[nextLine],
-                DRAW_TEXT_MARGIN + HUD_BORDER_WIDTH,
-                yPos
-            );
-            yPos += DRAW_MSG_CHAR_H + DRAW_TEXT_Y_SPACING;
-            ++msg_Buffer.linesVis;
+            if (skipLines) {
+                --skipLines;
+            } else if (msg_Buffer.linesVis < maxLines) {
+                Draw_PlanarTextProp(
+                    plane,
+                    msg_Buffer.lineLengths[nextLine] & MSG_LENGTH_MASK,
+                    msg_Buffer.lineTextPtrs[nextLine],
+                    DRAW_TEXT_MARGIN + HUD_BORDER_WIDTH,
+                    yPos
+                );
+                yPos += MSG_SMALL_LINE_STEP;
+                ++msg_Buffer.linesVis;
+            }
         }
         nextLine = msg_NextLineNumber(nextLine);
     } while (nextLine != lastLine);

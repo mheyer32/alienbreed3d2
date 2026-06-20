@@ -98,7 +98,7 @@ static CharKey char_keys[] = {
  * Non-printable keys. Assignable keys only.
  */
 static SpecialKey special_keys[] = {
-    { "BSPC",   0x41 }, //
+    { "BSPC",   0x41 }, // Backspace
     { "ENT",    0x44 },
     { "CTRL",   0x63 },
     { "CAPS",   0x62 },
@@ -106,8 +106,8 @@ static SpecialKey special_keys[] = {
     { "LSHIFT", 0x60 },
     { "R?",     0x30 }, // left mystery key
     { "RSHIFT", 0x61 },
-    { "LALT",   0x64 }, // same for left and right :(
-    { "RALT",   0x64 }, // same for left and right :(
+    { "LALT",   0x64 },
+    { "RALT",   0x65 },
     { "LAMIGA", 0x66 },
     { "SPACE",  0x40 },
     { "RAMIGA", 0x67 },

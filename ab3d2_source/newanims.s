@@ -762,15 +762,26 @@ BACKSFX:
 
 
 objmoveanim:
-                move.w  Plr1_Zone_w,d0
-				move.l	Plr1_ZonePtr_l,a0
-				move.w	(a0),Plr1_Zone_w
+                ;move.w  Plr1_Zone_w,d0
+				;move.l	Plr1_ZonePtr_l,a0
+				;move.w	(a0),Plr1_Zone_w
 
+				;cmp.w   Plr1_Zone_w,d0
+                ;beq.s   .not_changed
+
+				;SET_MEM_BIT	GAME_EVENTBIT_ZONE_CHANGE,Game_ProgressSignal_l
+
+				move.l  Plr1_ZonePtr_l,a0
+				move.w  (a0),d0
 				cmp.w   Plr1_Zone_w,d0
-                beq.s   .not_changed
+				beq.s   .not_changed
 
-                SET_MEM_BIT	GAME_EVENTBIT_ZONE_CHANGE,Game_ProgressSignal_l
+				; Zone changed. Only set the event bit if this is the first visit.
+				move.w  d0,Plr1_Zone_w
+				tas     (Zone_Visited_vb,d0.w) ; better hope this is in fast ram.
+				bne.s   .not_changed
 
+				SET_MEM_BIT GAME_EVENTBIT_ZONE_CHANGE,Game_ProgressSignal_l
 .not_changed:
 				move.l	Plr2_ZonePtr_l,a0
 				move.w	(a0),Plr2_Zone_w
@@ -2709,7 +2720,7 @@ Draw_SkyBackdrop:
 
 				; Bail if the zone is tagged as having no sky
 				; Don't use Plr1_Zone_w as it changes on interrupt
-
+			IFD DEV
 				move.l  Lvl_ListOfGraphRoomsPtr_l,a5
                 move.w  PVST_Zone_w(a5),d5
 				lea		Zone_BackdropDisable_vb,a5
@@ -2720,7 +2731,7 @@ Draw_SkyBackdrop:
 
 				btst.b  d3,(a5) ; d3 is applied modulo 8, test the bit
 				bne.b	sky_early_exit
-
+			ENDC
 				move.l	a0,-(a7)
 				move.w	tmpangpos,d5
 				and.w	#4095,d5

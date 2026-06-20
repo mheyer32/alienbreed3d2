@@ -308,8 +308,7 @@ SETPLAYERS:
 				; Optional files - floor tile override and level properties
 				move.b	d0,Lvl_FloorFilenameX_vb
 				move.b	d0,Lvl_WallFilenameX_vb
-				move.b	d0,Lvl_ModPropsFilenameX_vb
-				move.b	d0,Lvl_ErrataFilenameX_vb
+				move.b	d0,LMod_PropertiesFileX
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq		Plr_InitSlave
@@ -1126,7 +1125,7 @@ game_LoadPosition:
 				ENDR
 
 				move.l  #Plr_Health_w,a0
-				CALLC   Game_ApplyInventoryLimits
+				CALLC   GMod_RawApplyInventoryLimits
 
 				move.w	Game_LevelCounter_w,d0
 				move.l	#mnu_CURRENTLEVELLINE,a1

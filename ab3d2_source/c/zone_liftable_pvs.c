@@ -5,6 +5,7 @@
 #include "zone.h"
 #include "zone_liftable.h"
 #include "zone_inline.h"
+#include "devmode.h"
 
 void zone_DumpLiftable(ZLiftable const* liftable, int index, char const* type)
 {
