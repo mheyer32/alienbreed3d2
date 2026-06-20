@@ -19,18 +19,18 @@ extern struct FileInfoBlock io_FileInfoBlock;
  * Basic valiation for Game Modification Files based on expected header properties.
  */
 static BOOL gmf_CheckData(
-    GMF_Data* pGMFData,
-    GMF_Header const* pAgainst
+    GMF_Data* GMFDataPtr,
+    GMF_Header const* referenceHeaderPtr
 ) {
-    if (!pGMFData || !pAgainst || !pGMFData->gmd_Data) {
+    if (!GMFDataPtr || !referenceHeaderPtr || !GMFDataPtr->gmd_DataPtr) {
         return FALSE;
     }
-    GMF_Header const* pFrom = (GMF_Header const*)pGMFData->gmd_Data;
+    GMF_Header const* pFrom = (GMF_Header const*)GMFDataPtr->gmd_DataPtr;
     return
-        pAgainst->h_Ident.id_Value     == pFrom->h_Ident.id_Value &&
-        pAgainst->h_SubFormat.id_Value == pFrom->h_SubFormat.id_Value &&
-        pAgainst->h_Version.v_Major    == pFrom->h_RequiresVersion.v_Major &&
-        pAgainst->h_Version.v_Minor    >= pFrom->h_RequiresVersion.v_Minor &&
+        referenceHeaderPtr->h_Ident.id_Value     == pFrom->h_Ident.id_Value &&
+        referenceHeaderPtr->h_SubFormat.id_Value == pFrom->h_SubFormat.id_Value &&
+        referenceHeaderPtr->h_Version.v_Major    == pFrom->h_RequiresVersion.v_Major &&
+        referenceHeaderPtr->h_Version.v_Minor    >= pFrom->h_RequiresVersion.v_Minor &&
         pFrom->h_Description.do_Offset >= sizeof(GMF_ChunkHeader);
 }
 
@@ -42,13 +42,13 @@ static BOOL gmf_CheckData(
  */
 static BOOL gmf_ReadFile(
     char const* filename,
-    GMF_Data* pGMFData
+    GMF_Data* GMFDataPtr
 ) {
     BPTR    hGamePropsFH = DOSFALSE;
     BOOL    bResult = FALSE;
     do {
-        if (!filename || !pGMFData) {
-            dprintf("Invalid parameters %s %p\n", filename, pGMFData);
+        if (!filename || !GMFDataPtr) {
+            dprintf("Invalid parameters %s %p\n", filename, GMFDataPtr);
             break;
         }
 
@@ -68,25 +68,25 @@ static BOOL gmf_ReadFile(
         }
 
         LONG iLength = io_FileInfoBlock.fib_Size;
-        UBYTE* pBuffer = (UBYTE*)AllocVec(iLength, MEMF_ANY|MEMF_CLEAR);
-        if (!pBuffer) {
+        UBYTE* bufferPtr = (UBYTE*)AllocVec(iLength, MEMF_ANY|MEMF_CLEAR);
+        if (!bufferPtr) {
             dprintf("Couldn't allocate %d bytes for file %s data\n", iLength, filename);
             break;
         }
 
-        LONG iRead = Read(hGamePropsFH, pBuffer, iLength);
+        LONG iRead = Read(hGamePropsFH, bufferPtr, iLength);
         if (iRead != iLength) {
             dprintf("Incorrect length read, %d bytes instead of %d for file %s data\n", iRead, iLength, filename);
-            FreeVec(pBuffer);
+            FreeVec(bufferPtr);
             break;
         }
 
-        pGMFData->gmd_Data      = pBuffer;
-        pGMFData->gmd_Length    = iLength;
-        pGMFData->gmd_Header    = NULL;
-        pGMFData->gmd_Index     = NULL;
-        pGMFData->gmd_IndexSize = 0;
-        pGMFData->gmd_Strings   = NULL;
+        GMFDataPtr->gmd_DataPtr    = bufferPtr;
+        GMFDataPtr->gmd_Length     = iLength;
+        GMFDataPtr->gmd_HeaderPtr  = NULL;
+        GMFDataPtr->gmd_IndexPtr   = NULL;
+        GMFDataPtr->gmd_IndexSize  = 0;
+        GMFDataPtr->gmd_StringsPtr = NULL;
         bResult = TRUE;
     } while (FALSE);
 
@@ -102,9 +102,9 @@ static BOOL gmf_ReadFile(
  * Handles parsing the default chunks common to all Game Modification Format files, i.e. the Index and String
  * chunks.
  */
-static BOOL gmf_ProcessDefaultChunks(GMF_Data* pGMFData)
+static BOOL gmf_ProcessDefaultChunks(GMF_Data* GMFDataPtr)
 {
-    GMF_ChunkHeader const* pIndexHeader = (GMF_ChunkHeader const*)(pGMFData->gmd_Data + sizeof(GMF_Header));
+    GMF_ChunkHeader const* pIndexHeader = (GMF_ChunkHeader const*)(GMFDataPtr->gmd_DataPtr + sizeof(GMF_Header));
     if (
         pIndexHeader->ch_Ident.id_Value != IDENT_INDX ||
         pIndexHeader->ch_Length < (sizeof(GMF_ChunkHeader) + sizeof(GMF_IndexEntry))
@@ -114,18 +114,18 @@ static BOOL gmf_ProcessDefaultChunks(GMF_Data* pGMFData)
     int iNumEntries = (pIndexHeader->ch_Length - sizeof(GMF_ChunkHeader))/sizeof(GMF_IndexEntry);
 
     GMF_IndexEntry* pIndexEntry = (GMF_IndexEntry*)(((UBYTE*)pIndexHeader) + sizeof(GMF_ChunkHeader));
-    pGMFData->gmd_IndexSize = iNumEntries;
-    pGMFData->gmd_Index     = pIndexEntry;
-    pGMFData->gmd_Strings   = NULL;
+    GMFDataPtr->gmd_IndexSize   = iNumEntries;
+    GMFDataPtr->gmd_IndexPtr    = pIndexEntry;
+    GMFDataPtr->gmd_StringsPtr  = NULL;
 
     /**
      * Convert the offsets in the index to their actual addresses
      */
     for (int i = 0; i < iNumEntries; ++i) {
-        pIndexEntry[i].ie_Offset.do_ByteAddress = pGMFData->gmd_Data + pIndexEntry[i].ie_Offset.do_Offset;
+        pIndexEntry[i].ie_Offset.do_BytePtr = GMFDataPtr->gmd_DataPtr + pIndexEntry[i].ie_Offset.do_Offset;
 
         /* Quick sanity check - ensure the index ident is a match for the in memory location */
-        GMF_Ident const* pChunkIdent = (GMF_Ident const*)pIndexEntry[i].ie_Offset.do_ByteAddress;
+        GMF_Ident const* pChunkIdent = (GMF_Ident const*)pIndexEntry[i].ie_Offset.do_BytePtr;
         if (pIndexEntry[i].ie_Ident.id_Value != pChunkIdent->id_Value) {
             dprintf(
                 "Index entry %d ident mismatch. Index: %.*s => Chunk: %.*s\n",
@@ -137,19 +137,19 @@ static BOOL gmf_ProcessDefaultChunks(GMF_Data* pGMFData)
         }
 
         if (pIndexEntry[i].ie_Ident.id_Value == IDENT_STRH) {
-            pGMFData->gmd_Strings = pIndexEntry[i].ie_Offset.do_Text;
+            GMFDataPtr->gmd_StringsPtr = pIndexEntry[i].ie_Offset.do_TextPtr;
         }
     }
 
-    if (!pGMFData->gmd_Strings) {
+    if (!GMFDataPtr->gmd_StringsPtr) {
         dprintf("String Heap not found in Index\n");
         return FALSE;
     }
 
     /* Patch the description locaton */
-    GMF_Header* pHeader = (GMF_Header*)pGMFData->gmd_Data;
-    pHeader->h_Description.do_Text = pGMFData->gmd_Strings + pHeader->h_Description.do_Offset;
-    pGMFData->gmd_Header = pHeader;
+    GMF_Header* headerPtr = (GMF_Header*)GMFDataPtr->gmd_DataPtr;
+    headerPtr->h_Description.do_TextPtr = GMFDataPtr->gmd_StringsPtr + headerPtr->h_Description.do_Offset;
+    GMFDataPtr->gmd_HeaderPtr = headerPtr;
     return TRUE;
 }
 
@@ -160,13 +160,13 @@ static BOOL gmf_ProcessDefaultChunks(GMF_Data* pGMFData)
  * file only contains one of each chunk type.
  */
 GMF_ChunkHeader const* GMF_LocateChunk(
-    GMF_Data const* pGMFData,
+    GMF_Data const* GMFDataPtr,
     ULONG iIdentValue
 ) {
-    //dprintf("GMF_LocateChunk(%p, 0x%08X) [Index Size %u]\n", pGMFData, iIdentValue, (int)pGMFData->gmd_IndexSize);
-    for (ULONG i = 0; i < pGMFData->gmd_IndexSize; ++i) {
-        if (pGMFData->gmd_Index[i].ie_Ident.id_Value == iIdentValue) {
-            return (GMF_ChunkHeader const *)pGMFData->gmd_Index[i].ie_Offset.do_ByteAddress;
+    //dprintf("GMF_LocateChunk(%p, 0x%08X) [Index Size %u]\n", GMFDataPtr, iIdentValue, (int)GMFDataPtr->gmd_IndexSize);
+    for (ULONG i = 0; i < GMFDataPtr->gmd_IndexSize; ++i) {
+        if (GMFDataPtr->gmd_IndexPtr[i].ie_Ident.id_Value == iIdentValue) {
+            return (GMF_ChunkHeader const *)GMFDataPtr->gmd_IndexPtr[i].ie_Offset.do_BytePtr;
         }
     }
     dprintf("GMF_LocateChunk() Failed to load chunk ident 0x%08X\n", iIdentValue);
@@ -181,45 +181,45 @@ GMF_ChunkHeader const* GMF_LocateChunk(
  */
 GMF_Data* GMF_LoadFile(
     char const* filename,
-    GMF_Header const* pCheckHeader,
-    GMF_ParserEntry const* pCustomParsers
+    GMF_Header const* referenceHeaderPtr,
+    GMF_ParserEntry const* customParserListPtr
 ) {
-    GMF_Data* pGMFData = NULL;
+    GMF_Data* GMFDataPtr = NULL;
     do {
-        if (!filename || !pCheckHeader) {
-            dprintf("Invalid parameters %p %p\n", filename, pCheckHeader);
+        if (!filename || !referenceHeaderPtr) {
+            dprintf("Invalid parameters %p %p\n", filename, referenceHeaderPtr);
             break;
         }
-        pGMFData = (GMF_Data*)AllocVec(sizeof(GMF_Data), MEMF_ANY|MEMF_CLEAR);
-        if (!pGMFData) {
+        GMFDataPtr = (GMF_Data*)AllocVec(sizeof(GMF_Data), MEMF_ANY|MEMF_CLEAR);
+        if (!GMFDataPtr) {
             dprintf("Failed to allocate %u bytes of memory for GMF_Data\n", sizeof(GMF_Data));
             break;
         }
         if (
-            !gmf_ReadFile(filename, pGMFData) ||
-            !gmf_CheckData(pGMFData, pCheckHeader) ||
-            !gmf_ProcessDefaultChunks(pGMFData)
+            !gmf_ReadFile(filename, GMFDataPtr) ||
+            !gmf_CheckData(GMFDataPtr, referenceHeaderPtr) ||
+            !gmf_ProcessDefaultChunks(GMFDataPtr)
         ) {
-            FreeVec(pGMFData);
-            pGMFData = NULL;
+            FreeVec(GMFDataPtr);
+            GMFDataPtr = NULL;
             break;
         }
 
-        if (pCustomParsers) {
-            GMF_ChunkHeader const* pChunkHeader = NULL;
+        if (customParserListPtr) {
+            GMF_ChunkHeader const* chunkHeaderPtr = NULL;
             while (
-                pCustomParsers->pe_Ident &&
-                pCustomParsers->pe_Parser
+                customParserListPtr->pe_Ident &&
+                customParserListPtr->pe_Parser
             ) {
-                if ( (pChunkHeader = GMF_LocateChunk(pGMFData, pCustomParsers->pe_Ident)) ) {
-                    pCustomParsers->pe_Parser(pChunkHeader, pGMFData);
+                if ( (chunkHeaderPtr = GMF_LocateChunk(GMFDataPtr, customParserListPtr->pe_Ident)) ) {
+                    customParserListPtr->pe_Parser(chunkHeaderPtr, GMFDataPtr);
                 }
-                ++pCustomParsers;
+                ++customParserListPtr;
             }
         }
     } while (FALSE);
 
-    return pGMFData;
+    return GMFDataPtr;
 }
 
 /**
@@ -227,12 +227,12 @@ GMF_Data* GMF_LoadFile(
  *
  * Releases a GMF_Data instance and any associated data.
  */
-void GMF_Free(GMF_Data const* pGMFData)
+void GMF_Free(GMF_Data const* GMFDataPtr)
 {
-    if (pGMFData) {
-        if (pGMFData->gmd_Data) {
-            FreeVec(pGMFData->gmd_Data);
+    if (GMFDataPtr) {
+        if (GMFDataPtr->gmd_DataPtr) {
+            FreeVec(GMFDataPtr->gmd_DataPtr);
         }
-        FreeVec((void*)pGMFData);
+        FreeVec((void*)GMFDataPtr);
     }
 }

@@ -261,7 +261,7 @@ void Zone_ApplyErrata()
 {
     WORD const* zoneListPtr;
     WORD zoneID;
-    if ( (zoneListPtr = LMod_Properties.lmod_PVSErrata) ) {
+    if ( (zoneListPtr = LMod_Properties.lmod_PVSErrataPtr) ) {
         /**
          * The PVS errata is a stream of words that are varying length lists that each begin with the
          * zone ID the errata applies to, followed by a ZONE_ID_LIST_END terminated list of IDs of
@@ -286,7 +286,7 @@ void Zone_ApplyErrata()
         }
         dprintf("\tDone. %d PVS lists amended\n", (int)numZones);
     }
-    if ( (zoneListPtr = LMod_Properties.lmod_BCKDErrata) ) {
+    if ( (zoneListPtr = LMod_Properties.lmod_BCKDErrataPtr) ) {
         /**
          * The Backdrop errata is a stream of words indicating the zones that should have their backdrop
          * flag cleared. The szone is terminated by ZONE_ID_LIST_END

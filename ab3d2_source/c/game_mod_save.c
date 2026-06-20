@@ -26,7 +26,7 @@ static UWORD gmod_CountAchievementUnlocks()
 {
     UWORD uCount = 0;
     for (ULONG i = 0; i < GMod_Defaults.gmod_NumDefinedAchievements; ++i) {
-        if (GMod_Progress.pprg_Unlocked[i]) {
+        if (GMod_Progress.pprg_UnlockedPtr[i]) {
             ++uCount;
         }
     }
@@ -94,29 +94,29 @@ static void gmod_CalculateProgressSaveSize(GMod_SaveInfo* restrict pSaveInfo)
     pSaveInfo->uTotalSize += pSaveInfo->uIndexChunkSize;
 }
 
-static UBYTE* gmod_MakeProgressHeader(UBYTE* pBuffer)
+static UBYTE* gmod_MakeProgressHeader(UBYTE* bufferPtr)
 {
     extern GMF_Header const gprg_Header;
     CopyMem(
         &gprg_Header,
-        pBuffer,
+        bufferPtr,
         sizeof(GMF_Header)
     );
-    GMF_Header* pHeader = (GMF_Header*)pBuffer;
+    GMF_Header* headerPtr = (GMF_Header*)bufferPtr;
 
     // The version required is at least the version saved from.
-    pHeader->h_RequiresVersion = pHeader->h_Version;
-    pHeader->h_Description.do_Offset = sizeof(GMF_ChunkHeader);
-    return pBuffer + sizeof(GMF_Header);
+    headerPtr->h_RequiresVersion = headerPtr->h_Version;
+    headerPtr->h_Description.do_Offset = sizeof(GMF_ChunkHeader);
+    return bufferPtr + sizeof(GMF_Header);
 }
 
-static UBYTE* gmod_MakeIndexChunk(UBYTE* pBuffer, GMod_SaveInfo const* pSaveInfo)
+static UBYTE* gmod_MakeIndexChunk(UBYTE* bufferPtr, GMod_SaveInfo const* pSaveInfo)
 {
     // We assume the index is immediately after the header
-    GMF_ChunkHeader* pHeader = (GMF_ChunkHeader*)pBuffer;
-    pHeader->ch_Ident.id_Value = IDENT_INDX;
-    pHeader->ch_Length = pSaveInfo->uIndexChunkSize;
-    GMF_IndexEntry* pIndex = (GMF_IndexEntry*)GMF_ChunkData(pHeader);
+    GMF_ChunkHeader* headerPtr = (GMF_ChunkHeader*)bufferPtr;
+    headerPtr->ch_Ident.id_Value = IDENT_INDX;
+    headerPtr->ch_Length = pSaveInfo->uIndexChunkSize;
+    GMF_IndexEntry* pIndex = (GMF_IndexEntry*)GMF_ChunkData(headerPtr);
     ULONG uOffset = sizeof(GMF_Header) + pSaveInfo->uIndexChunkSize;
     if (pSaveInfo->uInventoryLimitChunkSize) {
         pIndex->ie_Ident.id_Value = IDENT_INVL;
@@ -149,41 +149,41 @@ static UBYTE* gmod_MakeIndexChunk(UBYTE* pBuffer, GMod_SaveInfo const* pSaveInfo
         ++pIndex;
     }
 
-    return pBuffer + pSaveInfo->uIndexChunkSize;
+    return bufferPtr + pSaveInfo->uIndexChunkSize;
 }
 
-static UBYTE* gmod_MakeInventoryLimitsChunk(UBYTE* pBuffer, GMod_SaveInfo const* pSaveInfo)
+static UBYTE* gmod_MakeInventoryLimitsChunk(UBYTE* bufferPtr, GMod_SaveInfo const* pSaveInfo)
 {
-    GMF_ChunkHeader* pHeader = (GMF_ChunkHeader*)pBuffer;
-    pHeader->ch_Ident.id_Value = IDENT_INVL;
-    pHeader->ch_Length = pSaveInfo->uInventoryLimitChunkSize;
+    GMF_ChunkHeader* headerPtr = (GMF_ChunkHeader*)bufferPtr;
+    headerPtr->ch_Ident.id_Value = IDENT_INVL;
+    headerPtr->ch_Length = pSaveInfo->uInventoryLimitChunkSize;
     CopyMem(
         &GMod_Progress.pprg_InventoryLimits,
-        GMF_ChunkData(pHeader),
+        GMF_ChunkData(headerPtr),
         sizeof(GMod_InventoryLimits)
     );
-    return pBuffer + pSaveInfo->uInventoryLimitChunkSize;
+    return bufferPtr + pSaveInfo->uInventoryLimitChunkSize;
 }
 
-static UBYTE* gmod_MakeProgressCountersChunk(UBYTE* pBuffer, GMod_SaveInfo const* pSaveInfo)
+static UBYTE* gmod_MakeProgressCountersChunk(UBYTE* bufferPtr, GMod_SaveInfo const* pSaveInfo)
 {
-    GMF_ChunkHeader* pHeader = (GMF_ChunkHeader*)pBuffer;
-    pHeader->ch_Ident.id_Value = IDENT_CTRS;
-    pHeader->ch_Length = pSaveInfo->uProgressCountersChunkSize;
+    GMF_ChunkHeader* headerPtr = (GMF_ChunkHeader*)bufferPtr;
+    headerPtr->ch_Ident.id_Value = IDENT_CTRS;
+    headerPtr->ch_Length = pSaveInfo->uProgressCountersChunkSize;
     CopyMem(
         &GMod_Progress.pprg_Counters,
-        GMF_ChunkData(pHeader),
+        GMF_ChunkData(headerPtr),
         sizeof(GMod_ProgressCounters)
     );
-    return pBuffer + pSaveInfo->uProgressCountersChunkSize;
+    return bufferPtr + pSaveInfo->uProgressCountersChunkSize;
 }
 
-static UBYTE* gmod_MakeWeaponAdjustmentsChunk(UBYTE* pBuffer, GMod_SaveInfo const* pSaveInfo)
+static UBYTE* gmod_MakeWeaponAdjustmentsChunk(UBYTE* bufferPtr, GMod_SaveInfo const* pSaveInfo)
 {
-    GMF_ChunkHeader* pHeader = (GMF_ChunkHeader*)pBuffer;
-    pHeader->ch_Ident.id_Value = IDENT_WADJ;
-    pHeader->ch_Length = pSaveInfo->uWeaponAdjustmentsChunkSize;
-    GMod_WeaponAdjustment *pSave = (GMod_WeaponAdjustment*)GMF_ChunkData(pHeader);
+    GMF_ChunkHeader* headerPtr = (GMF_ChunkHeader*)bufferPtr;
+    headerPtr->ch_Ident.id_Value = IDENT_WADJ;
+    headerPtr->ch_Length = pSaveInfo->uWeaponAdjustmentsChunkSize;
+    GMod_WeaponAdjustment *pSave = (GMod_WeaponAdjustment*)GMF_ChunkData(headerPtr);
     GMod_WeaponAdjustment const* pAdjustment = GMod_Progress.pprg_WeaponAdjustments;
     for (UWORD i=0; i < NUM_GUN_DEFS; ++i) {
         if (pAdjustment[i].wadj_SlotID != 0xFFFF) {
@@ -195,36 +195,36 @@ static UBYTE* gmod_MakeWeaponAdjustmentsChunk(UBYTE* pBuffer, GMod_SaveInfo cons
             ++pSave;
         }
     }
-    return pBuffer + pSaveInfo->uWeaponAdjustmentsChunkSize;
+    return bufferPtr + pSaveInfo->uWeaponAdjustmentsChunkSize;
 }
 
-static UBYTE* gmod_MakeUnlocksChunk(UBYTE* pBuffer, GMod_SaveInfo const* pSaveInfo)
+static UBYTE* gmod_MakeUnlocksChunk(UBYTE* bufferPtr, GMod_SaveInfo const* pSaveInfo)
 {
-    GMF_ChunkHeader* pHeader = (GMF_ChunkHeader*)pBuffer;
-    pHeader->ch_Ident.id_Value = IDENT_UNLK;
-    pHeader->ch_Length = pSaveInfo->uUnlocksChunkSize;
-    GMod_Unlocked *pSave = (GMod_Unlocked*)GMF_ChunkData(pHeader);
+    GMF_ChunkHeader* headerPtr = (GMF_ChunkHeader*)bufferPtr;
+    headerPtr->ch_Ident.id_Value = IDENT_UNLK;
+    headerPtr->ch_Length = pSaveInfo->uUnlocksChunkSize;
+    GMod_Unlocked *pSave = (GMod_Unlocked*)GMF_ChunkData(headerPtr);
     for (ULONG i = 0; i < GMod_Defaults.gmod_NumDefinedAchievements; ++i) {
-        if (GMod_Progress.pprg_Unlocked[i]) {
-            pSave->gpc_Awarded = GMod_Progress.pprg_Unlocked[i];
+        if (GMod_Progress.pprg_UnlockedPtr[i]) {
+            pSave->gpc_Awarded = GMod_Progress.pprg_UnlockedPtr[i];
             pSave->gpc_ID      = (UWORD)i;
             ++pSave;
         }
     }
-    return pBuffer + pSaveInfo->uUnlocksChunkSize;
+    return bufferPtr + pSaveInfo->uUnlocksChunkSize;
 }
 
-static UBYTE* gmod_MakeStringChunk(UBYTE* pBuffer, GMod_SaveInfo const* pSaveInfo)
+static UBYTE* gmod_MakeStringChunk(UBYTE* bufferPtr, GMod_SaveInfo const* pSaveInfo)
 {
-    GMF_ChunkHeader* pHeader = (GMF_ChunkHeader*)pBuffer;
-    pHeader->ch_Ident.id_Value = IDENT_STRH;
-    pHeader->ch_Length = pSaveInfo->uStringChunkSize;
+    GMF_ChunkHeader* headerPtr = (GMF_ChunkHeader*)bufferPtr;
+    headerPtr->ch_Ident.id_Value = IDENT_STRH;
+    headerPtr->ch_Length = pSaveInfo->uStringChunkSize;
     CopyMem(
         sSaveDesc,
-        GMF_ChunkData(pHeader),
+        GMF_ChunkData(headerPtr),
         sizeof(sSaveDesc)
     );
-    return pBuffer + pSaveInfo->uStringChunkSize;
+    return bufferPtr + pSaveInfo->uStringChunkSize;
 }
 
 void GMod_SavePlayerProgress(void)
@@ -272,28 +272,28 @@ void GMod_SavePlayerProgress(void)
     }
 
     // Add the header.
-    UBYTE* pBuffer = gmod_MakeProgressHeader(pBufferBase);
+    UBYTE* bufferPtr = gmod_MakeProgressHeader(pBufferBase);
 
-    pBuffer = gmod_MakeIndexChunk(pBuffer, pSaveInfo);
+    bufferPtr = gmod_MakeIndexChunk(bufferPtr, pSaveInfo);
 
     if (pSaveInfo->uInventoryLimitChunkSize) {
-        pBuffer = gmod_MakeInventoryLimitsChunk(pBuffer, pSaveInfo);
+        bufferPtr = gmod_MakeInventoryLimitsChunk(bufferPtr, pSaveInfo);
     }
 
     if (pSaveInfo->uProgressCountersChunkSize) {
-        pBuffer = gmod_MakeProgressCountersChunk(pBuffer, pSaveInfo);
+        bufferPtr = gmod_MakeProgressCountersChunk(bufferPtr, pSaveInfo);
     }
 
     if (pSaveInfo->uWeaponAdjustmentsChunkSize) {
-        pBuffer = gmod_MakeWeaponAdjustmentsChunk(pBuffer, pSaveInfo);
+        bufferPtr = gmod_MakeWeaponAdjustmentsChunk(bufferPtr, pSaveInfo);
     }
 
     if (pSaveInfo->uNumUnlocks) {
-        pBuffer = gmod_MakeUnlocksChunk(pBuffer, pSaveInfo);
+        bufferPtr = gmod_MakeUnlocksChunk(bufferPtr, pSaveInfo);
     }
 
     if (pSaveInfo->uStringChunkSize) {
-        pBuffer = gmod_MakeStringChunk(pBuffer, pSaveInfo);
+        bufferPtr = gmod_MakeStringChunk(bufferPtr, pSaveInfo);
     }
 
     BPTR gameProgressFH = Open(GMod_ProgressFile, MODE_NEWFILE);

@@ -34,7 +34,6 @@ enum {
     IDENT_ACHV = 0x41434856,    // Achievements (used in: GMOD)
     IDENT_CTRS = 0x43545253,    // Counters (used in: GPRG)
     IDENT_UNLK = 0x554E4C4B,    // Unlocked (used in: GPRG)
-    //IDENT_PVSD = 0x50565344,    // PVS Deletions (used in LMOD)
 };
 
 /**********************************************************************************************************************/
@@ -48,7 +47,7 @@ enum {
  *     - Main Game Modification
  */
 typedef struct {
-    char const* rwrd_Description;
+    char const* rwrd_DescriptionPtr;
     UWORD       rwrd_CarryOffset;
     UWORD       rwrd_ImmediateOffset;
     UWORD       rwrd_RewardData[1];     // Beware: varying length data here.
@@ -67,7 +66,7 @@ typedef struct {
 typedef struct {
     UWORD              spab_Index;
     UWORD              spab_AmmoID;
-    GMod_Reward const* spab_Reward;
+    GMod_Reward const* spab_RewardPtr;
 } ASM_ALIGN(sizeof(ULONG)) GMod_SpecialAmmoBonus; // 8 bytes
 
 /**********************************************************************************************************************/
@@ -90,8 +89,8 @@ enum {
  *     - Main Game Modification
  */
 typedef struct {
-    char const*        achv_Description;
-    GMod_Reward const* achv_Reward;
+    char const*        achv_DescriptionPtr;
+    GMod_Reward const* achv_RewardPtr;
     UWORD              achv_RuleType;
     UWORD              achv_EventMask;  // Must be zero in file.
     union {
@@ -247,14 +246,14 @@ typedef struct {
  */
 typedef struct {
     /** Loaded file data */
-    GMF_Data const*                 gmod_Loaded;
-    GMod_InventoryLimits const*     gmod_DefinedInventoryLimits;
-    GMod_SpecialAmmoBonus const*    gmod_DefinedSpecialAmmoBonuses;
-    GMod_WeaponAdjustment const*    gmod_DefinedWeaponAdjustments;
-    GMod_Achievement const*         gmod_DefinedAchievements;
-    ULONG                           gmod_NumDefinedSpecialAmmoBonuses;
-    ULONG                           gmod_NumDefinedWeaponAdjustments;
-    ULONG                           gmod_NumDefinedAchievements;
+    GMF_Data const*              gmod_LoadedPtr;
+    GMod_InventoryLimits const*  gmod_DefinedInventoryLimitsPtr;
+    GMod_SpecialAmmoBonus const* gmod_DefinedSpecialAmmoBonusesPtr;
+    GMod_WeaponAdjustment const* gmod_DefinedWeaponAdjustmentsPtr;
+    GMod_Achievement const*      gmod_DefinedAchievementsPtr;
+    ULONG                        gmod_NumDefinedSpecialAmmoBonuses;
+    ULONG                        gmod_NumDefinedWeaponAdjustments;
+    ULONG                        gmod_NumDefinedAchievements;
 } GMod_DefaultProperties;
 
 extern GMod_DefaultProperties GMod_Defaults; // Defined in BSS
@@ -267,9 +266,9 @@ extern GMod_DefaultProperties GMod_Defaults; // Defined in BSS
  * Applies the reward definition to the inventory limits and current carry.
  */
 extern void GMod_ApplyReward(
-    GMod_Reward const*    pReward,
-    GMod_InventoryLimits* pInventoryLimits,
-    InventoryConsumables* pInventoryConsumables
+    GMod_Reward const*    rewardPtr,
+    GMod_InventoryLimits* inventoryLimitsPtr,
+    InventoryConsumables* inventoryConsumablesPtr
 );
 
 /**
@@ -306,15 +305,15 @@ extern BOOL GMod_LoadModDefaults(void);
  * Note: This is the runtime representation of player progression.
  */
 typedef struct {
-    GMod_InventoryLimits    pprg_InventoryLimits;
-    GMod_WeaponAdjustment   pprg_WeaponAdjustments[NUM_GUN_DEFS];
-    GMod_ProgressCounters   pprg_Counters;
+    GMod_InventoryLimits  pprg_InventoryLimits;
+    GMod_WeaponAdjustment pprg_WeaponAdjustments[NUM_GUN_DEFS];
+    GMod_ProgressCounters pprg_Counters;
 
     /** Dynamically allocated, count matches GMod_DefaultProperties.gmod_NumDefinedAchievements */
-    ShortDate* pprg_Unlocked;
+    ShortDate*            pprg_UnlockedPtr;
 
     /** Bitmap of already unlocked achievements, for quick testing via tst.b */
-    UBYTE*     pprg_UnlockedMap;
+    UBYTE*                pprg_UnlockedMapPtr;
 } GMod_PlayerProgression;
 
 extern GMod_PlayerProgression GMod_Progress; // In BSS

@@ -4,6 +4,16 @@
 #include "game_mod_format.h"
 
 /**
+ * Chunk ident values for level mod file components
+ */
+enum {
+    IDENT_PVSD = 0x50565344,
+    IDENT_BCKD = 0x42434B44,
+    IDENT_ZMSG = 0x5A4D5347,
+    IDENT_OMSG = 0x4F4D5347,
+};
+
+/**
  * ZoneDeletions is used for both PVS and Backdrop deletions
  */
 typedef struct {
@@ -14,22 +24,18 @@ typedef struct {
  * LevelMessage is used for both Zone and Object messages
  */
 typedef struct {
-    UWORD lm_ZoneID;
-    UWORD lm_Attributes;
-    char const* lm_Text;
+    UWORD       lm_ZoneID;
+    UWORD       lm_Attributes;
+    char const* lm_TextPtr;
 } ASM_ALIGN(sizeof(WORD)) LevelMessage;
 
-enum {
-    IDENT_PVSD = 0x50565344,
-    IDENT_BCKD = 0x42434B44,
-    IDENT_ZMSG = 0x5A4D5347,
-    IDENT_OMSG = 0x4F4D5347,
-};
-
+/**
+ * LMod_LevelProperties structure holds the level modification data (if any)
+ */
 typedef struct {
-    GMF_Data const* lmod_Loaded;
-    WORD const* lmod_PVSErrata;
-    WORD const* lmod_BCKDErrata;
+    GMF_Data const* lmod_LoadedPtr;
+    WORD const*     lmod_PVSErrataPtr;
+    WORD const*     lmod_BCKDErrataPtr;
 } LMod_LevelProperties;
 
 extern LMod_LevelProperties LMod_Properties;

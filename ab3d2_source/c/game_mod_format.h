@@ -29,8 +29,8 @@ enum {
  */
 typedef union {
     ULONG       do_Offset;
-    char const* do_Text;
-    UBYTE*      do_ByteAddress;
+    char const* do_TextPtr;
+    UBYTE*      do_BytePtr;
 } ASM_ALIGN(sizeof(ULONG)) GMF_DataOffset;
 
 /**
@@ -49,8 +49,8 @@ typedef struct {
  * Basic 4-byte ident. Accessible either as a 32-bit word or as 4 characters. Big endian layout.
  */
 typedef union {
-    char        id_Text[4];
-    ULONG       id_Value;
+    char  id_Text[4];
+    ULONG id_Value;
 } ASM_ALIGN(sizeof(ULONG)) GMF_Ident;
 
 /**
@@ -59,11 +59,11 @@ typedef union {
  * Main game modification file header.
  */
 typedef struct {
-    GMF_Ident       h_Ident;
-    GMF_Ident       h_SubFormat;
-    GMF_Version     h_RequiresVersion;
-    GMF_Version     h_Version;
-    GMF_DataOffset  h_Description;
+    GMF_Ident      h_Ident;
+    GMF_Ident      h_SubFormat;
+    GMF_Version    h_RequiresVersion;
+    GMF_Version    h_Version;
+    GMF_DataOffset h_Description;
 } ASM_ALIGN(sizeof(ULONG)) GMF_Header;
 
 /**
@@ -72,8 +72,8 @@ typedef struct {
  * Minimalist header for each Chunk.
  */
 typedef struct {
-    GMF_Ident   ch_Ident;
-    ULONG       ch_Length;
+    GMF_Ident ch_Ident;
+    ULONG     ch_Length;
 } ASM_ALIGN(sizeof(ULONG)) GMF_ChunkHeader;
 
 /**
@@ -82,8 +82,8 @@ typedef struct {
  * Basic Ident/Offset pair for the common Index chunk.
  */
 typedef struct {
-    GMF_Ident       ie_Ident;
-    GMF_DataOffset  ie_Offset;
+    GMF_Ident      ie_Ident;
+    GMF_DataOffset ie_Offset;
 } ASM_ALIGN(sizeof(ULONG)) GMF_IndexEntry;
 
 /**
@@ -92,12 +92,12 @@ typedef struct {
  * Main structure for loaded Game Modification Files.
  */
 typedef struct {
-    UBYTE*                gmd_Data;
+    UBYTE*                gmd_DataPtr;
     ULONG                 gmd_Length;
     ULONG                 gmd_IndexSize;
-    GMF_Header const*     gmd_Header;
-    GMF_IndexEntry const* gmd_Index;
-    char const*           gmd_Strings;
+    GMF_Header const*     gmd_HeaderPtr;
+    GMF_IndexEntry const* gmd_IndexPtr;
+    char const*           gmd_StringsPtr;
 } ASM_ALIGN(sizeof(ULONG)) GMF_Data;
 
 
@@ -106,7 +106,7 @@ typedef struct {
  *
  * Callable type for parsing chunks after loading.
  */
-typedef BOOL (*GMF_ChunkParser)(GMF_ChunkHeader const* pChunkHeader, GMF_Data* pGMFData);
+typedef BOOL (*GMF_ChunkParser)(GMF_ChunkHeader const* chunkHeaderPtr, GMF_Data* GMFDataPtr);
 
 /**
  * GMF_ParserEntry
@@ -114,7 +114,7 @@ typedef BOOL (*GMF_ChunkParser)(GMF_ChunkHeader const* pChunkHeader, GMF_Data* p
  * Basic Ident/Parser pair for associating a parser to a particular chunk type.
  */
 typedef struct {
-    ULONG pe_Ident;
+    ULONG           pe_Ident;
     GMF_ChunkParser pe_Parser;
 } ASM_ALIGN(sizeof(ULONG)) GMF_ParserEntry;
 
@@ -125,9 +125,9 @@ typedef struct {
  * For a given initial string reference, resolves an offset to the actual in-memory location within the common
  * string chunk.
  */
-inline const char* GMF_ResolveString(char const* string, GMF_Data const* pGMFData)
+inline const char* GMF_ResolveString(char const* string, GMF_Data const* GMFDataPtr)
 {
-    return (string < pGMFData->gmd_Strings) ? pGMFData->gmd_Strings + (size_t)string : string;
+    return (string < GMFDataPtr->gmd_StringsPtr) ? GMFDataPtr->gmd_StringsPtr + (size_t)string : string;
 }
 
 /**
@@ -136,9 +136,9 @@ inline const char* GMF_ResolveString(char const* string, GMF_Data const* pGMFDat
  * Returns the start of the chunk body data for a given header. This is simply the data immediately following.
  * Assumes the returned data requires modification.
  */
-inline void* GMF_ChunkData(GMF_ChunkHeader const *pHeader)
+inline void* GMF_ChunkData(GMF_ChunkHeader const* headerPtr)
 {
-    return ((UBYTE*)pHeader) + sizeof(GMF_ChunkHeader);
+    return ((UBYTE*)headerPtr) + sizeof(GMF_ChunkHeader);
 }
 
 /**
@@ -147,7 +147,7 @@ inline void* GMF_ChunkData(GMF_ChunkHeader const *pHeader)
  * Returns the first encountered instance of a chunk with the supplied index. It is assumed that a game modification
  * file only contains one of each chunk type.
  */
-extern GMF_ChunkHeader const* GMF_LocateChunk(GMF_Data const* pGMFData, ULONG iIdentValue);
+extern GMF_ChunkHeader const* GMF_LocateChunk(GMF_Data const* GMFDataPtr, ULONG iIdentValue);
 
 /**
  * GMF_LoadFile()
@@ -156,9 +156,9 @@ extern GMF_ChunkHeader const* GMF_LocateChunk(GMF_Data const* pGMFData, ULONG iI
  * parsers for any custom chunk types that are present.
  */
 extern GMF_Data* GMF_LoadFile(
-    char const* filename,
-    GMF_Header const* pCheckHeader,
-    GMF_ParserEntry const* pCustomParsers
+    char const*            filename,
+    GMF_Header const*      referenceHeaderPtr,
+    GMF_ParserEntry const* customParserListPtr
 );
 
 /**
@@ -166,11 +166,11 @@ extern GMF_Data* GMF_LoadFile(
  *
  * Releases a GMF_Data instance and any associated data.
  */
-extern void GMF_Free(GMF_Data const* pGMFData);
+extern void GMF_Free(GMF_Data const* GMFDataPtr);
 
 /**
  * Quick and dirty macro to get the count of fixed size records from a chunk
  */
-#define GMF_ChunkRecordCount(pChunk, type) (ULONG)((pChunk->ch_Length - sizeof(GMF_ChunkHeader))/sizeof(type))
+#define GMF_ChunkRecordCount(chunkPtr, type) (ULONG)((chunkPtr->ch_Length - sizeof(GMF_ChunkHeader))/sizeof(type))
 
 #endif /* _TKG_GMF_H_ */

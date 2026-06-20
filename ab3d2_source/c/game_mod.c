@@ -62,11 +62,11 @@ void GMod_CalculateDate(void)
 /**
  * Reward helper function. Returns the address of the carry modification, if a carry modification is defined.
  */
-static UWORD const* gmod_GetRewardCarry(GMod_Reward const* pReward)
+static UWORD const* gmod_GetRewardCarry(GMod_Reward const* rewardPtr)
 {
-    if (pReward->rwrd_CarryOffset >= sizeof(GMF_ChunkHeader)) {
+    if (rewardPtr->rwrd_CarryOffset >= sizeof(GMF_ChunkHeader)) {
         return (UWORD const*) (
-            ((UBYTE const*)pReward) + pReward->rwrd_CarryOffset
+            ((UBYTE const*)rewardPtr) + rewardPtr->rwrd_CarryOffset
         );
     }
     return NULL;
@@ -75,11 +75,11 @@ static UWORD const* gmod_GetRewardCarry(GMod_Reward const* pReward)
 /**
  * Reward helper function. Returns the address of the immediate modification, if an immediate modification is defined.
  */
-static UWORD const* gmod_GetRewardImmediate(GMod_Reward const* pReward)
+static UWORD const* gmod_GetRewardImmediate(GMod_Reward const* rewardPtr)
 {
-    if (pReward->rwrd_ImmediateOffset >= sizeof(GMF_ChunkHeader)) {
+    if (rewardPtr->rwrd_ImmediateOffset >= sizeof(GMF_ChunkHeader)) {
         return (UWORD const*) (
-            ((UBYTE const*)pReward) + pReward->rwrd_ImmediateOffset
+            ((UBYTE const*)rewardPtr) + rewardPtr->rwrd_ImmediateOffset
         );
     }
     return NULL;
@@ -97,41 +97,41 @@ static inline UWORD gmod_AddSaturated(UWORD a, UWORD b, UWORD limit)
 /**********************************************************************************************************************/
 
 void GMod_ApplyReward(
-    GMod_Reward const* pReward,
-    GMod_InventoryLimits* pInventoryLimits,
-    InventoryConsumables* pInventoryConsumables
+    GMod_Reward const* rewardPtr,
+    GMod_InventoryLimits* inventoryLimitsPtr,
+    InventoryConsumables* inventoryConsumablesPtr
 ) {
     /**
      * First apply any carry limit updates
      */
-    UWORD const* pRewardData = gmod_GetRewardCarry(pReward);
+    UWORD const* pRewardData = gmod_GetRewardCarry(rewardPtr);
     if (pRewardData) {
-        pInventoryLimits->ic_Health += *pRewardData++;
-        pInventoryLimits->ic_JetpackFuel += *pRewardData++;
+        inventoryLimitsPtr->ic_Health += *pRewardData++;
+        inventoryLimitsPtr->ic_JetpackFuel += *pRewardData++;
 
         /**
          * Add ammo
          */
         while (*pRewardData != 0xFFFF) {
             UWORD slot = *pRewardData++;
-            pInventoryLimits->ic_AmmoCounts[slot] += *pRewardData++;
+            inventoryLimitsPtr->ic_AmmoCounts[slot] += *pRewardData++;
         }
     }
 
     /**
      * Then apply any immediate updates, not exceeding the carry limits
      */
-    pRewardData = gmod_GetRewardImmediate(pReward);
+    pRewardData = gmod_GetRewardImmediate(rewardPtr);
     if (pRewardData) {
-        pInventoryConsumables->ic_Health = gmod_AddSaturated(
-            pInventoryConsumables->ic_Health,
+        inventoryConsumablesPtr->ic_Health = gmod_AddSaturated(
+            inventoryConsumablesPtr->ic_Health,
             *pRewardData++,
-            pInventoryLimits->ic_Health
+            inventoryLimitsPtr->ic_Health
         );
-        pInventoryConsumables->ic_JetpackFuel = gmod_AddSaturated(
-            pInventoryConsumables->ic_JetpackFuel,
+        inventoryConsumablesPtr->ic_JetpackFuel = gmod_AddSaturated(
+            inventoryConsumablesPtr->ic_JetpackFuel,
             *pRewardData++,
-            pInventoryLimits->ic_JetpackFuel
+            inventoryLimitsPtr->ic_JetpackFuel
         );
 
         /**
@@ -139,15 +139,15 @@ void GMod_ApplyReward(
          */
         while (*pRewardData != 0xFFFF) {
             UWORD slot = *pRewardData++;
-            pInventoryConsumables->ic_AmmoCounts[slot] = gmod_AddSaturated(
-                pInventoryConsumables->ic_AmmoCounts[slot],
+            inventoryConsumablesPtr->ic_AmmoCounts[slot] = gmod_AddSaturated(
+                inventoryConsumablesPtr->ic_AmmoCounts[slot],
                 *pRewardData++,
-                pInventoryLimits->ic_AmmoCounts[slot]
+                inventoryLimitsPtr->ic_AmmoCounts[slot]
             );
         }
     }
-    if (pReward->rwrd_Description) {
-        Msg_PushLine(pReward->rwrd_Description, MSG_TAG_OPTIONS|80);
+    if (rewardPtr->rwrd_DescriptionPtr) {
+        Msg_PushLine(rewardPtr->rwrd_DescriptionPtr, MSG_TAG_OPTIONS|80);
     }
 }
 
@@ -190,11 +190,11 @@ void GMod_Done()
 {
     GMod_SavePlayerProgress();
 
-    if (GMod_Defaults.gmod_Loaded) {
-        GMF_Free(GMod_Defaults.gmod_Loaded);
+    if (GMod_Defaults.gmod_LoadedPtr) {
+        GMF_Free(GMod_Defaults.gmod_LoadedPtr);
     }
-    if (GMod_Progress.pprg_Unlocked) {
-        FreeVec(GMod_Progress.pprg_Unlocked);
+    if (GMod_Progress.pprg_UnlockedPtr) {
+        FreeVec(GMod_Progress.pprg_UnlockedPtr);
     }
 }
 
@@ -205,16 +205,16 @@ void GMod_Done()
  */
 static inline BOOL gmod_CheckAchieved(UWORD id)
 {
-    return GMod_Progress.pprg_UnlockedMap[(id >> 3)] & (1 << (id & 7));
+    return GMod_Progress.pprg_UnlockedMapPtr[(id >> 3)] & (1 << (id & 7));
 }
 
 static void gmod_MarkAchieved(UWORD id)
 {
     UWORD byte = id >> 3;
     UBYTE bit  = (1 << (id & 7));
-    if (!(GMod_Progress.pprg_UnlockedMap[byte] & bit)) {
-        GMod_Progress.pprg_UnlockedMap[byte] |= bit;
-        GMod_Progress.pprg_Unlocked[id] = GMod_Date;
+    if (!(GMod_Progress.pprg_UnlockedMapPtr[byte] & bit)) {
+        GMod_Progress.pprg_UnlockedMapPtr[byte] |= bit;
+        GMod_Progress.pprg_UnlockedPtr[id] = GMod_Date;
     }
 /*
     int iDay    = GMod_Date & 0x1F;
@@ -226,9 +226,9 @@ static void gmod_MarkAchieved(UWORD id)
 */
 }
 
-static BOOL gmod_TestRuleKillCount(GMod_Achievement const* restrict pAchievement)
+static BOOL gmod_TestRuleKillCount(GMod_Achievement const* restrict achievementPtr)
 {
-    UWORD uAlienTypeId = pAchievement->achv_Param.oKillCount.uAlienType;
+    UWORD uAlienTypeId = achievementPtr->achv_Param.oKillCount.uAlienType;
 
 #ifdef PARANOID
     if (uAlienTypeId >= NUM_ALIEN_DEFS) {
@@ -236,13 +236,13 @@ static BOOL gmod_TestRuleKillCount(GMod_Achievement const* restrict pAchievement
     }
 #endif
 
-    return GMod_Progress.pprg_Counters.prgc_AlienKills[uAlienTypeId] >= pAchievement->achv_Param.oKillCount.uCount;
+    return GMod_Progress.pprg_Counters.prgc_AlienKills[uAlienTypeId] >= achievementPtr->achv_Param.oKillCount.uCount;
 }
 
-static BOOL gmod_TestRuleGroupKillCount(GMod_Achievement const* restrict pAchievement)
+static BOOL gmod_TestRuleGroupKillCount(GMod_Achievement const* restrict achievementPtr)
 {
-    ULONG const uEnemyMask = pAchievement->achv_Param.oGroupKillCount.uAlienMask;
-    ULONG const uCount     = pAchievement->achv_Param.oGroupKillCount.uCount;
+    ULONG const uEnemyMask = achievementPtr->achv_Param.oGroupKillCount.uAlienMask;
+    ULONG const uCount     = achievementPtr->achv_Param.oGroupKillCount.uCount;
     ULONG uTotal = 0;
     for (UWORD uAlienTypeId = 0; uAlienTypeId < NUM_ALIEN_DEFS; ++uAlienTypeId) {
         if (uEnemyMask & (1 << uAlienTypeId)) {
@@ -255,18 +255,18 @@ static BOOL gmod_TestRuleGroupKillCount(GMod_Achievement const* restrict pAchiev
     return FALSE;
 }
 
-static BOOL gmod_TestRuleZoneFound(GMod_Achievement const* restrict pAchievement)
+static BOOL gmod_TestRuleZoneFound(GMod_Achievement const* restrict achievementPtr)
 {
-    return Game_LevelNumber == pAchievement->achv_Param.oZoneFound.uLevel
-        && Plr1_Zone == pAchievement->achv_Param.oZoneFound.uZoneID;
+    return Game_LevelNumber == achievementPtr->achv_Param.oZoneFound.uLevel
+        && Plr1_Zone == achievementPtr->achv_Param.oZoneFound.uZoneID;
 }
 
-static BOOL gmod_TestRuleLevelTimeImproved(GMod_Achievement const* restrict pAchievement)
+static BOOL gmod_TestRuleLevelTimeImproved(GMod_Achievement const* restrict achievementPtr)
 {
-    ULONG const uCountLimit = pAchievement->achv_Param.oMaskedLevelCount.uCount;
-    UWORD const uLevelMask  = pAchievement->achv_Param.oMaskedLevelCount.uLevelMask;
+    ULONG const uCountLimit = achievementPtr->achv_Param.oMaskedLevelCount.uCount;
+    UWORD const uLevelMask  = achievementPtr->achv_Param.oMaskedLevelCount.uLevelMask;
 
-    if (pAchievement->achv_Param.oMaskedLevelCount.bOverall) {
+    if (achievementPtr->achv_Param.oMaskedLevelCount.bOverall) {
         // The combined times improved count across all inclued levels
         ULONG uCount = 0;
         for (UWORD uLevelNum = 0; uLevelNum < NUM_LEVELS; ++uLevelNum) {
@@ -290,12 +290,12 @@ static BOOL gmod_TestRuleLevelTimeImproved(GMod_Achievement const* restrict pAch
     return FALSE;
 }
 
-static BOOL gmod_TestRulePlayerDied(GMod_Achievement const* restrict pAchievement)
+static BOOL gmod_TestRulePlayerDied(GMod_Achievement const* restrict achievementPtr)
 {
-    ULONG const uCountLimit = pAchievement->achv_Param.oMaskedLevelCount.uCount;
-    UWORD const uLevelMask  = pAchievement->achv_Param.oMaskedLevelCount.uLevelMask;
+    ULONG const uCountLimit = achievementPtr->achv_Param.oMaskedLevelCount.uCount;
+    UWORD const uLevelMask  = achievementPtr->achv_Param.oMaskedLevelCount.uLevelMask;
 
-    if (pAchievement->achv_Param.oMaskedLevelCount.bOverall) {
+    if (achievementPtr->achv_Param.oMaskedLevelCount.bOverall) {
         // The combined number of times the player died across all inclued levels
         ULONG uCount = 0;
         for (UWORD uLevelNum = 0; uLevelNum < NUM_LEVELS; ++uLevelNum) {
@@ -319,10 +319,10 @@ static BOOL gmod_TestRulePlayerDied(GMod_Achievement const* restrict pAchievemen
     return FALSE;
 }
 
-static BOOL gmod_TestRuleStuffCollected(GMod_Achievement const* restrict pAchievement)
+static BOOL gmod_TestRuleStuffCollected(GMod_Achievement const* restrict achievementPtr)
 {
     ULONG const* pConsumables = &GMod_Progress.pprg_Counters.prgc_TotalHealthCollected;
-    UWORD consumableId = pAchievement->achv_Param.oCollected.uConsumable;
+    UWORD consumableId = achievementPtr->achv_Param.oCollected.uConsumable;
 
 #ifdef PARANOID
     if (consumableId >= INVENTORY_SLOTS) {
@@ -330,7 +330,7 @@ static BOOL gmod_TestRuleStuffCollected(GMod_Achievement const* restrict pAchiev
     }
 #endif
 
-    return pConsumables[consumableId] >= pAchievement->achv_Param.oCollected.uCount;
+    return pConsumables[consumableId] >= achievementPtr->achv_Param.oCollected.uCount;
 }
 
 typedef BOOL (*TestRuleFunction)(GMod_Achievement const*);
@@ -351,22 +351,22 @@ void GMod_UpdateProgress(void)
 {
     //extern LONG Sys_FrameNumber_l;
     //dprintf("Frame %d Progress Signal 0x%08X\n", Sys_FrameNumber_l, Game_ProgressSignal);
-    GMod_Achievement const* pAchievement = GMod_Defaults.gmod_DefinedAchievements;
+    GMod_Achievement const* achievementPtr = GMod_Defaults.gmod_DefinedAchievementsPtr;
     UWORD uNumAchievements = (UWORD)GMod_Defaults.gmod_NumDefinedAchievements;
-    for (UWORD id = 0; id < uNumAchievements; ++id, ++pAchievement) {
+    for (UWORD id = 0; id < uNumAchievements; ++id, ++achievementPtr) {
         /** Early out on any achievements where the rule mask doesn't intersect with the event signal */
         if (
-            !(Game_ProgressSignal & pAchievement->achv_EventMask) ||
+            !(Game_ProgressSignal & achievementPtr->achv_EventMask) ||
             gmod_CheckAchieved(id)
         ) {
             continue;
         }
 
-        if (gmod_TestRules[pAchievement->achv_RuleType](pAchievement)) {
-            Msg_PushLine(pAchievement->achv_Description, MSG_TAG_OPTIONS|80);
-            if (pAchievement->achv_Reward) {
+        if (gmod_TestRules[achievementPtr->achv_RuleType](achievementPtr)) {
+            Msg_PushLine(achievementPtr->achv_DescriptionPtr, MSG_TAG_OPTIONS|80);
+            if (achievementPtr->achv_RewardPtr) {
                 GMod_ApplyReward(
-                    pAchievement->achv_Reward,
+                    achievementPtr->achv_RewardPtr,
                     &GMod_Progress.pprg_InventoryLimits,
                     &Plr1_Inventory.inv_Consumables
                 );

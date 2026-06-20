@@ -20,12 +20,12 @@ typedef struct {
     UWORD ii_Shield;
     UWORD ii_Jetpack;
     UWORD ii_Weapons[NUM_GUN_DEFS];
-} ASM_ALIGN(sizeof(WORD))  InventoryItems;
+} ASM_ALIGN(sizeof(WORD)) InventoryItems;
 
 typedef struct {
     InventoryConsumables inv_Consumables;
     InventoryItems       inv_Items;
-} ASM_ALIGN(sizeof(WORD))  Inventory;
+} ASM_ALIGN(sizeof(WORD)) Inventory;
 
 /**
  * Unmodified default limits
@@ -34,7 +34,6 @@ typedef struct {
 #define INVENTORY_DEFAULT_HEALTH_LIMIT 10000
 #define INVENTORY_DEFAULT_FUEL_LIMIT 250
 #define INVENTORY_UNCAPPED_LIMIT 32000
-
 #define INVENTORY_SLOTS (sizeof(InventoryConsumables)/sizeof(UWORD))
 
 #endif // INVENTORY_H
