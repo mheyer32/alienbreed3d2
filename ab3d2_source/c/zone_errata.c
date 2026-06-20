@@ -3,6 +3,8 @@
 #include "zone_inline.h"
 #include <proto/exec.h>
 #include <stdio.h>
+#include "devmode.h"
+#include "level_mod.h"
 
 /**
  * zone_errata.c
@@ -252,26 +254,28 @@ void zone_RebuildCurrentPVS(Zone* zonePtr)
 }
 
 /**
- * Apply the zone PVS Errata
- *
- * The errata is a stream of words that are varying length lists that each begin with the
- * zone ID the errata applies to, followed by a ZONE_ID_LIST_END terminated list of IDs of
- * potentially visible zones to be removed from the PVS list for the starting zone. The errata
- * list itself is terminated by ZONE_ID_LIST_END, i.e. the word list ends with a double
- * ZONE_ID_LIST_END pair.
+ * Apply the zone errata
  *
  */
-void Zone_ApplyPVSErrata(REG(a0, WORD const* zonePVSErrataPtr))
+void Zone_ApplyErrata()
 {
-    if (zonePVSErrataPtr) {
-        dputs("Zone_ApplyPVSErrata()...");
+    WORD const* zoneListPtr;
+    WORD zoneID;
+    if ( (zoneListPtr = LMod_Properties.lmod_PVSErrataPtr) ) {
+        /**
+         * The PVS errata is a stream of words that are varying length lists that each begin with the
+         * zone ID the errata applies to, followed by a ZONE_ID_LIST_END terminated list of IDs of
+         * potentially visible zones to be removed from the PVS list for the starting zone. The errata
+         * list itself is terminated by ZONE_ID_LIST_END, i.e. the word list ends with a double
+         * ZONE_ID_LIST_END pair.
+         */
+        dprintf("Zone_ApplyPVSErrata(%p)...\n", zoneListPtr);
         WORD numZones = 0;
-        WORD zoneID;
-        while (Zone_IsValidZoneID(zoneID = *zonePVSErrataPtr++)) {
+        while (Zone_IsValidZoneID(zoneID = *zoneListPtr++)) {
             Zone* zonePtr = Lvl_ZonePtrsPtr_l[zoneID];
             //dprintf("\tZone %d [%p]: ", (int)zoneID, zonePtr);
-            WORD const* removeListPtr = zonePVSErrataPtr;
-            while (Zone_IsValidZoneID( (zoneID = *zonePVSErrataPtr++) )) {
+            WORD const* removeListPtr = zoneListPtr;
+            while (Zone_IsValidZoneID( (zoneID = *zoneListPtr++) )) {
                 //dprintf("%d, ", (int)zoneID);
             }
             //dputchar('\n');
@@ -281,5 +285,15 @@ void Zone_ApplyPVSErrata(REG(a0, WORD const* zonePVSErrataPtr))
             ++numZones;
         }
         dprintf("\tDone. %d PVS lists amended\n", (int)numZones);
+    }
+    if ( (zoneListPtr = LMod_Properties.lmod_BCKDErrataPtr) ) {
+        /**
+         * The Backdrop errata is a stream of words indicating the zones that should have their backdrop
+         * flag cleared. The szone is terminated by ZONE_ID_LIST_END
+         */
+        while (Zone_IsValidZoneID(zoneID = *zoneListPtr++)) {
+            dprintf("\tClearing backdrop for Zone %d\n", (int)zoneID);
+            Lvl_ZonePtrsPtr_l[zoneID]->z_DrawBackdrop = 0;
+        }
     }
 }

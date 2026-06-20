@@ -359,10 +359,12 @@ draw_bitmap_glare:
 				divu	d6,d7
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
-				swap	d7
-				clr.w	d7
-				swap	d7
-				lea		(a3,d7.l*8),a2			; pointer to horiz const
+				;swap	d7
+				;clr.w	d7
+				;swap	d7
+				;lea		(a3,d7.l*8),a2			; pointer to horiz const
+				lea (a3,d7.w*8),a2 ; pointer to horiz const
+
 				move.w	d1,d7
 				move.w	6(a6),d6
 				add.w	d6,d6
@@ -375,10 +377,11 @@ draw_bitmap_glare:
 				divu	d6,d7
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
-				swap	d7
-				clr.w	d7
-				swap	d7
-				lea		(a3,d7.l*8),a3			; pointer to vertical c.
+				;swap	d7
+				;clr.w	d7
+				;swap	d7
+				;lea		(a3,d7.l*8),a3			; pointer to vertical c.
+				lea		(a3,d7.w*8),a3			; pointer to vertical c.
 												; * CLIP OBJECT TO TOP AND BOTTOM
 												; * OF THE VISIBLE DISPLAY
 
@@ -797,10 +800,13 @@ pastobjscale:
 				divu	d6,d7
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
-				swap	d7
-				clr.w	d7
-				swap	d7
-				lea		(a3,d7.l*8),a2	; pointer to horiz const (d7th pair in ConstantTable_vl)
+				;swap	d7
+				;clr.w	d7
+				;swap	d7
+				;lea		(a3,d7.l*8),a2	; pointer to horiz const (d7th pair in ConstantTable_vl)
+
+				lea (a3,d7.w*8),a2
+
 				move.w	d1,d7
 				move.w	6(a6),d6
 				add.w	d6,d6
@@ -813,10 +819,11 @@ pastobjscale:
 				divu	d6,d7
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
-				swap	d7
-				clr.w	d7
-				swap	d7
-				lea		(a3,d7.l*8),a3			; pointer to vertical scale table?
+				;swap	d7
+				;clr.w	d7
+				;swap	d7
+				;lea		(a3,d7.l*8),a3			; pointer to vertical scale table?
+				lea (a3,d7.w*8),a3
 ; vertical c.
 
 ;* CLIP OBJECT TO TOP AND BOTTOM
@@ -2434,8 +2441,8 @@ toobright:
 ; move.w (a1,d1.w*2),d1
 ; asl.w #3,d1
 				move.l	Draw_TexturePalettePtr_l,a1
-				add.l	#256*32,a1
-				lea		(a1,d1.w),a1
+				;add.l	#256*32,a1
+				lea		8192(a1,d1.w),a1
 				tst.b	draw_PreGouraud_b
 				bne		predoglare
 
@@ -2942,8 +2949,11 @@ toodimh:
 ; move.w (a1,d1.w*2),d1
 ; asl.w #3,d1
 				move.l	Draw_TexturePalettePtr_l,a1
-				add.l	#256*32,a1
-				add.w	d1,a1
+				;add.l	#256*32,a1
+				;add.w	d1,a1
+
+				lea 8192(a1,d1.w),a1
+
 				tst.b	draw_PreGouraud_b
 ; beq.s .noshiny
 ; add.l #256*32,a1

@@ -43,5 +43,5 @@ anim_DoorOpenTimers_vw:	ds.w	40 ; newanims.s
 
 Obj_RoomPath_vw:			ds.w	100 ; objmove.s
 
-		DCLC game_ModProps,	ds.b,	GModT_SizeOf_l
+		DCLC game_ModProps,	ds.b,	256
 		DCLC KeyMap_vb,		ds.b,	256

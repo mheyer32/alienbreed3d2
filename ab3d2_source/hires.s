@@ -478,13 +478,10 @@ noload:
 
 				DEV_CHECK_SET SKIP_PVS_AMEND,.done_errata
 
-				tst.l	Lvl_ErrataPtr_l
-				beq.s	.done_errata
-
-				move.l	Lvl_ErrataPtr_l,a0
-				CALLC	Zone_ApplyPVSErrata
+				CALLC	Zone_ApplyErrata
 
 .done_errata:
+
 				CALLC	Zone_InitEdgePVS
 
 				movem.l	(sp)+,d0/d1/a0/a1
@@ -1882,8 +1879,7 @@ nodrawp2:
 .no_palette_update:
 				tst.l		Game_ProgressSignal_l
 				beq.s		.no_update_progress
-				CALLC		Game_UpdatePlayerProgress
-
+				CALLC		GMod_UpdateProgress
 .no_update_progress:
 				CALLC Vid_Present
 
