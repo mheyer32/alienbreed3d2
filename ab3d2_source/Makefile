@@ -75,6 +75,8 @@ $(TARGETNAME): $(OBJS)
 bump_build:
 	./bumprev.py --build
 
+-include ie/build.mk
+
 new:	bump_build $(foreach F,$(FLAVORS),$(foreach C,$(CPUS),build-$(F)-$(C)))
 
 all:	$(foreach F,$(FLAVORS),$(foreach C,$(CPUS),build-$(F)-$(C)))

@@ -214,6 +214,10 @@ There are three main CPU tuning options:
     - Specifically excludes routines optimised for slower CPUs and runtime indirections used to select them.
     - May contain 68060-specific optimisations, e.g. cache aware, move16 and code rewritten for fast multiplication, zero cycle branches, superscalar execution, etc.
 
+## Intuition Engine Port (WIP)
+
+See [ab3d2_source/ie/README.md](ab3d2_source/ie/README.md) for IE build
+targets, Redux media-profile setup and implementation notes.
 
 ### Release
 
