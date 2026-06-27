@@ -28,16 +28,16 @@
 	; Edge structure. The ZoneT_EdgeListOffset_w points to a list of words that are indexes
 	; in an array of the following structure, pointed to by Lvl_ZoneEdgePtr_l
 	STRUCTURE EdgeT,0
-		WORD  EdgeT_XPos_w     ; 0 X coordinate
-		WORD  EdgeT_ZPos_w     ; 2 Z coordinate
-		WORD  EdgeT_XLen_w     ; 4 Length in X direction
-		WORD  EdgeT_ZLen_w     ; 6 Length in Z direction
-		WORD  EdgeT_JoinZone_w ; 8 Zone the edge joins to, or -1 for a solid wall
-		WORD  EdgeT_Word_5     ; 10 TODO
-		BYTE  EdgeT_Byte_12    ; 12
-		BYTE  EdgeT_Byte_13    ; 13
-		WORD  EdgeT_Flags_w    ; 14 TODO - some sort of flags
-		LABEL EdgeT_SizeOf_l   ; 16
+		WORD  EdgeT_XPos_w        ; 0 X coordinate
+		WORD  EdgeT_ZPos_w        ; 2 Z coordinate
+		WORD  EdgeT_XLen_w        ; 4 Length in X direction
+		WORD  EdgeT_ZLen_w        ; 6 Length in Z direction
+		WORD  EdgeT_JoinZone_w    ; 8 Zone the edge joins to, or -1 for a solid wall
+		WORD  EdgeT_Length_w      ; 10 Scaled wall length for collision code
+		BYTE  EdgeT_UnitNormalX_b ; 12 X uhit normal
+		BYTE  EdgeT_UnitNormalZ_b ; 13 Y unit normal
+		WORD  EdgeT_Flags_w       ; 14 TODO - determine flag bits
+		LABEL EdgeT_SizeOf_l      ; 16
 
 	STRUCTURE PVST,0
 		WORD  PVST_Zone_w ; 0

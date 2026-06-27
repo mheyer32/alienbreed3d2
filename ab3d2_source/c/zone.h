@@ -55,12 +55,12 @@ typedef struct {
  * is accessed by subtracting an offset stored in the Zone structure from the Zone address.
  */
 typedef struct {
-    Vec2W e_Pos;        // X coordinate
-    Vec2W e_Len;        // Length in X direction
-    WORD  e_JoinZoneID; // Zone the edge joins to, or -1 for a solid wall
-    WORD  e_Word_5;     // TODO figure out what this is
-    BYTE  e_Byte_12;    // TODO figure out what this is
-    BYTE  e_Byte_13;    // TODO figure out what this is
+    Vec2W e_Pos;         // X/Z coordinate
+    Vec2W e_Len;         // X/Z component lengths
+    WORD  e_JoinZoneID;  // Zone the edge joins to, or -1 for a solid wall
+    WORD  e_Length;      // Scalend length used in collision code
+    BYTE  e_UnitNormalX; // X component of unit normal
+    BYTE  e_UnitNormalZ; // Z component of unit normal
     UWORD e_Flags;
 } ASM_ALIGN(sizeof(WORD)) ZEdge;
 
