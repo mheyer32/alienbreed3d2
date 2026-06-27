@@ -2,9 +2,9 @@
 #define ZONE_DOOR_H
 
 #define LVL_MAX_DOOR_ZONES 16
-#define NOT_A_DOOR -1
-#define END_OF_DOOR_LIST 999
-#define END_OF_DOOR_WALL_LIST -1
+#define NOT_A_LIFTABLE -1
+#define END_OF_LIFTABLE_LIST 999
+#define END_OF_LIFTABLE_WALL_LIST -1
 
 typedef enum {
     DOOR_RAISE_PLAYER_USE   = 0,
@@ -41,8 +41,7 @@ typedef struct {
     WORD  zl_ClosingSoundFX;// 12, 2
     WORD  zl_OpenedSoundFX;// 14, 2
     WORD  zl_ClosedSoundFX;// 16, 2
-    WORD  zl_Word9;// 18, 2 - something X coordinate related
-    WORD  zl_Word10;// 20, 2 - something Z coordinate related
+    Vec2W zl_SoundOrigin;
     WORD  zl_Word11;// 22, 2
     WORD  zl_Word12;// 24, 2
     LONG  zl_GraphicsOffset;// 26, 4
@@ -94,7 +93,7 @@ extern UBYTE Zone_DoorMap_vb[];
 void Zone_InitDoorList(void);
 
 /**
- * Get the Door ID for the given ZoneID. Returns NOT_A_DOOR if the zone is not a door.
+ * Get the Door ID for the given ZoneID. Returns NOT_A_LIFTABLE if the zone is not a door.
  */
 WORD Zone_GetDoorID(WORD zoneID);
 

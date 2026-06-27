@@ -57,8 +57,8 @@
 		UWORD ZLiftableT_ClosingSoundFX_w	; 12, 2
 		UWORD ZLiftableT_OpenedSoundFX_w	; 14, 2
 		UWORD ZLiftableT_ClosedSoundFX_w	; 16, 2
-		UWORD ZLiftableT_Word9_w			; 18, 2 - something X coordinate related
-		UWORD ZLiftableT_Word10_w			; 20, 2 - something Z coordinate related
+		UWORD ZLiftableT_SoundOriginX_w		; 18, 2
+		UWORD ZLiftableT_SoundOriginZ_w		; 20, 2
 		UWORD ZLiftableT_Word11_w			; 22, 2
 		UWORD ZLiftableT_Word12_w			; 24, 2
 		UWORD ZLiftableT_GraphicsPtrOffset_l; 26, 4 - offset from Lvl_GraphicsPtr_l
@@ -75,9 +75,9 @@
 		ULONG ZLiftWallT_Long_l				; 6, 4
 		LABEL ZLoftWallT_SizeOf_l
 
-NOT_A_DOOR				EQU -1
-END_OF_DOOR_LIST		EQU 999
-END_OF_DOOR_WALL_LIST 	EQU -1
+NOT_A_LIFTABLE				EQU -1
+END_OF_LIFTABLE_LIST		EQU 999
+END_OF_LIFTABLE_WALL_LIST 	EQU -1
 
 *****************************
 * Door Definitions **********

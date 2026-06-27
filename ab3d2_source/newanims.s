@@ -875,7 +875,7 @@ okzone:
 
 				bra.s	morezones
 
-				rts
+				rts		; unreachable?
 
 LiftRoutine:
 				move.w	#-1,anim_CurrentLiftable_w
@@ -885,10 +885,10 @@ LiftRoutine:
 doalift:
 				add.w	#1,anim_CurrentLiftable_w
 				move.w	(a0)+,d0						; 0: ZLiftableT_Bottom_w
-				cmp.w	#999,d0
+				cmp.w	#END_OF_LIFTABLE_LIST,d0
 				bne		notallliftsdone
 
-				move.w	#999,(a6)
+				move.w	#END_OF_LIFTABLE_LIST,(a6)
 				move.w	#0,anim_LiftOnlyLocks_w
 				bsr		DoWaterAnims
 
@@ -908,8 +908,8 @@ notallliftsdone:
 				subq.w	#1,anim_ClosingSoundFX_w
 				subq.w	#1,anim_OpenedSoundFX_w
 				subq.w	#1,anim_ClosedSoundFX_w
-				move.w	(a0)+,d2						; 18: ZLiftableT_Word9_w
-				move.w	(a0)+,d3						; 20: ZLiftableT_Word10_w
+				move.w	(a0)+,d2						; 18: ZLiftableT_SoundOriginX_w
+				move.w	(a0)+,d3						; 20: ZLiftableT_SoundOriginZ_w
 				sub.w	Plr1_TmpXOff_l,d2
 				sub.w	Plr1_TmpZOff_l,d3
 				move.w	Vis_CosVal_w,d4
@@ -1057,8 +1057,8 @@ notallliftsdone:
 				lea		(a3,d5.w),a4
 				move.w	#0,EdgeT_Flags_w(a4)
 				move.l	(a0)+,a1				; 2: ZLiftWallT_GraphicsOffset_l
-				add.l	Lvl_GraphicsPtr_l,a1	; 6: ZLiftWallT_Long_l
-				move.l	(a0)+,a2
+				add.l	Lvl_GraphicsPtr_l,a1
+				move.l	(a0)+,a2				; 6: ZLiftWallT_Long_l
 				adda.w	d0,a2
 				move.w	a2,12(a1)				; was move.l	a2,10(a1) ;
 				move.l	d3,20(a1)
@@ -1260,10 +1260,10 @@ DoorRoutine:
 doadoor:
 				add.w	#1,anim_CurrentLiftable_w      ; Door index
 				move.w	(a0)+,d0				; 0: bottom of door movement
-				cmp.w	#999,d0
+				cmp.w	#END_OF_LIFTABLE_LIST,d0
 				bne		notalldoorsdone
 
-				move.w	#999,(a6)
+				move.w	#END_OF_LIFTABLE_LIST,(a6)
 				move.w	#0,Anim_DoorAndLiftLocks_l
 				rts
 
@@ -1285,8 +1285,8 @@ notalldoorsdone:
 				subq.w	#1,anim_ClosingSoundFX_w
 				subq.w	#1,anim_OpenedSoundFX_w
 				subq.w	#1,anim_ClosedSoundFX_w
-				move.w	(a0)+,d2					; 18: ZLiftableT_Word9_w
-				move.w	(a0)+,d3					; 20: ZLiftableT_Word10_w
+				move.w	(a0)+,d2					; 18: ZLiftableT_SoundOriginX_w
+				move.w	(a0)+,d3					; 20: ZLiftableT_SoundOriginZ_w
 				sub.w	Plr1_TmpXOff_l,d2
 				sub.w	Plr1_TmpZOff_l,d3
 				move.w	Vis_CosVal_w,d4

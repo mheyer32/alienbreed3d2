@@ -315,7 +315,7 @@ static WORD zone_GetIndexInPVSList(WORD zoneID)
 static ZDoorListMask zone_GetInitialDoorMask(WORD zoneID)
 {
     WORD doorIndex = Zone_GetDoorID(zoneID);
-    if (doorIndex != NOT_A_DOOR) {
+    if (doorIndex != NOT_A_LIFTABLE) {
         return 1 << doorIndex;
     }
     return 0;

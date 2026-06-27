@@ -37,13 +37,12 @@ void zone_DumpLiftable(ZLiftable const* liftable, int index, char const* type)
         (int)liftable->zl_ClosedSoundFX
     );
     dprintf(
-        "\tzl_Word9  = %d\n"  // 18, 2 - something X coordinate related
-        "\tzl_Word10 = %d\n" // 20, 2 - something Z coordinate related
+        "\tzl_SoundOrigin  = {%d, %d}\n"  // 18, 2 - something X coordinate related
         "\tzl_Word11 = %d [0x%04X]\n" // 22, 2
         "\tzl_Word12 = %d [0x%04X]\n" // 24, 2
         "\tzl_GraphicsOffset = %d\n",  // 26, 4
-        (int)liftable->zl_Word9,
-        (int)liftable->zl_Word10,
+        (int)liftable->zl_SoundOrigin.v_X,
+        (int)liftable->zl_SoundOrigin.v_Z,
         (int)liftable->zl_Word11, (unsigned)liftable->zl_Word11,
         (int)liftable->zl_Word12, (unsigned)liftable->zl_Word12,
         (int)liftable->zl_GraphicsOffset
@@ -85,7 +84,7 @@ void Zone_InitDoorList()
     doorDataPtr.marker = Lvl_DoorDataPtr_l;
 
     WORD doorIndex = 0;
-    while (*doorDataPtr.marker != END_OF_DOOR_LIST && doorIndex < LVL_MAX_DOOR_ZONES) {
+    while (*doorDataPtr.marker != END_OF_LIFTABLE_LIST && doorIndex < LVL_MAX_DOOR_ZONES) {
         WORD zoneID = doorDataPtr.door->zl_ZoneID;
         if (Zone_IsValidZoneID(zoneID)) {
             //zone_DumpLiftable(doorDataPtr.door, doorIndex, "Door");
@@ -94,7 +93,7 @@ void Zone_InitDoorList()
             Zone_DoorMap_vb[zoneID >> 3] |= (1 << (zoneID & 7));
         }
         doorDataPtr.door++;
-        while (*doorDataPtr.marker++ != END_OF_DOOR_WALL_LIST) {
+        while (*doorDataPtr.marker++ != END_OF_LIFTABLE_WALL_LIST) {
             // skip over the wall data for the moment
         }
     }
@@ -121,5 +120,5 @@ WORD Zone_GetDoorID(WORD zoneID)
             }
         }
     }
-    return NOT_A_DOOR;
+    return NOT_A_LIFTABLE;
 }
