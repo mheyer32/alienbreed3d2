@@ -67,6 +67,17 @@
 		UBYTE ZLiftableT_RaiseCondition_b	; 34, 1
 		UBYTE ZLiftableT_LowerCondition_b   ; 35, 1
 		LABEL ZLiftableT_SizeOf_l			; 36
+		; Lift ZLiftWallT list follows the structure
+
+	STRUCTURE ZLiftWallT,0
+		UWORD ZLiftWallT_EdgeID_w			; 0, 2
+		ULONG ZLiftWallT_GraphicsOffset_l	; 2, 4
+		ULONG ZLiftWallT_Long_l				; 6, 4
+		LABEL ZLoftWallT_SizeOf_l
+
+NOT_A_DOOR				EQU -1
+END_OF_DOOR_LIST		EQU 999
+END_OF_DOOR_WALL_LIST 	EQU -1
 
 *****************************
 * Door Definitions **********

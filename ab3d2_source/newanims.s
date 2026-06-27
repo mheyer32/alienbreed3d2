@@ -884,7 +884,7 @@ LiftRoutine:
 
 doalift:
 				add.w	#1,anim_CurrentLiftable_w
-				move.w	(a0)+,d0						; 0 bottom of lift movement
+				move.w	(a0)+,d0						; 0: ZLiftableT_Bottom_w
 				cmp.w	#999,d0
 				bne		notallliftsdone
 
@@ -895,21 +895,21 @@ doalift:
 				rts
 
 notallliftsdone:
-				move.w	(a0)+,d1						; 2 top of lift movement.
-				move.w	(a0)+,anim_OpeningSpeed_w		; 4
+				move.w	(a0)+,d1						; 2: ZLiftableT_Top_w
+				move.w	(a0)+,anim_OpeningSpeed_w		; 4: ZLiftableT_OpeningSpeed_w
 				neg.w	anim_OpeningSpeed_w
-				move.w	(a0)+,anim_ClosingSpeed_w		; 6
-				move.w	(a0)+,anim_OpenDuration_w		; 8
-				move.w	(a0)+,anim_OpeningSoundFX_w		; 10
-				move.w	(a0)+,anim_ClosingSoundFX_w		; 12
-				move.w	(a0)+,anim_OpenedSoundFX_w		; 14
-				move.w	(a0)+,anim_ClosedSoundFX_w		; 16
+				move.w	(a0)+,anim_ClosingSpeed_w		; 6: ZLiftableT_ClosingSpeed_w
+				move.w	(a0)+,anim_OpenDuration_w		; 8: ZLiftableT_OpenDuration_w
+				move.w	(a0)+,anim_OpeningSoundFX_w		; 10: ZLiftableT_OpeningSoundFX_w
+				move.w	(a0)+,anim_ClosingSoundFX_w		; 12: ZLiftableT_ClosingSoundFX_w
+				move.w	(a0)+,anim_OpenedSoundFX_w		; 14: ZLiftableT_OpenedSoundFX_w
+				move.w	(a0)+,anim_ClosedSoundFX_w		; 16: ZLiftableT_ClosedSoundFX_w
 				subq.w	#1,anim_OpeningSoundFX_w
 				subq.w	#1,anim_ClosingSoundFX_w
 				subq.w	#1,anim_OpenedSoundFX_w
 				subq.w	#1,anim_ClosedSoundFX_w
-				move.w	(a0)+,d2						; 18
-				move.w	(a0)+,d3						; 20
+				move.w	(a0)+,d2						; 18: ZLiftableT_Word9_w
+				move.w	(a0)+,d3						; 20: ZLiftableT_Word10_w
 				sub.w	Plr1_TmpXOff_l,d2
 				sub.w	Plr1_TmpZOff_l,d3
 				move.w	Vis_CosVal_w,d4
@@ -928,10 +928,10 @@ notallliftsdone:
 				add.l	d4,d4
 				swap	d4
 				move.w	d4,Aud_NoiseZ_w
-				move.w	(a0),d3
+				move.w	(a0),d3							; 22: ZLiftableT_Word11_w
 				move.w	d3,(a6)+
-				move.w	2(a0),d2
-				move.w	8(a0),d7
+				move.w	2(a0),d2						; 24: ZLiftableT_Word12_w
+				move.w	8(a0),d7						; 30: ZLiftableT_ZoneID_w
 				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d7.w*4),a1
 				move.b	ZoneT_Echo_b(a1),PlayEcho
@@ -993,11 +993,11 @@ notallliftsdone:
 				sub.w	d3,d0
 				cmp.w	#15*16,d0
 				slt		d6
-				move.w	d3,(a0)+
+				move.w	d3,(a0)+				; 22: LiftableT_Word11_w
 				move.l	a0,a5
-				move.w	d2,(a0)+
+				move.w	d2,(a0)+				; 24: ZLiftableT_Word12_w
 				move.w	d2,d7
-				move.l	(a0)+,a1
+				move.l	(a0)+,a1				; 26 ZLiftableT_GraphicsPtrOffset_l
 				add.l	Lvl_GraphicsPtr_l,a1
 				asr.w	#2,d3
 				move.w	d3,d0
@@ -1005,9 +1005,14 @@ notallliftsdone:
 				move.w	d0,2(a1)
 				move.w	d3,d0
 
-				ext.l	d3	; Safety - sign extend before shift
+				IFD OPT060
+				muls	#256,d3
+				ELSE
+				ext.l	d3
 				asl.l	#8,d3
-				move.w	(a0)+,d5
+				ENDC
+
+				move.w	(a0)+,d5				; 30: ZLiftableT_ZoneID_w
 				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d5.w*4),a1
 				move.w	(a1),d5
@@ -1029,7 +1034,8 @@ notallliftsdone:
 				move.w	anim_FloorMoveSpeed_w,Plr2_FloorSpd_w
 
 .nosetfloorspd2:
-				move.w	(a0)+,d2				; conditions
+				; ingored?
+				move.w	(a0)+,d2				; 32: ZLiftableT_Word16_w
 ; and.w Conditions,d2
 ; cmp.w -2(a0),d2
 				move.w	anim_CurrentLiftable_w,d2
@@ -1037,23 +1043,24 @@ notallliftsdone:
 				btst	d2,d5
 				beq.s	.satisfied
 
-				move.w	(a0)+,d5
+				; ignored?
+				move.w	(a0)+,d5				; 34: ZLiftableT_RaiseCondition_b, ZLiftableT_LowerCondition_b
 
 .dothesimplething:
 				move.l	Lvl_ZoneEdgePtr_l,a3
 
 .simplecheck:
-				move.w	(a0)+,d5
+				move.w	(a0)+,d5				; (36) 0: ZLiftWallT_EdgeID_w
 				blt		nomoreliftwalls
 
 				asl.w	#4,d5
 				lea		(a3,d5.w),a4
-				move.w	#0,14(a4)
-				move.l	(a0)+,a1
-				add.l	Lvl_GraphicsPtr_l,a1
+				move.w	#0,EdgeT_Flags_w(a4)
+				move.l	(a0)+,a1				; 2: ZLiftWallT_GraphicsOffset_l
+				add.l	Lvl_GraphicsPtr_l,a1	; 6: ZLiftWallT_Long_l
 				move.l	(a0)+,a2
 				adda.w	d0,a2
-				move.w	a2,12(a1);was move.l	a2,10(a1)
+				move.w	a2,12(a1)				; was move.l	a2,10(a1) ;
 				move.l	d3,20(a1)
 				bra.s	.simplecheck
 
@@ -1265,21 +1272,21 @@ doadoor:
 				; are raised and lowered with the door.
 
 notalldoorsdone:
-				move.w	(a0)+,d1				; 2: top of door movement.
-				move.w	(a0)+,anim_OpeningSpeed_w	; 4:
-				neg.w	anim_OpeningSpeed_w
-				move.w	(a0)+,anim_ClosingSpeed_w	; 6:
-				move.w	(a0)+,anim_OpenDuration_w	; 8:
-				move.w	(a0)+,anim_OpeningSoundFX_w	; 10:
-				move.w	(a0)+,anim_ClosingSoundFX_w	; 12:
-				move.w	(a0)+,anim_OpenedSoundFX_w	; 14:
-				move.w	(a0)+,anim_ClosedSoundFX_w	; 16:
+				move.w	(a0)+,d1					; 2:  ZLiftableT_Top_w
+				move.w	(a0)+,anim_OpeningSpeed_w	; 4:  ZLiftableT_OpeningSpeed_w
+				neg.w	anim_OpeningSpeed_w			;
+				move.w	(a0)+,anim_ClosingSpeed_w	; 6:  ZLiftableT_ClosingSpeed_w
+				move.w	(a0)+,anim_OpenDuration_w	; 8:  ZLiftableT_OpenDuration_w
+				move.w	(a0)+,anim_OpeningSoundFX_w	; 10: ZLiftableT_OpeningSoundFX_w
+				move.w	(a0)+,anim_ClosingSoundFX_w	; 12: ZLiftableT_ClosingSoundFX_w
+				move.w	(a0)+,anim_OpenedSoundFX_w	; 14: ZLiftableT_OpenedSoundFX_w
+				move.w	(a0)+,anim_ClosedSoundFX_w	; 16: ZLiftableT_ClosedSoundFX_w
 				subq.w	#1,anim_OpeningSoundFX_w
 				subq.w	#1,anim_ClosingSoundFX_w
 				subq.w	#1,anim_OpenedSoundFX_w
 				subq.w	#1,anim_ClosedSoundFX_w
-				move.w	(a0)+,d2					; 18:
-				move.w	(a0)+,d3					; 20:
+				move.w	(a0)+,d2					; 18: ZLiftableT_Word9_w
+				move.w	(a0)+,d3					; 20: ZLiftableT_Word10_w
 				sub.w	Plr1_TmpXOff_l,d2
 				sub.w	Plr1_TmpZOff_l,d3
 				move.w	Vis_CosVal_w,d4
@@ -1298,15 +1305,15 @@ notalldoorsdone:
 				add.l	d4,d4
 				swap	d4
 				move.w	d4,Aud_NoiseZ_w
-				move.w	(a0),d3						; 22:
-				move.w	2(a0),d2					; 24:
-				move.w	8(a0),d7					; 30: Zone ID
+				move.w	(a0),d3						; 22: ZLiftableT_Word11_w
+				move.w	2(a0),d2					; 24: ZLiftableT_Word12_w
+				move.w	8(a0),d7					; 30: ZLiftableT_ZoneID_w
 				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d7.w*4),a1
 				move.b	ZoneT_Echo_b(a1),PlayEcho
 				muls	Anim_TempFrames_w,d2
 				add.w	d2,d3
-				move.w	2(a0),d2					; 24:
+				move.w	2(a0),d2					; 24: ZLiftableT_Word12_w
 				cmp.w	d3,d0
 				sle		anim_DoorClosed_b
 
@@ -1377,11 +1384,11 @@ NOTMOVING:
 				sub.w	d3,d0
 				cmp.w	#15*16,d0
 				sge		d6
-				move.w	d3,(a0)+					; 22:
+				move.w	d3,(a0)+					; 22: ZLiftableT_Word11_w
 				move.l	a0,a5
-				move.w	d2,(a0)+					; 24:
+				move.w	d2,(a0)+					; 24: ZLiftableT_Word12_w
 				move.w	d2,d7
-				move.l	(a0)+,a1					; 26:
+				move.l	(a0)+,a1					; 26: ZLiftableT_GraphicsPtrOffset_l
 				add.l	Lvl_GraphicsPtr_l,a1
 				; asr.w	#2,d3
 				; move.w	d3,d0
@@ -1393,12 +1400,15 @@ NOTMOVING:
 				asr.w	#2,d3
 				move.w	d3,d0
 
+				IFD OPT060
 				muls	#256,d3
-				;ext.l	d3		; Safety: Sign extend before shift
-				;asl.l	#8,d3
+				ELSE
+				ext.l	d3		; Safety: Sign extend before shift
+				asl.l	#8,d3
+				ENDC
 
 				move.l	Lvl_ZonePtrsPtr_l,a1
-				move.w	(a0)+,d5					; 30: Zone ID
+				move.w	(a0)+,d5					; 30: ZLiftableT_ZoneID_w
 				move.l	(a1,d5.w*4),a1
 				move.l	d3,6(a1)
 				neg.w	d0
@@ -1420,26 +1430,26 @@ NOTMOVING:
 
 				move.w	#-16,d7
 				move.w	#$8000,d1
-				move.w	(a0)+,d2				; 32:
-				move.w	(a0)+,d5				; 34: Conditions UBYTE[2]
+				move.w	(a0)+,d2				; 32: ZLiftableT_Word16_w
+				move.w	(a0)+,d5				; 34: ZLiftableT_RaiseCondition_b, ZLiftableT_LowerCondition_b
 				bra		backfromtst
 
 NotGoBackUp:
-				move.w	(a0)+,d2				; 32 - bit number?
+				move.w	(a0)+,d2				; 32 - ZLiftableT_Word16_w
 ; and.w Conditions,d2
 				move.w	anim_CurrentLiftable_w,d2
 				move.w	Anim_DoorAndLiftLocks_l,d5
 				btst	d2,d5
 				beq.s	satisfied
 
-				move.w	(a0)+,d5 ; 34 : Conditions UBYTE[2]
+				move.w	(a0)+,d5 ; 34 : ZLiftableT_RaiseCondition_b, ZLiftableT_LowerCondition_b
 
 dothesimplething:
 				move.l	Lvl_ZoneEdgePtr_l,a3
 
 simplecheck:
-                ; List of walls from this point?
-				move.w	(a0)+,d5              ; 36
+                ; List of walls from this point
+				move.w	(a0)+,d5              ; 36: Start of lift walls
 				blt		nomoredoorwalls       ; -1 terminated wall data, else Edge ID
 
 				asl.w	#4,d5                 ; Each edge entry is 16 bytes
@@ -1458,8 +1468,8 @@ simplecheck:
 satisfied:
 				moveq	#0,d4
 				moveq	#0,d5
-				move.b	(a0)+,d5
-				move.b	(a0)+,d4
+				move.b	(a0)+,d5              ; 34: ZLiftableT_RaiseCondition_b,
+				move.b	(a0)+,d4              ; 35: ZLiftableT_LowerCondition_b
 				tst.b	anim_DoorOpen_b
 				bne		tstdoortoclose
 

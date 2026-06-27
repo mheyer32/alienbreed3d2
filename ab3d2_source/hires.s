@@ -4655,9 +4655,14 @@ pastscale:
 				muls	#107,d0
 				bra	.fullscreen
 .smallscreen:
-				;muls	#64,d0			; FIXME: why muls here? Is this addressing the floor tile row?
+				; FIXME: why muls here? Is this addressing the floor tile row?
+				IFD OPT060
+				muls.w	#64,d0
+				ELSE
 				ext.l	d0
 				lsl.l	#6,d0
+				ENDC
+
 .fullscreen:
 ***************************************************************
 				move.l	d0,a2					; a2
@@ -4749,9 +4754,13 @@ doneclip:
 				muls	#107,d0
 				bra	.fullscreen
 .smallscreen:
-				;muls	#64,d0			; FIXME: why muls here? Is this addressing the floor tile row?
+				; FIXME: why muls here? Is this addressing the floor tile row?
+				IFD OPT060
+				muls	#64,d0
+				ELSE
 				ext.l	d0
 				lsl.l	#6,d0
+				ENDC
 .fullscreen:
 ***************************************************************
 
