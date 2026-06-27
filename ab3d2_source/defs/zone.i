@@ -67,12 +67,12 @@
 		UBYTE ZLiftableT_RaiseCondition_b	; 34, 1
 		UBYTE ZLiftableT_LowerCondition_b   ; 35, 1
 		LABEL ZLiftableT_SizeOf_l			; 36
-		; Lift ZLiftWallT list follows the structure
+		; Lift ZLiftableWallT list follows the structure
 
-	STRUCTURE ZLiftWallT,0
-		UWORD ZLiftWallT_EdgeID_w			; 0, 2
-		ULONG ZLiftWallT_GraphicsOffset_l	; 2, 4
-		ULONG ZLiftWallT_Long_l				; 6, 4
+	STRUCTURE ZLiftableWallT,0
+		UWORD ZLiftableWallT_EdgeID_w			; 0, 2
+		ULONG ZLiftableWallT_GraphicsOffset_l	; 2, 4
+		ULONG ZLiftableWallT_Long_l				; 6, 4
 		LABEL ZLoftWallT_SizeOf_l
 
 NOT_A_LIFTABLE				EQU -1

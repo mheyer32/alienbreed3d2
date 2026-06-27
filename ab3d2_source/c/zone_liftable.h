@@ -58,15 +58,15 @@ typedef struct {
     WORD  zlw_EdgeID;         //  0, 2
     LONG  zlw_GraphicsOffset; //  2, 4
     LONG  zlw_Long1;          //  6, 4 - Something to do with the vertical texture displacement?
-} ASM_ALIGN(sizeof(WORD)) ZLiftWall;
+} ASM_ALIGN(sizeof(WORD)) ZLiftableWall;
 
 /**
- * Data stream: The Door definition, is followed by 2N ZLiftWall records, followed by a -1 word
+ * Data stream: The Door definition, is followed by 2N ZLiftableWall records, followed by a -1 word
  * that represents the end of the door wall list.
  *
  * The door list itself is terminated with the magic number 999
  *
- * [{ ZLiftable, ZLiftWall[N*2], -1 }, { ZLiftable, ZLiftWall[N*2], -1 }..., 999]
+ * [{ ZLiftable, ZLiftableWall[N*2], -1 }, { ZLiftable, ZLiftableWall[N*2], -1 }..., 999]
  */
 
 /**
@@ -75,7 +75,7 @@ typedef struct {
 typedef union {
     WORD      const* marker;
     ZLiftable const* door;
-    ZLiftWall const* wall;
+    ZLiftableWall const* wall;
 } DoorDataPtr;
 
 extern WORD* Lvl_DoorDataPtr_l;

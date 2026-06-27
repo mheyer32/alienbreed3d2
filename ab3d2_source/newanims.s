@@ -1050,15 +1050,15 @@ notallliftsdone:
 				move.l	Lvl_ZoneEdgePtr_l,a3
 
 .simplecheck:
-				move.w	(a0)+,d5				; (36) 0: ZLiftWallT_EdgeID_w
+				move.w	(a0)+,d5				; (36) 0: ZLiftableWallT_EdgeID_w
 				blt		nomoreliftwalls
 
 				asl.w	#4,d5
 				lea		(a3,d5.w),a4
 				move.w	#0,EdgeT_Flags_w(a4)
-				move.l	(a0)+,a1				; 2: ZLiftWallT_GraphicsOffset_l
+				move.l	(a0)+,a1				; 2: ZLiftableWallT_GraphicsOffset_l
 				add.l	Lvl_GraphicsPtr_l,a1
-				move.l	(a0)+,a2				; 6: ZLiftWallT_Long_l
+				move.l	(a0)+,a2				; 6: ZLiftableWallT_Long_l
 				adda.w	d0,a2
 				move.w	a2,12(a1)				; was move.l	a2,10(a1) ;
 				move.l	d3,20(a1)
