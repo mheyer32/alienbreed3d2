@@ -267,7 +267,7 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
 
     dprintf(
         "\n\tEdge List: (Offset: %d)\n"
-        "\t\t| Idx |  XPos  |  ZPos  |  XLen  |  ZLen  | JZn | ...... | ... | ... | Flag |\n"
+        "\t\t| Idx |  XPos  |  ZPos  |  XLen  |  ZLen  | JZn | Length | XUN | ZUN | Flag |\n"
         "\t\t+-----+--------+--------+--------+--------+-----+--------+-----+-----+------+\n",
         (int)zonePtr->z_EdgeListOffset
     );
@@ -283,8 +283,8 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
                 edge,
                 (int)edgePtr->e_Pos.v_X,     (int)edgePtr->e_Pos.v_Z,
                 (int)edgePtr->e_Len.v_X,     (int)edgePtr->e_Len.v_Z,
-                (int)edgePtr->e_JoinZoneID,  (int)edgePtr->e_Word_5,
-                (int)edgePtr->e_Byte_12,     (int)edgePtr->e_Byte_13,
+                (int)edgePtr->e_JoinZoneID,  (int)edgePtr->e_Length,
+                (int)edgePtr->e_UnitNormalX, (int)edgePtr->e_UnitNormalZ,
                 (int)edgePtr->e_Flags
             );
         } else {

@@ -137,10 +137,10 @@ thisisawall2:
 				move.b	Obj_AwayFromWall_b,d3
 				blt.s	.notomatoes
 
-				move.b	EdgeT_Byte_12(a2),d2
+				move.b	EdgeT_UnitNormalX_b(a2),d2
 				ext.w	d2
 
-				move.b	EdgeT_Byte_13(a2),d4
+				move.b	EdgeT_UnitNormalZ_b(a2),d4
 				ext.w	d4
 
 				tst.b	d3
@@ -170,7 +170,7 @@ thisisawall2:
 				sub.l	d1,d0
 				ble		chkhttt
 
-				move.w	EdgeT_Word_5(a2),d3
+				move.w	EdgeT_Length_w(a2),d3
 				add.w	Obj_ExtLen_w,d3
 				divs	d3,d0
 				cmp.w	#32,d0
@@ -185,7 +185,7 @@ chkhttt:
 				;move.w	d5,WALLZLEN
 
 				move.l	d0,d7
-				move.w	EdgeT_Word_5(a2),d3
+				move.w	EdgeT_Length_w(a2),d3
 				add.w	Obj_ExtLen_w,d3
 				divs	d3,d7					;  d
 
@@ -509,9 +509,9 @@ anotherwalls:
 				move.b	Obj_AwayFromWall_b,d3
 				blt.s	.notomatoes
 
-				move.b	EdgeT_Byte_12(a2),d2
+				move.b	EdgeT_UnitNormalX_b(a2),d2
 				ext.w	d2
-				move.b	EdgeT_Byte_13(a2),d4
+				move.b	EdgeT_UnitNormalZ_b(a2),d4
 				ext.w	d4
 				tst.b	d3
 				beq.s	.noshift
@@ -577,7 +577,7 @@ anotherwalls:
 				blt		.oknothitwall
 
 .mighthit:
-				move.w	EdgeT_Word_5(a2),d0
+				move.w	EdgeT_Length_w(a2),d0
 				add.w	Obj_ExtLen_w,d0
 				divs	d0,d7					;  d
 				sub.w	#3,d7
@@ -762,7 +762,7 @@ checkifcrossed:
 ; Find height at crossing point:
 
 				move.l	billy,d7
-				divs	EdgeT_Word_5(a2),d7
+				divs	EdgeT_Length_w(a2),d7
 				move.w	oldx,d0
 				move.w	oldz,d1
 				sub.w	(a2),d0 ; EdgeT_XPos_w
@@ -770,7 +770,7 @@ checkifcrossed:
 				muls	EdgeT_XLen_w(a2),d1
 				muls	EdgeT_ZLen_w(a2),d0
 				sub.l	d1,d0
-				divs	EdgeT_Word_5(a2),d0
+				divs	EdgeT_Length_w(a2),d0
 				sub.w	d7,d0
 				bgt.s	.ohbugger
 
@@ -1454,8 +1454,8 @@ FindWayOut:
 				muls	EdgeT_XLen_w(a2),d6
 				muls	EdgeT_ZLen_w(a2),d5
 				sub.l	d6,d5					; positive
-				divs	EdgeT_Word_5(a2),d4
-				divs	EdgeT_Word_5(a2),d5
+				divs	EdgeT_Length_w(a2),d4
+				divs	EdgeT_Length_w(a2),d5
 				add.w	d5,d4
 				beq.s	sameheight
 				muls	d7,d5
@@ -1581,8 +1581,8 @@ FindCollisionPt:
 				muls	EdgeT_XLen_w(a2),d6
 				muls	EdgeT_ZLen_w(a2),d5
 				sub.l	d6,d5					; positive
-				divs	EdgeT_Word_5(a2),d4
-				divs	EdgeT_Word_5(a2),d5
+				divs	EdgeT_Length_w(a2),d4
+				divs	EdgeT_Length_w(a2),d5
 				move.w	d5,d6
 				add.w	d5,d4
 				beq.s	.sameheight
