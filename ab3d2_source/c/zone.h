@@ -54,7 +54,7 @@ typedef struct {
  * ID. Each Zone structure is preceded by a list of 16-bit word indexes into the array, that
  * is accessed by subtracting an offset stored in the Zone structure from the Zone address.
  *
- * Note the RotNormaX/Z pair are rotated 45 degrees to the carddinal axes and only 5 bit.
+ * Note the e_RotNormalX/Z pair are rotated 45 degrees to the cardinal axes and only 6-bit signed.
  * It seems as if the value is calculated in the editor by applying the rotation first,
  * then the normalisation. This results in ~28 being the maximum component value rather than 31.
  *
