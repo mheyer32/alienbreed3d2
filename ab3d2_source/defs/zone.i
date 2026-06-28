@@ -33,9 +33,9 @@
 		WORD  EdgeT_XLen_w        ; 4 Length in X direction
 		WORD  EdgeT_ZLen_w        ; 6 Length in Z direction
 		WORD  EdgeT_JoinZone_w    ; 8 Zone the edge joins to, or -1 for a solid wall
-		WORD  EdgeT_Length_w      ; 10 Scaled wall length for collision code
-		BYTE  EdgeT_UnitNormalX_b ; 12 X uhit normal
-		BYTE  EdgeT_UnitNormalZ_b ; 13 Y unit normal
+		WORD  EdgeT_Length_w      ; 10 Wall length for collision code
+		BYTE  EdgeT_RotNormalX_b  ; 12 X pre-rotated unit normal
+		BYTE  EdgeT_RotNormalZ_b  ; 13 Y pre-rotated unit normal
 		WORD  EdgeT_Flags_w       ; 14 TODO - determine flag bits
 		LABEL EdgeT_SizeOf_l      ; 16
 

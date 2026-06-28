@@ -137,10 +137,10 @@ thisisawall2:
 				move.b	Obj_AwayFromWall_b,d3
 				blt.s	.notomatoes
 
-				move.b	EdgeT_UnitNormalX_b(a2),d2
+				move.b	EdgeT_RotNormalX_b(a2),d2
 				ext.w	d2
 
-				move.b	EdgeT_UnitNormalZ_b(a2),d4
+				move.b	EdgeT_RotNormalZ_b(a2),d4
 				ext.w	d4
 
 				tst.b	d3
@@ -509,9 +509,9 @@ anotherwalls:
 				move.b	Obj_AwayFromWall_b,d3
 				blt.s	.notomatoes
 
-				move.b	EdgeT_UnitNormalX_b(a2),d2
+				move.b	EdgeT_RotNormalX_b(a2),d2
 				ext.w	d2
-				move.b	EdgeT_UnitNormalZ_b(a2),d4
+				move.b	EdgeT_RotNormalZ_b(a2),d4
 				ext.w	d4
 				tst.b	d3
 				beq.s	.noshift

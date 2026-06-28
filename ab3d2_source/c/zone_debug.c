@@ -254,7 +254,7 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
         do {
             zone = (int)p->pvs_ZoneID;
             dprintf(
-                "\t\t| %3d | %6d | %6d | %6d | %6d |\n",
+                "\t\t| %3d | %6d | %6d | %6d | %7d |\n",
                 zone,
                 (int)(p->pvs_ClipID >= 0 ? Lvl_ClipsPtr_l[p->pvs_ClipID] : -1 ),
                 (int)p->pvs_Word2, // significant?
@@ -267,8 +267,8 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
 
     dprintf(
         "\n\tEdge List: (Offset: %d)\n"
-        "\t\t| Idx |  XPos  |  ZPos  |  XLen  |  ZLen  | JZn | Length | XUN | ZUN | Flag |\n"
-        "\t\t+-----+--------+--------+--------+--------+-----+--------+-----+-----+------+\n",
+        "\t\t| Idx  |  XPos  |  ZPos  |  XLen  |  ZLen  | JZn | Length | XRN | ZRN | Flag |\n"
+        "\t\t+------+--------+--------+--------+--------+-----+--------+-----+-----+------+\n",
         (int)zonePtr->z_EdgeListOffset
     );
     // ExitList is an address offset prior to the zone
@@ -279,12 +279,12 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
         if (edge >= 0) {
             ZEdge* edgePtr = Lvl_ZoneEdgePtr_l + edge;
             dprintf(
-                "\t\t| %3d | %6d | %6d | %6d | %6d | %3d | %6d | %3d | %3d | %04X |\n",
+                "\t\t| %4d | %6d | %6d | %6d | %6d | %3d | %6d | %3d | %3d | %04X |\n",
                 edge,
                 (int)edgePtr->e_Pos.v_X,     (int)edgePtr->e_Pos.v_Z,
                 (int)edgePtr->e_Len.v_X,     (int)edgePtr->e_Len.v_Z,
                 (int)edgePtr->e_JoinZoneID,  (int)edgePtr->e_Length,
-                (int)edgePtr->e_UnitNormalX, (int)edgePtr->e_UnitNormalZ,
+                (int)edgePtr->e_RotNormalX, (int)edgePtr->e_RotNormalZ,
                 (int)edgePtr->e_Flags
             );
         } else {
