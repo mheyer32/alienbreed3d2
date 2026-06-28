@@ -59,7 +59,7 @@
 		UWORD ZLiftableT_ClosedSoundFX_w	; 16, 2
 		UWORD ZLiftableT_SoundOriginX_w		; 18, 2
 		UWORD ZLiftableT_SoundOriginZ_w		; 20, 2
-		UWORD ZLiftableT_Word11_w			; 22, 2
+		UWORD ZLiftableT_EndOfTravel_w		; 22, 2 - For doors: ZLiftableT_Bottom_w, for lifts: ZLiftableT_Top_w
 		UWORD ZLiftableT_Word12_w			; 24, 2
 		UWORD ZLiftableT_GraphicsPtrOffset_l; 26, 4 - offset from Lvl_GraphicsPtr_l
 		UWORD ZLiftableT_ZoneID_w			; 30, 2

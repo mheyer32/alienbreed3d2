@@ -31,6 +31,14 @@ static inline BOOL Zone_IsDoor(WORD zoneID)
 }
 
 /**
+ * Checks if a Zone is a door or not. This relies on the bitmap lookup.
+ */
+static inline BOOL Zone_IsLift(WORD zoneID)
+{
+    return Zone_IsValidZoneID(zoneID) && ( Zone_LiftMap_vb[zoneID >> 3] & (1 << (zoneID & 7)) );
+}
+
+/**
  * Obtain the address of the list of edges for the current zone. This is obtained by
  * adding the (negative) z_EdgeListOffset to the Zone address.
  */
