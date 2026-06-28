@@ -71,15 +71,15 @@ ItsAnAlien:
 				move.w	AlienT_FollowupSpeed_w(a1),AI_FollowupSpeed_w
 				move.w	AlienT_FollowupTimeout_w(a1),AI_FollowupTimer_w
 				move.w	AlienT_Girth_w(a1),d0
-				move.b	diststowall+1(pc,d0.w*4),Obj_AwayFromWall_b
-				move.w	diststowall+2(pc,d0.w*4),Obj_ExtLen_w
+				move.b	Obj_DistToWallTab_vw+1(pc,d0.w*4),Obj_AwayFromWall_b
+				move.w	Obj_DistToWallTab_vw+2(pc,d0.w*4),Obj_ExtLen_w
 				jsr		AI_MainRoutine
 
 				rts
 
 ALIENECHO:		dc.w	0
 
-diststowall:
+Obj_DistToWallTab_vw:
 				dc.w	0,40
 				dc.w	1,80
 				dc.w	2,160

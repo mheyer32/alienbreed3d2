@@ -53,14 +53,28 @@ typedef struct {
  * Edge structure. These are stored in a large array loaded from disk and are referenced by
  * ID. Each Zone structure is preceded by a list of 16-bit word indexes into the array, that
  * is accessed by subtracting an offset stored in the Zone structure from the Zone address.
+ *
+ * Note the e_RotNormalX/Z pair are rotated 45 degrees to the cardinal axes and only 6-bit signed.
+ * It seems as if the value is calculated in the editor by applying the rotation first,
+ * then the normalisation. This results in ~28 being the maximum component value rather than 31.
+ *
+ * TODO - The reason for this scaling is that the value is dynamically shifted based on the
+ * object minimum distance to wall scaling factor which is 0, 1 or 2. This results in a value
+ * that is on the range -127 to 127 but lacks precision in the lower bits. It might be better
+ * to recompute the normals at load time from the e_Len using a more precise arithmetic and
+ * using fixed 8 bit signed normals in the range -127 to +127.
+ *
+ * We can account for this by scaling the values down rather than up where they are used
+ * (see Obj_DistToWallTab_vw table in newaliencontrol.s)
+ *
  */
 typedef struct {
     Vec2W e_Pos;         // X/Z coordinate
     Vec2W e_Len;         // X/Z component lengths
     WORD  e_JoinZoneID;  // Zone the edge joins to, or -1 for a solid wall
-    WORD  e_Length;      // Scalend length used in collision code
-    BYTE  e_UnitNormalX; // X component of unit normal
-    BYTE  e_UnitNormalZ; // Z component of unit normal
+    WORD  e_Length;      // Precomputed wall length
+    BYTE  e_RotNormalX;  // X component of pre-rotated unit normal
+    BYTE  e_RotNormalZ;  // Z component of pre-rotated unit normal
     UWORD e_Flags;
 } ASM_ALIGN(sizeof(WORD)) ZEdge;
 
