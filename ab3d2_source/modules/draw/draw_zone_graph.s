@@ -53,7 +53,7 @@ Draw_Zone_Graph:
 				DEV_CHECK_SET SKIP_EDGE_PVS,.no_edge_pvs
 
 				; 0xABADCAFE - Quick Hack version of edge vis. If the zone is not tagged visible, skip
-				tst.w   ZoneT_Unused_w(a2)
+				tst.b   ZoneT_TaggedVisible_b(a2)
 				bne		.no_edge_pvs
 
 				DEV_ZDBG ZDbg_SkipEdge

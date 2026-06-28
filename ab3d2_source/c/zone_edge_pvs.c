@@ -750,7 +750,7 @@ void zone_MarkVisibleViaEdges(WORD size)
     zone_MakePVSZoneIDList(Lvl_ZonePtrsPtr_l[zoneID], &Zone_PVSList_vw[0]);
 
     for (WORD i = 0; i < size; ++i) {
-        Lvl_ZonePtrsPtr_l[Zone_PVSList_vw[i]]->z_Unused = Zone_PVSMask_vb[i];
+        Lvl_ZonePtrsPtr_l[Zone_PVSList_vw[i]]->z_TaggedVisible = Zone_PVSMask_vb[i];
     }
 }
 

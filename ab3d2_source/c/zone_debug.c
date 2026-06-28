@@ -259,7 +259,7 @@ void ZDbg_DumpZone(REG(a0, Zone* zonePtr)) {
                 (int)(p->pvs_ClipID >= 0 ? Lvl_ClipsPtr_l[p->pvs_ClipID] : -1 ),
                 (int)p->pvs_Word2, // significant?
                 (int)p->pvs_Word2,  // significant?
-                (int)(zone >= 0 ? Lvl_ZonePtrsPtr_l[zone]->z_Unused : 0)
+                (int)(zone >= 0 ? Lvl_ZonePtrsPtr_l[zone]->z_TaggedVisible : 0)
             );
             ++p;
         } while (zone > -1);
