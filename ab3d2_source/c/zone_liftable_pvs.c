@@ -38,12 +38,12 @@ void zone_DumpLiftable(ZLiftable const* liftable, int index, char const* type)
     );
     dprintf(
         "\tzl_SoundOrigin  = {%d, %d}\n"  // 18, 2 - something X coordinate related
-        "\tzl_Word11 = %d [0x%04X]\n" // 22, 2
+        "\tzl_EndOfTravel = %d [0x%04X]\n" // 22, 2
         "\tzl_Word12 = %d [0x%04X]\n" // 24, 2
         "\tzl_GraphicsOffset = %d\n",  // 26, 4
         (int)liftable->zl_SoundOrigin.v_X,
         (int)liftable->zl_SoundOrigin.v_Z,
-        (int)liftable->zl_Word11, (unsigned)liftable->zl_Word11,
+        (int)liftable->zl_EndOfTravel, (unsigned)liftable->zl_EndOfTravel,
         (int)liftable->zl_Word12, (unsigned)liftable->zl_Word12,
         (int)liftable->zl_GraphicsOffset
     );
@@ -60,9 +60,12 @@ void zone_DumpLiftable(ZLiftable const* liftable, int index, char const* type)
 }
 
 /**
- * Number of doors in the level
+ * TODO initialisation code for doors and lifts is all but identical, so this can be refactored at some point
+ *      into something more common.
  */
+
 static WORD zone_NumDoorDefs = 0;
+static WORD zone_NumLiftDefs = 0;
 
 /**
  * Initialise the compact door list array. The level contains a fixed number of door definitions but not
@@ -80,19 +83,29 @@ void Zone_InitDoorList()
         Zone_DoorMap_vb[i] = 0;
     }
 
-    DoorDataPtr doorDataPtr;
+    LiftableDataPtr doorDataPtr;
     doorDataPtr.marker = Lvl_DoorDataPtr_l;
 
     WORD doorIndex = 0;
     while (*doorDataPtr.marker != END_OF_LIFTABLE_LIST && doorIndex < LVL_MAX_DOOR_ZONES) {
-        WORD zoneID = doorDataPtr.door->zl_ZoneID;
+        WORD zoneID = doorDataPtr.data->zl_ZoneID;
         if (Zone_IsValidZoneID(zoneID)) {
-            //zone_DumpLiftable(doorDataPtr.door, doorIndex, "Door");
-            dprintf("Door %2d => Zone %3d\n", (int)doorIndex, (int)zoneID);
+            // Patch runtime invariants:
+            // Opening speed is reverse sign
+            doorDataPtr.dataInit->zl_OpeningSpeed = -doorDataPtr.dataInit->zl_OpeningSpeed;
+
+            // Doors are 1-indexed in the source data, 0 indexed at runtime.
+            --doorDataPtr.dataInit->zl_OpeningSoundFX;
+            --doorDataPtr.dataInit->zl_ClosingSoundFX;
+            --doorDataPtr.dataInit->zl_OpenedSoundFX;
+            --doorDataPtr.dataInit->zl_ClosedSoundFX;
+
+            zone_DumpLiftable(doorDataPtr.data, doorIndex, "Door");
+            //dprintf("Door %2d => Zone %3d\n", (int)doorIndex, (int)zoneID);
             Zone_DoorList_vw[doorIndex++] = zoneID;
             Zone_DoorMap_vb[zoneID >> 3] |= (1 << (zoneID & 7));
         }
-        doorDataPtr.door++;
+        doorDataPtr.data++;
         while (*doorDataPtr.marker++ != END_OF_LIFTABLE_WALL_LIST) {
             // skip over the wall data for the moment
         }
@@ -101,11 +114,66 @@ void Zone_InitDoorList()
     // Record the actual door count
     zone_NumDoorDefs = doorIndex;
 
-    // Make sure the rest of the list is initialised with
+    // Make sure the rest of the list is initialised with end markers
     while (doorIndex < LVL_MAX_DOOR_ZONES) {
         Zone_DoorList_vw[doorIndex++] = ZONE_ID_LIST_END;
     }
 }
+
+/**
+ * Initialise the compact lift list array. The level contains a fixed number of lift definitions but not
+ * all doors are assigned to a valid zone since it is not necessary to use all available doors.
+ *
+ * Note that the door data doesn't contain any gaps, so if a level defines only 3 doors, no matter which
+ * letter number is assigned, the indexes of the 3 doors will always be 0, 1, 2.
+ *
+ * We construct the list and also set the zone_NumLiftDefs
+ */
+void Zone_InitLiftList()
+{
+    dprintf("Zone_InitLiftList()\n");
+    for (WORD i = 0; i < Lvl_NumZones_w/8; ++i) {
+        Zone_LiftMap_vb[i] = 0;
+    }
+
+    LiftableDataPtr liftDataPtr;
+    liftDataPtr.marker = Lvl_LiftDataPtr_l;
+
+    WORD liftIndex = 0;
+    while (*liftDataPtr.marker != END_OF_LIFTABLE_LIST && liftIndex < LVL_MAX_DOOR_ZONES) {
+        WORD zoneID = liftDataPtr.data->zl_ZoneID;
+        if (Zone_IsValidZoneID(zoneID)) {
+            // Patch runtime invariants:
+            // Opening speed is reverse sign
+            liftDataPtr.dataInit->zl_OpeningSpeed = -liftDataPtr.dataInit->zl_OpeningSpeed;
+
+            // Lifts are 1-indexed in the source data, 0 indexed at runtime.
+            --liftDataPtr.dataInit->zl_OpeningSoundFX;
+            --liftDataPtr.dataInit->zl_ClosingSoundFX;
+            --liftDataPtr.dataInit->zl_OpenedSoundFX;
+            --liftDataPtr.dataInit->zl_ClosedSoundFX;
+
+            zone_DumpLiftable(liftDataPtr.data, liftIndex, "Lift");
+            //dprintf("Lift %2d => Zone %3d\n", (int)liftIndex, (int)zoneID);
+            Zone_LiftList_vw[liftIndex++] = zoneID;
+            Zone_LiftMap_vb[zoneID >> 3] |= (1 << (zoneID & 7));
+        }
+        liftDataPtr.data++;
+        while (*liftDataPtr.marker++ != END_OF_LIFTABLE_WALL_LIST) {
+            // skip over the wall data for the moment
+        }
+    }
+
+    // Record the actual lift count
+    zone_NumLiftDefs = liftIndex;
+
+    // Make sure the rest of the list is initialised with
+    while (liftIndex < LVL_MAX_DOOR_ZONES) {
+        Zone_LiftList_vw[liftIndex++] = ZONE_ID_LIST_END;
+    }
+}
+
+
 
 /**
  * Returns the Door Index for a given zone. Uses the door map to quickly eliminate all the zones that are
@@ -116,6 +184,22 @@ WORD Zone_GetDoorID(WORD zoneID)
     if (Zone_IsDoor(zoneID)) {
         for (WORD i = 0; i < zone_NumDoorDefs; ++i) {
             if (zoneID == Zone_DoorList_vw[i]) {
+                return i;
+            }
+        }
+    }
+    return NOT_A_LIFTABLE;
+}
+
+/**
+ * Returns the Lift Index for a given zone. Uses the lift map to quickly eliminate all the zones that are
+ * not lifts, before attempting to match one of the entries. Nothing clever, just a linear search.
+ */
+WORD Zone_GetLiftID(WORD zoneID)
+{
+    if (Zone_IsLift(zoneID)) {
+        for (WORD i = 0; i < zone_NumLiftDefs; ++i) {
+            if (zoneID == Zone_LiftList_vw[i]) {
                 return i;
             }
         }

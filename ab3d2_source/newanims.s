@@ -877,37 +877,19 @@ okzone:
 
 				rts		; unreachable?
 
-LiftRoutine:
-				move.w	#-1,anim_CurrentLiftable_w
-				move.l	Lvl_LiftDataPtr_l,a0
-				move.l	#anim_LiftHeightTable_vw,a6
 
-doalift:
-				add.w	#1,anim_CurrentLiftable_w
-				move.w	(a0)+,d0						; 0: ZLiftableT_Bottom_w
-				cmp.w	#END_OF_LIFTABLE_LIST,d0
-				bne		notallliftsdone
-
-				move.w	#END_OF_LIFTABLE_LIST,(a6)
-				move.w	#0,anim_LiftOnlyLocks_w
-				bsr		DoWaterAnims
-
-				rts
-
-notallliftsdone:
+next_liftable:	; common for lift and door
+				; a0 points to liftable data
 				move.w	(a0)+,d1						; 2: ZLiftableT_Top_w
 				move.w	(a0)+,anim_OpeningSpeed_w		; 4: ZLiftableT_OpeningSpeed_w
-				neg.w	anim_OpeningSpeed_w
 				move.w	(a0)+,anim_ClosingSpeed_w		; 6: ZLiftableT_ClosingSpeed_w
 				move.w	(a0)+,anim_OpenDuration_w		; 8: ZLiftableT_OpenDuration_w
 				move.w	(a0)+,anim_OpeningSoundFX_w		; 10: ZLiftableT_OpeningSoundFX_w
 				move.w	(a0)+,anim_ClosingSoundFX_w		; 12: ZLiftableT_ClosingSoundFX_w
 				move.w	(a0)+,anim_OpenedSoundFX_w		; 14: ZLiftableT_OpenedSoundFX_w
 				move.w	(a0)+,anim_ClosedSoundFX_w		; 16: ZLiftableT_ClosedSoundFX_w
-				subq.w	#1,anim_OpeningSoundFX_w
-				subq.w	#1,anim_ClosingSoundFX_w
-				subq.w	#1,anim_OpenedSoundFX_w
-				subq.w	#1,anim_ClosedSoundFX_w
+
+				; Determine sound location - TODO - working out of this could be skipped would save a few
 				move.w	(a0)+,d2						; 18: ZLiftableT_SoundOriginX_w
 				move.w	(a0)+,d3						; 20: ZLiftableT_SoundOriginZ_w
 				sub.w	Plr1_TmpXOff_l,d2
@@ -928,7 +910,29 @@ notallliftsdone:
 				add.l	d4,d4
 				swap	d4
 				move.w	d4,Aud_NoiseZ_w
-				move.w	(a0),d3							; 22: ZLiftableT_Word11_w
+				rts
+
+LiftRoutine:
+				move.w	#-1,anim_CurrentLiftable_w
+				move.l	Lvl_LiftDataPtr_l,a0
+				move.l	#anim_LiftHeightTable_vw,a6
+
+check_lift_list_end:
+				add.w	#1,anim_CurrentLiftable_w
+				move.w	(a0)+,d0						; 0: ZLiftableT_Bottom_w
+				cmp.w	#END_OF_LIFTABLE_LIST,d0
+				bne		next_lift
+
+				move.w	#END_OF_LIFTABLE_LIST,(a6)
+				move.w	#0,anim_LiftOnlyLocks_w
+				bsr		DoWaterAnims
+
+				rts
+
+next_lift:
+				bsr next_liftable
+
+				move.w	(a0),d3							; 22: ZLiftableT_EndOfTravel_w
 				move.w	d3,(a6)+
 				move.w	2(a0),d2						; 24: ZLiftableT_Word12_w
 				move.w	8(a0),d7						; 30: ZLiftableT_ZoneID_w
@@ -1118,7 +1122,7 @@ liftwalls:
 				bra		liftwalls
 
 nomoreliftwalls:
-				bra		doalift
+				bra		check_lift_list_end
 
 				rts
 
@@ -1257,55 +1261,20 @@ DoorRoutine:
 				move.l	Lvl_DoorDataPtr_l,a0
 				move.w	#-1,anim_CurrentLiftable_w
 
-doadoor:
+check_door_list_end:
 				add.w	#1,anim_CurrentLiftable_w      ; Door index
 				move.w	(a0)+,d0				; 0: bottom of door movement
 				cmp.w	#END_OF_LIFTABLE_LIST,d0
-				bne		notalldoorsdone
+				bne		next_door
 
 				move.w	#END_OF_LIFTABLE_LIST,(a6)
 				move.w	#0,Anim_DoorAndLiftLocks_l
 				rts
 
-				; TODO - The door structures are not uniformly large. I think there is conditionally
-				; included data, including but probably not limited to, the set of adjoining walls that
-				; are raised and lowered with the door.
+next_door:
+				bsr next_liftable
 
-notalldoorsdone:
-				move.w	(a0)+,d1					; 2:  ZLiftableT_Top_w
-				move.w	(a0)+,anim_OpeningSpeed_w	; 4:  ZLiftableT_OpeningSpeed_w
-				neg.w	anim_OpeningSpeed_w			;
-				move.w	(a0)+,anim_ClosingSpeed_w	; 6:  ZLiftableT_ClosingSpeed_w
-				move.w	(a0)+,anim_OpenDuration_w	; 8:  ZLiftableT_OpenDuration_w
-				move.w	(a0)+,anim_OpeningSoundFX_w	; 10: ZLiftableT_OpeningSoundFX_w
-				move.w	(a0)+,anim_ClosingSoundFX_w	; 12: ZLiftableT_ClosingSoundFX_w
-				move.w	(a0)+,anim_OpenedSoundFX_w	; 14: ZLiftableT_OpenedSoundFX_w
-				move.w	(a0)+,anim_ClosedSoundFX_w	; 16: ZLiftableT_ClosedSoundFX_w
-				subq.w	#1,anim_OpeningSoundFX_w
-				subq.w	#1,anim_ClosingSoundFX_w
-				subq.w	#1,anim_OpenedSoundFX_w
-				subq.w	#1,anim_ClosedSoundFX_w
-				move.w	(a0)+,d2					; 18: ZLiftableT_SoundOriginX_w
-				move.w	(a0)+,d3					; 20: ZLiftableT_SoundOriginZ_w
-				sub.w	Plr1_TmpXOff_l,d2
-				sub.w	Plr1_TmpZOff_l,d3
-				move.w	Vis_CosVal_w,d4
-				move.w	Vis_SinVal_w,d5
-				muls	d2,d4
-				muls	d3,d5
-				sub.l	d5,d4
-				add.l	d4,d4
-				swap	d4
-				move.w	d4,Aud_NoiseX_w
-				move.w	Vis_SinVal_w,d4
-				move.w	Vis_CosVal_w,d5
-				muls	d2,d4
-				muls	d3,d5
-				sub.l	d5,d4
-				add.l	d4,d4
-				swap	d4
-				move.w	d4,Aud_NoiseZ_w
-				move.w	(a0),d3						; 22: ZLiftableT_Word11_w
+				move.w	(a0),d3						; 22: ZLiftableT_EndOfTravel_w
 				move.w	2(a0),d2					; 24: ZLiftableT_Word12_w
 				move.w	8(a0),d7					; 30: ZLiftableT_ZoneID_w
 				move.l	Lvl_ZonePtrsPtr_l,a1
@@ -1362,8 +1331,6 @@ nolower:
 				move.w	d1,d3
 				moveq	#0,d2
 noraise:
-NOTMOVING:
-
 				; Update the door state bitmap for the zone visibility logic
 				; We only care about the fully closed state, anything open/ing has to be
 				; considered see through
@@ -1384,7 +1351,7 @@ NOTMOVING:
 				sub.w	d3,d0
 				cmp.w	#15*16,d0
 				sge		d6
-				move.w	d3,(a0)+					; 22: ZLiftableT_Word11_w
+				move.w	d3,(a0)+					; 22: ZLiftableT_EndOfTravel_w
 				move.l	a0,a5
 				move.w	d2,(a0)+					; 24: ZLiftableT_Word12_w
 				move.w	d2,d7
@@ -1516,7 +1483,7 @@ nothinghit:
 
 nomoredoorwalls:
 				addq	#2,a6
-				bra		doadoor
+				bra		check_door_list_end
 
 				rts
 

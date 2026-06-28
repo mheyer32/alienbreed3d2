@@ -603,6 +603,7 @@ void Zone_InitEdgePVS()
     #endif
 
     Zone_InitDoorList();
+    Zone_InitLiftList();
 
     ULONG infoTupleBufferSize = (ULONG)Lvl_NumZones_w * 3 * sizeof(WORD);
 
