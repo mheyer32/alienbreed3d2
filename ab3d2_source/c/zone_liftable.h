@@ -2,9 +2,9 @@
 #define ZONE_DOOR_H
 
 #define LVL_MAX_DOOR_ZONES 16
-#define NOT_A_DOOR -1
-#define END_OF_DOOR_LIST 999
-#define END_OF_DOOR_WALL_LIST -1
+#define NOT_A_LIFTABLE -1
+#define END_OF_LIFTABLE_LIST 999
+#define END_OF_LIFTABLE_WALL_LIST -1
 
 typedef enum {
     DOOR_RAISE_PLAYER_USE   = 0,
@@ -41,8 +41,7 @@ typedef struct {
     WORD  zl_ClosingSoundFX;// 12, 2
     WORD  zl_OpenedSoundFX;// 14, 2
     WORD  zl_ClosedSoundFX;// 16, 2
-    WORD  zl_Word9;// 18, 2 - something X coordinate related
-    WORD  zl_Word10;// 20, 2 - something Z coordinate related
+    Vec2W zl_SoundOrigin;
     WORD  zl_Word11;// 22, 2
     WORD  zl_Word12;// 24, 2
     LONG  zl_GraphicsOffset;// 26, 4
@@ -56,18 +55,18 @@ typedef struct {
  * TODO - Figure this out. There are two of these records per raise wall
  */
 typedef struct {
-    WORD  zdw_EdgeID;         //  0, 2
-    LONG  zdw_GraphicsOffset; //  2, 4
-    LONG  zdw_Long1;          //  6, 4 - Something to do with the vertical texture displacement?
-} ASM_ALIGN(sizeof(WORD)) ZDoorWall;
+    WORD  zlw_EdgeID;         //  0, 2
+    LONG  zlw_GraphicsOffset; //  2, 4
+    LONG  zlw_Long1;          //  6, 4 - Something to do with the vertical texture displacement?
+} ASM_ALIGN(sizeof(WORD)) ZLiftableWall;
 
 /**
- * Data stream: The Door definition, is followed by 2N ZDoorWall records, followed by a -1 word
+ * Data stream: The Door definition, is followed by 2N ZLiftableWall records, followed by a -1 word
  * that represents the end of the door wall list.
  *
  * The door list itself is terminated with the magic number 999
  *
- * [{ ZLiftable, ZDoorWall[N*2], -1 }, { ZLiftable, ZDoorWall[N*2], -1 }..., 999]
+ * [{ ZLiftable, ZLiftableWall[N*2], -1 }, { ZLiftable, ZLiftableWall[N*2], -1 }..., 999]
  */
 
 /**
@@ -76,7 +75,7 @@ typedef struct {
 typedef union {
     WORD      const* marker;
     ZLiftable const* door;
-    ZDoorWall const* wall;
+    ZLiftableWall const* wall;
 } DoorDataPtr;
 
 extern WORD* Lvl_DoorDataPtr_l;
@@ -94,7 +93,7 @@ extern UBYTE Zone_DoorMap_vb[];
 void Zone_InitDoorList(void);
 
 /**
- * Get the Door ID for the given ZoneID. Returns NOT_A_DOOR if the zone is not a door.
+ * Get the Door ID for the given ZoneID. Returns NOT_A_LIFTABLE if the zone is not a door.
  */
 WORD Zone_GetDoorID(WORD zoneID);
 
