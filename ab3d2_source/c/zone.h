@@ -41,12 +41,14 @@ enum {
  *
  * TODO - we ideally need to tag in here somewhere a flag that represents the visibility
  * based on the current edge determination.
+ *
+ *
  */
 typedef struct {
     WORD pvs_ZoneID;
     WORD pvs_ClipID;
-    WORD pvs_Word2; // TODO figure out what this is
-    WORD pvs_Word3; // TODO figure out what this is
+    WORD pvs_Word2; // TODO figure out what this is.
+    WORD pvs_Word3; // TODO figure out what this is.
 } ASM_ALIGN(sizeof(WORD)) ZPVSRecord;
 
 /**
@@ -96,7 +98,8 @@ typedef struct {
     WORD  z_UpperBrightness;          // 24, 2
     WORD  z_ControlPoint;             // 26, 2 really UBYTE[2]
     WORD  z_BackSFXMask;              // 28, 2 Originally long but always accessed as word
-    WORD  z_Unused;                   // 30, 2 so this is the unused half
+    UBYTE z_TaggedVisible;            // 30, 1 Set at runtime during PVS traversal
+    UBYTE z_Reserved;                 // 31, 1 Unused for now
     WORD  z_EdgeListOffset;           // 32, 2
     WORD  z_Points;                   // 34, 2
     UBYTE z_DrawBackdrop;             // 36, 1

@@ -12,7 +12,8 @@
 		UWORD ZoneT_UpperBrightness_w	; 24, 2
 		UWORD ZoneT_ControlPoint_w		; 26, 2 really UBYTE[2]
 		UWORD ZoneT_BackSFXMask_w		; 28, 2 Originally long but always accessed as word
-		UWORD ZoneT_Unused_w            ; 30, 2 so this is the unused half
+		UBYTE ZoneT_TaggedVisible_b     ; 30, 1 Set at runtime
+		UBYTE ZoneT_Reserved_b          ; 31, 1 Reserved
 		UWORD ZoneT_EdgeListOffset_w	; 32, 2 Offset relative to ZoneT instance
 		UWORD ZoneT_Points_w			; 34, 2
 		UBYTE ZoneT_DrawBackdrop_b		; 36, 1 Draw background?
