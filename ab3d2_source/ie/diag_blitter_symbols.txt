@@ -1,0 +1,10 @@
+ie_blitter_test_fill_count_l
+ie_blitter_test_copy_count_l
+ie_blitter_test_error_l
+ie_blitter_test_command_w
+ie_blitter_test_done_w
+ie_blitter_test_scratch_vb
+ie_menu_active
+_Vid_FullScreen_b
+_Vid_FullScreenTemp_b
+_Vid_RightX_w

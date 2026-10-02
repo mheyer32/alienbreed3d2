@@ -1,0 +1,118 @@
+-- Live, controller-agnostic gamepad diagnostic for the non-headless engine.
+-- It records Intuition Engine's canonical MMIO state. Face buttons are named
+-- by position because printed letters differ between controller families.
+
+local GAMEPAD_STATUS = 0x000F25C0
+local GAMEPAD_PAD0 = 0x000F25D0
+local RESULT = "gamepad-live.result"
+local S = require("gamepad_acceptance_symbols")
+
+local canonical_bits = {
+    "dpad_up", "dpad_down", "dpad_left", "dpad_right",
+    "face_bottom", "face_right", "face_left", "face_top",
+    "shoulder_left", "shoulder_right", "trigger_left", "trigger_right",
+    "centre_left", "centre_right", "stick_left", "stick_right", "home",
+}
+
+local function focus_m68k()
+    for _, entry in ipairs(dbg.cpu_list()) do
+        if entry.label == "M68K" or entry.cpu_name == "M68K" or entry.name == "M68K" then
+            dbg.cpu_focus(entry.id)
+            return
+        end
+    end
+    error("M68K CPU not registered")
+end
+
+-- Debugger reads expose MMIO register lanes in bus-native little-endian order,
+-- unlike M68K RAM. Decode MMIO separately so its numeric masks match guest
+-- move.l reads and the published gamepad ABI.
+local function rd32mmio(address)
+    local a, b, c, d = string.byte(dbg.read_mem(address, 4), 1, 4)
+    return (a or 0) + (b or 0) * 0x100 +
+        (c or 0) * 0x10000 + (d or 0) * 0x1000000
+end
+
+local function rd16be(address)
+    local a, b = string.byte(dbg.read_mem(address, 2), 1, 2)
+    return (a or 0) * 0x100 + (b or 0)
+end
+
+local function rd8(address)
+    return string.byte(dbg.read_mem(address, 1), 1) or 0
+end
+
+local function signed16(value)
+    value = value % 0x10000
+    if value >= 0x8000 then return value - 0x10000 end
+    return value
+end
+
+local function axis_state(value)
+    if value <= -8192 then return -1 end
+    if value >= 8192 then return 1 end
+    return 0
+end
+
+local function bit_set(value, bit)
+    return math.floor(value / (2 ^ bit)) % 2 ~= 0
+end
+
+local function pressed_names(buttons)
+    local names = {}
+    for bit, name in ipairs(canonical_bits) do
+        if bit_set(buttons, bit - 1) then names[#names + 1] = name end
+    end
+    if #names == 0 then return "none" end
+    return table.concat(names, ",")
+end
+
+local output = {
+    "AB3D2_GAMEPAD_LIVE v1",
+    "face positions: bottom=fire right=duck left=use top=jump",
+    "press and release every physical button, then close the engine",
+}
+
+local function record(line)
+    output[#output + 1] = line
+    sys.write_file(RESULT, table.concat(output, "\n") .. "\n")
+    sys.print("AB3D2_GAMEPAD_LIVE", line)
+end
+
+record("ready")
+
+local previous
+while true do
+    dbg.open()
+    focus_m68k()
+    local status = rd32mmio(GAMEPAD_STATUS)
+    local buttons = rd32mmio(GAMEPAD_PAD0)
+    local lxy = rd32mmio(GAMEPAD_PAD0 + 4)
+    local rxy = rd32mmio(GAMEPAD_PAD0 + 8)
+    local actions = rd16be(S.ie_gamepad_actions_w)
+    local operate_raw = rd8(S.operate_key)
+    local operate_key = rd8(S._KeyMap_vb + operate_raw)
+    local use_pending = rd8(S.Plr1_Used_b)
+    local use_tap = rd8(S.Plr1_TmpSpcTap_b)
+    local use_previous = rd8(S.plr_PrevUseKeyState_b)
+    local conditions = rd16be(S.Conditions)
+    dbg.continue(true)
+
+    local lx = axis_state(signed16(lxy))
+    local ly = axis_state(signed16(math.floor(lxy / 0x10000)))
+    local rx = axis_state(signed16(rxy))
+    local ry = axis_state(signed16(math.floor(rxy / 0x10000)))
+    local state = string.format(
+        "status=$%08X buttons=$%08X canonical_bits=%s axes=L(%d,%d) R(%d,%d) " ..
+        "actions=$%04X operate_key=$%02X use_pending=$%02X use_tap=$%02X " ..
+        "use_previous=$%02X conditions=$%04X",
+        status, buttons, pressed_names(buttons), lx, ly, rx, ry,
+        actions, operate_key, use_pending, use_tap, use_previous, conditions)
+    if state ~= previous then
+        record(state)
+        previous = state
+    end
+    -- Debugger inspection briefly pauses the guest. A low sampling cadence
+    -- keeps gameplay usable; hold the tested button for at least one second.
+    sys.wait_ms(500)
+end

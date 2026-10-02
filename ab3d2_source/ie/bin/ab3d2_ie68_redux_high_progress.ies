@@ -1,0 +1,73 @@
+-- Redux High leaves final display fitting to the host compositor, so this
+-- target has a higher JIT progress contract than the original media profile.
+local vblank_counter = 0x00013f30 -- _Vid_VBLCount_l in ie/diag_symbols.lua
+local sample_ms = 10000
+local minimum_guest_ticks_per_second = 30
+
+local function tap(scancode)
+    term.scancode(scancode)
+    sys.wait_ms(40)
+    term.scancode(scancode + 0x80)
+    sys.wait_ms(100)
+end
+
+local function read_counter()
+    dbg.open()
+    local a, b, c, d = string.byte(dbg.read_mem(vblank_counter, 4), 1, 4)
+    dbg.close()
+    return ((a or 0) * 0x1000000) + ((b or 0) * 0x10000) + ((c or 0) * 0x100) + (d or 0)
+end
+
+local function counter_delta(before, after)
+    if after >= before then
+        return after - before
+    end
+    return after
+end
+
+sys.wait_ms(3000)
+local accept = keys.ENTER or keys.RETURN or keys.SPACE
+tap(accept)
+tap(accept)
+tap(keys.SPACE or accept)
+sys.wait_ms(3000)
+
+local mode = cpu.execution_mode()
+if mode ~= "jit" then
+    sys.print("AB3D2_GUEST_PROGRESS", "mode=" .. mode, "error=jit_required")
+    sys.exit(1)
+end
+
+local before = read_counter()
+local before_jit = cpu.jit_stats()
+local before_native_blocks = before_jit.native_blocks or 0
+local before_native_retired = before_jit.native_retired or 0
+local started = sys.time_ms()
+sys.wait_ms(sample_ms)
+local elapsed = sys.time_ms() - started
+local after = read_counter()
+local delta = after - before
+if delta < 0 then
+    delta = delta + 4294967296
+end
+local jit = cpu.jit_stats()
+local native_blocks = counter_delta(before_native_blocks, jit.native_blocks or 0)
+local native_retired = counter_delta(before_native_retired, jit.native_retired or 0)
+
+sys.print(
+    "AB3D2_GUEST_PROGRESS",
+    "mode=" .. mode,
+    "elapsed_ms=" .. elapsed,
+    "vblanks=" .. delta,
+    "vblanks_per_second=" .. (delta * 1000 / elapsed),
+    "native_blocks=" .. native_blocks,
+    "native_retired=" .. native_retired
+)
+
+if delta * 1000 < minimum_guest_ticks_per_second * elapsed then
+    sys.exit(1)
+end
+if native_blocks <= 0 or native_retired <= 0 then
+    sys.exit(1)
+end
+sys.exit(0)

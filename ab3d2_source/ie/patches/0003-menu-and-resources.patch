@@ -1,0 +1,90 @@
+--- a/menu/menunb.s
++++ b/menu/menunb.s
+@@ -65,6 +65,9 @@
+ 				bsr.w	mnu_copycredz
+ 
+ .w8key:
++				IFD		IS_IE
++				jsr		_ie_wait_tof
++				ENDC
+ 				jsr		key_readkey
+ 				cmp.l	#50*10,counter
+ 				beq.s	.exit
+@@ -435,11 +438,13 @@
+ 				move.l	a0,-(a7)
+ 				move.l	#0,mnu_printdelay
+ 				bsr.w	mnu_cls
++				IFND	IS_IE
+ 				move.l	#35,timer
+ 
+-.w8a:
++	.w8a:
+ 				tst.l	timer
+ 				bne.s	.w8a
++				ENDC
+ 				move.l	(a7)+,a0
+ 				move.l	a0,-(a7)
+ 				move.w	(a0),d0
+@@ -508,7 +513,7 @@
+ 				clr.b   (a5,d7.w)
+ 				tst.b   d0
+ 				bne		.cd32
+-.keys:
++	.keys:
+ 				jsr		key_readkey
+ 
+ 				tst.w	d0
+@@ -563,6 +568,7 @@
+ 				moveq.l	#42,d1
+ 				bra.s	.cpcont
+ .cd32:
++				IFND	IS_IE
+ 				clr.b	Plr1_Keys_b
+ 				clr.b	Plr1_Path_b
+ 				clr.b	Plr1_Mouse_b
+@@ -571,6 +577,7 @@
+ 				clr.b	Plr2_Path_b
+ 				clr.b	Plr2_Mouse_b
+ 				st		Plr2_Joystick_b
++				ENDC
+ .quit:
+ 				moveq.l	#0,d1
+ 
+@@ -1941,12 +1948,21 @@
+ 
+ 				section	.bsschip,bss_c
+ 
++				IFD	IS_IE
++				xdef	_mnu_screen
++				xdef	_mnu_morescreen
++_mnu_screen		equ	$02800000
++mnu_screen		equ	_mnu_screen
++_mnu_morescreen	equ	$02840000
++mnu_morescreen	equ	_mnu_morescreen
++				ELSE
+ _mnu_screen::
+ mnu_screen:		ds.b	2*40*512				; 4 color background,. 320x512 pixels
+ 
+ _mnu_morescreen::
+ mnu_morescreen:
+ 				ds.b	8*40*SCREEN_HEIGHT				; 8 bitplanes 320x256 pixels
++				ENDC
+ 
+ 				align	8				; align for fetch mode 3
+ 
+--- a/modules/res.s
++++ b/modules/res.s
+@@ -299,9 +299,13 @@
+ 				move.l	GLF_DatabasePtr_l,a0
+ 				lea		GLFT_LevelMusic_l(a0),a0
+ 
++				IFD		IS_IE
++				clr.l	Lvl_MusicPtr_l
++				ELSE
+ 				move.l	#MEMF_CHIP,IO_MemType_l
+ 				jsr		IO_LoadFile
+ 				move.l	d0,Lvl_MusicPtr_l
++				ENDC
+ 
+ 				move.l	#MEMF_ANY,IO_MemType_l
+ 				move.l	#Lvl_BinFilename_vb,a0

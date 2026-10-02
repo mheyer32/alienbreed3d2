@@ -1,0 +1,1091 @@
+--- a/hires.s
++++ b/hires.s
+@@ -1,13 +1,36 @@
+-				include	"system.i"
++				IFD		IS_IE
++				include	"ie/platform/system.i"
++				ELSE
++				include	"ie/platform/system.i"
++				ENDC
+ 				include	"macros.i"
+ 				include	"defs.i"
+ 				include "modules/rawkey_macros.i"
++				include "ie/platform/ie_keymap.i"
+ 				include "modules/dev_macros.i"
+ 				opt		o+
+ 
+ 				xref	_custom
+ 				xref	_ciaa
+ 				xref	_Vid_Present
++				IFD		IS_IE
++				xref	ie_poll_input
++				xref	ie_MakeSomeNoise
++				IFD		IE_GAMEPAD_TEST
++				xref	ie_gamepad_test_plr1_mouse_l
++				xref	ie_gamepad_test_menu_up_l
++				xref	ie_gamepad_test_menu_down_l
++				xref	ie_gamepad_test_menu_wait_l
++				ENDC
++				xdef	Aud_SampleNum_w
++				xdef	Aud_SampleList_vl
++				xdef	Aud_NoiseVol_w
++				xdef	Aud_ChannelPick_b
++				ENDC
++				xdef	lastpressed
++				IFD		IS_IE
++				xdef	Game_Running_b
++				ENDC
+ 
+ ;*************************************************
+ ;* Stuff to do to get a C2P version:
+@@ -137,7 +160,11 @@
+ 				clr.b	Plr2_Mouse_b
+ 				st		Plr2_Joystick_b
+ 				ELSE
++				IFD		IS_IE
++				st		Plr1_Keys_b
++				ELSE
+ 				clr.b	Plr1_Keys_b
++				ENDC
+ 				clr.b	Plr1_Path_b
+ 				st		Plr1_Mouse_b
+ 				clr.b	Plr1_Joystick_b
+@@ -184,7 +211,11 @@
+ 				rts
+ 
+ 				; Include even in C version for assembly helpers
++				IFD		IS_IE
++				include		"ie/platform/ie_system_runtime.i"
++				ELSE
+ 				include		"modules/system.s"
++				ENDC
+ 				include		"modules/level.s"
+ 
+ 				IFD MEMTRACK
+@@ -281,7 +312,9 @@
+ ;				move.w	#$0020,_custom+intreq
+ ;				dbra	d1,.fdup
+ 
++				IFND	IS_IE
+ 				move.l	#_custom,a6
++				ENDC
+ 				jsr		SETPLAYERS
+ 
+ 				jsr		Res_LoadLevelData
+@@ -507,10 +540,12 @@
+ 				move.l	#Aud_EmptyBufferEnd,Samp2endRIGHT
+ 				move.l	#Aud_EmptyBufferEnd,Samp3endRIGHT
+ 
++				IFND	IS_IE
+ 				bset.b	#1,$bfe001
+ 
+ 				; clear audio modulation settings
+ 				move.w	#$00ff,_custom+adkcon
++				ENDC
+ 
+ 				; FIXME: reimplement level blurb
+ ; move.l #Blurbfield,$dff080
+@@ -544,7 +579,8 @@
+ 				jsr		Plr_Initialise
+ ; bsr initobjpos
+ 
+-				; setup audio channels
++				IFND	IS_IE
++				; setup Paula audio channels.
+ 				move.l	#$dff000,a6
+ 
+ 				move.l	#Aud_Null1_vw,$dff0a0
+@@ -594,6 +630,7 @@
+ 				move.w	#DMAF_SETCLR!DMAF_MASTER!DMAF_AUDIO,dmacon(a6)
+ 
+ 				move.w	#$0,potgo(a6)
++				ENDC
+ 				move.w	#0,Conditions
+ 
+ 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
+@@ -652,7 +689,11 @@
+ 
+ ********************************************
+ 
++				IFD		IS_IE
++				move.b	#$ff,Game_Running_b
++				ELSE
+ 				st		Game_Running_b
++				ENDC
+ 				st		dosounds
+ 
+ 				jsr		AI_InitAlienWorkspace
+@@ -722,11 +763,22 @@
+ nomorezones:
+ 
+ NOALLWALLS:
++				IFD		IS_IE
++				move.w	#FS_WIDTH/2,Vid_CentreX_w
++				move.w	#FS_WIDTH,Vid_RightX_w
++				move.w	#FS_HEIGHT,Vid_BottomY_w
++				move.w	#FS_HEIGHT/2,TOTHEMIDDLE
++				st		Vid_FullScreen_b
++				st		Vid_FullScreenTemp_b
++				clr.b	Vid_DoubleHeight_b
++				clr.b	Vid_DoubleWidth_b
++				ELSE
+ 				move.w	#SMALL_WIDTH/2,Vid_CentreX_w
+ 				move.w	#SMALL_WIDTH,Vid_RightX_w
+ 				move.w	#SMALL_HEIGHT,Vid_BottomY_w
+ 				move.w	#SMALL_HEIGHT/2,TOTHEMIDDLE
+ 				clr.b	Vid_FullScreen_b
++				ENDC
+ 				CALLC	Draw_ResetGameDisplay
+ 
+ 				st		Plr1_Weapons_vb+1
+@@ -816,7 +868,9 @@
+ .skipDH:
+ **************************************************************
+ game_main_loop:
++				IFND	IS_IE
+ 				move.w	#%110000000000,_custom+potgo
++				ENDC
+ 
+ 				cmp.b	#PLR_MASTER,Plr_MultiplayerType_b
+ 				bne		.notmess
+@@ -906,8 +960,10 @@
+ 
+ 				FREE_OBJ	a0
+ .notmess2:
++				IFND	IS_IE
+ 				;FIXME: should use _LVOWritePotgo here!
+ 				move.w	#%110000000000,_custom+potgo ; POTGO -start Potentiometer reading
++				ENDC
+ 													; FIXME: shouldn't this be in a regular interrupt, like VBL?
+ 
+ 				move.b	MAPON,draw_RenderMap_b
+@@ -929,9 +985,16 @@
+ 				bne		.nopause
+ 				tst.b	RAWKEY_P(a5)
+ 				beq.s	.nopause
++				IFD		IS_IE
++				cmp.b	#$ff,RAWKEY_P(a5)
++				bne.s	.nopause
++				ENDC
+ 				clr.b	Game_Running_b
+ 
+ .waitrel:
++				IFD		IS_IE
++				jsr		ie_poll_input
++				ENDC
+ 				tst.b	Plr1_Joystick_b
+ 				beq.s	.NOJOY
+ 				jsr		_ReadJoy1
+@@ -942,7 +1005,11 @@
+ 
+ 				bsr		Game_Pause
+ 
++				IFD		IS_IE
++				move.b	#$ff,Game_Running_b
++				ELSE
+ 				st		Game_Running_b
++				ENDC
+ .nopause:
+ 
+ ; FIXME: "player is hit" color handling missing
+@@ -957,7 +1024,11 @@
+ nofadedownhc:
+ 				;bsr		Vid_LoadMainPalette		; should only reload the palatte when hit
+ 
++				IFD		IS_IE
++				move.b	#$ff,READCONTROLS
++				ELSE
+ 				st		READCONTROLS
++				ENDC
+ 				move.l	#$dff000,a6
+ 
+ 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
+@@ -970,6 +1041,9 @@
+ 
+ 				move.l	#KeyMap_vb,a5
+ .waitrel:
++				IFD		IS_IE
++				jsr		ie_poll_input
++				ENDC
+ 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
+ 				beq.s	.RE2
+ 				tst.b	Plr1_Joystick_b
+@@ -1000,12 +1074,20 @@
+ .masfirst:
+ 				clr.b	Game_SlavePaused_b
+ 				clr.b	Game_MasterPaused_b
++				IFD		IS_IE
++				move.b	#$ff,Game_Running_b
++				ELSE
+ 				st		Game_Running_b
++				ENDC
+ 
+ .nopause:
+ 				clr.l	d2
+ 				move.w	Sys_FPSLimit_w,d2
++				IFD		IS_IE
++				bmi.s	.ie_wait_vbl_once
++				ELSE
+ 				bmi.s	.no_vbl
++				ENDC
+ 
+ 				;move.l	Vid_VBLCountLast_l,d2
+ 				add.l	Vid_VBLCountLast_l,d2
+@@ -1016,11 +1098,21 @@
+ 				;cmp.l	d2,d3
+ 				cmp.l	Vid_VBLCount_l,d2
+ 				blt.s	.skipWaitTOF
++				IFD		IS_IE
++				move.b	#$ff,Game_Running_b
++				ENDC
+ 				CALLGRAF	WaitTOF
+ 				bra.s	.waitvbl
+ 
+ .skipWaitTOF:
+ 				move.l	Vid_VBLCount_l,Vid_VBLCountLast_l
++				bra.s	.no_vbl
++				IFD		IS_IE
++.ie_wait_vbl_once:
++				move.b	#$ff,Game_Running_b
++				CALLGRAF	WaitTOF
++				move.l	Vid_VBLCount_l,Vid_VBLCountLast_l
++				ENDC
+ .no_vbl:
+ 				;move.l	d3,Vid_VBLCountLast_l
+ 
+@@ -1943,9 +2035,9 @@
+ ;.skip_copperlist:
+ ;.skip_resolution_cycle:
+ 
+-				tst.b	RAWKEY_F9(a5)
++				tst.b	IE_KEY_PIXEL_MODE(a5)
+ 				beq		.skip_double_height
+-				clr.b	RAWKEY_F9(a5)
++				clr.b	IE_KEY_PIXEL_MODE(a5)
+ 				tst.b	LASTDH
+ 				bne		.not_double_height
+ 				st		LASTDH
+@@ -1966,24 +2058,6 @@
+ 				clr.b	LASTDH
+ 
+ .not_double_height:
+-				; Hijacking this for the simple wall test
+-				tst.b	RAWKEY_F8(a5)
+-				beq.s	.skip_double_width
+-				clr.b	RAWKEY_F8(a5)
+-				tst.b	LASTDW
+-				bne		.not_double_width
+-
+-				not.b	Draw_ForceSimpleWalls_b
+-
+-				;not.b	Vid_DoubleWidth_b
+-				;bsr		SetupRenderbufferSize
+-
+-				bra.s	.not_double_width
+-
+-.skip_double_width:
+-				clr.b	LASTDW
+-
+-.not_double_width:
+ 
+ *****************************************
+ 				move.l	Plr2_ZonePtr_l,a0
+@@ -2086,6 +2160,10 @@
+ 				move.l	Plr1_ZonePtr_l,a0
+ 				move.w	(a0),d0
+ 
++				IFD		IS_IE
++				tst.w	Lvl_ExitZoneID_w
++				beq.s	noexit
++				ENDC
+ 				cmp.w	Lvl_ExitZoneID_w,d0
+ 
+ ; change this for quick exit, charlie
+@@ -2205,7 +2283,7 @@
+ 				rts
+ 
+ LASTDH:			dc.b	0
+-LASTDW:			dc.b	0
++				even
+ DOANYWATER:		dc.w	0
+ 
+ ; Screenshot?
+@@ -2237,7 +2315,11 @@
+ 
+ 				include "modules/draw/draw_map.s"
+ 				include "modules/c2p/c2p.s"
++				IFD		IS_IE
+ 				include	"pauseopts.s"
++				ELSE
++				include	"pauseopts.s"
++				ENDC
+ 				include "modules/dev_inst.s"
+ 
+ 
+@@ -2250,7 +2332,9 @@
+ ***************************************************************************
+ 
+ 
++				IFND	IS_IE
+ READCONTROLS:	dc.w	0
++				ENDC
+ 
+ tstststst:		dc.w	0
+ 
+@@ -3207,7 +3291,7 @@
+ DONTDOGUN:
+ 				dc.w	0
+ 
+-				include "modules/draw/draw_zone_graph.s"
++				include "ie/draw_zone_graph.s"
+ DrawDisplay:
+ 				clr.b	fillscrnwater
+ 
+@@ -3399,7 +3483,9 @@
+ 
+ 				include "modules/transform.s"
+ 
++				IFND	IS_IE
+ Game_Running_b:	dc.w	0						; does main game run?
++				ENDC
+ 
+ endlevel:
+ ; 	_break #0
+@@ -3455,8 +3541,10 @@
+ 				; Record the victory
+ 				STATS_WON
+ 
++				IFND	IS_IE
+ 				; Disable audio DMA
+ 				move.w	#$f,$dff000+dmacon
++				ENDC
+ 
+ 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
+ 				bne.s	.nonextlev
+@@ -3489,8 +3577,10 @@
+ 				;jmp		ENDGAMESCROLL
+ 
+ wevelost:
++				IFND	IS_IE
+ 				; disable Audio DMA
+ 				move.w	#$f,$dff000+dmacon
++				ENDC
+ 
+ 				jmp		closeeverything
+ 
+@@ -3542,7 +3632,9 @@
+ ; include "endscroll.s"
+ 
+ ***********************************
++				IFND	IS_IE
+ 				include	"cd32joy.s"
++				ENDC
+ 
+ *************************************
+ * Set left and right clip values
+@@ -3879,8 +3971,8 @@
+ 				cmp.w	d1,d3
+ 				beq		lineflat				; if line is flat, skip
+ 
++				bgt		lineonright
+ 				st		drawit
+-				bgt		lineonright
+ 				move.l	#LeftSideTable_vw,a3
+ 
+ 				; switch points to make line sloped downwards
+@@ -3964,6 +4056,7 @@
+ 
+ 			; Is this "drawing" right line into a buffer, storing the X values into a3
+ lineonright:
++				st		drawit
+ 
+ 				lea		(a3,d1*2),a3			;right line entry start
+ 
+@@ -4176,8 +4269,8 @@
+ 				bra		lineflatGOUR
+ 
+ linenotflatGOUR:
++				bgt		lineonrightGOUR
+ 				st		drawit
+-				bgt		lineonrightGOUR
+ 				move.l	#LeftSideTable_vw,a3
+ 				exg		d1,d3
+ 				exg		d0,d2
+@@ -4297,6 +4390,7 @@
+ 				bra		lineflatGOUR
+ 
+ lineonrightGOUR:
++				st		drawit
+ 
+ 				lea		(a3,d1*2),a3			; left side entry
+ 
+@@ -5852,6 +5946,9 @@
+ 
+ ; todo - this is only used from the menu code
+ key_readkey:
++				IFD		IS_IE
++				jsr		ie_poll_input
++				ENDC
+ 				moveq	#0,d0
+ 				move.b	lastpressed,d0
+ 				move.b	#0,lastpressed
+@@ -6317,6 +6414,7 @@
+ 				st		CHANNELDATA
+ 				;*******************************
+ 
++				IFND	IS_IE
+ 				move.w	#$f,$dff000+dmacon
+ 				move.l	#Aud_Null1_vw,$dff0a0
+ 				move.w	#100,$dff0a4 ; size
+@@ -6337,6 +6435,7 @@
+ 				move.w	#100,$dff0d4 ; size
+ 				move.w	#443,$dff0d6 ; period
+ 				move.w	#63,$dff0d8  ; volume
++				ENDC
+ 
+ 				move.l	#Aud_EmptyBuffer_vl,pos0LEFT
+ 				move.l	#Aud_EmptyBuffer_vl,pos1LEFT
+@@ -6593,7 +6692,11 @@
+ 
+ 
+ 				tst.b	READCONTROLS
++				IFD		IS_IE
++				bra.s	.readcontrols_enabled
++				ENDC
+ 				beq		nocontrols
++.readcontrols_enabled:
+ 
+ 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
+ 				beq		control2
+@@ -6669,9 +6772,15 @@
+ 				bra		nocontrols
+ 
+ .propercontrol:
++				IFD		IS_IE
++				jsr		ie_poll_input
++				ENDC
+ 
+ 				tst.b	Plr1_Mouse_b
+ 				beq.s	.plr1_no_mouse
++				IFD		IE_GAMEPAD_TEST
++				addq.l	#1,ie_gamepad_test_plr1_mouse_l
++				ENDC
+ 				bsr		Plr1_MouseControl
+ .plr1_no_mouse:
+ 				tst.b	Plr1_Keys_b
+@@ -6817,7 +6926,9 @@
+ 				and.w	#$fffe,d0
+ *********************
+ 
++				IFND	IS_IE
+ 				move.w	d0,dmacon(a6)
++				ENDC
+ 
+ nomuckabout:
+ 
+@@ -6831,6 +6942,11 @@
+ dointer
+ 
+ JUSTSOUNDS:
++				IFD		IS_IE
++				GETREGS
++				moveq	#0,d0
++				rts
++				ENDC
+ 				tst.b	dosounds
+ 				beq.s	.notthing
+ 
+@@ -7243,6 +7359,9 @@
+ ***********************************
+ 
+ fourchannel:
++				IFD		IS_IE
++				rts
++				ENDC
+ 				move.l	#$dff000,a6
+ 
+ 				tst.b	LEFTCHANDATA
+@@ -7515,6 +7634,9 @@
+ 
+ 
+ MakeSomeNoise:
++				IFD		IS_IE
++				jmp		ie_MakeSomeNoise
++				ENDC
+ 
+ ; move.w #$10,$dff000+intena
+ 
+@@ -8056,9 +8178,17 @@
+ 				rts
+ 
+ 				include	"modules/res.s"
++				IFD		IS_IE
++				include	"ie/platform/ie_file_io_runtime.i"
++				ELSE
+ 				include	"modules/file_io.s"
++				ENDC
+ 				include "modules/vid.s"
++				IFD		IS_IE
+ 				include	"controlloop.s"
++				ELSE
++				include	"controlloop.s"
++				ENDC
+ 
+ 
+ saveinters:
+@@ -8334,7 +8464,11 @@
+ 				st		oktodisplay
+ 				rts
+ 
++				IFD		IS_IE
++				include "ie/platform/ie_music.i"
++				ELSE
+ 				include "modules/music.s"
++				ENDC
+ 
+ UseAllChannels:		dc.w	0
+ ;CHEATPTR:			dc.l	0
+@@ -8356,7 +8490,9 @@
+ 
+ 				section .text,code
+ 				cnop	0,4
++				IFND	IS_IE
+ 				include	"serial_nightmare.s"
++				ENDC
+ 
+ 				cnop	0,4
+ 
+--- a/controlloop.s
++++ b/controlloop.s
+@@ -31,6 +31,27 @@
+ ;12. Reload title screen
+ ;13. goto 6
+ 
++				xdef	turn_left_key
++				xdef	turn_right_key
++				xdef	forward_key
++				xdef	backward_key
++				xdef	fire_key
++				xdef	operate_key
++				xdef	run_key
++				xdef	sidestep_left_key
++				xdef	sidestep_right_key
++				xdef	duck_key
++				xdef	jump_key
++				xdef	look_up_key
++				xdef	look_down_key
++				xdef	next_weapon_key
++				xdef	ie_game_stage
++
++				IFD		IS_IE
++EXEC_CTRL			equ		$F2324
++EXEC_OP_HARD_RESET	equ		5
++				ENDC
++
+ 
+ 				align 4
+ OPTSPRADDR:
+@@ -42,28 +63,46 @@
+ 				align	4
+ 
+ Game_Start:
++				move.l	#1,ie_game_stage
+ 				move.l	a7,sys_RecoveryStack	; Save stack pointer for Sys_FatalError
++				move.l	a7,mnu_mainstack
++				clr.b	Game_ShouldQuit_b
++
++				st		Plr1_Keys_b
++				clr.b	Plr1_Path_b
++				st		Plr1_Mouse_b
++				clr.b	Plr1_Joystick_b
++				clr.b	Plr2_Keys_b
++				clr.b	Plr2_Path_b
++				clr.b	Plr2_Mouse_b
++				clr.b	Plr2_Joystick_b
+ 
+ 				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
+ 				CALLC	Vid_OpenMainScreen
++				move.l	#2,ie_game_stage
+ 
+ 				move.l	#GLF_DatabaseName_vb,a0
+ 				jsr		IO_LoadFile
+ 				move.l	d0,GLF_DatabasePtr_l
++				move.l	#3,ie_game_stage
+ 
+ 				move.l	#Game_StoryFile_vb,a0
+ 				jsr		IO_LoadFile
+ 				move.l	d0,Lvl_IntroTextPtr_l
+-
++				move.l	#4,ie_game_stage
++
++				IFND	IS_IE
+ 				jsr		_InitLowLevel
++				ENDC
+ 
+ 				;jsr		mnu_start	; For some reason this doesn't work
+ 										; Shows the wrong menu
+ 
++				IFND	IS_IE
+ 				jsr		mnu_copycredz
+-
+ 				CALLC	mnu_setscreen
+-				move.l	a7,mnu_mainstack	; not sure if this is the right thing or even in use...
++				ENDC
++				move.l	#5,ie_game_stage
+ 
+ 				jsr		IO_InitQueue
+ 
+@@ -72,14 +111,20 @@
+ 				;bsr		FADEUPTITLE
+ 
+ 				jsr		Res_LoadSoundFx
++				move.l	#6,ie_game_stage
+ 				jsr		Res_LoadWallTextures
++				move.l	#7,ie_game_stage
+ 				jsr		Res_LoadFloorsAndTextures
++				move.l	#8,ie_game_stage
+ 				jsr		Res_LoadObjects
+-
++				move.l	#9,ie_game_stage
++
++				IFND	IS_IE
+ 				move.l	#draw_BackdropImageName_vb,a0
+ 				move.l	#Draw_BackdropImagePtr_l,d0
+ 				move.l	#0,d1
+ 				jsr		IO_QueueFile
++				ENDC
+ 
+ ; jsr _StopPlayer
+ ; jsr _RemPlayer
+@@ -87,9 +132,11 @@
+ 
+ ***********************************************
+ 				jsr		IO_FlushQueue
++				move.l	#10,ie_game_stage
+ ***********************************************
+ 
+ 				jsr		Res_PatchSoundFx
++				move.l	#11,ie_game_stage
+ 
+ 				;move.w	#23,FADEAMOUNT
+ 				;bsr		FADEDOWNTITLE
+@@ -102,10 +149,13 @@
+ 				ENDC
+ 
+ 				jsr		game_SetMenuLevelNames
++				move.l	#12,ie_game_stage
+ 
+ 				bsr		DEFAULTGAME
++				move.l	#13,ie_game_stage
+ 
+ game_BackToMenu:
++				move.l	#14,ie_game_stage
+ 				CALLC	Sys_ClearKeyboard
+ 
+ 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
+@@ -115,6 +165,7 @@
+ 				beq.s	game_BackToMaster
+ 
+ 				bsr		game_ReadMainMenu
++				move.l	#15,ie_game_stage
+ 
+ 				bra		game_DoneMenu
+ 
+@@ -127,6 +178,7 @@
+ 				bsr		game_SlaveMenu
+ 
+ game_DoneMenu:
++				move.l	#16,ie_game_stage
+ 				tst.b	Game_ShouldQuit_b
+ 				bne		Game_Quit
+ 
+@@ -199,6 +251,14 @@
+ 				bra		game_BackToMenu
+ 
+ Game_Quit:
++				IFD		IS_IE
++				move.l	#EXEC_OP_HARD_RESET,EXEC_CTRL
++.wait_for_ie_reset:
++				bra.s	.wait_for_ie_reset
++				ENDC
++
++				move.l	ie_game_stage,ie_game_quit_from_stage
++				move.l	#99,ie_game_stage
+ 				moveq	#0,d0 ; No fading
+ 				CALLC	mnu_clearscreen ; Maybe No-op
+ 
+@@ -212,11 +272,20 @@
+ 				jsr		Res_FreeFloorsAndTextures
+ 				jsr		Res_FreeObjects
+ 
++				IFND	IS_IE
+ 				jsr		_CloseLowLevel
++				ENDC
+ 
+ 				move.l	#0,d0
+ 
+ 				rts
++
++				cnop	0,4
++ie_game_stage:
++				dc.l	0
++ie_game_quit_from_stage:
++				dc.l	0
++
+ 
+ ; PREFERENCES (TODO - SHIP OUT):
+ 
+@@ -249,7 +318,7 @@
+ next_weapon_key:	dc.b	RAWKEY_BSLASH
+ spare_key:          dc.b    0
+ 
+-		DCLC Prefs_FullScreen_b,	dc.b,	0
++		DCLC Prefs_FullScreen_b,	dc.b,	255
+ 		DCLC Prefs_PixelMode_b,		dc.b,	0
+ 		DCLC Prefs_VertMargin_b,	dc.b,	0
+ 		DCLC Prefs_SimpleLighting_b,dc.b,	0
+@@ -351,6 +420,7 @@
+ ********************************************************
+ 
+ game_ReadMainMenu:
++				move.l	#20,ie_game_stage
+ 				move.b	#PLR_SINGLE,Plr_MultiplayerType_b
+ 				move.w	Game_LevelCounter_w,d0
+ 				move.l	#mnu_CURRENTLEVELLINE,a1
+@@ -364,10 +434,17 @@
+ 
+ 				lea		mnu_MYMAINMENU,a0
+ 				bsr		game_OpenMenu
++				move.l	#21,ie_game_stage
+ 
+ .rdlop:
+ 				lea		mnu_MYMAINMENU,a0
++				move.l	#22,ie_game_stage
++				IFD		IS_IE
++				bsr		ie_menu_wait_select
++				ELSE
+ 				bsr		game_CheckMenu
++				ENDC
++				move.l	#23,ie_game_stage
+ 
+ ***************************************************************
+ 				tst.w	d0
+@@ -409,7 +486,8 @@
+ 				cmp.w	#4,d0
+ 				bne		.nocred
+ 
+-				;jsr		mnu_viewcredz
++				CALLC	Sys_ClearKeyboard
++				jsr		mnu_viewcredz
+ 				lea		mnu_MYMAINMENU,a0
+ 				bsr		game_OpenMenu
+ 
+@@ -896,7 +974,11 @@
+ 
+ *********************************************
+ 				move.l	#mnu_buttonanim,mnu_frameptr
++				IFD		IS_IE
++				jsr		ie_menu_getrawvalue
++				ELSE
+ 				jsr		mnu_getrawvalue
++				ENDC
+ 				move.l	#mnu_cursanim,mnu_frameptr
+ ***********************************************
+ 
+@@ -942,7 +1024,11 @@
+ 
+ **********************************************
+ 				move.l	#mnu_buttonanim,mnu_frameptr
++				IFD		IS_IE
++				jsr		ie_menu_getrawvalue
++				ELSE
+ 				jsr		mnu_getrawvalue
++				ENDC
+ 				move.l	#mnu_cursanim,mnu_frameptr
+ ***********************************************
+ 
+@@ -973,11 +1059,16 @@
+ 
+ 				move.l	#KeyMap_vb,a5
+ .wait_loop:
++				IFD		IS_IE
++				jsr		ie_wait_vblank
++				jsr		ie_poll_input
++				ELSE
+ 				; Should this yield a bit?
+ 				;moveq	#1,d1
+ 				;CALLDOS Delay
+ 				btst	#7,$bfe001 ; cia
+ 				beq.s	.wait_loop
++				ENDC
+ 
+ 				IFEQ	CD32VER
+ 				tst.b	RAWKEY_SPACEBAR(a5)
+@@ -990,6 +1081,7 @@
+ 				bne.s	.wait_loop
+ 				ENDC
+ 
++				IFND	IS_IE
+ 				btst	#1,_custom+joy1dat
+ 				sne		d0
+ 				btst	#1,_custom+joy1dat+1
+@@ -1005,6 +1097,7 @@
+ 				bne.s	.wait_loop
+ 				tst.b	d3
+ 				bne.s	.wait_loop
++				ENDC
+ 
+ 				movem.l	(a7)+,d0/d1/d2/d3
+ 				rts
+@@ -1045,6 +1138,9 @@
+ game_OpenMenu:
+ .redraw:
+ 				move.l	a0,-(a7)
++				IFD		IS_IE
++				CALLC	mnu_setscreen
++				ENDC
+ 				jsr		mnu_openmenu			; Open new menu
+ 
+ 				move.l	(a7)+,a0
+@@ -1057,7 +1153,11 @@
+ 				move.l	a0,-(a7)
+ 				jsr		mnu_update
+ 
++				IFD		IS_IE
++				bsr		ie_menu_wait_select
++				ELSE
+ 				jsr		mnu_waitmenu			; Wait for option
++				ENDC
+ 
+ 				move.l	(a7)+,a0
+ 				moveq.l	#0,d2
+@@ -1068,6 +1168,134 @@
+ 				move.w	d2,d0					; option number
+ 				rts
+ 
++ie_menu_wait_select:
++				move.b	#0,lastpressed
++				clr.w	ie_menu_repeat_wait_w
++
++.loop:
++				IFD		IE_GAMEPAD_TEST
++				addq.l	#1,ie_gamepad_test_menu_wait_l
++				ENDC
++				bsr.w	ie_menu_clear_old_cursor
++				bsr.w	mnu_docursor
++				jsr		_ie_wait_tof
++				jsr		_ReadJoy1
++				tst.w	ie_menu_repeat_wait_w
++				beq.s	.repeat_ready
++				subq.w	#1,ie_menu_repeat_wait_w
++.repeat_ready:
++				move.l	#KeyMap_vb,a5
++				moveq	#0,d7
++				move.b	forward_key,d7
++				move.b	(a5,d7.w),d0
++				clr.b	(a5,d7.w)
++				tst.b	d0
++				bne.w	.up_keymap
++				move.b	backward_key,d7
++				move.b	(a5,d7.w),d0
++				clr.b	(a5,d7.w)
++				tst.b	d0
++				bne.w	.down_keymap
++				move.b	fire_key,d7
++				move.b	(a5,d7.w),d0
++				clr.b	(a5,d7.w)
++				tst.b	d0
++				bne.w	.select
++				move.b	#RAWKEY_ENTER,d7
++				move.b	(a5,d7.w),d0
++				clr.b	(a5,d7.w)
++				tst.b	d0
++				bne.w	.select
++				move.b	#RAWKEY_SPACEBAR,d7
++				move.b	(a5,d7.w),d0
++				clr.b	(a5,d7.w)
++				tst.b	d0
++				bne.w	.select
++				jsr		key_readkey
++				tst.w	d0
++				beq.w	.loop
++
++				cmp.b	#RAWKEY_DOWN,d0
++				beq.s	.down
++				cmp.b	#RAWKEY_S,d0
++				beq.s	.down
++				cmp.b	#RAWKEY_UP,d0
++				beq.s	.up
++				cmp.b	#RAWKEY_W,d0
++				beq.s	.up
++				cmp.b	#RAWKEY_ENTER,d0
++				beq.s	.select
++				cmp.b	#RAWKEY_SPACEBAR,d0
++				beq.s	.select
++				cmp.b	#RAWKEY_ESC,d0
++				beq.s	.exit
++				bra.w	.loop
++
++.down_keymap:
++				move.b	#0,lastpressed
++.down:
++				tst.w	ie_menu_repeat_wait_w
++				bne.w	.loop
++				IFD		IE_GAMEPAD_TEST
++				addq.l	#1,ie_gamepad_test_menu_down_l
++				ENDC
++				move.w	#6,ie_menu_repeat_wait_w
++				addq.w	#1,mnu_row
++				bra.w	.loop
++
++.up_keymap:
++				move.b	#0,lastpressed
++.up:
++				tst.w	ie_menu_repeat_wait_w
++				bne.w	.loop
++				IFD		IE_GAMEPAD_TEST
++				addq.l	#1,ie_gamepad_test_menu_up_l
++				ENDC
++				move.w	#6,ie_menu_repeat_wait_w
++				subq.w	#1,mnu_row
++				bra.w	.loop
++
++.exit:
++				move.w	mnu_items,d0
++				subq.w	#1,d0
++				rts
++
++.select:
++				move.w	mnu_row,d0
++				divu	mnu_items,d0
++				swap.w	d0
++				and.l	#$ffff,d0
++				rts
++
++ie_menu_getrawvalue:
++				move.b	#0,lastpressed
++
++.loop:
++				bsr.w	ie_menu_clear_old_cursor
++				bsr.w	mnu_docursor
++				jsr		_ie_wait_tof
++				jsr		key_readkey
++				tst.w	d0
++				beq.s	.loop
++				rts
++
++ie_menu_clear_old_cursor:
++				moveq.l	#0,d1
++				move.w	mnu_oldrow,d1
++				cmp.w	mnu_row,d1
++				beq.s	.done
++				divu	mnu_items,d1
++				swap.w	d1
++				mulu	mnu_spread,d1
++				add.w	mnu_cury,d1
++				move.w	mnu_curx,d0
++				lea		mnu_cleararrow,a0
++				bsr.w	mnu_printxy
++.done:
++				rts
++
++				cnop	0,4
++ie_menu_repeat_wait_w:	dc.w	0
+ game_SavedGameSlotPtr_l:	dc.l	0
+ game_SavedGameSlotSize_l:	dc.l	0
+ 
+@@ -1197,18 +1425,10 @@
+ 				move.l	(a1)+,(a0)+
+ 				ENDR
+ 
+-				move.l	#Game_SavedGamesName_vb,d1
+-				move.l	#MODE_NEWFILE,d2
+-				CALLDOS	Open
+-				move.l	d0,IO_DOSFileHandle_l
+-
+-				move.l	game_SavedGameSlotPtr_l,d2
+-				move.l	IO_DOSFileHandle_l,d1
+-				move.l	game_SavedGameSlotSize_l,d3
+-				CALLDOS	Write
+-
+-				move.l	IO_DOSFileHandle_l,d1
+-				CALLDOS	Close
++				move.l	#Game_SavedGamesName_vb,a0
++				move.l	game_SavedGameSlotPtr_l,d0
++				move.l	game_SavedGameSlotSize_l,d1
++				bsr		io_ie_write_buffer
+ 
+ ;				move.l	#200,d1
+ ;				CALLDOS	Delay
+@@ -1228,7 +1448,7 @@
+ FADEVAL:		dc.w	0
+ 
+ Game_StoryFile_vb:
+-				dc.b	'ab3:includes/TEXT_FILE'
++				dc.b	'ab3:includes/TEXT_FILE',0
+ 
+ 				even
+ 
+@@ -1236,3 +1456,17 @@
+ 				dc.l	0
+ 
+ 				include	"menu/menunb.s"
++
++				xdef	_ie_wait_tof
++				xref	ie_wait_vblank
++
++_ie_wait_tof:
++				jsr		ie_wait_vblank
++				tst.l	timer
++				beq.s	.timer_done
++				subq.l	#1,timer
++.timer_done:
++				addq.l	#1,counter
++				addq.l	#1,main_counter
++				jsr		mnu_vblint
++				rts
+--- a/pauseopts.s
++++ b/pauseopts.s
+@@ -2,6 +2,10 @@
+ Game_Pause:
+ 
+ .waitpress:
++				IFD		IS_IE
++				jsr		ie_wait_vblank
++				jsr		ie_poll_input
++				ENDC
+ 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
+ 				beq.s	.otherk
+ 
+@@ -20,11 +24,20 @@
+ .NOJOY:
+ 				tst.b	RAWKEY_P(a5)
+ 				bne.s	.unp
++				IFND	IS_IE
+ 				btst	#7,$bfe001
+ 				bne.s	.waitpress
++				ENDC
++				IFD		IS_IE
++				bra.s	.waitpress
++				ENDC
+ 
+ .unp:
+ .wr2:
++				IFD		IS_IE
++				jsr		ie_wait_vblank
++				jsr		ie_poll_input
++				ENDC
+ 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
+ 				beq.s	.otherk2
+ 				tst.b	Plr1_Joystick_b
+@@ -42,8 +55,10 @@
+ 				tst.b	RAWKEY_P(a5)
+ 				bne.s	.wr2
+ 
++				IFND	IS_IE
+ 				btst	#7,$bfe001
+ 				beq.s	.wr2
++				ENDC
+ 
+ 				rts
+ 

@@ -1,0 +1,76 @@
+sys.print("AB3D2_PACK_SAVE START")
+local S = {
+    io_ie_load_to_heap = @io_ie_load_to_heap@,
+    io_ie_write_buffer = @io_ie_write_buffer@,
+}
+
+local stack_address = 0x006EFF00
+local name_address = 0x006EFE00
+local data_address = 0x006EFD00
+local save_name = "boot.dat\0"
+local payload = "AB3D2 packed save override\n"
+
+local function be32(value)
+    return string.char(
+        math.floor(value / 0x1000000) % 0x100,
+        math.floor(value / 0x10000) % 0x100,
+        math.floor(value / 0x100) % 0x100,
+        value % 0x100)
+end
+
+local function focus_m68k()
+    for _, entry in ipairs(dbg.cpu_list()) do
+        if entry.label == "M68K" or entry.cpu_name == "M68K" or entry.name == "M68K" then
+            dbg.cpu_focus(entry.id)
+            return
+        end
+    end
+    error("M68K CPU not registered")
+end
+
+local function call(address)
+    dbg.write_mem(stack_address, be32(0))
+    dbg.set_reg("A7", stack_address)
+    dbg.set_pc(address)
+    dbg.set_bp(0)
+    dbg.continue()
+    sys.wait_ms(500)
+    dbg.open()
+    if dbg.get_pc() ~= 0 then
+        error(string.format("guest helper did not return: pc=%08X", dbg.get_pc()))
+    end
+    dbg.clear_all_bp()
+end
+
+sys.wait_ms(3000)
+dbg.open()
+focus_m68k()
+dbg.clear_all_bp()
+dbg.write_mem(name_address, save_name)
+dbg.write_mem(data_address, payload)
+dbg.set_reg("A0", name_address)
+dbg.set_reg("D0", data_address)
+dbg.set_reg("D1", string.len(payload))
+call(S.io_ie_write_buffer)
+
+local registers = dbg.get_regs()
+if (registers.D0 or 1) ~= 0 then
+    error("packed save write failed")
+end
+
+dbg.write_mem(name_address, save_name)
+dbg.set_reg("A0", name_address)
+call(S.io_ie_load_to_heap)
+registers = dbg.get_regs()
+local loaded_address = registers.D0 or 0
+local loaded_length = registers.D1 or 0
+if loaded_length ~= string.len(payload) then
+    error("packed save length mismatch")
+end
+if dbg.read_mem(loaded_address, loaded_length) ~= payload then
+    error("packed save did not override the embedded default")
+end
+
+dbg.close()
+sys.print("AB3D2_PACK_SAVE PASS", "bytes=" .. tostring(loaded_length))
+sys.exit(0)

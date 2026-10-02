@@ -1,0 +1,184 @@
+--- a/bss/draw_bss.s
++++ b/bss/draw_bss.s
+@@ -10,6 +10,11 @@
+ 
+ DRAW_MAX_POLY_OBJECTS=40
+ DRAW_MAX_OBJECTS=38
++				IFD		IS_IE
++DRAW_MAX_POLY_POINTS=1024
++				ELSE
++DRAW_MAX_POLY_POINTS=250
++				ENDC
+ 
+ draw_DepthTable_vl:			ds.l	80
+ draw_DepthTableEnd:
+@@ -29,8 +34,8 @@
+ Draw_PolyObjects_vl:			ds.l	DRAW_MAX_POLY_OBJECTS
+ 
+ ; FIMXE: screenconv stores word sized points, why are they using ds.l here?
+-draw_2DPointsProjected_vl:		ds.l	250*2	; projected 2D points in screenspace
+-draw_3DPointsRotated_vl:		ds.l	250*3	; rotated 3D points in X/Z plane (y pointing up)
++draw_2DPointsProjected_vl:		ds.l	DRAW_MAX_POLY_POINTS*2	; projected 2D points in screenspace
++draw_3DPointsRotated_vl:		ds.l	DRAW_MAX_POLY_POINTS*3	; rotated 3D points in X/Z plane (y pointing up)
+ 
+ Draw_WallTexturePtrs_vl:		ds.l	NUM_WALL_TEXTURES
+ Draw_ObjectPtrs_vl:				ds.l	DRAW_MAX_OBJECTS*4
+@@ -65,7 +70,7 @@
+ 
+ toppt_l:						ds.l	1
+ midobj_l:						ds.l	1
+-boxbrights_vw:					ds.w	250
++boxbrights_vw:					ds.w	DRAW_MAX_POLY_POINTS
+ ;boxang:							ds.w	1
+ 
+ 								ds.w	SCREEN_WIDTH*4; draw_PolyBotTab_vw has negative offsets
+--- a/bss/player_bss.s
++++ b/bss/player_bss.s
+@@ -260,6 +260,11 @@
+ _Plr_MultiplayerType_b::
+ Plr_MultiplayerType_b:			ds.b	1	; CHAR enum - m(aster), s(lave), n(either)
+ Plr_Decelerate_b:				ds.b	1
++				IFD		IS_IE
++				even
++READCONTROLS:					ds.w	1
++Game_Running_b:					ds.w	1
++				ENDC
+ 
+ ; Byte fields
+ ; Private
+--- a/modules/player.s
++++ b/modules/player.s
+@@ -13,6 +13,11 @@
+ ; Plr1_Data->ObjectPtr_l + EntT_SizeOf_l == Plr2_Data->ObjectPtr_l
+ ; Plr2_Data->ObjectPtr_l + EntT_SizeOf_l == player weapon entity
+ ;
++				IFD		IS_IE
++				xref	ie_mouse_delta_x_w
++				xref	ie_mouse_left_key_down_b
++				xref	ie_mouse_right_key_down_b
++				ENDC
+ 
+ ;******************************************************************************
+ ;*
+@@ -76,6 +81,14 @@
+ 				CALLC	Sys_ReadMouse
+ 
+ 				move.l	(a7)+,a0
++				IFD		IS_IE
++				move.w	ie_mouse_delta_x_w,d0
++				beq.s	.no_ie_mouse_x
++				clr.w	ie_mouse_delta_x_w
++				asl.w	#2,d0
++				add.w	d0,Vis_AngPos_w
++.no_ie_mouse_x:
++				ENDC
+ 				move.l	#SinCosTable_vw,a1
+ 				move.w	PlrT_SnapAngSpd_w(a0),d1
+ 				move.w	Vis_AngPos_w,d0
+@@ -161,13 +174,41 @@
+ 				beq.s	.notQuake
+ 				move.b	forward_key,d7
+ .notQuake
++				IFD		IS_IE
++				btst	#2,_custom+potinp		; right button
++				beq.s	.ie_right_button_down
++				tst.b	ie_mouse_right_key_down_b
++				beq.s	.ie_right_button_done
++				clr.b	ie_mouse_right_key_down_b
++				clr.b	(a5,d7.w)
++				bra.s	.ie_right_button_done
++.ie_right_button_down:
++				st		ie_mouse_right_key_down_b
++				st		(a5,d7.w)
++.ie_right_button_done:
++				ELSE
+ 				btst	#2,$dff000+potinp		; right button
+ 				seq		(a5,d7.w)
++				ENDC
+ 
+ 				; The left mouse button triggers the fire key
+ 				move.b	fire_key,d7
++				IFD		IS_IE
++				btst	#CIAB_GAMEPORT0,_ciaa+ciapra ; left button
++				beq.s	.ie_left_button_down
++				tst.b	ie_mouse_left_key_down_b
++				beq.s	.ie_left_button_done
++				clr.b	ie_mouse_left_key_down_b
++				clr.b	(a5,d7.w)
++				bra.s	.ie_left_button_done
++.ie_left_button_down:
++				st		ie_mouse_left_key_down_b
++				st		(a5,d7.w)
++.ie_left_button_done:
++				ELSE
+ 				btst	#CIAB_GAMEPORT0,$bfe001+ciapra ; left button
+ 				seq		(a5,d7.w)
++				ENDC
+ 
+ 				rts
+ 
+@@ -382,7 +423,10 @@
+ 				dbra	d1,.pickweap
+ 
+ .go:
+-				tst.b	RAWKEY_F10(a5)
++				IFD		IS_IE
++				bra.s	.notswapscr2
++				ENDC
++				tst.b	IE_KEY_SCREEN_SIZE(a5)
+ 				beq.s	.notswapscr
+ 
+ 				tst.b	lastscr
+@@ -726,7 +770,6 @@
+ 				add.l	d1,d7
+ 				tst.b	Plr_Decelerate_b
+ 				beq.s	.no_control_possible
+-
+ 				add.l	d6,PlrT_SnapXSpdVal_l(a0)
+ 				add.l	d7,PlrT_SnapZSpdVal_l(a0)
+ 
+@@ -806,7 +849,7 @@
+ 				bgt		.above_ground
+ 				beq.s	.on_ground
+ 
+-				st		Plr_Decelerate_b
++				move.b	#$ff,Plr_Decelerate_b
+ 
+ 				; we are under the ground.
+ 
+@@ -832,7 +875,7 @@
+ 				add.b	d3,EntT_DamageTaken_b(a4)
+ 
+ .skip_damage:
+-				st		Plr_Decelerate_b
++				move.b	#$ff,Plr_Decelerate_b
+ 				move.w	#0,plr_FallDamage_w
+ 				move.w	Plr_AddToBobble_w,d3
+ 				move.w	d3,d4
+@@ -895,7 +938,7 @@
+ 				move.w	#250,PlrT_JetpackFuel_w(a0)
+ 
+ .have_jetpack_fuel:
+-				st		Plr_Decelerate_b
++				move.b	#$ff,Plr_Decelerate_b
+ 				move.l	#-128,plr_JumpSpeed_l
+ 				move.l	#KeyMap_vb,a5
+ 				moveq	#0,d7
+@@ -917,7 +960,7 @@
+ 				cmp.l	#16*64,d3
+ 				bgt.s	.nonearmove
+ 
+-				st		Plr_Decelerate_b
++				move.b	#$ff,Plr_Decelerate_b
+ 
+ .nonearmove:
+ ; need to fall down (possibly).
+@@ -964,7 +1007,7 @@
+ 				GETREGS
+ 
+ .no_splash_fx:
+-				st		Plr_Decelerate_b
++				move.b	#$ff,Plr_Decelerate_b
+ 				move.w	#0,plr_FallDamage_w
+ 				cmp.l	#512,d2
+ 				blt.s	.proceed

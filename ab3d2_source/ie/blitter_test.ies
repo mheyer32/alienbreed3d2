@@ -1,0 +1,140 @@
+-- Deterministic full-screen blitter regression for the AB3D2 IE port.
+local S = require("diag_blitter_symbols")
+
+sys.write_file("blitter-test.result", "AB3D2_BLITTER START\n")
+
+local function focus_m68k()
+    for _, entry in ipairs(dbg.cpu_list()) do
+        if entry.label == "M68K" or entry.cpu_name == "M68K" or entry.name == "M68K" then
+            dbg.cpu_focus(entry.id)
+            return
+        end
+    end
+    error("M68K CPU not registered")
+end
+
+local function rd8(address)
+    return string.byte(dbg.read_mem(address, 1), 1) or 0
+end
+
+local function rd16(address)
+    local a, b = string.byte(dbg.read_mem(address, 2), 1, 2)
+    return (a or 0) * 0x100 + (b or 0)
+end
+
+local function rd32(address)
+    local a, b, c, d = string.byte(dbg.read_mem(address, 4), 1, 4)
+    return (a or 0) * 0x1000000 + (b or 0) * 0x10000 +
+        (c or 0) * 0x100 + (d or 0)
+end
+
+local function wr16(address, value)
+    dbg.write_mem(address, string.char(
+        math.floor(value / 0x100) % 0x100, value % 0x100))
+end
+
+local function inspect(fn)
+    dbg.open()
+    focus_m68k()
+    local a, b, c, d = fn()
+    dbg.continue(true)
+    return a, b, c, d
+end
+
+local function fail(message)
+    sys.write_file("blitter-test.result", "AB3D2_BLITTER FAIL " .. message .. "\n")
+    error(message, 2)
+end
+
+local function request(command, seed, verify)
+    local before = inspect(function()
+        dbg.write_mem(S.ie_blitter_test_scratch_vb, seed)
+        local done = rd16(S.ie_blitter_test_done_w)
+        wr16(S.ie_blitter_test_command_w, command)
+        return done
+    end)
+    for _ = 1, 100 do
+        sys.wait_ms(10)
+        local done = inspect(function() return rd16(S.ie_blitter_test_done_w) end)
+        if done ~= before then
+            inspect(function()
+                verify(dbg.read_mem(S.ie_blitter_test_scratch_vb, 512))
+            end)
+            return
+        end
+    end
+    fail("test command " .. command .. " did not run")
+end
+
+local fill_count, copy_count, blit_error, menu_active
+for _ = 1, 500 do
+    fill_count, copy_count, blit_error, menu_active = inspect(function()
+        return rd32(S.ie_blitter_test_fill_count_l),
+            rd32(S.ie_blitter_test_copy_count_l),
+            rd32(S.ie_blitter_test_error_l),
+            rd32(S.ie_menu_active)
+    end)
+    if menu_active ~= 0 and fill_count >= 1 and copy_count >= 7 then break end
+    if _ % 25 == 0 then
+        term.scancode(keys.ENTER)
+        sys.wait_ms(30)
+        term.scancode(keys.ENTER + 0x80)
+    end
+    sys.wait_ms(10)
+end
+
+if menu_active == 0 then fail("menu did not become active") end
+if fill_count < 1 then fail("display reset did not use the blitter") end
+if copy_count < 7 then fail("menu background/fire copies did not use the blitter") end
+if blit_error ~= 0 then
+    fail("BLT_STATUS error " .. string.format("$%08X", blit_error))
+end
+
+request(1, string.rep(string.char(0xA5), 512), function(bytes)
+    for offset = 0, 511 do
+        local in_fill = (offset >= 16 and offset < 33) or
+            (offset >= 39 and offset < 56) or
+            (offset >= 62 and offset < 79)
+        local want = in_fill and 0 or 0xA5
+        local got = string.byte(bytes, offset + 1)
+        if got ~= want then
+            fail("strided fill byte " .. offset .. "=" .. got .. " want=" .. want)
+        end
+    end
+end)
+
+local source = {}
+for offset = 0, 511 do
+    if offset >= 16 and offset < 89 then
+        source[#source + 1] = string.char((offset * 37 + 11) % 256)
+    else
+        source[#source + 1] = string.char(0x5A)
+    end
+end
+request(2, table.concat(source), function(bytes)
+    for offset = 0, 511 do
+        local want
+        if offset >= 16 and offset < 89 then
+            want = (offset * 37 + 11) % 256
+        elseif offset >= 272 and offset < 345 then
+            local source_offset = offset - 256
+            want = (source_offset * 37 + 11) % 256
+        else
+            want = 0x5A
+        end
+        local got = string.byte(bytes, offset + 1)
+        if got ~= want then
+            fail("linear copy byte " .. offset .. "=" .. got .. " want=" .. want)
+        end
+    end
+end)
+
+inspect(function()
+    if rd8(S._Vid_FullScreen_b) == 0 then fail("full-screen mode is not active") end
+    if rd8(S._Vid_FullScreenTemp_b) == 0 then fail("temporary full-screen mode is not active") end
+    if rd16(S._Vid_RightX_w) ~= 320 then fail("full-screen right edge is not 320") end
+end)
+
+sys.write_file("blitter-test.result", "AB3D2_BLITTER PASS\n")
+sys.print("AB3D2_BLITTER PASS", "fills", fill_count, "copies", copy_count)
+sys.exit(0)

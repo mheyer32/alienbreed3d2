@@ -10,6 +10,10 @@
 ; Notes: The entity references for player 1, player 2 and the weapon view model
 ;        are stored contiguously:
 ;
+
+	IFD		IE_GAMEPAD_TEST
+	xref ie_gamepad_test_use_events_l
+	ENDC
 ; Plr1_Data->ObjectPtr_l + EntT_SizeOf_l == Plr2_Data->ObjectPtr_l
 ; Plr2_Data->ObjectPtr_l + EntT_SizeOf_l == player weapon entity
 ;
@@ -230,6 +234,9 @@ plr_KeyboardControl:
 				bne.s	.nottapped
 
 				st		PlrT_Used_b(a0)
+	IFD		IE_GAMEPAD_TEST
+				addq.l	#1,ie_gamepad_test_use_events_l
+	ENDC
 
 .nottapped:
 				move.b	d1,plr_PrevUseKeyState_b

@@ -1,0 +1,147 @@
+-- Focused TDD regression for the IE guest-side FPS counter.
+local S = require("diag_symbols_fps_test")
+
+local function expect(ok, message)
+    if not ok then
+        sys.print("AB3D2_FPS FAIL " .. message)
+        sys.write_file("fps-test.result", "AB3D2_FPS FAIL " .. message .. "\n")
+        error(message, 2)
+    end
+end
+
+local function focus_m68k()
+    for _, entry in ipairs(dbg.cpu_list()) do
+        if entry.label == "M68K" or entry.cpu_name == "M68K" or entry.name == "M68K" then
+            dbg.cpu_focus(entry.id)
+            return
+        end
+    end
+    error("M68K CPU not registered")
+end
+
+local function rd8(a)
+    return string.byte(dbg.read_mem(a, 1), 1) or 0
+end
+
+local function rd16(a)
+    local x, y = string.byte(dbg.read_mem(a, 2), 1, 2)
+    return (x or 0) * 256 + (y or 0)
+end
+
+local function rd32(a)
+    local a0, a1, a2, a3 = string.byte(dbg.read_mem(a, 4), 1, 4)
+    return (a0 or 0) * 0x1000000 + (a1 or 0) * 0x10000 + (a2 or 0) * 0x100 + (a3 or 0)
+end
+
+local function wr8(a, v)
+    dbg.write_mem(a, string.char(v % 256))
+end
+
+local function wr16(a, v)
+    dbg.write_mem(a, string.char(math.floor(v / 256) % 256, v % 256))
+end
+
+sys.write_file("fps-test.result", "AB3D2_FPS START\n")
+sys.wait_ms(300)
+dbg.open()
+focus_m68k()
+local fb = rd32(S._Vid_FastBufferPtr_l)
+expect(fb ~= 0, "game framebuffer is null")
+local counter = fb + 222 * 320 + 192
+for y = 0, 7 do
+    dbg.write_mem(counter + y * 320, string.rep("\0", 64))
+end
+wr8(S._Prefs_DisplayFPS_b, 0)
+wr8(S.ie_fps_test_force_samples_b, 1)
+local frames0 = rd32(S._Sys_FrameNumber_l)
+expect(rd32(S.ie_fps_test_render_count_l) == 0, "disabled FPS counter render seam advanced")
+dbg.close()
+-- Advance through the title/menu flow into gameplay, where the legacy main
+-- loop calls Sys_FrameLap and Sys_EvalFPS.
+for _ = 1, 3 do
+    term.scancode(keys.ENTER)
+    sys.wait_ms(40)
+    term.scancode(keys.ENTER + 0x80)
+    sys.wait_ms(700)
+end
+dbg.open()
+focus_m68k()
+expect(rd32(S._Sys_FrameNumber_l) > frames0,
+    "frame clock did not advance pc=" .. string.format("%08X", dbg.get_pc()))
+local frame_hi = rd32(S._Sys_FrameTimeECV_q)
+local frame_lo = rd32(S._Sys_FrameTimeECV_q + 4)
+local previous_hi = rd32(S._Sys_FrameTimeECV_q + 8)
+local previous_lo = rd32(S._Sys_FrameTimeECV_q + 12)
+expect(frame_lo ~= 0,
+    "current legacy EClock is not high-low monotonic time")
+expect(previous_hi == frame_hi and previous_lo == frame_lo,
+    "previous legacy EClock was not refreshed from current time")
+local mark_hi = rd32(S.ie_fps_test_mark_ecv_q)
+local mark_lo = rd32(S.ie_fps_test_mark_ecv_q + 4)
+expect(mark_lo ~= 0 and
+       (mark_hi < frame_hi or (mark_hi == frame_hi and mark_lo <= frame_lo)),
+    "Sys_MarkTime did not store EClockVal as ev_hi, ev_lo")
+expect(rd32(S.ie_fps_test_mark_rate_l) == 1000000,
+    "Sys_MarkTime rate does not match its microsecond timestamps")
+dbg.close()
+sys.wait_ms(300)
+dbg.open()
+focus_m68k()
+local next_frame_hi = rd32(S._Sys_FrameTimeECV_q)
+local next_frame_lo = rd32(S._Sys_FrameTimeECV_q + 4)
+expect(next_frame_hi > frame_hi or (next_frame_hi == frame_hi and next_frame_lo > frame_lo),
+    "legacy EClock did not advance between frames")
+expect(rd32(S._Sys_FrameTimeECV_q + 8) == next_frame_hi and
+       rd32(S._Sys_FrameTimeECV_q + 12) == next_frame_lo,
+    "legacy previous EClock did not follow the current frame")
+expect(rd16(S.ie_fps_test_result_w) == 50 and rd16(S.ie_fps_test_result_w + 2) == 0,
+    "20 ms samples did not calculate 50.0 FPS")
+expect(rd32(S.ie_fps_test_render_count_l) == 0, "disabled FPS counter rendered")
+local disabled_eval_count = rd32(S.ie_fps_test_eval_count_l)
+dbg.close()
+sys.wait_ms(300)
+dbg.open()
+focus_m68k()
+expect(rd32(S.ie_fps_test_eval_count_l) == disabled_eval_count,
+    "disabled FPS counter continued evaluating samples")
+wr8(S.ie_fps_test_force_samples_b, 2)
+dbg.close()
+sys.wait_ms(300)
+dbg.open()
+focus_m68k()
+expect(rd16(S.ie_fps_test_result_w) == 4 and rd16(S.ie_fps_test_result_w + 2) == 0,
+    "250 ms samples did not calculate 4.0 FPS")
+expect(rd32(S.ie_fps_test_eval_count_l) == disabled_eval_count + 1,
+    "forced disabled FPS evaluation did not run exactly once")
+wr8(S._Prefs_DisplayFPS_b, 1)
+dbg.close()
+sys.wait_ms(300)
+dbg.open()
+focus_m68k()
+local pixels = 0
+for y = 0, 7 do
+    for x = 0, 47 do
+        if rd8(counter + y * 320 + x) ~= 0 then pixels = pixels + 1 end
+    end
+end
+expect(pixels > 0, "enabled FPS counter did not render")
+expect(rd8(S.ie_fps_test_render_digit_count_b) == 4,
+    "FPS renderer did not draw hundreds, tens, ones, and tenths")
+expect(rd16(S.ie_fps_test_render_digit_x_w) == 192 and
+       rd16(S.ie_fps_test_render_digit_x_w + 2) == 200 and
+       rd16(S.ie_fps_test_render_digit_x_w + 4) == 208 and
+       rd16(S.ie_fps_test_render_digit_x_w + 6) == 224,
+    "FPS digits were not rendered at the expected non-overlapping positions")
+expect(rd32(S.ie_fps_test_decimal_offset_l) == 222 * 320 + 218,
+    "FPS decimal point address was not in the HUD row")
+expect(rd8(S.ie_fps_test_present_decimal_b) == 255 and
+       rd8(S.ie_fps_test_present_decimal_b + 1) == 255 and
+       rd8(S.ie_fps_test_present_decimal_b + 2) == 255 and
+       rd8(S.ie_fps_test_present_decimal_b + 3) == 255,
+    "FPS decimal point did not survive final HUD composition")
+expect(rd32(S.ie_fps_test_render_count_l) ~= 0, "render seam was not observed")
+
+dbg.close()
+sys.print("AB3D2_FPS PASS")
+sys.write_file("fps-test.result", "AB3D2_FPS PASS\n")
+sys.quit()

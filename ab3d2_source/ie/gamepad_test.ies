@@ -1,0 +1,365 @@
+-- Deterministic controller regression for the AB3D2 IE port.
+local S = require("diag_gamepad_symbols")
+
+sys.write_file("gamepad-test.result", "AB3D2_GAMEPAD START\n")
+
+local function focus_m68k()
+    for _, entry in ipairs(dbg.cpu_list()) do
+        if entry.label == "M68K" or entry.cpu_name == "M68K" or entry.name == "M68K" then
+            dbg.cpu_focus(entry.id)
+            return
+        end
+    end
+    error("M68K CPU not registered")
+end
+
+local function expect(condition, message)
+    if not condition then
+        sys.write_file("gamepad-test.result", "AB3D2_GAMEPAD FAIL " .. message .. "\n")
+        error(message, 2)
+    end
+end
+
+local function rd8(address)
+    return string.byte(dbg.read_mem(address, 1), 1) or 0
+end
+
+local function rd16(address)
+    local a, b = string.byte(dbg.read_mem(address, 2), 1, 2)
+    return (a or 0) * 0x100 + (b or 0)
+end
+
+local function rd32(address)
+    local a, b, c, d = string.byte(dbg.read_mem(address, 4), 1, 4)
+    return (a or 0) * 0x1000000 + (b or 0) * 0x10000 +
+        (c or 0) * 0x100 + (d or 0)
+end
+
+local function wr8(address, value)
+    dbg.write_mem(address, string.char(value % 0x100))
+end
+
+local function wr16(address, value)
+    dbg.write_mem(address, string.char(
+        math.floor(value / 0x100) % 0x100, value % 0x100))
+end
+
+local function wr32(address, value)
+    dbg.write_mem(address, string.char(
+        math.floor(value / 0x1000000) % 0x100,
+        math.floor(value / 0x10000) % 0x100,
+        math.floor(value / 0x100) % 0x100,
+        value % 0x100))
+end
+
+local function axis_pair(x, y)
+    return ((y % 0x10000) * 0x10000) + (x % 0x10000)
+end
+
+local function inspect(fn)
+    dbg.open()
+    focus_m68k()
+    local a, b, c = fn()
+    dbg.continue(true)
+    return a, b, c
+end
+
+local function wait_counter(address, before, label)
+    for _ = 1, 50 do
+        sys.wait_ms(100)
+        if inspect(function() return rd32(address) end) ~= before then return end
+    end
+    expect(false, label .. " did not run")
+end
+
+local function set_snapshot(status, buttons, lx, ly, rx, ry)
+    dbg.open()
+    focus_m68k()
+    local before = rd32(S.ie_gamepad_test_read_count_l)
+    wr32(S.ie_gamepad_test_status_l, status)
+    wr32(S.ie_gamepad_test_buttons_l, buttons)
+    wr32(S.ie_gamepad_test_lxy_l, axis_pair(lx or 0, ly or 0))
+    wr32(S.ie_gamepad_test_rxy_l, axis_pair(rx or 0, ry or 0))
+    dbg.continue(true)
+    wait_counter(S.ie_gamepad_test_read_count_l, before, "_ReadJoy1")
+end
+
+local function expect_actions(want, label)
+    local got = inspect(function() return rd16(S.ie_gamepad_test_last_actions_w) end)
+    expect(got == want,
+        label .. ": action mask=" .. string.format("$%04X", got) ..
+        " want=" .. string.format("$%04X", want))
+end
+
+local function edge_count(action)
+    return inspect(function()
+        return rd16(S.ie_gamepad_test_edge_counts_vw + action * 2)
+    end)
+end
+
+local function clear_pad(label)
+    set_snapshot(0, 0)
+    expect_actions(0, label)
+    local axis = inspect(function() return rd16(S.ie_gamepad_axis_state_w) end)
+    expect(axis == 0, label .. ": axis state was not cleared")
+end
+
+local function wait_key(raw_key, want, label)
+    for _ = 1, 100 do
+        local got = inspect(function() return rd8(S._KeyMap_vb + raw_key) end)
+        if got == want then return end
+        sys.wait_ms(20)
+    end
+    local got = inspect(function() return rd8(S._KeyMap_vb + raw_key) end)
+    expect(false, label .. ": key state=" .. tostring(got) .. " want=" .. tostring(want))
+end
+
+local menu_ready = false
+for _ = 1, 500 do
+    menu_ready = inspect(function() return rd32(S.ie_menu_active) ~= 0 end)
+    if menu_ready then break end
+    sys.wait_ms(10)
+end
+expect(menu_ready, "menu did not become active")
+
+inspect(function()
+    expect(rd8(S.Plr1_Mouse_b) ~= 0, "mouse is not enabled by default")
+    expect(rd8(S.Plr1_Keys_b) ~= 0, "keyboard is not enabled by default")
+    expect(rd8(S.Plr1_Joystick_b) == 0, "joystick is enabled by default")
+    expect(rd8(S.Plr2_Joystick_b) == 0, "player two joystick is enabled by default")
+    wr8(S.ie_gamepad_test_enable_b, 1)
+end)
+
+-- Reach the actual main menu before controller actions can affect game flow.
+local menu_wait = inspect(function() return rd32(S.ie_gamepad_test_menu_wait_l) end)
+for _ = 1, 30 do
+    if menu_wait ~= 0 then break end
+    term.scancode(keys.ENTER)
+    sys.wait_ms(40)
+    term.scancode(keys.ENTER + 0x80)
+    sys.wait_ms(200)
+    menu_wait = inspect(function() return rd32(S.ie_gamepad_test_menu_wait_l) end)
+end
+local menu_pc = inspect(function() return dbg.get_pc() end)
+expect(menu_wait ~= 0,
+    "main menu input loop did not run, pc=" .. string.format("$%08X", menu_pc))
+
+-- The menu must consume down/up and stop moving after release.
+local down_before = inspect(function()
+    wr16(S.mnu_row, 0)
+    return rd32(S.ie_gamepad_test_menu_down_l)
+end)
+set_snapshot(1, 0x00000002)
+sys.wait_ms(200)
+set_snapshot(1, 0)
+local down_after = inspect(function() return rd32(S.ie_gamepad_test_menu_down_l) end)
+expect(down_after ~= down_before, "D-pad down did not move the menu")
+sys.wait_ms(100)
+expect(inspect(function() return rd32(S.ie_gamepad_test_menu_down_l) end) == down_after,
+    "released D-pad continued moving the menu")
+local up_before = inspect(function() return rd32(S.ie_gamepad_test_menu_up_l) end)
+set_snapshot(1, 0x00000001)
+sys.wait_ms(200)
+set_snapshot(1, 0)
+local up_after = inspect(function() return rd32(S.ie_gamepad_test_menu_up_l) end)
+expect(up_after ~= up_before, "D-pad up did not move the menu")
+sys.wait_ms(100)
+expect(inspect(function() return rd32(S.ie_gamepad_test_menu_up_l) end) == up_after,
+    "released D-pad continued moving the menu")
+
+-- Left-stick vertical movement follows the same menu path.
+down_before = inspect(function()
+    wr16(S.mnu_row, 0)
+    return rd32(S.ie_gamepad_test_menu_down_l)
+end)
+set_snapshot(1, 0, 0, 8192)
+expect_actions(0x0002, "left-stick menu down")
+wait_counter(S.ie_gamepad_test_menu_down_l, down_before, "left-stick menu down")
+set_snapshot(1, 0)
+down_after = inspect(function() return rd32(S.ie_gamepad_test_menu_down_l) end)
+expect(down_after ~= down_before, "left-stick down did not move the menu")
+up_before = inspect(function() return rd32(S.ie_gamepad_test_menu_up_l) end)
+set_snapshot(1, 0, 0, -8192)
+expect_actions(0x0001, "left-stick menu up")
+wait_counter(S.ie_gamepad_test_menu_up_l, up_before, "left-stick menu up")
+set_snapshot(1, 0)
+up_after = inspect(function() return rd32(S.ie_gamepad_test_menu_up_l) end)
+expect(up_after ~= up_before, "left-stick up did not move the menu")
+
+-- Pause is edge-driven, but exercise it before gameplay so it does not
+-- intentionally suspend the later control-dispatch checks.
+set_snapshot(1, 0x00002000)
+expect(edge_count(14) == 1, "Start/pause first press was not recorded")
+set_snapshot(1, 0x00002000)
+expect(edge_count(14) == 1, "Start/pause repeated while held")
+set_snapshot(1, 0)
+set_snapshot(1, 0x00002000)
+expect(edge_count(14) == 2, "Start/pause second press was not recorded")
+clear_pad("Start/pause disconnect")
+
+-- A selects without silently switching either player to joystick mode.
+local level_before = inspect(function()
+    wr16(S.mnu_row, 0)
+    return rd32(S.ie_gamepad_test_level_begin_l)
+end)
+set_snapshot(1, 0x00000010)
+expect_actions(0x0100, "A/fire")
+wait_counter(S.ie_gamepad_test_level_begin_l, level_before, "A menu selection")
+inspect(function()
+    expect(rd8(S.Plr1_Joystick_b) == 0, "A changed player-one control mode")
+    expect(rd8(S.Plr2_Joystick_b) == 0, "A changed player-two control mode")
+end)
+
+-- The IE menu exposes key bindings, not the legacy internal joystick-mode
+-- flag. Gamepad input must therefore remain active alongside the reachable
+-- default keyboard-and-mouse mode.
+local mouse_before, player2_fire = inspect(function()
+    expect(rd8(S.Plr1_Keys_b) ~= 0, "player-one keys were not enabled")
+    expect(rd8(S.Plr1_Mouse_b) ~= 0, "player-one mouse was not enabled")
+    expect(rd8(S.Plr1_Joystick_b) == 0, "player-one legacy joystick mode was enabled")
+    return rd32(S.ie_gamepad_test_plr1_mouse_l), rd8(S.Plr2_Fire_b)
+end)
+
+clear_pad("absent pad")
+
+local held_buttons = {
+    {0x00000010, 0x0100, "A/fire"},
+    {0x00000080, 0x0800, "Y/jump"},
+    {0x00000100, 0x1000, "LB/run"},
+}
+for _, item in ipairs(held_buttons) do
+    set_snapshot(1, item[1])
+    expect_actions(item[2], item[3])
+    set_snapshot(1, 0)
+    expect_actions(0, item[3] .. " release")
+    clear_pad(item[3] .. " disconnect")
+end
+
+local edge_buttons = {
+    {0x00000020, 10, "B/duck"},
+    {0x00000200, 13, "RB/next weapon"},
+}
+for _, item in ipairs(edge_buttons) do
+    set_snapshot(1, item[1])
+    local first = edge_count(item[2])
+    expect(first == 1, item[3] .. ": first press count=" .. first)
+    set_snapshot(1, item[1])
+    local held = edge_count(item[2])
+    expect(held == 1, item[3] .. ": repeated while held, count=" .. held)
+    set_snapshot(1, 0)
+    set_snapshot(1, item[1])
+    local second = edge_count(item[2])
+    expect(second == 2, item[3] .. ": second press count=" .. second)
+    clear_pad(item[3] .. " disconnect")
+    set_snapshot(1, item[1])
+    local after_disconnect = edge_count(item[2])
+    expect(after_disconnect == 3,
+        item[3] .. ": disconnect did not clear edge state, count=" .. after_disconnect)
+    set_snapshot(1, 0)
+end
+
+-- Use is edge-detected by plr_KeyboardControl. The controller layer must hold
+-- its synthetic operate key long enough for that gameplay consumer to see it,
+-- while a held button must still produce only one use event.
+local operate_raw, use_before = inspect(function()
+    return rd8(S.operate_key), rd32(S.ie_gamepad_test_use_events_l)
+end)
+set_snapshot(1, 0x00000040)
+wait_key(operate_raw, 0xff, "X/use press")
+wait_counter(S.ie_gamepad_test_use_events_l, use_before, "X/use gameplay delivery")
+sys.wait_ms(200)
+local use_held = inspect(function() return rd32(S.ie_gamepad_test_use_events_l) end)
+expect(use_held == use_before + 1,
+    "X/use repeated while held, count=" .. use_held .. " before=" .. use_before)
+set_snapshot(1, 0)
+wait_key(operate_raw, 0, "X/use release")
+set_snapshot(1, 0x00000040)
+wait_counter(S.ie_gamepad_test_use_events_l, use_held, "X/use second gameplay delivery")
+clear_pad("X/use disconnect")
+
+-- Keyboard and controller remain additive owners of the operate key too.
+term.scancode(keys.F)
+wait_key(operate_raw, 0xff, "keyboard operate press")
+set_snapshot(1, 0x00000040)
+set_snapshot(1, 0)
+wait_key(operate_raw, 0xff, "controller release cancelled keyboard operate")
+term.scancode(keys.F + 0x80)
+wait_key(operate_raw, 0, "keyboard operate release")
+
+local directions = {
+    {"left Y up", 0, -1, 0, 0, 0x0001},
+    {"left Y down", 0, 1, 0, 0, 0x0002},
+    {"left X left", -1, 0, 0, 0, 0x0004},
+    {"left X right", 1, 0, 0, 0, 0x0008},
+    {"right X left", 0, 0, -1, 0, 0x0010},
+    {"right X right", 0, 0, 1, 0, 0x0020},
+    {"right Y up", 0, 0, 0, -1, 0x0040},
+    {"right Y down", 0, 0, 0, 1, 0x0080},
+}
+for _, item in ipairs(directions) do
+    local function sample(magnitude)
+        set_snapshot(1, 0, item[2] * magnitude, item[3] * magnitude,
+                     item[4] * magnitude, item[5] * magnitude)
+    end
+    sample(8191)
+    expect_actions(0, item[1] .. " dead zone")
+    sample(8192)
+    expect_actions(item[6], item[1] .. " engage")
+    sample(6144)
+    expect_actions(item[6], item[1] .. " hysteresis hold")
+    sample(6143)
+    expect_actions(0, item[1] .. " release")
+    clear_pad(item[1] .. " disconnect")
+end
+
+local dpad = {
+    {0x00000001, 0x0001, "D-pad up"},
+    {0x00000002, 0x0002, "D-pad down"},
+    {0x00000004, 0x0010, "D-pad left"},
+    {0x00000008, 0x0020, "D-pad right"},
+}
+for _, item in ipairs(dpad) do
+    set_snapshot(1, item[1])
+    expect_actions(item[2], item[3])
+    clear_pad(item[3] .. " disconnect")
+end
+
+-- Held input remains live across normal gameplay frames without an
+-- unreachable joystick-mode selection, while mouse control still dispatches.
+set_snapshot(1, 0x00000001)
+sys.wait_ms(200)
+expect_actions(0x0001, "default-mode held D-pad up")
+wait_counter(S.ie_gamepad_test_plr1_mouse_l, mouse_before,
+    "player-one mouse dispatch")
+expect(inspect(function() return rd8(S.Plr2_Fire_b) end) == player2_fire,
+    "pad zero mutated player two")
+set_snapshot(1, 0)
+inspect(function()
+    expect(rd16(S.ie_gamepad_actions_w) == 0, "released controller action remained active")
+    expect(rd32(S.ie_mouse_relative_ok) ~= 0, "mouse mode lost relative input")
+end)
+
+-- Keyboard and controller are additive owners of the same logical keys.
+-- Releasing or disconnecting the controller must not cancel a keyboard hold.
+local forward_raw = inspect(function() return rd8(S.forward_key) end)
+term.scancode(keys.W)
+wait_key(forward_raw, 0xff, "keyboard forward press")
+set_snapshot(1, 0x00000001)
+set_snapshot(1, 0)
+wait_key(forward_raw, 0xff, "controller release cancelled keyboard forward")
+set_snapshot(1, 0x00000001)
+set_snapshot(0, 0)
+wait_key(forward_raw, 0xff, "controller disconnect cancelled keyboard forward")
+term.scancode(keys.W + 0x80)
+wait_key(forward_raw, 0, "keyboard forward release")
+set_snapshot(1, 0x00000001)
+term.scancode(keys.W)
+wait_key(forward_raw, 0xff, "combined forward press")
+term.scancode(keys.W + 0x80)
+wait_key(forward_raw, 0xff, "keyboard release cancelled controller forward")
+set_snapshot(1, 0)
+wait_key(forward_raw, 0, "controller forward release")
+
+sys.write_file("gamepad-test.result", "AB3D2_GAMEPAD PASS\n")
+sys.print("AB3D2_GAMEPAD PASS")
+sys.quit()
