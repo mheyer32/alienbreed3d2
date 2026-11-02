@@ -14,6 +14,7 @@
 #include <SDI_compiler.h>
 
 #include <stdlib.h>  //abort
+#include <string.h>
 
 #define ALIB_HARDWARE_CUSTOM
 #include <proto/alib.h>

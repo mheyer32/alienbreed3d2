@@ -44,12 +44,12 @@ enum {
  *
  *
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(WORD)) {
     WORD pvs_ZoneID;
     WORD pvs_ClipID;
     WORD pvs_Word2; // TODO figure out what this is.
     WORD pvs_Word3; // TODO figure out what this is.
-} ASM_ALIGN(sizeof(WORD)) ZPVSRecord;
+} ZPVSRecord;
 
 /**
  * Edge structure. These are stored in a large array loaded from disk and are referenced by
@@ -70,7 +70,7 @@ typedef struct {
  * (see Obj_DistToWallTab_vw table in newaliencontrol.s)
  *
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(WORD)) {
     Vec2W e_Pos;         // X/Z coordinate
     Vec2W e_Len;         // X/Z component lengths
     WORD  e_JoinZoneID;  // Zone the edge joins to, or -1 for a solid wall
@@ -78,7 +78,7 @@ typedef struct {
     BYTE  e_RotNormalX;  // X component of pre-rotated unit normal
     BYTE  e_RotNormalZ;  // Z component of pre-rotated unit normal
     UWORD e_Flags;
-} ASM_ALIGN(sizeof(WORD)) ZEdge;
+} ZEdge;
 
 /**
  * Main zone structure. Note that the long fields in here can be 2-byte aligned due to the
@@ -87,7 +87,7 @@ typedef struct {
  * [list of zone edge indexes] [zone structure] [list of zone PVS record data]
  *
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(WORD)) {
     WORD  z_ZoneID;                   //  2, 2
     LONG  z_Floor;                    //  2, 4
     LONG  z_Roof;                     //  6, 4
@@ -110,14 +110,14 @@ typedef struct {
     WORD  z_FloorNoise;               // 44, 2
     WORD  z_UpperFloorNoise;          // 46, 2
     ZPVSRecord  z_PotVisibleZoneList[1];    // 48, 2 Vector, varying length
-} ASM_ALIGN(sizeof(WORD)) Zone;
+} Zone;
 
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(WORD)) {
     WORD zei_EdgeID;
     WORD zei_StartPointID;
     WORD zei_EndPointID;
     WORD zei_Reserved;
-} ASM_ALIGN(sizeof(WORD)) ZEdgeInfo;
+} ZEdgeInfo;
 
 /**
  * Structure for the per-edge PVS data header:
@@ -125,7 +125,7 @@ typedef struct {
  * [Zone ID][Num Edges][Num PVS][EdgeID 0]...[EdgeID N][PVS List 0] ... [PVS List N]
  *
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(WORD)) {
     WORD zep_ZoneID;
     WORD zep_ListSize;
     WORD zep_EdgeCount;
@@ -142,7 +142,7 @@ typedef struct {
      * Followed by zep_EdgeCount sets of data.
      */
     ZEdgeInfo zep_EdgeInfoList[1];
-} ASM_ALIGN(sizeof(WORD)) ZEdgePVSHeader;
+} ZEdgePVSHeader;
 
 /**
  * Simple typedefs to give more meaningful names to the masks used for doors and lifts.
@@ -153,10 +153,10 @@ typedef UWORD ZLiftListMask;
 /**
  * Utility tuple that represents the floor/roof pair, for convenience.
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(WORD)) {
     LONG zlp_Floor;
     LONG zlp_Roof;
-} ASM_ALIGN(sizeof(WORD)) Zone_LevelPair;
+} Zone_LevelPair;
 
 /**
  * Enumerations of truthy visibility types

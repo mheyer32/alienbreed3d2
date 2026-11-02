@@ -46,12 +46,12 @@ enum {
  * Used in:
  *     - Main Game Modification
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(ULONG)) {
     char const* rwrd_DescriptionPtr;
     UWORD       rwrd_CarryOffset;
     UWORD       rwrd_ImmediateOffset;
     UWORD       rwrd_RewardData[1];     // Beware: varying length data here.
-} ASM_ALIGN(sizeof(ULONG)) GMod_Reward;
+} GMod_Reward;
 
 /**********************************************************************************************************************/
 
@@ -63,11 +63,11 @@ typedef struct {
  * Used in:
  *     - Main Game Modification
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(ULONG)) {
     UWORD              spab_Index;
     UWORD              spab_AmmoID;
     GMod_Reward const* spab_RewardPtr;
-} ASM_ALIGN(sizeof(ULONG)) GMod_SpecialAmmoBonus; // 8 bytes
+} GMod_SpecialAmmoBonus; // 8 bytes
 
 /**********************************************************************************************************************/
 
@@ -88,7 +88,7 @@ enum {
  * Used in:
  *     - Main Game Modification
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(ULONG)) {
     char const*        achv_DescriptionPtr;
     GMod_Reward const* achv_RewardPtr;
     UWORD              achv_RuleType;
@@ -97,39 +97,39 @@ typedef struct {
         UBYTE          bytes[20]; // Varies depending on rule type
 
         // Structure mappings
-        struct {
+        struct ASM_ALIGN(sizeof(UWORD)) {
             // AR_KILL_COUNT
             ULONG uCount;
             UWORD uAlienType;
-        } ASM_ALIGN(sizeof(UWORD)) oKillCount;
+        } oKillCount;
 
-        struct {
+        struct ASM_ALIGN(sizeof(UWORD)) {
             // AR_GROUP_KILL_COUNT
             ULONG uCount;
             ULONG uAlienMask;
-        } ASM_ALIGN(sizeof(UWORD)) oGroupKillCount;
+        } oGroupKillCount;
 
-        struct {
+        struct ASM_ALIGN(sizeof(UWORD)) {
             // AR_ZONE_FOUND
             UWORD uLevel;
             UWORD uZoneID;
-        } ASM_ALIGN(sizeof(UWORD)) oZoneFound;
+        } oZoneFound;
 
-        struct {
+        struct ASM_ALIGN(sizeof(UWORD)) {
             // AR_TIME_IMPROVED | AR_PLAYER_DIED
             ULONG uCount; // The count is ULONG since it can be compared to the sum of multiple 16-bit counters
             UWORD bOverall;
             UWORD uLevelMask;
-        } ASM_ALIGN(sizeof(UWORD)) oMaskedLevelCount;
+        } oMaskedLevelCount;
 
-        struct {
+        struct ASM_ALIGN(sizeof(UWORD)) {
             // AR_COLLECTED
             ULONG uCount;
             UWORD uConsumable;
-        } ASM_ALIGN(sizeof(UWORD)) oCollected;
+        } oCollected;
 
     } achv_Param;
-} ASM_ALIGN(sizeof(ULONG)) GMod_Achievement; // 32 bytes
+} GMod_Achievement; // 32 bytes
 
 /**********************************************************************************************************************/
 
@@ -142,7 +142,7 @@ typedef struct {
  *     - Main Game Modification (initial defaults)
  *     - Player Progression (current values)
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(UWORD)) {
     UWORD wadj_SlotID;
     WORD  wadj_XOffset;
     WORD  wadj_YOffset;
@@ -151,7 +151,7 @@ typedef struct {
     UWORD wadj_BurstLimit;
     UWORD wadj_CoolDown;
     UWORD wadj_Flags;
-} ASM_ALIGN(sizeof(UWORD)) GMod_WeaponAdjustment; // 16 bytes
+} GMod_WeaponAdjustment; // 16 bytes
 
 /**
  * GMod_WeaponAdjustment.wadj_Flags
@@ -171,7 +171,7 @@ typedef struct {
  * Used in:
  *     - Player Progression
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(ULONG)) {
     /**
      * Record the expected counts of data which will help if this is ever expanded.
      */
@@ -210,7 +210,7 @@ typedef struct {
 
     /** Total ammo collected, per ammo class */
     ULONG prgc_TotalAmmoFound[NUM_BULLET_DEFS];
-} ASM_ALIGN(sizeof(ULONG)) GMod_ProgressCounters;
+} GMod_ProgressCounters;
 
 /**********************************************************************************************************************/
 
@@ -228,12 +228,12 @@ typedef UWORD ShortDate;
  * Used in:
  *     - Player Progression
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(UWORD)) {
     ShortDate gpc_Awarded; // Date Awarded
     UWORD     gpc_ID;      // Index of the Achievement
     //UWORD     gpc_Level;   // Which level the achievemnt was awarded in
     //UWORD     gpc_Reserved;
-} ASM_ALIGN(sizeof(UWORD)) GMod_Unlocked;
+} GMod_Unlocked;
 
 
 /**********************************************************************************************************************/

@@ -7,20 +7,20 @@
 #define END_OF_LIFTABLE_LIST 999
 #define END_OF_LIFTABLE_WALL_LIST -1
 
-typedef enum {
+typedef enum ASM_PACKED {
     DOOR_RAISE_PLAYER_USE   = 0,
     DOOR_RAISE_PLAYER_TOUCH = 1,
     DOOR_RAISE_BULLET_TOUCH = 2,
     DOOR_RAISE_ALIEN_TOUCH  = 3,
     DOOR_RAISE_ON_TIMEOUT   = 4,
     DOOR_RAISE_NEVER        = 5,
-} ASM_ALIGN(sizeof(UBYTE)) DoorRaise;
+} DoorRaise;
 
 
-typedef enum {
+typedef enum ASM_PACKED {
     DOOR_LOWER_ON_TIMEOUT = 0,
     DOOR_LOWER_NEVER      = 1,
-} ASM_ALIGN(sizeof(UBYTE)) DoorLower;
+} DoorLower;
 
 /**
  * ZLiftable defintion. Applies to both Door and Lift, which share the same basic
@@ -32,7 +32,7 @@ typedef enum {
  * Doors have the property that they are either fully closed or not. Lifts are more
  * complicated in that junctions with adjoining sones may or may not be open.
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(WORD)) {
     WORD  zl_Bottom;            //  0, 2
     WORD  zl_Top;               //  2, 2
     WORD  zl_OpeningSpeed;      //  4, 2
@@ -50,7 +50,7 @@ typedef struct {
     WORD  zl_Word16;            // 32, 2 TODO - determine purpose
     UBYTE zl_RaiseCondition;    // 34, 1
     UBYTE zl_LowerCondition;    // 35, 1
-}  ASM_ALIGN(sizeof(WORD)) ZLiftable;
+} ZLiftable;
 
 /**
  * Data stream: The ZLiftable definition, is followed by 2N ZLiftableWall records, followed by a -1 word
@@ -60,11 +60,11 @@ typedef struct {
  *
  * [{ ZLiftable, ZLiftableWall[N*2], -1 }, { ZLiftable, ZLiftableWall[N*2], -1 }..., 999]
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(WORD)) {
     WORD  zlw_EdgeID;         //  0, 2
     LONG  zlw_GraphicsOffset; //  2, 4
     LONG  zlw_Long1;          //  6, 4 - TODO - Something to do with the vertical texture displacement?
-} ASM_ALIGN(sizeof(WORD)) ZLiftableWall;
+} ZLiftableWall;
 
 
 

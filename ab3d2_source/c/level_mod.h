@@ -16,18 +16,18 @@ enum {
 /**
  * ZoneDeletions is used for both PVS and Backdrop deletions
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(WORD)) {
     UWORD zd_Data[1];
-} ASM_ALIGN(sizeof(WORD)) ZoneDeletions;
+} ZoneDeletions;
 
 /**
  * LevelMessage is used for both Zone and Object messages
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(WORD)) {
     UWORD       lm_ZoneID;
     UWORD       lm_Attributes;
     char const* lm_TextPtr;
-} ASM_ALIGN(sizeof(WORD)) LevelMessage;
+} LevelMessage;
 
 /**
  * LMod_LevelProperties structure holds the level modification data (if any)

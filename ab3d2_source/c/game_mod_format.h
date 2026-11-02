@@ -27,78 +27,78 @@ enum {
  *
  * Represents an offset in the file that is to be resolved to an actual address during parsing.
  */
-typedef union {
+typedef union ASM_ALIGN(sizeof(ULONG)) {
     ULONG       do_Offset;
     char const* do_TextPtr;
     UBYTE*      do_BytePtr;
-} ASM_ALIGN(sizeof(ULONG)) GMF_DataOffset;
+} GMF_DataOffset;
 
 /**
  * GMF_Version
  *
  * Basic major.minor version tuple used for version checks.
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(ULONG)) {
     UWORD       v_Major;
     UWORD       v_Minor;
-} ASM_ALIGN(sizeof(ULONG)) GMF_Version;
+} GMF_Version;
 
 /**
  * GMF_Ident
  *
  * Basic 4-byte ident. Accessible either as a 32-bit word or as 4 characters. Big endian layout.
  */
-typedef union {
+typedef union ASM_ALIGN(sizeof(ULONG)) {
     char  id_Text[4];
     ULONG id_Value;
-} ASM_ALIGN(sizeof(ULONG)) GMF_Ident;
+} GMF_Ident;
 
 /**
  * GMF_Header
  *
  * Main game modification file header.
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(ULONG)) {
     GMF_Ident      h_Ident;
     GMF_Ident      h_SubFormat;
     GMF_Version    h_RequiresVersion;
     GMF_Version    h_Version;
     GMF_DataOffset h_Description;
-} ASM_ALIGN(sizeof(ULONG)) GMF_Header;
+} GMF_Header;
 
 /**
  * GMF_ChunkHeader
  *
  * Minimalist header for each Chunk.
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(ULONG)) {
     GMF_Ident ch_Ident;
     ULONG     ch_Length;
-} ASM_ALIGN(sizeof(ULONG)) GMF_ChunkHeader;
+} GMF_ChunkHeader;
 
 /**
  * GMF_IndexEntry
  *
  * Basic Ident/Offset pair for the common Index chunk.
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(ULONG)) {
     GMF_Ident      ie_Ident;
     GMF_DataOffset ie_Offset;
-} ASM_ALIGN(sizeof(ULONG)) GMF_IndexEntry;
+} GMF_IndexEntry;
 
 /**
  * GMF_Data
  *
  * Main structure for loaded Game Modification Files.
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(ULONG)) {
     UBYTE*                gmd_DataPtr;
     ULONG                 gmd_Length;
     ULONG                 gmd_IndexSize;
     GMF_Header const*     gmd_HeaderPtr;
     GMF_IndexEntry const* gmd_IndexPtr;
     char const*           gmd_StringsPtr;
-} ASM_ALIGN(sizeof(ULONG)) GMF_Data;
+} GMF_Data;
 
 
 /**
@@ -113,10 +113,10 @@ typedef BOOL (*GMF_ChunkParser)(GMF_ChunkHeader const* chunkHeaderPtr, GMF_Data*
  *
  * Basic Ident/Parser pair for associating a parser to a particular chunk type.
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(ULONG)) {
     ULONG           pe_Ident;
     GMF_ChunkParser pe_Parser;
-} ASM_ALIGN(sizeof(ULONG)) GMF_ParserEntry;
+} GMF_ParserEntry;
 
 
 /**

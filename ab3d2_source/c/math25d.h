@@ -7,33 +7,33 @@
 /**
  * Simple 2 compoment XZ vector, 16 bit precision
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(WORD)) {
     WORD v_X;
     WORD v_Z;
-} ASM_ALIGN(sizeof(WORD)) Vec2W;
+} Vec2W;
 
 /**
  * Simple 2 compoment XZ vector, 32 bit precision
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(LONG)) {
     LONG v_X;
     LONG v_Z;
-} ASM_ALIGN(sizeof(LONG)) Vec2L;
+} Vec2L;
 
 /**
  * Simple 3 compoment XYZ vector, 32 bit precision
  */
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(WORD)) {
     WORD v_X;
     WORD v_Y;
     WORD v_Z;
-} ASM_ALIGN(sizeof(WORD)) Vec3W;
+} Vec3W;
 
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(LONG)) {
     LONG v_X;
     LONG v_Y;
     LONG v_Z;
-} ASM_ALIGN(sizeof(LONG)) Vec3L;
+} Vec3L;
 
 
 #define SINTAB_SIZE 8192

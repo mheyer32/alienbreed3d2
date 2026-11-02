@@ -5,7 +5,7 @@
 #include "inventory.h"
 
 // Player Definition (runtime)
-typedef struct {
+typedef struct ASM_ALIGN(sizeof(WORD)) {
     // Long fields
     ObjBase*    plr_ObjectPtr; //   0, 4
 
@@ -96,7 +96,7 @@ typedef struct {
     UBYTE plr_Reserved2_b				; 239
 */
 
-} ASM_ALIGN(sizeof(WORD))  Player;
+} Player;
 
 #define MULTIPLAYER_SLAVE  ((BYTE)'s')
 #define MULTIPLAYER_MASTER ((BYTE)'m')

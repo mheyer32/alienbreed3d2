@@ -32,7 +32,7 @@
  */
 struct AchievementStruct;
 typedef BOOL (*Rule)(struct AchievementStruct const*);
-struct AchievementStruct {
+struct ASM_ALIGN(sizeof(WORD)) AchievementStruct {
     char const* ac_Name;             // 4 4    Name
     char const* ac_RewardDesc;       // 4 8    Reward message
 
@@ -46,7 +46,7 @@ struct AchievementStruct {
     WORD        ac_AmmoType;         // 2 28   Ammunition type (-1 for none)
     UWORD       ac_AmmoTypeCapBonus; // 2 30   Capacity bonus for ammunition type
     UWORD       ac_AmmoTypeBonus;    // 2 32   Immediate bonus for ammunition type
-} ASM_ALIGN(sizeof(WORD)); // 34
+}; // 34
 typedef struct AchievementStruct Achievement;
 
 /**
