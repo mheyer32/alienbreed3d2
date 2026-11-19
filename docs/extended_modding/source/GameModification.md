@@ -144,6 +144,42 @@ The `DefaultGlobals` node is a key-value set, that defines the modification defa
     }
 ```
 
+### AlienAdjustment
+
+The optional `AlienAdjustment` node defines per-alien modifications.
+
+**Structure:**
+
+```
+    AlienAdjustment: {
+        "<alien name>": {
+            // All fields are optional but at least one must be specified.
+            ScaleWidth: <#percent>,
+            ScaleHeight: <#percent>,
+            VertOffset: <#offset>
+        },
+    }
+```
+
+**Notes:**
+
+If all values are zero, the definition is considered empty and will be discarded.
+
+Fields:
+
+- `ScaleWidth`
+    - Applies a scale adjustment to the width of all the animation frames for the alien.
+    - Value is percentage of the original, i.e. 100 is unchanged.
+
+- `ScaleHeight`
+    - Applies a scale adjustment to the width of all the animation frames for the alien.
+    - Value is percentage of the original, i.e. 100 is unchanged.
+
+- `VertOffset`
+    - Applies an absolute adjustment to the vertical offset of all animations frames for the alien.
+    - Value is signed.
+
+
 ### DefaultInventoryLimits
 
 The `DefaultInventoryLimits` node is a `SupplyQuantity` that sets the initial limits for player comsumables and ammunition when starting a new game:
@@ -201,7 +237,7 @@ The optional `WeaponAdjustment` node defines per-weapon behavioural changes for 
 
 **Notes:**
 
-If all values are zero/false, the definition is considered empty and will be discarded. The values defined within these definitions are considered _default_ values for the weapons they apply to. Future updates will record the active values for eahc weapon in the player progression file. This is intended to allow for in-game modification to these values e.g. as a consequence of locating some special item or via achievements or other objectives.
+If all values are zero/false, the definition is considered empty and will be discarded. The values defined within these definitions are considered _default_ values for the weapons they apply to. Future updates will record the active values for each weapon in the player progression file. This is intended to allow for in-game modification to these values e.g. as a consequence of locating some special item or via achievements or other objectives.
 
 Fields:
 
