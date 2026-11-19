@@ -146,7 +146,7 @@ The `DefaultGlobals` node is a key-value set, that defines the modification defa
 
 ### AlienAdjustment
 
-The optional `AlienAdjustment` node defines per-alien modifications.
+The optional `AlienAdjustment` node defines per-alien modifications:
 
 **Structure:**
 
