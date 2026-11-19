@@ -88,7 +88,7 @@ Sys_FatalError:
 				clr.w	(a3)		; NUL terminator and indicate last line
 				rts
 .nl:
-				clr.b	(a3)+		; Terminate line
+				sf		(a3)+		; Terminate line
 				move.b	#1,(a3)+	; Continue on next
 				; And start a new one
 .startline:

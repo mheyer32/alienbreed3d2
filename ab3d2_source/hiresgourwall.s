@@ -202,12 +202,12 @@ DoleftendGOUR:
 				add.l	d5,WD_LeftBrightScaled_l(a0)
 				move.l	WD_DUpperHorizBright_l(a0),d5
 				add.l	d5,WD_UpperLeftBrightScaled_l(a0)
-				add.l	#$10000,d7
-				dbra	d7,.scr_divide_loop
+				add.l	#$10000,d7 ; increment upper word.
+				dbra	d7,.scr_divide_loop ; lower word affected only
 
 .out_of_calc:
 				swap	d7
-				tst.w	d7
+				tst.w	d7 ; value that was incremented during first loop
 				bge.s	.something_to_draw
 
 				rts
@@ -701,11 +701,11 @@ draw_WallGouraudShaded:
 				add.l	d5,d1
 				move.l	draw_TopOfWall_l(pc),d5
 				divs	d0,d5
-				add.w	Vid_CentreY_w,d5
+				add.w	Vid_ViewHorizonY_w,d5
 				move.w	d5,draw_StripTop_w
 				move.l	draw_BottomOfWall_l(pc),d5
 				divs	d0,d5
-				add.w	Vid_CentreY_w,d5
+				add.w	Vid_ViewHorizonY_w,d5
 				move.w	d5,draw_StripBottom_w
 
 .compute_loop:
@@ -727,12 +727,12 @@ draw_WallGouraudShaded:
 				move.l	draw_TopOfWall_l(pc),d6
 				divs	d2,d6
 				move.w	draw_StripBottom_w(pc),16(a0)
-				add.w	Vid_CentreY_w,d6
+				add.w	Vid_ViewHorizonY_w,d6
 				move.w	d6,draw_StripTop_w
 				move.w	d6,14(a0)
 				move.l	draw_BottomOfWall_l(pc),d6
 				divs	d2,d6
-				add.w	Vid_CentreY_w,d6
+				add.w	Vid_ViewHorizonY_w,d6
 				move.w	d6,draw_StripBottom_w
 				move.w	d6,18(a0)
 				move.l	d3,(a1)
@@ -804,12 +804,12 @@ computeloop2G:
 				move.l	draw_TopOfWall_l(pc),d6
 				divs	d2,d6
 				move.w	draw_StripBottom_w(pc),16(a0)
-				add.w	Vid_CentreY_w,d6
+				add.w	Vid_ViewHorizonY_w,d6
 				move.w	d6,draw_StripTop_w
 				move.w	d6,14(a0)
 				move.l	draw_BottomOfWall_l(pc),d6
 				divs	d2,d6
-				add.w	Vid_CentreY_w,d6
+				add.w	Vid_ViewHorizonY_w,d6
 				move.w	d6,draw_StripBottom_w
 				move.w	d6,18(a0)
 				move.l	d3,(a1)
@@ -1174,7 +1174,7 @@ gotoendG:
 				move.l	d7,draw_GouraudStep_l
 
 				; start/endline in renderbuffer?
-				add.l	draw_LineOffsetBuffer_vl(pc,d5.w*4),a3 ; contains renderbuffer offsets for each line
+				add.l	draw_RenderBufferStrideTable_vl(pc,d5.w*4),a3 ; contains renderbuffer offsets for each line
 
 				add.w	d2,d2
 
@@ -1225,7 +1225,7 @@ doubwallGOUR:
 				ble		nostripqG
 
 				move.l	d7,draw_GouraudStep_l
-				add.l	draw_LineOffsetBuffer_vl(pc,d5.w*4),a3
+				add.l	draw_RenderBufferStrideTable_vl(pc,d5.w*4),a3
 				add.w	d2,d2
 				move.l	4(a1,d2.w*8),d0
 				add.w	TOPOFFSET(pc),d5
@@ -1304,7 +1304,7 @@ gotoendGB:
 				ble		nostripqG
 
 				move.l	d7,draw_GouraudStep_l
-				add.l	draw_LineOffsetBuffer_vl(pc,d5.w*4),a3 ; start of line in renderbuffer
+				add.l	draw_RenderBufferStrideTable_vl(pc,d5.w*4),a3 ; start of line in renderbuffer
 				move.w	d2,d4
 				add.w	d2,d2
 				add.w	d2,d4
@@ -1349,7 +1349,7 @@ doubwallGOURBIG:
 				ble		nostripqG
 
 				move.l	d7,draw_GouraudStep_l
-				add.l	draw_LineOffsetBuffer_vl(pc,d5.w*4),a3
+				add.l	draw_RenderBufferStrideTable_vl(pc,d5.w*4),a3
 				move.w	d2,d4
 				add.w	d2,d2
 				add.w	d2,d4

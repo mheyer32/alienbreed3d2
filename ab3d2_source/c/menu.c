@@ -210,7 +210,6 @@ void mnu_clearscreen(REG(d0, BOOL fade))
         mnu_ScreenBuffer = NULL;
     } else {
         DestroyBlitTask();
-
     }
 
     Vid_LoadMainPalette();
@@ -416,10 +415,22 @@ static void SAVEDS BlitTaskProc(void)
 
     Signal(mainTask, SIGBREAKF_CTRL_E);
 
+    /**
+     * When the screen height is below the regular minimum, adjust the blit area to compensate.
+     * Unfortunately the control menu is a hot mess here and ends up clipped. However since these can be set in
+     * the config file, that can be fixed later.
+     */
+    WORD iSourceYOffset = 0;
+    WORD iBlitHeight = SCREEN_HEIGHT;
+    if (Vid_ScreenHeight < SCREEN_HEIGHT) {
+        iSourceYOffset = (SCREEN_HEIGHT - Vid_ScreenHeight) >> 1;
+        iBlitHeight -= iSourceYOffset;
+    }
+
     while (1) {
         ULONG signal = Wait(SIGBREAKF_CTRL_C|SIGBREAKF_CTRL_E);
         if (!(signal & SIGBREAKF_CTRL_C)) {
-            BltBitMapRastPort(&mnu_bitmap, 0, 0, &Vid_MainScreen_l->RastPort, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0x0C0);
+            BltBitMapRastPort(&mnu_bitmap, 0, iSourceYOffset, &Vid_MainScreen_l->RastPort, 0, 0, SCREEN_WIDTH, iBlitHeight, 0x0C0);
         } else {
             break;
         }

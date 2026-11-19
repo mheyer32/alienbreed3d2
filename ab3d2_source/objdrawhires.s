@@ -236,7 +236,7 @@ draw_bitmap_glare:
 				;DEV_INC.w Reserved1
 				; 0xABADCAFE - Not worth it < 10 typically
 
-				add.w	Vid_CentreY_w,d6
+				add.w	Vid_ViewHorizonY_w,d6
 				cmp.w	d3,d6
 				bge		object_behind
 
@@ -255,7 +255,7 @@ draw_bitmap_glare:
 				divs	d1,d6
 				;DEV_INC.w Reserved1
 
-				add.w	Vid_CentreY_w,d6
+				add.w	Vid_ViewHorizonY_w,d6
 				cmp.w	d2,d6
 				ble		object_behind
 
@@ -272,7 +272,7 @@ draw_bitmap_glare:
 				asl.l	#7,d2
 				add.l	d2,d0
 				addq	#2,a0
-				move.l	Draw_TexturePalettePtr_l,a4
+				move.l	Draw_PaletteShadeTablePtr_l,a4
 				sub.l	#512,a4
 				move.w	(a0)+,d2				; height
 				add.w	draw_AuxY_w,d2
@@ -283,7 +283,7 @@ draw_bitmap_glare:
 				divs	d1,d2
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
-				add.w	Vid_CentreY_w,d2
+				add.w	Vid_ViewHorizonY_w,d2
 
 				divs	d1,d0
 				;DEV_INC.w Reserved1 ; counts how many divisions
@@ -359,10 +359,12 @@ draw_bitmap_glare:
 				divu	d6,d7
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
-				swap	d7
-				clr.w	d7
-				swap	d7
-				lea		(a3,d7.l*8),a2			; pointer to horiz const
+				;swap	d7
+				;clr.w	d7
+				;swap	d7
+				;lea		(a3,d7.l*8),a2			; pointer to horiz const
+				lea (a3,d7.w*8),a2 ; pointer to horiz const
+
 				move.w	d1,d7
 				move.w	6(a6),d6
 				add.w	d6,d6
@@ -375,10 +377,11 @@ draw_bitmap_glare:
 				divu	d6,d7
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
-				swap	d7
-				clr.w	d7
-				swap	d7
-				lea		(a3,d7.l*8),a3			; pointer to vertical c.
+				;swap	d7
+				;clr.w	d7
+				;swap	d7
+				;lea		(a3,d7.l*8),a3			; pointer to vertical c.
+				lea		(a3,d7.w*8),a3			; pointer to vertical c.
 												; * CLIP OBJECT TO TOP AND BOTTOM
 												; * OF THE VISIBLE DISPLAY
 
@@ -599,7 +602,7 @@ draw_Bitmap:
 				divs	d1,d6
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
-				add.w	Vid_CentreY_w,d6
+				add.w	Vid_ViewHorizonY_w,d6
 				cmp.w	d3,d6
 				bge		object_behind
 
@@ -615,7 +618,7 @@ draw_Bitmap:
 				divs	d1,d6
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
-				add.w	Vid_CentreY_w,d6
+				add.w	Vid_ViewHorizonY_w,d6
 				cmp.w	d2,d6					; bottom of object over top of screen?
 				ble		object_behind
 
@@ -694,7 +697,7 @@ pastobjscale:
 				divs	d1,d2
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
-				add.w	Vid_CentreY_w,d2
+				add.w	Vid_ViewHorizonY_w,d2
 
 				divs	d1,d0
 				;DEV_INC.w Reserved1 ; counts how many divisions
@@ -715,8 +718,8 @@ pastobjscale:
 				adda.w	d7,a5					; a5 pointing to?
 				asl.w	#4,d7
 				adda.w	d7,a6					; a6 pointing to?
-				clr.b	draw_LightIt_b
-				clr.b	draw_Additive_b
+				sf		draw_LightIt_b
+				sf		draw_Additive_b
 				move.b	4(a0),d7
 				btst	#7,d7
 				sne		draw_FlipIt_b
@@ -797,10 +800,13 @@ pastobjscale:
 				divu	d6,d7
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
-				swap	d7
-				clr.w	d7
-				swap	d7
-				lea		(a3,d7.l*8),a2	; pointer to horiz const (d7th pair in ConstantTable_vl)
+				;swap	d7
+				;clr.w	d7
+				;swap	d7
+				;lea		(a3,d7.l*8),a2	; pointer to horiz const (d7th pair in ConstantTable_vl)
+
+				lea (a3,d7.w*8),a2
+
 				move.w	d1,d7
 				move.w	6(a6),d6
 				add.w	d6,d6
@@ -813,10 +819,11 @@ pastobjscale:
 				divu	d6,d7
 				;DEV_INC.w Reserved1 ; counts how many divisions
 
-				swap	d7
-				clr.w	d7
-				swap	d7
-				lea		(a3,d7.l*8),a3			; pointer to vertical scale table?
+				;swap	d7
+				;clr.w	d7
+				;swap	d7
+				;lea		(a3,d7.l*8),a3			; pointer to vertical scale table?
+				lea (a3,d7.w*8),a3
 ; vertical c.
 
 ;* CLIP OBJECT TO TOP AND BOTTOM
@@ -1443,10 +1450,10 @@ draw_CalcBrightRings:
 .solid_wall:
 				move.w	EdgeT_XLen_w(a3),d1
 				move.w	EdgeT_ZLen_w(a3),d2
-				move.w	oldx,newx
-				move.w	oldz,newz
-				sub.w	d2,newx
-				add.w	d1,newz
+				move.w	Obj_OldX_w,Obj_NewX_w
+				move.w	Obj_OldZ_w,Obj_NewZ_w
+				sub.w	d2,Obj_NewX_w
+				add.w	d1,Obj_NewZ_w
 
 				SAVEREGS
 
@@ -1607,8 +1614,8 @@ draw_CalcBrightsInZone:
 ; list is terminated with -1.
 
 				move.l	Lvl_PointsPtr_l,a3
-				move.w	draw_Obj_XPos_w,oldx
-				move.w	draw_Obj_ZPos_w,oldz
+				move.w	draw_Obj_XPos_w,Obj_OldX_w
+				move.w	draw_Obj_ZPos_w,Obj_OldZ_w
 				move.w	#10,speed
 				move.w	#0,Range
 
@@ -1616,8 +1623,8 @@ draw_CalcBrightsInZone:
 				move.w	(a1)+,d0				;pt number
 				blt		.done_point_bright
 
-				move.w	(a3,d0.w*4),newx
-				move.w	2(a3,d0.w*4),newz
+				move.w	(a3,d0.w*4),Obj_NewX_w
+				move.w	2(a3,d0.w*4),Obj_NewZ_w
 
 				SAVEREGS
 
@@ -1684,7 +1691,7 @@ polybehind:
 ; struct Lvl_ObjectPointsPtr_l {short x,y,z}
 draw_PolygonModel:
 				move.w	EntT_CurrentAngle_w(a0),draw_ObjectAng_w
-				move.w	Vid_CentreY_w,draw_PolygonCentreY_w
+				move.w	Vid_ViewHorizonY_w,draw_PolygonCentreY_w
 				move.w	(a0)+,d0				; object Id?
 				move.l	Lvl_ObjectPointsPtr_l,a4
 				move.w	(a4,d0.w*8),draw_Obj_XPos_w
@@ -2321,7 +2328,7 @@ checkbeh:
 				sub.l	d0,d2
 				move.l	d2,polybright
 				move.l	#draw_2DPointsProjected_vl,a3
-				clr.b	drawit
+				sf		drawit
 				tst.b	draw_Gouraud_b
 				bne.s	usegour
 
@@ -2433,9 +2440,9 @@ toobright:
 				asl.w	#8,d1
 ; move.w (a1,d1.w*2),d1
 ; asl.w #3,d1
-				move.l	Draw_TexturePalettePtr_l,a1
-				add.l	#256*32,a1
-				lea		(a1,d1.w),a1
+				move.l	Draw_PaletteShadeTablePtr_l,a1
+				;add.l	#256*32,a1
+				lea		8192(a1,d1.w),a1
 				tst.b	draw_PreGouraud_b
 				bne		predoglare
 
@@ -2574,7 +2581,7 @@ val				SET		val+SCREEN_WIDTH
 				ENDR
 
 predoglare:
-				move.l	Draw_TexturePalettePtr_l,a1
+				move.l	Draw_PaletteShadeTablePtr_l,a1
 				sub.w	#512,a1
 
 DOGLAREPOLY:
@@ -2737,7 +2744,7 @@ LinesPtr:		dc.l	0
 PtsPtr:			dc.l	0
 
 gotlurvelyshading:
-				move.l	Draw_TexturePalettePtr_l,a1
+				move.l	Draw_PaletteShadeTablePtr_l,a1
 				add.l	#256*32,a1
 				tst.b	draw_PreGouraud_b
 
@@ -2941,9 +2948,12 @@ toodimh:
 
 ; move.w (a1,d1.w*2),d1
 ; asl.w #3,d1
-				move.l	Draw_TexturePalettePtr_l,a1
-				add.l	#256*32,a1
-				add.w	d1,a1
+				move.l	Draw_PaletteShadeTablePtr_l,a1
+				;add.l	#256*32,a1
+				;add.w	d1,a1
+
+				lea 8192(a1,d1.w),a1
+
 				tst.b	draw_PreGouraud_b
 ; beq.s .noshiny
 ; add.l #256*32,a1

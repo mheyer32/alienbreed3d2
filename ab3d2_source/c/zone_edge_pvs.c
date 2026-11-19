@@ -5,6 +5,7 @@
 #include "zone.h"
 #include "zone_liftable.h"
 #include "zone_inline.h"
+#include "devmode.h"
 
 extern Vec2W const* Lvl_PointsPtr_l;
 extern WORD Lvl_NumPoints_w;
@@ -50,12 +51,12 @@ static struct {
      * have the same indexing as the zre_FullPVSListPtr list. Where an entry is truthy, the zone at
      * the index position is potentially visible via the edge. Otherwise, it isn't.
      */
-    UBYTE* zre_EdgePVSList;
+    UBYTE* zre_EdgePVSListPtr;
 
     /**
      * Pointer to the specific door list mask under evaluation, if there is one.
      */
-    ZDoorListMask* zre_DoorMaskList;
+    ZDoorListMask* zre_DoorMaskListPtr;
 
     /**
      * Recursion depth tracker.
@@ -176,7 +177,7 @@ static void zone_CountPVS(Zone const* zonePtr, ZPVSCount* pvsCountPtr)
  *
  * This fills the pvsCountBufferPtr with the per-zone facts as it goes. We need that later.
  */
-static ULONG zone_CalcEdgePVSDataSize(ZPVSCount* pvsCountBufferPtr)
+static ULONG zone_CalcEdgePVSDataSize(ZPVSCount* restrict pvsCountBufferPtr)
 {
     /* Begin with the assumption we need as many pointers as zones */
     ULONG totalSize = Lvl_NumZones_w * sizeof(ZEdgePVSHeader*);
@@ -214,7 +215,7 @@ static ZEdgePVSHeader** zone_AllocEdgePVS(ZPVSCount* pvsCountBufferPtr)
 /**
  * Calculate the offset fields for a given ZEdgePVSHeader once the size/edges/features are known
  */
-static void zone_CalcZEdgePVSHeaderOffsets(ZEdgePVSHeader* currentEdgePVSPtr, UWORD features)
+static inline void zone_CalcZEdgePVSHeaderOffsets(ZEdgePVSHeader* restrict currentEdgePVSPtr, UWORD features)
 {
     // First the offset to the edge mask. This immediately follows the the array of ZEdgeInfo
     size_t offset = (sizeof(ZEdgePVSHeader) - sizeof(ZEdgeInfo)) +
@@ -239,7 +240,7 @@ static void zone_CalcZEdgePVSHeaderOffsets(ZEdgePVSHeader* currentEdgePVSPtr, UW
  * Builds up the pointer table with the location for each ZEdgePVSHeader and populates
  * the ZEdgePVSHeader structure fields.
  */
-static void zone_FillZEdgePVSHeaders(ZEdgePVSHeader* currentEdgePVSPtr, ZPVSCount const* pvsCountBufferPtr)
+static void zone_FillZEdgePVSHeaders(ZEdgePVSHeader* restrict currentEdgePVSPtr, ZPVSCount const* restrict pvsCountBufferPtr)
 {
     // First Pass - build the ZEdgePVSHeader data and populate the edge indexes.
     for (WORD zoneID = 0; zoneID < Lvl_NumZones_w; ++zoneID) {
@@ -314,7 +315,7 @@ static WORD zone_GetIndexInPVSList(WORD zoneID)
 static ZDoorListMask zone_GetInitialDoorMask(WORD zoneID)
 {
     WORD doorIndex = Zone_GetDoorID(zoneID);
-    if (doorIndex != NOT_A_DOOR) {
+    if (doorIndex != NOT_A_LIFTABLE) {
         return 1 << doorIndex;
     }
     return 0;
@@ -340,9 +341,9 @@ static void zone_RecurseEdgePVS(WORD indexInPVS, ZDoorListMask doorMask)
     WORD visType = ZVIS_DIRECT;
 
     // Mark as visited and thus visible in the PVS
-    Zone_EdgePVSState.zre_EdgePVSList[indexInPVS] = ZVIS_DIRECT;
+    Zone_EdgePVSState.zre_EdgePVSListPtr[indexInPVS] = ZVIS_DIRECT;
 
-    if (Zone_EdgePVSState.zre_DoorMaskList) {
+    if (Zone_EdgePVSState.zre_DoorMaskListPtr) {
         ZDoorListMask myDoorMask = zone_GetInitialDoorMask(zoneID);
         if (myDoorMask) {
             doorMask |= myDoorMask;
@@ -351,10 +352,10 @@ static void zone_RecurseEdgePVS(WORD indexInPVS, ZDoorListMask doorMask)
             visType = ZVIS_COND;
         }
 
-        Zone_EdgePVSState.zre_DoorMaskList[indexInPVS] = doorMask;
+        Zone_EdgePVSState.zre_DoorMaskListPtr[indexInPVS] = doorMask;
     }
 
-    Zone_EdgePVSState.zre_EdgePVSList[indexInPVS] = visType;
+    Zone_EdgePVSState.zre_EdgePVSListPtr[indexInPVS] = visType;
 
     // Get the list of known joining edges for this zone.
     ZEdgePVSHeader* currentEdgePVSPtr = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
@@ -372,7 +373,7 @@ static void zone_RecurseEdgePVS(WORD indexInPVS, ZDoorListMask doorMask)
             continue;
         }
 
-        WORD nextVis = Zone_EdgePVSState.zre_EdgePVSList[indexInPVS];
+        WORD nextVis = Zone_EdgePVSState.zre_EdgePVSListPtr[indexInPVS];
         // Have we visited this zone already?
         // This is an MVP version of visibility upgrade.
         if (nextVis >= ZVIS_DOOR) {
@@ -425,10 +426,10 @@ static void zone_FillZEdgePVSListData()
         ZEdgePVSHeader* currentEdgePVSPtr  = Lvl_ZEdgePVSHeaderPtrsPtr_l[zoneID];
 
         // Can never be null
-        Zone_EdgePVSState.zre_EdgePVSList  = Zone_GetEdgePVSListBase(currentEdgePVSPtr);
+        Zone_EdgePVSState.zre_EdgePVSListPtr  = Zone_GetEdgePVSListBase(currentEdgePVSPtr);
 
         // Note, might be null
-        Zone_EdgePVSState.zre_DoorMaskList = Zone_GetEdgePVSDoorListBase(currentEdgePVSPtr);
+        Zone_EdgePVSState.zre_DoorMaskListPtr = Zone_GetEdgePVSDoorListBase(currentEdgePVSPtr);
 
         if (currentEdgePVSPtr->zep_EdgeCount > 10) {
             dprintf(
@@ -461,17 +462,17 @@ static void zone_FillZEdgePVSListData()
             // );
 
             // Mark the root zone as already visited
-            Zone_EdgePVSState.zre_EdgePVSList[0] = ZVIS_DIRECT;
+            Zone_EdgePVSState.zre_EdgePVSListPtr[0] = ZVIS_DIRECT;
 
             // Set the root zone door mask, if relevant
-            if (Zone_EdgePVSState.zre_DoorMaskList) {
-                Zone_EdgePVSState.zre_DoorMaskList[0] = doorMask;
+            if (Zone_EdgePVSState.zre_DoorMaskListPtr) {
+                Zone_EdgePVSState.zre_DoorMaskListPtr[0] = doorMask;
             }
             // Mark the rest as clear. They will be set true for every zone we enter during
             // the recursion.
             // TODO - why is mem fill not working here?
             for (WORD i = 1; i < currentEdgePVSPtr->zep_ListSize; ++i) {
-                Zone_EdgePVSState.zre_EdgePVSList[i] = 0;
+                Zone_EdgePVSState.zre_EdgePVSListPtr[i] = 0;
             }
 
             WORD indexInPVS = zone_GetIndexInPVSList(edgePtr->e_JoinZoneID);
@@ -480,7 +481,7 @@ static void zone_FillZEdgePVSListData()
                 zone_RecurseEdgePVS(indexInPVS, doorMask);
             }
 
-            if (Zone_EdgePVSState.zre_DoorMaskList) {
+            if (Zone_EdgePVSState.zre_DoorMaskListPtr) {
 /*
 #if defined(ZONE_DEBUG)
                 char const* doorIDNames = "0123456789ABCDEF";
@@ -490,8 +491,8 @@ static void zone_FillZEdgePVSListData()
                     (int)edgeNum
                 );
                 for (WORD i = 0; i < currentEdgePVSPtr->zep_ListSize; ++i) {
-                    if (Zone_EdgePVSState.zre_EdgePVSList[i]) {
-                        WORD mask = Zone_EdgePVSState.zre_DoorMaskList[i];
+                    if (Zone_EdgePVSState.zre_EdgePVSListPtr[i]) {
+                        WORD mask = Zone_EdgePVSState.zre_DoorMaskListPtr[i];
                         for (WORD j = 0; j < 16; ++j) {
                             buffer[j] = (mask & (1 << j)) ? doorIDNames[j] : '-';
                         }
@@ -506,9 +507,9 @@ static void zone_FillZEdgePVSListData()
                 dputs("}\n");
 #endif
 */
-                Zone_EdgePVSState.zre_DoorMaskList += currentEdgePVSPtr->zep_ListSize;
+                Zone_EdgePVSState.zre_DoorMaskListPtr += currentEdgePVSPtr->zep_ListSize;
             }
-            Zone_EdgePVSState.zre_EdgePVSList += currentEdgePVSPtr->zep_ListSize;
+            Zone_EdgePVSState.zre_EdgePVSListPtr += currentEdgePVSPtr->zep_ListSize;
         }
     }
     dprintf(
@@ -602,6 +603,7 @@ void Zone_InitEdgePVS()
     #endif
 
     Zone_InitDoorList();
+    Zone_InitLiftList();
 
     ULONG infoTupleBufferSize = (ULONG)Lvl_NumZones_w * 3 * sizeof(WORD);
 
@@ -726,7 +728,7 @@ void zone_ClearEdgePVSBuffer(WORD size)
     }
 }
 
-void zone_MergeEdgePVS(UBYTE const* zoneMaskPtr, ZDoorListMask const* doorListMaskPtr, WORD size)
+void zone_MergeEdgePVS(UBYTE const* restrict zoneMaskPtr, ZDoorListMask const* restrict doorListMaskPtr, WORD size)
 {
     if (doorListMaskPtr) {
         ZDoorListMask mask = Zone_RenderDoorState_w;
@@ -748,7 +750,7 @@ void zone_MarkVisibleViaEdges(WORD size)
     zone_MakePVSZoneIDList(Lvl_ZonePtrsPtr_l[zoneID], &Zone_PVSList_vw[0]);
 
     for (WORD i = 0; i < size; ++i) {
-        Lvl_ZonePtrsPtr_l[Zone_PVSList_vw[i]]->z_Unused = Zone_PVSMask_vb[i];
+        Lvl_ZonePtrsPtr_l[Zone_PVSList_vw[i]]->z_TaggedVisible = Zone_PVSMask_vb[i];
     }
 }
 

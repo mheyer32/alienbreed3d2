@@ -39,6 +39,7 @@ typedef struct {
     UBYTE o_SeePlayer;
 } ObjBase;
 
+#include "version.h"
 #include "math25d.h"
 #include "zone.h"
 #include "zone_liftable.h"

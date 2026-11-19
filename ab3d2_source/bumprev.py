@@ -182,3 +182,14 @@ oFileHandle.write(
 )
 
 oFileHandle.close()
+
+sTemplate = "#ifndef VERSION_H\n#   define TKG_VERSION {ver}\n#   define TKG_REVISION {rev}\n#   define TKG_BUILD {build}\n#   define TKG_HASH \"{hash}\"\n#endif\n"
+
+oFileHandle = open('c/version.h', 'w')
+oFileHandle.write(sTemplate.format(
+    ver     = iVersion,
+    rev     = iRevision,
+    build   = iBuildNum,
+    hash    = sHash
+))
+oFileHandle.close()

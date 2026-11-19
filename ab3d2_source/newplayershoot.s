@@ -150,8 +150,8 @@ Plr1_Shot:
 				move.w	#100,Aud_NoiseVol_w
 				move.w	#100,Plr1_NoiseVol_w
 				move.w	#12,Aud_SampleNum_w
-				clr.b	notifplaying
-				move.b	#$fb,IDNUM
+				sf		notifplaying
+				move.b	#$fb,Aud_IDNum_w
 				jsr		MakeSomeNoise
 
 				rts
@@ -180,9 +180,9 @@ Plr1_Shot:
 				move.w	#300,Aud_NoiseVol_w
 				move.w	ShootT_SFX_w(a6),Aud_SampleNum_w
 				move.b	#2,Aud_ChannelPick_b
-				clr.b	notifplaying
+				sf		notifplaying
 				movem.l	d0/a0/d5/d6/d7/a6/a4/a5,-(a7)
-				move.b	#$fb,IDNUM
+				move.b	#$fb,Aud_IDNum_w
 				jsr		MakeSomeNoise
 
 				movem.l	(a7)+,d0/a0/d5/d6/d7/a6/a4/a5
@@ -264,19 +264,19 @@ Plr1_Shot:
 				beq		plr1_FireProjectile
 
 				move.w	#0,bulyspd
-				move.w	Plr1_XOff_l,oldx
-				move.w	Plr1_ZOff_l,oldz
+				move.w	Plr1_XOff_l,Obj_OldX_w
+				move.w	Plr1_ZOff_l,Obj_OldZ_w
 				move.w	Plr1_SinVal_w,d0
 				asr.w	#7,d0
-				add.w	oldx,d0
-				move.w	d0,newx
+				add.w	Obj_OldX_w,d0
+				move.w	d0,Obj_NewX_w
 				move.w	Plr1_CosVal_w,d0
 				asr.w	#7,d0
-				add.w	oldz,d0
-				move.w	d0,newz
+				add.w	Obj_OldZ_w,d0
+				move.w	d0,Obj_NewZ_w
 				move.l	Plr1_YOff_l,d0
 				add.l	#10*128,d0
-				move.l	d0,oldy
+				move.l	d0,Obj_OldY_w
 				move.l	d0,d1
 				jsr		GetRand
 
@@ -284,9 +284,9 @@ Plr1_Shot:
 				sub.w	#$800,d0
 				ext.l	d0
 				add.l	d0,d1
-				move.l	d1,newy
+				move.l	d1,Obj_NewY_w
 				st		exitfirst
-				clr.b	Obj_WallBounce_b
+				sf		Obj_WallBounce_b
 				move.w	#0,Obj_ExtLen_w
 				move.b	#$ff,Obj_AwayFromWall_b
 				move.w	#%0000010000000000,wallflags
@@ -302,18 +302,18 @@ Plr1_Shot:
 
 				tst.b	hitwall
 				bne.s	.nofurther
-				move.w	newx,d0
-				sub.w	oldx,d0
-				add.w	d0,oldx
-				add.w	d0,newx
-				move.w	newz,d0
-				sub.w	oldz,d0
-				add.w	d0,oldz
-				add.w	d0,newz
-				move.l	newy,d0
-				sub.l	oldy,d0
-				add.l	d0,oldy
-				add.l	d0,newy
+				move.w	Obj_NewX_w,d0
+				sub.w	Obj_OldX_w,d0
+				add.w	d0,Obj_OldX_w
+				add.w	d0,Obj_NewX_w
+				move.w	Obj_NewZ_w,d0
+				sub.w	Obj_OldZ_w,d0
+				add.w	d0,Obj_OldZ_w
+				add.w	d0,Obj_NewZ_w
+				move.l	Obj_NewY_w,d0
+				sub.l	Obj_OldY_w,d0
+				add.l	d0,Obj_OldY_w
+				add.l	d0,Obj_NewY_w
 				bra		.again
 
 .nofurther:
@@ -334,8 +334,8 @@ Plr1_Shot:
 .foundonefree2:
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
-				move.w	newx,(a1,d2.w*8)
-				move.w	newz,4(a1,d2.w*8)
+				move.w	Obj_NewX_w,(a1,d2.w*8)
+				move.w	Obj_NewZ_w,4(a1,d2.w*8)
 				move.b	#1,ShotT_Status_b(a0)
 				move.w	#0,ShotT_Gravity_w(a0)
 				move.b	BULTYPE+1,ShotT_Size_b(a0)
@@ -490,8 +490,8 @@ Plr2_Shot:
 				move.w	#300,Aud_NoiseVol_w
 				move.w	#100,Plr2_NoiseVol_w
 				move.w	#12,Aud_SampleNum_w
-				clr.b	notifplaying
-				move.b	#$fb,IDNUM
+				sf		notifplaying
+				move.b	#$fb,Aud_IDNum_w
 				jsr		MakeSomeNoise
 
 				rts
@@ -520,10 +520,10 @@ Plr2_Shot:
 				move.w	#300,Aud_NoiseVol_w
 				move.w	ShootT_SFX_w(a6),Aud_SampleNum_w
 				move.b	#2,Aud_ChannelPick_b
-				clr.b	notifplaying
+				sf		notifplaying
 
 				movem.l	d0/a0/d5/d6/d7/a6/a4/a5,-(a7)
-				move.b	#$fb,IDNUM
+				move.b	#$fb,Aud_IDNum_w
 				jsr		MakeSomeNoise
 
 				movem.l	(a7)+,d0/a0/d5/d6/d7/a6/a4/a5
@@ -596,19 +596,19 @@ Plr2_Shot:
 				beq		plr2_FireProjectile
 
 				move.w	#0,bulyspd
-				move.w	Plr2_XOff_l,oldx
-				move.w	Plr2_ZOff_l,oldz
+				move.w	Plr2_XOff_l,Obj_OldX_w
+				move.w	Plr2_ZOff_l,Obj_OldZ_w
 				move.w	Plr2_SinVal_w,d0
 				asr.w	#7,d0
-				add.w	oldx,d0
-				move.w	d0,newx
+				add.w	Obj_OldX_w,d0
+				move.w	d0,Obj_NewX_w
 				move.w	Plr2_CosVal_w,d0
 				asr.w	#7,d0
-				add.w	oldz,d0
-				move.w	d0,newz
+				add.w	Obj_OldZ_w,d0
+				move.w	d0,Obj_NewZ_w
 				move.l	Plr2_YOff_l,d0
 				add.l	#10*128,d0
-				move.l	d0,oldy
+				move.l	d0,Obj_OldY_w
 				move.l	d0,d1
 				jsr		GetRand
 
@@ -616,9 +616,9 @@ Plr2_Shot:
 				sub.w	#$800,d0
 				ext.l	d0
 				add.l	d0,d1
-				move.l	d1,newy
+				move.l	d1,Obj_NewY_w
 				st		exitfirst
-				clr.b	Obj_WallBounce_b
+				sf		Obj_WallBounce_b
 				move.w	#0,Obj_ExtLen_w
 				move.b	#$ff,Obj_AwayFromWall_b
 				move.w	#%0000010000000000,wallflags
@@ -634,18 +634,18 @@ Plr2_Shot:
 				tst.b	hitwall
 				bne.s	.nofurther
 
-				move.w	newx,d0
-				sub.w	oldx,d0
-				add.w	d0,oldx
-				add.w	d0,newx
-				move.w	newz,d0
-				sub.w	oldz,d0
-				add.w	d0,oldz
-				add.w	d0,newz
-				move.l	newy,d0
-				sub.l	oldy,d0
-				add.l	d0,oldy
-				add.l	d0,newy
+				move.w	Obj_NewX_w,d0
+				sub.w	Obj_OldX_w,d0
+				add.w	d0,Obj_OldX_w
+				add.w	d0,Obj_NewX_w
+				move.w	Obj_NewZ_w,d0
+				sub.w	Obj_OldZ_w,d0
+				add.w	d0,Obj_OldZ_w
+				add.w	d0,Obj_NewZ_w
+				move.l	Obj_NewY_w,d0
+				sub.l	Obj_OldY_w,d0
+				add.l	d0,Obj_OldY_w
+				add.l	d0,Obj_NewY_w
 				bra		.again
 
 .nofurther:
@@ -666,8 +666,8 @@ Plr2_Shot:
 .foundonefree2:
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
-				move.w	newx,(a1,d2.w*8)
-				move.w	newz,4(a1,d2.w*8)
+				move.w	Obj_NewX_w,(a1,d2.w*8)
+				move.w	Obj_NewZ_w,4(a1,d2.w*8)
 				move.b	#1,ShotT_Status_b(a0)
 				move.w	#0,ShotT_Gravity_w(a0)
 				move.b	BULTYPE+1,ShotT_Size_b(a0)
@@ -846,32 +846,32 @@ plr1_HitscanSucceded:
 
 plr1_HitscanFailed:
 
-				move.w	Plr1_XOff_l,oldx
-				move.w	Plr1_ZOff_l,oldz
+				move.w	Plr1_XOff_l,Obj_OldX_w
+				move.w	Plr1_ZOff_l,Obj_OldZ_w
 				move.l	Plr1_YOff_l,d1
 				add.l	#10*128,d1
-				move.l	d1,oldy
+				move.l	d1,Obj_OldY_w
 
 				move.w	(a4),d0
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),d2
-				sub.w	oldx,d2
+				sub.w	Obj_OldX_w,d2
 				asr.w	#1,d2
-				add.w	oldx,d2
-				move.w	d2,newx
+				add.w	Obj_OldX_w,d2
+				move.w	d2,Obj_NewX_w
 				move.w	4(a1,d0.w*8),d2
-				sub.w	oldz,d2
+				sub.w	Obj_OldZ_w,d2
 				asr.w	#1,d2
-				add.w	oldz,d2
-				move.w	d2,newz
+				add.w	Obj_OldZ_w,d2
+				move.w	d2,Obj_NewZ_w
 
 				move.w	4(a0),d2
 				ext.l	d2
 				asl.l	#7,d2
-				move.l	d2,newy
+				move.l	d2,Obj_NewY_w
 
 				st		exitfirst
-				clr.b	Obj_WallBounce_b
+				sf		Obj_WallBounce_b
 				move.w	#0,Obj_ExtLen_w
 				move.b	#$ff,Obj_AwayFromWall_b
 				move.w	#%0000010000000000,wallflags
@@ -886,18 +886,18 @@ plr1_HitscanFailed:
 				jsr		MoveObject
 				tst.b	hitwall
 				bne.s	.nofurther
-				move.w	newx,d1
-				sub.w	oldx,d1
-				add.w	d1,oldx
-				add.w	d1,newx
-				move.w	newz,d1
-				sub.w	oldz,d1
-				add.w	d1,oldz
-				add.w	d1,newz
-				move.l	newy,d1
-				sub.l	oldy,d1
-				add.l	d1,oldy
-				add.l	d1,newy
+				move.w	Obj_NewX_w,d1
+				sub.w	Obj_OldX_w,d1
+				add.w	d1,Obj_OldX_w
+				add.w	d1,Obj_NewX_w
+				move.w	Obj_NewZ_w,d1
+				sub.w	Obj_OldZ_w,d1
+				add.w	d1,Obj_OldZ_w
+				add.w	d1,Obj_NewZ_w
+				move.l	Obj_NewY_w,d1
+				sub.l	Obj_OldY_w,d1
+				add.l	d1,Obj_OldY_w
+				add.l	d1,Obj_NewY_w
 				bra		.again
 
 .nofurther:
@@ -919,8 +919,8 @@ plr1_HitscanFailed:
 				move.b  #OBJ_TYPE_PROJECTILE,ObjT_TypeID_b(a0)
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
-				move.w	newx,(a1,d2.w*8)
-				move.w	newz,4(a1,d2.w*8)
+				move.w	Obj_NewX_w,(a1,d2.w*8)
+				move.w	Obj_NewZ_w,4(a1,d2.w*8)
 				move.b	#1,ShotT_Status_b(a0)
 				move.w	#0,ShotT_Gravity_w(a0)
 				move.b	BULTYPE+1,ShotT_Size_b(a0)
@@ -929,7 +929,7 @@ plr1_HitscanFailed:
 				move.l	Obj_ZonePtr_l,a1
 				move.w  (a1),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
-				move.l	newy,d1
+				move.l	Obj_NewY_w,d1
 				move.l	d1,ShotT_AccYPos_w(a0)
 				asr.l	#7,d1
 				move.w	d1,4(a0)
@@ -988,32 +988,32 @@ plr2_HitscanSucceded:
 				rts
 
 plr2_HitscanFailed:
-				move.w	Plr2_XOff_l,oldx
-				move.w	Plr2_ZOff_l,oldz
+				move.w	Plr2_XOff_l,Obj_OldX_w
+				move.w	Plr2_ZOff_l,Obj_OldZ_w
 				move.l	Plr2_YOff_l,d1
 				add.l	#10*128,d1
-				move.l	d1,oldy
+				move.l	d1,Obj_OldY_w
 
 				move.w	(a4),d0
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a1,d0.w*8),d2
-				sub.w	oldx,d2
+				sub.w	Obj_OldX_w,d2
 				asr.w	#1,d2
-				add.w	oldx,d2
-				move.w	d2,newx
+				add.w	Obj_OldX_w,d2
+				move.w	d2,Obj_NewX_w
 				move.w	4(a1,d0.w*8),d2
-				sub.w	oldz,d2
+				sub.w	Obj_OldZ_w,d2
 				asr.w	#1,d2
-				add.w	oldz,d2
-				move.w	d2,newz
+				add.w	Obj_OldZ_w,d2
+				move.w	d2,Obj_NewZ_w
 
 				move.w	4(a0),d2
 				ext.l	d2
 				asl.l	#7,d2
-				move.l	d2,newy
+				move.l	d2,Obj_NewY_w
 
 				st		exitfirst
-				clr.b	Obj_WallBounce_b
+				sf		Obj_WallBounce_b
 				move.w	#0,Obj_ExtLen_w
 				move.b	#$ff,Obj_AwayFromWall_b
 				move.w	#%0000010000000000,wallflags
@@ -1030,18 +1030,18 @@ plr2_HitscanFailed:
 				tst.b	hitwall
 				bne.s	.nofurther
 
-				move.w	newx,d1
-				sub.w	oldx,d1
-				add.w	d1,oldx
-				add.w	d1,newx
-				move.w	newz,d1
-				sub.w	oldz,d1
-				add.w	d1,oldz
-				add.w	d1,newz
-				move.l	newy,d1
-				sub.l	oldy,d1
-				add.l	d1,oldy
-				add.l	d1,newy
+				move.w	Obj_NewX_w,d1
+				sub.w	Obj_OldX_w,d1
+				add.w	d1,Obj_OldX_w
+				add.w	d1,Obj_NewX_w
+				move.w	Obj_NewZ_w,d1
+				sub.w	Obj_OldZ_w,d1
+				add.w	d1,Obj_OldZ_w
+				add.w	d1,Obj_NewZ_w
+				move.l	Obj_NewY_w,d1
+				sub.l	Obj_OldY_w,d1
+				add.l	d1,Obj_OldY_w
+				add.l	d1,Obj_NewY_w
 				bra		.again
 
 .nofurther:
@@ -1063,8 +1063,8 @@ plr2_HitscanFailed:
 				move.b  #OBJ_TYPE_PROJECTILE,ObjT_TypeID_b(a0)
 				move.l	Lvl_ObjectPointsPtr_l,a1
 				move.w	(a0),d2
-				move.w	newx,(a1,d2.w*8)
-				move.w	newz,4(a1,d2.w*8)
+				move.w	Obj_NewX_w,(a1,d2.w*8)
+				move.w	Obj_NewZ_w,4(a1,d2.w*8)
 				move.b	#1,ShotT_Status_b(a0)
 				move.w	#0,ShotT_Gravity_w(a0)
 				move.b	BULTYPE+1,ShotT_Size_b(a0)
@@ -1073,7 +1073,7 @@ plr2_HitscanFailed:
 				move.l	Obj_ZonePtr_l,a1
 				move.w	(a1),ObjT_ZoneID_w(a0)
 				st		ShotT_Worry_b(a0)
-				move.l	newy,d1
+				move.l	Obj_NewY_w,d1
 				move.l	d1,ShotT_AccYPos_w(a0)
 				asr.l	#7,d1
 				move.w	d1,4(a0)

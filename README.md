@@ -6,7 +6,7 @@ original/compatible tooling.
 
 ## Quickstart
 
-This is the project repository for the game engine. If you just want to play the original game on your Amiga, please download the [Aminet Release](https//aminet.net/package/game/shoot/AB3D2_TKG):
+This is the project repository for the game engine. If you just want to play the original game on your Amiga, please download the [Aminet Release](https://aminet.net/package/game/shoot/AB3D2_TKG):
 
 - Does not depend on any original game disks or WHDL installations.
 - Contains the complete original game with the latest stable binaries from this repository.

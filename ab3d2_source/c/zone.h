@@ -5,16 +5,6 @@
 
 //#define DEBUG_ZONE_ERRATA
 
-#if defined(ZONE_DEBUG)
-    #define dputchar(c) putchar(c)
-    #define dputs(msg) puts(msg)
-    #define dprintf(fmt, ...) printf(fmt, ## __VA_ARGS__)
-#else
-    #define dputchar(c)
-    #define dputs(msg)
-    #define dprintf(fmt, ...)
-#endif
-
 /**
  * @see defs.i
  *
@@ -51,26 +41,42 @@ enum {
  *
  * TODO - we ideally need to tag in here somewhere a flag that represents the visibility
  * based on the current edge determination.
+ *
+ *
  */
 typedef struct {
     WORD pvs_ZoneID;
     WORD pvs_ClipID;
-    WORD pvs_Word2; // TODO figure out what this is
-    WORD pvs_Word3; // TODO figure out what this is
+    WORD pvs_Word2; // TODO figure out what this is.
+    WORD pvs_Word3; // TODO figure out what this is.
 } ASM_ALIGN(sizeof(WORD)) ZPVSRecord;
 
 /**
  * Edge structure. These are stored in a large array loaded from disk and are referenced by
  * ID. Each Zone structure is preceded by a list of 16-bit word indexes into the array, that
  * is accessed by subtracting an offset stored in the Zone structure from the Zone address.
+ *
+ * Note the e_RotNormalX/Z pair are rotated 45 degrees to the cardinal axes and only 6-bit signed.
+ * It seems as if the value is calculated in the editor by applying the rotation first,
+ * then the normalisation. This results in ~28 being the maximum component value rather than 31.
+ *
+ * TODO - The reason for this scaling is that the value is dynamically shifted based on the
+ * object minimum distance to wall scaling factor which is 0, 1 or 2. This results in a value
+ * that is on the range -127 to 127 but lacks precision in the lower bits. It might be better
+ * to recompute the normals at load time from the e_Len using a more precise arithmetic and
+ * using fixed 8 bit signed normals in the range -127 to +127.
+ *
+ * We can account for this by scaling the values down rather than up where they are used
+ * (see Obj_DistToWallTab_vw table in newaliencontrol.s)
+ *
  */
 typedef struct {
-    Vec2W e_Pos;        // X coordinate
-    Vec2W e_Len;        // Length in X direction
-    WORD  e_JoinZoneID; // Zone the edge joins to, or -1 for a solid wall
-    WORD  e_Word_5;     // TODO figure out what this is
-    BYTE  e_Byte_12;    // TODO figure out what this is
-    BYTE  e_Byte_13;    // TODO figure out what this is
+    Vec2W e_Pos;         // X/Z coordinate
+    Vec2W e_Len;         // X/Z component lengths
+    WORD  e_JoinZoneID;  // Zone the edge joins to, or -1 for a solid wall
+    WORD  e_Length;      // Precomputed wall length
+    BYTE  e_RotNormalX;  // X component of pre-rotated unit normal
+    BYTE  e_RotNormalZ;  // Z component of pre-rotated unit normal
     UWORD e_Flags;
 } ASM_ALIGN(sizeof(WORD)) ZEdge;
 
@@ -92,7 +98,8 @@ typedef struct {
     WORD  z_UpperBrightness;          // 24, 2
     WORD  z_ControlPoint;             // 26, 2 really UBYTE[2]
     WORD  z_BackSFXMask;              // 28, 2 Originally long but always accessed as word
-    WORD  z_Unused;                   // 30, 2 so this is the unused half
+    UBYTE z_TaggedVisible;            // 30, 1 Set at runtime during PVS traversal
+    UBYTE z_Reserved;                 // 31, 1 Unused for now
     WORD  z_EdgeListOffset;           // 32, 2
     WORD  z_Points;                   // 34, 2
     UBYTE z_DrawBackdrop;             // 36, 1
@@ -182,7 +189,7 @@ enum {
  * ZONE_ID_LIST_END pair.
  *
  */
-void Zone_ApplyPVSErrata(REG(a0, WORD const* zonePVSErrataPtr));
+void Zone_ApplyErrata(void);
 void Zone_InitEdgePVS(void);
 void Zone_FreeEdgePVS(void);
 
@@ -234,6 +241,6 @@ typedef enum {
  * Determines the possible crossing between any two zones, based on their heights.
  * Does not require that the zones are joined as only their relative heights are compared.
  */
-ZoneCrossing Zone_DetermineCrossing(Zone const* from, Zone const* to);
+ZoneCrossing Zone_DetermineCrossing(Zone const* from, Zone const* to) __attribute__((pure));
 
 #endif // ZONE_H

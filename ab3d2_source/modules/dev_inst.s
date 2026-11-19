@@ -56,7 +56,7 @@ dev_FPSIntAvg_w:			ds.w	1
 
 dev_FPSFracAvg_w:			ds.w	1
 dev_FPSLimit_w:				ds.w	1
-dev_Reserved1_w:			ds.w	1
+dev_Reserved1_w:			ds.w	1	; Divisions
 
 dev_Reserved2_w:			ds.w	1
 dev_Reserved3_w:			ds.w	1
@@ -275,6 +275,12 @@ Dev_PrintStats:
 				move.l		#24,d0
 				bsr			Dev_PrintF
 
+				; Divisions
+				lea			dev_Reserved2_w,a1
+				lea			.dev_ss_divs_vb,a0
+				move.l		#40,d0
+				bsr			Dev_PrintF
+
 
 				; Shaded walls
 				;lea			dev_VisibleShadedWalls_w,a1
@@ -392,6 +398,8 @@ Dev_PrintStats:
  				dc.b		"off",0
 .dev_bool_on_vb:
 				dc.b		"on",0
+.dev_ss_divs_vb:
+				dc.b		"ND:%3d",0
 
 .dev_ss_door_mask_vb:
 				dc.b "DM: %04X",0
@@ -446,14 +454,12 @@ Dev_DrawGraph:
 				; Now draw it...
 				move.l	Vid_FastBufferPtr_l,a0
 
-				; In fullscreen, we need to make a small adjustment
-				IFNE	FS_HEIGHT_C2P_DIFF
-				moveq	#FS_HEIGHT_C2P_DIFF,d2
-				and.b	Vid_FullScreen_b,d2
-				ENDC
-
 				move.w	Vid_BottomY_w,d0
-				sub.w	d2,d0
+				tst.b	Vid_FullScreen_b
+				beq.s	.done_bottom
+
+				move.w	Vid_FullscreenRenderHeight_w,d0
+.done_bottom:
 
 				sub.w	Vid_LetterBoxMarginHeight_w,d0
 				mulu.w	#SCREEN_WIDTH,d0

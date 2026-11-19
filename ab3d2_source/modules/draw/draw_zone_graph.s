@@ -53,7 +53,7 @@ Draw_Zone_Graph:
 				DEV_CHECK_SET SKIP_EDGE_PVS,.no_edge_pvs
 
 				; 0xABADCAFE - Quick Hack version of edge vis. If the zone is not tagged visible, skip
-				tst.w   ZoneT_Unused_w(a2)
+				tst.b   ZoneT_TaggedVisible_b(a2)
 				bne		.no_edge_pvs
 
 				DEV_ZDBG ZDbg_SkipEdge
@@ -205,7 +205,7 @@ Draw_Zone_Graph:
 				; Room does not have an upper zone
 .lower_zone_only:
 				move.l	Draw_CurrentZonePtr_l,a0
-				clr.b	Draw_DoUpper_b
+				sf	Draw_DoUpper_b
 				move.l	#CurrentPointBrights_vl,Draw_PointBrightsPtr_l
 
 				move.l	draw_BackupRoomPtr_l,a1
@@ -238,7 +238,7 @@ Draw_Zone_Graph:
 .lower_zone_first:
 
 				move.l	Draw_CurrentZonePtr_l,a0
-				clr.b	Draw_DoUpper_b
+				sf	Draw_DoUpper_b
 				move.l	#CurrentPointBrights_vl,Draw_PointBrightsPtr_l
 				move.l	draw_BackupRoomPtr_l,a1
 				move.l	ZoneT_Roof_l(a1),d0
@@ -377,7 +377,7 @@ draw_RenderCurrentZone:
 .itswater:
 				move.w	#2,SMALLIT
 				move.w	#3,d0
-				clr.b	draw_UseGouraudFlats_b
+				sf	draw_UseGouraudFlats_b
 				st		draw_UseWater_b
 				jsr		Draw_Flats
 				bra		.draw_loop
@@ -418,7 +418,7 @@ draw_RenderCurrentZone:
 ;				movem.l	(a7)+,a0/d0
 
 				;* 1,2 = floor/roof
-				clr.b	draw_UseWater_b
+				sf	draw_UseWater_b
 				move.b	draw_GouraudFlatsSelected_b,draw_UseGouraudFlats_b
 				jsr		Draw_Flats
 
@@ -431,7 +431,7 @@ draw_RenderCurrentZone:
 				bra		.draw_loop
 
 .itsawall:
-;				; clr.b	wall_SeeThrough_b
+;				; sf	wall_SeeThrough_b
 ;				; move.l #stripbuffer,a1
 				jsr		Draw_Wall
 				bra		.draw_loop

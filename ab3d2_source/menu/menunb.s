@@ -493,19 +493,19 @@ mnu_waitmenu:;out: d0=Selection number
 
 				move.b	forward_key,d7
 				move.b	(a5,d7.w),d0
-				clr.b   (a5,d7.w)
+				sf	   (a5,d7.w)
 				tst.b   d0
 				bne		.up
 
 				move.b	backward_key,d7
 				move.b	(a5,d7.w),d0
-				clr.b   (a5,d7.w)
+				sf	   (a5,d7.w)
 				tst.b   d0
 				bne		.down
 
 				move.b	fire_key,d7
 				move.b	(a5,d7.w),d0
-				clr.b   (a5,d7.w)
+				sf	   (a5,d7.w)
 				tst.b   d0
 				bne		.cd32
 .keys:
@@ -563,13 +563,13 @@ mnu_waitmenu:;out: d0=Selection number
 				moveq.l	#42,d1
 				bra.s	.cpcont
 .cd32:
-				clr.b	Plr1_Keys_b
-				clr.b	Plr1_Path_b
-				clr.b	Plr1_Mouse_b
+				sf		Plr1_Keys_b
+				sf		Plr1_Path_b
+				sf		Plr1_Mouse_b
 				st		Plr1_Joystick_b
-				clr.b	Plr2_Keys_b
-				clr.b	Plr2_Path_b
-				clr.b	Plr2_Mouse_b
+				sf		Plr2_Keys_b
+				sf		Plr2_Path_b
+				sf		Plr2_Mouse_b
 				st		Plr2_Joystick_b
 .quit:
 				moveq.l	#0,d1
@@ -702,7 +702,7 @@ mnu_putslider:;in: d0,d1,d7,a0=Xpos,Ypos,Spread,Slider ptr
 .loop:
 				move.b	#59,(a1)+
 				dbra	d2,.loop
-				clr.b	(a1)
+				sf		(a1)
 				bsr.w	mnu_printxy
 				movem.l	(a7)+,d0-d1/a0
 				add.w	d4,d0

@@ -116,7 +116,7 @@ c2p_ConvertNull:
 				move.l	(a0,d1.w*4),Vid_C2PSetParamsPtr_l
 				move.l	(a1,d1.w*4),Vid_C2PConvertPtr_l
 				st		C2P_NeedsSetParam_b
-				clr.b	C2P_NeedsInit_b
+				sf		C2P_NeedsInit_b
 
 				IFD DEV
 				CALLC	C2P_DebugInit
@@ -139,7 +139,7 @@ c2p_ConvertNull:
 				move.l	Vid_C2PSetParamsPtr_l,a0
 				jsr		(a0)
 
-				clr.b	C2P_NeedsSetParam_b
+				sf		C2P_NeedsSetParam_b
 
 .no_set_param:
 				move.l	Vid_C2PConvertPtr_l,a0

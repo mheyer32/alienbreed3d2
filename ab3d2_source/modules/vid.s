@@ -47,13 +47,13 @@ VID_BRIGHT_ADJ_MAX	EQU	5120
 ; a5 contains keyboard state. No regs clobbered.
 ;
 Vid_CheckSettingsAdjust:
-				clr.b	Vid_UpdatePalette_b
+				sf		Vid_UpdatePalette_b
 ; Brightness offset (black point)
 .dec_bright_offset:
 				tst.b	RAWKEY_NUM_1(a5)
 				beq.s	.res_bright_offset
 
-				clr.b	RAWKEY_NUM_1(a5)
+				sf		RAWKEY_NUM_1(a5)
 
 				cmpi.w	#VID_BRIGHT_ADJ_MIN,Vid_BrightnessOffset_w
 				ble		.skip_update_palette
@@ -65,7 +65,7 @@ Vid_CheckSettingsAdjust:
 				tst.b	RAWKEY_NUM_2(a5)
 				beq.s	.inc_bright_offset
 
-				clr.b	RAWKEY_NUM_2(a5)
+				sf		RAWKEY_NUM_2(a5)
 				clr.w	Vid_BrightnessOffset_w
 				bra		.update_palette
 
@@ -73,7 +73,7 @@ Vid_CheckSettingsAdjust:
 				tst.b	RAWKEY_NUM_3(a5)
 				beq.s	.dec_contrast_adjust
 
-				clr.b	RAWKEY_NUM_3(a5)
+				sf		RAWKEY_NUM_3(a5)
 				cmpi.w	#VID_BRIGHT_ADJ_MAX,Vid_BrightnessOffset_w
 				bge		.skip_update_palette
 
@@ -85,7 +85,7 @@ Vid_CheckSettingsAdjust:
 				tst.b	RAWKEY_NUM_4(a5)
 				beq		.res_contrast_adjust
 
-				clr.b	RAWKEY_NUM_4(a5)
+				sf		RAWKEY_NUM_4(a5)
 				cmpi.w	#VID_CONTRAST_ADJ_MIN,Vid_ContrastAdjust_w
 
 				ble		.skip_update_palette
@@ -97,7 +97,7 @@ Vid_CheckSettingsAdjust:
 				tst.b	RAWKEY_NUM_5(a5)
 				beq.s	.inc_contrast_adjust
 
-				clr.b	RAWKEY_NUM_5(a5)
+				sf		RAWKEY_NUM_5(a5)
 				move.w	#VID_CONTRAST_ADJ_DEF,Vid_ContrastAdjust_w
 				bra		.update_palette
 
@@ -105,7 +105,7 @@ Vid_CheckSettingsAdjust:
 				tst.b	RAWKEY_NUM_6(a5)
 				beq.s	.dec_gamma
 
-				clr.b	RAWKEY_NUM_6(a5)
+				sf		RAWKEY_NUM_6(a5)
 
 				cmpi.w	#VID_CONTRAST_ADJ_MAX,Vid_ContrastAdjust_w
 				bge		.skip_update_palette
@@ -118,7 +118,7 @@ Vid_CheckSettingsAdjust:
 				tst.b	RAWKEY_NUM_7(a5)
 				beq.s	.res_gamma
 
-				clr.b	RAWKEY_NUM_7(a5)
+				sf		RAWKEY_NUM_7(a5)
 
 				tst.b	Vid_GammaLevel_b
 				beq		.skip_update_palette
@@ -130,15 +130,15 @@ Vid_CheckSettingsAdjust:
 				tst.b	RAWKEY_NUM_8(a5)
 				beq.s	.inc_gamma
 
-				clr.b	RAWKEY_NUM_8(a5)
-				clr.b	Vid_GammaLevel_b
+				sf		RAWKEY_NUM_8(a5)
+				sf		Vid_GammaLevel_b
 				bra.s	.update_palette
 
 .inc_gamma:
 				tst.b	RAWKEY_NUM_9(a5)
 				beq		.skip_update_palette
 
-				clr.b	RAWKEY_NUM_9(a5)
+				sf		RAWKEY_NUM_9(a5)
 				cmpi.b	#8,Vid_GammaLevel_b
 				bge.s	.skip_update_palette
 

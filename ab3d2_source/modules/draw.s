@@ -20,28 +20,28 @@ gunny_b:		dc.b	0
 				align 4
 
 Draw_Crosshair:
-                ; Get the pen
-                clr.l   d0
+				; Get the pen
+				clr.l   d0
 				move.b  Prefs_CrossHairColour_b,d0
 				and.b   #7,d0 ; paranoia
 				move.l  #Draw_CrosshairPens_vb,a1
 				add.w   d0,a1
 				tst.b   (a1)
-                beq     .done
+				beq     .done
 
 
 				move.l	Vid_FastBufferPtr_l,a0
 				add.w	Vid_CentreX_w,a0
 				move.w	Vid_BottomY_w,d0
 				muls.w	#SCREEN_WIDTH/2,d0
-***************************************************************
+;***************************************************************
 ;dirty hack for fullscreen to allow the crosshair to match 2/3 screen position while looking for a mor robust solution.
-***************************************************************
+;***************************************************************
 				tst.b	Vid_FullScreen_b
 				beq.s	.small
 
 				move.w	 STOPOFFSET,d1
-                ble.s   .above
+				ble.s   .above
 
 				muls.w  #(256/9),d1
 				asr.l   #8,d1
@@ -94,3 +94,5 @@ Draw_CrosshairPens_vb:
 				dc.b 250 ; intense red
 				dc.b 133 ; ice blue
 				dc.b  69 ; intense blue
+
+

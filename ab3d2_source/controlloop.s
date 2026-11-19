@@ -137,17 +137,17 @@ game_DoneMenu:
 
 				FILTER
 
-				clr.b	Game_FinishedLevel_b
+				sf		Game_FinishedLevel_b
 				clr.w	Plr1_SnapAngPos_w
 				clr.w	Plr2_SnapAngPos_w
 				clr.w	Plr1_AngPos_w
 				clr.w	Plr2_AngPos_w
-				clr.b	Plr1_GunSelected_b
-				clr.b	Plr2_GunSelected_b
+				sf		Plr1_GunSelected_b
+				sf		Plr2_GunSelected_b
 
-***************************
-				clr.b	AI_NoEnemies_b
-***************************
+;***************************
+				sf		AI_NoEnemies_b
+;***************************
 
 				move.l	#Plr_Health_w,a0
 				move.l	#Plr_Shield_w,a1
@@ -308,8 +308,7 @@ SETPLAYERS:
 				; Optional files - floor tile override and level properties
 				move.b	d0,Lvl_FloorFilenameX_vb
 				move.b	d0,Lvl_WallFilenameX_vb
-				move.b	d0,Lvl_ModPropsFilenameX_vb
-				move.b	d0,Lvl_ErrataFilenameX_vb
+				move.b	d0,LMod_PropertiesFileX
 
 				cmp.b	#PLR_SLAVE,Plr_MultiplayerType_b
 				beq		Plr_InitSlave
@@ -320,19 +319,19 @@ onepla:
 				rts
 
 Plr_InitMaster:
-				clr.b	AI_NoEnemies_b
+				sf		AI_NoEnemies_b
 				move.w	Game_LevelNumber_w,d0
-				jsr		SENDFIRST
+				jsr		Ser_SendAndReceiveLong
 
 				move.w	Rand1,d0
-				jsr		SENDFIRST
+				jsr		Ser_SendAndReceiveLong
 
 				bsr		TWOPLAYER
 				rts
 
 Plr_InitSlave:
-				clr.b	AI_NoEnemies_b
-				jsr		RECFIRST
+				sf		AI_NoEnemies_b
+				jsr		Ser_ReceiveAndSendLong
 				move.w	d0,Game_LevelNumber_w
 				add.b	#'a',d0
 				move.b	d0,Lvl_BinFilenameX_vb
@@ -341,7 +340,7 @@ Plr_InitSlave:
 				move.b	d0,Lvl_MapFilenameX_vb
 				move.b	d0,Lvl_FlyMapFilenameX_vb
 
-				jsr		RECFIRST
+				jsr		Ser_ReceiveAndSendLong
 				move.w	d0,Rand1
 				bsr		TWOPLAYER
 
@@ -1126,7 +1125,7 @@ game_LoadPosition:
 				ENDR
 
 				move.l  #Plr_Health_w,a0
-				CALLC   Game_ApplyInventoryLimits
+				CALLC   GMod_RawApplyInventoryLimits
 
 				move.w	Game_LevelCounter_w,d0
 				move.l	#mnu_CURRENTLEVELLINE,a1

@@ -626,9 +626,9 @@ Anim_ExplodeIntoBits:
 				move.l	Lvl_ObjectPointsPtr_l,a2
 				move.w	(a5),d3
 				lea		(a2,d3.w*8),a2
-				move.w	newx,d0
+				move.w	Obj_NewX_w,d0
 				move.w	d0,(a2)
-				move.w	newz,d0
+				move.w	Obj_NewZ_w,d0
 				move.w	d0,4(a2)
 				move.b	#2,16(a2)
 				jsr		GetRand
@@ -675,7 +675,7 @@ Anim_ExplodeIntoBits:
 ; move.w #40,ShotT_Gravity_w(a5)
 				move.w	#0,ShotT_Flags_w(a5)
 				move.w	#0,ShotT_Lifetime_w(a5)
-				clr.b	ShotT_Status_b(a5)
+				sf		ShotT_Status_b(a5)
 				move.b	ShotT_InUpperZone_b(a0),ShotT_InUpperZone_b(a5)
 				st		ShotT_Worry_b(a5)
 				adda.w	#64,a5
@@ -745,7 +745,7 @@ BACKSFX:
 				move.l	GLF_DatabasePtr_l,a0
 				add.l	#GLFT_AmbientSFX_l,a0
 				move.w	(a0,d0.w*2),Aud_SampleNum_w
-				move.w	#$fff0,IDNUM
+				move.w	#$fff0,Aud_IDNum_w
 				st.b	notifplaying
 				move.l	#0,Aud_NoiseX_w
 				move.b	#0,PlayEcho
@@ -762,15 +762,26 @@ BACKSFX:
 
 
 objmoveanim:
-                move.w  Plr1_Zone_w,d0
-				move.l	Plr1_ZonePtr_l,a0
-				move.w	(a0),Plr1_Zone_w
+                ;move.w  Plr1_Zone_w,d0
+				;move.l	Plr1_ZonePtr_l,a0
+				;move.w	(a0),Plr1_Zone_w
 
+				;cmp.w   Plr1_Zone_w,d0
+                ;beq.s   .not_changed
+
+				;SET_MEM_BIT	GAME_EVENTBIT_ZONE_CHANGE,Game_ProgressSignal_l
+
+				move.l  Plr1_ZonePtr_l,a0
+				move.w  (a0),d0
 				cmp.w   Plr1_Zone_w,d0
-                beq.s   .not_changed
+				beq.s   .not_changed
 
-                SET_MEM_BIT	GAME_EVENTBIT_ZONE_CHANGE,Game_ProgressSignal_l
+				; Zone changed. Only set the event bit if this is the first visit.
+				move.w  d0,Plr1_Zone_w
+				tas     (Zone_Visited_vb,d0.w) ; better hope this is in fast ram.
+				bne.s   .not_changed
 
+				SET_MEM_BIT GAME_EVENTBIT_ZONE_CHANGE,Game_ProgressSignal_l
 .not_changed:
 				move.l	Plr2_ZonePtr_l,a0
 				move.w	(a0),Plr2_Zone_w
@@ -864,41 +875,23 @@ okzone:
 
 				bra.s	morezones
 
-				rts
+				rts		; unreachable?
 
-LiftRoutine:
-				move.w	#-1,anim_CurrentLiftable_w
-				move.l	Lvl_LiftDataPtr_l,a0
-				move.l	#anim_LiftHeightTable_vw,a6
 
-doalift:
-				add.w	#1,anim_CurrentLiftable_w
-				move.w	(a0)+,d0						; 0 bottom of lift movement
-				cmp.w	#999,d0
-				bne		notallliftsdone
+next_liftable:	; common for lift and door
+				; a0 points to liftable data
+				move.w	(a0)+,d1						; 2: ZLiftableT_Top_w
+				move.w	(a0)+,anim_OpeningSpeed_w		; 4: ZLiftableT_OpeningSpeed_w
+				move.w	(a0)+,anim_ClosingSpeed_w		; 6: ZLiftableT_ClosingSpeed_w
+				move.w	(a0)+,anim_OpenDuration_w		; 8: ZLiftableT_OpenDuration_w
+				move.w	(a0)+,anim_OpeningSoundFX_w		; 10: ZLiftableT_OpeningSoundFX_w
+				move.w	(a0)+,anim_ClosingSoundFX_w		; 12: ZLiftableT_ClosingSoundFX_w
+				move.w	(a0)+,anim_OpenedSoundFX_w		; 14: ZLiftableT_OpenedSoundFX_w
+				move.w	(a0)+,anim_ClosedSoundFX_w		; 16: ZLiftableT_ClosedSoundFX_w
 
-				move.w	#999,(a6)
-				move.w	#0,anim_LiftOnlyLocks_w
-				bsr		DoWaterAnims
-
-				rts
-
-notallliftsdone:
-				move.w	(a0)+,d1						; 2 top of lift movement.
-				move.w	(a0)+,anim_OpeningSpeed_w		; 4
-				neg.w	anim_OpeningSpeed_w
-				move.w	(a0)+,anim_ClosingSpeed_w		; 6
-				move.w	(a0)+,anim_OpenDuration_w		; 8
-				move.w	(a0)+,anim_OpeningSoundFX_w		; 10
-				move.w	(a0)+,anim_ClosingSoundFX_w		; 12
-				move.w	(a0)+,anim_OpenedSoundFX_w		; 14
-				move.w	(a0)+,anim_ClosedSoundFX_w		; 16
-				subq.w	#1,anim_OpeningSoundFX_w
-				subq.w	#1,anim_ClosingSoundFX_w
-				subq.w	#1,anim_OpenedSoundFX_w
-				subq.w	#1,anim_ClosedSoundFX_w
-				move.w	(a0)+,d2						; 18
-				move.w	(a0)+,d3						; 20
+				; Determine sound location - TODO - working out of this could be skipped would save a few
+				move.w	(a0)+,d2						; 18: ZLiftableT_SoundOriginX_w
+				move.w	(a0)+,d3						; 20: ZLiftableT_SoundOriginZ_w
 				sub.w	Plr1_TmpXOff_l,d2
 				sub.w	Plr1_TmpZOff_l,d3
 				move.w	Vis_CosVal_w,d4
@@ -917,10 +910,32 @@ notallliftsdone:
 				add.l	d4,d4
 				swap	d4
 				move.w	d4,Aud_NoiseZ_w
-				move.w	(a0),d3
+				rts
+
+LiftRoutine:
+				move.w	#-1,anim_CurrentLiftable_w
+				move.l	Lvl_LiftDataPtr_l,a0
+				move.l	#anim_LiftHeightTable_vw,a6
+
+check_lift_list_end:
+				add.w	#1,anim_CurrentLiftable_w
+				move.w	(a0)+,d0						; 0: ZLiftableT_Bottom_w
+				cmp.w	#END_OF_LIFTABLE_LIST,d0
+				bne		next_lift
+
+				move.w	#END_OF_LIFTABLE_LIST,(a6)
+				move.w	#0,anim_LiftOnlyLocks_w
+				bsr		DoWaterAnims
+
+				rts
+
+next_lift:
+				bsr next_liftable
+
+				move.w	(a0),d3							; 22: ZLiftableT_EndOfTravel_w
 				move.w	d3,(a6)+
-				move.w	2(a0),d2
-				move.w	8(a0),d7
+				move.w	2(a0),d2						; 24: ZLiftableT_Word12_w
+				move.w	8(a0),d7						; 30: ZLiftableT_ZoneID_w
 				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d7.w*4),a1
 				move.b	ZoneT_Echo_b(a1),PlayEcho
@@ -941,8 +956,8 @@ notallliftsdone:
 				blt.s	.nonoise3
 
 				move.b	#1,Aud_ChannelPick_b
-				clr.b	notifplaying
-				move.w	#$fffd,IDNUM
+				sf		notifplaying
+				move.w	#$fffd,Aud_IDNum_w
 
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
 				jsr		MakeSomeNoise
@@ -967,8 +982,8 @@ notallliftsdone:
 				blt.s	.nonoise
 
 				move.b	#1,Aud_ChannelPick_b
-				clr.b	notifplaying
-				move.w	#$fffd,IDNUM
+				sf		notifplaying
+				move.w	#$fffd,Aud_IDNum_w
 
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
 				jsr		MakeSomeNoise
@@ -982,11 +997,11 @@ notallliftsdone:
 				sub.w	d3,d0
 				cmp.w	#15*16,d0
 				slt		d6
-				move.w	d3,(a0)+
+				move.w	d3,(a0)+				; 22: LiftableT_Word11_w
 				move.l	a0,a5
-				move.w	d2,(a0)+
+				move.w	d2,(a0)+				; 24: ZLiftableT_Word12_w
 				move.w	d2,d7
-				move.l	(a0)+,a1
+				move.l	(a0)+,a1				; 26 ZLiftableT_GraphicsPtrOffset_l
 				add.l	Lvl_GraphicsPtr_l,a1
 				asr.w	#2,d3
 				move.w	d3,d0
@@ -994,9 +1009,14 @@ notallliftsdone:
 				move.w	d0,2(a1)
 				move.w	d3,d0
 
-				ext.l	d3	; Safety - sign extend before shift
+				IFD OPT060
+				muls	#256,d3
+				ELSE
+				ext.l	d3
 				asl.l	#8,d3
-				move.w	(a0)+,d5
+				ENDC
+
+				move.w	(a0)+,d5				; 30: ZLiftableT_ZoneID_w
 				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d5.w*4),a1
 				move.w	(a1),d5
@@ -1018,7 +1038,8 @@ notallliftsdone:
 				move.w	anim_FloorMoveSpeed_w,Plr2_FloorSpd_w
 
 .nosetfloorspd2:
-				move.w	(a0)+,d2				; conditions
+				; ingored?
+				move.w	(a0)+,d2				; 32: ZLiftableT_Word16_w
 ; and.w Conditions,d2
 ; cmp.w -2(a0),d2
 				move.w	anim_CurrentLiftable_w,d2
@@ -1026,23 +1047,24 @@ notallliftsdone:
 				btst	d2,d5
 				beq.s	.satisfied
 
-				move.w	(a0)+,d5
+				; ignored?
+				move.w	(a0)+,d5				; 34: ZLiftableT_RaiseCondition_b, ZLiftableT_LowerCondition_b
 
 .dothesimplething:
 				move.l	Lvl_ZoneEdgePtr_l,a3
 
 .simplecheck:
-				move.w	(a0)+,d5
+				move.w	(a0)+,d5				; (36) 0: ZLiftableWallT_EdgeID_w
 				blt		nomoreliftwalls
 
 				asl.w	#4,d5
 				lea		(a3,d5.w),a4
-				move.w	#0,14(a4)
-				move.l	(a0)+,a1
+				move.w	#0,EdgeT_Flags_w(a4)
+				move.l	(a0)+,a1				; 2: ZLiftableWallT_GraphicsOffset_l
 				add.l	Lvl_GraphicsPtr_l,a1
-				move.l	(a0)+,a2
+				move.l	(a0)+,a2				; 6: ZLiftableWallT_Long_l
 				adda.w	d0,a2
-				move.w	a2,12(a1);was move.l	a2,10(a1)
+				move.w	a2,12(a1)				; was move.l	a2,10(a1) ;
 				move.l	d3,20(a1)
 				bra.s	.simplecheck
 
@@ -1083,7 +1105,7 @@ liftwalls:
 
 				move.b	#1,Aud_ChannelPick_b
 				st		notifplaying
-				move.w	#$fffe,IDNUM
+				move.w	#$fffe,Aud_IDNum_w
 
 				movem.l	a0/a3/a4/d0/d1/d2/d3/d6/d7,-(a7)
 				jsr		MakeSomeNoise
@@ -1100,7 +1122,7 @@ liftwalls:
 				bra		liftwalls
 
 nomoreliftwalls:
-				bra		doalift
+				bra		check_lift_list_end
 
 				rts
 
@@ -1239,63 +1261,28 @@ DoorRoutine:
 				move.l	Lvl_DoorDataPtr_l,a0
 				move.w	#-1,anim_CurrentLiftable_w
 
-doadoor:
+check_door_list_end:
 				add.w	#1,anim_CurrentLiftable_w      ; Door index
 				move.w	(a0)+,d0				; 0: bottom of door movement
-				cmp.w	#999,d0
-				bne		notalldoorsdone
+				cmp.w	#END_OF_LIFTABLE_LIST,d0
+				bne		next_door
 
-				move.w	#999,(a6)
+				move.w	#END_OF_LIFTABLE_LIST,(a6)
 				move.w	#0,Anim_DoorAndLiftLocks_l
 				rts
 
-				; TODO - The door structures are not uniformly large. I think there is conditionally
-				; included data, including but probably not limited to, the set of adjoining walls that
-				; are raised and lowered with the door.
+next_door:
+				bsr next_liftable
 
-notalldoorsdone:
-				move.w	(a0)+,d1				; 2: top of door movement.
-				move.w	(a0)+,anim_OpeningSpeed_w	; 4:
-				neg.w	anim_OpeningSpeed_w
-				move.w	(a0)+,anim_ClosingSpeed_w	; 6:
-				move.w	(a0)+,anim_OpenDuration_w	; 8:
-				move.w	(a0)+,anim_OpeningSoundFX_w	; 10:
-				move.w	(a0)+,anim_ClosingSoundFX_w	; 12:
-				move.w	(a0)+,anim_OpenedSoundFX_w	; 14:
-				move.w	(a0)+,anim_ClosedSoundFX_w	; 16:
-				subq.w	#1,anim_OpeningSoundFX_w
-				subq.w	#1,anim_ClosingSoundFX_w
-				subq.w	#1,anim_OpenedSoundFX_w
-				subq.w	#1,anim_ClosedSoundFX_w
-				move.w	(a0)+,d2					; 18:
-				move.w	(a0)+,d3					; 20:
-				sub.w	Plr1_TmpXOff_l,d2
-				sub.w	Plr1_TmpZOff_l,d3
-				move.w	Vis_CosVal_w,d4
-				move.w	Vis_SinVal_w,d5
-				muls	d2,d4
-				muls	d3,d5
-				sub.l	d5,d4
-				add.l	d4,d4
-				swap	d4
-				move.w	d4,Aud_NoiseX_w
-				move.w	Vis_SinVal_w,d4
-				move.w	Vis_CosVal_w,d5
-				muls	d2,d4
-				muls	d3,d5
-				sub.l	d5,d4
-				add.l	d4,d4
-				swap	d4
-				move.w	d4,Aud_NoiseZ_w
-				move.w	(a0),d3						; 22:
-				move.w	2(a0),d2					; 24:
-				move.w	8(a0),d7					; 30: Zone ID
+				move.w	(a0),d3						; 22: ZLiftableT_EndOfTravel_w
+				move.w	2(a0),d2					; 24: ZLiftableT_Word12_w
+				move.w	8(a0),d7					; 30: ZLiftableT_ZoneID_w
 				move.l	Lvl_ZonePtrsPtr_l,a1
 				move.l	(a1,d7.w*4),a1
 				move.b	ZoneT_Echo_b(a1),PlayEcho
 				muls	Anim_TempFrames_w,d2
 				add.w	d2,d3
-				move.w	2(a0),d2					; 24:
+				move.w	2(a0),d2					; 24: ZLiftableT_Word12_w
 				cmp.w	d3,d0
 				sle		anim_DoorClosed_b
 
@@ -1309,8 +1296,8 @@ notalldoorsdone:
 				blt.s	.nonoise
 
 				move.b	#1,Aud_ChannelPick_b
-				clr.b	notifplaying
-				move.w	#$fffd,IDNUM
+				sf		notifplaying
+				move.w	#$fffd,Aud_IDNum_w
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
 				jsr		MakeSomeNoise
 
@@ -1333,8 +1320,8 @@ nolower:
 				blt.s	.nonoise
 
 				move.b	#1,Aud_ChannelPick_b
-				clr.b	notifplaying
-				move.w	#$fffd,IDNUM
+				sf		notifplaying
+				move.w	#$fffd,Aud_IDNum_w
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
 				jsr		MakeSomeNoise
 
@@ -1344,8 +1331,6 @@ nolower:
 				move.w	d1,d3
 				moveq	#0,d2
 noraise:
-NOTMOVING:
-
 				; Update the door state bitmap for the zone visibility logic
 				; We only care about the fully closed state, anything open/ing has to be
 				; considered see through
@@ -1366,11 +1351,11 @@ NOTMOVING:
 				sub.w	d3,d0
 				cmp.w	#15*16,d0
 				sge		d6
-				move.w	d3,(a0)+					; 22:
+				move.w	d3,(a0)+					; 22: ZLiftableT_EndOfTravel_w
 				move.l	a0,a5
-				move.w	d2,(a0)+					; 24:
+				move.w	d2,(a0)+					; 24: ZLiftableT_Word12_w
 				move.w	d2,d7
-				move.l	(a0)+,a1					; 26:
+				move.l	(a0)+,a1					; 26: ZLiftableT_GraphicsPtrOffset_l
 				add.l	Lvl_GraphicsPtr_l,a1
 				; asr.w	#2,d3
 				; move.w	d3,d0
@@ -1382,12 +1367,15 @@ NOTMOVING:
 				asr.w	#2,d3
 				move.w	d3,d0
 
+				IFD OPT060
 				muls	#256,d3
-				;ext.l	d3		; Safety: Sign extend before shift
-				;asl.l	#8,d3
+				ELSE
+				ext.l	d3		; Safety: Sign extend before shift
+				asl.l	#8,d3
+				ENDC
 
 				move.l	Lvl_ZonePtrsPtr_l,a1
-				move.w	(a0)+,d5					; 30: Zone ID
+				move.w	(a0)+,d5					; 30: ZLiftableT_ZoneID_w
 				move.l	(a1,d5.w*4),a1
 				move.l	d3,6(a1)
 				neg.w	d0
@@ -1409,26 +1397,26 @@ NOTMOVING:
 
 				move.w	#-16,d7
 				move.w	#$8000,d1
-				move.w	(a0)+,d2				; 32:
-				move.w	(a0)+,d5				; 34: Conditions UBYTE[2]
+				move.w	(a0)+,d2				; 32: ZLiftableT_Word16_w
+				move.w	(a0)+,d5				; 34: ZLiftableT_RaiseCondition_b, ZLiftableT_LowerCondition_b
 				bra		backfromtst
 
 NotGoBackUp:
-				move.w	(a0)+,d2				; 32 - bit number?
+				move.w	(a0)+,d2				; 32 - ZLiftableT_Word16_w
 ; and.w Conditions,d2
 				move.w	anim_CurrentLiftable_w,d2
 				move.w	Anim_DoorAndLiftLocks_l,d5
 				btst	d2,d5
 				beq.s	satisfied
 
-				move.w	(a0)+,d5 ; 34 : Conditions UBYTE[2]
+				move.w	(a0)+,d5 ; 34 : ZLiftableT_RaiseCondition_b, ZLiftableT_LowerCondition_b
 
 dothesimplething:
 				move.l	Lvl_ZoneEdgePtr_l,a3
 
 simplecheck:
-                ; List of walls from this point?
-				move.w	(a0)+,d5              ; 36
+                ; List of walls from this point
+				move.w	(a0)+,d5              ; 36: Start of lift walls
 				blt		nomoredoorwalls       ; -1 terminated wall data, else Edge ID
 
 				asl.w	#4,d5                 ; Each edge entry is 16 bytes
@@ -1447,8 +1435,8 @@ simplecheck:
 satisfied:
 				moveq	#0,d4
 				moveq	#0,d5
-				move.b	(a0)+,d5
-				move.b	(a0)+,d4
+				move.b	(a0)+,d5              ; 34: ZLiftableT_RaiseCondition_b,
+				move.b	(a0)+,d4              ; 35: ZLiftableT_LowerCondition_b
 				tst.b	anim_DoorOpen_b
 				bne		tstdoortoclose
 
@@ -1477,8 +1465,8 @@ doorwalls:
 				blt.s	nothinghit
 
 				move.b	#1,Aud_ChannelPick_b
-				clr.b	notifplaying
-				move.w	#$fffd,IDNUM
+				sf		notifplaying
+				move.w	#$fffd,Aud_IDNum_w
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
 				jsr		MakeSomeNoise
 
@@ -1495,7 +1483,7 @@ nothinghit:
 
 nomoredoorwalls:
 				addq	#2,a6
-				bra		doadoor
+				bra		check_door_list_end
 
 				rts
 
@@ -1627,7 +1615,7 @@ backtoend:
 				move.w	#10,Aud_SampleNum_w
 				move.b	#1,Aud_ChannelPick_b
 				st		notifplaying
-				move.w	#$fffc,IDNUM
+				move.w	#$fffc,Aud_IDNum_w
 
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
 				jsr		MakeSomeNoise
@@ -1688,7 +1676,7 @@ p1_SpaceIsPressed:
 				move.w	#10,Aud_SampleNum_w
 				move.b	#1,Aud_ChannelPick_b
 				st		notifplaying
-				move.w	#$fffc,IDNUM
+				move.w	#$fffc,Aud_IDNum_w
 
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
 				jsr		MakeSomeNoise
@@ -1746,7 +1734,7 @@ p2_SpaceIsPressed:
 				move.w	#10,Aud_SampleNum_w
 				move.b	#1,Aud_ChannelPick_b
 				st		notifplaying
-				move.w	#$fffc,IDNUM
+				move.w	#$fffc,Aud_IDNum_w
 				movem.l	a0/a3/d0/d1/d2/d3/d6/d7,-(a7)
 				jsr		MakeSomeNoise
 
@@ -1847,7 +1835,7 @@ JUMPBULLET:
 				bra		doneobj
 
 ;ItsAGasPipe:
-;				clr.b	ShotT_Worry_b(a0)
+;				sf		ShotT_Worry_b(a0)
 ;				move.w	Anim_TempFrames_w,d0
 ;				tst.w	EntT_Timer3_w(a0)
 ;				ble.s	maybeflame
@@ -1882,8 +1870,8 @@ JUMPBULLET:
 ;				move.w	#200,Aud_NoiseVol_w
 ;				move.w	#22,Aud_SampleNum_w
 ;				move.b	#1,Aud_ChannelPick_b
-;				clr.b	notifplaying
-;				move.w	(a0),IDNUM
+;				sf		notifplaying
+;				move.w	(a0),Aud_IDNum_w
 ;				jsr		MakeSomeNoise
 ;
 ;				GETREGS
@@ -1915,7 +1903,7 @@ JUMPBULLET:
 ;				ext.l	d0
 ;				asl.l	#7,d0
 ;				move.l	d0,ShotT_AccYPos_w(a5)
-;				clr.b	ShotT_Status_b(a5)
+;				sf		ShotT_Status_b(a5)
 ;				move.w	#0,ShotT_VelocityY_w(a5)
 ;				move.w	(a0),d0
 ;				move.w	(a5),d1
@@ -2046,7 +2034,7 @@ noworrylife:
 
 				FREE_ENT	a0
 
-				clr.b	ShotT_Status_b(a0)
+				sf		ShotT_Status_b(a0)
 				move.b	#0,ShotT_Anim_b(a0)
 				rts
 
@@ -2173,7 +2161,7 @@ notdoneanim:
 ; swap d0
 				move.w	#200,Aud_NoiseVol_w
 				move.w	d0,Aud_SampleNum_w
-				move.w	d1,IDNUM
+				move.w	d1,Aud_IDNum_w
 
 				SAVEREGS
 
@@ -2185,10 +2173,10 @@ notdoneanim:
 				move.l	BulT_ExplosiveForce_l(a6),d0
 				beq.s	.noexplosion
 
-				move.w	newx,Viewerx
-				move.w	newz,Viewerz
-				move.w	4(a0),Viewery
-				move.b	ShotT_InUpperZone_b(a0),ViewerTop
+				move.w	Obj_NewX_w,Obj_ViewerX_w
+				move.w	Obj_NewZ_w,Obj_ViewerZ_w
+				move.w	4(a0),Obj_ViewerY_w
+				move.b	ShotT_InUpperZone_b(a0),Obj_ViewerInUpperZone_b
 
 				SAVEREGS
 
@@ -2243,7 +2231,7 @@ notdoneanim:
 				move.l	(a1,d1.w*8),Aud_NoiseX_w
 				move.w	#200,Aud_NoiseVol_w
 				move.w	d0,Aud_SampleNum_w
-				move.w	d1,IDNUM
+				move.w	d1,Aud_IDNum_w
 
 				SAVEREGS
 
@@ -2256,10 +2244,10 @@ notdoneanim:
 				move.l	BulT_ExplosiveForce_l(a6),d0
 				beq.s	.noexplosion2
 
-				move.w	4(a0),Viewery
-				move.w	newx,Viewerx
-				move.w	newz,Viewerz
-				move.b	ShotT_InUpperZone_b(a0),ViewerTop
+				move.w	4(a0),Obj_ViewerY_w
+				move.w	Obj_NewX_w,Obj_ViewerX_w
+				move.w	Obj_NewZ_w,Obj_ViewerZ_w
+				move.b	ShotT_InUpperZone_b(a0),Obj_ViewerInUpperZone_b
 
 				SAVEREGS
 
@@ -2273,7 +2261,7 @@ notdoneanim:
 				move.w	(a0),d1
 				lea		(a1,d1.w*8),a1
 				move.l	(a1),d2
-				move.l	d2,oldx
+				move.l	d2,Obj_OldX_w
 				move.l	ShotT_VelocityX_w(a0),d3
 				move.w	d3,d4
 				swap	d3
@@ -2284,9 +2272,9 @@ notdoneanim:
 				clr.w	d3
 				add.l	d4,d3
 				add.l	d3,d2
-				move.l	d2,newx
+				move.l	d2,Obj_NewX_w
 				move.l	4(a1),d2
-				move.l	d2,oldz
+				move.l	d2,Obj_OldZ_w
 				move.l	ShotT_VelocityZ_w(a0),d3
 				move.w	d3,d4
 				swap	d3
@@ -2296,8 +2284,8 @@ notdoneanim:
 				clr.w	d3
 				add.l	d4,d3
 				add.l	d3,d2
-				move.l	d2,newz
-				move.l	ShotT_AccYPos_w(a0),oldy
+				move.l	d2,Obj_NewZ_w
+				move.l	ShotT_AccYPos_w(a0),Obj_OldY_w
 				move.w	ShotT_VelocityY_w(a0),d3
 				muls	Anim_TempFrames_w,d3
 				move.l	BulT_Gravity_l(a6),d5
@@ -2321,25 +2309,25 @@ nograv:
 				add.l	d3,d4
 				move.l	d4,ShotT_AccYPos_w(a0)
 				sub.l	#5*128,d4
-				move.l	d4,newy
+				move.l	d4,Obj_NewY_w
 				add.l	#5*128,d4
 				asr.l	#7,d4
 				move.w	d4,4(a0)
 				tst.l	BulT_BounceHoriz_l(a6)
 				sne		Obj_WallBounce_b
 				seq		exitfirst
-				clr.b	MOVING
-				clr.b	hitwall
+				sf		MOVING
+				sf		hitwall
 				move.b	ShotT_InUpperZone_b(a0),StoodInTop
 				move.w	#%0000010000000000,wallflags
 				move.l	#0,StepUpVal
 				move.l	#$1000000,StepDownVal
 				move.l	#10*128,thingheight
-				move.w	oldx,d0
-				cmp.w	newx,d0
+				move.w	Obj_OldX_w,d0
+				cmp.w	Obj_NewX_w,d0
 				bne.s	lalal
-				move.w	oldz,d0
-				cmp.w	newz,d0
+				move.w	Obj_OldZ_w,d0
+				cmp.w	Obj_NewZ_w,d0
 				beq.s	nomovebul
 
 				move.w	#1,WallLength_w
@@ -2354,9 +2342,9 @@ lalal:
 				beq.s	.nobright
 
 				neg.w	d0
-				move.w	newx,d1
-				move.w	newz,d2
-				move.l	newy,Anim_BrightY_l
+				move.w	Obj_NewX_w,d1
+				move.w	Obj_NewZ_w,d2
+				move.l	Obj_NewY_w,Anim_BrightY_l
 				move.l	Obj_ZonePtr_l,a0
 				move.w	(a0),d3
 				jsr		anim_BrightenPoints
@@ -2418,7 +2406,7 @@ nomovebul:
 				move.w	d4,4(a0)
 
 .hitsomething:
-				clr.b	timeout
+				sf		timeout
 				move.b	#0,ShotT_Anim_b(a0)
 				move.b	#1,ShotT_Status_b(a0)
 				move.l	BulT_ImpactSFX_l(a6),d0
@@ -2430,7 +2418,7 @@ nomovebul:
 				move.l	(a1,d1.w*8),Aud_NoiseX_w
 				move.w	#200,Aud_NoiseVol_w
 				move.w	d0,Aud_SampleNum_w
-				move.w	d1,IDNUM
+				move.w	d1,Aud_IDNum_w
 
 				SAVEREGS
 
@@ -2442,10 +2430,10 @@ nomovebul:
 				move.l	BulT_ExplosiveForce_l(a6),d0
 				beq.s	.noexplosion
 
-				move.w	newx,Viewerx
-				move.w	newz,Viewerz
-				move.w	4(a0),Viewery
-				move.b	ShotT_InUpperZone_b(a0),ViewerTop
+				move.w	Obj_NewX_w,Obj_ViewerX_w
+				move.w	Obj_NewZ_w,Obj_ViewerZ_w
+				move.w	4(a0),Obj_ViewerY_w
+				move.b	ShotT_InUpperZone_b(a0),Obj_ViewerInUpperZone_b
 
 				SAVEREGS
 
@@ -2465,8 +2453,8 @@ lab:
 				move.l	Obj_ZonePtr_l,a3
 				move.w	(a3),ObjT_ZoneID_w(a0)
 				move.w	(a3),EntT_ZoneID_w(a0)
-				move.l	newx,(a1)
-				move.l	newz,4(a1)
+				move.l	Obj_NewX_w,(a1)
+				move.l	Obj_NewZ_w,4(a1)
 ;************
 ;* Check if hit a nasty
 
@@ -2478,12 +2466,12 @@ lab:
 notasplut:
 				move.l	Lvl_ObjectDataPtr_l,a3
 				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.w	newx,d2
-				sub.w	oldx,d2
-				move.w	d2,xdiff
-				move.w	newz,d1
-				sub.w	oldz,d1
-				move.w	d1,zdiff
+				move.w	Obj_NewX_w,d2
+				sub.w	Obj_OldX_w,d2
+				move.w	d2,Obj_XDiff_w
+				move.w	Obj_NewZ_w,d1
+				sub.w	Obj_OldZ_w,d1
+				move.w	d1,Obj_ZDiff_w
 				move.w	d1,d3
 				move.w	d2,d4
 				muls	d2,d2
@@ -2596,14 +2584,14 @@ notasplut:
 				move.w	d2,d4
 				move.w	4(a1,d1.w*8),d3
 				move.w	d3,d5
-				sub.w	newx,d4
-				sub.w	oldx,d2
+				sub.w	Obj_NewX_w,d4
+				sub.w	Obj_OldX_w,d2
 				move.w	d2,d6
-				sub.w	newz,d5
-				sub.w	oldz,d3
+				sub.w	Obj_NewZ_w,d5
+				sub.w	Obj_OldZ_w,d3
 				move.w	d3,d7
-				muls	zdiff,d6
-				muls	xdiff,d7
+				muls	Obj_ZDiff_w,d6
+				muls	Obj_XDiff_w,d7
 				sub.l	d7,d6
 				bgt.s	.pos
 
@@ -2648,7 +2636,7 @@ notasplut:
 				move.l	(a1,d1.w*8),Aud_NoiseX_w
 				move.w	#200,Aud_NoiseVol_w
 				move.w	d0,Aud_SampleNum_w
-				move.w	d1,IDNUM
+				move.w	d1,Aud_IDNum_w
 
 				SAVEREGS
 
@@ -2660,9 +2648,9 @@ notasplut:
 				move.l	BulT_ExplosiveForce_l(a6),d0
 				beq.s	.noexplosion3
 
-				move.w	4(a0),Viewery
-				move.w	newx,Viewerx
-				move.w	newz,Viewerz
+				move.w	4(a0),Obj_ViewerY_w
+				move.w	Obj_NewX_w,Obj_ViewerX_w
+				move.w	Obj_NewZ_w,Obj_ViewerZ_w
 
 				SAVEREGS
 
@@ -2709,7 +2697,7 @@ Draw_SkyBackdrop:
 
 				; Bail if the zone is tagged as having no sky
 				; Don't use Plr1_Zone_w as it changes on interrupt
-
+			IFD DEV
 				move.l  Lvl_ListOfGraphRoomsPtr_l,a5
                 move.w  PVST_Zone_w(a5),d5
 				lea		Zone_BackdropDisable_vb,a5
@@ -2720,7 +2708,7 @@ Draw_SkyBackdrop:
 
 				btst.b  d3,(a5) ; d3 is applied modulo 8, test the bit
 				bne.b	sky_early_exit
-
+			ENDC
 				move.l	a0,-(a7)
 				move.w	tmpangpos,d5
 				and.w	#4095,d5
@@ -2748,7 +2736,7 @@ Draw_SkyBackdrop:
 ; lea.l Draw_BackdropImagePtr_l,a1
 				add.l	d5,a1
 				add.w	#SKY_BACKDROP_H,a1
-				move.w	Vid_CentreY_w,d7
+				move.w	Vid_ViewHorizonY_w,d7
 				move.w	d7,d6
 				move.w	d6,d5
 				asr.w	#1,d5
@@ -2805,7 +2793,7 @@ draw_SkyBackDropFullscreen:
 				move.l	Draw_BackdropImagePtr_l,a1
 				add.l	d5,a1
 				add.w	#SKY_BACKDROP_H,a1
-				move.w	Vid_CentreY_w,d7
+				move.w	Vid_ViewHorizonY_w,d7
 				move.w	d7,d6
 				sub.w	d6,a1
 				sub.w	d6,a5
@@ -2902,10 +2890,10 @@ HitObjLoop:
 				move.l	(a3,d1.w*4),a3
 				move.l	a3,Obj_ToZonePtr_l
 				move.l	Lvl_ObjectPointsPtr_l,a3
-				move.w	(a3,d0.w*8),Targetx
-				move.w	4(a3,d0.w*8),Targetz
-				move.w	4(a2),Targety
-				move.b	ShotT_InUpperZone_b(a2),TargetTop
+				move.w	(a3,d0.w*8),Obj_TargetX_w
+				move.w	4(a3,d0.w*8),Obj_TargetZ_w
+				move.w	4(a2),Obj_TargetY_w
+				move.b	ShotT_InUpperZone_b(a2),Obj_TargetInUpperZone_b
 				jsr		CanItBeSeen
 
 				tst.b	CanSee
@@ -2914,11 +2902,11 @@ HitObjLoop:
 				; 0xABADAFE - TODO - Revisit this
 				; Splash Damage does not seem to take vertical separation into consideration
 				; here, only X and Z coordinates
-				move.w	Targetx,d0
-				sub.w	Viewerx,d0 ; tx-vx
+				move.w	Obj_TargetX_w,d0
+				sub.w	Obj_ViewerX_w,d0 ; tx-vx
 				move.w	d0,d2
-				move.w	Targetz,d1
-				sub.w	Viewerz,d1 ; tz-vx
+				move.w	Obj_TargetZ_w,d1
+				sub.w	Obj_ViewerZ_w,d1 ; tz-vx
 				move.w	d1,d3
 				muls	d2,d2      ; (tx-vx)^2
 				muls	d3,d3      ; (tz-vz)^2
@@ -3061,7 +3049,7 @@ CheckedEmAll:
 				move.w	d1,anim_MiddleX_w
 				move.w	d2,anim_MiddleZ_w
 				move.w	#9,d7
-				clr.b	exitfirst
+				sf		exitfirst
 				st.b	Obj_WallBounce_b
 				move.w	12(a0),d0
 				move.l	Lvl_ZonePtrsPtr_l,a3
@@ -3071,7 +3059,7 @@ CheckedEmAll:
 				move.w	4(a0),d0
 				ext.l	d0
 				asl.l	#7,d0
-				move.l	d0,oldy
+				move.l	d0,Obj_OldY_w
 				moveq	#2,d5
 				move.w	#NUM_PLR_SHOT_DATA-1,NUMTOCHECK
 				move.w	#2,d6
@@ -3097,8 +3085,8 @@ DOFLAMES:
 				add.w	#1,anim_DoneFlames_w
 				move.w	anim_MiddleX_w,d1
 				move.w	anim_MiddleZ_w,d2
-				move.w	d1,oldx
-				move.w	d2,oldz
+				move.w	d1,Obj_OldX_w
+				move.w	d2,Obj_OldZ_w
 				move.b	ShotT_InUpperZone_b(a0),StoodInTop
 				jsr		GetRand
 
@@ -3120,15 +3108,15 @@ DOFLAMES:
 
 .znz:
 				add.w	d0,d2
-				move.l	oldy,d3
+				move.l	Obj_OldY_w,d3
 				jsr		GetRand
 
 				muls	d5,d0
 				asr.l	#3,d0
 				add.l	d0,d3
-				move.l	d3,newy
-				move.w	d1,newx
-				move.w	d2,newz
+				move.l	d3,Obj_NewY_w
+				move.w	d1,Obj_NewX_w
+				move.w	d2,Obj_NewZ_w
 				move.l	anim_MiddleRoom_l,Obj_ZonePtr_l
 
 				movem.l	d5/d6/a0/a1/a3/d7/a6,-(a7)
@@ -3140,7 +3128,7 @@ DOFLAMES:
 
 				move.l	Obj_ZonePtr_l,a2
 				move.w	(a2),12(a3)
-				move.l	newy,d0
+				move.l	Obj_NewY_w,d0
 				move.l	ZoneT_Floor_l(a2),d1
 				move.l	ZoneT_Roof_l(a2),d2
 				tst.b	ShotT_InUpperZone_b(a0)
@@ -3174,8 +3162,8 @@ DOFLAMES:
 				st		ShotT_Worry_b(a3)
 				move.w	(a3),d0
 				move.l	Lvl_ObjectPointsPtr_l,a2
-				move.w	newx,(a2,d0.w*8)
-				move.w	newz,4(a2,d0.w*8)
+				move.w	Obj_NewX_w,(a2,d0.w*8)
+				move.w	Obj_NewZ_w,4(a2,d0.w*8)
 				adda.w	#64,a3
 				sub.w	#1,NUMTOCHECK
 				blt.s	.nomore

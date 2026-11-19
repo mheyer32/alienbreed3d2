@@ -175,8 +175,10 @@ _ReadJoy1
 				st		(a5,d5.w)
 				st		.ducklast
 				bra.s	.notduckbut
+
 .notduckbutpre:
-				clr.b	.ducklast
+				sf		.ducklast
+
 .notduckbut:
 
 				move.b	force_sidestep_key,d5
@@ -220,7 +222,8 @@ _ReadJoy1
 				bra		.nonextweap
 
 .nonextweappre:
-				clr.b	.heldlast
+				sf		.heldlast
+
 .nonextweap:
 
 
@@ -397,7 +400,7 @@ _ReadJoy2
 				st		(a5,d5.w)
 				bra		.notduckbut
 .notduckbutpre:
-				clr.b	.ducklast
+				sf		.ducklast
 .notduckbut:
 
 
@@ -441,7 +444,7 @@ _ReadJoy2
 				bra		.nonextweap
 
 .nonextweappre:
-				clr.b	.heldlast
+				sf		.heldlast
 .nonextweap:
 
 

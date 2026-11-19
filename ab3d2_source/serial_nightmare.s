@@ -20,7 +20,7 @@ SERREC:
 
 ;sends and receives an interleaved long word
 ;from d0 into d0 (sends first)
-SENDFIRST:
+Ser_SendAndReceiveLong:
 				move.b	d0,d1
 				bsr.s	SERSEND
 				bsr.s	SERREC
@@ -49,7 +49,7 @@ SENDFIRST:
 
 ;sends and receives an interleaved long word
 ;from d0 into d0 (receives first)
-RECFIRST:
+Ser_ReceiveAndSendLong:
 				bsr.s	SERREC
 				move.b	d1,d2
 				move.b	d0,d1
@@ -221,6 +221,8 @@ noadd2:
 				bclr	#6,(a0)
 				move.l	d0,(a1)+
 				rts
+
+; TODO Investigate the following - is it parnet type cable?
 
 ;Before calling either of the transmission routines, the
 ;appropriate initialisation routine must be called

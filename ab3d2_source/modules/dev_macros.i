@@ -101,7 +101,7 @@ DEV_TOGGLE		MACRO
 DEV_CHECK_KEY	MACRO
 				tst.b		\1(a5)
 				beq.s		.dev_\2\@
-				clr.b		\1(a5)
+				sf			\1(a5)
 				DEV_TOGGLE	\2
 .dev_\2\@:
 				ENDM

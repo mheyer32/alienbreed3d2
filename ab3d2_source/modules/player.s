@@ -148,7 +148,7 @@ plr_MouseControl:
 .skip_look_down:
 				move.w	d0,STOPOFFSET
 				neg.w	d0
-				add.w	TOTHEMIDDLE,d0
+				add.w	Vid_CentreY_w,d0
 				move.w	d0,SMIDDLEY
 				muls	#SCREEN_WIDTH,d0
 				move.l	d0,SBIGMIDDLEY
@@ -219,7 +219,7 @@ plr_KeyboardControl:
 				bra.s	.no_next_weapon
 
 .no_next_weapon_pre:
-				clr.b	plr_PrevNextWeaponKeyState_b
+				sf		plr_PrevNextWeaponKeyState_b
 
 .no_next_weapon:
 				move.b	operate_key,d7
@@ -237,7 +237,7 @@ plr_KeyboardControl:
 				tst.b	(a5,d7.w)
 				beq.s	.notduck
 
-				clr.b	(a5,d7.w)
+				sf		(a5,d7.w)
 				move.l	#PLR_STAND_HEIGHT,PlrT_SnapTargHeight_l(a0)
 				not.b	PlrT_Ducked_b(a0)
 				beq.s	.notduck
@@ -255,7 +255,7 @@ plr_KeyboardControl:
 				sub.l	ZoneT_UpperRoof_l(a4),d0
 
 .use_bottom:
-				clr.b	PlrT_Squished_b(a0)
+				sf		PlrT_Squished_b(a0)
 				move.l	#PLR_STAND_HEIGHT,PlrT_SnapSquishedHeight_l(a0)
 				cmp.l	#PLR_STAND_HEIGHT+3*1024,d0
 				bgt.s	.oktostand
@@ -286,7 +286,7 @@ plr_KeyboardControl:
 				tst.b	RAWKEY_K(a5)
 				beq.s	.notselkey
 
-				clr.b	RAWKEY_K(a5)
+				sf		RAWKEY_K(a5)
 
 				st		PlrT_InvMouse_b(a0) ; hack for when mouse is re-selected
 
@@ -297,9 +297,9 @@ plr_KeyboardControl:
 
 				move.l	(sp)+,a0
 				st		PlrT_Keys_b(a0)
-				clr.b	PlrT_Path_b(a0)
-				clr.b	PlrT_Mouse_b(a0)
-				clr.b	PlrT_Joystick_b(a0)
+				sf		PlrT_Path_b(a0)
+				sf		PlrT_Mouse_b(a0)
+				sf		PlrT_Joystick_b(a0)
 
 .notselkey:
 				tst.b	RAWKEY_J(a5)
@@ -307,10 +307,10 @@ plr_KeyboardControl:
 
 				st		PlrT_InvMouse_b(a0) ; hack for when mouse is re-selected
 
-				clr.b	RAWKEY_J(a5)
-				clr.b	PlrT_Keys_b(a0)
-				clr.b	PlrT_Path_b(a0)
-				clr.b	PlrT_Mouse_b(a0)
+				sf		RAWKEY_J(a5)
+				sf		PlrT_Keys_b(a0)
+				sf		PlrT_Path_b(a0)
+				sf		PlrT_Mouse_b(a0)
 				st		PlrT_Joystick_b(a0)
 
 				move.l	a0,-(sp)
@@ -324,11 +324,11 @@ plr_KeyboardControl:
 				tst.b	RAWKEY_M(a5)
 				beq.s	.notselmouse
 
-				clr.b	RAWKEY_M(a5)
-				clr.b	PlrT_Keys_b(a0)
-				clr.b	PlrT_Path_b(a0)
+				sf		RAWKEY_M(a5)
+				sf		PlrT_Keys_b(a0)
+				sf		PlrT_Path_b(a0)
 				st		PlrT_Mouse_b(a0)
-				clr.b	PlrT_Joystick_b(a0)
+				sf		PlrT_Joystick_b(a0)
 				eor.b	#-1,PlrT_InvMouse_b(a0)
 				beq.s	.mouse_normal
 
@@ -395,13 +395,13 @@ plr_KeyboardControl:
 				bra.s	.notswapscr2
 
 .notswapscr:
-				clr.b	lastscr
+				sf		lastscr
 
 .notswapscr2:
 				tst.b	RAWKEY_F7(a5)
 				beq.s	.noframelimit
 
-				clr.b	RAWKEY_F7(a5)
+				sf		RAWKEY_F7(a5)
 				cmp.w	#5,Sys_FPSLimit_w
 				beq.s	.resetfpslimit
 
@@ -417,7 +417,7 @@ plr_KeyboardControl:
 				beq.b   .done_normal_keys
 				add.b   #1,Prefs_CrossHairColour_b
 				and.b   #7,Prefs_CrossHairColour_b
-				clr.b   RAWKEY_NUM_DOT(a5)
+				sf	   RAWKEY_NUM_DOT(a5)
 
 .done_normal_keys:
 				IFD DEV
@@ -427,7 +427,7 @@ plr_KeyboardControl:
 				tst.b			RAWKEY_X(a5)
 				beq.s			.clear_zone_data
 
-				clr.b			RAWKEY_X(a5)
+				sf				RAWKEY_X(a5)
 				lea				Zone_BackdropDisable_vb,a1
 				move.w			PlrT_Zone_w(a0),d0
 				move.w          d0,d1
@@ -439,7 +439,7 @@ plr_KeyboardControl:
 				tst.b			RAWKEY_Z(a5)
 				beq.s			.dev_toggles
 
-				clr.b			RAWKEY_Z(a5)
+				sf				RAWKEY_Z(a5)
 
 				move.w			#ZONE_BACKDROP_DISABLE_SIZE/16-1,d0
 				lea				Zone_BackdropDisable_vb,a1
@@ -521,12 +521,12 @@ plr_KeyboardControl:
 				bra.s	.skip_centre_look_2
 
 .skip_centre_look:
-				clr.b	Plr_OldCentre_b
+				sf		Plr_OldCentre_b
 
 .skip_centre_look_2:
 				move.w	d0,STOPOFFSET
 				neg.w	d0
-				add.w	TOTHEMIDDLE,d0
+				add.w	Vid_CentreY_w,d0
 				move.w	d0,SMIDDLEY
 				muls.w	#SCREEN_WIDTH,d0
 				move.l	d0,SBIGMIDDLEY
@@ -737,26 +737,26 @@ plr_KeyboardControl:
 				add.l	d7,PlrT_SnapZOff_l(a0)
 				move.b	fire_key,d5
 				tst.b	PlrT_Fire_b(a0)
-				beq.s	.firenotpressed
+				beq.s	.fire_not_pressed
 
 				; fire was pressed last time.
 				tst.b	(a5,d5.w)
-				beq.s	.firenownotpressed
+				beq.s	.fire_released
 
 				; fire is still pressed this time.
 				st		PlrT_Fire_b(a0)
 				bra		.done
 
-.firenownotpressed:
+.fire_released:
 				; fire has been released.
-				clr.b	PlrT_Fire_b(a0)
+				sf		PlrT_Fire_b(a0)
 				bra		.done
 
-.firenotpressed:
+.fire_not_pressed:
 				; fire was not pressed last frame...
 				; if it has still not been pressed, go back above
 				tst.b	(a5,d5.w)
-				beq.s	.firenownotpressed
+				beq.s	.fire_released
 
 				; fire was not pressed last time, and was this time, so has
 				; been clicked.
@@ -826,7 +826,7 @@ plr_Fall:
 				asl.l	#6,d2
 				move.l	PlrT_ObjectPtr_l(a0),a4
 				move.w	plr_FallDamage_w,d3
-				sub.w	#100,d3 ; TODO - this should depend on the distance fallen.
+				sub.w	#PLAYER_FALL_DAMAGE_MIN,d3 ; TODO - this should depend on the distance fallen.
 				ble.s	.skip_damage
 
 				add.b	d3,EntT_DamageTaken_b(a4)
@@ -849,14 +849,14 @@ plr_Fall:
 				bsr		plr_DoFootstepFX
 
 .skip_footstep_fx:
-				move.l	#-1024,plr_JumpSpeed_l
+				move.l	#PLAYER_JUMP_IMPULSE_AIR,plr_JumpSpeed_l
 
 				move.l	PlrT_ZonePtr_l(a0),a2
 				move.l	ZoneT_Water_l(a2),d0
 				cmp.l	d0,d1
 				blt.s	.not_in_water
 
-				move.l	#-512,plr_JumpSpeed_l
+				move.l	#PLAYER_JUMP_IMPULSE_WATER,plr_JumpSpeed_l
 
 .not_in_water:
 				tst.w	PlrT_Health_w(a0)
@@ -867,6 +867,7 @@ plr_Fall:
 				move.b	jump_key,d7
 				tst.b	(a5,d7.w)
 				beq.s	.no_thrust
+
 				move.l	plr_JumpSpeed_l,d2
 
 .no_thrust:
@@ -880,7 +881,11 @@ plr_Fall:
 				bra		.proceed
 
 .above_ground:
-				clr.b	Plr_Decelerate_b
+				;for reference
+				; PlrT_SnapTYOff_l(a0),d0
+				; PlrT_SnapYOff_l(a0),d1
+				; PlrT_SnapYVel_l(a0),d2
+				sf		Plr_Decelerate_b
 				tst.w	PlrT_Jetpack_w(a0)
 				beq.s	.not_flying
 
@@ -896,7 +901,7 @@ plr_Fall:
 
 .have_jetpack_fuel:
 				st		Plr_Decelerate_b
-				move.l	#-128,plr_JumpSpeed_l
+				move.l	#PLAYER_JETPACK_ACCELERATION,plr_JumpSpeed_l
 				move.l	#KeyMap_vb,a5
 				moveq	#0,d7
 				move.b	jump_key,d7
@@ -915,18 +920,19 @@ plr_Fall:
 				move.l	d0,d3
 				sub.l	d1,d3
 				cmp.l	#16*64,d3
-				bgt.s	.nonearmove
+				bgt.s	.no_near_move
 
 				st		Plr_Decelerate_b
 
-.nonearmove:
-; need to fall down (possibly).
+.no_near_move:
+				; need to fall down (possibly).
 				add.l	d2,d1
 				cmp.l	d1,d0
 				bgt.s	.still_above
 
+				; minimum cap on fall damage
 				move.w	plr_FallDamage_w,d3
-				sub.w	#100,d3
+				sub.w	#PLAYER_FALL_DAMAGE_MIN,d3
 				ble.s	.skip_damage_2
 
 				move.l	PlrT_ObjectPtr_l(a0),a4
@@ -940,7 +946,11 @@ plr_Fall:
 				bra		.proceed
 
 .still_above:
-				add.l	#64,d2
+				; todo - is this what caused jerkiness on lifts?
+				add.l	#PLAYER_FALL_ACCELERATION,d2
+				; TODO this doesn't really work with slower acceleration
+				;      since it just adds a constant value per time iteration
+				;      that we are above ground
 				add.w	#1,plr_FallDamage_w
 
 				move.l	PlrT_ZonePtr_l(a0),a2
@@ -957,19 +967,20 @@ plr_Fall:
 				move.w	#0,Aud_NoiseX_w
 				move.w	#100,Aud_NoiseZ_w
 				move.w	#80,Aud_NoiseVol_w
-				move.w	#$fff8,IDNUM
-				clr.b	notifplaying
+				move.w	#$fff8,Aud_IDNum_w
+				sf		notifplaying
 				jsr		MakeSomeNoise
 
 				GETREGS
 
 .no_splash_fx:
+				; sinking
 				st		Plr_Decelerate_b
 				move.w	#0,plr_FallDamage_w
-				cmp.l	#512,d2
+				cmp.l	#PLAYER_WATER_MAX_SINK_SPEED,d2
 				blt.s	.proceed
 
-				move.l	#512,d2					; reached terminal velocity.
+				move.l	#PLAYER_WATER_MAX_SINK_SPEED,d2	; reached terminal velocity.
 
 .proceed:
 				move.l	PlrT_ZonePtr_l(a0),a2
@@ -987,6 +998,8 @@ plr_Fall:
 				move.l	d3,d1
 				tst.l	d2
 				bge.s	.ok_ceiling
+
+				; todo - determine impact damage
 
 				moveq	#0,d2
 
@@ -1038,8 +1051,8 @@ plr_DoFootstepFX:
 				move.w	#0,Aud_NoiseX_w
 				move.w	#100,Aud_NoiseZ_w
 				move.w	#80,Aud_NoiseVol_w
-				move.w	#$fff8,IDNUM
-				clr.b	notifplaying
+				move.w	#$fff8,Aud_IDNum_w
+				sf		notifplaying
 				move.b	PlrT_Echo_b(a0),SourceEcho
 				jsr		MakeSomeNoise
 
