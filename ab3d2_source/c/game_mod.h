@@ -27,8 +27,9 @@ typedef InventoryConsumables GMod_InventoryLimits;
  * Additional Chunk Idents
  */
 enum {
+    IDENT_AADJ = 0x4141444A,    // Alien Adjustments (used in: GMOD)
     IDENT_INVL = 0x494E564C,    // Inventory Limits (used in: GMOD, GPRG)
-    IDENT_WADJ = 0x5741444A,    // Weapon adjustments (used in: GMOD, GPRG)
+    IDENT_WADJ = 0x5741444A,    // Weapon Adjustments (used in: GMOD, GPRG)
     IDENT_SPAB = 0x53504142,    // Special Ammo Bonuses (used in: GMOD)
     IDENT_RWRD = 0x52575244,    // Rewards (used in: GMOD)
     IDENT_ACHV = 0x41434856,    // Achievements (used in: GMOD)
@@ -163,6 +164,23 @@ typedef struct {
 
     } achv_Param;
 } ASM_ALIGN(sizeof(ULONG)) GMod_Achievement; // 32 bytes
+
+/**********************************************************************************************************************/
+
+/**
+ * GMod_AlienAdjustment
+ *
+ * Defines modifications for alien definition
+ *
+ * Used in:
+ *     - Main Game Modification (initial defaults)
+ */
+typedef struct {
+    UWORD aadj_AlienID;
+    UWORD aadj_ScaleWidth;
+    UWORD aadj_ScaleHeight;
+    WORD  aadj_VerticalOffset;
+} ASM_ALIGN(sizeof(UWORD)) GMod_AlienAdjustment; // 8 bytes
 
 /**********************************************************************************************************************/
 

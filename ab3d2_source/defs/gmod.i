@@ -45,6 +45,16 @@ MAX_ACHIEVEMENTS EQU 128
 		ULONG	GDefT_NumAchievements_l			; 36, 4
 		LABEL GDefT_SizeOf_l					; 40
 
+	; Alien Adjustments
+	; See: c/game_mod.h: GMod_AlienAdjustment
+	STRUCTURE AAdjT,0
+		UWORD	AAdjT_AlienID_w			; 0, 2
+		UWORD	AAdjT_ScaleWidth_w		; 2, 2
+		UWORD	AAdjT_ScaleHeight_w		; 4, 2
+		WORD 	AAdjT_VerticalOffset_w	; 6, 2
+		LABEL	AAdjT_SizeOf_l			; 8
+
+
 	; Weapon Adjustments
 	; See: c/game_mod.h: GMod_WeaponAdjustment
 	STRUCTURE WAdjT,0
