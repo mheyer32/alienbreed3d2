@@ -286,17 +286,17 @@ Dev_PrintStats:
 
 				;lea 		Plr1_YOff_l,a1
 				;lea 		.dev_ss_p1h,a0
-				lea 		Debug_Collide_w,a1
-				lea 		.dev_ss_debug_h,a0
-				move.l		#40,d0
-				bsr			Dev_PrintF
+				;lea 		Debug_Collide_w,a1
+				;lea 		.dev_ss_debug_h,a0
+				;move.l		#40,d0
+				;bsr			Dev_PrintF
 
 				;lea 		Plr1_Height_l,a1
 				;lea 		.dev_ss_p1h,a0
-				lea 		Debug_Height_w,a1
-				lea 		.dev_ss_debug_h,a0
-				move.l		#56,d0
-				bsr			Dev_PrintF
+				;lea 		Debug_Height_w,a1
+				;lea 		.dev_ss_debug_h,a0
+				;move.l		#56,d0
+				;bsr			Dev_PrintF
 
 				; Res3
 				lea			dev_Reserved3_w,a1

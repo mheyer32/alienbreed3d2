@@ -772,7 +772,7 @@ Plr_CheckObjectCollide:
 				; Object levels are in 15.1 format.
 				;
 
-				move.l	#0,Debug_Collide_w
+				;move.l	#0,Debug_Collide_w
 
 				; a1 <= b2
 				move.l	PlrT_YOff_l(a1),d7					; Eye level (includes bob) (15.8)
@@ -791,8 +791,8 @@ Plr_CheckObjectCollide:
 				cmp.w	d6,d7
 				ble		.no_collide
 
-				move.w	d7,Debug_Height_w
-				move.w	d6,Debug_Collide_w
+				;move.w	d7,Debug_Height_w
+				;move.w	d6,Debug_Collide_w
 
 				; Height checks done, rest here.
 				; TODO - maybe replace the rest of this with simialr range checks for X and Z
@@ -911,8 +911,8 @@ Plr_CheckObjectCollide:
 
 				align 4
 obj_StatPtr_l:		dc.l 0
-Debug_Collide_w:	dc.w 0
-Debug_Height_w:		dc.w 0
+;Debug_Collide_w:	dc.w 0
+;Debug_Height_w:		dc.w 0
 
 DEFANIMOBJ:
 				move.l	GLF_DatabasePtr_l,a3
