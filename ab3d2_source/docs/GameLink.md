@@ -45,6 +45,8 @@ The file is a raw binary with no specific header data.
 | 0x000150C0 | Echo Table | `uint8[60]` | |
 
 
+See: [defs/gamelink.i](../defs/gamelink.i)
+
 ## Data Structures
 
 The data structures presented here are in pseudo C structure format. Each structure is packed, with no padding or holes. The structure names are illustrative and do not necessarily exactly match the structure names used in the sourceode.
@@ -100,6 +102,8 @@ struct AlienDef {
 };
 ```
 
+See: [defs/alien.i](../defs/alien.i)
+
 ### BulletDef
 
 Defines the behaviour of a particular bullet/projectile type. Note that this structure comprises primarily of 32-bit fields that contain only 8 or 16-bit data. These fields may be split in future so that runtime-injected additional properties can be added by game modifications.
@@ -126,6 +130,8 @@ struct BulletDef {
 };
 ```
 
+See: [defs/bullet.i](../defs/bullet.i)
+
 ### FloorDef
 
 Defines floor tile behaviours.
@@ -149,3 +155,5 @@ struct ShootDef {
     uint16 SountEffect;
 };
 ```
+
+See: [defs/bullet.i](../defs/bullet.i)
