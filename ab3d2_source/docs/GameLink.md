@@ -78,7 +78,7 @@ Defines the basic properties and behaviours of a given alien.
 
 ```
 struct AlienDef {
-    uint16 GraphicsType;
+    uint16 GraphicType;
     uint16 DefaultBehaviour;
     uint16 ReactionTime;
     uint16 DefaultSpeed;
@@ -132,6 +132,19 @@ struct BulletDef {
 
 See: [defs/bullet.i](../defs/bullet.i)
 
+
+### Consumables
+
+Defines the amount of consumables awarded by a collectable or activatable object. Note that the fields are technically signed meaning that an object could deduct from the player inventory.
+
+```
+struct Consumables {
+    int16 Health;
+    int16 JetpackFuel;
+    int16 AmmoCounts[20]; // Entry per Bullet Type
+};
+```
+
 ### FloorDef
 
 Defines floor tile behaviours.
@@ -142,6 +155,45 @@ struct FloorDef {
 };
 
 ```
+
+### Items
+
+Defines the set of items awarded by a collectable object. Usually this will be a single item corresponding to what the collectable is, e.g. weapon, jetpack.
+
+```
+struct Items {
+    uint16 Shield;
+    uint16 Jetpack;
+    uint16 Weapons[10]; // Entry per Weapon Type
+};
+```
+
+### ObjectDef
+
+Defines the base properties of objects. Objects are further extended into decorations, collectables, activatables, destructabls and aliens.
+
+```
+struct ObjectDef {
+    uint16 Behaviour;
+    uint16 GraphicType;
+    uint16 ActiveTimeout;
+    uint16 HitPoints;
+    uint16 ExplosiveForce;
+    uint16 Impassible;
+    uint16 DefaultAnimLen;
+    uint16 CollideRadius;
+    uint16 CollideHeight'
+    uint16 FloorCeiling;
+    uint16 LockToWall;
+    uint16 ActiveAnimLen;
+    uint16 SoundEffect;
+    uint8  Unknown[14]; // TBC
+};
+
+```
+
+See: [defs/object.i](../defs/object.i)
+
 
 ### ShootDef
 
