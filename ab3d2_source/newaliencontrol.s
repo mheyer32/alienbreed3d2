@@ -181,7 +181,6 @@ Collectable:	; a0 points to the instance of the object
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq.s	.NotCollected2
 
-				;bsr		Plr2_CheckObjectCollide
 				lea 	Plr2_Data,a1
 				bsr		Plr_CheckObjectCollide
 
@@ -252,7 +251,6 @@ Activatable:
 
 				bsr		DEFANIMOBJ
 
-				;bsr		Plr1_CheckObjectCollide
 				lea		Plr1_Data,a1
 				bsr		Plr_CheckObjectCollide
 
