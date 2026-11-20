@@ -34,14 +34,26 @@ MAX_ACHIEVEMENTS EQU 128
 	; See: c/game_mod.h: GMod_DefaultProperties
 	STRUCTURE GDefT,0
 		ULONG	GDefT_LoadedPtr_l				; 0, 4
-		ULONG	GDefT_InventoryLimitsPtr_l		; 4, 4
-		ULONG	GDefT_SpecialAmmoBonusesPtr_l	; 8, 4
-		ULONG	GDefT_WeaponAdjustmentsPtr_l	; 12, 4
-		ULONG	GDefT_AchievementsPtr_l;		; 16, 4
-		ULONG	GDefT_NumSpecialAmmoBonuses_l	; 20, 4
-		ULONG	GDefT_NumWeaponAdjustments_l	; 24, 4
-		ULONG	GDefT_NumAchievements_l			; 28, 4
-		LABEL GDefT_SizeOf_l					; 32
+		ULONG   GDefT_DefaultGlobalsPtr_l       ; 4, 4
+		ULONG	GDefT_InventoryLimitsPtr_l		; 8, 4
+		ULONG	GDefT_SpecialAmmoBonusesPtr_l	; 12, 4
+		ULONG	GDefT_WeaponAdjustmentsPtr_l	; 16, 4
+		ULONG	GDefT_AchievementsPtr_l;		; 20, 4
+		ULONG   GDefT_NumDefaultGlobals_l       ; 24
+		ULONG	GDefT_NumSpecialAmmoBonuses_l	; 28, 4
+		ULONG	GDefT_NumWeaponAdjustments_l	; 32, 4
+		ULONG	GDefT_NumAchievements_l			; 36, 4
+		LABEL GDefT_SizeOf_l					; 40
+
+	; Alien Adjustments
+	; See: c/game_mod.h: GMod_AlienAdjustment
+	STRUCTURE AAdjT,0
+		UWORD	AAdjT_AlienID_w			; 0, 2
+		UWORD	AAdjT_ScaleWidth_w		; 2, 2
+		UWORD	AAdjT_ScaleHeight_w		; 4, 2
+		WORD 	AAdjT_VerticalOffset_w	; 6, 2
+		LABEL	AAdjT_SizeOf_l			; 8
+
 
 	; Weapon Adjustments
 	; See: c/game_mod.h: GMod_WeaponAdjustment

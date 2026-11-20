@@ -31,7 +31,7 @@ OBJ_TYPE_PLAYER2 EQU 5
 		; It appears these are accessed as bytes in some use cases, so the probability is that the
 		; data is overwritten or repurposed for temporary objects (projectiles/explosions)
 		ULONG ObjT_XPos_l			; 0, 4 - To be confirmed
-		ULONG ObjT_ZPos_l 			; 4, 4 - To be confirmed
+		ULONG ObjT_ZPos_l 			; 4, 4 - To be confirmed ; actually contains vertical position (scale x2)
 		ULONG ObjT_YPos_l 			; 8, 4 - To be confirmed
 
 		UWORD ObjT_ZoneID_w			; 12, 2 - Zone where the object is located, or -1 if it's been removed

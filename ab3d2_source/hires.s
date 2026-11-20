@@ -55,8 +55,8 @@ VID_FAST_BUFFER_SIZE	equ		SCREEN_WIDTH*SCREEN_HEIGHT+15		; screen size plus alig
 
 maxscrdiv				equ		8
 max3ddiv				equ		5
-PLR_STAND_HEIGHT		equ		12*1024
-PLR_CROUCH_HEIGHT		equ		8*1024
+PLR_STAND_HEIGHT		equ		48*256 ; Was 12*1024, redefined in terms of wall texel height
+PLR_CROUCH_HEIGHT		equ		32*256 ; Was 8*1024,  redefined in terms of wall texel height
 scrheight				equ		80
 intreqrl				equ		$01f
 
@@ -470,7 +470,7 @@ noload:
 
 .noclips:
 				sf		Plr1_StoodInTop_b
-				move.l	#PLR_STAND_HEIGHT,Plr1_SnapHeight_l
+				move.l	Plr_StandHeight_l,Plr1_SnapHeight_l
 
 				; Audio is really 6 channels because hardware channel zero is
 				; reserved for the soundtrack.
@@ -607,10 +607,11 @@ scaledownlop:
 
 				move.l	Aud_SampleList_vl+6*8,pos0LEFT
 				move.l	Aud_SampleList_vl+6*8+4,Samp0endLEFT
-				move.l	#PLR_STAND_HEIGHT,Plr1_SnapTargHeight_l
-				move.l	#PLR_STAND_HEIGHT,Plr1_SnapHeight_l
-				move.l	#PLR_STAND_HEIGHT,Plr2_SnapTargHeight_l
-				move.l	#PLR_STAND_HEIGHT,Plr2_SnapHeight_l
+				move.l  Plr_StandHeight_l,d0
+				move.l	d0,Plr1_SnapTargHeight_l
+				move.l	d0,Plr1_SnapHeight_l
+				move.l	d0,Plr2_SnapTargHeight_l
+				move.l	d0,Plr2_SnapHeight_l
 
 				CALLC	Sys_ClearKeyboard
 
@@ -6606,7 +6607,7 @@ nostartalan:
 				sf		Plr1_Fire_b
 				sf		Plr1_Clicked_b
 				move.w	#0,Plr_AddToBobble_w
-				move.l	#PLR_CROUCH_HEIGHT,Plr1_SnapHeight_l
+				move.l	Plr_CrouchHeight_l,Plr1_SnapHeight_l
 				move.w	View_LookMax_w,d0					; Is this related to render buffer height
 				move.w	d0,STOPOFFSET
 				neg.w	d0
@@ -6696,7 +6697,7 @@ control2:
 
 				sf		Plr2_Fire_b
 				move.w	#0,Plr_AddToBobble_w
-				move.l	#PLR_CROUCH_HEIGHT,Plr2_SnapHeight_l
+				move.l	Plr_CrouchHeight_l,Plr2_SnapHeight_l
 				move.w	View_LookMax_w,d0
 				move.w	d0,STOPOFFSET
 				neg.w	d0

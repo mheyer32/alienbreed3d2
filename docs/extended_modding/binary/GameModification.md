@@ -35,7 +35,7 @@ The Default Globals Chunk contains the binary encoded key-value data defined in 
 | - | | } |
 | ... | ... | ... | Structure repeated per key-value|
 
-Notes:
+**Notes:**
 
 - It is the responsibility of the tool generating the binary from the ARSON source to ensure that there are no colliding keys.
 - It is up to the engine implementation to match the values by their precomputed hash and interpret the corresponding value data accordingly.
@@ -53,7 +53,7 @@ The Inventory Limits Chunk contains the binary encoded limits defined in the sou
 | 10 | Max Fuel | `int16` | |
 | 12 | Max Ammo | `int16[20]` | One for each defined Ammo class |
 
-Notes:
+**Notes:**
 
 - The default maximum value for Ammunition is 32767
 - The default maximum value for Health is 32767
@@ -75,11 +75,35 @@ The Special Ammo Bonuses Chunk contains the binary encoded values defined in the
 | - | | } |
 | ... | ... | ... | Structure repeated per defined Ammo Bonus |
 
-Notes:
+**Notes:**
 
 - Since each special bonus defines a corresponding Reward, the Reward Chunk must also be present.
 - The Ammo Type values can only be those defined in the SpecialAmmoTypes list.
 - After loading, the Special Ammo Bonuses Chunk is parsed to update teh Reward Offset to the corresponding in-memory location of the Reward data.
+
+### Alien Adjustment
+
+The Alien Adjusment Chunk contains the binary encoded data defined in the  [Alien Adjustment](../source/GameModification.md#alienajustment) node. If the node is ommited, no Chunk is generated.
+
+| Offset In Chunk | Content | Type | Notes |
+| :---- | :---- | :---- | :---- |
+| 0 | **Ident** | `char[4]` | "AADJ" |
+| 4 | **Length** | `uint32` | Size of complete chunk. (Length - 8) / 8 gives record count |
+| - | Record [0] | struct { | |
+| 8 | - Alien ID | `uint16` | Which Alien the adjustment is for |
+| 10 | - ScaleWidth | `uint16` | 8.8 fixed point scale factor |
+| 12 | - ScaleHeight | `uint16` | 8.8 fixed point scale factor |
+| 14 | - VertOffset | `int16` | |
+| 16 | - AuxXOffset | `int16` | |
+| 16 | - AuxYOffset | `int16` | |
+| 18 | - BulletXOffset | `int16` | |
+| 20 | - BulletYOffset | `int16` | |
+| - | | } |
+| ... | ... | ... | Structure repeated per defined Alien Adjustment |
+
+**Notes:**
+
+- ScaleWidth and ScaleHeight are stored as 8.8 fixed point multipliers derived from the input percentage.
 
 ### Weapon Adjustment
 
@@ -101,7 +125,7 @@ The Weapon Adjusment Chunk contains the binary encoded data defined in the  [Wea
 | - | | } |
 | ... | ... | ... | Structure repeated per defined Weapon Adjustment |
 
-Notes:
+**Notes:**
 
 - The Flags field contains the boolean options defined in the source node:
     - NoRun `0x0001`
@@ -129,7 +153,7 @@ The Achievenents Chunk contains the binary encoded achievement data defined in t
 | - | | } |
 | ... | ... | ... | Structure repeated per defined Achievement |
 
-Notes:
+**Notes:**
 
 - Each Achievement record is 32 bytes and the order is important:
     - 20 bytes are reserved for the rule parameters to permit more complex rules in future.
@@ -245,7 +269,7 @@ The Carry and Immediate Data are varying length arrays of `(u)int16` which is wh
 | 4 | Ammo ID | `uint16[...]` | Per Ammunition class included |
 | n | Ammo ID Add | `int16[...]` | Per Ammunition class included |
 
-Notes:
+**Notes:**
 
 - Add values are signed. This allows for the definition of Rewards that are penalties for the player.
 - The values for Health and Fuel are always present, defaulting to zero if no modification is applied.

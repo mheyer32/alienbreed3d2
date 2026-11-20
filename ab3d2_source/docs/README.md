@@ -26,6 +26,8 @@ Based on the Level Editor, every 32 steps in the Y direction corresponds to 1 me
 
 Wall texture coordinates adopt the same scale as the Y direction. An unscaled 128x128 texture will repeat every 128 steps in the Y direction and every 256 steps in the X/Z directions.
 
+At runtime, Y coordinates are further scaled by 256 to allow for higher precision movement, particularly with respect to lifts, doors and the vertical movement of objects (flying, falling etc).
+
 Floor texture coordinates adopt the same scale as the X/Z directions. All floor/ceiling textures are 64x64 and at the default scaling (0) will tile twice in the space that a 64 wide wall texture occupies. In game:
 
 ![In World](./img/view_scale.png)
@@ -44,3 +46,32 @@ The game engine uses an angular system of measure that divides the full circle i
 | West | 6144 | -32767 | 0 |
 
 Note that the sine table contains 8192 entries, comprising two complete cycles of the sine function. This allows both sine and cosine to use the same table, without wrapping.
+
+
+### Game Link Data Format
+
+The game exports many definitions to a database file. This contains the file location and description of the main assets as well as animation definitions and other key properties of each entity.
+
+
+| Offset | What | Remarks |
+| - | - | - |
+| 0x00000000 | Level Directory Name | 64 bytes, zero-padded |
+| 0x00000020 | Level Names | 20 bytes per entry, space-padded |
+| 0x000002C0 | Bitmap Graphic File Names | 64 bytes per entry, zero-padded |
+| 0x00000A40 | Sound File Names | 64 bytes per entry, zero-padded |
+| 0x00001940 | Floor Tile File Name | 64 bytes, zero-padded |
+| 0x00001980 | Model Texture Tile File Name | 64 bytes, zero-padded |
+| 0x000019C0 | Data 1 | TBC |
+| 0x00003230 | Ammo Names | 20 bytes per entry, zero-padded |
+| 0x000033C0 | Weapon Names | 20 bytes per entry, zero-padded |
+| 0x00003488 | Data 2 | TBC |
+| 0x000034D8 | Alien Names | 20 bytes per entry, zero-padded |
+| 0x00003668 | Data 3 | TBC |
+| 0x000057C4 | Vector Names | 20 bytes per entry, zero-padded |
+| 0x00005A00 | Data 4 | TBC |
+| 0x00013FE0 | Vector File Names | 64 bytes per entry, zero-padded |
+| 0x00014760 | Wall Texture File Names | 64 bytes per entry, zero-padded |
+| 0x00014B60 | Data 5 | TBC |
+| 0x00014CC0 | Level Music File Names | 64 bytes per entry, zero-padded |
+| 0x000150C0 | Data 6 | TBC |
+| 0x000150FB | Last Byte | End of file |

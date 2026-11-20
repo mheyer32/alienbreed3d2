@@ -7,6 +7,12 @@
 ; *
 ; *****************************************************************************
 
+				align 4
+	DCLC	Plr_StandHeight_l
+				dc.l PLR_STAND_HEIGHT
+	DCLC	Plr_CrouchHeight_l
+				dc.l PLR_CROUCH_HEIGHT
+
 ; Notes: The entity references for player 1, player 2 and the weapon view model
 ;        are stored contiguously:
 ;
@@ -31,7 +37,7 @@ Plr_Initialise:
 				move.l	d0,Plr1_ZonePtr_l
 				move.l	Plr1_ZonePtr_l,a0
 				move.l	ZoneT_Floor_l(a0),d0
-				sub.l	#PLR_STAND_HEIGHT,d0
+				sub.l	Plr_StandHeight_l,d0
 				move.l	d0,Plr1_SnapYOff_l
 				move.l	d0,Plr1_YOff_l
 				move.l	d0,Plr1_SnapTYOff_l
@@ -50,7 +56,7 @@ Plr_Initialise:
 				move.l	d0,Plr2_ZonePtr_l
 				move.l	Plr2_ZonePtr_l,a0
 				move.l	ZoneT_Floor_l(a0),d0
-				sub.l	#PLR_STAND_HEIGHT,d0
+				sub.l	Plr_StandHeight_l,d0
 				move.l	d0,Plr2_SnapYOff_l
 				move.l	d0,Plr2_YOff_l
 				move.l	d0,Plr2_SnapTYOff_l
@@ -238,11 +244,11 @@ plr_KeyboardControl:
 				beq.s	.notduck
 
 				sf		(a5,d7.w)
-				move.l	#PLR_STAND_HEIGHT,PlrT_SnapTargHeight_l(a0)
+				move.l	Plr_StandHeight_l,PlrT_SnapTargHeight_l(a0)
 				not.b	PlrT_Ducked_b(a0)
 				beq.s	.notduck
 
-				move.l	#PLR_CROUCH_HEIGHT,PlrT_SnapTargHeight_l(a0)
+				move.l	Plr_CrouchHeight_l,PlrT_SnapTargHeight_l(a0)
 
 .notduck:
 				move.l	PlrT_ZonePtr_l(a0),a4
@@ -256,12 +262,14 @@ plr_KeyboardControl:
 
 .use_bottom:
 				sf		PlrT_Squished_b(a0)
-				move.l	#PLR_STAND_HEIGHT,PlrT_SnapSquishedHeight_l(a0)
-				cmp.l	#PLR_STAND_HEIGHT+3*1024,d0
+				move.l  Plr_StandHeight_l,d1
+				move.l	d1,PlrT_SnapSquishedHeight_l(a0)
+				add.l   #3*1024,d1
+				cmp.l	d1,d0
 				bgt.s	.oktostand
 
 				st		PlrT_Squished_b(a0)
-				move.l	#PLR_CROUCH_HEIGHT,PlrT_SnapSquishedHeight_l(a0)
+				move.l	Plr_CrouchHeight_l,PlrT_SnapSquishedHeight_l(a0)
 
 .oktostand:
 				move.l	PlrT_SnapTargHeight_l(a0),d1

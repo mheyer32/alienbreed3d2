@@ -11,6 +11,21 @@ A_FrameLen			EQU		11
 A_OptLen			EQU		A_FrameLen*20
 A_AnimLen			EQU		A_OptLen*11
 
+	; Alien Animation Frame
+	STRUCTURE AAFT,0
+		UBYTE AAFT_GraphicFile_b,
+		UBYTE AAFT_FrameNuber_b,
+		UBYTE AAFT_ScaleWidth_b,
+		UBYTE AAFT_ScaleHeigt_b,
+		BYTE  AAFT_VerticalOffset_b,
+		UBYTE AAFT_SoundEffect_b,
+		UBYTE AAFT_Action_b
+		UBYTE AAFT_AnimInstruction_b,
+		UBYTE AAFT_AuxObjectFrame_b,
+		BYTE  AAFT_AuxObjectXOffset_b,
+		BYTE  AAFT_AuxObjectYOffset_b,
+		LABEL AAFT_SizeOf_l ; 11
+
 GLFT_OBJ_NAME_LENGTH EQU 20
 GLFT_GUN_NAME_LENGTH EQU 20
 GLFT_BUL_NAME_LENGTH EQU 20
@@ -38,7 +53,7 @@ GLFT_BUL_NAME_LENGTH EQU 20
 		STRUCT GLFT_ObjectActAnims_l,(NUM_OBJECT_DEFS*O_AnimSize)
 		STRUCT GLFT_AmmoGive_l,(NUM_OBJECT_DEFS*AmmoGiveLen)		; ammo given per (collectable) object
 		STRUCT GLFT_GunGive_l,(NUM_OBJECT_DEFS*GunGiveLen)			; guns given per (collectable) object
-		STRUCT GLFT_AlienAnims_l,(NUM_ALIEN_DEFS*A_AnimLen)
+		STRUCT GLFT_AlienAnims_l,(NUM_ALIEN_DEFS*A_AnimLen)			;
 		STRUCT GLFT_VectorNames_l,(NUM_OBJECT_DEFS*64)
 		STRUCT GLFT_WallGFXNames_l,(NUM_WALL_TEXTURES*64)
 		STRUCT GLFT_WallHeights_l,(NUM_WALL_TEXTURES*2)

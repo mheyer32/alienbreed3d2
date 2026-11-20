@@ -27,14 +27,48 @@ typedef InventoryConsumables GMod_InventoryLimits;
  * Additional Chunk Idents
  */
 enum {
+    IDENT_AADJ = 0x4141444A,    // Alien Adjustments (used in: GMOD)
     IDENT_INVL = 0x494E564C,    // Inventory Limits (used in: GMOD, GPRG)
-    IDENT_WADJ = 0x5741444A,    // Weapon adjustments (used in: GMOD, GPRG)
+    IDENT_WADJ = 0x5741444A,    // Weapon Adjustments (used in: GMOD, GPRG)
     IDENT_SPAB = 0x53504142,    // Special Ammo Bonuses (used in: GMOD)
     IDENT_RWRD = 0x52575244,    // Rewards (used in: GMOD)
     IDENT_ACHV = 0x41434856,    // Achievements (used in: GMOD)
     IDENT_CTRS = 0x43545253,    // Counters (used in: GPRG)
     IDENT_UNLK = 0x554E4C4B,    // Unlocked (used in: GPRG)
+    IDENT_GBDF = 0x47424446,    // Default Globals (used in: GMOD)
 };
+
+/**********************************************************************************************************************/
+
+/**
+ * GMod_HashKeyValue
+ *
+ * Defines a key value pair in which the key has been converted into a hash.
+ *
+ * Used in:
+ *     - Main Game Modification (Default Globals)
+ */
+typedef struct {
+    ULONG hkv_Hash; // FNV1A
+    union {
+        // Interpretation depends on what the key is.
+        ULONG hkv_Value;
+        char const* hkv_String;
+    };
+} ASM_ALIGN(sizeof(ULONG)) GMod_HashKeyValue; // 8 bytes
+
+enum {
+    HASH_PLR_STAND_HEIGHT    = 0xA0FCEE75, // Player.StandHeight
+    HASH_PLR_CROUCH_HEIGHT   = 0xDEE5770B, // Player.CrouchHeight
+    HASH_PHY_BASE_GRAV_ACCEL = 0x2DEEE9B9, // Physics.BaseGravityAcceleration
+    HASH_PHY_BASE_AIR_RESIST = 0xB7904D2A, // Physics.BaseAirResistance
+    HASH_PHY_BASE_WTR_RESIST = 0x4A7DB331, // Physics.BaseWaterResistance
+};
+
+/**
+ * Attempts to process the GMod_HashKeyValue by matching the key against a set of handler callbacks.
+ */
+extern void Gmod_ProcessGlobalHKV(GMod_HashKeyValue const * pHKVEntry);
 
 /**********************************************************************************************************************/
 
@@ -130,6 +164,27 @@ typedef struct {
 
     } achv_Param;
 } ASM_ALIGN(sizeof(ULONG)) GMod_Achievement; // 32 bytes
+
+/**********************************************************************************************************************/
+
+/**
+ * GMod_AlienAdjustment
+ *
+ * Defines modifications for alien definition
+ *
+ * Used in:
+ *     - Main Game Modification (initial defaults)
+ */
+typedef struct {
+    UWORD aadj_AlienID;
+    UWORD aadj_ScaleWidth;    // 8.8
+    UWORD aadj_ScaleHeight;   // 8.8
+    WORD  aadj_VerticalOffset;
+    WORD  aadj_AuxXOffset;
+    WORD  aadj_AuxYOffset;
+    WORD  aadj_BulletXOffset;
+    WORD  aadj_BulletYOffset;
+} ASM_ALIGN(sizeof(UWORD)) GMod_AlienAdjustment; // 16 bytes
 
 /**********************************************************************************************************************/
 
@@ -247,10 +302,12 @@ typedef struct {
 typedef struct {
     /** Loaded file data */
     GMF_Data const*              gmod_LoadedPtr;
+    GMod_HashKeyValue const*     gmod_DefaultGlobalsPtr;
     GMod_InventoryLimits const*  gmod_DefinedInventoryLimitsPtr;
     GMod_SpecialAmmoBonus const* gmod_DefinedSpecialAmmoBonusesPtr;
     GMod_WeaponAdjustment const* gmod_DefinedWeaponAdjustmentsPtr;
     GMod_Achievement const*      gmod_DefinedAchievementsPtr;
+    ULONG                        gmod_NumDefaultGlobals;
     ULONG                        gmod_NumDefinedSpecialAmmoBonuses;
     ULONG                        gmod_NumDefinedWeaponAdjustments;
     ULONG                        gmod_NumDefinedAchievements;
@@ -296,6 +353,8 @@ extern void GMod_Done(void);
  * Returns true if a viable modification file was found and processed correctly.
  */
 extern BOOL GMod_LoadModDefaults(void);
+
+extern void GMod_ApplyGlobalDefaults(void);
 
 /**********************************************************************************************************************/
 

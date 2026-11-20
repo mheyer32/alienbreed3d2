@@ -56,11 +56,13 @@ dev_FPSIntAvg_w:			ds.w	1
 
 dev_FPSFracAvg_w:			ds.w	1
 dev_FPSLimit_w:				ds.w	1
-dev_Reserved1_w:			ds.w	1	; Divisions
 
+dev_Reserved1_w:			ds.w	1	; Divisions
 dev_Reserved2_w:			ds.w	1
+
 dev_Reserved3_w:			ds.w	1
 dev_Reserved4_w:			ds.w	1
+
 dev_Reserved5_w:			ds.w	1
 ; Not cleared per frame
 dev_FrameIndex_w:			ds.w	1	; frame number % DEV_GRAPH_BUFFER_SIZE
@@ -132,6 +134,7 @@ Dev_MarkFrameBegin:
 				move.w	d0,dev_FrameIndex_w
 
 				lea		dev_Counters_vw,a0
+				clr.l	(a0)+
 				clr.l	(a0)+
 				clr.l	(a0)+
 				clr.l	(a0)+
@@ -276,9 +279,29 @@ Dev_PrintStats:
 				bsr			Dev_PrintF
 
 				; Divisions
-				lea			dev_Reserved2_w,a1
+				;lea			dev_Reserved2_w,a1
+				;lea			.dev_ss_divs_vb,a0
+				;move.l		#40,d0
+				;bsr			Dev_PrintF
+
+				;lea 		Plr1_YOff_l,a1
+				;lea 		.dev_ss_p1h,a0
+				;lea 		Debug_Collide_w,a1
+				;lea 		.dev_ss_debug_h,a0
+				;move.l		#40,d0
+				;bsr			Dev_PrintF
+
+				;lea 		Plr1_Height_l,a1
+				;lea 		.dev_ss_p1h,a0
+				;lea 		Debug_Height_w,a1
+				;lea 		.dev_ss_debug_h,a0
+				;move.l		#56,d0
+				;bsr			Dev_PrintF
+
+				; Res3
+				lea			dev_Reserved3_w,a1
 				lea			.dev_ss_divs_vb,a0
-				move.l		#40,d0
+				move.l		#72,d0
 				bsr			Dev_PrintF
 
 
@@ -403,6 +426,13 @@ Dev_PrintStats:
 
 .dev_ss_door_mask_vb:
 				dc.b "DM: %04X",0
+
+.dev_ss_p1h:
+				dc.b "H: %6ld",0
+
+.dev_ss_debug_h:
+				dc.b "H: %6d",0
+
 
 				align 4
 

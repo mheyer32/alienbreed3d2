@@ -17,7 +17,7 @@ ItsAnAlien:
 				rts
 
 .no_enemies:
-				move.w	#-1,ObjT_ZoneID_w(a0)
+				move.w	#NULL_ZONE_ID,ObjT_ZoneID_w(a0)
 				rts
 
 .ok_alive:
@@ -111,7 +111,7 @@ GUNHELD:
 
 				rts
 
-Collectable:
+Collectable:	; a0 points to the instance of the object
 				move.w	ObjT_ZoneID_w(a0),d0
 				bge.s	.ok_in_room
 				rts
@@ -163,7 +163,10 @@ Collectable:
 				move.w	d0,4(a0)
 				bsr		DEFANIMOBJ
 
-				bsr		Plr1_CheckObjectCollide
+				;bsr		Plr1_CheckObjectCollide
+				lea		Plr1_Data,a1
+				bsr		Plr_CheckObjectCollide
+
 				tst.b	d0
 				beq.s	.NotCollected1
 
@@ -171,14 +174,16 @@ Collectable:
 
 				tst.w	d0
 				beq.s	.NotCollected1
-				move.w	#-1,ObjT_ZoneID_w(a0)
+				move.w	#NULL_ZONE_ID,ObjT_ZoneID_w(a0)
 				sf		ShotT_Worry_b(a0)
 
 .NotCollected1:
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq.s	.NotCollected2
 
-				bsr		Plr2_CheckObjectCollide
+				lea 	Plr2_Data,a1
+				bsr		Plr_CheckObjectCollide
+
 				tst.b	d0
 				beq.s	.NotCollected2
 
@@ -188,7 +193,7 @@ Collectable:
 				beq.s	.NotCollected2
 
 				; todo - is this what is removing the item?
-				move.w	#-1,ObjT_ZoneID_w(a0)
+				move.w	#NULL_ZONE_ID,ObjT_ZoneID_w(a0)
 				sf		ShotT_Worry_b(a0)
 
 .NotCollected2:
@@ -246,7 +251,9 @@ Activatable:
 
 				bsr		DEFANIMOBJ
 
-				bsr		Plr1_CheckObjectCollide
+				lea		Plr1_Data,a1
+				bsr		Plr_CheckObjectCollide
+
 				tst.b	d0
 				beq.s	.NotActivated1
 
@@ -266,7 +273,10 @@ Activatable:
 .NotActivated1:
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq		.NotActivated2
-				bsr		Plr2_CheckObjectCollide
+				;bsr		Plr2_CheckObjectCollide
+				lea 	Plr2_Data,a1
+				bsr		Plr_CheckObjectCollide
+
 				tst.b	d0
 				beq.s	.NotActivated2
 
@@ -331,7 +341,10 @@ ACTIVATED:
 				ble.s	.DEACTIVATE
 
 .nottimeout:
-				bsr		Plr1_CheckObjectCollide
+				;bsr		Plr1_CheckObjectCollide
+				lea		Plr1_Data,a1
+				bsr		Plr_CheckObjectCollide
+
 				tst.b	d0
 				beq.s	.NotDeactivated1
 
@@ -350,7 +363,10 @@ ACTIVATED:
 				cmp.b	#PLR_SINGLE,Plr_MultiplayerType_b
 				beq.s	.NotDeactivated2
 
-				bsr		Plr2_CheckObjectCollide
+				;bsr		Plr2_CheckObjectCollide
+				lea 	Plr2_Data,a1
+				bsr		Plr_CheckObjectCollide
+
 				tst.b	d0
 				beq.s	.NotDeactivated2
 
@@ -723,31 +739,64 @@ Plr2_CollectItem:
 .no_collect:
 				rts
 
-Plr1_CheckObjectCollide:
-				move.l	obj_StatPtr_l,a2
-				move.b	Plr1_StoodInTop_b,d0
+
+
+; a1 points to player
+Plr_CheckObjectCollide:
+				move.b	PlrT_StoodInTop_b(a1),d0
 				move.b	ShotT_InUpperZone_b(a0),d1
 				eor.b	d0,d1
-				bne		.NotSameZone
+				bne.s	.no_collide
 
-				move.w	Plr1_XOff_l,Obj_OldX_w
-				move.w	Plr1_ZOff_l,Obj_OldZ_w
-				move.w	Plr1_Zone_w,d7
+;				move.w	PlrT_XOff_l(a1),Obj_OldX_w
+;				move.w	PlrT_ZOff_l(a1),Obj_OldZ_w
+				move.w	PlrT_Zone_w(a1),d7
 				cmp.w	ObjT_ZoneID_w(a0),d7
-				bne		.NotSameZone
+				bne.s	.no_collide
 
-				move.l	Plr1_YOff_l,d7
-				move.l	Plr1_Height_l,d6
-				asr.l	#1,d6
-				add.l	d6,d7
-				asr.l	#7,d7
-				sub.w	4(a0),d7
-				bgt.s	.okpos
-				neg.w	d7
 
-.okpos:
-				cmp.w	ODefT_CollideHeight_w(a2),d7
-				bgt		.NotSameZone
+				; 0xABADCAFE - Replacement collectable logic.
+				; Range based height checks. Note, vertical axis is sign inverted (higher levels increasingly negative)
+				;
+				; For two ranges, a1...a2 and b1...b2, where a1 < a2 and b1 < b2, a simple overlap test is
+				; a1 <= b2 && b1 <= a2
+				;
+				; a1 - player eye level
+				; a2 - player foot level (eye level - height)
+				; b1 - object top (y position - collide height)
+				; b2 - object y position
+				;
+				; Player levels are in 15.8 format.
+				; Object levels are in 15.1 format.
+				;
+
+				;move.l	#0,Debug_Collide_w
+
+				; a1 <= b2
+				move.l	PlrT_YOff_l(a1),d7					; Eye level (includes bob) (15.8)
+				asr.l	#7,d7							; a1 (15.1)
+				move.w	4(a0),d6						; b2 (15.1)
+				cmp.w	d7,d6							;
+				ble		.no_collide						; object floor above eye level
+
+				; b1 <= a2
+				move.l	PlrT_Height_l(a1),d0			; Stand or crouch height (15.8)
+				asr.l	#7,d0							;
+				add.l	d0,d7							; a2 (15.1)
+
+				move.l	obj_StatPtr_l,a2
+				sub.w	ODefT_CollideHeight_w(a2),d6	; b1 (15.1)
+				cmp.w	d6,d7
+				ble		.no_collide
+
+				;move.w	d7,Debug_Height_w
+				;move.w	d6,Debug_Collide_w
+
+				; Height checks done, rest here.
+				; TODO - maybe replace the rest of this with simialr range checks for X and Z
+				;        for an AABB box intersection test.
+				move.w	PlrT_XOff_l(a1),Obj_OldX_w
+				move.w	PlrT_ZOff_l(a1),Obj_OldZ_w
 
 				move.w	(a0),d0
 				move.l	Lvl_ObjectPointsPtr_l,a1
@@ -756,56 +805,18 @@ Plr1_CheckObjectCollide:
 				move.w	ODefT_CollideRadius_w(a2),d2
 				muls	d2,d2
 				jsr		CheckHit
+
 				move.b	hitwall,d0
 				rts
 
-.NotSameZone:
+.no_collide:
 				moveq	#0,d0
 				rts
 
-Plr2_CheckObjectCollide:
-				move.l	obj_StatPtr_l,a2
-				move.b	Plr2_StoodInTop_b,d0
-				move.b	ShotT_InUpperZone_b(a0),d1
-				eor.b	d0,d1
-				bne		.NotSameZone
-
-				move.w	Plr2_XOff_l,Obj_OldX_w
-				move.w	Plr2_ZOff_l,Obj_OldZ_w
-				move.w	Plr2_Zone_w,d7
-
-				cmp.w	ObjT_ZoneID_w(a0),d7
-				bne		.NotSameZone
-
-				move.l	Plr2_YOff_l,d7
-				move.l	Plr2_Height_l,d6
-				asr.l	#1,d6
-				add.l	d6,d7
-				asr.l	#7,d7
-				sub.w	4(a0),d7
-				bgt.s	.okpos
-
-				neg.w	d7
-
-.okpos:
-				cmp.w	ODefT_CollideHeight_w(a2),d7
-				bgt		.NotSameZone
-
-				move.w	(a0),d0
-				move.l	Lvl_ObjectPointsPtr_l,a1
-				move.w	(a1,d0.w*8),Obj_NewX_w
-				move.w	4(a1,d0.w*8),Obj_NewZ_w
-				move.w	ODefT_CollideRadius_w(a2),d2
-				muls	d2,d2
-				jsr		CheckHit
-				move.b	hitwall,d0
-				rts
-
-.NotSameZone:
-				moveq	#0,d0
-				rts
-
-obj_StatPtr_l:	dc.l	0
+				align 4
+obj_StatPtr_l:		dc.l 0
+;Debug_Collide_w:	dc.w 0
+;Debug_Height_w:		dc.w 0
 
 DEFANIMOBJ:
 				move.l	GLF_DatabasePtr_l,a3
