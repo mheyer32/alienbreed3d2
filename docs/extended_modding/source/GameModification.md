@@ -156,7 +156,11 @@ The optional `AlienAdjustment` node defines per-alien modifications:
             // All fields are optional but at least one must be specified.
             ScaleWidth: <#percent>,
             ScaleHeight: <#percent>,
-            VertOffset: <#offset>
+            VertOffset: <#offset>,
+            AuxXOffset: <#offset>,
+            AuxYOffset: <#offset>,
+            BulletXOffset: <#offset>,
+            BulletYOffset: <#offset>,
         },
     }
 ```
@@ -179,6 +183,21 @@ Fields:
     - Applies an absolute adjustment to the vertical offset of all animations frames for the alien.
     - Value is signed.
 
+- `AuxXOffset`
+    - Applies an absolute adjustment to the horizontal position of the auxilliary object, if any.
+    - Value is signed.
+
+- `AuxYOffset`
+    - Applies an absolute adjustment to the vertical position of the auxilliary object, if any.
+    - Value is signed.
+
+- `BulletXOffset`
+    - Applies an absolute adjustment to the horizontal position of the bullet spawn, if any.
+    - Value is signed.
+
+- `BulletYOffset`
+    - Applies an absolute adjustment to the vertical position of the bullet spawn, if any.
+    - Value is signed.
 
 ### DefaultInventoryLimits
 

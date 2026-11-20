@@ -177,10 +177,14 @@ typedef struct {
  */
 typedef struct {
     UWORD aadj_AlienID;
-    UWORD aadj_ScaleWidth;
-    UWORD aadj_ScaleHeight;
+    UWORD aadj_ScaleWidth;    // 8.8
+    UWORD aadj_ScaleHeight;   // 8.8
     WORD  aadj_VerticalOffset;
-} ASM_ALIGN(sizeof(UWORD)) GMod_AlienAdjustment; // 8 bytes
+    WORD  aadj_AuxXOffset;
+    WORD  aadj_AuxYOffset;
+    WORD  aadj_BulletXOffset;
+    WORD  aadj_BulletYOffset;
+} ASM_ALIGN(sizeof(UWORD)) GMod_AlienAdjustment; // 16 bytes
 
 /**********************************************************************************************************************/
 

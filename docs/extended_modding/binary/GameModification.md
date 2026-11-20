@@ -94,6 +94,10 @@ The Alien Adjusment Chunk contains the binary encoded data defined in the  [Alie
 | 10 | - ScaleWidth | `uint16` | 8.8 fixed point scale factor |
 | 12 | - ScaleHeight | `uint16` | 8.8 fixed point scale factor |
 | 14 | - VertOffset | `int16` | |
+| 16 | - AuxXOffset | `int16` | |
+| 16 | - AuxYOffset | `int16` | |
+| 18 | - BulletXOffset | `int16` | |
+| 20 | - BulletYOffset | `int16` | |
 | - | | } |
 | ... | ... | ... | Structure repeated per defined Alien Adjustment |
 
